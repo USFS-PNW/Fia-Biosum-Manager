@@ -609,6 +609,8 @@ namespace FIA_Biosum_Manager
 
         }
 
+        public static bool FS_NETWORK_IS_AVAILABLE => FS_NETWORK == FS_NETWORK_STATUS.Available;
+        public static bool FS_NETWORK_IS_NOT_AVAILABLE => FS_NETWORK == FS_NETWORK_STATUS.NotAvailable;
 
         public static FS_NETWORK_STATUS FS_NETWORK = FS_NETWORK_STATUS.NotAvailable;
         public enum FS_NETWORK_STATUS

@@ -21,7 +21,7 @@ namespace FIA_Biosum_Manager
         public Reference m_oReference = new Reference();
         public ProcessorScenarioRun m_oProcessorScenarioRun = new ProcessorScenarioRun();
         public ProcessorScenarioRuleDefinitions m_oProcessorScenarioRuleDefinitions = new ProcessorScenarioRuleDefinitions();
-        public VolumeAndBiomassCalculations m_oVolumeAndBiomassCalculations = new VolumeAndBiomassCalculations();
+        public VolumeAndBiomass m_oVolumeAndBiomass = new VolumeAndBiomass();
 
 
         public Tables()
@@ -2399,24 +2399,17 @@ namespace FIA_Biosum_Manager
         }
 
 
-        public class VolumeAndBiomassCalculations
+        public class VolumeAndBiomass
         {
-            static public string DefaultBiosumVolumesInputTable { get { return "biosum_volumes_input"; } }
-            static public string DefaultFcsBiosumVolumesInputTable { get { return "fcs_biosum_volumes_input"; } }
-            static public string DefaultBiosumVolumesOutputTable { get { return "BIOSUM_CALC_OUTPUT"; } }
+            static public string BiosumVolumesInputTable { get { return "biosum_volumes_input"; } }
+            static public string FcsBiosumVolumesInputTable { get { return "fcs_biosum_volumes_input"; } }
+            static public string BiosumCalcOutputTable { get { return "biosum_calc_output"; } }
             static public string DefaultSqliteWorkDatabase { get { return "fcs_tree.db"; } }
-            public static string DefaultSqliteWorkTable { get{ return "sqlite_work_table"; } }
+            public static string SqliteWorkTable { get{ return "sqlite_work_table"; } }
 
-            static public string DefaultVolumeAndBiomassCalculationTable
+            static public string BiosumVolumeCalcTable
             {
-                get
-                {
-                    return
-                        FIA_Biosum_Manager.utils.FS_NETWORK == utils.FS_NETWORK_STATUS.NotAvailable
-                            ? "BIOSUM_VOLUME"
-                            : "BIOSUM_CALC"
-                        ;
-                }
+                get { return FIA_Biosum_Manager.utils.FS_NETWORK == utils.FS_NETWORK_STATUS.NotAvailable ? "BIOSUM_VOLUME" : "BIOSUM_CALC" ; }
             }
         }
 

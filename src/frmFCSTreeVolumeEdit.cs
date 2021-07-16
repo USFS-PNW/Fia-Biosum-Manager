@@ -1159,16 +1159,16 @@ namespace FIA_Biosum_Manager
             m_oOracleServices.m_oTree.GetVolumesMode = FIADBOracle.Services.Tree.GetVolumesModeValues.SQLUpdate;
             
 
-            if (m_strGridTableSource.Trim() != Tables.VolumeAndBiomassCalculations.DefaultBiosumVolumesInputTable)
+            if (m_strGridTableSource.Trim() != Tables.VolumeAndBiomass.BiosumVolumesInputTable)
             {
                 //step 5 - delete and create work tables
-                if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomassCalculations.DefaultBiosumVolumesInputTable))
-                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + Tables.VolumeAndBiomassCalculations.DefaultBiosumVolumesInputTable);
-                frmMain.g_oTables.m_oFvs.CreateOracleInputBiosumVolumesTable(m_oAdo, m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomassCalculations.DefaultBiosumVolumesInputTable);
+                if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomass.BiosumVolumesInputTable))
+                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                frmMain.g_oTables.m_oFvs.CreateOracleInputBiosumVolumesTable(m_oAdo, m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomass.BiosumVolumesInputTable);
 
-                if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomassCalculations.DefaultFcsBiosumVolumesInputTable))
-                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + Tables.VolumeAndBiomassCalculations.DefaultFcsBiosumVolumesInputTable);
-                frmMain.g_oTables.m_oFvs.CreateOracleInputFCSBiosumVolumesTable(m_oAdo, m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomassCalculations.DefaultFcsBiosumVolumesInputTable);
+                if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable))
+                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
+                frmMain.g_oTables.m_oFvs.CreateOracleInputFCSBiosumVolumesTable(m_oAdo, m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
 
                 intThermValue++;
                 UpdateThermPercent(0, intRecordCount + 8, intThermValue);
@@ -1206,7 +1206,7 @@ namespace FIA_Biosum_Manager
                             "BIOSUM_COND_ID AS CND_CN," +
                             "MID(BIOSUM_COND_ID,1,LEN(BIOSUM_COND_ID)-1) AS PLT_CN";
 
-                m_oAdo.m_strSQL = "INSERT INTO " + Tables.VolumeAndBiomassCalculations.DefaultFcsBiosumVolumesInputTable + " " +
+                m_oAdo.m_strSQL = "INSERT INTO " + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable + " " +
                                  "(" + strColumns + ") SELECT " + strValues + " FROM " + strTable;
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_oAdo.m_strSQL + "\r\n\r\n");
@@ -1230,7 +1230,7 @@ namespace FIA_Biosum_Manager
                 UpdateThermPercent(0, intRecordCount + 8, intThermValue);
             }
 
-            m_oAdo.m_strSQL = "INSERT INTO fcs_biosum_volume (" + strColumns + ") SELECT " + strColumns + " FROM " + Tables.VolumeAndBiomassCalculations.DefaultFcsBiosumVolumesInputTable;
+            m_oAdo.m_strSQL = "INSERT INTO fcs_biosum_volume (" + strColumns + ") SELECT " + strColumns + " FROM " + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable;
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_oAdo.m_strSQL + "\r\n\r\n");
             m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
@@ -1416,16 +1416,16 @@ namespace FIA_Biosum_Manager
         if (m_oOracleServices.m_oTree == null) MessageBox.Show("m_oTree==null");
         //LPOTTS m_oOracleServices.m_oTree.GetVolumesMode = FIADBOracle.Services.Tree.GetVolumesModeValues.SQLUpdate;
         m_oOracleServices.m_oTree.GetVolumesMode = FIADBOracle.Services.Tree.GetVolumesModeValues.InsertRowTrigger;
-        if (m_strGridTableSource.Trim() != Tables.VolumeAndBiomassCalculations.DefaultBiosumVolumesInputTable)
+        if (m_strGridTableSource.Trim() != Tables.VolumeAndBiomass.BiosumVolumesInputTable)
         {
             //step 5 - delete and create work tables
-            if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomassCalculations.DefaultBiosumVolumesInputTable))
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + Tables.VolumeAndBiomassCalculations.DefaultBiosumVolumesInputTable);
-            frmMain.g_oTables.m_oFvs.CreateOracleInputBiosumVolumesTable(m_oAdo, m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomassCalculations.DefaultBiosumVolumesInputTable);
+            if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomass.BiosumVolumesInputTable))
+                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+            frmMain.g_oTables.m_oFvs.CreateOracleInputBiosumVolumesTable(m_oAdo, m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomass.BiosumVolumesInputTable);
 
-            if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomassCalculations.DefaultFcsBiosumVolumesInputTable))
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + Tables.VolumeAndBiomassCalculations.DefaultFcsBiosumVolumesInputTable);
-            frmMain.g_oTables.m_oFvs.CreateOracleInputFCSBiosumVolumesTable(m_oAdo, m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomassCalculations.DefaultFcsBiosumVolumesInputTable);
+            if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable))
+                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
+            frmMain.g_oTables.m_oFvs.CreateOracleInputFCSBiosumVolumesTable(m_oAdo, m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
 
             intThermValue++;
             UpdateThermPercent(0, intRecordCount + 8, intThermValue);
@@ -1463,7 +1463,7 @@ namespace FIA_Biosum_Manager
                         "BIOSUM_COND_ID AS CND_CN," +
                         "MID(BIOSUM_COND_ID,1,LEN(BIOSUM_COND_ID)-1) AS PLT_CN";
 
-            m_oAdo.m_strSQL = "INSERT INTO " + Tables.VolumeAndBiomassCalculations.DefaultFcsBiosumVolumesInputTable + " " +
+            m_oAdo.m_strSQL = "INSERT INTO " + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable + " " +
                              "(" + strColumns + ") SELECT " + strValues + " FROM " + strTable;
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_oAdo.m_strSQL + "\r\n\r\n");
@@ -1487,7 +1487,7 @@ namespace FIA_Biosum_Manager
             UpdateThermPercent(0, intRecordCount + 8, intThermValue);
         }
 
-        m_oAdo.m_strSQL = "INSERT INTO fcs_biosum_volume (" + strColumns + ") SELECT " + strColumns + " FROM " + Tables.VolumeAndBiomassCalculations.DefaultFcsBiosumVolumesInputTable;
+        m_oAdo.m_strSQL = "INSERT INTO fcs_biosum_volume (" + strColumns + ") SELECT " + strColumns + " FROM " + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable;
         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_oAdo.m_strSQL + "\r\n\r\n");
         m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
@@ -1681,15 +1681,15 @@ namespace FIA_Biosum_Manager
             m_oAdo.OpenConnection(m_oAdo.getMDBConnString(m_strTempDBFile, "", ""));
 
 
-        if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomassCalculations.DefaultBiosumVolumesInputTable))
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + Tables.VolumeAndBiomassCalculations.DefaultBiosumVolumesInputTable);
+        if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomass.BiosumVolumesInputTable))
+            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + Tables.VolumeAndBiomass.BiosumVolumesInputTable);
 
-        frmMain.g_oTables.m_oFvs.CreateOracleInputBiosumVolumesTable(m_oAdo, m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomassCalculations.DefaultBiosumVolumesInputTable);
+        frmMain.g_oTables.m_oFvs.CreateOracleInputBiosumVolumesTable(m_oAdo, m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomass.BiosumVolumesInputTable);
 
-        if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomassCalculations.DefaultFcsBiosumVolumesInputTable))
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + Tables.VolumeAndBiomassCalculations.DefaultFcsBiosumVolumesInputTable);
+        if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable))
+            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
 
-        frmMain.g_oTables.m_oFvs.CreateOracleInputFCSBiosumVolumesTable(m_oAdo, m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomassCalculations.DefaultFcsBiosumVolumesInputTable);
+        frmMain.g_oTables.m_oFvs.CreateOracleInputFCSBiosumVolumesTable(m_oAdo, m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
 
 
 
@@ -1697,13 +1697,13 @@ namespace FIA_Biosum_Manager
             m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE cull_work_table");
 
         m_oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.FVSOut_BuiltInputTableForVolumeCalculation_Step1(
-            Tables.VolumeAndBiomassCalculations.DefaultBiosumVolumesInputTable, cmbDatasource.Text.Trim(),p_strRxPackage);
+            Tables.VolumeAndBiomass.BiosumVolumesInputTable, cmbDatasource.Text.Trim(),p_strRxPackage);
         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_oAdo.m_strSQL + "\r\n\r\n");
         m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
 
         m_oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.FVSOut_BuildInputTableForVolumeCalculation_Step2(
-            Tables.VolumeAndBiomassCalculations.DefaultBiosumVolumesInputTable,
+            Tables.VolumeAndBiomass.BiosumVolumesInputTable,
             m_oQueries.m_oFIAPlot.m_strTreeTable,
             m_oQueries.m_oFIAPlot.m_strPlotTable,
             m_oQueries.m_oFIAPlot.m_strCondTable);
@@ -1712,7 +1712,7 @@ namespace FIA_Biosum_Manager
         m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
 
         m_oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.FVSOut_BuildInputTableForVolumeCalculation_Step3(
-            Tables.VolumeAndBiomassCalculations.DefaultBiosumVolumesInputTable,
+            Tables.VolumeAndBiomass.BiosumVolumesInputTable,
             m_oQueries.m_oFIAPlot.m_strCondTable);
         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_oAdo.m_strSQL + "\r\n\r\n");
@@ -1720,26 +1720,26 @@ namespace FIA_Biosum_Manager
 
         m_oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.FVSOut_BuildInputTableForVolumeCalculation_Step4(
             "cull_work_table",
-            Tables.VolumeAndBiomassCalculations.DefaultBiosumVolumesInputTable);
+            Tables.VolumeAndBiomass.BiosumVolumesInputTable);
         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_oAdo.m_strSQL + "\r\n\r\n");
         m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
 
         m_oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.PNWRS.FVSOut_BuildInputTableForVolumeCalculation_Step5(
             "cull_work_table",
-            Tables.VolumeAndBiomassCalculations.DefaultBiosumVolumesInputTable);
+            Tables.VolumeAndBiomass.BiosumVolumesInputTable);
         m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
 
         m_oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.PNWRS.FVSOut_BuildInputTableForVolumeCalculation_Step6(
             "cull_work_table",
-            Tables.VolumeAndBiomassCalculations.DefaultBiosumVolumesInputTable);
+            Tables.VolumeAndBiomass.BiosumVolumesInputTable);
         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_oAdo.m_strSQL + "\r\n\r\n");
         m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
 
         m_oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.FVSOut_BuildInputTableForVolumeCalculation_Step7(
-            Tables.VolumeAndBiomassCalculations.DefaultBiosumVolumesInputTable,
-            Tables.VolumeAndBiomassCalculations.DefaultFcsBiosumVolumesInputTable);
+            Tables.VolumeAndBiomass.BiosumVolumesInputTable,
+            Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_oAdo.m_strSQL + "\r\n\r\n");
         m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
@@ -1800,9 +1800,9 @@ namespace FIA_Biosum_Manager
                    //END: ADDED BIOSUM_VOLUME COLUMNS
                    "fvs_tree_id," +
                    "biosum_cond_id " +
-             "FROM " + Tables.VolumeAndBiomassCalculations.DefaultBiosumVolumesInputTable, this.cmbDatasource.Text.Trim());
+             "FROM " + Tables.VolumeAndBiomass.BiosumVolumesInputTable, this.cmbDatasource.Text.Trim());
 
-        m_strGridTableSource = Tables.VolumeAndBiomassCalculations.DefaultBiosumVolumesInputTable;
+        m_strGridTableSource = Tables.VolumeAndBiomass.BiosumVolumesInputTable;
         frmMain.g_oFrmMain.DeactivateStandByAnimation();
         frmMain.g_sbpInfo.Text = "Ready";
 

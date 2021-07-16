@@ -4366,10 +4366,10 @@ namespace FIA_Biosum_Manager
             else
             {
                 string str = System.Environment.GetEnvironmentVariable("PATH").ToString().ToLower();
-                if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomassCalculations.DefaultSqliteWorkDatabase) == false)
+                if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase) == false)
                 {
                     ErrCode = -1;
-                    ErrMsg = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomassCalculations.DefaultSqliteWorkDatabase + " not found";
+                    ErrMsg = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase + " not found";
                 }
                 if (ErrCode == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR") == false)
                 {
