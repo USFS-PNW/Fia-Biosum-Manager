@@ -1,4 +1,5 @@
 using System;
+using FcsClassLibrary;
 
 namespace FIA_Biosum_Manager
 {
@@ -20,6 +21,7 @@ namespace FIA_Biosum_Manager
         public Reference m_oReference = new Reference();
         public ProcessorScenarioRun m_oProcessorScenarioRun = new ProcessorScenarioRun();
         public ProcessorScenarioRuleDefinitions m_oProcessorScenarioRuleDefinitions = new ProcessorScenarioRuleDefinitions();
+        public VolumeAndBiomassCalculations m_oVolumeAndBiomassCalculations = new VolumeAndBiomassCalculations();
 
 
         public Tables()
@@ -2397,6 +2399,27 @@ namespace FIA_Biosum_Manager
         }
 
 
+        public class VolumeAndBiomassCalculations
+        {
+            static public string DefaultBiosumVolumesInputTable { get { return "biosum_volumes_input"; } }
+            static public string DefaultFcsBiosumVolumesInputTable { get { return "fcs_biosum_volumes_input"; } }
+            static public string DefaultBiosumVolumesOutputTable { get { return "BIOSUM_CALC_OUTPUT"; } }
+            static public string DefaultSqliteWorkDatabase { get { return "fcs_tree.db"; } }
+            public static string DefaultSqliteWorkTable { get{ return "sqlite_work_table"; } }
+
+            static public string DefaultVolumeAndBiomassCalculationTable
+            {
+                get
+                {
+                    return
+                        FIA_Biosum_Manager.utils.FS_NETWORK == utils.FS_NETWORK_STATUS.NotAvailable
+                            ? "BIOSUM_VOLUME"
+                            : "BIOSUM_CALC"
+                        ;
+                }
+            }
+        }
+
         public class FVS
         {
             public static string[] g_strFVSOutTablesArray =  {"FVS_CASES",
@@ -2454,8 +2477,6 @@ namespace FIA_Biosum_Manager
 
             static public string DefaultFVSTreeTableName { get { return "FVS_Tree"; } }
 
-            static public string DefaultOracleInputVolumesTable { get { return "biosum_volumes_input"; } }
-            static public string DefaultOracleInputFCSVolumesTable { get { return "fcs_biosum_volumes_input"; } }
 
             static public string DefaultFVSTreeIdWorkTable { get { return "fvs_tree_id_work_table"; } }
 
@@ -2670,6 +2691,9 @@ namespace FIA_Biosum_Manager
                     "roughcull DOUBLE," +
                     "decaycd BYTE," +
                     "totage DOUBLE," +
+                    "SUBP BYTE," +
+                    "FORMCL BYTE," +
+                    "CULLBF DOUBLE," +
                     //START: ADDED BIOSUM_VOLUME COLUMNS
                     "sitree INTEGER, " + 
                     "wdldstem INTEGER," + 
@@ -2688,7 +2712,14 @@ namespace FIA_Biosum_Manager
                     "cfsnd DECIMAL(3,0)," + 
                     "bfsnd DECIMAL(3,0)," + 
                     "precipitation DOUBLE," + 
-                    "balive DOUBLE," + 
+                    "balive DOUBLE," +
+                    "diahtcd INTEGER," +
+                    "standing_dead_cd INTEGER," +
+                    "volcfsnd_calc DECIMAL(13,6)," +
+                    "drybio_bole_calc DECIMAL(13,6)," +
+                    "drybio_top_calc DECIMAL(13,6)," +
+                    "drybio_sapling_calc DECIMAL(13,6)," +
+                    "drybio_wdld_spp_calc DECIMAL(13,6)," +
                     //END: ADDED BIOSUM_VOLUME COLUMNS
                     "volcfnet DOUBLE," +
                     "volcfgrs DOUBLE," +
@@ -2728,6 +2759,9 @@ namespace FIA_Biosum_Manager
                     "CULL DOUBLE," +
                     "DECAYCD BYTE," +
                     "TOTAGE DOUBLE," +
+                    "SUBP BYTE," +
+                    "FORMCL BYTE," +
+                    "CULLBF DOUBLE," +
                     //START: ADDED BIOSUM_VOLUME COLUMNS
                     "SITREE INTEGER," +
                     "WDLDSTEM INTEGER," +
@@ -2747,6 +2781,13 @@ namespace FIA_Biosum_Manager
                     "BFSND INTEGER," +
                     "PRECIPITATION DOUBLE," +
                     "BALIVE DOUBLE," +
+                    "DIAHTCD INTEGER," +
+                    "STANDING_DEAD_CD INTEGER," +
+                    "VOLCFSND_CALC DOUBLE," +
+                    "DRYBIO_BOLE_CALC DOUBLE," +
+                    "DRYBIO_TOP_CALC DOUBLE," +
+                    "DRYBIO_SAPLING_CALC DOUBLE," +
+                    "DRYBIO_WDLD_SPP_CALC DOUBLE," +
                     //END: ADDED BIOSUM_VOLUME COLUMNS
                     "TRE_CN CHAR(34)," +
                     "CND_CN CHAR(34)," +
@@ -2784,6 +2825,9 @@ namespace FIA_Biosum_Manager
                     "CULL DOUBLE," +
                     "DECAYCD BYTE," +
                     "TOTAGE DOUBLE," +
+                    "SUBP BYTE," +
+                    "FORMCL BYTE," +
+                    "CULLBF DOUBLE," +
                     //START: ADDED BIOSUM_VOLUME COLUMNS
                     "SITREE INTEGER, " +
                     "WDLDSTEM INTEGER," +
@@ -2803,6 +2847,13 @@ namespace FIA_Biosum_Manager
                     "BFSND INTEGER," +
                     "PRECIPITATION DOUBLE," +
                     "BALIVE DOUBLE," +
+                    "DIAHTCD INTEGER," +
+                    "STANDING_DEAD_CD INTEGER," +
+                    "VOLCFSND_CALC DOUBLE," +
+                    "DRYBIO_BOLE_CALC DOUBLE," +
+                    "DRYBIO_TOP_CALC DOUBLE," +
+                    "DRYBIO_SAPLING_CALC DOUBLE," +
+                    "DRYBIO_WDLD_SPP_CALC DOUBLE," +
                     //END: ADDED BIOSUM_VOLUME COLUMNS
                     "TRE_CN CHAR(34)," +
                     "CND_CN CHAR(34)," +
@@ -4009,7 +4060,7 @@ namespace FIA_Biosum_Manager
                     "spcd INTEGER," +
                     "spgrpcd INTEGER," +
                     "dia SINGLE," +
-                    "diahtcd BYTE," +
+                    "diahtcd BYTE," + //TODO: test if the new integer version in the biosum volumes section works 
                     "ht DOUBLE," +
                     "htcd BYTE," +
                     "actualht DOUBLE," +
@@ -4067,7 +4118,13 @@ namespace FIA_Biosum_Manager
                     "cullform DECIMAL(3,0)," +
                     "cullmstop DECIMAL(3,0)," +
                     "cfsnd DECIMAL(3,0)," +
-                    "bfsnd DECIMAL(3,0)," + 
+                    "bfsnd DECIMAL(3,0)," +
+                    "standing_dead_cd INTEGER," +
+                    "volcfsnd DECIMAL(13,6)," +
+                    "drybio_bole DECIMAL(13,6)," +
+                    "drybio_top DECIMAL(13,6)," +
+                    "drybio_sapling DECIMAL(13,6)," +
+                    "drybio_wdld_spp DECIMAL(13,6)," +
                     //END: ADDED BIOSUM_VOLUME COLUMNS
                     "fvs_tree_id CHAR(10)," +
                     "idb_alltree_id LONG," +
