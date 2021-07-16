@@ -4755,48 +4755,36 @@ namespace FIA_Biosum_Manager
         }
         private static string FormattedStringOrNull(DbDataReader p_DataReader, string key, DataType type)
         {
-            var strValue = "";
+            if (p_DataReader[key] == DBNull.Value) return "null";
             switch (type)
             {
                 case DataType.INTEGER:
                 {
-                    strValue = (p_DataReader[key] != DBNull.Value ? Convert.ToInt32(p_DataReader[key]).ToString() : "null") + ",";
-                    break;
+                    return Convert.ToInt32(p_DataReader[key]).ToString().Trim();
                 }
                 case DataType.DOUBLE:
                 {
-                    strValue = (p_DataReader[key] != DBNull.Value ? Convert.ToDouble(p_DataReader[key]).ToString() : "null") + ",";
-                    break;
+                    return Convert.ToDouble(p_DataReader[key]).ToString().Trim();
                 }
                 case DataType.BYTE:
                 {
-                    strValue = (p_DataReader[key] != DBNull.Value ? Convert.ToByte(p_DataReader[key]).ToString() : "null") + ",";
-                    break;
+                    return Convert.ToByte(p_DataReader[key]).ToString().Trim();
                 }
                 case DataType.STRING:
                 {
-                    strValue = (p_DataReader[key] != DBNull.Value ? "'" + p_DataReader[key].ToString().Trim() + "'" : "null") + ",";
-                    break;
+                    return "'" + p_DataReader[key].ToString().Trim() + "'";
                 }
+                default: return "null";
             }
-
-            return strValue;
-
         }
 
-        private static string InsertValues(DbDataReader p_DataReader, List<(string columnName, DataType type)> columnsAndDataTypes)
+        private static string GetParsedInsertValues(DbDataReader p_DataReader, List<(string columnName, DataType type)> columnsAndDataTypes)
         {
             if (columnsAndDataTypes == null) return "";
-            StringBuilder values = new StringBuilder();
-
+            var values = new List<string>();
             foreach (var pair in columnsAndDataTypes)
-            {
-                values.Append(FormattedStringOrNull(p_DataReader, pair.columnName, pair.type));
-            }
-
-            var strValues = values.ToString();
-            return strValues.Substring(0, strValues.Length - 1); //remove last comma
-
+                values.Add(FormattedStringOrNull(p_DataReader, pair.columnName, pair.type));
+            return string.Join(",", values);
         }
 
 	    private int ImportDownWoodyMaterials(ado_data_access p_ado)
