@@ -3777,7 +3777,7 @@ namespace FIA_Biosum_Manager
                                                 if (oSQLite.m_DataReader["TRE_CN"] != DBNull.Value &&
                                                     Convert.ToString(oSQLite.m_DataReader["TRE_CN"]).Trim().Length > 0)
                                                 {
-                                                    strValueList = InsertValues(oSQLite.m_DataReader, columnsAndDataTypes);
+                                                    strValueList = GetParsedInsertValues(oSQLite.m_DataReader, columnsAndDataTypes);
                                                     command.CommandText = $"INSERT INTO {Tables.VolumeAndBiomass.BiosumCalcOutputTable} ({strColumnList}) VALUES ({strValueList})";
                                                     command.ExecuteNonQuery();
                                                     SetThermValue(m_frmTherm.progressBar1, "Value", COUNT);
@@ -4745,32 +4745,19 @@ namespace FIA_Biosum_Manager
         {
             INTEGER, DOUBLE, BYTE, STRING
         }
-        private static string FormattedStringOrNull(DbDataReader p_DataReader, string key, DataType type)
+        private string FormattedStringOrNull(DbDataReader p_DataReader, string key, DataType type)
         {
-            if (p_DataReader[key] == DBNull.Value) return "null";
-            switch (type)
+            var typeConverterDict = new Dictionary<DataType, Func<string, string>>()
             {
-                case DataType.INTEGER:
-                {
-                    return Convert.ToInt32(p_DataReader[key]).ToString().Trim();
-                }
-                case DataType.DOUBLE:
-                {
-                    return Convert.ToDouble(p_DataReader[key]).ToString().Trim();
-                }
-                case DataType.BYTE:
-                {
-                    return Convert.ToByte(p_DataReader[key]).ToString().Trim();
-                }
-                case DataType.STRING:
-                {
-                    return "'" + p_DataReader[key].ToString().Trim() + "'";
-                }
-                default: return "null";
-            }
+                {DataType.INTEGER, (input) => { return Convert.ToInt32(p_DataReader[input]).ToString().Trim(); }},
+                {DataType.DOUBLE, (input) => { return Convert.ToDouble(p_DataReader[input]).ToString().Trim(); }},
+                {DataType.BYTE, (input) => { return Convert.ToByte(p_DataReader[input]).ToString().Trim(); }},
+                {DataType.STRING, (input) => { return "'" + p_DataReader[key].ToString().Trim() + "'"; }},
+            };
+            return p_DataReader[key] != DBNull.Value ? typeConverterDict[type](key) : "null";
         }
 
-        private static string GetParsedInsertValues(DbDataReader p_DataReader, List<(string columnName, DataType type)> columnsAndDataTypes)
+        private string GetParsedInsertValues(DbDataReader p_DataReader, List<(string columnName, DataType type)> columnsAndDataTypes)
         {
             if (columnsAndDataTypes == null) return "";
             var values = new List<string>();
