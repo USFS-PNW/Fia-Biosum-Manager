@@ -3529,18 +3529,11 @@ namespace FIA_Biosum_Manager
                                 //
                                 //INSERT ALL THE MS ACCESS DATA INTO SQLITE
                                 //
-                                int intTotalRecs = (int) p_ado.getRecordCount(m_connTempMDBFile,
-                                    $"SELECT COUNT(*) AS ROWCOUNT FROM {Tables.VolumeAndBiomass.SqliteWorkTable}",
-                                    Tables.VolumeAndBiomass.SqliteWorkTable);
-                                string strColumnList =
-                                    $@"STATECD, COUNTYCD, PLOT, INVYR, SUBP, TREE, VOL_LOC_GRP, SPCD, PRECIPITATION, BALIVE, SITREE, WDLDSTEM,
-                                                               DIAHTCD, DIA, HT, ACTUALHT, UPPER_DIA, UPPER_DIA_HT, CENTROID_DIA, CENTROID_DIA_HT_ACTUAL, SAWHT, HTDMP,
-                                                               BOLEHT, FORMCL, CR, STATUSCD, STANDING_DEAD_CD, TREECLCD, ROUGHCULL, CULL, CULLBF, CULLCF, CULL_FLD,
-                                                               CULLDEAD, CULLFORM, CULLMSTOP, CFSND, BFSND, DECAYCD, TOTAGE, PLT_CN, CND_CN, TRE_CN ";
-
+                                int intTotalRecs = (int) p_ado.getRecordCount(m_connTempMDBFile, $"SELECT COUNT(*) AS ROWCOUNT FROM {Tables.VolumeAndBiomass.SqliteWorkTable}", Tables.VolumeAndBiomass.SqliteWorkTable);
+                                string strColumnList = "";
                                 string strValueList = "";
-                                p_ado.SqlQueryReader(m_connTempMDBFile,
-                                    $"SELECT * FROM {Tables.VolumeAndBiomass.SqliteWorkTable}");
+
+                                p_ado.SqlQueryReader(m_connTempMDBFile, $"SELECT * FROM {Tables.VolumeAndBiomass.SqliteWorkTable}");
                                 if (p_ado.m_OleDbDataReader.HasRows)
                                 {
                                     System.Data.SQLite.SQLiteTransaction transaction;
@@ -3557,60 +3550,59 @@ namespace FIA_Biosum_Manager
                                     {
                                         COUNT = 0;
                                         SetThermValue(m_frmTherm.progressBar1, "Maximum", intTotalRecs);
-                                    var columnsAndDataTypes = new List<(string columnName, DataType type)>
-                                    {
-                                        ("STATECD", DataType.INTEGER),
-                                        ("COUNTYCD", DataType.INTEGER),
-                                        ("PLOT", DataType.INTEGER),
-                                        ("INVYR", DataType.INTEGER),
-                                        ("SUBP", DataType.INTEGER),
-                                        ("TREE", DataType.INTEGER),
-                                        ("VOL_LOC_GRP", DataType.STRING),
-                                        ("SPCD", DataType.INTEGER),
-                                        ("PRECIPITATION", DataType.DOUBLE),
-                                        ("BALIVE", DataType.DOUBLE),
-                                        ("SITREE", DataType.INTEGER),
-                                        ("WDLDSTEM", DataType.INTEGER),
-                                        ("DIAHTCD", DataType.INTEGER),
-                                        ("DIA", DataType.DOUBLE),
-                                        ("HT", DataType.INTEGER),
-                                        ("ACTUALHT", DataType.INTEGER),
-                                        ("UPPER_DIA", DataType.DOUBLE),
-                                        ("UPPER_DIA_HT", DataType.DOUBLE),
-                                        ("CENTROID_DIA", DataType.DOUBLE),
-                                        ("CENTROID_DIA_HT_ACTUAL", DataType.DOUBLE),
-                                        ("SAWHT", DataType.INTEGER),
-                                        ("HTDMP", DataType.DOUBLE),
-                                        ("BOLEHT", DataType.INTEGER),
-                                        ("FORMCL", DataType.INTEGER),
-                                        ("CR", DataType.INTEGER),
-                                        ("STATUSCD", DataType.INTEGER),
-                                        ("STANDING_DEAD_CD", DataType.INTEGER),
-                                        ("TREECLCD", DataType.INTEGER),
-                                        ("ROUGHCULL", DataType.INTEGER),
-                                        ("CULL", DataType.INTEGER),
-                                        ("CULLBF", DataType.INTEGER),
-                                        ("CULLCF", DataType.INTEGER),
-                                        ("CULL_FLD", DataType.INTEGER),
-                                        ("CULLDEAD", DataType.INTEGER),
-                                        ("CULLFORM", DataType.INTEGER),
-                                        ("CULLMSTOP", DataType.INTEGER),
-                                        ("CFSND", DataType.INTEGER),
-                                        ("BFSND", DataType.INTEGER),
-                                        ("DECAYCD", DataType.INTEGER),
-                                        ("TOTAGE", DataType.INTEGER),
-                                        ("PLT_CN", DataType.STRING),
-                                        ("CND_CN", DataType.STRING),
-                                        ("TRE_CN", DataType.STRING)
-                                    };
-                                    strColumnList = string.Join(",", columnsAndDataTypes.Select(item => item.columnName));
+                                        var columnsAndDataTypes = new List<(string columnName, DataType type)>
+                                        {
+                                            ("STATECD", DataType.INTEGER),
+                                            ("COUNTYCD", DataType.INTEGER),
+                                            ("PLOT", DataType.INTEGER),
+                                            ("INVYR", DataType.INTEGER),
+                                            ("SUBP", DataType.INTEGER),
+                                            ("TREE", DataType.INTEGER),
+                                            ("VOL_LOC_GRP", DataType.STRING),
+                                            ("SPCD", DataType.INTEGER),
+                                            ("PRECIPITATION", DataType.DOUBLE),
+                                            ("BALIVE", DataType.DOUBLE),
+                                            ("SITREE", DataType.INTEGER),
+                                            ("WDLDSTEM", DataType.INTEGER),
+                                            ("DIAHTCD", DataType.INTEGER),
+                                            ("DIA", DataType.DOUBLE),
+                                            ("HT", DataType.INTEGER),
+                                            ("ACTUALHT", DataType.INTEGER),
+                                            ("UPPER_DIA", DataType.DOUBLE),
+                                            ("UPPER_DIA_HT", DataType.DOUBLE),
+                                            ("CENTROID_DIA", DataType.DOUBLE),
+                                            ("CENTROID_DIA_HT_ACTUAL", DataType.DOUBLE),
+                                            ("SAWHT", DataType.INTEGER),
+                                            ("HTDMP", DataType.DOUBLE),
+                                            ("BOLEHT", DataType.INTEGER),
+                                            ("FORMCL", DataType.INTEGER),
+                                            ("CR", DataType.INTEGER),
+                                            ("STATUSCD", DataType.INTEGER),
+                                            ("STANDING_DEAD_CD", DataType.INTEGER),
+                                            ("TREECLCD", DataType.INTEGER),
+                                            ("ROUGHCULL", DataType.INTEGER),
+                                            ("CULL", DataType.INTEGER),
+                                            ("CULLBF", DataType.INTEGER),
+                                            ("CULLCF", DataType.INTEGER),
+                                            ("CULL_FLD", DataType.INTEGER),
+                                            ("CULLDEAD", DataType.INTEGER),
+                                            ("CULLFORM", DataType.INTEGER),
+                                            ("CULLMSTOP", DataType.INTEGER),
+                                            ("CFSND", DataType.INTEGER),
+                                            ("BFSND", DataType.INTEGER),
+                                            ("DECAYCD", DataType.INTEGER),
+                                            ("TOTAGE", DataType.INTEGER),
+                                            ("PLT_CN", DataType.STRING),
+                                            ("CND_CN", DataType.STRING),
+                                            ("TRE_CN", DataType.STRING)
+                                        };
+                                        strColumnList = string.Join(",", columnsAndDataTypes.Select(item => item.columnName));
 
-                                        while (_MSAccess.m_OleDbDataReader.Read())
+                                        while (MSAccess.m_OleDbDataReader.Read())
                                         {
                                             COUNT++;
-                                            strValueList = InsertValues(_MSAccess.m_OleDbDataReader, columnsAndDataTypes);
-                                            command.CommandText =
-                                                $"INSERT INTO {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} ({strColumnList}) VALUES ({strValueList})";
+                                            strValueList = GetParsedInsertValues(MSAccess.m_OleDbDataReader, columnsAndDataTypes);
+                                            command.CommandText = $"INSERT INTO {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} ({strColumnList}) VALUES ({strValueList})";
                                             command.ExecuteNonQuery();
                                             //if (COUNT == 100) break;
                                             //frmMain.g_oDelegate.SetControlPropertyValue((Control)lblSQLite2Msg, "Text", "INSERT DATA: " + COUNT.ToString() + " of " + intTotalCount.ToString());
