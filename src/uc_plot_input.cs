@@ -3514,7 +3514,7 @@ namespace FIA_Biosum_Manager
 
                                 _OracleADO = oOracle;
                                 _SQLite = oSQLite;
-                                _MSAccess = p_ado;
+                                MSAccess = p_ado;
 
                                 //
                                 //CONNECT TO SQLITE AND REMOVE DATA FROM SQLITE DB
@@ -3630,9 +3630,9 @@ namespace FIA_Biosum_Manager
                                 }
 
                                 strConn = m_connTempMDBFile.ConnectionString;
-                                _MSAccess.m_OleDbDataReader.Close();
-                                _MSAccess.m_OleDbDataReader.Dispose();
-                                _MSAccess.CloseConnection(m_connTempMDBFile);
+                                MSAccess.m_OleDbDataReader.Close();
+                                MSAccess.m_OleDbDataReader.Dispose();
+                                MSAccess.CloseConnection(m_connTempMDBFile);
                                 m_connTempMDBFile.Dispose();
                                 //oAdo = null;
                                 SetThermValue(m_frmTherm.progressBar1, "Value", 1);
@@ -3666,7 +3666,7 @@ namespace FIA_Biosum_Manager
                                 {
                                     //oAdo = new ado_data_access();
 
-                                    //_MSAccess = p_ado;
+                                    //MSAccess = p_ado;
 
                                     _SQLite.OpenConnection(false, 1,
                                         frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" +
@@ -3674,16 +3674,16 @@ namespace FIA_Biosum_Manager
 
                                     //COUNT = Convert.ToInt32(_oSQLite.getSingleDoubleValueFromSQLQuery(_oSQLite.m_Connection,"SELECT COUNT(*) AS ROWCOUNT FROM BIOSUM_CALC","biosum_calc"));
 
-                                    _MSAccess.OpenConnection(strConn, ref m_connTempMDBFile);
+                                    MSAccess.OpenConnection(strConn, ref m_connTempMDBFile);
 
-                                    if (_MSAccess.TableExist(m_connTempMDBFile,
+                                    if (MSAccess.TableExist(m_connTempMDBFile,
                                         Tables.VolumeAndBiomass.BiosumCalcOutputTable))
-                                        _MSAccess.SqlNonQuery(m_connTempMDBFile,
+                                        MSAccess.SqlNonQuery(m_connTempMDBFile,
                                             $"DROP TABLE {Tables.VolumeAndBiomass.BiosumCalcOutputTable}");
 
                                     System.Threading.Thread.Sleep(3000);
 
-                                    _MSAccess.SqlNonQuery(m_connTempMDBFile,
+                                    MSAccess.SqlNonQuery(m_connTempMDBFile,
                                         $"SELECT * INTO {Tables.VolumeAndBiomass.BiosumCalcOutputTable} FROM {Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable} WHERE 1=2");
 
 
@@ -3804,7 +3804,7 @@ namespace FIA_Biosum_Manager
                                             //update VOLTSGRS
                                             if (m_intError == 0)
                                             {
-                                                _MSAccess.m_strSQL =
+                                                MSAccess.m_strSQL =
                                                     $@"UPDATE {frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName} t 
                                                             INNER JOIN {Tables.VolumeAndBiomass.BiosumCalcOutputTable} o ON t.CN = o.TRE_CN
                                                             SET t.volcfgrs=IIF(o.VOLCFGRS_CALC IS NOT NULL, o.VOLCFGRS_CALC, null),
@@ -3818,7 +3818,7 @@ namespace FIA_Biosum_Manager
                                                             t.drybio_top=IIF(o.DRYBIO_TOP_CALC IS NOT NULL, o.DRYBIO_TOP_CALC, null),
                                                             t.drybio_sapling=IIF(o.DRYBIO_SAPLING_CALC IS NOT NULL, o.DRYBIO_SAPLING_CALC, null),
                                                             t.drybio_wdld_spp=IIF(o.DRYBIO_WDLD_SPP_CALC IS NOT NULL, o.DRYBIO_WDLD_SPP_CALC, null)";
-                                                _MSAccess.SqlNonQuery(m_connTempMDBFile, _MSAccess.m_strSQL);
+                                                MSAccess.SqlNonQuery(m_connTempMDBFile, MSAccess.m_strSQL);
                                             }
                                         }
 
@@ -3827,8 +3827,8 @@ namespace FIA_Biosum_Manager
                                         //intChanges = MSAccessCommitChanges("BIOSUM_CALC_INPUT");
                                     }
 
-                                    //_MSAccess.CloseConnection(_MSAccess.m_OleDbConnection);
-                                    //_MSAccess.m_OleDbConnection.Dispose();
+                                    //MSAccess.CloseConnection(MSAccess.m_OleDbConnection);
+                                    //MSAccess.m_OleDbConnection.Dispose();
                                     //oAdo = null;
                                     oSQLite.CloseAndDisposeConnection(oSQLite.m_Connection, true);
                                     oSQLite = null;
