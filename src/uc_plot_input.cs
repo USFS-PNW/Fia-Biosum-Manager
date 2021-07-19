@@ -3353,7 +3353,7 @@ namespace FIA_Biosum_Manager
                         p_ado.SqlNonQuery(this.m_connTempMDBFile, p_ado.m_strSQL);
                     }
                    
-                        SetLabelValue(m_frmTherm.lblMsg, "Text", "Start Oracle Services...Stand By");
+                        SetLabelValue(m_frmTherm.lblMsg, "Text", "Start Volume and Biomass Calculations...Stand By");
                         frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
                         FIADBOracle.Services m_oOracleServices = new FIADBOracle.Services();
                         m_oOracleServices.Start();
@@ -3608,7 +3608,7 @@ namespace FIA_Biosum_Manager
                                             //frmMain.g_oDelegate.SetControlPropertyValue((Control)lblSQLite2Msg, "Text", "INSERT DATA: " + COUNT.ToString() + " of " + intTotalCount.ToString());
                                             frmMain.g_oDelegate.SetControlPropertyValue(
                                                 (System.Windows.Forms.Control) m_frmTherm.lblMsg, "Text",
-                                                "Prepare Tree Data for Oracle VOLTSGRS Values...Stand By [" +
+                                                "Prepare Tree Data for Volume and Biomass Calculations...Stand By [" +
                                                 COUNT.ToString() + "/" + intTotalRecs.ToString() + "]");
                                             frmMain.g_oDelegate.ExecuteControlMethod(
                                                 (System.Windows.Forms.Control) this.m_frmTherm.lblMsg, "Refresh");
@@ -3637,7 +3637,7 @@ namespace FIA_Biosum_Manager
                                 //oAdo = null;
                                 SetThermValue(m_frmTherm.progressBar1, "Value", 1);
                                 //
-                                //RUN JAVA APP TO SEND TO ORACLE AND CALCULATE VOLUME/BIOMASS
+                                //RUN JAVA APP TO CALCULATE VOLUME/BIOMASS
                                 //
                                 if (m_intError == 0)
                                 {
