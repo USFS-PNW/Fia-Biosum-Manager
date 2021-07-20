@@ -2880,8 +2880,7 @@ namespace FIA_Biosum_Manager
                 }
                 public static string FIAPlotInput_BuildInputTableForVolumeCalculation_Step1(string p_strInputVolumesTable,string p_strFIATreeTable,string p_strColumns,string p_strValues)
                 {
-                    return  "INSERT INTO " + p_strInputVolumesTable + " " +
-                            "(" + p_strColumns + ") SELECT " + p_strValues + " FROM " + p_strFIATreeTable;
+                    return $"INSERT INTO {p_strInputVolumesTable} ({p_strColumns}) SELECT {p_strValues} FROM {p_strFIATreeTable} WHERE biosum_status_cd=9";
                 }
                 public static string FIAPlotInput_BuildInputTableForVolumeCalculation_Step2(
                                         string p_strInputVolumesTable,
