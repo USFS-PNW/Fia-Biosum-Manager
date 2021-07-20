@@ -13,7 +13,6 @@ using System.Xml;
 using System.Threading;
 
 
-
 namespace FIA_Biosum_Manager
 {
 	/// <summary>
@@ -3373,24 +3372,37 @@ namespace FIA_Biosum_Manager
 
 
                         //TODO: more columns like diahtcd need to be populated here.
-                        strColumns = "STATECD,COUNTYCD,PLOT," +
-                                     "SUBP,FORMCL,CULLBF," +
-                                     "INVYR,TREE,SPCD,DIA,DIAHTCD,HT," +
-                                     "ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,TRE_CN,CND_CN,PLT_CN,VOL_LOC_GRP";
+                        var treeToFcsBiosumVolumesInputTable = new (string name, string value)[]
+                        {
+                            ("STATECD", "STATECD"),
+                            ("COUNTYCD", "COUNTYCD"),
+                            ("PLOT", "CINT(MID(BIOSUM_COND_ID, 16, 5)) AS PLOT"),
+                            ("SUBP", "SUBP"),
+                            ("FORMCL", "FORMCL"),
+                            ("CULLBF", "CULLBF"),
+                            ("INVYR", "INVYR"),
+                            ("TREE", "TREE"),
+                            ("SPCD", "SPCD"),
+                            ("DIA", "IIF(DIA IS NOT NULL, ROUND(DIA, 2), DIA)"),
+                            ("DIAHTCD", "DIAHTCD"),
+                            ("HT", "HT"),
+                            ("ACTUALHT", "ACTUALHT"),
+                            ("CR", "CR"),
+                            ("STATUSCD", "STATUSCD"),
+                            ("TREECLCD", "TREECLCD"),
+                            ("ROUGHCULL", "ROUGHCULL"),
+                            ("CULL", "CULL"),
+                            ("TRE_CN", "CN AS TRE_CN"),
+                            ("CND_CN", "BIOSUM_COND_ID AS CND_CN"),
+                            ("PLT_CN", "MID(BIOSUM_COND_ID, 1, LEN(BIOSUM_COND_ID)-1) AS PLT_CN"),
+                            ("VOL_LOC_GRP", "'' AS VOL_LOC_GRP"),
+                        };
 
-
-                        strValues = "STATECD,COUNTYCD,CINT(MID(BIOSUM_COND_ID,16,5)) AS PLOT," +
-                                    "SUBP,FORMCL,CULLBF," +
-                                    "INVYR,TREE,SPCD,IIF(DIA IS NOT NULL,ROUND(DIA,2),DIA),DIAHTCD,HT,ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL," +
-                                    "CN AS TRE_CN," +
-                                    "BIOSUM_COND_ID AS CND_CN," +
-                                    "MID(BIOSUM_COND_ID,1,LEN(BIOSUM_COND_ID)-1) AS PLT_CN,'' AS VOL_LOC_GRP";
+                        strColumns = string.Join(",", treeToFcsBiosumVolumesInputTable.Select(e => e.name));
+                        strValues = string.Join(",", treeToFcsBiosumVolumesInputTable.Select(e => e.value));
 
                         //insert records
-                        p_ado.m_strSQL = Queries.FVS.VolumesAndBiomass.FIAPlotInput_BuildInputTableForVolumeCalculation_Step1(Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable, m_strTreeTable,strColumns,strValues);
-
-                       // p_ado.m_strSQL = "INSERT INTO " + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable + " " +
-                       //                  "(" + strColumns + ") SELECT " + strValues + " FROM " + m_strTreeTable;
+                        p_ado.m_strSQL = Queries.FVS.VolumesAndBiomass.FIAPlotInput_BuildInputTableForVolumeCalculation_Step1( Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable, m_strTreeTable, strColumns, strValues);
                         
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n\r\n");
@@ -3522,7 +3534,7 @@ namespace FIA_Biosum_Manager
                                 oSQLite.OpenConnection(false, 1,
                                     frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" +
                                     Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase, "BIOSUM");
-                                oSQLite.SqlNonQuery(oSQLite.m_Connection, "DELETE FROM BIOSUM_CALC");
+                                oSQLite.SqlNonQuery(oSQLite.m_Connection, $"DELETE FROM {Tables.VolumeAndBiomass.BiosumVolumeCalcTable}");
                                 SetThermValue(m_frmTherm.progressBar1, "Value", 0);
                                 System.Threading.Thread.Sleep(2000);
 
@@ -3530,8 +3542,6 @@ namespace FIA_Biosum_Manager
                                 //INSERT ALL THE MS ACCESS DATA INTO SQLITE
                                 //
                                 int intTotalRecs = (int) p_ado.getRecordCount(m_connTempMDBFile, $"SELECT COUNT(*) AS ROWCOUNT FROM {Tables.VolumeAndBiomass.SqliteWorkTable}", Tables.VolumeAndBiomass.SqliteWorkTable);
-                                string strColumnList = "";
-                                string strValueList = "";
 
                                 p_ado.SqlQueryReader(m_connTempMDBFile, $"SELECT * FROM {Tables.VolumeAndBiomass.SqliteWorkTable}");
                                 if (p_ado.m_OleDbDataReader.HasRows)
@@ -3550,61 +3560,60 @@ namespace FIA_Biosum_Manager
                                     {
                                         COUNT = 0;
                                         SetThermValue(m_frmTherm.progressBar1, "Maximum", intTotalRecs);
-                                        var columnsAndDataTypes = new List<(string columnName, DataType type)>
+                                        var columnsAndDataTypes = new List<(string columnName, utils.DataType type)>
                                         {
-                                            ("STATECD", DataType.INTEGER),
-                                            ("COUNTYCD", DataType.INTEGER),
-                                            ("PLOT", DataType.INTEGER),
-                                            ("INVYR", DataType.INTEGER),
-                                            ("SUBP", DataType.INTEGER),
-                                            ("TREE", DataType.INTEGER),
-                                            ("VOL_LOC_GRP", DataType.STRING),
-                                            ("SPCD", DataType.INTEGER),
-                                            ("PRECIPITATION", DataType.DOUBLE),
-                                            ("BALIVE", DataType.DOUBLE),
-                                            ("SITREE", DataType.INTEGER),
-                                            ("WDLDSTEM", DataType.INTEGER),
-                                            ("DIAHTCD", DataType.INTEGER),
-                                            ("DIA", DataType.DOUBLE),
-                                            ("HT", DataType.INTEGER),
-                                            ("ACTUALHT", DataType.INTEGER),
-                                            ("UPPER_DIA", DataType.DOUBLE),
-                                            ("UPPER_DIA_HT", DataType.DOUBLE),
-                                            ("CENTROID_DIA", DataType.DOUBLE),
-                                            ("CENTROID_DIA_HT_ACTUAL", DataType.DOUBLE),
-                                            ("SAWHT", DataType.INTEGER),
-                                            ("HTDMP", DataType.DOUBLE),
-                                            ("BOLEHT", DataType.INTEGER),
-                                            ("FORMCL", DataType.INTEGER),
-                                            ("CR", DataType.INTEGER),
-                                            ("STATUSCD", DataType.INTEGER),
-                                            ("STANDING_DEAD_CD", DataType.INTEGER),
-                                            ("TREECLCD", DataType.INTEGER),
-                                            ("ROUGHCULL", DataType.INTEGER),
-                                            ("CULL", DataType.INTEGER),
-                                            ("CULLBF", DataType.INTEGER),
-                                            ("CULLCF", DataType.INTEGER),
-                                            ("CULL_FLD", DataType.INTEGER),
-                                            ("CULLDEAD", DataType.INTEGER),
-                                            ("CULLFORM", DataType.INTEGER),
-                                            ("CULLMSTOP", DataType.INTEGER),
-                                            ("CFSND", DataType.INTEGER),
-                                            ("BFSND", DataType.INTEGER),
-                                            ("DECAYCD", DataType.INTEGER),
-                                            ("TOTAGE", DataType.INTEGER),
-                                            ("PLT_CN", DataType.STRING),
-                                            ("CND_CN", DataType.STRING),
-                                            ("TRE_CN", DataType.STRING)
+                                            ("STATECD", utils.DataType.INTEGER),
+                                            ("COUNTYCD", utils.DataType.INTEGER),
+                                            ("PLOT", utils.DataType.INTEGER),
+                                            ("INVYR", utils.DataType.INTEGER),
+                                            ("SUBP", utils.DataType.INTEGER),
+                                            ("TREE", utils.DataType.INTEGER),
+                                            ("VOL_LOC_GRP", utils.DataType.STRING),
+                                            ("SPCD", utils.DataType.INTEGER),
+                                            ("PRECIPITATION", utils.DataType.DOUBLE),
+                                            ("BALIVE", utils.DataType.DOUBLE),
+                                            ("SITREE", utils.DataType.INTEGER),
+                                            ("WDLDSTEM", utils.DataType.INTEGER),
+                                            ("DIAHTCD", utils.DataType.INTEGER),
+                                            ("DIA", utils.DataType.DOUBLE),
+                                            ("HT", utils.DataType.INTEGER),
+                                            ("ACTUALHT", utils.DataType.INTEGER),
+                                            ("UPPER_DIA", utils.DataType.DOUBLE),
+                                            ("UPPER_DIA_HT", utils.DataType.DOUBLE),
+                                            ("CENTROID_DIA", utils.DataType.DOUBLE),
+                                            ("CENTROID_DIA_HT_ACTUAL", utils.DataType.DOUBLE),
+                                            ("SAWHT", utils.DataType.INTEGER),
+                                            ("HTDMP", utils.DataType.DOUBLE),
+                                            ("BOLEHT", utils.DataType.INTEGER),
+                                            ("FORMCL", utils.DataType.INTEGER),
+                                            ("CR", utils.DataType.INTEGER),
+                                            ("STATUSCD", utils.DataType.INTEGER),
+                                            ("STANDING_DEAD_CD", utils.DataType.INTEGER),
+                                            ("TREECLCD", utils.DataType.INTEGER),
+                                            ("ROUGHCULL", utils.DataType.INTEGER),
+                                            ("CULL", utils.DataType.INTEGER),
+                                            ("CULLBF", utils.DataType.INTEGER),
+                                            ("CULLCF", utils.DataType.INTEGER),
+                                            ("CULL_FLD", utils.DataType.INTEGER),
+                                            ("CULLDEAD", utils.DataType.INTEGER),
+                                            ("CULLFORM", utils.DataType.INTEGER),
+                                            ("CULLMSTOP", utils.DataType.INTEGER),
+                                            ("CFSND", utils.DataType.INTEGER),
+                                            ("BFSND", utils.DataType.INTEGER),
+                                            ("DECAYCD", utils.DataType.INTEGER),
+                                            ("TOTAGE", utils.DataType.INTEGER),
+                                            ("PLT_CN", utils.DataType.STRING),
+                                            ("CND_CN", utils.DataType.STRING),
+                                            ("TRE_CN", utils.DataType.STRING)
                                         };
-                                        strColumnList = string.Join(",", columnsAndDataTypes.Select(item => item.columnName));
+                                        strColumns = string.Join(",", columnsAndDataTypes.Select(item => item.columnName));
 
                                         while (MSAccess.m_OleDbDataReader.Read())
                                         {
                                             COUNT++;
-                                            strValueList = GetParsedInsertValues(MSAccess.m_OleDbDataReader, columnsAndDataTypes);
-                                            command.CommandText = $"INSERT INTO {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} ({strColumnList}) VALUES ({strValueList})";
+                                            strValues = utils.GetParsedInsertValues(MSAccess.m_OleDbDataReader, columnsAndDataTypes);
+                                            command.CommandText = $"INSERT INTO {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} ({strColumns}) VALUES ({strValues})";
                                             command.ExecuteNonQuery();
-                                            //if (COUNT == 100) break;
                                             //frmMain.g_oDelegate.SetControlPropertyValue((Control)lblSQLite2Msg, "Text", "INSERT DATA: " + COUNT.ToString() + " of " + intTotalCount.ToString());
                                             frmMain.g_oDelegate.SetControlPropertyValue(
                                                 (System.Windows.Forms.Control) m_frmTherm.lblMsg, "Text",
@@ -3699,64 +3708,64 @@ namespace FIA_Biosum_Manager
                                     oSQLite.SqlQueryReader(oSQLite.m_Connection,
                                         $"SELECT * FROM {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} WHERE VOLTSGRS_CALC IS NOT NULL");
 
-                                    var columnsAndDataTypes = new List<(string columnName, DataType type)>
+                                    var columnsAndDataTypes = new List<(string columnName, utils.DataType type)>
                                     {
-                                        ("STATECD", DataType.INTEGER),
-                                        ("COUNTYCD", DataType.INTEGER),
-                                        ("PLOT", DataType.INTEGER),
-                                        ("INVYR", DataType.INTEGER),
-                                        ("SUBP", DataType.INTEGER),
-                                        ("TREE", DataType.INTEGER),
-                                        ("VOL_LOC_GRP", DataType.STRING),
-                                        ("SPCD", DataType.INTEGER),
-                                        ("PRECIPITATION", DataType.DOUBLE),
-                                        ("BALIVE", DataType.DOUBLE),
-                                        ("SITREE", DataType.INTEGER),
-                                        ("WDLDSTEM", DataType.INTEGER),
-                                        ("DIAHTCD", DataType.INTEGER),
-                                        ("DIA", DataType.DOUBLE),
-                                        ("HT", DataType.INTEGER),
-                                        ("ACTUALHT", DataType.INTEGER),
-                                        ("UPPER_DIA", DataType.DOUBLE),
-                                        ("UPPER_DIA_HT", DataType.DOUBLE),
-                                        ("CENTROID_DIA", DataType.DOUBLE),
-                                        ("CENTROID_DIA_HT_ACTUAL", DataType.DOUBLE),
-                                        ("SAWHT", DataType.INTEGER),
-                                        ("HTDMP", DataType.DOUBLE),
-                                        ("BOLEHT", DataType.INTEGER),
-                                        ("FORMCL", DataType.INTEGER),
-                                        ("CR", DataType.INTEGER),
-                                        ("STATUSCD", DataType.INTEGER),
-                                        ("STANDING_DEAD_CD", DataType.INTEGER),
-                                        ("TREECLCD", DataType.INTEGER),
-                                        ("ROUGHCULL", DataType.INTEGER),
-                                        ("CULL", DataType.INTEGER),
-                                        ("CULLBF", DataType.INTEGER),
-                                        ("CULLCF", DataType.INTEGER),
-                                        ("CULL_FLD", DataType.INTEGER),
-                                        ("CULLDEAD", DataType.INTEGER),
-                                        ("CULLFORM", DataType.INTEGER),
-                                        ("CULLMSTOP", DataType.INTEGER),
-                                        ("CFSND", DataType.INTEGER),
-                                        ("BFSND", DataType.INTEGER),
-                                        ("DECAYCD", DataType.INTEGER),
-                                        ("TOTAGE", DataType.INTEGER),
-                                        ("PLT_CN", DataType.STRING),
-                                        ("CND_CN", DataType.STRING),
-                                        ("TRE_CN", DataType.STRING),
-                                        ("VOLCFGRS_CALC", DataType.DOUBLE),
-                                        ("VOLCFNET_CALC", DataType.DOUBLE),
-                                        ("VOLCFSND_CALC", DataType.DOUBLE),
-                                        ("VOLCSGRS_CALC", DataType.DOUBLE),
-                                        ("VOLTSGRS_CALC", DataType.DOUBLE),
-                                        ("DRYBIOM_CALC", DataType.DOUBLE),
-                                        ("DRYBIOT_CALC", DataType.DOUBLE),
-                                        ("DRYBIO_BOLE_CALC", DataType.DOUBLE),
-                                        ("DRYBIO_TOP_CALC", DataType.DOUBLE),
-                                        ("DRYBIO_SAPLING_CALC", DataType.DOUBLE),
-                                        ("DRYBIO_WDLD_SPP_CALC", DataType.DOUBLE)
+                                        ("STATECD", utils.DataType.INTEGER),
+                                        ("COUNTYCD", utils.DataType.INTEGER),
+                                        ("PLOT", utils.DataType.INTEGER),
+                                        ("INVYR", utils.DataType.INTEGER),
+                                        ("SUBP", utils.DataType.INTEGER),
+                                        ("TREE", utils.DataType.INTEGER),
+                                        ("VOL_LOC_GRP", utils.DataType.STRING),
+                                        ("SPCD", utils.DataType.INTEGER),
+                                        ("PRECIPITATION", utils.DataType.DOUBLE),
+                                        ("BALIVE", utils.DataType.DOUBLE),
+                                        ("SITREE", utils.DataType.INTEGER),
+                                        ("WDLDSTEM", utils.DataType.INTEGER),
+                                        ("DIAHTCD", utils.DataType.INTEGER),
+                                        ("DIA", utils.DataType.DOUBLE),
+                                        ("HT", utils.DataType.INTEGER),
+                                        ("ACTUALHT", utils.DataType.INTEGER),
+                                        ("UPPER_DIA", utils.DataType.DOUBLE),
+                                        ("UPPER_DIA_HT", utils.DataType.DOUBLE),
+                                        ("CENTROID_DIA", utils.DataType.DOUBLE),
+                                        ("CENTROID_DIA_HT_ACTUAL", utils.DataType.DOUBLE),
+                                        ("SAWHT", utils.DataType.INTEGER),
+                                        ("HTDMP", utils.DataType.DOUBLE),
+                                        ("BOLEHT", utils.DataType.INTEGER),
+                                        ("FORMCL", utils.DataType.INTEGER),
+                                        ("CR", utils.DataType.INTEGER),
+                                        ("STATUSCD", utils.DataType.INTEGER),
+                                        ("STANDING_DEAD_CD", utils.DataType.INTEGER),
+                                        ("TREECLCD", utils.DataType.INTEGER),
+                                        ("ROUGHCULL", utils.DataType.INTEGER),
+                                        ("CULL", utils.DataType.INTEGER),
+                                        ("CULLBF", utils.DataType.INTEGER),
+                                        ("CULLCF", utils.DataType.INTEGER),
+                                        ("CULL_FLD", utils.DataType.INTEGER),
+                                        ("CULLDEAD", utils.DataType.INTEGER),
+                                        ("CULLFORM", utils.DataType.INTEGER),
+                                        ("CULLMSTOP", utils.DataType.INTEGER),
+                                        ("CFSND", utils.DataType.INTEGER),
+                                        ("BFSND", utils.DataType.INTEGER),
+                                        ("DECAYCD", utils.DataType.INTEGER),
+                                        ("TOTAGE", utils.DataType.INTEGER),
+                                        ("PLT_CN", utils.DataType.STRING),
+                                        ("CND_CN", utils.DataType.STRING),
+                                        ("TRE_CN", utils.DataType.STRING),
+                                        ("VOLCFGRS_CALC", utils.DataType.DOUBLE),
+                                        ("VOLCFNET_CALC", utils.DataType.DOUBLE),
+                                        ("VOLCFSND_CALC", utils.DataType.DOUBLE),
+                                        ("VOLCSGRS_CALC", utils.DataType.DOUBLE),
+                                        ("VOLTSGRS_CALC", utils.DataType.DOUBLE),
+                                        ("DRYBIOM_CALC", utils.DataType.DOUBLE),
+                                        ("DRYBIOT_CALC", utils.DataType.DOUBLE),
+                                        ("DRYBIO_BOLE_CALC", utils.DataType.DOUBLE),
+                                        ("DRYBIO_TOP_CALC", utils.DataType.DOUBLE),
+                                        ("DRYBIO_SAPLING_CALC", utils.DataType.DOUBLE),
+                                        ("DRYBIO_WDLD_SPP_CALC", utils.DataType.DOUBLE)
                                     };
-                                    strColumnList = string.Join(",", columnsAndDataTypes.Select(item => item.columnName));
+                                    strColumns = string.Join(",", columnsAndDataTypes.Select(item => item.columnName));
 
                                     if (oSQLite.m_DataReader.HasRows)
                                     {
@@ -3777,8 +3786,8 @@ namespace FIA_Biosum_Manager
                                                 if (oSQLite.m_DataReader["TRE_CN"] != DBNull.Value &&
                                                     Convert.ToString(oSQLite.m_DataReader["TRE_CN"]).Trim().Length > 0)
                                                 {
-                                                    strValueList = GetParsedInsertValues(oSQLite.m_DataReader, columnsAndDataTypes);
-                                                    command.CommandText = $"INSERT INTO {Tables.VolumeAndBiomass.BiosumCalcOutputTable} ({strColumnList}) VALUES ({strValueList})";
+                                                    strValues = utils.GetParsedInsertValues(oSQLite.m_DataReader, columnsAndDataTypes);
+                                                    command.CommandText = $"INSERT INTO {Tables.VolumeAndBiomass.BiosumCalcOutputTable} ({strColumns}) VALUES ({strValues})";
                                                     command.ExecuteNonQuery();
                                                     SetThermValue(m_frmTherm.progressBar1, "Value", COUNT);
                                                 }
@@ -3824,7 +3833,6 @@ namespace FIA_Biosum_Manager
 
                                         transaction.Dispose();
                                         transaction = null;
-                                        //intChanges = MSAccessCommitChanges("BIOSUM_CALC_INPUT");
                                     }
 
                                     //MSAccess.CloseConnection(MSAccess.m_OleDbConnection);
@@ -4740,31 +4748,6 @@ namespace FIA_Biosum_Manager
 
 		    return p_ado.m_intError;
 		}
-
-        private enum DataType
-        {
-            INTEGER, DOUBLE, BYTE, STRING
-        }
-        private string FormattedStringOrNull(DbDataReader p_DataReader, string key, DataType type)
-        {
-            var typeConverterDict = new Dictionary<DataType, Func<string, string>>()
-            {
-                {DataType.INTEGER, (input) => { return Convert.ToInt32(p_DataReader[input]).ToString().Trim(); }},
-                {DataType.DOUBLE, (input) => { return Convert.ToDouble(p_DataReader[input]).ToString().Trim(); }},
-                {DataType.BYTE, (input) => { return Convert.ToByte(p_DataReader[input]).ToString().Trim(); }},
-                {DataType.STRING, (input) => { return "'" + p_DataReader[key].ToString().Trim() + "'"; }},
-            };
-            return p_DataReader[key] != DBNull.Value ? typeConverterDict[type](key) : "null";
-        }
-
-        private string GetParsedInsertValues(DbDataReader p_DataReader, List<(string columnName, DataType type)> columnsAndDataTypes)
-        {
-            if (columnsAndDataTypes == null) return "";
-            var values = new List<string>();
-            foreach (var pair in columnsAndDataTypes)
-                values.Add(FormattedStringOrNull(p_DataReader, pair.columnName, pair.type));
-            return string.Join(",", values);
-        }
 
 	    private int ImportDownWoodyMaterials(ado_data_access p_ado)
 	    {
