@@ -3517,7 +3517,7 @@ namespace FIA_Biosum_Manager
                            "i.roughcull=IIF(t.roughcull IS NULL,0,t.roughcull)," +
                            "i.decaycd=IIF(t.decaycd IS NULL,0,t.decaycd)," +
                            "i.balive=c.balive," +
-                           "i.precipitation=p.precipitation,";
+                           "i.precipitation=p.precipitation";
                 }
 
                 public static string BuildInputTableForVolumeCalculation_Step3(
