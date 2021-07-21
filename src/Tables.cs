@@ -4078,6 +4078,7 @@ namespace FIA_Biosum_Manager
                     "drybiom DOUBLE," +
                     "bhage INTEGER," +
                     "cullbf DOUBLE," +
+                    "cullcf DOUBLE," +
                     "cullsf DOUBLE," +
                     "totage DOUBLE," +
                     "mist_cl_cd INTEGER," +
