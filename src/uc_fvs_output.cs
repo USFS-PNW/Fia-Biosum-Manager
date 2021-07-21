@@ -4661,7 +4661,7 @@ namespace FIA_Biosum_Manager
                                 if (oAdo.TableExist(oConn, Tables.VolumeAndBiomass.BiosumVolumesInputTable))
                                     oAdo.SqlNonQuery(oConn, "DROP TABLE " + Tables.VolumeAndBiomass.BiosumVolumesInputTable);
                                 frmMain.g_oTables.m_oFvs.CreateOracleInputBiosumVolumesTable(oAdo, oConn, Tables.VolumeAndBiomass.BiosumVolumesInputTable);
-                                oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.FVSOut_BuiltInputTableForVolumeCalculation_Step1(
+                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step1(
                                                    Tables.VolumeAndBiomass.BiosumVolumesInputTable,
                                                    strFvsTreeTable, p_strPackage);
 
@@ -4675,7 +4675,7 @@ namespace FIA_Biosum_Manager
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
-                                oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.FVSOut_BuiltInputTableForVolumeCalculation_Step1a(
+                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step1a(
                                                    Tables.VolumeAndBiomass.BiosumVolumesInputTable,
                                                    strFvsTreeTable, p_strPackage);
 
@@ -4695,7 +4695,7 @@ namespace FIA_Biosum_Manager
 
                                 //join plot, cond, and tree table to oracle input tree volumes table.
                                 //NOTE: this query handles existing FIADB trees that have been grown forward.
-                                oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.FVSOut_BuildInputTableForVolumeCalculation_Step2(
+                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step2(
                                                    Tables.VolumeAndBiomass.BiosumVolumesInputTable,
                                                    m_oQueries.m_oFIAPlot.m_strTreeTable,
                                                    m_oQueries.m_oFIAPlot.m_strPlotTable,
@@ -4720,7 +4720,7 @@ namespace FIA_Biosum_Manager
 
 
                                 //join cond table to oracle input tree volumes table.
-                                oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.FVSOut_BuildInputTableForVolumeCalculation_Step3(
+                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step3(
                                                   Tables.VolumeAndBiomass.BiosumVolumesInputTable,
                                                   m_oQueries.m_oFIAPlot.m_strCondTable);
 
@@ -4740,7 +4740,7 @@ namespace FIA_Biosum_Manager
                                 if (oAdo.TableExist(oConn, "CULL_TOTAL_WORK_TABLE"))
                                     oAdo.SqlNonQuery(oConn, "DROP TABLE CULL_TOTAL_WORK_TABLE");
 
-                                oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.FVSOut_BuildInputTableForVolumeCalculation_Step4(
+                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step4(
                                                   "cull_total_work_table",
                                                   Tables.VolumeAndBiomass.BiosumVolumesInputTable);
 
@@ -4757,7 +4757,7 @@ namespace FIA_Biosum_Manager
                                            m_intProgressStepTotalCount);
 
 
-                                oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.PNWRS.FVSOut_BuildInputTableForVolumeCalculation_Step5(
+                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.PNWRS.BuildInputTableForVolumeCalculation_Step5(
                                                     "cull_total_work_table",
                                                     Tables.VolumeAndBiomass.BiosumVolumesInputTable);
 
@@ -4772,7 +4772,7 @@ namespace FIA_Biosum_Manager
                                            m_intProgressStepCurrentCount,
                                            m_intProgressStepTotalCount);
 
-                                oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.PNWRS.FVSOut_BuildInputTableForVolumeCalculation_Step6(
+                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.PNWRS.BuildInputTableForVolumeCalculation_Step6(
                                                   "cull_total_work_table",
                                                   Tables.VolumeAndBiomass.BiosumVolumesInputTable);
 
@@ -4979,7 +4979,7 @@ namespace FIA_Biosum_Manager
                                         //into 
                                         //table fcs_biosum_volumes_input (FcsBiosumVolumesInputTable)
                                         oAdo.m_strSQL =
-                                            Queries.FVS.VolumesAndBiomass.FVSOut_BuildInputTableForVolumeCalculation_Step7(
+                                            Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step7(
                                                     Tables.VolumeAndBiomass.BiosumVolumesInputTable,
                                                     Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
 
@@ -5160,7 +5160,7 @@ namespace FIA_Biosum_Manager
                                                         //oracle table fcs_biosum_volume 
                                                         //into 
                                                         //table fvs_tree
-                                                        oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.FVSOut_BuildInputTableForVolumeCalculation_Step9(
+                                                        oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step9(
                                                                            strFvsTreeTable, "BIOSUM_VOLUME_OUTPUT");
 
 
@@ -5207,7 +5207,7 @@ namespace FIA_Biosum_Manager
                                     frmMain.g_oTables.m_oFvs.CreateOracleInputFCSBiosumVolumesTable(oAdo, oConn, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
 
                                     oAdo.m_strSQL =
-                                        Queries.FVS.VolumesAndBiomass.FVSOut_BuildInputTableForVolumeCalculation_Step7(
+                                        Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step7(
                                              Tables.VolumeAndBiomass.BiosumVolumesInputTable,
                                              Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
 
@@ -5220,7 +5220,7 @@ namespace FIA_Biosum_Manager
 
 
 
-                                    oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.FVSOut_BuildInputTableForVolumeCalculation_Step8(
+                                    oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step8(
                                             Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable, "fcs_biosum_volume");
 
 
@@ -5245,7 +5245,7 @@ namespace FIA_Biosum_Manager
                                         oAdo.OpenConnection(strConn);
                                         m_oPrePostDbFileItem_Collection.Item(y).Connection = oAdo.m_OleDbConnection;
                                         oConn = oAdo.m_OleDbConnection;
-                                        oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.FVSOut_BuildInputTableForVolumeCalculation_Step9(
+                                        oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step9(
                                                            strFvsTreeTable, "fcs_biosum_volume");
 
 

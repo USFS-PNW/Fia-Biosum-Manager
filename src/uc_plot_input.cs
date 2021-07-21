@@ -3422,7 +3422,7 @@ namespace FIA_Biosum_Manager
                         strValues = string.Join(",", treeToFcsBiosumVolumesInputTable.Select(e => e.value));
 
                         //insert records
-                        p_ado.m_strSQL = Queries.FVS.VolumesAndBiomass.FIAPlotInput_BuildInputTableForVolumeCalculation_Step1( Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable, m_strTreeTable, strColumns, strValues);
+                        p_ado.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step1(Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable, m_strTreeTable, strColumns, strValues);
                         
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n\r\n");
@@ -3430,13 +3430,13 @@ namespace FIA_Biosum_Manager
 
 
                        // p_ado.m_strSQL = "UPDATE " + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable + " f INNER JOIN " + m_strCondTable + " c ON f.CND_CN = c.BIOSUM_COND_ID SET f.vol_loc_grp=IIF(INSTR(1,c.vol_loc_grp,'22') > 0,'S26LEOR',c.vol_loc_grp)";
-                        p_ado.m_strSQL = Queries.FVS.VolumesAndBiomass.FIAPlotInput_BuildInputTableForVolumeCalculation_Step2(Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable, m_strTreeTable,m_strPlotTable,m_strCondTable);
+                        p_ado.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step2(Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable, m_strTreeTable,m_strPlotTable,m_strCondTable);
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n\r\n");
                         p_ado.SqlNonQuery(this.m_connTempMDBFile, p_ado.m_strSQL);
 
 
-                        p_ado.m_strSQL = Queries.FVS.VolumesAndBiomass.FIAPlotInput_BuildInputTableForVolumeCalculation_Step3(Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable, m_strCondTable);
+                        p_ado.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step3(Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable, m_strCondTable);
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n\r\n");
                         p_ado.SqlNonQuery(this.m_connTempMDBFile, p_ado.m_strSQL);
@@ -3445,7 +3445,7 @@ namespace FIA_Biosum_Manager
                         if (p_ado.TableExist(m_connTempMDBFile, "CULL_TOTAL_WORK_TABLE"))
                             p_ado.SqlNonQuery(m_connTempMDBFile, "DROP TABLE CULL_TOTAL_WORK_TABLE");
 
-                        p_ado.m_strSQL = Queries.FVS.VolumesAndBiomass.FIAPlotInput_BuildInputTableForVolumeCalculation_Step4(
+                        p_ado.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step4(
                                           "cull_total_work_table",
                                           Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
                        
@@ -3454,14 +3454,14 @@ namespace FIA_Biosum_Manager
                         p_ado.SqlNonQuery(this.m_connTempMDBFile, p_ado.m_strSQL);
 
 
-                        p_ado.m_strSQL = Queries.FVS.VolumesAndBiomass.PNWRS.FIAPlotInput_BuildInputTableForVolumeCalculation_Step5(
+                        p_ado.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.PNWRS.BuildInputTableForVolumeCalculation_Step5(
                             "cull_total_work_table", Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n\r\n");
                         p_ado.SqlNonQuery(this.m_connTempMDBFile, p_ado.m_strSQL);
 
 
-                        p_ado.m_strSQL = Queries.FVS.VolumesAndBiomass.PNWRS.FIAPlotInput_BuildInputTableForVolumeCalculation_Step6(
+                        p_ado.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.PNWRS.BuildInputTableForVolumeCalculation_Step6(
                                        "cull_total_work_table", Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n\r\n");
