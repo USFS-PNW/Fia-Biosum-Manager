@@ -3371,31 +3371,51 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oTables.m_oFvs.CreateOracleInputFCSBiosumVolumesTable(p_ado, this.m_connTempMDBFile, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
 
 
-                        //TODO: more columns like diahtcd need to be populated here.
                         var treeToFcsBiosumVolumesInputTable = new (string name, string value)[]
                         {
-                            ("STATECD", "STATECD"),
+                            ("ACTUALHT", "ACTUALHT"),
+                            // ("BALIVE", "BALIVE"), //cond table
+                            ("BFSND", "BFSND"),
+                            ("BOLEHT", "BOLEHT"),
+                            ("CENTROID_DIA", "CENTROID_DIA"),
+                            ("CENTROID_DIA_HT_ACTUAL", "CENTROID_DIA_HT_ACTUAL"),
+                            ("CFSND", "CFSND"),
+                            ("CND_CN", "BIOSUM_COND_ID AS CND_CN"),
                             ("COUNTYCD", "COUNTYCD"),
-                            ("PLOT", "CINT(MID(BIOSUM_COND_ID, 16, 5)) AS PLOT"),
-                            ("SUBP", "SUBP"),
-                            ("FORMCL", "FORMCL"),
+                            ("CR", "CR"),
+                            ("CULL", "CULL"),
                             ("CULLBF", "CULLBF"),
-                            ("INVYR", "INVYR"),
-                            ("TREE", "TREE"),
-                            ("SPCD", "SPCD"),
+                            ("CULLCF", "CULLCF"), // TODO: Where is this from? Not in master.tree, but it is in FIADB.Tree. Jason said you can't convert BF to CF
+                            ("CULLDEAD", "CULLDEAD"),
+                            ("CULLFORM", "CULLFORM"),
+                            ("CULLMSTOP", "CULLMSTOP"),
+                            ("CULL_FLD", "CULL_FLD"),
+                            // ("DECAYCD", "null as DECAYCD"), // TODO: Update queries following this will set it.
                             ("DIA", "IIF(DIA IS NOT NULL, ROUND(DIA, 2), DIA)"),
                             ("DIAHTCD", "DIAHTCD"),
+                            ("FORMCL", "FORMCL"),
                             ("HT", "HT"),
-                            ("ACTUALHT", "ACTUALHT"),
-                            ("CR", "CR"),
-                            ("STATUSCD", "STATUSCD"),
-                            ("TREECLCD", "TREECLCD"),
-                            ("ROUGHCULL", "ROUGHCULL"),
-                            ("CULL", "CULL"),
-                            ("TRE_CN", "CN AS TRE_CN"),
-                            ("CND_CN", "BIOSUM_COND_ID AS CND_CN"),
+                            ("HTDMP", "HTDMP"),
+                            ("INVYR", "INVYR"),
+                            ("PLOT", "CINT(MID(BIOSUM_COND_ID, 16, 5)) AS PLOT"),
                             ("PLT_CN", "MID(BIOSUM_COND_ID, 1, LEN(BIOSUM_COND_ID)-1) AS PLT_CN"),
+                            // ("PRECIPITATION", "PRECIPITATION"), //plot table
+                            ("ROUGHCULL", "ROUGHCULL"),
+                            ("SAWHT", "SAWHT"),
+                            ("SITREE", "SITREE"),
+                            ("SPCD", "SPCD"),
+                            ("STANDING_DEAD_CD", "STANDING_DEAD_CD"),
+                            ("STATECD", "STATECD"),
+                            ("STATUSCD", "STATUSCD"),
+                            ("SUBP", "SUBP"),
+                            // ("TOTAGE", "null as TOTAGE"), //TODO: set in update query that follows
+                            ("TREE", "TREE"),
+                            ("TREECLCD", "TREECLCD"),
+                            ("TRE_CN", "CN AS TRE_CN"),
+                            ("UPPER_DIA", "UPPER_DIA"),
+                            ("UPPER_DIA_HT", "UPPER_DIA_HT"),
                             ("VOL_LOC_GRP", "'' AS VOL_LOC_GRP"),
+                            ("WDLDSTEM", "WDLDSTEM"),
                         };
 
                         strColumns = string.Join(",", treeToFcsBiosumVolumesInputTable.Select(e => e.name));
