@@ -200,7 +200,6 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.TextBox txtMDBSiteTreeTable;
 		private System.Windows.Forms.Button btnMDBSiteTreeBrowse;
         private System.Windows.Forms.TextBox txtMDBSiteTree;
-        private frmDialog _frmDialog = null;
         private Label label2;
         private ComboBox cmbCondPropPercent;
         private Label label1;
@@ -219,34 +218,18 @@ namespace FIA_Biosum_Manager
 		private System.ComponentModel.Container components = null;
 
 
-        private Oracle.ADO.FCSOracle _OracleADO;
-        public Oracle.ADO.FCSOracle OracleADO
-        {
-            get { return _OracleADO; }
-            set { _OracleADO = value; }
-        }
-        private SQLite.ADO.DataMgr _SQLite = new SQLite.ADO.DataMgr();
-        public SQLite.ADO.DataMgr SQLite
-        {
-            get { return _SQLite; }
-            set { _SQLite = value; }
-        }
-        private FIA_Biosum_Manager.ado_data_access _MSAccess;
+        public Oracle.ADO.FCSOracle OracleADO { get; set; }
+
+        public SQLite.ADO.DataMgr SQLite { get; set; } = new SQLite.ADO.DataMgr();
+
         private Label lblFSNetwork;
         private Label label16;
     
-        public FIA_Biosum_Manager.ado_data_access MSAccess
-        {
-            get { return _MSAccess; }
-            set { _MSAccess = value; }
-        }
-	    public frmDialog ReferenceFormDialog
-        {
-            set { _frmDialog = value; }
-            get { return _frmDialog; }
-        }
-       
-		public uc_plot_input()
+        public FIA_Biosum_Manager.ado_data_access MSAccess { get; set; }
+
+        public frmDialog ReferenceFormDialog { set; get; } = null;
+
+        public uc_plot_input()
 		{
 			// This call is required by the Windows.Forms Form Designer.
 			InitializeComponent();
@@ -3544,8 +3527,8 @@ namespace FIA_Biosum_Manager
                                 SQLite.ADO.DataMgr oSQLite = new SQLite.ADO.DataMgr();
                                 Oracle.ADO.FCSOracle oOracle = new Oracle.ADO.FCSOracle();
 
-                                _OracleADO = oOracle;
-                                _SQLite = oSQLite;
+                                OracleADO = oOracle;
+                                SQLite = oSQLite;
                                 MSAccess = p_ado;
 
                                 //
@@ -3697,7 +3680,7 @@ namespace FIA_Biosum_Manager
 
                                     //MSAccess = p_ado;
 
-                                    _SQLite.OpenConnection(false, 1,
+                                    SQLite.OpenConnection(false, 1,
                                         frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" +
                                         Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase, "BIOSUM");
 
@@ -3718,8 +3701,8 @@ namespace FIA_Biosum_Manager
 
                                     //MSAccessBeginTransaction("BIOSUM_VOLUME_INPUT", "TRE_CN,VOLCSGRS_CALC,VOLCFGRS_CALC,VOLCFNET_CALC,DRYBIOT_CALC,DRYBIOM_CALC,VOLTSGRS_CALC", "TRE_CN",COUNT , "");
 
-                                    intTotalRecs = Convert.ToInt32(_SQLite.getSingleDoubleValueFromSQLQuery(
-                                        _SQLite.m_Connection,
+                                    intTotalRecs = Convert.ToInt32(SQLite.getSingleDoubleValueFromSQLQuery(
+                                        SQLite.m_Connection,
                                         $"SELECT COUNT(*) AS ROWCOUNT FROM {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} WHERE VOLTSGRS_CALC IS NOT NULL",
                                         "biosum_calc"));
 
