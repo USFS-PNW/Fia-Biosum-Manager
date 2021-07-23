@@ -2409,7 +2409,7 @@ namespace FIA_Biosum_Manager
 
             static public string BiosumVolumeCalcTable
             {
-                get { return FIA_Biosum_Manager.utils.FS_NETWORK == utils.FS_NETWORK_STATUS.NotAvailable ? "BIOSUM_VOLUME" : "BIOSUM_CALC" ; }
+                get { return utils.FS_NETWORK == utils.FS_NETWORK_STATUS.NotAvailable ? "BIOSUM_VOLUME" : "BIOSUM_CALC" ; }
             }
         }
 

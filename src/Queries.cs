@@ -3592,6 +3592,24 @@ namespace FIA_Biosum_Manager
                                "WHERE a.treeclcd=3 AND a.statuscd=2 AND a.SpCd NOT IN (62,65,66,106,133,138,304,321,322,475,756,758,990)";
                     }
                 }
+
+                public static string WriteCalculatedVolumeAndBiomassColumnsToTreeTable(
+                    string p_strBiosumCalcOutputTable)
+                {
+                    return $@"UPDATE {frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName} t 
+                                INNER JOIN {Tables.VolumeAndBiomass.BiosumCalcOutputTable} o ON t.CN = o.TRE_CN
+                                SET t.volcfgrs=IIF(o.VOLCFGRS_CALC IS NOT NULL, o.VOLCFGRS_CALC, null),
+                                t.volcfnet=IIF(o.VOLCFNET_CALC IS NOT NULL, o.VOLCFNET_CALC, null),
+                                t.volcfsnd=IIF(o.VOLCFSND_CALC IS NOT NULL, o.VOLCFSND_CALC, null),
+                                t.volcsgrs=IIF(o.VOLCSGRS_CALC IS NOT NULL, o.VOLCSGRS_CALC, null),
+                                t.voltsgrs=IIF(o.VOLTSGRS_CALC IS NOT NULL,o.VOLTSGRS_CALC,null),
+                                t.drybiom=IIF(t.DRYBIOM IS NULL,o.DRYBIOM_CALC,t.DRYBIOM),
+                                t.drybiot=IIF(t.DRYBIOT IS NULL,o.DRYBIOT_CALC,t.DRYBIOT),
+                                t.drybio_bole=IIF(o.DRYBIO_BOLE_CALC IS NOT NULL, o.DRYBIO_BOLE_CALC, null),
+                                t.drybio_top=IIF(o.DRYBIO_TOP_CALC IS NOT NULL, o.DRYBIO_TOP_CALC, null),
+                                t.drybio_sapling=IIF(o.DRYBIO_SAPLING_CALC IS NOT NULL, o.DRYBIO_SAPLING_CALC, null),
+                                t.drybio_wdld_spp=IIF(o.DRYBIO_WDLD_SPP_CALC IS NOT NULL, o.DRYBIO_WDLD_SPP_CALC, null)";
+                }
             }
 
             public class FVSOut
@@ -3856,7 +3874,34 @@ namespace FIA_Biosum_Manager
                 /// <param name="p_strFvsTreeTable"></param>
                 /// <param name="p_strOracleBiosumVolumesTable"></param>
                 /// <returns></returns>
-                public static string BuildInputTableForVolumeCalculation_Step9(
+                public static string BuildInputTableForVolumeCalculation_Step9(string p_strFvsTreeTable,
+                    string p_strBiosumCalcOutputTable)
+                {
+                    //TODO: how to join to the biosum_calc_output table? o.tre_cn vs f.???
+                    return $@"UPDATE {p_strFvsTreeTable} f
+                           INNER JOIN {p_strBiosumCalcOutputTable} o
+                           ON f.id = o.tree 
+                           SET f.drybio_bole=IIF(o.DRYBIO_BOLE_CALC IS NOT NULL, o.DRYBIO_BOLE_CALC, null),
+                           f.drybio_sapling=IIF(o.DRYBIO_SAPLING_CALC IS NOT NULL, o.DRYBIO_SAPLING_CALC, null),
+                           f.drybio_top=IIF(o.DRYBIO_TOP_CALC IS NOT NULL, o.DRYBIO_TOP_CALC, null),
+                           f.drybio_wdld_spp=IIF(o.DRYBIO_WDLD_SPP_CALC IS NOT NULL, o.DRYBIO_WDLD_SPP_CALC, null),
+                           f.drybiom=o.DRYBIOM_CALC,
+                           f.drybiot=o.DRYBIOT_CALC,
+                           f.volcfgrs=o.VOLCFGRS_CALC,
+                           f.volcfnet=o.VOLCFNET_CALC,
+                           f.volcfsnd=IIF(o.VOLCFSND_CALC IS NOT NULL, o.VOLCFSND_CALC, null),
+                           f.volcsgrs=o.VOLCSGRS_CALC,
+                           f.voltsgrs=o.VOLTSGRS_CALC ";
+                }
+
+                /// <summary>
+                /// Update the FVS_TREE table with the volumes and biomass for Oracle XE
+                /// values that Oracle returned
+                /// </summary>
+                /// <param name="p_strFvsTreeTable"></param>
+                /// <param name="p_strOracleBiosumVolumesTable"></param>
+                /// <returns></returns>
+                public static string BuildInputTableForVolumeCalculationXE_Step9(
                     string p_strFvsTreeTable,
                     string p_strOracleBiosumVolumesTable)
                 {
@@ -3868,7 +3913,7 @@ namespace FIA_Biosum_Manager
                            "f.volcfnet=o.VOLCFNET_CALC," +
                            "f.drybiot=o.DRYBIOT_CALC," +
                            "f.drybiom=o.DRYBIOM_CALC," +
-                           "f.voltsgrs=o.VOLTSGRS_CALC"; //TODO: Add BIOSUM_CALC calculated columns here? Oracle XE logic left alone? Additional query in case we are in FS_NETWORK branch?
+                           "f.voltsgrs=o.VOLTSGRS_CALC";
                 }
             }
         }

@@ -4927,7 +4927,7 @@ namespace FIA_Biosum_Manager
                                     }
                                     else oAdo.m_OleDbDataReader.Close();
                                 }
-                                else if (FIA_Biosum_Manager.utils.FS_NETWORK == utils.FS_NETWORK_STATUS.Available)
+                                else if (utils.FS_NETWORK_IS_AVAILABLE)
                                 {
                                     if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase) == false)
                                     {
@@ -5160,8 +5160,9 @@ namespace FIA_Biosum_Manager
                                                         //oracle table fcs_biosum_volume 
                                                         //into 
                                                         //table fvs_tree
+                                                        //TODO: add new biosum_calc columns
                                                         oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step9(
-                                                                           strFvsTreeTable, "BIOSUM_VOLUME_OUTPUT");
+                                                                           strFvsTreeTable, Tables.VolumeAndBiomass.BiosumCalcOutputTable);
 
 
                                                         if (m_bDebug && frmMain.g_intDebugLevel > 2)
@@ -5245,7 +5246,7 @@ namespace FIA_Biosum_Manager
                                         oAdo.OpenConnection(strConn);
                                         m_oPrePostDbFileItem_Collection.Item(y).Connection = oAdo.m_OleDbConnection;
                                         oConn = oAdo.m_OleDbConnection;
-                                        oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step9(
+                                        oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculationXE_Step9(
                                                            strFvsTreeTable, "fcs_biosum_volume");
 
 
