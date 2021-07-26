@@ -672,12 +672,12 @@ namespace FIA_Biosum_Manager
                 {DataType.STRING, (input) => "'" + input.ToString().Trim() + "'"},
             };
 
-        public static string GetParsedInsertValues(DbDataReader reader, List<(string columnName, DataType type)> columnsAndDataTypes)
+        public static string GetParsedInsertValues(DbDataReader reader, List<Tuple<string, DataType>> columnsAndDataTypes)
         {
             if (columnsAndDataTypes == null || columnsAndDataTypes.Count < 1) return "";
             return string.Join(",", 
-                columnsAndDataTypes.Select(pair => reader[pair.columnName] == DBNull.Value ? "null" 
-                        : _typeConverterDict[pair.type](reader[pair.columnName]))
+                columnsAndDataTypes.Select(pair => reader[pair.Item1] == DBNull.Value ? "null" 
+                        : _typeConverterDict[pair.Item2](reader[pair.Item1]))
                 .ToList());
         }
 	}

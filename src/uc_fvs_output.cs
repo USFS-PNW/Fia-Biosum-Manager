@@ -6,8 +6,7 @@ using System.Data;
 using System.Windows.Forms;
 using System.Threading;
 using System.Collections.Generic;
-
-
+using System.Linq;
 
 
 namespace FIA_Biosum_Manager
@@ -4117,6 +4116,7 @@ namespace FIA_Biosum_Manager
 
 
 
+            string strColumns = "";
             string strValues = "";
             string strRx = "";
             string strCycle = "";
@@ -4866,6 +4866,13 @@ namespace FIA_Biosum_Manager
                                                 m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.BfSnd = Convert.ToInt32(oAdo.m_OleDbDataReader["bfsnd"]);
                                                 m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.Precipitation = Convert.ToDouble(oAdo.m_OleDbDataReader["precipitation"]);
                                                 m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.BaLive = Convert.ToDouble(oAdo.m_OleDbDataReader["balive"]);
+//                                                m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.DiaHtCd = Convert.ToInt32(oAdo.m_OleDbDataReader["diahtcd"]);
+//                                                m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.StandingDeadCd = Convert.ToInt32(oAdo.m_OleDbDataReader["standing_dead_cd"]);
+//                                                m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.VolcfsndCalc = Convert.ToDouble(oAdo.m_OleDbDataReader["volcfsnd_calc"]);
+//                                                m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.DrybioBoleCalc = Convert.ToDouble(oAdo.m_OleDbDataReader["drybio_bole_calc"]);
+//                                                m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.DrybioTopCalc = Convert.ToDouble(oAdo.m_OleDbDataReader["drybio_top_calc"]);
+//                                                m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.DrybioSaplingCalc = Convert.ToDouble(oAdo.m_OleDbDataReader["drybio_sapling_calc"]);
+//                                                m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.DrybioWdldSppCalc = Convert.ToDouble(oAdo.m_OleDbDataReader["drybio_wdld_spp_calc"]);
                                                 //END: ADDED BIOSUM_VOLUME COLUMNS
                                                 m_oOracleServices.m_oTree.AddBiosumRecord(m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord);
 
@@ -4991,20 +4998,54 @@ namespace FIA_Biosum_Manager
                                         //
                                         //INSERT ALL THE MS ACCESS DATA INTO SQLITE
                                         //
-                                        //string strColumns = "STATECD,COUNTYCD,PLOT,INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT," +
-                                        //        "ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE,TRE_CN,CND_CN,PLT_CN," +
-                                        //        "VOLCSGRS_CALC,VOLCFGRS_CALC,VOLCFNET_CALC,DRYBIOT_CALC,DRYBIOM_CALC,VOLTSGRS_CALC";
-                                        //BIOSUM_VOLUME ADDED COLUMNS
-                                        string strColumns = "STATECD,COUNTYCD,PLOT,INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT," +
-                                                            "ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE," +
-                                                             //START: ADDED BIOSUM_VOLUME COLUMNS
-                                                             "SITREE,WDLDSTEM,UPPER_DIA,UPPER_DIA_HT," + 
-                                                             "CENTROID_DIA,CENTROID_DIA_HT_ACTUAL,SAWHT," + 
-                                                             "HTDMP,BOLEHT,CULLCF,CULL_FLD,CULLDEAD," + 
-                                                             "CULLFORM,CULLMSTOP,CFSND,BFSND,PRECIPITATION,BALIVE," +
-                                                             //END: ADDED BIOSUM_VOLUME COLUMNS
-                                                            "TRE_CN,CND_CN,PLT_CN," +
-                                                            "VOLCSGRS_CALC,VOLCFGRS_CALC,VOLCFNET_CALC,DRYBIOT_CALC,DRYBIOM_CALC,VOLTSGRS_CALC";
+
+                                        var columnsAndDataTypes = new List<Tuple<string, utils.DataType>>
+                                        { 
+                                            Tuple.Create("ACTUALHT", utils.DataType.INTEGER),
+                                            Tuple.Create("BALIVE", utils.DataType.DOUBLE), // TODO: get this from cond table? reuse for multiple treatment cycles naively?
+                                            Tuple.Create("BFSND", utils.DataType.INTEGER),
+                                            Tuple.Create("BOLEHT", utils.DataType.INTEGER),
+                                            Tuple.Create("CENTROID_DIA", utils.DataType.DOUBLE),
+                                            Tuple.Create("CENTROID_DIA_HT_ACTUAL", utils.DataType.DOUBLE),
+                                            Tuple.Create("CFSND", utils.DataType.INTEGER),
+                                            Tuple.Create("CND_CN", utils.DataType.STRING),
+                                            Tuple.Create("COUNTYCD", utils.DataType.INTEGER),
+                                            Tuple.Create("CR", utils.DataType.INTEGER),
+                                            Tuple.Create("CULL", utils.DataType.INTEGER),
+                                            Tuple.Create("CULLBF", utils.DataType.INTEGER),
+                                            Tuple.Create("CULLCF", utils.DataType.INTEGER),
+                                            Tuple.Create("CULLDEAD", utils.DataType.INTEGER),
+                                            Tuple.Create("CULLFORM", utils.DataType.INTEGER),
+                                            Tuple.Create("CULLMSTOP", utils.DataType.INTEGER),
+                                            Tuple.Create("CULL_FLD", utils.DataType.INTEGER),
+                                            Tuple.Create("DECAYCD", utils.DataType.INTEGER),
+                                            Tuple.Create("DIA", utils.DataType.DOUBLE),
+                                            Tuple.Create("DIAHTCD", utils.DataType.INTEGER),
+                                            Tuple.Create("FORMCL", utils.DataType.INTEGER),
+                                            Tuple.Create("HT", utils.DataType.INTEGER),
+                                            Tuple.Create("HTDMP", utils.DataType.DOUBLE),
+                                            Tuple.Create("INVYR", utils.DataType.INTEGER),
+                                            Tuple.Create("PLOT", utils.DataType.INTEGER),
+                                            Tuple.Create("PLT_CN", utils.DataType.STRING),
+                                            Tuple.Create("PRECIPITATION", utils.DataType.DOUBLE), //TODO: get this from plot table? reuse for multiple treatment cycles naively?
+                                            Tuple.Create("ROUGHCULL", utils.DataType.INTEGER),
+                                            Tuple.Create("SAWHT", utils.DataType.INTEGER),
+                                            Tuple.Create("SITREE", utils.DataType.INTEGER),
+                                            Tuple.Create("SPCD", utils.DataType.INTEGER),
+                                            Tuple.Create("STANDING_DEAD_CD", utils.DataType.INTEGER),
+                                            Tuple.Create("STATECD", utils.DataType.INTEGER),
+                                            Tuple.Create("STATUSCD", utils.DataType.INTEGER),
+                                            Tuple.Create("SUBP", utils.DataType.INTEGER),
+                                            Tuple.Create("TOTAGE", utils.DataType.INTEGER),
+                                            Tuple.Create("TREE", utils.DataType.INTEGER),
+                                            Tuple.Create("TREECLCD", utils.DataType.INTEGER),
+                                            Tuple.Create("TRE_CN", utils.DataType.STRING),
+                                            Tuple.Create("UPPER_DIA", utils.DataType.DOUBLE),
+                                            Tuple.Create("UPPER_DIA_HT", utils.DataType.DOUBLE),
+                                            Tuple.Create("VOL_LOC_GRP", utils.DataType.STRING),
+                                            Tuple.Create("WDLDSTEM", utils.DataType.INTEGER),
+                                        };
+                                        strColumns = string.Join(",", columnsAndDataTypes.Select(item => item.Item1));
                                         strValues = "";
                                         oAdo.SqlQueryReader(oConn, "SELECT * FROM " + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
                                         if (oAdo.m_OleDbDataReader.HasRows)
@@ -5022,17 +5063,17 @@ namespace FIA_Biosum_Manager
                                             try
                                             {
                                                 COUNT = 0;
-                                                UpdateTherm(m_frmTherm.progressBar1,
-                                                   COUNT, intTotalRecs);
+                                                UpdateTherm(m_frmTherm.progressBar1, COUNT, intTotalRecs);
                                                 while (oAdo.m_OleDbDataReader.Read())
                                                 {
                                                     COUNT++;
-                                                    InsertValues(oAdo.m_OleDbDataReader, ref strValues);
-                                                    command.CommandText = "INSERT INTO BIOSUM_VOLUME (" + strColumns + ") VALUES (" + strValues + ")";
+                                                    strValues = utils.GetParsedInsertValues(oAdo.m_OleDbDataReader, columnsAndDataTypes);
+                                                    command.CommandText = $"INSERT INTO {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} ({strColumns}) VALUES ({strValues})";
                                                     command.ExecuteNonQuery();
                                                     //if (COUNT == 100) break;
                                                     //frmMain.g_oDelegate.SetControlPropertyValue((Control)lblSQLite2Msg, "Text", "INSERT DATA: " + COUNT.ToString() + " of " + intTotalCount.ToString());
-                                                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + " Prepare Tree Data for Oracle Input...Stand By [" + COUNT.ToString() + "/" + intTotalRecs.ToString() + "]");
+                                                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", 
+                                                        "Package:" + p_strPackage.Trim() + " Prepare Tree Data for Oracle Input...Stand By [" + COUNT.ToString() + "/" + intTotalRecs.ToString() + "]");
                                                     frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
                                                     UpdateTherm(m_frmTherm.progressBar1,
                                                    COUNT, intTotalRecs);
@@ -5082,25 +5123,27 @@ namespace FIA_Biosum_Manager
 
                                             _SQLite.OpenConnection(false, 1, frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase, "BIOSUM");
 
-                                            //COUNT = Convert.ToInt32(_oSQLite.getSingleDoubleValueFromSQLQuery(_oSQLite.m_Connection,"SELECT COUNT(*) AS ROWCOUNT FROM BIOSUM_VOLUME","biosum_volume"));
+                                            //COUNT = Convert.ToInt32(_oSQLite.getSingleDoubleValueFromSQLQuery(_oSQLite.m_Connection,"SELECT COUNT(*) AS ROWCOUNT FROM BIOSUM_CALC","biosum_volume"));
 
                                             _MSAccess.OpenConnection(strConn, ref oConn);
 
-                                            if (_MSAccess.TableExist(oConn, "BIOSUM_VOLUME_OUTPUT"))
-                                                _MSAccess.SqlNonQuery(oConn, "DROP TABLE BIOSUM_VOLUME_OUTPUT");
+                                            if (_MSAccess.TableExist(oConn, Tables.VolumeAndBiomass.BiosumCalcOutputTable))
+                                                _MSAccess.SqlNonQuery(oConn, $"DROP TABLE {Tables.VolumeAndBiomass.BiosumCalcOutputTable}");
 
                                             System.Threading.Thread.Sleep(3000);
 
-                                            _MSAccess.SqlNonQuery(oConn, "SELECT * INTO BIOSUM_VOLUME_OUTPUT FROM " + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable + " WHERE 1=2");
+                                            _MSAccess.SqlNonQuery(oConn, $"SELECT * INTO {Tables.VolumeAndBiomass.BiosumCalcOutputTable} FROM {Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable} WHERE 1=2");
 
 
                                             //MSAccessBeginTransaction("BIOSUM_VOLUME_INPUT", "TRE_CN,VOLCSGRS_CALC,VOLCFGRS_CALC,VOLCFNET_CALC,DRYBIOT_CALC,DRYBIOM_CALC,VOLTSGRS_CALC", "TRE_CN",COUNT , "");
 
-                                            intTotalRecs = Convert.ToInt32(_SQLite.getSingleDoubleValueFromSQLQuery(_SQLite.m_Connection, "SELECT COUNT(*) AS ROWCOUNT FROM BIOSUM_VOLUME WHERE DRYBIOT_CALC IS NOT NULL OR VOLTSGRS_CALC IS NOT NULL", "biosum_volume"));
+                                            intTotalRecs = Convert.ToInt32(_SQLite.getSingleDoubleValueFromSQLQuery( _SQLite.m_Connection,
+                                                $"SELECT COUNT(*) AS ROWCOUNT FROM {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} WHERE DRYBIOT_CALC IS NOT NULL OR VOLTSGRS_CALC IS NOT NULL",
+                                                Tables.VolumeAndBiomass.BiosumVolumeCalcTable));
 
                                             UpdateTherm(m_frmTherm.progressBar1, 3, 6);
 
-                                            oSQLite.SqlQueryReader(oSQLite.m_Connection, "SELECT * FROM BIOSUM_VOLUME WHERE DRYBIOT_CALC IS NOT NULL OR VOLTSGRS_CALC IS NOT NULL");
+                                            oSQLite.SqlQueryReader(oSQLite.m_Connection, $"SELECT * FROM {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} WHERE DRYBIOT_CALC IS NOT NULL OR VOLTSGRS_CALC IS NOT NULL");
                                             if (oSQLite.m_DataReader.HasRows)
                                             {
                                                 System.Data.OleDb.OleDbTransaction transaction;
@@ -5112,26 +5155,85 @@ namespace FIA_Biosum_Manager
                                                 try
                                                 {
                                                     COUNT = 0;
-                                                    UpdateTherm(m_frmTherm.progressBar1,
-                                                   COUNT, intTotalRecs);
+                                                    UpdateTherm(m_frmTherm.progressBar1, COUNT, intTotalRecs);
+                                                    columnsAndDataTypes = new List<Tuple<string, utils.DataType>>
+                                                    {
+                                                        Tuple.Create("ACTUALHT", utils.DataType.INTEGER),
+                                                        Tuple.Create("BALIVE", utils.DataType.DOUBLE),
+                                                        Tuple.Create("BFSND", utils.DataType.INTEGER),
+                                                        Tuple.Create("BOLEHT", utils.DataType.INTEGER),
+                                                        Tuple.Create("CENTROID_DIA", utils.DataType.DOUBLE),
+                                                        Tuple.Create("CENTROID_DIA_HT_ACTUAL", utils.DataType.DOUBLE),
+                                                        Tuple.Create("CFSND", utils.DataType.INTEGER),
+                                                        Tuple.Create("CND_CN", utils.DataType.STRING),
+                                                        Tuple.Create("COUNTYCD", utils.DataType.INTEGER),
+                                                        Tuple.Create("CR", utils.DataType.INTEGER),
+                                                        Tuple.Create("CULL", utils.DataType.INTEGER),
+                                                        Tuple.Create("CULLBF", utils.DataType.INTEGER),
+                                                        Tuple.Create("CULLCF", utils.DataType.INTEGER),
+                                                        Tuple.Create("CULLDEAD", utils.DataType.INTEGER),
+                                                        Tuple.Create("CULLFORM", utils.DataType.INTEGER),
+                                                        Tuple.Create("CULLMSTOP", utils.DataType.INTEGER),
+                                                        Tuple.Create("CULL_FLD", utils.DataType.INTEGER),
+                                                        Tuple.Create("DECAYCD", utils.DataType.INTEGER),
+                                                        Tuple.Create("DIA", utils.DataType.DOUBLE),
+                                                        Tuple.Create("DIAHTCD", utils.DataType.INTEGER),
+                                                        Tuple.Create("FORMCL", utils.DataType.INTEGER),
+                                                        Tuple.Create("HT", utils.DataType.INTEGER),
+                                                        Tuple.Create("HTDMP", utils.DataType.DOUBLE),
+                                                        Tuple.Create("INVYR", utils.DataType.INTEGER),
+                                                        Tuple.Create("PLOT", utils.DataType.INTEGER),
+                                                        Tuple.Create("PLT_CN", utils.DataType.STRING),
+                                                        Tuple.Create("PRECIPITATION", utils.DataType.DOUBLE),
+                                                        Tuple.Create("ROUGHCULL", utils.DataType.INTEGER),
+                                                        Tuple.Create("SAWHT", utils.DataType.INTEGER),
+                                                        Tuple.Create("SITREE", utils.DataType.INTEGER),
+                                                        Tuple.Create("SPCD", utils.DataType.INTEGER),
+                                                        Tuple.Create("STANDING_DEAD_CD", utils.DataType.INTEGER),
+                                                        Tuple.Create("STATECD", utils.DataType.INTEGER),
+                                                        Tuple.Create("STATUSCD", utils.DataType.INTEGER),
+                                                        Tuple.Create("SUBP", utils.DataType.INTEGER),
+                                                        Tuple.Create("TOTAGE", utils.DataType.INTEGER),
+                                                        Tuple.Create("TREE", utils.DataType.INTEGER),
+                                                        Tuple.Create("TREECLCD", utils.DataType.INTEGER),
+                                                        Tuple.Create("TRE_CN", utils.DataType.STRING),
+                                                        Tuple.Create("UPPER_DIA", utils.DataType.DOUBLE),
+                                                        Tuple.Create("UPPER_DIA_HT", utils.DataType.DOUBLE),
+                                                        Tuple.Create("VOL_LOC_GRP", utils.DataType.STRING),
+                                                        Tuple.Create("WDLDSTEM", utils.DataType.INTEGER),
+                                                        Tuple.Create("DRYBIOM_CALC", utils.DataType.DOUBLE),
+                                                        Tuple.Create("DRYBIOT_CALC", utils.DataType.DOUBLE),
+                                                        Tuple.Create("DRYBIO_BOLE_CALC", utils.DataType.DOUBLE),
+                                                        Tuple.Create("DRYBIO_SAPLING_CALC", utils.DataType.DOUBLE),
+                                                        Tuple.Create("DRYBIO_TOP_CALC", utils.DataType.DOUBLE),
+                                                        Tuple.Create("DRYBIO_WDLD_SPP_CALC", utils.DataType.DOUBLE),
+                                                        Tuple.Create("VOLCFGRS_CALC", utils.DataType.DOUBLE),
+                                                        Tuple.Create("VOLCFNET_CALC", utils.DataType.DOUBLE),
+                                                        Tuple.Create("VOLCFSND_CALC", utils.DataType.DOUBLE),
+                                                        Tuple.Create("VOLCSGRS_CALC", utils.DataType.DOUBLE),
+                                                        Tuple.Create("VOLTSGRS_CALC", utils.DataType.DOUBLE),
+                                                    };
+                                                    strColumns = string.Join(",", columnsAndDataTypes.Select(item => item.Item1));
                                                     while (oSQLite.m_DataReader.Read())
                                                     {
                                                         COUNT++;
-                                                        if (oSQLite.m_DataReader["TRE_CN"] != DBNull.Value &&
-                                                            Convert.ToString(oSQLite.m_DataReader["TRE_CN"]).Trim().Length > 0)
+                                                        if (oSQLite.m_DataReader["TRE_CN"] != DBNull.Value && Convert.ToString(oSQLite.m_DataReader["TRE_CN"]).Trim().Length > 0)
                                                         {
-
-
-                                                            InsertValues(oSQLite.m_DataReader, ref strValues);
-                                                            command.CommandText = "INSERT INTO BIOSUM_VOLUME_OUTPUT (" + strColumns + ") VALUES (" + strValues + ")";
+                                                            strValues = utils.GetParsedInsertValues(oSQLite.m_DataReader, columnsAndDataTypes);
+                                                            command.CommandText = $"INSERT INTO {Tables.VolumeAndBiomass.BiosumCalcOutputTable} ({strColumns}) VALUES ({strValues})";
                                                             command.ExecuteNonQuery();
-                                                            UpdateTherm(m_frmTherm.progressBar1,
-                                                                    COUNT, intTotalRecs);
-
+                                                            UpdateTherm(m_frmTherm.progressBar1, COUNT, intTotalRecs);
                                                         }
-                                                        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + "...Stand By [" + COUNT.ToString() + "/" + intTotalRecs.ToString() + "]");
-                                                        frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
+
+                                                        frmMain.g_oDelegate.SetControlPropertyValue(
+                                                            (System.Windows.Forms.Control) m_frmTherm.lblMsg, "Text",
+                                                            "Package:" + p_strPackage.Trim() + "...Stand By [" +
+                                                            COUNT.ToString() + "/" + intTotalRecs.ToString() + "]");
+                                                        frmMain.g_oDelegate.ExecuteControlMethod(
+                                                            (System.Windows.Forms.Control) this.m_frmTherm.lblMsg,
+                                                            "Refresh");
                                                     }
+
                                                     transaction.Commit();
                                                 }
                                                 catch (Exception err)
@@ -10032,407 +10134,5 @@ namespace FIA_Biosum_Manager
                 MessageBox.Show("The file " + strAuditDbFile + " does not exist");
             }
         }
-
-        private static void InsertValues(System.Data.OleDb.OleDbDataReader p_DataReader, ref string strValues)
-        {
-            strValues = Convert.ToInt32(p_DataReader["STATECD"]).ToString() + ",";
-            strValues = strValues + Convert.ToInt32(p_DataReader["COUNTYCD"]).ToString() + ",";
-            strValues = strValues + Convert.ToInt32(p_DataReader["PLOT"]).ToString() + ",";
-            strValues = strValues + Convert.ToInt32(p_DataReader["INVYR"]).ToString() + ",";
-            strValues = strValues + "'" + p_DataReader["VOL_LOC_GRP"].ToString() + "',";
-            strValues = strValues + Convert.ToInt32(p_DataReader["TREE"]).ToString() + ",";
-            strValues = strValues + Convert.ToInt32(p_DataReader["SPCD"]).ToString() + ",";
-
-            if (p_DataReader["DIA"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["DIA"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["HT"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["HT"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["ACTUALHT"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["ACTUALHT"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CR"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["CR"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["STATUSCD"] != DBNull.Value)
-                strValues = strValues + Convert.ToByte(p_DataReader["STATUSCD"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["TREECLCD"] != DBNull.Value)
-                strValues = strValues + Convert.ToByte(p_DataReader["TREECLCD"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["ROUGHCULL"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["ROUGHCULL"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-            if (p_DataReader["CULL"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["CULL"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["DECAYCD"] != DBNull.Value)
-                strValues = strValues + Convert.ToByte(p_DataReader["DECAYCD"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["TOTAGE"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["TOTAGE"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            //START: ADDED BIOSUM_VOLUME COLUMNS
-            if (p_DataReader["SITREE"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["SITREE"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["WDLDSTEM"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["WDLDSTEM"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["UPPER_DIA"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["UPPER_DIA"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["UPPER_DIA_HT"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["UPPER_DIA_HT"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CENTROID_DIA"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["CENTROID_DIA"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CENTROID_DIA_HT_ACTUAL"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["CENTROID_DIA_HT_ACTUAL"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["SAWHT"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["SAWHT"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["HTDMP"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["HTDMP"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["BOLEHT"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["BOLEHT"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CULLCF"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CULLCF"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CULL_FLD"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CULL_FLD"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CULLDEAD"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CULLDEAD"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CULLFORM"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CULLFORM"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CULLMSTOP"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CULLMSTOP"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CFSND"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CFSND"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["BFSND"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["BFSND"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["PRECIPITATION"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["PRECIPITATION"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["BALIVE"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["BALIVE"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-            //END: ADDED BIOSUM_VOLUME COLUMNS
-
-            strValues = strValues + "'" + p_DataReader["TRE_CN"].ToString() + "',";
-
-            if (p_DataReader["CND_CN"] != DBNull.Value)
-                strValues = strValues + "'" + p_DataReader["CND_CN"].ToString() + "',";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["PLT_CN"] != DBNull.Value)
-                strValues = strValues + "'" + p_DataReader["PLT_CN"].ToString() + "',";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["VOLCSGRS_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["VOLCSGRS_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["VOLCFGRS_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["VOLCFGRS_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["VOLCFNET_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["VOLCFNET_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["DRYBIOT_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["DRYBIOT_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["DRYBIOM_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["DRYBIOM_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["VOLTSGRS_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["VOLTSGRS_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            strValues = strValues.Substring(0, strValues.Length - 1);
-
-        }
-
-        private static void InsertValues(System.Data.SQLite.SQLiteDataReader p_DataReader, ref string strValues)
-        {
-            strValues = Convert.ToInt32(p_DataReader["STATECD"]).ToString() + ",";
-            strValues = strValues + Convert.ToInt32(p_DataReader["COUNTYCD"]).ToString() + ",";
-            strValues = strValues + Convert.ToInt32(p_DataReader["PLOT"]).ToString() + ",";
-            strValues = strValues + Convert.ToInt32(p_DataReader["INVYR"]).ToString() + ",";
-            strValues = strValues + "'" + p_DataReader["VOL_LOC_GRP"].ToString() + "',";
-            strValues = strValues + Convert.ToInt32(p_DataReader["TREE"]).ToString() + ",";
-            strValues = strValues + Convert.ToInt32(p_DataReader["SPCD"]).ToString() + ",";
-
-            if (p_DataReader["DIA"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["DIA"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["HT"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["HT"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["ACTUALHT"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["ACTUALHT"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CR"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["CR"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["STATUSCD"] != DBNull.Value)
-                strValues = strValues + Convert.ToByte(p_DataReader["STATUSCD"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["TREECLCD"] != DBNull.Value)
-                strValues = strValues + Convert.ToByte(p_DataReader["TREECLCD"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["ROUGHCULL"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["ROUGHCULL"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-            if (p_DataReader["CULL"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["CULL"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["DECAYCD"] != DBNull.Value)
-                strValues = strValues + Convert.ToByte(p_DataReader["DECAYCD"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["TOTAGE"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["TOTAGE"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            //START: ADDED BIOSUM_VOLUME COLUMNS
-            if (p_DataReader["SITREE"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["SITREE"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["WDLDSTEM"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["WDLDSTEM"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["UPPER_DIA"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["UPPER_DIA"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["UPPER_DIA_HT"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["UPPER_DIA_HT"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CENTROID_DIA"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["CENTROID_DIA"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CENTROID_DIA_HT_ACTUAL"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["CENTROID_DIA_HT_ACTUAL"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["SAWHT"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["SAWHT"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["HTDMP"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["HTDMP"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["BOLEHT"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["BOLEHT"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CULLCF"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CULLCF"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CULL_FLD"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CULL_FLD"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CULLDEAD"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CULLDEAD"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CULLFORM"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CULLFORM"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CULLMSTOP"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CULLMSTOP"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CFSND"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CFSND"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["BFSND"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["BFSND"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["PRECIPITATION"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["PRECIPITATION"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["BALIVE"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["BALIVE"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-            //END: ADDED BIOSUM_VOLUME COLUMNS
-
-
-            strValues = strValues + "'" + p_DataReader["TRE_CN"].ToString() + "',";
-
-            if (p_DataReader["CND_CN"] != DBNull.Value)
-                strValues = strValues + "'" + p_DataReader["CND_CN"].ToString() + "',";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["PLT_CN"] != DBNull.Value)
-                strValues = strValues + "'" + p_DataReader["PLT_CN"].ToString() + "',";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["VOLCSGRS_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["VOLCSGRS_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["VOLCFGRS_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["VOLCFGRS_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["VOLCFNET_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["VOLCFNET_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["DRYBIOT_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["DRYBIOT_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["DRYBIOM_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["DRYBIOM_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-
-
-            if (p_DataReader["VOLTSGRS_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["VOLTSGRS_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            strValues = strValues.Substring(0, strValues.Length - 1);
-
-
-        }
-
-        
-		
-	}
-    
+    }
 }
