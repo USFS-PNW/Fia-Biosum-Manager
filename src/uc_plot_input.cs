@@ -3886,9 +3886,11 @@ namespace FIA_Biosum_Manager
 						"SELECT DISTINCT(a.biosum_cond_id),a.tottpa as tpa  " + 
 						"FROM " + this.m_strTreeTable + " t, " + 
 						"(SELECT biosum_cond_id, SUM(tpacurr) as tottpa " + 
-						"FROM " + this.m_strTreeTable + " " + 
-						"WHERE  dia >= 5 AND statuscd=1 " + 
-						"GROUP BY biosum_cond_id) a " + 
+						"FROM " + this.m_strTreeTable + " " +
+                        //issue_253: include saplings in tpacurr
+                        //"WHERE  dia >= 5 AND statuscd=1 " + 
+                        "WHERE statuscd=1 " +
+                        "GROUP BY biosum_cond_id) a " + 
 						"WHERE t.biosum_status_cd=9 AND " + 
 						"a.biosum_cond_id=t.biosum_cond_id;";
 
@@ -3930,9 +3932,11 @@ namespace FIA_Biosum_Manager
 						"SELECT DISTINCT(a.biosum_cond_id),a.totswdtpa as swd_tpa  " + 
 						"FROM " + this.m_strTreeTable + " t, " + 
 						"(SELECT biosum_cond_id, SUM(tpacurr) as totswdtpa " + 
-						"FROM " + this.m_strTreeTable + " " + 
-						"WHERE spcd < 300 AND dia >= 5 AND statuscd=1 " + 
-						"GROUP BY biosum_cond_id ) a " + 
+						"FROM " + this.m_strTreeTable + " " +
+                        //issue_253: include saplings in tpacurr  
+                        //"WHERE spcd < 300 AND dia >= 5 AND statuscd=1 " +
+                        "WHERE spcd < 300 AND statuscd = 1 " +
+                        "GROUP BY biosum_cond_id ) a " + 
 						"WHERE t.biosum_status_cd=9 AND " + 
 						"a.biosum_cond_id=t.biosum_cond_id;";
 
@@ -3974,9 +3978,11 @@ namespace FIA_Biosum_Manager
 						"SELECT DISTINCT(a.biosum_cond_id),a.tothwdtpa as hwd_tpacurr  " + 
 						"FROM " + this.m_strTreeTable + " t, " + 
 						"(SELECT biosum_cond_id, SUM(tpacurr) as tothwdtpa " + 
-						"FROM " + this.m_strTreeTable + " " + 
-						"WHERE spcd > 299 AND dia >= 5 AND statuscd=1 " + 
-						"GROUP BY biosum_cond_id ) a " + 
+						"FROM " + this.m_strTreeTable + " " +
+                        //issue_253: include saplings in tpacurr  
+                        //"WHERE spcd > 299 AND dia >= 5 AND statuscd=1 " + 
+                        "WHERE spcd > 299 AND statuscd=1 " +
+                        "GROUP BY biosum_cond_id ) a " + 
 						"WHERE t.biosum_status_cd=9 AND " + 
 						"a.biosum_cond_id=t.biosum_cond_id;";
 
