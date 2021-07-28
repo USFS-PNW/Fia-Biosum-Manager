@@ -1456,7 +1456,7 @@ namespace FIA_Biosum_Manager
         private void CopyScenario()
         {
             frmDialog frmTemp = new frmDialog();
-            frmTemp.Initialize_Scenario_Optimizer_Scenario_Copy();
+            frmTemp.Initialize_Scenario_Optimizer_Scenario_Copy(this);
             frmTemp.Text = "FIA Biosum";
             if (m_oOptimizerScenarioItem.ScenarioId.Trim().Length == 0) LoadRuleDefinitions();
 
