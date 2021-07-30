@@ -993,6 +993,8 @@ namespace FIA_Biosum_Manager
               m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.DrybioTopCalc = null;
               m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.DrybioSaplingCalc = null;
               m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.DrybioWdldSppCalc = null;
+              m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.CullBf = null;
+              m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.Subp = null;
               //END: ADDED BIOSUM_VOLUME COLUMNS
 
               m_oOracleServices.m_oTree.AddBiosumRecord(m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord);
