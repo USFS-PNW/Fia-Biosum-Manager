@@ -1229,7 +1229,7 @@ namespace FIA_Biosum_Manager
 					frmMain.g_oSQLMacroSubstitutionVariable_Collection;
 
 				string strScenarioOutputFolder = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim();
-                this.m_strSystemResultsDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir,"mdb");
+                this.m_strSystemResultsDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir,"accdb");
 				this.CopyScenarioResultsTable(this.m_strSystemResultsDbPathAndFile,strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile);
 
                 this.m_strContextDbPathAndFile = "";
@@ -1443,7 +1443,7 @@ namespace FIA_Biosum_Manager
                     m_strOptimizationTableName = ReferenceOptimizerScenarioForm.OutputTablePrefix + "_" + m_strOptimizationTableName;
 
                     CreateAuditTables();
-					CreateScenarioResultTables();
+					CreateOptimizerResultTables();
                     if (!String.IsNullOrEmpty(m_strContextDbPathAndFile))
                         CreateContextTables();
                     CreateValidComboTables();
@@ -1828,7 +1828,13 @@ namespace FIA_Biosum_Manager
 							string strFileDate = oDate.ToString(strDateFormat);
 							strFileDate = strFileDate.Replace("/","_"); strFileDate=strFileDate.Replace(":","_");
 							this.CreateHtml();
-							this.CopyScenarioResultsTable(strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile, this.m_strSystemResultsDbPathAndFile);
+                            this.CopyScenarioResultsTable(strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile, this.m_strSystemResultsDbPathAndFile);
+                            // issue #255: Optimizer results requires repair
+                            if (frmMain.g_intDebugLevel > 2)
+                            {
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, "Compacting " + Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile + " \r\n");
+                            }
+                            CompactMDB(strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile, null);
                             if (! String.IsNullOrEmpty(this.m_strContextDbPathAndFile))
                                 this.CopyScenarioResultsTable(strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsContextDbFile, this.m_strContextDbPathAndFile);
                             this.m_strSystemResultsDbPathAndFile = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile;
@@ -2151,7 +2157,7 @@ namespace FIA_Biosum_Manager
 		/// <summary>
 		/// create links to the tables located in the optimizer_results.accdb file
 		/// </summary>
-		private void CreateScenarioResultTables()
+		private void CreateOptimizerResultTables()
 		{
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
