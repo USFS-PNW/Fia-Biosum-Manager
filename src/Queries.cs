@@ -3593,6 +3593,33 @@ namespace FIA_Biosum_Manager
                     }
                 }
 
+                /// <summary>
+                /// Insert into the MS Access Biosum Volume table
+                /// the formatted data in the input volumes table.
+                /// This extra step is needed before importing to 
+                /// Oracle because the performance of formatting of data from Access to 
+                /// the Oracle Linked table is slow.
+                /// </summary>
+                /// <param name="p_strInputVolumesTable"></param>
+                /// <param name="p_strOracleBiosumVolumesTable"></param>
+                /// <returns></returns>
+                public static string BuildInputTableForVolumeCalculation_Step7(
+                    string p_strInputVolumesTable,
+                    string p_strBiosumVolumesTable)
+                {
+                    string strColumns = "STATECD,COUNTYCD,PLOT,INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT," +
+                                        "ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE,TRE_CN,CND_CN,PLT_CN";
+
+                    string strValues = "STATECD,COUNTYCD,PLOT," +
+                                       "INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT,ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE," +
+                                       "TRE_CN,CND_CN,PLT_CN";
+
+                    return "INSERT INTO " + p_strBiosumVolumesTable + " " +
+                           "(" + strColumns + ") " +
+                           "SELECT " + strValues + " " +
+                           "FROM " + p_strInputVolumesTable;
+                }
+
                 public static string WriteCalculatedVolumeAndBiomassColumnsToTreeTable(
                     string p_strBiosumCalcOutputTable)
                 {
@@ -3820,32 +3847,6 @@ namespace FIA_Biosum_Manager
                            "FROM " + p_strInputVolumesTable;
                 }
 
-                /// <summary>
-                /// Insert into the MS Access Biosum Volume table
-                /// the formatted data in the input volumes table.
-                /// This extra step is needed before importing to 
-                /// Oracle because the performance of formatting of data from Access to 
-                /// the Oracle Linked table is slow.
-                /// </summary>
-                /// <param name="p_strInputVolumesTable"></param>
-                /// <param name="p_strOracleBiosumVolumesTable"></param>
-                /// <returns></returns>
-                public static string BuildPlotInputTableForVolumeCalculation_Step7(
-                    string p_strInputVolumesTable,
-                    string p_strBiosumVolumesTable)
-                {
-                    string strColumns = "STATECD,COUNTYCD,PLOT,INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT," +
-                                        "ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE,TRE_CN,CND_CN,PLT_CN";
-
-                    string strValues = "STATECD,COUNTYCD,PLOT," +
-                                       "INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT,ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE," +
-                                       "TRE_CN,CND_CN,PLT_CN";
-
-                    return "INSERT INTO " + p_strBiosumVolumesTable + " " +
-                           "(" + strColumns + ") " +
-                           "SELECT " + strValues + " " +
-                           "FROM " + p_strInputVolumesTable;
-                }
 
                 /// <summary>
                 /// Insert records into the fcs oracle linked table
