@@ -3368,7 +3368,7 @@ namespace FIA_Biosum_Manager
                             Tuple.Create("CR", "CR"),
                             Tuple.Create("CULL", "CULL"),
                             Tuple.Create("CULLBF", "CULLBF"),
-                            Tuple.Create("CULLCF", "CULLCF"), // TODO: Where is this from? Not in master.tree, but it is in FIADB.Tree. Jason said you can't convert BF to CF
+                            Tuple.Create("CULLCF", "CULLCF"),
                             Tuple.Create("CULLDEAD", "CULLDEAD"),
                             Tuple.Create("CULLFORM", "CULLFORM"),
                             Tuple.Create("CULLMSTOP", "CULLMSTOP"),
@@ -3391,7 +3391,7 @@ namespace FIA_Biosum_Manager
                             Tuple.Create("STATECD", "STATECD"),
                             Tuple.Create("STATUSCD", "STATUSCD"),
                             Tuple.Create("SUBP", "SUBP"),
-                            // ("TOTAGE", "null as TOTAGE"), //TODO: set in update query that follows
+                            Tuple.Create("TOTAGE", "TOTAGE"),
                             Tuple.Create("TREE", "TREE"),
                             Tuple.Create("TREECLCD", "TREECLCD"),
                             Tuple.Create("TRE_CN", "CN AS TRE_CN"),
