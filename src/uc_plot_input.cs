@@ -3024,6 +3024,20 @@ namespace FIA_Biosum_Manager
                         using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                         {
                             conn.Open();
+                            // Special handling for pop_eval to not permanently save evals that weren't used
+                            oDataMgr.m_strSQL = "UPDATE " + m_strPopEvalTable +
+                                                " SET biosum_status_cd = 1 WHERE EXISTS(" +
+                                                " SELECT eval_cn FROM pop_estn_unit" +
+                                                " WHERE pop_estn_unit.eval_cn = pop_eval.cn)";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, oDataMgr.m_strSQL + "\r\n");
+                            oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                            oDataMgr.m_strSQL = "DELETE FROM " + m_strPopEvalTable +
+                                " WHERE biosum_status_cd = 9";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, oDataMgr.m_strSQL + "\r\n");
+                            oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
                             foreach (string table in arrTables)
                             {
                                 if (oDataMgr.TableExist(conn, table))
@@ -8614,8 +8628,8 @@ namespace FIA_Biosum_Manager
                 string strMasterConn = oDataMgr.GetConnectionString(m_strMasterDbFile);
                 oDataMgr.OpenConnection(strMasterConn);
                 oDataMgr.m_strSQL = "DELETE FROM " + strDestTable +
-                    " WHERE rscd = " + this.m_strCurrFIADBRsCd + " AND " +
-                    "evalid = " + this.m_strCurrFIADBEvalId;
+                    " WHERE biosum_status_cd = 9 or (rscd = " + this.m_strCurrFIADBRsCd +
+                    " and evalid = " + this.m_strCurrFIADBEvalId + ")";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, oDataMgr.m_strSQL + "\r\n");
                 oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
@@ -8689,9 +8703,8 @@ namespace FIA_Biosum_Manager
 
                 oDataMgr.m_strSQL = "UPDATE " + strDestTable +
                     " SET biosum_status_cd = 9" +
-                    " WHERE EXISTS(SELECT *" +
-                    " FROM FIADB." + strDestTable +
-                    " WHERE " + strDestTable + ".cn = FIADB." + strDestTable + ".cn)";
+                    " WHERE rscd = " + this.m_strCurrFIADBRsCd + " AND " +
+                    "evalid = " + this.m_strCurrFIADBEvalId;
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
                         oDataMgr.m_strSQL + "\r\n");
