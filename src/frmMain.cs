@@ -4461,20 +4461,8 @@ namespace FIA_Biosum_Manager
                 }
             }
         }
-        public static string FCSSchema
-        {
-            get
-            {
-                if (FIA_Biosum_Manager.utils.FS_NETWORK == FIA_Biosum_Manager.utils.FS_NETWORK_STATUS.NotAvailable)
-                {
-                    return "FCS_BIOSUM";
-                }
-                else
-                {
-                    return "ANL_PNW_FIA_FCS";
-                }
-            }
-        }
+        public static string FCSSchema => utils.FS_NETWORK_IS_AVAILABLE ? "ANL_PNW_FIA_FCS" : "FCS_BIOSUM";
+
         public static string OracleXEPath
         {
             get { return @"c:\oraclexe\app\oracle\product\11.2.0\server\bin"; }
