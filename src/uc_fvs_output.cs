@@ -4811,7 +4811,7 @@ namespace FIA_Biosum_Manager
 
                                     if (oAdo.m_OleDbDataReader.HasRows)
                                     {
-                                        FIADBOracle.Services.FS_NETWORK_AVAILABLE = FIA_Biosum_Manager.utils.FS_NETWORK == utils.FS_NETWORK_STATUS.Available ? true : false;
+                                        FIADBOracle.Services.FS_NETWORK_AVAILABLE = utils.FS_NETWORK_IS_AVAILABLE;
                                         m_oOracleServices.Start();
 
                                         if (m_oOracleServices.m_intError == 0)

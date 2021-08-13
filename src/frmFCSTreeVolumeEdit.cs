@@ -936,7 +936,7 @@ namespace FIA_Biosum_Manager
         lblDRYBIOM.Text = "0"; lblDRYBIOT.Text = "0"; lblVOLCFGRS.Text = "0";
         lblVOLCFNET.Text = "0"; lblVOLCSGRS.Text = "0"; lblVOLTSGRS.Text = "0";
 
-       FIADBOracle.Services.FS_NETWORK_AVAILABLE = FIA_Biosum_Manager.utils.FS_NETWORK == utils.FS_NETWORK_STATUS.Available ? true : false;
+        FIADBOracle.Services.FS_NETWORK_AVAILABLE = utils.FS_NETWORK_IS_AVAILABLE;
      
       FIADBOracle.Services m_oOracleServices = new FIADBOracle.Services();
       
