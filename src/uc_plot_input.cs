@@ -8692,8 +8692,42 @@ namespace FIA_Biosum_Manager
                         oDataMgr.m_strSQL + "\r\n");
                 oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
 
-                oDataMgr.m_strSQL = "INSERT INTO " + strDestTable + " (" + strFields + ")" +
-                    " SELECT " + strFields + " FROM FIADB." + strDestTable + "   " +
+                //get the fiabiosum table structures
+                string strSqliteFields = "";
+                DataTable dtSqliteDestSchema = oDataMgr.getTableSchema(oDataMgr.m_Connection, "select * from " + strDestTable);
+                using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
+                {
+                    con.Open();
+                    DataTable dtSourceSchema = oDataMgr.getTableSchema(con, "select * from " + strSourceTable.Trim());
+
+                    //build field list string to insert sql by matching 
+                    //up the column names in the biosum plot table and the fiadb plot table
+                    strSqliteFields = "";
+                    for (x = 0; x <= dtSqliteDestSchema.Rows.Count - 1; x++)
+                    {
+                        strCol = dtSqliteDestSchema.Rows[x]["columnname"].ToString().Trim();
+                        //see if there is an equivalent FIADB column
+                        for (y = 0; y <= dtSourceSchema.Rows.Count - 1; y++)
+                        {
+                            if (strCol.Trim().ToUpper() == dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper())
+                            {
+                                if (strSqliteFields.Trim().Length == 0)
+                                {
+                                    strSqliteFields = strCol;
+                                }
+                                else
+                                {
+                                    strSqliteFields += "," + strCol;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+
+
+                oDataMgr.m_strSQL = "INSERT INTO " + strDestTable + " (" + strSqliteFields + ")" +
+                    " SELECT " + strSqliteFields + " FROM FIADB." + strDestTable + "   " +
                     "WHERE rscd = " + this.m_strCurrFIADBRsCd + " AND " +
                           "evalid = " + this.m_strCurrFIADBEvalId;
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)

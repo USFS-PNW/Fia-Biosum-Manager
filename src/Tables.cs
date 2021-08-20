@@ -4266,7 +4266,7 @@ namespace FIA_Biosum_Manager
                     "evalid INTEGER," +
                     "estn_unit INTEGER," +
                     "stratumcd INTEGER," +
-                    "stratum_desc VARCHAR (255)," +
+                    "stratum_descr VARCHAR (255)," +
                     "statecd INTEGER," +
                     "p1pointcnt INTEGER," +
                     "p2pointcnt INTEGER," +
