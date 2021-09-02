@@ -2546,8 +2546,6 @@ namespace FIA_Biosum_Manager
             string strAuditDbFile;
 			string strCurVariant="";
 			
-			string strFvsTreeTable="";
-			
 			bool bUpdateCondTable=false;
 			
             string strFVSOutPrePostPathAndDbFile = "";
