@@ -3015,10 +3015,8 @@ namespace FIA_Biosum_Manager
                             //
                             if (intItemError == 0)
                             {
-                                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim() + " Update FVS_TREE table");
-                                RunAppend_UpdateFVSTreeTable(strPackage, strVariant, strRx1, strRx2, strRx3, strRx4,
-                                    strFvsTreeTable,
-                                    ref intItemError, ref strItemError);
+                                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control) this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim() + " Update " + m_strFvsTreeTable + " table");
+                                RunAppend_UpdateFVSTreeTable(strPackage, strVariant, strRx1, strRx2, strRx3, strRx4, m_strFvsTreeTable, ref intItemError, ref strItemError);
 
                                 if (intItemError == 0)
                                 {
