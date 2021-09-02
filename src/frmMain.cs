@@ -4450,7 +4450,7 @@ namespace FIA_Biosum_Manager
         {
             get
             {
-                if (FIA_Biosum_Manager.utils.FS_NETWORK == FIA_Biosum_Manager.utils.FS_NETWORK_STATUS.NotAvailable)
+                if (utils.FS_NETWORK_IS_NOT_AVAILABLE)
                 {
                     return "Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=LOCALHOST)(PORT=1521))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=XE)));User Id=fcs_biosum;Password=fcs;Pooling=true;Min Pool Size=1;Max Pool Size=5;";
                 }
