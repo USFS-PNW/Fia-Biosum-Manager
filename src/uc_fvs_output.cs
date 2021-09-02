@@ -4654,35 +4654,48 @@ namespace FIA_Biosum_Manager
                                 //
                                 //UPDATE VOLUME COLUMNS
                                 //
-                                //update cycle 1 records with tree volumes and actualht
+                                //Update Cycle=1 records with tree volumes and actualht
                                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + " Update volume columns with tree table values for cycle 1 records");
                                 frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
-                                oAdo.m_strSQL = "UPDATE " + strFvsTreeTable + " f " +
-                                                  "INNER JOIN " + m_oQueries.m_oFIAPlot.m_strTreeTable + " t " +
-                                                  "ON f.biosum_cond_id = t.biosum_cond_id AND " +
-                                                     "f.fvs_tree_id=t.fvs_tree_id " +
-                                                  "SET f.volcsgrs=t.volcsgrs," +
-                                                      "f.volcfgrs=t.volcfgrs," +
-                                                      "f.volcfnet=t.volcfnet," +
-                                                      "f.drybiot=t.drybiot," +
-                                                      "f.drybiom=t.drybiom," +
-                                                      "f.voltsgrs=t.voltsgrs " +
-                                                  "WHERE f.rxcycle='1' AND f.rxpackage='" + p_strPackage.Trim() + "'";
-                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
+                                oAdo.m_strSQL = $@"UPDATE {strFvsTreeTable} f 
+                                                    INNER JOIN {m_oQueries.m_oFIAPlot.m_strTreeTable} t 
+                                                    ON f.biosum_cond_id = t.biosum_cond_id AND f.fvs_tree_id=t.fvs_tree_id
+                                                    SET f.drybio_bole=t.drybio_bole,
+                                                        f.drybio_sapling=t.drybio_sapling,
+                                                        f.drybio_top=t.drybio_top,
+                                                        f.drybio_wdld_spp=t.drybio_wdld_spp,
+                                                        f.drybiom=t.drybiom,
+                                                        f.drybiot=t.drybiot,
+                                                        f.volcfgrs=t.volcfgrs,
+                                                        f.volcfnet=t.volcfnet,
+                                                        f.volcfsnd=t.volcfsnd,
+                                                        f.volcsgrs=t.volcsgrs,
+                                                        f.voltsgrs=t.voltsgrs,
+                                                        f.diahtcd=t.diahtcd
+                                                    WHERE f.rxcycle='1' AND f.rxpackage='{p_strPackage.Trim()}' ";
                                 oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
-                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                                //Set DIAHTCD for FIADB Cycle<>1 trees to their Cycle=1 DIAHTCD values
+                                //TODO: precipitation? BALive?
+                                oAdo.m_strSQL = $@"UPDATE {strFvsTreeTable} f INNER JOIN {m_oQueries.m_oFIAPlot.m_strTreeTable} t 
+                                                    ON t.biosum_cond_id=f.biosum_cond_id AND t.fvs_tree_id=f.fvs_tree_id
+                                                    SET f.diahtcd=t.diahtcd 
+                                                    WHERE f.fvscreatedtree_yn='N' AND f.rxcycle<>'1' AND f.rxpackage='{p_strPackage.Trim()}'";
+                                oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
+
+                                //Set DIAHTCD for FVS-Created trees using FIA_TREE_SPECIES_REF.WOODLAND_YN
+                                oAdo.m_strSQL = $@"UPDATE {strFvsTreeTable} f INNER JOIN {strFiaTreeSpeciesRefTableLink} ref 
+                                                        ON cint(f.fvs_species)=ref.spcd
+                                                    SET f.diahtcd=IIF(ref.woodland_yn='N', 1, 2)
+                                                    WHERE f.fvscreatedtree_yn='Y' 
+                                                        AND f.diahtcd IS NULL 
+                                                        AND f.rxpackage='{p_strPackage.Trim()}'";
+                                oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
 
                                 m_intProgressStepCurrentCount++;
-                                UpdateTherm(m_frmTherm.progressBar1,
-                                           m_intProgressStepCurrentCount,
-                                           m_intProgressStepTotalCount);
+                                UpdateTherm(m_frmTherm.progressBar1, m_intProgressStepCurrentCount, m_intProgressStepTotalCount);
 
-
-
-
-                                //udpate growth projected trees with tree volumes
+                                //update growth projected trees with tree volumes
                                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + " Prepare data for Oracle volume calculation");
                                 frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
                                 if (oAdo.TableExist(oConn, Tables.VolumeAndBiomass.BiosumVolumesInputTable))
