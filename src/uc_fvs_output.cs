@@ -199,6 +199,7 @@ namespace FIA_Biosum_Manager
             if (m_oQueries.m_oFvs.m_strFvsTreeTable.Trim().Length == 0)
             {
                 m_oQueries.m_oFvs.m_strFvsTreeTable = Tables.FVS.DefaultFVSTreeTableName;
+                m_strFvsTreeTable = Tables.FVS.DefaultFVSTreeTableName;
             }
 
 			
@@ -2904,7 +2905,7 @@ namespace FIA_Biosum_Manager
                             
                             if (m_bDebug && frmMain.g_intDebugLevel > 1)
                                 this.WriteText(m_strDebugFile, "\r\nSTART: Create PREPOST DbFile table links " + System.DateTime.Now.ToString() + "\r\n");
-                            RunAppend_CreatePREPOSTDbFileAndTableLinks(strOutDirAndFile, strAuditDbFile, strVariant,"FVS_TREE", strCutListTempDbFile);
+                            RunAppend_CreatePREPOSTDbFileAndTableLinks(strOutDirAndFile, strAuditDbFile, strVariant, m_strFvsTreeTable, strCutListTempDbFile);
                             if (m_bDebug && frmMain.g_intDebugLevel > 1)
                                 this.WriteText(m_strDebugFile, "\r\nEND: Create PREPOST DbFile table links " + System.DateTime.Now.ToString() + "\r\n");
                            
@@ -4104,7 +4105,7 @@ namespace FIA_Biosum_Manager
                                                   string p_strRx2,
                                                   string p_strRx3,
                                                   string p_strRx4,
-                                                  string p_strFvsTreeTable,
+                                                  string strFvsTreeTable,
                                                   ref int p_intError,
                                                   ref string p_strError)
         {
@@ -4128,7 +4129,6 @@ namespace FIA_Biosum_Manager
             string strFVSSummarySeqNumMtxTableLink = "";
             string strFVSOutSeqNumMatrixTableLink = "";
             string strCasesTable = "";
-            string strFvsTreeTable = "fvs_tree";
             string strFvsTreeTCuFtTable = "fvs_tree_TCuFt";
             string strConn = "";
             bool bIdColumnExist = false;
@@ -6682,7 +6682,6 @@ namespace FIA_Biosum_Manager
 			string strRx="";
             string strSQL = "";
             string strFvsTreeFile;
-            string strFvsTreeTable;
             System.Windows.Forms.ListView oLv = (System.Windows.Forms.ListView)frmMain.g_oDelegate.GetListView(this.lstFvsOutput, false);
             System.Windows.Forms.ListViewItem oLvItem = null;
 
