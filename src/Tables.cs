@@ -2565,11 +2565,17 @@ namespace FIA_Biosum_Manager
                     "ht DOUBLE," +
                     "estht DOUBLE," +
                     "pctcr DOUBLE," +
-                    "volcfnet DOUBLE," +
-                    "volcfgrs DOUBLE," +
-                    "volcsgrs DOUBLE," +
+                    "diahtcd integer," +
+                    "drybio_bole double," +
+                    "drybio_sapling double," +
+                    "drybio_top double," +
+                    "drybio_wdld_spp double," +
+                    "volcfsnd double," + 
                     "drybiom DOUBLE," +
                     "drybiot DOUBLE," +
+                    "volcfgrs DOUBLE," +
+                    "volcfnet DOUBLE," +
+                    "volcsgrs DOUBLE," +
                     "voltsgrs DOUBLE," +
                     "fvs_tree_id CHAR(10)," +
                     "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
