@@ -3652,18 +3652,15 @@ namespace FIA_Biosum_Manager
                 /// <param name="p_strFvsTreeTable"></param>
                 /// <param name="p_strRxPackage"></param>
                 /// <returns></returns>
-                public static string BuildInputTableForVolumeCalculation_Step1(string p_strInputVolumesTable,
-                    string p_strFvsTreeTable, string p_strRxPackage)
+                public static string BuildInputTableForVolumeCalculation_Step1(string p_strInputVolumesTable, string p_strFvsTreeTable, string p_strRxPackage)
                 {
                     string strColumns = "id,biosum_cond_id,invyr,fvs_variant,spcd,dbh,ht,actualht,cr,fvs_tree_id";
-                    return "INSERT INTO " + p_strInputVolumesTable + " " +
-                           "(" + strColumns + ") " +
-                           "SELECT id,biosum_cond_id,CINT(rxyear) AS invyr," +
-                           "fvs_variant," +
-                           "IIF(FvsCreatedTree_YN='Y',CINT(fvs_species),-1) AS spcd," +
-                           "dbh,estht,ht,pctcr,fvs_tree_id " +
-                           "FROM " + p_strFvsTreeTable + " " +
-                           "WHERE rxpackage='" + p_strRxPackage.Trim() + "' AND rxcycle<>'1'";
+                    return $@"INSERT INTO {p_strInputVolumesTable} ({strColumns}) 
+                           SELECT id,biosum_cond_id,CINT(rxyear) AS invyr, fvs_variant,
+                           IIF(FvsCreatedTree_YN='Y',CINT(fvs_species),-1) AS spcd,
+                           dbh,estht,ht,pctcr,fvs_tree_id 
+                           FROM {p_strFvsTreeTable}
+                           WHERE rxpackage='{p_strRxPackage.Trim()}' AND rxcycle<>'1'";
                 }
 
                 /// <summary>
@@ -3673,18 +3670,14 @@ namespace FIA_Biosum_Manager
                 /// <param name="p_strFvsTreeTable"></param>
                 /// <param name="p_strRxPackage"></param>
                 /// <returns></returns>
-                public static string BuildInputTableForVolumeCalculation_Step1a(string p_strInputVolumesTable,
-                    string p_strFvsTreeTable, string p_strRxPackage)
+                public static string BuildInputTableForVolumeCalculation_Step1a(string p_strInputVolumesTable, string p_strFvsTreeTable, string p_strRxPackage)
                 {
                     string strColumns = "id,biosum_cond_id,invyr,fvs_variant,spcd,dbh,ht,actualht,cr,fvs_tree_id";
-                    return "INSERT INTO " + p_strInputVolumesTable + " " +
-                           "(" + strColumns + ") " +
-                           "SELECT id,biosum_cond_id,CINT(rxyear) AS invyr," +
-                           "fvs_variant," +
-                           "IIF(FvsCreatedTree_YN='Y',CINT(fvs_species),-1) AS spcd," +
-                           "dbh,estht,ht,pctcr,fvs_tree_id " +
-                           "FROM " + p_strFvsTreeTable + " " +
-                           "WHERE rxpackage='" + p_strRxPackage.Trim() + "' AND rxcycle='1' AND FvsCreatedTree_YN='Y'";
+                    string values = "id,biosum_cond_id,CINT(rxyear) AS invyr, fvs_variant, IIF(FvsCreatedTree_YN='Y',CINT(fvs_species),-1) AS spcd, dbh,estht,ht,pctcr,fvs_tree_id";
+                    return $@"INSERT INTO {p_strInputVolumesTable} ({strColumns}) 
+                           SELECT {values}
+                           FROM {p_strFvsTreeTable}
+                           WHERE rxpackage='{p_strRxPackage.Trim()}' AND rxcycle='1' AND FvsCreatedTree_YN='Y'";
                 }
 
                 /// <summary>
@@ -3693,18 +3686,11 @@ namespace FIA_Biosum_Manager
                 /// <param name="p_strInputVolumesTable"></param>
                 /// <param name="p_strFvsTreeTable"></param>
                 /// <returns></returns>
-                public static string BuildInputTableForVolumeCalculation_Step1(string p_strInputVolumesTable,
-                    string p_strFvsTreeTable)
+                public static string BuildInputTableForVolumeCalculation_Step1(string p_strInputVolumesTable, string p_strFvsTreeTable)
                 {
                     string strColumns = "id,biosum_cond_id,invyr,fvs_variant,spcd,dbh,ht,actualht,cr,fvs_tree_id";
-                    return "INSERT INTO " + p_strInputVolumesTable + " " +
-                           "(" + strColumns + ") " +
-                           "SELECT id,biosum_cond_id,CINT(rxyear) AS invyr," +
-                           "fvs_variant," +
-                           "IIF(FvsCreatedTree_YN='Y',CINT(fvs_species),-1) AS spcd," +
-                           "dbh,estht,ht,pctcr,fvs_tree_id " +
-                           "FROM " + p_strFvsTreeTable + " " +
-                           "WHERE rxcycle<>'1'";
+                    string values = "id,biosum_cond_id,CINT(rxyear) AS invyr, fvs_variant, IIF(FvsCreatedTree_YN='Y',CINT(fvs_species),-1) AS spcd, dbh,estht,ht,pctcr,fvs_tree_id ";
+                    return $@"INSERT INTO {p_strInputVolumesTable} ({strColumns}) SELECT {values} FROM {p_strFvsTreeTable} WHERE rxcycle<>'1'";
                 }
 
                 /// <summary>
@@ -3715,25 +3701,35 @@ namespace FIA_Biosum_Manager
                 /// <param name="p_strFIAPlotTable"></param>
                 /// <param name="p_strFIACondTable"></param>
                 /// <returns></returns>
-                public static string BuildInputTableForVolumeCalculation_Step2(
-                    string p_strInputVolumesTable,
-                    string p_strFIATreeTable,
-                    string p_strFIAPlotTable,
-                    string p_strFIACondTable)
+                public static string BuildInputTableForVolumeCalculation_Step2(string p_strInputVolumesTable, string p_strFIATreeTable, string p_strFIAPlotTable, string p_strFIACondTable)
                 {
-                    return "UPDATE " + p_strInputVolumesTable + " i " +
-                           "INNER JOIN ((" + p_strFIATreeTable + " t " +
-                           "INNER JOIN " + p_strFIACondTable + " c " +
-                           "ON t.biosum_cond_id=c.biosum_cond_id) " +
-                           "INNER JOIN " + p_strFIAPlotTable + " p " +
-                           "ON p.biosum_plot_id=c.biosum_plot_id) " +
-                           "ON i.fvs_tree_id = t.fvs_tree_id and i.biosum_cond_id = t.biosum_cond_id " +
-                           "SET i.spcd=t.spcd," +
-                           "i.statuscd=IIF(t.statuscd IS NULL,1,t.statuscd)," +
-                           "i.treeclcd=t.treeclcd," +
-                           "i.cull=IIF(t.cull IS NULL,0,t.cull)," +
-                           "i.roughcull=IIF(t.roughcull IS NULL,0,t.roughcull)," +
-                           "i.decaycd=IIF(t.decaycd IS NULL,0,t.decaycd)"; //TODO: what about balive and precipitation?
+                    return $@"UPDATE {p_strInputVolumesTable} i 
+                                INNER JOIN (({p_strFIATreeTable} t 
+                                    INNER JOIN {p_strFIACondTable} c ON t.biosum_cond_id=c.biosum_cond_id)
+                                        INNER JOIN {p_strFIAPlotTable} p ON p.biosum_plot_id=c.biosum_plot_id) 
+                                ON i.fvs_tree_id = t.fvs_tree_id and i.biosum_cond_id = t.biosum_cond_id 
+                            SET i.spcd=t.spcd,
+                                i.statuscd=IIF(t.statuscd IS NULL,1,t.statuscd),
+                                i.treeclcd=t.treeclcd,
+                                i.cull=IIF(t.cull IS NULL,0,t.cull),
+                                i.roughcull=IIF(t.roughcull IS NULL,0,t.roughcull),
+                                i.decaycd=IIF(t.decaycd IS NULL,0,t.decaycd),
+                                i.balive=c.balive,
+                                i.precipitation=p.precipitation ";
+                }
+
+                /// <summary>
+                /// TODO: Update biosum_volumes_input fields with values from the FVS OUTPUT records to match the cycle1 fiadb sourced trees
+                /// </summary>
+                /// <param name="p_strInputVolumesTable"></param>
+                /// <param name="p_strFIATreeTable"></param>
+                /// <param name="p_strFIAPlotTable"></param>
+                /// <param name="p_strFIACondTable"></param>
+                /// <returns></returns>
+                public static string BuildInputTableForVolumeCalculation_Step2a(string p_strInputVolumesTable, string p_strFIATreeTable, string p_strFIAPlotTable, string p_strFIACondTable, string p_strFvsOutSummaryTable)
+                {
+
+                    return ""; //update biosum_volumes_input join to plot/cond/fvsout_summary/fvsout_cutlist set balive=fvsout.ba, other tree columns from fvs cutlist?
                 }
 
                 /// <summary>
@@ -3742,34 +3738,26 @@ namespace FIA_Biosum_Manager
                 /// <param name="p_strInputVolumesTable"></param>
                 /// <param name="p_strFIACondTable"></param>
                 /// <returns></returns>
-                public static string BuildInputTableForVolumeCalculation_Step3(
-                    string p_strInputVolumesTable,
-                    string p_strFIACondTable)
+                public static string BuildInputTableForVolumeCalculation_Step3(string p_strInputVolumesTable, string p_strFIACondTable)
                 {
-                    return "UPDATE " + p_strInputVolumesTable + " i " +
-                           "INNER JOIN " + p_strFIACondTable + " c " +
-                           "ON i.biosum_cond_id=c.biosum_cond_id " +
-                           "SET i.vol_loc_grp=c.vol_loc_grp," +
-                           //i.vol_loc_grp=IIF(INSTR(1,c.vol_loc_grp,'22') > 0,'S26LEOR',c.vol_loc_grp)," + 
-                           "i.statuscd=IIF(i.statuscd IS NULL,1,i.statuscd)," +
-                           "i.cull=IIF(i.cull IS NULL,0,i.cull)," +
-                           "i.roughcull=IIF(i.roughcull IS NULL,0,i.roughcull)," +
-                           "i.decaycd=IIF(i.decaycd IS NULL,0,i.decaycd)";
+                    return $@"UPDATE {p_strInputVolumesTable} i INNER JOIN {p_strFIACondTable} c 
+                                ON i.biosum_cond_id=c.biosum_cond_id 
+                            SET i.vol_loc_grp=c.vol_loc_grp,
+                                i.statuscd=IIF(i.statuscd IS NULL,1,i.statuscd),
+                                i.cull=IIF(i.cull IS NULL,0,i.cull),
+                                i.roughcull=IIF(i.roughcull IS NULL,0,i.roughcull),
+                                i.decaycd=IIF(i.decaycd IS NULL,0,i.decaycd)";
                 }
 
                 /// <summary>
                 /// Create and Populate a CULL work table with TOTALCULL (cull + roughcull)
                 /// </summary>
                 /// <returns></returns>
-                public static string BuildInputTableForVolumeCalculation_Step4(
-                    string p_strCullTable,
-                    string p_strInputVolumesTable)
+                public static string BuildInputTableForVolumeCalculation_Step4(string p_strCullTable, string p_strInputVolumesTable)
                 {
-                    return "SELECT id, IIF(cull IS NOT NULL AND roughcull IS NOT NULL, cull + roughcull," +
-                           "IIF(cull IS NOT NULL,cull," +
-                           "IIF(roughcull IS NOT NULL, roughcull,0))) AS totalcull " +
-                           "INTO " + p_strCullTable + " " +
-                           "FROM " + p_strInputVolumesTable;
+                    //TODO: does inputVolumesTable have an id column? yes. What is it set to? How is id populated? FVS_TREE.ID?
+                    string columns = "id, IIF(cull IS NOT NULL AND roughcull IS NOT NULL, cull + roughcull, IIF(cull IS NOT NULL,cull, IIF(roughcull IS NOT NULL, roughcull,0))) AS totalcull";
+                    return $@"SELECT {columns} INTO {p_strCullTable} FROM {p_strInputVolumesTable}";
                 }
 
                 public class PNWRS
@@ -3785,18 +3773,13 @@ namespace FIA_Biosum_Manager
                     /// <param name="p_strCullTable"></param>
                     /// <param name="p_strInputVolumesTable"></param>
                     /// <returns></returns>
-                    public static string BuildInputTableForVolumeCalculation_Step5(
-                        string p_strCullTable,
-                        string p_strInputVolumesTable)
+                    public static string BuildInputTableForVolumeCalculation_Step5(string p_strCullTable, string p_strInputVolumesTable)
                     {
-                        return "UPDATE " + p_strInputVolumesTable + " a " +
-                               "INNER JOIN " + p_strCullTable + " b " +
-                               "ON a.id=b.id " +
-                               "SET a.treeclcd=" +
-                               "IIF(a.SpCd IN (62,65,66,106,133,138,304,321,322,475,756,758,990),3," +
-                               "IIF(a.StatusCd=2,3," +
-                               "IIF(b.totalcull < 75,2," +
-                               "IIF(a.roughcull > 37.5,3,4))))";
+                        return $@"UPDATE {p_strInputVolumesTable} a INNER JOIN {p_strCullTable} b ON a.id=b.id
+                                   SET a.treeclcd= IIF(a.SpCd IN (62,65,66,106,133,138,304,321,322,475,756,758,990),3,
+                                       IIF(a.StatusCd=2,3,
+                                           IIF(b.totalcull < 75,2,
+                                               IIF(a.roughcull > 37.5,3,4))))";
                     }
 
                     /// <summary>
@@ -3806,16 +3789,11 @@ namespace FIA_Biosum_Manager
                     /// <param name="p_strCullTable"></param>
                     /// <param name="p_strInputVolumesTable"></param>
                     /// <returns></returns>
-                    public static string BuildInputTableForVolumeCalculation_Step6(
-                        string p_strCullTable,
-                        string p_strInputVolumesTable)
+                    public static string BuildInputTableForVolumeCalculation_Step6(string p_strCullTable, string p_strInputVolumesTable)
                     {
-                        return "UPDATE " + p_strInputVolumesTable + " a " +
-                               "INNER JOIN " + p_strCullTable + " b " +
-                               "ON a.id=b.id " +
-                               "SET a.treeclcd=" +
-                               "IIF(a.DecayCd > 1,4,IIF(a.dbh < 9 AND a.SpCd < 300,4,a.treeclcd)) " +
-                               "WHERE a.treeclcd=3 AND a.statuscd=2 AND a.SpCd NOT IN (62,65,66,106,133,138,304,321,322,475,756,758,990)";
+                        return $@"UPDATE {p_strInputVolumesTable} a INNER JOIN {p_strCullTable} b ON a.id=b.id
+                               SET a.treeclcd=IIF(a.DecayCd > 1,4,IIF(a.dbh < 9 AND a.SpCd < 300,4,a.treeclcd)) 
+                               WHERE a.treeclcd=3 AND a.statuscd=2 AND a.SpCd NOT IN (62,65,66,106,133,138,304,321,322,475,756,758,990)";
                     }
                 }
 
@@ -3829,9 +3807,7 @@ namespace FIA_Biosum_Manager
                 /// <param name="p_strInputVolumesTable"></param>
                 /// <param name="p_strOracleBiosumVolumesTable"></param>
                 /// <returns></returns>
-                public static string BuildInputTableForVolumeCalculation_Step7(
-                    string p_strInputVolumesTable,
-                    string p_strBiosumVolumesTable)
+                public static string BuildInputTableForVolumeCalculation_Step7(string p_strInputVolumesTable, string p_strBiosumVolumesTable)
                 {
                     string strColumns = "STATECD,COUNTYCD,PLOT,INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT," +
                                         "ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE,TRE_CN,CND_CN,PLT_CN";
@@ -3841,10 +3817,7 @@ namespace FIA_Biosum_Manager
                         "INVYR,VOL_LOC_GRP,ID AS TREE,SPCD,DBH AS DIA,HT,ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE," +
                         "CSTR(ID) AS TRE_CN,BIOSUM_COND_ID AS CND_CN,MID(BIOSUM_COND_ID,1,LEN(BIOSUM_COND_ID)-1) AS PLT_CN";
 
-                    return "INSERT INTO " + p_strBiosumVolumesTable + " " +
-                           "(" + strColumns + ") " +
-                           "SELECT " + strValues + " " +
-                           "FROM " + p_strInputVolumesTable;
+                    return $@"INSERT INTO {p_strBiosumVolumesTable} ({strColumns}) SELECT {strValues} FROM {p_strInputVolumesTable}";
                 }
 
 
@@ -3854,18 +3827,12 @@ namespace FIA_Biosum_Manager
                 /// <param name="p_strBiosumVolumesTable"></param>
                 /// <param name=""></param>
                 /// <returns></returns>
-                public static string BuildInputTableForVolumeCalculation_Step8(
-                    string p_strBiosumVolumesTable,
-                    string p_strOracleFCSBiosumVolumesLinkedTable)
+                public static string BuildInputTableForVolumeCalculation_Step8(string p_strBiosumVolumesTable, string p_strOracleFCSBiosumVolumesLinkedTable)
                 {
-                    string strColumns = "STATECD,COUNTYCD,PLOT,INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT," +
-                                        "ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE,TRE_CN,CND_CN,PLT_CN";
-
-
-                    return "INSERT INTO " + p_strOracleFCSBiosumVolumesLinkedTable + " " +
-                           "(" + strColumns + ") " +
-                           "SELECT " + strColumns + " " +
-                           "FROM " + p_strBiosumVolumesTable;
+                    string strColumns = @"STATECD,COUNTYCD,PLOT,INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT,ACTUALHT,CR,
+                                        STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE,TRE_CN,CND_CN,PLT_CN";
+                    return $@"INSERT INTO {p_strOracleFCSBiosumVolumesLinkedTable} ({strColumns}) 
+                                SELECT {strColumns} FROM {p_strBiosumVolumesTable}";
                 }
 
                 /// <summary>
@@ -3875,10 +3842,8 @@ namespace FIA_Biosum_Manager
                 /// <param name="p_strFvsTreeTable"></param>
                 /// <param name="p_strOracleBiosumVolumesTable"></param>
                 /// <returns></returns>
-                public static string BuildInputTableForVolumeCalculation_Step9(string p_strFvsTreeTable,
-                    string p_strBiosumCalcOutputTable)
+                public static string BuildInputTableForVolumeCalculation_Step9(string p_strFvsTreeTable, string p_strBiosumCalcOutputTable)
                 {
-                    //TODO: how to join to the biosum_calc_output table? o.tre_cn vs f.???
                     return $@"UPDATE {p_strFvsTreeTable} f
                            INNER JOIN {p_strBiosumCalcOutputTable} o
                            ON f.id = o.tree 
@@ -3902,19 +3867,15 @@ namespace FIA_Biosum_Manager
                 /// <param name="p_strFvsTreeTable"></param>
                 /// <param name="p_strOracleBiosumVolumesTable"></param>
                 /// <returns></returns>
-                public static string BuildInputTableForVolumeCalculationXE_Step9(
-                    string p_strFvsTreeTable,
-                    string p_strOracleBiosumVolumesTable)
+                public static string BuildInputTableForVolumeCalculationXE_Step9(string p_strFvsTreeTable, string p_strOracleBiosumVolumesTable)
                 {
-                    return "UPDATE " + p_strFvsTreeTable + " f " +
-                           "INNER JOIN " + p_strOracleBiosumVolumesTable + " o " +
-                           "ON f.id = o.tree " +
-                           "SET f.volcsgrs=o.VOLCSGRS_CALC," +
-                           "f.volcfgrs=o.VOLCFGRS_CALC," +
-                           "f.volcfnet=o.VOLCFNET_CALC," +
-                           "f.drybiot=o.DRYBIOT_CALC," +
-                           "f.drybiom=o.DRYBIOM_CALC," +
-                           "f.voltsgrs=o.VOLTSGRS_CALC";
+                    return $@"UPDATE {p_strFvsTreeTable} f INNER JOIN {p_strOracleBiosumVolumesTable} o ON f.id = o.tree 
+                            SET f.volcsgrs=o.VOLCSGRS_CALC,
+                                f.volcfgrs=o.VOLCFGRS_CALC,
+                                f.volcfnet=o.VOLCFNET_CALC,
+                                f.drybiot=o.DRYBIOT_CALC,
+                                f.drybiom=o.DRYBIOM_CALC,
+                                f.voltsgrs=o.VOLTSGRS_CALC";
                 }
             }
         }
