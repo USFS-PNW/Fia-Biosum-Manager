@@ -4705,8 +4705,6 @@ namespace FIA_Biosum_Manager
                                                    Tables.VolumeAndBiomass.BiosumVolumesInputTable,
                                                    strFvsTreeTable, p_strPackage);
 
-
-
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
 
@@ -4718,7 +4716,6 @@ namespace FIA_Biosum_Manager
                                 oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step1a(
                                                    Tables.VolumeAndBiomass.BiosumVolumesInputTable,
                                                    strFvsTreeTable, p_strPackage);
-
 
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
@@ -5042,7 +5039,7 @@ namespace FIA_Biosum_Manager
                                         var columnsAndDataTypes = new List<Tuple<string, utils.DataType>>
                                         { 
                                             Tuple.Create("ACTUALHT", utils.DataType.INTEGER),
-                                            Tuple.Create("BALIVE", utils.DataType.DOUBLE), // TODO: get this from cond table? reuse for multiple treatment cycles naively?
+                                            Tuple.Create("BALIVE", utils.DataType.DOUBLE),
                                             Tuple.Create("BFSND", utils.DataType.INTEGER),
                                             Tuple.Create("BOLEHT", utils.DataType.INTEGER),
                                             Tuple.Create("CENTROID_DIA", utils.DataType.DOUBLE),
@@ -5067,7 +5064,7 @@ namespace FIA_Biosum_Manager
                                             Tuple.Create("INVYR", utils.DataType.INTEGER),
                                             Tuple.Create("PLOT", utils.DataType.INTEGER),
                                             Tuple.Create("PLT_CN", utils.DataType.STRING),
-                                            Tuple.Create("PRECIPITATION", utils.DataType.DOUBLE), //TODO: get this from plot table? reuse for multiple treatment cycles naively?
+                                            Tuple.Create("PRECIPITATION", utils.DataType.DOUBLE),
                                             Tuple.Create("ROUGHCULL", utils.DataType.INTEGER),
                                             Tuple.Create("SAWHT", utils.DataType.INTEGER),
                                             Tuple.Create("SITREE", utils.DataType.INTEGER),
@@ -5306,16 +5303,11 @@ namespace FIA_Biosum_Manager
                                                         oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step9(
                                                                            strFvsTreeTable, Tables.VolumeAndBiomass.BiosumCalcOutputTable);
 
-
                                                         if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                                             this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
                                                         oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
                                                         if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                                             this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-
-
-
                                                     }
                                                 }
                                                 transaction.Dispose();
