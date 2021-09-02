@@ -2726,7 +2726,8 @@ namespace FIA_Biosum_Manager
                     "drybiom DOUBLE," +
                     "drybiot DOUBLE," +
                     "voltsgrs DOUBLE," +
-                    "fvs_tree_id CHAR(10))";
+                    "fvs_tree_id CHAR(10))," +
+                    "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'";
 
             }
             public void CreateOracleInputFCSBiosumVolumesTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
