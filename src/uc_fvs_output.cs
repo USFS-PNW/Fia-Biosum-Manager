@@ -3546,6 +3546,25 @@ namespace FIA_Biosum_Manager
                                             MessageBox.Show("!!Failed to create Oracle XE ODBC table link!! Contact technical support","FIA Biosum");
                                         }
                                     }
+
+                                    //
+                                    //CREATE A TABLE LINK TO THE REF_SPECIES TABLE
+                                    //
+                                    //ref_species table link
+                                    if (m_dao.m_intError == 0)
+                                    {
+                                        z = m_oQueries.m_oDataSource.getDataSourceTableNameRow("FIA Tree Species Reference");
+                                        oTableLinkItem = new TableLinkItem();
+                                        oTableLinkItem.TableName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.TABLE];
+                                        oTableLinkItem.LinkedTableName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.TABLE];
+                                        oTableLinkItem.DbFileName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.MDBFILE].Trim();
+                                        oTableLinkItem.Directory = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.PATH].Trim();
+                                        macrosubst oMacroSub = new macrosubst();
+                                        oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
+                                        var strAppDataPath = oMacroSub.GeneralTranslateVariableSubstitution(oTableLinkItem.FullPath);
+                                        m_dao.CreateTableLink(oDbFileItem.FullPath, oTableLinkItem.LinkedTableName, strAppDataPath, oTableLinkItem.TableName, true);
+                                        oDbFileItem.TableLinkCollection.Add(oTableLinkItem);
+                                    }
                                 }
                                
                             }
@@ -3586,10 +3605,13 @@ namespace FIA_Biosum_Manager
                                                         oTableLinkItem.FullPath,
                                                         oTableLinkItem.TableName,
                                                         true);
-                                m_oPrePostDbFileItem_Collection.Add(oDbFileItem);
+                                oDbFileItem.TableLinkCollection.Add(oTableLinkItem);
                             }
 
-                        
+                            if (m_dao.m_intError == 0)
+                            {
+                                m_oPrePostDbFileItem_Collection.Add(oDbFileItem);
+                            }
                     }
                     
                     
@@ -4124,6 +4146,8 @@ namespace FIA_Biosum_Manager
             string strDbFile = "";
             string strFVSOutTable = "";
             string strFVSOutTableLink = "";
+            string strFvsOutSummaryLink = "";
+            string strFiaTreeSpeciesRefTableLink = "";
             string strFVSSummarySeqNumMtxTableLink = "";
             string strFVSOutSeqNumMatrixTableLink = "";
             string strCasesTable = "";
@@ -4153,7 +4177,6 @@ namespace FIA_Biosum_Manager
                 strDbFile = m_oPrePostDbFileItem_Collection.Item(y).DbFileName.Trim().ToUpper();
                 if (strDbFile == "PREPOST_FVS_CUTLIST.ACCDB")
                 {
-
                     for (x = 0; x <= m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Count - 1; x++)
                     {
                         TableLinkItem oTableLinkItem = m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Item(x);
@@ -4210,7 +4233,15 @@ namespace FIA_Biosum_Manager
                                     if (m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Item(z).TableName == "FVS_CASES")
                                     {
                                         strCasesTable = m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Item(z).LinkedTableName;
-                                        break;
+                                    }
+                                    else if (m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Item(z).TableName == "FVS_SUMMARY")
+                                    {
+                                        strFvsOutSummaryLink = m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Item(z).LinkedTableName;
+                                    }
+                                    else if (m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Item(z).TableName ==
+                                             m_oQueries.m_oDataSource.getValidDataSourceTableName(Datasource.TableTypes.FiaTreeSpeciesReference))
+                                    {
+                                        strFiaTreeSpeciesRefTableLink = m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Item(z).LinkedTableName;
                                     }
                                 }
 
