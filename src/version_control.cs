@@ -1,3 +1,4 @@
+using SQLite.ADO;
 using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
@@ -6149,6 +6150,42 @@ namespace FIA_Biosum_Manager
             //You may want to check for one or more of the new fields before trying to add them
             //I have had trouble in the past when needing to run the upgrade code twice on a project because it
             //failed in the middle.
+
+            //new master.db file: Migrating POP tables to SQLite
+            DataMgr p_dataMgr = new DataMgr();
+            //@ToDo: Fix this after merging in Tyler's code
+            //string strDestFile = ReferenceProjectDirectory.Trim() + "\\" + frmMain.g_oTables.m_oFIAPlot.DefaultPopTableDbFile;
+            string strDestFile = ReferenceProjectDirectory.Trim();
+            if (!System.IO.File.Exists(strDestFile))
+            {
+                p_dataMgr.CreateDbFile(strDestFile);
+                string strConn = p_dataMgr.GetConnectionString(strDestFile);
+                using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+                    con.Open();
+                    //pop estimation unit table
+                    if (!p_dataMgr.TableExist(con, frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableName))
+                    {
+                        frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopEstnUnitTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableName);
+                    }
+                    //pop eval table
+                    if (!p_dataMgr.TableExist(con, frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName))
+                    {
+                        frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopEstnUnitTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName);
+                    }
+                    //pop plot stratum assignment table
+                    if (!p_dataMgr.TableExist(con, frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName))
+                    {
+                        frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopEstnUnitTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName);
+                    }
+                    //pop stratum table
+                    if (!p_dataMgr.TableExist(con, frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName))
+                    {
+                        frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopEstnUnitTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName);
+                    }
+                }
+            }
+
         }
 
 
