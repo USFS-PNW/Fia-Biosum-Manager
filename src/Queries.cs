@@ -3646,7 +3646,7 @@ namespace FIA_Biosum_Manager
                 }
 
                 /// <summary>
-                /// Insert all FVS_TREEs that are not cycle 1 trees 
+                /// Insert all FVS_TREEs 
                 /// </summary>
                 /// <param name="p_strInputVolumesTable"></param>
                 /// <param name="p_strFvsTreeTable"></param>
@@ -3654,30 +3654,12 @@ namespace FIA_Biosum_Manager
                 /// <returns></returns>
                 public static string BuildInputTableForVolumeCalculation_Step1(string p_strInputVolumesTable, string p_strFvsTreeTable, string p_strRxPackage)
                 {
-                    string strColumns = "id,biosum_cond_id,invyr,fvs_variant,spcd,dbh,ht,actualht,cr,fvs_tree_id";
+                    string strColumns = @"id,biosum_cond_id,invyr,fvs_variant,spcd,dbh,ht,actualht,cr,fvs_tree_id, diahtcd, fvscreatedtree_yn";
+                    string strValues = @"id,biosum_cond_id,CINT(rxyear) AS invyr, fvs_variant, IIF(FvsCreatedTree_YN='Y',CINT(fvs_species),-1) AS spcd, dbh,estht,ht,pctcr,fvs_tree_id, diahtcd, fvscreatedtree_yn";
                     return $@"INSERT INTO {p_strInputVolumesTable} ({strColumns}) 
-                           SELECT id,biosum_cond_id,CINT(rxyear) AS invyr, fvs_variant,
-                           IIF(FvsCreatedTree_YN='Y',CINT(fvs_species),-1) AS spcd,
-                           dbh,estht,ht,pctcr,fvs_tree_id 
+                           SELECT {strValues} 
                            FROM {p_strFvsTreeTable}
-                           WHERE rxpackage='{p_strRxPackage.Trim()}' AND rxcycle<>'1'";
-                }
-
-                /// <summary>
-                /// Insert all FVS_TREEs that are cycle 1 trees and are also fvs created trees
-                /// </summary>
-                /// <param name="p_strInputVolumesTable"></param>
-                /// <param name="p_strFvsTreeTable"></param>
-                /// <param name="p_strRxPackage"></param>
-                /// <returns></returns>
-                public static string BuildInputTableForVolumeCalculation_Step1a(string p_strInputVolumesTable, string p_strFvsTreeTable, string p_strRxPackage)
-                {
-                    string strColumns = "id,biosum_cond_id,invyr,fvs_variant,spcd,dbh,ht,actualht,cr,fvs_tree_id";
-                    string values = "id,biosum_cond_id,CINT(rxyear) AS invyr, fvs_variant, IIF(FvsCreatedTree_YN='Y',CINT(fvs_species),-1) AS spcd, dbh,estht,ht,pctcr,fvs_tree_id";
-                    return $@"INSERT INTO {p_strInputVolumesTable} ({strColumns}) 
-                           SELECT {values}
-                           FROM {p_strFvsTreeTable}
-                           WHERE rxpackage='{p_strRxPackage.Trim()}' AND rxcycle='1' AND FvsCreatedTree_YN='Y'";
+                           WHERE rxpackage='{p_strRxPackage.Trim()}'";
                 }
 
                 /// <summary>
@@ -3719,17 +3701,20 @@ namespace FIA_Biosum_Manager
                 }
 
                 /// <summary>
-                /// TODO: Update biosum_volumes_input fields with values from the FVS OUTPUT records to match the cycle1 fiadb sourced trees
+                /// Update biosum_volumes_input fields (balive, precipitation)
                 /// </summary>
                 /// <param name="p_strInputVolumesTable"></param>
                 /// <param name="p_strFIATreeTable"></param>
                 /// <param name="p_strFIAPlotTable"></param>
                 /// <param name="p_strFIACondTable"></param>
                 /// <returns></returns>
-                public static string BuildInputTableForVolumeCalculation_Step2a(string p_strInputVolumesTable, string p_strFIATreeTable, string p_strFIAPlotTable, string p_strFIACondTable, string p_strFvsOutSummaryTable)
+                public static string BuildInputTableForVolumeCalculation_Step2a(string p_strInputVolumesTable, string p_strFIAPlotTable, string p_strFIACondTable, string p_strFvsOutSummaryTable)
                 {
-
-                    return ""; //update biosum_volumes_input join to plot/cond/fvsout_summary/fvsout_cutlist set balive=fvsout.ba, other tree columns from fvs cutlist?
+                    return $@"UPDATE (({p_strFIAPlotTable} p INNER JOIN {p_strFIACondTable} c ON p.biosum_plot_id = c.biosum_plot_id) 
+                                INNER JOIN {p_strInputVolumesTable} i ON c.biosum_cond_id = i.biosum_cond_id) 
+                                INNER JOIN {p_strFvsOutSummaryTable} s ON i.invyr = s.Year AND i.biosum_cond_id = s.StandID
+                                SET i.balive=s.ba, i.precipitation=p.precipitation
+                                WHERE i.fvscreatedtree_yn='Y'";
                 }
 
                 /// <summary>
@@ -3810,12 +3795,12 @@ namespace FIA_Biosum_Manager
                 public static string BuildInputTableForVolumeCalculation_Step7(string p_strInputVolumesTable, string p_strBiosumVolumesTable)
                 {
                     string strColumns = "STATECD,COUNTYCD,PLOT,INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT," +
-                                        "ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE,TRE_CN,CND_CN,PLT_CN";
+                                        "ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE,TRE_CN,CND_CN,PLT_CN, DIAHTCD, BALIVE, PRECIPITATION";
 
                     string strValues =
                         "CINT(MID(BIOSUM_COND_ID,6,2)) AS STATECD,CINT(MID(BIOSUM_COND_ID,12,3)) AS COUNTYCD,CINT(MID(BIOSUM_COND_ID,16,5)) AS PLOT," +
                         "INVYR,VOL_LOC_GRP,ID AS TREE,SPCD,DBH AS DIA,HT,ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE," +
-                        "CSTR(ID) AS TRE_CN,BIOSUM_COND_ID AS CND_CN,MID(BIOSUM_COND_ID,1,LEN(BIOSUM_COND_ID)-1) AS PLT_CN";
+                        "CSTR(ID) AS TRE_CN,BIOSUM_COND_ID AS CND_CN,MID(BIOSUM_COND_ID,1,LEN(BIOSUM_COND_ID)-1) AS PLT_CN, DIAHTCD, BALIVE, PRECIPITATION";
 
                     return $@"INSERT INTO {p_strBiosumVolumesTable} ({strColumns}) SELECT {strValues} FROM {p_strInputVolumesTable}";
                 }
