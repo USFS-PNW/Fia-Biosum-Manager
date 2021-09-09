@@ -1073,11 +1073,6 @@ namespace FIA_Biosum_Manager
 				p_frmTherm.lblMsg.Refresh();
 				//System.IO.File.Copy(strSourceFile, strDestFile,true);		
 				
-				strConn = p_ado.getMDBConnString(strDestFile,"admin","");
-				p_ado.OpenConnection(strConn);
-				frmMain.g_oTables.m_oFvs.CreateFVSOutProcessorIn(p_ado,p_ado.m_OleDbConnection,Tables.FVS.DefaultFVSTreeTableName);
-				p_ado.CloseConnection(p_ado.m_OleDbConnection);
-
 				if (this.txtShared.Text.Trim().Length > 0)
 				{
 					strDestFile = this.txtRootDirectory.Text.Trim() + "\\db\\shared_project_links_and_notes.mdb";
