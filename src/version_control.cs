@@ -2,6 +2,7 @@ using SQLite.ADO;
 using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
+using System.Linq;
 
 namespace FIA_Biosum_Manager
 {
@@ -6207,6 +6208,54 @@ namespace FIA_Biosum_Manager
                 System.Windows.Forms.MessageBox.Show($"The Master Tree table was not found.",
                     "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
                     System.Windows.Forms.MessageBoxIcon.Error);
+            }
+
+            //Update FVS_Tree tables 
+            var strVariants = oDs.getVariants();
+            var strFvsTreeTable = Tables.FVS.DefaultFVSTreeTableName;
+            var strDataBaseNames = new List<string>(); 
+
+            //Get full path of each cutlist \biosumcalc\VARIANT_PACKAGE_TREE_CUTLIST.MDB
+            if (strVariants != null && strVariants.Length > 0)
+            {
+                string strFvsDataDir = ReferenceProjectDirectory.Trim() + "\\fvs\\data\\";
+                foreach (string variant in strVariants)
+                {
+                    string strBioSumCalcPath = strFvsDataDir + variant + "\\BiosumCalc\\";
+                    if (System.IO.Directory.Exists(strBioSumCalcPath))
+                    {
+                        strDataBaseNames.AddRange(System.IO.Directory.GetFiles(strBioSumCalcPath, "*.*", System.IO.SearchOption.AllDirectories)
+                            .Where(s => (s.ToLower().EndsWith(".mdb") || s.ToLower().EndsWith(".accdb")) && s.ToLower().Contains("cutlist")) .ToArray());
+                    }
+                }
+            }
+
+            //Connect to each database looking for FVS_TREE table and add any missing columns
+            foreach (string db in strDataBaseNames)
+            {
+                using (var conn = new OleDbConnection(oAdo.getMDBConnString(db, "", "")))
+                {
+                    conn.Open();
+                    if (oAdo.TableExist(conn, strFvsTreeTable))
+                    {
+                        new List<string[]>
+                        {
+                            new string[] {"diahtcd", "integer"},
+                            new string[] {"drybio_bole", "double"},
+                            new string[] {"drybio_sapling", "double"},
+                            new string[] {"drybio_top", "double"},
+                            new string[] {"drybio_wdld_spp", "double"},
+                            new string[] {"volcfsnd", "double" },
+                            new string[] {"volcfgrs", "DOUBLE"},
+                            new string[] {"volcfnet", "DOUBLE"},
+                            new string[] {"volcsgrs", "DOUBLE"},
+                        }.ForEach(column =>
+                        {
+                            if (!oAdo.ColumnExist(conn, strFvsTreeTable, column[0]))
+                                oAdo.AddColumn(conn, strFvsTreeTable, column[0], column[1], "");
+                        });
+                    }
+                }
             }
 
             //new master.db file: Migrating POP tables to SQLite
