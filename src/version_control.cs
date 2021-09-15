@@ -535,6 +535,8 @@ namespace FIA_Biosum_Manager
                             Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR2]) < 10))
                     {
                         UpdateDatasources_5_8_10();
+                        UpdateProjectVersionFile(strProjVersionFile);
+                        bPerformCheck = false;
                     }
                     else if ((Convert.ToInt16(m_strAppVerArray[APP_VERSION_MAJOR]) == 5 &&
                         Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR1]) > 6) &&
@@ -6295,7 +6297,7 @@ namespace FIA_Biosum_Manager
             DataMgr p_dataMgr = new DataMgr();
             //@ToDo: Fix this after merging in Tyler's code
             //string strDestFile = ReferenceProjectDirectory.Trim() + "\\" + frmMain.g_oTables.m_oFIAPlot.DefaultPopTableDbFile;
-            string strDestFile = ReferenceProjectDirectory.Trim();
+            string strDestFile = ReferenceProjectDirectory.Trim() + @"\db\master.db";
             if (!System.IO.File.Exists(strDestFile))
             {
                 p_dataMgr.CreateDbFile(strDestFile);
