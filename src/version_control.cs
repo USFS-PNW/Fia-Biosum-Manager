@@ -6147,7 +6147,7 @@ namespace FIA_Biosum_Manager
 
         public void UpdateDatasources_5_8_10()
         {
-            //Update Master.mdb Tree table
+            //Update Master Tree/Cond/Plot tables
             ado_data_access oAdo = new ado_data_access();
             FIA_Biosum_Manager.Datasource oDs = new Datasource();
             oDs.m_strDataSourceMDBFile = ReferenceProjectDirectory.Trim() + "\\db\\project.mdb";
@@ -6158,54 +6158,87 @@ namespace FIA_Biosum_Manager
             oDs.populate_datasource_array();
 
             int intTreeTableType = oDs.getDataSourceTableNameRow("TREE");
-            if (intTreeTableType > -1)
+            if (oDs.DataSourceTableExist(intTreeTableType))
             {
-                //even though listed in datasource table, the file and table could possibly not exist
-                if (oDs.m_strDataSource[intTreeTableType, Datasource.FILESTATUS] == "F" &&
-                    oDs.m_strDataSource[intTreeTableType, Datasource.TABLESTATUS] == "F")
+                string strTreeTable = oDs.m_strDataSource[intTreeTableType, Datasource.TABLE].Trim();
+                string strTreeTableDb = oDs.m_strDataSource[intTreeTableType, Datasource.PATH].Trim() + "\\" +
+                                        oDs.m_strDataSource[intTreeTableType, Datasource.MDBFILE].Trim();
+                using (OleDbConnection conn = new OleDbConnection(oAdo.getMDBConnString(strTreeTableDb, "", "")))
                 {
-                    string strTreeTable = oDs.m_strDataSource[intTreeTableType, Datasource.TABLE].Trim();
-                    string strMasterMdb = oDs.m_strDataSource[intTreeTableType, Datasource.PATH].Trim() + "\\" +
-                                      oDs.m_strDataSource[intTreeTableType, Datasource.MDBFILE].Trim();
-
-                    //open the project db file
-                    using (OleDbConnection conn = new OleDbConnection(oAdo.getMDBConnString(strMasterMdb, "", "")))
+                    conn.Open();
+                    new List<string[]>
                     {
-                        conn.Open();
-                        new List<string[]>
-                        {
-                            new string[] {"bfsnd", "DECIMAL(3,0)"},
-                            new string[] {"boleht", "DECIMAL(3,0)"},
-                            new string[] {"centroid_dia", "DECIMAL(4,1)"},
-                            new string[] {"centroid_dia_ht_actual", "DECIMAL(4,1)"},
-                            new string[] {"cfsnd", "DECIMAL(3,0)"},
-                            new string[] {"cull_fld", "DECIMAL(2,0)"},
-                            new string[] {"cullcf", "INTEGER"},
-                            new string[] {"culldead", "DECIMAL(3,0)"},
-                            new string[] {"cullform", "DECIMAL(3,0)"},
-                            new string[] {"cullmstop", "DECIMAL(3,0)"},
-                            new string[] {"drybio_bole", "DECIMAL(13,6)"},
-                            new string[] {"drybio_sapling", "DECIMAL(13,6)"},
-                            new string[] {"drybio_top", "DECIMAL(13,6)"},
-                            new string[] {"drybio_wdld_spp", "DECIMAL(13,6)"},
-                            new string[] {"htdmp", "DECIMAL(3,1)"},
-                            new string[] {"sawht", "DECIMAL(2,0)"},
-                            new string[] {"sitree", "INTEGER"},
-                            new string[] {"standing_dead_cd", "INTEGER"},
-                            new string[] {"upper_dia", "DECIMAL(4,1)"},
-                            new string[] {"upper_dia_ht", "DECIMAL(4,1)"},
-                            new string[] {"volcfsnd", "DECIMAL(13,6)"},
-                        }.ForEach(column =>
-                        {
-                            if (!oAdo.ColumnExist(conn, strTreeTable, column[0]))
-                                oAdo.AddColumn(conn, strTreeTable, column[0], column[1], "");
-                        });
-                    }
+                        new string[] {"bfsnd", "DECIMAL(3,0)"},
+                        new string[] {"boleht", "DECIMAL(3,0)"},
+                        new string[] {"centroid_dia", "DECIMAL(4,1)"},
+                        new string[] {"centroid_dia_ht_actual", "DECIMAL(4,1)"},
+                        new string[] {"cfsnd", "DECIMAL(3,0)"},
+                        new string[] {"cull_fld", "DECIMAL(2,0)"},
+                        new string[] {"cullcf", "INTEGER"},
+                        new string[] {"culldead", "DECIMAL(3,0)"},
+                        new string[] {"cullform", "DECIMAL(3,0)"},
+                        new string[] {"cullmstop", "DECIMAL(3,0)"},
+                        new string[] {"drybio_bole", "DECIMAL(13,6)"},
+                        new string[] {"drybio_sapling", "DECIMAL(13,6)"},
+                        new string[] {"drybio_top", "DECIMAL(13,6)"},
+                        new string[] {"drybio_wdld_spp", "DECIMAL(13,6)"},
+                        new string[] {"htdmp", "DECIMAL(3,1)"},
+                        new string[] {"sawht", "DECIMAL(2,0)"},
+                        new string[] {"sitree", "INTEGER"},
+                        new string[] {"standing_dead_cd", "INTEGER"},
+                        new string[] {"upper_dia", "DECIMAL(4,1)"},
+                        new string[] {"upper_dia_ht", "DECIMAL(4,1)"},
+                        new string[] {"volcfsnd", "DECIMAL(13,6)"},
+                    }.ForEach(column =>
+                    {
+                        if (!oAdo.ColumnExist(conn, strTreeTable, column[0]))
+                            oAdo.AddColumn(conn, strTreeTable, column[0], column[1], "");
+                    });
                 }
             }
             else
             {
-                System.Windows.Forms.MessageBox.Show($"The Master Tree table was not found.",
+                System.Windows.Forms.MessageBox.Show("The Master Tree table was not found.",
+                    "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
+                    System.Windows.Forms.MessageBoxIcon.Error);
+            }
+
+            int intCondTableType = oDs.getDataSourceTableNameRow("CONDITION");
+            if (oDs.DataSourceTableExist(intCondTableType))
+            {
+                string strCondTable = oDs.m_strDataSource[intCondTableType, Datasource.TABLE].Trim();
+                string strCondTableDb = oDs.m_strDataSource[intCondTableType, Datasource.PATH].Trim() + "\\" +
+                                        oDs.m_strDataSource[intCondTableType, Datasource.MDBFILE].Trim();
+                using (OleDbConnection conn = new OleDbConnection(oAdo.getMDBConnString(strCondTableDb, "", "")))
+                {
+                    conn.Open();
+                    if (!oAdo.ColumnExist(conn, strCondTable, "balive"))
+                        oAdo.AddColumn(conn, strCondTable, "balive", "DOUBLE", "");
+                }
+            }
+            else
+            {
+                System.Windows.Forms.MessageBox.Show("The Master Cond table was not found.",
+                    "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
+                    System.Windows.Forms.MessageBoxIcon.Error);
+            }
+
+            int intPlotTableType = oDs.getDataSourceTableNameRow("PLOT");
+            if (oDs.DataSourceTableExist(intPlotTableType))
+            {
+                string strPlotTable = oDs.m_strDataSource[intPlotTableType, Datasource.TABLE].Trim();
+                string strPlotTableDb = oDs.m_strDataSource[intPlotTableType, Datasource.PATH].Trim() + "\\" +
+                                        oDs.m_strDataSource[intPlotTableType, Datasource.MDBFILE].Trim();
+                using (OleDbConnection conn = new OleDbConnection(oAdo.getMDBConnString(strPlotTableDb, "", "")))
+                {
+                    conn.Open();
+                    if (!oAdo.ColumnExist(conn, strPlotTable, "precipitation"))
+                        oAdo.AddColumn(conn, strPlotTable, "precipitation", "DOUBLE", "");
+                }
+            }
+            else
+            {
+                System.Windows.Forms.MessageBox.Show("The Master Plot table was not found.",
                     "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
                     System.Windows.Forms.MessageBoxIcon.Error);
             }
