@@ -1625,12 +1625,13 @@ namespace FIA_Biosum_Manager
             if (m_oAdo.m_OleDbConnection == null)
                 m_oAdo.OpenConnection(m_oAdo.getMDBConnString(m_strTempDBFile, "", ""));
 
-            m_oAdo.m_strSQL = "SELECT fvs_variant FROM " +  m_oQueries.m_oFIAPlot.m_strPlotTable + " " + 
-                              "WHERE fvs_variant IS NOT NULL AND LEN(TRIM(fvs_variant)) > 0";
+                m_oAdo.m_strSQL = "SELECT count(fvs_variant) FROM " + m_oQueries.m_oFIAPlot.m_strPlotTable + " " +
+                                  "WHERE fvs_variant IS NOT NULL AND LEN(TRIM(fvs_variant)) > 0";
 
-            if ((int)m_oAdo.getRecordCount(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL, "fva_variant") > 0)
-            {
-                FIA_Biosum_Manager.frmDialog oDlg = new frmDialog();
+                if ((int)m_oAdo.getRecordCount(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL, "fvs_variant") > 0)
+
+                {
+                    FIA_Biosum_Manager.frmDialog oDlg = new frmDialog();
 
                 oDlg.uc_select_list_item1.lblTitle.Text = "FVS Variant";
                 oDlg.uc_select_list_item1.listBox1.Sorted = true;
