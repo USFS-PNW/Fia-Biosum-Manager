@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using FcsClassLibrary;
 
 namespace FIA_Biosum_Manager
@@ -2410,6 +2411,70 @@ namespace FIA_Biosum_Manager
             static public string BiosumVolumeCalcTable
             {
                 get { return utils.FS_NETWORK == utils.FS_NETWORK_STATUS.NotAvailable ? "BIOSUM_VOLUME" : "BIOSUM_CALC" ; }
+            }
+
+            static public List<Tuple<string, utils.DataType>> ColumnsAndDataTypes
+            {
+                get
+                {
+                    return new List<Tuple<string, utils.DataType>>
+                    {
+                        Tuple.Create("STATECD", utils.DataType.INTEGER),
+                        Tuple.Create("COUNTYCD", utils.DataType.INTEGER),
+                        Tuple.Create("PLOT", utils.DataType.INTEGER),
+                        Tuple.Create("INVYR", utils.DataType.INTEGER),
+                        Tuple.Create("SUBP", utils.DataType.INTEGER),
+                        Tuple.Create("TREE", utils.DataType.INTEGER),
+                        Tuple.Create("VOL_LOC_GRP", utils.DataType.STRING),
+                        Tuple.Create("SPCD", utils.DataType.INTEGER),
+                        Tuple.Create("PRECIPITATION", utils.DataType.DOUBLE),
+                        Tuple.Create("BALIVE", utils.DataType.DOUBLE),
+                        Tuple.Create("SITREE", utils.DataType.INTEGER),
+                        Tuple.Create("WDLDSTEM", utils.DataType.INTEGER),
+                        Tuple.Create("DIAHTCD", utils.DataType.INTEGER),
+                        Tuple.Create("DIA", utils.DataType.DOUBLE),
+                        Tuple.Create("HT", utils.DataType.INTEGER),
+                        Tuple.Create("ACTUALHT", utils.DataType.INTEGER),
+                        Tuple.Create("UPPER_DIA", utils.DataType.DOUBLE),
+                        Tuple.Create("UPPER_DIA_HT", utils.DataType.DOUBLE),
+                        Tuple.Create("CENTROID_DIA", utils.DataType.DOUBLE),
+                        Tuple.Create("CENTROID_DIA_HT_ACTUAL", utils.DataType.DOUBLE),
+                        Tuple.Create("SAWHT", utils.DataType.INTEGER),
+                        Tuple.Create("HTDMP", utils.DataType.DOUBLE),
+                        Tuple.Create("BOLEHT", utils.DataType.INTEGER),
+                        Tuple.Create("FORMCL", utils.DataType.INTEGER),
+                        Tuple.Create("CR", utils.DataType.INTEGER),
+                        Tuple.Create("STATUSCD", utils.DataType.INTEGER),
+                        Tuple.Create("STANDING_DEAD_CD", utils.DataType.INTEGER),
+                        Tuple.Create("TREECLCD", utils.DataType.INTEGER),
+                        Tuple.Create("ROUGHCULL", utils.DataType.INTEGER),
+                        Tuple.Create("CULL", utils.DataType.INTEGER),
+                        Tuple.Create("CULLBF", utils.DataType.INTEGER),
+                        Tuple.Create("CULLCF", utils.DataType.INTEGER),
+                        Tuple.Create("CULL_FLD", utils.DataType.INTEGER),
+                        Tuple.Create("CULLDEAD", utils.DataType.INTEGER),
+                        Tuple.Create("CULLFORM", utils.DataType.INTEGER),
+                        Tuple.Create("CULLMSTOP", utils.DataType.INTEGER),
+                        Tuple.Create("CFSND", utils.DataType.INTEGER),
+                        Tuple.Create("BFSND", utils.DataType.INTEGER),
+                        Tuple.Create("DECAYCD", utils.DataType.INTEGER),
+                        Tuple.Create("TOTAGE", utils.DataType.INTEGER),
+                        Tuple.Create("PLT_CN", utils.DataType.STRING),
+                        Tuple.Create("CND_CN", utils.DataType.STRING),
+                        Tuple.Create("TRE_CN", utils.DataType.STRING),
+                        Tuple.Create("VOLCFGRS_CALC", utils.DataType.DOUBLE),
+                        Tuple.Create("VOLCFNET_CALC", utils.DataType.DOUBLE),
+                        Tuple.Create("VOLCFSND_CALC", utils.DataType.DOUBLE),
+                        Tuple.Create("VOLCSGRS_CALC", utils.DataType.DOUBLE),
+                        Tuple.Create("VOLTSGRS_CALC", utils.DataType.DOUBLE),
+                        Tuple.Create("DRYBIOM_CALC", utils.DataType.DOUBLE),
+                        Tuple.Create("DRYBIOT_CALC", utils.DataType.DOUBLE),
+                        Tuple.Create("DRYBIO_BOLE_CALC", utils.DataType.DOUBLE),
+                        Tuple.Create("DRYBIO_TOP_CALC", utils.DataType.DOUBLE),
+                        Tuple.Create("DRYBIO_SAPLING_CALC", utils.DataType.DOUBLE),
+                        Tuple.Create("DRYBIO_WDLD_SPP_CALC", utils.DataType.DOUBLE)
+                    };
+                }
             }
         }
 
