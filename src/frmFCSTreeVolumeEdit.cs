@@ -1400,31 +1400,51 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1,
                     "Prepare Tree Data For BioSumComps Volume and Biomass calculations...Stand By");
 
-                    strColumns = "STATECD,COUNTYCD,PLOT,INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT," +
-                             "ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE," +
-                             //START: ADDED BIOSUM_VOLUME COLUMNS
-                             "SITREE,WDLDSTEM,UPPER_DIA,UPPER_DIA_HT," +
-                             "CENTROID_DIA,CENTROID_DIA_HT_ACTUAL,SAWHT," +
-                             "HTDMP,BOLEHT,CULLCF,CULL_FLD,CULLDEAD," +
-                             "CULLFORM,CULLMSTOP,CFSND,BFSND,PRECIPITATION,BALIVE," +
-                             "DIAHTCD,STANDING_DEAD_CD," +
-                             //END: ADDED BIOSUM_VOLUME COLUMNS
-                             "TRE_CN,CND_CN,PLT_CN";
-
-                strValues = "CINT(MID(BIOSUM_COND_ID,6,2)) AS STATECD," +
-                            "CINT(MID(BIOSUM_COND_ID,12,3)) AS COUNTYCD," +
-                            "CINT(MID(BIOSUM_COND_ID,16,5)) AS PLOT," +
-                            "INVYR,VOL_LOC_GRP,ID AS TREE,SPCD,DBH AS DIA,HT,ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE," +
-                            //START: ADDED BIOSUM_VOLUME COLUMNS
-                            "SITREE,WDLDSTEM,UPPER_DIA,UPPER_DIA_HT," +
-                            "CENTROID_DIA,CENTROID_DIA_HT_ACTUAL,SAWHT," +
-                            "HTDMP,BOLEHT,CULLCF,CULL_FLD,CULLDEAD," +
-                            "CULLFORM,CULLMSTOP,CFSND,BFSND,PRECIPITATION,BALIVE," +
-                            "DIAHTCD,STANDING_DEAD_CD," +
-                            //END: ADDED BIOSUM_VOLUME COLUMNS
-                            "CSTR(ID) AS TRE_CN," +
-                            "BIOSUM_COND_ID AS CND_CN," +
-                            "MID(BIOSUM_COND_ID,1,LEN(BIOSUM_COND_ID)-1) AS PLT_CN";
+                var treeToFcsBiosumVolumesInputTable = new List<Tuple<string, string>>
+                {
+                    Tuple.Create("STATECD", "CINT(MID(BIOSUM_COND_ID,6,2)) AS STATECD"),
+                    Tuple.Create("COUNTYCD", "CINT(MID(BIOSUM_COND_ID,12,3)) AS COUNTYCD"),
+                    Tuple.Create("PLOT", "CINT(MID(BIOSUM_COND_ID,16,5)) AS PLOT"),
+                    Tuple.Create("INVYR", "INVYR"),
+                    Tuple.Create("VOL_LOC_GRP", "VOL_LOC_GRP"),
+                    Tuple.Create("TREE", "ID AS TREE"),
+                    Tuple.Create("SPCD", "SPCD"),
+                    Tuple.Create("DIA", "DBH AS DIA"),
+                    Tuple.Create("HT", "HT"),
+                    Tuple.Create("ACTUALHT", "ACTUALHT"),
+                    Tuple.Create("CR", "CR"),
+                    Tuple.Create("STATUSCD", "STATUSCD"),
+                    Tuple.Create("TREECLCD", "TREECLCD"),
+                    Tuple.Create("ROUGHCULL", "ROUGHCULL"),
+                    Tuple.Create("CULL", "CULL"),
+                    Tuple.Create("DECAYCD", "DECAYCD"),
+                    Tuple.Create("TOTAGE", "TOTAGE"),
+                    Tuple.Create("SITREE", "SITREE"),
+                    Tuple.Create("WDLDSTEM", "WDLDSTEM"),
+                    Tuple.Create("UPPER_DIA", "UPPER_DIA"),
+                    Tuple.Create("UPPER_DIA_HT", "UPPER_DIA_HT"),
+                    Tuple.Create("CENTROID_DIA", "CENTROID_DIA"),
+                    Tuple.Create("CENTROID_DIA_HT_ACTUAL", "CENTROID_DIA_HT_ACTUAL"),
+                    Tuple.Create("SAWHT", "SAWHT"),
+                    Tuple.Create("HTDMP", "HTDMP"),
+                    Tuple.Create("BOLEHT", "BOLEHT"),
+                    Tuple.Create("CULLCF", "CULLCF"),
+                    Tuple.Create("CULL_FLD", "CULL_FLD"),
+                    Tuple.Create("CULLDEAD", "CULLDEAD"),
+                    Tuple.Create("CULLFORM", "CULLFORM"),
+                    Tuple.Create("CULLMSTOP", "CULLMSTOP"),
+                    Tuple.Create("CFSND", "CFSND"),
+                    Tuple.Create("BFSND", "BFSND"),
+                    Tuple.Create("PRECIPITATION", "PRECIPITATION"),
+                    Tuple.Create("BALIVE", "BALIVE"),
+                    Tuple.Create("DIAHTCD", "DIAHTCD"),
+                    Tuple.Create("STANDING_DEAD_CD", "STANDING_DEAD_CD"),
+                    Tuple.Create("TRE_CN", "CSTR(ID) AS TRE_CN"),
+                    Tuple.Create("CND_CN", "BIOSUM_COND_ID AS CND_CN"),
+                    Tuple.Create("PLT_CN", "MID(BIOSUM_COND_ID,1,LEN(BIOSUM_COND_ID)-1) AS PLT_CN"),
+                };
+                strColumns = string.Join(",", treeToFcsBiosumVolumesInputTable.Select(e => e.Item1));
+                strValues = string.Join(",", treeToFcsBiosumVolumesInputTable.Select(e => e.Item2));
 
                 m_oAdo.m_strSQL = $"INSERT INTO {Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable} ({strColumns}) SELECT {strValues} FROM {strTable}";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
