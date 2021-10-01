@@ -885,7 +885,7 @@ namespace FIA_Biosum_Manager
             this.btnLinkTableTest.Name = "btnLinkTableTest";
             this.btnLinkTableTest.Size = new System.Drawing.Size(249, 21);
             this.btnLinkTableTest.TabIndex = 3;
-            this.btnLinkTableTest.Text = "Test Link To Oracle BIOSUM_VOLUME table";
+            this.btnLinkTableTest.Text = utils.FS_NETWORK_IS_AVAILABLE ? "Test FCS_TREE.BIOSUM_CALC Workflow" : "Test Link To Oracle BIOSUM_VOLUME table";
             this.btnLinkTableTest.UseVisualStyleBackColor = true;
             this.btnLinkTableTest.Click += new System.EventHandler(this.btnLinkTableTest_Click);
             // 
@@ -2287,76 +2287,97 @@ namespace FIA_Biosum_Manager
         frmMain.g_oDelegate.InitializeThreadEvents();
         frmMain.g_oDelegate.m_oEventStopThread.Reset();
         frmMain.g_oDelegate.m_oEventThreadStopped.Reset();
-        frmMain.g_oDelegate.m_oThread = new Thread(new ThreadStart(this.TestOracleTableLink));
+        frmMain.g_oDelegate.m_oThread = new Thread(new ThreadStart(this.TestExternalDatabaseConnection));
         frmMain.g_oDelegate.m_oThread.IsBackground = true;
         frmMain.g_oDelegate.m_oThread.Start();
 
     
     }
-    private void TestOracleTableLink() //TODO: test sqlite fcs_tree.db connectivity
+    private void TestExternalDatabaseConnection()
     {
         frmMain.g_oDelegate.CurrentThreadProcessDone = false;
         string strFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
         string str="";
-        try
+        if (utils.FS_NETWORK_IS_NOT_AVAILABLE)
         {
-            if (utils.FS_NETWORK == utils.FS_NETWORK_STATUS.NotAvailable)
-            {
-                str = "ODBC\r\n-----------------\r\nData Source Name:FIA Biosum Oracle Services\r\nTNS Service Name:XE\r\nUser Id:fcs\r\nOracle Table Name:BIOSUM_VOLUME\r\nMS Access Table Link Name:fcs_biosum_volume\r\nConnection Status:";
-            }
-            else
-            {
-                str = "ODBC\r\n-----------------\r\nData Source Name:FIADB01P\r\nTNS Service Name:FIADB01P\r\nUser Id:Windows Authentication\r\nOracle Table Name:BIOSUM_VOLUME\r\nMS Access Table Link Name:fcs_biosum_volume\r\nConnection Status:";
-            }
-            frmMain.g_oFrmMain.ActivateStandByAnimation(
-                 this.WindowState,
-                 this.Left,
-                 this.Height,
-                 this.Width,
-                 this.Top);
+            frmMain.g_oFrmMain.ActivateStandByAnimation(this.WindowState, this.Left, this.Height, this.Width, this.Top);
             FIA_Biosum_Manager.dao_data_access oDao = new FIA_Biosum_Manager.dao_data_access();
             oDao.CreateMDB(strFile);
-            if (utils.FS_NETWORK == utils.FS_NETWORK_STATUS.NotAvailable)
+
+            try
             {
+                str = "ODBC\r\n-----------------\r\nData Source Name:FIA Biosum Oracle Services\r\nTNS Service Name:XE\r\nUser Id:fcs\r\nOracle Table Name:BIOSUM_VOLUME\r\nMS Access Table Link Name:fcs_biosum_volume\r\nConnection Status:";
                 oDao.CreateOracleXETableLink("FIA Biosum Oracle Services", "fcs_biosum", "fcs", "FCS_BIOSUM", "BIOSUM_VOLUME", strFile, "fcs_biosum_volume");
-            }
-            else
-            {
-                oDao.CreateOracleTableLink(strFile, "BIOSUM_VOLUME", "fcs_biosum_volume", "FIADB01P", "ANL_PNW_FIA_FCS");
-            }
-            frmMain.g_oFrmMain.DeactivateStandByAnimation();
-            if (oDao.TableExists(strFile, "fcs_biosum_volume"))
-            {
-                MessageBox.Show(str + "Success");
-            }
-            else
-            {
-                if (utils.FS_NETWORK == utils.FS_NETWORK_STATUS.Available)
-                    MessageBox.Show(str + "Error creating MS Access table link to FIADB01P Oracle table 'ANL_PNW_FIA_FCS.BIOSUM_VOLUME'", "FIA Biosum");
+                if (oDao.TableExists(strFile, "fcs_biosum_volume"))
+                {
+                    MessageBox.Show(str + "Success", "FIA Biosum");
+                }
                 else
-                    MessageBox.Show(str + "Error creating MS Access table link to Oracle XE table 'BIOSUM_VOLUME'", "FIA Biosum");
+                {
+                    MessageBox.Show( str + "Error creating MS Access table link to FIADB01P Oracle table 'ANL_PNW_FIA_FCS.BIOSUM_VOLUME'", "FIA Biosum");
+                }
+
+                oDao.m_DaoDbEngine.Idle(1);
+                oDao.m_DaoDbEngine.Idle(8);
+                oDao.m_DaoWorkspace.Close();
+                oDao.m_DaoDbEngine = null;
+                oDao = null;
             }
-            oDao.m_DaoDbEngine.Idle(1);
-            oDao.m_DaoDbEngine.Idle(8);
-            oDao.m_DaoWorkspace.Close();
-            oDao.m_DaoDbEngine = null;
-            oDao = null;
-
-
+            catch (Exception err)
+            {
+                frmMain.g_oFrmMain.DeactivateStandByAnimation();
+                MessageBox.Show( str + "Error creating MS Access table link to Oracle XE table 'BIOSUM_VOLUME'\r\n Error Message:" + err.Message, "FIA Biosum");
+            }
         }
-        catch (Exception err)
+        else
         {
-            frmMain.g_oFrmMain.DeactivateStandByAnimation();
-            MessageBox.Show(str + "Error creating MS Access table link to Oracle XE table 'BIOSUM_VOLUME'\r\n Error Message:" + err.Message, "FIA Biosum");
+            bool fcsTreeDbExists = System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase);
+            bool bioSumCompsJarExists = System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR");
+            bool fcsTreeCalcBatExists = System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_tree_calc.bat");
+            bool bioSumCompsJarExecuted = false;
+
+            //RUN here
+            if (fcsTreeDbExists && bioSumCompsJarExists && fcsTreeCalcBatExists)
+            {
+                frmMain.g_oUtils.RunProcess(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum", "fcs_tree_calc.bat", "BAT");
+                bioSumCompsJarExecuted = true;
+            }
+            else
+            {
+                m_intError = -1;
+                m_strError = "Missing required files";
+            }
+
+            bool fcsErrorMsgExists = System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_error_msg.txt");
+            if (fcsErrorMsgExists)
+            {
+                    m_strError = System.IO.File.ReadAllText(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_error_msg.txt");
+                    if (m_strError.IndexOf("JAVA.EXE", 0) > 0)
+                        m_strError = "Problem detected running JAVA.EXE";
+                    m_intError = -2;
+            }
+
+            str = $@"FCS_TREE.DB & BioSumComps.jar test report
+                {Environment.NewLine}-----------------------------------------
+                {Environment.NewLine}User Id: Windows Authentication
+                {Environment.NewLine}Table Name: BIOSUM_CALC
+                {Environment.NewLine}FCS_TREE.DB FOUND: {(fcsTreeDbExists ? "Yes" : "No")}
+                {Environment.NewLine}FCS_TREE_CALC.BAT FOUND: {(fcsTreeCalcBatExists ? "Yes" : "No")}
+                {Environment.NewLine}BioSumComps.jar FOUND: {(bioSumCompsJarExists ? "Yes" : "No")}
+                {Environment.NewLine}BioSumComps EXECUTED:{(bioSumCompsJarExecuted ? "Yes" : "No")}
+                {Environment.NewLine}FCS_Errors FOUND: {(fcsErrorMsgExists ? "Yes" : "No")}";
+
+            if (m_intError != 0)
+                str += $"{Environment.NewLine}Error Message: {m_strError}";
+
+            MessageBox.Show(str, "FIA Biosum");
+
         }
 
-
+        frmMain.g_oFrmMain.DeactivateStandByAnimation();
         frmMain.g_oDelegate.CurrentThreadProcessDone = true;
         frmMain.g_oDelegate.m_oEventThreadStopped.Set();
         this.Invoke(frmMain.g_oDelegate.m_oDelegateThreadFinished);
-
-            
-        
     }
 
     private void txtStateCd_TextChanged(object sender, EventArgs e)
