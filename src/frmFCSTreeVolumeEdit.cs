@@ -1359,6 +1359,7 @@ namespace FIA_Biosum_Manager
         int intCurrRow = 0;
         int intRecordCount = 0;
         int intThermValue = 0;
+        int intTotalRecs = 0;
 
         System.Data.DataRow p_rowFound;
 
@@ -1377,7 +1378,7 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1,
                 "Building inputs for BioSumComps Volume and Biomass calculations...Stand By");
             intThermValue++;
-            UpdateThermPercent(0, intRecordCount + 8, intThermValue);
+            UpdateThermPercent(0, intRecordCount *3 + 8, intThermValue);
 
             //Prepare FcsBiosumVolumesInputTable for SQLite fcs_tree.db & BioSumComps.jar if calculating for TreeSample or Tree_Work_Table built using master.tree, cond, plot
             if (strTable != Tables.VolumeAndBiomass.BiosumVolumesInputTable)
@@ -1394,7 +1395,7 @@ namespace FIA_Biosum_Manager
                     Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
 
                 intThermValue++;
-                UpdateThermPercent(0, intRecordCount + 8, intThermValue);
+                UpdateThermPercent(0, intRecordCount *3 + 8, intThermValue);
 
                 //step 6 - insert records
                 frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1,
@@ -1454,10 +1455,12 @@ namespace FIA_Biosum_Manager
             }
 
             intThermValue++;
-            UpdateThermPercent(0, intRecordCount + 8, intThermValue);
+            UpdateThermPercent(0, intRecordCount *3 + 8, intThermValue);
 
             strColumns = string.Join(",", columnsAndDataTypes.Select(item => item.Item1));
 
+            frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1,
+                $"Clearing data from FCS_TREE.DB BIOSUM_CALC...Stand By");
             SQLite.ADO.DataMgr oSQLite = new SQLite.ADO.DataMgr();
             oSQLite.OpenConnection(false, 1,
                 frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" +
@@ -1467,23 +1470,24 @@ namespace FIA_Biosum_Manager
 
 
             //Parse MSAccess fcs_biosum_volumes_input and insert into SQLite FCS_TREE.Biosum_Calc table
-            int intTotalRecs = (int) m_oAdo.getRecordCount(conn,
+            intTotalRecs = (int) m_oAdo.getRecordCount(conn,
                 $"SELECT COUNT(*) AS ROWCOUNT FROM {Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable}",
                 Tables.VolumeAndBiomass.SqliteWorkTable);
             m_oAdo.SqlQueryReader(conn, $"SELECT * FROM {Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable}");
             if (m_oAdo.m_OleDbDataReader.HasRows)
             {
+                frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1,
+                    $"Filling FCS_TREE.DB BIOSUM_CALC with data from {strTable}...Stand By");
                 System.Data.SQLite.SQLiteTransaction transaction =
                     oSQLite.m_Connection.BeginTransaction(IsolationLevel.ReadCommitted);
                 System.Data.SQLite.SQLiteCommand command = oSQLite.m_Connection.CreateCommand();
                 command.Transaction = transaction;
                 try
                 {
-                    COUNT = 0;
-//                    SetThermValue(m_frmTherm.progressBar1, "Maximum", intTotalRecs); //TODO
                     while (m_oAdo.m_OleDbDataReader.Read())
                     {
-                        COUNT++;
+                        intThermValue++;
+                        UpdateThermPercent(0, intRecordCount *3 + 8, intThermValue);
                         strValues = utils.GetParsedInsertValues(m_oAdo.m_OleDbDataReader, columnsAndDataTypes);
                         command.CommandText = $"INSERT INTO {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} ({strColumns}) VALUES ({strValues})";
                         command.ExecuteNonQuery();
@@ -1494,7 +1498,7 @@ namespace FIA_Biosum_Manager
 //                        frmMain.g_oDelegate.ExecuteControlMethod(
 //                            (System.Windows.Forms.Control) this.m_frmTherm.lblMsg, "Refresh");
 //                        if (COUNT <= intTotalRecs)
-//                            SetThermValue(m_frmTherm.progressBar1, "Value", COUNT); //TODO
+//                            UpdateThermPercent(0, intTotalRecs, COUNT);
                     }
 
                     transaction.Commit();
@@ -1547,14 +1551,11 @@ namespace FIA_Biosum_Manager
         }
 
         intThermValue++;
-        UpdateThermPercent(0, intRecordCount + 8, intThermValue);
+        UpdateThermPercent(0, intRecordCount *3 + 8, intThermValue);
 
         //step 7 - Get returned results from SQLite
         frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1,
             "Wait For BioSumComps.jar Volume and Biomass Calculations To Complete...Stand By");
-
-        intThermValue++;
-        UpdateThermPercent(0, intRecordCount + 8, intThermValue);
 
         //Parse SQLite output and insert into Biosum_Calc_Output access table
         using (var conn = new System.Data.OleDb.OleDbConnection(m_oAdo.getMDBConnString(m_strTempDBFile, "", "")))
@@ -1574,11 +1575,11 @@ namespace FIA_Biosum_Manager
 
                 m_oAdo.SqlNonQuery(conn, $"SELECT * INTO {Tables.VolumeAndBiomass.BiosumCalcOutputTable} FROM {Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable} WHERE 1=2");
 
-                var intTotalRecs = Convert.ToInt32(oSQLite.getSingleDoubleValueFromSQLQuery(oSQLite.m_Connection,
+                intTotalRecs = Convert.ToInt32(oSQLite.getSingleDoubleValueFromSQLQuery(oSQLite.m_Connection,
                     $"SELECT COUNT(*) AS ROWCOUNT FROM {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} WHERE VOLTSGRS_CALC IS NOT NULL",
                     Tables.VolumeAndBiomass.BiosumVolumeCalcTable));
 
-//                    SetThermValue(m_frmTherm.progressBar1, "Maximum", intTotalRecs);
+                UpdateThermPercent(0, intRecordCount *3 + 8, intThermValue);
 
                 oSQLite.SqlQueryReader(oSQLite.m_Connection, $"SELECT * FROM {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} WHERE VOLTSGRS_CALC IS NOT NULL");
                 if (oSQLite.m_DataReader.HasRows)
@@ -1591,19 +1592,15 @@ namespace FIA_Biosum_Manager
                     command.Transaction = transaction;
                     try
                     {
-                        COUNT = 0;
-//                            SetThermValue(m_frmTherm.progressBar1, "Value", COUNT);
-
                         while (oSQLite.m_DataReader.Read())
                         {
-                            COUNT++;
-                            if (oSQLite.m_DataReader["TRE_CN"] != DBNull.Value &&
-                                Convert.ToString(oSQLite.m_DataReader["TRE_CN"]).Trim().Length > 0)
+                            intThermValue++;
+                            UpdateThermPercent(0, intRecordCount *3 + 8, intThermValue);
+                            if (oSQLite.m_DataReader["TRE_CN"] != DBNull.Value && Convert.ToString(oSQLite.m_DataReader["TRE_CN"]).Trim().Length > 0)
                             {
                                 strValues = utils.GetParsedInsertValues(oSQLite.m_DataReader, columnsAndDataTypes);
                                 command.CommandText = $"INSERT INTO {Tables.VolumeAndBiomass.BiosumCalcOutputTable} ({strColumns}) VALUES ({strValues})";
                                 command.ExecuteNonQuery();
-//                                    SetThermValue(m_frmTherm.progressBar1, "Value", COUNT);
                             }
 
 //                                frmMain.g_oDelegate.SetControlPropertyValue(
@@ -1634,7 +1631,7 @@ namespace FIA_Biosum_Manager
                 oSQLite = null;
             }
 
-//            SetThermValue(m_frmTherm.progressBar1, "Value", m_frmTherm.progressBar1.Maximum);
+            UpdateThermPercent(0, intRecordCount *3 + 8, intThermValue);
 
             //step 8 - Update grid with returned results
             frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1,
@@ -1661,10 +1658,10 @@ namespace FIA_Biosum_Manager
                     uc_gridview1.m_ds.Tables[0].PrimaryKey = colPk;
                     while (m_oAdo.m_OleDbDataReader.Read())
                     {
-                        if (intThermValue < intRecordCount + 8)
+                        if (intThermValue < intRecordCount *3 + 8)
                         {
                             intThermValue++;
-                            UpdateThermPercent(0, intRecordCount + 8, intThermValue);
+                            UpdateThermPercent(0, intRecordCount *3 + 8, intThermValue);
                         }
 
                         System.Object[] p_searchID = new Object[1];
@@ -1721,7 +1718,7 @@ namespace FIA_Biosum_Manager
 
                 m_oAdo.m_OleDbDataReader.Close();
                 m_oAdo.m_OleDbDataReader.Dispose();
-                UpdateThermPercent(0, intRecordCount + 8, intRecordCount + 8);
+                UpdateThermPercent(0, intRecordCount *3 + 8, intRecordCount *3 + 8);
                 System.Threading.Thread.Sleep(2000);
             }
             else
