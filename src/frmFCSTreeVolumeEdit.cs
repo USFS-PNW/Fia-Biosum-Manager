@@ -178,7 +178,7 @@ namespace FIA_Biosum_Manager
           m_oQueries.m_oFIAPlot.LoadDatasource = true;
           m_oQueries.LoadDatasources(true);
           m_strTempDBFile = m_oQueries.m_strTempDbFile;
-          oDao.CreateTableLink(m_strTempDBFile, "treesample", frmMain.g_oEnv.strAppDir + "\\db\\treesample.mdb", "treesample");
+          oDao.CreateTableLink(m_strTempDBFile, "treesample", frmMain.g_oEnv.strAppDir + "\\db\\treesample.accdb", "treesample");
           oDao.m_DaoWorkspace.Close();
           //
           //CREATE LINK IN TEMP MDB TO ALL VARIANT CUTLIST TABLES
@@ -238,7 +238,7 @@ namespace FIA_Biosum_Manager
       {
           m_strTempDBFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
           oDao.CreateMDB(m_strTempDBFile);
-          oDao.CreateTableLink(m_strTempDBFile, "treesample", frmMain.g_oEnv.strAppDir + "\\db\\treesample.mdb", "treesample");
+          oDao.CreateTableLink(m_strTempDBFile, "treesample", frmMain.g_oEnv.strAppDir + "\\db\\treesample.accdb", "treesample");
           oDao.m_DaoWorkspace.Close();
       }
       oDao = null;
