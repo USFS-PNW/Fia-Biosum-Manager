@@ -2298,6 +2298,7 @@ namespace FIA_Biosum_Manager
             oRxPackageItemCollection = null;
 			oDao=null;
 		}
+
         /// <summary>
         /// Create table links to FVS Output tables
         /// </summary>
@@ -2341,6 +2342,9 @@ namespace FIA_Biosum_Manager
             oDao.m_DaoWorkspace.Close();
             oDao = null;
         }
+
+        /// <summary>
+        /// Create links to all the FVS Output FVS_SUMMARY tables for every variant and package
         /// </summary>
         /// <param name="p_oQueries">Class that provides query access as well as creating a temp DB file that contains all the needed table links</param>
         /// <param name="p_strDbFile">Access database file that is the target file to contain all the table links</param>
