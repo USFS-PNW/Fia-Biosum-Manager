@@ -222,7 +222,7 @@ namespace FIA_Biosum_Manager
 
             m_intError = frmMain.Validate_OracleConnectivity();
 
-            lblFSNetwork.Text = FIA_Biosum_Manager.utils.FS_NETWORK == utils.FS_NETWORK_STATUS.NotAvailable ? "ORACLE XE" : "FS NETWORK ANL_PNW_FIA_FCS";
+            lblFSNetwork.Text = FIA_Biosum_Manager.utils.FS_NETWORK == utils.FS_NETWORK_STATUS.NotAvailable ? "ORACLE XE BIOSUM_VOLUME" : "FS NETWORK FCS_TREE.DB BIOSUM_CALC";
 		}
        
 
