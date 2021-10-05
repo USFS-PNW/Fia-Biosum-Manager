@@ -1187,9 +1187,7 @@ namespace FIA_Biosum_Manager
                             "CENTROID_DIA,CENTROID_DIA_HT_ACTUAL,SAWHT," +
                             "HTDMP,BOLEHT,CULLCF,CULL_FLD,CULLDEAD," +
                             "CULLFORM,CULLMSTOP,CFSND,BFSND,PRECIPITATION,BALIVE," +
-                            "DIAHTCD,STANDING_DEAD_CD,VOLCFSND_CALC," +
-                            "DRYBIO_BOLE_CALC,DRYBIO_TOP_CALC," +
-                            "DRYBIO_SAPLING_CALC,DRYBIO_WDLD_SPP_CALC," +
+                            "DIAHTCD,STANDING_DEAD_CD," +
                             //END: ADDED BIOSUM_VOLUME COLUMNS
                             "TRE_CN,CND_CN,PLT_CN";
 
@@ -1203,9 +1201,7 @@ namespace FIA_Biosum_Manager
                             "CENTROID_DIA,CENTROID_DIA_HT_ACTUAL,SAWHT," +
                             "HTDMP,BOLEHT,CULLCF,CULL_FLD,CULLDEAD," +
                             "CULLFORM,CULLMSTOP,CFSND,BFSND,PRECIPITATION,BALIVE," +
-                            "DIAHTCD,STANDING_DEAD_CD,VOLCFSND_CALC," +
-                            "DRYBIO_BOLE_CALC,DRYBIO_TOP_CALC," +
-                            "DRYBIO_SAPLING_CALC,DRYBIO_WDLD_SPP_CALC," +
+                            "DIAHTCD,STANDING_DEAD_CD," +
                             //END: ADDED BIOSUM_VOLUME COLUMNS
                             "CSTR(ID) AS TRE_CN," +
                             "BIOSUM_COND_ID AS CND_CN," +
@@ -1226,9 +1222,7 @@ namespace FIA_Biosum_Manager
                             "CENTROID_DIA,CENTROID_DIA_HT_ACTUAL,SAWHT," +
                             "HTDMP,BOLEHT,CULLCF,CULL_FLD,CULLDEAD," +
                             "CULLFORM,CULLMSTOP,CFSND,BFSND,PRECIPITATION,BALIVE," +
-                            "DIAHTCD,STANDING_DEAD_CD,VOLCFSND_CALC," +
-                            "DRYBIO_BOLE_CALC,DRYBIO_TOP_CALC," +
-                            "DRYBIO_SAPLING_CALC,DRYBIO_WDLD_SPP_CALC," +
+                            "DIAHTCD,STANDING_DEAD_CD," +
                             //END: ADDED BIOSUM_VOLUME COLUMNS
                             "TRE_CN,CND_CN,PLT_CN";
                 intThermValue++;
