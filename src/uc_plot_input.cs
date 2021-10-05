@@ -4571,19 +4571,16 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
 					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
 
+                p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table(biosum_cond_id, vol_ac_grs_stem_ttl_ft3) " +
+                    "SELECT DISTINCT(a.biosum_cond_id),a.ttl as vol_ac_grs_stem_ttl_ft3 " +
+                    "FROM " + this.m_strTreeTable + " t, " +
+                    "(SELECT biosum_cond_id, SUM(voltsgrs * tpacurr) as ttl " +
+                    "FROM " + this.m_strTreeTable + " " +
+                    "WHERE voltsgrs IS NOT NULL AND tpacurr IS NOT NULL AND statuscd = 1 AND dia >= 1 " +
+                    "GROUP BY biosum_cond_id ) a " +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
 
-					
-					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,vol_ac_grs_stem_ttl_ft3) " + 
-						"SELECT DISTINCT(a.biosum_cond_id),a.ttl as  vol_ac_grs_stem_ttl_ft3 " + 
-						"FROM " + this.m_strTreeTable + " t, " + 
-						"(SELECT biosum_cond_id, SUM(IIF(dia >= 5, (drybiot / (drybiom/volcfgrs)) * tpacurr,IIF(spcd < 300, (drybiot /25.82) * tpacurr,(drybiot /31.79) * tpacurr))) AS ttl " + 
-						"FROM " + this.m_strTreeTable + " " + 
-						"WHERE statuscd=1 AND dia >= 1 " + 
-						"GROUP BY biosum_cond_id) a " + 
-						"WHERE t.biosum_status_cd=9 AND " + 
-						"a.biosum_cond_id=t.biosum_cond_id;";
-
-					strTime = System.DateTime.Now.ToString();
+                    strTime = System.DateTime.Now.ToString();
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
 					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
@@ -4620,18 +4617,16 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
 					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
 
-					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,hwd_vol_ac_grs_stem_ttl_ft3) " + 
-						"SELECT DISTINCT(a.biosum_cond_id),a.ttl as  hwd_vol_ac_grs_stem_ttl_ft3 " + 
-						"FROM " + this.m_strTreeTable + " t, " + 
-						"(SELECT biosum_cond_id,  SUM(IIF(dia >= 5, (drybiot / (drybiom/volcfgrs)) * tpacurr,(drybiot /31.79) * tpacurr)) as ttl " + 
-						"FROM " + this.m_strTreeTable + " " + 
-						"WHERE statuscd=1 AND dia >= 1 AND spcd > 299 " + 
-						"GROUP BY biosum_cond_id) a " + 
-						"WHERE t.biosum_status_cd=9 AND " + 
-						"a.biosum_cond_id=t.biosum_cond_id;";
+                p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table(biosum_cond_id, hwd_vol_ac_grs_stem_ttl_ft3) " +
+                    "SELECT DISTINCT(a.biosum_cond_id),a.ttl as  hwd_vol_ac_grs_stem_ttl_ft3 " +
+                    "FROM " + this.m_strTreeTable + " t, " +
+                    "(SELECT biosum_cond_id, SUM(voltsgrs * tpacurr) as ttl " +
+                    "FROM " + this.m_strTreeTable + " " +
+                    "WHERE spcd > 299 AND voltsgrs IS NOT NULL AND tpacurr IS NOT NULL AND statuscd = 1 AND dia >= 1 " +
+                    "GROUP BY biosum_cond_id ) a " +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
 
-
-					strTime = System.DateTime.Now.ToString();
+                    strTime = System.DateTime.Now.ToString();
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
 					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
@@ -4666,18 +4661,16 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
 					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
 
-					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,swd_vol_ac_grs_stem_ttl_ft3) " + 
-						"SELECT DISTINCT(a.biosum_cond_id),a.ttl as  swd_vol_ac_grs_stem_ttl_ft3 " + 
-						"FROM " + this.m_strTreeTable + " t, " + 
-						"(SELECT biosum_cond_id,  SUM( IIF(dia >= 5, (drybiot / (drybiom/volcfgrs)) * tpacurr,(drybiot /25.82) * tpacurr)) as ttl  " + 
-						"FROM " + this.m_strTreeTable + " " + 
-						"WHERE statuscd=1 AND dia >= 1 AND spcd < 300 " + 
-						"GROUP BY biosum_cond_id) a " + 
-						"WHERE t.biosum_status_cd=9 AND " + 
-						"a.biosum_cond_id=t.biosum_cond_id;";
+                p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table(biosum_cond_id, swd_vol_ac_grs_stem_ttl_ft3) " +
+                    "SELECT DISTINCT(a.biosum_cond_id),a.ttl as swd_vol_ac_grs_stem_ttl_ft3 " +
+                    "FROM " + this.m_strTreeTable + " t, " +
+                    "(SELECT biosum_cond_id, SUM(voltsgrs * tpacurr) as ttl " +
+                    "FROM " + this.m_strTreeTable + " " +
+                    "WHERE spcd< 300 AND voltsgrs IS NOT NULL AND tpacurr IS NOT NULL AND statuscd = 1 AND dia >= 1 " +
+                    "GROUP BY biosum_cond_id ) a " +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
 
-
-					strTime = System.DateTime.Now.ToString();
+                    strTime = System.DateTime.Now.ToString();
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
 					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
