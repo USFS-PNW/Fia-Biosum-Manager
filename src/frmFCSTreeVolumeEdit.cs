@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Threading;
 
@@ -181,9 +183,15 @@ namespace FIA_Biosum_Manager
           oDao.CreateTableLink(m_strTempDBFile, "treesample", frmMain.g_oEnv.strAppDir + "\\db\\treesample.accdb", "treesample");
           oDao.m_DaoWorkspace.Close();
           //
-          //CREATE LINK IN TEMP MDB TO ALL VARIANT CUTLIST TABLES
+          //CREATE LINK IN TEMP MDB TO ALL VARIANT FVS_CUTLIST TABLES
           //
           m_oRxTools.CreateTableLinksToFVSOutTreeListTables(m_oQueries, m_oQueries.m_strTempDbFile);
+
+          //
+          //CREATE LINK IN TEMP MDB TO ALL VARIANT & PACKAGE FVS_SUMMARY TABLES
+          //
+          m_oRxTools.CreateTableLinksToFVSOutSummaryTables(m_oQueries, m_oQueries.m_strTempDbFile);
+
           //
           //OPEN CONNECTION TO TEMP DB FILE
           //
@@ -1839,6 +1847,10 @@ namespace FIA_Biosum_Manager
         frmMain.g_oTables.m_oFvs.CreateOracleInputFCSBiosumVolumesTable(m_oAdo, m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
 
         var strFvsTreeTable = this.cmbDatasource.Text; //e.g., fvs_tree_IN_BM_P009_TREE_CUTLIST
+        var regex = new Regex(@"fvs_tree_IN_([A-Z]{2})_(P\d{3}).*");
+        var strVariant = regex.Match(strFvsTreeTable).Groups[1];
+        var strPackage = regex.Match(strFvsTreeTable).Groups[2];
+        var strFvsSummaryTable = $"fvs_summary_IN_{strVariant}_{strPackage}"; //e.g., fvs_tree_IN_BM_P009_TREE_CUTLIST
         var strFiaTreeSpeciesRefTableLink = Tables.ProcessorScenarioRun.DefaultFiaTreeSpeciesRefTableName;
 
         if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, "cull_work_table"))
@@ -1873,16 +1885,16 @@ namespace FIA_Biosum_Manager
                              SET b.diahtcd=IIF(ref.woodland_yn='N', 1, 2) WHERE b.fvscreatedtree_yn='Y'";
         m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
 
-        //TODO: Reuse prepost database logic to link to appropriate FVSOut FVS_SUMMARY tables
-//        //Update FVSCreatedTrees balive=fvs_summary.BA
-//        m_oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step2a(
-//                           Tables.VolumeAndBiomass.BiosumVolumesInputTable,
-//                           m_oQueries.m_oFIAPlot.m_strPlotTable,
-//                           m_oQueries.m_oFIAPlot.m_strCondTable, 
-//                           strFvsOutSummaryLink); //How to define this? Refer to uc_fvs_output.cs
-//        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-//            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_oAdo.m_strSQL + "\r\n\r\n");
-//        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+        //Update FVSCreatedTrees balive=fvs_summary.BA
+        if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, strFvsSummaryTable))
+        {
+            m_oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step2a(
+                Tables.VolumeAndBiomass.BiosumVolumesInputTable, m_oQueries.m_oFIAPlot.m_strPlotTable,
+                m_oQueries.m_oFIAPlot.m_strCondTable, strFvsSummaryTable);
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_oAdo.m_strSQL + "\r\n\r\n");
+            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+        }
 
         m_oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step3(
             Tables.VolumeAndBiomass.BiosumVolumesInputTable,
