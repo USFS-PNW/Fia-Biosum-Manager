@@ -247,7 +247,7 @@ namespace FIA_Biosum_Manager
                     string strFvsDataDir = m_strProjDir + "\\fvs\\data\\";
                     int num_variants_in_fvs_data = 0;
                     foreach (string variant in strVariants)
-                        if (Directory.Exists(strFvsDataDir + "\\" + variant + "\\"))
+                        if (Directory.Exists(strFvsDataDir + variant + "\\"))
                             num_variants_in_fvs_data++;
                     int progressbar2_value = 40;
                     foreach (string variant in strVariants)
