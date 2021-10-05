@@ -6275,7 +6275,6 @@ namespace FIA_Biosum_Manager
                     {
                         new List<string[]>
                         {
-                            new string[] {"diahtcd", "integer"},
                             new string[] {"drybio_bole", "double"},
                             new string[] {"drybio_sapling", "double"},
                             new string[] {"drybio_top", "double"},

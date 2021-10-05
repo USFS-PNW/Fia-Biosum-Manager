@@ -1847,21 +1847,6 @@ namespace FIA_Biosum_Manager
         var strFvsTreeTable = this.cmbDatasource.Text; //e.g., fvs_tree_IN_BM_P009_TREE_CUTLIST
         var strFiaTreeSpeciesRefTableLink = Tables.ProcessorScenarioRun.DefaultFiaTreeSpeciesRefTableName;
 
-        //Set DIAHTCD for FIADB Cycle<>1 trees to their Cycle=1 DIAHTCD values
-        m_oAdo.m_strSQL = $@"UPDATE {strFvsTreeTable} f INNER JOIN {m_oQueries.m_oFIAPlot.m_strTreeTable} t 
-                                                   ON t.biosum_cond_id=f.biosum_cond_id AND t.fvs_tree_id=f.fvs_tree_id
-                                                   SET f.diahtcd=t.diahtcd 
-                                                   WHERE f.fvscreatedtree_yn='N' AND f.rxpackage='{p_strRxPackage.Trim()}'";
-
-        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-
-        //Set DIAHTCD for FVS-Created trees using FIA_TREE_SPECIES_REF.WOODLAND_YN
-        m_oAdo.m_strSQL =
-            $@"UPDATE {strFvsTreeTable} f INNER JOIN {strFiaTreeSpeciesRefTableLink} ref ON cint(f.fvs_species)=ref.spcd
-                                                   SET f.diahtcd=IIF(ref.woodland_yn='N', 1, 2)
-                                                   WHERE f.fvscreatedtree_yn='Y' AND f.rxpackage='{p_strRxPackage.Trim()}'";
-        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-
         if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, "cull_work_table"))
             m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE cull_work_table");
 
@@ -1879,6 +1864,31 @@ namespace FIA_Biosum_Manager
         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_oAdo.m_strSQL + "\r\n\r\n");
         m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+
+        //Set DIAHTCD for FIADB Cycle<>1 trees to their Cycle=1 DIAHTCD values
+        m_oAdo.m_strSQL = $@"UPDATE {Tables.VolumeAndBiomass.BiosumVolumesInputTable} b 
+                             INNER JOIN {m_oQueries.m_oFIAPlot.m_strTreeTable} t 
+                             ON t.biosum_cond_id=b.biosum_cond_id AND t.fvs_tree_id=b.fvs_tree_id
+                             SET b.diahtcd=t.diahtcd WHERE b.fvscreatedtree_yn='N'";
+
+        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+
+        //Set DIAHTCD for FVS-Created trees using FIA_TREE_SPECIES_REF.WOODLAND_YN
+        m_oAdo.m_strSQL = $@"UPDATE {Tables.VolumeAndBiomass.BiosumVolumesInputTable} b 
+                             INNER JOIN {strFiaTreeSpeciesRefTableLink} ref ON cint(b.spcd)=ref.spcd
+                             SET b.diahtcd=IIF(ref.woodland_yn='N', 1, 2) WHERE b.fvscreatedtree_yn='Y'";
+        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+
+        //TODO: Reuse prepost database logic to link to appropriate FVSOut FVS_SUMMARY tables
+//        //Update FVSCreatedTrees balive=fvs_summary.BA
+//        m_oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step2a(
+//                           Tables.VolumeAndBiomass.BiosumVolumesInputTable,
+//                           m_oQueries.m_oFIAPlot.m_strPlotTable,
+//                           m_oQueries.m_oFIAPlot.m_strCondTable, 
+//                           strFvsOutSummaryLink); //How to define this? Refer to uc_fvs_output.cs
+//        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+//            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_oAdo.m_strSQL + "\r\n\r\n");
+//        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
 
         m_oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step3(
             Tables.VolumeAndBiomass.BiosumVolumesInputTable,

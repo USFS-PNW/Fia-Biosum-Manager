@@ -3654,8 +3654,8 @@ namespace FIA_Biosum_Manager
                 /// <returns></returns>
                 public static string BuildInputTableForVolumeCalculation_Step1(string p_strInputVolumesTable, string p_strFvsTreeTable, string p_strRxPackage)
                 {
-                    string strColumns = @"id,biosum_cond_id,invyr,fvs_variant,spcd,dbh,ht,actualht,cr,fvs_tree_id, diahtcd, fvscreatedtree_yn";
-                    string strValues = @"id,biosum_cond_id,CINT(rxyear) AS invyr, fvs_variant, IIF(FvsCreatedTree_YN='Y',CINT(fvs_species),-1) AS spcd, dbh,estht,ht,pctcr,fvs_tree_id, diahtcd, fvscreatedtree_yn";
+                    string strColumns = @"id,biosum_cond_id,invyr,fvs_variant,spcd,dbh,ht,actualht,cr,fvs_tree_id, fvscreatedtree_yn";
+                    string strValues = @"id,biosum_cond_id,CINT(rxyear) AS invyr, fvs_variant, IIF(FvsCreatedTree_YN='Y',CINT(fvs_species),-1) AS spcd, dbh,estht,ht,pctcr,fvs_tree_id, fvscreatedtree_yn";
                     return $@"INSERT INTO {p_strInputVolumesTable} ({strColumns}) 
                            SELECT {strValues} 
                            FROM {p_strFvsTreeTable}

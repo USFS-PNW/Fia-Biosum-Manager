@@ -2630,7 +2630,6 @@ namespace FIA_Biosum_Manager
                     "ht DOUBLE," +
                     "estht DOUBLE," +
                     "pctcr DOUBLE," +
-                    "diahtcd integer," +
                     "drybio_bole double," +
                     "drybio_sapling double," +
                     "drybio_top double," +

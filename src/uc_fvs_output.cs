@@ -4658,30 +4658,6 @@ namespace FIA_Biosum_Manager
                                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + " Update volume columns with tree table values for cycle 1 records");
                                 frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
 
-                                //Set DIAHTCD for FIADB Cycle<>1 trees to their Cycle=1 DIAHTCD values
-                                oAdo.m_strSQL = $@"UPDATE {strFvsTreeTable} f INNER JOIN {m_oQueries.m_oFIAPlot.m_strTreeTable} t 
-                                                   ON t.biosum_cond_id=f.biosum_cond_id AND t.fvs_tree_id=f.fvs_tree_id
-                                                   SET f.diahtcd=t.diahtcd 
-                                                   WHERE f.fvscreatedtree_yn='N' AND f.rxpackage='{p_strPackage.Trim()}'";
-
-                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
-                                oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
-                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-                                //Set DIAHTCD for FVS-Created trees using FIA_TREE_SPECIES_REF.WOODLAND_YN
-
-                                oAdo.m_strSQL = $@"UPDATE {strFvsTreeTable} f INNER JOIN {strFiaTreeSpeciesRefTableLink} ref ON cint(f.fvs_species)=ref.spcd
-                                                   SET f.diahtcd=IIF(ref.woodland_yn='N', 1, 2)
-                                                   WHERE f.fvscreatedtree_yn='Y' AND f.rxpackage='{p_strPackage.Trim()}'";
-
-                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
-                                oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
-                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
                                 m_intProgressStepCurrentCount++;
                                 UpdateTherm(m_frmTherm.progressBar1, m_intProgressStepCurrentCount, m_intProgressStepTotalCount);
 
@@ -4732,6 +4708,28 @@ namespace FIA_Biosum_Manager
                                 UpdateTherm(m_frmTherm.progressBar1,
                                            m_intProgressStepCurrentCount,
                                            m_intProgressStepTotalCount);
+
+
+                                //Set DIAHTCD for FIADB Cycle<>1 trees to their Cycle=1 DIAHTCD values
+                                oAdo.m_strSQL = $@"UPDATE {Tables.VolumeAndBiomass.BiosumVolumesInputTable} b 
+                                                   INNER JOIN {m_oQueries.m_oFIAPlot.m_strTreeTable} t 
+                                                   ON t.biosum_cond_id=b.biosum_cond_id AND t.fvs_tree_id=b.fvs_tree_id
+                                                   SET b.diahtcd=t.diahtcd WHERE b.fvscreatedtree_yn='N'";
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
+                                oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                                //Set DIAHTCD for FVS-Created trees using FIA_TREE_SPECIES_REF.WOODLAND_YN
+                                oAdo.m_strSQL = $@"UPDATE {Tables.VolumeAndBiomass.BiosumVolumesInputTable} b 
+                                                   INNER JOIN {strFiaTreeSpeciesRefTableLink} ref ON cint(b.spcd)=ref.spcd
+                                                   SET b.diahtcd=IIF(ref.woodland_yn='N', 1, 2) WHERE b.fvscreatedtree_yn='Y'";
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
+                                oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
                                 //Update FVSCreatedTrees balive=fvs_summary.BA
                                 oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step2a(
