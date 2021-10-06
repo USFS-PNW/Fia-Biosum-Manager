@@ -3631,9 +3631,9 @@ namespace FIA_Biosum_Manager
                         return strSQL;
                     }
 
-                    public static string DeleteHtAndHtTopKForNonMeasuredHeights(string strDestTable)
+                    public static string DeleteHtAndHtTopKForUnknownHtcd(string strDestTable)
                     {
-                        return "UPDATE " + strDestTable + " SET Ht=0, HtTopK=0 WHERE Htcd NOT IN (1,2,3);";
+                        return "UPDATE " + strDestTable + " SET Ht=0, HtTopK=0 WHERE Htcd NOT IN (1,2,3,4);";
                     }
 
                     public static string SetBrokenTopFlag(string strDestTable)
