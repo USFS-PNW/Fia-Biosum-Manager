@@ -1073,6 +1073,9 @@ namespace FIA_Biosum_Manager
                 oSQLite.CloseAndDisposeConnection(oSQLite.m_Connection, true);
             }
 
+            frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1,
+                "Checking required files for volume and biomass calculations...Stand By");
+
             //RUN JAVA APP TO CALCULATE VOLUME/BIOMASS
             if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" +
                                       Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase) == false)
@@ -1098,6 +1101,9 @@ namespace FIA_Biosum_Manager
                 m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_tree_calc.bat not found";
             }
 
+            frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1,
+                "Wait For BioSumComps.jar Volume and Biomass Calculations To Complete...Stand By");
+
             if (m_intError == 0)
             {
                 frmMain.g_oUtils.RunProcess(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum", "fcs_tree_calc.bat", "BAT");
@@ -1110,9 +1116,9 @@ namespace FIA_Biosum_Manager
                 }
             }
 
-            //step 7 - Get returned results from SQLite
+            //Get returned results from SQLite
             frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1,
-                "Wait For BioSumComps.jar Volume and Biomass Calculations To Complete...Stand By");
+                "Gathering results from FCS_TREE.DB...Stand By");
 
             //Parse SQLite output and insert into Biosum_Calc_Output access table
             using (var conn = new System.Data.OleDb.OleDbConnection(m_oAdo.getMDBConnString(m_strTempDBFile, "", "")))
@@ -1227,6 +1233,7 @@ namespace FIA_Biosum_Manager
                         System.Windows.Forms.MessageBoxIcon.Error);
                 }
             }
+            RunBatch_Finished();
         }
         else
         {
