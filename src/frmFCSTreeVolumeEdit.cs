@@ -964,20 +964,6 @@ namespace FIA_Biosum_Manager
         lblVOLCFNET.Text = "0";
         lblVOLCSGRS.Text = "0";
         lblVOLTSGRS.Text = "0";
-        if (string.IsNullOrEmpty(txtStateCd.Text.Trim())) txtStateCd.Text = "NULL";
-        if (string.IsNullOrEmpty(txtCountyCd.Text.Trim())) txtCountyCd.Text = "NULL";
-        if (string.IsNullOrEmpty(txtPlot.Text.Trim())) txtPlot.Text = "NULL";
-        if (string.IsNullOrEmpty(txtInvYr.Text.Trim())) txtInvYr.Text = "NULL";
-        if (string.IsNullOrEmpty(txtVolLocGrp.Text.Trim())) txtVolLocGrp.Text = "NULL";
-        if (string.IsNullOrEmpty(txtSpCd.Text.Trim())) txtSpCd.Text = "NULL";
-        if (string.IsNullOrEmpty(txtDbh.Text.Trim())) txtDbh.Text = "NULL";
-        if (string.IsNullOrEmpty(txtHt.Text.Trim())) txtHt.Text = "NULL";
-        if (string.IsNullOrEmpty(txtActualHt.Text.Trim())) txtActualHt.Text = "NULL";
-        if (string.IsNullOrEmpty(txtCR.Text.Trim())) txtCR.Text = "NULL";
-        if (string.IsNullOrEmpty(txtStatusCd.Text.Trim())) txtStatusCd.Text = "NULL";
-        if (string.IsNullOrEmpty(txtTreeClCd.Text.Trim())) txtTreeClCd.Text = "NULL";
-        if (string.IsNullOrEmpty(txtRoughCull.Text.Trim())) txtRoughCull.Text = "NULL";
-        if (string.IsNullOrEmpty(txtCull.Text.Trim())) txtCull.Text = "NULL";
 
         if (utils.FS_NETWORK_IS_AVAILABLE)
         {
@@ -2652,20 +2638,20 @@ namespace FIA_Biosum_Manager
         selectedRow.Add(COL_STANDING_DEAD_CD, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_STANDING_DEAD_CD].ToString().Trim()));
 
         //Update textboxes
-        this.txtActualHt.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_ACTUALHT].ToString().Trim();
-        this.txtCountyCd.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_COUNTY].ToString().Trim();
-        this.txtCR.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CR].ToString().Trim();
-        this.txtCull.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CULL].ToString().Trim();
-        this.txtDbh.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_DBH].ToString().Trim();
-        this.txtHt.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_HT].ToString().Trim();
-        this.txtInvYr.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_INVYR].ToString().Trim();
-        this.txtPlot.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_PLOT].ToString().Trim();
-        this.txtRoughCull.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_ROUGHCULL].ToString().Trim();
-        this.txtStateCd.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_STATE].ToString().Trim();
-        this.txtSpCd.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_SPCD].ToString().Trim();
-        this.txtStatusCd.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_STATUSCD].ToString().Trim();
-        this.txtTreeClCd.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_TREECLCD].ToString().Trim();
-        this.txtVolLocGrp.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_VOLLOCGRP].ToString().Trim();
+        this.txtActualHt.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_ACTUALHT].ToString().Trim());
+        this.txtCountyCd.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_COUNTY].ToString().Trim());
+        this.txtCR.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CR].ToString().Trim());
+        this.txtCull.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CULL].ToString().Trim());
+        this.txtDbh.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_DBH].ToString().Trim());
+        this.txtHt.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_HT].ToString().Trim());
+        this.txtInvYr.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_INVYR].ToString().Trim());
+        this.txtPlot.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_PLOT].ToString().Trim());
+        this.txtRoughCull.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_ROUGHCULL].ToString().Trim());
+        this.txtStateCd.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_STATE].ToString().Trim());
+        this.txtSpCd.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_SPCD].ToString().Trim());
+        this.txtStatusCd.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_STATUSCD].ToString().Trim());
+        this.txtTreeClCd.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_TREECLCD].ToString().Trim());
+        this.txtVolLocGrp.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_VOLLOCGRP].ToString().Trim());
     }
 
     private void frmFCSTreeVolumeEdit_Resize(object sender, EventArgs e)
