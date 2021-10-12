@@ -14,44 +14,59 @@ namespace FIA_Biosum_Manager
 {
   public class frmFCSTreeVolumeEdit : Form
   {
-    const int COL_VOLCFGRS = 0;
-    const int COL_VOLCSGRS = 1;
-    const int COL_VOLCFNET = 2;
-    const int COL_DRYBIOM = 3;
-    const int COL_DRYBIOT = 4;
-    const int COL_VOLTSGRS = 5;
-    const int COL_ID = 6;
-    const int COL_STATE = 7;
-    const int COL_COUNTY = 8;
-    const int COL_PLOT = 9;
-    const int COL_FVSVARIANT =10;
-    const int COL_INVYR = 11;
-    const int COL_TREEID = 12;
-    const int COL_VOLLOCGRP = 15;
-    const int COL_SPCD = 12;
-    const int COL_DBH = 13;
-    const int COL_HT = 14;
-    const int COL_ACTUALHT = 16;
-    const int COL_CR = 19;
-    const int COL_STATUSCD = 17;
-    const int COL_TREECLCD = 18;
-    const int COL_CULL = 20;
-    const int COL_ROUGHCULL = 21;
-    const int COL_DECAYCD = 22;
-    const int COL_TOTAGE = 23;
+      const int COL_DRYBIOM = 0;
+      const int COL_DRYBIOT = 1;
+      const int COL_DRYBIO_BOLE = 2;
+      const int COL_DRYBIO_SAPLING = 3;
+      const int COL_DRYBIO_TOP = 4;
+      const int COL_DRYBIO_WDLD_SPP = 5;
+      const int COL_VOLCFGRS = 6;
+      const int COL_VOLCFNET = 7;
+      const int COL_VOLCFSND = 8;
+      const int COL_VOLCSGRS = 9;
+      const int COL_VOLTSGRS = 10;
+      const int COL_ID = 11;
+      const int COL_BIOSUM_COND_ID = 12;
+      const int COL_FVS_TREE_ID = 13;
+      const int COL_STATE = 14;
+      const int COL_COUNTY = 15;
+      const int COL_PLOT = 16;
+      const int COL_FVS_VARIANT = 17;
+      const int COL_INVYR = 18;
+      const int COL_SPCD = 19;
+      const int COL_DBH = 20;
+      const int COL_HT = 21;
+      const int COL_VOLLOCGRP = 22;
+      const int COL_ACTUALHT = 23;
+      const int COL_STATUSCD = 24;
+      const int COL_TREECLCD = 25;
+      const int COL_CR = 26;
+      const int COL_CULL = 27;
+      const int COL_ROUGHCULL = 28;
+      const int COL_DECAYCD = 29;
+      const int COL_TOTAGE = 30;
+      const int COL_SITREE = 31;
+      const int COL_WDLDSTEM = 32;
+      const int COL_UPPER_DIA = 33;
+      const int COL_UPPER_DIA_HT = 34;
+      const int COL_CENTROID_DIA = 35;
+      const int COL_CENTROID_DIA_HT_ACTUAL = 36;
+      const int COL_SAWHT = 37;
+      const int COL_HTDMP = 38;
+      const int COL_BOLEHT = 39;
+      const int COL_CULLCF = 40;
+      const int COL_CULL_FLD = 41;
+      const int COL_CULLDEAD = 42;
+      const int COL_CULLFORM = 43;
+      const int COL_CULLMSTOP = 44;
+      const int COL_CFSND = 45;
+      const int COL_BFSND = 46;
+      const int COL_PRECIPITATION = 47;
+      const int COL_BALIVE = 48;
+      const int COL_DIAHTCD = 49;
+      const int COL_STANDING_DEAD_CD = 50;
+      private Dictionary<int, string> selectedRow = new Dictionary<int, string>();
 
-    /*
-    const int COL_SITREE = 24;
-    const int COL_WDLDSTEM = 25;
-    const int COL_UPPERDIA = 26;
-    const int COL_UPPERDIAHT = 27;
-    const int COL_CENTROIDDIA = 28;
-     */
-
-    const int COL_TRECN = 24;
-    const int COL_PLTCN = 25;
-    const int COL_CNDCN = 26;
-    
     private System.Windows.Forms.Button btnTreeVolBatch;
     private System.Windows.Forms.Panel panel1;
     private System.Windows.Forms.GroupBox groupBox1;
@@ -937,8 +952,8 @@ namespace FIA_Biosum_Manager
         this.txtStatusCd.Text = "1";
         this.txtTreeClCd.Text = "2";
         this.txtVolLocGrp.Text = "S26LCA";
+        selectedRow.Clear();
 
-     
     }
 
     private void btnTreeVolSingle_Click( object sender, EventArgs e )
@@ -949,6 +964,20 @@ namespace FIA_Biosum_Manager
         lblVOLCFNET.Text = "0";
         lblVOLCSGRS.Text = "0";
         lblVOLTSGRS.Text = "0";
+        if (string.IsNullOrEmpty(txtStateCd.Text.Trim())) txtStateCd.Text = "NULL";
+        if (string.IsNullOrEmpty(txtCountyCd.Text.Trim())) txtCountyCd.Text = "NULL";
+        if (string.IsNullOrEmpty(txtPlot.Text.Trim())) txtPlot.Text = "NULL";
+        if (string.IsNullOrEmpty(txtInvYr.Text.Trim())) txtInvYr.Text = "NULL";
+        if (string.IsNullOrEmpty(txtVolLocGrp.Text.Trim())) txtVolLocGrp.Text = "NULL";
+        if (string.IsNullOrEmpty(txtSpCd.Text.Trim())) txtSpCd.Text = "NULL";
+        if (string.IsNullOrEmpty(txtDbh.Text.Trim())) txtDbh.Text = "NULL";
+        if (string.IsNullOrEmpty(txtHt.Text.Trim())) txtHt.Text = "NULL";
+        if (string.IsNullOrEmpty(txtActualHt.Text.Trim())) txtActualHt.Text = "NULL";
+        if (string.IsNullOrEmpty(txtCR.Text.Trim())) txtCR.Text = "NULL";
+        if (string.IsNullOrEmpty(txtStatusCd.Text.Trim())) txtStatusCd.Text = "NULL";
+        if (string.IsNullOrEmpty(txtTreeClCd.Text.Trim())) txtTreeClCd.Text = "NULL";
+        if (string.IsNullOrEmpty(txtRoughCull.Text.Trim())) txtRoughCull.Text = "NULL";
+        if (string.IsNullOrEmpty(txtCull.Text.Trim())) txtCull.Text = "NULL";
 
         if (utils.FS_NETWORK_IS_AVAILABLE)
         {
@@ -970,7 +999,57 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oTables.m_oFvs.CreateOracleInputFCSBiosumVolumesTable(m_oAdo, conn,
                     Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
 
-                var fcsBiosumVolumesInputTableValues = new List<Tuple<string, string>>
+                List<Tuple<string, string>> fcsBiosumVolumesInputTableValues;
+
+                if (selectedRow.Count > 0)
+                    fcsBiosumVolumesInputTableValues = new List<Tuple<string, string>>
+                    {
+                        Tuple.Create("STATECD", txtStateCd.Text.Trim()),
+                        Tuple.Create("COUNTYCD", txtCountyCd.Text.Trim()),
+                        Tuple.Create("PLOT", txtPlot.Text.Trim()),
+                        Tuple.Create("INVYR", txtInvYr.Text.Trim()),
+                        Tuple.Create("TREE", selectedRow[COL_ID]),
+                        Tuple.Create("VOL_LOC_GRP", $"'{selectedRow[COL_VOLLOCGRP]}'"),
+                        Tuple.Create("SPCD", selectedRow[COL_SPCD]),
+                        Tuple.Create("DIA", selectedRow[COL_DBH]),
+                        Tuple.Create("HT", txtHt.Text.Trim()),
+                        Tuple.Create("ACTUALHT", txtActualHt.Text.Trim()),
+                        Tuple.Create("CR", txtCR.Text.Trim()),
+                        Tuple.Create("STATUSCD", txtStatusCd.Text.Trim()),
+                        Tuple.Create("TREECLCD", txtTreeClCd.Text.Trim()),
+                        Tuple.Create("ROUGHCULL", txtRoughCull.Text.Trim()),
+                        Tuple.Create("CULL", txtCull.Text.Trim()),
+                        Tuple.Create("DECAYCD", selectedRow[COL_DECAYCD]),
+                        Tuple.Create("TOTAGE", selectedRow[COL_TOTAGE]),
+                        Tuple.Create("SUBP", "NULL"),
+                        Tuple.Create("FORMCL", "NULL"),
+                        Tuple.Create("CULLBF", "NULL"),
+                        Tuple.Create("SITREE", selectedRow[COL_SITREE]),
+                        Tuple.Create("WDLDSTEM", selectedRow[COL_WDLDSTEM]),
+                        Tuple.Create("UPPER_DIA", selectedRow[COL_UPPER_DIA]),
+                        Tuple.Create("UPPER_DIA_HT", selectedRow[COL_UPPER_DIA_HT]),
+                        Tuple.Create("CENTROID_DIA", selectedRow[COL_CENTROID_DIA]),
+                        Tuple.Create("CENTROID_DIA_HT_ACTUAL", selectedRow[COL_CENTROID_DIA_HT_ACTUAL]),
+                        Tuple.Create("SAWHT", selectedRow[COL_SAWHT]),
+                        Tuple.Create("HTDMP", selectedRow[COL_HTDMP]),
+                        Tuple.Create("BOLEHT", selectedRow[COL_BOLEHT]),
+                        Tuple.Create("CULLCF", selectedRow[COL_CULLCF]),
+                        Tuple.Create("CULL_FLD", selectedRow[COL_CULL_FLD]),
+                        Tuple.Create("CULLDEAD", selectedRow[COL_CULLDEAD]),
+                        Tuple.Create("CULLFORM", selectedRow[COL_CULLFORM]),
+                        Tuple.Create("CULLMSTOP", selectedRow[COL_CULLMSTOP]),
+                        Tuple.Create("CFSND", selectedRow[COL_CFSND]),
+                        Tuple.Create("BFSND", selectedRow[COL_BFSND]),
+                        Tuple.Create("PRECIPITATION", selectedRow[COL_PRECIPITATION]),
+                        Tuple.Create("BALIVE", selectedRow[COL_BALIVE]),
+                        Tuple.Create("DIAHTCD", selectedRow[COL_DIAHTCD]),
+                        Tuple.Create("STANDING_DEAD_CD", selectedRow[COL_STANDING_DEAD_CD]),
+                        Tuple.Create("TRE_CN", "1"),
+                        Tuple.Create("CND_CN", "1"),
+                        Tuple.Create("PLT_CN", "1"),
+                    };
+
+                else fcsBiosumVolumesInputTableValues = new List<Tuple<string, string>>
                 {
                     Tuple.Create("STATECD", txtStateCd.Text.Trim()),
                     Tuple.Create("COUNTYCD", txtCountyCd.Text.Trim()),
@@ -2513,7 +2592,67 @@ namespace FIA_Biosum_Manager
 
     private void btnEdit_Click(object sender, EventArgs e)
     {
-        this.txtActualHt.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1,COL_ACTUALHT].ToString().Trim() ;
+        //Collect all fields in current row to edit
+        string gridValueOrNull(string value)
+        {
+            return !string.IsNullOrEmpty(value) ? value : "NULL";
+        }
+
+        selectedRow.Clear();
+        selectedRow.Add(COL_DRYBIOM, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_DRYBIOM].ToString().Trim()));
+        selectedRow.Add(COL_DRYBIOT, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_DRYBIOT].ToString().Trim()));
+        selectedRow.Add(COL_DRYBIO_BOLE, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_DRYBIO_BOLE].ToString().Trim()));
+        selectedRow.Add(COL_DRYBIO_SAPLING, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_DRYBIO_SAPLING].ToString().Trim()));
+        selectedRow.Add(COL_DRYBIO_TOP, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_DRYBIO_TOP].ToString().Trim()));
+        selectedRow.Add(COL_DRYBIO_WDLD_SPP, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_DRYBIO_WDLD_SPP].ToString().Trim()));
+        selectedRow.Add(COL_VOLCFGRS, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_VOLCFGRS].ToString().Trim()));
+        selectedRow.Add(COL_VOLCFNET, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_VOLCFNET].ToString().Trim()));
+        selectedRow.Add(COL_VOLCFSND, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_VOLCFSND].ToString().Trim()));
+        selectedRow.Add(COL_VOLCSGRS, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_VOLCSGRS].ToString().Trim()));
+        selectedRow.Add(COL_VOLTSGRS, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_VOLTSGRS].ToString().Trim()));
+        selectedRow.Add(COL_ID, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_ID].ToString().Trim()));
+        selectedRow.Add(COL_BIOSUM_COND_ID, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_BIOSUM_COND_ID].ToString().Trim()));
+        selectedRow.Add(COL_FVS_TREE_ID, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_FVS_TREE_ID].ToString().Trim()));
+        selectedRow.Add(COL_STATE, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_STATE].ToString().Trim()));
+        selectedRow.Add(COL_COUNTY, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_COUNTY].ToString().Trim()));
+        selectedRow.Add(COL_PLOT, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_PLOT].ToString().Trim()));
+        selectedRow.Add(COL_FVS_VARIANT, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_FVS_VARIANT].ToString().Trim()));
+        selectedRow.Add(COL_INVYR, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_INVYR].ToString().Trim()));
+        selectedRow.Add(COL_SPCD, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_SPCD].ToString().Trim()));
+        selectedRow.Add(COL_DBH, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_DBH].ToString().Trim()));
+        selectedRow.Add(COL_HT, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_HT].ToString().Trim()));
+        selectedRow.Add(COL_VOLLOCGRP, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_VOLLOCGRP].ToString().Trim()));
+        selectedRow.Add(COL_ACTUALHT, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_ACTUALHT].ToString().Trim()));
+        selectedRow.Add(COL_STATUSCD, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_STATUSCD].ToString().Trim()));
+        selectedRow.Add(COL_TREECLCD, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_TREECLCD].ToString().Trim()));
+        selectedRow.Add(COL_CR, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CR].ToString().Trim()));
+        selectedRow.Add(COL_CULL, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CULL].ToString().Trim()));
+        selectedRow.Add(COL_ROUGHCULL, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_ROUGHCULL].ToString().Trim()));
+        selectedRow.Add(COL_DECAYCD, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_DECAYCD].ToString().Trim()));
+        selectedRow.Add(COL_TOTAGE, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_TOTAGE].ToString().Trim()));
+        selectedRow.Add(COL_SITREE, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_SITREE].ToString().Trim()));
+        selectedRow.Add(COL_WDLDSTEM, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_WDLDSTEM].ToString().Trim()));
+        selectedRow.Add(COL_UPPER_DIA, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_UPPER_DIA].ToString().Trim()));
+        selectedRow.Add(COL_UPPER_DIA_HT, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_UPPER_DIA_HT].ToString().Trim()));
+        selectedRow.Add(COL_CENTROID_DIA, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CENTROID_DIA].ToString().Trim()));
+        selectedRow.Add(COL_CENTROID_DIA_HT_ACTUAL, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CENTROID_DIA_HT_ACTUAL].ToString().Trim()));
+        selectedRow.Add(COL_SAWHT, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_SAWHT].ToString().Trim()));
+        selectedRow.Add(COL_HTDMP, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_HTDMP].ToString().Trim()));
+        selectedRow.Add(COL_BOLEHT, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_BOLEHT].ToString().Trim()));
+        selectedRow.Add(COL_CULLCF, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CULLCF].ToString().Trim()));
+        selectedRow.Add(COL_CULL_FLD, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CULL_FLD].ToString().Trim()));
+        selectedRow.Add(COL_CULLDEAD, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CULLDEAD].ToString().Trim()));
+        selectedRow.Add(COL_CULLFORM, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CULLFORM].ToString().Trim()));
+        selectedRow.Add(COL_CULLMSTOP, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CULLMSTOP].ToString().Trim()));
+        selectedRow.Add(COL_CFSND, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CFSND].ToString().Trim()));
+        selectedRow.Add(COL_BFSND, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_BFSND].ToString().Trim()));
+        selectedRow.Add(COL_PRECIPITATION, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_PRECIPITATION].ToString().Trim()));
+        selectedRow.Add(COL_BALIVE, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_BALIVE].ToString().Trim()));
+        selectedRow.Add(COL_DIAHTCD, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_DIAHTCD].ToString().Trim()));
+        selectedRow.Add(COL_STANDING_DEAD_CD, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_STANDING_DEAD_CD].ToString().Trim()));
+
+        //Update textboxes
+        this.txtActualHt.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_ACTUALHT].ToString().Trim();
         this.txtCountyCd.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_COUNTY].ToString().Trim();
         this.txtCR.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CR].ToString().Trim();
         this.txtCull.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CULL].ToString().Trim();
@@ -2521,13 +2660,12 @@ namespace FIA_Biosum_Manager
         this.txtHt.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_HT].ToString().Trim();
         this.txtInvYr.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_INVYR].ToString().Trim();
         this.txtPlot.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_PLOT].ToString().Trim();
-        this.txtRoughCull.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1,COL_ROUGHCULL].ToString().Trim();
+        this.txtRoughCull.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_ROUGHCULL].ToString().Trim();
         this.txtStateCd.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_STATE].ToString().Trim();
         this.txtSpCd.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_SPCD].ToString().Trim();
         this.txtStatusCd.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_STATUSCD].ToString().Trim();
         this.txtTreeClCd.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_TREECLCD].ToString().Trim();
         this.txtVolLocGrp.Text = uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_VOLLOCGRP].ToString().Trim();
-        
     }
 
     private void frmFCSTreeVolumeEdit_Resize(object sender, EventArgs e)
