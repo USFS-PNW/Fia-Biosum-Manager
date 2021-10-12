@@ -5185,7 +5185,6 @@ namespace FIA_Biosum_Manager
                                                         //oracle table fcs_biosum_volume 
                                                         //into 
                                                         //table fvs_tree
-                                                        //TODO: add new biosum_calc columns
                                                         oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step9(
                                                                            strFvsTreeTable, Tables.VolumeAndBiomass.BiosumCalcOutputTable);
 
