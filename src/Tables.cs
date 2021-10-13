@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using FcsClassLibrary;
 
 namespace FIA_Biosum_Manager
 {
@@ -20,6 +22,7 @@ namespace FIA_Biosum_Manager
         public Reference m_oReference = new Reference();
         public ProcessorScenarioRun m_oProcessorScenarioRun = new ProcessorScenarioRun();
         public ProcessorScenarioRuleDefinitions m_oProcessorScenarioRuleDefinitions = new ProcessorScenarioRuleDefinitions();
+        public VolumeAndBiomass m_oVolumeAndBiomass = new VolumeAndBiomass();
 
 
         public Tables()
@@ -2397,6 +2400,84 @@ namespace FIA_Biosum_Manager
         }
 
 
+        public class VolumeAndBiomass
+        {
+            static public string BiosumVolumesInputTable { get { return "biosum_volumes_input"; } }
+            static public string FcsBiosumVolumesInputTable { get { return "fcs_biosum_volumes_input"; } }
+            static public string BiosumCalcOutputTable { get { return "biosum_calc_output"; } }
+            static public string DefaultSqliteWorkDatabase { get { return "fcs_tree.db"; } }
+            public static string SqliteWorkTable { get{ return "sqlite_work_table"; } }
+
+            static public string BiosumVolumeCalcTable
+            {
+                get { return utils.FS_NETWORK == utils.FS_NETWORK_STATUS.NotAvailable ? "BIOSUM_VOLUME" : "BIOSUM_CALC" ; }
+            }
+
+            static public List<Tuple<string, utils.DataType>> ColumnsAndDataTypes
+            {
+                get
+                {
+                    return new List<Tuple<string, utils.DataType>>
+                    {
+                        Tuple.Create("STATECD", utils.DataType.INTEGER),
+                        Tuple.Create("COUNTYCD", utils.DataType.INTEGER),
+                        Tuple.Create("PLOT", utils.DataType.INTEGER),
+                        Tuple.Create("INVYR", utils.DataType.INTEGER),
+                        Tuple.Create("SUBP", utils.DataType.INTEGER),
+                        Tuple.Create("TREE", utils.DataType.INTEGER),
+                        Tuple.Create("VOL_LOC_GRP", utils.DataType.STRING),
+                        Tuple.Create("SPCD", utils.DataType.INTEGER),
+                        Tuple.Create("PRECIPITATION", utils.DataType.DOUBLE),
+                        Tuple.Create("BALIVE", utils.DataType.DOUBLE),
+                        Tuple.Create("SITREE", utils.DataType.INTEGER),
+                        Tuple.Create("WDLDSTEM", utils.DataType.INTEGER),
+                        Tuple.Create("DIAHTCD", utils.DataType.INTEGER),
+                        Tuple.Create("DIA", utils.DataType.DOUBLE),
+                        Tuple.Create("HT", utils.DataType.INTEGER),
+                        Tuple.Create("ACTUALHT", utils.DataType.INTEGER),
+                        Tuple.Create("UPPER_DIA", utils.DataType.DOUBLE),
+                        Tuple.Create("UPPER_DIA_HT", utils.DataType.DOUBLE),
+                        Tuple.Create("CENTROID_DIA", utils.DataType.DOUBLE),
+                        Tuple.Create("CENTROID_DIA_HT_ACTUAL", utils.DataType.DOUBLE),
+                        Tuple.Create("SAWHT", utils.DataType.INTEGER),
+                        Tuple.Create("HTDMP", utils.DataType.DOUBLE),
+                        Tuple.Create("BOLEHT", utils.DataType.INTEGER),
+                        Tuple.Create("FORMCL", utils.DataType.INTEGER),
+                        Tuple.Create("CR", utils.DataType.INTEGER),
+                        Tuple.Create("STATUSCD", utils.DataType.INTEGER),
+                        Tuple.Create("STANDING_DEAD_CD", utils.DataType.INTEGER),
+                        Tuple.Create("TREECLCD", utils.DataType.INTEGER),
+                        Tuple.Create("ROUGHCULL", utils.DataType.INTEGER),
+                        Tuple.Create("CULL", utils.DataType.INTEGER),
+                        Tuple.Create("CULLBF", utils.DataType.INTEGER),
+                        Tuple.Create("CULLCF", utils.DataType.INTEGER),
+                        Tuple.Create("CULL_FLD", utils.DataType.INTEGER),
+                        Tuple.Create("CULLDEAD", utils.DataType.INTEGER),
+                        Tuple.Create("CULLFORM", utils.DataType.INTEGER),
+                        Tuple.Create("CULLMSTOP", utils.DataType.INTEGER),
+                        Tuple.Create("CFSND", utils.DataType.INTEGER),
+                        Tuple.Create("BFSND", utils.DataType.INTEGER),
+                        Tuple.Create("DECAYCD", utils.DataType.INTEGER),
+                        Tuple.Create("TOTAGE", utils.DataType.INTEGER),
+                        Tuple.Create("PLT_CN", utils.DataType.STRING),
+                        Tuple.Create("CND_CN", utils.DataType.STRING),
+                        Tuple.Create("TRE_CN", utils.DataType.STRING),
+                        Tuple.Create("VOLCFGRS_CALC", utils.DataType.DOUBLE),
+                        Tuple.Create("VOLCFNET_CALC", utils.DataType.DOUBLE),
+                        Tuple.Create("VOLCFSND_CALC", utils.DataType.DOUBLE),
+                        Tuple.Create("VOLCSGRS_CALC", utils.DataType.DOUBLE),
+                        Tuple.Create("VOLTSGRS_CALC", utils.DataType.DOUBLE),
+                        Tuple.Create("DRYBIOM_CALC", utils.DataType.DOUBLE),
+                        Tuple.Create("DRYBIOT_CALC", utils.DataType.DOUBLE),
+                        Tuple.Create("DRYBIO_BOLE_CALC", utils.DataType.DOUBLE),
+                        Tuple.Create("DRYBIO_TOP_CALC", utils.DataType.DOUBLE),
+                        Tuple.Create("DRYBIO_SAPLING_CALC", utils.DataType.DOUBLE),
+                        Tuple.Create("DRYBIO_WDLD_SPP_CALC", utils.DataType.DOUBLE)
+                    };
+                }
+            }
+        }
+
         public class FVS
         {
             public static string[] g_strFVSOutTablesArray =  {"FVS_CASES",
@@ -2454,8 +2535,6 @@ namespace FIA_Biosum_Manager
 
             static public string DefaultFVSTreeTableName { get { return "FVS_Tree"; } }
 
-            static public string DefaultOracleInputVolumesTable { get { return "biosum_volumes_input"; } }
-            static public string DefaultOracleInputFCSVolumesTable { get { return "fcs_biosum_volumes_input"; } }
 
             static public string DefaultFVSTreeIdWorkTable { get { return "fvs_tree_id_work_table"; } }
 
@@ -2551,11 +2630,16 @@ namespace FIA_Biosum_Manager
                     "ht DOUBLE," +
                     "estht DOUBLE," +
                     "pctcr DOUBLE," +
-                    "volcfnet DOUBLE," +
-                    "volcfgrs DOUBLE," +
-                    "volcsgrs DOUBLE," +
+                    "drybio_bole double," +
+                    "drybio_sapling double," +
+                    "drybio_top double," +
+                    "drybio_wdld_spp double," +
+                    "volcfsnd double," + 
                     "drybiom DOUBLE," +
                     "drybiot DOUBLE," +
+                    "volcfgrs DOUBLE," +
+                    "volcfnet DOUBLE," +
+                    "volcsgrs DOUBLE," +
                     "voltsgrs DOUBLE," +
                     "fvs_tree_id CHAR(10)," +
                     "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
@@ -2670,6 +2754,9 @@ namespace FIA_Biosum_Manager
                     "roughcull DOUBLE," +
                     "decaycd BYTE," +
                     "totage DOUBLE," +
+                    "SUBP BYTE," +
+                    "FORMCL BYTE," +
+                    "CULLBF DOUBLE," +
                     //START: ADDED BIOSUM_VOLUME COLUMNS
                     "sitree INTEGER, " + 
                     "wdldstem INTEGER," + 
@@ -2688,7 +2775,14 @@ namespace FIA_Biosum_Manager
                     "cfsnd DECIMAL(3,0)," + 
                     "bfsnd DECIMAL(3,0)," + 
                     "precipitation DOUBLE," + 
-                    "balive DOUBLE," + 
+                    "balive DOUBLE," +
+                    "diahtcd INTEGER," +
+                    "standing_dead_cd INTEGER," +
+                    "volcfsnd_calc DECIMAL(13,6)," +
+                    "drybio_bole_calc DECIMAL(13,6)," +
+                    "drybio_top_calc DECIMAL(13,6)," +
+                    "drybio_sapling_calc DECIMAL(13,6)," +
+                    "drybio_wdld_spp_calc DECIMAL(13,6)," +
                     //END: ADDED BIOSUM_VOLUME COLUMNS
                     "volcfnet DOUBLE," +
                     "volcfgrs DOUBLE," +
@@ -2696,7 +2790,8 @@ namespace FIA_Biosum_Manager
                     "drybiom DOUBLE," +
                     "drybiot DOUBLE," +
                     "voltsgrs DOUBLE," +
-                    "fvs_tree_id CHAR(10))";
+                    "fvs_tree_id CHAR(10)," +
+                    "FvsCreatedTree_YN CHAR(1) DEFAULT 'N')";
 
             }
             public void CreateOracleInputFCSBiosumVolumesTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
@@ -2728,6 +2823,9 @@ namespace FIA_Biosum_Manager
                     "CULL DOUBLE," +
                     "DECAYCD BYTE," +
                     "TOTAGE DOUBLE," +
+                    "SUBP BYTE," +
+                    "FORMCL BYTE," +
+                    "CULLBF DOUBLE," +
                     //START: ADDED BIOSUM_VOLUME COLUMNS
                     "SITREE INTEGER," +
                     "WDLDSTEM INTEGER," +
@@ -2747,6 +2845,13 @@ namespace FIA_Biosum_Manager
                     "BFSND INTEGER," +
                     "PRECIPITATION DOUBLE," +
                     "BALIVE DOUBLE," +
+                    "DIAHTCD INTEGER," +
+                    "STANDING_DEAD_CD INTEGER," +
+                    "VOLCFSND_CALC DOUBLE," +
+                    "DRYBIO_BOLE_CALC DOUBLE," +
+                    "DRYBIO_TOP_CALC DOUBLE," +
+                    "DRYBIO_SAPLING_CALC DOUBLE," +
+                    "DRYBIO_WDLD_SPP_CALC DOUBLE," +
                     //END: ADDED BIOSUM_VOLUME COLUMNS
                     "TRE_CN CHAR(34)," +
                     "CND_CN CHAR(34)," +
@@ -2784,6 +2889,9 @@ namespace FIA_Biosum_Manager
                     "CULL DOUBLE," +
                     "DECAYCD BYTE," +
                     "TOTAGE DOUBLE," +
+                    "SUBP BYTE," +
+                    "FORMCL BYTE," +
+                    "CULLBF DOUBLE," +
                     //START: ADDED BIOSUM_VOLUME COLUMNS
                     "SITREE INTEGER, " +
                     "WDLDSTEM INTEGER," +
@@ -2803,6 +2911,13 @@ namespace FIA_Biosum_Manager
                     "BFSND INTEGER," +
                     "PRECIPITATION DOUBLE," +
                     "BALIVE DOUBLE," +
+                    "DIAHTCD INTEGER," +
+                    "STANDING_DEAD_CD INTEGER," +
+                    "VOLCFSND_CALC DOUBLE," +
+                    "DRYBIO_BOLE_CALC DOUBLE," +
+                    "DRYBIO_TOP_CALC DOUBLE," +
+                    "DRYBIO_SAPLING_CALC DOUBLE," +
+                    "DRYBIO_WDLD_SPP_CALC DOUBLE," +
                     //END: ADDED BIOSUM_VOLUME COLUMNS
                     "TRE_CN CHAR(34)," +
                     "CND_CN CHAR(34)," +
@@ -4009,7 +4124,7 @@ namespace FIA_Biosum_Manager
                     "spcd INTEGER," +
                     "spgrpcd INTEGER," +
                     "dia SINGLE," +
-                    "diahtcd BYTE," +
+                    "diahtcd BYTE," + //TODO: test if the new integer version in the biosum volumes section works 
                     "ht DOUBLE," +
                     "htcd BYTE," +
                     "actualht DOUBLE," +
@@ -4034,6 +4149,7 @@ namespace FIA_Biosum_Manager
                     "drybiom DOUBLE," +
                     "bhage INTEGER," +
                     "cullbf DOUBLE," +
+                    "cullcf DOUBLE," +
                     "cullsf DOUBLE," +
                     "totage DOUBLE," +
                     "mist_cl_cd INTEGER," +
@@ -4067,7 +4183,13 @@ namespace FIA_Biosum_Manager
                     "cullform DECIMAL(3,0)," +
                     "cullmstop DECIMAL(3,0)," +
                     "cfsnd DECIMAL(3,0)," +
-                    "bfsnd DECIMAL(3,0)," + 
+                    "bfsnd DECIMAL(3,0)," +
+                    "standing_dead_cd INTEGER," +
+                    "volcfsnd DECIMAL(13,6)," +
+                    "drybio_bole DECIMAL(13,6)," +
+                    "drybio_top DECIMAL(13,6)," +
+                    "drybio_sapling DECIMAL(13,6)," +
+                    "drybio_wdld_spp DECIMAL(13,6)," +
                     //END: ADDED BIOSUM_VOLUME COLUMNS
                     "fvs_tree_id CHAR(10)," +
                     "idb_alltree_id LONG," +

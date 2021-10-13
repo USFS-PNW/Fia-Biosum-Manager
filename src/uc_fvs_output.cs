@@ -6,8 +6,7 @@ using System.Data;
 using System.Windows.Forms;
 using System.Threading;
 using System.Collections.Generic;
-
-
+using System.Linq;
 
 
 namespace FIA_Biosum_Manager
@@ -200,6 +199,7 @@ namespace FIA_Biosum_Manager
             if (m_oQueries.m_oFvs.m_strFvsTreeTable.Trim().Length == 0)
             {
                 m_oQueries.m_oFvs.m_strFvsTreeTable = Tables.FVS.DefaultFVSTreeTableName;
+                m_strFvsTreeTable = Tables.FVS.DefaultFVSTreeTableName;
             }
 
 			
@@ -222,7 +222,7 @@ namespace FIA_Biosum_Manager
 
             m_intError = frmMain.Validate_OracleConnectivity();
 
-            lblFSNetwork.Text = FIA_Biosum_Manager.utils.FS_NETWORK == utils.FS_NETWORK_STATUS.NotAvailable ? "ORACLE XE" : "FS NETWORK ANL_PNW_FIA_FCS";
+            lblFSNetwork.Text = FIA_Biosum_Manager.utils.FS_NETWORK == utils.FS_NETWORK_STATUS.NotAvailable ? "ORACLE XE BIOSUM_VOLUME" : "FS NETWORK FCS_TREE.DB BIOSUM_CALC";
 		}
        
 
@@ -2546,8 +2546,6 @@ namespace FIA_Biosum_Manager
             string strAuditDbFile;
 			string strCurVariant="";
 			
-			string strFvsTreeTable="";
-			
 			bool bUpdateCondTable=false;
 			
             string strFVSOutPrePostPathAndDbFile = "";
@@ -2905,7 +2903,7 @@ namespace FIA_Biosum_Manager
                             
                             if (m_bDebug && frmMain.g_intDebugLevel > 1)
                                 this.WriteText(m_strDebugFile, "\r\nSTART: Create PREPOST DbFile table links " + System.DateTime.Now.ToString() + "\r\n");
-                            RunAppend_CreatePREPOSTDbFileAndTableLinks(strOutDirAndFile, strAuditDbFile, strVariant,"FVS_TREE", strCutListTempDbFile);
+                            RunAppend_CreatePREPOSTDbFileAndTableLinks(strOutDirAndFile, strAuditDbFile, strVariant, m_strFvsTreeTable, strCutListTempDbFile);
                             if (m_bDebug && frmMain.g_intDebugLevel > 1)
                                 this.WriteText(m_strDebugFile, "\r\nEND: Create PREPOST DbFile table links " + System.DateTime.Now.ToString() + "\r\n");
                            
@@ -3017,10 +3015,8 @@ namespace FIA_Biosum_Manager
                             //
                             if (intItemError == 0)
                             {
-                                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim() + " Update FVS_TREE table");
-                                RunAppend_UpdateFVSTreeTable(strPackage, strVariant, strRx1, strRx2, strRx3, strRx4,
-                                    strFvsTreeTable,
-                                    ref intItemError, ref strItemError);
+                                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control) this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim() + " Update " + m_strFvsTreeTable + " table");
+                                RunAppend_UpdateFVSTreeTable(strPackage, strVariant, strRx1, strRx2, strRx3, strRx4, m_strFvsTreeTable, ref intItemError, ref strItemError);
 
                                 if (intItemError == 0)
                                 {
@@ -3530,7 +3526,7 @@ namespace FIA_Biosum_Manager
                                             m_dao.DeleteTableFromMDB(oDbFileItem.FullPath,"fcs_biosum_volume");
                                         }
                                         oTableLinkItem = new TableLinkItem();
-                                        oTableLinkItem.TableName = "BIOSUM_VOLUME";
+                                        oTableLinkItem.TableName = Tables.VolumeAndBiomass.BiosumVolumeCalcTable;
                                         oTableLinkItem.LinkedTableName = "fcs_biosum_volume";
 
                                         oDbFileItem.TableLinkCollection.Add(oTableLinkItem);
@@ -3538,13 +3534,34 @@ namespace FIA_Biosum_Manager
                                         {
                                             System.Threading.Thread.Sleep(2000*z);
                                             m_dao.m_intError = 0;
-                                            m_dao.CreateOracleXETableLink("FIA Biosum Oracle Services", "fcs_biosum", "fcs", "FCS_BIOSUM", "BIOSUM_VOLUME", oDbFileItem.FullPath.Trim(), "fcs_biosum_volume");
+                                            m_dao.CreateOracleXETableLink("FIA Biosum Oracle Services", "fcs_biosum", "fcs", "FCS_BIOSUM",
+                                                Tables.VolumeAndBiomass.BiosumVolumeCalcTable,
+                                                oDbFileItem.FullPath.Trim(), "fcs_biosum_volume");
                                             if (m_dao.m_intError==0) break;
                                         }
                                         if (m_dao.m_intError!=0)
                                         {
                                             MessageBox.Show("!!Failed to create Oracle XE ODBC table link!! Contact technical support","FIA Biosum");
                                         }
+                                    }
+
+                                    //
+                                    //CREATE A TABLE LINK TO THE REF_SPECIES TABLE
+                                    //
+                                    //ref_species table link
+                                    if (m_dao.m_intError == 0)
+                                    {
+                                        z = m_oQueries.m_oDataSource.getDataSourceTableNameRow("FIA Tree Species Reference");
+                                        oTableLinkItem = new TableLinkItem();
+                                        oTableLinkItem.TableName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.TABLE];
+                                        oTableLinkItem.LinkedTableName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.TABLE];
+                                        oTableLinkItem.DbFileName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.MDBFILE].Trim();
+                                        oTableLinkItem.Directory = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.PATH].Trim();
+                                        macrosubst oMacroSub = new macrosubst();
+                                        oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
+                                        var strAppDataPath = oMacroSub.GeneralTranslateVariableSubstitution(oTableLinkItem.FullPath);
+                                        m_dao.CreateTableLink(oDbFileItem.FullPath, oTableLinkItem.LinkedTableName, strAppDataPath, oTableLinkItem.TableName, true);
+                                        oDbFileItem.TableLinkCollection.Add(oTableLinkItem);
                                     }
                                 }
                                
@@ -3586,10 +3603,13 @@ namespace FIA_Biosum_Manager
                                                         oTableLinkItem.FullPath,
                                                         oTableLinkItem.TableName,
                                                         true);
-                                m_oPrePostDbFileItem_Collection.Add(oDbFileItem);
+                                oDbFileItem.TableLinkCollection.Add(oTableLinkItem);
                             }
 
-                        
+                            if (m_dao.m_intError == 0)
+                            {
+                                m_oPrePostDbFileItem_Collection.Add(oDbFileItem);
+                            }
                     }
                     
                     
@@ -4103,7 +4123,7 @@ namespace FIA_Biosum_Manager
                                                   string p_strRx2,
                                                   string p_strRx3,
                                                   string p_strRx4,
-                                                  string p_strFvsTreeTable,
+                                                  string strFvsTreeTable,
                                                   ref int p_intError,
                                                   ref string p_strError)
         {
@@ -4115,6 +4135,7 @@ namespace FIA_Biosum_Manager
 
 
 
+            string strColumns = "";
             string strValues = "";
             string strRx = "";
             string strCycle = "";
@@ -4123,10 +4144,11 @@ namespace FIA_Biosum_Manager
             string strDbFile = "";
             string strFVSOutTable = "";
             string strFVSOutTableLink = "";
+            string strFvsOutSummaryLink = "";
+            string strFiaTreeSpeciesRefTableLink = "";
             string strFVSSummarySeqNumMtxTableLink = "";
             string strFVSOutSeqNumMatrixTableLink = "";
             string strCasesTable = "";
-            string strFvsTreeTable = "fvs_tree";
             string strFvsTreeTCuFtTable = "fvs_tree_TCuFt";
             string strConn = "";
             bool bIdColumnExist = false;
@@ -4153,7 +4175,6 @@ namespace FIA_Biosum_Manager
                 strDbFile = m_oPrePostDbFileItem_Collection.Item(y).DbFileName.Trim().ToUpper();
                 if (strDbFile == "PREPOST_FVS_CUTLIST.ACCDB")
                 {
-
                     for (x = 0; x <= m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Count - 1; x++)
                     {
                         TableLinkItem oTableLinkItem = m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Item(x);
@@ -4210,7 +4231,15 @@ namespace FIA_Biosum_Manager
                                     if (m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Item(z).TableName == "FVS_CASES")
                                     {
                                         strCasesTable = m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Item(z).LinkedTableName;
-                                        break;
+                                    }
+                                    else if (m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Item(z).TableName == "FVS_SUMMARY")
+                                    {
+                                        strFvsOutSummaryLink = m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Item(z).LinkedTableName;
+                                    }
+                                    else if (m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Item(z).TableName ==
+                                             m_oQueries.m_oDataSource.getValidDataSourceTableName(Datasource.TableTypes.FiaTreeSpeciesReference))
+                                    {
+                                        strFiaTreeSpeciesRefTableLink = m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Item(z).LinkedTableName;
                                     }
                                 }
 
@@ -4625,58 +4654,22 @@ namespace FIA_Biosum_Manager
                                 //
                                 //UPDATE VOLUME COLUMNS
                                 //
-                                //update cycle 1 records with tree volumes and actualht
+                                //Update Cycle=1 records with tree volumes and actualht
                                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + " Update volume columns with tree table values for cycle 1 records");
                                 frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
-                                oAdo.m_strSQL = "UPDATE " + strFvsTreeTable + " f " +
-                                                  "INNER JOIN " + m_oQueries.m_oFIAPlot.m_strTreeTable + " t " +
-                                                  "ON f.biosum_cond_id = t.biosum_cond_id AND " +
-                                                     "f.fvs_tree_id=t.fvs_tree_id " +
-                                                  "SET f.volcsgrs=t.volcsgrs," +
-                                                      "f.volcfgrs=t.volcfgrs," +
-                                                      "f.volcfnet=t.volcfnet," +
-                                                      "f.drybiot=t.drybiot," +
-                                                      "f.drybiom=t.drybiom," +
-                                                      "f.voltsgrs=t.voltsgrs " +
-                                                  "WHERE f.rxcycle='1' AND f.rxpackage='" + p_strPackage.Trim() + "'";
-                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
-                                oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
-                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
                                 m_intProgressStepCurrentCount++;
-                                UpdateTherm(m_frmTherm.progressBar1,
-                                           m_intProgressStepCurrentCount,
-                                           m_intProgressStepTotalCount);
+                                UpdateTherm(m_frmTherm.progressBar1, m_intProgressStepCurrentCount, m_intProgressStepTotalCount);
 
-
-
-
-                                //udpate growth projected trees with tree volumes
+                                //update growth projected trees with tree volumes
                                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + " Prepare data for Oracle volume calculation");
                                 frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
-                                if (oAdo.TableExist(oConn, Tables.FVS.DefaultOracleInputVolumesTable))
-                                    oAdo.SqlNonQuery(oConn, "DROP TABLE " + Tables.FVS.DefaultOracleInputVolumesTable);
-                                frmMain.g_oTables.m_oFvs.CreateOracleInputBiosumVolumesTable(oAdo, oConn, Tables.FVS.DefaultOracleInputVolumesTable);
-                                oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.FVSOut_BuiltInputTableForVolumeCalculation_Step1(
-                                                   Tables.FVS.DefaultOracleInputVolumesTable,
+                                if (oAdo.TableExist(oConn, Tables.VolumeAndBiomass.BiosumVolumesInputTable))
+                                    oAdo.SqlNonQuery(oConn, "DROP TABLE " + Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                                frmMain.g_oTables.m_oFvs.CreateOracleInputBiosumVolumesTable(oAdo, oConn, Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step1(
+                                                   Tables.VolumeAndBiomass.BiosumVolumesInputTable,
                                                    strFvsTreeTable, p_strPackage);
-
-
-
-                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
-
-                                oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
-
-                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-                                oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.FVSOut_BuiltInputTableForVolumeCalculation_Step1a(
-                                                   Tables.FVS.DefaultOracleInputVolumesTable,
-                                                   strFvsTreeTable, p_strPackage);
-
 
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
@@ -4693,8 +4686,8 @@ namespace FIA_Biosum_Manager
 
                                 //join plot, cond, and tree table to oracle input tree volumes table.
                                 //NOTE: this query handles existing FIADB trees that have been grown forward.
-                                oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.FVSOut_BuildInputTableForVolumeCalculation_Step2(
-                                                   Tables.FVS.DefaultOracleInputVolumesTable,
+                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step2(
+                                                   Tables.VolumeAndBiomass.BiosumVolumesInputTable,
                                                    m_oQueries.m_oFIAPlot.m_strTreeTable,
                                                    m_oQueries.m_oFIAPlot.m_strPlotTable,
                                                    m_oQueries.m_oFIAPlot.m_strCondTable);
@@ -4717,9 +4710,45 @@ namespace FIA_Biosum_Manager
                                            m_intProgressStepTotalCount);
 
 
+                                //Set DIAHTCD for FIADB Cycle<>1 trees to their Cycle=1 DIAHTCD values
+                                oAdo.m_strSQL = $@"UPDATE {Tables.VolumeAndBiomass.BiosumVolumesInputTable} b 
+                                                   INNER JOIN {m_oQueries.m_oFIAPlot.m_strTreeTable} t 
+                                                   ON t.biosum_cond_id=b.biosum_cond_id AND t.fvs_tree_id=b.fvs_tree_id
+                                                   SET b.diahtcd=t.diahtcd WHERE b.fvscreatedtree_yn='N'";
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
+                                oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                                //Set DIAHTCD for FVS-Created trees using FIA_TREE_SPECIES_REF.WOODLAND_YN
+                                oAdo.m_strSQL = $@"UPDATE {Tables.VolumeAndBiomass.BiosumVolumesInputTable} b 
+                                                   INNER JOIN {strFiaTreeSpeciesRefTableLink} ref ON cint(b.spcd)=ref.spcd
+                                                   SET b.diahtcd=IIF(ref.woodland_yn='N', 1, 2) WHERE b.fvscreatedtree_yn='Y'";
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
+                                oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                                //Update FVSCreatedTrees balive=fvs_summary.BA
+                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step2a(
+                                                   Tables.VolumeAndBiomass.BiosumVolumesInputTable,
+                                                   m_oQueries.m_oFIAPlot.m_strPlotTable,
+                                                   m_oQueries.m_oFIAPlot.m_strCondTable, 
+                                                   strFvsOutSummaryLink);
+
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
+
+                                oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
+
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
                                 //join cond table to oracle input tree volumes table.
-                                oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.FVSOut_BuildInputTableForVolumeCalculation_Step3(
-                                                  Tables.FVS.DefaultOracleInputVolumesTable,
+                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step3(
+                                                  Tables.VolumeAndBiomass.BiosumVolumesInputTable,
                                                   m_oQueries.m_oFIAPlot.m_strCondTable);
 
 
@@ -4738,9 +4767,9 @@ namespace FIA_Biosum_Manager
                                 if (oAdo.TableExist(oConn, "CULL_TOTAL_WORK_TABLE"))
                                     oAdo.SqlNonQuery(oConn, "DROP TABLE CULL_TOTAL_WORK_TABLE");
 
-                                oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.FVSOut_BuildInputTableForVolumeCalculation_Step4(
+                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step4(
                                                   "cull_total_work_table",
-                                                  Tables.FVS.DefaultOracleInputVolumesTable);
+                                                  Tables.VolumeAndBiomass.BiosumVolumesInputTable);
 
 
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
@@ -4755,9 +4784,9 @@ namespace FIA_Biosum_Manager
                                            m_intProgressStepTotalCount);
 
 
-                                oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.PNWRS.FVSOut_BuildInputTableForVolumeCalculation_Step5(
+                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.PNWRS.BuildInputTableForVolumeCalculation_Step5(
                                                     "cull_total_work_table",
-                                                    Tables.FVS.DefaultOracleInputVolumesTable);
+                                                    Tables.VolumeAndBiomass.BiosumVolumesInputTable);
 
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
@@ -4770,9 +4799,9 @@ namespace FIA_Biosum_Manager
                                            m_intProgressStepCurrentCount,
                                            m_intProgressStepTotalCount);
 
-                                oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.PNWRS.FVSOut_BuildInputTableForVolumeCalculation_Step6(
+                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.PNWRS.BuildInputTableForVolumeCalculation_Step6(
                                                   "cull_total_work_table",
-                                                  Tables.FVS.DefaultOracleInputVolumesTable);
+                                                  Tables.VolumeAndBiomass.BiosumVolumesInputTable);
 
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
@@ -4790,9 +4819,9 @@ namespace FIA_Biosum_Manager
 
 
 
-                                oAdo.m_strSQL = "SELECT * FROM " + Tables.FVS.DefaultOracleInputVolumesTable;
+                                oAdo.m_strSQL = "SELECT * FROM " + Tables.VolumeAndBiomass.BiosumVolumesInputTable;
 
-                                int intTotalRecs = (int)oAdo.getSingleDoubleValueFromSQLQuery(oConn, "SELECT COUNT(*) AS TTLCOUNT FROM " + Tables.FVS.DefaultOracleInputVolumesTable, "temp");
+                                int intTotalRecs = (int)oAdo.getSingleDoubleValueFromSQLQuery(oConn, "SELECT COUNT(*) AS TTLCOUNT FROM " + Tables.VolumeAndBiomass.BiosumVolumesInputTable, "temp");
                                 if (intTotalRecs < 2)
                                 {
 
@@ -4809,7 +4838,7 @@ namespace FIA_Biosum_Manager
 
                                     if (oAdo.m_OleDbDataReader.HasRows)
                                     {
-                                        FIADBOracle.Services.FS_NETWORK_AVAILABLE = FIA_Biosum_Manager.utils.FS_NETWORK == utils.FS_NETWORK_STATUS.Available ? true : false;
+                                        FIADBOracle.Services.FS_NETWORK_AVAILABLE = utils.FS_NETWORK_IS_AVAILABLE;
                                         m_oOracleServices.Start();
 
                                         if (m_oOracleServices.m_intError == 0)
@@ -4864,6 +4893,13 @@ namespace FIA_Biosum_Manager
                                                 m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.BfSnd = Convert.ToInt32(oAdo.m_OleDbDataReader["bfsnd"]);
                                                 m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.Precipitation = Convert.ToDouble(oAdo.m_OleDbDataReader["precipitation"]);
                                                 m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.BaLive = Convert.ToDouble(oAdo.m_OleDbDataReader["balive"]);
+//                                                m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.DiaHtCd = Convert.ToInt32(oAdo.m_OleDbDataReader["diahtcd"]);
+//                                                m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.StandingDeadCd = Convert.ToInt32(oAdo.m_OleDbDataReader["standing_dead_cd"]);
+//                                                m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.VolcfsndCalc = Convert.ToDouble(oAdo.m_OleDbDataReader["volcfsnd_calc"]);
+//                                                m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.DrybioBoleCalc = Convert.ToDouble(oAdo.m_OleDbDataReader["drybio_bole_calc"]);
+//                                                m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.DrybioTopCalc = Convert.ToDouble(oAdo.m_OleDbDataReader["drybio_top_calc"]);
+//                                                m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.DrybioSaplingCalc = Convert.ToDouble(oAdo.m_OleDbDataReader["drybio_sapling_calc"]);
+//                                                m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord.DrybioWdldSppCalc = Convert.ToDouble(oAdo.m_OleDbDataReader["drybio_wdld_spp_calc"]);
                                                 //END: ADDED BIOSUM_VOLUME COLUMNS
                                                 m_oOracleServices.m_oTree.AddBiosumRecord(m_oOracleServices.m_oTree.BiosumTreeInputSingleRecord);
 
@@ -4925,12 +4961,12 @@ namespace FIA_Biosum_Manager
                                     }
                                     else oAdo.m_OleDbDataReader.Close();
                                 }
-                                else if (FIA_Biosum_Manager.utils.FS_NETWORK == utils.FS_NETWORK_STATUS.Available)
+                                else if (utils.FS_NETWORK_IS_AVAILABLE)
                                 {
-                                    if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\FCS_TREE.db") == false)
+                                    if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase) == false)
                                     {
                                         m_intError = -1;
-                                        m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\FCS_TREE.db not found";
+                                        m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase + " not found";
                                     }
                                     if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR")==false)
                                     {
@@ -4951,17 +4987,19 @@ namespace FIA_Biosum_Manager
                                         _OracleADO = oOracle;
                                         _SQLite = oSQLite;
                                         _MSAccess = oAdo;
+                                        var columnsAndDataTypes = Tables.VolumeAndBiomass.ColumnsAndDataTypes;
+                                        strColumns = string.Join(",", columnsAndDataTypes.Select(item => item.Item1));
                                         //
                                         //CONNECT TO SQLITE AND REMOVE DATA FROM SQLITE DB
                                         //
-                                        oSQLite.OpenConnection(false, 1, frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\FCS_TREE.db", "BIOSUM");
+                                        oSQLite.OpenConnection(false, 1, frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase, "BIOSUM");
 
-                                        oSQLite.SqlNonQuery(oSQLite.m_Connection, "DELETE FROM BIOSUM_VOLUME");
+                                        oSQLite.SqlNonQuery(oSQLite.m_Connection, $"DELETE FROM {Tables.VolumeAndBiomass.BiosumVolumeCalcTable}");
 
-                                        if (oAdo.TableExist(oConn, Tables.FVS.DefaultOracleInputFCSVolumesTable))
-                                            oAdo.SqlNonQuery(oConn, "DROP TABLE " + Tables.FVS.DefaultOracleInputFCSVolumesTable);
+                                        if (oAdo.TableExist(oConn, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable))
+                                            oAdo.SqlNonQuery(oConn, "DROP TABLE " + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
 
-                                        frmMain.g_oTables.m_oFvs.CreateOracleInputFCSBiosumVolumesTable(oAdo, oConn, Tables.FVS.DefaultOracleInputFCSVolumesTable);
+                                        frmMain.g_oTables.m_oFvs.CreateOracleInputFCSBiosumVolumesTable(oAdo, oConn, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
 
 
 
@@ -4973,13 +5011,13 @@ namespace FIA_Biosum_Manager
 
                                         //insert records 
                                         //from 
-                                        //table biosum_volumes_input (DefaultOracleInputVolumesTable)
+                                        //table biosum_volumes_input (BiosumVolumesInputTable)
                                         //into 
-                                        //table fcs_biosum_volumes_input (DefaultOracleInputFCSVolumesTable)
+                                        //table fcs_biosum_volumes_input (FcsBiosumVolumesInputTable)
                                         oAdo.m_strSQL =
-                                            Queries.FVS.VolumesAndBiomass.FVSOut_BuildInputTableForVolumeCalculation_Step7(
-                                                    Tables.FVS.DefaultOracleInputVolumesTable,
-                                                    Tables.FVS.DefaultOracleInputFCSVolumesTable);
+                                            Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step7(
+                                                    Tables.VolumeAndBiomass.BiosumVolumesInputTable,
+                                                    Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
 
                                         if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                             this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
@@ -4989,22 +5027,8 @@ namespace FIA_Biosum_Manager
                                         //
                                         //INSERT ALL THE MS ACCESS DATA INTO SQLITE
                                         //
-                                        //string strColumns = "STATECD,COUNTYCD,PLOT,INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT," +
-                                        //        "ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE,TRE_CN,CND_CN,PLT_CN," +
-                                        //        "VOLCSGRS_CALC,VOLCFGRS_CALC,VOLCFNET_CALC,DRYBIOT_CALC,DRYBIOM_CALC,VOLTSGRS_CALC";
-                                        //BIOSUM_VOLUME ADDED COLUMNS
-                                        string strColumns = "STATECD,COUNTYCD,PLOT,INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT," +
-                                                            "ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE," +
-                                                             //START: ADDED BIOSUM_VOLUME COLUMNS
-                                                             "SITREE,WDLDSTEM,UPPER_DIA,UPPER_DIA_HT," + 
-                                                             "CENTROID_DIA,CENTROID_DIA_HT_ACTUAL,SAWHT," + 
-                                                             "HTDMP,BOLEHT,CULLCF,CULL_FLD,CULLDEAD," + 
-                                                             "CULLFORM,CULLMSTOP,CFSND,BFSND,PRECIPITATION,BALIVE," +
-                                                             //END: ADDED BIOSUM_VOLUME COLUMNS
-                                                            "TRE_CN,CND_CN,PLT_CN," +
-                                                            "VOLCSGRS_CALC,VOLCFGRS_CALC,VOLCFNET_CALC,DRYBIOT_CALC,DRYBIOM_CALC,VOLTSGRS_CALC";
-                                        strValues = "";
-                                        oAdo.SqlQueryReader(oConn, "SELECT * FROM " + Tables.FVS.DefaultOracleInputFCSVolumesTable);
+
+                                        oAdo.SqlQueryReader(oConn, "SELECT * FROM " + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
                                         if (oAdo.m_OleDbDataReader.HasRows)
                                         {
                                             System.Data.SQLite.SQLiteTransaction transaction;
@@ -5020,17 +5044,17 @@ namespace FIA_Biosum_Manager
                                             try
                                             {
                                                 COUNT = 0;
-                                                UpdateTherm(m_frmTherm.progressBar1,
-                                                   COUNT, intTotalRecs);
+                                                UpdateTherm(m_frmTherm.progressBar1, COUNT, intTotalRecs);
                                                 while (oAdo.m_OleDbDataReader.Read())
                                                 {
                                                     COUNT++;
-                                                    InsertValues(oAdo.m_OleDbDataReader, ref strValues);
-                                                    command.CommandText = "INSERT INTO BIOSUM_VOLUME (" + strColumns + ") VALUES (" + strValues + ")";
+                                                    strValues = utils.GetParsedInsertValues(oAdo.m_OleDbDataReader, columnsAndDataTypes);
+                                                    command.CommandText = $"INSERT INTO {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} ({strColumns}) VALUES ({strValues})";
                                                     command.ExecuteNonQuery();
                                                     //if (COUNT == 100) break;
                                                     //frmMain.g_oDelegate.SetControlPropertyValue((Control)lblSQLite2Msg, "Text", "INSERT DATA: " + COUNT.ToString() + " of " + intTotalCount.ToString());
-                                                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + " Prepare Tree Data for Oracle Input...Stand By [" + COUNT.ToString() + "/" + intTotalRecs.ToString() + "]");
+                                                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", 
+                                                        "Package:" + p_strPackage.Trim() + " Prepare Tree Data for Oracle Input...Stand By [" + COUNT.ToString() + "/" + intTotalRecs.ToString() + "]");
                                                     frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
                                                     UpdateTherm(m_frmTherm.progressBar1,
                                                    COUNT, intTotalRecs);
@@ -5078,27 +5102,29 @@ namespace FIA_Biosum_Manager
 
                                             _MSAccess = oAdo;
 
-                                            _SQLite.OpenConnection(false, 1, frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\FCS_TREE.db", "BIOSUM");
+                                            _SQLite.OpenConnection(false, 1, frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase, "BIOSUM");
 
-                                            //COUNT = Convert.ToInt32(_oSQLite.getSingleDoubleValueFromSQLQuery(_oSQLite.m_Connection,"SELECT COUNT(*) AS ROWCOUNT FROM BIOSUM_VOLUME","biosum_volume"));
+                                            //COUNT = Convert.ToInt32(_oSQLite.getSingleDoubleValueFromSQLQuery(_oSQLite.m_Connection,"SELECT COUNT(*) AS ROWCOUNT FROM BIOSUM_CALC","biosum_volume"));
 
                                             _MSAccess.OpenConnection(strConn, ref oConn);
 
-                                            if (_MSAccess.TableExist(oConn, "BIOSUM_VOLUME_OUTPUT"))
-                                                _MSAccess.SqlNonQuery(oConn, "DROP TABLE BIOSUM_VOLUME_OUTPUT");
+                                            if (_MSAccess.TableExist(oConn, Tables.VolumeAndBiomass.BiosumCalcOutputTable))
+                                                _MSAccess.SqlNonQuery(oConn, $"DROP TABLE {Tables.VolumeAndBiomass.BiosumCalcOutputTable}");
 
                                             System.Threading.Thread.Sleep(3000);
 
-                                            _MSAccess.SqlNonQuery(oConn, "SELECT * INTO BIOSUM_VOLUME_OUTPUT FROM " + Tables.FVS.DefaultOracleInputFCSVolumesTable + " WHERE 1=2");
+                                            _MSAccess.SqlNonQuery(oConn, $"SELECT * INTO {Tables.VolumeAndBiomass.BiosumCalcOutputTable} FROM {Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable} WHERE 1=2");
 
 
                                             //MSAccessBeginTransaction("BIOSUM_VOLUME_INPUT", "TRE_CN,VOLCSGRS_CALC,VOLCFGRS_CALC,VOLCFNET_CALC,DRYBIOT_CALC,DRYBIOM_CALC,VOLTSGRS_CALC", "TRE_CN",COUNT , "");
 
-                                            intTotalRecs = Convert.ToInt32(_SQLite.getSingleDoubleValueFromSQLQuery(_SQLite.m_Connection, "SELECT COUNT(*) AS ROWCOUNT FROM BIOSUM_VOLUME WHERE DRYBIOT_CALC IS NOT NULL OR VOLTSGRS_CALC IS NOT NULL", "biosum_volume"));
+                                            intTotalRecs = Convert.ToInt32(_SQLite.getSingleDoubleValueFromSQLQuery( _SQLite.m_Connection,
+                                                $"SELECT COUNT(*) AS ROWCOUNT FROM {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} WHERE DRYBIOT_CALC IS NOT NULL OR VOLTSGRS_CALC IS NOT NULL",
+                                                Tables.VolumeAndBiomass.BiosumVolumeCalcTable));
 
                                             UpdateTherm(m_frmTherm.progressBar1, 3, 6);
 
-                                            oSQLite.SqlQueryReader(oSQLite.m_Connection, "SELECT * FROM BIOSUM_VOLUME WHERE DRYBIOT_CALC IS NOT NULL OR VOLTSGRS_CALC IS NOT NULL");
+                                            oSQLite.SqlQueryReader(oSQLite.m_Connection, $"SELECT * FROM {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} WHERE DRYBIOT_CALC IS NOT NULL OR VOLTSGRS_CALC IS NOT NULL");
                                             if (oSQLite.m_DataReader.HasRows)
                                             {
                                                 System.Data.OleDb.OleDbTransaction transaction;
@@ -5110,26 +5136,27 @@ namespace FIA_Biosum_Manager
                                                 try
                                                 {
                                                     COUNT = 0;
-                                                    UpdateTherm(m_frmTherm.progressBar1,
-                                                   COUNT, intTotalRecs);
+                                                    UpdateTherm(m_frmTherm.progressBar1, COUNT, intTotalRecs);
                                                     while (oSQLite.m_DataReader.Read())
                                                     {
                                                         COUNT++;
-                                                        if (oSQLite.m_DataReader["TRE_CN"] != DBNull.Value &&
-                                                            Convert.ToString(oSQLite.m_DataReader["TRE_CN"]).Trim().Length > 0)
+                                                        if (oSQLite.m_DataReader["TRE_CN"] != DBNull.Value && Convert.ToString(oSQLite.m_DataReader["TRE_CN"]).Trim().Length > 0)
                                                         {
-
-
-                                                            InsertValues(oSQLite.m_DataReader, ref strValues);
-                                                            command.CommandText = "INSERT INTO BIOSUM_VOLUME_OUTPUT (" + strColumns + ") VALUES (" + strValues + ")";
+                                                            strValues = utils.GetParsedInsertValues(oSQLite.m_DataReader, columnsAndDataTypes);
+                                                            command.CommandText = $"INSERT INTO {Tables.VolumeAndBiomass.BiosumCalcOutputTable} ({strColumns}) VALUES ({strValues})";
                                                             command.ExecuteNonQuery();
-                                                            UpdateTherm(m_frmTherm.progressBar1,
-                                                                    COUNT, intTotalRecs);
-
+                                                            UpdateTherm(m_frmTherm.progressBar1, COUNT, intTotalRecs);
                                                         }
-                                                        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + "...Stand By [" + COUNT.ToString() + "/" + intTotalRecs.ToString() + "]");
-                                                        frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
+
+                                                        frmMain.g_oDelegate.SetControlPropertyValue(
+                                                            (System.Windows.Forms.Control) m_frmTherm.lblMsg, "Text",
+                                                            "Package:" + p_strPackage.Trim() + "...Stand By [" +
+                                                            COUNT.ToString() + "/" + intTotalRecs.ToString() + "]");
+                                                        frmMain.g_oDelegate.ExecuteControlMethod(
+                                                            (System.Windows.Forms.Control) this.m_frmTherm.lblMsg,
+                                                            "Refresh");
                                                     }
+
                                                     transaction.Commit();
                                                 }
                                                 catch (Exception err)
@@ -5158,19 +5185,14 @@ namespace FIA_Biosum_Manager
                                                         //oracle table fcs_biosum_volume 
                                                         //into 
                                                         //table fvs_tree
-                                                        oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.FVSOut_BuildInputTableForVolumeCalculation_Step9(
-                                                                           strFvsTreeTable, "BIOSUM_VOLUME_OUTPUT");
-
+                                                        oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step9(
+                                                                           strFvsTreeTable, Tables.VolumeAndBiomass.BiosumCalcOutputTable);
 
                                                         if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                                             this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
                                                         oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
                                                         if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                                             this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-
-
-
                                                     }
                                                 }
                                                 transaction.Dispose();
@@ -5193,8 +5215,8 @@ namespace FIA_Biosum_Manager
                                 else
                                 {
 
-                                    if (oAdo.TableExist(oConn, Tables.FVS.DefaultOracleInputFCSVolumesTable))
-                                        oAdo.SqlNonQuery(oConn, "DROP TABLE " + Tables.FVS.DefaultOracleInputFCSVolumesTable);
+                                    if (oAdo.TableExist(oConn, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable))
+                                        oAdo.SqlNonQuery(oConn, "DROP TABLE " + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
 
                                     m_oOracleServices.Start();
 
@@ -5202,12 +5224,12 @@ namespace FIA_Biosum_Manager
 
                                     m_oOracleServices.m_oTree.GetVolumesMode = FIADBOracle.Services.Tree.GetVolumesModeValues.SQLUpdate;
 
-                                    frmMain.g_oTables.m_oFvs.CreateOracleInputFCSBiosumVolumesTable(oAdo, oConn, Tables.FVS.DefaultOracleInputFCSVolumesTable);
+                                    frmMain.g_oTables.m_oFvs.CreateOracleInputFCSBiosumVolumesTable(oAdo, oConn, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
 
                                     oAdo.m_strSQL =
-                                        Queries.FVS.VolumesAndBiomass.FVSOut_BuildInputTableForVolumeCalculation_Step7(
-                                             Tables.FVS.DefaultOracleInputVolumesTable,
-                                             Tables.FVS.DefaultOracleInputFCSVolumesTable);
+                                        Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step7(
+                                             Tables.VolumeAndBiomass.BiosumVolumesInputTable,
+                                             Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
 
 
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
@@ -5218,8 +5240,8 @@ namespace FIA_Biosum_Manager
 
 
 
-                                    oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.FVSOut_BuildInputTableForVolumeCalculation_Step8(
-                                            Tables.FVS.DefaultOracleInputFCSVolumesTable, "fcs_biosum_volume");
+                                    oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step8(
+                                            Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable, "fcs_biosum_volume");
 
 
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
@@ -5243,7 +5265,7 @@ namespace FIA_Biosum_Manager
                                         oAdo.OpenConnection(strConn);
                                         m_oPrePostDbFileItem_Collection.Item(y).Connection = oAdo.m_OleDbConnection;
                                         oConn = oAdo.m_OleDbConnection;
-                                        oAdo.m_strSQL = Queries.FVS.VolumesAndBiomass.FVSOut_BuildInputTableForVolumeCalculation_Step9(
+                                        oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculationXE_Step9(
                                                            strFvsTreeTable, "fcs_biosum_volume");
 
 
@@ -6577,7 +6599,6 @@ namespace FIA_Biosum_Manager
 			string strRx="";
             string strSQL = "";
             string strFvsTreeFile;
-            string strFvsTreeTable;
             System.Windows.Forms.ListView oLv = (System.Windows.Forms.ListView)frmMain.g_oDelegate.GetListView(this.lstFvsOutput, false);
             System.Windows.Forms.ListViewItem oLvItem = null;
 
@@ -10029,407 +10050,5 @@ namespace FIA_Biosum_Manager
                 MessageBox.Show("The file " + strAuditDbFile + " does not exist");
             }
         }
-
-        private static void InsertValues(System.Data.OleDb.OleDbDataReader p_DataReader, ref string strValues)
-        {
-            strValues = Convert.ToInt32(p_DataReader["STATECD"]).ToString() + ",";
-            strValues = strValues + Convert.ToInt32(p_DataReader["COUNTYCD"]).ToString() + ",";
-            strValues = strValues + Convert.ToInt32(p_DataReader["PLOT"]).ToString() + ",";
-            strValues = strValues + Convert.ToInt32(p_DataReader["INVYR"]).ToString() + ",";
-            strValues = strValues + "'" + p_DataReader["VOL_LOC_GRP"].ToString() + "',";
-            strValues = strValues + Convert.ToInt32(p_DataReader["TREE"]).ToString() + ",";
-            strValues = strValues + Convert.ToInt32(p_DataReader["SPCD"]).ToString() + ",";
-
-            if (p_DataReader["DIA"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["DIA"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["HT"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["HT"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["ACTUALHT"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["ACTUALHT"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CR"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["CR"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["STATUSCD"] != DBNull.Value)
-                strValues = strValues + Convert.ToByte(p_DataReader["STATUSCD"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["TREECLCD"] != DBNull.Value)
-                strValues = strValues + Convert.ToByte(p_DataReader["TREECLCD"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["ROUGHCULL"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["ROUGHCULL"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-            if (p_DataReader["CULL"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["CULL"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["DECAYCD"] != DBNull.Value)
-                strValues = strValues + Convert.ToByte(p_DataReader["DECAYCD"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["TOTAGE"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["TOTAGE"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            //START: ADDED BIOSUM_VOLUME COLUMNS
-            if (p_DataReader["SITREE"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["SITREE"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["WDLDSTEM"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["WDLDSTEM"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["UPPER_DIA"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["UPPER_DIA"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["UPPER_DIA_HT"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["UPPER_DIA_HT"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CENTROID_DIA"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["CENTROID_DIA"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CENTROID_DIA_HT_ACTUAL"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["CENTROID_DIA_HT_ACTUAL"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["SAWHT"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["SAWHT"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["HTDMP"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["HTDMP"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["BOLEHT"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["BOLEHT"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CULLCF"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CULLCF"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CULL_FLD"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CULL_FLD"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CULLDEAD"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CULLDEAD"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CULLFORM"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CULLFORM"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CULLMSTOP"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CULLMSTOP"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CFSND"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CFSND"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["BFSND"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["BFSND"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["PRECIPITATION"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["PRECIPITATION"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["BALIVE"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["BALIVE"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-            //END: ADDED BIOSUM_VOLUME COLUMNS
-
-            strValues = strValues + "'" + p_DataReader["TRE_CN"].ToString() + "',";
-
-            if (p_DataReader["CND_CN"] != DBNull.Value)
-                strValues = strValues + "'" + p_DataReader["CND_CN"].ToString() + "',";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["PLT_CN"] != DBNull.Value)
-                strValues = strValues + "'" + p_DataReader["PLT_CN"].ToString() + "',";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["VOLCSGRS_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["VOLCSGRS_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["VOLCFGRS_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["VOLCFGRS_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["VOLCFNET_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["VOLCFNET_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["DRYBIOT_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["DRYBIOT_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["DRYBIOM_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["DRYBIOM_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["VOLTSGRS_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["VOLTSGRS_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            strValues = strValues.Substring(0, strValues.Length - 1);
-
-        }
-
-        private static void InsertValues(System.Data.SQLite.SQLiteDataReader p_DataReader, ref string strValues)
-        {
-            strValues = Convert.ToInt32(p_DataReader["STATECD"]).ToString() + ",";
-            strValues = strValues + Convert.ToInt32(p_DataReader["COUNTYCD"]).ToString() + ",";
-            strValues = strValues + Convert.ToInt32(p_DataReader["PLOT"]).ToString() + ",";
-            strValues = strValues + Convert.ToInt32(p_DataReader["INVYR"]).ToString() + ",";
-            strValues = strValues + "'" + p_DataReader["VOL_LOC_GRP"].ToString() + "',";
-            strValues = strValues + Convert.ToInt32(p_DataReader["TREE"]).ToString() + ",";
-            strValues = strValues + Convert.ToInt32(p_DataReader["SPCD"]).ToString() + ",";
-
-            if (p_DataReader["DIA"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["DIA"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["HT"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["HT"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["ACTUALHT"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["ACTUALHT"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CR"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["CR"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["STATUSCD"] != DBNull.Value)
-                strValues = strValues + Convert.ToByte(p_DataReader["STATUSCD"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["TREECLCD"] != DBNull.Value)
-                strValues = strValues + Convert.ToByte(p_DataReader["TREECLCD"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["ROUGHCULL"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["ROUGHCULL"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-            if (p_DataReader["CULL"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["CULL"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["DECAYCD"] != DBNull.Value)
-                strValues = strValues + Convert.ToByte(p_DataReader["DECAYCD"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["TOTAGE"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["TOTAGE"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            //START: ADDED BIOSUM_VOLUME COLUMNS
-            if (p_DataReader["SITREE"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["SITREE"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["WDLDSTEM"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["WDLDSTEM"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["UPPER_DIA"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["UPPER_DIA"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["UPPER_DIA_HT"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["UPPER_DIA_HT"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CENTROID_DIA"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["CENTROID_DIA"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CENTROID_DIA_HT_ACTUAL"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["CENTROID_DIA_HT_ACTUAL"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["SAWHT"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["SAWHT"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["HTDMP"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["HTDMP"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["BOLEHT"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["BOLEHT"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CULLCF"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CULLCF"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CULL_FLD"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CULL_FLD"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CULLDEAD"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CULLDEAD"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CULLFORM"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CULLFORM"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CULLMSTOP"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CULLMSTOP"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["CFSND"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["CFSND"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["BFSND"] != DBNull.Value)
-                strValues = strValues + Convert.ToInt32(p_DataReader["BFSND"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["PRECIPITATION"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["PRECIPITATION"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["BALIVE"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["BALIVE"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-            //END: ADDED BIOSUM_VOLUME COLUMNS
-
-
-            strValues = strValues + "'" + p_DataReader["TRE_CN"].ToString() + "',";
-
-            if (p_DataReader["CND_CN"] != DBNull.Value)
-                strValues = strValues + "'" + p_DataReader["CND_CN"].ToString() + "',";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["PLT_CN"] != DBNull.Value)
-                strValues = strValues + "'" + p_DataReader["PLT_CN"].ToString() + "',";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["VOLCSGRS_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["VOLCSGRS_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["VOLCFGRS_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["VOLCFGRS_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["VOLCFNET_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["VOLCFNET_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["DRYBIOT_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["DRYBIOT_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            if (p_DataReader["DRYBIOM_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["DRYBIOM_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-
-
-            if (p_DataReader["VOLTSGRS_CALC"] != DBNull.Value)
-                strValues = strValues + Convert.ToDouble(p_DataReader["VOLTSGRS_CALC"]).ToString() + ",";
-            else
-                strValues = strValues + "null,";
-
-            strValues = strValues.Substring(0, strValues.Length - 1);
-
-
-        }
-
-        
-		
-	}
-    
+    }
 }

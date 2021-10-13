@@ -2,6 +2,7 @@ using SQLite.ADO;
 using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
+using System.Linq;
 
 namespace FIA_Biosum_Manager
 {
@@ -533,7 +534,9 @@ namespace FIA_Biosum_Manager
                             Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR1]) <= 8 &&
                             Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR2]) < 10))
                     {
-                        UpdateDatsources_5_8_10();
+                        UpdateDatasources_5_8_10();
+                        UpdateProjectVersionFile(strProjVersionFile);
+                        bPerformCheck = false;
                     }
                     else if ((Convert.ToInt16(m_strAppVerArray[APP_VERSION_MAJOR]) == 5 &&
                         Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR1]) > 6) &&
@@ -6144,18 +6147,156 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void UpdateDatsources_5_8_10()
+        public void UpdateDatasources_5_8_10()
         {
-            //@sorgtyler: your schema upgrade code goes here
-            //You may want to check for one or more of the new fields before trying to add them
-            //I have had trouble in the past when needing to run the upgrade code twice on a project because it
-            //failed in the middle.
+            //Update Master Tree/Cond/Plot tables
+            ado_data_access oAdo = new ado_data_access();
+            FIA_Biosum_Manager.Datasource oDs = new Datasource();
+            oDs.m_strDataSourceMDBFile = ReferenceProjectDirectory.Trim() + "\\db\\project.mdb";
+            oDs.m_strDataSourceTableName = "datasource";
+            oDs.m_strScenarioId = "";
+            oDs.LoadTableColumnNamesAndDataTypes = false;
+            oDs.LoadTableRecordCount = false;
+            oDs.populate_datasource_array();
+
+            int intTreeTableType = oDs.getDataSourceTableNameRow("TREE");
+            if (oDs.DataSourceTableExist(intTreeTableType))
+            {
+                string strTreeTable = oDs.m_strDataSource[intTreeTableType, Datasource.TABLE].Trim();
+                string strTreeTableDb = oDs.m_strDataSource[intTreeTableType, Datasource.PATH].Trim() + "\\" +
+                                        oDs.m_strDataSource[intTreeTableType, Datasource.MDBFILE].Trim();
+                using (OleDbConnection conn = new OleDbConnection(oAdo.getMDBConnString(strTreeTableDb, "", "")))
+                {
+                    conn.Open();
+                    new List<string[]>
+                    {
+                        new string[] {"bfsnd", "DECIMAL(3,0)"},
+                        new string[] {"boleht", "DECIMAL(3,0)"},
+                        new string[] {"centroid_dia", "DECIMAL(4,1)"},
+                        new string[] {"centroid_dia_ht_actual", "DECIMAL(4,1)"},
+                        new string[] {"cfsnd", "DECIMAL(3,0)"},
+                        new string[] {"cull_fld", "DECIMAL(2,0)"},
+                        new string[] {"cullcf", "INTEGER"},
+                        new string[] {"culldead", "DECIMAL(3,0)"},
+                        new string[] {"cullform", "DECIMAL(3,0)"},
+                        new string[] {"cullmstop", "DECIMAL(3,0)"},
+                        new string[] {"drybio_bole", "DECIMAL(13,6)"},
+                        new string[] {"drybio_sapling", "DECIMAL(13,6)"},
+                        new string[] {"drybio_top", "DECIMAL(13,6)"},
+                        new string[] {"drybio_wdld_spp", "DECIMAL(13,6)"},
+                        new string[] {"htdmp", "DECIMAL(3,1)"},
+                        new string[] {"sawht", "DECIMAL(2,0)"},
+                        new string[] {"sitree", "INTEGER"},
+                        new string[] {"standing_dead_cd", "INTEGER"},
+                        new string[] {"upper_dia", "DECIMAL(4,1)"},
+                        new string[] {"upper_dia_ht", "DECIMAL(4,1)"},
+                        new string[] {"volcfsnd", "DECIMAL(13,6)"},
+                    }.ForEach(column =>
+                    {
+                        if (!oAdo.ColumnExist(conn, strTreeTable, column[0]))
+                            oAdo.AddColumn(conn, strTreeTable, column[0], column[1], "");
+                    });
+                }
+            }
+            else
+            {
+                System.Windows.Forms.MessageBox.Show("The Master Tree table was not found.",
+                    "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
+                    System.Windows.Forms.MessageBoxIcon.Error);
+            }
+
+            int intCondTableType = oDs.getDataSourceTableNameRow("CONDITION");
+            if (oDs.DataSourceTableExist(intCondTableType))
+            {
+                string strCondTable = oDs.m_strDataSource[intCondTableType, Datasource.TABLE].Trim();
+                string strCondTableDb = oDs.m_strDataSource[intCondTableType, Datasource.PATH].Trim() + "\\" +
+                                        oDs.m_strDataSource[intCondTableType, Datasource.MDBFILE].Trim();
+                using (OleDbConnection conn = new OleDbConnection(oAdo.getMDBConnString(strCondTableDb, "", "")))
+                {
+                    conn.Open();
+                    if (!oAdo.ColumnExist(conn, strCondTable, "balive"))
+                        oAdo.AddColumn(conn, strCondTable, "balive", "DOUBLE", "");
+                }
+            }
+            else
+            {
+                System.Windows.Forms.MessageBox.Show("The Master Cond table was not found.",
+                    "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
+                    System.Windows.Forms.MessageBoxIcon.Error);
+            }
+
+            int intPlotTableType = oDs.getDataSourceTableNameRow("PLOT");
+            if (oDs.DataSourceTableExist(intPlotTableType))
+            {
+                string strPlotTable = oDs.m_strDataSource[intPlotTableType, Datasource.TABLE].Trim();
+                string strPlotTableDb = oDs.m_strDataSource[intPlotTableType, Datasource.PATH].Trim() + "\\" +
+                                        oDs.m_strDataSource[intPlotTableType, Datasource.MDBFILE].Trim();
+                using (OleDbConnection conn = new OleDbConnection(oAdo.getMDBConnString(strPlotTableDb, "", "")))
+                {
+                    conn.Open();
+                    if (!oAdo.ColumnExist(conn, strPlotTable, "precipitation"))
+                        oAdo.AddColumn(conn, strPlotTable, "precipitation", "DOUBLE", "");
+                }
+            }
+            else
+            {
+                System.Windows.Forms.MessageBox.Show("The Master Plot table was not found.",
+                    "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
+                    System.Windows.Forms.MessageBoxIcon.Error);
+            }
+
+            //Update FVS_Tree tables 
+            var strVariants = oDs.getVariants();
+            var strFvsTreeTable = Tables.FVS.DefaultFVSTreeTableName;
+            var strDataBaseNames = new List<string>(); 
+
+            //Get full path of each cutlist \biosumcalc\VARIANT_PACKAGE_TREE_CUTLIST.MDB
+            if (strVariants != null && strVariants.Length > 0)
+            {
+                string strFvsDataDir = ReferenceProjectDirectory.Trim() + "\\fvs\\data\\";
+                foreach (string variant in strVariants)
+                {
+                    string strBioSumCalcPath = strFvsDataDir + variant + "\\BiosumCalc\\";
+                    if (System.IO.Directory.Exists(strBioSumCalcPath))
+                    {
+                        strDataBaseNames.AddRange(System.IO.Directory.GetFiles(strBioSumCalcPath, "*.*", System.IO.SearchOption.AllDirectories)
+                            .Where(s => (s.ToLower().EndsWith(".mdb") || s.ToLower().EndsWith(".accdb")) && s.ToLower().Contains("cutlist")) .ToArray());
+                    }
+                }
+            }
+
+            //Connect to each database looking for FVS_TREE table and add any missing columns
+            foreach (string db in strDataBaseNames)
+            {
+                using (var conn = new OleDbConnection(oAdo.getMDBConnString(db, "", "")))
+                {
+                    conn.Open();
+                    if (oAdo.TableExist(conn, strFvsTreeTable))
+                    {
+                        new List<string[]>
+                        {
+                            new string[] {"drybio_bole", "double"},
+                            new string[] {"drybio_sapling", "double"},
+                            new string[] {"drybio_top", "double"},
+                            new string[] {"drybio_wdld_spp", "double"},
+                            new string[] {"volcfsnd", "double" },
+                            new string[] {"volcfgrs", "DOUBLE"},
+                            new string[] {"volcfnet", "DOUBLE"},
+                            new string[] {"volcsgrs", "DOUBLE"},
+                        }.ForEach(column =>
+                        {
+                            if (!oAdo.ColumnExist(conn, strFvsTreeTable, column[0]))
+                                oAdo.AddColumn(conn, strFvsTreeTable, column[0], column[1], "");
+                        });
+                    }
+                }
+            }
 
             //new master.db file: Migrating POP tables to SQLite
             DataMgr p_dataMgr = new DataMgr();
             //@ToDo: Fix this after merging in Tyler's code
             //string strDestFile = ReferenceProjectDirectory.Trim() + "\\" + frmMain.g_oTables.m_oFIAPlot.DefaultPopTableDbFile;
-            string strDestFile = ReferenceProjectDirectory.Trim();
+            string strDestFile = ReferenceProjectDirectory.Trim() + @"\db\master.db";
             if (!System.IO.File.Exists(strDestFile))
             {
                 p_dataMgr.CreateDbFile(strDestFile);

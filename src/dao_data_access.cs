@@ -68,7 +68,8 @@ namespace FIA_Biosum_Manager
             }
             try
             {
-                this.m_DaoWorkspace.Close();
+                if (this.m_DaoWorkspace != null) 
+                    this.m_DaoWorkspace.Close();
             }
             catch
             {

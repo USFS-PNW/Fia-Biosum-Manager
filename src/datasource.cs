@@ -412,6 +412,14 @@ namespace FIA_Biosum_Manager
 			}
 			return false;
 		}
+
+        public bool DataSourceTableExist(int intTableType)
+        {
+            return intTableType > -1 &&
+                   this.m_strDataSource[intTableType, Datasource.FILESTATUS] == "F" &&
+                   this.m_strDataSource[intTableType, Datasource.TABLESTATUS] == "F";
+        }
+
 		///<summary>
 		///create a mdb file in the users temporary dir
 		///and create a link to each of the  

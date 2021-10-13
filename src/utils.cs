@@ -2,6 +2,9 @@
 
 
 using System;
+using System.Collections.Generic;
+using System.Data.Common;
+using System.Linq;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 
@@ -609,6 +612,8 @@ namespace FIA_Biosum_Manager
 
         }
 
+        public static bool FS_NETWORK_IS_AVAILABLE => FS_NETWORK == FS_NETWORK_STATUS.Available;
+        public static bool FS_NETWORK_IS_NOT_AVAILABLE => FS_NETWORK == FS_NETWORK_STATUS.NotAvailable;
 
         public static FS_NETWORK_STATUS FS_NETWORK = FS_NETWORK_STATUS.NotAvailable;
         public enum FS_NETWORK_STATUS
@@ -646,8 +651,35 @@ namespace FIA_Biosum_Manager
             }
             return oStatus;
         }
+
+        /// <summary>
+        /// This enum is used to categorize column datatypes for parsing values from DbDataReaders.
+        /// </summary>
+        public enum DataType
+        {
+            INTEGER,
+            DOUBLE,
+            BYTE,
+            STRING
+        }
+
+        private static readonly Dictionary<DataType, Func<object, string>> _typeConverterDict =
+            new Dictionary<DataType, Func<object, string>>()
+            {
+                {DataType.INTEGER, (input) => Convert.ToInt32(input).ToString().Trim()},
+                {DataType.DOUBLE, (input) => Convert.ToDouble(input).ToString().Trim()},
+                {DataType.BYTE, (input) => Convert.ToByte(input).ToString().Trim()},
+                {DataType.STRING, (input) => "'" + input.ToString().Trim() + "'"},
+            };
+
+        public static string GetParsedInsertValues(DbDataReader reader, List<Tuple<string, DataType>> columnsAndDataTypes)
+        {
+            if (columnsAndDataTypes == null || columnsAndDataTypes.Count < 1) return "";
+            return string.Join(",", 
+                columnsAndDataTypes.Select(pair => reader[pair.Item1] == DBNull.Value ? "null" 
+                        : _typeConverterDict[pair.Item2](reader[pair.Item1]))
+                .ToList());
+        }
 	}
-
-
 
 }

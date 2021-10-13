@@ -4366,10 +4366,10 @@ namespace FIA_Biosum_Manager
             else
             {
                 string str = System.Environment.GetEnvironmentVariable("PATH").ToString().ToLower();
-                if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\FCS_TREE.db") == false)
+                if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase) == false)
                 {
                     ErrCode = -1;
-                    ErrMsg = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\FCS_TREE.db not found";
+                    ErrMsg = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase + " not found";
                 }
                 if (ErrCode == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR") == false)
                 {
@@ -4450,7 +4450,7 @@ namespace FIA_Biosum_Manager
         {
             get
             {
-                if (FIA_Biosum_Manager.utils.FS_NETWORK == FIA_Biosum_Manager.utils.FS_NETWORK_STATUS.NotAvailable)
+                if (utils.FS_NETWORK_IS_NOT_AVAILABLE)
                 {
                     return "Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=LOCALHOST)(PORT=1521))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=XE)));User Id=fcs_biosum;Password=fcs;Pooling=true;Min Pool Size=1;Max Pool Size=5;";
                 }
@@ -4461,20 +4461,8 @@ namespace FIA_Biosum_Manager
                 }
             }
         }
-        public static string FCSSchema
-        {
-            get
-            {
-                if (FIA_Biosum_Manager.utils.FS_NETWORK == FIA_Biosum_Manager.utils.FS_NETWORK_STATUS.NotAvailable)
-                {
-                    return "FCS_BIOSUM";
-                }
-                else
-                {
-                    return "ANL_PNW_FIA_FCS";
-                }
-            }
-        }
+        public static string FCSSchema => utils.FS_NETWORK_IS_AVAILABLE ? "ANL_PNW_FIA_FCS" : "FCS_BIOSUM";
+
         public static string OracleXEPath
         {
             get { return @"c:\oraclexe\app\oracle\product\11.2.0\server\bin"; }
