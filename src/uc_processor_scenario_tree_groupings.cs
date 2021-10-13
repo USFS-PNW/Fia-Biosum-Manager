@@ -289,104 +289,213 @@ namespace FIA_Biosum_Manager
 
         public void saveTreeGroupings_FromProperties()
         {
-            ado_data_access _objAdo = new ado_data_access();
-            string strDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsDbFile;
-            _objAdo.OpenConnection(_objAdo.getMDBConnString(strDbFile, "", ""));
-
-            if (_objAdo.m_intError == 0)
+            if (!ReferenceProcessorScenarioForm.m_bUsingSqlite)
             {
-                string strScenarioId = this.ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.ScenarioId;
-            //delete the current records
-            _objAdo.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName +
-                    " WHERE TRIM(UCASE(scenario_id)) = '" + strScenarioId.Trim() + "'";
-            _objAdo.SqlNonQuery(_objAdo.m_OleDbConnection, _objAdo.m_strSQL);
+                ado_data_access _objAdo = new ado_data_access();
+                string strDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsDbFile;
+                _objAdo.OpenConnection(_objAdo.getMDBConnString(strDbFile, "", ""));
 
-            // saving tree diameter groups
-            if (_objAdo.m_intError == 0)
-            {
-                string strMin;
-                string strMax;
-                string strDef;
-                string strId;
-                for (int x = 0; x <= ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeDiamGroupsItem_Collection.Count - 1; x++)
+                if (_objAdo.m_intError == 0)
                 {
-                    FIA_Biosum_Manager.ProcessorScenarioItem.TreeDiamGroupsItem oItem =
-                        ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeDiamGroupsItem_Collection.Item(x);
-                    strId = oItem.DiamGroup;
-                    strMin = oItem.MinDiam;
-                    strMax = oItem.MaxDiam;
-                    strDef = oItem.DiamClass;
-
-                    _objAdo.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName + " " +
-                        "(diam_group,diam_class,min_diam,max_diam,scenario_id) VALUES " +
-                        "(" + strId + ",'" + strDef.Trim() + "'," +
-                        strMin + "," + strMax + ",'" + strScenarioId.Trim() + "');";
+                    string strScenarioId = this.ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.ScenarioId;
+                    //delete the current records
+                    _objAdo.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName +
+                            " WHERE TRIM(UCASE(scenario_id)) = '" + strScenarioId.Trim() + "'";
                     _objAdo.SqlNonQuery(_objAdo.m_OleDbConnection, _objAdo.m_strSQL);
-                    if (_objAdo.m_intError != 0)
+
+                    // saving tree diameter groups
+                    if (_objAdo.m_intError == 0)
                     {
-                        break;
+                        string strMin;
+                        string strMax;
+                        string strDef;
+                        string strId;
+                        for (int x = 0; x <= ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeDiamGroupsItem_Collection.Count - 1; x++)
+                        {
+                            FIA_Biosum_Manager.ProcessorScenarioItem.TreeDiamGroupsItem oItem =
+                                ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeDiamGroupsItem_Collection.Item(x);
+                            strId = oItem.DiamGroup;
+                            strMin = oItem.MinDiam;
+                            strMax = oItem.MaxDiam;
+                            strDef = oItem.DiamClass;
+
+                            _objAdo.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName + " " +
+                                "(diam_group,diam_class,min_diam,max_diam,scenario_id) VALUES " +
+                                "(" + strId + ",'" + strDef.Trim() + "'," +
+                                strMin + "," + strMax + ",'" + strScenarioId.Trim() + "');";
+                            _objAdo.SqlNonQuery(_objAdo.m_OleDbConnection, _objAdo.m_strSQL);
+                            if (_objAdo.m_intError != 0)
+                            {
+                                break;
+                            }
+                        }
                     }
-                }  
-            }
-            // saving tree species groups
-            if (_objAdo.m_intError == 0)
-            {
-			  string strCommonName;
-              int intSpCd;
-			  int intSpcGrp;
-			  string strGrpLabel;
-                int x;
+                    // saving tree species groups
+                    if (_objAdo.m_intError == 0)
+                    {
+                        string strCommonName;
+                        int intSpCd;
+                        int intSpcGrp;
+                        string strGrpLabel;
+                        int x;
 
-			  //delete all records from the tree species group table
-              _objAdo.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName +
-                                 " WHERE TRIM(UCASE(scenario_id))='" + strScenarioId.Trim().ToUpper() + " '";
-              _objAdo.SqlNonQuery(_objAdo.m_OleDbConnection, _objAdo.m_strSQL);
-              if (_objAdo.m_intError != 0) return;
-                        
-			  //delete all records from the tree species group list table
-              _objAdo.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName +
-                                " WHERE TRIM(UCASE(scenario_id))='" + strScenarioId.Trim().ToUpper() + " '";
-              _objAdo.SqlNonQuery(_objAdo.m_OleDbConnection, _objAdo.m_strSQL);
+                        //delete all records from the tree species group table
+                        _objAdo.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName +
+                                           " WHERE TRIM(UCASE(scenario_id))='" + strScenarioId.Trim().ToUpper() + " '";
+                        _objAdo.SqlNonQuery(_objAdo.m_OleDbConnection, _objAdo.m_strSQL);
+                        if (_objAdo.m_intError != 0) return;
 
-              if (_objAdo.m_intError == 0)
-			  {
-                for (x = 0; x <= this.ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oSpcGroupItem_Collection.Count -1; x++)
-                {
-                    FIA_Biosum_Manager.ProcessorScenarioItem.SpcGroupItem oItem =
-                        ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oSpcGroupItem_Collection.Item(x);
-                    intSpcGrp = oItem.SpeciesGroup;
-                    strGrpLabel = oItem.SpeciesGroupLabel;
-                    _objAdo.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName + " " +
-                                       "(SPECIES_GROUP,SPECIES_LABEL,SCENARIO_ID) VALUES " +
-                                       "(" + Convert.ToString(intSpcGrp).Trim() + ",'" + strGrpLabel.Trim() + "','" + strScenarioId.Trim() + "');";
-                    _objAdo.SqlNonQuery(_objAdo.m_OleDbConnection, _objAdo.m_strSQL);
+                        //delete all records from the tree species group list table
+                        _objAdo.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName +
+                                          " WHERE TRIM(UCASE(scenario_id))='" + strScenarioId.Trim().ToUpper() + " '";
+                        _objAdo.SqlNonQuery(_objAdo.m_OleDbConnection, _objAdo.m_strSQL);
+
+                        if (_objAdo.m_intError == 0)
+                        {
+                            for (x = 0; x <= this.ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oSpcGroupItem_Collection.Count - 1; x++)
+                            {
+                                FIA_Biosum_Manager.ProcessorScenarioItem.SpcGroupItem oItem =
+                                    ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oSpcGroupItem_Collection.Item(x);
+                                intSpcGrp = oItem.SpeciesGroup;
+                                strGrpLabel = oItem.SpeciesGroupLabel;
+                                _objAdo.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName + " " +
+                                                   "(SPECIES_GROUP,SPECIES_LABEL,SCENARIO_ID) VALUES " +
+                                                   "(" + Convert.ToString(intSpcGrp).Trim() + ",'" + strGrpLabel.Trim() + "','" + strScenarioId.Trim() + "');";
+                                _objAdo.SqlNonQuery(_objAdo.m_OleDbConnection, _objAdo.m_strSQL);
+                            }
+                        }
+                        if (_objAdo.m_intError == 0)
+                        {
+                            for (x = 0; x <= this.ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oSpcGroupListItem_Collection.Count - 1; x++)
+                            {
+                                FIA_Biosum_Manager.ProcessorScenarioItem.SpcGroupListItem oItem =
+                                  ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oSpcGroupListItem_Collection.Item(x);
+                                intSpcGrp = oItem.SpeciesGroup;
+                                strCommonName = oItem.CommonName;
+                                strCommonName = _objAdo.FixString(strCommonName.Trim(), "'", "''");
+                                intSpCd = oItem.SpeciesCode;
+
+                                _objAdo.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName + " " +
+                                    "(SPECIES_GROUP,common_name,SCENARIO_ID,SPCD) VALUES " +
+                                    "(" + Convert.ToString(intSpcGrp).Trim() + ",'" + strCommonName + "','" + strScenarioId.Trim() + "', " +
+                                    intSpCd + " );";
+                                _objAdo.SqlNonQuery(_objAdo.m_OleDbConnection, _objAdo.m_strSQL);
+                            }
+                        }
+                    }
+
+                    ReferenceProcessorScenarioForm.m_bTreeGroupsCopied = false;
                 }
-              }
-              if (_objAdo.m_intError == 0)
-              {
-                  for (x = 0; x <= this.ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oSpcGroupListItem_Collection.Count - 1; x++)
-                  {
-                      FIA_Biosum_Manager.ProcessorScenarioItem.SpcGroupListItem oItem =
-                        ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oSpcGroupListItem_Collection.Item(x);
-                      intSpcGrp = oItem.SpeciesGroup;
-                      strCommonName = oItem.CommonName;
-                      strCommonName = _objAdo.FixString(strCommonName.Trim(), "'", "''");
-                      intSpCd = oItem.SpeciesCode;
-
-                      _objAdo.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName + " " +
-                          "(SPECIES_GROUP,common_name,SCENARIO_ID,SPCD) VALUES " +
-                          "(" + Convert.ToString(intSpcGrp).Trim() + ",'" + strCommonName + "','" + strScenarioId.Trim() + "', " +
-                          intSpCd + " );";
-                      _objAdo.SqlNonQuery(_objAdo.m_OleDbConnection, _objAdo.m_strSQL);
-                  }
-              }					
+                _objAdo.CloseConnection(_objAdo.m_OleDbConnection);
+                _objAdo = null;
             }
-
-            ReferenceProcessorScenarioForm.m_bTreeGroupsCopied = false;
+            else
+            {
+                saveTreeGroupings_FromPropertiesSqlite();
             }
-            _objAdo.CloseConnection(_objAdo.m_OleDbConnection);
-            _objAdo = null;
         }
-     }
+        public void saveTreeGroupings_FromPropertiesSqlite()
+        {
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+            string strDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDbFile)))
+            {
+                conn.Open();
+                if (oDataMgr.m_intError ==0)
+                {
+                    string strScenarioId = this.ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.ScenarioId;
+                    //delete the current records
+                    oDataMgr.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName +
+                            " WHERE TRIM(UPPER(scenario_id)) = '" + strScenarioId.ToUpper().Trim() + "'";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+                    // saving tree diameter groups
+                    if (oDataMgr.m_intError == 0)
+                    {
+                        string strMin;
+                        string strMax;
+                        string strDef;
+                        string strId;
+                        for (int x = 0; x <= ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeDiamGroupsItem_Collection.Count - 1; x++)
+                        {
+                            ProcessorScenarioItem.TreeDiamGroupsItem oItem =
+                                ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeDiamGroupsItem_Collection.Item(x);
+                            strId = oItem.DiamGroup;
+                            strMin = oItem.MinDiam;
+                            strMax = oItem.MaxDiam;
+                            strDef = oItem.DiamClass;
+
+                            oDataMgr.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName + " " +
+                                "(diam_group,diam_class,min_diam,max_diam,scenario_id) VALUES " +
+                                "(" + strId + ",'" + strDef.Trim() + "'," +
+                                strMin + "," + strMax + ",'" + strScenarioId.Trim() + "');";
+                            oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                            if (oDataMgr.m_intError != 0)
+                            {
+                                break;
+                            }
+                        }
+                    }
+                    // saving tree species groups
+                    if (oDataMgr.m_intError == 0)
+                    {
+                        string strCommonName;
+                        int intSpCd;
+                        int intSpcGrp;
+                        string strGrpLabel;
+                        int x;
+
+                        //delete all records from the tree species group table
+                        oDataMgr.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName +
+                                           " WHERE TRIM(UPPER(scenario_id))='" + strScenarioId.Trim().ToUpper() + "'";
+                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                        if (oDataMgr.m_intError != 0) return;
+
+                        //delete all records from the tree species group list table
+                        oDataMgr.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName +
+                                          " WHERE TRIM(UPPER(scenario_id))='" + strScenarioId.Trim().ToUpper() + "'";
+                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+                        if (oDataMgr.m_intError == 0)
+                        {
+                            for (x = 0; x <= this.ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oSpcGroupItem_Collection.Count - 1; x++)
+                            {
+                                FIA_Biosum_Manager.ProcessorScenarioItem.SpcGroupItem oItem =
+                                    ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oSpcGroupItem_Collection.Item(x);
+                                intSpcGrp = oItem.SpeciesGroup;
+                                strGrpLabel = oItem.SpeciesGroupLabel;
+                                oDataMgr.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName + " " +
+                                                   "(SPECIES_GROUP,SPECIES_LABEL,SCENARIO_ID) VALUES " +
+                                                   "(" + Convert.ToString(intSpcGrp).Trim() + ",'" + strGrpLabel.Trim() + "','" + strScenarioId.Trim() + "');";
+                                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                            }
+                        }
+                        if (oDataMgr.m_intError == 0)
+                        {
+                            for (x = 0; x <= this.ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oSpcGroupListItem_Collection.Count - 1; x++)
+                            {
+                                ProcessorScenarioItem.SpcGroupListItem oItem =
+                                  ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oSpcGroupListItem_Collection.Item(x);
+                                intSpcGrp = oItem.SpeciesGroup;
+                                strCommonName = oItem.CommonName;
+                                strCommonName = oDataMgr.FixString(strCommonName.Trim(), "'", "''");
+                                intSpCd = oItem.SpeciesCode;
+
+                                oDataMgr.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName + " " +
+                                    "(SPECIES_GROUP,common_name,SCENARIO_ID,SPCD) VALUES " +
+                                    "(" + Convert.ToString(intSpcGrp).Trim() + ",'" + strCommonName + "','" + strScenarioId.Trim() + "', " +
+                                    intSpCd + " );";
+                                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                            }
+                        }
+                    }
+                    ReferenceProcessorScenarioForm.m_bTreeGroupsCopied = false;
+                }
+
+            }
+            oDataMgr = null;
+        }
+    }
 }

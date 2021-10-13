@@ -108,16 +108,16 @@ namespace FIA_Biosum_Manager
 			this.grpbox6.Visible=false;
 			this.DisplayGroupSet(1);
 
-			this.m_oQueries = new Queries();
-			//load datasources
-			m_oQueries.m_oFvs.LoadDatasource=true;
-			m_oQueries.m_oFIAPlot.LoadDatasource=true;
-			m_oQueries.LoadDatasources(true);
+            this.m_oQueries = new Queries();
+            //load datasources
+            //m_oQueries.m_oFvs.LoadDatasource = true;
+            //m_oQueries.m_oFIAPlot.LoadDatasource = true;
+            m_oQueries.LoadDatasources(true);
             m_oRxTools.LoadAllRxPackageItems(m_oRxPackage_Collection);
 
-			
-			//create links to all the fvstree tables
-			this.m_oRxTools.CreateTableLinksToFVSOutTreeListTables(m_oQueries,m_oQueries.m_strTempDbFile);
+
+            //create links to all the fvstree tables
+            this.m_oRxTools.CreateTableLinksToFVSOutTreeListTables(m_oQueries, m_oQueries.m_strTempDbFile);
 
             this.m_ado = new ado_data_access();
             spc_common_name_collection1 = new spc_common_name_collection();
@@ -248,9 +248,9 @@ namespace FIA_Biosum_Manager
             // 
             // btnTreeAudit
             // 
-            this.btnTreeAudit.Location = new System.Drawing.Point(208, 555);
+            this.btnTreeAudit.Location = new System.Drawing.Point(189, 555);
             this.btnTreeAudit.Name = "btnTreeAudit";
-            this.btnTreeAudit.Size = new System.Drawing.Size(128, 24);
+            this.btnTreeAudit.Size = new System.Drawing.Size(140, 24);
             this.btnTreeAudit.TabIndex = 63;
             this.btnTreeAudit.Text = "Tree Audit Report";
             this.btnTreeAudit.Click += new System.EventHandler(this.btnTreeAudit_Click);
@@ -258,7 +258,7 @@ namespace FIA_Biosum_Manager
             // btnPrev
             // 
             this.btnPrev.Enabled = false;
-            this.btnPrev.Location = new System.Drawing.Point(360, 555);
+            this.btnPrev.Location = new System.Drawing.Point(350, 555);
             this.btnPrev.Name = "btnPrev";
             this.btnPrev.Size = new System.Drawing.Size(56, 24);
             this.btnPrev.TabIndex = 62;
@@ -269,7 +269,7 @@ namespace FIA_Biosum_Manager
             // btnNext
             // 
             this.btnNext.Enabled = false;
-            this.btnNext.Location = new System.Drawing.Point(416, 555);
+            this.btnNext.Location = new System.Drawing.Point(406, 555);
             this.btnNext.Name = "btnNext";
             this.btnNext.Size = new System.Drawing.Size(56, 24);
             this.btnNext.TabIndex = 61;
@@ -282,7 +282,7 @@ namespace FIA_Biosum_Manager
             this.btnBoth.Enabled = false;
             this.btnBoth.Location = new System.Drawing.Point(93, 104);
             this.btnBoth.Name = "btnBoth";
-            this.btnBoth.Size = new System.Drawing.Size(40, 24);
+            this.btnBoth.Size = new System.Drawing.Size(50, 24);
             this.btnBoth.TabIndex = 59;
             this.btnBoth.Text = "Both";
             this.btnBoth.Click += new System.EventHandler(this.btnBoth_Click);
@@ -317,9 +317,9 @@ namespace FIA_Biosum_Manager
             // 
             // btnAdd
             // 
-            this.btnAdd.Location = new System.Drawing.Point(480, 555);
+            this.btnAdd.Location = new System.Drawing.Point(468, 555);
             this.btnAdd.Name = "btnAdd";
-            this.btnAdd.Size = new System.Drawing.Size(80, 24);
+            this.btnAdd.Size = new System.Drawing.Size(100, 24);
             this.btnAdd.TabIndex = 55;
             this.btnAdd.Text = "Add Groups";
             this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
@@ -360,29 +360,30 @@ namespace FIA_Biosum_Manager
             // 
             this.txtGrp6.Location = new System.Drawing.Point(12, 24);
             this.txtGrp6.Name = "txtGrp6";
-            this.txtGrp6.Size = new System.Drawing.Size(136, 20);
+            this.txtGrp6.Size = new System.Drawing.Size(136, 22);
             this.txtGrp6.TabIndex = 34;
             this.txtGrp6.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtGrp6_KeyPress);
             // 
             // lstGrp6
             // 
+            this.lstGrp6.ItemHeight = 16;
             this.lstGrp6.Location = new System.Drawing.Point(12, 56);
             this.lstGrp6.Name = "lstGrp6";
-            this.lstGrp6.Size = new System.Drawing.Size(136, 108);
+            this.lstGrp6.Size = new System.Drawing.Size(136, 100);
             this.lstGrp6.TabIndex = 36;
             // 
             // btnRemove6
             // 
-            this.btnRemove6.Location = new System.Drawing.Point(24, 168);
+            this.btnRemove6.Location = new System.Drawing.Point(12, 168);
             this.btnRemove6.Name = "btnRemove6";
-            this.btnRemove6.Size = new System.Drawing.Size(56, 24);
+            this.btnRemove6.Size = new System.Drawing.Size(75, 24);
             this.btnRemove6.TabIndex = 38;
             this.btnRemove6.Text = "Remove";
             this.btnRemove6.Click += new System.EventHandler(this.btnRemove6_Click);
             // 
             // btnClearAll6
             // 
-            this.btnClearAll6.Location = new System.Drawing.Point(80, 168);
+            this.btnClearAll6.Location = new System.Drawing.Point(91, 168);
             this.btnClearAll6.Name = "btnClearAll6";
             this.btnClearAll6.Size = new System.Drawing.Size(56, 24);
             this.btnClearAll6.TabIndex = 39;
@@ -416,29 +417,30 @@ namespace FIA_Biosum_Manager
             // 
             this.txtGrp5.Location = new System.Drawing.Point(12, 24);
             this.txtGrp5.Name = "txtGrp5";
-            this.txtGrp5.Size = new System.Drawing.Size(136, 20);
+            this.txtGrp5.Size = new System.Drawing.Size(136, 22);
             this.txtGrp5.TabIndex = 34;
             this.txtGrp5.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtGrp5_KeyPress);
             // 
             // lstGrp5
             // 
+            this.lstGrp5.ItemHeight = 16;
             this.lstGrp5.Location = new System.Drawing.Point(12, 56);
             this.lstGrp5.Name = "lstGrp5";
-            this.lstGrp5.Size = new System.Drawing.Size(136, 108);
+            this.lstGrp5.Size = new System.Drawing.Size(136, 100);
             this.lstGrp5.TabIndex = 36;
             // 
             // btnRemove5
             // 
-            this.btnRemove5.Location = new System.Drawing.Point(24, 168);
+            this.btnRemove5.Location = new System.Drawing.Point(12, 168);
             this.btnRemove5.Name = "btnRemove5";
-            this.btnRemove5.Size = new System.Drawing.Size(56, 24);
+            this.btnRemove5.Size = new System.Drawing.Size(75, 24);
             this.btnRemove5.TabIndex = 38;
             this.btnRemove5.Text = "Remove";
             this.btnRemove5.Click += new System.EventHandler(this.btnRemove5_Click);
             // 
             // btnClearAll5
             // 
-            this.btnClearAll5.Location = new System.Drawing.Point(80, 168);
+            this.btnClearAll5.Location = new System.Drawing.Point(91, 168);
             this.btnClearAll5.Name = "btnClearAll5";
             this.btnClearAll5.Size = new System.Drawing.Size(56, 24);
             this.btnClearAll5.TabIndex = 39;
@@ -462,29 +464,30 @@ namespace FIA_Biosum_Manager
             // 
             this.txtGrp4.Location = new System.Drawing.Point(12, 24);
             this.txtGrp4.Name = "txtGrp4";
-            this.txtGrp4.Size = new System.Drawing.Size(136, 20);
+            this.txtGrp4.Size = new System.Drawing.Size(136, 22);
             this.txtGrp4.TabIndex = 34;
             this.txtGrp4.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtGrp4_KeyPress);
             // 
             // lstGrp4
             // 
+            this.lstGrp4.ItemHeight = 16;
             this.lstGrp4.Location = new System.Drawing.Point(12, 56);
             this.lstGrp4.Name = "lstGrp4";
-            this.lstGrp4.Size = new System.Drawing.Size(136, 108);
+            this.lstGrp4.Size = new System.Drawing.Size(136, 100);
             this.lstGrp4.TabIndex = 36;
             // 
             // btnRemove4
             // 
-            this.btnRemove4.Location = new System.Drawing.Point(24, 168);
+            this.btnRemove4.Location = new System.Drawing.Point(12, 168);
             this.btnRemove4.Name = "btnRemove4";
-            this.btnRemove4.Size = new System.Drawing.Size(56, 24);
+            this.btnRemove4.Size = new System.Drawing.Size(75, 24);
             this.btnRemove4.TabIndex = 38;
             this.btnRemove4.Text = "Remove";
             this.btnRemove4.Click += new System.EventHandler(this.btnRemove4_Click);
             // 
             // btnClearAll4
             // 
-            this.btnClearAll4.Location = new System.Drawing.Point(80, 168);
+            this.btnClearAll4.Location = new System.Drawing.Point(91, 168);
             this.btnClearAll4.Name = "btnClearAll4";
             this.btnClearAll4.Size = new System.Drawing.Size(56, 24);
             this.btnClearAll4.TabIndex = 39;
@@ -526,29 +529,30 @@ namespace FIA_Biosum_Manager
             // 
             this.txtGrp3.Location = new System.Drawing.Point(12, 24);
             this.txtGrp3.Name = "txtGrp3";
-            this.txtGrp3.Size = new System.Drawing.Size(136, 20);
+            this.txtGrp3.Size = new System.Drawing.Size(136, 22);
             this.txtGrp3.TabIndex = 34;
             this.txtGrp3.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtGrp3_KeyPress);
             // 
             // lstGrp3
             // 
+            this.lstGrp3.ItemHeight = 16;
             this.lstGrp3.Location = new System.Drawing.Point(12, 56);
             this.lstGrp3.Name = "lstGrp3";
-            this.lstGrp3.Size = new System.Drawing.Size(136, 108);
+            this.lstGrp3.Size = new System.Drawing.Size(136, 100);
             this.lstGrp3.TabIndex = 36;
             // 
             // btnRemove3
             // 
-            this.btnRemove3.Location = new System.Drawing.Point(24, 168);
+            this.btnRemove3.Location = new System.Drawing.Point(12, 168);
             this.btnRemove3.Name = "btnRemove3";
-            this.btnRemove3.Size = new System.Drawing.Size(56, 24);
+            this.btnRemove3.Size = new System.Drawing.Size(75, 24);
             this.btnRemove3.TabIndex = 38;
             this.btnRemove3.Text = "Remove";
             this.btnRemove3.Click += new System.EventHandler(this.btnRemove3_Click);
             // 
             // btnClearAll3
             // 
-            this.btnClearAll3.Location = new System.Drawing.Point(80, 168);
+            this.btnClearAll3.Location = new System.Drawing.Point(91, 168);
             this.btnClearAll3.Name = "btnClearAll3";
             this.btnClearAll3.Size = new System.Drawing.Size(56, 24);
             this.btnClearAll3.TabIndex = 39;
@@ -572,29 +576,30 @@ namespace FIA_Biosum_Manager
             // 
             this.txtGrp2.Location = new System.Drawing.Point(12, 24);
             this.txtGrp2.Name = "txtGrp2";
-            this.txtGrp2.Size = new System.Drawing.Size(136, 20);
+            this.txtGrp2.Size = new System.Drawing.Size(136, 22);
             this.txtGrp2.TabIndex = 34;
             this.txtGrp2.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtGrp2_KeyPress);
             // 
             // lstGrp2
             // 
+            this.lstGrp2.ItemHeight = 16;
             this.lstGrp2.Location = new System.Drawing.Point(12, 56);
             this.lstGrp2.Name = "lstGrp2";
-            this.lstGrp2.Size = new System.Drawing.Size(136, 108);
+            this.lstGrp2.Size = new System.Drawing.Size(136, 100);
             this.lstGrp2.TabIndex = 36;
             // 
             // btnRemove2
             // 
-            this.btnRemove2.Location = new System.Drawing.Point(26, 168);
+            this.btnRemove2.Location = new System.Drawing.Point(14, 168);
             this.btnRemove2.Name = "btnRemove2";
-            this.btnRemove2.Size = new System.Drawing.Size(56, 24);
+            this.btnRemove2.Size = new System.Drawing.Size(75, 24);
             this.btnRemove2.TabIndex = 38;
             this.btnRemove2.Text = "Remove";
             this.btnRemove2.Click += new System.EventHandler(this.btnRemove2_Click);
             // 
             // btnClearAll2
             // 
-            this.btnClearAll2.Location = new System.Drawing.Point(82, 168);
+            this.btnClearAll2.Location = new System.Drawing.Point(93, 168);
             this.btnClearAll2.Name = "btnClearAll2";
             this.btnClearAll2.Size = new System.Drawing.Size(56, 24);
             this.btnClearAll2.TabIndex = 39;
@@ -618,29 +623,30 @@ namespace FIA_Biosum_Manager
             // 
             this.txtGrp1.Location = new System.Drawing.Point(12, 24);
             this.txtGrp1.Name = "txtGrp1";
-            this.txtGrp1.Size = new System.Drawing.Size(136, 20);
+            this.txtGrp1.Size = new System.Drawing.Size(136, 22);
             this.txtGrp1.TabIndex = 34;
             this.txtGrp1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtGrp1_KeyPress);
             // 
             // lstGrp1
             // 
+            this.lstGrp1.ItemHeight = 16;
             this.lstGrp1.Location = new System.Drawing.Point(12, 56);
             this.lstGrp1.Name = "lstGrp1";
-            this.lstGrp1.Size = new System.Drawing.Size(136, 108);
+            this.lstGrp1.Size = new System.Drawing.Size(136, 100);
             this.lstGrp1.TabIndex = 36;
             // 
             // btnRemove1
             // 
-            this.btnRemove1.Location = new System.Drawing.Point(24, 168);
+            this.btnRemove1.Location = new System.Drawing.Point(12, 168);
             this.btnRemove1.Name = "btnRemove1";
-            this.btnRemove1.Size = new System.Drawing.Size(56, 24);
+            this.btnRemove1.Size = new System.Drawing.Size(75, 24);
             this.btnRemove1.TabIndex = 38;
             this.btnRemove1.Text = "Remove";
             this.btnRemove1.Click += new System.EventHandler(this.btnRemove1_Click);
             // 
             // btnClearAll1
             // 
-            this.btnClearAll1.Location = new System.Drawing.Point(80, 168);
+            this.btnClearAll1.Location = new System.Drawing.Point(91, 168);
             this.btnClearAll1.Name = "btnClearAll1";
             this.btnClearAll1.Size = new System.Drawing.Size(56, 24);
             this.btnClearAll1.TabIndex = 39;
@@ -649,18 +655,18 @@ namespace FIA_Biosum_Manager
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(624, 555);
+            this.btnCancel.Location = new System.Drawing.Point(636, 555);
             this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(56, 24);
+            this.btnCancel.Size = new System.Drawing.Size(65, 24);
             this.btnCancel.TabIndex = 43;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // btnSave
             // 
-            this.btnSave.Location = new System.Drawing.Point(568, 555);
+            this.btnSave.Location = new System.Drawing.Point(572, 555);
             this.btnSave.Name = "btnSave";
-            this.btnSave.Size = new System.Drawing.Size(56, 24);
+            this.btnSave.Size = new System.Drawing.Size(60, 24);
             this.btnSave.TabIndex = 41;
             this.btnSave.Text = "Save";
             this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
@@ -685,9 +691,10 @@ namespace FIA_Biosum_Manager
             // 
             // lstCommonName
             // 
+            this.lstCommonName.ItemHeight = 16;
             this.lstCommonName.Location = new System.Drawing.Point(8, 136);
             this.lstCommonName.Name = "lstCommonName";
-            this.lstCommonName.Size = new System.Drawing.Size(136, 407);
+            this.lstCommonName.Size = new System.Drawing.Size(136, 404);
             this.lstCommonName.TabIndex = 33;
             this.lstCommonName.SelectedIndexChanged += new System.EventHandler(this.lstCommonName_SelectedIndexChanged);
             this.lstCommonName.MouseHover += new System.EventHandler(this.lstCommonName_MouseHover);
@@ -698,7 +705,7 @@ namespace FIA_Biosum_Manager
             this.lblTitle.Dock = System.Windows.Forms.DockStyle.Top;
             this.lblTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTitle.ForeColor = System.Drawing.Color.Green;
-            this.lblTitle.Location = new System.Drawing.Point(3, 16);
+            this.lblTitle.Location = new System.Drawing.Point(3, 18);
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(770, 32);
             this.lblTitle.TabIndex = 32;
@@ -716,7 +723,7 @@ namespace FIA_Biosum_Manager
             // 
             this.chkFilterSpecies.Location = new System.Drawing.Point(352, 64);
             this.chkFilterSpecies.Name = "chkFilterSpecies";
-            this.chkFilterSpecies.Size = new System.Drawing.Size(400, 16);
+            this.chkFilterSpecies.Size = new System.Drawing.Size(400, 20);
             this.chkFilterSpecies.TabIndex = 67;
             this.chkFilterSpecies.Text = "Show only species found in the FVS Tree tables";
             this.chkFilterSpecies.CheckStateChanged += new System.EventHandler(this.chkFilterSpecies_CheckStateChanged);
@@ -1380,46 +1387,72 @@ namespace FIA_Biosum_Manager
 				{
 					int x=0;
 					//save to the species groups table
-
-                    //
-                    //OPEN CONNECTION TO DB FILE CONTAINING PROCESSOR SCENARIO TABLES
-                    //
-                    //scenario mdb connection
-                    string strScenarioMDB =
-                        frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                        "\\processor\\db\\scenario_processor_rule_definitions.mdb";
-                    ado_data_access oAdo = new ado_data_access();
-                    oAdo.OpenConnection(oAdo.getMDBConnString(strScenarioMDB, "", ""));
-
-					if (oAdo.m_intError==0)
+				    DialogResult result = MessageBox.Show("Save Tree Species Group Data? Y/N","Tree Species Groups",System.Windows.Forms.MessageBoxButtons.YesNoCancel,System.Windows.Forms.MessageBoxIcon.Question);
+					if (result == DialogResult.Yes)
 					{
-						DialogResult result = MessageBox.Show("Save Tree Species Group Data? Y/N","Tree Species Groups",System.Windows.Forms.MessageBoxButtons.YesNoCancel,System.Windows.Forms.MessageBoxIcon.Question);
-						if (result == DialogResult.Yes)
-						{
-							string str;
-							string strCommonName;
-                            int intSpCd;
-							int intSpcGrp;
-							string strSavedList="";
-							int intGrpCollection;
-							string strGrpLabel;
-							//delete the current groups
+						string str;
+						string strCommonName;
+                        int intSpCd;
+					    int intSpcGrp;
+						string strSavedList="";
+						int intGrpCollection;
+						string strGrpLabel;
+                        string strSql;
 
-							//delete all records from the tree species group table
-                            oAdo.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName +
-                                " WHERE TRIM(UCASE(scenario_id))='" + _strScenarioId.Trim().ToUpper() + " '";
-                            oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                            if (oAdo.m_intError != 0) return;
-                        
-							//delete all records from the tree species group list table
-                            oAdo.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName +
-                                " WHERE TRIM(UCASE(scenario_id))='" + _strScenarioId.Trim().ToUpper() + " '";
-                            oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-
+                        //
+                        //OPEN CONNECTION TO DB FILE CONTAINING PROCESSOR SCENARIO TABLES
+                        //
+                        //scenario mdb connection                        
+                        ado_data_access oAdo = new ado_data_access();
+                        SQLite.ADO.DataMgr oDataMgr = null;
+                        if (!ReferenceProcessorScenarioForm.m_bUsingSqlite)
+                        {
+                            string strScenarioMDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                                "\\processor\\db\\scenario_processor_rule_definitions.mdb";
+                            oAdo.OpenConnection(oAdo.getMDBConnString(strScenarioMDB, "", ""));
                             if (oAdo.m_intError == 0)
-							{
-                                for (x = 0; x <= this.spc_common_name_collection1.Count - 1; x++)
-                                {
+                            {
+                                //delete the current groups
+                                //delete all records from the tree species group table
+                                oAdo.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName +
+                                    " WHERE TRIM(UCASE(scenario_id))='" + _strScenarioId.Trim().ToUpper() + "'";
+                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
+                                if (oAdo.m_intError != 0) return;
+
+                                //delete all records from the tree species group list table
+                                oAdo.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName +
+                                    " WHERE TRIM(UCASE(scenario_id))='" + _strScenarioId.Trim().ToUpper() + "'";
+                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
+                            }
+                            m_intError = oAdo.m_intError;
+                        }
+                        else
+                        {
+                            oDataMgr = new SQLite.ADO.DataMgr();
+                            string strScenarioDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                            oDataMgr.OpenConnection(oDataMgr.GetConnectionString(strScenarioDB));
+                            if (oDataMgr.m_intError == 0)
+                            {
+                                //delete the current groups
+                                //delete all records from the tree species group table
+                                oDataMgr.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName +
+                                    " WHERE TRIM(UPPER(scenario_id))='" + _strScenarioId.Trim().ToUpper() + "'";
+                                oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
+                                if (oDataMgr.m_intError != 0) return;
+
+                                //delete all records from the tree species group list table
+                                oDataMgr.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName +
+                                    " WHERE TRIM(UPPER(scenario_id))='" + _strScenarioId.Trim().ToUpper() + "'";
+                                oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
+                            }
+                            m_intError = oDataMgr.m_intError;
+                        }
+
+                        if (m_intError == 0)
+                        {
+                            for (x = 0; x <= this.spc_common_name_collection1.Count - 1; x++)
+                            {
                                     if (this.spc_common_name_collection1.Item(x).SpeciesGroupIndex >= 0)
                                     {
 
@@ -1431,6 +1464,8 @@ namespace FIA_Biosum_Manager
                                         strGrpLabel = this.spc_groupings_collection1.Item(intSpcGrp).GroupLabel;
                                         strGrpLabel = strGrpLabel.Replace(' ', '_');
                                         str = "," + strGrpLabel.Trim() + ",";
+                                    if (!ReferenceProcessorScenarioForm.m_bUsingSqlite)
+                                    {
                                         if (strSavedList.IndexOf(str, 0) < 0)
                                         {
                                             oAdo.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName + " " +
@@ -1446,21 +1481,45 @@ namespace FIA_Biosum_Manager
                                             intSpCd + " );";
                                         oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
                                     }
+                                    else
+                                    {
+                                        if (strSavedList.IndexOf(str, 0) < 0)
+                                        {
+                                            oDataMgr.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName + " " +
+                                                "(SPECIES_GROUP,SPECIES_LABEL,SCENARIO_ID) VALUES " +
+                                                "(" + Convert.ToString(intSpcGrp + 1).Trim() + ",'" + strGrpLabel.Trim() + "','" + _strScenarioId.Trim() + "');";
+                                            oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
+                                            strSavedList += str;
+                                        }
 
-									
+                                        oDataMgr.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName + " " +
+                                            "(SPECIES_GROUP,common_name,SCENARIO_ID,SPCD) VALUES " +
+                                            "(" + Convert.ToString(intSpcGrp + 1).Trim() + ",'" + strCommonName + "','" + _strScenarioId.Trim() + "', " +
+                                            intSpCd + " );";
+                                        oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
+                                    }
+
                                 }
-								this.btnSave.Enabled=false;
-							}
-						}
-                        else if (result == DialogResult.Cancel)
+                            }
+                            this.btnSave.Enabled = false;
+                        }
+                        if (oAdo != null && oAdo.m_OleDbConnection != null)
                         {
-                            this.ParentForm.DialogResult = DialogResult.Cancel;
+                            if (oAdo.m_OleDbConnection.State == System.Data.ConnectionState.Open)
+                                oAdo.CloseConnection(oAdo.m_OleDbConnection);
+                            oAdo = null;
+                        }
+                        else if (oDataMgr != null)
+                        {
+                            oDataMgr.CloseConnection(oDataMgr.m_Connection);
+                            oDataMgr = null;
                         }
 
-						if (oAdo.m_OleDbConnection.State == System.Data.ConnectionState.Open)
-                            oAdo.CloseConnection(oAdo.m_OleDbConnection);
-					}
-					
+                    }
+                    else if (result == DialogResult.Cancel)
+                    {
+                        this.ParentForm.DialogResult = DialogResult.Cancel;
+                    }					
 				}
 				catch (Exception e)
 				{
@@ -1471,9 +1530,7 @@ namespace FIA_Biosum_Manager
 						System.Windows.Forms.MessageBoxIcon.Exclamation);
 
 					this.m_intError=-1;
-
 				}
-
 			}
 
 

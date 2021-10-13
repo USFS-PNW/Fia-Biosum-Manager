@@ -15,6 +15,7 @@ namespace FIA_Biosum_Manager
         private FIA_Biosum_Manager.OptimizerScenarioItem m_oOptimizerScenarioItem;
         private Queries m_oQueries = new Queries();
         private FIA_Biosum_Manager.OptimizerScenarioItem _oOptimizerScenarioItem;
+        private FIA_Biosum_Manager.frmOptimizerScenario _frmOptimizerScenario;
         private FIA_Biosum_Manager.OptimizerScenarioTools m_oOptimizerScenarioTools = new OptimizerScenarioTools();
         private ListViewAlternateBackgroundColors m_oLvAlternateColors = new ListViewAlternateBackgroundColors();
 
@@ -37,6 +38,11 @@ namespace FIA_Biosum_Manager
         {
             get { return this._oOptimizerScenarioItem; }
             set { this._oOptimizerScenarioItem = value; }
+        }
+        public FIA_Biosum_Manager.frmOptimizerScenario ReferenceOptimizerScenarioForm
+        {
+            get { return _frmOptimizerScenario; }
+            set { _frmOptimizerScenario = value; }
         }
         public void loadvalues()
         {
@@ -292,7 +298,7 @@ namespace FIA_Biosum_Manager
                 //load the scenario into the collection
                 m_oOptimizerScenarioTools.LoadScenario(
                     p_strScenarioId.Trim(),
-                    m_oQueries,
+                    m_oQueries, ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite,
                     m_oOptimizerScenarioItem_Collection);
                 lblMsg.Hide();
             }

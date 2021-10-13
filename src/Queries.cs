@@ -72,13 +72,13 @@ namespace FIA_Biosum_Manager
             if (this.m_oTravelTime.LoadDatasource) this.m_oTravelTime.LoadDatasources();
 			m_strTempDbFile = this.m_oDataSource.CreateMDBAndTableDataSourceLinks();
 		}
-		public void LoadDatasources(bool p_bLimited,string p_strScenarioType,string p_strScenarioId)
+		public void LoadDatasources(bool p_bLimited, bool p_bUsingSqlite, string p_strScenarioType, string p_strScenarioId)
 		{
 			Scenario=true;
 			ScenarioType=p_strScenarioType;
 			if (p_bLimited)
 			{
-				LoadLimitedDatasources(p_strScenarioType,p_strScenarioId);
+				LoadLimitedDatasources(p_strScenarioType, p_bUsingSqlite, p_strScenarioId);
 			}
             if (this.m_oDataSource.m_intError < 0)
             {
@@ -110,7 +110,7 @@ namespace FIA_Biosum_Manager
 			
 			
 		}
-		protected void LoadLimitedDatasources(string p_strScenarioType,string p_strScenarioId)
+		protected void LoadLimitedDatasources(string p_strScenarioType, bool p_bUsingSqlite, string p_strScenarioId)
 		{
 			string strProjDir=frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
 			
@@ -118,11 +118,18 @@ namespace FIA_Biosum_Manager
 			m_oDataSource.LoadTableColumnNamesAndDataTypes=false;
 			m_oDataSource.m_strScenarioId=p_strScenarioId.Trim();
 			m_oDataSource.LoadTableRecordCount=false;
-			m_oDataSource.m_strDataSourceMDBFile = strProjDir.Trim() + "\\" + p_strScenarioType + "\\db\\scenario_" + p_strScenarioType + "_rule_definitions.mdb";
-			m_oDataSource.m_strDataSourceTableName = "scenario_datasource";
-			m_oDataSource.populate_datasource_array();
-			
-		}
+            m_oDataSource.m_strDataSourceTableName = "scenario_datasource";
+            if (!p_bUsingSqlite)
+            {
+                m_oDataSource.m_strDataSourceMDBFile = strProjDir.Trim() + "\\" + p_strScenarioType + "\\db\\scenario_" + p_strScenarioType + "_rule_definitions.mdb";
+                m_oDataSource.populate_datasource_array();
+            }
+            else
+            {
+                m_oDataSource.m_strDataSourceMDBFile = strProjDir.Trim() + "\\" + p_strScenarioType + "\\db\\scenario_" + p_strScenarioType + "_rule_definitions.db";
+                m_oDataSource.populate_datasource_array_sqlite();
+            }
+        }
 		static public string GetInsertSQL(string p_strFields, string p_strValues,string p_strTable)
 		{
 			return "INSERT INTO " + p_strTable + " (" + p_strFields + ") VALUES (" + p_strValues + ")";
@@ -3273,9 +3280,9 @@ namespace FIA_Biosum_Manager
                         return strSQL;
                     }
 
-                    public static string DeleteHtAndHtTopKForNonMeasuredHeights(string strDestTable)
+                    public static string DeleteHtAndHtTopKForUnknownHtcd(string strDestTable)
                     {
-                        return "UPDATE " + strDestTable + " SET Ht=0, HtTopK=0 WHERE Htcd NOT IN (1,2,3);";
+                        return "UPDATE " + strDestTable + " SET Ht=0, HtTopK=0 WHERE Htcd NOT IN (1,2,3,4);";
                     }
 
                     public static string SetBrokenTopFlag(string strDestTable)
@@ -3989,8 +3996,8 @@ namespace FIA_Biosum_Manager
                 //CREATE THE BIOSUM PLOT TABLE WITH 
                 //ONLY THE CURRENTLY SELECTED EVALUATION
                 //
-                strSQL[0] = "SELECT p.* " + 
-                            "INTO BIOSUM_PLOT " + 
+                strSQL[0] = "CREATE TABLE BIOSUM_PLOT AS " +
+                            "SELECT p.* " + 
                             "FROM " + p_strFIADBPlotTable + " p, " + 
                                 "(SELECT DISTINCT PLT_CN " + 
                                  "FROM " + p_strPpsaTable + " " + 
@@ -3999,8 +4006,8 @@ namespace FIA_Biosum_Manager
                 //
                 //CREATE BIOSUM_PPSA
                 //
-                strSQL[1] = "SELECT ppsa.*,p.CYCLE,p.SUBCYCLE " + 
-                            "INTO BIOSUM_PPSA " + 
+                strSQL[1] = "CREATE TABLE BIOSUM_PPSA AS " +
+                            "SELECT ppsa.*,p.CYCLE,p.SUBCYCLE " + 
                             "FROM " + p_strPpsaTable + " ppsa " + 
                             "INNER JOIN BIOSUM_PLOT p " + 
                             "ON ppsa.PLT_CN=p.CN " + 
@@ -4008,7 +4015,8 @@ namespace FIA_Biosum_Manager
                 //
                 //CREATE BIOSUM COND TABLE
                 //
-                strSQL[2] = "SELECT c.* INTO BIOSUM_COND FROM " + p_strFIADBCondTable + " c," + 
+                strSQL[2] = "CREATE TABLE BIOSUM_COND AS " +
+                            "SELECT c.* FROM " + p_strFIADBCondTable + " c," + 
                             "(SELECT CN FROM BIOSUM_PLOT) p " + 
                             "WHERE c.PLT_CN = p.CN";
 
@@ -4021,13 +4029,13 @@ namespace FIA_Biosum_Manager
                             "WHERE cond_status_cd = 1 AND condprop_unadj < ." + p_strCondProp;
 
                 //join pop_estn_unit,pop_stratum,pop_eval tables into biosum_eus_temp
-                strSQL[5] = "SELECT pe.rscd, pe.evalid,ps.estn_unit,ps.stratumcd," +
+                strSQL[5] = "CREATE TABLE BIOSUM_EUS_TEMP AS " +
+                            "SELECT pe.rscd, pe.evalid,ps.estn_unit,ps.stratumcd," +
                                    "pe.eval_descr,peu.estn_unit_descr,peu.arealand_eu," +
                                    "peu.areatot_eu , ps.p1pointcnt, ps.p2pointcnt," +
                                    "peu.p1pntcnt_eu as p1pointcnt_eu,peu.area_used," +
                                    "ps.adj_factor_macr,ps.adj_factor_subp," +
                                    "ps.adj_factor_micr,ps.expns,pe.LAND_ONLY " +
-                            "INTO BIOSUM_EUS_TEMP " +
                             "FROM " + p_strPopEstUnitTable + " peu," +
                                       p_strPopEvalTable + " pe," + p_strPopStratumTable + " ps " +
                                       "WHERE  ((pe.rscd=" + p_strRsCd + " AND pe.EVALID=" + p_strEvalId + ")) AND " +
@@ -4038,20 +4046,26 @@ namespace FIA_Biosum_Manager
                 //
                 //SUM UP UNADJUSTED FACTORS FOR DENIED ACCESS
                 //
-                strSQL[6] = "SELECT DISTINCT ppsa.evalid, ppsa.estn_unit, ppsa.statecd, ppsa.stratumcd, ppsa.plot," +
+                strSQL[6] = "CREATE TABLE BIOSUM_PPSA_DENIED_ACCESS AS " +
+                            "SELECT DISTINCT ppsa.evalid, ppsa.estn_unit, ppsa.statecd, ppsa.stratumcd, ppsa.plot," +
                                             "ppsa.countycd, ppsa.subcycle, ppsa.cycle, ppsa.unitcd," +
-                                            "SUM(IIF(eus.LAND_ONLY='N'," +
-                                                    "IIF(c.COND_STATUS_CD IN (1,2,3,4),0,c.MACRPROP_UNADJ)," +
-                                                    "IIF(c.COND_STATUS_CD IN (1,2,3),0,c.MACRPROP_UNADJ))) as denied_macr," +
-                                            "SUM(IIF(eus.LAND_ONLY='N'," +
-                                                    "IIF(c.COND_STATUS_CD IN (1,2,3,4),0,c.MICRPROP_UNADJ)," +
-                                                    "IIF(c.COND_STATUS_CD IN (1,2,3),0,c.MICRPROP_UNADJ))) as denied_micr," +
-                                            "SUM(IIF(eus.LAND_ONLY='N'," +
-                                                    "IIF(c.COND_STATUS_CD IN (1,2,3,4),0,c.SUBPPROP_UNADJ)," +
-                                                    "IIF(c.COND_STATUS_CD IN (1,2,3),0,c.SUBPPROP_UNADJ))) as denied_subp," +
-                                            "SUM(IIF(eus.LAND_ONLY='N',IIF(c.COND_STATUS_CD IN (1,2,3,4),0,c.CONDPROP_UNADJ),IIF(c.COND_STATUS_CD IN (1,2,3),0,c.CONDPROP_UNADJ))) as denied_cond " +
-                            "INTO BIOSUM_PPSA_DENIED_ACCESS " +
-                            "FROM BIOSUM_PPSA ppsa," +
+                            " SUM(CASE WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD IN(1, 2, 3, 4) THEN 0" +
+                            " WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD NOT IN(1, 2, 3, 4) THEN c.MACRPROP_UNADJ" +
+                            " WHEN eus.LAND_ONLY <> 'N' AND c.COND_STATUS_CD IN(1, 2, 3) THEN 0" +
+                            " ELSE c.MACRPROP_UNADJ END) AS denied_macr," +
+                            " SUM(CASE WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD IN(1, 2, 3, 4) THEN 0" +
+                            " WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD NOT IN(1, 2, 3, 4) THEN c.MICRPROP_UNADJ" +
+                            " WHEN eus.LAND_ONLY <> 'N' AND c.COND_STATUS_CD IN(1, 2, 3) THEN 0" +
+                            " ELSE c.MICRPROP_UNADJ END) AS denied_micr," +
+                            " SUM(CASE WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD IN(1, 2, 3, 4) THEN 0" +
+                            " WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD NOT IN(1, 2, 3, 4) THEN c.SUBPPROP_UNADJ" +
+                            " WHEN eus.LAND_ONLY <> 'N' AND c.COND_STATUS_CD IN(1, 2, 3) THEN 0" +
+                            " ELSE c.SUBPPROP_UNADJ END) AS denied_subp," +
+                            " SUM(CASE WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD IN(1, 2, 3, 4) THEN 0" +
+                            " WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD NOT IN(1, 2, 3, 4) THEN c.CONDPROP_UNADJ" +
+                            " WHEN eus.LAND_ONLY <> 'N' AND c.COND_STATUS_CD IN(1, 2, 3) THEN 0" +
+                            " ELSE c.CONDPROP_UNADJ END) AS denied_cond" +
+                            " FROM BIOSUM_PPSA ppsa," +
                                  "BIOSUM_COND c," +
                                  "BIOSUM_EUS_TEMP eus " +
                             "WHERE (ppsa.plt_cn = c.plt_cn) AND " +
@@ -4065,12 +4079,12 @@ namespace FIA_Biosum_Manager
                 //DELETE DENIED_COND=1
                 strSQL[7] = "DELETE FROM BIOSUM_PPSA_DENIED_ACCESS WHERE DENIED_COND =  1";
                 //JOIN THE 2 TABLES
-                strSQL[8] = "SELECT ppsa.*," +
+                strSQL[8] = "CREATE TABLE BIOSUM_PPSA_TEMP AS " +
+                            "SELECT ppsa.*," +
                                    "denied.denied_macr," +
                                    "denied.denied_micr," +
                                    "denied.denied_subp," +
                                    "denied.denied_cond " +
-                            "INTO BIOSUM_PPSA_TEMP " +
                             "FROM BIOSUM_PPSA_DENIED_ACCESS denied," +
                                  "BIOSUM_PPSA ppsa " +
                            "WHERE ppsa.evalid = denied.evalid AND " +
@@ -4085,32 +4099,32 @@ namespace FIA_Biosum_Manager
                 //
                 //CALCULATE ADJUSTMENTS
                 //
-                strSQL[9] = "SELECT DISTINCT " +
-                                   "eus.rscd, eus.evalid, eus.estn_unit, eus.stratumcd," +
-                                   "eus.arealand_eu, eus.areatot_eu," +
-                                   "eus.area_used, rowcount.p2pointcnt_man as p2pointcnt_man," +
-                                   "eus.p1pointcnt, eus.p1pointcnt_eu, eus.p2pointcnt," +
-                                   "SUM(c.MACRPROP_UNADJ * " +
-                                        "IIF(eus.LAND_ONLY='N'," +
-                                        "IIF(c.COND_STATUS_CD IN (1,2,3,4),1,0)," +
-                                        "IIF(c.COND_STATUS_CD IN (1,2,3),1,0))) / " +
-                                            "SUM(c.macrprop_unadj) as pmh_macr," +
-                                   "SUM(c.MICRPROP_UNADJ * " +
-                                       "IIF(eus.LAND_ONLY='N'," +
-                                       "IIF(c.COND_STATUS_CD IN (1,2,3,4),1,0)," +
-                                       "IIF(c.COND_STATUS_CD IN (1,2,3),1,0))) / " +
-                                           "SUM(c.micrprop_unadj) as pmh_micr," +
-                                   "SUM(c.SUBPPROP_UNADJ * " +
-                                       "IIF(eus.LAND_ONLY='N'," +
-                                       "IIF(c.COND_STATUS_CD IN (1,2,3,4),1,0)," +
-                                       "IIF(c.COND_STATUS_CD IN (1,2,3),1,0))) / " +
-                                           "SUM(c.subpprop_unadj) as pmh_sub," +
-                                   "SUM(c.CONDPROP_UNADJ * " +
-                                       "IIF(eus.LAND_ONLY='N'," +
-                                       "IIF(c.COND_STATUS_CD IN (1,2,3,4),1,0)," +
-                                       "IIF(c.COND_STATUS_CD IN (1,2,3),1,0))) / " +
-                                           "SUM(c.condprop_unadj) as pmh_cond " +
-                            "INTO BIOSUM_EUS_ACCESS " +
+                strSQL[9] = "CREATE TABLE BIOSUM_EUS_ACCESS AS" +
+                                " SELECT DISTINCT " +
+                                "eus.rscd, eus.evalid, eus.estn_unit, eus.stratumcd," +
+                                "eus.arealand_eu, eus.areatot_eu," +
+                                "eus.area_used, rowcount.p2pointcnt_man as p2pointcnt_man," +
+                                "eus.p1pointcnt, eus.p1pointcnt_eu, eus.p2pointcnt," +
+                                " SUM(c.MACRPROP_UNADJ *" +
+                                " CASE WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD IN(1, 2, 3, 4) THEN 1" +
+                                " WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD NOT IN(1, 2, 3, 4) THEN 0" +
+                                " WHEN eus.LAND_ONLY <> 'N' AND c.COND_STATUS_CD IN(1, 2, 3) THEN 1" +
+                                " ELSE 0 END) / SUM(c.macrprop_unadj) as pmh_macr," +
+                                " SUM(c.MICRPROP_UNADJ *" +
+                                " CASE WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD IN(1, 2, 3, 4) THEN 1" +
+                                " WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD NOT IN(1, 2, 3, 4) THEN 0" +
+                                " WHEN eus.LAND_ONLY <> 'N' AND c.COND_STATUS_CD IN(1, 2, 3) THEN 1 " +
+                                " ELSE 0 END) / SUM(c.MICRPROP_unadj) as pmh_micr," +
+                                " SUM(c.SUBPPROP_UNADJ *" +
+                                " CASE WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD IN(1, 2, 3, 4) THEN 1" +
+                                " WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD NOT IN(1, 2, 3, 4) THEN 0" +
+                                " WHEN eus.LAND_ONLY <> 'N' AND c.COND_STATUS_CD IN(1, 2, 3) THEN 1" +
+                                " ELSE 0 END) / SUM(c.SUBPPROP_unadj) as pmh_sub," +
+                                " SUM(c.CONDPROP_UNADJ *" +
+                                " CASE WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD IN(1, 2, 3, 4) THEN 1" +
+                                " WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD NOT IN(1, 2, 3, 4) THEN 0" +
+                                " WHEN eus.LAND_ONLY <> 'N' AND c.COND_STATUS_CD IN(1, 2, 3) THEN 1" +
+                                " ELSE 0 END) / SUM(c.CONDPROP_unadj) as pmh_cond " +
                             "FROM BIOSUM_COND c," +
                                  "BIOSUM_PPSA_TEMP ppsa," +
                                  "BIOSUM_EUS_TEMP  eus," +
@@ -4157,19 +4171,19 @@ namespace FIA_Biosum_Manager
                 //CALCULATE STRATUM AREA
                 //
                 strSQL[12] = "UPDATE BIOSUM_EUS_ACCESS " +
-                             "SET double_sampling = " +
-                                 "IIF(p1pointcnt_eu is null OR " +
-                                     "p1pointcnt is null OR " +
-                                     "p1pointcnt=p1pointcnt_eu," +
-                                     "0,1)," +
-                            "stratum_area = " +
-                                "IIF(p1pointcnt_eu is NOT null AND " +
-                                    "p1pointcnt_eu > 0," +
-                                    "area_used*p1pointcnt/p1pointcnt_eu,0)";
+                                "SET double_sampling = " +
+                                "CASE WHEN p1pointcnt_eu is null OR p1pointcnt is null OR p1pointcnt = p1pointcnt_eu THEN 0 " +
+                                "ELSE 1 " +
+                                "END, " +
+                                "stratum_area = " +
+                                "CASE WHEN p1pointcnt_eu is NOT null AND p1pointcnt_eu > 0 THEN area_used*p1pointcnt / p1pointcnt_eu " +
+                                "ELSE 0 " +
+                                "END";
                 //
                 //MERGE BIOSUM_EUS_ACCESS WITH BIOSUM_EUS_TEMP INTO  biosum_pop_stratum_adjustment_factors
                 //
-                strSQL[13] = "SELECT a.rscd,a.evalid," +
+                strSQL[13] = "CREATE TABLE biosum_pop_stratum_adjustment_factors AS " +
+                            "SELECT a.rscd,a.evalid," +
                                   "a.estn_unit,a.stratumcd," +
                                   "a.p2pointcnt_man,a.stratum_area," +
                                   "a.double_sampling," +
@@ -4178,7 +4192,6 @@ namespace FIA_Biosum_Manager
                                   "b.eval_descr,b.estn_unit_descr," +
                                   "b.adj_factor_macr, b.adj_factor_subp," +
                                   "b.adj_factor_micr, b.expns " +
-                          "INTO biosum_pop_stratum_adjustment_factors " +
                           "FROM BIOSUM_EUS_ACCESS a " +
                           "INNER JOIN BIOSUM_EUS_TEMP b " +
                           "ON a.rscd = b.rscd AND " +
@@ -4191,12 +4204,24 @@ namespace FIA_Biosum_Manager
                 //UPDATE THE  biosum_pop_stratum_adjustment_factors TABLE 
                 //WITH THE KEY COLUMN FROM THE POP_STRATUM TABLE
                 //
-                strSQL[15] = "UPDATE biosum_pop_stratum_adjustment_factors b  " + 
-                             "INNER JOIN " + p_strPopStratumTable + " ps " + 
-                             "ON ps.RSCD = b.RSCD AND ps.EVALID=b.EVALID AND " + 
-                                "ps.ESTN_UNIT=b.ESTN_UNIT AND ps.STRATUMCD = b.STRATUMCD " + 
-                             "SET b.STRATUM_CN=ps.CN " + 
-                             "WHERE b.RSCD=" + p_strRsCd + " AND b.EVALID=" + p_strEvalId;
+                strSQL[15] = "UPDATE biosum_pop_stratum_adjustment_factors" +
+                    " SET (STRATUM_CN) =" +
+                    " (SELECT POP_STRATUM.cn FROM " + p_strPopStratumTable +
+                    " WHERE " + p_strPopStratumTable + ".RSCD = biosum_pop_stratum_adjustment_factors.RSCD" +
+                    " AND " + p_strPopStratumTable + ".EVALID = biosum_pop_stratum_adjustment_factors.EVALID" +
+                    " AND " + p_strPopStratumTable + ".ESTN_UNIT = biosum_pop_stratum_adjustment_factors.ESTN_UNIT" +
+                    " AND " + p_strPopStratumTable + ".STRATUMCD = biosum_pop_stratum_adjustment_factors.STRATUMCD" +
+                    " AND biosum_pop_stratum_adjustment_factors.RSCD = " + p_strRsCd +
+                    " AND biosum_pop_stratum_adjustment_factors.EVALID = " + p_strEvalId + ")" +
+                    " WHERE EXISTS( " +
+                    " SELECT * FROM POP_STRATUM" +
+                    " WHERE " + p_strPopStratumTable + ".RSCD = biosum_pop_stratum_adjustment_factors.RSCD" +
+                    " AND " + p_strPopStratumTable + ".EVALID = biosum_pop_stratum_adjustment_factors.EVALID" +
+                    " AND " + p_strPopStratumTable + ".ESTN_UNIT = biosum_pop_stratum_adjustment_factors.ESTN_UNIT" +
+                    " AND " + p_strPopStratumTable + ".STRATUMCD = biosum_pop_stratum_adjustment_factors.STRATUMCD" +
+                    " AND biosum_pop_stratum_adjustment_factors.RSCD = " + p_strRsCd +
+                    " AND biosum_pop_stratum_adjustment_factors.EVALID = " + p_strEvalId + ")";
+
                 //
                 //CLEAN UP
                 //
@@ -5472,27 +5497,67 @@ namespace FIA_Biosum_Manager
                 string p_strTotalAdditionalCostsTableName,
                 string p_strHarvestCostsTableName,
                 string p_strScenarioId,
-                bool p_bIncludeZeroHarvestCpa)
+                bool p_bIncludeZeroHarvestCpa, bool p_bUsingSqlite)
             {
-                string strSql = "UPDATE " + p_strHarvestCostsTableName + " h " +
-                       "INNER JOIN " + p_strTotalAdditionalCostsTableName + " a " +
-                       "ON h.biosum_cond_id = a.biosum_cond_id AND h.rx=a.rx," +
-                       "scenario_cost_revenue_escalators e " +
-                       "SET h.complete_cpa = " +
-                           "IIF(h.RXCycle='1',(h.harvest_cpa+a.complete_additional_cpa)," +
-                           "IIF(h.RXCycle='2',(h.harvest_cpa+a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle2," +
-                           "IIF(h.RXCycle='3',(h.harvest_cpa+a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle3," +
-                           "IIF(h.RXCycle='4',(h.harvest_cpa+a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle4,0)))) ";
-                if (p_bIncludeZeroHarvestCpa == false)
+                string strSql = "";
+                if (!p_bUsingSqlite)
                 {
-                    strSql += "WHERE h.harvest_cpa IS NOT NULL AND h.harvest_cpa > 0  AND ";
+                    strSql = "UPDATE " + p_strHarvestCostsTableName + " h " +
+                            "INNER JOIN " + p_strTotalAdditionalCostsTableName + " a " +
+                            "ON h.biosum_cond_id = a.biosum_cond_id AND h.rx=a.rx," +
+                            "scenario_cost_revenue_escalators e " +
+                            "SET h.complete_cpa = " +
+                            "IIF(h.RXCycle='1',(h.harvest_cpa+a.complete_additional_cpa)," +
+                            "IIF(h.RXCycle='2',(h.harvest_cpa+a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle2," +
+                            "IIF(h.RXCycle='3',(h.harvest_cpa+a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle3," +
+                            "IIF(h.RXCycle='4',(h.harvest_cpa+a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle4,0)))) ";
+                    if (p_bIncludeZeroHarvestCpa == false)
+                    {
+                        strSql += "WHERE h.harvest_cpa IS NOT NULL AND h.harvest_cpa > 0  AND ";
+                    }
+                    else
+                    {
+                        strSql += "WHERE h.harvest_cpa IS NOT NULL AND ";
+                    }
+                    strSql += "TRIM(UCASE(e.scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'";
                 }
                 else
                 {
-                    strSql += "WHERE h.harvest_cpa IS NOT NULL AND ";
+                    strSql = "UPDATE " + p_strHarvestCostsTableName + " AS h " +
+                        "SET complete_cpa = " +
+                        "(SELECT CASE WHEN h.RXCycle = '1' THEN h.harvest_cpa + a.complete_additional_cpa " +
+                        "WHEN h.RXCycle = '2' THEN h.harvest_cpa + a.complete_additional_cpa * " +
+                        "(SELECT EscalatorOperatingCosts_Cycle2 from definitions.scenario_cost_revenue_escalators " +
+                        "WHERE TRIM(scenario_id) = '" + p_strScenarioId.Trim() + "') " +
+                        "WHEN h.RXCycle = '3' THEN h.harvest_cpa + a.complete_additional_cpa * " +
+                        "(SELECT EscalatorOperatingCosts_Cycle3 from definitions.scenario_cost_revenue_escalators " +
+                        "WHERE TRIM(scenario_id) = '" + p_strScenarioId.Trim() + "') " +
+                        "WHEN h.RXCycle = '4' THEN h.harvest_cpa + a.complete_additional_cpa * " +
+                        "(SELECT EscalatorOperatingCosts_Cycle4 from definitions.scenario_cost_revenue_escalators " +
+                        "WHERE TRIM(scenario_id) = '" + p_strScenarioId.Trim() + "') " +
+                        "ELSE 0 END " +
+                        "FROM " + p_strTotalAdditionalCostsTableName + " AS a " +
+                        "WHERE h.biosum_cond_id = a.biosum_cond_id AND h.RX = a.RX ";
+                    if (p_bIncludeZeroHarvestCpa == false)
+                    {
+                        strSql += "AND h.harvest_cpa IS NOT NULL AND h.harvest_cpa > 0) ";
+                    }
+                    else
+                    {
+                        strSql += "AND h.harvest_cpa IS NOT NULL) ";
+                    }
+                    strSql += "WHERE EXISTS( SELECT* FROM " + p_strTotalAdditionalCostsTableName + " AS a " +
+                              "WHERE h.biosum_cond_id = a.biosum_cond_id AND h.RX = a.RX ";
+                    if (p_bIncludeZeroHarvestCpa == false)
+                    {
+                        strSql += "AND h.harvest_cpa IS NOT NULL AND h.harvest_cpa > 0) ";
+                    }
+                    else
+                    {
+                        strSql += "AND h.harvest_cpa IS NOT NULL) ";
+                    }
                 }
-                strSql += "TRIM(UCASE(e.scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'";
-                return strSql;
+                    return strSql;
             }
             //2018-30-JUL: No longer calculating ideal costs
             //See uc_processor_scenario_run.RunScenario_UpdateHarvestCostsTableWithAdditionalCosts() to re-implement

@@ -15,6 +15,7 @@ namespace FIA_Biosum_Manager
         private FIA_Biosum_Manager.ProcessorScenarioItem m_oProcessorScenarioItem;
         private Queries m_oQueries = new Queries();
         private FIA_Biosum_Manager.ProcessorScenarioItem _oProcessorScenarioItem;
+        private FIA_Biosum_Manager.frmProcessorScenario _frmProcessorScenario;
         private FIA_Biosum_Manager.ProcessorScenarioTools m_oProcessorScenarioTools = new ProcessorScenarioTools();
         private ListViewAlternateBackgroundColors m_oLvAlternateColors = new ListViewAlternateBackgroundColors();
 
@@ -38,12 +39,14 @@ namespace FIA_Biosum_Manager
             get { return this._oProcessorScenarioItem; }
             set { this._oProcessorScenarioItem = value; }
         }
+        public FIA_Biosum_Manager.frmProcessorScenario ReferenceProcessorScenarioForm
+        {
+            get { return _frmProcessorScenario; }
+            set { _frmProcessorScenario = value; }
+        }
         public void loadvalues()
         {
-            int x;
-            
             lvProcessorScenario.Items.Clear();
-            System.Windows.Forms.ListViewItem entryListItem = null;
             this.m_oLvAlternateColors.InitializeRowCollection();
             this.m_oLvAlternateColors.ReferenceAlternateBackgroundColor = frmMain.g_oGridViewAlternateRowBackgroundColor;
             this.m_oLvAlternateColors.ReferenceAlternateForegroundColor = frmMain.g_oGridViewRowForegroundColor;
@@ -53,6 +56,18 @@ namespace FIA_Biosum_Manager
             this.m_oLvAlternateColors.ReferenceListView = this.lvProcessorScenario;
             this.m_oLvAlternateColors.CustomFullRowSelect = true;
             if (frmMain.g_oGridViewFont != null) this.lvProcessorScenario.Font = frmMain.g_oGridViewFont;
+
+            if (!ReferenceProcessorScenarioForm.m_bUsingSqlite)
+            {
+                loadgrid();
+            }
+            else
+            {
+                loadgridSqlite();
+            }
+        }
+        private void loadgrid()
+        {
             //
             //OPEN CONNECTION TO DB FILE CONTAINING Processor Scenario TABLE
             //
@@ -64,14 +79,15 @@ namespace FIA_Biosum_Manager
             //get a list of all the scenarios
             //
             ado_data_access oAdo = new ado_data_access();
-            oAdo.OpenConnection(oAdo.getMDBConnString(strProcessorScenarioMDB,"",""));
+            oAdo.OpenConnection(oAdo.getMDBConnString(strProcessorScenarioMDB, "", ""));
             oAdo.SqlQueryReader(oAdo.m_OleDbConnection,
                        "SELECT scenario_id,description " +
                        "FROM scenario " +
                        "WHERE scenario_id IS NOT NULL AND " +
                                          "LEN(TRIM(scenario_id)) > 0");
 
-            x = 0;
+            int x = 0;
+            ListViewItem entryListItem = null;
             if (oAdo.m_OleDbDataReader.HasRows)
             {
                 while (oAdo.m_OleDbDataReader.Read())
@@ -112,11 +128,72 @@ namespace FIA_Biosum_Manager
             }
             oAdo.m_OleDbDataReader.Close();
             oAdo.CloseConnection(oAdo.m_OleDbConnection);
-
         }
-        public void savevalues()
+        private void loadgridSqlite()
         {
-           
+            //
+            //OPEN CONNECTION TO DB FILE CONTAINING Processor Scenario TABLE
+            //
+            //scenario mdb connection
+            string strProcessorScenarioDB =
+              frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+              "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();            
+            using (System.Data.SQLite.SQLiteConnection conn = 
+                new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strProcessorScenarioDB)))
+            {
+                conn.Open();
+                //
+                //get a list of all the scenarios
+                //
+                oDataMgr.SqlQueryReader(conn,
+                           "SELECT scenario_id,description " +
+                           "FROM scenario " +
+                           "WHERE scenario_id IS NOT NULL AND " +
+                                             "LENGTH(TRIM(scenario_id)) > 0");
+                int x = 0;
+                ListViewItem entryListItem = null;
+                if (oDataMgr.m_DataReader.HasRows)
+                {
+                    while (oDataMgr.m_DataReader.Read())
+
+                    {
+                        if (oDataMgr.m_DataReader["scenario_id"] != DBNull.Value &&
+                            oDataMgr.m_DataReader["scenario_id"].ToString().Trim().Length > 0 &&
+                            ReferenceCurrentScenarioItem.ScenarioId.Trim().ToUpper() !=
+                            oDataMgr.m_DataReader["scenario_id"].ToString().Trim().ToUpper())
+                        {
+                            entryListItem = lvProcessorScenario.Items.Add(" ");
+
+                            entryListItem.UseItemStyleForSubItems = false;
+                            this.m_oLvAlternateColors.AddRow();
+                            this.m_oLvAlternateColors.AddColumns(x, lvProcessorScenario.Columns.Count);
+
+
+                            entryListItem.SubItems.Add(oDataMgr.m_DataReader["scenario_id"].ToString().Trim());
+
+                            if (oDataMgr.m_DataReader["description"] != DBNull.Value &&
+                                oDataMgr.m_DataReader["description"].ToString().Trim().Length > 0)
+                            {
+                                entryListItem.SubItems.Add(oDataMgr.m_DataReader["description"].ToString().Trim());
+                            }
+                            else
+                            {
+                                entryListItem.SubItems.Add(" ");
+                            }
+                            x = x + 1;
+                        }
+                    }
+                    oDataMgr.m_DataReader.Close();
+                    this.m_oLvAlternateColors.ListView();
+                }
+                else
+                {
+                    MessageBox.Show("!!No Scenarios To Copy!!", "FIA Bisoum");
+                    btnCopy.Enabled = false;
+                }
+            }
         }
 
         private void lvProcessorScenario_SelectedIndexChanged(object sender, EventArgs e)
@@ -310,7 +387,8 @@ namespace FIA_Biosum_Manager
                 lblMsg.Show();
                 lblMsg.Refresh();
                 //load the scenario into the collection
-                m_oProcessorScenarioTools.LoadScenario(p_strScenarioId.Trim(), m_oQueries, m_oProcessorScenarioItem_Collection);
+                m_oProcessorScenarioTools.LoadScenario(p_strScenarioId.Trim(), m_oQueries, ReferenceProcessorScenarioForm.m_bUsingSqlite,
+                    m_oProcessorScenarioItem_Collection);
                 lblMsg.Hide();
             }
         }

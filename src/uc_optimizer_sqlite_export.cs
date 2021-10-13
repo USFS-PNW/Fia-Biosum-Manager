@@ -29,7 +29,6 @@ namespace FIA_Biosum_Manager
         private string m_strResultsDbPath = "";
         private string m_strResultsAccdbPath = "";
         private string m_strFvsContextAccdbPath = "";
-        private string m_strPopAccdbPath = "";
         private System.Collections.Generic.IDictionary<string, string> m_dictScenarios = null;
 
 
@@ -308,7 +307,6 @@ namespace FIA_Biosum_Manager
         
         private void BtnExport_Click(object sender, EventArgs e)
         {
-            m_strPopAccdbPath = m_frmMain.getProjectDirectory() + @"\" + frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableDbFile;
             m_intDatabaseCount = 0;
             m_strDebugFile = m_frmMain.getProjectDirectory() + @"\optimizer\" + m_strOptimizerScenario + @"\db\sqlite_log.txt";
             bool bDbExists = false;
@@ -493,7 +491,6 @@ namespace FIA_Biosum_Manager
             string strAccdbConnection = oAdo.getMDBConnString(m_strContextAccdbPath, "", "");
             string strTable = "";
             System.Collections.Generic.IList<string> lstTables = new System.Collections.Generic.List<string>();
-            System.Collections.Generic.IList<string> lstPopTables = new System.Collections.Generic.List<string>();
             try
             {
             using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
@@ -530,9 +527,9 @@ namespace FIA_Biosum_Manager
                 }
                 System.Collections.Generic.IList<string> lstTableNames = 
                     new System.Collections.Generic.List<string>();
-                lstTableNames.Add(Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName + "_C");
-                lstTableNames.Add(Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName + "_C");
-                System.Collections.Generic.IList<string[]> lstColumnNames =
+                    lstTableNames.Add(Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName + "_C");
+                    lstTableNames.Add(Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName + "_C");
+                    System.Collections.Generic.IList<string[]> lstColumnNames =
                     new System.Collections.Generic.List<string[]>();
                 System.Collections.Generic.IList<string[]> lstDataTypes =
                     new System.Collections.Generic.List<string[]>();
@@ -613,35 +610,6 @@ namespace FIA_Biosum_Manager
                 {
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Created " + strTable + " table \r\n");
                 }
-                strTable = frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableName;
-                frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopEstnUnitTable(oDataMgr, con, strTable);
-                lstPopTables.Add(strTable);
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                {
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Created " + strTable + " table \r\n");
-                }
-                strTable = frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName;
-                frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopEvalTable(oDataMgr, con, strTable);
-                lstPopTables.Add(strTable);
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                {
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Created " + strTable + " table \r\n");
-                }
-                strTable = frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName;
-                frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopPlotStratumAssgnTable(oDataMgr, con, strTable);
-                lstPopTables.Add(strTable);
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                {
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Created " + strTable + " table \r\n");
-                }
-                strTable = frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName;
-                frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopStratumTable(oDataMgr, con, strTable);
-                lstPopTables.Add(strTable);
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                {
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Created " + strTable + " table \r\n");
-                }
-
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                 {
@@ -688,55 +656,37 @@ namespace FIA_Biosum_Manager
                         }
                     }
 
-                    // Process POP tables
-                    oAccessConn.Close();
-                    oAccessConn.ConnectionString = oAdo.getMDBConnString(m_strPopAccdbPath, "", "");
-                    oAccessConn.Open();
-                    foreach (string strTableName in lstPopTables)
-                    {
-                        if (oAdo.TableExist(oAccessConn, strTableName))
+                        // Copy POP tables from sqlite master.db
+                        string[] arrPopTables = { frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName,
+                                                  frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableName,
+                                                  frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName,
+                                                  frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName};
+                        string strMasterDbPath = m_frmMain.getProjectDirectory() + @"\" + frmMain.g_oTables.m_oFIAPlot.DefaultPopTableDbFile;
+                        oDataMgr.m_strSQL = "ATTACH DATABASE '" + strMasterDbPath + "' AS MASTER";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
+                                oDataMgr.m_strSQL + "\r\n");
+                        oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
+
+                        foreach(var nextTable in arrPopTables)
                         {
-                            counter += 1;
-                            string strMessage = "Writing rows to " + strTableName + " in " + System.IO.Path.GetFileName(m_strResultsDbPath);
-                            UpdateProgressBar1(strMessage, counter + (100 / (m_intDatabaseCount * 10)));
-                            string strSql = "select * from " + strTableName;
-                            oAdo.CreateDataTable(oAccessConn, strSql, strTableName, false);
-                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                            {
-                                frmMain.g_oUtils.WriteText(m_strDebugFile, "Created " + strTableName + " table \r\n");
-                            }
-
-                            using (System.Data.SQLite.SQLiteDataAdapter da = new System.Data.SQLite.SQLiteDataAdapter(strSql, con))
-                            {
-                                using (System.Data.SQLite.SQLiteCommandBuilder cb = new System.Data.SQLite.SQLiteCommandBuilder(da))
-                                {
-                                    da.InsertCommand = cb.GetInsertCommand();
-                                    int rows = da.Update(oAdo.m_DataTable);
-                                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                                    {
-                                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Populated context table " + strTableName + " \r\n");
-                                    }
-                                }
-                            }
-
-                            // Add extra fields to pop_eval table; They will be null
-                            if (strTableName.Equals(frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName))
-                            {
-                                string[] arrExtraFields = { "Growth_Acct", "LAND_ONLY" };
-                                foreach (string strFieldName in arrExtraFields)
-                                {
-                                    oDataMgr.AddColumn(con, strTableName, strFieldName, "TEXT", "");
-                                }
-                                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                                {
-                                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Added extra fields to table " + strTableName + " \r\n");
-                                }
-                            }
-                            
+                            oDataMgr.m_strSQL = "CREATE TABLE " + nextTable + " AS " +
+                                                "SELECT * FROM MASTER." + nextTable;
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
+                                    oDataMgr.m_strSQL + "\r\n");
+                            oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
                         }
+
+                        //detach FIADB database
+                        oDataMgr.m_strSQL = "DETACH DATABASE MASTER";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
+                                oDataMgr.m_strSQL + "\r\n");
+                        oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
+
                     }
-                }
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                 {
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Finished populating context tables! \r\n");
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n");
@@ -1576,7 +1526,7 @@ namespace FIA_Biosum_Manager
                     }
                     else if (strTableName.Equals(Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName + "_C"))
                     {
-                        frmMain.g_oTables.m_oProcessor.CreateSqliteTreeVolValSpeciesDiamGroupsTable(oDataMgr, con, strTableName);
+                        frmMain.g_oTables.m_oProcessor.CreateSqliteTreeVolValSpeciesDiamGroupsTable(oDataMgr, con, strTableName, true);
                     }
                     else if (strTableName.Equals(frmMain.g_oTables.m_oFIAPlot.DefaultConditionTableName))
                     {

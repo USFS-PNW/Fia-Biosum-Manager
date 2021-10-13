@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Windows.Forms;
-using System.Text;
+using SQLite.ADO;
 
 namespace FIA_Biosum_Manager
 {
@@ -387,12 +387,155 @@ namespace FIA_Biosum_Manager
 			p_ado = null;
 		}
 
+        ///<summary>
+        ///Load a 2 dimensional array with 
+        ///this datasource information:
+        ///Table Type, MDB paths and files, table names, file/table
+        ///found, table record count.
+        ///OPTIONAL: table columns and datatypes will also load into the array
+        ///          if the variable LoadColumnNamesAndDataTypes is set to true
+        ///</summary>
+        ///@ToDo: This implementation assumes the data source tables are all in MS Access db
+        public void populate_datasource_array_sqlite()
+        {
+            macrosubst oMacroSub = new macrosubst();
+            oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
 
-  	///<summary>
-		///Validate the existance of the table in the datasource
-	  ///</summary>
-		/// <param name="strTableName">Table name to validate.</param>
-		public bool DataSourceTableExist(string strTableName)
+            int intRecCnt = 0;
+            string strPathAndFile = "";
+            string strSQL = "";
+            string strConn = "";
+            this.m_intNumberOfTables = 0;
+
+            ado_data_access p_ado = new ado_data_access();      // used for getting record counts
+            DataMgr dataMgr = new DataMgr();
+
+            this.m_intError = 0;
+            this.m_strError = "";
+
+            strConn = dataMgr.GetConnectionString(this.m_strDataSourceMDBFile);
+            using (System.Data.SQLite.SQLiteConnection sqlConn = new System.Data.SQLite.SQLiteConnection(strConn))
+            {
+                sqlConn.Open();
+                intRecCnt = Convert.ToInt32(dataMgr.getRecordCount(sqlConn, "select count(*) from " + this.m_strDataSourceTableName, this.m_strDataSourceTableName));
+                this.m_strDataSource = new String[intRecCnt, 10];
+                if (this.m_strScenarioId.Trim().Length > 0)
+                {
+                    strSQL = "select table_type,path,file,table_name from scenario_datasource" +
+                             " where trim(scenario_id) = '" + this.m_strScenarioId.Trim() + "';";
+                }
+                else
+                {
+                    strSQL = "select table_type,path,file,table_name from " + this.m_strDataSourceTableName + ";";
+                }
+                try
+                {
+                    dataMgr.SqlQueryReader(sqlConn, strSQL);
+                    int x = 0;
+                    ado_data_access oExistsAdo = new ado_data_access();
+                    using (var oExistsConn = new System.Data.OleDb.OleDbConnection())
+                    {
+                        while (dataMgr.m_DataReader.Read())
+                        {
+                            this.m_intNumberOfTables++;
+                            // Add a ListItem object to the array
+                            this.m_strDataSource[x, TABLETYPE] = dataMgr.m_DataReader["table_type"].ToString().Trim();
+                            this.m_strDataSource[x, PATH] = dataMgr.m_DataReader["path"].ToString().Trim();
+                            this.m_strDataSource[x, MDBFILE] = dataMgr.m_DataReader["file"].ToString().Trim();
+                            strPathAndFile = oMacroSub.GeneralTranslateVariableSubstitution(dataMgr.m_DataReader["path"].ToString().Trim()) +
+                                "\\" + dataMgr.m_DataReader["file"].ToString().Trim();
+                            if (System.IO.File.Exists(strPathAndFile) == true)
+                            {
+                                this.m_strDataSource[x, FILESTATUS] = "F";
+                                this.m_strDataSource[x, TABLE] = dataMgr.m_DataReader["table_name"].ToString().Trim();
+                                string strExistsConn = oExistsAdo.getMDBConnString(strPathAndFile, "", "");
+
+                                // this is the first time the connection is used -> not open yet
+                                if (String.IsNullOrEmpty(oExistsConn.ConnectionString))
+                                {
+                                    oExistsConn.ConnectionString = strExistsConn;
+                                    oExistsConn.Open();
+                                }
+                                else
+                                {
+                                    // close and reopen the connection if the target database has changed
+                                    // the connectionString returned by the connection doesn't include the "Password" key that is included
+                                    // in strExistsConn
+                                    if (oExistsConn.ConnectionString + "Password=;" != strExistsConn)
+                                    {
+                                        if (oExistsConn.State != ConnectionState.Closed)
+                                        {
+                                            oExistsConn.Close();
+                                            oExistsConn.ConnectionString = strExistsConn;
+                                            oExistsConn.Open();
+                                        }
+                                    }
+                                }
+
+                                //see if the table exists in the mdb database container
+                                if (oExistsAdo.TableExist(oExistsConn, dataMgr.m_DataReader["table_name"].ToString().Trim()) == true)
+                                {
+                                    this.m_strDataSource[x, TABLESTATUS] = "F";
+                                    this.m_strDataSource[x, RECORDCOUNT] = "0";
+                                    this.m_strDataSource[x, COLUMN_LIST] = "";
+                                    this.m_strDataSource[x, DATATYPE_LIST] = "";
+
+                                    if (this.LoadTableRecordCount || this.LoadTableColumnNamesAndDataTypes)
+                                    {
+                                        strConn = p_ado.getMDBConnString(strPathAndFile, "admin", "");
+                                        p_ado.OpenConnection(strConn);
+                                        if (p_ado.m_intError == 0)
+                                        {
+                                            strSQL = "select count(*) from " + dataMgr.m_DataReader["table_name"].ToString();
+                                            if (this.LoadTableRecordCount) this.m_strDataSource[x, RECORDCOUNT] = Convert.ToString(p_ado.getRecordCount(strConn, strSQL, dataMgr.m_DataReader["table_name"].ToString()));
+                                            if (this.LoadTableColumnNamesAndDataTypes) p_ado.getFieldNamesAndDataTypes(strConn, "select * from " + dataMgr.m_DataReader["table_name"].ToString(), ref this.m_strDataSource[x, COLUMN_LIST], ref this.m_strDataSource[x, DATATYPE_LIST]);
+                                            p_ado.CloseConnection(p_ado.m_OleDbConnection);
+                                            while (p_ado.m_OleDbConnection.State != ConnectionState.Closed)
+                                                System.Threading.Thread.Sleep(5000);
+                                            p_ado.m_OleDbConnection.Dispose();
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    this.m_strDataSource[x, TABLESTATUS] = "NF";
+                                    this.m_strDataSource[x, RECORDCOUNT] = "0";
+                                }
+                            }
+                            else
+                            {
+                                this.m_strDataSource[x, FILESTATUS] = "NF";
+                                this.m_strDataSource[x, TABLE] = dataMgr.m_DataReader["table_name"].ToString().Trim();
+                                this.m_strDataSource[x, TABLESTATUS] = "NF";
+                                this.m_strDataSource[x, RECORDCOUNT] = "0";
+                            }
+                            UpdateTableMacroVariable(this.m_strDataSource[x, TABLETYPE], this.m_strDataSource[x, TABLE]);
+
+                            x++;
+                        }
+                    }
+                    oExistsAdo = null;
+                    dataMgr.m_DataReader.Close();
+                }
+                catch
+                {
+                    this.m_intError = -1;
+                    this.m_strError = "The Query Command " + strSQL + " Failed";
+                    MessageBox.Show(this.m_strError);
+                    p_ado.CloseConnection(p_ado.m_OleDbConnection);
+                    p_ado = null;
+                    return;
+                }
+            }
+            p_ado = null;
+        }
+
+
+        ///<summary>
+        ///Validate the existance of the table in the datasource
+        ///</summary>
+        /// <param name="strTableName">Table name to validate.</param>
+        public bool DataSourceTableExist(string strTableName)
 		{
 			int x;
 			for (x=0; x <= this.m_intNumberOfTables-1; x++)
@@ -1241,6 +1384,93 @@ namespace FIA_Biosum_Manager
             oAdo = null;
             return strVariantArray;
         
+        }
+        public void ValidateDataSources(
+            ref System.Collections.Generic.IDictionary<string, string[]> dictSources)
+        {
+            string strSql;
+            string strPathAndFile = "";
+            string strSqliteConn = "";
+            string strAccdbConn = "";
+
+            macrosubst oMacroSub = new macrosubst();
+            oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
+            DataMgr dataMgr = new DataMgr();
+            ado_data_access oAdo = new ado_data_access();
+            dao_data_access oDao = new dao_data_access();   // This is here even though we never use it to avoid dao errors later
+            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection())
+            {
+                using (System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection())
+                {
+                    foreach (var tableType in dictSources.Keys)
+                    {
+                        string[] arrSource = dictSources[tableType];
+                        strPathAndFile = oMacroSub.GeneralTranslateVariableSubstitution(arrSource[PATH]) +
+                            "\\" + arrSource[MDBFILE];
+                        if (System.IO.File.Exists(strPathAndFile) == true)
+                        {
+                            arrSource[FILESTATUS] = "F";
+                            if (System.IO.Path.GetExtension(strPathAndFile).Equals(".db"))
+                            {
+                                string strNewConn = dataMgr.GetConnectionString(strPathAndFile);
+                                if (!strSqliteConn.Equals(strNewConn))
+                                {
+                                    con.Close();
+                                    con.ConnectionString = strNewConn;
+                                    con.Open();
+                                    strSqliteConn = strNewConn;
+                                }
+                                if (dataMgr.TableExist(con, arrSource[TABLE]))
+                                {
+                                    arrSource[TABLESTATUS] = "F";
+                                    strSql = "select count from " + arrSource[TABLE];
+                                    long recordCount = dataMgr.getRecordCount(con, strSql, arrSource[TABLE]);
+                                    arrSource[RECORDCOUNT] = Convert.ToString(recordCount);
+                                }
+                                else
+                                {
+                                    arrSource[TABLESTATUS] = "NF";
+                                }
+
+                            }
+                            else
+                            {
+                                //MS Access
+                                string strNewConn = oAdo.getMDBConnString(strPathAndFile, "admin", "");
+                                if (!strAccdbConn.Equals(strNewConn))
+                                {
+                                    if (oConn.State == ConnectionState.Open)
+                                    {
+                                        oConn.Close();
+                                    }
+                                    while (oConn.State != ConnectionState.Closed)
+                                        System.Threading.Thread.Sleep(2000);
+                                    oConn.ConnectionString = strNewConn;
+                                    oConn.Open();
+                                    strAccdbConn = strNewConn;
+                                }
+                                if (oAdo.TableExist(oConn, arrSource[TABLE]))
+                                {
+                                    arrSource[TABLESTATUS] = "F";
+                                    strSql = "select count(*) from " + arrSource[TABLE];
+                                    long recordCount = oAdo.getRecordCount(oConn, strSql, arrSource[TABLE]);
+                                    arrSource[RECORDCOUNT] = Convert.ToString(recordCount);
+                                }
+                                else
+                                {
+                                    arrSource[TABLESTATUS] = "NF";
+                                }
+                            }
+                        }
+                        else
+                        {
+                            arrSource[FILESTATUS] = "NF";
+                            arrSource[TABLESTATUS] = "NF";
+                            arrSource[RECORDCOUNT] = "0";
+                        }
+                    }
+                }
+            }
         }
 		public bool LoadTableColumnNamesAndDataTypes
 		{

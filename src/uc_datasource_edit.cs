@@ -38,6 +38,7 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Button btnTableName;
 		private string m_strDataSourceMDBFile;
 		private string m_strDataSourceTable;
+        private bool m_bUsingSqlite;
 		private System.Windows.Forms.ProgressBar progressBar1;
 		private System.Windows.Forms.Button btnHelp;
 		private System.Windows.Forms.Button btnCopyToSameDbFile;
@@ -72,7 +73,7 @@ namespace FIA_Biosum_Manager
 			// TODO: Add any initialization after the InitializeComponent call
 
 		}
-		public uc_datasource_edit(string p_strScenarioMDBFile, string p_strScenarioId)
+		public uc_datasource_edit(string p_strScenarioMDBFile, string p_strScenarioId, bool p_bUsingSqlite)
 		{
 			// This call is required by the Windows.Forms Form Designer.
 			InitializeComponent();
@@ -80,6 +81,7 @@ namespace FIA_Biosum_Manager
 			this.m_strDataSourceMDBFile = p_strScenarioMDBFile.Trim();
 			this.m_strDataSourceTable = "scenario_datasource";
 			this.m_strScenarioId=p_strScenarioId;
+            this.m_bUsingSqlite = p_bUsingSqlite;
             this.m_oEnv = new env();
 			// TODO: Add any initialization after the InitializeComponent call
 
@@ -196,7 +198,7 @@ namespace FIA_Biosum_Manager
             // 
             this.btnTableName.Location = new System.Drawing.Point(290, 46);
             this.btnTableName.Name = "btnTableName";
-            this.btnTableName.Size = new System.Drawing.Size(120, 24);
+            this.btnTableName.Size = new System.Drawing.Size(170, 30);
             this.btnTableName.TabIndex = 2;
             this.btnTableName.Text = "Change Table Name";
             this.btnTableName.Click += new System.EventHandler(this.btnTableName_Click);
@@ -221,9 +223,9 @@ namespace FIA_Biosum_Manager
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(336, 376);
+            this.btnCancel.Location = new System.Drawing.Point(423, 376);
             this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(72, 40);
+            this.btnCancel.Size = new System.Drawing.Size(90, 40);
             this.btnCancel.TabIndex = 31;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
@@ -232,7 +234,7 @@ namespace FIA_Biosum_Manager
             // 
             this.btnCommitChange.Location = new System.Drawing.Point(264, 376);
             this.btnCommitChange.Name = "btnCommitChange";
-            this.btnCommitChange.Size = new System.Drawing.Size(72, 40);
+            this.btnCommitChange.Size = new System.Drawing.Size(130, 40);
             this.btnCommitChange.TabIndex = 30;
             this.btnCommitChange.Text = "Commit Change";
             this.btnCommitChange.Click += new System.EventHandler(this.btnCommitChange_Click);
@@ -263,9 +265,9 @@ namespace FIA_Biosum_Manager
             // 
             // btnCopyToSameDbFile
             // 
-            this.btnCopyToSameDbFile.Location = new System.Drawing.Point(272, 80);
+            this.btnCopyToSameDbFile.Location = new System.Drawing.Point(304, 80);
             this.btnCopyToSameDbFile.Name = "btnCopyToSameDbFile";
-            this.btnCopyToSameDbFile.Size = new System.Drawing.Size(328, 24);
+            this.btnCopyToSameDbFile.Size = new System.Drawing.Size(360, 24);
             this.btnCopyToSameDbFile.TabIndex = 30;
             this.btnCopyToSameDbFile.Text = "Copy Table To Same Db File And Assign A New Table Name";
             this.btnCopyToSameDbFile.Click += new System.EventHandler(this.btnCopyToSameDbFile_Click);
@@ -274,7 +276,7 @@ namespace FIA_Biosum_Manager
             // 
             this.btnCopy.Location = new System.Drawing.Point(16, 128);
             this.btnCopy.Name = "btnCopy";
-            this.btnCopy.Size = new System.Drawing.Size(256, 24);
+            this.btnCopy.Size = new System.Drawing.Size(280, 24);
             this.btnCopy.TabIndex = 29;
             this.btnCopy.Text = "Copy Table To A Different MS Access Db File";
             this.btnCopy.Click += new System.EventHandler(this.btnCopy_Click);
@@ -293,7 +295,7 @@ namespace FIA_Biosum_Manager
             this.btnMove.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnMove.Location = new System.Drawing.Point(16, 104);
             this.btnMove.Name = "btnMove";
-            this.btnMove.Size = new System.Drawing.Size(256, 24);
+            this.btnMove.Size = new System.Drawing.Size(280, 24);
             this.btnMove.TabIndex = 27;
             this.btnMove.Text = "Move Table To A Different MS Access Db  File";
             this.btnMove.Click += new System.EventHandler(this.btnMove_Click);
@@ -303,7 +305,7 @@ namespace FIA_Biosum_Manager
             this.btnFile.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnFile.Location = new System.Drawing.Point(16, 80);
             this.btnFile.Name = "btnFile";
-            this.btnFile.Size = new System.Drawing.Size(256, 24);
+            this.btnFile.Size = new System.Drawing.Size(280, 24);
             this.btnFile.TabIndex = 8;
             this.btnFile.Text = "Get An MS Access Db File And Table";
             this.btnFile.Click += new System.EventHandler(this.btnFile_Click);
@@ -341,7 +343,7 @@ namespace FIA_Biosum_Manager
             this.lblTitle.Dock = System.Windows.Forms.DockStyle.Top;
             this.lblTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTitle.ForeColor = System.Drawing.Color.Green;
-            this.lblTitle.Location = new System.Drawing.Point(3, 16);
+            this.lblTitle.Location = new System.Drawing.Point(3, 18);
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(690, 32);
             this.lblTitle.TabIndex = 25;
@@ -470,7 +472,7 @@ namespace FIA_Biosum_Manager
 				this.btnCancel.Top = this.groupBox4.Top + this.groupBox4.Height  + 5;
 				this.btnCommitChange.Top = this.btnCancel.Top;
 				this.btnCancel.Left = (int) (this.Width * .50) ; //+ (int) (this.btnSave.Width / 2);
-				this.btnCommitChange.Left = this.btnCancel.Left - this.btnCancel.Width;
+				this.btnCommitChange.Left = this.btnCancel.Left - this.btnCancel.Width -50;
 				this.btnHelp.Top = this.btnClose.Top;
 				this.progressBar1.Left = (int)(this.groupBox1.Width * .50) - (int)(this.progressBar1.Width * .50);
 				this.progressBar1.Top = this.btnCommitChange.Top + this.btnCommitChange.Height + 10;
@@ -518,6 +520,7 @@ namespace FIA_Biosum_Manager
 
 			dao_data_access tempDao = new dao_data_access();
 			ado_data_access tempAdo = new ado_data_access();
+            SQLite.ADO.DataMgr tempDataMgr = new SQLite.ADO.DataMgr();
 			utils p_utils = new utils();
 			switch (strAction)
 			{
@@ -568,28 +571,39 @@ namespace FIA_Biosum_Manager
 								//update the datasource info
 								strFile = p_utils.getFileName(this.lblNewMDBFile.Text);
 								strDir = p_utils.getDirectory(this.lblNewMDBFile.Text);
-						
-						
-								strConn = tempAdo.getMDBConnString(this.m_strDataSourceMDBFile,"admin","");
 
-								if (this.m_strScenarioId.Trim().Length > 0)
-								{
+                                if (this.m_strScenarioId.Trim().Length > 0)
+                                {
 
-									strSQL = "UPDATE " + this.m_strDataSourceTable + " SET path = '" + strDir + "', " +
-										"file = '" +  strFile + "', " +
-										"table_name = '" + this.lblNewTable.Text.Trim() + "'" + 
-										" WHERE scenario_id = '" + 	this.m_strScenarioId + "' AND " +
-										"table_type = '" + this.lblTableType.Text.Trim() + "';";
-								}
-								else
-								{
-									strSQL = "UPDATE " + this.m_strDataSourceTable + " SET path = '" + strDir + "', " +
-										"file = '" +  strFile + "', " +
-										"table_name = '" + this.lblNewTable.Text.Trim() + "'" + 
-										" WHERE table_type = '" + this.lblTableType.Text.Trim() + "';";
-								}
-						
-								tempAdo.SqlNonQuery(strConn, strSQL);
+                                    strSQL = "UPDATE " + this.m_strDataSourceTable + " SET path = '" + strDir + "', " +
+                                        "file = '" + strFile + "', " +
+                                        "table_name = '" + this.lblNewTable.Text.Trim() + "'" +
+                                        " WHERE scenario_id = '" + this.m_strScenarioId + "' AND " +
+                                        "table_type = '" + this.lblTableType.Text.Trim() + "';";
+                                }
+                                else
+                                {
+                                    strSQL = "UPDATE " + this.m_strDataSourceTable + " SET path = '" + strDir + "', " +
+                                        "file = '" + strFile + "', " +
+                                        "table_name = '" + this.lblNewTable.Text.Trim() + "'" +
+                                        " WHERE table_type = '" + this.lblTableType.Text.Trim() + "';";
+                                }
+
+                                if (! m_bUsingSqlite)
+                                {
+                                    strConn = tempAdo.getMDBConnString(this.m_strDataSourceMDBFile, "admin", "");
+                                    tempAdo.SqlNonQuery(strConn, strSQL);
+                                }
+                                else
+                                {
+                                    strConn = tempDataMgr.GetConnectionString(this.m_strDataSourceMDBFile);
+                                    using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConn))
+                                    {
+                                        con.Open();
+                                        tempDataMgr.SqlNonQuery(con, strSQL);
+                                    }
+                                }
+								
 							}
 							else tempAdo.CloseConnection(tempAdo.m_OleDbConnection);
 						}
@@ -652,31 +666,37 @@ namespace FIA_Biosum_Manager
 						
 								strFile = p_utils.getFileName(this.lblNewMDBFile.Text.Trim());
 								strDir = p_utils.getDirectory(this.lblNewMDBFile.Text.Trim());
-						
-						
-								strConn = tempAdo.getMDBConnString(this.m_strDataSourceMDBFile.Trim(),"admin","");
-								//strConn = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + 
-								//	this.m_strDataSourceMDBFile + ";User Id=admin;Password=;";
+                                if (this.m_strScenarioId.Trim().Length > 0)
+                                {
+                                    strSQL = "UPDATE " + this.m_strDataSourceTable + " SET path = '" + strDir + "', " +
+                                        "file = '" + strFile + "', " +
+                                        "table_name = '" + this.lblNewTable.Text.Trim() + "'" +
+                                        " WHERE scenario_id = '" + this.m_strScenarioId + "' AND " +
+                                        "table_type = '" + this.lblTableType.Text.Trim() + "';";
+                                }
+                                else
+                                {
+                                    strSQL = "UPDATE " + this.m_strDataSourceTable + " SET path = '" + strDir + "', " +
+                                        "file = '" + strFile + "', " +
+                                        "table_name = '" + this.lblNewTable.Text.Trim() + "'" +
+                                        " WHERE table_type = '" + this.lblTableType.Text.Trim() + "';";
+                                }
 
-								if (this.m_strScenarioId.Trim().Length > 0)
-								{
-
-									strSQL = "UPDATE " + this.m_strDataSourceTable + " SET path = '" + strDir + "', " +
-										"file = '" +  strFile + "', " +
-										"table_name = '" + this.lblNewTable.Text.Trim() + "'" + 
-										" WHERE scenario_id = '" + 	this.m_strScenarioId + "' AND " +
-										"table_type = '" + this.lblTableType.Text.Trim() + "';";
-								}
-								else
-								{
-									strSQL = "UPDATE " + this.m_strDataSourceTable + " SET path = '" + strDir + "', " +
-										"file = '" +  strFile + "', " +
-										"table_name = '" + this.lblNewTable.Text.Trim() + "'" + 
-										" WHERE table_type = '" + this.lblTableType.Text.Trim() + "';";
-								}
-						
-								tempAdo.SqlNonQuery(strConn, strSQL);
-							}
+                                if (!m_bUsingSqlite)
+                                {
+                                    strConn = tempAdo.getMDBConnString(this.m_strDataSourceMDBFile.Trim(), "admin", "");
+                                    tempAdo.SqlNonQuery(strConn, strSQL);
+                                }
+                                else
+                                {
+                                    strConn = tempDataMgr.GetConnectionString(this.m_strDataSourceMDBFile);
+                                    using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConn))
+                                    {
+                                        con.Open();
+                                        tempDataMgr.SqlNonQuery(con, strSQL);
+                                    }
+                                }
+                            }
 						}
 					}
                     frmMain.g_oFrmMain.DeactivateStandByAnimation();
@@ -685,11 +705,8 @@ namespace FIA_Biosum_Manager
 					
 					strFile = p_utils.getFileName(this.lblNewMDBFile.Text.Trim());
 					strDir = p_utils.getDirectory(this.lblNewMDBFile.Text.Trim());
-					
-						
+											
 					strConn = tempAdo.getMDBConnString(this.m_strDataSourceMDBFile.Trim(),"admin","");	
-					//strConn = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + 
-					//	this.m_strDataSourceMDBFile + ";User Id=admin;Password=;";
 
 					if (this.m_strScenarioId.Trim().Length > 0)
 					{
@@ -707,8 +724,20 @@ namespace FIA_Biosum_Manager
 							"table_name = '" + this.lblNewTable.Text.Trim() + "'" + 
 							" WHERE table_type = '" + this.lblTableType.Text.Trim() + "';";
 					}
-						
-					tempAdo.SqlNonQuery(strConn, strSQL);
+
+                    if (!m_bUsingSqlite)
+                    {
+                        tempAdo.SqlNonQuery(strConn, strSQL);
+                    }
+                    else
+                    {
+                        strConn = tempDataMgr.GetConnectionString(this.m_strDataSourceMDBFile);
+                        using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConn))
+                        {
+                            con.Open();
+                            tempDataMgr.SqlNonQuery(con, strSQL);
+                        }
+                    }
 
 					break;
 				case "copytosamedbfile":
@@ -736,9 +765,7 @@ namespace FIA_Biosum_Manager
 									"FROM " + this.lblTable.Text;
 								tempAdo.SqlNonQuery(tempAdo.m_OleDbConnection,tempAdo.m_strSQL);
 
-							}
-						
-						
+							}						
 						}
 						else
 						{
@@ -746,36 +773,43 @@ namespace FIA_Biosum_Manager
 							tempAdo.m_strSQL = "SELECT * INTO " + this.lblNewTable.Text + " " + 
 								"FROM " + this.lblTable.Text;
 							tempAdo.SqlNonQuery(tempAdo.m_OleDbConnection,tempAdo.m_strSQL);
-
 						}
-
 
 						strFile = p_utils.getFileName(this.lblNewMDBFile.Text.Trim());
 						strDir = p_utils.getDirectory(this.lblNewMDBFile.Text.Trim());
-					
-						
-						strConn = tempAdo.getMDBConnString(this.m_strDataSourceMDBFile.Trim(),"admin","");	
-						//strConn = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + 
-						//	this.m_strDataSourceMDBFile + ";User Id=admin;Password=;";
 
-						if (this.m_strScenarioId.Trim().Length > 0)
-						{
+                        if (this.m_strScenarioId.Trim().Length > 0)
+                        {
 
-							strSQL = "UPDATE " + this.m_strDataSourceTable + " SET path = '" + strDir + "', " +
-								"file = '" +  strFile + "', " +
-								"table_name = '" + this.lblNewTable.Text.Trim() + "'" + 
-								" WHERE scenario_id = '" + 	this.m_strScenarioId + "' AND " +
-								"table_type = '" + this.lblTableType.Text.Trim() + "';";
-						}
-						else
-						{
-							strSQL = "UPDATE " + this.m_strDataSourceTable + " SET path = '" + strDir + "', " +
-								"file = '" +  strFile + "', " +
-								"table_name = '" + this.lblNewTable.Text.Trim() + "'" + 
-								" WHERE table_type = '" + this.lblTableType.Text.Trim() + "';";
-						}
-						
-						tempAdo.SqlNonQuery(strConn, strSQL);
+                            strSQL = "UPDATE " + this.m_strDataSourceTable + " SET path = '" + strDir + "', " +
+                                "file = '" + strFile + "', " +
+                                "table_name = '" + this.lblNewTable.Text.Trim() + "'" +
+                                " WHERE scenario_id = '" + this.m_strScenarioId + "' AND " +
+                                "table_type = '" + this.lblTableType.Text.Trim() + "';";
+                        }
+                        else
+                        {
+                            strSQL = "UPDATE " + this.m_strDataSourceTable + " SET path = '" + strDir + "', " +
+                                "file = '" + strFile + "', " +
+                                "table_name = '" + this.lblNewTable.Text.Trim() + "'" +
+                                " WHERE table_type = '" + this.lblTableType.Text.Trim() + "';";
+                        }
+
+                        if (!m_bUsingSqlite)
+                        {
+                            strConn = tempAdo.getMDBConnString(this.m_strDataSourceMDBFile.Trim(), "admin", "");
+                            tempAdo.SqlNonQuery(strConn, strSQL);
+                        }
+                        else
+                        {
+                            strConn = tempDataMgr.GetConnectionString(this.m_strDataSourceMDBFile);
+                            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConn))
+                            {
+                                con.Open();
+                                tempDataMgr.SqlNonQuery(con, strSQL);
+                            }
+                        }
+
 					}
                     frmMain.g_oFrmMain.DeactivateStandByAnimation();
 
@@ -798,9 +832,8 @@ namespace FIA_Biosum_Manager
 			}
 			tempDao = null;
 			tempAdo = null;
-			p_utils = null;
-
-			
+            tempDataMgr = null;
+			p_utils = null;			
 		}
 
 		private void btnCommitChange_Click_Old(object sender, System.EventArgs e)

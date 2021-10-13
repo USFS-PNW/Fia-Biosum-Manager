@@ -1402,189 +1402,7 @@ namespace FIA_Biosum_Manager
 
 
 		}
-		public bool DeleteScenario(string p_strScenarioType,string p_strScenarioId)
-		{
-						
 
-			System.Text.StringBuilder strFullPath;
-
-			string strSQL = "Delete Scenario '" + p_strScenarioId + "' (Y/N)?";
-			DialogResult result = MessageBox.Show(strSQL,"Delete Scenario", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-			switch (result) 
-			{
-				case DialogResult.Yes:
-					break;
-				case DialogResult.No:
-					return false;
-			}                
-            
-			
-			string strScenarioFile = "scenario_" + p_strScenarioType + "_rule_definitions.mdb" ; //this.txtScenarioMDBFile.Text;
-			string strScenarioDir =  frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + p_strScenarioType + "\\db";
-			
-			string strFile = "scenario_" + p_strScenarioType + "_rule_definitions.mdb"; 
-			strFullPath = new System.Text.StringBuilder(strScenarioDir);
-			strFullPath.Append("\\");
-			strFullPath.Append(strFile);
-			System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
-			ado_data_access p_ado = new ado_data_access();
-			string strConn = p_ado.getMDBConnString(strFullPath.ToString(),"admin","");
-			p_ado.OpenConnection(strConn);
-			string strScenarioPath = Convert.ToString(p_ado.getSingleStringValueFromSQLQuery(p_ado.m_OleDbConnection,"SELECT path FROM scenario WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'","scenario")).Trim();
-			
-			strSQL = "DELETE * FROM scenario WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-			p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
-			if (p_ado.m_intError==0)
-			{
-				strSQL = "DELETE * FROM scenario_datasource WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-				p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);				
-			}
-            {
-                strSQL = "DELETE * FROM scenario_datasource WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-            }
-            if (p_ado.m_intError == 0)
-            {
-                // This table exists in both PROCESSOR and CORE scenario rule definitions
-                strSQL = "DELETE * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestCostColumnsTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-            }
-            if (p_strScenarioType.Equals("processor"))
-            {
-                if (p_ado.m_intError == 0)
-                {
-                    strSQL = "DELETE * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-                }
-                if (p_ado.m_intError == 0)
-                {
-                    strSQL = "DELETE * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultCostRevenueEscalatorsTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-                }
-                if (p_ado.m_intError == 0)
-                {
-                    strSQL = "DELETE * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-                }
-                if (p_ado.m_intError == 0)
-                {
-                    strSQL = "DELETE * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultMoveInCostsTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-                }
-                if (p_ado.m_intError == 0)
-                {
-                    strSQL = "DELETE * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultRxHarvestMethodTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-                }
-                if (p_ado.m_intError == 0)
-                {
-                    strSQL = "DELETE * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-                }
-                if (p_ado.m_intError == 0)
-                {
-                    strSQL = "DELETE * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-                }
-                if (p_ado.m_intError == 0)
-                {
-                    strSQL = "DELETE * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-                }
-                if (p_ado.m_intError == 0)
-                {
-                    strSQL = "DELETE * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-                }
-            }
-            else
-            {
-                if (p_ado.m_intError == 0)
-                {
-                    strSQL = "DELETE * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCondFilterTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-                }
-                if (p_ado.m_intError == 0)
-                {
-                    strSQL = "DELETE * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCondFilterMiscTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-                }
-                if (p_ado.m_intError == 0)
-                {
-                    strSQL = "DELETE * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCostsTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-                }
-                if (p_ado.m_intError == 0)
-                {
-                    strSQL = "DELETE * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-                }
-                if (p_ado.m_intError == 0)
-                {
-                    strSQL = "DELETE * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOptimizationTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-                }
-                if (p_ado.m_intError == 0)
-                {
-                    strSQL = "DELETE * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOverallEffectiveTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-                }
-                if (p_ado.m_intError == 0)
-                {
-                    strSQL = "DELETE * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-                }
-                if (p_ado.m_intError == 0)
-                {
-                    strSQL = "DELETE * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLandOwnerGroupsTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-                }
-                if (p_ado.m_intError == 0)
-                {
-                    strSQL = "DELETE * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPlotFilterTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-                }
-                if (p_ado.m_intError == 0)
-                {
-                    strSQL = "DELETE * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPlotFilterMiscTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-                }
-                if (p_ado.m_intError == 0)
-                {
-                    strSQL = "DELETE * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-                }
-                if (p_ado.m_intError == 0)
-                {
-                    strSQL = "DELETE * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-                }
-                if (p_ado.m_intError == 0)
-                {
-                    strSQL = "DELETE * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLastTieBreakRankTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-                }
-            }
-			if (p_ado.m_intError==0)
-			{
-                try
-                {
-                    // Delete scenario output folder
-                    System.IO.Directory.Delete(strScenarioPath, true);
-                }
-                catch (Exception err)
-                {
-                    MessageBox.Show(err.Message);
-                }
-                
-                strSQL = p_strScenarioId + " was successfully deleted.";
-                result = MessageBox.Show(strSQL, "Delete Scenario", MessageBoxButtons.OK);
-			}
-			p_ado.CloseConnection(p_ado.m_OleDbConnection);
-			p_ado = null;
-			return true;
-
-		}
 		public void OpenProcessorScenario(string p_strType,frmProcessorScenario p_frmProcessorScenario)
 		{
 			FIA_Biosum_Manager.frmProcessorScenario oFrmProcessorScenario = new frmProcessorScenario(this);
@@ -1613,13 +1431,28 @@ namespace FIA_Biosum_Manager
 					oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
 					oFrmScenario.uc_datasource1.strScenarioId = oFrmProcessorScenario.uc_scenario_open1.txtScenarioId.Text.Trim();
 					oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
-					oFrmScenario.uc_datasource1.LoadValues();
-					oFrmScenario.uc_scenario1.strScenarioDescription = oFrmProcessorScenario.uc_scenario_open1.strScenarioDescription;
+                    if (oFrmProcessorScenario.m_bUsingSqlite == false)
+                    {
+                        oFrmScenario.uc_datasource1.LoadValues();
+                    }
+                    else
+                    {
+                        oFrmScenario.uc_datasource1.LoadValuesSqlite();
+                    }
+                    oFrmScenario.uc_scenario1.strScenarioDescription = oFrmProcessorScenario.uc_scenario_open1.strScenarioDescription;
 					oFrmScenario.uc_scenario1.strScenarioId = oFrmProcessorScenario.uc_scenario_open1.strScenarioId;
 					oFrmScenario.uc_scenario1.strScenarioPath = oFrmProcessorScenario.uc_scenario_open1.strScenarioPath;
 					oFrmScenario.uc_scenario_notes1.ReferenceProcessorScenarioForm=oFrmScenario;
 					oFrmScenario.uc_scenario_notes1.ScenarioType="processor";
-					oFrmScenario.uc_scenario_notes1.LoadValues();
+                    oFrmScenario.uc_datasource1.UsingSqlite = oFrmProcessorScenario.m_bUsingSqlite;
+                    if (oFrmProcessorScenario.m_bUsingSqlite == false)
+                    {
+                        oFrmScenario.uc_scenario_notes1.LoadValues();
+                    }
+                    else
+                    {
+                        oFrmScenario.uc_scenario_notes1.LoadValuesSqlite();
+                    }
 					oFrmScenario.MdiParent = this;
                     oFrmScenario.m_oProcessorScenarioItem.ScenarioId = oFrmScenario.uc_scenario1.strScenarioId;
                     oFrmScenario.m_oProcessorScenarioItem.DbPath = oFrmScenario.uc_scenario1.strScenarioPath;
@@ -1647,7 +1480,16 @@ namespace FIA_Biosum_Manager
 					oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
 					oFrmScenario.uc_datasource1.strScenarioId = oFrmProcessorScenario.uc_scenario1.txtScenarioId.Text.Trim();
 					oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
-					oFrmScenario.uc_datasource1.LoadValues();
+                    oFrmScenario.uc_datasource1.UsingSqlite = oFrmProcessorScenario.m_bUsingSqlite;
+                    if (oFrmProcessorScenario.m_bUsingSqlite == false)
+                    {
+                        oFrmScenario.uc_datasource1.LoadValues();
+                    }
+                    else
+                    {
+                        oFrmScenario.uc_datasource1.LoadValuesSqlite();
+                    }
+                    
 					oFrmScenario.uc_scenario1.strScenarioDescription = oFrmProcessorScenario.uc_scenario1.strScenarioDescription;
 					oFrmScenario.uc_scenario1.strScenarioId = oFrmProcessorScenario.uc_scenario1.strScenarioId;
 					oFrmScenario.uc_scenario1.strScenarioPath = oFrmProcessorScenario.uc_scenario1.strScenarioPath;
@@ -2601,31 +2443,38 @@ namespace FIA_Biosum_Manager
         public void StartBiosumProcessorDialog()
         {
             System.Text.StringBuilder strFullPath;
+            long lngCount = -1;
 
-            System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
             string strProjDir = getProjectDirectory();
-            string strScenarioDir = strProjDir.Trim() + "\\processor\\db";
-            string strFile = "scenario_processor_rule_definitions.mdb";
+            string strScenarioDir = strProjDir.Trim() + "\\processor";
             strFullPath = new System.Text.StringBuilder(strScenarioDir);
             strFullPath.Append("\\");
-            strFullPath.Append(strFile);
-            ado_data_access oAdo = new ado_data_access();
-            string strConn = oAdo.getMDBConnString(strFullPath.ToString(), "admin", "");
-            int intCount = Convert.ToInt32(oAdo.getRecordCount(strConn, "select count(*) from scenario", "scenario"));
-            if (oAdo.m_intError == 0)
+            string strDbFullPath = strFullPath.ToString() + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+            strFullPath.Append(Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsDbFile);
+            if (System.IO.File.Exists(strDbFullPath))
             {
-                frmMain.g_oFrmMain = this;
-                if (intCount > 0)
+                SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
+                using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(dataMgr.GetConnectionString(strDbFullPath)))
                 {
-                    OpenProcessorScenario("Open", null);
-                }
-                else
-                {
-
-                    OpenProcessorScenario("New", null);
+                    con.Open();
+                    lngCount = dataMgr.getRecordCount(con, "select count(*) from scenario", "scenario");
                 }
             }
+            else
+            {
+                ado_data_access oAdo = new ado_data_access();
+                string strConn = oAdo.getMDBConnString(strFullPath.ToString(), "admin", "");
+                lngCount = oAdo.getRecordCount(strConn, "select count(*) from scenario", "scenario");
+            }
 
+            if (lngCount > 0)
+            {
+                OpenProcessorScenario("Open", null);
+            }
+            else
+            {
+                OpenProcessorScenario("New", null);
+            }
         }
         public void StartFVSOutputDataDialog()
         {

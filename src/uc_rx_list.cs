@@ -2476,6 +2476,53 @@ namespace FIA_Biosum_Manager
 			}
 		}
 
+        /// <summary>
+        /// Load the Rx Harvest Methods into the processor scenario dropdown combo boxes for 
+        /// low slope and steep slope
+        /// </summary>
+        /// <param name="p_oAdo"></param>
+        /// <param name="p_oConn"></param>
+        /// <param name="p_oQueries"></param>
+        /// <param name="p_cmbHarvestMethod"></param>
+        /// <param name="p_cmbHarvestMethodSteepSlope"></param>
+        /// @ToDo: This needs to be tested; Harvest methods still in MS Access when written
+        public void LoadRxHarvestMethodsSqlite(string p_strDbFile, Queries p_oQueries, ComboBox p_cmbHarvestMethod, ComboBox p_cmbHarvestMethodSteepSlope)
+        {
+            p_cmbHarvestMethod.Items.Clear();
+            p_cmbHarvestMethodSteepSlope.Items.Clear();
+            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
+            string strConn = dataMgr.GetConnectionString(p_strDbFile);
+            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
+            {
+                oConn.Open();
+                dataMgr.m_strSQL = Queries.GenericSelectSQL(p_oQueries.m_oReference.m_strRefHarvestMethodTable, "steep_yn,method,description", "steep_yn IN ('Y','N')");
+                dataMgr.SqlQueryReader(oConn, dataMgr.m_strSQL);
+                if (dataMgr.m_intError == 0)
+                {
+                    if (dataMgr.m_DataReader.HasRows)
+                    {
+                        while (dataMgr.m_DataReader.Read())
+                        {
+                            if (dataMgr.m_DataReader["method"] != System.DBNull.Value)
+                            {
+                                if (dataMgr.m_DataReader["steep_yn"].ToString().Trim() == "Y")
+                                {
+                                    p_cmbHarvestMethodSteepSlope.Items.Add(dataMgr.m_DataReader["method"].ToString().Trim());
+
+                                }
+                                else
+                                {
+                                    p_cmbHarvestMethod.Items.Add(dataMgr.m_DataReader["method"].ToString().Trim());
+
+                                }
+                            }
+                        }
+                    }
+                    dataMgr.m_DataReader.Close();
+                }
+            }
+        }
+
         public void LoadFVSOutputPrePostRxCycleSeqNum(ado_data_access p_oAdo,
                                         System.Data.OleDb.OleDbConnection p_oConn, 
                                         FVSPrePostSeqNumItem_Collection p_oCollection)
