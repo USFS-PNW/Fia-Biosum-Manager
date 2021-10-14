@@ -2239,19 +2239,19 @@ namespace FIA_Biosum_Manager
                     strDestTableLinkName = "fiadb_plot_input";
                     //oDao.CreateTableLink(this.m_strTempMDBFile,strDestTableLinkName,strFIADBDbFile,strSourceTableName,true);
                     oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, strSourceTableName, strDestTableLinkName,
-                        ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile);
+                        ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
                     SetThermValue(m_frmTherm.progressBar1, "Value", 40);
                     //cond table
                     strSourceTableName = "BIOSUM_COND";
                     strDestTableLinkName = "fiadb_cond_input";
                     if (oDao.m_intError==0) oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, strSourceTableName, strDestTableLinkName,
-                                                ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile);
+                                                ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
                     SetThermValue(m_frmTherm.progressBar1, "Value", 70);
                     //biosum adjustment factors table
                     strSourceTableName = frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName;
                     strDestTableLinkName = "fiadb_biosum_adjustment_factors_input";
                     if (oDao.m_intError==0) oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, strSourceTableName, strDestTableLinkName,
-                                                ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile);
+                                                ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
                     m_intError = oDao.m_intError;
                     
                     //destroy the object and release it from memory
@@ -2458,27 +2458,27 @@ namespace FIA_Biosum_Manager
                 strSourceTableName = "BIOSUM_PLOT";
                 strDestTableLinkName = "fiadb_plot_input";
                 p_dao1.CreateSQLiteTableLink(this.m_strTempMDBFile, strSourceTableName, strDestTableLinkName,
-                    ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile);
+                    ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
                 
                 //cond table
                 strSourceTableName = "BIOSUM_COND";
                 strDestTableLinkName = "fiadb_cond_input";
                 if (p_dao1.m_intError == 0) p_dao1.CreateSQLiteTableLink(this.m_strTempMDBFile, strSourceTableName, strDestTableLinkName,
-                    ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile);
+                    ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
 
                 //tree table
                 str2 = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbTreeTable, "Text", false);
                 if (p_dao1.m_intError == 0) p_dao1.CreateSQLiteTableLink(this.m_strTempMDBFile, str2.Trim(), "fiadb_tree_input",
-                    ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile);
+                    ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
                 //tree regional biomass
                 str2 = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbTreeRegionalBiomassTable, "Text", false);
                 if (p_dao1.m_intError == 0 && str2.Trim().Length > 0 && str2.Trim() != "<Optional Table>") p_dao1.CreateSQLiteTableLink(this.m_strTempMDBFile, str2.Trim(), "fiadb_treeRegionalBiomass_input",
-                    ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile);
+                    ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
 
                 //site tree
                 str2 = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbSiteTreeTable, "Text", false);
                 if (p_dao1.m_intError == 0) p_dao1.CreateSQLiteTableLink(this.m_strTempMDBFile, str2.Trim(), "fiadb_site_tree_input",
-                    ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile);
+                    ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
 
                 //biosum_volume table
                 //ORACLE FCS Tree Volume Table
@@ -4889,10 +4889,10 @@ namespace FIA_Biosum_Manager
 
 		    dao_data_access p_dao = new dao_data_access();
             //Link to FIADB source tables in temporary database
-            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmCwdTable, strFiaCWD,  ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile);
-            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmFwdTable, strFiaFWD,  ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile);
-            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmDuffLitterTable, strFiaDL,  ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile);
-            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmTransectSegmentTable, strFiaTS,  ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile);
+            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmCwdTable, strFiaCWD,  ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
+            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmFwdTable, strFiaFWD,  ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
+            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmDuffLitterTable, strFiaDL,  ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
+            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmTransectSegmentTable, strFiaTS,  ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
 
             //Link to Master_AUX.accdb DWM source tables in temporary database
             string strMasterAuxDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.accdb"; 
@@ -5085,11 +5085,11 @@ namespace FIA_Biosum_Manager
             p_dao.CreateSQLiteTableLink(m_strTempMDBFile, m_strGRMComponentTable, m_strGRMComponentTable, ODBCMgr.DSN_KEYS.PlotInputDsnName,
                 strFIADBDbFile);
             p_dao.CreateSQLiteTableLink(m_strTempMDBFile, (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbPlotTable,
-                    "Text", false), "FIADB_PLOT_TABLE", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile);
+                    "Text", false), "FIADB_PLOT_TABLE", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
             p_dao.CreateSQLiteTableLink(m_strTempMDBFile, (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbCondTable,
-                    "Text", false), "FIADB_COND_TABLE", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile);
+                    "Text", false), "FIADB_COND_TABLE", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
             p_dao.CreateSQLiteTableLink(m_strTempMDBFile, (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbTreeTable,
-                    "Text", false), "FIADB_TREE_TABLE", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile);
+                    "Text", false), "FIADB_TREE_TABLE", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
 	        //Link to Master_AUX.accdb GRM dest tables in temporary database
 	        p_dao.CreateTableLink(m_strTempMDBFile, m_strGrmStandTable, strMasterAuxDb, m_strGrmStandTable);
 	        p_dao.CreateTableLink(m_strTempMDBFile, m_strGrmTreeTable, strMasterAuxDb, m_strGrmTreeTable);
@@ -8414,7 +8414,7 @@ namespace FIA_Biosum_Manager
                 DataMgr oDataMgr = new DataMgr();
                 //add link to SQLite input
                 p_dao1.CreateSQLiteTableLink(this.m_strTempMDBFile, strSourceTable.Trim(), strSourceTableLink,
-                    ODBCMgr.DSN_KEYS.PlotInputDsnName, strSourceFile.Trim());
+                    ODBCMgr.DSN_KEYS.PlotInputDsnName, strSourceFile.Trim(), true);
                 //destroy the object and release it from memory
                 p_dao1.m_DaoWorkspace.Close();
                 p_dao1.m_DaoWorkspace = null;
