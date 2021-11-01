@@ -2498,8 +2498,6 @@ namespace FIA_Biosum_Manager
 
                         if (utils.FS_NETWORK_IS_NOT_AVAILABLE)
                             p_dao1.CreateOracleXETableLink("FIA Biosum Oracle Services", "fcs_biosum", "fcs", "FCS_BIOSUM", "BIOSUM_VOLUME", m_strTempMDBFile.Trim(), "fcs_biosum_volume");
-                        else
-                            p_dao1.CreateOracleTableLink(m_strTempMDBFile.Trim(), "BIOSUM_VOLUME", "fcs_biosum_volume", "FIADB01P", "ANL_PNW_FIA_FCS");
 
                         if (p_dao1.m_intError == 0) break;
                     }
@@ -2507,8 +2505,6 @@ namespace FIA_Biosum_Manager
                     {
                         if (utils.FS_NETWORK_IS_NOT_AVAILABLE)
                             MessageBox.Show("!!Failed to create Oracle XE ODBC table link!! Contact technical support", "FIA Biosum");
-                        else
-                            MessageBox.Show("!!Failed to create FIADB01P Oracle ODBC table link!! Contact technical support", "FIA Biosum");
                     }
                 }
 
