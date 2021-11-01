@@ -6312,17 +6312,17 @@ namespace FIA_Biosum_Manager
                     //pop eval table
                     if (!p_dataMgr.TableExist(con, frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName))
                     {
-                        frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopEstnUnitTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName);
+                        frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopEvalTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName);
                     }
                     //pop plot stratum assignment table
                     if (!p_dataMgr.TableExist(con, frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName))
                     {
-                        frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopEstnUnitTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName);
+                        frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopPlotStratumAssgnTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName);
                     }
                     //pop stratum table
                     if (!p_dataMgr.TableExist(con, frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName))
                     {
-                        frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopEstnUnitTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName);
+                        frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopStratumTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName);
                     }
                 }
             }
