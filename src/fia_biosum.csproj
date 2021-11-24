@@ -216,6 +216,9 @@
     <Compile Include="uc_delete_conditions.Designer.cs">
       <DependentUpon>uc_delete_conditions.cs</DependentUpon>
     </Compile>
+    <Compile Include="uc_fvs_create_mdbs.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="uc_optimizer_scenario_calculated_variables.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -646,6 +649,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="uc_delete_conditions.resx">
       <DependentUpon>uc_delete_conditions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="uc_fvs_create_mdbs.resx">
+      <DependentUpon>uc_fvs_create_mdbs.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="uc_optimizer_scenario_calculated_variables.resx">
       <DependentUpon>uc_optimizer_scenario_calculated_variables.cs</DependentUpon>

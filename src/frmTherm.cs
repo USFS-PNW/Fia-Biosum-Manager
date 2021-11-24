@@ -230,7 +230,7 @@ namespace FIA_Biosum_Manager
 				case "FVS OUT DATA":
 				   this.m_frmDialog.uc_fvs_output1.StopThread();
 					break;
-				case "ADD TEXT FILE POP TABLE DATA":
+                case "ADD TEXT FILE POP TABLE DATA":
 					this.m_frmDialog.uc_plot_input1.StopThread();
 					break;
 				case "ADD TEXT FILE PLOT,COND,SITE TREE, & TREE TABLE DATA":
