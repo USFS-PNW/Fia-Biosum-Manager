@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Windows.Forms;
-using System.Text;
+using SQLite.ADO;
 
 namespace FIA_Biosum_Manager
 {
@@ -866,6 +866,7 @@ namespace FIA_Biosum_Manager
 			//check if new project
 			ado_data_access p_ado = new ado_data_access();
 			dao_data_access p_dao = new dao_data_access();
+            DataMgr p_dataMgr = new DataMgr();
 			if (this.m_strAction == "NEW") 
 			{
 				//new project
@@ -965,10 +966,27 @@ namespace FIA_Biosum_Manager
 
 				p_ado.CloseConnection(p_ado.m_OleDbConnection);
 
-				//
+                //master.db file: Migrating POP tables to SQLite
+                strDestFile = this.txtRootDirectory.Text.Trim() + "\\" + frmMain.g_oTables.m_oFIAPlot.DefaultPopTableDbFile;
+                p_dataMgr.CreateDbFile(strDestFile);
+                strConn = p_dataMgr.GetConnectionString(strDestFile);
+                using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+                    con.Open();
+                    //pop estimation unit table
+                    frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopEstnUnitTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableName);
+                    //pop eval table
+                    frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopEvalTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName);
+                    //pop plot stratum assignment table
+                    frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopPlotStratumAssgnTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName);
+                    //pop stratum table
+                    frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopStratumTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName);
+                }
+
+                //
                 //master_aux file: Where additional input tables are stored
                 //
-				strDestFile = this.txtRootDirectory.Text.Trim() + "\\db\\master_aux.accdb";
+                strDestFile = this.txtRootDirectory.Text.Trim() + "\\db\\master_aux.accdb";
 				p_frmTherm.Increment(4);
 				p_frmTherm.lblMsg.Text = strDestFile;
 				p_frmTherm.lblMsg.Refresh();
@@ -1073,11 +1091,6 @@ namespace FIA_Biosum_Manager
 				p_frmTherm.lblMsg.Refresh();
 				//System.IO.File.Copy(strSourceFile, strDestFile,true);		
 				
-				strConn = p_ado.getMDBConnString(strDestFile,"admin","");
-				p_ado.OpenConnection(strConn);
-				frmMain.g_oTables.m_oFvs.CreateFVSOutProcessorIn(p_ado,p_ado.m_OleDbConnection,Tables.FVS.DefaultFVSTreeTableName);
-				p_ado.CloseConnection(p_ado.m_OleDbConnection);
-
 				if (this.txtShared.Text.Trim().Length > 0)
 				{
 					strDestFile = this.txtRootDirectory.Text.Trim() + "\\db\\shared_project_links_and_notes.mdb";
@@ -1465,6 +1478,7 @@ namespace FIA_Biosum_Manager
 				
 			}
 			p_ado=null;
+            p_dataMgr = null;
 			this.btnSave.Enabled=false;
 			this.btnCancel.Enabled=false;
 			this.btnEdit.Enabled=true;
@@ -1604,7 +1618,30 @@ namespace FIA_Biosum_Manager
 			oDao = null;
 		}
 
-		private void btnSharedDirectory_Click(object sender, System.EventArgs e)
+        public void CreateProcessorScenarioRuleDefinitionSqliteDbAndTables(string p_strPathAndFile)
+        {
+            DataMgr dataMgr = new DataMgr();
+
+            dataMgr.CreateDbFile(p_strPathAndFile);
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dataMgr.GetConnectionString(p_strPathAndFile)))
+            {
+                conn.Open();
+                frmMain.g_oTables.m_oScenario.CreateSqliteScenarioDatasourceTable(dataMgr, conn, Tables.Scenario.DefaultScenarioDatasourceTableName);
+                frmMain.g_oTables.m_oScenario.CreateSqliteScenarioTable(dataMgr, conn, Tables.Scenario.DefaultScenarioTableName);
+                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioTreeSpeciesDollarValuesTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName);
+                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioRxHarvestMethodTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultRxHarvestMethodTableName);
+                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioHarvestMethodTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodTableName);
+                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioCostRevenueEscalatorsTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultCostRevenueEscalatorsTableName);
+                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioHarvestCostColumnsTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestCostColumnsTableName);
+                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioAdditionalHarvestCostsTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName);
+                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioMoveInCostsTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultMoveInCostsTableName);
+                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioTreeDiamGroupsTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName);
+                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioTreeSpeciesGroupsListTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName);
+                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioTreeSpeciesGroupsTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName);
+            }
+        }
+
+        private void btnSharedDirectory_Click(object sender, System.EventArgs e)
 		{
 		    string strSourceFile="";
 			string strDestFile="";

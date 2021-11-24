@@ -960,8 +960,8 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value",
                         intProgressBarCounter++);
 
-                    //If Htcd not in {1,2,3} then set the Ht and HtTopK to 0
-                    strSQL = Queries.FVS.FVSInput.TreeInit.DeleteHtAndHtTopKForNonMeasuredHeights(strTreeInitWorkTable);
+                    //If Htcd not in {1,2,3,4} then set the Ht and HtTopK to 0
+                    strSQL = Queries.FVS.FVSInput.TreeInit.DeleteHtAndHtTopKForUnknownHtcd(strTreeInitWorkTable);
                     m_ado.SqlNonQuery(conn, strSQL);
                     frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value",
                         intProgressBarCounter++);

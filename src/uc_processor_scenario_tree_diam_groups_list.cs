@@ -686,60 +686,110 @@ namespace FIA_Biosum_Manager
 				string strDef;
 				string strId;
 
-                //
-                //OPEN CONNECTION TO DB FILE CONTAINING PROCESSOR SCENARIO TABLES
-                //
-                //scenario mdb connection
-                string strScenarioMDB =
-                    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                    "\\processor\\db\\scenario_processor_rule_definitions.mdb";
-                ado_data_access oAdo = new ado_data_access();
-                oAdo.OpenConnection(oAdo.getMDBConnString(strScenarioMDB, "", ""));
-                if (oAdo.m_intError != 0)
+                if (!ReferenceProcessorScenarioForm.m_bUsingSqlite)
                 {
-                    m_intError = m_ado.m_intError;
-                    m_strError = m_ado.m_strError;
+                    //
+                    //OPEN CONNECTION TO DB FILE CONTAINING PROCESSOR SCENARIO TABLES
+                    //
+                    //scenario mdb connection
+                    string strScenarioMDB =
+                        frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                        "\\processor\\db\\scenario_processor_rule_definitions.mdb";
+                    ado_data_access oAdo = new ado_data_access();
+                    oAdo.OpenConnection(oAdo.getMDBConnString(strScenarioMDB, "", ""));
+                    if (oAdo.m_intError != 0)
+                    {
+                        m_intError = m_ado.m_intError;
+                        m_strError = m_ado.m_strError;
+                        oAdo = null;
+                        return;
+                    }
+
+                    if (this.m_intError == 0)
+                    {
+                        //delete the current records
+                        oAdo.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName +
+                            " WHERE TRIM(UCASE(scenario_id)) = '" + ScenarioId.Trim().ToUpper() + "'";
+                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
+
+                        if (oAdo.m_intError == 0)
+                        {
+                            for (x = 0; x <= this.lstTreeDiam.Items.Count - 1; x++)
+                            {
+                                strId = this.lstTreeDiam.Items[x].Text;
+                                strMin = this.lstTreeDiam.Items[x].SubItems[1].Text;
+                                strMax = this.lstTreeDiam.Items[x].SubItems[2].Text;
+                                strDef = this.lstTreeDiam.Items[x].SubItems[3].Text;
+
+                                oAdo.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName + " " +
+                                    "(diam_group,diam_class,min_diam,max_diam,scenario_id) VALUES " +
+                                    "(" + strId + ",'" + strDef.Trim() + "'," +
+                                    strMin + "," + strMax + ",'" + ScenarioId + "');";
+                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
+                                if (oAdo.m_intError != 0)
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    oAdo.CloseConnection(oAdo.m_OleDbConnection);
+                    this.m_intError = oAdo.m_intError;
                     oAdo = null;
-                    return;
                 }
+                else
+                {
+                    string strScenarioDB =
+                        frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                        "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                    SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+                    using (System.Data.SQLite.SQLiteConnection conn =
+                        new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
+                    {
+                        conn.Open();
+                        if (oDataMgr.m_intError != 0)
+                        {
+                            m_intError = oDataMgr.m_intError;
+                            m_strError = oDataMgr.m_strError;
+                            oDataMgr = null;
+                            return;
+                        }
+                        if (this.m_intError == 0)
+                        {
+                            //delete the current records
+                            oDataMgr.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName +
+                                " WHERE TRIM(UPPER(scenario_id)) = '" + ScenarioId.Trim().ToUpper() + "'";
+                            oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 
-				if (this.m_intError==0)
-				{
-					//delete the current records
-                    oAdo.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName +
-                        " WHERE TRIM(UCASE(scenario_id)) = '" + ScenarioId.Trim().ToUpper() + "'";
-                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-
-                    if (oAdo.m_intError == 0)
-					{
-						for (x=0;x<=this.lstTreeDiam.Items.Count-1;x++)
-						{
-							strId = this.lstTreeDiam.Items[x].Text;
-							strMin = this.lstTreeDiam.Items[x].SubItems[1].Text;
-							strMax = this.lstTreeDiam.Items[x].SubItems[2].Text;
-							strDef = this.lstTreeDiam.Items[x].SubItems[3].Text;
-
-                            oAdo.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName + " " + 
-								"(diam_group,diam_class,min_diam,max_diam,scenario_id) VALUES " + 
-								"(" + strId + ",'" + strDef.Trim() + "'," + 
-								strMin + "," + strMax + ",'" + ScenarioId + "');";
-                            oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                            if (oAdo.m_intError != 0)
-							{
-								break;
-							}
-						}
-					}
-                    if (this.m_intError == 0 && oAdo.m_intError == 0)
-					{
-                        this.btnSave.Enabled=false;
-					}
-
-				}
-                oAdo.CloseConnection(oAdo.m_OleDbConnection);
-                oAdo = null;
-			}
-
+                            if (oDataMgr.m_intError == 0)
+                            {
+                                for (x = 0; x <= this.lstTreeDiam.Items.Count - 1; x++)
+                                {
+                                    strId = this.lstTreeDiam.Items[x].Text;
+                                    strMin = this.lstTreeDiam.Items[x].SubItems[1].Text;
+                                    strMax = this.lstTreeDiam.Items[x].SubItems[2].Text;
+                                    strDef = this.lstTreeDiam.Items[x].SubItems[3].Text;
+                                    oDataMgr.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName + " " +
+                                        "(diam_group,diam_class,min_diam,max_diam,scenario_id) VALUES " +
+                                        "(" + strId + ",'" + strDef.Trim() + "'," +
+                                        strMin + "," + strMax + ",'" + ScenarioId + "');";
+                                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                                    if (oDataMgr.m_intError != 0)
+                                    {
+                                        break;
+                                    }
+                                }
+                                this.m_intError = oDataMgr.m_intError;
+                                oDataMgr = null;
+                            }
+                        }
+                    }
+                }
+                if (this.m_intError == 0)
+                {
+                    this.btnSave.Enabled = false;
+                }
+            }
 		}
 
 		private void btnDelete_Click(object sender, System.EventArgs e)

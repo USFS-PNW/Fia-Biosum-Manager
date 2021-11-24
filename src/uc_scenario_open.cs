@@ -85,199 +85,200 @@ namespace FIA_Biosum_Manager
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this.btnOpen = new System.Windows.Forms.Button();
-			this.txtDescription = new System.Windows.Forms.TextBox();
-			this.lstScenario = new System.Windows.Forms.ListBox();
-			this.lblScenarioId = new System.Windows.Forms.Label();
-			this.lblScenarioDescription = new System.Windows.Forms.Label();
-			this.lblScenarioPath = new System.Windows.Forms.Label();
-			this.txtScenarioPath = new System.Windows.Forms.TextBox();
-			this.dataSet1 = new System.Data.DataSet();
-			this.oleDbSelectCommand1 = new System.Data.OleDb.OleDbCommand();
-			this.oleDbInsertCommand1 = new System.Data.OleDb.OleDbCommand();
-			this.oleDbUpdateCommand1 = new System.Data.OleDb.OleDbCommand();
-			this.oleDbDeleteCommand1 = new System.Data.OleDb.OleDbCommand();
-			this.oleDbDataAdapter1 = new System.Data.OleDb.OleDbDataAdapter();
-			this.oleDbCommand1 = new System.Data.OleDb.OleDbCommand();
-			this.oleDbConnection1 = new System.Data.OleDb.OleDbConnection();
-			this.lblNewScenario = new System.Windows.Forms.Label();
-			this.txtScenarioId = new System.Windows.Forms.TextBox();
-			this.btnCancel = new System.Windows.Forms.Button();
-			this.groupBox1 = new System.Windows.Forms.GroupBox();
-			this.lblTitle = new System.Windows.Forms.Label();
-			this.btnClose = new System.Windows.Forms.Button();
-			((System.ComponentModel.ISupportInitialize)(this.dataSet1)).BeginInit();
-			this.groupBox1.SuspendLayout();
-			this.SuspendLayout();
-			// 
-			// btnOpen
-			// 
-			this.btnOpen.BackColor = System.Drawing.SystemColors.Control;
-			this.btnOpen.Location = new System.Drawing.Point(224, 400);
-			this.btnOpen.Name = "btnOpen";
-			this.btnOpen.Size = new System.Drawing.Size(96, 32);
-			this.btnOpen.TabIndex = 1;
-			this.btnOpen.Text = "OK";
-			this.btnOpen.Click += new System.EventHandler(this.btnOpen_Click);
-			// 
-			// txtDescription
-			// 
-			this.txtDescription.Enabled = false;
-			this.txtDescription.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.txtDescription.Location = new System.Drawing.Point(168, 193);
-			this.txtDescription.Multiline = true;
-			this.txtDescription.Name = "txtDescription";
-			this.txtDescription.Size = new System.Drawing.Size(448, 152);
-			this.txtDescription.TabIndex = 2;
-			this.txtDescription.Text = "";
-			this.txtDescription.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtDescription_KeyPress);
-			this.txtDescription.TextChanged += new System.EventHandler(this.txtDescription_TextChanged);
-			// 
-			// lstScenario
-			// 
-			this.lstScenario.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.lstScenario.ItemHeight = 20;
-			this.lstScenario.Location = new System.Drawing.Point(8, 74);
-			this.lstScenario.Name = "lstScenario";
-			this.lstScenario.Size = new System.Drawing.Size(144, 324);
-			this.lstScenario.TabIndex = 3;
-			this.lstScenario.SelectedIndexChanged += new System.EventHandler(this.lstScenario_SelectedIndexChanged);
-			// 
-			// lblScenarioId
-			// 
-			this.lblScenarioId.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.lblScenarioId.Location = new System.Drawing.Point(16, 49);
-			this.lblScenarioId.Name = "lblScenarioId";
-			this.lblScenarioId.Size = new System.Drawing.Size(120, 23);
-			this.lblScenarioId.TabIndex = 4;
-			this.lblScenarioId.Text = "Scenario List";
-			// 
-			// lblScenarioDescription
-			// 
-			this.lblScenarioDescription.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.lblScenarioDescription.Location = new System.Drawing.Point(168, 166);
-			this.lblScenarioDescription.Name = "lblScenarioDescription";
-			this.lblScenarioDescription.Size = new System.Drawing.Size(138, 16);
-			this.lblScenarioDescription.TabIndex = 5;
-			this.lblScenarioDescription.Text = "Scenario Description";
-			// 
-			// lblScenarioPath
-			// 
-			this.lblScenarioPath.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.lblScenarioPath.Location = new System.Drawing.Point(168, 109);
-			this.lblScenarioPath.Name = "lblScenarioPath";
-			this.lblScenarioPath.Size = new System.Drawing.Size(136, 15);
-			this.lblScenarioPath.TabIndex = 6;
-			this.lblScenarioPath.Text = "Scenario Directory Path";
-			// 
-			// txtScenarioPath
-			// 
-			this.txtScenarioPath.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.txtScenarioPath.Location = new System.Drawing.Point(168, 129);
-			this.txtScenarioPath.Name = "txtScenarioPath";
-			this.txtScenarioPath.Size = new System.Drawing.Size(448, 26);
-			this.txtScenarioPath.TabIndex = 7;
-			this.txtScenarioPath.Text = "";
-			// 
-			// dataSet1
-			// 
-			this.dataSet1.DataSetName = "NewDataSet";
-			this.dataSet1.Locale = new System.Globalization.CultureInfo("en-US");
-			// 
-			// oleDbDataAdapter1
-			// 
-			this.oleDbDataAdapter1.DeleteCommand = this.oleDbDeleteCommand1;
-			this.oleDbDataAdapter1.InsertCommand = this.oleDbInsertCommand1;
-			this.oleDbDataAdapter1.SelectCommand = this.oleDbSelectCommand1;
-			this.oleDbDataAdapter1.UpdateCommand = this.oleDbUpdateCommand1;
-			// 
-			// lblNewScenario
-			// 
-			this.lblNewScenario.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.lblNewScenario.Location = new System.Drawing.Point(168, 53);
-			this.lblNewScenario.Name = "lblNewScenario";
-			this.lblNewScenario.Size = new System.Drawing.Size(128, 15);
-			this.lblNewScenario.TabIndex = 9;
-			this.lblNewScenario.Text = "Scenario Id";
-			// 
-			// txtScenarioId
-			// 
-			this.txtScenarioId.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.txtScenarioId.Location = new System.Drawing.Point(168, 75);
-			this.txtScenarioId.MaxLength = 20;
-			this.txtScenarioId.Name = "txtScenarioId";
-			this.txtScenarioId.Size = new System.Drawing.Size(120, 26);
-			this.txtScenarioId.TabIndex = 10;
-			this.txtScenarioId.Text = "";
-			this.txtScenarioId.Leave += new System.EventHandler(this.txtScenarioId_Leave);
-			// 
-			// btnCancel
-			// 
-			this.btnCancel.BackColor = System.Drawing.SystemColors.Control;
-			this.btnCancel.Enabled = false;
-			this.btnCancel.Location = new System.Drawing.Point(336, 400);
-			this.btnCancel.Name = "btnCancel";
-			this.btnCancel.Size = new System.Drawing.Size(96, 32);
-			this.btnCancel.TabIndex = 14;
-			this.btnCancel.Text = "Cancel";
-			this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
-			// 
-			// groupBox1
-			// 
-			this.groupBox1.Controls.Add(this.lblTitle);
-			this.groupBox1.Controls.Add(this.btnClose);
-			this.groupBox1.Controls.Add(this.lblNewScenario);
-			this.groupBox1.Controls.Add(this.txtScenarioId);
-			this.groupBox1.Controls.Add(this.lblScenarioPath);
-			this.groupBox1.Controls.Add(this.txtScenarioPath);
-			this.groupBox1.Controls.Add(this.lblScenarioDescription);
-			this.groupBox1.Controls.Add(this.txtDescription);
-			this.groupBox1.Controls.Add(this.btnOpen);
-			this.groupBox1.Controls.Add(this.btnCancel);
-			this.groupBox1.Controls.Add(this.lblScenarioId);
-			this.groupBox1.Controls.Add(this.lstScenario);
-			this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.groupBox1.Location = new System.Drawing.Point(0, 0);
-			this.groupBox1.Name = "groupBox1";
-			this.groupBox1.Size = new System.Drawing.Size(632, 480);
-			this.groupBox1.TabIndex = 15;
-			this.groupBox1.TabStop = false;
-			this.groupBox1.Resize += new System.EventHandler(this.groupBox1_Resize);
-			// 
-			// lblTitle
-			// 
-			this.lblTitle.Dock = System.Windows.Forms.DockStyle.Top;
-			this.lblTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.lblTitle.ForeColor = System.Drawing.Color.Green;
-			this.lblTitle.Location = new System.Drawing.Point(3, 16);
-			this.lblTitle.Name = "lblTitle";
-			this.lblTitle.Size = new System.Drawing.Size(626, 32);
-			this.lblTitle.TabIndex = 25;
-			this.lblTitle.Text = "Open Scenario";
-			// 
-			// btnClose
-			// 
-			this.btnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnClose.BackColor = System.Drawing.SystemColors.Control;
-			this.btnClose.Location = new System.Drawing.Point(528, 440);
-			this.btnClose.Name = "btnClose";
-			this.btnClose.Size = new System.Drawing.Size(96, 32);
-			this.btnClose.TabIndex = 15;
-			this.btnClose.Text = "Close";
-			this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
-			// 
-			// uc_scenario_open
-			// 
-			this.BackColor = System.Drawing.SystemColors.Control;
-			this.Controls.Add(this.groupBox1);
-			this.Name = "uc_scenario_open";
-			this.Size = new System.Drawing.Size(632, 480);
-			this.Resize += new System.EventHandler(this.uc_scenario_Resize);
-			this.Load += new System.EventHandler(this.uc_scenario_Load);
-			this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.uc_scenario_MouseDown);
-			((System.ComponentModel.ISupportInitialize)(this.dataSet1)).EndInit();
-			this.groupBox1.ResumeLayout(false);
-			this.ResumeLayout(false);
+            this.btnOpen = new System.Windows.Forms.Button();
+            this.txtDescription = new System.Windows.Forms.TextBox();
+            this.lstScenario = new System.Windows.Forms.ListBox();
+            this.lblScenarioId = new System.Windows.Forms.Label();
+            this.lblScenarioDescription = new System.Windows.Forms.Label();
+            this.lblScenarioPath = new System.Windows.Forms.Label();
+            this.txtScenarioPath = new System.Windows.Forms.TextBox();
+            this.dataSet1 = new System.Data.DataSet();
+            this.oleDbSelectCommand1 = new System.Data.OleDb.OleDbCommand();
+            this.oleDbInsertCommand1 = new System.Data.OleDb.OleDbCommand();
+            this.oleDbUpdateCommand1 = new System.Data.OleDb.OleDbCommand();
+            this.oleDbDeleteCommand1 = new System.Data.OleDb.OleDbCommand();
+            this.oleDbDataAdapter1 = new System.Data.OleDb.OleDbDataAdapter();
+            this.oleDbCommand1 = new System.Data.OleDb.OleDbCommand();
+            this.oleDbConnection1 = new System.Data.OleDb.OleDbConnection();
+            this.lblNewScenario = new System.Windows.Forms.Label();
+            this.txtScenarioId = new System.Windows.Forms.TextBox();
+            this.btnCancel = new System.Windows.Forms.Button();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.lblTitle = new System.Windows.Forms.Label();
+            this.btnClose = new System.Windows.Forms.Button();
+            ((System.ComponentModel.ISupportInitialize)(this.dataSet1)).BeginInit();
+            this.groupBox1.SuspendLayout();
+            this.SuspendLayout();
+            // 
+            // btnOpen
+            // 
+            this.btnOpen.BackColor = System.Drawing.SystemColors.Control;
+            this.btnOpen.Location = new System.Drawing.Point(224, 400);
+            this.btnOpen.Name = "btnOpen";
+            this.btnOpen.Size = new System.Drawing.Size(96, 32);
+            this.btnOpen.TabIndex = 1;
+            this.btnOpen.Text = "OK";
+            this.btnOpen.UseVisualStyleBackColor = false;
+            this.btnOpen.Click += new System.EventHandler(this.btnOpen_Click);
+            // 
+            // txtDescription
+            // 
+            this.txtDescription.Enabled = false;
+            this.txtDescription.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtDescription.Location = new System.Drawing.Point(168, 193);
+            this.txtDescription.Multiline = true;
+            this.txtDescription.Name = "txtDescription";
+            this.txtDescription.Size = new System.Drawing.Size(448, 152);
+            this.txtDescription.TabIndex = 2;
+            this.txtDescription.TextChanged += new System.EventHandler(this.txtDescription_TextChanged);
+            this.txtDescription.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtDescription_KeyPress);
+            // 
+            // lstScenario
+            // 
+            this.lstScenario.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lstScenario.ItemHeight = 25;
+            this.lstScenario.Location = new System.Drawing.Point(8, 74);
+            this.lstScenario.Name = "lstScenario";
+            this.lstScenario.Size = new System.Drawing.Size(144, 304);
+            this.lstScenario.TabIndex = 3;
+            this.lstScenario.SelectedIndexChanged += new System.EventHandler(this.lstScenario_SelectedIndexChanged);
+            // 
+            // lblScenarioId
+            // 
+            this.lblScenarioId.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblScenarioId.Location = new System.Drawing.Point(16, 49);
+            this.lblScenarioId.Name = "lblScenarioId";
+            this.lblScenarioId.Size = new System.Drawing.Size(120, 23);
+            this.lblScenarioId.TabIndex = 4;
+            this.lblScenarioId.Text = "Scenario List";
+            // 
+            // lblScenarioDescription
+            // 
+            this.lblScenarioDescription.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblScenarioDescription.Location = new System.Drawing.Point(168, 166);
+            this.lblScenarioDescription.Name = "lblScenarioDescription";
+            this.lblScenarioDescription.Size = new System.Drawing.Size(160, 16);
+            this.lblScenarioDescription.TabIndex = 5;
+            this.lblScenarioDescription.Text = "Scenario Description";
+            // 
+            // lblScenarioPath
+            // 
+            this.lblScenarioPath.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblScenarioPath.Location = new System.Drawing.Point(168, 109);
+            this.lblScenarioPath.Name = "lblScenarioPath";
+            this.lblScenarioPath.Size = new System.Drawing.Size(136, 15);
+            this.lblScenarioPath.TabIndex = 6;
+            this.lblScenarioPath.Text = "Scenario Directory Path";
+            // 
+            // txtScenarioPath
+            // 
+            this.txtScenarioPath.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtScenarioPath.Location = new System.Drawing.Point(168, 129);
+            this.txtScenarioPath.Name = "txtScenarioPath";
+            this.txtScenarioPath.Size = new System.Drawing.Size(448, 30);
+            this.txtScenarioPath.TabIndex = 7;
+            // 
+            // dataSet1
+            // 
+            this.dataSet1.DataSetName = "NewDataSet";
+            this.dataSet1.Locale = new System.Globalization.CultureInfo("en-US");
+            // 
+            // oleDbDataAdapter1
+            // 
+            this.oleDbDataAdapter1.DeleteCommand = this.oleDbDeleteCommand1;
+            this.oleDbDataAdapter1.InsertCommand = this.oleDbInsertCommand1;
+            this.oleDbDataAdapter1.SelectCommand = this.oleDbSelectCommand1;
+            this.oleDbDataAdapter1.UpdateCommand = this.oleDbUpdateCommand1;
+            // 
+            // lblNewScenario
+            // 
+            this.lblNewScenario.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblNewScenario.Location = new System.Drawing.Point(168, 53);
+            this.lblNewScenario.Name = "lblNewScenario";
+            this.lblNewScenario.Size = new System.Drawing.Size(128, 15);
+            this.lblNewScenario.TabIndex = 9;
+            this.lblNewScenario.Text = "Scenario Id";
+            // 
+            // txtScenarioId
+            // 
+            this.txtScenarioId.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtScenarioId.Location = new System.Drawing.Point(168, 75);
+            this.txtScenarioId.MaxLength = 20;
+            this.txtScenarioId.Name = "txtScenarioId";
+            this.txtScenarioId.Size = new System.Drawing.Size(120, 30);
+            this.txtScenarioId.TabIndex = 10;
+            this.txtScenarioId.Leave += new System.EventHandler(this.txtScenarioId_Leave);
+            // 
+            // btnCancel
+            // 
+            this.btnCancel.BackColor = System.Drawing.SystemColors.Control;
+            this.btnCancel.Enabled = false;
+            this.btnCancel.Location = new System.Drawing.Point(336, 400);
+            this.btnCancel.Name = "btnCancel";
+            this.btnCancel.Size = new System.Drawing.Size(96, 32);
+            this.btnCancel.TabIndex = 14;
+            this.btnCancel.Text = "Cancel";
+            this.btnCancel.UseVisualStyleBackColor = false;
+            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.lblTitle);
+            this.groupBox1.Controls.Add(this.btnClose);
+            this.groupBox1.Controls.Add(this.lblNewScenario);
+            this.groupBox1.Controls.Add(this.txtScenarioId);
+            this.groupBox1.Controls.Add(this.lblScenarioPath);
+            this.groupBox1.Controls.Add(this.txtScenarioPath);
+            this.groupBox1.Controls.Add(this.lblScenarioDescription);
+            this.groupBox1.Controls.Add(this.txtDescription);
+            this.groupBox1.Controls.Add(this.btnOpen);
+            this.groupBox1.Controls.Add(this.btnCancel);
+            this.groupBox1.Controls.Add(this.lblScenarioId);
+            this.groupBox1.Controls.Add(this.lstScenario);
+            this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.groupBox1.Location = new System.Drawing.Point(0, 0);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(632, 480);
+            this.groupBox1.TabIndex = 15;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Resize += new System.EventHandler(this.groupBox1_Resize);
+            // 
+            // lblTitle
+            // 
+            this.lblTitle.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTitle.ForeColor = System.Drawing.Color.Green;
+            this.lblTitle.Location = new System.Drawing.Point(3, 18);
+            this.lblTitle.Name = "lblTitle";
+            this.lblTitle.Size = new System.Drawing.Size(626, 32);
+            this.lblTitle.TabIndex = 25;
+            this.lblTitle.Text = "Open Scenario";
+            // 
+            // btnClose
+            // 
+            this.btnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnClose.BackColor = System.Drawing.SystemColors.Control;
+            this.btnClose.Location = new System.Drawing.Point(528, 440);
+            this.btnClose.Name = "btnClose";
+            this.btnClose.Size = new System.Drawing.Size(96, 32);
+            this.btnClose.TabIndex = 15;
+            this.btnClose.Text = "Close";
+            this.btnClose.UseVisualStyleBackColor = false;
+            this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
+            // 
+            // uc_scenario_open
+            // 
+            this.BackColor = System.Drawing.SystemColors.Control;
+            this.Controls.Add(this.groupBox1);
+            this.Name = "uc_scenario_open";
+            this.Size = new System.Drawing.Size(632, 480);
+            this.Load += new System.EventHandler(this.uc_scenario_Load);
+            this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.uc_scenario_MouseDown);
+            this.Resize += new System.EventHandler(this.uc_scenario_Resize);
+            ((System.ComponentModel.ISupportInitialize)(this.dataSet1)).EndInit();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
+            this.ResumeLayout(false);
 
 		}
 		#endregion
@@ -371,7 +372,47 @@ namespace FIA_Biosum_Manager
 			}
 			p_ado = null;
 		}
-		private void btnFolder_Click(object sender, System.EventArgs e)
+        public void populate_scenario_listbox_sqlite()
+        {
+            string strScenarioId = "";
+            string strDescription = "";
+            string strScenarioPath = "";
+            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
+
+            string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\" +
+                    Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+
+            string strConn = dataMgr.GetConnectionString(strScenarioDir);
+            try
+            {
+                lstScenario.Items.Clear();
+                using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+                    con.Open();
+                    dataMgr.SqlQueryReader(con, "select * from scenario");
+                    if (dataMgr.m_DataReader.HasRows)
+                    {
+                        while (dataMgr.m_DataReader.Read())
+                        {
+                            strScenarioId = dataMgr.m_DataReader["scenario_id"].ToString();
+                            strDescription = dataMgr.m_DataReader["description"].ToString();
+                            strScenarioPath = dataMgr.m_DataReader["path"].ToString();
+                            this.lstScenario.Items.Add(strScenarioId);
+                        }
+                    }
+                }
+                this.lstScenario.SelectedIndex = this.lstScenario.Items.Count - 1;
+                this.txtScenarioPath.Text = strScenarioPath;
+                this.txtDescription.Text = strDescription;
+            }
+            catch (Exception caught)
+            {
+                intError = -1;
+                strError = caught.Message;
+                MessageBox.Show(strError, "FIA Biosum");
+            }
+        }
+        private void btnFolder_Click(object sender, System.EventArgs e)
 		{
             
 			DialogResult result = ((frmMain)this.Parent.Parent).folderBrowserDialog1.ShowDialog();
@@ -775,73 +816,19 @@ namespace FIA_Biosum_Manager
  
 
 		}
-		public void DeleteScenario() 
-		{
 
-			string strSQL = "Delete Scenario '" + this.txtScenarioId.Text + "' (Y/N)?";
-			DialogResult result = MessageBox.Show(strSQL,"Delete Scenario", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-			switch (result) 
-			{
-				case DialogResult.Yes:
-					break;
-				case DialogResult.No:
-					return;
-			}                
-            
-			string strScenarioPath = this.txtScenarioPath.Text;
-			string strScenarioFile = "scenario_" + ScenarioType + "_rule_definitions.mdb" ; 
-			string strScenarioDir = ((frmMain)this.ParentForm.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\" + ScenarioType + "\\db";
-			string strFile = "scenario_" + ScenarioType + "_rule_definitions.mdb"; //((frmMain)this.ParentForm.ParentForm).frmProject.uc_project1.m_strProjectFile;
-			StringBuilder strFullPath = new StringBuilder(strScenarioDir);
-			strFullPath.Append("\\");
-			strFullPath.Append(strFile);
-
-			System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
-			ado_data_access p_ado = new ado_data_access();
-			string strConn = p_ado.getMDBConnString(strFullPath.ToString(),"admin","");
-			//string strConn = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + strFullPath.ToString() + ";User Id=admin;Password=;";
-			
-            strSQL = "DELETE * FROM scenario WHERE scenario_id =  " + "'" + this.txtScenarioId.Text.Trim() + "'";
-			p_ado.SqlNonQuery(strConn,strSQL);
-			if (p_ado.m_intError==0)
-			{
-				strSQL = "DELETE * FROM scenario_datasource WHERE scenario_id =  " + "'" + this.txtScenarioId.Text.Trim() + "'";
-				p_ado.SqlNonQuery(strConn,strSQL);				
-			}
-			if (p_ado.m_intError==0)
-			{
-				strSQL = this.txtScenarioId.Text + " was successfully deleted from the scenario tables. Do you wish to delete the scenario file and directory (Y/N)?";
-				result = MessageBox.Show(strSQL,"Delete Scenario", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-				switch (result) 
-				{
-					case DialogResult.Yes:
-						strSQL = strScenarioPath + "\\" + strScenarioFile;
-						try 
-						{
-							System.IO.Directory.Delete(strScenarioPath,true);
-						}
-						catch
-						{
-						}
-						break;
-					case DialogResult.No:
-						break;
-				}                
-
-			}
-			p_ado = null;
-     		this.ParentForm.Close();
-			
-		}
 		public void OpenScenario()
 		{
-			this.populate_scenario_listbox();
-			if (this.lstScenario.Items.Count > 0) 
-			{
-              
-			}
-	        
-
+            if (ReferenceProcessorScenarioForm != null && 
+                ReferenceProcessorScenarioForm.m_bUsingSqlite == true)
+            {
+                this.populate_scenario_listbox_sqlite();
+            }
+            else
+            {
+                this.populate_scenario_listbox();
+            }
+            	        
 			this.btnCancel.Enabled = true;
 			this.btnOpen.Enabled = true;
 			this.txtDescription.Enabled=false;
@@ -861,7 +848,7 @@ namespace FIA_Biosum_Manager
 			ado_data_access p_ado = new ado_data_access();
 			string strConn = p_ado.getMDBConnString(strFullPath.ToString(),"admin","");
 			//string strConn = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + strFullPath.ToString() + ";User Id=admin;Password=;";
-			string strSQL = "select * from scenario where scenario_id = '" + this.lstScenario.SelectedItem.ToString() + "';";
+			string strSQL = "select * from scenario where scenario_id = '" + this.lstScenario.SelectedItem.ToString().Trim() + "';";
 			
             p_ado.SqlQueryReader(strConn,strSQL);
 			if (p_ado.m_intError==0)
@@ -891,9 +878,41 @@ namespace FIA_Biosum_Manager
 				p_ado.m_OleDbConnection.Close();
 				p_ado.m_OleDbConnection = null;
 			}
-			
-
 		}
+        private void RefreshFormSqlite()
+        {
+            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
+            string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\" +
+                    Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+            string strConn = dataMgr.GetConnectionString(strScenarioDir);
+            try
+            {
+                using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+                    con.Open();
+                    string strSQL = "select * from scenario where scenario_id = '" + this.lstScenario.SelectedItem.ToString() + "';";
+                    dataMgr.SqlQueryReader(con, strSQL);
+                    if (dataMgr.m_DataReader.HasRows)
+                    {
+                        while (dataMgr.m_DataReader.Read())
+                        {
+                            txtScenarioId.Text = dataMgr.m_DataReader["scenario_id"].ToString();
+                            txtDescription.Text = dataMgr.m_DataReader["description"].ToString();
+                            txtScenarioPath.Text = dataMgr.m_DataReader["path"].ToString();
+                            break;
+
+                        }
+                    }
+                    dataMgr.m_DataReader.Close();
+                }
+            }
+            catch (Exception caught)
+            {
+                intError = -1;
+                strError = caught.Message;
+                MessageBox.Show(strError, "FIA Biosum");
+            }
+        }
 		private void txtDescription_KeyPress(object sender, System.Windows.Forms.KeyPressEventArgs e)
 		{
      	   //if (this.btnSave.Enabled==false) this.btnSave.Enabled=true;
@@ -903,7 +922,15 @@ namespace FIA_Biosum_Manager
 		{
 			if (this.lstScenario.SelectedIndex >= 0) 
 			{
-				this.RefreshForm();
+                if (ReferenceProcessorScenarioForm != null && 
+                    ReferenceProcessorScenarioForm.m_bUsingSqlite == true)
+                {
+                    this.RefreshFormSqlite();
+                }
+                else
+                {
+                    this.RefreshForm();
+                }                
 			}
 		}
 

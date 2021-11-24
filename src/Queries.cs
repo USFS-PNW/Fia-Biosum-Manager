@@ -9,7 +9,7 @@ namespace FIA_Biosum_Manager
 	/// </summary>
 	public class Queries
 	{
-		public int m_intError=0;
+        public int m_intError=0;
 		public string m_strError="";
 		public Project m_oProject = new Project();
 		public CoreScenarioResults m_oCoreScenarioResults = new CoreScenarioResults();
@@ -23,6 +23,7 @@ namespace FIA_Biosum_Manager
 		public Audit m_oAudit = new Audit();
 		public Reference m_oReference = new Reference();
 		public FIA_Biosum_Manager.Datasource m_oDataSource;
+        public VolumeAndBiomass m_oVolumeAndBiomass = new VolumeAndBiomass();
 		public string m_strTempDbFile;
 		private bool _bScenario=false;
 		private string _strScenarioType="";
@@ -71,13 +72,13 @@ namespace FIA_Biosum_Manager
             if (this.m_oTravelTime.LoadDatasource) this.m_oTravelTime.LoadDatasources();
 			m_strTempDbFile = this.m_oDataSource.CreateMDBAndTableDataSourceLinks();
 		}
-		public void LoadDatasources(bool p_bLimited,string p_strScenarioType,string p_strScenarioId)
+		public void LoadDatasources(bool p_bLimited, bool p_bUsingSqlite, string p_strScenarioType, string p_strScenarioId)
 		{
 			Scenario=true;
 			ScenarioType=p_strScenarioType;
 			if (p_bLimited)
 			{
-				LoadLimitedDatasources(p_strScenarioType,p_strScenarioId);
+				LoadLimitedDatasources(p_strScenarioType, p_bUsingSqlite, p_strScenarioId);
 			}
             if (this.m_oDataSource.m_intError < 0)
             {
@@ -109,7 +110,7 @@ namespace FIA_Biosum_Manager
 			
 			
 		}
-		protected void LoadLimitedDatasources(string p_strScenarioType,string p_strScenarioId)
+		protected void LoadLimitedDatasources(string p_strScenarioType, bool p_bUsingSqlite, string p_strScenarioId)
 		{
 			string strProjDir=frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
 			
@@ -117,11 +118,18 @@ namespace FIA_Biosum_Manager
 			m_oDataSource.LoadTableColumnNamesAndDataTypes=false;
 			m_oDataSource.m_strScenarioId=p_strScenarioId.Trim();
 			m_oDataSource.LoadTableRecordCount=false;
-			m_oDataSource.m_strDataSourceMDBFile = strProjDir.Trim() + "\\" + p_strScenarioType + "\\db\\scenario_" + p_strScenarioType + "_rule_definitions.mdb";
-			m_oDataSource.m_strDataSourceTableName = "scenario_datasource";
-			m_oDataSource.populate_datasource_array();
-			
-		}
+            m_oDataSource.m_strDataSourceTableName = "scenario_datasource";
+            if (!p_bUsingSqlite)
+            {
+                m_oDataSource.m_strDataSourceMDBFile = strProjDir.Trim() + "\\" + p_strScenarioType + "\\db\\scenario_" + p_strScenarioType + "_rule_definitions.mdb";
+                m_oDataSource.populate_datasource_array();
+            }
+            else
+            {
+                m_oDataSource.m_strDataSourceMDBFile = strProjDir.Trim() + "\\" + p_strScenarioType + "\\db\\scenario_" + p_strScenarioType + "_rule_definitions.db";
+                m_oDataSource.populate_datasource_array_sqlite();
+            }
+        }
 		static public string GetInsertSQL(string p_strFields, string p_strValues,string p_strTable)
 		{
 			return "INSERT INTO " + p_strTable + " (" + p_strFields + ") VALUES (" + p_strValues + ")";
@@ -2754,358 +2762,6 @@ namespace FIA_Biosum_Manager
 
             }
             */
-            public class VolumesAndBiomass
-            {
-                public VolumesAndBiomass()
-                {
-                }
-                /// <summary>
-                /// Insert all FVS_TREEs that are not cycle 1 trees 
-                /// </summary>
-                /// <param name="p_strInputVolumesTable"></param>
-                /// <param name="p_strFvsTreeTable"></param>
-                /// <param name="p_strRxPackage"></param>
-                /// <returns></returns>
-                public static string FVSOut_BuiltInputTableForVolumeCalculation_Step1(string p_strInputVolumesTable,string p_strFvsTreeTable,string p_strRxPackage)
-                {
-                    string strColumns = "id,biosum_cond_id,invyr,fvs_variant,spcd,dbh,ht,actualht,cr,fvs_tree_id";
-                    return "INSERT INTO " + p_strInputVolumesTable + " " +
-                            "(" + strColumns + ") " + 
-                            "SELECT id,biosum_cond_id,CINT(rxyear) AS invyr," + 
-                                    "fvs_variant," + 
-                                    "IIF(FvsCreatedTree_YN='Y',CINT(fvs_species),-1) AS spcd," +
-                                    "dbh,estht,ht,pctcr,fvs_tree_id " +
-                            "FROM " + p_strFvsTreeTable + " " +
-                            "WHERE rxpackage='" + p_strRxPackage.Trim() + "' AND rxcycle<>'1'"; 
-                }
-                /// <summary>
-                /// Insert all FVS_TREEs that are cycle 1 trees and are also fvs created trees
-                /// </summary>
-                /// <param name="p_strInputVolumesTable"></param>
-                /// <param name="p_strFvsTreeTable"></param>
-                /// <param name="p_strRxPackage"></param>
-                /// <returns></returns>
-                public static string FVSOut_BuiltInputTableForVolumeCalculation_Step1a(string p_strInputVolumesTable, string p_strFvsTreeTable, string p_strRxPackage)
-                {
-                    string strColumns = "id,biosum_cond_id,invyr,fvs_variant,spcd,dbh,ht,actualht,cr,fvs_tree_id";
-                    return "INSERT INTO " + p_strInputVolumesTable + " " +
-                            "(" + strColumns + ") " +
-                            "SELECT id,biosum_cond_id,CINT(rxyear) AS invyr," +
-                                    "fvs_variant," +
-                                    "IIF(FvsCreatedTree_YN='Y',CINT(fvs_species),-1) AS spcd," +
-                                    "dbh,estht,ht,pctcr,fvs_tree_id " +
-                            "FROM " + p_strFvsTreeTable + " " +
-                            "WHERE rxpackage='" + p_strRxPackage.Trim() + "' AND rxcycle='1' AND FvsCreatedTree_YN='Y'";
-                }
-                /// <summary>
-                /// Insert FVS_TREEs that are not cycle 1 trees
-                /// </summary>
-                /// <param name="p_strInputVolumesTable"></param>
-                /// <param name="p_strFvsTreeTable"></param>
-                /// <returns></returns>
-                public static string FVSOut_BuiltInputTableForVolumeCalculation_Step1(string p_strInputVolumesTable, string p_strFvsTreeTable)
-                {
-                    string strColumns = "id,biosum_cond_id,invyr,fvs_variant,spcd,dbh,ht,actualht,cr,fvs_tree_id";
-                    return "INSERT INTO " + p_strInputVolumesTable + " " +
-                            "(" + strColumns + ") " +
-                            "SELECT id,biosum_cond_id,CINT(rxyear) AS invyr," +
-                                    "fvs_variant," +
-                                    "IIF(FvsCreatedTree_YN='Y',CINT(fvs_species),-1) AS spcd," +
-                                    "dbh,estht,ht,pctcr,fvs_tree_id " +
-                            "FROM " + p_strFvsTreeTable + " " +
-                            "WHERE rxcycle<>'1'";
-                }
-                /// <summary>
-                /// Update tree fields with values from the MASTER.TREE records
-                /// </summary>
-                /// <param name="p_strInputVolumesTable"></param>
-                /// <param name="p_strFIATreeTable"></param>
-                /// <param name="p_strFIAPlotTable"></param>
-                /// <param name="p_strFIACondTable"></param>
-                /// <returns></returns>
-                public static string FVSOut_BuildInputTableForVolumeCalculation_Step2(
-                                        string p_strInputVolumesTable,
-                                        string p_strFIATreeTable,
-                                        string p_strFIAPlotTable,
-                                        string p_strFIACondTable)
-                {
-                    return "UPDATE " + p_strInputVolumesTable + " i " +
-                           "INNER JOIN ((" + p_strFIATreeTable + " t " +
-                                        "INNER JOIN " + p_strFIACondTable + " c " +
-                                        "ON t.biosum_cond_id=c.biosum_cond_id) " +
-                                        "INNER JOIN " + p_strFIAPlotTable + " p " +
-                                        "ON p.biosum_plot_id=c.biosum_plot_id) " +
-                           "ON i.fvs_tree_id = t.fvs_tree_id and i.biosum_cond_id = t.biosum_cond_id " +
-                           "SET i.spcd=t.spcd," +
-                               "i.statuscd=IIF(t.statuscd IS NULL,1,t.statuscd)," +
-                               "i.treeclcd=t.treeclcd," +
-                               "i.cull=IIF(t.cull IS NULL,0,t.cull)," +
-                               "i.roughcull=IIF(t.roughcull IS NULL,0,t.roughcull)," +
-                               "i.decaycd=IIF(t.decaycd IS NULL,0,t.decaycd)";
-                }
-                /// <summary>
-                /// Update tree fields to have values other than null. Also assign the VOL_LOC_GRP value from the condition table.
-                /// </summary>
-                /// <param name="p_strInputVolumesTable"></param>
-                /// <param name="p_strFIACondTable"></param>
-                /// <returns></returns>
-                public static string FVSOut_BuildInputTableForVolumeCalculation_Step3(
-                                        string p_strInputVolumesTable,
-                                        string p_strFIACondTable)
-                {
-                    return "UPDATE " + p_strInputVolumesTable + " i " +
-                                      "INNER JOIN " + p_strFIACondTable + " c " +
-                                      "ON i.biosum_cond_id=c.biosum_cond_id " +
-                                      "SET i.vol_loc_grp=IIF(INSTR(1,c.vol_loc_grp,'22') > 0,'S26LEOR',c.vol_loc_grp)," + 
-                                          "i.statuscd=IIF(i.statuscd IS NULL,1,i.statuscd)," +
-                                          "i.cull=IIF(i.cull IS NULL,0,i.cull)," + 
-                                          "i.roughcull=IIF(i.roughcull IS NULL,0,i.roughcull)," +
-                                          "i.decaycd=IIF(i.decaycd IS NULL,0,i.decaycd)";
-                }
-                /// <summary>
-                /// Create and Populate a CULL work table with TOTALCULL (cull + roughcull)
-                /// </summary>
-                /// <returns></returns>
-                public static string FVSOut_BuildInputTableForVolumeCalculation_Step4(
-                                     string p_strCullTable, 
-                                     string p_strInputVolumesTable)
-                {
-                    return "SELECT id, IIF(cull IS NOT NULL AND roughcull IS NOT NULL, cull + roughcull," +
-                                      "IIF(cull IS NOT NULL,cull," +
-                                      "IIF(roughcull IS NOT NULL, roughcull,0))) AS totalcull " +
-                           "INTO " + p_strCullTable + " " + 
-                           "FROM " + p_strInputVolumesTable;
-
-                }
-                public static string FIAPlotInput_BuildInputTableForVolumeCalculation_Step1(string p_strInputVolumesTable,string p_strFIATreeTable,string p_strColumns,string p_strValues)
-                {
-                    return  "INSERT INTO " + p_strInputVolumesTable + " " +
-                            "(" + p_strColumns + ") SELECT " + p_strValues + " FROM " + p_strFIATreeTable;
-                }
-                public static string FIAPlotInput_BuildInputTableForVolumeCalculation_Step2(
-                                        string p_strInputVolumesTable,
-                                        string p_strFIATreeTable,
-                                        string p_strFIAPlotTable,
-                                        string p_strFIACondTable)
-                {
-                    return "UPDATE " + p_strInputVolumesTable + " i " +
-                           "INNER JOIN ((" + p_strFIATreeTable + " t " +
-                                        "INNER JOIN " + p_strFIACondTable + " c " +
-                                        "ON t.biosum_cond_id=c.biosum_cond_id) " +
-                                        "INNER JOIN " + p_strFIAPlotTable + " p " +
-                                        "ON p.biosum_plot_id=c.biosum_plot_id) " +
-                           "ON i.tre_cn=t.cn " +
-                           "SET i.spcd=t.spcd," +
-                               "i.statuscd=IIF(t.statuscd IS NULL,1,t.statuscd)," +
-                               "i.treeclcd=t.treeclcd," +
-                               "i.cull=IIF(t.cull IS NULL,0,t.cull)," +
-                               "i.roughcull=IIF(t.roughcull IS NULL,0,t.roughcull)," +
-                               "i.decaycd=IIF(t.decaycd IS NULL,0,t.decaycd)";
-                }
-                public static string FIAPlotInput_BuildInputTableForVolumeCalculation_Step3(
-                                        string p_strInputVolumesTable,
-                                        string p_strFIACondTable)
-                {
-                    return "UPDATE " + p_strInputVolumesTable + " i " +
-                                      "INNER JOIN " + p_strFIACondTable + " c " +
-                                      "ON i.cnd_cn=c.biosum_cond_id " +
-                                      "SET i.vol_loc_grp=IIF(INSTR(1,c.vol_loc_grp,'22') > 0,'S26LEOR',c.vol_loc_grp)," +
-                                          "i.statuscd=IIF(i.statuscd IS NULL,1,i.statuscd)," +
-                                          "i.cull=IIF(i.cull IS NULL,0,i.cull)," +
-                                          "i.roughcull=IIF(i.roughcull IS NULL,0,i.roughcull)," +
-                                          "i.decaycd=IIF(i.decaycd IS NULL,0,i.decaycd)";
-                }
-                public static string FIAPlotInput_BuildInputTableForVolumeCalculation_Step4(
-                                    string p_strCullTable,
-                                    string p_strInputVolumesTable)
-                {
-                    return "SELECT tre_cn, IIF(cull IS NOT NULL AND roughcull IS NOT NULL, cull + roughcull," +
-                                      "IIF(cull IS NOT NULL,cull," +
-                                      "IIF(roughcull IS NOT NULL, roughcull,0))) AS totalcull " +
-                           "INTO " + p_strCullTable + " " +
-                           "FROM " + p_strInputVolumesTable;
-
-                }
-               //public static string FIAPlotInput_BuildInputTableForVolumeCalculation_Step2(string p_strInputVolumesTable, string p_strFIACondTable)
-               // {
-               //     return "UPDATE " + p_strInputVolumesTable + " f INNER JOIN " + p_strFIACondTable + " c ON f.CND_CN = c.BIOSUM_COND_ID SET f.vol_loc_grp=IIF(INSTR(1,c.vol_loc_grp,'22') > 0,'S26LEOR',c.vol_loc_grp)";
-               // }
-
-                public class PNWRS
-                {
-                    public PNWRS()
-                    {
-                    }
-                    /// <summary>
-                    /// Update the TREECLCD column for all trees 
-                    /// by comparing SPCD,ROUGHCULL,STATUSCD and TOTALCULL columns
-                    /// </summary>
-                    /// <param name="p_strCullTable"></param>
-                    /// <param name="p_strInputVolumesTable"></param>
-                    /// <returns></returns>
-                    public static string FVSOut_BuildInputTableForVolumeCalculation_Step5(
-                                         string p_strCullTable,
-                                         string p_strInputVolumesTable)
-                    {
-                        return "UPDATE " + p_strInputVolumesTable + " a " +
-                                          "INNER JOIN " + p_strCullTable + " b " +
-                                          "ON a.id=b.id " +
-                                          "SET a.treeclcd=" +
-                                          "IIF(a.SpCd IN (62,65,66,106,133,138,304,321,322,475,756,758,990),3," +
-                                          "IIF(a.StatusCd=2,3," +
-                                          "IIF(b.totalcull < 75,2," +
-                                          "IIF(a.roughcull > 37.5,3,4))))";
-                    }
-                    /// <summary>
-                    /// Update the TREECLCD column for TREECLCD=3 and dead trees 
-                    /// by comparing SPCD,DBH,STATUSCD and DECAYCD columns
-                    /// </summary>
-                    /// <param name="p_strCullTable"></param>
-                    /// <param name="p_strInputVolumesTable"></param>
-                    /// <returns></returns>
-                    public static string FVSOut_BuildInputTableForVolumeCalculation_Step6(
-                                         string p_strCullTable,
-                                         string p_strInputVolumesTable)
-                    {
-                        return "UPDATE " + p_strInputVolumesTable + " a " +
-                                          "INNER JOIN " + p_strCullTable + " b " +
-                                          "ON a.id=b.id " +
-                                          "SET a.treeclcd=" +
-                                          "IIF(a.DecayCd > 1,4,IIF(a.dbh < 9 AND a.SpCd < 300,4,a.treeclcd)) " +
-                                          "WHERE a.treeclcd=3 AND a.statuscd=2 AND a.SpCd NOT IN (62,65,66,106,133,138,304,321,322,475,756,758,990)";
-                    }
-                    /// <summary>
-                    /// Update the TREECLCD column for all trees 
-                    /// by comparing SPCD,ROUGHCULL,STATUSCD and TOTALCULL columns
-                    /// </summary>
-                    /// <param name="p_strCullTable"></param>
-                    /// <param name="p_strInputVolumesTable"></param>
-                    /// <returns></returns>
-                    public static string FIAPlotInput_BuildInputTableForVolumeCalculation_Step5(
-                                         string p_strCullTable,
-                                         string p_strInputVolumesTable)
-                    {
-                        return "UPDATE " + p_strInputVolumesTable + " a " +
-                                          "INNER JOIN " + p_strCullTable + " b " +
-                                          "ON a.tre_cn=b.tre_cn " +
-                                          "SET a.treeclcd=" +
-                                          "IIF(a.SpCd IN (62,65,66,106,133,138,304,321,322,475,756,758,990),3," +
-                                          "IIF(a.StatusCd=2,3," +
-                                          "IIF(b.totalcull < 75,2," +
-                                          "IIF(a.roughcull > 37.5,3,4))))";
-                    }
-                    /// <summary>
-                    /// Update the TREECLCD column for TREECLCD=3 and dead trees 
-                    /// by comparing SPCD,DBH,STATUSCD and DECAYCD columns
-                    /// </summary>
-                    /// <param name="p_strCullTable"></param>
-                    /// <param name="p_strInputVolumesTable"></param>
-                    /// <returns></returns>
-                    public static string FIAPlotInput_BuildInputTableForVolumeCalculation_Step6(
-                                         string p_strCullTable,
-                                         string p_strInputVolumesTable)
-                    {
-                        return "UPDATE " + p_strInputVolumesTable + " a " +
-                                          "INNER JOIN " + p_strCullTable + " b " +
-                                          "ON a.tre_cn=b.tre_cn " +
-                                          "SET a.treeclcd=" +
-                                          "IIF(a.DecayCd > 1,4,IIF(a.DIA < 9 AND a.SpCd < 300,4,a.treeclcd)) " +
-                                          "WHERE a.treeclcd=3 AND a.statuscd=2 AND a.SpCd NOT IN (62,65,66,106,133,138,304,321,322,475,756,758,990)";
-                    }
-                }
-                /// <summary>
-                /// Insert into the MS Access Biosum Volume table
-                /// the formatted data in the input volumes table.
-                /// This extra step is needed before importing to 
-                /// Oracle because the performance of formatting of data from Access to 
-                /// the Oracle Linked table is slow.
-                /// </summary>
-                /// <param name="p_strInputVolumesTable"></param>
-                /// <param name="p_strOracleBiosumVolumesTable"></param>
-                /// <returns></returns>
-                public static string FVSOut_BuildInputTableForVolumeCalculation_Step7(
-                            string p_strInputVolumesTable,
-                            string p_strBiosumVolumesTable)
-                {
-                    string strColumns = "STATECD,COUNTYCD,PLOT,INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT," +
-                                        "ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE,TRE_CN,CND_CN,PLT_CN";
-                      
-                    string strValues = "CINT(MID(BIOSUM_COND_ID,6,2)) AS STATECD,CINT(MID(BIOSUM_COND_ID,12,3)) AS COUNTYCD,CINT(MID(BIOSUM_COND_ID,16,5)) AS PLOT," +
-                                       "INVYR,VOL_LOC_GRP,ID AS TREE,SPCD,DBH AS DIA,HT,ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE," +
-                                       "CSTR(ID) AS TRE_CN,BIOSUM_COND_ID AS CND_CN,MID(BIOSUM_COND_ID,1,LEN(BIOSUM_COND_ID)-1) AS PLT_CN";
-
-                    return "INSERT INTO " + p_strBiosumVolumesTable + " " +
-                           "(" + strColumns + ") " + 
-                           "SELECT " + strValues + " " + 
-                           "FROM " + p_strInputVolumesTable;
-                }
-                /// <summary>
-                /// Insert into the MS Access Biosum Volume table
-                /// the formatted data in the input volumes table.
-                /// This extra step is needed before importing to 
-                /// Oracle because the performance of formatting of data from Access to 
-                /// the Oracle Linked table is slow.
-                /// </summary>
-                /// <param name="p_strInputVolumesTable"></param>
-                /// <param name="p_strOracleBiosumVolumesTable"></param>
-                /// <returns></returns>
-                public static string FVSOut_BuildPlotInputTableForVolumeCalculation_Step7(
-                            string p_strInputVolumesTable,
-                            string p_strBiosumVolumesTable)
-                {
-                    string strColumns = "STATECD,COUNTYCD,PLOT,INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT," +
-                                        "ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE,TRE_CN,CND_CN,PLT_CN";
-
-                    string strValues = "STATECD,COUNTYCD,PLOT," +
-                                       "INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT,ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE," +
-                                       "TRE_CN,CND_CN,PLT_CN";
-
-                    return "INSERT INTO " + p_strBiosumVolumesTable + " " +
-                           "(" + strColumns + ") " +
-                           "SELECT " + strValues + " " +
-                           "FROM " + p_strInputVolumesTable;
-                }
-                /// <summary>
-                /// Insert records into the fcs oracle linked table
-                /// </summary>
-                /// <param name="p_strBiosumVolumesTable"></param>
-                /// <param name=""></param>
-                /// <returns></returns>
-                public static string FVSOut_BuildInputTableForVolumeCalculation_Step8(
-                            string p_strBiosumVolumesTable,
-                            string p_strOracleFCSBiosumVolumesLinkedTable)
-                {
-                    string strColumns = "STATECD,COUNTYCD,PLOT,INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT," +
-                                        "ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE,TRE_CN,CND_CN,PLT_CN";
-
-                    
-                    return "INSERT INTO " + p_strOracleFCSBiosumVolumesLinkedTable + " " +
-                           "(" + strColumns + ") " +
-                           "SELECT " + strColumns + " " +
-                           "FROM " + p_strBiosumVolumesTable;
-                }
-                /// <summary>
-                /// Update the FVS_TREE table with the volumes and biomass
-                /// values that Oracle returned
-                /// </summary>
-                /// <param name="p_strFvsTreeTable"></param>
-                /// <param name="p_strOracleBiosumVolumesTable"></param>
-                /// <returns></returns>
-                public static string FVSOut_BuildInputTableForVolumeCalculation_Step9(
-                              string p_strFvsTreeTable,
-                              string p_strOracleBiosumVolumesTable)
-                {
-                    return "UPDATE " + p_strFvsTreeTable + " f " +
-                           "INNER JOIN " + p_strOracleBiosumVolumesTable + " o " +
-                           "ON f.id = o.tree " +
-                           "SET f.volcsgrs=o.VOLCSGRS_CALC," +
-                               "f.volcfgrs=o.VOLCFGRS_CALC," +
-                               "f.volcfnet=o.VOLCFNET_CALC," +
-                               "f.drybiot=o.DRYBIOT_CALC," +
-                               "f.drybiom=o.DRYBIOM_CALC," + 
-                               "f.voltsgrs=o.VOLTSGRS_CALC" ;
-                }
-            }
 
             public class FVSInput
             {
@@ -3624,9 +3280,9 @@ namespace FIA_Biosum_Manager
                         return strSQL;
                     }
 
-                    public static string DeleteHtAndHtTopKForNonMeasuredHeights(string strDestTable)
+                    public static string DeleteHtAndHtTopKForUnknownHtcd(string strDestTable)
                     {
-                        return "UPDATE " + strDestTable + " SET Ht=0, HtTopK=0 WHERE Htcd NOT IN (1,2,3);";
+                        return "UPDATE " + strDestTable + " SET Ht=0, HtTopK=0 WHERE Htcd NOT IN (1,2,3,4);";
                     }
 
                     public static string SetBrokenTopFlag(string strDestTable)
@@ -3828,7 +3484,395 @@ namespace FIA_Biosum_Manager
             }
 
         }
-		public class TravelTime
+
+        public class VolumeAndBiomass
+        {
+            public VolumeAndBiomass()
+            {
+            }
+
+            public class FIAPlotInput
+            {
+                public FIAPlotInput()
+                {
+                }
+
+                public static string BuildInputTableForVolumeCalculation_Step1(
+                    string p_strInputVolumesTable, string p_strFIATreeTable, string p_strColumns, string p_strValues)
+                {
+                    return
+                        $"INSERT INTO {p_strInputVolumesTable} ({p_strColumns}) SELECT {p_strValues} FROM {p_strFIATreeTable} WHERE biosum_status_cd=9";
+                }
+
+                public static string BuildInputTableForVolumeCalculation_Step2(
+                    string p_strInputVolumesTable,
+                    string p_strFIATreeTable,
+                    string p_strFIAPlotTable,
+                    string p_strFIACondTable)
+                {
+                    return "UPDATE " + p_strInputVolumesTable + " i " +
+                           "INNER JOIN ((" + p_strFIATreeTable + " t " +
+                           "INNER JOIN " + p_strFIACondTable + " c " +
+                           "ON t.biosum_cond_id=c.biosum_cond_id) " +
+                           "INNER JOIN " + p_strFIAPlotTable + " p " +
+                           "ON p.biosum_plot_id=c.biosum_plot_id) " +
+                           "ON i.tre_cn=t.cn " +
+                           "SET i.spcd=t.spcd," +
+                           "i.statuscd=IIF(t.statuscd IS NULL,1,t.statuscd)," +
+                           "i.treeclcd=t.treeclcd," +
+                           "i.cull=IIF(t.cull IS NULL,0,t.cull)," +
+                           "i.roughcull=IIF(t.roughcull IS NULL,0,t.roughcull)," +
+                           "i.decaycd=IIF(t.decaycd IS NULL,0,t.decaycd)," +
+                           "i.balive=c.balive," +
+                           "i.precipitation=p.precipitation";
+                }
+
+                public static string BuildInputTableForVolumeCalculation_Step3(
+                    string p_strInputVolumesTable,
+                    string p_strFIACondTable)
+                {
+                    return "UPDATE " + p_strInputVolumesTable + " i " +
+                           "INNER JOIN " + p_strFIACondTable + " c " +
+                           "ON i.cnd_cn=c.biosum_cond_id " +
+                           "SET i.vol_loc_grp=IIF(INSTR(1,c.vol_loc_grp,'22') > 0,'S26LEOR',c.vol_loc_grp)," +
+                           "i.statuscd=IIF(i.statuscd IS NULL,1,i.statuscd)," +
+                           "i.cull=IIF(i.cull IS NULL,0,i.cull)," +
+                           "i.roughcull=IIF(i.roughcull IS NULL,0,i.roughcull)," +
+                           "i.decaycd=IIF(i.decaycd IS NULL,0,i.decaycd)";
+                }
+
+                public static string BuildInputTableForVolumeCalculation_Step4(
+                    string p_strCullTable,
+                    string p_strInputVolumesTable)
+                {
+                    return "SELECT tre_cn, IIF(cull IS NOT NULL AND roughcull IS NOT NULL, cull + roughcull," +
+                           "IIF(cull IS NOT NULL,cull," +
+                           "IIF(roughcull IS NOT NULL, roughcull,0))) AS totalcull " +
+                           "INTO " + p_strCullTable + " " +
+                           "FROM " + p_strInputVolumesTable;
+                }
+
+                public class PNWRS
+                {
+                    public PNWRS()
+                    {
+                    }
+
+
+                    /// <summary>
+                    /// Update the TREECLCD column for all trees 
+                    /// by comparing SPCD,ROUGHCULL,STATUSCD and TOTALCULL columns
+                    /// </summary>
+                    /// <param name="p_strCullTable"></param>
+                    /// <param name="p_strInputVolumesTable"></param>
+                    /// <returns></returns>
+                    public static string BuildInputTableForVolumeCalculation_Step5(
+                        string p_strCullTable,
+                        string p_strInputVolumesTable)
+                    {
+                        return "UPDATE " + p_strInputVolumesTable + " a " +
+                               "INNER JOIN " + p_strCullTable + " b " +
+                               "ON a.tre_cn=b.tre_cn " +
+                               "SET a.treeclcd=" +
+                               "IIF(a.SpCd IN (62,65,66,106,133,138,304,321,322,475,756,758,990),3," +
+                               "IIF(a.StatusCd=2,3," +
+                               "IIF(b.totalcull < 75,2," +
+                               "IIF(a.roughcull > 37.5,3,4))))";
+                    }
+
+                    /// <summary>
+                    /// Update the TREECLCD column for TREECLCD=3 and dead trees 
+                    /// by comparing SPCD,DBH,STATUSCD and DECAYCD columns
+                    /// </summary>
+                    /// <param name="p_strCullTable"></param>
+                    /// <param name="p_strInputVolumesTable"></param>
+                    /// <returns></returns>
+                    public static string BuildInputTableForVolumeCalculation_Step6(
+                        string p_strCullTable,
+                        string p_strInputVolumesTable)
+                    {
+                        return "UPDATE " + p_strInputVolumesTable + " a " +
+                               "INNER JOIN " + p_strCullTable + " b " +
+                               "ON a.tre_cn=b.tre_cn " +
+                               "SET a.treeclcd=" +
+                               "IIF(a.DecayCd > 1,4,IIF(a.DIA < 9 AND a.SpCd < 300,4,a.treeclcd)) " +
+                               "WHERE a.treeclcd=3 AND a.statuscd=2 AND a.SpCd NOT IN (62,65,66,106,133,138,304,321,322,475,756,758,990)";
+                    }
+                }
+
+                /// <summary>
+                /// Insert into the MS Access Biosum Volume table
+                /// the formatted data in the input volumes table.
+                /// This extra step is needed before importing to 
+                /// Oracle because the performance of formatting of data from Access to 
+                /// the Oracle Linked table is slow.
+                /// </summary>
+                /// <param name="p_strInputVolumesTable"></param>
+                /// <param name="p_strOracleBiosumVolumesTable"></param>
+                /// <returns></returns>
+                public static string BuildInputTableForVolumeCalculation_Step7(
+                    string p_strInputVolumesTable,
+                    string p_strBiosumVolumesTable)
+                {
+                    string strColumns = "STATECD,COUNTYCD,PLOT,INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT," +
+                                        "ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE,TRE_CN,CND_CN,PLT_CN";
+
+                    string strValues = "STATECD,COUNTYCD,PLOT," +
+                                       "INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT,ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE," +
+                                       "TRE_CN,CND_CN,PLT_CN";
+
+                    return "INSERT INTO " + p_strBiosumVolumesTable + " " +
+                           "(" + strColumns + ") " +
+                           "SELECT " + strValues + " " +
+                           "FROM " + p_strInputVolumesTable;
+                }
+
+                public static string WriteCalculatedVolumeAndBiomassColumnsToTreeTable(
+                    string p_strBiosumCalcOutputTable)
+                {
+                    return $@"UPDATE {frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName} t 
+                                INNER JOIN {Tables.VolumeAndBiomass.BiosumCalcOutputTable} o ON t.CN = o.TRE_CN
+                                SET t.volcfgrs=IIF(o.VOLCFGRS_CALC IS NOT NULL, o.VOLCFGRS_CALC, null),
+                                t.volcfnet=IIF(o.VOLCFNET_CALC IS NOT NULL, o.VOLCFNET_CALC, null),
+                                t.volcfsnd=IIF(o.VOLCFSND_CALC IS NOT NULL, o.VOLCFSND_CALC, null),
+                                t.volcsgrs=IIF(o.VOLCSGRS_CALC IS NOT NULL, o.VOLCSGRS_CALC, null),
+                                t.voltsgrs=IIF(o.VOLTSGRS_CALC IS NOT NULL,o.VOLTSGRS_CALC,null),
+                                t.drybiom=IIF(t.DRYBIOM IS NULL,o.DRYBIOM_CALC,t.DRYBIOM),
+                                t.drybiot=IIF(t.DRYBIOT IS NULL,o.DRYBIOT_CALC,t.DRYBIOT),
+                                t.drybio_bole=IIF(o.DRYBIO_BOLE_CALC IS NOT NULL, o.DRYBIO_BOLE_CALC, null),
+                                t.drybio_top=IIF(o.DRYBIO_TOP_CALC IS NOT NULL, o.DRYBIO_TOP_CALC, null),
+                                t.drybio_sapling=IIF(o.DRYBIO_SAPLING_CALC IS NOT NULL, o.DRYBIO_SAPLING_CALC, null),
+                                t.drybio_wdld_spp=IIF(o.DRYBIO_WDLD_SPP_CALC IS NOT NULL, o.DRYBIO_WDLD_SPP_CALC, null)";
+                }
+            }
+
+            public class FVSOut
+            {
+                public FVSOut()
+                {
+                }
+
+                /// <summary>
+                /// Insert all FVS_TREEs 
+                /// </summary>
+                /// <param name="p_strInputVolumesTable"></param>
+                /// <param name="p_strFvsTreeTable"></param>
+                /// <param name="p_strRxPackage"></param>
+                /// <returns></returns>
+                public static string BuildInputTableForVolumeCalculation_Step1(string p_strInputVolumesTable, string p_strFvsTreeTable, string p_strRxPackage)
+                {
+                    string strColumns = @"id,biosum_cond_id,invyr,fvs_variant,spcd,dbh,ht,actualht,cr,fvs_tree_id, fvscreatedtree_yn";
+                    string strValues = @"id,biosum_cond_id,CINT(rxyear) AS invyr, fvs_variant, IIF(FvsCreatedTree_YN='Y',CINT(fvs_species),-1) AS spcd, dbh,estht,ht,pctcr,fvs_tree_id, fvscreatedtree_yn";
+                    return $@"INSERT INTO {p_strInputVolumesTable} ({strColumns}) 
+                           SELECT {strValues} 
+                           FROM {p_strFvsTreeTable}
+                           WHERE rxpackage='{p_strRxPackage.Trim()}'";
+                }
+
+                /// <summary>
+                /// Insert FVS_TREEs that are not cycle 1 trees
+                /// </summary>
+                /// <param name="p_strInputVolumesTable"></param>
+                /// <param name="p_strFvsTreeTable"></param>
+                /// <returns></returns>
+                public static string BuildInputTableForVolumeCalculation_Step1(string p_strInputVolumesTable, string p_strFvsTreeTable)
+                {
+                    string strColumns = "id,biosum_cond_id,invyr,fvs_variant,spcd,dbh,ht,actualht,cr,fvs_tree_id";
+                    string values = "id,biosum_cond_id,CINT(rxyear) AS invyr, fvs_variant, IIF(FvsCreatedTree_YN='Y',CINT(fvs_species),-1) AS spcd, dbh,estht,ht,pctcr,fvs_tree_id ";
+                    return $@"INSERT INTO {p_strInputVolumesTable} ({strColumns}) SELECT {values} FROM {p_strFvsTreeTable} WHERE rxcycle<>'1'";
+                }
+
+                /// <summary>
+                /// Update tree fields with values from the MASTER.TREE records
+                /// </summary>
+                /// <param name="p_strInputVolumesTable"></param>
+                /// <param name="p_strFIATreeTable"></param>
+                /// <param name="p_strFIAPlotTable"></param>
+                /// <param name="p_strFIACondTable"></param>
+                /// <returns></returns>
+                public static string BuildInputTableForVolumeCalculation_Step2(string p_strInputVolumesTable, string p_strFIATreeTable, string p_strFIAPlotTable, string p_strFIACondTable)
+                {
+                    return $@"UPDATE {p_strInputVolumesTable} i 
+                                INNER JOIN (({p_strFIATreeTable} t 
+                                    INNER JOIN {p_strFIACondTable} c ON t.biosum_cond_id=c.biosum_cond_id)
+                                        INNER JOIN {p_strFIAPlotTable} p ON p.biosum_plot_id=c.biosum_plot_id) 
+                                ON i.fvs_tree_id = t.fvs_tree_id and i.biosum_cond_id = t.biosum_cond_id 
+                            SET i.spcd=t.spcd,
+                                i.statuscd=IIF(t.statuscd IS NULL,1,t.statuscd),
+                                i.treeclcd=t.treeclcd,
+                                i.cull=IIF(t.cull IS NULL,0,t.cull),
+                                i.roughcull=IIF(t.roughcull IS NULL,0,t.roughcull),
+                                i.decaycd=IIF(t.decaycd IS NULL,0,t.decaycd),
+                                i.balive=c.balive,
+                                i.precipitation=p.precipitation ";
+                }
+
+                /// <summary>
+                /// Update biosum_volumes_input fields (balive, precipitation)
+                /// </summary>
+                /// <param name="p_strInputVolumesTable"></param>
+                /// <param name="p_strFIATreeTable"></param>
+                /// <param name="p_strFIAPlotTable"></param>
+                /// <param name="p_strFIACondTable"></param>
+                /// <returns></returns>
+                public static string BuildInputTableForVolumeCalculation_Step2a(string p_strInputVolumesTable, string p_strFIAPlotTable, string p_strFIACondTable, string p_strFvsOutSummaryTable)
+                {
+                    return $@"UPDATE (({p_strFIAPlotTable} p INNER JOIN {p_strFIACondTable} c ON p.biosum_plot_id = c.biosum_plot_id) 
+                                INNER JOIN {p_strInputVolumesTable} i ON c.biosum_cond_id = i.biosum_cond_id) 
+                                INNER JOIN {p_strFvsOutSummaryTable} s ON i.invyr = s.Year AND i.biosum_cond_id = s.StandID
+                                SET i.balive=s.ba, i.precipitation=p.precipitation
+                                WHERE i.fvscreatedtree_yn='Y'";
+                }
+
+                /// <summary>
+                /// Update tree fields to have values other than null. Also assign the VOL_LOC_GRP value from the condition table.
+                /// </summary>
+                /// <param name="p_strInputVolumesTable"></param>
+                /// <param name="p_strFIACondTable"></param>
+                /// <returns></returns>
+                public static string BuildInputTableForVolumeCalculation_Step3(string p_strInputVolumesTable, string p_strFIACondTable)
+                {
+                    return $@"UPDATE {p_strInputVolumesTable} i INNER JOIN {p_strFIACondTable} c 
+                                ON i.biosum_cond_id=c.biosum_cond_id 
+                            SET i.vol_loc_grp=c.vol_loc_grp,
+                                i.statuscd=IIF(i.statuscd IS NULL,1,i.statuscd),
+                                i.cull=IIF(i.cull IS NULL,0,i.cull),
+                                i.roughcull=IIF(i.roughcull IS NULL,0,i.roughcull),
+                                i.decaycd=IIF(i.decaycd IS NULL,0,i.decaycd)";
+                }
+
+                /// <summary>
+                /// Create and Populate a CULL work table with TOTALCULL (cull + roughcull)
+                /// </summary>
+                /// <returns></returns>
+                public static string BuildInputTableForVolumeCalculation_Step4(string p_strCullTable, string p_strInputVolumesTable)
+                {
+                    //TODO: does inputVolumesTable have an id column? yes. What is it set to? How is id populated? FVS_TREE.ID?
+                    string columns = "id, IIF(cull IS NOT NULL AND roughcull IS NOT NULL, cull + roughcull, IIF(cull IS NOT NULL,cull, IIF(roughcull IS NOT NULL, roughcull,0))) AS totalcull";
+                    return $@"SELECT {columns} INTO {p_strCullTable} FROM {p_strInputVolumesTable}";
+                }
+
+                public class PNWRS
+                {
+                    public PNWRS()
+                    {
+                    }
+
+                    /// <summary>
+                    /// Update the TREECLCD column for all trees 
+                    /// by comparing SPCD,ROUGHCULL,STATUSCD and TOTALCULL columns
+                    /// </summary>
+                    /// <param name="p_strCullTable"></param>
+                    /// <param name="p_strInputVolumesTable"></param>
+                    /// <returns></returns>
+                    public static string BuildInputTableForVolumeCalculation_Step5(string p_strCullTable, string p_strInputVolumesTable)
+                    {
+                        return $@"UPDATE {p_strInputVolumesTable} a INNER JOIN {p_strCullTable} b ON a.id=b.id
+                                   SET a.treeclcd= IIF(a.SpCd IN (62,65,66,106,133,138,304,321,322,475,756,758,990),3,
+                                       IIF(a.StatusCd=2,3,
+                                           IIF(b.totalcull < 75,2,
+                                               IIF(a.roughcull > 37.5,3,4))))";
+                    }
+
+                    /// <summary>
+                    /// Update the TREECLCD column for TREECLCD=3 and dead trees 
+                    /// by comparing SPCD,DBH,STATUSCD and DECAYCD columns
+                    /// </summary>
+                    /// <param name="p_strCullTable"></param>
+                    /// <param name="p_strInputVolumesTable"></param>
+                    /// <returns></returns>
+                    public static string BuildInputTableForVolumeCalculation_Step6(string p_strCullTable, string p_strInputVolumesTable)
+                    {
+                        return $@"UPDATE {p_strInputVolumesTable} a INNER JOIN {p_strCullTable} b ON a.id=b.id
+                               SET a.treeclcd=IIF(a.DecayCd > 1,4,IIF(a.dbh < 9 AND a.SpCd < 300,4,a.treeclcd)) 
+                               WHERE a.treeclcd=3 AND a.statuscd=2 AND a.SpCd NOT IN (62,65,66,106,133,138,304,321,322,475,756,758,990)";
+                    }
+                }
+
+                /// <summary>
+                /// Insert into the MS Access Biosum Volume table
+                /// the formatted data in the input volumes table.
+                /// This extra step is needed before importing to 
+                /// Oracle because the performance of formatting of data from Access to 
+                /// the Oracle Linked table is slow.
+                /// </summary>
+                /// <param name="p_strInputVolumesTable"></param>
+                /// <param name="p_strOracleBiosumVolumesTable"></param>
+                /// <returns></returns>
+                public static string BuildInputTableForVolumeCalculation_Step7(string p_strInputVolumesTable, string p_strBiosumVolumesTable)
+                {
+                    string strColumns = "STATECD,COUNTYCD,PLOT,INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT," +
+                                        "ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE,TRE_CN,CND_CN,PLT_CN, DIAHTCD, BALIVE, PRECIPITATION";
+
+                    string strValues =
+                        "CINT(MID(BIOSUM_COND_ID,6,2)) AS STATECD,CINT(MID(BIOSUM_COND_ID,12,3)) AS COUNTYCD,CINT(MID(BIOSUM_COND_ID,16,5)) AS PLOT," +
+                        "INVYR,VOL_LOC_GRP,ID AS TREE,SPCD,DBH AS DIA,HT,ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE," +
+                        "CSTR(ID) AS TRE_CN,BIOSUM_COND_ID AS CND_CN,MID(BIOSUM_COND_ID,1,LEN(BIOSUM_COND_ID)-1) AS PLT_CN, DIAHTCD, BALIVE, PRECIPITATION";
+
+                    return $@"INSERT INTO {p_strBiosumVolumesTable} ({strColumns}) SELECT {strValues} FROM {p_strInputVolumesTable}";
+                }
+
+
+                /// <summary>
+                /// Insert records into the fcs oracle linked table
+                /// </summary>
+                /// <param name="p_strBiosumVolumesTable"></param>
+                /// <param name=""></param>
+                /// <returns></returns>
+                public static string BuildInputTableForVolumeCalculation_Step8(string p_strBiosumVolumesTable, string p_strOracleFCSBiosumVolumesLinkedTable)
+                {
+                    string strColumns = @"STATECD,COUNTYCD,PLOT,INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT,ACTUALHT,CR,
+                                        STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE,TRE_CN,CND_CN,PLT_CN";
+                    return $@"INSERT INTO {p_strOracleFCSBiosumVolumesLinkedTable} ({strColumns}) 
+                                SELECT {strColumns} FROM {p_strBiosumVolumesTable}";
+                }
+
+                /// <summary>
+                /// Update the FVS_TREE table with the volumes and biomass
+                /// values that Oracle returned
+                /// </summary>
+                /// <param name="p_strFvsTreeTable"></param>
+                /// <param name="p_strOracleBiosumVolumesTable"></param>
+                /// <returns></returns>
+                public static string BuildInputTableForVolumeCalculation_Step9(string p_strFvsTreeTable, string p_strBiosumCalcOutputTable)
+                {
+                    return $@"UPDATE {p_strFvsTreeTable} f
+                           INNER JOIN {p_strBiosumCalcOutputTable} o
+                           ON f.id = o.tree 
+                           SET f.drybio_bole=IIF(o.DRYBIO_BOLE_CALC IS NOT NULL, o.DRYBIO_BOLE_CALC, null),
+                           f.drybio_sapling=IIF(o.DRYBIO_SAPLING_CALC IS NOT NULL, o.DRYBIO_SAPLING_CALC, null),
+                           f.drybio_top=IIF(o.DRYBIO_TOP_CALC IS NOT NULL, o.DRYBIO_TOP_CALC, null),
+                           f.drybio_wdld_spp=IIF(o.DRYBIO_WDLD_SPP_CALC IS NOT NULL, o.DRYBIO_WDLD_SPP_CALC, null),
+                           f.drybiom=o.DRYBIOM_CALC,
+                           f.drybiot=o.DRYBIOT_CALC,
+                           f.volcfgrs=o.VOLCFGRS_CALC,
+                           f.volcfnet=o.VOLCFNET_CALC,
+                           f.volcfsnd=IIF(o.VOLCFSND_CALC IS NOT NULL, o.VOLCFSND_CALC, null),
+                           f.volcsgrs=o.VOLCSGRS_CALC,
+                           f.voltsgrs=o.VOLTSGRS_CALC ";
+                }
+
+                /// <summary>
+                /// Update the FVS_TREE table with the volumes and biomass for Oracle XE
+                /// values that Oracle returned
+                /// </summary>
+                /// <param name="p_strFvsTreeTable"></param>
+                /// <param name="p_strOracleBiosumVolumesTable"></param>
+                /// <returns></returns>
+                public static string BuildInputTableForVolumeCalculationXE_Step9(string p_strFvsTreeTable, string p_strOracleBiosumVolumesTable)
+                {
+                    return $@"UPDATE {p_strFvsTreeTable} f INNER JOIN {p_strOracleBiosumVolumesTable} o ON f.id = o.tree 
+                            SET f.volcsgrs=o.VOLCSGRS_CALC,
+                                f.volcfgrs=o.VOLCFGRS_CALC,
+                                f.volcfnet=o.VOLCFNET_CALC,
+                                f.drybiot=o.DRYBIOT_CALC,
+                                f.drybiom=o.DRYBIOM_CALC,
+                                f.voltsgrs=o.VOLTSGRS_CALC";
+                }
+            }
+        }
+
+        public class TravelTime
 		{
             public string m_strTravelTimeTable;
             private bool _bLoadDataSources = true;
@@ -3952,8 +3996,8 @@ namespace FIA_Biosum_Manager
                 //CREATE THE BIOSUM PLOT TABLE WITH 
                 //ONLY THE CURRENTLY SELECTED EVALUATION
                 //
-                strSQL[0] = "SELECT p.* " + 
-                            "INTO BIOSUM_PLOT " + 
+                strSQL[0] = "CREATE TABLE BIOSUM_PLOT AS " +
+                            "SELECT p.* " + 
                             "FROM " + p_strFIADBPlotTable + " p, " + 
                                 "(SELECT DISTINCT PLT_CN " + 
                                  "FROM " + p_strPpsaTable + " " + 
@@ -3962,8 +4006,8 @@ namespace FIA_Biosum_Manager
                 //
                 //CREATE BIOSUM_PPSA
                 //
-                strSQL[1] = "SELECT ppsa.*,p.CYCLE,p.SUBCYCLE " + 
-                            "INTO BIOSUM_PPSA " + 
+                strSQL[1] = "CREATE TABLE BIOSUM_PPSA AS " +
+                            "SELECT ppsa.*,p.CYCLE,p.SUBCYCLE " + 
                             "FROM " + p_strPpsaTable + " ppsa " + 
                             "INNER JOIN BIOSUM_PLOT p " + 
                             "ON ppsa.PLT_CN=p.CN " + 
@@ -3971,7 +4015,8 @@ namespace FIA_Biosum_Manager
                 //
                 //CREATE BIOSUM COND TABLE
                 //
-                strSQL[2] = "SELECT c.* INTO BIOSUM_COND FROM " + p_strFIADBCondTable + " c," + 
+                strSQL[2] = "CREATE TABLE BIOSUM_COND AS " +
+                            "SELECT c.* FROM " + p_strFIADBCondTable + " c," + 
                             "(SELECT CN FROM BIOSUM_PLOT) p " + 
                             "WHERE c.PLT_CN = p.CN";
 
@@ -3984,13 +4029,13 @@ namespace FIA_Biosum_Manager
                             "WHERE cond_status_cd = 1 AND condprop_unadj < ." + p_strCondProp;
 
                 //join pop_estn_unit,pop_stratum,pop_eval tables into biosum_eus_temp
-                strSQL[5] = "SELECT pe.rscd, pe.evalid,ps.estn_unit,ps.stratumcd," +
+                strSQL[5] = "CREATE TABLE BIOSUM_EUS_TEMP AS " +
+                            "SELECT pe.rscd, pe.evalid,ps.estn_unit,ps.stratumcd," +
                                    "pe.eval_descr,peu.estn_unit_descr,peu.arealand_eu," +
                                    "peu.areatot_eu , ps.p1pointcnt, ps.p2pointcnt," +
                                    "peu.p1pntcnt_eu as p1pointcnt_eu,peu.area_used," +
                                    "ps.adj_factor_macr,ps.adj_factor_subp," +
                                    "ps.adj_factor_micr,ps.expns,pe.LAND_ONLY " +
-                            "INTO BIOSUM_EUS_TEMP " +
                             "FROM " + p_strPopEstUnitTable + " peu," +
                                       p_strPopEvalTable + " pe," + p_strPopStratumTable + " ps " +
                                       "WHERE  ((pe.rscd=" + p_strRsCd + " AND pe.EVALID=" + p_strEvalId + ")) AND " +
@@ -4001,20 +4046,26 @@ namespace FIA_Biosum_Manager
                 //
                 //SUM UP UNADJUSTED FACTORS FOR DENIED ACCESS
                 //
-                strSQL[6] = "SELECT DISTINCT ppsa.evalid, ppsa.estn_unit, ppsa.statecd, ppsa.stratumcd, ppsa.plot," +
+                strSQL[6] = "CREATE TABLE BIOSUM_PPSA_DENIED_ACCESS AS " +
+                            "SELECT DISTINCT ppsa.evalid, ppsa.estn_unit, ppsa.statecd, ppsa.stratumcd, ppsa.plot," +
                                             "ppsa.countycd, ppsa.subcycle, ppsa.cycle, ppsa.unitcd," +
-                                            "SUM(IIF(eus.LAND_ONLY='N'," +
-                                                    "IIF(c.COND_STATUS_CD IN (1,2,3,4),0,c.MACRPROP_UNADJ)," +
-                                                    "IIF(c.COND_STATUS_CD IN (1,2,3),0,c.MACRPROP_UNADJ))) as denied_macr," +
-                                            "SUM(IIF(eus.LAND_ONLY='N'," +
-                                                    "IIF(c.COND_STATUS_CD IN (1,2,3,4),0,c.MICRPROP_UNADJ)," +
-                                                    "IIF(c.COND_STATUS_CD IN (1,2,3),0,c.MICRPROP_UNADJ))) as denied_micr," +
-                                            "SUM(IIF(eus.LAND_ONLY='N'," +
-                                                    "IIF(c.COND_STATUS_CD IN (1,2,3,4),0,c.SUBPPROP_UNADJ)," +
-                                                    "IIF(c.COND_STATUS_CD IN (1,2,3),0,c.SUBPPROP_UNADJ))) as denied_subp," +
-                                            "SUM(IIF(eus.LAND_ONLY='N',IIF(c.COND_STATUS_CD IN (1,2,3,4),0,c.CONDPROP_UNADJ),IIF(c.COND_STATUS_CD IN (1,2,3),0,c.CONDPROP_UNADJ))) as denied_cond " +
-                            "INTO BIOSUM_PPSA_DENIED_ACCESS " +
-                            "FROM BIOSUM_PPSA ppsa," +
+                            " SUM(CASE WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD IN(1, 2, 3, 4) THEN 0" +
+                            " WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD NOT IN(1, 2, 3, 4) THEN c.MACRPROP_UNADJ" +
+                            " WHEN eus.LAND_ONLY <> 'N' AND c.COND_STATUS_CD IN(1, 2, 3) THEN 0" +
+                            " ELSE c.MACRPROP_UNADJ END) AS denied_macr," +
+                            " SUM(CASE WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD IN(1, 2, 3, 4) THEN 0" +
+                            " WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD NOT IN(1, 2, 3, 4) THEN c.MICRPROP_UNADJ" +
+                            " WHEN eus.LAND_ONLY <> 'N' AND c.COND_STATUS_CD IN(1, 2, 3) THEN 0" +
+                            " ELSE c.MICRPROP_UNADJ END) AS denied_micr," +
+                            " SUM(CASE WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD IN(1, 2, 3, 4) THEN 0" +
+                            " WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD NOT IN(1, 2, 3, 4) THEN c.SUBPPROP_UNADJ" +
+                            " WHEN eus.LAND_ONLY <> 'N' AND c.COND_STATUS_CD IN(1, 2, 3) THEN 0" +
+                            " ELSE c.SUBPPROP_UNADJ END) AS denied_subp," +
+                            " SUM(CASE WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD IN(1, 2, 3, 4) THEN 0" +
+                            " WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD NOT IN(1, 2, 3, 4) THEN c.CONDPROP_UNADJ" +
+                            " WHEN eus.LAND_ONLY <> 'N' AND c.COND_STATUS_CD IN(1, 2, 3) THEN 0" +
+                            " ELSE c.CONDPROP_UNADJ END) AS denied_cond" +
+                            " FROM BIOSUM_PPSA ppsa," +
                                  "BIOSUM_COND c," +
                                  "BIOSUM_EUS_TEMP eus " +
                             "WHERE (ppsa.plt_cn = c.plt_cn) AND " +
@@ -4028,12 +4079,12 @@ namespace FIA_Biosum_Manager
                 //DELETE DENIED_COND=1
                 strSQL[7] = "DELETE FROM BIOSUM_PPSA_DENIED_ACCESS WHERE DENIED_COND =  1";
                 //JOIN THE 2 TABLES
-                strSQL[8] = "SELECT ppsa.*," +
+                strSQL[8] = "CREATE TABLE BIOSUM_PPSA_TEMP AS " +
+                            "SELECT ppsa.*," +
                                    "denied.denied_macr," +
                                    "denied.denied_micr," +
                                    "denied.denied_subp," +
                                    "denied.denied_cond " +
-                            "INTO BIOSUM_PPSA_TEMP " +
                             "FROM BIOSUM_PPSA_DENIED_ACCESS denied," +
                                  "BIOSUM_PPSA ppsa " +
                            "WHERE ppsa.evalid = denied.evalid AND " +
@@ -4048,32 +4099,32 @@ namespace FIA_Biosum_Manager
                 //
                 //CALCULATE ADJUSTMENTS
                 //
-                strSQL[9] = "SELECT DISTINCT " +
-                                   "eus.rscd, eus.evalid, eus.estn_unit, eus.stratumcd," +
-                                   "eus.arealand_eu, eus.areatot_eu," +
-                                   "eus.area_used, rowcount.p2pointcnt_man as p2pointcnt_man," +
-                                   "eus.p1pointcnt, eus.p1pointcnt_eu, eus.p2pointcnt," +
-                                   "SUM(c.MACRPROP_UNADJ * " +
-                                        "IIF(eus.LAND_ONLY='N'," +
-                                        "IIF(c.COND_STATUS_CD IN (1,2,3,4),1,0)," +
-                                        "IIF(c.COND_STATUS_CD IN (1,2,3),1,0))) / " +
-                                            "SUM(c.macrprop_unadj) as pmh_macr," +
-                                   "SUM(c.MICRPROP_UNADJ * " +
-                                       "IIF(eus.LAND_ONLY='N'," +
-                                       "IIF(c.COND_STATUS_CD IN (1,2,3,4),1,0)," +
-                                       "IIF(c.COND_STATUS_CD IN (1,2,3),1,0))) / " +
-                                           "SUM(c.micrprop_unadj) as pmh_micr," +
-                                   "SUM(c.SUBPPROP_UNADJ * " +
-                                       "IIF(eus.LAND_ONLY='N'," +
-                                       "IIF(c.COND_STATUS_CD IN (1,2,3,4),1,0)," +
-                                       "IIF(c.COND_STATUS_CD IN (1,2,3),1,0))) / " +
-                                           "SUM(c.subpprop_unadj) as pmh_sub," +
-                                   "SUM(c.CONDPROP_UNADJ * " +
-                                       "IIF(eus.LAND_ONLY='N'," +
-                                       "IIF(c.COND_STATUS_CD IN (1,2,3,4),1,0)," +
-                                       "IIF(c.COND_STATUS_CD IN (1,2,3),1,0))) / " +
-                                           "SUM(c.condprop_unadj) as pmh_cond " +
-                            "INTO BIOSUM_EUS_ACCESS " +
+                strSQL[9] = "CREATE TABLE BIOSUM_EUS_ACCESS AS" +
+                                " SELECT DISTINCT " +
+                                "eus.rscd, eus.evalid, eus.estn_unit, eus.stratumcd," +
+                                "eus.arealand_eu, eus.areatot_eu," +
+                                "eus.area_used, rowcount.p2pointcnt_man as p2pointcnt_man," +
+                                "eus.p1pointcnt, eus.p1pointcnt_eu, eus.p2pointcnt," +
+                                " SUM(c.MACRPROP_UNADJ *" +
+                                " CASE WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD IN(1, 2, 3, 4) THEN 1" +
+                                " WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD NOT IN(1, 2, 3, 4) THEN 0" +
+                                " WHEN eus.LAND_ONLY <> 'N' AND c.COND_STATUS_CD IN(1, 2, 3) THEN 1" +
+                                " ELSE 0 END) / SUM(c.macrprop_unadj) as pmh_macr," +
+                                " SUM(c.MICRPROP_UNADJ *" +
+                                " CASE WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD IN(1, 2, 3, 4) THEN 1" +
+                                " WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD NOT IN(1, 2, 3, 4) THEN 0" +
+                                " WHEN eus.LAND_ONLY <> 'N' AND c.COND_STATUS_CD IN(1, 2, 3) THEN 1 " +
+                                " ELSE 0 END) / SUM(c.MICRPROP_unadj) as pmh_micr," +
+                                " SUM(c.SUBPPROP_UNADJ *" +
+                                " CASE WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD IN(1, 2, 3, 4) THEN 1" +
+                                " WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD NOT IN(1, 2, 3, 4) THEN 0" +
+                                " WHEN eus.LAND_ONLY <> 'N' AND c.COND_STATUS_CD IN(1, 2, 3) THEN 1" +
+                                " ELSE 0 END) / SUM(c.SUBPPROP_unadj) as pmh_sub," +
+                                " SUM(c.CONDPROP_UNADJ *" +
+                                " CASE WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD IN(1, 2, 3, 4) THEN 1" +
+                                " WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD NOT IN(1, 2, 3, 4) THEN 0" +
+                                " WHEN eus.LAND_ONLY <> 'N' AND c.COND_STATUS_CD IN(1, 2, 3) THEN 1" +
+                                " ELSE 0 END) / SUM(c.CONDPROP_unadj) as pmh_cond " +
                             "FROM BIOSUM_COND c," +
                                  "BIOSUM_PPSA_TEMP ppsa," +
                                  "BIOSUM_EUS_TEMP  eus," +
@@ -4120,19 +4171,19 @@ namespace FIA_Biosum_Manager
                 //CALCULATE STRATUM AREA
                 //
                 strSQL[12] = "UPDATE BIOSUM_EUS_ACCESS " +
-                             "SET double_sampling = " +
-                                 "IIF(p1pointcnt_eu is null OR " +
-                                     "p1pointcnt is null OR " +
-                                     "p1pointcnt=p1pointcnt_eu," +
-                                     "0,1)," +
-                            "stratum_area = " +
-                                "IIF(p1pointcnt_eu is NOT null AND " +
-                                    "p1pointcnt_eu > 0," +
-                                    "area_used*p1pointcnt/p1pointcnt_eu,0)";
+                                "SET double_sampling = " +
+                                "CASE WHEN p1pointcnt_eu is null OR p1pointcnt is null OR p1pointcnt = p1pointcnt_eu THEN 0 " +
+                                "ELSE 1 " +
+                                "END, " +
+                                "stratum_area = " +
+                                "CASE WHEN p1pointcnt_eu is NOT null AND p1pointcnt_eu > 0 THEN area_used*p1pointcnt / p1pointcnt_eu " +
+                                "ELSE 0 " +
+                                "END";
                 //
                 //MERGE BIOSUM_EUS_ACCESS WITH BIOSUM_EUS_TEMP INTO  biosum_pop_stratum_adjustment_factors
                 //
-                strSQL[13] = "SELECT a.rscd,a.evalid," +
+                strSQL[13] = "CREATE TABLE biosum_pop_stratum_adjustment_factors AS " +
+                            "SELECT a.rscd,a.evalid," +
                                   "a.estn_unit,a.stratumcd," +
                                   "a.p2pointcnt_man,a.stratum_area," +
                                   "a.double_sampling," +
@@ -4141,7 +4192,6 @@ namespace FIA_Biosum_Manager
                                   "b.eval_descr,b.estn_unit_descr," +
                                   "b.adj_factor_macr, b.adj_factor_subp," +
                                   "b.adj_factor_micr, b.expns " +
-                          "INTO biosum_pop_stratum_adjustment_factors " +
                           "FROM BIOSUM_EUS_ACCESS a " +
                           "INNER JOIN BIOSUM_EUS_TEMP b " +
                           "ON a.rscd = b.rscd AND " +
@@ -4154,12 +4204,24 @@ namespace FIA_Biosum_Manager
                 //UPDATE THE  biosum_pop_stratum_adjustment_factors TABLE 
                 //WITH THE KEY COLUMN FROM THE POP_STRATUM TABLE
                 //
-                strSQL[15] = "UPDATE biosum_pop_stratum_adjustment_factors b  " + 
-                             "INNER JOIN " + p_strPopStratumTable + " ps " + 
-                             "ON ps.RSCD = b.RSCD AND ps.EVALID=b.EVALID AND " + 
-                                "ps.ESTN_UNIT=b.ESTN_UNIT AND ps.STRATUMCD = b.STRATUMCD " + 
-                             "SET b.STRATUM_CN=ps.CN " + 
-                             "WHERE b.RSCD=" + p_strRsCd + " AND b.EVALID=" + p_strEvalId;
+                strSQL[15] = "UPDATE biosum_pop_stratum_adjustment_factors" +
+                    " SET (STRATUM_CN) =" +
+                    " (SELECT POP_STRATUM.cn FROM " + p_strPopStratumTable +
+                    " WHERE " + p_strPopStratumTable + ".RSCD = biosum_pop_stratum_adjustment_factors.RSCD" +
+                    " AND " + p_strPopStratumTable + ".EVALID = biosum_pop_stratum_adjustment_factors.EVALID" +
+                    " AND " + p_strPopStratumTable + ".ESTN_UNIT = biosum_pop_stratum_adjustment_factors.ESTN_UNIT" +
+                    " AND " + p_strPopStratumTable + ".STRATUMCD = biosum_pop_stratum_adjustment_factors.STRATUMCD" +
+                    " AND biosum_pop_stratum_adjustment_factors.RSCD = " + p_strRsCd +
+                    " AND biosum_pop_stratum_adjustment_factors.EVALID = " + p_strEvalId + ")" +
+                    " WHERE EXISTS( " +
+                    " SELECT * FROM POP_STRATUM" +
+                    " WHERE " + p_strPopStratumTable + ".RSCD = biosum_pop_stratum_adjustment_factors.RSCD" +
+                    " AND " + p_strPopStratumTable + ".EVALID = biosum_pop_stratum_adjustment_factors.EVALID" +
+                    " AND " + p_strPopStratumTable + ".ESTN_UNIT = biosum_pop_stratum_adjustment_factors.ESTN_UNIT" +
+                    " AND " + p_strPopStratumTable + ".STRATUMCD = biosum_pop_stratum_adjustment_factors.STRATUMCD" +
+                    " AND biosum_pop_stratum_adjustment_factors.RSCD = " + p_strRsCd +
+                    " AND biosum_pop_stratum_adjustment_factors.EVALID = " + p_strEvalId + ")";
+
                 //
                 //CLEAN UP
                 //
@@ -5435,27 +5497,67 @@ namespace FIA_Biosum_Manager
                 string p_strTotalAdditionalCostsTableName,
                 string p_strHarvestCostsTableName,
                 string p_strScenarioId,
-                bool p_bIncludeZeroHarvestCpa)
+                bool p_bIncludeZeroHarvestCpa, bool p_bUsingSqlite)
             {
-                string strSql = "UPDATE " + p_strHarvestCostsTableName + " h " +
-                       "INNER JOIN " + p_strTotalAdditionalCostsTableName + " a " +
-                       "ON h.biosum_cond_id = a.biosum_cond_id AND h.rx=a.rx," +
-                       "scenario_cost_revenue_escalators e " +
-                       "SET h.complete_cpa = " +
-                           "IIF(h.RXCycle='1',(h.harvest_cpa+a.complete_additional_cpa)," +
-                           "IIF(h.RXCycle='2',(h.harvest_cpa+a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle2," +
-                           "IIF(h.RXCycle='3',(h.harvest_cpa+a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle3," +
-                           "IIF(h.RXCycle='4',(h.harvest_cpa+a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle4,0)))) ";
-                if (p_bIncludeZeroHarvestCpa == false)
+                string strSql = "";
+                if (!p_bUsingSqlite)
                 {
-                    strSql += "WHERE h.harvest_cpa IS NOT NULL AND h.harvest_cpa > 0  AND ";
+                    strSql = "UPDATE " + p_strHarvestCostsTableName + " h " +
+                            "INNER JOIN " + p_strTotalAdditionalCostsTableName + " a " +
+                            "ON h.biosum_cond_id = a.biosum_cond_id AND h.rx=a.rx," +
+                            "scenario_cost_revenue_escalators e " +
+                            "SET h.complete_cpa = " +
+                            "IIF(h.RXCycle='1',(h.harvest_cpa+a.complete_additional_cpa)," +
+                            "IIF(h.RXCycle='2',(h.harvest_cpa+a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle2," +
+                            "IIF(h.RXCycle='3',(h.harvest_cpa+a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle3," +
+                            "IIF(h.RXCycle='4',(h.harvest_cpa+a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle4,0)))) ";
+                    if (p_bIncludeZeroHarvestCpa == false)
+                    {
+                        strSql += "WHERE h.harvest_cpa IS NOT NULL AND h.harvest_cpa > 0  AND ";
+                    }
+                    else
+                    {
+                        strSql += "WHERE h.harvest_cpa IS NOT NULL AND ";
+                    }
+                    strSql += "TRIM(UCASE(e.scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'";
                 }
                 else
                 {
-                    strSql += "WHERE h.harvest_cpa IS NOT NULL AND ";
+                    strSql = "UPDATE " + p_strHarvestCostsTableName + " AS h " +
+                        "SET complete_cpa = " +
+                        "(SELECT CASE WHEN h.RXCycle = '1' THEN h.harvest_cpa + a.complete_additional_cpa " +
+                        "WHEN h.RXCycle = '2' THEN h.harvest_cpa + a.complete_additional_cpa * " +
+                        "(SELECT EscalatorOperatingCosts_Cycle2 from definitions.scenario_cost_revenue_escalators " +
+                        "WHERE TRIM(scenario_id) = '" + p_strScenarioId.Trim() + "') " +
+                        "WHEN h.RXCycle = '3' THEN h.harvest_cpa + a.complete_additional_cpa * " +
+                        "(SELECT EscalatorOperatingCosts_Cycle3 from definitions.scenario_cost_revenue_escalators " +
+                        "WHERE TRIM(scenario_id) = '" + p_strScenarioId.Trim() + "') " +
+                        "WHEN h.RXCycle = '4' THEN h.harvest_cpa + a.complete_additional_cpa * " +
+                        "(SELECT EscalatorOperatingCosts_Cycle4 from definitions.scenario_cost_revenue_escalators " +
+                        "WHERE TRIM(scenario_id) = '" + p_strScenarioId.Trim() + "') " +
+                        "ELSE 0 END " +
+                        "FROM " + p_strTotalAdditionalCostsTableName + " AS a " +
+                        "WHERE h.biosum_cond_id = a.biosum_cond_id AND h.RX = a.RX ";
+                    if (p_bIncludeZeroHarvestCpa == false)
+                    {
+                        strSql += "AND h.harvest_cpa IS NOT NULL AND h.harvest_cpa > 0) ";
+                    }
+                    else
+                    {
+                        strSql += "AND h.harvest_cpa IS NOT NULL) ";
+                    }
+                    strSql += "WHERE EXISTS( SELECT* FROM " + p_strTotalAdditionalCostsTableName + " AS a " +
+                              "WHERE h.biosum_cond_id = a.biosum_cond_id AND h.RX = a.RX ";
+                    if (p_bIncludeZeroHarvestCpa == false)
+                    {
+                        strSql += "AND h.harvest_cpa IS NOT NULL AND h.harvest_cpa > 0) ";
+                    }
+                    else
+                    {
+                        strSql += "AND h.harvest_cpa IS NOT NULL) ";
+                    }
                 }
-                strSql += "TRIM(UCASE(e.scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'";
-                return strSql;
+                    return strSql;
             }
             //2018-30-JUL: No longer calculating ideal costs
             //See uc_processor_scenario_run.RunScenario_UpdateHarvestCostsTableWithAdditionalCosts() to re-implement

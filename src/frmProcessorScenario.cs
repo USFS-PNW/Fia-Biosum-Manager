@@ -66,7 +66,8 @@ namespace FIA_Biosum_Manager
         private string m_xpsFile = Help.DefaultProcessorXPSFile;
         private string m_helpChapter = "PROCESSOR_DESCRIPTION";
         private Queries m_oQueries = new Queries();
-        
+        public bool m_bUsingSqlite;
+
         public string m_strError = "";
 		
 		public frmProcessorScenario(frmMain p_frmMain)
@@ -81,14 +82,21 @@ namespace FIA_Biosum_Manager
 			}
 
             this.m_oEnv = new env();
-			//
-			// TODO: Add any constructor code after InitializeComponent call
-			//
-			
-			//
-			//scenario description and properties
-			//
-			this.uc_scenario1 = new uc_scenario();
+            //
+            // TODO: Add any constructor code after InitializeComponent call
+            //
+
+            if (System.IO.File.Exists(
+                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()
+                + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile))
+            {
+                m_bUsingSqlite = true;
+            }
+
+            //
+            //scenario description and properties
+            //
+            this.uc_scenario1 = new uc_scenario();
 				
 			this.tbDesc.Controls.Add(uc_scenario1);
 			uc_scenario1.btnCancel.Hide();
@@ -236,7 +244,7 @@ namespace FIA_Biosum_Manager
             this.tlbScenario.Margin = new System.Windows.Forms.Padding(2);
             this.tlbScenario.Name = "tlbScenario";
             this.tlbScenario.ShowToolTips = true;
-            this.tlbScenario.Size = new System.Drawing.Size(982, 47);
+            this.tlbScenario.Size = new System.Drawing.Size(1052, 47);
             this.tlbScenario.TabIndex = 43;
             this.tlbScenario.ButtonClick += new System.Windows.Forms.ToolBarButtonClickEventHandler(this.tlbScenario_ButtonClick);
             // 
@@ -565,7 +573,7 @@ namespace FIA_Biosum_Manager
             // frmProcessorScenario
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            this.ClientSize = new System.Drawing.Size(982, 703);
+            this.ClientSize = new System.Drawing.Size(1052, 703);
             this.Controls.Add(this.tabControlScenario);
             this.Controls.Add(this.btnClose);
             this.Controls.Add(this.btnHelp);
@@ -613,15 +621,32 @@ namespace FIA_Biosum_Manager
 					this.SaveRuleDefinitions();
 					break;
 				case "DELETE":
-					if (this.uc_scenario_open1 != null)
+                    bool bDeleted = false;
+                    if (this.uc_scenario_open1 != null)
 					{
-						frmMain.g_oFrmMain.DeleteScenario("processor",uc_scenario_open1.txtScenarioId.Text.Trim());
-						uc_scenario_open1.lstScenario.Items.Remove(uc_scenario_open1.lstScenario.SelectedItems[0]);
+                        if (!m_bUsingSqlite)
+                        {
+                            bDeleted = uc_scenario1.DeleteScenario(uc_scenario_open1.txtScenarioId.Text.Trim());
+                        }
+                        else
+                        {
+                            bDeleted = uc_scenario1.DeleteScenarioSqlite(uc_scenario_open1.txtScenarioId.Text.Trim());
+                        }
+                        if (bDeleted)
+						    uc_scenario_open1.lstScenario.Items.Remove(uc_scenario_open1.lstScenario.SelectedItems[0]);
 					}
 					else
 					{
-						if (frmMain.g_oFrmMain.DeleteScenario("processor",uc_scenario1.txtScenarioId.Text.Trim()))
-							this.Close();
+                        if (!m_bUsingSqlite)
+                        {
+                            bDeleted = uc_scenario1.DeleteScenario(uc_scenario1.txtScenarioId.Text.Trim());
+                        }
+                        else
+                        {
+                            bDeleted = uc_scenario1.DeleteScenarioSqlite(uc_scenario1.txtScenarioId.Text.Trim());
+                        }
+                        if (bDeleted)
+                            this.Close();
 					}
 					break;
                 case "PROPERTIES":
@@ -671,7 +696,7 @@ namespace FIA_Biosum_Manager
 
 			this.uc_scenario1.ReferenceProcessorScenarioForm=this;
 
-			this.uc_scenario1.ScenarioType="processor";
+            this.uc_scenario1.ScenarioType = "processor";
 
 			this.uc_scenario1.NewScenario();
 
@@ -703,8 +728,7 @@ namespace FIA_Biosum_Manager
 
 			this.uc_scenario_open1.ReferenceProcessorScenarioForm=this;
 			this.uc_scenario_open1.ScenarioType="processor";
-
-			this.uc_scenario_open1.OpenScenario();
+            this.uc_scenario_open1.OpenScenario();
 
 			this.Height = 200;
 			int intHt = this.Height;
@@ -735,8 +759,7 @@ namespace FIA_Biosum_Manager
 				if (result == System.Windows.Forms.DialogResult.Yes)
 				{
 					this.SaveRuleDefinitions();
-				}
-				
+				}				
 			}
 		}
 
@@ -838,7 +861,7 @@ namespace FIA_Biosum_Manager
             m_oQueries.m_oFvs.LoadDatasource = true;
             m_oQueries.m_oReference.LoadDatasource = true;
             string ScenarioId = this.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
-            m_oQueries.LoadDatasources(true, "processor", ScenarioId);
+            m_oQueries.LoadDatasources(true, m_bUsingSqlite, "processor", ScenarioId);
             
             this.m_oProcessorScenarioItem.ScenarioId = uc_scenario1.txtScenarioId.Text.Trim();
  			this.uc_processor_scenario_harvest_method1.ReferenceProcessorScenarioForm=this;
@@ -852,7 +875,15 @@ namespace FIA_Biosum_Manager
             frmMain.g_sbpInfo.Text = "Loading Scenario Revenue And Cost Escalator Rule Definitions...Stand By";
 			this.uc_processor_scenario_escalators1.loadvalues();
             frmMain.g_sbpInfo.Text = "Loading Scenario Supplemental Harvest Component Rule Definitions...Stand By";
-            this.uc_processor_scenario_additional_harvest_cost_columns1.loadvalues();
+            if (!m_bUsingSqlite)
+            {
+                this.uc_processor_scenario_additional_harvest_cost_columns1.loadvalues();
+            }
+            else
+            {
+                this.uc_processor_scenario_additional_harvest_cost_columns1.loadvaluesSqlite();
+            }
+           
             frmMain.g_sbpInfo.Text = "Loading Scenario Run Data...Stand By";
             this.uc_processor_scenario_run1.loadvalues();
             frmMain.g_sbpInfo.Text = "Ready";
@@ -876,23 +907,30 @@ namespace FIA_Biosum_Manager
                 this.m_intError = uc_processor_scenario_harvest_method1.m_intError;
                 this.uc_processor_scenario_movein_costs1.savevalues();
                 this.m_intError = uc_processor_scenario_movein_costs1.m_intError;
-				this.uc_processor_scenario_merch_chip_value1.savevalues();
+                this.uc_processor_scenario_merch_chip_value1.savevalues();
                 if (m_intError == 0) m_intError = uc_processor_scenario_merch_chip_value1.m_intError;
                 this.uc_processor_scenario_escalators1.savevalues();
                 if (m_intError == 0) m_intError = uc_processor_scenario_escalators1.m_intError;
-                this.uc_processor_scenario_additional_harvest_cost_columns1.savevalues();
-                if (m_intError == 0) m_intError=uc_processor_scenario_additional_harvest_cost_columns1.m_intError;
+                if (!m_bUsingSqlite)
+                {
+                    this.uc_processor_scenario_additional_harvest_cost_columns1.savevalues();
+                }
+                else
+                {
+                    this.uc_processor_scenario_additional_harvest_cost_columns1.savevaluesSqlite();
+                }
+                if (m_intError == 0) m_intError = uc_processor_scenario_additional_harvest_cost_columns1.m_intError;
+                this.uc_scenario_notes1.SaveScenarioNotes();
+                this.uc_scenario1.UpdateDescription();
+
                 frmMain.g_oFrmMain.DeactivateStandByAnimation();
 			}
             if (m_bTreeGroupsCopied == true)
             {
                 this.uc_scenario_tree_groupings1.saveTreeGroupings_FromProperties();
             }
-            this.uc_scenario_notes1.SaveScenarioNotes();
-			this.uc_scenario1.UpdateDescription();
 			this.m_bSave=false;
 			frmMain.g_sbpInfo.Text = "Ready";
-
 		}
 
         public void ValidateRuleDefinitions(System.Collections.Generic.IList<string> lstRx)
@@ -920,12 +958,24 @@ namespace FIA_Biosum_Manager
         {
             string strScenario = uc_scenario1.txtScenarioId.Text.Trim();
             this.m_oProcessorScenarioItem.ScenarioId = strScenario;
-            string strScenarioMDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                "\\processor" + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsDbFile;
-            this.m_oProcessorScenarioTools.LoadTreeDiameterGroupValues(strScenarioMDB, 
-                strScenario, this.m_oProcessorScenarioItem);
-            this.m_oProcessorScenarioTools.LoadTreeSpeciesGroupValues(strScenarioMDB, strScenario,
-                this.m_oProcessorScenarioItem);
+            if (!m_bUsingSqlite)
+            {
+                string strScenarioMDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                    "\\processor" + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsDbFile;
+                this.m_oProcessorScenarioTools.LoadTreeDiameterGroupValues(strScenarioMDB,
+                    strScenario, this.m_oProcessorScenarioItem);
+                this.m_oProcessorScenarioTools.LoadTreeSpeciesGroupValues(strScenarioMDB, strScenario,
+                    this.m_oProcessorScenarioItem);
+            }
+            else
+            {
+                string strScenarioMDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                this.m_oProcessorScenarioTools.LoadTreeDiameterGroupValuesSqlite(strScenarioMDB,
+                    strScenario, this.m_oProcessorScenarioItem);
+                this.m_oProcessorScenarioTools.LoadTreeSpeciesGroupValuesSqlite(strScenarioMDB, strScenario,
+                    this.m_oProcessorScenarioItem);
+            }
             this.m_bTreeGroupsFirstTime = false;
         }
 		public void EnableTabPage(System.Windows.Forms.TabPage p_oTabPage,bool p_bEnable)
@@ -969,16 +1019,6 @@ namespace FIA_Biosum_Manager
 			}
 		}
 
-		private void frmProcessorScenario_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-		{
-			if (frmMain.g_oDelegate.CurrentThreadProcessIdle==false)
-			{
-				e.Cancel = true;
-				return;
-			}
-			CheckToSave();
-		}
-		
 		private void tabControlScenario_DrawItem(object sender, System.Windows.Forms.DrawItemEventArgs e)
 		{
 			TabControl_DrawItem(sender,e,Color.Green,System.Drawing.Brushes.White);
@@ -1203,6 +1243,8 @@ namespace FIA_Biosum_Manager
                 return;
             }
             CheckToSave();
+            // Delete additional harvest costs worktable; Only does something if using sqlite
+            this.uc_processor_scenario_additional_harvest_cost_columns1.DeleteWorkTable();
         }
 
         private void frmProcessorScenario_Activated(object sender, EventArgs e)
@@ -1216,7 +1258,7 @@ namespace FIA_Biosum_Manager
         private void CopyScenario()
         {
             frmDialog frmTemp = new frmDialog();
-            frmTemp.Initialize_Processor_Scenario_Copy();
+            frmTemp.Initialize_Processor_Scenario_Copy(this);
             frmTemp.Text = "FIA Biosum";
 
             if (m_bRulesFirstTime == true)
@@ -1256,8 +1298,15 @@ namespace FIA_Biosum_Manager
                 frmMain.g_sbpInfo.Text = "Loading Scenario Revenue And Cost Escalator Rule Definitions...Stand By";
                 this.uc_processor_scenario_escalators1.loadvalues_FromProperties();
                 frmMain.g_sbpInfo.Text = "Loading Scenario Supplemental Harvest Component Rule Definitions...Stand By";
-                this.uc_processor_scenario_additional_harvest_cost_columns1.loadvaluesFromProperties();
-                
+                if (!this.m_bUsingSqlite)
+                {
+                    this.uc_processor_scenario_additional_harvest_cost_columns1.loadvaluesFromProperties();
+                }
+                else
+                {
+                    this.uc_processor_scenario_additional_harvest_cost_columns1.loadvaluesFromPropertiesSqlite();
+                }
+
                 frmMain.g_sbpInfo.Text = "Ready";
                 m_bSave = true;
                 MessageBox.Show("Done");
@@ -1266,6 +1315,8 @@ namespace FIA_Biosum_Manager
 
         private void btnHelp_Click(object sender, EventArgs e)
         {
+            //ProcessorScenarioTools oTools = new ProcessorScenarioTools();
+            //oTools.migrate_access_data();
             if (!String.IsNullOrEmpty(m_helpChapter))
             {
                 if (m_oHelp == null)
@@ -2138,7 +2189,8 @@ namespace FIA_Biosum_Manager
         {
         }
 
-        public void LoadScenario(string p_strScenarioId, Queries p_oQueries, ProcessorScenarioItem_Collection p_oProcessorScenarioItem_Collection)
+        public void LoadScenario(string p_strScenarioId, Queries p_oQueries, bool bUsingSqlite,
+            ProcessorScenarioItem_Collection p_oProcessorScenarioItem_Collection)
         {
 
             //
@@ -2148,12 +2200,19 @@ namespace FIA_Biosum_Manager
             p_oQueries.m_oFIAPlot.LoadDatasource = true;
             p_oQueries.m_oProcessor.LoadDatasource = true;
             p_oQueries.m_oReference.LoadDatasource = true;
-            p_oQueries.LoadDatasources(true, "processor", p_strScenarioId);
-            p_oQueries.m_oDataSource.CreateScenarioRuleDefinitionTableLinks(
-                p_oQueries.m_strTempDbFile,
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim(),
-                "P");
-            LoadAll(p_oQueries.m_strTempDbFile, p_oQueries, p_strScenarioId, p_oProcessorScenarioItem_Collection);
+            p_oQueries.LoadDatasources(true, bUsingSqlite, "processor", p_strScenarioId);
+            if (!bUsingSqlite)
+            {
+                p_oQueries.m_oDataSource.CreateScenarioRuleDefinitionTableLinks(
+                    p_oQueries.m_strTempDbFile,
+                    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim(),
+                    "P");
+                LoadAll(p_oQueries.m_strTempDbFile, p_oQueries, p_strScenarioId, p_oProcessorScenarioItem_Collection);
+            }
+            else
+            {
+                LoadAllSqlite(p_oQueries, p_strScenarioId, p_oProcessorScenarioItem_Collection);
+            }
         }
 
         public void LoadAll(string p_strDbFile,Queries p_oQueries, string p_strScenarioId, FIA_Biosum_Manager.ProcessorScenarioItem_Collection p_oProcessorScenarioItem_Collection)
@@ -2182,18 +2241,35 @@ namespace FIA_Biosum_Manager
             oAdo = null;
         }
 
-        public void LoadGeneral(string p_strDbFile, string p_strScenarioId, FIA_Biosum_Manager.ProcessorScenarioItem p_oProcessorScenarioItem)
+        public void LoadAllSqlite(Queries p_oQueries, string p_strScenarioId, 
+            FIA_Biosum_Manager.ProcessorScenarioItem_Collection p_oProcessorScenarioItem_Collection)
         {
-            ado_data_access oAdo = new ado_data_access();
-            oAdo.OpenConnection(oAdo.getMDBConnString(p_strDbFile, "", ""));
-            if (oAdo.m_intError == 0)
-            {
-                this.LoadGeneral(oAdo, oAdo.m_OleDbConnection,p_strScenarioId, p_oProcessorScenarioItem);
-            }
-            m_intError = oAdo.m_intError;
-            oAdo.CloseConnection(oAdo.m_OleDbConnection);
-            oAdo = null;
+            // Access version used a temp file with links; Trying to skip that
+            string strScenarioDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+            //ado_data_access oAdo = new ado_data_access();
+            //oAdo.OpenConnection(oAdo.getMDBConnString(p_strDbFile, "", ""));
+            //if (oAdo.m_intError == 0)
+            //{
+
+            ProcessorScenarioItem oItem = new ProcessorScenarioItem();
+            this.LoadGeneralSqlite(strScenarioDB, p_strScenarioId, oItem);
+            this.LoadTreeDiameterGroupValuesSqlite(strScenarioDB, p_strScenarioId, oItem);
+            this.LoadTreeSpeciesGroupValuesSqlite(strScenarioDB, p_strScenarioId, oItem);
+            this.LoadHarvestMethodSqlite(strScenarioDB, oItem);
+            this.LoadMoveInCostsSqlite(strScenarioDB, oItem);
+            this.LoadSpeciesAndDiameterGroupDollarValuesSqlite(strScenarioDB, oItem);
+            this.LoadHarvestCostComponentsSqlite(strScenarioDB, oItem);
+
+            this.LoadEscalatorsSqlite(p_oQueries, strScenarioDB, oItem);
+            p_oProcessorScenarioItem_Collection.Add(oItem);
+
+            //}
+            //m_intError = oAdo.m_intError;
+            //oAdo.CloseConnection(oAdo.m_OleDbConnection);
+            //oAdo = null;
         }
+
         public void LoadGeneral(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.ProcessorScenarioItem p_oProcessorScenarioItem)
         {
             p_oAdo.SqlQueryReader(p_oConn, "SELECT * FROM scenario " + " WHERE TRIM(UCASE(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'");
@@ -2245,6 +2321,63 @@ namespace FIA_Biosum_Manager
                     p_oAdo.m_OleDbDataReader.Close();
                 }
             }
+        }
+        public void LoadGeneralSqlite(string p_strDbFile, string p_strScenarioId, FIA_Biosum_Manager.ProcessorScenarioItem p_oProcessorScenarioItem)
+        {
+            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
+            string strConn = dataMgr.GetConnectionString(p_strDbFile);
+            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
+            {
+                oConn.Open();
+                dataMgr.SqlQueryReader(oConn, "SELECT * FROM scenario " + " WHERE TRIM(UPPER(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'");
+                if (dataMgr.m_intError == 0)
+                {
+                    if (dataMgr.m_DataReader.HasRows)
+                    {
+                        while (dataMgr.m_DataReader.Read())
+                        {
+                            //
+                            //SCENARIO ID
+                            //
+                            if (dataMgr.m_DataReader["scenario_id"] != System.DBNull.Value)
+                            {
+                                p_oProcessorScenarioItem.ScenarioId = dataMgr.m_DataReader["scenario_id"].ToString().Trim();
+                            }
+                            //
+                            //DESCRIPTION
+                            //
+                            if (dataMgr.m_DataReader["description"] != System.DBNull.Value)
+                            {
+                                p_oProcessorScenarioItem.Description = dataMgr.m_DataReader["description"].ToString().Trim();
+                            }
+                            //
+                            //PATH
+                            //
+                            if (dataMgr.m_DataReader["path"] != System.DBNull.Value)
+                            {
+                                p_oProcessorScenarioItem.DbPath = dataMgr.m_DataReader["path"].ToString().Trim();
+                            }
+                            //
+                            //FILE
+                            //
+                            if (dataMgr.m_DataReader["file"] != System.DBNull.Value)
+                            {
+                                p_oProcessorScenarioItem.DbFileName = dataMgr.m_DataReader["file"].ToString().Trim();
+                            }
+                            //
+                            //NOTES
+                            //
+                            if (dataMgr.m_DataReader["notes"] != System.DBNull.Value)
+                            {
+                                p_oProcessorScenarioItem.Notes = dataMgr.m_DataReader["notes"].ToString().Trim();
+                            }
+                        }
+                        dataMgr.m_DataReader.Close();
+                    }
+                }
+            }
+
+
         }
         public void LoadHarvestMethod(string p_strDbFile, FIA_Biosum_Manager.ProcessorScenarioItem p_oProcessorScenarioItem)
         {
@@ -2410,6 +2543,166 @@ namespace FIA_Biosum_Manager
                 }
             }
         }
+        public void LoadHarvestMethodSqlite(string p_strDbFile, FIA_Biosum_Manager.ProcessorScenarioItem p_oProcessorScenarioItem)
+        {
+
+            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
+            string strConn = dataMgr.GetConnectionString(p_strDbFile);
+            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
+            {
+                oConn.Open();
+                dataMgr.SqlQueryReader(oConn, "SELECT * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodTableName + " WHERE TRIM(UPPER(scenario_id))='" + p_oProcessorScenarioItem.ScenarioId.Trim().ToUpper() + "'");
+
+                if (dataMgr.m_intError == 0)
+                {
+                    if (dataMgr.m_DataReader.HasRows)
+                    {
+                        while (dataMgr.m_DataReader.Read())
+                        {
+                            //
+                            //HARVEST METHOD SELECTION
+                            //
+                            string strHarvestMethodSelection = dataMgr.m_DataReader["HarvestMethodSelection"].ToString().Trim();
+                            if (strHarvestMethodSelection.Equals(HarvestMethodSelection.LOWEST_COST.Value))
+                            {
+                                p_oProcessorScenarioItem.m_oHarvestMethod.SelectedHarvestMethod = HarvestMethodSelection.LOWEST_COST;
+                            }
+                            else if (strHarvestMethodSelection.Equals(HarvestMethodSelection.SELECTED.Value))
+                            {
+                                p_oProcessorScenarioItem.m_oHarvestMethod.SelectedHarvestMethod = HarvestMethodSelection.SELECTED;
+                            }
+                            else
+                            {
+                                p_oProcessorScenarioItem.m_oHarvestMethod.SelectedHarvestMethod = HarvestMethodSelection.RX;
+                            }
+                            //
+                            //HARVEST METHOD LOW SLOPE
+                            //
+                            if (dataMgr.m_DataReader["HarvestMethodLowSlope"] != System.DBNull.Value)
+                            {
+                                if (dataMgr.m_DataReader["HarvestMethodLowSlope"].ToString().Trim().Length > 0)
+                                {
+                                    p_oProcessorScenarioItem.m_oHarvestMethod.HarvestMethodLowSlope = dataMgr.m_DataReader["HarvestMethodLowSlope"].ToString().Trim();
+                                }
+                            }
+                            //
+                            //HARVEST METHOD STEEP SLOPE
+                            //
+                            if (dataMgr.m_DataReader["HarvestMethodSteepSlope"] != System.DBNull.Value)
+                            {
+                                if (dataMgr.m_DataReader["HarvestMethodSteepSlope"].ToString().Trim().Length > 0)
+                                {
+                                    p_oProcessorScenarioItem.m_oHarvestMethod.HarvestMethodSteepSlope = dataMgr.m_DataReader["HarvestMethodSteepSlope"].ToString().Trim();
+                                }
+                            }
+                            //
+                            //MINIMUM CHIPS DBH
+                            //
+                            if (dataMgr.m_DataReader["min_chip_dbh"] != System.DBNull.Value)
+                            {
+                                if (dataMgr.m_DataReader["min_chip_dbh"].ToString().Trim().Length > 0)
+                                {
+                                    p_oProcessorScenarioItem.m_oHarvestMethod.MinDiaForChips = dataMgr.m_DataReader["min_chip_dbh"].ToString().Trim();
+                                }
+                            }
+                            //
+                            //MINIMUM DBH FOR SMALL LOGS
+                            //
+                            if (dataMgr.m_DataReader["min_sm_log_dbh"] != System.DBNull.Value)
+                            {
+                                if (dataMgr.m_DataReader["min_sm_log_dbh"].ToString().Trim().Length > 0)
+                                {
+                                    p_oProcessorScenarioItem.m_oHarvestMethod.MinDiaForSmallLogs = dataMgr.m_DataReader["min_sm_log_dbh"].ToString().Trim();
+                                }
+                            }
+                            //
+                            //MINIMUM DBH FOR LARGE LOGS
+                            //
+                            if (dataMgr.m_DataReader["min_lg_log_dbh"] != System.DBNull.Value)
+                            {
+                                if (dataMgr.m_DataReader["min_lg_log_dbh"].ToString().Trim().Length > 0)
+                                {
+                                    p_oProcessorScenarioItem.m_oHarvestMethod.MinDiaForLargeLogs = dataMgr.m_DataReader["min_lg_log_dbh"].ToString().Trim();
+                                }
+                            }
+                            //
+                            //STEEP SLOPE PERCENT
+                            //
+                            if (dataMgr.m_DataReader["SteepSlope"] != System.DBNull.Value)
+                            {
+                                if (dataMgr.m_DataReader["SteepSlope"].ToString().Trim().Length > 0)
+                                {
+                                    p_oProcessorScenarioItem.m_oHarvestMethod.SteepSlopePercent = dataMgr.m_DataReader["SteepSlope"].ToString().Trim();
+                                }
+                            }
+                            //
+                            //MINIMUM DBH FOR STEEP SLOPE
+                            //
+                            if (dataMgr.m_DataReader["min_dbh_steep_slope"] != System.DBNull.Value)
+                            {
+                                if (dataMgr.m_DataReader["min_dbh_steep_slope"].ToString().Trim().Length > 0)
+                                {
+                                    p_oProcessorScenarioItem.m_oHarvestMethod.MinDiaForAllTreesSteepSlope = dataMgr.m_DataReader["min_dbh_steep_slope"].ToString().Trim();
+                                }
+                            }
+                            //
+                            //PROCESS LOW AND STEEP SLOPE DURING RUN
+                            //
+                            if (dataMgr.m_DataReader["ProcessLowSlopeYN"] != System.DBNull.Value &&
+                                dataMgr.m_DataReader["ProcessLowSlopeYN"].ToString().Trim() == "Y")
+                            {
+                                p_oProcessorScenarioItem.m_oHarvestMethod.ProcessLowSlope = true;
+                            }
+                            else
+                            {
+                                p_oProcessorScenarioItem.m_oHarvestMethod.ProcessLowSlope = false;
+                            }
+                            if (dataMgr.m_DataReader["ProcessSteepSlopeYN"] != System.DBNull.Value &&
+                                dataMgr.m_DataReader["ProcessSteepSlopeYN"].ToString().Trim() == "Y")
+                            {
+                                p_oProcessorScenarioItem.m_oHarvestMethod.ProcessSteepSlope = true;
+                            }
+                            else
+                            {
+                                p_oProcessorScenarioItem.m_oHarvestMethod.ProcessSteepSlope = false;
+                            }
+                            //
+                            //WOODLAND MERCH AS PCT OF TOTAL VOLUME
+                            //
+                            if (dataMgr.m_DataReader["WoodlandMerchAsPercentOfTotalVol"] != System.DBNull.Value)
+                            {
+                                if (dataMgr.m_DataReader["WoodlandMerchAsPercentOfTotalVol"].ToString().Trim().Length > 0)
+                                {
+                                    p_oProcessorScenarioItem.m_oHarvestMethod.WoodlandMerchAsPctOfTotalVol = dataMgr.m_DataReader["WoodlandMerchAsPercentOfTotalVol"].ToString().Trim();
+                                }
+                            }
+                            //
+                            //SAPLING MERCH AS PCT OF TOTAL VOLUME
+                            //
+                            if (dataMgr.m_DataReader["SaplingMerchAsPercentOfTotalVol"] != System.DBNull.Value)
+                            {
+                                if (dataMgr.m_DataReader["SaplingMerchAsPercentOfTotalVol"].ToString().Trim().Length > 0)
+                                {
+                                    p_oProcessorScenarioItem.m_oHarvestMethod.SaplingMerchAsPctOfTotalVol = dataMgr.m_DataReader["SaplingMerchAsPercentOfTotalVol"].ToString().Trim();
+                                }
+                            }
+                            //
+                            //CULL PCT THRESHOLD
+                            //
+                            if (dataMgr.m_DataReader["CullPctThreshold"] != System.DBNull.Value)
+                            {
+                                if (dataMgr.m_DataReader["CullPctThreshold"].ToString().Trim().Length > 0)
+                                {
+                                    p_oProcessorScenarioItem.m_oHarvestMethod.CullPctThreshold = dataMgr.m_DataReader["CullPctThreshold"].ToString().Trim();
+                                }
+                            }
+                        }
+                        dataMgr.m_DataReader.Close();
+                    }
+                }
+            }
+            m_intError = dataMgr.m_intError;
+        }
         public void LoadMoveInCosts(string p_strDbFile, FIA_Biosum_Manager.ProcessorScenarioItem p_oProcessorScenarioItem)
         {
             ado_data_access oAdo = new ado_data_access();
@@ -2477,9 +2770,71 @@ namespace FIA_Biosum_Manager
                 }
             }
         }
-        public void LoadSpeciesAndDiameterGroupDollarValues(ado_data_access p_oAdo,
-                                                            System.Data.OleDb.OleDbConnection p_oConn,
-                                                            ProcessorScenarioItem p_oProcessorScenarioItem)
+        public void LoadMoveInCostsSqlite(string p_strDbFile, FIA_Biosum_Manager.ProcessorScenarioItem p_oProcessorScenarioItem)
+        {
+
+            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
+            string strConn = dataMgr.GetConnectionString(p_strDbFile);
+            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
+            {
+                oConn.Open();
+                dataMgr.SqlQueryReader(oConn, "SELECT * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultMoveInCostsTableName + 
+                    " WHERE TRIM(UPPER(scenario_id)) = '" + p_oProcessorScenarioItem.ScenarioId.Trim().ToUpper() + "'");
+
+                if (dataMgr.m_intError == 0)
+                {
+                    if (dataMgr.m_DataReader.HasRows)
+                    {
+                        while (dataMgr.m_DataReader.Read())
+                        {
+                            //
+                            //YARDING DISTANCE THRESHOLD
+                            //
+                            if (dataMgr.m_DataReader["yard_dist_threshold"] != System.DBNull.Value)
+                            {
+                                if (dataMgr.m_DataReader["yard_dist_threshold"].ToString().Trim().Length > 0)
+                                {
+                                    p_oProcessorScenarioItem.m_oMoveInCosts.YardDistThreshold = dataMgr.m_DataReader["yard_dist_threshold"].ToString().Trim();
+                                }
+                            }
+                            //
+                            //ASSUMED HARVEST AREA
+                            //
+                            if (dataMgr.m_DataReader["assumed_harvest_area_ac"] != System.DBNull.Value)
+                            {
+                                if (dataMgr.m_DataReader["assumed_harvest_area_ac"].ToString().Trim().Length > 0)
+                                {
+                                    p_oProcessorScenarioItem.m_oMoveInCosts.AssumedHarvestAreaAc = dataMgr.m_DataReader["assumed_harvest_area_ac"].ToString().Trim();
+                                }
+                            }
+                            //
+                            //MOVE-IN TIME MULTIPLIER
+                            //
+                            if (dataMgr.m_DataReader["move_in_time_multiplier"] != System.DBNull.Value)
+                            {
+                                if (dataMgr.m_DataReader["move_in_time_multiplier"].ToString().Trim().Length > 0)
+                                {
+                                    p_oProcessorScenarioItem.m_oMoveInCosts.MoveInTimeMultiplier = dataMgr.m_DataReader["move_in_time_multiplier"].ToString().Trim();
+                                }
+                            }
+                            //
+                            //MOVE-IN HOURS ADDEND
+                            //
+                            if (dataMgr.m_DataReader["move_in_hours_addend"] != System.DBNull.Value)
+                            {
+                                if (dataMgr.m_DataReader["move_in_hours_addend"].ToString().Trim().Length > 0)
+                                {
+                                    p_oProcessorScenarioItem.m_oMoveInCosts.MoveInHoursAddend = dataMgr.m_DataReader["move_in_hours_addend"].ToString().Trim();
+                                }
+                            }
+                        }
+                        dataMgr.m_DataReader.Close();
+                    }
+                }
+            }
+        }
+
+        private void CreateSpeciesDiameterGroupCollection(ProcessorScenarioItem p_oProcessorScenarioItem)
         {
             int x;
             for (x = p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Count - 1; x >= 0; x--)
@@ -2502,6 +2857,13 @@ namespace FIA_Biosum_Manager
                     p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Add(oItem);
                 }
             }
+        }
+
+        public void LoadSpeciesAndDiameterGroupDollarValues(ado_data_access p_oAdo,
+                                                            System.Data.OleDb.OleDbConnection p_oConn,
+                                                            ProcessorScenarioItem p_oProcessorScenarioItem)
+        {
+            CreateSpeciesDiameterGroupCollection(p_oProcessorScenarioItem);
             //
             //UPDATE MERCH AND CHIP DOLLAR VALUE
             //
@@ -2563,7 +2925,7 @@ namespace FIA_Biosum_Manager
                     }
                     if (strSpcGrp.Length > 0 && strDbhGrp.Length > 0)
                     {
-                        for (x = 0; x <= p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Count - 1; x++)
+                        for (int x = 0; x <= p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Count - 1; x++)
                         {
                             string tempSpGrp = p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).SpeciesGroup;
                             string tempDbhGrp = p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).DbhGroup;
@@ -2589,6 +2951,104 @@ namespace FIA_Biosum_Manager
                 }
             }
             p_oAdo.m_OleDbDataReader.Close();
+        }
+        public void LoadSpeciesAndDiameterGroupDollarValuesSqlite(string p_strDbFile, ProcessorScenarioItem p_oProcessorScenarioItem)
+        {
+            CreateSpeciesDiameterGroupCollection(p_oProcessorScenarioItem);
+
+            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
+            string strConn = dataMgr.GetConnectionString(p_strDbFile);
+            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
+            {
+                oConn.Open();
+                dataMgr.SqlQueryReader(oConn, "SELECT wood_bin,merch_value,chip_value,species_group,diam_group " +
+                    "FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName +
+                    " WHERE TRIM(scenario_id)='" + p_oProcessorScenarioItem.ScenarioId.Trim() + "'");
+
+                if (dataMgr.m_intError == 0)
+                {
+                    if (dataMgr.m_DataReader.HasRows)
+                    {
+                        while (dataMgr.m_DataReader.Read())
+                        {
+                            string strSpcGrp = "";
+                            string strDbhGrp = "";
+                            string strMerchValue = "0.00";
+                            string strChipValue = "0.00";
+                            string strWoodBin = "";
+
+                            if (dataMgr.m_DataReader["species_group"] != System.DBNull.Value)
+                            {
+                                int intSpcGrp = Convert.ToInt16(dataMgr.m_DataReader["species_group"]);
+                                foreach (ProcessorScenarioItem.SpcGroupItem objSpcGroup in p_oProcessorScenarioItem.m_oSpcGroupItem_Collection)
+                                {
+
+                                    if (objSpcGroup.SpeciesGroup == intSpcGrp)
+                                    {
+                                        strSpcGrp = objSpcGroup.SpeciesGroupLabel.Trim();
+                                        break; // Exit for loop when we've found the species group
+                                    }
+                                }
+                            }
+                            if (dataMgr.m_DataReader["diam_group"] != System.DBNull.Value &&
+                                dataMgr.m_DataReader["diam_group"].ToString().Trim().Length > 0)
+                            {
+                                string strDiamGroup = dataMgr.m_DataReader["diam_group"].ToString().Trim();
+                                foreach (ProcessorScenarioItem.TreeDiamGroupsItem objTreeDiam in p_oProcessorScenarioItem.m_oTreeDiamGroupsItem_Collection)
+                                {
+
+                                    if (objTreeDiam.DiamGroup.Equals(strDiamGroup))
+                                    {
+                                        strDbhGrp = objTreeDiam.DiamClass.Trim();
+                                        break; // Exit for loop when we've found the diameter group
+                                    }
+                                }
+                            }
+                            if (dataMgr.m_DataReader["merch_value"] != System.DBNull.Value &&
+                                dataMgr.m_DataReader["merch_value"].ToString().Trim().Length > 0)
+                            {
+                                strMerchValue = String.Format("{0:0.00}", Convert.ToDouble(dataMgr.m_DataReader["merch_value"]));
+                            }
+                            if (dataMgr.m_DataReader["chip_value"] != System.DBNull.Value &&
+                                dataMgr.m_DataReader["chip_value"].ToString().Trim().Length > 0)
+                            {
+                                strChipValue = String.Format("{0:0.00}", Convert.ToDouble(dataMgr.m_DataReader["chip_value"]));
+                            }
+                            if (dataMgr.m_DataReader["wood_bin"] != System.DBNull.Value &&
+                                dataMgr.m_DataReader["wood_bin"].ToString().Trim().Length > 0)
+                            {
+                                strWoodBin = dataMgr.m_DataReader["wood_bin"].ToString().Trim();
+                            }
+                            if (strSpcGrp.Length > 0 && strDbhGrp.Length > 0)
+                            {
+                                for (int x = 0; x <= p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Count - 1; x++)
+                                {
+                                    string tempSpGrp = p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).SpeciesGroup;
+                                    string tempDbhGrp = p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).DbhGroup;
+                                    //merch value is associated with each dbh and spc group
+                                    if (strSpcGrp.ToUpper() ==
+                                        p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).SpeciesGroup.Trim().ToUpper() &&
+                                        strDbhGrp.ToUpper() ==
+                                        p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).DbhGroup.Trim().ToUpper())
+                                    {
+                                        p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchDollarPerCubicFootValue = strMerchValue;
+                                        p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).ChipsDollarPerCubicFootValue = strChipValue;
+                                        if (strWoodBin == "M")
+                                        {
+                                            p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).UseAsEnergyWood = false;
+                                        }
+                                        else
+                                        {
+                                            p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).UseAsEnergyWood = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        dataMgr.m_DataReader.Close();
+                    }
+                }
+            }
         }
         public void LoadEscalators(string p_strDbFile, FIA_Biosum_Manager.ProcessorScenarioItem p_oProcessorScenarioItem)
         {
@@ -2705,11 +3165,125 @@ namespace FIA_Biosum_Manager
 					p_oAdo.m_OleDbDataReader.Close();
 					
 				}
-				
-			
+
+
+
             if (p_oQueries != null)
 		    	p_oProcessorScenarioItem.m_oEscalators.CycleLength=Convert.ToInt32(p_oAdo.getSingleDoubleValueFromSQLQuery(p_oAdo.m_OleDbConnection,"SELECT TOP 1 rxcycle_length FROM " + p_oQueries.m_oFvs.m_strRxPackageTable,"temp"));            
 
+        }
+        public void LoadEscalatorsSqlite(Queries p_oQueries, string p_strDbFile, FIA_Biosum_Manager.ProcessorScenarioItem p_oProcessorScenarioItem)
+        {
+            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
+            string strConn = dataMgr.GetConnectionString(p_strDbFile);
+            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
+            {
+                oConn.Open();
+                dataMgr.SqlQueryReader(oConn, "SELECT EscalatorOperatingCosts_Cycle2, " + 
+                                         "EscalatorOperatingCosts_Cycle3," +
+                                         "EscalatorOperatingCosts_Cycle4," +
+                                         "EscalatorMerchWoodRevenue_Cycle2," +
+                                         "EscalatorMerchWoodRevenue_Cycle3," +
+                                         "EscalatorMerchWoodRevenue_Cycle4," +
+                                         "EscalatorEnergyWoodRevenue_Cycle2," +
+                                         "EscalatorEnergyWoodRevenue_Cycle3," +
+                                         "EscalatorEnergyWoodRevenue_Cycle4 " +
+                                  "FROM scenario_cost_revenue_escalators " +
+                                  "WHERE TRIM(scenario_id) = '" + p_oProcessorScenarioItem.ScenarioId.Trim() + "'");
+                if (dataMgr.m_intError == 0)
+                {
+                    if (dataMgr.m_DataReader.HasRows)
+                    {
+                        while (dataMgr.m_DataReader.Read())
+                        {
+                            //
+                            //OPERATING COSTS CYCLE2
+                            //
+                            if (dataMgr.m_DataReader["EscalatorOperatingCosts_Cycle2"] != System.DBNull.Value &&
+                                dataMgr.m_DataReader["EscalatorOperatingCosts_Cycle2"].ToString().Trim().Length > 0)
+                            {
+                                p_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle2 = dataMgr.m_DataReader["EscalatorOperatingCosts_Cycle2"].ToString().Trim();
+                            }
+                            //
+                            //OPERATING COSTS CYCLE3
+                            //
+                            if (dataMgr.m_DataReader["EscalatorOperatingCosts_Cycle3"] != System.DBNull.Value &&
+                                dataMgr.m_DataReader["EscalatorOperatingCosts_Cycle3"].ToString().Trim().Length > 0)
+                            {
+                                p_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle3 = dataMgr.m_DataReader["EscalatorOperatingCosts_Cycle3"].ToString().Trim();
+                            }
+                            //
+                            //OPERATING COSTS CYCLE4
+                            //
+                            if (dataMgr.m_DataReader["EscalatorOperatingCosts_Cycle4"] != System.DBNull.Value &&
+                                dataMgr.m_DataReader["EscalatorOperatingCosts_Cycle4"].ToString().Trim().Length > 0)
+                            {
+                                p_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle4 = dataMgr.m_DataReader["EscalatorOperatingCosts_Cycle4"].ToString().Trim();
+                            }
+                            //														//
+                            //MERCH WOOD REVENUE CYCLE2
+                            //
+                            if (dataMgr.m_DataReader["EscalatorMerchWoodRevenue_Cycle2"] != System.DBNull.Value &&
+                                dataMgr.m_DataReader["EscalatorMerchWoodRevenue_Cycle2"].ToString().Trim().Length > 0)
+                            {
+                                p_oProcessorScenarioItem.m_oEscalators.MerchWoodRevenueCycle2 = dataMgr.m_DataReader["EscalatorMerchWoodRevenue_Cycle2"].ToString().Trim();
+                            }
+                            //
+                            //MERCH WOOD REVENUE CYCLE3
+                            //
+                            if (dataMgr.m_DataReader["EscalatorMerchWoodRevenue_Cycle3"] != System.DBNull.Value &&
+                                dataMgr.m_DataReader["EscalatorMerchWoodRevenue_Cycle3"].ToString().Trim().Length > 0)
+                            {
+                                p_oProcessorScenarioItem.m_oEscalators.MerchWoodRevenueCycle3 = dataMgr.m_DataReader["EscalatorMerchWoodRevenue_Cycle3"].ToString().Trim();
+                            }
+                            //
+                            //MERCH WOOD REVENUE CYCLE4
+                            //
+                            if (dataMgr.m_DataReader["EscalatorMerchWoodRevenue_Cycle4"] != System.DBNull.Value &&
+                                dataMgr.m_DataReader["EscalatorMerchWoodRevenue_Cycle4"].ToString().Trim().Length > 0)
+                            {
+                                p_oProcessorScenarioItem.m_oEscalators.MerchWoodRevenueCycle4 = dataMgr.m_DataReader["EscalatorMerchWoodRevenue_Cycle4"].ToString().Trim();
+                            }
+                            //														//
+                            //ENERGY WOOD REVENUE CYCLE2
+                            //
+                            if (dataMgr.m_DataReader["EscalatorEnergyWoodRevenue_Cycle2"] != System.DBNull.Value &&
+                                dataMgr.m_DataReader["EscalatorEnergyWoodRevenue_Cycle2"].ToString().Trim().Length > 0)
+                            {
+                                p_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle2 = dataMgr.m_DataReader["EscalatorEnergyWoodRevenue_Cycle2"].ToString().Trim();
+                            }
+                            //
+                            //ENERGY WOOD REVENUE CYCLE3
+                            //
+                            if (dataMgr.m_DataReader["EscalatorEnergyWoodRevenue_Cycle3"] != System.DBNull.Value &&
+                                dataMgr.m_DataReader["EscalatorEnergyWoodRevenue_Cycle3"].ToString().Trim().Length > 0)
+                            {
+                                p_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle3 = dataMgr.m_DataReader["EscalatorEnergyWoodRevenue_Cycle3"].ToString().Trim();
+                            }
+                            //
+                            //ENERGY WOOD REVENUE CYCLE4
+                            //
+                            if (dataMgr.m_DataReader["EscalatorEnergyWoodRevenue_Cycle4"] != System.DBNull.Value &&
+                                dataMgr.m_DataReader["EscalatorEnergyWoodRevenue_Cycle4"].ToString().Trim().Length > 0)
+                            {
+                                p_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle4 = dataMgr.m_DataReader["EscalatorEnergyWoodRevenue_Cycle4"].ToString().Trim();
+                            }
+                        }
+                    }
+                    dataMgr.m_DataReader.Close();
+                }
+            }
+
+            // Retrieve cycle length from any rx package item
+            RxTools oRxTools = new RxTools();
+            RxPackageItem_Collection p_oRxPackageItemCollection = new RxPackageItem_Collection();
+            string rxPackageDb = p_oQueries.m_oDataSource.getFullPathAndFile("TREATMENT PACKAGES");
+            oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(rxPackageDb, p_oQueries, p_oRxPackageItemCollection);
+            if (p_oRxPackageItemCollection != null && p_oRxPackageItemCollection.Count > 0)
+            {
+                RxPackageItem rxPackageItem = p_oRxPackageItemCollection.Item(0);
+                p_oProcessorScenarioItem.m_oEscalators.CycleLength = rxPackageItem.RxCycleLength;
+            }
         }
         public void LoadHarvestCostComponents(ado_data_access p_oAdo,
                                               System.Data.OleDb.OleDbConnection p_oConn,
@@ -2767,22 +3341,69 @@ namespace FIA_Biosum_Manager
             p_oAdo.m_OleDbDataReader.Close();
         }
 
-        public void LoadTreeDiameterGroupValues(string p_strDbFile, string p_strScenarioId, FIA_Biosum_Manager.ProcessorScenarioItem p_oProcessorScenarioItem)
+        public void LoadHarvestCostComponentsSqlite(string p_strDbFile, ProcessorScenarioItem p_oProcessorScenarioItem)
         {
-            ado_data_access oAdo = new ado_data_access();
-            oAdo.OpenConnection(oAdo.getMDBConnString(p_strDbFile, "", ""));
-            if (oAdo.m_intError == 0)
+            for (int x = p_oProcessorScenarioItem.m_oHarvestCostItem_Collection.Count - 1;
+                     x >= 0;
+                     x--)
             {
-                this.LoadTreeDiameterGroupValues(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, p_oProcessorScenarioItem);
+                p_oProcessorScenarioItem.m_oHarvestCostItem_Collection.Remove(x);
             }
-            m_intError = oAdo.m_intError;
-            oAdo.CloseConnection(oAdo.m_OleDbConnection);
-            oAdo = null;
+            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
+            string strConn = dataMgr.GetConnectionString(p_strDbFile);
+            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
+            {
+                oConn.Open();
+                //
+                //load up any scenario columns and the default values
+                //
+                dataMgr.SqlQueryReader(oConn, "SELECT rx,[ColumnName],[Description],Default_CPA FROM scenario_harvest_cost_columns WHERE TRIM(scenario_id)='"
+                    + p_oProcessorScenarioItem.ScenarioId.Trim() + "'");
+                if (dataMgr.m_intError == 0)
+                {
+                    if (dataMgr.m_DataReader.HasRows)
+                    {
+                        while (dataMgr.m_DataReader.Read())
+                        {
+                            ProcessorScenarioItem.HarvestCostItem oItem = new ProcessorScenarioItem.HarvestCostItem();
+                            if (dataMgr.m_DataReader["rx"] != System.DBNull.Value &&
+                                dataMgr.m_DataReader["rx"].ToString().Trim().Length > 0)
+                            {
+                                oItem.Rx = dataMgr.m_DataReader["rx"].ToString().Trim();
+                            }
+                            if (dataMgr.m_DataReader["ColumnName"] != System.DBNull.Value &&
+                                dataMgr.m_DataReader["ColumnName"].ToString().Trim().Length > 0)
+                            {
+                                oItem.ColumnName = dataMgr.m_DataReader["ColumnName"].ToString().Trim();
+                            }
+                            if (dataMgr.m_DataReader["Description"] != System.DBNull.Value &&
+                                dataMgr.m_DataReader["Description"].ToString().Trim().Length > 0)
+                            {
+                                oItem.Description = dataMgr.m_DataReader["Description"].ToString().Trim();
+                            }
+                            if (dataMgr.m_DataReader["Default_CPA"] != System.DBNull.Value &&
+                                dataMgr.m_DataReader["Default_CPA"].ToString().Trim().Length > 0)
+                            {
+                                string strDefaultCPA = String.Format("{0:0.00}", Convert.ToDouble(dataMgr.m_DataReader["Default_CPA"]));
+                                oItem.DefaultCostPerAcre = strDefaultCPA;
+                            }
+                            if (oItem.Rx.Trim().Length == 0)
+                            {
+                                oItem.Type = "S";
+                            }
+                            else
+                            {
+                                oItem.Type = "R";
+                            }
+                            p_oProcessorScenarioItem.m_oHarvestCostItem_Collection.Add(oItem);
+                        }
+                    }
+                    dataMgr.m_DataReader.Close();
+                }
+            }            
         }
-        
-        public void LoadTreeDiameterGroupValues(ado_data_access p_oAdo,
-                                                System.Data.OleDb.OleDbConnection p_oConn,
-                                                string p_strScenarioId,
+
+        public void LoadTreeDiameterGroupValues(string p_strDbFile, string p_strScenarioId,
                                                 ProcessorScenarioItem p_oProcessorScenarioItem)
         {
             int x;
@@ -2794,44 +3415,72 @@ namespace FIA_Biosum_Manager
             //
             //QUERY ALL DIAMETER GROUPS
             //
-            p_oAdo.SqlQueryReader(p_oConn, "SELECT * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName + 
-                " WHERE TRIM(UCASE(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "' ORDER BY DIAM_GROUP");
-
-
-            //
-            //CREATE A COLLECTION CONTAINING EACH DIAMETER GROUP
-            //
-            if (p_oAdo.m_OleDbDataReader.HasRows)
-            {
-                while (p_oAdo.m_OleDbDataReader.Read())
-                {
-                    ProcessorScenarioItem.TreeDiamGroupsItem oItem = new ProcessorScenarioItem.TreeDiamGroupsItem();
-                    oItem.DiamGroup = p_oAdo.m_OleDbDataReader["diam_group"].ToString().Trim();
-                    oItem.DiamClass = p_oAdo.m_OleDbDataReader["diam_class"].ToString().Trim();
-                    oItem.MaxDiam = p_oAdo.m_OleDbDataReader["max_diam"].ToString().Trim();
-                    oItem.MinDiam = p_oAdo.m_OleDbDataReader["min_diam"].ToString().Trim();
-                    p_oProcessorScenarioItem.m_oTreeDiamGroupsItem_Collection.Add(oItem);
-                }
-            }
-
-            p_oAdo.m_OleDbDataReader.Close();
-        }
-        public void LoadTreeSpeciesGroupValues(string p_strDbFile, string p_strScenarioId,
-            FIA_Biosum_Manager.ProcessorScenarioItem p_oProcessorScenarioItem)
-        {
             ado_data_access oAdo = new ado_data_access();
-            oAdo.OpenConnection(oAdo.getMDBConnString(p_strDbFile, "", ""));
-            if (oAdo.m_intError == 0)
+            string strConn = oAdo.getMDBConnString(p_strDbFile, "", "");
+            using (var oConn = new System.Data.OleDb.OleDbConnection(strConn))
             {
-                this.LoadTreeSpeciesGroupValues(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, 
-                    p_oProcessorScenarioItem);
+                oConn.Open();
+                oAdo.SqlQueryReader(oConn, "SELECT * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName +
+                    " WHERE TRIM(UCASE(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "' ORDER BY DIAM_GROUP");
+
+                //
+                //CREATE A COLLECTION CONTAINING EACH DIAMETER GROUP
+                //
+                if (oAdo.m_OleDbDataReader.HasRows)
+                {
+                    while (oAdo.m_OleDbDataReader.Read())
+                    {
+                        ProcessorScenarioItem.TreeDiamGroupsItem oItem = new ProcessorScenarioItem.TreeDiamGroupsItem();
+                        oItem.DiamGroup = oAdo.m_OleDbDataReader["diam_group"].ToString().Trim();
+                        oItem.DiamClass = oAdo.m_OleDbDataReader["diam_class"].ToString().Trim();
+                        oItem.MaxDiam = oAdo.m_OleDbDataReader["max_diam"].ToString().Trim();
+                        oItem.MinDiam = oAdo.m_OleDbDataReader["min_diam"].ToString().Trim();
+                        p_oProcessorScenarioItem.m_oTreeDiamGroupsItem_Collection.Add(oItem);
+                    }
+                }
+                oAdo.m_OleDbDataReader.Close();
             }
-            m_intError = oAdo.m_intError;
-            oAdo.CloseConnection(oAdo.m_OleDbConnection);
-            oAdo = null;
         }
-        public void LoadTreeSpeciesGroupValues(ado_data_access p_oAdo,
-                                        System.Data.OleDb.OleDbConnection p_oConn,
+        public void LoadTreeDiameterGroupValuesSqlite(string p_strDbFile, string p_strScenarioId,
+                                                      ProcessorScenarioItem p_oProcessorScenarioItem)
+        {
+            int x;
+            //REMOVE ANY EXISTING ITEMS
+            for (x = p_oProcessorScenarioItem.m_oTreeDiamGroupsItem_Collection.Count - 1; x >= 0; x--)
+            {
+                p_oProcessorScenarioItem.m_oTreeDiamGroupsItem_Collection.Remove(x);
+            }
+            //
+            //QUERY ALL DIAMETER GROUPS
+            //
+            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
+            string strConn = dataMgr.GetConnectionString(p_strDbFile);
+            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
+            {
+                oConn.Open();
+                dataMgr.SqlQueryReader(oConn, "SELECT * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName +
+                    " WHERE TRIM(UPPER(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "' ORDER BY DIAM_GROUP");
+
+                //
+                //CREATE A COLLECTION CONTAINING EACH DIAMETER GROUP
+                //
+                if (dataMgr.m_DataReader.HasRows)
+                {
+                    while (dataMgr.m_DataReader.Read())
+                    {
+                        ProcessorScenarioItem.TreeDiamGroupsItem oItem = new ProcessorScenarioItem.TreeDiamGroupsItem();
+                        oItem.DiamGroup = dataMgr.m_DataReader["diam_group"].ToString().Trim();
+                        oItem.DiamClass = dataMgr.m_DataReader["diam_class"].ToString().Trim();
+                        oItem.MaxDiam = dataMgr.m_DataReader["max_diam"].ToString().Trim();
+                        oItem.MinDiam = dataMgr.m_DataReader["min_diam"].ToString().Trim();
+                        p_oProcessorScenarioItem.m_oTreeDiamGroupsItem_Collection.Add(oItem);
+                    }
+                }
+                dataMgr.m_DataReader.Close();
+            }
+        }
+
+        public void LoadTreeSpeciesGroupValues(string p_strDbFile,
                                         string p_strScenarioId,
                                         ProcessorScenarioItem p_oProcessorScenarioItem)
         {
@@ -2842,67 +3491,153 @@ namespace FIA_Biosum_Manager
                 p_oProcessorScenarioItem.m_oSpcGroupItem_Collection.Remove(x);
             }
 
-            //LOAD USER SPECIES COMMON NAME GROUPING ASSIGNMENTS
-            /****************************************************************************************
-             **load any previous group assignments 
-             ****************************************************************************************/
-            p_oAdo.m_strSQL = "select * from " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName +
+            ado_data_access oAdo = new ado_data_access();
+            string strConn = oAdo.getMDBConnString(p_strDbFile, "", "");
+            using (var oConn = new System.Data.OleDb.OleDbConnection(strConn))
+            {
+                oConn.Open();
+                //LOAD USER SPECIES COMMON NAME GROUPING ASSIGNMENTS
+                /****************************************************************************************
+                 **load any previous group assignments 
+                 ****************************************************************************************/
+                oAdo.m_strSQL = "select * from " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName +
                 " WHERE TRIM(UCASE(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "' order by species_group";
-            p_oAdo.SqlQueryReader(p_oConn, p_oAdo.m_strSQL);
-            if (p_oAdo.m_intError == 0)
-            {
-                /**************************************************************************************
-                 **go through the species group table and assign values to the group label text box
-                 **************************************************************************************/
-                int intSpcGrp;
-                string strSpeciesLabel;
-                if (p_oAdo.m_OleDbDataReader.HasRows)
+                oAdo.SqlQueryReader(oConn, oAdo.m_strSQL);
+                if (oAdo.m_intError == 0)
                 {
-                    while (p_oAdo.m_OleDbDataReader.Read())
+                    /**************************************************************************************
+                     **go through the species group table and assign values to the group label text box
+                     **************************************************************************************/
+                    int intSpcGrp;
+                    string strSpeciesLabel;
+                    if (oAdo.m_OleDbDataReader.HasRows)
                     {
-                        if (p_oAdo.m_OleDbDataReader["species_group"] != DBNull.Value)
+                        while (oAdo.m_OleDbDataReader.Read())
                         {
-                            intSpcGrp = Convert.ToInt32(p_oAdo.m_OleDbDataReader["species_group"]);
-                            strSpeciesLabel = Convert.ToString(p_oAdo.m_OleDbDataReader["species_label"]).Trim();
-                            ProcessorScenarioItem.SpcGroupItem oItem = new ProcessorScenarioItem.SpcGroupItem();
-                            oItem.SpeciesGroup = intSpcGrp;
-                            oItem.SpeciesGroupLabel = strSpeciesLabel;
-                            p_oProcessorScenarioItem.m_oSpcGroupItem_Collection.Add(oItem);
+                            if (oAdo.m_OleDbDataReader["species_group"] != DBNull.Value)
+                            {
+                                intSpcGrp = Convert.ToInt32(oAdo.m_OleDbDataReader["species_group"]);
+                                strSpeciesLabel = Convert.ToString(oAdo.m_OleDbDataReader["species_label"]).Trim();
+                                ProcessorScenarioItem.SpcGroupItem oItem = new ProcessorScenarioItem.SpcGroupItem();
+                                oItem.SpeciesGroup = intSpcGrp;
+                                oItem.SpeciesGroupLabel = strSpeciesLabel;
+                                p_oProcessorScenarioItem.m_oSpcGroupItem_Collection.Add(oItem);
+                            }
                         }
                     }
+                    oAdo.m_OleDbDataReader.Close();
                 }
-                p_oAdo.m_OleDbDataReader.Close();
-            }
+                //REMOVE ANY EXISTING ITEMS
+                for (x = p_oProcessorScenarioItem.m_oSpcGroupListItem_Collection.Count - 1; x >= 0; x--)
+                {
+                    p_oProcessorScenarioItem.m_oSpcGroupListItem_Collection.Remove(x);
+                }
 
+                //go through the species table and load its 
+                //group list box with the species common name
+                oAdo.m_strSQL = "SELECT DISTINCT common_name,species_group, spcd " +
+                    "FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName +
+                    " WHERE TRIM(UCASE(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + " '";
+                oAdo.SqlQueryReader(oConn, oAdo.m_strSQL);
+                if (oAdo.m_intError == 0)
+                {
+                    if (oAdo.m_OleDbDataReader.HasRows)
+                    {
+                        while (oAdo.m_OleDbDataReader.Read())
+                        {
+                            if (oAdo.m_OleDbDataReader["common_name"] != DBNull.Value)
+                            {
+                                ProcessorScenarioItem.SpcGroupListItem oItem = new ProcessorScenarioItem.SpcGroupListItem();
+                                oItem.SpeciesGroup = Convert.ToInt32(oAdo.m_OleDbDataReader["species_group"]);
+                                oItem.CommonName = Convert.ToString(oAdo.m_OleDbDataReader["common_name"]).Trim();
+                                oItem.SpeciesCode = Convert.ToInt32(oAdo.m_OleDbDataReader["spcd"]);
+                                p_oProcessorScenarioItem.m_oSpcGroupListItem_Collection.Add(oItem);
+                            }
+                        }
+                    }
+                    oAdo.m_OleDbDataReader.Close();
+                }
+            }
+        }
+
+        public void LoadTreeSpeciesGroupValuesSqlite(string p_strDbFile,
+                                                     string p_strScenarioId,
+                                                     ProcessorScenarioItem p_oProcessorScenarioItem)
+        {
+            int x;
             //REMOVE ANY EXISTING ITEMS
-            for (x = p_oProcessorScenarioItem.m_oSpcGroupListItem_Collection.Count - 1; x >= 0; x--)
+            for (x = p_oProcessorScenarioItem.m_oSpcGroupItem_Collection.Count - 1; x >= 0; x--)
             {
-                p_oProcessorScenarioItem.m_oSpcGroupListItem_Collection.Remove(x);
+                p_oProcessorScenarioItem.m_oSpcGroupItem_Collection.Remove(x);
             }
 
-            //go through the species table and load its 
-            //group list box with the species common name
-            p_oAdo.m_strSQL = "SELECT DISTINCT common_name,species_group, spcd " +
-                "FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName +
-                " WHERE TRIM(UCASE(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + " '";
-            p_oAdo.SqlQueryReader(p_oConn, p_oAdo.m_strSQL); 
-            if (p_oAdo.m_intError == 0)
+            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
+            string strConn = dataMgr.GetConnectionString(p_strDbFile);
+            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
-                if (p_oAdo.m_OleDbDataReader.HasRows)
+                oConn.Open();
+                //LOAD USER SPECIES COMMON NAME GROUPING ASSIGNMENTS
+                /****************************************************************************************
+                 **load any previous group assignments 
+                 ****************************************************************************************/
+                dataMgr.m_strSQL = "select * from " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName +
+                " WHERE TRIM(UPPER(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "' order by species_group";
+                dataMgr.SqlQueryReader(oConn, dataMgr.m_strSQL);
+                if (dataMgr.m_intError == 0)
                 {
-                    while (p_oAdo.m_OleDbDataReader.Read())
+                    /**************************************************************************************
+                     **go through the species group table and assign values to the group label text box
+                     **************************************************************************************/
+                    int intSpcGrp;
+                    string strSpeciesLabel;
+                    if (dataMgr.m_DataReader.HasRows)
                     {
-                        if (p_oAdo.m_OleDbDataReader["common_name"] != DBNull.Value)
+                        while (dataMgr.m_DataReader.Read())
                         {
-                            ProcessorScenarioItem.SpcGroupListItem oItem = new ProcessorScenarioItem.SpcGroupListItem();
-                            oItem.SpeciesGroup = Convert.ToInt32(p_oAdo.m_OleDbDataReader["species_group"]);
-                            oItem.CommonName = Convert.ToString(p_oAdo.m_OleDbDataReader["common_name"]).Trim();
-                            oItem.SpeciesCode = Convert.ToInt32(p_oAdo.m_OleDbDataReader["spcd"]);
-                            p_oProcessorScenarioItem.m_oSpcGroupListItem_Collection.Add(oItem);
+                            if (dataMgr.m_DataReader["species_group"] != DBNull.Value)
+                            {
+                                intSpcGrp = Convert.ToInt32(dataMgr.m_DataReader["species_group"]);
+                                strSpeciesLabel = Convert.ToString(dataMgr.m_DataReader["species_label"]).Trim();
+                                ProcessorScenarioItem.SpcGroupItem oItem = new ProcessorScenarioItem.SpcGroupItem();
+                                oItem.SpeciesGroup = intSpcGrp;
+                                oItem.SpeciesGroupLabel = strSpeciesLabel;
+                                p_oProcessorScenarioItem.m_oSpcGroupItem_Collection.Add(oItem);
+                            }
                         }
                     }
+                    dataMgr.m_DataReader.Close();
                 }
-                p_oAdo.m_OleDbDataReader.Close();
+                //REMOVE ANY EXISTING ITEMS
+                for (x = p_oProcessorScenarioItem.m_oSpcGroupListItem_Collection.Count - 1; x >= 0; x--)
+                {
+                    p_oProcessorScenarioItem.m_oSpcGroupListItem_Collection.Remove(x);
+                }
+
+                //go through the species table and load its 
+                //group list box with the species common name
+                dataMgr.m_strSQL = "SELECT DISTINCT common_name,species_group, spcd " +
+                    "FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName +
+                    " WHERE TRIM(UPPER(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'" +
+                    " ORDER BY COMMON_NAME COLLATE NOCASE";
+                dataMgr.SqlQueryReader(oConn, dataMgr.m_strSQL);
+                if (dataMgr.m_intError == 0)
+                {
+                    if (dataMgr.m_DataReader.HasRows)
+                    {
+                        while (dataMgr.m_DataReader.Read())
+                        {
+                            if (dataMgr.m_DataReader["common_name"] != DBNull.Value)
+                            {
+                                ProcessorScenarioItem.SpcGroupListItem oItem = new ProcessorScenarioItem.SpcGroupListItem();
+                                oItem.SpeciesGroup = Convert.ToInt32(dataMgr.m_DataReader["species_group"]);
+                                oItem.CommonName = Convert.ToString(dataMgr.m_DataReader["common_name"]).Trim();
+                                oItem.SpeciesCode = Convert.ToInt32(dataMgr.m_DataReader["spcd"]);
+                                p_oProcessorScenarioItem.m_oSpcGroupListItem_Collection.Add(oItem);
+                            }
+                        }
+                    }
+                    dataMgr.m_DataReader.Close();
+                }
             }
         }
 
@@ -3100,6 +3835,121 @@ namespace FIA_Biosum_Manager
             strLine = strLine + "\r\n\r\nEOF";
             return strLine;
 
+        }
+
+        public void migrate_access_data()
+        {
+            string targetDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                @"\processor\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+            string sourceDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                @"\processor\" + Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodDbFile;
+            if (System.IO.File.Exists(targetDbFile) == false)
+            {
+                frmMain.g_oFrmMain.frmProject.uc_project1.CreateProcessorScenarioRuleDefinitionSqliteDbAndTables(targetDbFile);
+            }
+            else
+            {
+                MessageBox.Show(targetDbFile + " already exists. New tables cannot be created!!", "FIA Biosum");
+                return;
+            }
+
+            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
+            ado_data_access oAdo = new ado_data_access();
+            dao_data_access oDao = new dao_data_access();
+            ODBCMgr odbcmgr = new ODBCMgr();
+            try
+            {
+
+                string[] arrTargetTables = { };
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dataMgr.GetConnectionString(targetDbFile)))
+                {
+                    conn.Open();
+                    arrTargetTables = dataMgr.getTableNames(conn);
+                    if (arrTargetTables.Length < 1)
+                    {
+                        MessageBox.Show("Target SQLite tables could not be created. Migration stopped!!", "FIA Biosum");
+                        return;
+                    }
+
+                    // custom processing for scenario_additional_harvest_costs
+                    string[] strSourceColumnsArray = new string[0];
+                    string strTableName = Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName;
+                    oDao.getFieldNames(sourceDbFile, strTableName, ref strSourceColumnsArray);
+                    foreach (string strColumn in strSourceColumnsArray)
+                    {
+                        if (!dataMgr.ColumnExists(conn, strTableName, strColumn))
+                        {
+                            dataMgr.AddColumn(conn, strTableName, strColumn, "REAL", "");
+                        }
+                    }
+                }
+
+                // Check to see if the input SQLite DSN exists and if so, delete so we can add
+                if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName))
+                {
+                    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName);
+                }
+                odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName, targetDbFile);
+
+                // Create temporary database
+                utils oUtils = new utils();
+                env oEnv = new env();
+                string strTempAccdb = oUtils.getRandomFile(oEnv.strTempDir, "accdb");
+                oDao.CreateMDB(strTempAccdb);
+
+                // Link all the target tables to the database
+                for (int i = 0; i < arrTargetTables.Length; i++)
+                {
+                    oDao.CreateSQLiteTableLink(strTempAccdb, arrTargetTables[i], arrTargetTables[i] + "_1",
+                        ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName, targetDbFile);
+                }
+                oDao.CreateTableLinks(strTempAccdb, sourceDbFile);  // Link all the source tables to the database
+
+                string strCopyConn = oAdo.getMDBConnString(strTempAccdb, "", "");
+                using (var copyConn = new System.Data.OleDb.OleDbConnection(strCopyConn))
+                {
+                    copyConn.Open();
+                    foreach (var strTable in arrTargetTables)
+                    {
+                        oAdo.m_strSQL = "INSERT INTO " + strTable + "_1" +
+                        " SELECT * FROM " + strTable;
+                        oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                    }
+
+                    if (oAdo.m_intError == 0)
+                    {
+                        // Primary key required to update
+                        oAdo.AddPrimaryKey(copyConn, "scenario_1", "scenario_id_pk", "scenario_id");
+                        // Set file (database) field to new Sqlite DB
+                        string newDbFile = System.IO.Path.GetFileName(Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile);
+                        oAdo.m_strSQL = "UPDATE scenario_1 set file = '" +
+                            newDbFile + "'";
+                        oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            finally
+            {
+                // Clean-up
+                if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName))
+                {
+                    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName);
+                }
+                if (oAdo != null)
+                {
+                    oAdo = null;
+                }
+                if (oDao != null)
+                {
+                    oDao.m_DaoWorkspace.Close();
+                    oDao = null;
+                }
+            }
         }
 
     }

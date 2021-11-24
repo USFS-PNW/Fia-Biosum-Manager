@@ -50,32 +50,20 @@ namespace FIA_Biosum_Manager
             this.m_oLvAlternateColors.CustomFullRowSelect = true;
             if (frmMain.g_oGridViewFont != null) this.lvProcessorScenario.Font = frmMain.g_oGridViewFont;
 
-            ado_data_access oAdo = null;
+            ado_data_access oAdo = new ado_data_access();
             string strProcessorScenario = "";
             string strFullDetailsYN = "N";
             if (p_bScenarioCopy == false)
             {
-                //
-                //OPEN CONNECTION TO DB FILE CONTAINING PROCESSOR SCENARIO TABLE
-                //
-                //scenario mdb connection
-                string strProcessorScenarioMDB =
-                  frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                  "\\processor\\db\\scenario_processor_rule_definitions.mdb";
-                //
-                //get a list of all the scenarios
-                //
-                oAdo = new ado_data_access();
-                oAdo.OpenConnection(oAdo.getMDBConnString(strProcessorScenarioMDB, "", ""));
-                string[] strScenarioArray =
-                    frmMain.g_oUtils.ConvertListToArray(
-                        oAdo.CreateCommaDelimitedList(
-                           oAdo.m_OleDbConnection,
-                           "SELECT scenario_id " +
-                           "FROM scenario " +
-                           "WHERE scenario_id IS NOT NULL AND " +
-                                             "LEN(TRIM(scenario_id)) > 0", ""), ",");
-                oAdo.CloseConnection(oAdo.m_OleDbConnection);
+                string[] strScenarioArray = null;
+                if (!ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite)
+                {
+                    strScenarioArray = loadScenarioArray(oAdo);
+                }
+                else
+                {
+                    strScenarioArray = loadScenarioArraySqlite();
+                }
                 if (strScenarioArray == null) return;
 
                 for (x = 0; x <= strScenarioArray.Length - 1; x++)
@@ -87,14 +75,19 @@ namespace FIA_Biosum_Manager
                     m_oQueries.m_oFIAPlot.LoadDatasource = true;
                     m_oQueries.m_oProcessor.LoadDatasource = true;
                     m_oQueries.m_oReference.LoadDatasource = true;
-                    m_oQueries.LoadDatasources(true, "processor", strScenarioArray[x]);
-                    m_oQueries.m_oDataSource.CreateScenarioRuleDefinitionTableLinks(
-                        m_oQueries.m_strTempDbFile,
-                        frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim(),
-                        "P");
-                    oTools.LoadAll(m_oQueries.m_strTempDbFile, m_oQueries, strScenarioArray[x], m_oProcessorScenarioItem_Collection);
-                    //System.IO.File.Delete(m_oQueries.m_strTempDbFile);
-
+                    m_oQueries.LoadDatasources(true, ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite, "processor", strScenarioArray[x]);
+                    if (!ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite)
+                    {
+                        m_oQueries.m_oDataSource.CreateScenarioRuleDefinitionTableLinks(
+                            m_oQueries.m_strTempDbFile,
+                            frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim(),
+                            "P");
+                        oTools.LoadAll(m_oQueries.m_strTempDbFile, m_oQueries, strScenarioArray[x], m_oProcessorScenarioItem_Collection);
+                    }
+                    else
+                    {
+                        oTools.LoadAllSqlite(m_oQueries, strScenarioArray[x], m_oProcessorScenarioItem_Collection);
+                    }
                 }
             }
             else
@@ -120,9 +113,6 @@ namespace FIA_Biosum_Manager
 
                 entryListItem.SubItems.Add(m_oProcessorScenarioItem_Collection.Item(x).ScenarioId);
                 entryListItem.SubItems.Add(m_oProcessorScenarioItem_Collection.Item(x).Description);
-                
-
-
             }
             this.m_oLvAlternateColors.ListView();
 
@@ -198,6 +188,56 @@ namespace FIA_Biosum_Manager
                     chkFullDetails.Checked = true;
                 else
                     chkFullDetails.Checked = false;
+        }
+        private string[] loadScenarioArray(ado_data_access oAdo)
+        {
+            //
+            //OPEN CONNECTION TO DB FILE CONTAINING PROCESSOR SCENARIO TABLE
+            //
+            //scenario mdb connection
+            string strProcessorScenarioMDB =
+              frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+              "\\processor\\db\\scenario_processor_rule_definitions.mdb";
+            //
+            //get a list of all the scenarios
+            //
+            oAdo.OpenConnection(oAdo.getMDBConnString(strProcessorScenarioMDB, "", ""));
+            string[] strScenarioArray =
+                frmMain.g_oUtils.ConvertListToArray(
+                    oAdo.CreateCommaDelimitedList(
+                       oAdo.m_OleDbConnection,
+                       "SELECT scenario_id " +
+                       "FROM scenario " +
+                       "WHERE scenario_id IS NOT NULL AND " +
+                                         "LEN(TRIM(scenario_id)) > 0", ""), ",");
+            oAdo.CloseConnection(oAdo.m_OleDbConnection);
+            return strScenarioArray;
+        }
+        private string[] loadScenarioArraySqlite()
+        {
+            //
+            //OPEN CONNECTION TO DB FILE CONTAINING PROCESSOR SCENARIO TABLE
+            //
+            //scenario mdb connection
+            string strProcessorScenarioDB =
+              frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+              "\\processor\\"+ Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+            //
+            //get a list of all the scenarios
+            //
+            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
+            string strConn = dataMgr.GetConnectionString(strProcessorScenarioDB);
+            IList<string> lstScenarioArray = null;
+            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
+            {
+                oConn.Open();
+                lstScenarioArray = dataMgr.getStringList(oConn,
+                        "SELECT scenario_id " +
+                        "FROM scenario " +
+                        "WHERE scenario_id IS NOT NULL AND " +
+                        "LENGTH(TRIM(scenario_id)) > 0");
+            }
+            return lstScenarioArray.ToArray();
         }
         public void savevalues()
         {

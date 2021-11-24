@@ -144,13 +144,16 @@ namespace FIA_Biosum_Manager
                 }
             }
 
-                /**************************************************************
-                 **create a temporary MDB File that will contain table links
-                 **to the cond, plot, and harvest_costs tables
-                 **************************************************************/
+            /**************************************************************
+             **create a temporary MDB File that will contain table links
+             **to the cond, plot, and harvest_costs tables
+             **************************************************************/
+            dao_data_access p_dao = new dao_data_access();
+            if (System.IO.File.Exists(strHarvestCostsPathAndFile) && p_dao.TableExists(strHarvestCostsPathAndFile, 
+                Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName))
+            {
                 this.m_strTempMDBFile = this.ReferenceOptimizerScenarioForm.uc_datasource1.CreateMDBAndScenarioTableDataSourceLinks(m_oEnv.strTempDir);
 
-                FIA_Biosum_Manager.dao_data_access p_dao = new dao_data_access();
                 p_dao.CreateTableLink(this.m_strTempMDBFile,
                                       Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName,
                                       strHarvestCostsPathAndFile, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName);
@@ -204,6 +207,7 @@ namespace FIA_Biosum_Manager
                     }
                     oAdo.m_OleDbDataReader.Close();
                 }
+            }
 		}
 
 		// We do not currently save the list of selected packages. It is reloaded

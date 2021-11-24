@@ -68,7 +68,8 @@ namespace FIA_Biosum_Manager
             }
             try
             {
-                this.m_DaoWorkspace.Close();
+                if (this.m_DaoWorkspace != null) 
+                    this.m_DaoWorkspace.Close();
             }
             catch
             {
@@ -705,7 +706,8 @@ namespace FIA_Biosum_Manager
             this.m_DaoDatabase = null;
         }
 
-        public void CreateSQLiteTableLink(string strMDBFileDestination, string strTableSource, string strTableDestination, string strDsn, string strSQLiteDbFile)
+        public void CreateSQLiteTableLink(string strSQLiteFileDestination, string strTableSource, string strTableDestination, string strDsn, 
+            string strSQLiteDbFile, bool bDeleteExistingLink)
         {
 
             string strConnect = "ODBC;DSN=" + strDsn + ";DATABASE=" + strSQLiteDbFile;
@@ -715,7 +717,60 @@ namespace FIA_Biosum_Manager
             /********************************************************
              **open the destination file that will contain the link
              ********************************************************/
-            this.OpenDb(strMDBFileDestination);
+            this.OpenDb(strSQLiteFileDestination);
+            if (this.m_intError == 0)
+            {
+                try
+                {
+                    if (this.TableExists(this.m_DaoDatabase, strTableDestination) == true)
+                    {
+                        if (bDeleteExistingLink == true)
+                        {
+                            this.m_DaoDatabase.TableDefs.Delete(strTableDestination);
+                        }
+                    }
+
+                    /****************************************************
+                     **get the table definition of the source table
+                     ****************************************************/
+                    this.m_DaoTableDef = this.m_DaoDatabase.CreateTableDef(strTableDestination, 0, strTableSource.Trim(), strConnect);
+
+
+                    /******************************************************************
+                     **append the link to the source table in the destination file
+                     ******************************************************************/
+                    this.m_DaoDatabase.TableDefs.Append(this.m_DaoTableDef);
+
+                }
+                catch (Exception caught)
+                {
+                    m_DaoDatabase.Close();
+                    m_DaoTableDef = null;
+                    m_DaoDatabase = null;
+                    this.m_intError = -1;
+                    this.m_strError = caught.Message;
+                    if (_bDisplayErrors)
+                        MessageBox.Show(this.m_strError);
+                    return;
+                }
+                this.m_DaoDatabase.Close();
+                this.m_DaoTableDef = null;
+
+            }
+            this.m_DaoDatabase = null;
+        }
+
+        public void CreateSQLiteTableLink(string strSQLiteFileDestination, string strTableSource, string strTableDestination, string strDsn, string strSQLiteDbFile)
+        {
+
+            string strConnect = "ODBC;DSN=" + strDsn + ";DATABASE=" + strSQLiteDbFile;
+
+            this.m_intError = 0;
+            this.m_strError = "";
+            /********************************************************
+             **open the destination file that will contain the link
+             ********************************************************/
+            this.OpenDb(strSQLiteFileDestination);
             if (this.m_intError == 0)
             {
                 try
@@ -749,6 +804,7 @@ namespace FIA_Biosum_Manager
             }
             this.m_DaoDatabase = null;
         }
+
         /// <summary>
         /// delete a table from an mdb file
         /// </summary>

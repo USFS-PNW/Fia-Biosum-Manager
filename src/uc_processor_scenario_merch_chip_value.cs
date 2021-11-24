@@ -77,46 +77,56 @@ namespace FIA_Biosum_Manager
 		public void loadvalues()
 		{
 			int x;
-			int y;
-			
-			string strSpcGrp="";
-			string strDbhGrp="";
-			string strMerchValue="";
-			string strChipValue="";
-            string strWoodBin = "";
+            //
+            //SCENARIO ID
+            //
+            ScenarioId = this.ReferenceProcessorScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
 
-			if (m_oAdo!=null && m_oAdo.m_OleDbConnection != null)
-				if (m_oAdo.m_OleDbConnection.State == System.Data.ConnectionState.Open) m_oAdo.CloseConnection(m_oAdo.m_OleDbConnection);
+            if (!ReferenceProcessorScenarioForm.m_bUsingSqlite)
+            {
+                if (m_oAdo != null && m_oAdo.m_OleDbConnection != null)
+                    if (m_oAdo.m_OleDbConnection.State == System.Data.ConnectionState.Open) m_oAdo.CloseConnection(m_oAdo.m_OleDbConnection);
 
-			//
-			//SCENARIO MDB
-			//
-			string strScenarioMDB = 
-				frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + 
-				"\\processor\\db\\scenario_processor_rule_definitions.mdb";
-			//
-			//SCENARIO ID
-			//
-			ScenarioId = this.ReferenceProcessorScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
-			//
-			//CREATE LINK IN TEMP MDB TO SCENARIO TREE SPECIES DIAM DOLLAR VALUES TABLE
-			//
-			dao_data_access oDao = new dao_data_access();
-			//link to tree species groups table
-            oDao.CreateTableLink(this.ReferenceProcessorScenarioForm.LoadedQueries.m_strTempDbFile,
-                                 "scenario_tree_species_diam_dollar_values",
-                                 strScenarioMDB,"scenario_tree_species_diam_dollar_values",true);
-            oDao.m_DaoWorkspace.Close();
-			oDao=null;
-			//
-			//OPEN CONNECTION TO TEMP DB FILE
-			//
-			m_oAdo = new ado_data_access();
-            m_oAdo.OpenConnection(m_oAdo.getMDBConnString(this.ReferenceProcessorScenarioForm.LoadedQueries.m_strTempDbFile, "", ""));
-			if (m_oAdo.m_intError==0)
-			{
-                ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadSpeciesAndDiameterGroupDollarValues
-                    (m_oAdo, m_oAdo.m_OleDbConnection, ReferenceProcessorScenarioForm.m_oProcessorScenarioItem);
+                //
+                //SCENARIO MDB
+                //
+                string strScenarioMDB =
+                    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                    "\\processor\\db\\scenario_processor_rule_definitions.mdb";
+
+                //
+                //CREATE LINK IN TEMP MDB TO SCENARIO TREE SPECIES DIAM DOLLAR VALUES TABLE
+                //
+                dao_data_access oDao = new dao_data_access();
+                //link to tree species groups table
+                oDao.CreateTableLink(this.ReferenceProcessorScenarioForm.LoadedQueries.m_strTempDbFile,
+                                     "scenario_tree_species_diam_dollar_values",
+                                     strScenarioMDB, "scenario_tree_species_diam_dollar_values", true);
+                oDao.m_DaoWorkspace.Close();
+                oDao = null;
+                //
+                //OPEN CONNECTION TO TEMP DB FILE
+                //
+                m_oAdo = new ado_data_access();
+                m_oAdo.OpenConnection(m_oAdo.getMDBConnString(this.ReferenceProcessorScenarioForm.LoadedQueries.m_strTempDbFile, "", ""));
+                if (m_oAdo.m_intError == 0)
+                {
+                    ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadSpeciesAndDiameterGroupDollarValues
+                        (m_oAdo, m_oAdo.m_OleDbConnection, ReferenceProcessorScenarioForm.m_oProcessorScenarioItem);
+                }
+            }
+            else
+            {
+                //
+                //SCENARIO MDB
+                //
+                string strScenarioMDB =
+                    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadSpeciesAndDiameterGroupDollarValuesSqlite(strScenarioMDB,
+                    ReferenceProcessorScenarioForm.m_oProcessorScenarioItem);
+            }
+
 
                 //REMOVE OLD CONTROLS FROM FORM IF THEY EXIST
                 string strName = "uc_processor_scenario_spc_dbh_group_value2";
@@ -210,15 +220,6 @@ namespace FIA_Biosum_Manager
                         }
                     }
                 }
-				
-
-
-				
-			}
-
-			
-
-			
 		}
 
         public void loadvalues_FromProperties()
@@ -334,55 +335,114 @@ namespace FIA_Biosum_Manager
 			string strMerchValue="";
 			string strChipValue="";
             string strWoodBin = "";
-			string strFields="scenario_id,species_group,diam_group,wood_bin,merch_value,chip_value";
-			string strValues="";
-			
-			//
-			//DELETE THE CURRENT SCENARIO RECORDS
-			//
-			m_oAdo.m_strSQL = "DELETE FROM scenario_tree_species_diam_dollar_values " + 
-				            "WHERE TRIM(scenario_id)='" + this.ScenarioId.Trim() + "'";
-			m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection,m_oAdo.m_strSQL);
-			//
-			//DELETE THE WORK TABLE
-			//
-			if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection,"spcgrp_dbhgrp"))
-				m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection,"DROP TABLE spcgrp_dbhgrp");
-			//
-			//CREATE AND POPULATE WORK TABLE
-			//
-            m_oAdo.m_strSQL = "CREATE TABLE spcgrp_dbhgrp (" +
-                    "species_group INTEGER," +
-                    "species_label CHAR(50)," +
-                    "diam_group INTEGER," +
-                    "diam_class CHAR(15))";
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+            string strSql = "";
 
-            foreach (ProcessorScenarioItem.SpcGroupItem objSpcGroup in ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oSpcGroupItem_Collection)
+            SQLite.ADO.DataMgr oDataMgr = null;
+            if (!ReferenceProcessorScenarioForm.m_bUsingSqlite)
             {
-                foreach (ProcessorScenarioItem.TreeDiamGroupsItem objDiamGroup in ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeDiamGroupsItem_Collection)
+                //
+                //DELETE THE CURRENT SCENARIO RECORDS
+                //
+                m_oAdo.m_strSQL = "DELETE FROM scenario_tree_species_diam_dollar_values " +
+                                "WHERE TRIM(scenario_id)='" + this.ScenarioId.Trim() + "'";
+                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                //
+                //DELETE THE WORK TABLE
+                //
+                if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, "spcgrp_dbhgrp"))
+                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE spcgrp_dbhgrp");
+                //
+                //CREATE AND POPULATE WORK TABLE
+                //
+                m_oAdo.m_strSQL = "CREATE TABLE spcgrp_dbhgrp (" +
+                        "species_group INTEGER," +
+                        "species_label CHAR(50)," +
+                        "diam_group INTEGER," +
+                        "diam_class CHAR(15))";
+                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+
+                foreach (ProcessorScenarioItem.SpcGroupItem objSpcGroup in ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oSpcGroupItem_Collection)
                 {
-                    // INITIALIZE RECORDS IN WORK TABLE
-                    m_oAdo.m_strSQL = "INSERT INTO spcgrp_dbhgrp (species_group,species_label, diam_group, diam_class) " +
-                        "VALUES (" + objSpcGroup.SpeciesGroup + ",'" + objSpcGroup.SpeciesGroupLabel + "'," + 
-                        objDiamGroup.DiamGroup + ",'" + objDiamGroup.DiamClass + "')";
-                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                    //
-                    //INSERT SCENARIO RECORDS
-                    //
-                    m_oAdo.m_strSQL = "INSERT INTO scenario_tree_species_diam_dollar_values (scenario_id,species_group,diam_group) " +
-                                    "VALUES ('" + ScenarioId.Trim() + "'," + objSpcGroup.SpeciesGroup + "," +
-                                    objDiamGroup.DiamGroup + ")";
-                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                    foreach (ProcessorScenarioItem.TreeDiamGroupsItem objDiamGroup in ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeDiamGroupsItem_Collection)
+                    {
+                        // INITIALIZE RECORDS IN WORK TABLE
+                        m_oAdo.m_strSQL = "INSERT INTO spcgrp_dbhgrp (species_group,species_label, diam_group, diam_class) " +
+                            "VALUES (" + objSpcGroup.SpeciesGroup + ",'" + objSpcGroup.SpeciesGroupLabel + "'," +
+                            objDiamGroup.DiamGroup + ",'" + objDiamGroup.DiamClass + "')";
+                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                        //
+                        //INSERT SCENARIO RECORDS
+                        //
+                        m_oAdo.m_strSQL = "INSERT INTO scenario_tree_species_diam_dollar_values (scenario_id,species_group,diam_group) " +
+                                        "VALUES ('" + ScenarioId.Trim() + "'," + objSpcGroup.SpeciesGroup + "," +
+                                        objDiamGroup.DiamGroup + ")";
+                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                    }
                 }
             }
+            else
+            {
+                oDataMgr = new SQLite.ADO.DataMgr();
+                string strScenarioDB =
+                    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                oDataMgr.OpenConnection(oDataMgr.GetConnectionString(strScenarioDB));
+                if (oDataMgr.m_intError != 0)
+                {
+                    m_intError = oDataMgr.m_intError;
+                    m_strError = oDataMgr.m_strError;
+                    oDataMgr = null;
+                    return;
+                }
+                m_intError = 0;
+                m_strError = "";
+                //
+                //DELETE THE CURRENT SCENARIO RECORDS
+                //
+                oDataMgr.m_strSQL = "DELETE FROM scenario_tree_species_diam_dollar_values " +
+                                "WHERE TRIM(scenario_id)='" + this.ScenarioId.Trim() + "'";
+                oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
+                //
+                //DELETE THE WORK TABLE
+                //
+                if (oDataMgr.TableExist(oDataMgr.m_Connection, "spcgrp_dbhgrp"))
+                    oDataMgr.SqlNonQuery(oDataMgr.m_Connection, "DROP TABLE spcgrp_dbhgrp");
+                //
+                //CREATE AND POPULATE WORK TABLE
+                //
+                oDataMgr.m_strSQL = "CREATE TABLE spcgrp_dbhgrp (" +
+                        "species_group INTEGER," +
+                        "species_label TEXT," +
+                        "diam_group INTEGER," +
+                        "diam_class TEXT)";
+                oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
+
+                foreach (ProcessorScenarioItem.SpcGroupItem objSpcGroup in ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oSpcGroupItem_Collection)
+                {
+                    foreach (ProcessorScenarioItem.TreeDiamGroupsItem objDiamGroup in ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeDiamGroupsItem_Collection)
+                    {
+                        // INITIALIZE RECORDS IN WORK TABLE
+                        oDataMgr.m_strSQL = "INSERT INTO spcgrp_dbhgrp (species_group,species_label, diam_group, diam_class) " +
+                            "VALUES (" + objSpcGroup.SpeciesGroup + ",'" + objSpcGroup.SpeciesGroupLabel + "'," +
+                            objDiamGroup.DiamGroup + ",'" + objDiamGroup.DiamClass + "')";
+                        oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
+                        //
+                        //INSERT SCENARIO RECORDS
+                        //
+                        oDataMgr.m_strSQL = "INSERT INTO scenario_tree_species_diam_dollar_values (scenario_id,species_group,diam_group) " +
+                                        "VALUES ('" + ScenarioId.Trim() + "'," + objSpcGroup.SpeciesGroup + "," +
+                                        objDiamGroup.DiamGroup + ")";
+                        oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
+                    }
+                }
+            }
+
 
 			//
 			//UPDATE SCENARIO RECORDS WITH MERCH AND CHIP VALUES
 			//
 			for (x=0;x<=this.uc_processor_scenario_spc_dbh_group_value_collection1.Count-1;x++)
 			{
-				strValues="";
 				strSpcGrp = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).SpeciesGroup.Trim();
 				strDbhGrp = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).DbhGroup.Trim();
                 strWoodBin = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).GetWoodBin();
@@ -391,24 +451,51 @@ namespace FIA_Biosum_Manager
 				strChipValue = this.txtChipValue.Text.Trim();
 				strChipValue = strChipValue.Replace("$","");
 
-				m_oAdo.m_strSQL = "UPDATE scenario_tree_species_diam_dollar_values a " + 
-					              "INNER JOIN spcgrp_dbhgrp b " + 
-					              "ON  a.species_group=b.species_group AND " + 
-					                  "a.diam_group=b.diam_group " + 
-					              "SET a.merch_value=" + strMerchValue + "," + 
-					                  "a.chip_value=" + strChipValue + ", " + 
-                                      "a.wood_bin='" + strWoodBin.Trim() + "' " + 
-								  "WHERE TRIM(a.scenario_id)='" + ScenarioId.Trim() + "' AND " + 
-					                    "TRIM(b.species_label)='" + strSpcGrp + "' AND " + 
-					                    "TRIM(b.diam_class)='" + strDbhGrp + "'";
+                if (!ReferenceProcessorScenarioForm.m_bUsingSqlite)
+                {
+                    strSql = "UPDATE scenario_tree_species_diam_dollar_values a " +
+                                  "INNER JOIN spcgrp_dbhgrp b " +
+                                  "ON  a.species_group=b.species_group AND " +
+                                      "a.diam_group=b.diam_group " +
+                                  "SET a.merch_value=" + strMerchValue + "," +
+                                      "a.chip_value=" + strChipValue + ", " +
+                                      "a.wood_bin='" + strWoodBin.Trim() + "' " +
+                                  "WHERE TRIM(a.scenario_id)='" + ScenarioId.Trim() + "' AND " +
+                                        "TRIM(b.species_label)='" + strSpcGrp + "' AND " +
+                                        "TRIM(b.diam_class)='" + strDbhGrp + "'";
+                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, strSql);
+                }
+                else
+                {
+                    strSql = "UPDATE scenario_tree_species_diam_dollar_values " +
+                             "SET merch_value = " + strMerchValue + "," +
+                             "chip_value = " + strChipValue + "," +
+                             "wood_bin = '" + strWoodBin.Trim() + "' WHERE EXISTS (" +
+                             "SELECT * FROM spcgrp_dbhgrp " +
+                             "WHERE scenario_tree_species_diam_dollar_values.species_group = spcgrp_dbhgrp.species_group " +
+                             "AND scenario_tree_species_diam_dollar_values.diam_group = spcgrp_dbhgrp.diam_group " +
+                             "AND TRIM(scenario_tree_species_diam_dollar_values.scenario_id) = '" + ScenarioId.Trim() + "' " +
+                             "AND TRIM(spcgrp_dbhgrp.species_label) = '" + strSpcGrp + "' " +
+                             "AND TRIM(spcgrp_dbhgrp.diam_class) = '" + strDbhGrp + "')";
 
+                    oDataMgr.SqlNonQuery(oDataMgr.m_Connection, strSql);
+                }
 				
-				m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection,m_oAdo.m_strSQL);
-				uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).SaveValues();
-			
-				
+				uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).SaveValues();							
 			}
-			this.m_strChipValueSave=this.txtChipValue.Text;
+			this.m_strChipValueSave= this.txtChipValue.Text;
+            if (ReferenceProcessorScenarioForm.m_bUsingSqlite)
+            {
+                //
+                //DELETE THE WORK TABLE AND CLOSE CONNECTION
+                //
+                if (oDataMgr.TableExist(oDataMgr.m_Connection, "spcgrp_dbhgrp"))
+                    oDataMgr.SqlNonQuery(oDataMgr.m_Connection, "DROP TABLE spcgrp_dbhgrp");
+                    m_intError = oDataMgr.m_intError;
+
+                    oDataMgr.CloseConnection(oDataMgr.m_Connection);
+                    oDataMgr = null;
+            }
 			
 		}
 		public frmProcessorScenario ReferenceProcessorScenarioForm

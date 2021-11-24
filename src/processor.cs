@@ -9,10 +9,12 @@ namespace FIA_Biosum_Manager
     {
         private string m_strScenarioId = "";
         private ado_data_access  m_oAdo;
+        private SQLite.ADO.DataMgr m_oDataMgr;
         private string m_strOpcostTableName = "OpCost_Input";
         private string m_strTvvTableName = "TreeVolValLowSlope";
         private string m_strDebugFile ="";
         private string m_strOpcostIdealTableName = "OpCost_Ideal_Output";
+        private bool m_bUsingSqlite = false;
         //private ado_data_access p_oAdo;
         private System.Collections.Generic.List<tree> m_trees;
         private scenarioHarvestMethod m_scenarioHarvestMethod;
@@ -22,12 +24,36 @@ namespace FIA_Biosum_Manager
         private escalators m_escalators;
         public System.Collections.Generic.List<string> m_standsWithNoYardingDistance;
 
-        public processor(string strDebugFile, string strScenarioId, string strConnectionString)
+        public processor(string strDebugFile, string strScenarioId, string strConnectionString, bool bUsingSqlite,
+                         string sqliteConnectionString)
         {
             m_strDebugFile = strDebugFile;
             m_strScenarioId = strScenarioId;
+            m_bUsingSqlite = bUsingSqlite;
             m_oAdo = new ado_data_access();
             m_oAdo.OpenConnection(strConnectionString);
+            if (m_bUsingSqlite)
+            {
+                m_oDataMgr = new SQLite.ADO.DataMgr();
+                m_oDataMgr.OpenConnection(sqliteConnectionString);
+                // Attach to rule definitions database; Seems to be connection-specific
+                string strScenarioDB =
+                    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                string strSql = "ATTACH DATABASE '" + strScenarioDB + "' AS definitions";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + strSql + "\r\n");
+                m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, strSql);
+                // Set up an ODBC DSN for the temp database
+                // Check to see if the input SQLite DSN exists and if so, delete so we can add
+                ODBCMgr odbcmgr = new ODBCMgr();
+                if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName))
+                {
+                    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName);
+                }
+                odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName,
+                    m_oDataMgr.m_Connection.FileName);
+            }
         }
         
         public Queries init()
@@ -60,7 +86,7 @@ namespace FIA_Biosum_Manager
             p_oQueries.m_oFvs.LoadDatasource = true;
             p_oQueries.m_oReference.LoadDatasource = true;
             p_oQueries.m_oProcessor.LoadDatasource = true;
-            p_oQueries.LoadDatasources(true, "processor", m_strScenarioId);
+            p_oQueries.LoadDatasources(true, m_bUsingSqlite, "processor", m_strScenarioId);
 
             //link to all the scenario rule definition tables
             oDao.CreateTableLink(p_oQueries.m_strTempDbFile,
@@ -138,6 +164,7 @@ namespace FIA_Biosum_Manager
         {
 
             //Load harvest methods; Prescription load depends on harvest methods
+            //@ToDo: Table names that are passed in here are still in MS Access
             m_harvestMethodList = LoadHarvestMethods(p_strRefHarvestMethodTableName);
             //If harvest methods didn't load, stop processing
             if (m_harvestMethodList == null)
@@ -241,7 +268,7 @@ namespace FIA_Biosum_Manager
                                 newTree.DryBiom = Convert.ToDouble(m_oAdo.m_OleDbDataReader["drybiom"]);
                             }
                         }
-                        catch (System.InvalidCastException castEx)
+                        catch (Exception)
                         {
                             frmMain.g_oUtils.WriteText(m_strDebugFile, "loadTrees: Unable to load fvs_tree_id: " + newTree.FvsTreeId + " due to null values!\r\n");
                             frmMain.g_oUtils.WriteText(m_strDebugFile, "loadTrees: Process aborted for variant: " + p_strVariant + " rxPackage: " + p_strRxPackage + "!\r\n");
@@ -918,7 +945,7 @@ namespace FIA_Biosum_Manager
             return -1;
         }
 
-        public int CreateTreeVolValWorkTable(string strDateTimeCreated, bool blnInclHarvMethodCat)
+        public int CreateTreeVolValWorkTable(string strDateTimeCreated)
         {
             int intReturnVal = -1;
             if (m_trees.Count < 1)
@@ -937,12 +964,36 @@ namespace FIA_Biosum_Manager
 
             if (m_oAdo.m_intError == 0)
             {
-                // drop tree vol val work table (TreeVolValLowSlope) if it exists for next variant/package
-                if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, m_strTvvTableName) == true)
-                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + m_strTvvTableName);
-                
-                // create tree vol val work table (TreeVolValLowSlope); Re-use the sql from tree vol val but don't create the indexes
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, Tables.Processor.CreateTreeVolValSpeciesDiamGroupsTableSQL(m_strTvvTableName));
+                if (!m_bUsingSqlite)
+                {
+                    // drop tree vol val work table (TreeVolValLowSlope) if it exists for next variant/package
+                    if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, m_strTvvTableName) == true)
+                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + m_strTvvTableName);
+
+                    // create tree vol val work table (TreeVolValLowSlope); Re-use the sql from tree vol val but don't create the indexes
+                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, Tables.Processor.CreateTreeVolValSpeciesDiamGroupsTableSQL(m_strTvvTableName));
+                }
+                else
+                {
+                    // drop tree vol val work table (TreeVolValLowSlope) if it exists for next variant/package
+                    if (m_oDataMgr.TableExist(m_oDataMgr.m_Connection, m_strTvvTableName) == true)
+                        m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, "DROP TABLE " + m_strTvvTableName);
+
+                    // create tree vol val work table (TreeVolValLowSlope); Re-use the sql from tree vol val but don't create the indexes
+                    m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, Tables.Processor.CreateSqliteTreeVolValSpeciesDiamGroupsTableSQL(m_strTvvTableName, false));
+
+                    // check to see if table link exists; Create it if it doesn't
+                    if (! m_oAdo.TableExist(m_oAdo.m_OleDbConnection, m_strTvvTableName))
+                    {
+                        dao_data_access oDao = new dao_data_access();
+                        oDao.CreateSQLiteTableLink(m_oAdo.m_OleDbConnection.DataSource, m_strTvvTableName,
+                            m_strTvvTableName, ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName,
+                            m_oDataMgr.m_Connection.FileName);
+                        oDao.m_DaoWorkspace.Close();
+                        oDao = null;
+                    }
+                }
+
 
                 // load opcostIdeal into memory if user asked for low-cost harvest system
                 System.Collections.Generic.IDictionary<String, opcostIdeal> dictIdeal = new System.Collections.Generic.Dictionary<String, opcostIdeal>();
@@ -1154,36 +1205,62 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "createTreeVolValWorkTable: Begin writing tree vol val table - " + System.DateTime.Now.ToString() + "\r\n");
                 long lngCount =0;
+
+                System.Collections.Generic.IList<string> lstSql = new System.Collections.Generic.List<string>();
                 foreach (string key in dictTvvInput.Keys)
                 {
                     treeVolValInput nextStand = dictTvvInput[key];
-                    m_oAdo.m_strSQL = "INSERT INTO " + m_strTvvTableName + " " +
+                    string strSQL = "INSERT INTO " + m_strTvvTableName + " " +
                     "(biosum_cond_id, rxpackage, rx, rxcycle, species_group, diam_group, " +
                     "chip_vol_cf, chip_wt_gt, chip_val_dpa, chip_mkt_val_pgt," +
                     "merch_vol_cf, merch_wt_gt, merch_val_dpa, " +
                     "merch_to_chipbin_YN,  " +
                     "bc_vol_cf, bc_wt_gt, stand_residue_wt_gt, " +
-                    "biosum_harvest_method_category, DateTimeCreated, place_holder)" +
-                    "VALUES ('" + nextStand.CondId + "', '" + nextStand.RxPackage + "', '" + nextStand.Rx + "', '" + 
+                    //"biosum_harvest_method_category, DateTimeCreated, place_holder)" +
+                    "DateTimeCreated, place_holder)" +
+                    "VALUES ('" + nextStand.CondId + "', '" + nextStand.RxPackage + "', '" + nextStand.Rx + "', '" +
                     nextStand.RxCycle + "', " + nextStand.SpeciesGroup + ", " + nextStand.DiamGroup + ", " +
                     nextStand.ChipVolCfPa + ", " + nextStand.ChipWtGtPa + ", " + (nextStand.ChipWtGtPa * nextStand.ChipMktValPgt) +
                     ", " + nextStand.ChipMktValPgt + ", " + nextStand.TotalMerchVolCfPa + ", " + nextStand.TotalMerchWtGtPa + ", " + nextStand.TotalMerchValDpa +
                     ", '" + nextStand.MerchToChip + "', " + nextStand.TotalBrushCutVolCfPa + "," +
-                    nextStand.TotalBrushCutWtGtPa + ", " + nextStand.StandResidueWtGtPa + ", " + 
-                    nextStand.HarvestMethodCategory + ", '" + strDateTimeCreated + "', 'N')";
-
-                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                    if (m_oAdo.m_intError != 0) break;
-                    lngCount++;
+                    nextStand.TotalBrushCutWtGtPa + ", " + nextStand.StandResidueWtGtPa + ", " +
+                    //nextStand.HarvestMethodCategory + ", '" + strDateTimeCreated + "', 'N')";
+                    "'" + strDateTimeCreated + "', 'N')";
+                    lstSql.Add(strSQL);
                 }
 
-                //We may want this column for testing but not in the final product
-                //Also drop id column because it prevents copying rows into final tree vol val
-                if (!blnInclHarvMethodCat)
+                if (!m_bUsingSqlite)
                 {
-                    string strSqlAlter = "ALTER TABLE " + m_strTvvTableName + " DROP COLUMN biosum_harvest_method_category, id";
-                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, strSqlAlter);
+                    foreach (var item in lstSql)
+                    {
+                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, item);
+                        if (m_oAdo.m_intError != 0) break;
+                        lngCount++;
+                    }
                 }
+                else
+                {
+                    //Note: Wrapping this in a transaction made it MUCH faster!!
+                    m_oDataMgr.m_Command = m_oDataMgr.m_Connection.CreateCommand();
+                    using (m_oDataMgr.m_Transaction = m_oDataMgr.m_Connection.BeginTransaction())
+                    {
+                        m_oDataMgr.m_Command.Transaction = m_oDataMgr.m_Transaction;
+                        foreach (var item in lstSql)
+                        {
+                            m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, item);
+                            if (m_oDataMgr.m_intError != 0) break;
+                            lngCount++;
+                        }
+                        m_oDataMgr.m_Transaction.Commit();
+                    }
+                }
+
+                //Drop id column because it prevents copying rows into final tree vol val                    
+                if (!m_bUsingSqlite)
+                {
+                    string strSqlAlter = "ALTER TABLE " + m_strTvvTableName + " DROP COLUMN id";
+                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, strSqlAlter);
+                }                    
                 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "END createTreeVolValWorkTable INSERTED " + lngCount + " RECORDS: " + System.DateTime.Now.ToString() + "\r\n");
@@ -1208,28 +1285,63 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
                 }
             }
+            if (m_oDataMgr != null)
+            {
+                m_oDataMgr.CloseConnection(m_oDataMgr.m_Connection);
+                m_oDataMgr = null;
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                {
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//Dispose of DataMgr object END \r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+                }
+            }
             return intReturnVal;
         }
 
         private System.Collections.Generic.List<treeDiamGroup> LoadTreeDiamGroups()
         {
             System.Collections.Generic.List<treeDiamGroup> listDiamGroups = new System.Collections.Generic.List<treeDiamGroup>();
-            if (m_oAdo.m_intError == 0)
+            if (!m_bUsingSqlite)
             {
-                string strSQL = "SELECT * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName +
-                    " WHERE TRIM(UCASE(scenario_id))='" + m_strScenarioId.Trim().ToUpper() + "'";
-                m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
-                if (m_oAdo.m_OleDbDataReader.HasRows)
+                if (m_oAdo.m_intError == 0)
                 {
-                    while (m_oAdo.m_OleDbDataReader.Read())
+                    string strSQL = "SELECT * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName +
+                        " WHERE TRIM(scenario_id)='" + m_strScenarioId.Trim() + "'";
+                    m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
+                    if (m_oAdo.m_OleDbDataReader.HasRows)
                     {
-                        int intDiamGroup = Convert.ToInt32(m_oAdo.m_OleDbDataReader["diam_group"]);
-                        double dblMinDiam = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_diam"]);
-                        double dblMaxDiam = Convert.ToDouble(m_oAdo.m_OleDbDataReader["max_diam"]);
-                        listDiamGroups.Add(new treeDiamGroup(intDiamGroup, dblMinDiam, dblMaxDiam));
+                        while (m_oAdo.m_OleDbDataReader.Read())
+                        {
+                            int intDiamGroup = Convert.ToInt32(m_oAdo.m_OleDbDataReader["diam_group"]);
+                            double dblMinDiam = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_diam"]);
+                            double dblMaxDiam = Convert.ToDouble(m_oAdo.m_OleDbDataReader["max_diam"]);
+                            listDiamGroups.Add(new treeDiamGroup(intDiamGroup, dblMinDiam, dblMaxDiam));
+                        }
                     }
                 }
             }
+            else
+            {
+                if (m_oDataMgr.m_intError == 0)
+                {
+                    string strSQL = "SELECT * FROM definitions." + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName +
+                        " WHERE TRIM(scenario_id)='" + m_strScenarioId.Trim() + "'";
+                    m_oDataMgr.SqlQueryReader(m_oDataMgr.m_Connection, strSQL);
+                    if (m_oDataMgr.m_DataReader.HasRows)
+                    {
+                        while (m_oDataMgr.m_DataReader.Read())
+                        {
+                            int intDiamGroup = Convert.ToInt32(m_oDataMgr.m_DataReader["diam_group"]);
+                            double dblMinDiam = Convert.ToDouble(m_oDataMgr.m_DataReader["min_diam"]);
+                            double dblMaxDiam = Convert.ToDouble(m_oDataMgr.m_DataReader["max_diam"]);
+                            listDiamGroups.Add(new treeDiamGroup(intDiamGroup, dblMinDiam, dblMaxDiam));
+                        }
+                        m_oDataMgr.m_DataReader.Close();
+                    }
+                }
+            }
+
             return listDiamGroups;
         }
 
@@ -1289,28 +1401,56 @@ namespace FIA_Biosum_Manager
         {
             System.Collections.Generic.IDictionary<String, speciesDiamValue> dictSpeciesDiamValues = 
                 new System.Collections.Generic.Dictionary<String, speciesDiamValue>();
-            if (m_oAdo.m_intError == 0)
+            if (! m_bUsingSqlite)
             {
-                string strSQL = "SELECT * FROM " + 
-                                Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName + 
-                                " WHERE scenario_id = '" + p_scenario + "'";
-                m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
-                if (m_oAdo.m_OleDbDataReader.HasRows)
+                if (m_oAdo.m_intError == 0)
                 {
-                    while (m_oAdo.m_OleDbDataReader.Read())
+                    string strSQL = "SELECT * FROM " +
+                                    Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName +
+                                    " WHERE scenario_id = '" + p_scenario + "'";
+                    m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
+                    if (m_oAdo.m_OleDbDataReader.HasRows)
                     {
-                        int intSpcGroup = Convert.ToInt32(m_oAdo.m_OleDbDataReader["species_group"]);
-                        int intDiamGroup = Convert.ToInt32(m_oAdo.m_OleDbDataReader["diam_group"]);
-                        string strWoodBin = Convert.ToString(m_oAdo.m_OleDbDataReader["wood_bin"]).Trim();
-                        double dblMerchValue = Convert.ToDouble(m_oAdo.m_OleDbDataReader["merch_value"]);
-                        double dblChipValue = Convert.ToDouble(m_oAdo.m_OleDbDataReader["chip_value"]);
-                        string strKey = intDiamGroup + "|" + intSpcGroup;
-                        dictSpeciesDiamValues.Add(strKey, new speciesDiamValue(intDiamGroup, intSpcGroup,
-                            strWoodBin, dblMerchValue, dblChipValue));
+                        while (m_oAdo.m_OleDbDataReader.Read())
+                        {
+                            int intSpcGroup = Convert.ToInt32(m_oAdo.m_OleDbDataReader["species_group"]);
+                            int intDiamGroup = Convert.ToInt32(m_oAdo.m_OleDbDataReader["diam_group"]);
+                            string strWoodBin = Convert.ToString(m_oAdo.m_OleDbDataReader["wood_bin"]).Trim();
+                            double dblMerchValue = Convert.ToDouble(m_oAdo.m_OleDbDataReader["merch_value"]);
+                            double dblChipValue = Convert.ToDouble(m_oAdo.m_OleDbDataReader["chip_value"]);
+                            string strKey = intDiamGroup + "|" + intSpcGroup;
+                            dictSpeciesDiamValues.Add(strKey, new speciesDiamValue(intDiamGroup, intSpcGroup,
+                                strWoodBin, dblMerchValue, dblChipValue));
+                        }
                     }
-                    //Console.WriteLine("DiamValues: " + dictSpeciesDiamValues.Keys.Count);
                 }
             }
+            else
+            {
+                if (m_oDataMgr.m_intError == 0)
+                {
+                    string strSQL = "SELECT * FROM definitions." +
+                                    Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName +
+                                    " WHERE scenario_id = '" + p_scenario + "'";
+                    m_oDataMgr.SqlQueryReader(m_oDataMgr.m_Connection, strSQL);
+                    if (m_oDataMgr.m_DataReader.HasRows)
+                    {
+                        while (m_oDataMgr.m_DataReader.Read())
+                        {
+                            int intSpcGroup = Convert.ToInt32(m_oDataMgr.m_DataReader["species_group"]);
+                            int intDiamGroup = Convert.ToInt32(m_oDataMgr.m_DataReader["diam_group"]);
+                            string strWoodBin = Convert.ToString(m_oDataMgr.m_DataReader["wood_bin"]).Trim();
+                            double dblMerchValue = Convert.ToDouble(m_oDataMgr.m_DataReader["merch_value"]);
+                            double dblChipValue = Convert.ToDouble(m_oDataMgr.m_DataReader["chip_value"]);
+                            string strKey = intDiamGroup + "|" + intSpcGroup;
+                            dictSpeciesDiamValues.Add(strKey, new speciesDiamValue(intDiamGroup, intSpcGroup,
+                                strWoodBin, dblMerchValue, dblChipValue));
+                        }
+                        m_oDataMgr.m_DataReader.Close();
+                    }
+                }
+            }
+
             return dictSpeciesDiamValues;
         }
 
@@ -1324,17 +1464,78 @@ namespace FIA_Biosum_Manager
             
             System.Collections.Generic.IDictionary<String, prescription> dictPrescriptions = 
                 new System.Collections.Generic.Dictionary<String, prescription>();
-            if (m_oAdo.m_intError == 0)
-            {
-                string strSQL = "SELECT * FROM " + p_strRxTable;
-                m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
-                if (m_oAdo.m_OleDbDataReader.HasRows)
+                if (m_oAdo.m_intError == 0)
                 {
-                    while (m_oAdo.m_OleDbDataReader.Read())
+                    string strSQL = "SELECT * FROM " + p_strRxTable;
+                    m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
+                    if (m_oAdo.m_OleDbDataReader.HasRows)
                     {
-                        string strRx = Convert.ToString(m_oAdo.m_OleDbDataReader["rx"]).Trim();
+                        while (m_oAdo.m_OleDbDataReader.Read())
+                        {
+                            string strRx = Convert.ToString(m_oAdo.m_OleDbDataReader["rx"]).Trim();
+                            string strHarvestMethodLowSlope = Convert.ToString(m_oAdo.m_OleDbDataReader["HarvestMethodLowSlope"]).Trim();
+                            string strHarvestMethodSteepSlope = Convert.ToString(m_oAdo.m_OleDbDataReader["HarvestMethodSteepSlope"]).Trim();
+                            harvestMethod objHarvestMethodLowSlope = null;
+                            harvestMethod objHarvestMethodSteepSlope = null;
+                            foreach (harvestMethod nextMethod in m_harvestMethodList)
+                            {
+                                if (nextMethod.Method.Equals(strHarvestMethodLowSlope) && !nextMethod.SteepSlope)
+                                {
+                                    objHarvestMethodLowSlope = nextMethod;
+                                }
+                                else if (nextMethod.Method.Equals(strHarvestMethodSteepSlope) && nextMethod.SteepSlope)
+                                {
+                                    objHarvestMethodSteepSlope = nextMethod;
+                                }
+                            }
+
+                            dictPrescriptions.Add(strRx, new prescription(strRx, objHarvestMethodLowSlope, objHarvestMethodSteepSlope));
+                        }
+                    }
+                }
+            return dictPrescriptions;
+        }
+
+        private scenarioHarvestMethod LoadScenarioHarvestMethod(string p_scenario)
+        {
+            if (m_harvestMethodList == null || m_harvestMethodList.Count == 0)
+            {
+                System.Windows.Forms.MessageBox.Show("Harvest methods must be loaded before loading scenario harvest methods", "FIA Biosum",
+                    System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+            }
+            
+            scenarioHarvestMethod returnVariables = null;
+            if (!m_bUsingSqlite)
+            {
+                if (m_oAdo.m_intError == 0)
+                {
+                    string strSQL = "SELECT * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodTableName +
+                                    " WHERE scenario_id = '" + p_scenario + "'";
+                    m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
+                    if (m_oAdo.m_OleDbDataReader.HasRows)
+                    {
+                        // We should only have one record
+                        m_oAdo.m_OleDbDataReader.Read();
                         string strHarvestMethodLowSlope = Convert.ToString(m_oAdo.m_OleDbDataReader["HarvestMethodLowSlope"]).Trim();
+                        double dblMinChipDbh = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_chip_dbh"]);
+                        double dblMinSmallLogDbh = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_sm_log_dbh"]);
+                        double dblMinLgLogDbh = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_lg_log_dbh"]);
+                        int intMinSlopePct = Convert.ToInt32(m_oAdo.m_OleDbDataReader["SteepSlope"]);
+                        double dblMinDbhSteepSlope = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_dbh_steep_slope"]);
+                        string strHarvestMethodSelection = Convert.ToString(m_oAdo.m_OleDbDataReader["HarvestMethodSelection"]).Trim();
+                        HarvestMethodSelection objHarvestMethodSelection = HarvestMethodSelection.RX;
+                        if (strHarvestMethodSelection.Equals(HarvestMethodSelection.LOWEST_COST.Value))
+                        {
+                            objHarvestMethodSelection = HarvestMethodSelection.LOWEST_COST;
+                        }
+                        else if (strHarvestMethodSelection.Equals(HarvestMethodSelection.SELECTED.Value))
+                        {
+                            objHarvestMethodSelection = HarvestMethodSelection.SELECTED;
+                        }
                         string strHarvestMethodSteepSlope = Convert.ToString(m_oAdo.m_OleDbDataReader["HarvestMethodSteepSlope"]).Trim();
+                        int intSaplingMerchAsPercentOfTotalVol = Convert.ToInt16(m_oAdo.m_OleDbDataReader["SaplingMerchAsPercentOfTotalVol"]);
+                        int intWoodlandMerchAsPercentOfTotalVol = Convert.ToInt16(m_oAdo.m_OleDbDataReader["WoodlandMerchAsPercentOfTotalVol"]);
+                        int intCullPctThreshold = Convert.ToInt16(m_oAdo.m_OleDbDataReader["CullPctThreshold"]);
                         harvestMethod objHarvestMethodLowSlope = null;
                         harvestMethod objHarvestMethodSteepSlope = null;
                         foreach (harvestMethod nextMethod in m_harvestMethodList)
@@ -1348,167 +1549,216 @@ namespace FIA_Biosum_Manager
                                 objHarvestMethodSteepSlope = nextMethod;
                             }
                         }
-                        
-                        dictPrescriptions.Add(strRx, new prescription(strRx, objHarvestMethodLowSlope, objHarvestMethodSteepSlope));
-                    }
-                }
-            }
-            return dictPrescriptions;
-        }
 
-        private scenarioHarvestMethod LoadScenarioHarvestMethod(string p_scenario)
-        {
-            if (m_harvestMethodList == null || m_harvestMethodList.Count == 0)
-            {
-                System.Windows.Forms.MessageBox.Show("Harvest methods must be loaded before loading scenario harvest methods", "FIA Biosum",
-                    System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-            }
-            
-            scenarioHarvestMethod returnVariables = null;
-            if (m_oAdo.m_intError == 0)
-            {
-                string strSQL = "SELECT * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodTableName +
-                                " WHERE scenario_id = '" + p_scenario + "'";
-                m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
-                if (m_oAdo.m_OleDbDataReader.HasRows)
-                {
-                    // We should only have one record
-                    m_oAdo.m_OleDbDataReader.Read();
-                    string strHarvestMethodLowSlope = Convert.ToString(m_oAdo.m_OleDbDataReader["HarvestMethodLowSlope"]).Trim();
-                    double dblMinChipDbh = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_chip_dbh"]);
-                    double dblMinSmallLogDbh = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_sm_log_dbh"]);
-                    double dblMinLgLogDbh = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_lg_log_dbh"]);
-                    int intMinSlopePct = Convert.ToInt32(m_oAdo.m_OleDbDataReader["SteepSlope"]);
-                    double dblMinDbhSteepSlope = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_dbh_steep_slope"]);
-                    string strHarvestMethodSelection = Convert.ToString(m_oAdo.m_OleDbDataReader["HarvestMethodSelection"]).Trim();
-                    HarvestMethodSelection objHarvestMethodSelection = HarvestMethodSelection.RX;
-                    if (strHarvestMethodSelection.Equals(HarvestMethodSelection.LOWEST_COST.Value))
-                    {
-                        objHarvestMethodSelection = HarvestMethodSelection.LOWEST_COST;
+                        returnVariables = new scenarioHarvestMethod(dblMinChipDbh, dblMinSmallLogDbh, dblMinLgLogDbh,
+                            intMinSlopePct, dblMinDbhSteepSlope,
+                            objHarvestMethodLowSlope, objHarvestMethodSteepSlope,
+                            intSaplingMerchAsPercentOfTotalVol, intWoodlandMerchAsPercentOfTotalVol, intCullPctThreshold, objHarvestMethodSelection);
                     }
-                    else if (strHarvestMethodSelection.Equals(HarvestMethodSelection.SELECTED.Value))
-                    {
-                        objHarvestMethodSelection = HarvestMethodSelection.SELECTED;
-                    }
-                    string strHarvestMethodSteepSlope = Convert.ToString(m_oAdo.m_OleDbDataReader["HarvestMethodSteepSlope"]).Trim();
-                    int intSaplingMerchAsPercentOfTotalVol = Convert.ToInt16(m_oAdo.m_OleDbDataReader["SaplingMerchAsPercentOfTotalVol"]);
-                    int intWoodlandMerchAsPercentOfTotalVol = Convert.ToInt16(m_oAdo.m_OleDbDataReader["WoodlandMerchAsPercentOfTotalVol"]);
-                    int intCullPctThreshold = Convert.ToInt16(m_oAdo.m_OleDbDataReader["CullPctThreshold"]);
-                    harvestMethod objHarvestMethodLowSlope = null;
-                    harvestMethod objHarvestMethodSteepSlope = null;
-                    foreach (harvestMethod nextMethod in m_harvestMethodList)
-                    {
-                        if (nextMethod.Method.Equals(strHarvestMethodLowSlope) && !nextMethod.SteepSlope)
-                        {
-                            objHarvestMethodLowSlope = nextMethod;
-                        }
-                        else if (nextMethod.Method.Equals(strHarvestMethodSteepSlope) && nextMethod.SteepSlope)
-                        {
-                            objHarvestMethodSteepSlope = nextMethod;
-                        }
-                    }
-                    
-                    returnVariables = new scenarioHarvestMethod(dblMinChipDbh, dblMinSmallLogDbh, dblMinLgLogDbh,
-                        intMinSlopePct, dblMinDbhSteepSlope,
-                        objHarvestMethodLowSlope, objHarvestMethodSteepSlope,
-                        intSaplingMerchAsPercentOfTotalVol, intWoodlandMerchAsPercentOfTotalVol, intCullPctThreshold, objHarvestMethodSelection);
                 }
             }
+            else
+            {
+                if (m_oDataMgr.m_intError == 0)
+                {
+                    string strSQL = "SELECT * FROM definitions." + Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodTableName +
+                                    " WHERE scenario_id = '" + p_scenario + "'";
+                    m_oDataMgr.SqlQueryReader(m_oDataMgr.m_Connection, strSQL);
+                    if (m_oDataMgr.m_DataReader.HasRows)
+                    {
+                        // We should only have one record
+                        m_oDataMgr.m_DataReader.Read();
+                        string strHarvestMethodLowSlope = Convert.ToString(m_oDataMgr.m_DataReader["HarvestMethodLowSlope"]).Trim();
+                        double dblMinChipDbh = Convert.ToDouble(m_oDataMgr.m_DataReader["min_chip_dbh"]);
+                        double dblMinSmallLogDbh = Convert.ToDouble(m_oDataMgr.m_DataReader["min_sm_log_dbh"]);
+                        double dblMinLgLogDbh = Convert.ToDouble(m_oDataMgr.m_DataReader["min_lg_log_dbh"]);
+                        int intMinSlopePct = Convert.ToInt32(m_oDataMgr.m_DataReader["SteepSlope"]);
+                        double dblMinDbhSteepSlope = Convert.ToDouble(m_oDataMgr.m_DataReader["min_dbh_steep_slope"]);
+                        string strHarvestMethodSelection = Convert.ToString(m_oDataMgr.m_DataReader["HarvestMethodSelection"]).Trim();
+                        HarvestMethodSelection objHarvestMethodSelection = HarvestMethodSelection.RX;
+                        if (strHarvestMethodSelection.Equals(HarvestMethodSelection.LOWEST_COST.Value))
+                        {
+                            objHarvestMethodSelection = HarvestMethodSelection.LOWEST_COST;
+                        }
+                        else if (strHarvestMethodSelection.Equals(HarvestMethodSelection.SELECTED.Value))
+                        {
+                            objHarvestMethodSelection = HarvestMethodSelection.SELECTED;
+                        }
+                        string strHarvestMethodSteepSlope = Convert.ToString(m_oDataMgr.m_DataReader["HarvestMethodSteepSlope"]).Trim();
+                        int intSaplingMerchAsPercentOfTotalVol = Convert.ToInt16(m_oDataMgr.m_DataReader["SaplingMerchAsPercentOfTotalVol"]);
+                        int intWoodlandMerchAsPercentOfTotalVol = Convert.ToInt16(m_oDataMgr.m_DataReader["WoodlandMerchAsPercentOfTotalVol"]);
+                        int intCullPctThreshold = Convert.ToInt16(m_oDataMgr.m_DataReader["CullPctThreshold"]);
+                        harvestMethod objHarvestMethodLowSlope = null;
+                        harvestMethod objHarvestMethodSteepSlope = null;
+                        foreach (harvestMethod nextMethod in m_harvestMethodList)
+                        {
+                            if (nextMethod.Method.Equals(strHarvestMethodLowSlope) && !nextMethod.SteepSlope)
+                            {
+                                objHarvestMethodLowSlope = nextMethod;
+                            }
+                            else if (nextMethod.Method.Equals(strHarvestMethodSteepSlope) && nextMethod.SteepSlope)
+                            {
+                                objHarvestMethodSteepSlope = nextMethod;
+                            }
+                        }
+
+                        returnVariables = new scenarioHarvestMethod(dblMinChipDbh, dblMinSmallLogDbh, dblMinLgLogDbh,
+                            intMinSlopePct, dblMinDbhSteepSlope,
+                            objHarvestMethodLowSlope, objHarvestMethodSteepSlope,
+                            intSaplingMerchAsPercentOfTotalVol, intWoodlandMerchAsPercentOfTotalVol, intCullPctThreshold, objHarvestMethodSelection);
+                    }
+                }
+            }
+
             return returnVariables;
         }
 
         private scenarioMoveInCost LoadScenarioMoveInCost(string p_scenario)
         {
             scenarioMoveInCost returnVariables = null;
-            if (m_oAdo.m_intError == 0)
+            if (!m_bUsingSqlite)
             {
-                string strSQL = "SELECT * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultMoveInCostsTableName +
-                                " WHERE scenario_id = '" + p_scenario + "'";
-                m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
-                if (m_oAdo.m_OleDbDataReader.HasRows)
+                if (m_oAdo.m_intError == 0)
                 {
-                    // We should only have one record
-                    m_oAdo.m_OleDbDataReader.Read();
-                    double dblYardDistThreshold = Convert.ToDouble(m_oAdo.m_OleDbDataReader["yard_dist_threshold"]);
-                    double dblAssumedHarvestAreaAc = Convert.ToDouble(m_oAdo.m_OleDbDataReader["assumed_harvest_area_ac"]);
-                    double dblMoveInTimeMultiplier = Convert.ToDouble(m_oAdo.m_OleDbDataReader["move_in_time_multiplier"]);
-                    double dblMoveInHoursAddend = Convert.ToDouble(m_oAdo.m_OleDbDataReader["move_in_hours_addend"]);
+                    string strSQL = "SELECT * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultMoveInCostsTableName +
+                                    " WHERE scenario_id = '" + p_scenario + "'";
+                    m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
+                    if (m_oAdo.m_OleDbDataReader.HasRows)
+                    {
+                        // We should only have one record
+                        m_oAdo.m_OleDbDataReader.Read();
+                        double dblYardDistThreshold = Convert.ToDouble(m_oAdo.m_OleDbDataReader["yard_dist_threshold"]);
+                        double dblAssumedHarvestAreaAc = Convert.ToDouble(m_oAdo.m_OleDbDataReader["assumed_harvest_area_ac"]);
+                        double dblMoveInTimeMultiplier = Convert.ToDouble(m_oAdo.m_OleDbDataReader["move_in_time_multiplier"]);
+                        double dblMoveInHoursAddend = Convert.ToDouble(m_oAdo.m_OleDbDataReader["move_in_hours_addend"]);
 
-                    returnVariables = new scenarioMoveInCost(dblYardDistThreshold, dblAssumedHarvestAreaAc,
-                                                             dblMoveInTimeMultiplier, dblMoveInHoursAddend);
+                        returnVariables = new scenarioMoveInCost(dblYardDistThreshold, dblAssumedHarvestAreaAc,
+                                                                 dblMoveInTimeMultiplier, dblMoveInHoursAddend);
+                    }
                 }
             }
+            else
+            {
+                if (m_oDataMgr.m_intError == 0)
+                {
+                    string strSQL = "SELECT * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultMoveInCostsTableName +
+                                    " WHERE scenario_id = '" + p_scenario + "'";
+                    m_oDataMgr.SqlQueryReader(m_oDataMgr.m_Connection, strSQL);
+                    if (m_oDataMgr.m_DataReader.HasRows)
+                    {
+                        // We should only have one record
+                        m_oDataMgr.m_DataReader.Read();
+                        double dblYardDistThreshold = Convert.ToDouble(m_oDataMgr.m_DataReader["yard_dist_threshold"]);
+                        double dblAssumedHarvestAreaAc = Convert.ToDouble(m_oDataMgr.m_DataReader["assumed_harvest_area_ac"]);
+                        double dblMoveInTimeMultiplier = Convert.ToDouble(m_oDataMgr.m_DataReader["move_in_time_multiplier"]);
+                        double dblMoveInHoursAddend = Convert.ToDouble(m_oDataMgr.m_DataReader["move_in_hours_addend"]);
+                        returnVariables = new scenarioMoveInCost(dblYardDistThreshold, dblAssumedHarvestAreaAc,
+                                                                 dblMoveInTimeMultiplier, dblMoveInHoursAddend);
+                        m_oDataMgr.m_DataReader.Close();
+                    }
+                }
+            }
+
             return returnVariables;
         }
 
         private escalators LoadEscalators()
         {
             escalators returnEscalators = null;
-            if (m_oAdo.m_intError == 0)
+            if (!m_bUsingSqlite)
             {
-                string strSQL = "SELECT * FROM " +
-                                Tables.ProcessorScenarioRuleDefinitions.DefaultCostRevenueEscalatorsTableName + 
-                                " WHERE scenario_id = '" + m_strScenarioId + "'";
-                m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
-                if (m_oAdo.m_OleDbDataReader.HasRows)
+                if (m_oAdo.m_intError == 0)
                 {
-                    // We should only have one record
-                    m_oAdo.m_OleDbDataReader.Read();
-                    double dblEnergyWoodRevCycle2 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorEnergyWoodRevenue_Cycle2"]);
-                    double dblEnergyWoodRevCycle3 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorEnergyWoodRevenue_Cycle3"]);
-                    double dblEnergyWoodRevCycle4 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorEnergyWoodRevenue_Cycle4"]);
-                    double dblMerchWoodRevCycle2 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorMerchWoodRevenue_Cycle2"]);
-                    double dblMerchWoodRevCycle3 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorMerchWoodRevenue_Cycle3"]);
-                    double dblMerchWoodRevCycle4 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorMerchWoodRevenue_Cycle4"]);
+                    string strSQL = "SELECT * FROM " +
+                                    Tables.ProcessorScenarioRuleDefinitions.DefaultCostRevenueEscalatorsTableName +
+                                    " WHERE scenario_id = '" + m_strScenarioId + "'";
+                    m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
+                    if (m_oAdo.m_OleDbDataReader.HasRows)
+                    {
+                        // We should only have one record
+                        m_oAdo.m_OleDbDataReader.Read();
+                        double dblEnergyWoodRevCycle2 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorEnergyWoodRevenue_Cycle2"]);
+                        double dblEnergyWoodRevCycle3 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorEnergyWoodRevenue_Cycle3"]);
+                        double dblEnergyWoodRevCycle4 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorEnergyWoodRevenue_Cycle4"]);
+                        double dblMerchWoodRevCycle2 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorMerchWoodRevenue_Cycle2"]);
+                        double dblMerchWoodRevCycle3 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorMerchWoodRevenue_Cycle3"]);
+                        double dblMerchWoodRevCycle4 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorMerchWoodRevenue_Cycle4"]);
 
 
-                    returnEscalators = new escalators(dblEnergyWoodRevCycle2, dblEnergyWoodRevCycle3, dblEnergyWoodRevCycle4,
-                                                      dblMerchWoodRevCycle2, dblMerchWoodRevCycle3, dblMerchWoodRevCycle4);
+                        returnEscalators = new escalators(dblEnergyWoodRevCycle2, dblEnergyWoodRevCycle3, dblEnergyWoodRevCycle4,
+                                                          dblMerchWoodRevCycle2, dblMerchWoodRevCycle3, dblMerchWoodRevCycle4);
+                    }
                 }
             }
+            else
+            {
+                if (m_oDataMgr.m_intError == 0)
+                {
+                    string strSQL = "SELECT * FROM definitions." +
+                                    Tables.ProcessorScenarioRuleDefinitions.DefaultCostRevenueEscalatorsTableName +
+                                    " WHERE scenario_id = '" + m_strScenarioId + "'";
+                    m_oDataMgr.SqlQueryReader(m_oDataMgr.m_Connection, strSQL);
+                    if (m_oDataMgr.m_DataReader.HasRows)
+                    {
+                        // We should only have one record
+                        m_oDataMgr.m_DataReader.Read();
+                        double dblEnergyWoodRevCycle2 = Convert.ToDouble(m_oDataMgr.m_DataReader["EscalatorEnergyWoodRevenue_Cycle2"]);
+                        double dblEnergyWoodRevCycle3 = Convert.ToDouble(m_oDataMgr.m_DataReader["EscalatorEnergyWoodRevenue_Cycle3"]);
+                        double dblEnergyWoodRevCycle4 = Convert.ToDouble(m_oDataMgr.m_DataReader["EscalatorEnergyWoodRevenue_Cycle4"]);
+                        double dblMerchWoodRevCycle2 = Convert.ToDouble(m_oDataMgr.m_DataReader["EscalatorMerchWoodRevenue_Cycle2"]);
+                        double dblMerchWoodRevCycle3 = Convert.ToDouble(m_oDataMgr.m_DataReader["EscalatorMerchWoodRevenue_Cycle3"]);
+                        double dblMerchWoodRevCycle4 = Convert.ToDouble(m_oDataMgr.m_DataReader["EscalatorMerchWoodRevenue_Cycle4"]);
+
+
+                        returnEscalators = new escalators(dblEnergyWoodRevCycle2, dblEnergyWoodRevCycle3, dblEnergyWoodRevCycle4,
+                                                          dblMerchWoodRevCycle2, dblMerchWoodRevCycle3, dblMerchWoodRevCycle4);
+                    }
+                }
+            }
+
             return returnEscalators;
         }
 
         private System.Collections.Generic.IList<harvestMethod> LoadHarvestMethods(string p_strRefHarvestMethodTableName)
         {
             System.Collections.Generic.IList<harvestMethod> harvestMethodList = null;
-            if (m_oAdo.m_intError == 0)
-            {
-                // Check to see if the biosum_category column exists in the harvest method table; If not
-                // throw an error and exit the function; Processor won't work without this value
-                if (!m_oAdo.ColumnExist(m_oAdo.m_OleDbConnection, p_strRefHarvestMethodTableName, "min_tpa"))
-                {
-                    string strErrMsg = "Your project contains an obsolete version of the " + p_strRefHarvestMethodTableName +
-                                       " table that does not contain the 'min_tpa' field. Copy a new version of this table into your project from the" +
-                                       " BioSum installation directory before trying to run Processor.";
-                    System.Windows.Forms.MessageBox.Show(strErrMsg, "FIA Biosum",
-                        System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-                    return harvestMethodList;
-                }
 
-                string strSQL = "SELECT * FROM " + p_strRefHarvestMethodTableName;
-                m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
-                if (m_oAdo.m_OleDbDataReader.HasRows)
+                if (m_oAdo.m_intError == 0)
                 {
-                    harvestMethodList = new System.Collections.Generic.List<harvestMethod>();
-                    while (m_oAdo.m_OleDbDataReader.Read())
+                    // Check to see if the biosum_category column exists in the harvest method table; If not
+                    // throw an error and exit the function; Processor won't work without this value
+                    if (!m_oAdo.ColumnExist(m_oAdo.m_OleDbConnection, p_strRefHarvestMethodTableName, "min_tpa"))
                     {
-                        string strSteepYN = Convert.ToString(m_oAdo.m_OleDbDataReader["STEEP_YN"]).Trim();
-                        bool blnSteep = false;
-                        if (strSteepYN.Equals("Y"))
-                        { blnSteep = true; }
-                        string strMethod = Convert.ToString(m_oAdo.m_OleDbDataReader["Method"]).Trim();
-                        int intBiosumCategory = Convert.ToInt16(m_oAdo.m_OleDbDataReader["biosum_category"]);
-                        double dblMinTpa = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_tpa"]);
-                        double dblMinYardDistanceFt = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_yard_distance_ft"]);
-                        double dblMinAvgTreeVolCf = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_avg_tree_vol_cf"]);
-                        harvestMethod newMethod = new harvestMethod(blnSteep, strMethod, intBiosumCategory,dblMinTpa,
-                            dblMinYardDistanceFt, dblMinAvgTreeVolCf);
-                        harvestMethodList.Add(newMethod);
+                        string strErrMsg = "Your project contains an obsolete version of the " + p_strRefHarvestMethodTableName +
+                                           " table that does not contain the 'min_tpa' field. Copy a new version of this table into your project from the" +
+                                           " BioSum installation directory before trying to run Processor.";
+                        System.Windows.Forms.MessageBox.Show(strErrMsg, "FIA Biosum",
+                            System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                        return harvestMethodList;
+                    }
+
+                    string strSQL = "SELECT * FROM " + p_strRefHarvestMethodTableName;
+                    m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
+                    if (m_oAdo.m_OleDbDataReader.HasRows)
+                    {
+                        harvestMethodList = new System.Collections.Generic.List<harvestMethod>();
+                        while (m_oAdo.m_OleDbDataReader.Read())
+                        {
+                            string strSteepYN = Convert.ToString(m_oAdo.m_OleDbDataReader["STEEP_YN"]).Trim();
+                            bool blnSteep = false;
+                            if (strSteepYN.Equals("Y"))
+                            { blnSteep = true; }
+                            string strMethod = Convert.ToString(m_oAdo.m_OleDbDataReader["Method"]).Trim();
+                            int intBiosumCategory = Convert.ToInt16(m_oAdo.m_OleDbDataReader["biosum_category"]);
+                            double dblMinTpa = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_tpa"]);
+                            double dblMinYardDistanceFt = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_yard_distance_ft"]);
+                            double dblMinAvgTreeVolCf = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_avg_tree_vol_cf"]);
+                            harvestMethod newMethod = new harvestMethod(blnSteep, strMethod, intBiosumCategory, dblMinTpa,
+                                dblMinYardDistanceFt, dblMinAvgTreeVolCf);
+                            harvestMethodList.Add(newMethod);
+                        }
                     }
                 }
-            }
-
             return harvestMethodList;
         }
         

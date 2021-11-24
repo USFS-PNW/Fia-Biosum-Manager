@@ -111,11 +111,11 @@ namespace FIA_Biosum_Manager
 		{
 			try
 			{
-				this.txtNotes.Left = 5;
-				this.txtNotes.Width = this.Width - 10;
-				this.txtNotes.Height = this.ClientSize.Height - this.txtNotes.Top - 5;
-				this.txtNotes.Left = (int) (this.groupBox1.Width * .50) - (int) (this.txtNotes.Width * .50);
-			}
+                this.txtNotes.Left = 5;
+                this.txtNotes.Width = this.Width - 10;
+                this.txtNotes.Height = this.ClientSize.Height - this.txtNotes.Top - 5;
+                //this.txtNotes.Left = (int) (this.groupBox1.Width * .50) - (int) (this.txtNotes.Width * .50);
+            }
 			catch
 			{
 			}
@@ -135,34 +135,58 @@ namespace FIA_Biosum_Manager
 		}
 		public void SaveScenarioNotes()
 		{
-			ado_data_access p_ado = new ado_data_access();
-			System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
+            ado_data_access p_ado = null;
+            SQLite.ADO.DataMgr oDataMgr = null;
+            string strNotes = this.txtNotes.Text;
             string strProjDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
             string strScenarioDir = strProjDir + "\\" + ScenarioType + "\\db";
-            string strFile = "scenario_" + ScenarioType + "_rule_definitions.mdb"; //((frmMain)this.ParentForm.ParentForm).frmProject.uc_project1.m_strProjectFile;
-			StringBuilder strFullPath = new StringBuilder(strScenarioDir);
-			strFullPath.Append("\\");
-			strFullPath.Append(strFile);
-			string strNotes = this.txtNotes.Text;
-			string strSQL="";
-			strNotes=p_ado.FixString(strNotes,"'","''");
-			string strConn=p_ado.getMDBConnString(strFullPath.ToString(),"admin","");
-			//string strConn = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + strFullPath.ToString() + ";User Id=admin;Password=;";
-			if (ScenarioType.Trim().ToUpper() == "OPTIMIZER")
-			{
-				strSQL = "UPDATE scenario SET notes = '" + 
-					strNotes + 
-					"' WHERE trim(lcase(scenario_id)) = '" + ((frmOptimizerScenario)this.ParentForm).uc_scenario1.txtScenarioId.Text.Trim().ToLower() + "';";
-			}
-			else
-			{
-				strSQL = "UPDATE scenario SET notes = '" + 
-					strNotes + 
-					"' WHERE trim(lcase(scenario_id)) = '" + this.ReferenceProcessorScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower() + "';";
-			}
-			p_ado.SqlNonQuery(strConn,strSQL);
-			p_ado=null;
-		
+            if ((ReferenceProcessorScenarioForm != null && !ReferenceProcessorScenarioForm.m_bUsingSqlite) 
+                 || ScenarioType.Trim().ToUpper() == "OPTIMIZER")
+            {
+                p_ado = new ado_data_access();
+                strNotes = p_ado.FixString(strNotes, "'", "''");
+                string strSQL = "";
+                if (ScenarioType.Trim().ToUpper() == "OPTIMIZER")
+                {
+                    strSQL = "UPDATE scenario SET notes = '" +
+                        strNotes +
+                        "' WHERE trim(lcase(scenario_id)) = '" + ((frmOptimizerScenario)this.ParentForm).uc_scenario1.txtScenarioId.Text.Trim().ToLower() + "';";
+                }
+                else
+                {
+                    strSQL = "UPDATE scenario SET notes = '" +
+                        strNotes +
+                        "' WHERE trim(lcase(scenario_id)) = '" + this.ReferenceProcessorScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower() + "';";
+                }
+                System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
+                string strFile = "scenario_" + ScenarioType + "_rule_definitions.mdb";
+                StringBuilder strFullPath = new StringBuilder(strScenarioDir);
+                strFullPath.Append("\\");
+                strFullPath.Append(strFile);
+                string strConn = p_ado.getMDBConnString(strFullPath.ToString(), "admin", "");
+                p_ado.SqlNonQuery(strConn, strSQL);
+                p_ado = null;
+            }
+            else
+            {
+                oDataMgr = new SQLite.ADO.DataMgr();
+                strNotes = oDataMgr.FixString(strNotes, "'", "''");
+                //@ToDo: Only support Processor at this time
+                string strSQL = "UPDATE scenario SET notes = '" +
+                    strNotes +
+                    "' WHERE trim(lower(scenario_id)) = '" + this.ReferenceProcessorScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower() + "';";
+                string strFile = "scenario_" + ScenarioType + "_rule_definitions.db";
+                StringBuilder strFullPath = new StringBuilder(strScenarioDir);
+                strFullPath.Append("\\");
+                strFullPath.Append(strFile);
+                string strConn = oDataMgr.GetConnectionString(strFullPath.ToString());
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+                    conn.Open();
+                    oDataMgr.SqlNonQuery(conn, strSQL);
+                }
+                oDataMgr = null;
+            }		
 		}
 		public void LoadValues()
 		{
@@ -193,6 +217,32 @@ namespace FIA_Biosum_Manager
 			oAdo=null;
 			this.txtNotes.Text = strNotes;
 		}
+
+        public void LoadValuesSqlite()
+        {
+            string strNotes = "";
+            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
+            string strScenarioDBDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\db";
+            string strScenarioFile = "scenario_" + ScenarioType + "_rule_definitions.db";
+            StringBuilder strScenarioFullPath = new StringBuilder(strScenarioDBDir);
+            strScenarioFullPath.Append("\\");
+            strScenarioFullPath.Append(strScenarioFile);
+            string strScenarioConn = dataMgr.GetConnectionString(strScenarioFullPath.ToString());
+            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strScenarioConn))
+            {
+                con.Open();
+                if (ScenarioType.Trim().ToUpper() == "OPTIMIZER")
+                {
+                    dataMgr.m_strSQL = "SELECT notes FROM scenario WHERE TRIM(scenario_id)='" + this.ReferenceOptimizerScenarioForm.uc_scenario1.strScenarioId.Trim() + "'";
+                }
+                else
+                {
+                    dataMgr.m_strSQL = "SELECT notes FROM scenario WHERE TRIM(scenario_id)='" + this.ReferenceProcessorScenarioForm.uc_scenario1.strScenarioId.Trim() + "'";
+                }
+                strNotes = dataMgr.getSingleStringValueFromSQLQuery(con, dataMgr.m_strSQL, "scenario");
+            }
+            this.txtNotes.Text = strNotes;
+        }
 
         public void loadvalues_FromProperties()
         {
