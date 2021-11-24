@@ -108,10 +108,62 @@ namespace FIA_Biosum_Manager
 
         }
 
+        private void CreateMDBs_Main()
+        {
+            // When you need to see how to update progress bars:
+            // RunAppend_Main in uc_fvs_output.cs! (also good for seeing how to interact with m_intError;
+            var textBoxValue = frmMain.g_oDelegate.GetControlPropertyValue(this.textBox1, "Text", false);
+            frmMain.g_oDelegate.SetControlPropertyValue(this.textBox1, "Text", textBoxValue+ " Magic");
+            return;
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
 
+            //if (this.lstFvsOutput.CheckedItems.Count == 0)
+            //{
+            //    MessageBox.Show("No Boxes Are Checked", "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+            //    return;
+            //}
+
+            //this.m_frmTherm = new frmTherm(((frmDialog)ParentForm), "FVS OUT DATA",
+            //    "FVS Output", "2");
+            //m_frmTherm.Visible = false;
+            //this.m_frmTherm.lblMsg.Text = "";
+            //this.m_frmTherm.TopMost = true;
+
+            //this.cmbStep.Enabled = false;
+            //this.btnExecute.Enabled = false;
+            //this.btnChkAll.Enabled = false;
+            //this.btnClearAll.Enabled = false;
+            //this.btnRefresh.Enabled = false;
+            //this.btnClose.Enabled = false;
+            //this.btnHelp.Enabled = false;
+            //this.btnCancel.Visible = false;
+            //this.btnViewLogFile.Enabled = false;
+            //this.btnViewPostLogFile.Enabled = false;
+            //this.btnAuditDb.Enabled = false;
+            //this.btnPostAppendAuditDb.Enabled = false;
+
+            //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Maximum", 100);
+            //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Minimum", 0);
+            //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Value", 0);
+            //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg2, "Text", "Overall Progress");
+            //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "");
+            //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Visible", true);
+            //m_frmTherm.Show((frmDialog)ParentForm);
+
+            frmMain.g_oDelegate.CurrentThreadProcessAborted = false;
+            frmMain.g_oDelegate.CurrentThreadProcessDone = false;
+            frmMain.g_oDelegate.CurrentThreadProcessStarted = false;
+            frmMain.g_oDelegate.m_oThread = new System.Threading.Thread(new System.Threading.ThreadStart(CreateMDBs_Main));
+            frmMain.g_oDelegate.InitializeThreadEvents();
+            frmMain.g_oDelegate.m_oThread.IsBackground = true;
+            frmMain.g_oDelegate.CurrentThreadProcessIdle = false;
+            frmMain.g_oDelegate.m_oThread.Start();
         }
+
+        
 
         internal void uc_fvs_create_mdbs_Resize()
         {
