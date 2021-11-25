@@ -27,13 +27,16 @@ namespace FIA_Biosum_Manager
         private dao_data_access m_dao;
         private string m_strTempMDBFileConnectionString;
         private env m_oEnv;
+        private utils m_oUtils;
         private bool m_bDebug;
+        private Datasource m_oDatasource = null;
+
 
         public uc_fvs_create_mdbs(string p_strProjDir)
         {
             InitializeComponent();
+            InitializeDatasource();
             this.m_strProjDir = p_strProjDir;
-
             this.m_oQueries = new Queries();
             m_oQueries.m_oFvs.LoadDatasource = true;
             m_oQueries.m_oFIAPlot.LoadDatasource = true;
@@ -57,6 +60,32 @@ namespace FIA_Biosum_Manager
             }
             this.m_oEnv = new env();
             this.m_bDebug = frmMain.g_bDebug;
+        }
+
+        private void InitializeDatasource()
+        {
+            string strProjDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+
+            m_oDatasource = new Datasource();
+            m_oDatasource.LoadTableColumnNamesAndDataTypes = false;
+            m_oDatasource.LoadTableRecordCount = false;
+            m_oDatasource.m_strDataSourceMDBFile = strProjDir.Trim() + "\\db\\project.mdb";
+            m_oDatasource.m_strDataSourceTableName = "datasource";
+            m_oDatasource.m_strScenarioId = "";
+            m_oDatasource.populate_datasource_array();
+
+            ////get table names
+            //this.m_strPlotTable = m_oDatasource.getValidDataSourceTableName("PLOT");
+            //this.m_strCondTable = m_oDatasource.getValidDataSourceTableName("CONDITION");
+            //this.m_strTreeTable = m_oDatasource.getValidDataSourceTableName("TREE");
+            //this.m_strSiteTreeTable = m_oDatasource.getValidDataSourceTableName("SITE TREE");
+            //this.m_strTreeRegionalBiomassTable = m_oDatasource.getValidDataSourceTableName("TREE REGIONAL BIOMASS");
+            //this.m_strPpsaTable = m_oDatasource.getValidDataSourceTableName("POPULATION PLOT STRATUM ASSIGNMENT");
+            //this.m_strPopEstUnitTable = m_oDatasource.getValidDataSourceTableName("POPULATION ESTIMATION UNIT");
+            //this.m_strPopStratumTable = m_oDatasource.getValidDataSourceTableName("POPULATION STRATUM");
+            //this.m_strPopEvalTable = m_oDatasource.getValidDataSourceTableName("POPULATION EVALUATION");
+            //this.m_strBiosumPopStratumAdjustmentFactorsTable = m_oDatasource.getValidDataSourceTableName("BIOSUM POP STRATUM ADJUSTMENT FACTORS");
+            //this.m_strTreeMacroPlotBreakPointDiaTable = m_oDatasource.getValidDataSourceTableName("FIA TREE MACRO PLOT BREAKPOINT DIAMETER");
         }
 
         private void InitializeComponent()
@@ -122,6 +151,37 @@ namespace FIA_Biosum_Manager
             var strFields = "";
             var strDataTypes = "";
             var textBoxOutput = "";
+            var oUtils = new utils();
+            var oEnv = new env();
+            // strTempRandomFile = m_oUtils.getRandomFile(m_oEnv.strTempDir, "accdb");
+            var strTempMDB = m_oDatasource.CreateMDBAndTableDataSourceLinks();
+            // Similar example: uc_delete_conditions.cs line 504 (Execute
+            var fileNameList = new List<string>();
+            using (System.Data.OleDb.OleDbConnection con = new System.Data.OleDb.OleDbConnection(m_ado.getMDBConnString(strTempMDB,"","")))
+            {
+                con.Open();
+                this.m_ado.SqlQueryReader(con, Queries.FVS.GetFVSVariantRxPackageSQL(m_oQueries.m_oFIAPlot.m_strPlotTable, m_oQueries.m_oFvs.m_strRxPackageTable));
+
+
+                while (this.m_ado.m_OleDbDataReader.Read())
+                {
+                    //rxpackage,simyear1_rx,simyear2_rx,simyear3_rx,simyear4_rx,rxcycle_length
+                    var strVariant = this.m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim();
+                    var strPackage = this.m_ado.m_OleDbDataReader["rxpackage"].ToString().Trim();
+                    var strRx1 = this.m_ado.m_OleDbDataReader["simyear1_rx"].ToString().Trim();
+                    strRx1 = String.IsNullOrEmpty(strRx1) ? "000" : strRx1;
+                    var strRx2 = this.m_ado.m_OleDbDataReader["simyear2_rx"].ToString().Trim();
+                    strRx2 = String.IsNullOrEmpty(strRx2) ? "000" : strRx2;
+                    var strRx3 = this.m_ado.m_OleDbDataReader["simyear3_rx"].ToString().Trim();
+                    strRx3 = String.IsNullOrEmpty(strRx3) ? "000" : strRx3;
+                    var strRx4 = this.m_ado.m_OleDbDataReader["simyear4_rx"].ToString().Trim();
+                    strRx4 = String.IsNullOrEmpty(strRx4) ? "000" : strRx4;
+                    // Example: FVSOUT_CA_P001-001-000-000-000.MDB
+                    var fileName = $@"FVSOUT_{strVariant}_P{strPackage}-{strRx1}-{strRx2}-{strRx3}-{strRx4}.MDB";
+                    fileNameList.Add(fileName);
+                }
+            }
+            // GetFVSVariantRxPackageSQL
             using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
             {
                 con.Open();
@@ -151,7 +211,7 @@ namespace FIA_Biosum_Manager
                 }
 
             }
-            frmMain.g_oDelegate.SetControlPropertyValue(this.textBox1, "Text", textBoxOutput);
+            frmMain.g_oDelegate.SetControlPropertyValue(this.textBox1, "Text", fileNameList.ToString());
 
             return;
         }
