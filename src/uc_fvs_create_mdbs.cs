@@ -6,6 +6,7 @@ using System.Data;
 using System.Windows.Forms;
 using System.Threading;
 using System.Collections.Generic;
+using SQLite.ADO;
 
 namespace FIA_Biosum_Manager
 {
@@ -113,10 +114,72 @@ namespace FIA_Biosum_Manager
             // When you need to see how to update progress bars:
             // RunAppend_Main in uc_fvs_output.cs! (also good for seeing how to interact with m_intError;
             var textBoxValue = frmMain.g_oDelegate.GetControlPropertyValue(this.textBox1, "Text", false);
-            frmMain.g_oDelegate.SetControlPropertyValue(this.textBox1, "Text", textBoxValue+ " Magic");
+
+            //get the fiadb table structures
+            DataMgr oDataMgr = new DataMgr();
+            var dbFileName = "fvsout.db";
+            string strConnection = oDataMgr.GetConnectionString(m_strProjDir + "\\fvs\\data\\" + dbFileName);
+            var strFields = "";
+            var strDataTypes = "";
+            var textBoxOutput = "";
+            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
+            {
+                con.Open();
+                //getTableNames
+                var tableNames = oDataMgr.getTableNames(con);
+                //build field list string to insert sql by matching 
+                //up the column names in the biosum plot table and the fiadb plot table
+                
+                foreach (var tblName in tableNames)
+                {
+                    DataTable dtSourceSchema = oDataMgr.getTableSchema(con, $"select * from {tblName}");
+
+                    var strCol = "";
+                    for (int y = 0; y <= dtSourceSchema.Rows.Count - 1; y++)
+                    {
+                        strCol = dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper() + " || " + dataTypeConvert(dtSourceSchema.Rows[y]["datatype"].ToString().ToUpper());
+                        if (strFields.Trim().Length == 0)
+                        {
+                            strFields = strCol;
+                        }
+                        else
+                        {
+                            strFields += "," + strCol;
+                        }
+                    }
+                    textBoxOutput += $@"{System.Environment.NewLine} Table Name: {tblName}{System.Environment.NewLine} Columns:{System.Environment.NewLine}{strFields}";
+                }
+
+            }
+            frmMain.g_oDelegate.SetControlPropertyValue(this.textBox1, "Text", textBoxOutput);
+
             return;
         }
 
+        private string dataTypeConvert(string dataTypeFromDB)
+        {
+            var convertedType = "";
+            switch (dataTypeFromDB)
+            {
+                case "SYSTEM.INT32":
+                    convertedType = "LONG";
+                    break;
+                case "SYSTEM.DOUBLE":
+                    convertedType = "DOUBLE";
+                    break;
+                case "SYSTEM.STRING":
+                    convertedType = "CHAR(255)";
+                    break;
+                default:
+                    convertedType = "UNRECOGNIZED";
+                    break;
+            }
+            // SYSTEM.INT32 > "LONG"
+            // SYSTEM.DOUBLE > "DOUBLE"
+            // SYSTEM.STRING > "CHAR(255)"
+            // ??? > "SINGLE"
+            return convertedType;
+        }
         private void button1_Click(object sender, EventArgs e)
         {
 
