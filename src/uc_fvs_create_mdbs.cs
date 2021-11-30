@@ -160,6 +160,13 @@ namespace FIA_Biosum_Manager
             {
                 // Create file in root\fvs\data\<variant>\<filename>
                 var strDbPathFile = m_strProjDir + "\\fvs\\data\\"+file[1]+"\\"+file[0];
+
+                if (System.IO.File.Exists(strDbPathFile))
+                {
+                    System.IO.File.Delete(strDbPathFile);
+                    // TODO: DEBUG LOG HERE.
+                    appendStringToDebugTextbox($@"File exists. Deleting: {strDbPathFile}");
+                }
                 oDao.CreateMDB(strDbPathFile);
                 // Open a connection to new file 
                 using (var accessConn = new OleDbConnection(m_ado.getMDBConnString(strDbPathFile, "", "")))
@@ -168,6 +175,8 @@ namespace FIA_Biosum_Manager
                     // Log to files in utils.cs WriteText method
                     appendStringToDebugTextbox($@"Connecting to: {file[0]}");
                     accessConn.Open();
+                    // TODO: Map goofy table names to proper ones. Either via a mapping, regex, or a simple string compare. FVS_Summary2 -> FVS_Summary
+                    var validTables = Tables.FVS.g_strFVSOutTablesArray;
                     createMDBTablesfromSQLite(strDbPathFile, oDataMgr, oDao, strSQLiteConnection);
                     //foreach (var query in tableQueriesList)
                     //{
@@ -188,8 +197,7 @@ namespace FIA_Biosum_Manager
             // TODO: PotFireBaseYr (sp?) special case handling. Each DB has two tables, FVS_Cases and FVS_PotFire.
             // Only one PotFireBaseYr db per variant. Probably.
 
-            frmMain.g_oDelegate.SetControlPropertyValue(this.textBox1, "Text", "Done");
-
+            appendStringToDebugTextbox("Done.");
             return;
         }
 
@@ -267,7 +275,6 @@ namespace FIA_Biosum_Manager
 
         }
 
-
         private void createMDBTablesfromSQLite(string strMDBPathAndFile, DataMgr oDataMgr, dao_data_access oDao, string strConnection)
         {
             using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
@@ -276,7 +283,19 @@ namespace FIA_Biosum_Manager
                 foreach (var tblName in oDataMgr.getTableNames(con))
                 {
                     DataTable dtSourceSchema = oDataMgr.getTableSchema(con, $"select * from {tblName}");
-                    oDao.CreateMDBTableFromDataSetTable(strMDBPathAndFile, tblName, dtSourceSchema, true);
+                    // TODO: Map goofy table names to proper ones. Either via a mapping, regex, or a simple string compare. FVS_Summary2 -> FVS_Summary
+                    var validTables = Tables.FVS.g_strFVSOutTablesArray;
+                    var validTablesList = new List<string>(validTables);
+                    var tablesSet = new HashSet<string>(validTablesList);
+                    var newTblName = tblName;
+                    if (!tablesSet.Contains(tblName))
+                    {
+                        if (tblName.ToUpper().Contains("SUMMARY"))
+                        {
+                            newTblName = "FVS_Summary";
+                        }
+                    }
+                    oDao.CreateMDBTableFromDataSetTable(strMDBPathAndFile, newTblName, dtSourceSchema, true);
                 }
             }
 
