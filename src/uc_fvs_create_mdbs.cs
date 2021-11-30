@@ -31,12 +31,15 @@ namespace FIA_Biosum_Manager
         private utils m_oUtils;
         private bool m_bDebug;
         private Datasource m_oDatasource = null;
-
+        private Dictionary<string, List<Tuple<string, string, utils.DataType>>> m_listDictFVSOutputTablesColumnsDefinitions;
+        private Dictionary<string, string> m_dictCreateTableQueries;
 
         public uc_fvs_create_mdbs(string p_strProjDir)
         {
             InitializeComponent();
             InitializeDatasource();
+            this.m_listDictFVSOutputTablesColumnsDefinitions = new Dictionary<string, List<Tuple<string, string, utils.DataType>>>();
+            this.m_dictCreateTableQueries = new Dictionary<string, string>();
             this.m_strProjDir = p_strProjDir;
             this.m_oQueries = new Queries();
             m_oQueries.m_oFvs.LoadDatasource = true;
@@ -74,28 +77,15 @@ namespace FIA_Biosum_Manager
             m_oDatasource.m_strDataSourceTableName = "datasource";
             m_oDatasource.m_strScenarioId = "";
             m_oDatasource.populate_datasource_array();
-
-            ////get table names
-            //this.m_strPlotTable = m_oDatasource.getValidDataSourceTableName("PLOT");
-            //this.m_strCondTable = m_oDatasource.getValidDataSourceTableName("CONDITION");
-            //this.m_strTreeTable = m_oDatasource.getValidDataSourceTableName("TREE");
-            //this.m_strSiteTreeTable = m_oDatasource.getValidDataSourceTableName("SITE TREE");
-            //this.m_strTreeRegionalBiomassTable = m_oDatasource.getValidDataSourceTableName("TREE REGIONAL BIOMASS");
-            //this.m_strPpsaTable = m_oDatasource.getValidDataSourceTableName("POPULATION PLOT STRATUM ASSIGNMENT");
-            //this.m_strPopEstUnitTable = m_oDatasource.getValidDataSourceTableName("POPULATION ESTIMATION UNIT");
-            //this.m_strPopStratumTable = m_oDatasource.getValidDataSourceTableName("POPULATION STRATUM");
-            //this.m_strPopEvalTable = m_oDatasource.getValidDataSourceTableName("POPULATION EVALUATION");
-            //this.m_strBiosumPopStratumAdjustmentFactorsTable = m_oDatasource.getValidDataSourceTableName("BIOSUM POP STRATUM ADJUSTMENT FACTORS");
-            //this.m_strTreeMacroPlotBreakPointDiaTable = m_oDatasource.getValidDataSourceTableName("FIA TREE MACRO PLOT BREAKPOINT DIAMETER");
         }
 
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.textBox1 = new System.Windows.Forms.TextBox();
             this.button1 = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.textBox1 = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -105,14 +95,26 @@ namespace FIA_Biosum_Manager
             this.groupBox1.Controls.Add(this.button1);
             this.groupBox1.Location = new System.Drawing.Point(32, 17);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(684, 377);
+            this.groupBox1.Size = new System.Drawing.Size(875, 435);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "groupBox1";
             // 
+            // textBox1
+            // 
+            this.textBox1.AccessibleDescription = "This textbox outputs logs on the Create MDB process.";
+            this.textBox1.AccessibleName = "Output Textbox";
+            this.textBox1.Location = new System.Drawing.Point(20, 21);
+            this.textBox1.Multiline = true;
+            this.textBox1.Name = "textBox1";
+            this.textBox1.ReadOnly = true;
+            this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.textBox1.Size = new System.Drawing.Size(849, 379);
+            this.textBox1.TabIndex = 1;
+            // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(20, 336);
+            this.button1.Location = new System.Drawing.Point(20, 406);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(126, 23);
             this.button1.TabIndex = 0;
@@ -120,23 +122,14 @@ namespace FIA_Biosum_Manager
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
-            // textBox1
-            // 
-            this.textBox1.Location = new System.Drawing.Point(20, 21);
-            this.textBox1.Multiline = true;
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(638, 285);
-            this.textBox1.TabIndex = 1;
-            // 
             // uc_fvs_create_mdbs
             // 
             this.Controls.Add(this.groupBox1);
             this.Name = "uc_fvs_create_mdbs";
-            this.Size = new System.Drawing.Size(746, 421);
+            this.Size = new System.Drawing.Size(937, 470);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
-
         }
 
         private void CreateMDBs_Main()
@@ -155,18 +148,28 @@ namespace FIA_Biosum_Manager
             var fileNamesList = new List<List<string>>();
             fileNamesList = getRunTitleFilenames();
             // GetFVSVariantRxPackageSQL
-            var tableQueriesList = getTableCreateQueries(strSQLiteConnection, dbFileName, oDataMgr);
+            populateTableQueryDictionaries(strSQLiteConnection,oDataMgr);
+
             foreach (var file in fileNamesList)
             {
                 // Create file in root\fvs\data\<variant>\<filename>
                 var strDbPathFile = m_strProjDir + "\\fvs\\data\\"+file[1]+"\\"+file[0];
 
-                if (System.IO.File.Exists(strDbPathFile))
+                var fi = new System.IO.FileInfo(strDbPathFile);
+                if (fi.Exists)
                 {
-                    System.IO.File.Delete(strDbPathFile);
+                    // Unhandled exception if file is open in Access; catch and prompt user to close and retry?
+                    fi.Delete();
+                    fi.Refresh();
+                    while (fi.Exists)
+                    {
+                        Thread.Sleep(100);
+                        fi.Refresh();
+                    }
                     // TODO: DEBUG LOG HERE.
                     appendStringToDebugTextbox($@"File exists. Deleting: {strDbPathFile}");
                 }
+
                 oDao.CreateMDB(strDbPathFile);
                 // Open a connection to new file 
                 using (var accessConn = new OleDbConnection(m_ado.getMDBConnString(strDbPathFile, "", "")))
@@ -175,17 +178,15 @@ namespace FIA_Biosum_Manager
                     // Log to files in utils.cs WriteText method
                     appendStringToDebugTextbox($@"Connecting to: {file[0]}");
                     accessConn.Open();
-                    // TODO: Map goofy table names to proper ones. Either via a mapping, regex, or a simple string compare. FVS_Summary2 -> FVS_Summary
-                    var validTables = Tables.FVS.g_strFVSOutTablesArray;
-                    createMDBTablesfromSQLite(strDbPathFile, oDataMgr, oDao, strSQLiteConnection);
+                    executeSQLListOnAccessConnection(m_dictCreateTableQueries, accessConn, m_ado);
                     // Populate new tables from SQLite
-                        // Code written for #223 does something similar
+                    // Code written for #223 does something similar
                     // Get answers for what analysts would prefer to do for setting base year?
-                        // Make text box as prototype.
-                    // Diff new and old access DBs if possible.
-                        // Idea: Use Tyler's access macro on the new and old, and compare outputs.
-                    // Progress indicators? Instantiate thermometer? Calculate max number of steps and add increments. Use delegate to update bar from background thread.
-                        // Update BioSum ready/working indicator in lower right corner of frmMain.
+                    // Make text box as prototype.
+                    // Diff new and old access DBs if possible.utputs.
+                    // Progress indicators? Instantiate thermometer? Calculate max number o
+                    // Idea: Use Tyler's access macro on the new and old, and compare onf steps and add increments. Use delegate to update bar from background thread.
+                    // Update BioSum ready/working indicator in lower right corner of frmMai.
                     // Cancel button
                     // Debug log with log levels.
                 }
@@ -203,14 +204,16 @@ namespace FIA_Biosum_Manager
             // Only one PotFireBaseYr db per variant. Probably.
 
             appendStringToDebugTextbox("Done.");
+            m_dictCreateTableQueries.Clear();
+            m_listDictFVSOutputTablesColumnsDefinitions.Clear();
             return;
         }
 
         private void appendStringToDebugTextbox(string text)
         {
             var textBoxValue = frmMain.g_oDelegate.GetControlPropertyValue(this.textBox1, "Text", false);
-            frmMain.g_oDelegate.SetControlPropertyValue(this.textBox1, "Text", textBoxValue += text +System.Environment.NewLine);
 
+            frmMain.g_oDelegate.SetControlPropertyValue(this.textBox1, "Text", textBoxValue += text +System.Environment.NewLine);
         }
         private string dataTypeConvert(string dataTypeFromDB)
         {
@@ -224,20 +227,43 @@ namespace FIA_Biosum_Manager
                     convertedType = "DOUBLE";
                     break;
                 case "SYSTEM.STRING":
-                    convertedType = "CHAR(255)";
+                    convertedType = "TEXT(255)";
                     break;
                 default:
                     convertedType = "UNRECOGNIZED";
                     break;
             }
-            // SYSTEM.INT32 > "LONG"
-            // SYSTEM.DOUBLE > "DOUBLE"
-            // SYSTEM.STRING > "CHAR(255)"
-            // ??? > "SINGLE"
+            // ??? > "SINGLE" ?
             return convertedType;
         }
 
-        private List<string> getTableCreateQueries(string strConnection, string fileName, DataMgr oDataMgr)
+        private utils.DataType getDataTypeEnumValueFromString(string dataTypeFromDB)
+        {
+            utils.DataType convertedType;
+            switch (dataTypeFromDB)
+            {
+                case "SYSTEM.INT32":
+                    convertedType = utils.DataType.INTEGER;
+                    break;
+                case "SYSTEM.DOUBLE":
+                    convertedType = utils.DataType.DOUBLE;
+                    break;
+                case "SYSTEM.STRING":
+                    convertedType = utils.DataType.STRING;
+                    break;
+                    // Byte case?
+                case "SYSTEM.BYTE":
+                    convertedType = utils.DataType.BYTE;
+                    break;
+                default:
+                    convertedType = utils.DataType.STRING;
+                    break;
+            }
+            // ??? > "SINGLE" ?
+            return convertedType;
+        }
+        // TODO: Make this a void function
+        private void populateTableQueryDictionaries(string strConnection, DataMgr oDataMgr)
         {
             using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
             {
@@ -247,8 +273,6 @@ namespace FIA_Biosum_Manager
                 //build field list string to insert sql by matching 
                 //up the column names in the biosum plot table and the fiadb plot table
 
-                var strFields = "";
-                var createTableQueriesList = new List<string>();
 
                 // Run this loop for each database we need to make.
                 foreach (var tblName in tableNames)
@@ -256,12 +280,18 @@ namespace FIA_Biosum_Manager
                     DataTable dtSourceSchema = oDataMgr.getTableSchema(con, $"select * from {tblName}");
                     var sb = new System.Text.StringBuilder();
                     var strCol = "";
-                    sb.Append($@"CREATE TABLE {tblName} (");
-
+                    sb.Append($@"CREATE TABLE {convertTblNameToBiosumTblName(tblName)} (");
+                    var strFields = "";
+                    var listColDataTypes = new List<Tuple<string, string, utils.DataType>>();
                     // TODO Make CaseID Unique? Make it the index (via ado_data_access index creation method?)
                     for (int y = 0; y <= dtSourceSchema.Rows.Count - 1; y++)
                     {
-                        strCol = dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper() + " " + dataTypeConvert(dtSourceSchema.Rows[y]["datatype"].ToString().ToUpper());
+                        var colName = "`"+dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper()+"`";
+                        var dataType = dtSourceSchema.Rows[y]["datatype"].ToString().ToUpper();
+
+                        listColDataTypes.Add(Tuple.Create(colName, colName, getDataTypeEnumValueFromString(dataType)));
+
+                        strCol = colName + " " + dataTypeConvert(dataType);
                         if (strFields.Trim().Length == 0)
                         {
                             strFields = strCol;
@@ -272,12 +302,20 @@ namespace FIA_Biosum_Manager
                         }
                     }
                     sb.Append(strFields + ") ");
-                    createTableQueriesList.Add(sb.ToString());
+                    m_dictCreateTableQueries[convertTblNameToBiosumTblName(tblName)] =sb.ToString();
+                    m_listDictFVSOutputTablesColumnsDefinitions[tblName] = listColDataTypes;
                 }
-                return createTableQueriesList;
-
             }
+        }
 
+        private void executeSQLListOnAccessConnection(Dictionary<string,string> queryDict, OleDbConnection accessConn, ado_data_access oAdo)
+        {
+            foreach (var tblName in queryDict.Keys)
+            {
+                appendStringToDebugTextbox($@"Creating table: {tblName}");
+                oAdo.SqlNonQuery(accessConn, queryDict[tblName]);
+                oAdo.AddIndex(accessConn, tblName, tblName+"_CaseId_Idx", "CaseID");
+            }
         }
 
         private void createMDBTablesfromSQLite(string strMDBPathAndFile, DataMgr oDataMgr, dao_data_access oDao, string strConnection)
@@ -288,22 +326,27 @@ namespace FIA_Biosum_Manager
                 foreach (var tblName in oDataMgr.getTableNames(con))
                 {
                     DataTable dtSourceSchema = oDataMgr.getTableSchema(con, $"select * from {tblName}");
-                    // TODO: Map goofy table names to proper ones. Either via a mapping, regex, or a simple string compare. FVS_Summary2 -> FVS_Summary
-                    var validTables = Tables.FVS.g_strFVSOutTablesArray;
-                    var validTablesList = new List<string>(validTables);
-                    var tablesSet = new HashSet<string>(validTablesList);
-                    var newTblName = tblName;
-                    if (!tablesSet.Contains(tblName))
-                    {
-                        if (tblName.ToUpper().Contains("SUMMARY"))
-                        {
-                            newTblName = "FVS_Summary";
-                        }
-                    }
+                    var newTblName = convertTblNameToBiosumTblName(tblName);
                     oDao.CreateMDBTableFromDataSetTable(strMDBPathAndFile, newTblName, dtSourceSchema, true);
                 }
             }
+        }
 
+        private string convertTblNameToBiosumTblName(string tblName)
+        {
+            // TODO: Map changed table names to proper ones. Either via a mapping, regex, or a simple string compare. FVS_Summary2 -> FVS_Summary
+            var validTables = Tables.FVS.g_strFVSOutTablesArray;
+            var validTablesList = new List<string>(validTables);
+            var tablesSet = new HashSet<string>(validTablesList);
+            var newTblName = tblName;
+            if (!tablesSet.Contains(tblName))
+            {
+                if (tblName.ToUpper().Contains("SUMMARY"))
+                {
+                    newTblName = "FVS_Summary";
+                }
+            }
+            return newTblName;
         }
 
         private List<List<string>> getRunTitleFilenames()
@@ -392,8 +435,6 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.CurrentThreadProcessIdle = false;
             frmMain.g_oDelegate.m_oThread.Start();
         }
-
-        
 
         internal void uc_fvs_create_mdbs_Resize()
         {
