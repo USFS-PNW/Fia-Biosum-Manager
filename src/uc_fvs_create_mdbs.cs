@@ -178,11 +178,16 @@ namespace FIA_Biosum_Manager
                     // TODO: Map goofy table names to proper ones. Either via a mapping, regex, or a simple string compare. FVS_Summary2 -> FVS_Summary
                     var validTables = Tables.FVS.g_strFVSOutTablesArray;
                     createMDBTablesfromSQLite(strDbPathFile, oDataMgr, oDao, strSQLiteConnection);
-                    //foreach (var query in tableQueriesList)
-                    //{
-                    //    appendStringToDebugTextbox($@"Executing query: {query}");
-                    //    m_ado.SqlNonQuery(accessConn, query);
-                    //}
+                    // Populate new tables from SQLite
+                        // Code written for #223 does something similar
+                    // Get answers for what analysts would prefer to do for setting base year?
+                        // Make text box as prototype.
+                    // Diff new and old access DBs if possible.
+                        // Idea: Use Tyler's access macro on the new and old, and compare outputs.
+                    // Progress indicators? Instantiate thermometer? Calculate max number of steps and add increments. Use delegate to update bar from background thread.
+                        // Update BioSum ready/working indicator in lower right corner of frmMain.
+                    // Cancel button
+                    // Debug log with log levels.
                 }
 
 
