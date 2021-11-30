@@ -8,6 +8,7 @@ using System.Threading;
 using System.Collections.Generic;
 using SQLite.ADO;
 using System.Data.OleDb;
+using System.Linq;
 
 namespace FIA_Biosum_Manager
 {
@@ -212,9 +213,9 @@ namespace FIA_Biosum_Manager
         private void appendStringToDebugTextbox(string text)
         {
             var textBoxValue = frmMain.g_oDelegate.GetControlPropertyValue(this.textBox1, "Text", false);
-
             frmMain.g_oDelegate.SetControlPropertyValue(this.textBox1, "Text", textBoxValue += text +System.Environment.NewLine);
         }
+
         private string dataTypeConvert(string dataTypeFromDB)
         {
             var convertedType = "";
@@ -286,7 +287,8 @@ namespace FIA_Biosum_Manager
                     // TODO Make CaseID Unique? Make it the index (via ado_data_access index creation method?)
                     for (int y = 0; y <= dtSourceSchema.Rows.Count - 1; y++)
                     {
-                        var colName = "`"+dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper()+"`";
+                        var colName = "`"+translateColumn(dtSourceSchema.Rows[y]["columnname"].ToString()).ToUpper()+"`";
+
                         var dataType = dtSourceSchema.Rows[y]["datatype"].ToString().ToUpper();
 
                         listColDataTypes.Add(Tuple.Create(colName, colName, getDataTypeEnumValueFromString(dataType)));
@@ -316,6 +318,19 @@ namespace FIA_Biosum_Manager
                 oAdo.SqlNonQuery(accessConn, queryDict[tblName]);
                 oAdo.AddIndex(accessConn, tblName, tblName+"_CaseId_Idx", "CaseID");
             }
+        }
+
+        private string translateColumn (string strToCheck)
+        {
+            var translatedStr = strToCheck.ToUpper();
+            // Map SPECIESFIA to SPECIES. TODO: Make prettier?
+            if (translatedStr.Contains("SPECIESFIA"))
+            {
+                translatedStr = translatedStr.Replace("SPECIESFIA", "SPECIES");
+                appendStringToDebugTextbox($@"Mapping SpeciesFIA to Species for col: {strToCheck}. New value: {translatedStr}");
+
+            }
+            return translatedStr;
         }
 
         private void createMDBTablesfromSQLite(string strMDBPathAndFile, DataMgr oDataMgr, dao_data_access oDao, string strConnection)
