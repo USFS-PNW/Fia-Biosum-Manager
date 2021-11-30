@@ -24,14 +24,13 @@ namespace FIA_Biosum_Manager
         private escalators m_escalators;
         public System.Collections.Generic.List<string> m_standsWithNoYardingDistance;
 
-        public processor(string strDebugFile, string strScenarioId, string strConnectionString, bool bUsingSqlite,
+        public processor(string strDebugFile, string strScenarioId, ado_data_access oAdo, bool bUsingSqlite,
                          string sqliteConnectionString)
         {
             m_strDebugFile = strDebugFile;
             m_strScenarioId = strScenarioId;
             m_bUsingSqlite = bUsingSqlite;
-            m_oAdo = new ado_data_access();
-            m_oAdo.OpenConnection(strConnectionString);
+            m_oAdo = oAdo;
             if (m_bUsingSqlite)
             {
                 m_oDataMgr = new SQLite.ADO.DataMgr();
@@ -1274,17 +1273,6 @@ namespace FIA_Biosum_Manager
                  frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
 
-            if (m_oAdo != null)
-            {
-                m_oAdo.CloseConnection(m_oAdo.m_OleDbConnection);
-                m_oAdo = null;
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                {
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//Dispose of ado_data_access object END \r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-                }
-            }
             if (m_oDataMgr != null)
             {
                 m_oDataMgr.CloseConnection(m_oDataMgr.m_Connection);

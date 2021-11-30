@@ -3495,7 +3495,7 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_ProcessOPCOST\r\n");
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
-            string strFile = "";
+
             //add the year
             //ALTER TABLE YEAR COLUMN
             m_oAdo.m_strSQL = "ALTER TABLE OPCOST_INPUT ALTER  COLUMN [YearCostCalc] INTEGER;";
@@ -3957,9 +3957,17 @@ namespace FIA_Biosum_Manager
             if (!ReferenceProcessorScenarioForm.m_bUsingSqlite)
             {
                 if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, "HarvestCostsTotalAdditionalWorkTable"))
+                {
                     m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE HarvestCostsTotalAdditionalWorkTable");
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Dropped HarvestCostsTotalAdditionalWorkTable \r\n");
+                }
+
                 frmMain.g_oTables.m_oProcessorScenarioRun.CreateTotalAdditionalHarvestCostsTable(
                     m_oAdo, m_oAdo.m_OleDbConnection, "HarvestCostsTotalAdditionalWorkTable");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Created HarvestCostsTotalAdditionalWorkTable \r\n");
+
                 if (m_oAdo.m_intError == 0)
                 {
                     //insert plot+rx records for the current scenario
@@ -5364,7 +5372,7 @@ namespace FIA_Biosum_Manager
                         strSqliteConnection = m_oDataMgr.m_Connection.ConnectionString;
                     }
                     processor mainProcessor = new processor(m_strDebugFile, ScenarioId.Trim(), 
-                        m_oAdo.m_OleDbConnection.ConnectionString, ReferenceProcessorScenarioForm.m_bUsingSqlite,
+                        m_oAdo, ReferenceProcessorScenarioForm.m_bUsingSqlite,
                         strSqliteConnection);
                     if (!_bInactiveVarRxPackage)
                     {
@@ -5417,7 +5425,7 @@ namespace FIA_Biosum_Manager
                         if (m_intError == 0)
                         {
                             m_oAdo.m_strSQL = "SELECT COUNT(*) AS reccount FROM opcost_input";
-
+                            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
                             y++;
                             frmMain.g_oDelegate.SetControlPropertyValue(ReferenceProgressBarEx, "Value", y);
                         }
