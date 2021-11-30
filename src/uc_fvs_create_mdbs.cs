@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using System.Threading;
 using System.Collections.Generic;
 using SQLite.ADO;
+using System.Data.OleDb;
 
 namespace FIA_Biosum_Manager
 {
@@ -142,80 +143,62 @@ namespace FIA_Biosum_Manager
         {
             // When you need to see how to update progress bars:
             // RunAppend_Main in uc_fvs_output.cs! (also good for seeing how to interact with m_intError;
-            var textBoxValue = frmMain.g_oDelegate.GetControlPropertyValue(this.textBox1, "Text", false);
 
             //get the fiadb table structures
             DataMgr oDataMgr = new DataMgr();
             var dbFileName = "fvsout.db";
-            string strConnection = oDataMgr.GetConnectionString(m_strProjDir + "\\fvs\\data\\" + dbFileName);
-            var strFields = "";
-            var strDataTypes = "";
-            var textBoxOutput = "";
-            var oUtils = new utils();
-            var oEnv = new env();
-            // strTempRandomFile = m_oUtils.getRandomFile(m_oEnv.strTempDir, "accdb");
-            var strTempMDB = m_oDatasource.CreateMDBAndTableDataSourceLinks();
-            // Similar example: uc_delete_conditions.cs line 504 (Execute
-            var fileNameList = new List<string>();
-            using (System.Data.OleDb.OleDbConnection con = new System.Data.OleDb.OleDbConnection(m_ado.getMDBConnString(strTempMDB,"","")))
-            {
-                con.Open();
-                this.m_ado.SqlQueryReader(con, Queries.FVS.GetFVSVariantRxPackageSQL(m_oQueries.m_oFIAPlot.m_strPlotTable, m_oQueries.m_oFvs.m_strRxPackageTable));
-
-
-                while (this.m_ado.m_OleDbDataReader.Read())
-                {
-                    //rxpackage,simyear1_rx,simyear2_rx,simyear3_rx,simyear4_rx,rxcycle_length
-                    var strVariant = this.m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim();
-                    var strPackage = this.m_ado.m_OleDbDataReader["rxpackage"].ToString().Trim();
-                    var strRx1 = this.m_ado.m_OleDbDataReader["simyear1_rx"].ToString().Trim();
-                    strRx1 = String.IsNullOrEmpty(strRx1) ? "000" : strRx1;
-                    var strRx2 = this.m_ado.m_OleDbDataReader["simyear2_rx"].ToString().Trim();
-                    strRx2 = String.IsNullOrEmpty(strRx2) ? "000" : strRx2;
-                    var strRx3 = this.m_ado.m_OleDbDataReader["simyear3_rx"].ToString().Trim();
-                    strRx3 = String.IsNullOrEmpty(strRx3) ? "000" : strRx3;
-                    var strRx4 = this.m_ado.m_OleDbDataReader["simyear4_rx"].ToString().Trim();
-                    strRx4 = String.IsNullOrEmpty(strRx4) ? "000" : strRx4;
-                    // Example: FVSOUT_CA_P001-001-000-000-000.MDB
-                    var fileName = $@"FVSOUT_{strVariant}_P{strPackage}-{strRx1}-{strRx2}-{strRx3}-{strRx4}.MDB";
-                    fileNameList.Add(fileName);
-                }
-            }
+            var dbPath = "\\fvs\\data\\" + dbFileName;
+            string strSQLiteConnection = oDataMgr.GetConnectionString(m_strProjDir + dbPath);
+            var oUtils = new utils(); // Cargo cult!(?) For doing SQLite to Acces oledb reader conversions
+            var oEnv = new env(); // Cargo cult!(?) For getting stuff about the temp directory and app directory
+            dao_data_access oDao = new dao_data_access();
+            var fileNamesList = new List<List<string>>();
+            fileNamesList = getRunTitleFilenames();
             // GetFVSVariantRxPackageSQL
-            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
+            var tableQueriesList = getTableCreateQueries(strSQLiteConnection, dbFileName, oDataMgr);
+            foreach (var file in fileNamesList)
             {
-                con.Open();
-                //getTableNames
-                var tableNames = oDataMgr.getTableNames(con);
-                //build field list string to insert sql by matching 
-                //up the column names in the biosum plot table and the fiadb plot table
-                
-                foreach (var tblName in tableNames)
+                // Create file in root\fvs\data\<variant>\<filename>
+                var strDbPathFile = m_strProjDir + "\\fvs\\data\\"+file[1]+"\\"+file[0];
+                oDao.CreateMDB(strDbPathFile);
+                // Open a connection to new file 
+                using (var accessConn = new OleDbConnection(m_ado.getMDBConnString(strDbPathFile, "", "")))
                 {
-                    DataTable dtSourceSchema = oDataMgr.getTableSchema(con, $"select * from {tblName}");
-
-                    var strCol = "";
-                    for (int y = 0; y <= dtSourceSchema.Rows.Count - 1; y++)
-                    {
-                        strCol = dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper() + " || " + dataTypeConvert(dtSourceSchema.Rows[y]["datatype"].ToString().ToUpper());
-                        if (strFields.Trim().Length == 0)
-                        {
-                            strFields = strCol;
-                        }
-                        else
-                        {
-                            strFields += "," + strCol;
-                        }
-                    }
-                    textBoxOutput += $@"{System.Environment.NewLine} Table Name: {tblName}{System.Environment.NewLine} Columns:{System.Environment.NewLine}{strFields}";
+                    // Populate tables via these queries
+                    // Log to files in utils.cs WriteText method
+                    appendStringToDebugTextbox($@"Connecting to: {file[0]}");
+                    accessConn.Open();
+                    createMDBTablesfromSQLite(strDbPathFile, oDataMgr, oDao, strSQLiteConnection);
+                    //foreach (var query in tableQueriesList)
+                    //{
+                    //    appendStringToDebugTextbox($@"Executing query: {query}");
+                    //    m_ado.SqlNonQuery(accessConn, query);
+                    //}
                 }
 
+
+
+                // Add index (if needed)
+                //var strTempIndex = column + "_delete_idx";
+                //if (!m_dao.IndexExists(strDbPathFile, table, strTempIndex))
+                //{
+                //    m_ado.AddIndex(conn, table, strTempIndex, column);
+                //}
             }
-            frmMain.g_oDelegate.SetControlPropertyValue(this.textBox1, "Text", fileNameList.ToString());
+            // TODO: PotFireBaseYr (sp?) special case handling. Each DB has two tables, FVS_Cases and FVS_PotFire.
+            // Only one PotFireBaseYr db per variant. Probably.
+
+            frmMain.g_oDelegate.SetControlPropertyValue(this.textBox1, "Text", "Done");
 
             return;
         }
 
+        private void appendStringToDebugTextbox(string text)
+        {
+            var textBoxValue = frmMain.g_oDelegate.GetControlPropertyValue(this.textBox1, "Text", false);
+            frmMain.g_oDelegate.SetControlPropertyValue(this.textBox1, "Text", textBoxValue += text +System.Environment.NewLine);
+
+        }
         private string dataTypeConvert(string dataTypeFromDB)
         {
             var convertedType = "";
@@ -239,6 +222,106 @@ namespace FIA_Biosum_Manager
             // SYSTEM.STRING > "CHAR(255)"
             // ??? > "SINGLE"
             return convertedType;
+        }
+
+        private List<string> getTableCreateQueries(string strConnection, string fileName, DataMgr oDataMgr)
+        {
+            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
+            {
+                con.Open();
+                //getTableNames
+                var tableNames = oDataMgr.getTableNames(con);
+                //build field list string to insert sql by matching 
+                //up the column names in the biosum plot table and the fiadb plot table
+
+                var strFields = "";
+                var createTableQueriesList = new List<string>();
+
+                // Run this loop for each database we need to make.
+                foreach (var tblName in tableNames)
+                {
+                    DataTable dtSourceSchema = oDataMgr.getTableSchema(con, $"select * from {tblName}");
+                    var sb = new System.Text.StringBuilder();
+                    var strCol = "";
+                    sb.Append($@"CREATE TABLE {tblName} (");
+
+                    // TODO Make CaseID Unique? Make it the index (via ado_data_access index creation method?)
+                    for (int y = 0; y <= dtSourceSchema.Rows.Count - 1; y++)
+                    {
+                        strCol = dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper() + " " + dataTypeConvert(dtSourceSchema.Rows[y]["datatype"].ToString().ToUpper());
+                        if (strFields.Trim().Length == 0)
+                        {
+                            strFields = strCol;
+                        }
+                        else
+                        {
+                            strFields += "," + strCol;
+                        }
+                    }
+                    sb.Append(strFields + ") ");
+                    createTableQueriesList.Add(sb.ToString());
+                }
+                return createTableQueriesList;
+
+            }
+
+        }
+
+
+        private void createMDBTablesfromSQLite(string strMDBPathAndFile, DataMgr oDataMgr, dao_data_access oDao, string strConnection)
+        {
+            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
+            {
+                con.Open();
+                foreach (var tblName in oDataMgr.getTableNames(con))
+                {
+                    DataTable dtSourceSchema = oDataMgr.getTableSchema(con, $"select * from {tblName}");
+                    oDao.CreateMDBTableFromDataSetTable(strMDBPathAndFile, tblName, dtSourceSchema, true);
+                }
+            }
+
+        }
+
+        private List<List<string>> getRunTitleFilenames()
+        {
+            // List of three items; databasename, variant, runtitle.
+            var fileNames = new List<List<string>>();
+            var strTempMDB = m_oDatasource.CreateMDBAndTableDataSourceLinks();
+            // Similar example: uc_delete_conditions.cs line 504 (Execute
+            var fileNameList = new List<string>();
+            using (System.Data.OleDb.OleDbConnection con = new System.Data.OleDb.OleDbConnection(m_ado.getMDBConnString(strTempMDB, "", "")))
+            {
+                con.Open();
+                this.m_ado.SqlQueryReader(con, Queries.FVS.GetFVSVariantRxPackageSQL(m_oQueries.m_oFIAPlot.m_strPlotTable, m_oQueries.m_oFvs.m_strRxPackageTable));
+
+                while (this.m_ado.m_OleDbDataReader.Read())
+                {
+                    //rxpackage,simyear1_rx,simyear2_rx,simyear3_rx,simyear4_rx,rxcycle_length
+                    var strVariant = this.m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim();
+                    var strPackage = this.m_ado.m_OleDbDataReader["rxpackage"].ToString().Trim();
+                    var strRx1 = this.m_ado.m_OleDbDataReader["simyear1_rx"].ToString().Trim();
+                    strRx1 = String.IsNullOrEmpty(strRx1) ? "000" : strRx1;
+                    var strRx2 = this.m_ado.m_OleDbDataReader["simyear2_rx"].ToString().Trim();
+                    strRx2 = String.IsNullOrEmpty(strRx2) ? "000" : strRx2;
+                    var strRx3 = this.m_ado.m_OleDbDataReader["simyear3_rx"].ToString().Trim();
+                    strRx3 = String.IsNullOrEmpty(strRx3) ? "000" : strRx3;
+                    var strRx4 = this.m_ado.m_OleDbDataReader["simyear4_rx"].ToString().Trim();
+                    strRx4 = String.IsNullOrEmpty(strRx4) ? "000" : strRx4;
+                    // Example: FVSOUT_CA_P001-001-000-000-000.MDB
+
+                    // Examples:
+                    //FVSOUT_CA_P003 - 003 - 000 - 000 - 000
+                    //FVSOUT_CA_POTFIRE_BaseYr
+                    //FVSOUT_CA_P001 - 001 - 000 - 000 - 000
+                    //FVSOUT_CA_P002 - 002 - 000 - 000 - 000
+                    //FVSOUT_CA_P005 - 000 - 000 - 000 - 000
+                    var runTitle = $@"FVSOUT_{strVariant}_P{strPackage}-{strRx1}-{strRx2}-{strRx3}-{strRx4}";
+                    var fileName = $@"FVSOUT_{strVariant}_P{strPackage}-{strRx1}-{strRx2}-{strRx3}-{strRx4}.MDB";
+                    fileNameList.Add(fileName);
+                    fileNames.Add(new List<string>() { fileName, strVariant, runTitle });
+                }
+            }
+            return fileNames;
         }
         private void button1_Click(object sender, EventArgs e)
         {
