@@ -3898,7 +3898,16 @@ namespace FIA_Biosum_Manager
                 odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName);
             }
             odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName, strInDirAndFile);
-
+            if (!string.IsNullOrEmpty(odbcmgr.m_strError))
+            {
+                frmMain.g_oUtils.WriteText(strDebugFile, "ODBCMgr error: " + odbcmgr.m_strError + "\r\n");
+                return;
+            }
+            else
+            {
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(strDebugFile, "Created DSN for " + ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName + "\r\n");
+            }
             // Link stand table to temp database
             oDao.CreateSQLiteTableLink(strTempMDB, Tables.FIA2FVS.DefaultFvsInputStandTableName, Tables.FIA2FVS.DefaultFvsInputStandTableName,
                 ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName, strInDirAndFile);
@@ -3917,7 +3926,7 @@ namespace FIA_Biosum_Manager
                 string strSql = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
                              " SELECT " + strSourceStandTableAlias + ".*" +
                              " FROM " + strSourceStandTableAlias +
-                             " INNER JOIN cond ON COND.cn = " + strSourceStandTableAlias + ".STAND_CN" +
+                             " INNER JOIN cond ON TRIM(COND.cn) = " + strSourceStandTableAlias + ".STAND_CN" +
                              " AND COND.INVYR = " + strSourceStandTableAlias + ".INV_YEAR" +
                              " WHERE " + strSourceStandTableAlias + ".VARIANT = '" + strVariant + "'";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -3926,8 +3935,8 @@ namespace FIA_Biosum_Manager
 
                 strSql = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
                     " SELECT " + strSourceTreeTableAlias + ".* FROM " + strSourceTreeTableAlias +
-                    " INNER JOIN " + Tables.FIA2FVS.DefaultFvsInputStandTableName + " ON " +
-                    strSourceTreeTableAlias + ".STAND_CN = " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".STAND_CN";
+                    " INNER JOIN " + Tables.FIA2FVS.DefaultFvsInputStandTableName + " ON TRIM(" +
+                    strSourceTreeTableAlias + ".STAND_CN) = " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".STAND_CN";
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
@@ -3962,6 +3971,15 @@ namespace FIA_Biosum_Manager
             if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName))
             {
                 odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName);
+            }
+            if (!string.IsNullOrEmpty(odbcmgr.m_strError))
+            {
+                frmMain.g_oUtils.WriteText(strDebugFile, "ODBCMgr error: " + odbcmgr.m_strError + "\r\n");
+            }
+            else
+            {
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(strDebugFile, "Removed DSN for " + ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName + "\r\n");
             }
         }
 	}

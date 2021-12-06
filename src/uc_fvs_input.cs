@@ -1942,6 +1942,16 @@ namespace FIA_Biosum_Manager
                     odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName);
                 }
                 odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName, strSourceDbDir);
+                if (!string.IsNullOrEmpty(odbcmgr.m_strError))
+                {
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "ODBCMgr error: " + odbcmgr.m_strError + "\r\n");
+                    return;
+                }
+                else
+                {
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Created DSN for " + ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName + "\r\n");
+                }
 
                 // Link to cond table
                 m_strCondTable = m_oQueries.m_oFIAPlot.m_strCondTable;
@@ -1953,6 +1963,11 @@ namespace FIA_Biosum_Manager
                 string strSourceTreeTableAlias = Tables.FIA2FVS.DefaultFvsInputTreeTableName + "_1";
                 oDao.CreateSQLiteTableLink(strTempMDB, Tables.FIA2FVS.DefaultFvsInputStandTableName, strSourceStandTableAlias,
                     ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName, strSourceDbDir);
+                if (oDao.m_intError != 0)
+                {
+                    return;
+                }
+
                 // Set the index, required to by ODBC to update
                 oDao.CreatePrimaryKeyIndex(strTempMDB, strSourceStandTableAlias, "STAND_CN");
                 oDao.CreateSQLiteTableLink(strTempMDB, Tables.FIA2FVS.DefaultFvsInputTreeTableName, strSourceTreeTableAlias,
@@ -2013,6 +2028,15 @@ namespace FIA_Biosum_Manager
                 }
 
                 odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName);    // Clean up DSN
+                if (!string.IsNullOrEmpty(odbcmgr.m_strError))
+                {
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "ODBCMgr error: " + odbcmgr.m_strError + "\r\n");
+                }
+                else
+                {
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Removed DSN for " + ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName + "\r\n");
+                }
 
                 frmMain.g_oDelegate.SetControlPropertyValue(
                             m_frmTherm.progressBar2,

@@ -75,7 +75,7 @@ namespace FIA_Biosum_Manager
                 m_oCurrentUserRegKey.SetValue("BigInt", "0");
                 m_oCurrentUserRegKey.SetValue("Database", p_strDBFileName);
                 m_oCurrentUserRegKey.SetValue("Description", "");
-                m_oCurrentUserRegKey.SetValue("Driver", @"C:\windows\system32\sqlite3odbc.dll");
+                m_oCurrentUserRegKey.SetValue("Driver", @"C:\windows\SysWOW64\sqlite3odbc.dll");
                 m_oCurrentUserRegKey.SetValue("FKSupport", "0");
                 m_oCurrentUserRegKey.SetValue("JDConv", "0");
                 m_oCurrentUserRegKey.SetValue("LoadExt", "");
