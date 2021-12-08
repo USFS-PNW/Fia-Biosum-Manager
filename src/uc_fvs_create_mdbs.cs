@@ -32,14 +32,14 @@ namespace FIA_Biosum_Manager
         private utils m_oUtils;
         private bool m_bDebug;
         private Datasource m_oDatasource = null;
-        private Dictionary<string, List<Tuple<string, string, utils.DataType>>> m_listDictFVSOutputTablesColumnsDefinitions;
+        private Dictionary<string, List<Tuple<string, utils.DataType>>> m_listDictFVSOutputTablesColumnsDefinitions;
         private Dictionary<string, string> m_dictCreateTableQueries;
 
         public uc_fvs_create_mdbs(string p_strProjDir)
         {
             InitializeComponent();
             InitializeDatasource();
-            this.m_listDictFVSOutputTablesColumnsDefinitions = new Dictionary<string, List<Tuple<string, string, utils.DataType>>>();
+            this.m_listDictFVSOutputTablesColumnsDefinitions = new Dictionary<string, List<Tuple<string, utils.DataType>>>();
             this.m_dictCreateTableQueries = new Dictionary<string, string>();
             this.m_strProjDir = p_strProjDir;
             this.m_oQueries = new Queries();
@@ -52,6 +52,14 @@ namespace FIA_Biosum_Manager
                 m_oQueries.m_oFvs.m_strFvsTreeTable = Tables.FVS.DefaultFVSTreeTableName;
             }
 
+            textBox1.TextChanged += (sender, e) =>
+            {
+                if (textBox1.Visible)
+                {
+                    textBox1.SelectionStart = textBox1.TextLength;
+                    textBox1.ScrollToCaret();
+                }
+            };
             this.m_ado = new ado_data_access();
             this.m_dao = new dao_data_access();
             this.m_strTempMDBFileConnectionString = this.m_ado.getMDBConnString(this.m_oQueries.m_strTempDbFile, "", "");
@@ -66,6 +74,8 @@ namespace FIA_Biosum_Manager
             this.m_oEnv = new env();
             this.m_bDebug = frmMain.g_bDebug;
         }
+
+
 
         private void InitializeDatasource()
         {
@@ -139,17 +149,17 @@ namespace FIA_Biosum_Manager
             // RunAppend_Main in uc_fvs_output.cs! (also good for seeing how to interact with m_intError;
 
             //get the fiadb table structures
-            DataMgr oDataMgr = new DataMgr();
+            DataMgr sqliteDataMgr = new DataMgr();
             var dbFileName = "fvsout.db";
             var dbPath = "\\fvs\\data\\" + dbFileName;
-            string strSQLiteConnection = oDataMgr.GetConnectionString(m_strProjDir + dbPath);
+            string strSQLiteConnection = sqliteDataMgr.GetConnectionString(m_strProjDir + dbPath);
             var oUtils = new utils(); // Cargo cult!(?) For doing SQLite to Acces oledb reader conversions
             var oEnv = new env(); // Cargo cult!(?) For getting stuff about the temp directory and app directory
             dao_data_access oDao = new dao_data_access();
             var fileNamesList = new List<List<string>>();
             fileNamesList = getRunTitleFilenames();
             // GetFVSVariantRxPackageSQL
-            populateTableQueryDictionaries(strSQLiteConnection,oDataMgr);
+            populateTableQueryDictionaries(strSQLiteConnection,sqliteDataMgr);
 
             foreach (var file in fileNamesList)
             {
@@ -181,6 +191,58 @@ namespace FIA_Biosum_Manager
                     accessConn.Open();
                     executeSQLListOnAccessConnection(m_dictCreateTableQueries, accessConn, m_ado);
                     // Populate new tables from SQLite
+                    using (var sqliteConn = new System.Data.SQLite.SQLiteConnection(strSQLiteConnection))
+                    {
+                        sqliteConn.Open();
+                        foreach (var tblName in m_listDictFVSOutputTablesColumnsDefinitions.Keys)
+                        {
+                            var cols = m_listDictFVSOutputTablesColumnsDefinitions[tblName];
+                            var strColumns = string.Join(",", m_listDictFVSOutputTablesColumnsDefinitions[tblName].Select(item => wrapInBackTick(item.Item1)));
+
+                            sqliteDataMgr.SqlQueryReader(sqliteConn, generateRuntitleSubsetQuery(tblName, file[2]));
+                            appendStringToDebugTextbox(generateRuntitleSubsetQuery(tblName, file[2]));
+
+
+                            // TODO: Make a dictionary mapping Access -> SQLite table names to SQLite -> Access
+                            if (sqliteDataMgr.m_DataReader.HasRows)
+                            {
+                                System.Data.OleDb.OleDbTransaction transaction;
+                                System.Data.OleDb.OleDbCommand command = accessConn.CreateCommand();
+                                // Start a local transaction
+                                transaction = accessConn.BeginTransaction(IsolationLevel.ReadCommitted);
+                                // Assign transaction object for a pending local transaction
+                                command.Transaction = transaction;
+                                try
+                                {
+                                    var recordCount = 0;
+                                    while (sqliteDataMgr.m_DataReader.Read())
+                                    {
+                                        if (sqliteDataMgr.m_DataReader["CASEID"] != DBNull.Value && Convert.ToString(sqliteDataMgr.m_DataReader["CASEID"]).Trim().Length > 0)
+                                        {
+                                            // Can't use year without backtick, can't use backticks
+                                            var strValues = utils.GetParsedInsertValues(sqliteDataMgr.m_DataReader, m_listDictFVSOutputTablesColumnsDefinitions[tblName]);
+                                            command.CommandText = $"INSERT INTO {tblName} ({strColumns}) VALUES ({strValues})";
+                                            command.ExecuteNonQuery();
+                                            recordCount++;
+                                        }
+                                    }
+                                    transaction.Commit();
+                                    appendStringToDebugTextbox($@"Inserted {recordCount} records into {tblName}");
+
+                                }
+                                catch (Exception err)
+                                {
+                                    m_intError = -1;
+                                    appendStringToDebugTextbox(err.Message);
+                                    transaction.Rollback();
+                                }
+                                transaction.Dispose();
+                            }
+                            sqliteDataMgr.m_DataReader.Dispose();
+                            
+                        }
+                    }
+
                     // Code written for #223 does something similar
                     // Get answers for what analysts would prefer to do for setting base year?
                     // Make text box as prototype.
@@ -238,6 +300,11 @@ namespace FIA_Biosum_Manager
             return convertedType;
         }
 
+        private string generateRuntitleSubsetQuery(string strTableName, string strRunTitle)
+        {
+            return !strTableName.ToUpper().Contains("CASES") ? $"SELECT f.* FROM FVS_CASES c INNER JOIN {strTableName} f ON c.CaseID=f.CaseID WHERE c.RunTitle='{strRunTitle}'" : $"SELECT c.* FROM {strTableName} c WHERE c.RunTitle='{strRunTitle}'";
+        }
+
         private utils.DataType getDataTypeEnumValueFromString(string dataTypeFromDB)
         {
             utils.DataType convertedType;
@@ -283,17 +350,21 @@ namespace FIA_Biosum_Manager
                     var strCol = "";
                     sb.Append($@"CREATE TABLE {convertTblNameToBiosumTblName(tblName)} (");
                     var strFields = "";
-                    var listColDataTypes = new List<Tuple<string, string, utils.DataType>>();
+                    var listColDataTypes = new List<Tuple<string, utils.DataType>>();
                     // TODO Make CaseID Unique? Make it the index (via ado_data_access index creation method?)
                     for (int y = 0; y <= dtSourceSchema.Rows.Count - 1; y++)
                     {
-                        var colName = "`"+translateColumn(dtSourceSchema.Rows[y]["columnname"].ToString()).ToUpper()+"`";
+                        var colName = translateColumn(dtSourceSchema.Rows[y]["columnname"].ToString()).ToUpper();
+                        //if (colName.Contains("YEAR"))
+                        //{
+                        //    continue;
+                        //}
 
                         var dataType = dtSourceSchema.Rows[y]["datatype"].ToString().ToUpper();
 
-                        listColDataTypes.Add(Tuple.Create(colName, colName, getDataTypeEnumValueFromString(dataType)));
+                        listColDataTypes.Add(Tuple.Create(colName, getDataTypeEnumValueFromString(dataType)));
 
-                        strCol = colName + " " + dataTypeConvert(dataType);
+                        strCol = wrapInBackTick(colName) + " " + dataTypeConvert(dataType);
                         if (strFields.Trim().Length == 0)
                         {
                             strFields = strCol;
@@ -305,7 +376,7 @@ namespace FIA_Biosum_Manager
                     }
                     sb.Append(strFields + ") ");
                     m_dictCreateTableQueries[convertTblNameToBiosumTblName(tblName)] =sb.ToString();
-                    m_listDictFVSOutputTablesColumnsDefinitions[tblName] = listColDataTypes;
+                    m_listDictFVSOutputTablesColumnsDefinitions[convertTblNameToBiosumTblName(tblName)] = listColDataTypes;
                 }
             }
         }
@@ -316,7 +387,7 @@ namespace FIA_Biosum_Manager
             {
                 appendStringToDebugTextbox($@"Creating table: {tblName}");
                 oAdo.SqlNonQuery(accessConn, queryDict[tblName]);
-                oAdo.AddIndex(accessConn, tblName, tblName+"_CaseId_Idx", "CaseID");
+                //oAdo.AddIndex(accessConn, tblName, tblName+"_CaseId_Idx", "CaseID");
             }
         }
 
@@ -449,6 +520,11 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.m_oThread.IsBackground = true;
             frmMain.g_oDelegate.CurrentThreadProcessIdle = false;
             frmMain.g_oDelegate.m_oThread.Start();
+        }
+
+        private string wrapInBackTick(string str)
+        {
+            return $@"`{str}`";
         }
 
         internal void uc_fvs_create_mdbs_Resize()

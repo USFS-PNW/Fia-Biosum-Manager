@@ -680,6 +680,15 @@ namespace FIA_Biosum_Manager
                         : _typeConverterDict[pair.Item2](reader[pair.Item1]))
                 .ToList());
         }
-	}
+
+        public static string GetParsedInsertValues(DbDataReader reader, List<Tuple<string,string, DataType>> columnsAndDataTypes)
+        {
+            if (columnsAndDataTypes == null || columnsAndDataTypes.Count < 1) return "";
+            return string.Join(",",
+                columnsAndDataTypes.Select(pair => reader[pair.Item1] == DBNull.Value ? "null"
+                        : _typeConverterDict[pair.Item3](reader[pair.Item1]))
+                .ToList());
+        }
+    }
 
 }
