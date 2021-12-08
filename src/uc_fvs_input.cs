@@ -1957,7 +1957,11 @@ namespace FIA_Biosum_Manager
                 m_strCondTable = m_oQueries.m_oFIAPlot.m_strCondTable;
                 string strCondMdb = m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Condition);
                 oDao.CreateTableLink(strTempMDB, m_strCondTable, strCondMdb, m_strCondTable);
-                
+                // Link to tree table
+                m_strTreeTable = m_oQueries.m_oFIAPlot.m_strTreeTable;
+                string strTreeMdb = m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree);
+                oDao.CreateTableLink(strTempMDB, m_strTreeTable, strTreeMdb, m_strTreeTable);
+
                 // Link to the input SQLite table; Takes the whole path to the DB
                 string strSourceStandTableAlias = Tables.FIA2FVS.DefaultFvsInputStandTableName + "_1";
                 string strSourceTreeTableAlias = Tables.FIA2FVS.DefaultFvsInputTreeTableName + "_1";

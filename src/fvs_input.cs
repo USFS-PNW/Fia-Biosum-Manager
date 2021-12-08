@@ -3928,16 +3928,25 @@ namespace FIA_Biosum_Manager
                              " FROM " + strSourceStandTableAlias +
                              " INNER JOIN cond ON TRIM(COND.cn) = " + strSourceStandTableAlias + ".STAND_CN" +
                              " AND COND.INVYR = " + strSourceStandTableAlias + ".INV_YEAR" +
-                             " WHERE " + strSourceStandTableAlias + ".VARIANT = '" + strVariant + "'";
+                             " WHERE " + strSourceStandTableAlias + ".VARIANT = '" + strVariant + "'" +
+                             " AND COND.landclcd = 1";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
                 oAdo.SqlNonQuery(oAccessConn, strSql);
 
-                strSql = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
-                    " SELECT " + strSourceTreeTableAlias + ".* FROM " + strSourceTreeTableAlias +
-                    " INNER JOIN " + Tables.FIA2FVS.DefaultFvsInputStandTableName + " ON TRIM(" +
-                    strSourceTreeTableAlias + ".STAND_CN) = " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".STAND_CN";
+                //strSql = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                //    " SELECT " + strSourceTreeTableAlias + ".* FROM " + strSourceTreeTableAlias +
+                //    " INNER JOIN " + Tables.FIA2FVS.DefaultFvsInputStandTableName + " ON TRIM(" +
+                //    strSourceTreeTableAlias + ".STAND_CN) = " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".STAND_CN";
 
+                strSql = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                         " SELECT " + strSourceTreeTableAlias + ".*" +
+                         " FROM " + strSourceTreeTableAlias + ", TREE, " + strSourceStandTableAlias + ", COND" +
+                         " WHERE cond.biosum_cond_id = tree.biosum_cond_id" +
+                         " AND TRIM(tree.cn) = " + strSourceTreeTableAlias + ".TREE_CN" +
+                         " AND TRIM(cond.cn) = " + strSourceStandTableAlias + ".STAND_CN" +
+                         " AND TRIM(cond.cn) = " + strSourceTreeTableAlias + ".STAND_CN" +
+                         " AND cond.landclcd = 1 AND tree.DIA > 0 AND " + strSourceStandTableAlias + ".VARIANT = '" + strVariant + "'";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
                 oAdo.SqlNonQuery(oAccessConn, strSql);

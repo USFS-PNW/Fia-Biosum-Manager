@@ -1494,6 +1494,7 @@ namespace FIA_Biosum_Manager
             static public string ProcessingSites = "Processing Sites";
             static public string Plot = "Plot";
             static public string Condition = "Condition";
+            static public string Tree = "Tree";
         }
 		
 	}
