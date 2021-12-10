@@ -35,6 +35,14 @@ namespace FIA_Biosum_Manager
         private Dictionary<string, List<Tuple<string, utils.DataType>>> m_listDictFVSOutputTablesColumnsDefinitions;
         private Dictionary<string, string> m_dictCreateTableQueries;
 
+        // Mapping of sqlite to Access tables names. Add new entries here.
+        public static Dictionary<string, string> sqliteToAccessTblNames = new Dictionary<string, string>
+        {
+            { "FVS_SUMMARY2", "FVS_SUMMARY" }
+        };
+        public static Dictionary<string, string> AccessToSqliteTblNames = sqliteToAccessTblNames.ToDictionary((i) => i.Value, (i) => i.Key);
+
+
         public uc_fvs_create_mdbs(string p_strProjDir)
         {
             InitializeComponent();
@@ -348,7 +356,7 @@ namespace FIA_Biosum_Manager
                     DataTable dtSourceSchema = oDataMgr.getTableSchema(con, $"select * from {tblName}");
                     var sb = new System.Text.StringBuilder();
                     var strCol = "";
-                    sb.Append($@"CREATE TABLE {convertTblNameToBiosumTblName(tblName)} (");
+                    sb.Append($@"CREATE TABLE {convertSqliteTblNameToBiosumTblName(tblName)} (");
                     var strFields = "";
                     var listColDataTypes = new List<Tuple<string, utils.DataType>>();
                     // TODO Make CaseID Unique? Make it the index (via ado_data_access index creation method?)
@@ -375,8 +383,8 @@ namespace FIA_Biosum_Manager
                         }
                     }
                     sb.Append(strFields + ") ");
-                    m_dictCreateTableQueries[convertTblNameToBiosumTblName(tblName)] =sb.ToString();
-                    m_listDictFVSOutputTablesColumnsDefinitions[convertTblNameToBiosumTblName(tblName)] = listColDataTypes;
+                    m_dictCreateTableQueries[convertSqliteTblNameToBiosumTblName(tblName)] =sb.ToString();
+                    m_listDictFVSOutputTablesColumnsDefinitions[convertSqliteTblNameToBiosumTblName(tblName)] = listColDataTypes;
                 }
             }
         }
@@ -404,21 +412,22 @@ namespace FIA_Biosum_Manager
             return translatedStr;
         }
 
-        private void createMDBTablesfromSQLite(string strMDBPathAndFile, DataMgr oDataMgr, dao_data_access oDao, string strConnection)
-        {
-            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
-            {
-                con.Open();
-                foreach (var tblName in oDataMgr.getTableNames(con))
-                {
-                    DataTable dtSourceSchema = oDataMgr.getTableSchema(con, $"select * from {tblName}");
-                    var newTblName = convertTblNameToBiosumTblName(tblName);
-                    oDao.CreateMDBTableFromDataSetTable(strMDBPathAndFile, newTblName, dtSourceSchema, true);
-                }
-            }
-        }
+        // Disused due to datatype incompatibilities
+        //private void createMDBTablesfromSQLite(string strMDBPathAndFile, DataMgr oDataMgr, dao_data_access oDao, string strConnection)
+        //{
+        //    using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
+        //    {
+        //        con.Open();
+        //        foreach (var tblName in oDataMgr.getTableNames(con))
+        //        {
+        //            DataTable dtSourceSchema = oDataMgr.getTableSchema(con, $"select * from {tblName}");
+        //            var newTblName = convertTblNameToBiosumTblName(tblName);
+        //            oDao.CreateMDBTableFromDataSetTable(strMDBPathAndFile, newTblName, dtSourceSchema, true);
+        //        }
+        //    }
+        //}
 
-        private string convertTblNameToBiosumTblName(string tblName)
+        private string convertSqliteTblNameToBiosumTblName(string tblName)
         {
             // TODO: Map changed table names to proper ones. Either via a mapping, regex, or a simple string compare. FVS_Summary2 -> FVS_Summary
             var validTables = Tables.FVS.g_strFVSOutTablesArray;
