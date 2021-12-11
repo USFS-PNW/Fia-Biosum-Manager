@@ -204,6 +204,7 @@ namespace FIA_Biosum_Manager
                         sqliteConn.Open();
                         foreach (var tblName in m_listDictFVSOutputTablesColumnsDefinitions.Keys)
                         {
+                            var accessTblName = convertAccessTblNameToSqliteTblName(tblName);
                             var cols = m_listDictFVSOutputTablesColumnsDefinitions[tblName];
                             var strColumns = string.Join(",", m_listDictFVSOutputTablesColumnsDefinitions[tblName].Select(item => wrapInBackTick(item.Item1)));
 
@@ -229,7 +230,7 @@ namespace FIA_Biosum_Manager
                                         {
                                             // Can't use year without backtick, can't use backticks
                                             var strValues = utils.GetParsedInsertValues(sqliteDataMgr.m_DataReader, m_listDictFVSOutputTablesColumnsDefinitions[tblName]);
-                                            command.CommandText = $"INSERT INTO {tblName} ({strColumns}) VALUES ({strValues})";
+                                            command.CommandText = $"INSERT INTO {accessTblName} ({strColumns}) VALUES ({strValues})";
                                             command.ExecuteNonQuery();
                                             recordCount++;
                                         }
@@ -439,6 +440,23 @@ namespace FIA_Biosum_Manager
                 if (tblName.ToUpper().Contains("SUMMARY"))
                 {
                     newTblName = "FVS_Summary";
+                }
+            }
+            return newTblName;
+        }
+
+        private string convertAccessTblNameToSqliteTblName(string tblName)
+        {
+            // TODO: Map changed table names to proper ones. Either via a mapping, regex, or a simple string compare. FVS_Summary2 -> FVS_Summary
+            var validTables = Tables.FVS.g_strFVSOutTablesArray;
+            var validTablesList = new List<string>(validTables);
+            var tablesSet = new HashSet<string>(validTablesList);
+            var newTblName = tblName;
+            if (!tablesSet.Contains(tblName))
+            {
+                if (tblName.ToUpper().Contains("SUMMARY"))
+                {
+                    newTblName = "FVS_Summary2";
                 }
             }
             return newTblName;
