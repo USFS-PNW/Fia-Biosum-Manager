@@ -234,7 +234,7 @@ namespace FIA_Biosum_Manager
                                             // Can't use year without backtick, can't use backticks
 
                                             var strValues = utils.GetParsedInsertValues(sqliteDataMgr.m_DataReader, m_listDictFVSOutputTablesColumnsDefinitions[tblName]);
-                                            command.CommandText = $"INSERT INTO {accessTblName} ({strColumns}) VALUES ({strValues})";
+                                            command.CommandText = $"INSERT INTO {tblName} ({strColumns}) VALUES ({strValues})";
                                             command.ExecuteNonQuery();
                                             recordCount++;
                                         }
