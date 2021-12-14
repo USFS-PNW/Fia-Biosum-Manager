@@ -207,8 +207,11 @@ namespace FIA_Biosum_Manager
                             var accessTblName = convertAccessTblNameToSqliteTblName(tblName);
                             var cols = m_listDictFVSOutputTablesColumnsDefinitions[tblName];
                             var strColumns = string.Join(",", m_listDictFVSOutputTablesColumnsDefinitions[tblName].Select(item => wrapInBackTick(item.Item1)));
-
-                            sqliteDataMgr.SqlQueryReader(sqliteConn, generateRuntitleSubsetQuery(tblName, file[2]));
+                            if (tblName.ToUpper().Contains("SUMMARY"))
+                            {
+                                var problem = true;
+                            }
+                            sqliteDataMgr.SqlQueryReader(sqliteConn, generateRuntitleSubsetQuery(accessTblName, file[2]));
                             appendStringToDebugTextbox(generateRuntitleSubsetQuery(tblName, file[2]));
 
 
@@ -229,6 +232,7 @@ namespace FIA_Biosum_Manager
                                         if (sqliteDataMgr.m_DataReader["CASEID"] != DBNull.Value && Convert.ToString(sqliteDataMgr.m_DataReader["CASEID"]).Trim().Length > 0)
                                         {
                                             // Can't use year without backtick, can't use backticks
+
                                             var strValues = utils.GetParsedInsertValues(sqliteDataMgr.m_DataReader, m_listDictFVSOutputTablesColumnsDefinitions[tblName]);
                                             command.CommandText = $"INSERT INTO {accessTblName} ({strColumns}) VALUES ({strValues})";
                                             command.ExecuteNonQuery();
