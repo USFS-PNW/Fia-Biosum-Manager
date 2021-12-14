@@ -360,8 +360,9 @@ namespace FIA_Biosum_Manager
 			{
 				System.Data.OleDb.OleDbDataReader oDataReader = oCommand.ExecuteReader();
 				int x = 0;
-				
-				while (oDataReader.Read())
+
+                dao_data_access p_dao = new dao_data_access();
+                while (oDataReader.Read())
 				{
 					if (oDataReader["table_type"] != System.DBNull.Value &&
 						oDataReader["table_type"].ToString().Trim().Length > 0)
@@ -403,7 +404,6 @@ namespace FIA_Biosum_Manager
 							this.m_oLvRowColors.ListViewSubItem(entryListItem.Index,uc_datasource.TABLE,entryListItem.SubItems[entryListItem.SubItems.Count-1],false);
 
 							//see if the table exists in the mdb database container
-							dao_data_access p_dao = new dao_data_access();
 							if (p_dao.TableExists(strPathAndFile,oDataReader["table_name"].ToString().Trim()) == true)
 							{
 								this.lstRequiredTables.Items[x].SubItems.Add("Found");
@@ -427,9 +427,6 @@ namespace FIA_Biosum_Manager
 								this.lstRequiredTables.Items[x].SubItems.Add("0");
 								this.m_oLvRowColors.ListViewSubItem(x,uc_datasource.RECORDCOUNT,entryListItem.SubItems[entryListItem.SubItems.Count-1],false);
 							}
-							
-							
-							p_dao = null;
 						}
 						else 
 						{
@@ -462,7 +459,15 @@ namespace FIA_Biosum_Manager
 					}
 					
 				}
-				oDataReader.Close();
+                // Dispose of dao object
+                if (p_dao != null && p_dao.m_DaoWorkspace != null)
+                {
+                    p_dao.m_DaoWorkspace.Close();
+                    p_dao.m_DaoWorkspace = null;
+                    p_dao.m_DaoDbEngine = null;
+                    p_dao = null;
+                }
+                oDataReader.Close();
 			}
 			catch
 			{
@@ -475,14 +480,8 @@ namespace FIA_Biosum_Manager
 			}
 			
 			oConn.Close();
-			
-
 			this.lstRequiredTables.Columns[TABLETYPE].Width = -1;
-			
-
-
 			p_ado = null;
-
 		}
 
         public void LoadValuesSqlite()

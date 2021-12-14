@@ -3927,7 +3927,7 @@ namespace FIA_Biosum_Manager
                              " SELECT " + strSourceStandTableAlias + ".*" +
                              " FROM " + strSourceStandTableAlias +
                              " INNER JOIN cond ON TRIM(COND.cn) = " + strSourceStandTableAlias + ".STAND_CN" +
-                             " AND COND.INVYR = " + strSourceStandTableAlias + ".INV_YEAR" +
+                             //" AND COND.INVYR = " + strSourceStandTableAlias + ".INV_YEAR" +
                              " WHERE " + strSourceStandTableAlias + ".VARIANT = '" + strVariant + "'" +
                              " AND COND.landclcd = 1";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
