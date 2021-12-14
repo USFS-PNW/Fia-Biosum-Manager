@@ -224,8 +224,8 @@ namespace FIA_Biosum_Manager
                                 transaction = accessConn.BeginTransaction(IsolationLevel.ReadCommitted);
                                 // Assign transaction object for a pending local transaction
                                 command.Transaction = transaction;
-                                try
-                                {
+                                //try
+                                //{
                                     var recordCount = 0;
                                     while (sqliteDataMgr.m_DataReader.Read())
                                     {
@@ -242,14 +242,14 @@ namespace FIA_Biosum_Manager
                                     transaction.Commit();
                                     appendStringToDebugTextbox($@"Inserted {recordCount} records into {tblName}");
 
-                                }
-                                catch (Exception err)
-                                {
-                                    m_intError = -1;
-                                    appendStringToDebugTextbox(err.Message);
-                                    transaction.Rollback();
-                                }
-                                transaction.Dispose();
+                                //}
+                                //catch (Exception err)
+                                //{
+                                //    m_intError = -1;
+                                //    appendStringToDebugTextbox(err.Message);
+                                //    transaction.Rollback();
+                                //}
+                                //transaction.Dispose();
                             }
                             sqliteDataMgr.m_DataReader.Dispose();
                             
