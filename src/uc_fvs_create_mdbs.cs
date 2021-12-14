@@ -367,7 +367,9 @@ namespace FIA_Biosum_Manager
                     // TODO Make CaseID Unique? Make it the index (via ado_data_access index creation method?)
                     for (int y = 0; y <= dtSourceSchema.Rows.Count - 1; y++)
                     {
-                        var colName = translateColumn(dtSourceSchema.Rows[y]["columnname"].ToString()).ToUpper();
+                        var colName = dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper();
+                        //                        var colName = translateColumn(dtSourceSchema.Rows[y]["columnname"].ToString()).ToUpper();
+
                         //if (colName.Contains("YEAR"))
                         //{
                         //    continue;
