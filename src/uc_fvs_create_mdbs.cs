@@ -207,10 +207,7 @@ namespace FIA_Biosum_Manager
                             var accessTblName = convertAccessTblNameToSqliteTblName(tblName);
                             var cols = m_listDictFVSOutputTablesColumnsDefinitions[tblName];
                             var strColumns = string.Join(",", m_listDictFVSOutputTablesColumnsDefinitions[tblName].Select(item => wrapInBackTick(item.Item1)));
-                            if (tblName.ToUpper().Contains("SUMMARY"))
-                            {
-                                var problem = true;
-                            }
+
                             sqliteDataMgr.SqlQueryReader(sqliteConn, generateRuntitleSubsetQuery(accessTblName, file[2]));
                             appendStringToDebugTextbox(generateRuntitleSubsetQuery(tblName, file[2]));
 
@@ -224,8 +221,8 @@ namespace FIA_Biosum_Manager
                                 transaction = accessConn.BeginTransaction(IsolationLevel.ReadCommitted);
                                 // Assign transaction object for a pending local transaction
                                 command.Transaction = transaction;
-                                //try
-                                //{
+                                try
+                                {
                                     var recordCount = 0;
                                     while (sqliteDataMgr.m_DataReader.Read())
                                     {
@@ -242,15 +239,15 @@ namespace FIA_Biosum_Manager
                                     transaction.Commit();
                                     appendStringToDebugTextbox($@"Inserted {recordCount} records into {tblName}");
 
-                                //}
-                                //catch (Exception err)
-                                //{
-                                //    m_intError = -1;
-                                //    appendStringToDebugTextbox(err.Message);
-                                //    transaction.Rollback();
-                                //}
-                                //transaction.Dispose();
                             }
+                                catch (Exception err)
+                            {
+                                m_intError = -1;
+                                appendStringToDebugTextbox(err.Message);
+                                transaction.Rollback();
+                            }
+                            transaction.Dispose();
+                        }
                             sqliteDataMgr.m_DataReader.Dispose();
                             
                         }
