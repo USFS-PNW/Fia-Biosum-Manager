@@ -674,23 +674,11 @@ namespace FIA_Biosum_Manager
 
         public static string GetParsedInsertValues(DbDataReader reader, List<Tuple<string, DataType>> columnsAndDataTypes)
         {
-            //foreach (var cad in columnsAndDataTypes)
-            //{
-            //    var type = cad.Item2;
-            //    var col = cad.Item1;
-            //    var converttype = _typeConverterDict[type];
-            //    var readerResult = reader[col];//SPECIES is the problem here. What is CADE27?
-            //}
             if (columnsAndDataTypes == null || columnsAndDataTypes.Count < 1) return "";
             return string.Join(",", 
                 columnsAndDataTypes.Select(pair => reader[pair.Item1] == DBNull.Value ? "null" 
                         : _typeConverterDict[pair.Item2](reader[pair.Item1]))
                 .ToList());
-            //if (columnsAndDataTypes == null || columnsAndDataTypes.Count < 1) return "";
-            //return string.Join(",",
-            //    columnsAndDataTypes.Select(pair => reader[pair.Item1.ToUpper().Contains("SPECIES") ? "SPECIESFIA" : pair.Item1] == DBNull.Value ? "null"
-            //            : _typeConverterDict[pair.Item2](reader[pair.Item1.ToUpper().Contains("SPECIES") ? "SPECIESFIA" : pair.Item1]))
-            //    .ToList());
         }
 
         public static string GetParsedInsertValues(DbDataReader reader, List<Tuple<string,string, DataType>> columnsAndDataTypes)
