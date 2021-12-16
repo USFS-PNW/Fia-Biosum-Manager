@@ -2487,13 +2487,13 @@ namespace FIA_Biosum_Manager
         {
             // TODO: 
             //check to see if the form has already been loaded
-            if (this.IsChildWindowVisible("FVS: Process FVS Output") == false)
+            if (this.IsChildWindowVisible("FVS: Create MDBs") == false)
             {
-                frmMain.g_sbpInfo.Text = "Loading FVS Output...Stand By";
+                frmMain.g_sbpInfo.Text = "Loading Create MDBs feature...Stand By";
                 this.m_frmCreateFvsOutputMdbs = new frmDialog(this);
                 this.m_frmCreateFvsOutputMdbs.MaximizeBox = true;
                 this.m_frmCreateFvsOutputMdbs.BackColor = System.Drawing.SystemColors.Control;
-                this.m_frmCreateFvsOutputMdbs.Text = "FVS: Process FVS Output";
+                this.m_frmCreateFvsOutputMdbs.Text = "FVS: Create MDBs";
                 FIA_Biosum_Manager.uc_fvs_create_mdbs p_uc = new uc_fvs_create_mdbs(this.frmProject.uc_project1.txtRootDirectory.Text.Trim());
                 if (p_uc.m_intError < 0)
                 {

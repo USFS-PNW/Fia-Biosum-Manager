@@ -40,6 +40,9 @@ namespace FIA_Biosum_Manager
         {
             { "FVS_SUMMARY2", "FVS_SUMMARY" }
         };
+        private Button button2;
+        private ProgressBar progressBar1;
+        private Button button3;
         public static Dictionary<string, string> AccessToSqliteTblNames = sqliteToAccessTblNames.ToDictionary((i) => i.Value, (i) => i.Key);
 
 
@@ -105,16 +108,22 @@ namespace FIA_Biosum_Manager
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.button1 = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.button2 = new System.Windows.Forms.Button();
+            this.button3 = new System.Windows.Forms.Button();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.progressBar1);
+            this.groupBox1.Controls.Add(this.button3);
+            this.groupBox1.Controls.Add(this.button2);
             this.groupBox1.Controls.Add(this.textBox1);
             this.groupBox1.Controls.Add(this.button1);
             this.groupBox1.Location = new System.Drawing.Point(32, 17);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(875, 435);
+            this.groupBox1.Size = new System.Drawing.Size(940, 465);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Create MDBs Output";
@@ -123,32 +132,59 @@ namespace FIA_Biosum_Manager
             // 
             this.textBox1.AccessibleDescription = "This textbox outputs logs on the Create MDB process.";
             this.textBox1.AccessibleName = "Output Textbox";
-            this.textBox1.Location = new System.Drawing.Point(20, 21);
+            this.textBox1.Location = new System.Drawing.Point(6, 21);
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
             this.textBox1.ReadOnly = true;
             this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox1.Size = new System.Drawing.Size(849, 379);
+            this.textBox1.Size = new System.Drawing.Size(928, 407);
             this.textBox1.TabIndex = 1;
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(20, 406);
+            this.button1.Location = new System.Drawing.Point(13, 434);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(126, 23);
+            this.button1.Size = new System.Drawing.Size(125, 25);
             this.button1.TabIndex = 0;
             this.button1.Text = "Create MDBs";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
+            // button2
+            // 
+            this.button2.Enabled = false;
+            this.button2.Location = new System.Drawing.Point(145, 434);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(125, 25);
+            this.button2.TabIndex = 2;
+            this.button2.Text = "Cancel";
+            this.button2.UseVisualStyleBackColor = true;
+            // 
+            // button3
+            // 
+            this.button3.Location = new System.Drawing.Point(276, 434);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(125, 25);
+            this.button3.TabIndex = 3;
+            this.button3.Text = "Export log as .txt";
+            this.button3.UseVisualStyleBackColor = true;
+            // 
+            // progressBar1
+            // 
+            this.progressBar1.Location = new System.Drawing.Point(407, 434);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(525, 25);
+            this.progressBar1.TabIndex = 4;
+            // 
             // uc_fvs_create_mdbs
             // 
             this.Controls.Add(this.groupBox1);
             this.Name = "uc_fvs_create_mdbs";
-            this.Size = new System.Drawing.Size(937, 470);
+            this.Size = new System.Drawing.Size(1000, 500);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
+
         }
 
         private void CreateMDBs_Main()
@@ -340,7 +376,6 @@ namespace FIA_Biosum_Manager
             // ??? > "SINGLE" ?
             return convertedType;
         }
-        // TODO: Make this a void function
         private void populateTableQueryDictionaries(string strConnection, DataMgr oDataMgr)
         {
             using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
@@ -508,31 +543,11 @@ namespace FIA_Biosum_Manager
         }
         private void button1_Click(object sender, EventArgs e)
         {
-
-            //if (this.lstFvsOutput.CheckedItems.Count == 0)
-            //{
-            //    MessageBox.Show("No Boxes Are Checked", "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-            //    return;
-            //}
-
             //this.m_frmTherm = new frmTherm(((frmDialog)ParentForm), "FVS OUT DATA",
             //    "FVS Output", "2");
             //m_frmTherm.Visible = false;
             //this.m_frmTherm.lblMsg.Text = "";
             //this.m_frmTherm.TopMost = true;
-
-            //this.cmbStep.Enabled = false;
-            //this.btnExecute.Enabled = false;
-            //this.btnChkAll.Enabled = false;
-            //this.btnClearAll.Enabled = false;
-            //this.btnRefresh.Enabled = false;
-            //this.btnClose.Enabled = false;
-            //this.btnHelp.Enabled = false;
-            //this.btnCancel.Visible = false;
-            //this.btnViewLogFile.Enabled = false;
-            //this.btnViewPostLogFile.Enabled = false;
-            //this.btnAuditDb.Enabled = false;
-            //this.btnPostAppendAuditDb.Enabled = false;
 
             //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Maximum", 100);
             //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Minimum", 0);
@@ -552,6 +567,7 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.m_oThread.Start();
         }
 
+        
         private string wrapInBackTick(string str)
         {
             return $@"`{str}`";
