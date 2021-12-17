@@ -20,7 +20,7 @@ namespace FIA_Biosum_Manager
         private GroupBox groupBox1;
         private TextBox textBox1;
         private IContainer components;
-        private Button button1;
+        private Button btnCreateMdbs;
         private string m_strProjDir;
         private Queries m_oQueries;
         private Tables m_oTables;
@@ -40,14 +40,13 @@ namespace FIA_Biosum_Manager
         {
             { "FVS_SUMMARY2", "FVS_SUMMARY" }
         };
-        private Button createMdbsCancelBtn;
-        private Button button3;
+        private Button btnCancel;
+        private Button btnExportLog;
         private ToolTip createMdbsTooltip;
         private ToolTip cancelTooltip;
         private ToolTip exportLogTooltip;
         private Button btnClose;
         public static Dictionary<string, string> AccessToSqliteTblNames = sqliteToAccessTblNames.ToDictionary((i) => i.Value, (i) => i.Key);
-
 
         public uc_fvs_create_mdbs(string p_strProjDir)
         {
@@ -108,30 +107,62 @@ namespace FIA_Biosum_Manager
         {
             this.components = new System.ComponentModel.Container();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.btnClose = new System.Windows.Forms.Button();
+            this.btnExportLog = new System.Windows.Forms.Button();
+            this.btnCancel = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.createMdbsCancelBtn = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
+            this.btnCreateMdbs = new System.Windows.Forms.Button();
             this.createMdbsTooltip = new System.Windows.Forms.ToolTip(this.components);
             this.cancelTooltip = new System.Windows.Forms.ToolTip(this.components);
             this.exportLogTooltip = new System.Windows.Forms.ToolTip(this.components);
-            this.btnClose = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.btnClose);
-            this.groupBox1.Controls.Add(this.button3);
-            this.groupBox1.Controls.Add(this.createMdbsCancelBtn);
+            this.groupBox1.Controls.Add(this.btnExportLog);
+            this.groupBox1.Controls.Add(this.btnCancel);
             this.groupBox1.Controls.Add(this.textBox1);
-            this.groupBox1.Controls.Add(this.button1);
+            this.groupBox1.Controls.Add(this.btnCreateMdbs);
             this.groupBox1.Location = new System.Drawing.Point(32, 17);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(940, 465);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Create MDBs Output";
+            // 
+            // btnClose
+            // 
+            this.btnClose.Location = new System.Drawing.Point(809, 434);
+            this.btnClose.Name = "btnClose";
+            this.btnClose.Size = new System.Drawing.Size(125, 25);
+            this.btnClose.TabIndex = 4;
+            this.btnClose.Text = "Close";
+            this.btnClose.UseVisualStyleBackColor = true;
+            this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
+            // 
+            // btnExportLog
+            // 
+            this.btnExportLog.Enabled = false;
+            this.btnExportLog.Location = new System.Drawing.Point(276, 434);
+            this.btnExportLog.Name = "btnExportLog";
+            this.btnExportLog.Size = new System.Drawing.Size(125, 25);
+            this.btnExportLog.TabIndex = 3;
+            this.btnExportLog.Text = "Export log as .txt";
+            this.btnExportLog.UseVisualStyleBackColor = true;
+            this.btnExportLog.Click += new System.EventHandler(this.btnExport_Click);
+            // 
+            // btnCancel
+            // 
+            this.btnCancel.Enabled = false;
+            this.btnCancel.Location = new System.Drawing.Point(145, 434);
+            this.btnCancel.Name = "btnCancel";
+            this.btnCancel.Size = new System.Drawing.Size(125, 25);
+            this.btnCancel.TabIndex = 2;
+            this.btnCancel.Text = "Cancel";
+            this.btnCancel.UseVisualStyleBackColor = true;
+            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // textBox1
             // 
@@ -145,35 +176,15 @@ namespace FIA_Biosum_Manager
             this.textBox1.Size = new System.Drawing.Size(928, 407);
             this.textBox1.TabIndex = 1;
             // 
-            // button1
+            // btnCreateMdbs
             // 
-            this.button1.Location = new System.Drawing.Point(13, 434);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(125, 25);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "Create MDBs";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // createMdbsCancelBtn
-            // 
-            this.createMdbsCancelBtn.Enabled = false;
-            this.createMdbsCancelBtn.Location = new System.Drawing.Point(145, 434);
-            this.createMdbsCancelBtn.Name = "createMdbsCancelBtn";
-            this.createMdbsCancelBtn.Size = new System.Drawing.Size(125, 25);
-            this.createMdbsCancelBtn.TabIndex = 2;
-            this.createMdbsCancelBtn.Text = "Cancel";
-            this.createMdbsCancelBtn.UseVisualStyleBackColor = true;
-            // 
-            // button3
-            // 
-            this.button3.Location = new System.Drawing.Point(276, 434);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(125, 25);
-            this.button3.TabIndex = 3;
-            this.button3.Text = "Export log as .txt";
-            this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(button3_Click);
+            this.btnCreateMdbs.Location = new System.Drawing.Point(13, 434);
+            this.btnCreateMdbs.Name = "btnCreateMdbs";
+            this.btnCreateMdbs.Size = new System.Drawing.Size(125, 25);
+            this.btnCreateMdbs.TabIndex = 0;
+            this.btnCreateMdbs.Text = "Create MDBs";
+            this.btnCreateMdbs.UseVisualStyleBackColor = true;
+            this.btnCreateMdbs.Click += new System.EventHandler(this.createMdbsMain_Click);
             // 
             // createMdbsTooltip
             // 
@@ -182,15 +193,6 @@ namespace FIA_Biosum_Manager
             // exportLogTooltip
             // 
             this.exportLogTooltip.ToolTipTitle = "Export Logs Button Tooltip";
-            // 
-            // btnClose
-            // 
-            this.btnClose.Location = new System.Drawing.Point(809, 434);
-            this.btnClose.Name = "btnClose";
-            this.btnClose.Size = new System.Drawing.Size(125, 25);
-            this.btnClose.TabIndex = 4;
-            this.btnClose.Text = "Close";
-            this.btnClose.UseVisualStyleBackColor = true;
             // 
             // uc_fvs_create_mdbs
             // 
@@ -207,8 +209,10 @@ namespace FIA_Biosum_Manager
         {
             // When you need to see how to update progress bars:
             // RunAppend_Main in uc_fvs_output.cs! (also good for seeing how to interact with m_intError;
-
+            frmMain.g_oDelegate.SetControlPropertyValue(this.btnExportLog, "Enabled", false);
+            frmMain.g_oDelegate.SetControlPropertyValue(this.btnCancel, "Enabled", true);
             //get the fiadb table structures
+            appendStringToDebugTextbox("Generating MDBs on this date and time:"+ DateTime.Now.ToLongDateString() + " " + DateTime.Now.ToLongTimeString().ToString());
             DataMgr sqliteDataMgr = new DataMgr();
             var dbFileName = "fvsout.db";
             var dbPath = "\\fvs\\data\\" + dbFileName;
@@ -226,7 +230,7 @@ namespace FIA_Biosum_Manager
                 // Create file in root\fvs\data\<variant>\<filename>
                 var strDbPathFile = m_strProjDir + "\\fvs\\data\\"+file[1]+"\\"+file[0];
 
-                var fi = new System.IO.FileInfo(strDbPathFile);
+                var fi = new FileInfo(strDbPathFile);
                 if (fi.Exists)
                 {
                     // Unhandled exception if file is open in Access; catch and prompt user to close and retry?
@@ -240,13 +244,12 @@ namespace FIA_Biosum_Manager
                     // TODO: DEBUG LOG HERE.
                     appendStringToDebugTextbox($@"File exists. Deleting: {strDbPathFile}");
                 }
-
+                
                 oDao.CreateMDB(strDbPathFile);
                 // Open a connection to new file 
                 using (var accessConn = new OleDbConnection(m_ado.getMDBConnString(strDbPathFile, "", "")))
                 {
                     // Populate tables via these queries
-                    // Log to files in utils.cs WriteText method
                     appendStringToDebugTextbox($@"Connecting to: {file[0]}");
                     accessConn.Open();
                     executeSQLListOnAccessConnection(m_dictCreateTableQueries, accessConn, m_ado);
@@ -258,17 +261,15 @@ namespace FIA_Biosum_Manager
                         {
                             var accessTblName = convertAccessTblNameToSqliteTblName(tblName);
                             var cols = m_listDictFVSOutputTablesColumnsDefinitions[tblName];
-                            var strColumns = string.Join(",", m_listDictFVSOutputTablesColumnsDefinitions[tblName].Select(item => wrapInBackTick(item.Item1)));
+                            var strColumns = string.Join(",", m_listDictFVSOutputTablesColumnsDefinitions[tblName].Select(item => wrapInBackTick(translateColumn(item.Item1))));
 
                             sqliteDataMgr.SqlQueryReader(sqliteConn, generateRuntitleSubsetQuery(accessTblName, file[2]));
                             appendStringToDebugTextbox(generateRuntitleSubsetQuery(tblName, file[2]));
 
-
-                            // TODO: Make a dictionary mapping Access -> SQLite table names to SQLite -> Access
                             if (sqliteDataMgr.m_DataReader.HasRows)
                             {
-                                System.Data.OleDb.OleDbTransaction transaction;
-                                System.Data.OleDb.OleDbCommand command = accessConn.CreateCommand();
+                                OleDbTransaction transaction;
+                                OleDbCommand command = accessConn.CreateCommand();
                                 // Start a local transaction
                                 transaction = accessConn.BeginTransaction(IsolationLevel.ReadCommitted);
                                 // Assign transaction object for a pending local transaction
@@ -280,9 +281,8 @@ namespace FIA_Biosum_Manager
                                     {
                                         if (sqliteDataMgr.m_DataReader["CASEID"] != DBNull.Value && Convert.ToString(sqliteDataMgr.m_DataReader["CASEID"]).Trim().Length > 0)
                                         {
-                                            // Can't use year without backtick, can't use backticks
-
                                             var strValues = utils.GetParsedInsertValues(sqliteDataMgr.m_DataReader, m_listDictFVSOutputTablesColumnsDefinitions[tblName]);
+                                            // Insert statements
                                             command.CommandText = $"INSERT INTO {tblName} ({strColumns}) VALUES ({strValues})";
                                             command.ExecuteNonQuery();
                                             recordCount++;
@@ -290,7 +290,6 @@ namespace FIA_Biosum_Manager
                                     }
                                     transaction.Commit();
                                     appendStringToDebugTextbox($@"Inserted {recordCount} records into {tblName}");
-
                             }
                                 catch (Exception err)
                             {
@@ -301,13 +300,13 @@ namespace FIA_Biosum_Manager
                             transaction.Dispose();
                         }
                             sqliteDataMgr.m_DataReader.Dispose();
-                            
+                            sqliteDataMgr.m_DataReader = null;
                         }
+                        sqliteConn.Close();
                     }
-
+                    accessConn.Close();
                     // Code written for #223 does something similar
                     // Get answers for what analysts would prefer to do for setting base year?
-                    // Make text box as prototype.
                     // Diff new and old access DBs if possible.utputs.
                     // Progress indicators? Instantiate thermometer? Calculate max number o
                     // Idea: Use Tyler's access macro on the new and old, and compare onf steps and add increments. Use delegate to update bar from background thread.
@@ -315,9 +314,6 @@ namespace FIA_Biosum_Manager
                     // Cancel button
                     // Debug log with log levels.
                 }
-
-
-
                 // Add index (if needed)
                 //var strTempIndex = column + "_delete_idx";
                 //if (!m_dao.IndexExists(strDbPathFile, table, strTempIndex))
@@ -327,12 +323,18 @@ namespace FIA_Biosum_Manager
             }
             // TODO: PotFireBaseYr (sp?) special case handling. Each DB has two tables, FVS_Cases and FVS_PotFire.
             // Only one PotFireBaseYr db per variant. Probably.
-
             appendStringToDebugTextbox("Done.");
             m_dictCreateTableQueries.Clear();
             m_listDictFVSOutputTablesColumnsDefinitions.Clear();
-            frmMain.g_oDelegate.StopThread();
+            CleanupThread();
+            frmMain.g_oDelegate.SetControlPropertyValue(this.btnExportLog, "Enabled", true);
+            frmMain.g_oDelegate.SetControlPropertyValue(this.btnCancel, "Enabled", false);
             return;
+        }
+
+        private void btnClose_Click(object sender, System.EventArgs e)
+        {
+            this.ParentForm.Close();
         }
 
         private void appendStringToDebugTextbox(string text)
@@ -341,10 +343,10 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.SetControlPropertyValue(this.textBox1, "Text", textBoxValue += text +System.Environment.NewLine);
         }
 
-        private void button3_Click(object sender, EventArgs e)
+        private void btnExport_Click(object sender, EventArgs e)
         {
             SaveFileDialog save = new SaveFileDialog();
-            save.FileName = "CreatMDBSExportLog-" + DateTime.Now.ToShortDateString() + ".txt";
+            save.FileName = "CreatMDBSExportLog-" + DateTime.Now.ToShortDateString().Replace("/","-") + ".txt";
             save.Filter = "Text File | *.txt";
             if (save.ShowDialog() == DialogResult.OK)
             {
@@ -420,7 +422,6 @@ namespace FIA_Biosum_Manager
                 //build field list string to insert sql by matching 
                 //up the column names in the biosum plot table and the fiadb plot table
 
-
                 // Run this loop for each database we need to make.
                 foreach (var tblName in tableNames)
                 {
@@ -434,18 +435,14 @@ namespace FIA_Biosum_Manager
                     for (int y = 0; y <= dtSourceSchema.Rows.Count - 1; y++)
                     {
                         var colName = dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper();
-                        //                        var colName = translateColumn(dtSourceSchema.Rows[y]["columnname"].ToString()).ToUpper();
-
-                        //if (colName.Contains("YEAR"))
-                        //{
-                        //    continue;
-                        //}
+                        var convertedColName = translateColumn(dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper());
 
                         var dataType = dtSourceSchema.Rows[y]["datatype"].ToString().ToUpper();
 
                         listColDataTypes.Add(Tuple.Create(colName, getDataTypeEnumValueFromString(dataType)));
 
-                        strCol = wrapInBackTick(colName) + " " + dataTypeConvert(dataType);
+                        // Use converted name here. We want SPECIES for the access creation, and SPECIESFIA for the selects.
+                        strCol = wrapInBackTick(convertedColName) + " " + dataTypeConvert(dataType);
                         if (strFields.Trim().Length == 0)
                         {
                             strFields = strCol;
@@ -475,7 +472,7 @@ namespace FIA_Biosum_Manager
         private string translateColumn (string strToCheck)
         {
             var translatedStr = strToCheck.ToUpper();
-            // Map SPECIESFIA to SPECIES. TODO: Make prettier?
+            // Map SPECIESFIA to SPECIES. In the future, add other column mappings (e.g. stuff that's different in FVSOUT.db from the target Access Mdbs) here.
             if (translatedStr.Contains("SPECIESFIA"))
             {
                 translatedStr = translatedStr.Replace("SPECIESFIA", "SPECIES");
@@ -575,22 +572,8 @@ namespace FIA_Biosum_Manager
             }
             return fileNames;
         }
-        private void button1_Click(object sender, EventArgs e)
+        private void createMdbsMain_Click(object sender, EventArgs e)
         {
-            //this.m_frmTherm = new frmTherm(((frmDialog)ParentForm), "FVS OUT DATA",
-            //    "FVS Output", "2");
-            //m_frmTherm.Visible = false;
-            //this.m_frmTherm.lblMsg.Text = "";
-            //this.m_frmTherm.TopMost = true;
-
-            //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Maximum", 100);
-            //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Minimum", 0);
-            //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Value", 0);
-            //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg2, "Text", "Overall Progress");
-            //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "");
-            //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Visible", true);
-            //m_frmTherm.Show((frmDialog)ParentForm);
-
             frmMain.g_oDelegate.CurrentThreadProcessAborted = false;
             frmMain.g_oDelegate.CurrentThreadProcessDone = false;
             frmMain.g_oDelegate.CurrentThreadProcessStarted = false;
@@ -601,7 +584,30 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.m_oThread.Start();
         }
 
-        
+        private void btnCancel_Click(object sender, System.EventArgs e)
+        {
+            CancelThread();
+        }
+
+        private void CancelThread()
+        {
+            bool bAbort = frmMain.g_oDelegate.AbortProcessing("FIA Biosum", "Do you wish to cancel processing (Y/N)?");
+            if (bAbort)
+            {
+                if (frmMain.g_oDelegate.m_oThread.IsAlive)
+                {
+                    frmMain.g_oDelegate.m_oThread.Join();
+                }
+                frmMain.g_oDelegate.StopThread();
+                CleanupThread();
+            }
+        }
+
+        private void CleanupThread()
+        {
+            this.ParentForm.Enabled = true;
+        }
+
         private string wrapInBackTick(string str)
         {
             return $@"`{str}`";
