@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using SQLite.ADO;
 using System.Data.OleDb;
 using System.Linq;
+using System.IO;
 
 namespace FIA_Biosum_Manager
 {
@@ -18,7 +19,6 @@ namespace FIA_Biosum_Manager
     {
         private GroupBox groupBox1;
         private TextBox textBox1;
-        private ToolTip toolTip1;
         private IContainer components;
         private Button button1;
         private string m_strProjDir;
@@ -40,9 +40,12 @@ namespace FIA_Biosum_Manager
         {
             { "FVS_SUMMARY2", "FVS_SUMMARY" }
         };
-        private Button button2;
-        private ProgressBar progressBar1;
+        private Button createMdbsCancelBtn;
         private Button button3;
+        private ToolTip createMdbsTooltip;
+        private ToolTip cancelTooltip;
+        private ToolTip exportLogTooltip;
+        private Button btnClose;
         public static Dictionary<string, string> AccessToSqliteTblNames = sqliteToAccessTblNames.ToDictionary((i) => i.Value, (i) => i.Key);
 
 
@@ -107,18 +110,20 @@ namespace FIA_Biosum_Manager
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.button1 = new System.Windows.Forms.Button();
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.button2 = new System.Windows.Forms.Button();
+            this.createMdbsCancelBtn = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.createMdbsTooltip = new System.Windows.Forms.ToolTip(this.components);
+            this.cancelTooltip = new System.Windows.Forms.ToolTip(this.components);
+            this.exportLogTooltip = new System.Windows.Forms.ToolTip(this.components);
+            this.btnClose = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.progressBar1);
+            this.groupBox1.Controls.Add(this.btnClose);
             this.groupBox1.Controls.Add(this.button3);
-            this.groupBox1.Controls.Add(this.button2);
+            this.groupBox1.Controls.Add(this.createMdbsCancelBtn);
             this.groupBox1.Controls.Add(this.textBox1);
             this.groupBox1.Controls.Add(this.button1);
             this.groupBox1.Location = new System.Drawing.Point(32, 17);
@@ -150,15 +155,15 @@ namespace FIA_Biosum_Manager
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
-            // button2
+            // createMdbsCancelBtn
             // 
-            this.button2.Enabled = false;
-            this.button2.Location = new System.Drawing.Point(145, 434);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(125, 25);
-            this.button2.TabIndex = 2;
-            this.button2.Text = "Cancel";
-            this.button2.UseVisualStyleBackColor = true;
+            this.createMdbsCancelBtn.Enabled = false;
+            this.createMdbsCancelBtn.Location = new System.Drawing.Point(145, 434);
+            this.createMdbsCancelBtn.Name = "createMdbsCancelBtn";
+            this.createMdbsCancelBtn.Size = new System.Drawing.Size(125, 25);
+            this.createMdbsCancelBtn.TabIndex = 2;
+            this.createMdbsCancelBtn.Text = "Cancel";
+            this.createMdbsCancelBtn.UseVisualStyleBackColor = true;
             // 
             // button3
             // 
@@ -168,13 +173,24 @@ namespace FIA_Biosum_Manager
             this.button3.TabIndex = 3;
             this.button3.Text = "Export log as .txt";
             this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(button3_Click);
             // 
-            // progressBar1
+            // createMdbsTooltip
             // 
-            this.progressBar1.Location = new System.Drawing.Point(407, 434);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(525, 25);
-            this.progressBar1.TabIndex = 4;
+            this.createMdbsTooltip.ToolTipTitle = "Create MDBs Button Tooltip";
+            // 
+            // exportLogTooltip
+            // 
+            this.exportLogTooltip.ToolTipTitle = "Export Logs Button Tooltip";
+            // 
+            // btnClose
+            // 
+            this.btnClose.Location = new System.Drawing.Point(809, 434);
+            this.btnClose.Name = "btnClose";
+            this.btnClose.Size = new System.Drawing.Size(125, 25);
+            this.btnClose.TabIndex = 4;
+            this.btnClose.Text = "Close";
+            this.btnClose.UseVisualStyleBackColor = true;
             // 
             // uc_fvs_create_mdbs
             // 
@@ -315,6 +331,7 @@ namespace FIA_Biosum_Manager
             appendStringToDebugTextbox("Done.");
             m_dictCreateTableQueries.Clear();
             m_listDictFVSOutputTablesColumnsDefinitions.Clear();
+            frmMain.g_oDelegate.StopThread();
             return;
         }
 
@@ -322,6 +339,23 @@ namespace FIA_Biosum_Manager
         {
             var textBoxValue = frmMain.g_oDelegate.GetControlPropertyValue(this.textBox1, "Text", false);
             frmMain.g_oDelegate.SetControlPropertyValue(this.textBox1, "Text", textBoxValue += text +System.Environment.NewLine);
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog save = new SaveFileDialog();
+            save.FileName = "CreatMDBSExportLog-" + DateTime.Now.ToShortDateString() + ".txt";
+            save.Filter = "Text File | *.txt";
+            if (save.ShowDialog() == DialogResult.OK)
+            {
+                StreamWriter writer = new StreamWriter(save.OpenFile());
+                for (int i = 0; i < textBox1.Lines.Count(); i++)
+                {
+                    writer.WriteLine(textBox1.Lines[i].ToString());
+                }
+                writer.Dispose();
+                writer.Close();
+            }
         }
 
         private string dataTypeConvert(string dataTypeFromDB)
