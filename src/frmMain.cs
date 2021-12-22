@@ -1338,11 +1338,12 @@ namespace FIA_Biosum_Manager
 			if (p_strType=="Open")
 			{
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                {
                     frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "=====================   OpenOptimizerScenario   =====================\r\n");
-                }
 
-                oFrmOptimizerScenario.InitializeOpenScenario();
+
+                oFrmOptimizerScenario.InitializeOpenScenario(frmProject.uc_project1.m_strDebugFile);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: frmOptimizerScenario.InitializeOpenScenario() successful! \r\n");
                 oFrmOptimizerScenario.uc_scenario_open1.Height = oFrmOptimizerScenario.uc_scenario_open1.m_intFullHt;
                 oFrmOptimizerScenario.uc_scenario_open1.Width = oFrmOptimizerScenario.uc_scenario_open1.m_intFullWd;
                 oFrmOptimizerScenario.Height = oFrmOptimizerScenario.uc_scenario_open1.Height + oFrmOptimizerScenario.uc_scenario_open1.Top + 50;
@@ -1353,8 +1354,8 @@ namespace FIA_Biosum_Manager
 					frmOptimizerScenario oFrmScenario = new frmOptimizerScenario(this);
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     {
-                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Initialized new frmOptimizerScenario\r\n");
-                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Existing scenario name: " + oFrmOptimizerScenario.uc_scenario_open1.txtScenarioId.Text + "\r\n");
+                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Initialized new frmOptimizerScenario\r\n");
+                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Existing scenario name: " + oFrmOptimizerScenario.uc_scenario_open1.txtScenarioId.Text + "\r\n");
                     }
                     oFrmScenario.Text = "Treatment Optimizer: Optimization Scenario (" + oFrmOptimizerScenario.uc_scenario_open1.txtScenarioId.Text.Trim() + ")";
 					oFrmScenario.m_bScenarioOpen = true;
@@ -1363,20 +1364,17 @@ namespace FIA_Biosum_Manager
 					oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
                     oFrmScenario.uc_datasource1.strScenarioId = oFrmOptimizerScenario.uc_scenario_open1.txtScenarioId.Text.Trim();
 					oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
-					oFrmScenario.uc_datasource1.LoadValues();
+					oFrmScenario.uc_datasource1.LoadValues(frmProject.uc_project1.m_strDebugFile);
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                    {
-                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Loaded datasource values\r\n");
-                    }
+                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Loaded datasource values\r\n");
+
                     oFrmScenario.uc_scenario1.strScenarioDescription = oFrmOptimizerScenario.uc_scenario_open1.strScenarioDescription;
                     oFrmScenario.uc_scenario1.strScenarioId = oFrmOptimizerScenario.uc_scenario_open1.strScenarioId;
                     oFrmScenario.uc_scenario1.strScenarioPath = oFrmOptimizerScenario.uc_scenario_open1.strScenarioPath;
                     oFrmScenario.uc_scenario_notes1.ReferenceOptimizerScenarioForm=oFrmScenario;
 					oFrmScenario.uc_scenario_notes1.LoadValues();
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                    {
-                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Loaded notes\r\n");
-                    }
+                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Loaded notes\r\n");
                     oFrmScenario.tlbScenario.Buttons[5].Visible = true; //properties
                     oFrmScenario.tlbScenario.Buttons[7].Visible = true; //copy
 					oFrmScenario.MdiParent = this;
@@ -1386,9 +1384,7 @@ namespace FIA_Biosum_Manager
 			else
 			{
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                {
-                    frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Creating new scenario\r\n");
-                }
+                    frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Creating new scenario\r\n");
                 oFrmOptimizerScenario.InitializeNewScenario();
                 oFrmOptimizerScenario.MinimizeBox = false;
                 result = oFrmOptimizerScenario.ShowDialog();
@@ -1397,8 +1393,8 @@ namespace FIA_Biosum_Manager
 					frmOptimizerScenario oFrmScenario = new frmOptimizerScenario(this);
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     {
-                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Initialized new frmOptimizerScenario\r\n");
-                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "New scenario name: " + oFrmOptimizerScenario.uc_scenario1.txtScenarioId.Text + "\r\n");
+                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Initialized new frmOptimizerScenario\r\n");
+                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: New scenario name: " + oFrmOptimizerScenario.uc_scenario1.txtScenarioId.Text + "\r\n");
 
                     }
                     oFrmScenario.Text = "Treatment Optimizer: Optimization Scenario (" + oFrmOptimizerScenario.uc_scenario1.txtScenarioId.Text.Trim() + ")";
@@ -1408,11 +1404,10 @@ namespace FIA_Biosum_Manager
 					oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
                     oFrmScenario.uc_datasource1.strScenarioId = oFrmOptimizerScenario.uc_scenario1.txtScenarioId.Text.Trim();
 					oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
-					oFrmScenario.uc_datasource1.LoadValues();
+					oFrmScenario.uc_datasource1.LoadValues(frmProject.uc_project1.m_strDebugFile);
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                    {
-                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Loaded datasource values\r\n");
-                    }
+                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Loaded datasource values\r\n");
+
                     oFrmScenario.uc_scenario1.strScenarioDescription = oFrmOptimizerScenario.uc_scenario1.strScenarioDescription;
                     oFrmScenario.uc_scenario1.strScenarioId = oFrmOptimizerScenario.uc_scenario1.strScenarioId;
                     oFrmScenario.uc_scenario1.strScenarioPath = oFrmOptimizerScenario.uc_scenario1.strScenarioPath;
@@ -1437,7 +1432,7 @@ namespace FIA_Biosum_Manager
 			DialogResult result;
 			if (p_strType=="Open")
 			{
-				oFrmProcessorScenario.InitializeOpenScenario();
+				oFrmProcessorScenario.InitializeOpenScenario(frmProject.uc_project1.m_strDebugFile);
 
 
 				oFrmProcessorScenario.uc_scenario_open1.Height = oFrmProcessorScenario.uc_scenario_open1.m_intFullHt;
@@ -1460,7 +1455,7 @@ namespace FIA_Biosum_Manager
 					oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
                     if (oFrmProcessorScenario.m_bUsingSqlite == false)
                     {
-                        oFrmScenario.uc_datasource1.LoadValues();
+                        oFrmScenario.uc_datasource1.LoadValues(frmProject.uc_project1.m_strDebugFile);
                     }
                     else
                     {
@@ -1510,7 +1505,7 @@ namespace FIA_Biosum_Manager
                     oFrmScenario.uc_datasource1.UsingSqlite = oFrmProcessorScenario.m_bUsingSqlite;
                     if (oFrmProcessorScenario.m_bUsingSqlite == false)
                     {
-                        oFrmScenario.uc_datasource1.LoadValues();
+                        oFrmScenario.uc_datasource1.LoadValues(frmProject.uc_project1.m_strDebugFile);
                     }
                     else
                     {
@@ -1662,12 +1657,11 @@ namespace FIA_Biosum_Manager
 					strFullPath.Append("\\");
                     strFullPath.Append(Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile);
 					ado_data_access oAdo = new ado_data_access();
-					string strConn=oAdo.getMDBConnString(strFullPath.ToString(),"admin","");
-					int intCount = Convert.ToInt32(oAdo.getRecordCount(strConn,"select count(*) from scenario","scenario"));
-					if (oAdo.m_intError==0)
+					string strConn=oAdo.getMDBConnString(strFullPath.ToString(),"","");
+					long lngCount = oAdo.getRecordCount(strConn,"select count(*) from scenario","scenario");
+                    if (oAdo.m_intError==0)
 					{
-						frmMain.g_oFrmMain=this;
-						if (intCount>0)
+						if (lngCount > 0)
 						{
 							OpenOptimizerScenario("Open", null);
 						}
@@ -1677,6 +1671,7 @@ namespace FIA_Biosum_Manager
 							OpenOptimizerScenario("New", null);
 						}
 					}
+                    oAdo = null;
 				
 				}
                 else if (strText.Trim().ToUpper() == "EXPORT TO SQLITE")

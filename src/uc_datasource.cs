@@ -316,8 +316,10 @@ namespace FIA_Biosum_Manager
 			MessageBox.Show(this.lstRequiredTables.Columns[0].Width.ToString());
 		}
 
-		public void LoadValues()
+		public void LoadValues(string strDebugFile)
 		{
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                frmMain.g_oUtils.WriteText(strDebugFile, "=====================   uc_datasource.LoadValues   =====================\r\n");
             macrosubst oMacroSub = new macrosubst();
             oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
             
@@ -326,26 +328,34 @@ namespace FIA_Biosum_Manager
 			string strConn="";
 
             LoadLstRequiredTables();
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(strDebugFile, "LoadValues: LoadLstRequiredTables complete \r\n");
 
-			ado_data_access p_ado = new ado_data_access();
-			System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
-			strConn = p_ado.getMDBConnString(this.m_strDataSourceMDBFile,"","");
+            ado_data_access p_ado = new ado_data_access();
+            System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
+            strConn = p_ado.getMDBConnString(this.m_strDataSourceMDBFile,"","");
 			oConn.ConnectionString = strConn;
-			intError = 0;
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(strDebugFile, "LoadValues: ConnectionString: " + oConn.ConnectionString + " \r\n");
+
+            intError = 0;
 			strError = "";
 			try
 			{
 				oConn.Open();
-			}
-			catch (System.Data.OleDb.OleDbException oleException)
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(strDebugFile, "LoadValues: oConn opened \r\n");
+            }
+			catch (Exception caught)
 			{
 				strError = "Failed to make an oleDb connection with " + strConn;
-				MessageBox.Show (strError + " oleException=" + oleException.Message.Trim());
+				MessageBox.Show (strError + " oleException=" + caught.Message.Trim());
 				intError = -1;
 				return;
 			}
 			System.Data.OleDb.OleDbCommand oCommand = oConn.CreateCommand();
-			if (m_strScenarioId != null && this.m_strScenarioId.Trim().Length  > 0)
+            dao_data_access p_dao = null;
+            if (m_strScenarioId != null && this.m_strScenarioId.Trim().Length  > 0)
 			{
 				oCommand.CommandText = "select table_type,path,file,table_name from " + this.m_strDataSourceTable + " " + 
 					" where scenario_id = '" + 
@@ -358,13 +368,17 @@ namespace FIA_Biosum_Manager
 			}
 			try
 			{
-				System.Data.OleDb.OleDbDataReader oDataReader = oCommand.ExecuteReader();
-				int x = 0;
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(strDebugFile, "LoadValues: Execute SQL: " + oCommand.CommandText + "\r\n");
+                System.Data.OleDb.OleDbDataReader oDataReader = oCommand.ExecuteReader();
+                int x = 0;
 
-                dao_data_access p_dao = new dao_data_access();
+                p_dao = new dao_data_access();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(strDebugFile, "LoadValues: Starting to read oDataReader \r\n");
                 while (oDataReader.Read())
 				{
-					if (oDataReader["table_type"] != System.DBNull.Value &&
+                    if (oDataReader["table_type"] != System.DBNull.Value &&
 						oDataReader["table_type"].ToString().Trim().Length > 0)
 					{
 						// Add a ListItem object to the ListView.
@@ -410,7 +424,9 @@ namespace FIA_Biosum_Manager
 								this.m_oLvRowColors.ListViewSubItem(entryListItem.Index,uc_datasource.TABLESTATUS,entryListItem.SubItems[entryListItem.SubItems.Count-1],false);
 								strConn = p_ado.getMDBConnString(strPathAndFile,"admin","");   //"Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + strPathAndFile + ";User Id=admin;Password=;";
 								strSQL = "select count(*) from " + oDataReader["table_name"].ToString();
-								this.lstRequiredTables.Items[x].SubItems.Add(Convert.ToString(p_ado.getRecordCount(strConn,strSQL,oDataReader["table_name"].ToString())));
+                                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                    frmMain.g_oUtils.WriteText(strDebugFile, "LoadValues: Execute SQL: " + strSQL + "\r\n");
+                                this.lstRequiredTables.Items[x].SubItems.Add(Convert.ToString(p_ado.getRecordCount(strConn,strSQL,oDataReader["table_name"].ToString())));
 								this.m_oLvRowColors.ListViewSubItem(entryListItem.Index,uc_datasource.RECORDCOUNT,entryListItem.SubItems[entryListItem.SubItems.Count-1],false);
 
 							}
@@ -459,6 +475,29 @@ namespace FIA_Biosum_Manager
 					}
 					
 				}
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(strDebugFile, "LoadValues: Finished reading oDataReader \r\n");
+                oDataReader.Close();
+                oConn.Close();
+                this.lstRequiredTables.Columns[TABLETYPE].Width = -1;
+                p_ado = null;
+            }
+            catch (Exception caught)
+            {
+				intError = -1;
+                strError = caught.Message;
+				MessageBox.Show(strError);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                {
+                    frmMain.g_oUtils.WriteText(strDebugFile, "LoadValues: Caught Exception: " + strError + " \r\n");
+                    frmMain.g_oUtils.WriteText(strDebugFile, "LoadValues: Stack trace: " + caught.StackTrace + " \r\n");
+                }
+                oConn.Close();
+				p_ado= null;
+                return;
+			}
+            finally
+            {
                 // Dispose of dao object
                 if (p_dao != null && p_dao.m_DaoWorkspace != null)
                 {
@@ -467,22 +506,11 @@ namespace FIA_Biosum_Manager
                     p_dao.m_DaoDbEngine = null;
                     p_dao = null;
                 }
-                oDataReader.Close();
-			}
-			catch
-			{
-				intError = -1;
-				strError = "The Query Command " + oCommand.CommandText.ToString() + " Failed";
-				MessageBox.Show(strError);
-				oConn.Close();
-				p_ado= null;
-				return;
-			}
+            }
 			
-			oConn.Close();
-			this.lstRequiredTables.Columns[TABLETYPE].Width = -1;
-			p_ado = null;
-		}
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                frmMain.g_oUtils.WriteText(strDebugFile, "=====================   uc_datasource.LoadValues completed   =====================\r\n");
+        }
 
         public void LoadValuesSqlite()
         {

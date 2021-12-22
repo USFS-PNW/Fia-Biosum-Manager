@@ -892,9 +892,11 @@ namespace FIA_Biosum_Manager
 
 		}
 
-		public void InitializeOpenScenario()
+		public void InitializeOpenScenario(string strDebugFile)
 		{
-			this.uc_scenario_open1 = new uc_scenario_open(); 
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(strDebugFile, "=====================   InitializeOpenScenario   =====================\r\n");
+            this.uc_scenario_open1 = new uc_scenario_open(); 
 
 			this.Controls.Add(uc_scenario_open1);
 
@@ -910,9 +912,11 @@ namespace FIA_Biosum_Manager
 
 			this.btnClose.Hide();
 
-			this.uc_scenario_open1.OpenScenario();
+			this.uc_scenario_open1.OpenScenario(strDebugFile);
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(strDebugFile, "InitializeOpenScenario: uc_scenario_open.OpenScenario() successful! \r\n");
 
-			this.Height = 200;
+            this.Height = 200;
 			int intHt = this.Height;
 			int intHt2=this.uc_scenario_open1.btnOpen.Height;
 			int intTop=this.uc_scenario_open1.btnOpen.Top;
@@ -923,10 +927,6 @@ namespace FIA_Biosum_Manager
 
 			}
 			this.Height = intHt;
-
-			
-
-
 		}
 
 		public void SetMenu(string strType)

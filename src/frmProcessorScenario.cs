@@ -704,7 +704,7 @@ namespace FIA_Biosum_Manager
 
 
 		}
-		public void InitializeOpenScenario()
+		public void InitializeOpenScenario(string strDebugFile)
 		{
 			this.uc_scenario_open1 = new uc_scenario_open(); 
 
@@ -728,7 +728,7 @@ namespace FIA_Biosum_Manager
 
 			this.uc_scenario_open1.ReferenceProcessorScenarioForm=this;
 			this.uc_scenario_open1.ScenarioType="processor";
-            this.uc_scenario_open1.OpenScenario();
+            this.uc_scenario_open1.OpenScenario(strDebugFile);
 
 			this.Height = 200;
 			int intHt = this.Height;
