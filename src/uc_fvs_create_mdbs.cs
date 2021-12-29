@@ -212,7 +212,7 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.SetControlPropertyValue(this.btnExportLog, "Enabled", false);
             frmMain.g_oDelegate.SetControlPropertyValue(this.btnCancel, "Enabled", true);
             //get the fiadb table structures
-            appendStringToDebugTextbox("Generating MDBs on this date and time:"+ DateTime.Now.ToLongDateString() + " " + DateTime.Now.ToLongTimeString().ToString());
+            appendStringToDebugTextbox("Generating MDBs on this date and time:" + DateTime.Now.ToLongDateString() + " " + DateTime.Now.ToLongTimeString().ToString());
             DataMgr sqliteDataMgr = new DataMgr();
             var dbFileName = "fvsout.db";
             var dbPath = "\\fvs\\data\\" + dbFileName;
@@ -223,12 +223,12 @@ namespace FIA_Biosum_Manager
             var fileNamesList = new List<List<string>>();
             fileNamesList = getRunTitleFilenames();
             // GetFVSVariantRxPackageSQL
-            populateTableQueryDictionaries(strSQLiteConnection,sqliteDataMgr);
+            populateTableQueryDictionaries(strSQLiteConnection, sqliteDataMgr);
 
             foreach (var file in fileNamesList)
             {
                 // Create file in root\fvs\data\<variant>\<filename>
-                var strDbPathFile = m_strProjDir + "\\fvs\\data\\"+file[1]+"\\"+file[0];
+                var strDbPathFile = m_strProjDir + "\\fvs\\data\\" + file[1] + "\\" + file[0];
 
                 var fi = new FileInfo(strDbPathFile);
                 if (fi.Exists)
@@ -244,7 +244,7 @@ namespace FIA_Biosum_Manager
                     // TODO: DEBUG LOG HERE.
                     appendStringToDebugTextbox($@"File exists. Deleting: {strDbPathFile}");
                 }
-                
+
                 oDao.CreateMDB(strDbPathFile);
                 // Open a connection to new file 
                 using (var accessConn = new OleDbConnection(m_ado.getMDBConnString(strDbPathFile, "", "")))
@@ -290,15 +290,15 @@ namespace FIA_Biosum_Manager
                                     }
                                     transaction.Commit();
                                     appendStringToDebugTextbox($@"Inserted {recordCount} records into {tblName}");
-                            }
+                                }
                                 catch (Exception err)
-                            {
-                                m_intError = -1;
-                                appendStringToDebugTextbox(err.Message);
-                                transaction.Rollback();
+                                {
+                                    m_intError = -1;
+                                    appendStringToDebugTextbox(err.Message);
+                                    transaction.Rollback();
+                                }
+                                transaction.Dispose();
                             }
-                            transaction.Dispose();
-                        }
                             sqliteDataMgr.m_DataReader.Dispose();
                             sqliteDataMgr.m_DataReader = null;
                         }
@@ -326,6 +326,12 @@ namespace FIA_Biosum_Manager
             appendStringToDebugTextbox("Done.");
             m_dictCreateTableQueries.Clear();
             m_listDictFVSOutputTablesColumnsDefinitions.Clear();
+
+            // Lesley added this
+            frmMain.g_oDelegate.CurrentThreadProcessDone = true;
+            frmMain.g_oDelegate.m_oEventThreadStopped.Set();
+            this.Invoke(frmMain.g_oDelegate.m_oDelegateThreadFinished);
+
             CleanupThread();
             frmMain.g_oDelegate.SetControlPropertyValue(this.btnExportLog, "Enabled", true);
             frmMain.g_oDelegate.SetControlPropertyValue(this.btnCancel, "Enabled", false);
@@ -340,13 +346,13 @@ namespace FIA_Biosum_Manager
         private void appendStringToDebugTextbox(string text)
         {
             var textBoxValue = frmMain.g_oDelegate.GetControlPropertyValue(this.textBox1, "Text", false);
-            frmMain.g_oDelegate.SetControlPropertyValue(this.textBox1, "Text", textBoxValue += text +System.Environment.NewLine);
+            frmMain.g_oDelegate.SetControlPropertyValue(this.textBox1, "Text", textBoxValue += text + System.Environment.NewLine);
         }
 
         private void btnExport_Click(object sender, EventArgs e)
         {
             SaveFileDialog save = new SaveFileDialog();
-            save.FileName = "CreatMDBSExportLog-" + DateTime.Now.ToShortDateString().Replace("/","-") + ".txt";
+            save.FileName = "CreatMDBSExportLog-" + DateTime.Now.ToShortDateString().Replace("/", "-") + ".txt";
             save.Filter = "Text File | *.txt";
             if (save.ShowDialog() == DialogResult.OK)
             {
@@ -401,7 +407,7 @@ namespace FIA_Biosum_Manager
                 case "SYSTEM.STRING":
                     convertedType = utils.DataType.STRING;
                     break;
-                    // Byte case?
+                // Byte case?
                 case "SYSTEM.BYTE":
                     convertedType = utils.DataType.BYTE;
                     break;
@@ -425,41 +431,45 @@ namespace FIA_Biosum_Manager
                 // Run this loop for each database we need to make.
                 foreach (var tblName in tableNames)
                 {
-                    DataTable dtSourceSchema = oDataMgr.getTableSchema(con, $"select * from {tblName}");
-                    var sb = new System.Text.StringBuilder();
-                    var strCol = "";
-                    sb.Append($@"CREATE TABLE {convertSqliteTblNameToBiosumTblName(tblName)} (");
-                    var strFields = "";
-                    var listColDataTypes = new List<Tuple<string, utils.DataType>>();
-                    // TODO Make CaseID Unique? Make it the index (via ado_data_access index creation method?)
-                    for (int y = 0; y <= dtSourceSchema.Rows.Count - 1; y++)
+                    // We only want tables that start with FVS_
+                    if (tblName.ToUpper().Contains("FVS_"))
                     {
-                        var colName = dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper();
-                        var convertedColName = translateColumn(dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper());
-
-                        var dataType = dtSourceSchema.Rows[y]["datatype"].ToString().ToUpper();
-
-                        listColDataTypes.Add(Tuple.Create(colName, getDataTypeEnumValueFromString(dataType)));
-
-                        // Use converted name here. We want SPECIES for the access creation, and SPECIESFIA for the selects.
-                        strCol = wrapInBackTick(convertedColName) + " " + dataTypeConvert(dataType);
-                        if (strFields.Trim().Length == 0)
+                        DataTable dtSourceSchema = oDataMgr.getTableSchema(con, $"select * from {tblName}");
+                        var sb = new System.Text.StringBuilder();
+                        var strCol = "";
+                        sb.Append($@"CREATE TABLE {convertSqliteTblNameToBiosumTblName(tblName)} (");
+                        var strFields = "";
+                        var listColDataTypes = new List<Tuple<string, utils.DataType>>();
+                        // TODO Make CaseID Unique? Make it the index (via ado_data_access index creation method?)
+                        for (int y = 0; y <= dtSourceSchema.Rows.Count - 1; y++)
                         {
-                            strFields = strCol;
+                            var colName = dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper();
+                            var convertedColName = translateColumn(dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper());
+
+                            var dataType = dtSourceSchema.Rows[y]["datatype"].ToString().ToUpper();
+
+                            listColDataTypes.Add(Tuple.Create(colName, getDataTypeEnumValueFromString(dataType)));
+
+                            // Use converted name here. We want SPECIES for the access creation, and SPECIESFIA for the selects.
+                            strCol = wrapInBackTick(convertedColName) + " " + dataTypeConvert(dataType);
+                            if (strFields.Trim().Length == 0)
+                            {
+                                strFields = strCol;
+                            }
+                            else
+                            {
+                                strFields += "," + strCol;
+                            }
                         }
-                        else
-                        {
-                            strFields += "," + strCol;
-                        }
+                        sb.Append(strFields + ") ");
+                        m_dictCreateTableQueries[convertSqliteTblNameToBiosumTblName(tblName)] = sb.ToString();
+                        m_listDictFVSOutputTablesColumnsDefinitions[convertSqliteTblNameToBiosumTblName(tblName)] = listColDataTypes;
                     }
-                    sb.Append(strFields + ") ");
-                    m_dictCreateTableQueries[convertSqliteTblNameToBiosumTblName(tblName)] =sb.ToString();
-                    m_listDictFVSOutputTablesColumnsDefinitions[convertSqliteTblNameToBiosumTblName(tblName)] = listColDataTypes;
                 }
             }
         }
 
-        private void executeSQLListOnAccessConnection(Dictionary<string,string> queryDict, OleDbConnection accessConn, ado_data_access oAdo)
+        private void executeSQLListOnAccessConnection(Dictionary<string, string> queryDict, OleDbConnection accessConn, ado_data_access oAdo)
         {
             foreach (var tblName in queryDict.Keys)
             {
@@ -469,7 +479,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private string translateColumn (string strToCheck)
+        private string translateColumn(string strToCheck)
         {
             var translatedStr = strToCheck.ToUpper();
             // Map SPECIESFIA to SPECIES. In the future, add other column mappings (e.g. stuff that's different in FVSOUT.db from the target Access Mdbs) here.
@@ -574,13 +584,13 @@ namespace FIA_Biosum_Manager
         }
         private void createMdbsMain_Click(object sender, EventArgs e)
         {
+            frmMain.g_oDelegate.CurrentThreadProcessIdle = false;
             frmMain.g_oDelegate.CurrentThreadProcessAborted = false;
             frmMain.g_oDelegate.CurrentThreadProcessDone = false;
             frmMain.g_oDelegate.CurrentThreadProcessStarted = false;
             frmMain.g_oDelegate.m_oThread = new System.Threading.Thread(new System.Threading.ThreadStart(CreateMDBs_Main));
             frmMain.g_oDelegate.InitializeThreadEvents();
             frmMain.g_oDelegate.m_oThread.IsBackground = true;
-            frmMain.g_oDelegate.CurrentThreadProcessIdle = false;
             frmMain.g_oDelegate.m_oThread.Start();
         }
 
@@ -591,15 +601,19 @@ namespace FIA_Biosum_Manager
 
         private void CancelThread()
         {
-            bool bAbort = frmMain.g_oDelegate.AbortProcessing("FIA Biosum", "Do you wish to cancel processing (Y/N)?");
-            if (bAbort)
+            if (frmMain.g_oDelegate.m_oThread.IsAlive)
             {
-                if (frmMain.g_oDelegate.m_oThread.IsAlive)
+                bool bAbort = frmMain.g_oDelegate.AbortProcessing("FIA Biosum", "Do you wish to cancel processing (Y/N)?");
+                if (frmMain.g_oDelegate.CurrentThreadProcessAborted)
                 {
-                    frmMain.g_oDelegate.m_oThread.Join();
+                    //if (frmMain.g_oDelegate.m_oThread.IsAlive)
+                    //{
+                    //    frmMain.g_oDelegate.m_oThread.Join();
+                    //}
+                    //frmMain.g_oDelegate.StopThread();
+                    frmMain.g_oDelegate.StopThread();
+                    CleanupThread();
                 }
-                frmMain.g_oDelegate.StopThread();
-                CleanupThread();
             }
         }
 
