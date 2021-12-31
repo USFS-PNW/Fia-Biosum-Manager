@@ -259,10 +259,9 @@ namespace FIA_Biosum_Manager
                         sqliteConn.Open();
                         foreach (var tblName in m_listDictFVSOutputTablesColumnsDefinitions.Keys)
                         {
-                            var accessTblName = convertAccessTblNameToSqliteTblName(tblName);
+                            var accessTblName = tblName;
                             var cols = m_listDictFVSOutputTablesColumnsDefinitions[tblName];
                             var strColumns = string.Join(",", m_listDictFVSOutputTablesColumnsDefinitions[tblName].Select(item => wrapInBackTick(translateColumn(item.Item1))));
-
                             sqliteDataMgr.SqlQueryReader(sqliteConn, generateRuntitleSubsetQuery(accessTblName, file[2]));
                             appendStringToDebugTextbox(generateRuntitleSubsetQuery(tblName, file[2]));
 
