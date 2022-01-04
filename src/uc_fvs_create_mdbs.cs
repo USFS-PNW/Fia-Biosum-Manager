@@ -13,8 +13,6 @@ using System.IO;
 
 namespace FIA_Biosum_Manager
 {
-
-
     public class uc_fvs_create_mdbs : System.Windows.Forms.UserControl
     {
         private GroupBox groupBox1;
@@ -87,8 +85,6 @@ namespace FIA_Biosum_Manager
             this.m_oEnv = new env();
             this.m_bDebug = frmMain.g_bDebug;
         }
-
-
 
         private void InitializeDatasource()
         {
@@ -207,24 +203,23 @@ namespace FIA_Biosum_Manager
 
         private void CreateMDBs_Main()
         {
-            // When you need to see how to update progress bars:
-            // RunAppend_Main in uc_fvs_output.cs! (also good for seeing how to interact with m_intError;
             frmMain.g_oDelegate.SetControlPropertyValue(this.btnExportLog, "Enabled", false);
             frmMain.g_oDelegate.SetControlPropertyValue(this.btnCancel, "Enabled", true);
-            //get the fiadb table structures
+            // Get the fiadb table structures
             appendStringToDebugTextbox("Generating MDBs on this date and time:" + DateTime.Now.ToLongDateString() + " " + DateTime.Now.ToLongTimeString().ToString());
             DataMgr sqliteDataMgr = new DataMgr();
             var dbFileName = "fvsout.db";
             var dbPath = "\\fvs\\data\\" + dbFileName;
             string strSQLiteConnection = sqliteDataMgr.GetConnectionString(m_strProjDir + dbPath);
-            var oUtils = new utils(); // Cargo cult!(?) For doing SQLite to Acces oledb reader conversions
-            var oEnv = new env(); // Cargo cult!(?) For getting stuff about the temp directory and app directory
+            // Initialize utils, environment, data access objects
+            var oUtils = new utils();
+            var oEnv = new env();
             dao_data_access oDao = new dao_data_access();
             var fileNamesList = new List<List<string>>();
             fileNamesList = getRunTitleFilenames();
-            // GetFVSVariantRxPackageSQL
             populateTableQueryDictionaries(strSQLiteConnection, sqliteDataMgr);
 
+            // Iterate over file name list to create new access files and populate them.
             foreach (var file in fileNamesList)
             {
                 // Create file in root\fvs\data\<variant>\<filename>
@@ -241,10 +236,8 @@ namespace FIA_Biosum_Manager
                         Thread.Sleep(100);
                         fi.Refresh();
                     }
-                    // TODO: DEBUG LOG HERE.
                     appendStringToDebugTextbox($@"File exists. Deleting: {strDbPathFile}");
                 }
-
                 oDao.CreateMDB(strDbPathFile);
                 // Open a connection to new file 
                 using (var accessConn = new OleDbConnection(m_ado.getMDBConnString(strDbPathFile, "", "")))
@@ -259,12 +252,13 @@ namespace FIA_Biosum_Manager
                         sqliteConn.Open();
                         foreach (var tblName in m_listDictFVSOutputTablesColumnsDefinitions.Keys)
                         {
-                            var accessTblName = tblName;
                             var cols = m_listDictFVSOutputTablesColumnsDefinitions[tblName];
+                            // Generate comma-seperated column string for insert statements. Wrap in back-tick to prevent "reserved word" errors.
                             var strColumns = string.Join(",", m_listDictFVSOutputTablesColumnsDefinitions[tblName].Select(item => wrapInBackTick(translateColumn(item.Item1))));
-                            sqliteDataMgr.SqlQueryReader(sqliteConn, generateRuntitleSubsetQuery(accessTblName, file[2]));
+                            
+                            // Open up a data manager for the subsetted query for the run title we're on.  
+                            sqliteDataMgr.SqlQueryReader(sqliteConn, generateRuntitleSubsetQuery(tblName, file[2]));
                             appendStringToDebugTextbox(generateRuntitleSubsetQuery(tblName, file[2]));
-
                             if (sqliteDataMgr.m_DataReader.HasRows)
                             {
                                 OleDbTransaction transaction;
@@ -275,6 +269,7 @@ namespace FIA_Biosum_Manager
                                 command.Transaction = transaction;
                                 try
                                 {
+                                    // Iterate over reader, create, and execute insert statements. Count them for display to user.
                                     var recordCount = 0;
                                     while (sqliteDataMgr.m_DataReader.Read())
                                     {
@@ -304,21 +299,13 @@ namespace FIA_Biosum_Manager
                         sqliteConn.Close();
                     }
                     accessConn.Close();
-                    // Code written for #223 does something similar
+                    // Potential future TODOs:
                     // Get answers for what analysts would prefer to do for setting base year?
-                    // Diff new and old access DBs if possible.utputs.
-                    // Progress indicators? Instantiate thermometer? Calculate max number o
-                    // Idea: Use Tyler's access macro on the new and old, and compare onf steps and add increments. Use delegate to update bar from background thread.
-                    // Update BioSum ready/working indicator in lower right corner of frmMai.
-                    // Cancel button
-                    // Debug log with log levels.
+                    // Diff new and old access DBs if possible.
+                    // Progress indicators? Instantiate thermometer? Calculate max number of steps and show progress?
+                    // Idea: Use Tyler's access macro on the new and old, and compare of steps and add increments. Use delegate to update bar from background thread.
+                    // Update BioSum ready/working indicator in lower right corner of frmMain.
                 }
-                // Add index (if needed)
-                //var strTempIndex = column + "_delete_idx";
-                //if (!m_dao.IndexExists(strDbPathFile, table, strTempIndex))
-                //{
-                //    m_ado.AddIndex(conn, table, strTempIndex, column);
-                //}
             }
             // TODO: PotFireBaseYr (sp?) special case handling. Each DB has two tables, FVS_Cases and FVS_PotFire.
             // Only one PotFireBaseYr db per variant. Probably.
@@ -383,7 +370,6 @@ namespace FIA_Biosum_Manager
                     convertedType = "UNRECOGNIZED";
                     break;
             }
-            // ??? > "SINGLE" ?
             return convertedType;
         }
 
@@ -406,7 +392,6 @@ namespace FIA_Biosum_Manager
                 case "SYSTEM.STRING":
                     convertedType = utils.DataType.STRING;
                     break;
-                // Byte case?
                 case "SYSTEM.BYTE":
                     convertedType = utils.DataType.BYTE;
                     break;
@@ -414,9 +399,9 @@ namespace FIA_Biosum_Manager
                     convertedType = utils.DataType.STRING;
                     break;
             }
-            // ??? > "SINGLE" ?
             return convertedType;
         }
+
         private void populateTableQueryDictionaries(string strConnection, DataMgr oDataMgr)
         {
             using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
@@ -424,8 +409,7 @@ namespace FIA_Biosum_Manager
                 con.Open();
                 //getTableNames
                 var tableNames = oDataMgr.getTableNames(con);
-                //build field list string to insert sql by matching 
-                //up the column names in the biosum plot table and the fiadb plot table
+                //Build field list string to insert sql by matching up the column names in the biosum plot table and the fiadb plot table
 
                 // Run this loop for each database we need to make.
                 foreach (var tblName in tableNames)
@@ -439,10 +423,11 @@ namespace FIA_Biosum_Manager
                         sb.Append($@"CREATE TABLE {convertSqliteTblNameToBiosumTblName(tblName)} (");
                         var strFields = "";
                         var listColDataTypes = new List<Tuple<string, utils.DataType>>();
-                        // TODO Make CaseID Unique? Make it the index (via ado_data_access index creation method?)
+                        // Iterate over table schema defined in Data Table format. Check debugger to see columns.
                         for (int y = 0; y <= dtSourceSchema.Rows.Count - 1; y++)
                         {
                             var colName = dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper();
+                            // This maps SPECIESFIA to SPECIES currently (and in the future should map any other column name differences between SQLite and target access DB
                             var convertedColName = translateColumn(dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper());
 
                             var dataType = dtSourceSchema.Rows[y]["datatype"].ToString().ToUpper();
@@ -461,6 +446,7 @@ namespace FIA_Biosum_Manager
                             }
                         }
                         sb.Append(strFields + ") ");
+                        // Populate the table create queries dict and the dictionary of output table columns and their access datatype.
                         m_dictCreateTableQueries[convertSqliteTblNameToBiosumTblName(tblName)] = sb.ToString();
                         m_listDictFVSOutputTablesColumnsDefinitions[convertSqliteTblNameToBiosumTblName(tblName)] = listColDataTypes;
                     }
@@ -491,24 +477,8 @@ namespace FIA_Biosum_Manager
             return translatedStr;
         }
 
-        // Disused due to datatype incompatibilities
-        //private void createMDBTablesfromSQLite(string strMDBPathAndFile, DataMgr oDataMgr, dao_data_access oDao, string strConnection)
-        //{
-        //    using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
-        //    {
-        //        con.Open();
-        //        foreach (var tblName in oDataMgr.getTableNames(con))
-        //        {
-        //            DataTable dtSourceSchema = oDataMgr.getTableSchema(con, $"select * from {tblName}");
-        //            var newTblName = convertTblNameToBiosumTblName(tblName);
-        //            oDao.CreateMDBTableFromDataSetTable(strMDBPathAndFile, newTblName, dtSourceSchema, true);
-        //        }
-        //    }
-        //}
-
         private string convertSqliteTblNameToBiosumTblName(string tblName)
         {
-            // TODO: Map changed table names to proper ones. Either via a mapping, regex, or a simple string compare. FVS_Summary2 -> FVS_Summary
             var validTables = Tables.FVS.g_strFVSOutTablesArray;
             var validTablesList = new List<string>(validTables);
             var tablesSet = new HashSet<string>(validTablesList);
@@ -545,7 +515,7 @@ namespace FIA_Biosum_Manager
             // List of three items; databasename, variant, runtitle.
             var fileNames = new List<List<string>>();
             var strTempMDB = m_oDatasource.CreateMDBAndTableDataSourceLinks();
-            // Similar example: uc_delete_conditions.cs line 504 (Execute
+
             var fileNameList = new List<string>();
             using (System.Data.OleDb.OleDbConnection con = new System.Data.OleDb.OleDbConnection(m_ado.getMDBConnString(strTempMDB, "", "")))
             {
