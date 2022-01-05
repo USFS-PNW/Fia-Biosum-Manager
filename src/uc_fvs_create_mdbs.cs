@@ -38,6 +38,12 @@ namespace FIA_Biosum_Manager
         {
             { "FVS_SUMMARY2", "FVS_SUMMARY" }
         };
+
+        // Mapping of sqlite column names to biosum column names. Add new entries here.
+        public static Dictionary<string, string> sqliteToAccessColNames = new Dictionary<string, string>
+        {
+            { "SPECIESFIA", "SPECIES" }
+        };
         private Button btnCancel;
         private Button btnExportLog;
         private ToolTip createMdbsTooltip;
@@ -500,10 +506,10 @@ namespace FIA_Biosum_Manager
         {
             var translatedStr = strToCheck.ToUpper();
             // Map SPECIESFIA to SPECIES. In the future, add other column mappings (e.g. stuff that's different in FVSOUT.db from the target Access Mdbs) here.
-            if (translatedStr.Contains("SPECIESFIA"))
+            if (sqliteToAccessColNames.Keys.Contains(translatedStr))
             {
-                translatedStr = translatedStr.Replace("SPECIESFIA", "SPECIES");
-                appendStringToDebugTextbox($@"Mapping SpeciesFIA to Species for col: {strToCheck}. New value: {translatedStr}");
+                translatedStr = sqliteToAccessColNames[translatedStr];
+                appendStringToDebugTextbox($@"Mapping column {strToCheck} to {translatedStr}");
             }
             return translatedStr;
         }
