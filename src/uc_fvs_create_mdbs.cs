@@ -201,6 +201,8 @@ namespace FIA_Biosum_Manager
 
         }
 
+        /// <summary>Main function for the "create MDBS" process. Executes the process of creating the Access files, subsetting the SQLite DB,
+        /// and inserting those rows into the new Access DBs. The result should be compatible with BioSum.</summary>
         private void CreateMDBs_Main()
         {
             frmMain.g_oDelegate.SetControlPropertyValue(this.btnExportLog, "Enabled", false);
@@ -310,8 +312,6 @@ namespace FIA_Biosum_Manager
             // TODO: PotFireBaseYr (sp?) special case handling. Each DB has two tables, FVS_Cases and FVS_PotFire.
             // Only one PotFireBaseYr db per variant. Probably.
             appendStringToDebugTextbox("Done.");
-            m_dictCreateTableQueries.Clear();
-            m_listDictFVSOutputTablesColumnsDefinitions.Clear();
 
             // Lesley added this
             frmMain.g_oDelegate.CurrentThreadProcessDone = true;
@@ -324,6 +324,11 @@ namespace FIA_Biosum_Manager
             return;
         }
 
+        /// <summary>
+        /// Closes the form.
+        /// </summary>
+        /// <param name="sender"> Sender object (unused).</param>
+        /// <param name="e">Event arguments (unused).</param>
         private void btnClose_Click(object sender, System.EventArgs e)
         {
             this.ParentForm.Close();
@@ -337,9 +342,13 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.SetControlPropertyValue(this.textBox1, "Text", textBoxValue += text + System.Environment.NewLine);
         }
 
-        /// <summary>Event handler for the export button. 
+        /// <summary>
+        /// Event handler for the export button. 
         /// Takes the text from the textbox and supplies it to the user to download as a .txt file. 
-        /// Only enabled when the process is complete. </summary>
+        /// Only enabled when the process is complete.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnExport_Click(object sender, EventArgs e)
         {
             SaveFileDialog save = new SaveFileDialog();
@@ -359,7 +368,6 @@ namespace FIA_Biosum_Manager
 
         /// <summary>Converts the string representation of an SQLite data type to the equivalent Access data type strings. </summary>
         /// <param name="dataTypeFromDB">The string representation of an SQLite data type.</param>
-
         private string dataTypeConvert(string dataTypeFromDB)
         {
             var convertedType = "";
@@ -562,6 +570,7 @@ namespace FIA_Biosum_Manager
             }
             return fileNames;
         }
+        /// <summary>Event handler for the Create MDBs button. Spins up the CreateMDBS_Main thread. </summary>
         private void createMdbsMain_Click(object sender, EventArgs e)
         {
             frmMain.g_oDelegate.CurrentThreadProcessIdle = false;
@@ -573,12 +582,18 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.m_oThread.IsBackground = true;
             frmMain.g_oDelegate.m_oThread.Start();
         }
-
+        /// <summary>
+        /// Attempts to cancel the thread.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnCancel_Click(object sender, System.EventArgs e)
         {
             CancelThread();
         }
-
+        /// <summary>
+        /// The thread cancel function. Aborts the thread and calls CleanupThread.
+        /// </summary>
         private void CancelThread()
         {
             if (frmMain.g_oDelegate.m_oThread.IsAlive)
@@ -586,27 +601,35 @@ namespace FIA_Biosum_Manager
                 bool bAbort = frmMain.g_oDelegate.AbortProcessing("FIA Biosum", "Do you wish to cancel processing (Y/N)?");
                 if (frmMain.g_oDelegate.CurrentThreadProcessAborted)
                 {
-                    //if (frmMain.g_oDelegate.m_oThread.IsAlive)
-                    //{
-                    //    frmMain.g_oDelegate.m_oThread.Join();
-                    //}
-                    //frmMain.g_oDelegate.StopThread();
                     frmMain.g_oDelegate.StopThread();
                     CleanupThread();
                 }
             }
         }
-
+        /// <summary>
+        /// Clean's up the current thread. Clears the create table and column definition dictionaries (so they can be repopulated on new runs).
+        /// Enables the parent form.
+        /// </summary>
         private void CleanupThread()
         {
+            m_dictCreateTableQueries.Clear();
+            m_listDictFVSOutputTablesColumnsDefinitions.Clear();
             this.ParentForm.Enabled = true;
         }
-
+        /// <summary>
+        /// Wraps the supplied string in ` characters. 
+        /// This is necessary for certain Access column names, so we just do it for everything.
+        /// </summary>
+        /// <param name="str">The string to wrap in `.</param>
+        /// <returns></returns>
         private string wrapInBackTick(string str)
         {
             return $@"`{str}`";
         }
 
+        /// <summary>
+        /// Resize function. Currently does nothing. I don't remember making this; perhaps we could resize the textbox?
+        /// </summary>
         internal void uc_fvs_create_mdbs_Resize()
         {
             return;
