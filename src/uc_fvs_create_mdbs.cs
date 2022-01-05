@@ -329,12 +329,17 @@ namespace FIA_Biosum_Manager
             this.ParentForm.Close();
         }
 
+        /// <summary>Appends the supplied string to the main output textbox. Adds a newline, so just include the message you want to output. </summary>
+        /// <param name="text">The string to append to the textbox.</param>
         private void appendStringToDebugTextbox(string text)
         {
             var textBoxValue = frmMain.g_oDelegate.GetControlPropertyValue(this.textBox1, "Text", false);
             frmMain.g_oDelegate.SetControlPropertyValue(this.textBox1, "Text", textBoxValue += text + System.Environment.NewLine);
         }
 
+        /// <summary>Event handler for the export button. 
+        /// Takes the text from the textbox and supplies it to the user to download as a .txt file. 
+        /// Only enabled when the process is complete. </summary>
         private void btnExport_Click(object sender, EventArgs e)
         {
             SaveFileDialog save = new SaveFileDialog();
@@ -351,6 +356,9 @@ namespace FIA_Biosum_Manager
                 writer.Close();
             }
         }
+
+        /// <summary>Converts the string representation of an SQLite data type to the equivalent Access data type strings. </summary>
+        /// <param name="dataTypeFromDB">The string representation of an SQLite data type.</param>
 
         private string dataTypeConvert(string dataTypeFromDB)
         {
@@ -373,11 +381,16 @@ namespace FIA_Biosum_Manager
             return convertedType;
         }
 
+        /// <summary>Generates a select query to subset the supplied table by the given run title. Used to populate access dbs from the SQLite tables. </summary>
+        /// <param name="strTableName">The SQLite table name to subset.</param>
+        ///  <param name="strRunTitle">The run title to subset the table by.</param>
         private string generateRuntitleSubsetQuery(string strTableName, string strRunTitle)
         {
             return !strTableName.ToUpper().Contains("CASES") ? $"SELECT f.* FROM FVS_CASES c INNER JOIN {strTableName} f ON c.CaseID=f.CaseID WHERE c.RunTitle='{strRunTitle}'" : $"SELECT c.* FROM {strTableName} c WHERE c.RunTitle='{strRunTitle}'";
         }
 
+        /// <summary>Converts the string representation of an SQLite data type to the equivalent utils.DataType enum value. </summary>
+        /// <param name="dataTypeFromDB">The string representation of an SQLite data type.</param>
         private utils.DataType getDataTypeEnumValueFromString(string dataTypeFromDB)
         {
             utils.DataType convertedType;
@@ -402,6 +415,11 @@ namespace FIA_Biosum_Manager
             return convertedType;
         }
 
+        /// <summary>This method populates dictionaries storing table creation scripts and 
+        /// for the new Access MDBs, and a dictionary of column definition information for each type of table
+        /// within those Access MDBs. </summary>
+        /// <param name="strConnection">The connection string for the source SQLite table.</param>
+        /// <param name="oDataMgr">An instance of the DataMgr class.</param>
         private void populateTableQueryDictionaries(string strConnection, DataMgr oDataMgr)
         {
             using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
@@ -454,16 +472,22 @@ namespace FIA_Biosum_Manager
             }
         }
 
+        /// <summary>Executes the supplied dictionary of queries on the table name used as the key, using the connection suppled.
+        /// Used to insert values into a new Access DB.</summary>
+        /// <param name="queryDict">A <string,string> dict where the key is a table and the value is a query to run.</param>
+        /// <param name="accessConn">An OleDbConnection for the access DB to run against.</param>
+        /// <param name="oAdo">An ado_data_access instance.</param>
         private void executeSQLListOnAccessConnection(Dictionary<string, string> queryDict, OleDbConnection accessConn, ado_data_access oAdo)
         {
             foreach (var tblName in queryDict.Keys)
             {
                 appendStringToDebugTextbox($@"Creating table: {tblName}");
                 oAdo.SqlNonQuery(accessConn, queryDict[tblName]);
-                //oAdo.AddIndex(accessConn, tblName, tblName+"_CaseId_Idx", "CaseID");
             }
         }
 
+        /// <summary>Translates "FVSOut.db" column naming conventions into BioSum ones, e.g. SPECIESFIA -> SPECIES.</summary>
+        /// <param name="strToCheck">String to check. If it matches, map it. Otherwise return the same string.</param>
         private string translateColumn(string strToCheck)
         {
             var translatedStr = strToCheck.ToUpper();
@@ -472,11 +496,12 @@ namespace FIA_Biosum_Manager
             {
                 translatedStr = translatedStr.Replace("SPECIESFIA", "SPECIES");
                 appendStringToDebugTextbox($@"Mapping SpeciesFIA to Species for col: {strToCheck}. New value: {translatedStr}");
-
             }
             return translatedStr;
         }
 
+        /// <summary>Translates "FVSOut.db" table naming conventions into BioSum ones, e.g. Any table with "Summary" in the name -> FVS_Summary.</summary>
+        /// <param name="tblName">String to check. If it matches, map it. Otherwise return the same string.</param>
         private string convertSqliteTblNameToBiosumTblName(string tblName)
         {
             var validTables = Tables.FVS.g_strFVSOutTablesArray;
@@ -493,23 +518,9 @@ namespace FIA_Biosum_Manager
             return newTblName;
         }
 
-        private string convertAccessTblNameToSqliteTblName(string tblName)
-        {
-            // TODO: Map changed table names to proper ones. Either via a mapping, regex, or a simple string compare. FVS_Summary2 -> FVS_Summary
-            var validTables = Tables.FVS.g_strFVSOutTablesArray;
-            var validTablesList = new List<string>(validTables);
-            var tablesSet = new HashSet<string>(validTablesList);
-            var newTblName = tblName;
-            if (!tablesSet.Contains(tblName))
-            {
-                if (tblName.ToUpper().Contains("SUMMARY"))
-                {
-                    newTblName = "FVS_Summary2";
-                }
-            }
-            return newTblName;
-        }
-
+        /// <summary>This function generates the list of Access DB file names we'll be populating.
+        /// It returns a List of Lists of strings. Each member of this list contains 3 strings: fileName, strVariant, and runTitle, in that order.
+        /// </summary>
         private List<List<string>> getRunTitleFilenames()
         {
             // List of three items; databasename, variant, runtitle.
@@ -517,7 +528,7 @@ namespace FIA_Biosum_Manager
             var strTempMDB = m_oDatasource.CreateMDBAndTableDataSourceLinks();
 
             var fileNameList = new List<string>();
-            using (System.Data.OleDb.OleDbConnection con = new System.Data.OleDb.OleDbConnection(m_ado.getMDBConnString(strTempMDB, "", "")))
+            using (OleDbConnection con = new OleDbConnection(m_ado.getMDBConnString(strTempMDB, "", "")))
             {
                 con.Open();
                 this.m_ado.SqlQueryReader(con, Queries.FVS.GetFVSVariantRxPackageSQL(m_oQueries.m_oFIAPlot.m_strPlotTable, m_oQueries.m_oFvs.m_strRxPackageTable));
