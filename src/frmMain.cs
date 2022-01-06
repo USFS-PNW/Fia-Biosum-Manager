@@ -862,7 +862,7 @@ namespace FIA_Biosum_Manager
             // 
             this.btnDB.Dock = System.Windows.Forms.DockStyle.Top;
             this.btnDB.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnDB.Location = new System.Drawing.Point(4, 23);
+            this.btnDB.Location = new System.Drawing.Point(4, 19);
             this.btnDB.Margin = new System.Windows.Forms.Padding(4);
             this.btnDB.Name = "btnDB";
             this.btnDB.Size = new System.Drawing.Size(172, 34);
