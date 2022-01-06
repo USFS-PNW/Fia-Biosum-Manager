@@ -4280,6 +4280,7 @@ namespace FIA_Biosum_Manager
                     "eval_cn CHAR(34)," +
                     "rscd DECIMAL (2,0)," +
                     "evalid DECIMAL (6,0)," +
+                    "estn_unit INTEGER," +
                     "estn_unit_descr CHAR(255)," +
                     "statecd DECIMAL (4,0)," +
                     "arealand_eu DECIMAL (12,2)," +
@@ -4288,8 +4289,8 @@ namespace FIA_Biosum_Manager
                     "area_source CHAR(50)," +
                     "p1pntcnt_eu DECIMAL (12,0)," +
                     "p1source CHAR(30)," +
+                    "modified_date DATE, " +
                     "biosum_status_cd BYTE)";
-
             }
             public void CreateSqlitePopEstnUnitTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
@@ -4307,6 +4308,7 @@ namespace FIA_Biosum_Manager
                     "eval_cn VARCHAR (34)," +
                     "rscd INTEGER," +
                     "evalid INTEGER," +
+                    "estn_unit INTEGER," +
                     "estn_unit_descr VARCHAR (255)," +
                     "statecd INTEGER," +
                     "arealand_eu FLOAT," +
@@ -4315,7 +4317,9 @@ namespace FIA_Biosum_Manager
                     "area_source VARCHAR (50)," +
                     "p1pntcnt_eu INTEGER," +
                     "p1source VARCHAR (50)," +
-                    "biosum_status_cd VARCHAR (1))";
+                    "biosum_status_cd VARCHAR (1), " +
+                    "modified_date DATE," +
+                    "PRIMARY KEY(RSCD, EVALID, ESTN_UNIT) )";
             }
             public void CreatePopEvalTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
@@ -4340,6 +4344,7 @@ namespace FIA_Biosum_Manager
                     "start_invyr DECIMAL (4,0)," +
                     "end_invyr DECIMAL (4,0)," +
                     "p1source CHAR(30)," +
+                    "modified_date DATE, " +
                     "biosum_status_cd BYTE)";
             }
             public void CreateSqlitePopEvalTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
@@ -4367,7 +4372,9 @@ namespace FIA_Biosum_Manager
                     "end_invyr INTEGER," +
                     "growth_acct VARCHAR (1)," +
                     "land_only VARCHAR (1)," +
-                    "biosum_status_cd VARCHAR (1))";
+                    "biosum_status_cd VARCHAR (1)," +
+                    "MODIFIED_DATE DATE," +
+                    "PRIMARY KEY(evalid))";
             }
             public void CreatePopPlotStratumAssgnTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
@@ -4393,11 +4400,12 @@ namespace FIA_Biosum_Manager
                     "evalid DECIMAL (6,0)," +
                     "estn_unit LONG," +
                     "stratumcd LONG," +
+                    "modified_date DATE, " +
                     "biosum_status_cd BYTE)";
             }
             public void CreateSqlitePopPlotStratumAssgnTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
-                p_oDataMgr.SqlNonQuery(p_oConn, CreatePopPlotStratumAssgnTableSQL(p_strTableName));
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqlitePopPlotStratumAssgnTableSQL(p_strTableName));
                 CreateSqlitePopPlotStratumAssgnTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
             }
             public void CreateSqlitePopPlotStratumAssgnTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
@@ -4419,7 +4427,9 @@ namespace FIA_Biosum_Manager
                     "evalid INTEGER," +
                     "estn_unit INTEGER," +
                     "stratumcd INTEGER," +
-                    "biosum_status_cd VARCHAR (1))";
+                    "biosum_status_cd VARCHAR (1)," +
+                    "modified_date DATE, " +
+                    "PRIMARY KEY(PLT_CN, STRATUM_CN))";
             }
             public void CreatePopStratumTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
@@ -4447,6 +4457,7 @@ namespace FIA_Biosum_Manager
                     "adj_factor_macr DECIMAL (5,4)," +
                     "adj_factor_subp DECIMAL (5,4)," +
                     "adj_factor_micr DECIMAL (5,4)," +
+                    "modified_date DATE, " +
                     "biosum_status_cd BYTE)";
             }
             public void CreateSqlitePopStratumTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
@@ -4475,7 +4486,9 @@ namespace FIA_Biosum_Manager
                     "adj_factor_macr FLOAT," +
                     "adj_factor_subp FLOAT," +
                     "adj_factor_micr FLOAT," +
-                    "biosum_status_cd VARCHAR (1))";
+                    "biosum_status_cd VARCHAR (1)," +
+                    "modified_date DATE, " +
+                    "PRIMARY KEY(RSCD, EVALID, ESTN_UNIT, STRATUMCD))";
             }
             public void CreateBiosumPopStratumAdjustmentFactorsTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
