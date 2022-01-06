@@ -102,7 +102,8 @@ namespace FIA_Biosum_Manager
 		public FIA_Biosum_Manager.btnMainForm m_btnFvsRx;
 		public FIA_Biosum_Manager.btnMainForm m_btnFvsRxPackage;
 		public FIA_Biosum_Manager.btnMainForm m_btnFvsInput;
-		public FIA_Biosum_Manager.btnMainForm m_btnFvsOutput;
+        public FIA_Biosum_Manager.btnMainForm m_btnCreateFvsOutputMdbs;
+        public FIA_Biosum_Manager.btnMainForm m_btnFvsOutput;
 		public FIA_Biosum_Manager.btnMainForm m_btnFvsTreeSpcCvt;
 		public FIA_Biosum_Manager.btnMainForm m_btnFvsTreeSpc;
 
@@ -134,7 +135,8 @@ namespace FIA_Biosum_Manager
 		private FIA_Biosum_Manager.frmDialog m_frmDataSource;     //datasource form
 		private FIA_Biosum_Manager.frmDialog m_frmFvsInput;       //fvs input form
 		private FIA_Biosum_Manager.frmDialog m_frmFvsTreeSpcCvt;  //fvs tree spc conversion form
-		private FIA_Biosum_Manager.frmDialog m_frmFvsOutput;      //fvs output
+        private FIA_Biosum_Manager.frmDialog m_frmCreateFvsOutputMdbs; // popup form for fvs access DB creation
+        private FIA_Biosum_Manager.frmDialog m_frmFvsOutput;      //fvs output
 		private FIA_Biosum_Manager.frmDialog m_frmProcessorSpc;   //processor spc audit form
 		private FIA_Biosum_Manager.frmDialog m_frmPSite;          //wood processing site form
 		private FIA_Biosum_Manager.frmDialog m_frmFvsVariant;     //plot fvs variant
@@ -2087,7 +2089,11 @@ namespace FIA_Biosum_Manager
 					case "TREE SPECIES":
 						this.LoadProcessorTreeSpcForm(this,"FVS");
 						break;
-					case "FVS OUTPUT DATA":
+                    case "CREATE FVSOUT MDBS":
+                        // Call StartFVSCreateMdbsDialog() method here
+                        StartFVSCreateMdbsDialog();
+                        break;
+                    case "FVS OUTPUT DATA":
                         StartFVSOutputDataDialog();
 
 						break;
@@ -2498,6 +2504,84 @@ namespace FIA_Biosum_Manager
                 OpenProcessorScenario("New", null);
             }
         }
+
+        public void StartFVSCreateMdbsDialog()
+        {
+            // TODO: 
+            //check to see if the form has already been loaded
+            if (this.IsChildWindowVisible("FVS: Create MDBs") == false)
+            {
+                frmMain.g_sbpInfo.Text = "Loading Create MDBs feature...Stand By";
+                this.m_frmCreateFvsOutputMdbs = new frmDialog(this);
+                this.m_frmCreateFvsOutputMdbs.MaximizeBox = true;
+                this.m_frmCreateFvsOutputMdbs.BackColor = System.Drawing.SystemColors.Control;
+                this.m_frmCreateFvsOutputMdbs.Text = "FVS: Create MDBs";
+                FIA_Biosum_Manager.uc_fvs_create_mdbs p_uc = new uc_fvs_create_mdbs(this.frmProject.uc_project1.txtRootDirectory.Text.Trim());
+                if (p_uc.m_intError < 0)
+                {
+                    this.m_frmCreateFvsOutputMdbs.Dispose();
+                    return;
+                }
+                ActivateStandByAnimation(this.WindowState, this.Left, this.Height, this.Width, this.Top);
+                this.m_frmCreateFvsOutputMdbs.Controls.Add(p_uc);
+                this.m_frmCreateFvsOutputMdbs.FvsCreateMdbsUserControl = p_uc;
+                this.m_frmCreateFvsOutputMdbs.Height = 0;
+                this.m_frmCreateFvsOutputMdbs.Width = 0;
+
+                if (p_uc.Top + p_uc.Height > this.m_frmCreateFvsOutputMdbs.ClientSize.Height + 2)
+                {
+                    for (int x = 1; ; x++)
+                    {
+                        this.m_frmCreateFvsOutputMdbs.Height = x;
+                        if (p_uc.Top +
+                            p_uc.Height <
+                            this.m_frmCreateFvsOutputMdbs.ClientSize.Height)
+                        {
+                            break;
+                        }
+                    }
+
+                }
+                if (p_uc.Left + p_uc.Width > this.m_frmCreateFvsOutputMdbs.ClientSize.Width + 2)
+                {
+                    for (int x = 1; ; x++)
+                    {
+                        this.m_frmCreateFvsOutputMdbs.Width = x;
+                        if (p_uc.Left +
+                            p_uc.Width <
+                            this.m_frmCreateFvsOutputMdbs.ClientSize.Width)
+                        {
+                            break;
+                        }
+                    }
+
+                }
+                p_uc.Dock = System.Windows.Forms.DockStyle.Fill;
+
+                this.m_frmCreateFvsOutputMdbs.Left = 0;
+                this.m_frmCreateFvsOutputMdbs.Top = 0;
+                this.m_frmCreateFvsOutputMdbs.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
+                this.m_frmCreateFvsOutputMdbs.DisposeOfFormWhenClosing = true;
+                this.m_frmCreateFvsOutputMdbs.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+                frmMain.g_sbpInfo.Text = "Ready";
+                this.m_frmCreateFvsOutputMdbs.MinimizeMainForm = true;
+                this.m_frmCreateFvsOutputMdbs.ParentControl = this;
+                this.Enabled = false;
+                this.DeactivateStandByAnimation();
+                this.m_frmCreateFvsOutputMdbs.Show(this);
+
+            }
+            else
+            {
+                if (this.m_frmCreateFvsOutputMdbs.WindowState == System.Windows.Forms.FormWindowState.Minimized)
+                    this.m_frmCreateFvsOutputMdbs.WindowState = System.Windows.Forms.FormWindowState.Normal;
+
+                this.m_frmCreateFvsOutputMdbs.Focus();
+
+            }
+
+        }
+
         public void StartFVSOutputDataDialog()
         {
             //check to see if the form has already been loaded
@@ -3514,10 +3598,10 @@ namespace FIA_Biosum_Manager
             this.m_btnProcessorStart.Top = this.m_btnProcessorTreeSpc.Top + this.m_btnProcessorTreeSpc.Height + 5;
 			this.m_btnProcessorStart.Text = "Start Biosum Processor";
 			this.m_btnProcessorStart.strToolTip = "Step 2 - Execute Processor";
-	     	
 
-			//DATABASE PANEL AND BUTTONS
-			this.m_pnlDb = new Panel();
+
+            //DATABASE PANEL AND BUTTONS
+            this.m_pnlDb = new Panel();
 			this.grpboxLeft.Controls.Add(this.m_pnlDb);
             this.PanelProperties(this.panel1,ref this.m_pnlDb);
             this.m_pnlDb.Visible=false;
@@ -3647,13 +3731,21 @@ namespace FIA_Biosum_Manager
 			this.m_btnFvsInput.Text = "FVS Input";
 			this.m_btnFvsInput.strToolTip = "Step 5 - Create FVS Input";
 
+            //Convert SQLite to MS Access FVSOUT databases
+            this.m_btnCreateFvsOutputMdbs = new btnMainForm(this);
+            this.m_pnlFvs.Controls.Add(this.m_btnCreateFvsOutputMdbs);
+            this.m_btnCreateFvsOutputMdbs.Size = this.btnMain1.Size;
+            this.m_btnCreateFvsOutputMdbs.Left = this.m_btnFvsVariant.Left;
+            this.m_btnCreateFvsOutputMdbs.Top = this.m_btnFvsInput.Top + this.m_btnFvsInput.Height + 5;
+            this.m_btnCreateFvsOutputMdbs.Text = "Create FVSOUT MDBs";
+            this.m_btnCreateFvsOutputMdbs.strToolTip = "Step 5.5 - Populate FVSOUT MDBs with SQLite FVSOUT.DB data";
 
-			//fvs output button
-			this.m_btnFvsOutput = new btnMainForm(this);
+            //fvs output button
+            this.m_btnFvsOutput = new btnMainForm(this);
 			this.m_pnlFvs.Controls.Add(this.m_btnFvsOutput);
 			this.m_btnFvsOutput.Size = this.btnMain1.Size;
 			this.m_btnFvsOutput.Left = this.m_btnFvsVariant.Left;
-			this.m_btnFvsOutput.Top = this.m_btnFvsInput.Top + this.m_btnFvsInput.Height + 5;
+			this.m_btnFvsOutput.Top = this.m_btnCreateFvsOutputMdbs.Top + this.m_btnCreateFvsOutputMdbs.Height + 5;
 			this.m_btnFvsOutput.Text = "FVS Output Data";
 			this.m_btnFvsOutput.strToolTip = "Step 6 - Update FFE Table And Processor Tree Table With FVS Output data";
 
