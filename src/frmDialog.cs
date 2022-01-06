@@ -48,7 +48,8 @@ namespace FIA_Biosum_Manager
 		public FIA_Biosum_Manager.uc_fvs_input uc_fvs_input1;
 		public FIA_Biosum_Manager.uc_fvs_tree_spc_conversion uc_tree_spc_conversion1;
 		public FIA_Biosum_Manager.uc_fvs_tree_spc_conversion_edit uc_fvs_tree_spc_conversion_edit1;
-		public FIA_Biosum_Manager.uc_fvs_output uc_fvs_output1;
+        private uc_fvs_create_mdbs uc_fvs_create_mdbs1;
+        public FIA_Biosum_Manager.uc_fvs_output uc_fvs_output1;
 		public FIA_Biosum_Manager.uc_processor_tree_spc uc_processor_tree_spc1;
 		public FIA_Biosum_Manager.uc_processor_tree_spc_edit uc_processor_tree_spc_edit1;
 		public FIA_Biosum_Manager.uc_gis_psite uc_gis_psite1;
@@ -79,7 +80,7 @@ namespace FIA_Biosum_Manager
 		/// </summary>
 		private System.ComponentModel.Container components = null;
 
-	    public frmDialog()
+        public frmDialog()
 		{
             
 			InitializeComponent();
@@ -259,7 +260,12 @@ namespace FIA_Biosum_Manager
                     return;
                 }
             }
-			if (this.uc_fvs_output1 != null && frmMain.g_oDelegate.CurrentThreadProcessIdle==false)
+            if (this.uc_fvs_create_mdbs1 != null && frmMain.g_oDelegate.CurrentThreadProcessIdle == false)
+            {
+                e.Cancel = true;
+                return;
+            }
+            if (this.uc_fvs_output1 != null && frmMain.g_oDelegate.CurrentThreadProcessIdle==false)
 			{
 				e.Cancel = true;
 				return;
@@ -272,6 +278,7 @@ namespace FIA_Biosum_Manager
 			if (this._bDispose == true)
 			{
                 if (this.uc_fvs_output1 != null) this.ParentControl.Enabled = true;
+                if (this.uc_fvs_create_mdbs1 != null) this.ParentControl.Enabled = true;
                 if (this.uc_fvs_input1 != null) this.ParentControl.Enabled = true;
                 if (this.PlotFvsVariantUserControl != null) this.ParentControl.Enabled = true;
                 if (this.ProcessorTreeSpcUserControl != null) this.ParentControl.Enabled = true;
@@ -674,7 +681,18 @@ namespace FIA_Biosum_Manager
 				return this.uc_fvs_tree_spc_conversion_edit1;
 			}
 		}
-		public FIA_Biosum_Manager.uc_fvs_output FvsOutProcessorInUserControl
+        public FIA_Biosum_Manager.uc_fvs_create_mdbs FvsCreateMdbsUserControl
+        {
+            set
+            {
+                this.uc_fvs_create_mdbs1 = value;
+            }
+            get
+            {
+                return this.uc_fvs_create_mdbs1;
+            }
+        }
+        public FIA_Biosum_Manager.uc_fvs_output FvsOutProcessorInUserControl
 		{
 			set
 			{
@@ -808,6 +826,9 @@ namespace FIA_Biosum_Manager
             {
 
                 uc_scenario_optimizer_scenario_copy1.panel1_Resize();
+            }else if (uc_fvs_create_mdbs1 != null)
+            {
+                uc_fvs_create_mdbs1.uc_fvs_create_mdbs_Resize();
             }
         }
 
