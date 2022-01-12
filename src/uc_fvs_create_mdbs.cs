@@ -44,6 +44,9 @@ namespace FIA_Biosum_Manager
         {
             { "SPECIESFIA", "SPECIES" }
         };
+
+        // Only 2 tables we want to create for POTFIRE
+        public static List<string> lstPotfireTables = new List<string> { "FVS_Cases", "FVS_PotFire" };
         private Button btnCancel;
         private Button btnExportLog;
         private ToolTip createMdbsTooltip;
@@ -260,49 +263,53 @@ namespace FIA_Biosum_Manager
                         sqliteConn.Open();
                         foreach (var tblName in m_listDictFVSOutputTablesColumnsDefinitions.Keys)
                         {
-                            var cols = m_listDictFVSOutputTablesColumnsDefinitions[tblName];
-                            // Generate comma-seperated column string for insert statements. Wrap in back-tick to prevent "reserved word" errors.
-                            var strColumns = string.Join(",", m_listDictFVSOutputTablesColumnsDefinitions[tblName].Select(item => wrapInBackTick(translateColumn(item.Item1))));
-                            
-                            // Open up a data manager for the subsetted query for the run title we're on.  
-                            sqliteDataMgr.SqlQueryReader(sqliteConn, generateRuntitleSubsetQuery(tblName, file[2]));
-                            appendStringToDebugTextbox(generateRuntitleSubsetQuery(tblName, file[2]));
-                            if (sqliteDataMgr.m_DataReader.HasRows)
+                            if (m_ado.TableExist(accessConn, tblName))
+                                // Add this to avoid exceptions and to support POTFIRE (only has 2 tables)
                             {
-                                OleDbTransaction transaction;
-                                OleDbCommand command = accessConn.CreateCommand();
-                                // Start a local transaction
-                                transaction = accessConn.BeginTransaction(IsolationLevel.ReadCommitted);
-                                // Assign transaction object for a pending local transaction
-                                command.Transaction = transaction;
-                                try
+                                var cols = m_listDictFVSOutputTablesColumnsDefinitions[tblName];
+                                // Generate comma-seperated column string for insert statements. Wrap in back-tick to prevent "reserved word" errors.
+                                var strColumns = string.Join(",", m_listDictFVSOutputTablesColumnsDefinitions[tblName].Select(item => wrapInBackTick(translateColumn(item.Item1))));
+
+                                // Open up a data manager for the subsetted query for the run title we're on.  
+                                sqliteDataMgr.SqlQueryReader(sqliteConn, generateRuntitleSubsetQuery(tblName, file[2]));
+                                appendStringToDebugTextbox(generateRuntitleSubsetQuery(tblName, file[2]));
+                                if (sqliteDataMgr.m_DataReader.HasRows)
                                 {
-                                    // Iterate over reader, create, and execute insert statements. Count them for display to user.
-                                    var recordCount = 0;
-                                    while (sqliteDataMgr.m_DataReader.Read())
+                                    OleDbTransaction transaction;
+                                    OleDbCommand command = accessConn.CreateCommand();
+                                    // Start a local transaction
+                                    transaction = accessConn.BeginTransaction(IsolationLevel.ReadCommitted);
+                                    // Assign transaction object for a pending local transaction
+                                    command.Transaction = transaction;
+                                    try
                                     {
-                                        if (sqliteDataMgr.m_DataReader["CASEID"] != DBNull.Value && Convert.ToString(sqliteDataMgr.m_DataReader["CASEID"]).Trim().Length > 0)
+                                        // Iterate over reader, create, and execute insert statements. Count them for display to user.
+                                        var recordCount = 0;
+                                        while (sqliteDataMgr.m_DataReader.Read())
                                         {
-                                            var strValues = utils.GetParsedInsertValues(sqliteDataMgr.m_DataReader, m_listDictFVSOutputTablesColumnsDefinitions[tblName]);
-                                            // Insert statements
-                                            command.CommandText = $"INSERT INTO {tblName} ({strColumns}) VALUES ({strValues})";
-                                            command.ExecuteNonQuery();
-                                            recordCount++;
+                                            if (sqliteDataMgr.m_DataReader["CASEID"] != DBNull.Value && Convert.ToString(sqliteDataMgr.m_DataReader["CASEID"]).Trim().Length > 0)
+                                            {
+                                                var strValues = utils.GetParsedInsertValues(sqliteDataMgr.m_DataReader, m_listDictFVSOutputTablesColumnsDefinitions[tblName]);
+                                                // Insert statements
+                                                command.CommandText = $"INSERT INTO {tblName} ({strColumns}) VALUES ({strValues})";
+                                                command.ExecuteNonQuery();
+                                                recordCount++;
+                                            }
                                         }
+                                        transaction.Commit();
+                                        appendStringToDebugTextbox($@"Inserted {recordCount} records into {tblName}");
                                     }
-                                    transaction.Commit();
-                                    appendStringToDebugTextbox($@"Inserted {recordCount} records into {tblName}");
+                                    catch (Exception err)
+                                    {
+                                        m_intError = -1;
+                                        appendStringToDebugTextbox(err.Message);
+                                        transaction.Rollback();
+                                    }
+                                    transaction.Dispose();
                                 }
-                                catch (Exception err)
-                                {
-                                    m_intError = -1;
-                                    appendStringToDebugTextbox(err.Message);
-                                    transaction.Rollback();
-                                }
-                                transaction.Dispose();
+                                sqliteDataMgr.m_DataReader.Dispose();
+                                sqliteDataMgr.m_DataReader = null;
                             }
-                            sqliteDataMgr.m_DataReader.Dispose();
-                            sqliteDataMgr.m_DataReader = null;
                         }
                         sqliteConn.Close();
                     }
@@ -495,8 +502,20 @@ namespace FIA_Biosum_Manager
         {
             foreach (var tblName in queryDict.Keys)
             {
-                appendStringToDebugTextbox($@"Creating table: {tblName}");
-                oAdo.SqlNonQuery(accessConn, queryDict[tblName]);
+                string strDataSource = accessConn.DataSource.ToUpper();
+                if (strDataSource.IndexOf("POTFIRE_BASEYR") > -1) // This is a baseyr database; Only create 2 tables
+                {
+                    if (lstPotfireTables.Contains(tblName))
+                    {
+                        appendStringToDebugTextbox($@"Creating table: {tblName}");
+                        oAdo.SqlNonQuery(accessConn, queryDict[tblName]);
+                    }
+                }
+                else
+                {
+                    appendStringToDebugTextbox($@"Creating table: {tblName}");
+                    oAdo.SqlNonQuery(accessConn, queryDict[tblName]);
+                }
             }
         }
 
@@ -541,7 +560,7 @@ namespace FIA_Biosum_Manager
             var fileNames = new List<List<string>>();
             var strTempMDB = m_oDatasource.CreateMDBAndTableDataSourceLinks();
 
-            var fileNameList = new List<string>();
+            var variantList = new List<string>();
             using (OleDbConnection con = new OleDbConnection(m_ado.getMDBConnString(strTempMDB, "", "")))
             {
                 con.Open();
@@ -568,9 +587,20 @@ namespace FIA_Biosum_Manager
                     //FVSOUT_CA_P001 - 001 - 000 - 000 - 000
                     //FVSOUT_CA_P002 - 002 - 000 - 000 - 000
                     //FVSOUT_CA_P005 - 000 - 000 - 000 - 000
+                    // maintain variant list so we can add the base year files
+                    if (!variantList.Contains(strVariant))
+                    {
+                        variantList.Add(strVariant);
+                    }
                     var runTitle = $@"FVSOUT_{strVariant}_P{strPackage}-{strRx1}-{strRx2}-{strRx3}-{strRx4}";
                     var fileName = $@"FVSOUT_{strVariant}_P{strPackage}-{strRx1}-{strRx2}-{strRx3}-{strRx4}.MDB";
-                    fileNameList.Add(fileName);
+                    fileNames.Add(new List<string>() { fileName, strVariant, runTitle });
+                }
+                // Add POTFIRE Base year mdbs
+                foreach (var strVariant in variantList)
+                {
+                    var runTitle = $@"FVSOUT_{strVariant}_POTFIRE_BaseYr";
+                    var fileName = $@"FVSOUT_{strVariant}_POTFIRE_BaseYr.MDB";
                     fileNames.Add(new List<string>() { fileName, strVariant, runTitle });
                 }
             }

@@ -7823,14 +7823,14 @@ namespace FIA_Biosum_Manager
 			bool bLoad=false;
             DataMgr oDataMgr = new DataMgr();
 			if (m_oDatasource==null) this.InitializeDatasource();
-				
-			try
-			{
-				//check if the eval list box has no values
-				if (this.lstFIADBInv.Items.Count==0)
-				{
-					bLoad=true;
-				}
+
+            try
+            {
+                //check if the eval list box has no values
+                if (this.lstFIADBInv.Items.Count == 0)
+                {
+                    bLoad = true;
+                }
                 //see if the same values in the list as the table
                 string strConnection = oDataMgr.GetConnectionString(this.txtFiadbInputFile.Text.Trim());
                 using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
@@ -7999,17 +7999,36 @@ namespace FIA_Biosum_Manager
                     else m_intError = m_ado.m_intError;
                 }
 
-
+                // 12-JAN-2022: Check that can be removed later for revised pop tables
+                if (!System.IO.File.Exists(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+                    frmMain.g_oTables.m_oFIAPlot.DefaultPopTableDbFile))
+                {
+                    MessageBox.Show("This project is missing the " + frmMain.g_oTables.m_oFIAPlot.DefaultPopTableDbFile +
+                        ". An error will be generated when plots are loaded!", "FIA BioSum");
+                }
+                else
+                {
+                    string strTestConn = oDataMgr.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+                        frmMain.g_oTables.m_oFIAPlot.DefaultPopTableDbFile.Trim());
+                    using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strTestConn))
+                    {
+                        con.Open();
+                        if (!oDataMgr.FieldExist(con, "select * from " + frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName, "MODIFIED_DATE"))
+                        {
+                            MessageBox.Show("This project has obsolete pop tables. An error will be generated when plots are loaded!", "FIA BioSum");
+                        }
+                    }
+                }
             }
-			catch (Exception e)
-			{
-				this.m_intError=-1;
-				MessageBox.Show(e.Message,
-					"FIA Biosum",
-					System.Windows.Forms.MessageBoxButtons.OK,
-					System.Windows.Forms.MessageBoxIcon.Exclamation);
-				return false;
-			}
+            catch (Exception e)
+            {
+                this.m_intError = -1;
+                MessageBox.Show(e.Message,
+                    "FIA Biosum",
+                    System.Windows.Forms.MessageBoxButtons.OK,
+                    System.Windows.Forms.MessageBoxIcon.Exclamation);
+                return false;
+            }
 			return bLoad;
 		}
 
