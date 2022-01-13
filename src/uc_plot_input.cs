@@ -3003,7 +3003,7 @@ namespace FIA_Biosum_Manager
 
 
                         // Save POP tables to SQLite
-                        SaveSqlitePopTables(this.m_strCurrFIADBEvalId);
+                        SaveSqlitePopTables(this.m_strCurrFIADBEvalId, this.m_strCurrFIADBRsCd);
                         SetThermValue(m_frmTherm.progressBar1, "Value",
                         GetThermValue(m_frmTherm.progressBar1, "Maximum"));
                         SetThermValue(m_frmTherm.progressBar2, "Value",
@@ -8569,7 +8569,7 @@ namespace FIA_Biosum_Manager
 
 		}
 
-        private void SaveSqlitePopTables(string strEvalId)
+        private void SaveSqlitePopTables(string strEvalId, string strRscd)
         {
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -8585,7 +8585,8 @@ namespace FIA_Biosum_Manager
             using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
             {
                 con.Open();
-                string strSQL = "SELECT COUNT(*) FROM " + this.m_strPopEvalTable + " WHERE evalid=" + strEvalId;
+                string strSQL = "SELECT COUNT(*) FROM " + this.m_strPopEvalTable + " WHERE evalid=" + strEvalId +
+                    " AND rscd= " + strRscd;
                 int intCount = (int) oDataMgr.getRecordCount(con, strSQL, this.m_strPopEvalTable);
                 if (intCount > 0 && frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                 {
@@ -8608,7 +8609,7 @@ namespace FIA_Biosum_Manager
                         "LOCATION_NM,REPORT_YEAR_NM,NOTES," +
                         "START_INVYR,END_INVYR,GROWTH_ACCT,LAND_ONLY, MODIFIED_DATE,1 " +
                         "from FIADB." + this.m_strPopEvalTable +
-                        " where evalid = " + strEvalId;
+                        " where evalid = " + strEvalId + " AND rscd= " + strRscd;
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
                             oDataMgr.m_strSQL + "\r\n");
@@ -8652,7 +8653,7 @@ namespace FIA_Biosum_Manager
                         }
                         oDataMgr.m_strSQL = "INSERT INTO " + pTable + " (" + strSqliteFields + ")" +
                             " SELECT " + strSqliteFields + " FROM FIADB." + arrSourceTables[i] + "   " +
-                            "WHERE evalid = " + strEvalId;
+                            "WHERE evalid = " + strEvalId + " AND rscd= " + strRscd;
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
                                 oDataMgr.m_strSQL + "\r\n");

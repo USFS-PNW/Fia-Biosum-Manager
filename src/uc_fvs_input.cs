@@ -330,7 +330,7 @@ namespace FIA_Biosum_Manager
             this.cmbAction.Items.AddRange(new object[] {
             "Create FVS Input Database Files",
             "Create FVS Input Database Files From FIA2FVS",
-            "Create FVS Output Database Files",
+            //"Create FVS Output Database Files",   13-JAN-2022 No longer needed with FVSOn*
             "Delete Standard FVS Output Tables",
             "Delete POTFIRE Base Year Output Tables",
             "Delete Both Standard and POTFIRE Base Year Output Tables",
@@ -2874,9 +2874,10 @@ namespace FIA_Biosum_Manager
                 case "CREATE FVS INPUT DATABASE FILES FROM FIA2FVS":
                     CreateFia2FvsInputFiles();
                     break;
-                case "CREATE FVS OUTPUT DATABASE FILES":
-                    CreateFvsOutFiles();
-                    break;
+                //case "CREATE FVS OUTPUT DATABASE FILES":
+                //    CreateFvsOutFiles();
+                //    break;
+                //13-JAN-2022: No longer needed with FVSOn*
                 case "DELETE STANDARD FVS OUTPUT TABLES":
                     BackupBeforeDelete("S");
                     break;

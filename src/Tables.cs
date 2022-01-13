@@ -4374,7 +4374,7 @@ namespace FIA_Biosum_Manager
                     "land_only VARCHAR (1)," +
                     "biosum_status_cd VARCHAR (1)," +
                     "MODIFIED_DATE DATE," +
-                    "PRIMARY KEY(evalid))";
+                    "PRIMARY KEY(evalid, rscd))";
             }
             public void CreatePopPlotStratumAssgnTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
@@ -4429,7 +4429,7 @@ namespace FIA_Biosum_Manager
                     "stratumcd INTEGER," +
                     "biosum_status_cd VARCHAR (1)," +
                     "modified_date DATE, " +
-                    "PRIMARY KEY(PLT_CN, STRATUM_CN))";
+                    "PRIMARY KEY(PLT_CN, STRATUM_CN, RSCD))";
             }
             public void CreatePopStratumTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
