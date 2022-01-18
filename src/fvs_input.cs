@@ -97,7 +97,6 @@ namespace FIA_Biosum_Manager
 		    m_strRefForestTypeTable = "REF_FOREST_TYPE";
 		    m_strRefForestTypeGroupTable = "REF_FOREST_TYPE_GROUP";
 		    m_strFiaTreeSpeciesRefTable = m_DataSource.getValidDataSourceTableName("FIA Tree Species Reference");
-		    m_DataSource.getValidDataSourceTableName("Population Plot Stratum Assignment");
 
 		    m_strGrmStandTable = frmMain.g_oTables.m_oFIAPlot.DefaultMasterAuxGRMStandName;
 		    m_strGrmTreeTable = frmMain.g_oTables.m_oFIAPlot.DefaultMasterAuxGRMTreeName;
