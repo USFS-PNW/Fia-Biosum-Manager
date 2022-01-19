@@ -5225,7 +5225,40 @@ namespace FIA_Biosum_Manager
 			{	
 			    this.m_strLoadedPopEvalInputTable=this.cmbFiadbPopEvalTable.Text;
 				this.FIADBLoadInv();
-						
+
+                List<string> lstFiadbStates = QueryFiadbStates();
+                IDictionary<string, List<string>> dictStateEval = QueryStateEvalids();
+                if (dictStateEval.Keys.Count > 0 && lstFiadbStates.Count > 0)
+                {
+                    bool bExists = false;
+                    // Check to see if any states in list are in the dict keys
+                    foreach (var strState in lstFiadbStates)
+                    {
+                        if (dictStateEval.Keys.Contains(strState))
+                        {
+                            bExists = true;
+                            break;
+                        }
+                    }
+                    if (bExists)
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        sb.Append("This project contains the following state, evalid combinations for states ");
+                        sb.Append("that exist in the input FIADB tables. It is STRONGLY advised to use ");
+                        sb.Append("only one valid per state.\n\r");
+                        foreach (var strState in lstFiadbStates)
+                        {
+                            if (dictStateEval.Keys.Contains(strState))
+                            {
+                                List<string> lstEvalid = dictStateEval[strState];
+                                string csv = String.Join(", ", lstEvalid.Select(x => x.ToString()).ToArray());
+                                sb.Append(strState + " -> " + csv);
+                            }
+                            sb.Append("\n");
+                        }
+                        MessageBox.Show(sb.ToString(), "FIA Biosum");
+                    }
+                }						
 			}
 
 			if (this.m_intError==0)
@@ -7821,7 +7854,6 @@ namespace FIA_Biosum_Manager
 			int x=0;
 			m_intError=0;
 			bool bLoad=false;
-            DataMgr oDataMgr = new DataMgr();
 			if (m_oDatasource==null) this.InitializeDatasource();
 
             try
@@ -7832,15 +7864,15 @@ namespace FIA_Biosum_Manager
                     bLoad = true;
                 }
                 //see if the same values in the list as the table
-                string strConnection = oDataMgr.GetConnectionString(this.txtFiadbInputFile.Text.Trim());
+                string strConnection = SQLite.GetConnectionString(this.txtFiadbInputFile.Text.Trim());
                 using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
                 {
                     con.Open();
                     string strSQL = "SELECT * FROM " + this.cmbFiadbPopEvalTable.Text.Trim();
-                    oDataMgr.SqlQueryReader(con, strSQL);
-                    if (oDataMgr.m_DataReader.HasRows)
+                    SQLite.SqlQueryReader(con, strSQL);
+                    if (SQLite.m_DataReader.HasRows)
                     {
-                        while (oDataMgr.m_DataReader.Read())
+                        while (SQLite.m_DataReader.Read())
                         {
                             //initialize eval values
                             strCN = "";
@@ -7851,19 +7883,19 @@ namespace FIA_Biosum_Manager
                             strEvalDesc = "";
                             strRptYr = "";
                             strNotes = "";
-                            strCN = Convert.ToString(oDataMgr.m_DataReader["cn"]).Trim();
-                            strEvalId = Convert.ToString(oDataMgr.m_DataReader["evalid"]).Trim();
-                            strRsCd = Convert.ToString(oDataMgr.m_DataReader["RsCd"]).Trim();
-                            strStateCd = Convert.ToString(oDataMgr.m_DataReader["statecd"]).Trim();
+                            strCN = Convert.ToString(SQLite.m_DataReader["cn"]).Trim();
+                            strEvalId = Convert.ToString(SQLite.m_DataReader["evalid"]).Trim();
+                            strRsCd = Convert.ToString(SQLite.m_DataReader["RsCd"]).Trim();
+                            strStateCd = Convert.ToString(SQLite.m_DataReader["statecd"]).Trim();
 
-                            if (oDataMgr.m_DataReader["location_nm"] != DBNull.Value)
-                                strLocNm = oDataMgr.m_DataReader["location_nm"].ToString();
-                            if (oDataMgr.m_DataReader["eval_descr"] != DBNull.Value)
-                                strEvalDesc = oDataMgr.m_DataReader["eval_descr"].ToString();
-                            if (oDataMgr.m_DataReader["report_year_nm"] != DBNull.Value)
-                                strRptYr = oDataMgr.m_DataReader["report_year_nm"].ToString();
-                            if (oDataMgr.m_DataReader["notes"] != DBNull.Value)
-                                strNotes = oDataMgr.m_DataReader["notes"].ToString();
+                            if (SQLite.m_DataReader["location_nm"] != DBNull.Value)
+                                strLocNm = SQLite.m_DataReader["location_nm"].ToString();
+                            if (SQLite.m_DataReader["eval_descr"] != DBNull.Value)
+                                strEvalDesc = SQLite.m_DataReader["eval_descr"].ToString();
+                            if (SQLite.m_DataReader["report_year_nm"] != DBNull.Value)
+                                strRptYr = SQLite.m_DataReader["report_year_nm"].ToString();
+                            if (SQLite.m_DataReader["notes"] != DBNull.Value)
+                                strNotes = SQLite.m_DataReader["notes"].ToString();
                             //string all the eval records
                             strCNDelimited = strCNDelimited + strCN + " " + "#";
                             strEvalIdDelimited = strEvalIdDelimited + strEvalId + " " + "#";
@@ -7903,8 +7935,8 @@ namespace FIA_Biosum_Manager
                         m_intError = -1;
                         bLoad = false;
                     }
-                    oDataMgr.m_DataReader.Close();
-                    oDataMgr.CloseConnection(oDataMgr.m_Connection);
+                    SQLite.m_DataReader.Close();
+                    SQLite.CloseConnection(SQLite.m_Connection);
                 } // Closing connection
 
                 if (bLoad)
@@ -8008,12 +8040,12 @@ namespace FIA_Biosum_Manager
                 }
                 else
                 {
-                    string strTestConn = oDataMgr.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+                    string strTestConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
                         frmMain.g_oTables.m_oFIAPlot.DefaultPopTableDbFile.Trim());
                     using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strTestConn))
                     {
                         con.Open();
-                        if (!oDataMgr.FieldExist(con, "select * from " + frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName, "MODIFIED_DATE"))
+                        if (!SQLite.FieldExist(con, "select * from " + frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName, "MODIFIED_DATE"))
                         {
                             MessageBox.Show("This project has obsolete pop tables. An error will be generated when plots are loaded!", "FIA BioSum");
                         }
@@ -8579,8 +8611,6 @@ namespace FIA_Biosum_Manager
             }
 
             DataMgr oDataMgr = new DataMgr();
-            m_strMasterDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
-                frmMain.g_oTables.m_oFIAPlot.DefaultPopTableDbFile;
             string strConnection = oDataMgr.GetConnectionString(m_strMasterDbFile);
             using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
             {
@@ -8677,6 +8707,66 @@ namespace FIA_Biosum_Manager
                     oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
                 }
             }
+        }
+
+        private IDictionary<string, List<string>> QueryStateEvalids()
+        {
+            m_strMasterDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+                frmMain.g_oTables.m_oFIAPlot.DefaultPopTableDbFile;
+            IDictionary<string, List<String>> dictStateEvalid = new Dictionary<string, List<String>>(); //Creates new dictionary
+            string strConnection = SQLite.GetConnectionString(m_strMasterDbFile);
+            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
+            {
+                con.Open();
+                string strSQL = "select distinct statecd, evalid " +
+                                "from pop_eval " +
+                                "group by evalid, statecd";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
+                        strSQL + "\r\n");
+                SQLite.SqlQueryReader(con, strSQL);
+                if (SQLite.m_DataReader.HasRows)
+                {
+                    while (SQLite.m_DataReader.Read())
+                    {
+                        //make sure the row is not null values
+                        if (SQLite.m_DataReader[0] != DBNull.Value &&
+                            SQLite.m_DataReader[0].ToString().Trim().Length > 0)
+                        {
+                            string strState = SQLite.m_DataReader["statecd"].ToString().Trim();
+                            string strEvalid = SQLite.m_DataReader["evalid"].ToString().Trim();
+                            List<string> lstEval = null;
+                            if (dictStateEvalid.ContainsKey(strState))
+                            {
+                                lstEval = dictStateEvalid[strState];
+                                lstEval.Add(strEvalid);
+                            }
+                            else
+                            {
+                                lstEval = new List<string>();
+                                lstEval.Add(strEvalid);
+                                dictStateEvalid.Add(strState, lstEval);
+                            }
+                        }
+                    }
+                    SQLite.m_DataReader.Close();
+                }
+            }
+            return dictStateEvalid;
+        }
+
+        private List<string> QueryFiadbStates()
+        {
+            List<string> lstStates = new List<string>();
+            for (int x = 0; x <= this.lstFIADBInv.Items.Count - 1; x++)
+            {
+                string strStateCd = this.lstFIADBInv.Items[x].SubItems[2].Text.Trim();
+                if (!lstStates.Contains(strStateCd))
+                {
+                    lstStates.Add(strStateCd);
+                }
+            }
+            return lstStates;
         }
 
         private void cmbCondPropPercent_KeyPress(object sender, KeyPressEventArgs e)
