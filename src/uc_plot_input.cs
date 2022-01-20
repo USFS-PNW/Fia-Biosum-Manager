@@ -85,7 +85,8 @@ namespace FIA_Biosum_Manager
 
 		private string m_strTempMDBFile;
 		private string m_strTempMDBFileConn;
-		private System.Data.OleDb.OleDbConnection m_connTempMDBFile;
+        private string m_strPopMDBFile;
+        private System.Data.OleDb.OleDbConnection m_connTempMDBFile;
 		private FIA_Biosum_Manager.ado_data_access m_ado;
 		private System.Data.DataTable m_dtStateCounty;
 		private System.Data.DataTable m_dtPlot;
@@ -97,10 +98,10 @@ namespace FIA_Biosum_Manager
 		private string m_strTreeTable;
 		private string m_strSiteTreeTable;
 		private string m_strTreeRegionalBiomassTable;
-		private string m_strPopEvalTable;
-		private string m_strPopEstUnitTable;
-		private string m_strPpsaTable;
-		private string m_strPopStratumTable;
+		private string m_strPopEvalTable = frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName;
+		private string m_strPopEstUnitTable = frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableName;
+		private string m_strPpsaTable = frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName;
+		private string m_strPopStratumTable = frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName;
         private string m_strBiosumPopStratumAdjustmentFactorsTable;
         private string m_strTreeMacroPlotBreakPointDiaTable;
         private string m_strDwmCwdTable = frmMain.g_oTables.m_oFIAPlot.DefaultDWMCoarseWoodyDebrisName;
@@ -1625,10 +1626,6 @@ namespace FIA_Biosum_Manager
 			this.m_strTreeTable = m_oDatasource.getValidDataSourceTableName("TREE");
 			this.m_strSiteTreeTable = m_oDatasource.getValidDataSourceTableName("SITE TREE");
 			this.m_strTreeRegionalBiomassTable = m_oDatasource.getValidDataSourceTableName("TREE REGIONAL BIOMASS");
-			this.m_strPpsaTable = m_oDatasource.getValidDataSourceTableName("POPULATION PLOT STRATUM ASSIGNMENT");
-			this.m_strPopEstUnitTable = m_oDatasource.getValidDataSourceTableName("POPULATION ESTIMATION UNIT");
-			this.m_strPopStratumTable = m_oDatasource.getValidDataSourceTableName("POPULATION STRATUM");
-			this.m_strPopEvalTable = m_oDatasource.getValidDataSourceTableName("POPULATION EVALUATION");
             this.m_strBiosumPopStratumAdjustmentFactorsTable = m_oDatasource.getValidDataSourceTableName("BIOSUM POP STRATUM ADJUSTMENT FACTORS");
             this.m_strTreeMacroPlotBreakPointDiaTable = m_oDatasource.getValidDataSourceTableName("FIA TREE MACRO PLOT BREAKPOINT DIAMETER");
 		}
@@ -2438,7 +2435,7 @@ namespace FIA_Biosum_Manager
                 //create a temporary mdb file with links to all the project tables
                 //and return the name of the file that contains the links
                 this.m_strTempMDBFile = m_oDatasource.CreateMDBAndTableDataSourceLinks();
-
+                this.CreatePopTableLinks();
 
                 //instatiate dao for creating links in the temp table
                 //to the fiadb plot, cond, and tree input tables
@@ -5243,9 +5240,11 @@ namespace FIA_Biosum_Manager
                     if (bExists)
                     {
                         StringBuilder sb = new StringBuilder();
-                        sb.Append("This project contains the following state, evalid combinations for states ");
-                        sb.Append("that exist in the input FIADB tables. It is STRONGLY advised to use ");
-                        sb.Append("only one valid per state.\n\r");
+                        sb.Append("The POP_PLT_STRATUM_ASSIGN table in this project contains records with the following ");
+                        sb.Append("combinations of STATE and EVALID for the FIADB tables you are about to load. ");
+                        sb.Append("It is STRONGLY advised to include only one EVALID per STATE in a BioSum project. ");
+                        sb.Append("Departing from this advisory presents risks to integrity and interpretability of project ");
+                        sb.Append("data that have not been fully explored.\n\r");
                         foreach (var strState in lstFiadbStates)
                         {
                             if (dictStateEval.Keys.Contains(strState))
@@ -6305,18 +6304,9 @@ namespace FIA_Biosum_Manager
 
 			FIA_Biosum_Manager.ado_data_access p_ado = new ado_data_access();
 
-			
-			//get all the project datasources
+			string strConn = p_ado.getMDBConnString(m_strPopMDBFile,"","");
 
-
-			string strMDBFile = ((frmDialog)this.ParentForm).m_frmMain.frmProject.uc_project1.txtRootDirectory.Text.ToString().Trim() + "\\db\\master.mdb";
-			string strConn = p_ado.getMDBConnString(strMDBFile,"","");
-
-			p_ado.m_strSQL = "SELECT * FROM " + this.m_strPopEvalTable + " where biosum_status_cd=9 order by statecd,evalid";
-
-	
-
-           
+			p_ado.m_strSQL = "SELECT * FROM " + this.m_strPopEvalTable + " where biosum_status_cd=9 order by statecd,evalid";           
 			p_ado.SqlQueryReader(strConn,p_ado.m_strSQL);
 			if (p_ado.m_intError==0)
 			{
@@ -7953,12 +7943,16 @@ namespace FIA_Biosum_Manager
 
                     //create a temporary mdb file with links to all the project tables
                     this.m_strTempMDBFile = m_oDatasource.CreateMDBAndTableDataSourceLinks();
-
-                    //get a connection string for the temp mdb file
+                    this.m_strPopMDBFile = this.m_strTempMDBFile;
                     if (this.m_ado == null)
                     {
                         this.m_ado = new ado_data_access();
                     }
+
+                    //create pop tables in temporary mdb file
+                    CreatePopTables();
+
+                    //get a connection string for the temp mdb file
                     this.m_strTempMDBFileConn = this.m_ado.getMDBConnString(this.m_strTempMDBFile, "", "");
                     this.m_ado.OpenConnection(m_strTempMDBFileConn);
                     if (m_ado.m_intError == 0)
@@ -8271,6 +8265,8 @@ namespace FIA_Biosum_Manager
             //create a temporary mdb file with links to all the project tables
             //and return the name of the file that contains the links
             this.m_strTempMDBFile = m_oDatasource.CreateMDBAndTableDataSourceLinks();
+            // Add links to the POP tables
+            CreatePopTableLinks();
 
 				this.m_bLoadStateCountyList=true;
 				this.m_bLoadStateCountyPlotList=true;
@@ -8753,6 +8749,47 @@ namespace FIA_Biosum_Manager
                 }
             }
             return dictStateEvalid;
+        }
+
+        private void CreatePopTables()
+        {
+            string strConn = m_ado.getMDBConnString(m_strPopMDBFile, "", "");
+            using (OleDbConnection conn = new OleDbConnection(strConn))
+            {
+                conn.Open();
+                //pop estimation unit table
+                frmMain.g_oTables.m_oFIAPlot.CreatePopEstnUnitTable(m_ado, conn, this.m_strPopEstUnitTable);
+                //pop eval table
+                frmMain.g_oTables.m_oFIAPlot.CreatePopEvalTable(m_ado, conn, this.m_strPopEvalTable);
+                //pop plot stratum assignment table
+                frmMain.g_oTables.m_oFIAPlot.CreatePopPlotStratumAssgnTable(m_ado, conn, this.m_strPpsaTable);
+                //pop stratum table
+                frmMain.g_oTables.m_oFIAPlot.CreatePopStratumTable(m_ado, conn, this.m_strPopStratumTable);
+            }
+
+            //instatiate dao for creating links in the temp table
+            //dao_data_access oDao = new dao_data_access();
+
+            ////destroy the object and release it from memory
+            //oDao.m_DaoWorkspace.Close();
+            //oDao.m_DaoWorkspace = null;
+            //oDao = null;
+        }
+
+        private void CreatePopTableLinks()
+        {
+            //instatiate dao for creating links in the temp table
+            dao_data_access oDao = new dao_data_access();
+
+            oDao.CreateTableLink(this.m_strTempMDBFile, this.m_strPopEvalTable, this.m_strPopMDBFile, this.m_strPopEvalTable);
+            oDao.CreateTableLink(this.m_strTempMDBFile, this.m_strPopEstUnitTable, this.m_strPopMDBFile, this.m_strPopEstUnitTable);
+            oDao.CreateTableLink(this.m_strTempMDBFile, this.m_strPopStratumTable, this.m_strPopMDBFile, this.m_strPopStratumTable);
+            oDao.CreateTableLink(this.m_strTempMDBFile, this.m_strPpsaTable, this.m_strPopMDBFile, this.m_strPpsaTable);
+
+            //destroy the object and release it from memory
+            oDao.m_DaoWorkspace.Close();
+            oDao.m_DaoWorkspace = null;
+            oDao = null;
         }
 
         private List<string> QueryFiadbStates()

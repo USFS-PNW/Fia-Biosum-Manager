@@ -3301,9 +3301,6 @@ namespace FIA_Biosum_Manager
 								int intCond = p_datasource.getValidTableNameRow("CONDITION");
 								int intPpsa = p_datasource.getValidTableNameRow("POPULATION PLOT STRATUM ASSIGNMENT");
 								int intTreeRegionalBiomass = p_datasource.getValidTableNameRow("TREE REGIONAL BIOMASS");
-								int intPopEval = p_datasource.getValidTableNameRow("POPULATION EVALUATION");
-								int intPopStratum = p_datasource.getValidTableNameRow("POPULATION STRATUM");
-								int intPopEstUnit = p_datasource.getValidTableNameRow("POPULATION ESTIMATION UNIT");
 								int intSiteTree = p_datasource.getValidTableNameRow("SITE TREE");
 
 								//check to see if we found all the table information

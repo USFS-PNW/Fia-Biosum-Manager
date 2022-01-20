@@ -402,11 +402,7 @@ namespace FIA_Biosum_Manager
 			int intTree = p_datasource.getValidTableNameRow("TREE");
 			int intPlot = p_datasource.getValidTableNameRow("PLOT");
 			int intCond = p_datasource.getValidTableNameRow("CONDITION");
-			int intPpsa = p_datasource.getValidTableNameRow("POPULATION PLOT STRATUM ASSIGNMENT");
 			int intTreeRegionalBiomass = p_datasource.getValidTableNameRow("TREE REGIONAL BIOMASS");
-			int intPopEval = p_datasource.getValidTableNameRow("POPULATION EVALUATION");
-			int intPopStratum = p_datasource.getValidTableNameRow("POPULATION STRATUM");
-			int intPopEstUnit = p_datasource.getValidTableNameRow("POPULATION ESTIMATION UNIT");
 			int intSiteTree = p_datasource.getValidTableNameRow("SITE TREE");
 
 			//check to see if we found all the table information
@@ -450,16 +446,6 @@ namespace FIA_Biosum_Manager
 					
 					p_ado.SqlNonQuery(strConn,strSQL);
 				}
-				//check if we have ppsa records
-				if (p_ado.m_intError == 0 && p_datasource.m_strDataSource[intPpsa,RECORDCOUNT].Trim() != "0")
-				{
-					
-					//delete the ppsa records
-					strSQL =  "DELETE FROM " + 
-						p_datasource.m_strDataSource[intPpsa,TABLE];
-
-					p_ado.SqlNonQuery(strConn,strSQL);
-				}
 				//check if we have cond records
 				if (p_ado.m_intError == 0 && p_datasource.m_strDataSource[intCond,RECORDCOUNT].Trim() != "0")
 				{
@@ -471,35 +457,6 @@ namespace FIA_Biosum_Manager
 //						" WHERE c.biosum_plot_id = p.biosum_plot_id);";
 
 					
-					p_ado.SqlNonQuery(strConn,strSQL);
-				}
-
-				//check if we have ploteval records
-				if (p_ado.m_intError == 0 && p_datasource.m_strDataSource[intPopEval,RECORDCOUNT].Trim() != "0")
-				{
-					
-					//delete all the ploteval records                   
-					strSQL =  "DELETE FROM " + 
-						p_datasource.m_strDataSource[intPopEval,TABLE]; 
-					p_ado.SqlNonQuery(strConn,strSQL);
-				}
-				//check if we have pop est unit records
-				if (p_ado.m_intError == 0 && p_datasource.m_strDataSource[intPopEstUnit,RECORDCOUNT].Trim() != "0")
-				{
-					
-					//delete all the ploteval records                   
-					strSQL =  "DELETE FROM " + 
-						p_datasource.m_strDataSource[intPopEstUnit,TABLE]; 
-					p_ado.SqlNonQuery(strConn,strSQL);
-				}
-
-				//check if we have pop est unit records
-				if (p_ado.m_intError == 0 && p_datasource.m_strDataSource[intPopStratum,RECORDCOUNT].Trim() != "0")
-				{
-					
-					//delete all the ploteval records                   
-					strSQL =  "DELETE FROM " + 
-						p_datasource.m_strDataSource[intPopStratum,TABLE]; 
 					p_ado.SqlNonQuery(strConn,strSQL);
 				}
 

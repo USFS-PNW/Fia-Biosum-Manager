@@ -1377,34 +1377,6 @@ namespace FIA_Biosum_Manager
 						"'tree_regional_biomass');";
 					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
 
-					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-						"('Population Evaluation'," + 
-						"'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," + 
-						"'master.mdb'," + 
-						"'pop_eval');";
-					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
-
-					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-						"('Population Estimation Unit'," + 
-						"'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," + 
-						"'master.mdb'," + 
-						"'pop_estn_unit');";
-					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
-
-					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-						"('Population Stratum'," + 
-						"'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," + 
-						"'master.mdb'," + 
-						"'pop_stratum');";
-					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
-
-					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-						"('Population Plot Stratum Assignment'," + 
-						"'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," + 
-						"'master.mdb'," + 
-						"'pop_plot_stratum_assgn');";
-					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
-
                     strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
                         "('BIOSUM Pop Stratum Adjustment Factors'," +
                         "'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," +

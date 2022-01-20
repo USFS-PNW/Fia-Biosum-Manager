@@ -73,10 +73,6 @@ namespace FIA_Biosum_Manager
 			"FIA Tree Macro Plot Breakpoint Diameter",
 			Datasource.TableTypes.HarvestMethods,
 			"Tree Regional Biomass",
-			"Population Evaluation",
-			"Population Estimation Unit",
-			"Population Stratum",
-			"Population Plot Stratum Assignment",
 			"BIOSUM Pop Stratum Adjustment Factors",
 			"Site Tree",
 			Datasource.TableTypes.FiaTreeSpeciesReference,
@@ -107,10 +103,6 @@ namespace FIA_Biosum_Manager
 	        "FIA Tree Macro Plot Breakpoint Diameter",
 	        Datasource.TableTypes.HarvestMethods,
 	        "Tree Regional Biomass",
-	        "Population Evaluation",
-	        "Population Estimation Unit",
-	        "Population Stratum",
-	        "Population Plot Stratum Assignment",
 	        "BIOSUM Pop Stratum Adjustment Factors",
 	        "Site Tree"
 	    };
@@ -140,10 +132,6 @@ namespace FIA_Biosum_Manager
 	        "FIA Tree Macro Plot Breakpoint Diameter",
 	        Datasource.TableTypes.HarvestMethods,
 	        "Tree Regional Biomass",
-	        "Population Evaluation",
-	        "Population Estimation Unit",
-	        "Population Stratum",
-	        "Population Plot Stratum Assignment",
 	        "BIOSUM Pop Stratum Adjustment Factors",
 	        "Site Tree"
 	    };
@@ -1040,21 +1028,6 @@ namespace FIA_Biosum_Manager
 				case "TREE REGIONAL BIOMASS":
 					p_dao.CreatePrimaryKeyIndex(p_strMDBPathAndFile, p_strTable,"tre_cn");
 					break;
-				case "POPULATION PLOT STRATUM ASSIGNMENT":
-					p_dao.CreatePrimaryKeyIndex(p_strMDBPathAndFile, p_strTable,"CN");
-					break;
-				case "POPULATION STRATUM":
-					p_dao.CreatePrimaryKeyIndex(p_strMDBPathAndFile, p_strTable,"CN");
-					break;
-				case "POPULATION EVALUATION":
-					p_dao.CreatePrimaryKeyIndex(p_strMDBPathAndFile, p_strTable,"CN");
-					break;
-				case "POPULATION ESTIMATION UNIT":
-					p_dao.CreatePrimaryKeyIndex(p_strMDBPathAndFile, p_strTable,"CN");
-					break;
-
-
-
 			}
 
 		}
@@ -1104,17 +1077,6 @@ namespace FIA_Biosum_Manager
 				case "TREE REGIONAL BIOMASS":
 					p_dao.CreatePrimaryKeyIndex(p_dao.m_DaoDatabase,p_strTable,"tre_cn");
 					break;
-				case "POPULATION PLOT STRATUM ASSIGNMENT":
-					p_dao.CreatePrimaryKeyIndex(p_dao.m_DaoDatabase, p_strTable,"CN");
-					break;
-				case "POPULATION EVALUATION":
-					p_dao.CreatePrimaryKeyIndex(p_dao.m_DaoDatabase, p_strTable,"CN");
-					break;
-				case "POPULATION ESTIMATION UNIT":
-					p_dao.CreatePrimaryKeyIndex(p_dao.m_DaoDatabase, p_strTable,"CN");
-					break;
-
-
 			}
 
 		}
@@ -1154,15 +1116,6 @@ namespace FIA_Biosum_Manager
 					break;
 				case "TREE REGIONAL BIOMASS":
 					frmMain.g_oTables.m_oFIAPlot.CreateTreeRegionalBiomassTableIndexes(p_oAdo,p_oConn,p_strTableName);
-					break;
-				case "POPULATION PLOT STRATUM ASSIGNMENT":
-					frmMain.g_oTables.m_oFIAPlot.CreatePopPlotStratumAssgnTableIndexes(p_oAdo,p_oConn,p_strTableName);
-					break;
-				case "POPULATION EVALUATION":
-					frmMain.g_oTables.m_oFIAPlot.CreatePopEvalTableIndexes(p_oAdo,p_oConn,p_strTableName);
-					break;
-				case "POPULATION ESTIMATION UNIT":
-                    frmMain.g_oTables.m_oFIAPlot.CreatePopEstnUnitTableIndexes(p_oAdo,p_oConn,p_strTableName);
 					break;
                 case "FVS COMMANDS":
                     frmMain.g_oTables.m_oReference.CreateFVSCommandsTableIndexes(p_oAdo, p_oConn, p_strTableName);
@@ -1274,22 +1227,6 @@ namespace FIA_Biosum_Manager
                 case "FIA TREE MACRO PLOT BREAKPOINT DIAMETER":
                     oItem.VariableName = "TreeMacroPlotBreakPointDiameterTable";
                     if (p_strTableName.Trim().Length == 0) p_strTableName=Tables.Reference.DefaultTreeMacroPlotBreakPointDiaTableName;
-					break;
-				case "POPULATION PLOT STRATUM ASSIGNMENT":
-					oItem.VariableName="PpsaTable";
-					if (p_strTableName.Trim().Length == 0) p_strTableName=frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName;
-					break;
-				case "POPULATION EVALUATION":
-					oItem.VariableName="PopEvalTable";
-					if (p_strTableName.Trim().Length == 0) p_strTableName=frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName;
-					break;
-				case "POPULATION ESTIMATION UNIT":
-					oItem.VariableName="PopEstnUnitTable";
-					if (p_strTableName.Trim().Length == 0) p_strTableName=frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableName;
-					break;
-				case "POPULATION STRATUM":
-					oItem.VariableName="PopStratumTable";
-					if (p_strTableName.Trim().Length == 0) p_strTableName=frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName;
 					break;
 				case "SITE TREE":
 					oItem.VariableName="SiteTreeTable";

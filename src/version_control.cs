@@ -6329,6 +6329,26 @@ namespace FIA_Biosum_Manager
 
         }
 
+        public void UpdateDatasources_5_8_11()
+        {
+            ado_data_access oAdo = new ado_data_access();
+            string projectDbPath = ReferenceProjectDirectory.Trim() + "\\db\\project.mdb";
+            string strConn = oAdo.getMDBConnString(projectDbPath, "", "");
+            using (var conn = new OleDbConnection(strConn))
+            {
+                conn.Open();
+                // Remove POP tables from datasource infrastructure
+                oAdo.m_strSQL = "DELETE FROM datasource WHERE TRIM(UCASE(table_type)) IN " +
+                    "('POPULATION EVALUATION','POPULATION ESTIMATION UNIT','POPULATION STRATUM','POPULATION PLOT STRATUM ASSIGNMENT')";
+                oAdo.SqlNonQuery(conn, oAdo.m_strSQL);
+
+                // Delete POP tables from master.mdb
+            }
+
+            // Check to see if POP tables exist in master.db; If so make sure they have modified_date column
+            // If not, create backup copy of master.db and recreate master.db with current pop table schema
+        }
+
 
         public string ReferenceProjectDirectory
 		{

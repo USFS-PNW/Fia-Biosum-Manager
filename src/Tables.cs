@@ -4383,7 +4383,7 @@ namespace FIA_Biosum_Manager
             }
             public void CreatePopPlotStratumAssgnTableIndexes(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "evalid");
+                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "PLT_CN, STRATUM_CN, RSCD");
             }
             public string CreatePopPlotStratumAssgnTableSQL(string p_strTableName)
             {
