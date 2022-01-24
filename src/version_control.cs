@@ -6294,9 +6294,7 @@ namespace FIA_Biosum_Manager
 
             //new master.db file: Migrating POP tables to SQLite
             DataMgr p_dataMgr = new DataMgr();
-            //@ToDo: Fix this after merging in Tyler's code
-            //string strDestFile = ReferenceProjectDirectory.Trim() + "\\" + frmMain.g_oTables.m_oFIAPlot.DefaultPopTableDbFile;
-            string strDestFile = ReferenceProjectDirectory.Trim() + @"\db\master.db";
+            string strDestFile = ReferenceProjectDirectory.Trim() + "\\" + frmMain.g_oTables.m_oFIAPlot.DefaultPopTableDbFile;
             if (!System.IO.File.Exists(strDestFile))
             {
                 p_dataMgr.CreateDbFile(strDestFile);
@@ -6332,6 +6330,8 @@ namespace FIA_Biosum_Manager
         public void UpdateDatasources_5_8_11()
         {
             ado_data_access oAdo = new ado_data_access();
+            string[] arrPopTables = { frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName, frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableName,
+                                      frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName, frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName};
             string projectDbPath = ReferenceProjectDirectory.Trim() + "\\db\\project.mdb";
             string strConn = oAdo.getMDBConnString(projectDbPath, "", "");
             using (var conn = new OleDbConnection(strConn))
@@ -6343,10 +6343,76 @@ namespace FIA_Biosum_Manager
                 oAdo.SqlNonQuery(conn, oAdo.m_strSQL);
 
                 // Delete POP tables from master.mdb
+                foreach (var pTable in arrPopTables)
+                {
+                    bool bExists = oAdo.TableExist(conn, pTable);
+                    if (bExists)
+                    {
+                        oAdo.m_strSQL = "DROP TABLE " + pTable;
+                        oAdo.SqlNonQuery(conn, oAdo.m_strSQL);
+                    }
+                }                
             }
 
             // Check to see if POP tables exist in master.db; If so make sure they have modified_date column
-            // If not, create backup copy of master.db and recreate master.db with current pop table schema
+            string strDestFile = ReferenceProjectDirectory.Trim() + "\\" + frmMain.g_oTables.m_oFIAPlot.DefaultPopTableDbFile;
+            bool bMissingColumn = false;
+            if (System.IO.File.Exists(strDestFile))
+            {
+                DataMgr p_dataMgr = new DataMgr();
+                string strDestConn = p_dataMgr.GetConnectionString(strDestFile);
+                using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strDestConn))
+                {
+                    con.Open();
+                    foreach (var pTable in arrPopTables)
+                    {
+                        if (p_dataMgr.TableExist(con, pTable))
+                        {
+                            if (!p_dataMgr.FieldExist(con, "select * from " + pTable, "MODIFIED_DATE"))
+                            {
+                                bMissingColumn = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                // If not, create backup copy of master.db and recreate master.db with current pop table schema
+                if (bMissingColumn)
+                {
+                    string strCopySuffix = "_ver_control_" + DateTime.Now.ToString("MMddyyyy");
+                    string strBackupFileName = System.IO.Path.GetFileNameWithoutExtension(strDestFile) + strCopySuffix + ".db";
+                    string strDestFolder = System.IO.Path.GetDirectoryName(strDestFile);
+                    if (!System.IO.File.Exists(strDestFolder + "\\" + strBackupFileName))
+                    {
+                        System.IO.File.Move(strDestFile, strDestFolder + "\\" + strBackupFileName);
+                    }
+                    p_dataMgr.CreateDbFile(strDestFile);
+                    using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strDestConn))
+                    {
+                        con.Open();
+                        //pop estimation unit table
+                        if (!p_dataMgr.TableExist(con, frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableName))
+                        {
+                            frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopEstnUnitTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableName);
+                        }
+                        //pop eval table
+                        if (!p_dataMgr.TableExist(con, frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName))
+                        {
+                            frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopEvalTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName);
+                        }
+                        //pop plot stratum assignment table
+                        if (!p_dataMgr.TableExist(con, frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName))
+                        {
+                            frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopPlotStratumAssgnTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName);
+                        }
+                        //pop stratum table
+                        if (!p_dataMgr.TableExist(con, frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName))
+                        {
+                            frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopStratumTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName);
+                        }
+                    }
+                }
+            }
         }
 
 
