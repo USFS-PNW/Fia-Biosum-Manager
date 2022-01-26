@@ -6330,37 +6330,16 @@ namespace FIA_Biosum_Manager
         public void UpdateDatasources_5_8_11()
         {
             ado_data_access oAdo = new ado_data_access();
+            DataMgr p_dataMgr = new DataMgr();
             string[] arrPopTables = { frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName, frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableName,
                                       frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName, frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName};
-            string projectDbPath = ReferenceProjectDirectory.Trim() + "\\db\\project.mdb";
-            string strConn = oAdo.getMDBConnString(projectDbPath, "", "");
-            using (var conn = new OleDbConnection(strConn))
-            {
-                conn.Open();
-                // Remove POP tables from datasource infrastructure
-                oAdo.m_strSQL = "DELETE FROM datasource WHERE TRIM(UCASE(table_type)) IN " +
-                    "('POPULATION EVALUATION','POPULATION ESTIMATION UNIT','POPULATION STRATUM','POPULATION PLOT STRATUM ASSIGNMENT')";
-                oAdo.SqlNonQuery(conn, oAdo.m_strSQL);
-
-                // Delete POP tables from master.mdb
-                foreach (var pTable in arrPopTables)
-                {
-                    bool bExists = oAdo.TableExist(conn, pTable);
-                    if (bExists)
-                    {
-                        oAdo.m_strSQL = "DROP TABLE " + pTable;
-                        oAdo.SqlNonQuery(conn, oAdo.m_strSQL);
-                    }
-                }                
-            }
 
             // Check to see if POP tables exist in master.db; If so make sure they have modified_date column
             string strDestFile = ReferenceProjectDirectory.Trim() + "\\" + frmMain.g_oTables.m_oFIAPlot.DefaultPopTableDbFile;
-            bool bMissingColumn = false;
+            string strDestConn = p_dataMgr.GetConnectionString(strDestFile);
+            bool bMissingColumn = true;
             if (System.IO.File.Exists(strDestFile))
             {
-                DataMgr p_dataMgr = new DataMgr();
-                string strDestConn = p_dataMgr.GetConnectionString(strDestFile);
                 using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strDestConn))
                 {
                     con.Open();
@@ -6376,40 +6355,66 @@ namespace FIA_Biosum_Manager
                         }
                     }
                 }
-                // If not, create backup copy of master.db and recreate master.db with current pop table schema
-                if (bMissingColumn)
+                System.Threading.Thread.Sleep(4000);    //Needed to avoid IO error further down when renaming the file
+            }
+
+            string projectDbPath = ReferenceProjectDirectory.Trim() + "\\db\\project.mdb";
+            string strConn = oAdo.getMDBConnString(projectDbPath, "", "");
+            using (var conn = new OleDbConnection(strConn))
+            {
+                conn.Open();
+                // Remove POP tables from datasource infrastructure
+                oAdo.m_strSQL = "DELETE FROM datasource WHERE TRIM(UCASE(table_type)) IN " +
+                    "('POPULATION EVALUATION','POPULATION ESTIMATION UNIT','POPULATION STRATUM','POPULATION PLOT STRATUM ASSIGNMENT')";
+                oAdo.SqlNonQuery(conn, oAdo.m_strSQL);
+
+                // Delete POP tables from master.mdb
+                conn.Close();
+                conn.ConnectionString = oAdo.getMDBConnString(ReferenceProjectDirectory.Trim() + "\\db\\master.mdb", "", "");
+                conn.Open();
+                foreach (var pTable in arrPopTables)
                 {
-                    string strCopySuffix = "_ver_control_" + DateTime.Now.ToString("MMddyyyy");
-                    string strBackupFileName = System.IO.Path.GetFileNameWithoutExtension(strDestFile) + strCopySuffix + ".db";
-                    string strDestFolder = System.IO.Path.GetDirectoryName(strDestFile);
-                    if (!System.IO.File.Exists(strDestFolder + "\\" + strBackupFileName))
+                    bool bExists = oAdo.TableExist(conn, pTable);
+                    if (bExists)
                     {
-                        System.IO.File.Move(strDestFile, strDestFolder + "\\" + strBackupFileName);
+                        oAdo.m_strSQL = "DROP TABLE " + pTable;
+                        oAdo.SqlNonQuery(conn, oAdo.m_strSQL);
                     }
-                    p_dataMgr.CreateDbFile(strDestFile);
-                    using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strDestConn))
+                }                
+            }
+            // If older version of .db POP tables, create backup copy of master.db and recreate master.db with current pop table schema
+            if (bMissingColumn)
+            {
+                string strCopySuffix = "_ver_control_" + DateTime.Now.ToString("MMddyyyy");
+                string strBackupFileName = System.IO.Path.GetFileNameWithoutExtension(strDestFile) + strCopySuffix + ".db";
+                string strDestFolder = System.IO.Path.GetDirectoryName(strDestFile);
+                if (!System.IO.File.Exists(strDestFolder + "\\" + strBackupFileName))
+                {
+                    System.IO.File.Move(strDestFile, strDestFolder + "\\" + strBackupFileName);
+                }
+                p_dataMgr.CreateDbFile(strDestFile);
+                using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strDestConn))
+                {
+                    con.Open();
+                    //pop estimation unit table
+                    if (!p_dataMgr.TableExist(con, frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableName))
                     {
-                        con.Open();
-                        //pop estimation unit table
-                        if (!p_dataMgr.TableExist(con, frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableName))
-                        {
-                            frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopEstnUnitTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableName);
-                        }
-                        //pop eval table
-                        if (!p_dataMgr.TableExist(con, frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName))
-                        {
-                            frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopEvalTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName);
-                        }
-                        //pop plot stratum assignment table
-                        if (!p_dataMgr.TableExist(con, frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName))
-                        {
-                            frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopPlotStratumAssgnTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName);
-                        }
-                        //pop stratum table
-                        if (!p_dataMgr.TableExist(con, frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName))
-                        {
-                            frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopStratumTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName);
-                        }
+                        frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopEstnUnitTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableName);
+                    }
+                    //pop eval table
+                    if (!p_dataMgr.TableExist(con, frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName))
+                    {
+                        frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopEvalTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName);
+                    }
+                    //pop plot stratum assignment table
+                    if (!p_dataMgr.TableExist(con, frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName))
+                    {
+                        frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopPlotStratumAssgnTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName);
+                    }
+                    //pop stratum table
+                    if (!p_dataMgr.TableExist(con, frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName))
+                    {
+                        frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopStratumTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName);
                     }
                 }
             }
