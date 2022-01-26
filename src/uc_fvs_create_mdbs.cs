@@ -47,6 +47,7 @@ namespace FIA_Biosum_Manager
 
         // Only 2 tables we want to create for POTFIRE
         public static List<string> lstPotfireTables = new List<string> { "FVS_Cases", "FVS_PotFire" };
+        public static string runTitle = "RUNTITLE";
         private Button btnCancel;
         private Button btnExportLog;
         private ToolTip createMdbsTooltip;
@@ -296,6 +297,9 @@ namespace FIA_Biosum_Manager
                                                 recordCount++;
                                             }
                                         }
+                                        // Update runtitle as needed
+                                        command.CommandText = $"UPDATE {tblName} SET {runTitle} = IIF(IsNull({runTitle}),'{file[2]}',{runTitle})";
+                                        command.ExecuteNonQuery();
                                         transaction.Commit();
                                         appendStringToDebugTextbox($@"Inserted {recordCount} records into {tblName}");
                                     }
@@ -463,12 +467,16 @@ namespace FIA_Biosum_Manager
                         var strFields = "";
                         var listColDataTypes = new List<Tuple<string, utils.DataType>>();
                         // Iterate over table schema defined in Data Table format. Check debugger to see columns.
+                        var hasRunTitleField = false;   // only add runtitle field if table doesn't have it
                         for (int y = 0; y <= dtSourceSchema.Rows.Count - 1; y++)
                         {
                             var colName = dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper();
                             // This maps SPECIESFIA to SPECIES currently (and in the future should map any other column name differences between SQLite and target access DB
                             var convertedColName = translateColumn(dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper());
-
+                            if (convertedColName.ToUpper() == runTitle)
+                            {
+                                hasRunTitleField = true;
+                            }
                             var dataType = dtSourceSchema.Rows[y]["datatype"].ToString().ToUpper();
 
                             listColDataTypes.Add(Tuple.Create(colName, getDataTypeEnumValueFromString(dataType)));
@@ -484,6 +492,13 @@ namespace FIA_Biosum_Manager
                                 strFields += "," + strCol;
                             }
                         }
+                        if (!hasRunTitleField)
+                        {
+                            // Add runTitle field to tables without it
+                            strCol = wrapInBackTick(runTitle) + " " + dataTypeConvert("SYSTEM.STRING");
+                            strFields += "," + strCol;
+                        }
+
                         sb.Append(strFields + ") ");
                         // Populate the table create queries dict and the dictionary of output table columns and their access datatype.
                         m_dictCreateTableQueries[convertSqliteTblNameToBiosumTblName(tblName)] = sb.ToString();
