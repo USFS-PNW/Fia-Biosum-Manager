@@ -227,7 +227,11 @@ namespace FIA_Biosum_Manager
 
                 //ProjectRoot\gis Section
                 UpdateProgressBar2(20);
-                ConnectToDatabasesInPathAndExecuteDeletes(Directory.GetFiles(m_strProjDir + "\\gis\\db\\", "*.mdb"));
+                // Travel times is now in gis_travel_times.accdb
+                ConnectToDatabasesInPathAndExecuteDeletes(Directory
+                    .GetFiles(m_strProjDir + "\\gis\\db\\", "*.*", SearchOption.AllDirectories)
+                    .Where(s => s.ToLower().EndsWith(".mdb") || s.ToLower().EndsWith(".accdb")).ToArray());
+
 
                 //ProjectRoot\processor Section
                 UpdateProgressBar2(30);
