@@ -43,11 +43,10 @@ namespace FIA_Biosum_Manager
         private string m_strTreeTable = "";
         private string m_strTreeSpcTable = "";
         private string m_strOutPotFireBaseYearMDBFile = "";
-        private Datasource m_DataSource;
         private ado_data_access m_ado;
         private dao_data_access m_dao;
         private string m_strConn = "";
-        private string m_strTempMDBFile = "";
+        private bool m_bOverwrite = true;
         private System.Windows.Forms.Button btnHelp;
         private int m_intError = 0;
         private System.Threading.Thread m_thread;
@@ -1704,8 +1703,46 @@ namespace FIA_Biosum_Manager
                 return;
             }
 
+            // Check for existing files
+            List<string> lstVariants = new List<string>();
+            for (int x = 0; x <= this.lstFvsInput.Items.Count - 1; x++)
+            {
+                if (this.lstFvsInput.Items[x].Checked)
+                {
+                    var item = this.lstFvsInput.Items[x];
+                    string strVariant = item.SubItems[1].Text.Trim();
+                    string strInDirAndFile = this.txtDataDir.Text + "\\" + strVariant + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
+                    if (!lstVariants.Contains(strInDirAndFile))
+                    {
+                        lstVariants.Add(strInDirAndFile);
+                    }
+                }
+            }
+
+            if (lstVariants.Count > 0)
+            {
+                System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                sb.Append("The FVS input databases listed below exist for the selected variants. ");
+                sb.Append("Click 'Yes' to append data to the existing databases or 'No' to overwrite them with new data. \r\n\r\n");
+                foreach (var item in lstVariants)
+                {
+                    sb.Append(item + "\r");
+                }
+                DialogResult res = MessageBox.Show(sb.ToString(), "FIA BioSum", MessageBoxButtons.YesNoCancel);
+                switch (res)
+                {
+                    case DialogResult.Cancel:
+                        return;
+                    case DialogResult.Yes:
+                        m_bOverwrite = false;
+                        break;
+                    case DialogResult.No:
+                        break;
+                }
+            }
+
             this.m_frmTherm = new frmTherm(((frmDialog)ParentForm), "EXTRACT FIA2FVS FVS INPUT FILE",
-                                 "FIA2FVS FVS Input", "2");
+                             "FIA2FVS FVS Input", "2");
 
             this.m_frmTherm.Visible = false;
             this.m_frmTherm.lblMsg.Text = "";
@@ -1723,7 +1760,7 @@ namespace FIA_Biosum_Manager
             this.m_frmTherm.progressBar2.Maximum = 100;
             this.m_frmTherm.progressBar2.Value = 0;
             this.m_frmTherm.lblMsg2.Text = "Overall Progress";
-            this.m_thread = new Thread(new ThreadStart(this.ExtractFIA2FVSRecords));
+            this.m_thread = new Thread(new ThreadStart(ExtractFIA2FVSRecords));
             this.m_thread.IsBackground = true;
             this.m_thread.Start();
 
@@ -1999,7 +2036,7 @@ namespace FIA_Biosum_Manager
                                 "Value", 20);
                             strCurVariant = strVariant;
                             p_fvsinput.StartFIA2FVS(odbcmgr, oDao, oAdo, strTempMDB, 
-                                strSourceDbDir, strDataDir, m_strDebugFile, strCurVariant, strSourceStandTableAlias, strSourceTreeTableAlias,
+                                strSourceDbDir, strDataDir, m_bOverwrite, m_strDebugFile, strCurVariant, strSourceStandTableAlias, strSourceTreeTableAlias,
                                 strGroups);
                         }
                         frmMain.g_oDelegate.SetControlPropertyValue(

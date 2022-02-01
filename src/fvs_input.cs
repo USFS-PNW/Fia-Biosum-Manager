@@ -3837,11 +3837,12 @@ namespace FIA_Biosum_Manager
         }
 
         public void StartFIA2FVS(ODBCMgr odbcmgr, dao_data_access oDao, 
-            ado_data_access oAdo, string strTempMDB, string strSourceDbDir, string strDataDir, 
+            ado_data_access oAdo, string strTempMDB, string strSourceDbDir, string strDataDir, bool bOverwrite, 
             string strDebugFile, string strVariant, string strSourceStandTableAlias, string strSourceTreeTableAlias,
             string strGroup)
         {
             // Copy the target database from BioSum application directory
+            // @ToDo: Here is where we need to start deciding overwrite/append (bOverwrite)
             string applicationDb = frmMain.g_oEnv.strAppDir + "\\db\\" + Tables.FIA2FVS.DefaultFvsInputFile;
             string strInDirAndFile = strDataDir + "\\" + strVariant + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
             File.Copy(applicationDb, strInDirAndFile, true);
