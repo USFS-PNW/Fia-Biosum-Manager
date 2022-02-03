@@ -3842,55 +3842,60 @@ namespace FIA_Biosum_Manager
             string strGroup)
         {
             // Copy the target database from BioSum application directory
-            // @ToDo: Here is where we need to start deciding overwrite/append (bOverwrite)
             string applicationDb = frmMain.g_oEnv.strAppDir + "\\db\\" + Tables.FIA2FVS.DefaultFvsInputFile;
             string strInDirAndFile = strDataDir + "\\" + strVariant + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
-            File.Copy(applicationDb, strInDirAndFile, true);
-
-            // Connect to target database (FVS_In.db)
-            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
-            string connTargetDb = oDataMgr.GetConnectionString(strInDirAndFile);
-            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(connTargetDb))
+            if (bOverwrite)
             {
-                con.Open();
-                string strSql = "ATTACH DATABASE '" + strSourceDbDir + "' AS source";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
-                oDataMgr.SqlNonQuery(con, strSql);
-
-                // Query schema from original stand table
-                strSql = "SELECT sql FROM source.sqlite_master WHERE type = 'table' " +
-                    "AND name = '" + Tables.FIA2FVS.DefaultFvsInputStandTableName + "'";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
-                strSql = oDataMgr.getSingleStringValueFromSQLQuery(con, strSql, "sqlite_master");
-                if (!String.IsNullOrEmpty(strSql))
-                {
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
-                    oDataMgr.SqlNonQuery(con, strSql);
-                }
-
-                // Create empty tree table
-                strSql = "SELECT sql FROM source.sqlite_master WHERE type = 'table' " +
-                    "AND name = '" + Tables.FIA2FVS.DefaultFvsInputTreeTableName + "'";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
-                strSql = oDataMgr.getSingleStringValueFromSQLQuery(con, strSql, "sqlite_master");
-                if (!String.IsNullOrEmpty(strSql))
-                {
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
-                    oDataMgr.SqlNonQuery(con, strSql);
-                }
-
-                // Disconnect from source database
-                strSql = "DETACH DATABASE 'source'";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
-                oDataMgr.SqlNonQuery(con, strSql);
+                // overwrite the existing FVSIn.db with an empty database
+                File.Copy(applicationDb, strInDirAndFile, true);
             }
 
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+            string connTargetDb = oDataMgr.GetConnectionString(strInDirAndFile);
+            if (bOverwrite)
+            {
+                // Connect to target database (FVS_In.db)
+                using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(connTargetDb))
+                {
+                    con.Open();
+                    string strSql = "ATTACH DATABASE '" + strSourceDbDir + "' AS source";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
+                    oDataMgr.SqlNonQuery(con, strSql);
+
+                    // Query schema and create empty stand table
+                    strSql = "SELECT sql FROM source.sqlite_master WHERE type = 'table' " +
+                        "AND name = '" + Tables.FIA2FVS.DefaultFvsInputStandTableName + "'";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
+                    strSql = oDataMgr.getSingleStringValueFromSQLQuery(con, strSql, "sqlite_master");
+                    if (!String.IsNullOrEmpty(strSql))
+                    {
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
+                        oDataMgr.SqlNonQuery(con, strSql);
+                    }
+
+                    // Create empty tree table
+                    strSql = "SELECT sql FROM source.sqlite_master WHERE type = 'table' " +
+                        "AND name = '" + Tables.FIA2FVS.DefaultFvsInputTreeTableName + "'";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
+                    strSql = oDataMgr.getSingleStringValueFromSQLQuery(con, strSql, "sqlite_master");
+                    if (!String.IsNullOrEmpty(strSql))
+                    {
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
+                        oDataMgr.SqlNonQuery(con, strSql);
+                    }
+
+                    // Disconnect from source database
+                    strSql = "DETACH DATABASE 'source'";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
+                    oDataMgr.SqlNonQuery(con, strSql);
+                }
+            }
 
             // Check to see if the target DSN exists and if so, delete so we can add
             if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName))
