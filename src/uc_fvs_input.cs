@@ -47,6 +47,7 @@ namespace FIA_Biosum_Manager
         private dao_data_access m_dao;
         private string m_strConn = "";
         private bool m_bOverwrite = true;
+        private IDictionary<string, List<string>> m_dictVariantStates = null;
         private System.Windows.Forms.Button btnHelp;
         private int m_intError = 0;
         private System.Threading.Thread m_thread;
@@ -330,9 +331,9 @@ namespace FIA_Biosum_Manager
             "Create FVS Input Database Files",
             "Create FVS Input Database Files From FIA2FVS",
             //"Create FVS Output Database Files",   13-JAN-2022 No longer needed with FVSOn*
-            "Delete Standard FVS Output Tables",
-            "Delete POTFIRE Base Year Output Tables",
-            "Delete Both Standard and POTFIRE Base Year Output Tables",
+            //"Delete Standard FVS Output Tables",  04-FEB-2022 No longer needed with FVSOn*
+            //"Delete POTFIRE Base Year Output Tables",
+            //"Delete Both Standard and POTFIRE Base Year Output Tables",
             "Write KCP Template Scripts",
             "View KCP Template Scripts"});
             this.cmbAction.Location = new System.Drawing.Point(279, 362);
@@ -1705,6 +1706,7 @@ namespace FIA_Biosum_Manager
 
             // Check for existing files
             List<string> lstVariants = new List<string>();
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
             for (int x = 0; x <= this.lstFvsInput.Items.Count - 1; x++)
             {
                 if (this.lstFvsInput.Items[x].Checked)
@@ -1714,7 +1716,21 @@ namespace FIA_Biosum_Manager
                     string strInDirAndFile = this.txtDataDir.Text + "\\" + strVariant + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
                     if (!lstVariants.Contains(strInDirAndFile))
                     {
-                        lstVariants.Add(strInDirAndFile);
+                        if (File.Exists(strInDirAndFile))
+                        {
+                            // Make sure we have both the required tables
+                            string connFiadbDb = oDataMgr.GetConnectionString(strInDirAndFile);
+                            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(connFiadbDb))
+                            {
+                                con.Open();
+                                if (oDataMgr.TableExist(con, Tables.FIA2FVS.DefaultFvsInputStandTableName) &&
+                                    oDataMgr.TableExist(con, Tables.FIA2FVS.DefaultFvsInputTreeTableName))
+                                {
+                                    // Only add to warnings if both tables exist
+                                    lstVariants.Add(strInDirAndFile);
+                                }
+                            }
+                        }                        
                     }
                 }
             }
@@ -1739,6 +1755,52 @@ namespace FIA_Biosum_Manager
                     case DialogResult.No:
                         break;
                 }
+
+                if (!m_bOverwrite)
+                {
+                    m_dictVariantStates = new Dictionary<string, List<string>>();    // Re-initialize dictionary
+                    string connFiadbDb = oDataMgr.GetConnectionString(this.txtFIADatamart.Text);
+                    using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(connFiadbDb))
+                    {
+                        con.Open();
+                        foreach (var strVariant in lstVariants)
+                        {
+                            oDataMgr.SqlNonQuery(con, "ATTACH '" + strVariant + "' as target");
+                            string strQuery = "SELECT distinct STATE FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                                              " INTERSECT SELECT distinct STATE" +
+                                              " FROM target." + Tables.FIA2FVS.DefaultFvsInputStandTableName;
+                            List<string> lstStates = oDataMgr.getStringList(con, strQuery);
+                            if (lstStates.Count > 0)
+                            {
+                                m_dictVariantStates.Add(strVariant, lstStates);
+                            }
+                            oDataMgr.SqlNonQuery(con, "DETACH DATABASE 'target'");
+                        }
+                    }
+                }
+                if (m_dictVariantStates.Keys.Count > 0)
+                {
+                    sb = new System.Text.StringBuilder();
+                    sb.Append("The FVS input databases listed below already contain records for state codes ");
+                    sb.Append("in the FIA Datamart input SQLite database. ");
+                    sb.Append("Click 'Yes' to replace the existing stands ");
+                    sb.Append("and trees for those states or 'No' to stop this process.\r\n\r\n");
+                    foreach (var strVariant in m_dictVariantStates.Keys)
+                    {
+                        sb.Append(strVariant + "\r");
+                    }
+                    res = MessageBox.Show(sb.ToString(), "FIA BioSum", MessageBoxButtons.YesNoCancel);
+                    switch (res)
+                    {
+                        case DialogResult.Cancel:
+                            return;
+                        case DialogResult.Yes:
+                            break;
+                        case DialogResult.No:
+                            return;
+                    }
+                }
+
             }
 
             this.m_frmTherm = new frmTherm(((frmDialog)ParentForm), "EXTRACT FIA2FVS FVS INPUT FILE",
@@ -2028,6 +2090,7 @@ namespace FIA_Biosum_Manager
                     {
                         //get the variant
                         strVariant = frmMain.g_oDelegate.GetListViewSubItemPropertyValue(lstFvsInput, x, COL_VARIANT, "Text", false).ToString().Trim();
+                        string strInDirAndFile = strDataDir + "\\" + strVariant + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
                         //see if this is a new variant
                         if (strVariant.Trim().ToUpper() != strCurVariant.Trim().ToUpper())
                         {
@@ -2035,9 +2098,14 @@ namespace FIA_Biosum_Manager
                                 m_frmTherm.progressBar1,
                                 "Value", 20);
                             strCurVariant = strVariant;
+                            List<string> lstStates = new List<string>();
+                            if (m_dictVariantStates.ContainsKey(strInDirAndFile))
+                            {
+                                lstStates = m_dictVariantStates[strInDirAndFile];
+                            }
                             p_fvsinput.StartFIA2FVS(odbcmgr, oDao, oAdo, strTempMDB, 
-                                strSourceDbDir, strDataDir, m_bOverwrite, m_strDebugFile, strCurVariant, strSourceStandTableAlias, strSourceTreeTableAlias,
-                                strGroups);
+                                strSourceDbDir, strDataDir, m_bOverwrite, m_strDebugFile, strCurVariant, lstStates, strSourceStandTableAlias, 
+                                strSourceTreeTableAlias, strGroups);
                         }
                         frmMain.g_oDelegate.SetControlPropertyValue(
                             m_frmTherm.progressBar1,
@@ -2046,7 +2114,6 @@ namespace FIA_Biosum_Manager
                         // This happens at the end
                         // Set Location file column to blank; Don't think this is relevant with FIA2FVS
                         frmMain.g_oDelegate.SetListViewSubItemPropertyValue(this.lstFvsInput, x, COL_LOC, "Text", "");
-                        string strInDirAndFile = strDataDir + "\\" + strVariant + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
                         if (File.Exists(strInDirAndFile) == true) //redundant check here, but leaves " " instead of new "0"
                         {
                             int[] fvsInputRecordCounts = getFVSSQLiteInputRecordCounts(strInDirAndFile);
@@ -2403,327 +2470,6 @@ namespace FIA_Biosum_Manager
             e.Handled = true;
         }
 
-        private void BackupBeforeDelete(string p_strAction)
-        {
-            if (this.lstFvsInput.CheckedItems.Count == 0)
-            {
-                MessageBox.Show("No Boxes Are Checked", "Delete FVS Out Tables", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                return;
-            }
-
-            DialogResult result = MessageBox.Show("Backup The MDB File(s) Before Deleting The Tables? (Y/N)",
-                                                  "FIA Biosum",
-                                                  System.Windows.Forms.MessageBoxButtons.YesNoCancel,
-                                                  System.Windows.Forms.MessageBoxIcon.Question);
-            switch (result)
-            {
-                case DialogResult.Yes:
-                    this.cmbAction.Enabled = false;
-
-                    this.btnExecuteAction.Enabled = false;
-                    this.btnRefresh.Enabled = false;
-                    this.btnChkAll.Enabled = false;
-                    this.btnClearAll.Enabled = false;
-                    this.btnClose.Enabled = false;
-                    this.btnHelp.Enabled = false;
-
-
-                    this.BackupFVSOutTables(p_strAction);
-                    this.DeleteFVSOutTables(p_strAction);
-
-                    this.cmbAction.Enabled = true;
-
-                    this.btnExecuteAction.Enabled = true;
-                    this.btnRefresh.Enabled = true;
-                    this.btnChkAll.Enabled = true;
-                    this.btnClearAll.Enabled = true;
-                    this.btnClose.Enabled = true;
-                    this.btnHelp.Enabled = true;
-
-
-                    break;
-                case DialogResult.No:
-                    this.cmbAction.Enabled = false;
-
-                    this.btnExecuteAction.Enabled = false;
-                    this.btnRefresh.Enabled = false;
-                    this.btnChkAll.Enabled = false;
-                    this.btnClearAll.Enabled = false;
-                    this.btnClose.Enabled = false;
-                    this.btnHelp.Enabled = false;
-
-                    this.DeleteFVSOutTables(p_strAction);
-
-                    this.cmbAction.Enabled = true;
-
-                    this.btnExecuteAction.Enabled = true;
-                    this.btnRefresh.Enabled = true;
-                    this.btnChkAll.Enabled = true;
-                    this.btnClearAll.Enabled = true;
-                    this.btnClose.Enabled = true;
-                    this.btnHelp.Enabled = true;
-
-
-                    break;
-            }
-
-        }
-
-        private void BackupFVSOutTables(string p_strAction)
-        {
-            try
-            {
-                bAbort = false;
-                string strFile;
-                string strNewFile;
-                string strVariant = "";
-                string strCurrentVariant = "";
-
-                this.btnCancel.Visible = true;
-                this.btnCancel.Refresh();
-                this.progressBar1.Maximum = this.lstFvsInput.Items.Count;
-                this.progressBar1.Minimum = 0;
-                this.progressBar1.Value = 0;
-                this.progressBar1.Visible = true;
-                this.lblProgress.Text = "";
-                this.lblProgress.Visible = true;
-                for (int x = 0; x <= this.lstFvsInput.Items.Count - 1; x++)
-                {
-                    if (this.lstFvsInput.Items[x].Checked == true)
-                    {
-                        strVariant = this.lstFvsInput.Items[x].SubItems[COL_VARIANT].Text.Trim();
-                        //out mdb file
-                        if (this.lstFvsInput.Items[x].SubItems[COL_MDBOUT].Text.Trim().Length > 0 &&
-                            (p_strAction == "B" || p_strAction == "S"))
-                        {
-                            strFile = this.txtDataDir.Text.Trim() + "\\" + this.lstFvsInput.Items[x].SubItems[COL_VARIANT].Text.Trim() + "\\" + this.lstFvsInput.Items[x].SubItems[COL_MDBOUT].Text.Trim();
-                            strNewFile = System.DateTime.Now.ToString().Trim() + "_" + this.lstFvsInput.Items[x].SubItems[COL_MDBOUT].Text.Trim();
-                            strNewFile = strNewFile.Replace('/', '_');
-                            strNewFile = strNewFile.Replace(':', '_');
-                            strNewFile = strNewFile.Replace(' ', '_');
-                            strNewFile = this.txtDataDir.Text.Trim() + "\\" + this.lstFvsInput.Items[x].SubItems[COL_VARIANT].Text.Trim() + "\\" + strNewFile;
-                            if (System.IO.File.Exists(strFile) == true)
-                            {
-                                System.IO.File.Copy(strFile, strNewFile, true);
-                            }
-                        }
-                        //potfire baseyr file
-                        if (this.lstFvsInput.Items[x].SubItems[COL_POTFIREMDBOUT].Text.Trim().Length > 0 &&
-                            (p_strAction == "B" || p_strAction == "P"))
-                        {
-                            if (strVariant != strCurrentVariant)
-                            {
-                                strCurrentVariant = strVariant;
-                                strFile = this.txtDataDir.Text.Trim() + "\\" + this.lstFvsInput.Items[x].SubItems[COL_VARIANT].Text.Trim() + "\\" + this.lstFvsInput.Items[x].SubItems[COL_POTFIREMDBOUT].Text.Trim();
-                                strNewFile = System.DateTime.Now.ToString().Trim() + "_" + this.lstFvsInput.Items[x].SubItems[COL_POTFIREMDBOUT].Text.Trim();
-                                strNewFile = strNewFile.Replace('/', '_');
-                                strNewFile = strNewFile.Replace(':', '_');
-                                strNewFile = strNewFile.Replace(' ', '_');
-                                strNewFile = this.txtDataDir.Text.Trim() + "\\" + this.lstFvsInput.Items[x].SubItems[COL_VARIANT].Text.Trim() + "\\" + strNewFile;
-                                if (System.IO.File.Exists(strFile) == true)
-                                {
-                                    System.IO.File.Copy(strFile, strNewFile, true);
-                                }
-                            }
-                        }
-                        System.Windows.Forms.Application.DoEvents();
-                        if (bAbort == true) break;
-
-                    }
-                    this.progressBar1.Visible = false;
-                    this.lblProgress.Visible = false;
-                    this.btnCancel.Visible = false;
-                }
-            }
-            catch (Exception err)
-            {
-                MessageBox.Show("!!Error!! \n" +
-                    "Module - uc_fvs_input:BackupFVSOutTables \n" +
-                    "Err Msg - " + err.Message,
-                    "Delete FVS Out Tables", System.Windows.Forms.MessageBoxButtons.OK,
-                    System.Windows.Forms.MessageBoxIcon.Exclamation);
-
-                this.m_intError = -1;
-            }
-
-
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="p_strAction">B=BOTH,S=STANDARD,P=POTFIRE</param>
-        private void DeleteFVSOutTables(string p_strAction)
-        {
-            try
-            {
-                bAbort = false;
-                string strFile;
-                //string strNewFile;
-                string strMsg = "";
-                string strTableItems = "";
-                string strDbFileItem = "";
-                string strVariant = "";
-                string strCurrentVariant = "";
-                this.btnCancel.Visible = true;
-                this.btnCancel.Refresh();
-                this.progressBar1.Maximum = this.lstFvsInput.Items.Count;
-                this.progressBar1.Minimum = 0;
-                this.progressBar1.Value = 0;
-                this.progressBar1.Visible = true;
-                this.lblProgress.Text = "";
-                this.lblProgress.Visible = true;
-                for (int x = 0; x <= this.lstFvsInput.Items.Count - 1; x++)
-                {
-                    if (this.lstFvsInput.Items[x].Checked == true)
-                    {
-                        strVariant = this.lstFvsInput.Items[x].SubItems[COL_VARIANT].Text.Trim();
-
-                        //out mdb file
-                        if (this.lstFvsInput.Items[x].SubItems[COL_MDBOUT].Text.Trim().Length > 0 &&
-                            (p_strAction == "B" || p_strAction == "S"))
-                        {
-
-                            strFile = this.txtDataDir.Text.Trim() + "\\" + this.lstFvsInput.Items[x].SubItems[COL_VARIANT].Text.Trim() + "\\" + this.lstFvsInput.Items[x].SubItems[COL_MDBOUT].Text.Trim();
-                            strDbFileItem = this.lstFvsInput.Items[x].SubItems[COL_MDBOUT].Text.Trim() + "\r\n---------------------------------\r\n";
-                            strTableItems = "";
-                            if (System.IO.File.Exists(strFile) == true)
-                            {
-                                m_ado.OpenConnection(m_ado.getMDBConnString(strFile, "", ""));
-                                if (m_ado.m_intError == 0)
-                                {
-                                    string[] strTableNamesArray = m_ado.getTableNames(m_ado.m_OleDbConnection);
-                                    if (strTableNamesArray != null && strTableNamesArray.Length > 0)
-                                    {
-                                        for (int y = 0; y <= strTableNamesArray.Length - 1; y++)
-                                        {
-                                            if (strTableNamesArray[y].Trim().Length > 0)
-                                            {
-                                                m_ado.SqlNonQuery(m_ado.m_OleDbConnection, "DROP TABLE " + strTableNamesArray[y].Trim());
-                                                strTableItems = strTableItems + strTableNamesArray[y].Trim() + ",";
-                                                switch (strTableNamesArray[y].Trim().ToUpper())
-                                                {
-                                                    case "FVS_SUMMARY":
-                                                        lstFvsInput.Items[x].SubItems[COL_SUMMARYCOUNT].Text = "";
-                                                        break;
-                                                    case "FVS_CUTLIST":
-                                                        lstFvsInput.Items[x].SubItems[COL_CUTCOUNT].Text = "";
-                                                        break;
-                                                    case "FVS_TREELIST":
-                                                        lstFvsInput.Items[x].SubItems[COL_LEFTCOUNT].Text = "";
-                                                        break;
-                                                    case "FVS_POTFIRE":
-                                                        lstFvsInput.Items[x].SubItems[COL_POTFIRECOUNT].Text = "";
-                                                        break;
-                                                }
-                                            }
-                                        }
-
-                                    }
-                                    m_ado.CloseConnection(m_ado.m_OleDbConnection);
-                                }
-                            }
-                            if (strTableItems.Trim().Length == 0)
-                            {
-                                strTableItems = "No Tables Deleted\r\n\r\n";
-                            }
-                            else
-                            {
-                                strTableItems = strTableItems.Substring(0, strTableItems.Length - 1);
-                                strTableItems = strTableItems + "\r\n\r\n";
-                            }
-                            strMsg = strMsg + strDbFileItem + strTableItems;
-                        }
-                        if (this.lstFvsInput.Items[x].SubItems[COL_POTFIREMDBOUT].Text.Trim().Length > 0 &&
-                            (p_strAction == "B" || p_strAction == "P"))
-                        {
-                            strFile = this.txtDataDir.Text.Trim() + "\\" + strVariant + "\\" + this.lstFvsInput.Items[x].SubItems[uc_fvs_input.COL_POTFIREMDBOUT].Text.Trim();
-
-                            if (System.IO.File.Exists(strFile) == true)
-                            {
-                                if (strVariant != strCurrentVariant)
-                                {
-                                    strDbFileItem = this.lstFvsInput.Items[x].SubItems[uc_fvs_input.COL_POTFIREMDBOUT].Text.Trim() + "\r\n---------------------------------\r\n";
-                                    strTableItems = "";
-                                    strCurrentVariant = strVariant;
-                                    m_ado.OpenConnection(m_ado.getMDBConnString(strFile, "", ""));
-                                    if (m_ado.m_intError == 0)
-                                    {
-                                        string[] strTableNamesArray = m_ado.getTableNames(m_ado.m_OleDbConnection);
-                                        if (strTableNamesArray != null && strTableNamesArray.Length > 0)
-                                        {
-                                            for (int y = 0; y <= strTableNamesArray.Length - 1; y++)
-                                            {
-                                                if (strTableNamesArray[y].Trim().Length > 0)
-                                                {
-                                                    m_ado.SqlNonQuery(m_ado.m_OleDbConnection, "DROP TABLE " + strTableNamesArray[y].Trim());
-                                                    strTableItems = strTableItems + strTableNamesArray[y].Trim() + ",";
-                                                    switch (strTableNamesArray[y].Trim().ToUpper())
-                                                    {
-                                                        case "FVS_POTFIRE":
-                                                            lstFvsInput.Items[x].SubItems[COL_POTFIREBASEYEARCOUNT].Text = "";
-                                                            break;
-                                                    }
-                                                }
-                                            }
-
-                                        }
-                                        m_ado.CloseConnection(m_ado.m_OleDbConnection);
-                                    }
-                                    if (strTableItems.Trim().Length == 0)
-                                    {
-                                        strTableItems = "No Tables Deleted\r\n\r\n";
-                                    }
-                                    else
-                                    {
-                                        strTableItems = strTableItems.Substring(0, strTableItems.Length - 1);
-                                        strTableItems = strTableItems + "\r\n\r\n";
-                                    }
-                                    strMsg = strMsg + strDbFileItem + strTableItems;
-                                }
-
-                            }
-
-
-
-                        }
-                        System.Windows.Forms.Application.DoEvents();
-                        if (bAbort == true) break;
-                    }
-                    this.progressBar1.Visible = false;
-                    this.lblProgress.Visible = false;
-                    this.btnCancel.Visible = false;
-                }
-                if (strMsg.Trim().Length > 0)
-                {
-                    //MessageBox.Show(strMsg, "Deleted Tables");
-                    FIA_Biosum_Manager.frmDialog frmTemp = new frmDialog();
-                    frmTemp.Text = "FIA Biosum";
-                    frmTemp.AutoScroll = false;
-                    uc_textbox uc_textbox1 = new uc_textbox();
-                    frmTemp.Controls.Add(uc_textbox1);
-                    uc_textbox1.Dock = DockStyle.Fill;
-                    uc_textbox1.lblTitle.Text = "Deleted Tables";
-                    uc_textbox1.TextValue = strMsg;
-                    frmTemp.ShowDialog();
-                }
-                else
-                {
-                    MessageBox.Show("No Tables Were Deleted", "FIA Biosum");
-                }
-            }
-            catch (Exception err)
-            {
-                MessageBox.Show("!!Error!! \n" +
-                    "Module - uc_fvs_input:BackupFVSOutTables \n" +
-                    "Err Msg - " + err.Message,
-                    "Delete FVS Out Tables", System.Windows.Forms.MessageBoxButtons.OK,
-                    System.Windows.Forms.MessageBoxIcon.Exclamation);
-
-                this.m_intError = -1;
-            }
-
-        }
-
         private void lstFvsInput_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
         {
             int x;
@@ -2915,15 +2661,16 @@ namespace FIA_Biosum_Manager
                 //    CreateFvsOutFiles();
                 //    break;
                 //13-JAN-2022: No longer needed with FVSOn*
-                case "DELETE STANDARD FVS OUTPUT TABLES":
-                    BackupBeforeDelete("S");
-                    break;
-                case "DELETE POTFIRE BASE YEAR OUTPUT TABLES":
-                    BackupBeforeDelete("P");
-                    break;
-                case "DELETE BOTH STANDARD AND POTFIRE BASE YEAR OUTPUT TABLES":
-                    BackupBeforeDelete("B");
-                    break;
+                //case "DELETE STANDARD FVS OUTPUT TABLES":
+                //    BackupBeforeDelete("S");
+                //    break;
+                //case "DELETE POTFIRE BASE YEAR OUTPUT TABLES":
+                //    BackupBeforeDelete("P");
+                //    break;
+                //case "DELETE BOTH STANDARD AND POTFIRE BASE YEAR OUTPUT TABLES":
+                //    BackupBeforeDelete("B");
+                //    break;
+                //04-FEB-2022: No longer needed with FVSOn
                 case "WRITE KCP TEMPLATE SCRIPTS":
                     WriteKCPDbLines();
                     break;

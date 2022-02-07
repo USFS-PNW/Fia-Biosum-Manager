@@ -3836,28 +3836,37 @@ namespace FIA_Biosum_Manager
             return _dictSiteIdxEq;
         }
 
-        public void StartFIA2FVS(ODBCMgr odbcmgr, dao_data_access oDao, 
-            ado_data_access oAdo, string strTempMDB, string strSourceDbDir, string strDataDir, bool bOverwrite, 
-            string strDebugFile, string strVariant, string strSourceStandTableAlias, string strSourceTreeTableAlias,
+        public void StartFIA2FVS(ODBCMgr odbcmgr, dao_data_access oDao,
+            ado_data_access oAdo, string strTempMDB, string strSourceDbDir, string strDataDir, bool bOverwrite,
+            string strDebugFile, string strVariant, List<string> lstStates, string strSourceStandTableAlias, string strSourceTreeTableAlias,
             string strGroup)
         {
             // Copy the target database from BioSum application directory
             string applicationDb = frmMain.g_oEnv.strAppDir + "\\db\\" + Tables.FIA2FVS.DefaultFvsInputFile;
             string strInDirAndFile = strDataDir + "\\" + strVariant + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
-            if (bOverwrite)
+            if (bOverwrite || !File.Exists(strInDirAndFile))
             {
-                // overwrite the existing FVSIn.db with an empty database
+                // overwrite the existing FVSIn.db with an empty database or create anew if missing
                 File.Copy(applicationDb, strInDirAndFile, true);
             }
 
             SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
             string connTargetDb = oDataMgr.GetConnectionString(strInDirAndFile);
-            if (bOverwrite)
+            //if (bOverwrite)
+            //{
+
+            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(connTargetDb))
             {
                 // Connect to target database (FVS_In.db)
-                using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(connTargetDb))
+                con.Open();
+                bool bCreateTables = bOverwrite;
+                if (!oDataMgr.TableExist(con, Tables.FIA2FVS.DefaultFvsInputStandTableName) ||
+                    !oDataMgr.TableExist(con, Tables.FIA2FVS.DefaultFvsInputTreeTableName))
                 {
-                    con.Open();
+                    bCreateTables = true;
+                }
+                if (bCreateTables == true)
+                {
                     string strSql = "ATTACH DATABASE '" + strSourceDbDir + "' AS source";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
@@ -3893,6 +3902,22 @@ namespace FIA_Biosum_Manager
                     strSql = "DETACH DATABASE 'source'";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
+                    oDataMgr.SqlNonQuery(con, strSql);
+                }
+                else if (bCreateTables == false && lstStates.Count > 0)
+                {
+                    // Delete existing state records if there is conflict with source
+                    string csv = String.Join(",", lstStates.Select(x => x.ToString()).ToArray());
+
+                    // Delete existing records from tree table
+                    string strSql = "DELETE FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                            " WHERE stand_cn IN(select stand_cn from " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                            " where state in (" + csv + "))";
+                    oDataMgr.SqlNonQuery(con, strSql);
+
+                    // Delete existing records from stand table
+                    strSql = "DELETE FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                            " WHERE STATE IN (" + csv + ")";
                     oDataMgr.SqlNonQuery(con, strSql);
                 }
             }
