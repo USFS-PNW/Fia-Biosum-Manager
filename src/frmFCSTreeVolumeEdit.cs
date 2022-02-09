@@ -160,15 +160,19 @@ namespace FIA_Biosum_Manager
     public frmFCSTreeVolumeEdit()
     {
 
-        if (frmMain.Validate_OracleConnectivity() < 0)
-        {
-            this.DialogResult = System.Windows.Forms.DialogResult.Abort;
-            this.Close();
-            return;
-        }
+            //@ToDo: Delete this later
+            //if (frmMain.Validate_OracleConnectivity() < 0)
+            //{
+            //    this.DialogResult = System.Windows.Forms.DialogResult.Abort;
+            //    this.Close();
+            //    return;
+            //}
 
-        
-     
+            utils.FS_NETWORK = utils.FS_NETWORK_STATUS.Available;
+
+
+
+
      this.SetStyle(ControlStyles.OptimizedDoubleBuffer |
                ControlStyles.AllPaintingInWmPaint,
                true);
@@ -1432,12 +1436,12 @@ namespace FIA_Biosum_Manager
         frmMain.g_oDelegate.m_oEventStopThread.Reset();
         frmMain.g_oDelegate.m_oEventThreadStopped.Reset();
 
-        FIA_Biosum_Manager.utils.FS_NETWORK_CHECK();
+        //FIA_Biosum_Manager.utils.FS_NETWORK_CHECK();
 
-        if (FIA_Biosum_Manager.utils.FS_NETWORK == utils.FS_NETWORK_STATUS.NotAvailable)
-             frmMain.g_oDelegate.m_oThread = new Thread(new ThreadStart(this.RunBatch_Main_XE));
-        else
-             frmMain.g_oDelegate.m_oThread = new Thread(new ThreadStart(this.RunBatch_Main_FS_NETWORK));
+        //if (FIA_Biosum_Manager.utils.FS_NETWORK == utils.FS_NETWORK_STATUS.NotAvailable)
+        //     frmMain.g_oDelegate.m_oThread = new Thread(new ThreadStart(this.RunBatch_Main_XE));
+        //else
+        frmMain.g_oDelegate.m_oThread = new Thread(new ThreadStart(this.RunBatch_Main));
         frmMain.g_oDelegate.m_oThread.IsBackground = true;
         frmMain.g_oDelegate.m_oThread.Start();
     }
@@ -1692,13 +1696,13 @@ namespace FIA_Biosum_Manager
 
     }
 
-    private void RunBatch_Main_FS_NETWORK()
+    private void RunBatch_Main()
     {
         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
         {
             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "\r\n//\r\n");
             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
-                "//frmFCSTreeVolumeEdit.RunBatch_Main_FS_NETWORK \r\n");
+                "//frmFCSTreeVolumeEdit.RunBatch_Main \r\n");
             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//\r\n");
         }
 
@@ -1718,7 +1722,7 @@ namespace FIA_Biosum_Manager
 
         System.Data.DataRow p_rowFound;
 
-        frmMain.g_oDelegate.CurrentThreadProcessName = "RunBatch_Main_FS_NETWORK";
+        frmMain.g_oDelegate.CurrentThreadProcessName = "RunBatch_Main";
         frmMain.g_oDelegate.CurrentThreadProcessStarted = true;
         frmMain.g_oDelegate.SetControlPropertyValue(progressBarBasic1, "Minimum", 0);
         frmMain.g_oDelegate.SetControlPropertyValue(progressBarBasic1, "Value", 0);
@@ -1795,6 +1799,8 @@ namespace FIA_Biosum_Manager
                     Tuple.Create("BALIVE", "BALIVE"),
                     Tuple.Create("DIAHTCD", "DIAHTCD"),
                     Tuple.Create("STANDING_DEAD_CD", "STANDING_DEAD_CD"),
+                    Tuple.Create("ECODIV", "ECOSUBCD"),
+                    Tuple.Create("STDORGCD", "STDORGCD"),
                     Tuple.Create("TRE_CN", "CSTR(ID) AS TRE_CN"),
                     Tuple.Create("CND_CN", "BIOSUM_COND_ID AS CND_CN"),
                     Tuple.Create("PLT_CN", "MID(BIOSUM_COND_ID,1,LEN(BIOSUM_COND_ID)-1) AS PLT_CN"),
@@ -1820,8 +1826,8 @@ namespace FIA_Biosum_Manager
             oSQLite.OpenConnection(false, 1,
                 frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" +
                 Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase, "BIOSUM_CALC");
-            oSQLite.SqlNonQuery(oSQLite.m_Connection, $"DELETE FROM {Tables.VolumeAndBiomass.BiosumVolumeCalcTable}");
-            System.Threading.Thread.Sleep(2000);
+                oSQLite.SqlNonQuery(oSQLite.m_Connection, $"DELETE FROM {Tables.VolumeAndBiomass.BiosumVolumeCalcTable}");
+                System.Threading.Thread.Sleep(2000);
 
 
             //Parse MSAccess fcs_biosum_volumes_input and insert into SQLite FCS_TREE.Biosum_Calc table
@@ -1895,7 +1901,7 @@ namespace FIA_Biosum_Manager
 
         if (m_intError == 0)
         {
-            frmMain.g_oUtils.RunProcess(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum", "fcs_tree_calc.bat", "BAT");
+                frmMain.g_oUtils.RunProcess(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum", "fcs_tree_calc.bat", "BAT");
             if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_error_msg.txt"))
             {
                 m_strError = System.IO.File.ReadAllText(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_error_msg.txt");

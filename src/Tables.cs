@@ -2475,6 +2475,8 @@ namespace FIA_Biosum_Manager
                         Tuple.Create("BFSND", utils.DataType.INTEGER),
                         Tuple.Create("DECAYCD", utils.DataType.INTEGER),
                         Tuple.Create("TOTAGE", utils.DataType.INTEGER),
+                        Tuple.Create("ECODIV", utils.DataType.STRING),
+                        Tuple.Create("STDORGCD", utils.DataType.INTEGER),
                         Tuple.Create("PLT_CN", utils.DataType.STRING),
                         Tuple.Create("CND_CN", utils.DataType.STRING),
                         Tuple.Create("TRE_CN", utils.DataType.STRING),
@@ -2868,6 +2870,8 @@ namespace FIA_Biosum_Manager
                     "DRYBIO_TOP_CALC DOUBLE," +
                     "DRYBIO_SAPLING_CALC DOUBLE," +
                     "DRYBIO_WDLD_SPP_CALC DOUBLE," +
+                    "STDORGCD INTEGER," +
+                    "ECODIV CHAR(7)," +
                     //END: ADDED BIOSUM_VOLUME COLUMNS
                     "TRE_CN CHAR(34)," +
                     "CND_CN CHAR(34)," +
