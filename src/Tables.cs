@@ -2801,6 +2801,8 @@ namespace FIA_Biosum_Manager
                     "drybio_top_calc DECIMAL(13,6)," +
                     "drybio_sapling_calc DECIMAL(13,6)," +
                     "drybio_wdld_spp_calc DECIMAL(13,6)," +
+                    "ecosubcd CHAR(7)," +
+                    "stdorgcd INTEGER," +
                     //END: ADDED BIOSUM_VOLUME COLUMNS
                     "volcfnet DOUBLE," +
                     "volcfgrs DOUBLE," +
@@ -3933,6 +3935,7 @@ namespace FIA_Biosum_Manager
                     "lon DOUBLE," +
                     "macro_breakpoint_dia INTEGER," +
                     "precipitation DOUBLE," +
+                    "ecosubcd CHAR(34)," +
                     "biosum_status_cd BYTE," +
                     "cn CHAR(34))";
             }
@@ -4041,8 +4044,8 @@ namespace FIA_Biosum_Manager
                     "biosum_status_cd BYTE, " +
                     "model_YN CHAR(1), " +
                     "dwm_fuelbed_typcd TEXT(3)," + 
-                    "balive DOUBLE)";
-
+                    "balive DOUBLE, " +
+                    "stdorgcd INTEGER)";
             }
             public void CreateSqliteConditionTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
