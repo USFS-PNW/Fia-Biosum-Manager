@@ -219,9 +219,6 @@ namespace FIA_Biosum_Manager
 		/// </summary>
 		private System.ComponentModel.Container components = null;
 
-
-        public Oracle.ADO.FCSOracle OracleADO { get; set; }
-
         public SQLite.ADO.DataMgr SQLite { get; set; } = new SQLite.ADO.DataMgr();
 
         private Label lblFSNetwork;
@@ -2477,35 +2474,6 @@ namespace FIA_Biosum_Manager
                 if (p_dao1.m_intError == 0) p_dao1.CreateSQLiteTableLink(this.m_strTempMDBFile, str2.Trim(), "fiadb_site_tree_input",
                     ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
 
-                //biosum_volume table
-                //ORACLE FCS Tree Volume Table
-                //create a temporary link to the ORACLE FCS BIOSUM_VOLUME table
-                if (p_dao1.m_intError == 0)
-                {
-                    System.Threading.Thread.Sleep(1000);
-                    if (p_dao1.TableExists(m_strTempMDBFile, "fcs_biosum_volume"))
-                    {
-                        p_dao1.DeleteTableFromMDB(m_strTempMDBFile, "fcs_biosum_volume");
-                    }
-
-                    for (int z = 1; z <= 5; z++)
-                    {
-                        System.Threading.Thread.Sleep(2000 * z);
-                        p_dao1.m_intError = 0;
-
-                        if (utils.FS_NETWORK_IS_NOT_AVAILABLE)
-                            p_dao1.CreateOracleXETableLink("FIA Biosum Oracle Services", "fcs_biosum", "fcs", "FCS_BIOSUM", "BIOSUM_VOLUME", m_strTempMDBFile.Trim(), "fcs_biosum_volume");
-
-                        if (p_dao1.m_intError == 0) break;
-                    }
-                    if (p_dao1.m_intError != 0)
-                    {
-                        if (utils.FS_NETWORK_IS_NOT_AVAILABLE)
-                            MessageBox.Show("!!Failed to create Oracle XE ODBC table link!! Contact technical support", "FIA Biosum");
-                    }
-                }
-
-
                 m_intError = p_dao1.m_intError;
 
                 //destroy the object and release it from memory
@@ -3485,13 +3453,7 @@ namespace FIA_Biosum_Manager
                    
                         SetLabelValue(m_frmTherm.lblMsg, "Text", "Start Volume and Biomass Calculations...Stand By");
                         frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
-                        FIADBOracle.Services m_oOracleServices = new FIADBOracle.Services();
-                        m_oOracleServices.Start();
-                        SetThermValue(m_frmTherm.progressBar1, "Value", 2);
 
-                        if (m_oOracleServices.m_oTree == null) MessageBox.Show("m_oTree==null");
-                        m_oOracleServices.m_oTree.GetVolumesMode = FIADBOracle.Services.Tree.GetVolumesModeValues.SQLUpdate;
-                        //if (m_strGridTableSource.Trim() != Tables.VolumeAndBiomass.BiosumVolumesInputTable)
                         //step 5 - delete and create work tables
                         if (p_ado.TableExist(this.m_connTempMDBFile, Tables.VolumeAndBiomass.BiosumVolumesInputTable))
                             p_ado.SqlNonQuery(this.m_connTempMDBFile, "DROP TABLE " + Tables.VolumeAndBiomass.BiosumVolumesInputTable);
@@ -3598,56 +3560,6 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n\r\n");
                         p_ado.SqlNonQuery(this.m_connTempMDBFile, p_ado.m_strSQL);
 
-                        if (utils.FS_NETWORK_IS_NOT_AVAILABLE)
-                        {
-                            p_ado.m_strSQL = "INSERT INTO fcs_biosum_volume (" + strColumns + ") SELECT " + strColumns + " FROM " + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable;
-                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n\r\n");
-                            p_ado.SqlNonQuery(this.m_connTempMDBFile, p_ado.m_strSQL);
-                            SetThermValue(m_frmTherm.progressBar1, "Value", 3);
-
-
-                            SetLabelValue(m_frmTherm.lblMsg, "Text", "Wait For Oracle Volume Compilation To Complete...Stand By");
-                            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
-
-                            m_oOracleServices.m_oTree.GetBiosumVolumes();
-
-                            SetThermValue(m_frmTherm.progressBar1, "Value", 4);
-
-                            if (m_oOracleServices.m_intError == 0)
-                            {
-                                SetLabelValue(m_frmTherm.lblMsg, "Text", "Update tree VOLTSGRS column with Oracle Calculated Values...Stand By");
-                                frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
-                                strConn = m_connTempMDBFile.ConnectionString;
-                                p_ado.CloseConnection(m_connTempMDBFile);
-                                p_ado.OpenConnection(strConn, ref m_connTempMDBFile);
-                                p_ado.m_strSQL = "UPDATE " + m_strTreeTable + " t " +
-                                                 "INNER JOIN fcs_biosum_volume f " +
-                                                 "ON t.cn = f.tre_cn " +
-                                                 "SET t.VOLTSGRS = f.VOLTSGRS_CALC," +
-                                                     "t.DRYBIOT  = IIF(t.DRYBIOT IS NULL,f.DRYBIOT_CALC,t.DRYBIOT)," +
-                                                     "t.DRYBIOM  = IIF(t.DRYBIOM IS NULL,f.DRYBIOM_CALC,t.DRYBIOM)";
-                                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n\r\n");
-                                p_ado.SqlNonQuery(m_connTempMDBFile, p_ado.m_strSQL);
-
-                            }
-                            else
-                            {
-                                DialogResult dlgResult = MessageBox.Show("!!Error!! \n" +
-                                                                         "Module - uc_plot_input:UpdateColumns\n" +
-                                                                         "Err Msg - Failed to update tree VOLTSGRS, DRYBIOT, DRYBIOM columns with Oracle Calculated Values. Continue plot input?",
-                                    "FIA Biosum", System.Windows.Forms.MessageBoxButtons.YesNo,
-                                    System.Windows.Forms.MessageBoxIcon.Exclamation);
-                                if (dlgResult == DialogResult.No)
-                                {
-                                    return m_oOracleServices.m_intError;
-                                }
-                            }
-                            SetThermValue(m_frmTherm.progressBar1, "Value", 5);
-                        }
-                        else
-                        {
                             frmMain.g_oTables.m_oFvs.CreateOracleInputFCSBiosumVolumesWorkTable(p_ado, m_connTempMDBFile, Tables.VolumeAndBiomass.SqliteWorkTable);
                             p_ado.m_strSQL = $@"INSERT INTO {Tables.VolumeAndBiomass.SqliteWorkTable} 
                                                 SELECT * FROM {Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable}";
@@ -3673,9 +3585,7 @@ namespace FIA_Biosum_Manager
                             {
                                 int COUNT = 0;
                                 SQLite.ADO.DataMgr oSQLite = new SQLite.ADO.DataMgr();
-                                Oracle.ADO.FCSOracle oOracle = new Oracle.ADO.FCSOracle();
 
-                                OracleADO = oOracle;
                                 SQLite = oSQLite;
                                 MSAccess = p_ado;
                                 var columnsAndDataTypes = Tables.VolumeAndBiomass.ColumnsAndDataTypes;
@@ -3878,7 +3788,6 @@ namespace FIA_Biosum_Manager
 
                                 SetThermValue(m_frmTherm.progressBar1, "Value", m_frmTherm.progressBar1.Maximum);
                             }
-                        }
   
 
                     

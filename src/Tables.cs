@@ -2422,12 +2422,8 @@ namespace FIA_Biosum_Manager
             static public string FcsBiosumVolumesInputTable { get { return "fcs_biosum_volumes_input"; } }
             static public string BiosumCalcOutputTable { get { return "biosum_calc_output"; } }
             static public string DefaultSqliteWorkDatabase { get { return "fcs_tree.db"; } }
-            public static string SqliteWorkTable { get{ return "sqlite_work_table"; } }
-
-            static public string BiosumVolumeCalcTable
-            {
-                get { return utils.FS_NETWORK == utils.FS_NETWORK_STATUS.NotAvailable ? "BIOSUM_VOLUME" : "BIOSUM_CALC" ; }
-            }
+            static public string SqliteWorkTable { get{ return "sqlite_work_table"; } }
+            static public string BiosumVolumeCalcTable { get { return "BIOSUM_CALC"; } }
 
             static public List<Tuple<string, utils.DataType>> ColumnsAndDataTypes
             {
@@ -2940,6 +2936,8 @@ namespace FIA_Biosum_Manager
                     "DRYBIO_TOP_CALC DOUBLE," +
                     "DRYBIO_SAPLING_CALC DOUBLE," +
                     "DRYBIO_WDLD_SPP_CALC DOUBLE," +
+                    "ECODIV CHAR(7)," +
+                    "STDORGCD INTEGER," +
                     //END: ADDED BIOSUM_VOLUME COLUMNS
                     "TRE_CN CHAR(34)," +
                     "CND_CN CHAR(34)," +
