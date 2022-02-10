@@ -488,7 +488,7 @@ namespace FIA_Biosum_Manager
             this.tabControlScenario.Margin = new System.Windows.Forms.Padding(2);
             this.tabControlScenario.Name = "tabControlScenario";
             this.tabControlScenario.SelectedIndex = 0;
-            this.tabControlScenario.Size = new System.Drawing.Size(691, 351);
+            this.tabControlScenario.Size = new System.Drawing.Size(699, 351);
             this.tabControlScenario.TabIndex = 41;
             this.tabControlScenario.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.tabControlScenario_DrawItem);
             this.tabControlScenario.SelectedIndexChanged += new System.EventHandler(this.tabControlScenario_SelectedIndexChanged);
@@ -502,7 +502,7 @@ namespace FIA_Biosum_Manager
             this.tbDesc.Location = new System.Drawing.Point(4, 22);
             this.tbDesc.Margin = new System.Windows.Forms.Padding(2);
             this.tbDesc.Name = "tbDesc";
-            this.tbDesc.Size = new System.Drawing.Size(683, 325);
+            this.tbDesc.Size = new System.Drawing.Size(691, 325);
             this.tbDesc.TabIndex = 0;
             this.tbDesc.Text = "Description";
             // 

@@ -113,7 +113,7 @@ namespace FIA_Biosum_Manager
             // btnOpen
             // 
             this.btnOpen.BackColor = System.Drawing.SystemColors.Control;
-            this.btnOpen.Location = new System.Drawing.Point(224, 400);
+            this.btnOpen.Location = new System.Drawing.Point(321, 400);
             this.btnOpen.Name = "btnOpen";
             this.btnOpen.Size = new System.Drawing.Size(96, 32);
             this.btnOpen.TabIndex = 1;
@@ -125,7 +125,7 @@ namespace FIA_Biosum_Manager
             // 
             this.txtDescription.Enabled = false;
             this.txtDescription.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtDescription.Location = new System.Drawing.Point(168, 193);
+            this.txtDescription.Location = new System.Drawing.Point(265, 193);
             this.txtDescription.Multiline = true;
             this.txtDescription.Name = "txtDescription";
             this.txtDescription.Size = new System.Drawing.Size(448, 152);
@@ -139,7 +139,7 @@ namespace FIA_Biosum_Manager
             this.lstScenario.ItemHeight = 25;
             this.lstScenario.Location = new System.Drawing.Point(8, 74);
             this.lstScenario.Name = "lstScenario";
-            this.lstScenario.Size = new System.Drawing.Size(144, 304);
+            this.lstScenario.Size = new System.Drawing.Size(227, 304);
             this.lstScenario.TabIndex = 3;
             this.lstScenario.SelectedIndexChanged += new System.EventHandler(this.lstScenario_SelectedIndexChanged);
             // 
@@ -155,7 +155,7 @@ namespace FIA_Biosum_Manager
             // lblScenarioDescription
             // 
             this.lblScenarioDescription.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblScenarioDescription.Location = new System.Drawing.Point(168, 166);
+            this.lblScenarioDescription.Location = new System.Drawing.Point(265, 166);
             this.lblScenarioDescription.Name = "lblScenarioDescription";
             this.lblScenarioDescription.Size = new System.Drawing.Size(160, 16);
             this.lblScenarioDescription.TabIndex = 5;
@@ -164,7 +164,7 @@ namespace FIA_Biosum_Manager
             // lblScenarioPath
             // 
             this.lblScenarioPath.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblScenarioPath.Location = new System.Drawing.Point(168, 109);
+            this.lblScenarioPath.Location = new System.Drawing.Point(265, 109);
             this.lblScenarioPath.Name = "lblScenarioPath";
             this.lblScenarioPath.Size = new System.Drawing.Size(136, 15);
             this.lblScenarioPath.TabIndex = 6;
@@ -173,7 +173,7 @@ namespace FIA_Biosum_Manager
             // txtScenarioPath
             // 
             this.txtScenarioPath.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtScenarioPath.Location = new System.Drawing.Point(168, 129);
+            this.txtScenarioPath.Location = new System.Drawing.Point(265, 129);
             this.txtScenarioPath.Name = "txtScenarioPath";
             this.txtScenarioPath.Size = new System.Drawing.Size(448, 30);
             this.txtScenarioPath.TabIndex = 7;
@@ -193,7 +193,7 @@ namespace FIA_Biosum_Manager
             // lblNewScenario
             // 
             this.lblNewScenario.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblNewScenario.Location = new System.Drawing.Point(168, 53);
+            this.lblNewScenario.Location = new System.Drawing.Point(265, 53);
             this.lblNewScenario.Name = "lblNewScenario";
             this.lblNewScenario.Size = new System.Drawing.Size(128, 15);
             this.lblNewScenario.TabIndex = 9;
@@ -202,7 +202,7 @@ namespace FIA_Biosum_Manager
             // txtScenarioId
             // 
             this.txtScenarioId.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtScenarioId.Location = new System.Drawing.Point(168, 75);
+            this.txtScenarioId.Location = new System.Drawing.Point(265, 75);
             this.txtScenarioId.MaxLength = 20;
             this.txtScenarioId.Name = "txtScenarioId";
             this.txtScenarioId.Size = new System.Drawing.Size(120, 30);
@@ -213,7 +213,7 @@ namespace FIA_Biosum_Manager
             // 
             this.btnCancel.BackColor = System.Drawing.SystemColors.Control;
             this.btnCancel.Enabled = false;
-            this.btnCancel.Location = new System.Drawing.Point(336, 400);
+            this.btnCancel.Location = new System.Drawing.Point(433, 400);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(96, 32);
             this.btnCancel.TabIndex = 14;
@@ -238,7 +238,7 @@ namespace FIA_Biosum_Manager
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox1.Location = new System.Drawing.Point(0, 0);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(632, 480);
+            this.groupBox1.Size = new System.Drawing.Size(745, 480);
             this.groupBox1.TabIndex = 15;
             this.groupBox1.TabStop = false;
             this.groupBox1.Resize += new System.EventHandler(this.groupBox1_Resize);
@@ -250,7 +250,7 @@ namespace FIA_Biosum_Manager
             this.lblTitle.ForeColor = System.Drawing.Color.Green;
             this.lblTitle.Location = new System.Drawing.Point(3, 18);
             this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(626, 32);
+            this.lblTitle.Size = new System.Drawing.Size(739, 32);
             this.lblTitle.TabIndex = 25;
             this.lblTitle.Text = "Open Scenario";
             // 
@@ -258,7 +258,7 @@ namespace FIA_Biosum_Manager
             // 
             this.btnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnClose.BackColor = System.Drawing.SystemColors.Control;
-            this.btnClose.Location = new System.Drawing.Point(528, 440);
+            this.btnClose.Location = new System.Drawing.Point(641, 440);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(96, 32);
             this.btnClose.TabIndex = 15;
@@ -271,7 +271,7 @@ namespace FIA_Biosum_Manager
             this.BackColor = System.Drawing.SystemColors.Control;
             this.Controls.Add(this.groupBox1);
             this.Name = "uc_scenario_open";
-            this.Size = new System.Drawing.Size(632, 480);
+            this.Size = new System.Drawing.Size(745, 480);
             this.Load += new System.EventHandler(this.uc_scenario_Load);
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.uc_scenario_MouseDown);
             this.Resize += new System.EventHandler(this.uc_scenario_Resize);
