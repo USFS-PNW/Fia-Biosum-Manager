@@ -3372,6 +3372,26 @@ namespace FIA_Biosum_Manager
                             "drybiom DOUBLE," +
                             "drybiot DOUBLE," +
                             "voltsgrs DOUBLE," +
+                            "sitree INTEGER," +
+                    "upper_dia DOUBLE," +
+                    "upper_dia_ht DOUBLE," +
+                    "centroid_dia DOUBLE," +
+                    "centroid_dia_ht_actual DOUBLE," +
+                    "sawht DOUBLE," +
+                    "htdmp DOUBLE," +
+                    "boleht DOUBLE," +
+                    "cull_fld DOUBLE," +
+                    "culldead DOUBLE," +
+                    "cullform DOUBLE," +
+                    "cullmstop DOUBLE," +
+                    "cfsnd DOUBLE," +
+                    "bfsnd DOUBLE," +
+                    "standing_dead_cd INTEGER," +
+                    "volcfsnd DOUBLE," +
+                    "drybio_bole DOUBLE," +
+                    "drybio_top DOUBLE," +
+                    "drybio_sapling DOUBLE," +
+                    "drybio_wdld_spp DOUBLE," +
                             "fvs_tree_id CHAR(10)," +
                             "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
                             "DateTimeCreated CHAR(22))";
