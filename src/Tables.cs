@@ -3953,7 +3953,7 @@ namespace FIA_Biosum_Manager
                     "lon DOUBLE," +
                     "macro_breakpoint_dia INTEGER," +
                     "precipitation DOUBLE," +
-                    "ecosubcd CHAR(34)," +
+                    "ecosubcd CHAR(7)," +
                     "biosum_status_cd BYTE," +
                     "cn CHAR(34))";
             }

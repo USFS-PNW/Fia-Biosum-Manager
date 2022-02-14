@@ -6704,7 +6704,15 @@ namespace FIA_Biosum_Manager
                                     oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
 
                                 }
-                                else
+                            else if (!oAdo.ColumnExist(oAdo.m_OleDbConnection, "audit_Post_NOVALUE_ERROR", "drybio_wdld_spp"))
+                            {
+                                // Accommodate new fields for v5.8.10
+                                oAdo.m_strSQL = "DROP TABLE audit_Post_NOVALUE_ERROR";
+                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
+                                oAdo.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("audit_Post_NOVALUE_ERROR");
+                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
+                            }
+                            else
                                 {
                                     //delete any records from a previous run for the current variant and rxpackage
                                     strSQL = sqlArray[0];
@@ -6746,13 +6754,21 @@ namespace FIA_Biosum_Manager
                                     frmMain.g_oUtils.getFileName(strFvsTreeFile));
 
                                 //check if VALUE_ERROR table exists
+
                                 if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_VALUE_ERROR") == false)
                                 {
                                     oAdo.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("audit_Post_VALUE_ERROR");
                                     oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-
                                 }
-                                else
+                            else if (!oAdo.ColumnExist(oAdo.m_OleDbConnection, "audit_Post_VALUE_ERROR", "drybio_wdld_spp"))
+                            {
+                                // Accommodate new fields for v5.8.10
+                                oAdo.m_strSQL = "DROP TABLE audit_Post_VALUE_ERROR";
+                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
+                                oAdo.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("audit_Post_VALUE_ERROR");
+                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
+                            }
+                            else
                                 {
                                     //delete any records from a previous run for the current variant and rxpackage
                                     strSQL = sqlArray[0];
