@@ -1024,18 +1024,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ado_data_oracle\src\ado_data_oracle.csproj">
-      <Project>{93b7f9a3-f9be-49ee-95d9-236bfb4f58c0}</Project>
-      <Name>ado_data_oracle</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Fcs-Class-Library\src\FcsClassLibrary.csproj">
-      <Project>{7F40D3A7-B7B5-45C5-B414-018F2A09F86F}</Project>
-      <Name>FcsClassLibrary</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\FIADB-Oracle-Services\src\FIADBOracleServices.csproj">
-      <Project>{2651779D-1307-4C18-9CEF-2F2E10432FF3}</Project>
-      <Name>FIADBOracleServices</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Progress-Bar-Basic\src\ProgressBarBasic.csproj">
       <Project>{ff455dc4-70f8-4158-a9b3-b5f406091e5b}</Project>
       <Name>ProgressBarBasic</Name>

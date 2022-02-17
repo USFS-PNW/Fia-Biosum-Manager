@@ -125,7 +125,6 @@ namespace FIA_Biosum_Manager
 		string m_strRxCycleList="";
 		string[] m_strRxCycleArray=null;
 
-        FIADBOracle.Services m_oOracleServices = new FIADBOracle.Services();
         private Button btnViewPostLogFile;
         private Label lblMsg;
 

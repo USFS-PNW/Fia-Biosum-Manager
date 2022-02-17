@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using FcsClassLibrary;
 
 namespace FIA_Biosum_Manager
 {
