@@ -1778,7 +1778,8 @@ namespace FIA_Biosum_Manager
                         }
                     }
                 }
-                if (m_dictVariantStates.Keys.Count > 0)
+                if (m_dictVariantStates != null && 
+                    m_dictVariantStates.Keys.Count > 0)
                 {
                     sb = new System.Text.StringBuilder();
                     sb.Append("The FVS input databases listed below already contain records for state codes ");
@@ -2099,7 +2100,8 @@ namespace FIA_Biosum_Manager
                                 "Value", 20);
                             strCurVariant = strVariant;
                             List<string> lstStates = new List<string>();
-                            if (m_dictVariantStates.ContainsKey(strInDirAndFile))
+                            if (m_dictVariantStates != null && 
+                                m_dictVariantStates.ContainsKey(strInDirAndFile))
                             {
                                 lstStates = m_dictVariantStates[strInDirAndFile];
                             }
