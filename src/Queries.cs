@@ -3407,11 +3407,6 @@ namespace FIA_Biosum_Manager
                         return strTreeValueUpdates;
                     }
 
-                    public static string UpdateTreeAge(string strDestTable, string strTreeAgeOffset)
-                    {
-                        return "UPDATE " + strDestTable + " SET Age = Age + " + strTreeAgeOffset + " WHERE Age is not null;";
-                    }
-
                     public static string PadSpeciesWithZero(string strDestTable)
                     {
                         //This addresses a problem with FVSOut having incorrect Species Codes being translated into "2TD"

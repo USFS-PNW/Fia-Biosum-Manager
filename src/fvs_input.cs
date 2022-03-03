@@ -73,10 +73,13 @@ namespace FIA_Biosum_Manager
 	    private string m_strGrmTreeTable;
 	    private bool m_bUseGrmCalibrationData;
 
-        //Tree Age offset parameter: PNW should add 4-6 years to Breast Height Age, while Eastern states should use 8 years
-        private string m_strTreeAgeOffset = "4";
+        //Added for FIA2FVS implementation
+        private bool m_bUseCullDefect;
+        private string m_strSourceFiaDb;
+        private string m_strDataDirectory;
+        private string m_strGroup;
 
-        private string m_strDebugFile = frmMain.g_oEnv.strTempDir + "\\biosum_fvs_input_debug.txt";
+        private string m_strDebugFile;
 
 	    public fvs_input(string p_strProjDir,frmTherm p_frmTherm)
 		{
@@ -203,15 +206,16 @@ namespace FIA_Biosum_Manager
 	    }
 
 
-	    public void Start(string p_strFVSInDir, string p_strVariant)
+	    public void Start(string p_strVariant, string p_strDebugFile)
 	    {
 	        try
 	        {
-	            DebugLogMessage("*****START*****" + System.DateTime.Now.ToString() + "\r\n");
-	            DebugLogMessage("//Start(" + p_strFVSInDir + "," + p_strVariant + ")\r\n", 1);
+                this.m_strDebugFile = p_strDebugFile;
+                DebugLogMessage("*****START*****" + System.DateTime.Now.ToString() + "\r\n");
+	            DebugLogMessage("//Start(" + m_strDataDirectory + "," + p_strVariant + ")\r\n", 1);
 
 	            this.m_intError = 0;
-	            this.m_strInDir = p_strFVSInDir.Trim() + "\\" + p_strVariant.Trim();
+	            this.m_strInDir = m_strDataDirectory + "\\" + p_strVariant.Trim();
 	            this.m_strVariant = p_strVariant.Trim();
 	            this.strFVSInMDBFile = "FVSIn.accdb";
 
@@ -611,7 +615,9 @@ namespace FIA_Biosum_Manager
 	        stringBuilder.AppendLine("Litter years excluded: " + m_strLitterExcludedYears);
 	        stringBuilder.AppendLine("Growth Removal Mortality Calibration data used: " +
 	            m_bUseGrmCalibrationData.ToString());
-            stringBuilder.AppendLine("Tree Age offset parameter: " + m_strTreeAgeOffset);
+            stringBuilder.AppendLine( "Account for tree-level percent defect (cull): " + m_bUseCullDefect.ToString());
+            stringBuilder.AppendLine("Source FIA Data Mart database: " + m_strSourceFiaDb );
+            stringBuilder.AppendLine("Selected FVS group: " + m_strGroup);
             frmMain.g_oUtils.WriteText(logFile, stringBuilder.ToString());
 	    }
 
@@ -661,8 +667,10 @@ namespace FIA_Biosum_Manager
 	        rows.Add(new string[] {"Duff years excluded", m_strDuffExcludedYears});
 	        rows.Add(new string[] {"Litter years excluded", m_strLitterExcludedYears});
 	        rows.Add(new string[] {"Growth Removal Mortality Calibration data used", m_bUseGrmCalibrationData.ToString()});
-            rows.Add(new string[] { "Tree Age offset parameter", m_strTreeAgeOffset });
-	        return rows;
+            rows.Add(new string[] {"Account for tree-level percent defect (cull)", m_bUseCullDefect.ToString() });
+            rows.Add(new string[] {"Source FIA Data Mart database", m_strSourceFiaDb });
+            rows.Add(new string[] {"Selected FVS group", m_strGroup });
+            return rows;
 	    }
 
 	    private void CreateDwmFuelbedTypeCodeFvsConversionTable(OleDbConnection conn)
@@ -1008,11 +1016,6 @@ namespace FIA_Biosum_Manager
                             intProgressBarCounter++);
                     }
 
-                    //Tree Age updates
-                    strSQL = Queries.FVS.FVSInput.TreeInit.UpdateTreeAge(strTreeInitWorkTable, m_strTreeAgeOffset);
-                    m_ado.SqlNonQuery(conn, strSQL);
-                    frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
-
                     //Calibration Data
                     if (bUseGrmCalibrationData)
                     {
@@ -1322,13 +1325,31 @@ namespace FIA_Biosum_Manager
 	        get { return m_bUseGrmCalibrationData; }
 	    }
 
-        public string strTreeAgeOffset
+        public bool bUseCullDefect
         {
-            set { m_strTreeAgeOffset = value; }
-            get { return m_strTreeAgeOffset; }
+            set { m_bUseCullDefect = value; }
+            get { return m_bUseCullDefect; }
         }
 
-	    /// <summary>
+        public string strSourceFiaDb
+        {
+            set { m_strSourceFiaDb = value; }
+            get { return m_strSourceFiaDb; }
+        }
+
+        public string strDataDirectory
+        {
+            set { m_strDataDirectory = value; }
+            get { return m_strDataDirectory; }
+        }
+
+        public string strGroup
+        {
+            set { m_strGroup = value; }
+            get { return m_strGroup; }
+        }
+
+        /// <summary>
         /// Get the maximum dead tree id for a biosum_cond_id
         /// </summary>
         /// <param name="p_strBiosum_Cond_Id"></param>
@@ -3837,13 +3858,12 @@ namespace FIA_Biosum_Manager
         }
 
         public void StartFIA2FVS(ODBCMgr odbcmgr, dao_data_access oDao,
-            ado_data_access oAdo, string strTempMDB, string strSourceDbDir, string strDataDir, bool bOverwrite,
-            string strDebugFile, string strVariant, List<string> lstStates, string strSourceStandTableAlias, string strSourceTreeTableAlias,
-            string strGroup)
+            ado_data_access oAdo, string strTempMDB, bool bOverwrite,
+            string strDebugFile, string strVariant, List<string> lstStates, string strSourceStandTableAlias, string strSourceTreeTableAlias)
         {
             // Copy the target database from BioSum application directory
             string applicationDb = frmMain.g_oEnv.strAppDir + "\\db\\" + Tables.FIA2FVS.DefaultFvsInputFile;
-            string strInDirAndFile = strDataDir + "\\" + strVariant + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
+            string strInDirAndFile = m_strDataDirectory + "\\" + strVariant + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
             if (bOverwrite || !File.Exists(strInDirAndFile))
             {
                 // overwrite the existing FVSIn.db with an empty database or create anew if missing
@@ -3867,7 +3887,7 @@ namespace FIA_Biosum_Manager
                 }
                 if (bCreateTables == true)
                 {
-                    string strSql = "ATTACH DATABASE '" + strSourceDbDir + "' AS source";
+                    string strSql = "ATTACH DATABASE '" + m_strSourceFiaDb + "' AS source";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
                     oDataMgr.SqlNonQuery(con, strSql);
