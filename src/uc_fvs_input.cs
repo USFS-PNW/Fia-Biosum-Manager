@@ -593,6 +593,8 @@ namespace FIA_Biosum_Manager
             // chkDwmFuelModel
             // 
             this.chkDwmFuelModel.AutoSize = true;
+            this.chkDwmFuelModel.Checked = true;
+            this.chkDwmFuelModel.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkDwmFuelModel.Location = new System.Drawing.Point(7, 19);
             this.chkDwmFuelModel.Name = "chkDwmFuelModel";
             this.chkDwmFuelModel.Size = new System.Drawing.Size(18, 17);

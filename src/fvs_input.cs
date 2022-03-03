@@ -3874,7 +3874,6 @@ namespace FIA_Biosum_Manager
             string connTargetDb = oDataMgr.GetConnectionString(strInDirAndFile);
             //if (bOverwrite)
             //{
-
             using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(connTargetDb))
             {
                 // Connect to target database (FVS_In.db)
@@ -3976,27 +3975,40 @@ namespace FIA_Biosum_Manager
                 string strSql = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
                              " SELECT " + strSourceStandTableAlias + ".*" +
                              " FROM " + strSourceStandTableAlias +
-                             " INNER JOIN cond ON TRIM(COND.cn) = " + strSourceStandTableAlias + ".STAND_CN" +
-                             //" AND COND.INVYR = " + strSourceStandTableAlias + ".INV_YEAR" +
+                             " INNER JOIN " + this.m_strCondTable + " ON TRIM(" + this.m_strCondTable + ".cn) = " + strSourceStandTableAlias + ".STAND_CN" +
                              " WHERE " + strSourceStandTableAlias + ".VARIANT = '" + strVariant + "'" +
-                             " AND COND.landclcd = 1";
+                             " AND " + this.m_strCondTable + ".landclcd = 1";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
                 oAdo.SqlNonQuery(oAccessConn, strSql);
 
-                //strSql = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
-                //    " SELECT " + strSourceTreeTableAlias + ".* FROM " + strSourceTreeTableAlias +
-                //    " INNER JOIN " + Tables.FIA2FVS.DefaultFvsInputStandTableName + " ON TRIM(" +
-                //    strSourceTreeTableAlias + ".STAND_CN) = " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".STAND_CN";
-
                 strSql = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
                          " SELECT " + strSourceTreeTableAlias + ".*" +
-                         " FROM " + strSourceTreeTableAlias + ", TREE, " + strSourceStandTableAlias + ", COND" +
-                         " WHERE cond.biosum_cond_id = tree.biosum_cond_id" +
-                         " AND TRIM(tree.cn) = " + strSourceTreeTableAlias + ".TREE_CN" +
-                         " AND TRIM(cond.cn) = " + strSourceStandTableAlias + ".STAND_CN" +
-                         " AND TRIM(cond.cn) = " + strSourceTreeTableAlias + ".STAND_CN" +
-                         " AND cond.landclcd = 1 AND tree.DIA > 0 AND " + strSourceStandTableAlias + ".VARIANT = '" + strVariant + "'";
+                         " FROM " + strSourceTreeTableAlias + ", " + this.m_strTreeTable + ", " + 
+                           strSourceStandTableAlias + ", " + this.m_strCondTable +
+                         " WHERE " + this.m_strCondTable + ".biosum_cond_id = " + this.m_strTreeTable + ".biosum_cond_id" +
+                         " AND TRIM(" + this.m_strTreeTable + ".cn) = " + strSourceTreeTableAlias + ".TREE_CN" +
+                         " AND TRIM(" + this.m_strCondTable + ".cn) = " + strSourceStandTableAlias + ".STAND_CN" +
+                         " AND TRIM(" + this.m_strCondTable + ".cn) = " + strSourceTreeTableAlias + ".STAND_CN" +
+                         " AND " + this.m_strCondTable + ".landclcd = 1 AND tree.DIA > 0 AND " + 
+                         strSourceStandTableAlias + ".VARIANT = '" + strVariant + "'";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
+                oAdo.SqlNonQuery(oAccessConn, strSql);
+
+                // Populate the STAND_ID and SAM_WT from the BioSum Cond table
+                strSql = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                         " INNER JOIN " + this.m_strCondTable + " ON TRIM(" + this.m_strCondTable + ".cn) = " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".STAND_CN" +
+                         " SET STAND_ID = trim(biosum_cond_id)," +
+                         " SAM_WT = ACRES" +
+                         " WHERE " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".VARIANT = '" + strVariant + "'";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
+                oAdo.SqlNonQuery(oAccessConn, strSql);
+
+                //Overwrite FOREST_TYPE with FOREST_TYPE_FIA
+                strSql = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                         " SET FOREST_TYPE = FOREST_TYPE_FIA";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
                 oAdo.SqlNonQuery(oAccessConn, strSql);
