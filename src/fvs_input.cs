@@ -3872,6 +3872,7 @@ namespace FIA_Biosum_Manager
 
             SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
             string connTargetDb = oDataMgr.GetConnectionString(strInDirAndFile);
+            this.m_strDebugFile = strDebugFile;
             //if (bOverwrite)
             //{
             using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(connTargetDb))
@@ -3887,40 +3888,34 @@ namespace FIA_Biosum_Manager
                 if (bCreateTables == true)
                 {
                     string strSql = "ATTACH DATABASE '" + m_strSourceFiaDb + "' AS source";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
+                    DebugLogMessage("Execute SQL: " + strSql + "\r\n", 2);
                     oDataMgr.SqlNonQuery(con, strSql);
 
                     // Query schema and create empty stand table
                     strSql = "SELECT sql FROM source.sqlite_master WHERE type = 'table' " +
                         "AND name = '" + Tables.FIA2FVS.DefaultFvsInputStandTableName + "'";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
+                    DebugLogMessage("Execute SQL: " + strSql + "\r\n", 2);
                     strSql = oDataMgr.getSingleStringValueFromSQLQuery(con, strSql, "sqlite_master");
                     if (!String.IsNullOrEmpty(strSql))
                     {
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
+                        DebugLogMessage("Execute SQL: " + strSql + "\r\n", 2);
                         oDataMgr.SqlNonQuery(con, strSql);
                     }
 
                     // Create empty tree table
                     strSql = "SELECT sql FROM source.sqlite_master WHERE type = 'table' " +
                         "AND name = '" + Tables.FIA2FVS.DefaultFvsInputTreeTableName + "'";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
+                    DebugLogMessage("Execute SQL: " + strSql + "\r\n", 2);
                     strSql = oDataMgr.getSingleStringValueFromSQLQuery(con, strSql, "sqlite_master");
                     if (!String.IsNullOrEmpty(strSql))
                     {
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
+                        DebugLogMessage("Execute SQL: " + strSql + "\r\n", 2);
                         oDataMgr.SqlNonQuery(con, strSql);
                     }
 
                     // Disconnect from source database
                     strSql = "DETACH DATABASE 'source'";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
+                    DebugLogMessage("Execute SQL: " + strSql + "\r\n", 2);
                     oDataMgr.SqlNonQuery(con, strSql);
                 }
                 else if (bCreateTables == false && lstStates.Count > 0)
@@ -3932,11 +3927,13 @@ namespace FIA_Biosum_Manager
                     string strSql = "DELETE FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
                             " WHERE stand_cn IN(select stand_cn from " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
                             " where state in (" + csv + "))";
+                    DebugLogMessage("Execute SQL: " + strSql + "\r\n", 2);
                     oDataMgr.SqlNonQuery(con, strSql);
 
                     // Delete existing records from stand table
                     strSql = "DELETE FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
                             " WHERE STATE IN (" + csv + ")";
+                    DebugLogMessage("Execute SQL: " + strSql + "\r\n", 2);
                     oDataMgr.SqlNonQuery(con, strSql);
                 }
             }
@@ -3949,13 +3946,12 @@ namespace FIA_Biosum_Manager
             odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName, strInDirAndFile);
             if (!string.IsNullOrEmpty(odbcmgr.m_strError))
             {
-                frmMain.g_oUtils.WriteText(strDebugFile, "ODBCMgr error: " + odbcmgr.m_strError + "\r\n");
+                DebugLogMessage("ODBCMgr error: " + odbcmgr.m_strError + "\r\n", 0);
                 return;
             }
             else
             {
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(strDebugFile, "Created DSN for " + ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName + "\r\n");
+                DebugLogMessage("Created DSN for " + ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName + "\r\n", 2);
             }
             // Link stand table to temp database
             oDao.CreateSQLiteTableLink(strTempMDB, Tables.FIA2FVS.DefaultFvsInputStandTableName, Tables.FIA2FVS.DefaultFvsInputStandTableName,
@@ -3972,57 +3968,32 @@ namespace FIA_Biosum_Manager
             using (OleDbConnection oAccessConn = new OleDbConnection(strAccdbConnection))
             {
                 oAccessConn.Open();
-                string strSql = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
-                             " SELECT " + strSourceStandTableAlias + ".*" +
-                             " FROM " + strSourceStandTableAlias +
-                             " INNER JOIN " + this.m_strCondTable + " ON TRIM(" + this.m_strCondTable + ".cn) = " + strSourceStandTableAlias + ".STAND_CN" +
-                             " WHERE " + strSourceStandTableAlias + ".VARIANT = '" + strVariant + "'" +
-                             " AND " + this.m_strCondTable + ".landclcd = 1";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
-                oAdo.SqlNonQuery(oAccessConn, strSql);
+                DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.StandInit.PopulateStandInit(strSourceStandTableAlias, this.m_strCondTable,
+                    strVariant) + "\r\n", 2);
+                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.PopulateStandInit(strSourceStandTableAlias, this.m_strCondTable,
+                    strVariant));
 
-                strSql = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
-                         " SELECT " + strSourceTreeTableAlias + ".*" +
-                         " FROM " + strSourceTreeTableAlias + ", " + this.m_strTreeTable + ", " + 
-                           strSourceStandTableAlias + ", " + this.m_strCondTable +
-                         " WHERE " + this.m_strCondTable + ".biosum_cond_id = " + this.m_strTreeTable + ".biosum_cond_id" +
-                         " AND TRIM(" + this.m_strTreeTable + ".cn) = " + strSourceTreeTableAlias + ".TREE_CN" +
-                         " AND TRIM(" + this.m_strCondTable + ".cn) = " + strSourceStandTableAlias + ".STAND_CN" +
-                         " AND TRIM(" + this.m_strCondTable + ".cn) = " + strSourceTreeTableAlias + ".STAND_CN" +
-                         " AND " + this.m_strCondTable + ".landclcd = 1 AND tree.DIA > 0 AND " + 
-                         strSourceStandTableAlias + ".VARIANT = '" + strVariant + "'";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
-                oAdo.SqlNonQuery(oAccessConn, strSql);
+                DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.PopulateTreeInit(strSourceTreeTableAlias, strSourceStandTableAlias,
+                    this.m_strCondTable, this.m_strTreeTable, strVariant) + "\r\n", 2);
+                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.PopulateTreeInit(strSourceTreeTableAlias, strSourceStandTableAlias,
+                    this.m_strCondTable, this.m_strTreeTable, strVariant));
 
                 // Populate the STAND_ID and SAM_WT from the BioSum Cond table
-                strSql = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
-                         " INNER JOIN " + this.m_strCondTable + " ON TRIM(" + this.m_strCondTable + ".cn) = " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".STAND_CN" +
-                         " SET STAND_ID = trim(biosum_cond_id)," +
-                         " SAM_WT = ACRES" +
-                         " WHERE " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".VARIANT = '" + strVariant + "'";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
-                oAdo.SqlNonQuery(oAccessConn, strSql);
+                DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.StandInit.UpdateFromCond(this.m_strCondTable, strVariant) + "\r\n", 2);
+                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.UpdateFromCond(this.m_strCondTable, strVariant));
 
                 //Overwrite FOREST_TYPE with FOREST_TYPE_FIA
-                strSql = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
-                         " SET FOREST_TYPE = FOREST_TYPE_FIA";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
-                oAdo.SqlNonQuery(oAccessConn, strSql);
+                DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.StandInit.UpdateForestType() + "\r\n", 2);
+                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.UpdateForestType());
 
                 // Delete link to target stand table from temp database
-                strSql = "DROP TABLE " + Tables.FIA2FVS.DefaultFvsInputStandTableName;
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
+                string strSql = "DROP TABLE " + Tables.FIA2FVS.DefaultFvsInputStandTableName;
+                DebugLogMessage("Execute SQL: " + strSql + "\r\n", 2);
                 oAdo.SqlNonQuery(oAccessConn, strSql);
 
                 // Delete link to target tree table from temp database
                 strSql = "DROP TABLE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName;
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSql + "\r\n");
+                DebugLogMessage("Execute SQL: " + strSql + "\r\n", 2);
                 oAdo.SqlNonQuery(oAccessConn, strSql);
 
             }
@@ -4033,8 +4004,7 @@ namespace FIA_Biosum_Manager
                 con.Open();
                 string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
                                 " SET GROUPS = '" + strGroup + "'";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(strDebugFile, "Execute SQL: " + strSQL + "\r\n");
+                DebugLogMessage("Execute SQL: " + strSQL + "\r\n", 2);
                 oDataMgr.SqlNonQuery(con, strSQL);
             }
 
@@ -4045,12 +4015,11 @@ namespace FIA_Biosum_Manager
             }
             if (!string.IsNullOrEmpty(odbcmgr.m_strError))
             {
-                frmMain.g_oUtils.WriteText(strDebugFile, "ODBCMgr error: " + odbcmgr.m_strError + "\r\n");
+                DebugLogMessage("ODBCMgr error: " + odbcmgr.m_strError + "\r\n", 2);
             }
             else
             {
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(strDebugFile, "Removed DSN for " + ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName + "\r\n");
+                DebugLogMessage("Removed DSN for " + ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName + "\r\n", 2);
             }
         }
 	}

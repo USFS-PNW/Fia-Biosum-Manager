@@ -3192,7 +3192,34 @@ namespace FIA_Biosum_Manager
 		                strSQL[idx++] = "DROP TABLE Dwm_Fwd_RsnCtCd_WorkTable;";
 		                return strSQL;
 		            }
-		        }
+
+                    public static string PopulateStandInit(string strSourceStandTableAlias, string strCondTable, string strVariant)
+                    {
+                        string strSQL = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                             " SELECT " + strSourceStandTableAlias + ".*" +
+                             " FROM " + strSourceStandTableAlias +
+                             " INNER JOIN " + strCondTable + " ON TRIM(" + strCondTable + ".cn) = " + strSourceStandTableAlias + ".STAND_CN" +
+                             " WHERE " + strSourceStandTableAlias + ".VARIANT = '" + strVariant + "'" +
+                             " AND " + strCondTable + ".landclcd = 1";
+                        return strSQL;
+                    }
+
+                    public static string UpdateFromCond(string strCondTable, string strVariant)
+                    {
+                        string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                         " INNER JOIN " + strCondTable + " ON TRIM(" + strCondTable + ".cn) = " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".STAND_CN" +
+                         " SET STAND_ID = trim(biosum_cond_id)," +
+                         " SAM_WT = ACRES" +
+                         " WHERE " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".VARIANT = '" + strVariant + "'";
+                        return strSQL;
+                    }
+
+                    public static string UpdateForestType()
+                    {
+                        return "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                         " SET FOREST_TYPE = FOREST_TYPE_FIA"; ;
+                    }
+                }
 
 		        //All the queries necessary to create the FVSIn.accdb FVS_TreeInit table using intermediate tables
                 public class TreeInit
@@ -3446,6 +3473,22 @@ namespace FIA_Biosum_Manager
                     public static string DeleteSpcdChangeWorkTable()
                     {
                         return "DROP TABLE SPCD_CHANGE_WORK_TABLE;";
+                    }
+
+                    public static string PopulateTreeInit(string strSourceTreeTableAlias, string strSourceStandTableAlias,
+                        string strCondTable, string strTreeTable, string strVariant)
+                    {
+                        string strSql = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                         " SELECT " + strSourceTreeTableAlias + ".*" +
+                         " FROM " + strSourceTreeTableAlias + ", " + strTreeTable + ", " +
+                           strSourceStandTableAlias + ", " + strCondTable +
+                         " WHERE " + strCondTable + ".biosum_cond_id = " + strTreeTable + ".biosum_cond_id" +
+                         " AND TRIM(" + strTreeTable + ".cn) = " + strSourceTreeTableAlias + ".TREE_CN" +
+                         " AND TRIM(" + strCondTable + ".cn) = " + strSourceStandTableAlias + ".STAND_CN" +
+                         " AND TRIM(" + strCondTable + ".cn) = " + strSourceTreeTableAlias + ".STAND_CN" +
+                         " AND " + strCondTable + ".landclcd = 1 AND " + strTreeTable + ".DIA > 0 AND " +
+                         strSourceStandTableAlias + ".VARIANT = '" + strVariant + "'";
+                        return strSql;
                     }
                 }
 
