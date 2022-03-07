@@ -4618,7 +4618,7 @@ namespace FIA_Biosum_Manager
                                 UpdateTherm(m_frmTherm.progressBar1, m_intProgressStepCurrentCount, m_intProgressStepTotalCount);
 
                                 //update growth projected trees with tree volumes
-                                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + " Prepare data for Oracle volume calculation");
+                                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + " Prepare data for volume calculation");
                                 frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
                                 if (oAdo.TableExist(oConn, Tables.VolumeAndBiomass.BiosumVolumesInputTable))
                                     oAdo.SqlNonQuery(oConn, "DROP TABLE " + Tables.VolumeAndBiomass.BiosumVolumesInputTable);
@@ -4860,7 +4860,7 @@ namespace FIA_Biosum_Manager
                                                     //if (COUNT == 100) break;
                                                     //frmMain.g_oDelegate.SetControlPropertyValue((Control)lblSQLite2Msg, "Text", "INSERT DATA: " + COUNT.ToString() + " of " + intTotalCount.ToString());
                                                     frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", 
-                                                        "Package:" + p_strPackage.Trim() + " Prepare Tree Data for Oracle Input...Stand By [" + COUNT.ToString() + "/" + intTotalRecs.ToString() + "]");
+                                                        "Package:" + p_strPackage.Trim() + " Prepare Tree Data for Input...Stand By [" + COUNT.ToString() + "/" + intTotalRecs.ToString() + "]");
                                                     frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
                                                     UpdateTherm(m_frmTherm.progressBar1,
                                                    COUNT, intTotalRecs);

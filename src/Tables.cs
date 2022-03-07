@@ -5091,7 +5091,7 @@ namespace FIA_Biosum_Manager
             {
                 return "CREATE TABLE " + p_strTableName +
                        " (cn text (34)," +
-                       " tree long," +
+                       " fvs_tree_id CHAR(10)," +
                        " biosum_cond_id text (25)," +
                        " biosum_plot_id text (24)," +
                        " spcd INTEGER," +

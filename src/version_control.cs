@@ -6418,6 +6418,55 @@ namespace FIA_Biosum_Manager
                     }
                 }
             }
+
+            //Update Master Cond/Plot tables
+            FIA_Biosum_Manager.Datasource oDs = new Datasource();
+            oDs.m_strDataSourceMDBFile = ReferenceProjectDirectory.Trim() + "\\db\\project.mdb";
+            oDs.m_strDataSourceTableName = "datasource";
+            oDs.m_strScenarioId = "";
+            oDs.LoadTableColumnNamesAndDataTypes = false;
+            oDs.LoadTableRecordCount = false;
+            oDs.populate_datasource_array();
+
+            int intCondTableType = oDs.getDataSourceTableNameRow("CONDITION");
+            if (oDs.DataSourceTableExist(intCondTableType))
+            {
+                string strCondTable = oDs.m_strDataSource[intCondTableType, Datasource.TABLE].Trim();
+                string strCondTableDb = oDs.m_strDataSource[intCondTableType, Datasource.PATH].Trim() + "\\" +
+                                        oDs.m_strDataSource[intCondTableType, Datasource.MDBFILE].Trim();
+                using (OleDbConnection conn = new OleDbConnection(oAdo.getMDBConnString(strCondTableDb, "", "")))
+                {
+                    conn.Open();
+                    if (!oAdo.ColumnExist(conn, strCondTable, "stdorgcd"))
+                        oAdo.AddColumn(conn, strCondTable, "stdorgcd", "INTEGER", "");
+                }
+            }
+            else
+            {
+                System.Windows.Forms.MessageBox.Show("The Master Cond table was not found.",
+                    "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
+                    System.Windows.Forms.MessageBoxIcon.Error);
+            }
+
+            int intPlotTableType = oDs.getDataSourceTableNameRow("PLOT");
+            if (oDs.DataSourceTableExist(intPlotTableType))
+            {
+                string strPlotTable = oDs.m_strDataSource[intPlotTableType, Datasource.TABLE].Trim();
+                string strPlotTableDb = oDs.m_strDataSource[intPlotTableType, Datasource.PATH].Trim() + "\\" +
+                                        oDs.m_strDataSource[intPlotTableType, Datasource.MDBFILE].Trim();
+                using (OleDbConnection conn = new OleDbConnection(oAdo.getMDBConnString(strPlotTableDb, "", "")))
+                {
+                    conn.Open();
+                    if (!oAdo.ColumnExist(conn, strPlotTable, "ecosubcd"))
+                        oAdo.AddColumn(conn, strPlotTable, "ecosubcd", "CHAR(7)", "");
+                }
+            }
+            else
+            {
+                System.Windows.Forms.MessageBox.Show("The Master Plot table was not found.",
+                    "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
+                    System.Windows.Forms.MessageBoxIcon.Error);
+            }
         }
 
 

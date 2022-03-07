@@ -3219,6 +3219,31 @@ namespace FIA_Biosum_Manager
                         return "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
                          " SET FOREST_TYPE = FOREST_TYPE_FIA"; ;
                     }
+
+                    public static string SetFuelModelToNull()
+                    {
+                        return "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                         " SET FUEL_MODEL = null";
+                    }
+
+                    public static string CopyDwmColumns(string strVariant)
+                    {
+                        string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                         " INNER JOIN FVS_StandInit ON TRIM(FVS_StandInit.STAND_ID) = " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".STAND_ID" +
+                         " SET " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_0_25_H = FVS_StandInit.FUEL_0_25_H, " +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_25_1_H = FVS_StandInit.FUEL_25_1_H, " +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_1_3_H = FVS_StandInit.FUEL_1_3_H, " +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_3_6_H = FVS_StandInit.FUEL_3_6_H, " +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_6_12_H = FVS_StandInit.FUEL_6_12_H, " +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_12_20_H = FVS_StandInit.FUEL_12_20_H, " +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_20_35_H = FVS_StandInit.FUEL_20_35_H" +
+                         //Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_25_1_H = FVS_StandInit.FUEL_25_1_H" +
+                         //Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_25_1_H = FVS_StandInit.FUEL_25_1_H" +
+                         //Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_25_1_H = FVS_StandInit.FUEL_25_1_H" +
+                         //Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_25_1_H = FVS_StandInit.FUEL_25_1_H" +
+                         " WHERE " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".VARIANT = '" + strVariant + "'";
+                        return strSQL;
+                    }
                 }
 
 		        //All the queries necessary to create the FVSIn.accdb FVS_TreeInit table using intermediate tables

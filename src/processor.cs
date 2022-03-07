@@ -617,21 +617,21 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oTables.m_oProcessor.CreateTreeReconcilationTable(p_oAdo, p_oAdo.m_OleDbConnection, strTableName);
 
                     string strTempCn = "9999";
-                    int intTempTree = 9999;
+                    string strTempTree = "9999";
                     foreach (tree nextTree in m_trees)
                     {
                         string strKey = nextTree.CondId + "_" + nextTree.FvsTreeId;
                         if (dictTreeTable.ContainsKey(strKey))
                         {
                             System.Collections.Generic.List<string> treeList = dictTreeTable[strKey];
-                            intTempTree = Convert.ToInt16(treeList[idxTree]);
+                            strTempTree = treeList[idxTree];
                             strTempCn = treeList[idxCn];
                         }
                         p_oAdo.m_strSQL = "INSERT INTO " + strTableName + " " +
-                        "(cn, tree, biosum_cond_id, biosum_plot_id, spcd, merchWtGt, nonMerchWtGt, drybiom, " +
+                        "(cn, fvs_tree_id, biosum_cond_id, biosum_plot_id, spcd, merchWtGt, nonMerchWtGt, drybiom, " +
                         "drybiot, volCfNet, volCfGrs, volTsgrs, odWgt, dryToGreen, tpa, dbh, species_group, " +
                         "isSapling, isWoodland, isCull, diam_group, merch_value, opcost_type, biosum_category)" +
-                        "VALUES ('" + strTempCn + "', " + intTempTree + ", '" + nextTree.CondId + "', '" + nextTree.PlotId + "', " +
+                        "VALUES ('" + strTempCn + "', '" + strTempTree + "', '" + nextTree.CondId + "', '" + nextTree.PlotId + "', " +
                         nextTree.SpCd + ", " + nextTree.MerchWtGtPa + ", " + nextTree.NonMerchWtGtPa + ", " + nextTree.DryBiom + ", " +
                         nextTree.DryBiot + ", " + nextTree.VolCfNet + ", " + nextTree.VolCfGrs + ", " + nextTree.VolTsGrs + ", " + nextTree.OdWgt +
                         ", " + nextTree.DryToGreen + ", " + nextTree.Tpa + ", " + nextTree.Dbh + ", " + nextTree.SpeciesGroup + ", " +

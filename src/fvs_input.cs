@@ -3902,6 +3902,16 @@ namespace FIA_Biosum_Manager
                         oDataMgr.SqlNonQuery(con, strSql);
                     }
 
+                    // Add BioSum DWM fields to empty stand table
+                    string[] arrDwmFields = new string[] {"SmallMediumTotalLength", "LargeTotalLength", "CWDTotalLength",
+                                                          "DuffPitCount", "LitterPitCount"};
+                    string[] arrDwmTypes = new string[] { "DOUBLE", "DOUBLE", "DOUBLE", "LONG", "LONG" };
+                    for (int i = 0; i < arrDwmFields.Length; i++)
+                    {
+                        oDataMgr.AddColumn(con, Tables.FIA2FVS.DefaultFvsInputStandTableName, arrDwmFields[i], arrDwmTypes[i], null);
+                        DebugLogMessage("Added column " + arrDwmFields[i] + " to table " + Tables.FIA2FVS.DefaultFvsInputStandTableName + "\r\n", 2);
+                    }
+
                     // Create empty tree table
                     strSql = "SELECT sql FROM source.sqlite_master WHERE type = 'table' " +
                         "AND name = '" + Tables.FIA2FVS.DefaultFvsInputTreeTableName + "'";
@@ -3986,6 +3996,28 @@ namespace FIA_Biosum_Manager
                 DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.StandInit.UpdateForestType() + "\r\n", 2);
                 oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.UpdateForestType());
 
+                //Null FUEL_MODEL if not checked
+                if (new int[]
+                {
+                    (int) m_enumDWMOption.SKIP_FUEL_MODEL_AND_DWM_DATA,
+                    (int) m_enumDWMOption.USE_DWM_DATA_ONLY
+                }.Contains(m_intDWMOption))
+                {
+                    //@ToDo: Make sure that other fuel model fields are nulled out too. Should be if we copy from FVSIn.accdb
+                    DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.StandInit.SetFuelModelToNull() + "\r\n", 2);
+                    oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.SetFuelModelToNull());
+                }
+
+                // Copy DWM fields from FVSIn.accdb
+                if (new int[]
+                {
+                    (int) m_enumDWMOption.USE_FUEL_MODEL_OR_DWM_DATA,
+                    (int) m_enumDWMOption.USE_DWM_DATA_ONLY
+                }.Contains(m_intDWMOption))
+                {
+                    CopyFuelColumns(oDao, strTempMDB, strVariant);
+                }
+
                 // Delete link to target stand table from temp database
                 string strSql = "DROP TABLE " + Tables.FIA2FVS.DefaultFvsInputStandTableName;
                 DebugLogMessage("Execute SQL: " + strSql + "\r\n", 2);
@@ -4022,7 +4054,49 @@ namespace FIA_Biosum_Manager
                 DebugLogMessage("Removed DSN for " + ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName + "\r\n", 2);
             }
         }
-	}
+
+        private void CopyFuelColumns(dao_data_access oDao, string strTempMDBFile, string strVariant)
+        {
+            ado_data_access oAdo = new ado_data_access();
+            this.m_strInDir = m_strDataDirectory + "\\" + strVariant.Trim();
+            this.strFVSInMDBFile = "FVSIn.accdb";
+            if (File.Exists(this.m_strInDir + "\\" + this.strFVSInMDBFile))
+            {
+                string strConn = oAdo.getMDBConnString(this.m_strInDir + "\\" + this.strFVSInMDBFile, "", "");
+                using (OleDbConnection oAccessConn = new OleDbConnection(strConn))
+                {
+                    oAccessConn.Open();
+                    if (oAdo.TableExist(oAccessConn, "FVS_StandInit"))
+                    {
+                        //source FVSIn.accdb tables
+                        oDao.CreateTableLink(strTempMDBFile, "FVS_StandInit", this.m_strInDir + "\\" + this.strFVSInMDBFile,
+                            "FVS_StandInit", true);
+                        DebugLogMessage("Created table link to BioSum FVS_StandInit table \r\n", 2);
+                        strConn = oAdo.getMDBConnString(strTempMDBFile, "", "");
+                        oAccessConn.Close();
+                        oAccessConn.ConnectionString = strConn;
+                        oAccessConn.Open();
+                        oAdo.OpenConnection(strConn);
+                        DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.StandInit.CopyDwmColumns(strVariant) + "\r\n", 2);
+                        oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.CopyDwmColumns(strVariant));
+                    }
+                    else
+                    {
+                        DebugLogMessage("Error: Unable to locate BioSum FVS_StandInit table. DWM data cannot be copied!! \r\n", 1);
+                    }
+                }
+
+               
+            }
+            else
+            {
+                DebugLogMessage("Error: Unable to locate BioSum FVSIn.accdb database. DWM data cannot be copied!! \r\n", 1);
+            }
+            //m_dao.CreateTableLink(this.m_strTempMDBFile, "FVS_TreeInit", this.m_strInDir + "\\" + this.strFVSInMDBFile,
+            //    "FVS_TreeInit", true);
+
+        }
+    }
 	
 	
 			
