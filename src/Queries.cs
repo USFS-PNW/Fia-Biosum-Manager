@@ -3236,11 +3236,25 @@ namespace FIA_Biosum_Manager
                          Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_3_6_H = FVS_StandInit.FUEL_3_6_H, " +
                          Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_6_12_H = FVS_StandInit.FUEL_6_12_H, " +
                          Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_12_20_H = FVS_StandInit.FUEL_12_20_H, " +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_20_35_H = FVS_StandInit.FUEL_20_35_H" +
-                         //Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_25_1_H = FVS_StandInit.FUEL_25_1_H" +
-                         //Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_25_1_H = FVS_StandInit.FUEL_25_1_H" +
-                         //Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_25_1_H = FVS_StandInit.FUEL_25_1_H" +
-                         //Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_25_1_H = FVS_StandInit.FUEL_25_1_H" +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_20_35_H = FVS_StandInit.FUEL_20_35_H," +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_35_50_H = FVS_StandInit.FUEL_35_50_H," +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_GT_50_H = FVS_StandInit.FUEL_GT_50_H," +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_0_25_S = FVS_StandInit.FUEL_0_25_S," +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_25_1_S = FVS_StandInit.FUEL_25_1_S," +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_1_3_S = FVS_StandInit.FUEL_1_3_S," +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_3_6_S = FVS_StandInit.FUEL_3_6_S," +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_6_12_S = FVS_StandInit.FUEL_6_12_S," +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_12_20_S = FVS_StandInit.FUEL_12_20_S," +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_20_35_S = FVS_StandInit.FUEL_20_35_S," +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_35_50_S = FVS_StandInit.FUEL_35_50_S," +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_GT_50_S = FVS_StandInit.FUEL_GT_50_S," +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_LITTER = FVS_StandInit.FUEL_LITTER," +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_DUFF = FVS_StandInit.FUEL_DUFF," +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".SmallMediumTotalLength = FVS_StandInit.SmallMediumTotalLength," +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".LargeTotalLength = FVS_StandInit.LargeTotalLength," +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".CWDTotalLength = FVS_StandInit.CWDTotalLength," +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".DuffPitCount = FVS_StandInit.DuffPitCount," +
+                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".LitterPitCount = FVS_StandInit.LitterPitCount" +
                          " WHERE " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".VARIANT = '" + strVariant + "'";
                         return strSQL;
                     }
