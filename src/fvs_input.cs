@@ -4166,7 +4166,7 @@ namespace FIA_Biosum_Manager
         private void UpdateDamageCodesForCull(string strTreeTable, string strTempMDBFile)
         {
             ado_data_access oAdo = new ado_data_access();
-            string[] arrQueries = Queries.FVS.FVSInput.TreeInit.UpdateDamageCodes(strTreeTable);
+            string[] arrQueries = Queries.FVS.FVSInput.TreeInit.UpdateDamageCodesForCull(strTreeTable);
             string strConn = oAdo.getMDBConnString(strTempMDBFile, "", "");
             using (OleDbConnection oAccessConn = new OleDbConnection(strConn))
             {

@@ -3578,7 +3578,7 @@ namespace FIA_Biosum_Manager
                          return strSQL;
                     }
 
-                    public static string[] UpdateDamageCodes(string strTreeTable)
+                    public static string[] UpdateDamageCodesForCull(string strTreeTable)
                     {
                         string[] arrDamageCodeUpdates = new string[6];
                         arrDamageCodeUpdates[0] = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
@@ -3602,10 +3602,12 @@ namespace FIA_Biosum_Manager
                         arrDamageCodeUpdates[3] = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
                             " SET TREEVALUE = 1";
                         arrDamageCodeUpdates[4] = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                            " SET TREEVALUE = 2" +
+                            " WHERE DAMAGE1 IS NOT NULL OR DAMAGE2 IS NOT NULL OR DAMAGE3 IS NOT NULL";
+                        arrDamageCodeUpdates[5] = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
                             " SET TREEVALUE = 3" +
-                            " WHERE (DAMAGE1 = 25 AND SEVERITY1 => 25) OR (DAMAGE2 = 25 AND SEVERITY2 => 25) OR" +
-                            " DAMAGE3 = 25 AND SEVERITY3 => 25";
-
+                            " WHERE (DAMAGE1 = 25 AND SEVERITY1 >= 25) OR (DAMAGE2 = 25 AND SEVERITY2 >= 25) OR" +
+                            " (DAMAGE3 = 25 AND SEVERITY3 >= 25)";
 
                         return arrDamageCodeUpdates;
                     }
