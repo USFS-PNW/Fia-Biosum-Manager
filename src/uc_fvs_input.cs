@@ -1585,7 +1585,7 @@ namespace FIA_Biosum_Manager
                         }
                         frmMain.g_oDelegate.SetControlPropertyValue(
                             m_frmTherm.progressBar1,
-                            "Value", 60);
+                            "Value", 7);
 
                         // This happens at the end
                         if (File.Exists(strInDirAndFile) == true) //redundant check here, but leaves " " instead of new "0"
@@ -1650,7 +1650,7 @@ namespace FIA_Biosum_Manager
                 MessageBox.Show("!!Error!! \n" +
                     "Module - uc_fvs_input:ExtractFIA2FVSRecords  \n" +
                     "Err Msg - " + err.Message.ToString().Trim(),
-                    "Append Records", System.Windows.Forms.MessageBoxButtons.OK,
+                    "ExtractFIA2FVSRecords", System.Windows.Forms.MessageBoxButtons.OK,
                     System.Windows.Forms.MessageBoxIcon.Exclamation);
                 this.m_intError = -1;
             }

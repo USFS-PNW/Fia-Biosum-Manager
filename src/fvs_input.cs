@@ -3863,18 +3863,22 @@ namespace FIA_Biosum_Manager
         {
             // Copy the target database from BioSum application directory
             string applicationDb = frmMain.g_oEnv.strAppDir + "\\db\\" + Tables.FIA2FVS.DefaultFvsInputFile;
-            string strInDirAndFile = m_strDataDirectory + "\\" + strVariant + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
+            this.m_strVariant = strVariant;
+            string strInDirAndFile = m_strDataDirectory + "\\" + this.m_strVariant + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
             if (bOverwrite || !File.Exists(strInDirAndFile))
             {
                 // overwrite the existing FVSIn.db with an empty database or create anew if missing
                 File.Copy(applicationDb, strInDirAndFile, true);
             }
 
+            int intProgressBarCounter = 0;
+            frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Minimum", intProgressBarCounter++);
+            frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Maximum",
+                7);
+
             SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
             string connTargetDb = oDataMgr.GetConnectionString(strInDirAndFile);
             this.m_strDebugFile = strDebugFile;
-            //if (bOverwrite)
-            //{
             using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(connTargetDb))
             {
                 // Connect to target database (FVS_In.db)
@@ -3887,6 +3891,8 @@ namespace FIA_Biosum_Manager
                 }
                 if (bCreateTables == true)
                 {
+                    frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
+                        "Creating FVS_INIT_COND tables For Variant " + this.m_strVariant);
                     string strSql = "ATTACH DATABASE '" + m_strSourceFiaDb + "' AS source";
                     DebugLogMessage("Execute SQL: " + strSql + "\r\n", 2);
                     oDataMgr.SqlNonQuery(con, strSql);
@@ -3930,6 +3936,9 @@ namespace FIA_Biosum_Manager
                 }
                 else if (bCreateTables == false && lstStates.Count > 0)
                 {
+                    frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
+                        "Deleting existing records from FVS_STANDINIT_COND and FVS_TREEINIT_COND tables For Variant " + this.m_strVariant);
+
                     // Delete existing state records if there is conflict with source
                     string csv = String.Join(",", lstStates.Select(x => x.ToString()).ToArray());
 
@@ -3948,6 +3957,7 @@ namespace FIA_Biosum_Manager
                 }
             }
 
+            frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
             // Check to see if the target DSN exists and if so, delete so we can add
             if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName))
             {
@@ -3974,6 +3984,8 @@ namespace FIA_Biosum_Manager
             // Set the index, required to by ODBC to update
             oDao.CreatePrimaryKeyIndex(strTempMDB, Tables.FIA2FVS.DefaultFvsInputTreeTableName, "TREE_CN");
 
+            frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
+                "Populating FVS_STANDINIT_COND and FVS_TREEINIT_COND tables For Variant " + this.m_strVariant);
             string strAccdbConnection = oAdo.getMDBConnString(strTempMDB, "", "");
             using (OleDbConnection oAccessConn = new OleDbConnection(strAccdbConnection))
             {
@@ -3988,6 +4000,9 @@ namespace FIA_Biosum_Manager
                 oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.PopulateTreeInit(strSourceTreeTableAlias, strSourceStandTableAlias,
                     this.m_strCondTable, this.m_strTreeTable, strVariant));
 
+                frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
+                frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
+                    "Customizing FVS_STANDINIT_COND table For Variant " + this.m_strVariant);
                 // Populate the STAND_ID and SAM_WT from the BioSum Cond table
                 DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.StandInit.UpdateFromCond(this.m_strCondTable, strVariant) + "\r\n", 2);
                 oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.UpdateFromCond(this.m_strCondTable, strVariant));
@@ -4018,6 +4033,9 @@ namespace FIA_Biosum_Manager
                     CopyFuelColumns(oDao, strTempMDB, strVariant);
                 }
 
+                frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
+                frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
+                    "Customizing FVS_TREEINIT_COND table For Variant " + this.m_strVariant);
                 // Populate the STAND_ID from the BioSum Cond table
                 DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.UpdateFromCond(this.m_strCondTable, strVariant) + "\r\n", 2);
                 oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.UpdateFromCond(this.m_strCondTable, strVariant));
@@ -4026,6 +4044,7 @@ namespace FIA_Biosum_Manager
                 DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.UpdateFromTree(this.m_strTreeTable) + "\r\n", 2);
                 oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.UpdateFromTree(this.m_strTreeTable));
 
+                frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
                 // Update tree_count
                 DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.UpdateTreeCount(this.m_strTreeTable) + "\r\n", 2);
                 oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.UpdateTreeCount(this.m_strTreeTable));
@@ -4035,12 +4054,14 @@ namespace FIA_Biosum_Manager
                 // Copy Grm columns if selected
                 if (bUseGrmCalibrationData)
                 {
+                    frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
                     CopyGrmColumns(oDao, strTempMDB, strVariant);
                 }
 
                 // Update defect codes for cull if selected
                 if (bUseCullDefect)
                 {
+                    frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
                     UpdateDamageCodesForCull(m_strTreeTable, strTempMDB);
                 }
 
