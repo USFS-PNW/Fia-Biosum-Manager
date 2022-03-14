@@ -71,6 +71,7 @@ namespace FIA_Biosum_Manager
         private frmMain _frmMain = null;
         private frmDialog _frmDialog = null;
         private string m_strFVSCycleLength = "10";
+        Dictionary<string, int[]> m_VariantCountsDict = null;
 
         private env m_oEnv;
         private Help m_oHelp;
@@ -115,6 +116,7 @@ namespace FIA_Biosum_Manager
         private Label lblFiaDatamartFile;
         private ComboBox cmbSelectedGroup;
         private Label lblSelectedGroup;
+        private CheckBox chkIncludeSeedlings;
 
         delegate string[] GetListBoxItemsDlg(CheckedListBox checkedListBox);
 
@@ -219,6 +221,7 @@ namespace FIA_Biosum_Manager
             this.btnHelp = new System.Windows.Forms.Button();
             this.btnClose = new System.Windows.Forms.Button();
             this.lblTitle = new System.Windows.Forms.Label();
+            this.chkIncludeSeedlings = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -471,6 +474,7 @@ namespace FIA_Biosum_Manager
             // 
             // otherOptionsGroupBox
             // 
+            this.otherOptionsGroupBox.Controls.Add(this.chkIncludeSeedlings);
             this.otherOptionsGroupBox.Controls.Add(this.chkCull);
             this.otherOptionsGroupBox.Location = new System.Drawing.Point(451, 96);
             this.otherOptionsGroupBox.Name = "otherOptionsGroupBox";
@@ -728,6 +732,18 @@ namespace FIA_Biosum_Manager
             this.lblTitle.TabIndex = 99;
             this.lblTitle.Text = "Create FVS Input";
             // 
+            // chkIncludeSeedlings
+            // 
+            this.chkIncludeSeedlings.AutoSize = true;
+            this.chkIncludeSeedlings.Checked = true;
+            this.chkIncludeSeedlings.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkIncludeSeedlings.Location = new System.Drawing.Point(6, 52);
+            this.chkIncludeSeedlings.Name = "chkIncludeSeedlings";
+            this.chkIncludeSeedlings.Size = new System.Drawing.Size(139, 21);
+            this.chkIncludeSeedlings.TabIndex = 4;
+            this.chkIncludeSeedlings.Text = "Include seedlings";
+            this.chkIncludeSeedlings.UseVisualStyleBackColor = true;
+            // 
             // uc_fvs_input
             // 
             this.Controls.Add(this.groupBox1);
@@ -880,7 +896,7 @@ namespace FIA_Biosum_Manager
                 string strRegKey = "";
 
                 //Keep a count of records in FVS_StandInit and FVS_TreeInit tables in each variant
-                Dictionary<string, int[]> pVariantCountsDict = new Dictionary<string, int[]>();
+                m_VariantCountsDict = new Dictionary<string, int[]>();
 
                 while (this.m_ado.m_OleDbDataReader.Read())
                 {
@@ -899,9 +915,9 @@ namespace FIA_Biosum_Manager
 
                     //fvs_variant		
                     strVariant = this.m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim();
-                    if (pVariantCountsDict.ContainsKey(strVariant) == false)
+                    if (m_VariantCountsDict.ContainsKey(strVariant) == false)
                     {
-                        pVariantCountsDict.Add(strVariant, null); //fvs_standinit, fvs_treeinit counts
+                        m_VariantCountsDict.Add(strVariant, null); //fvs_standinit, fvs_treeinit counts
                     }
 
                     entryListItem.SubItems.Add(this.m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim());
@@ -959,12 +975,12 @@ namespace FIA_Biosum_Manager
                     strInDirAndFile = this.txtDataDir.Text.Trim() + "\\" + this.m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim() + "\\" + "FVSIn.accdb";
                     if (frmMain.g_bSuppressFVSInputTableRowCount == false && System.IO.File.Exists(strInDirAndFile) == true)
                     {
-                        if (pVariantCountsDict[strVariant] == null)
+                        if (m_VariantCountsDict[strVariant] == null)
                         {
-                            pVariantCountsDict[strVariant] = getFVSInputRecordCounts(strInDirAndFile);
+                            m_VariantCountsDict[strVariant] = getFVSInputRecordCounts(strInDirAndFile);
                         }
-                        entryListItem.SubItems[COL_STANDCOUNT].Text = Convert.ToString(pVariantCountsDict[strVariant][0]);
-                        entryListItem.SubItems[COL_TREECOUNT].Text = Convert.ToString(pVariantCountsDict[strVariant][1]);
+                        entryListItem.SubItems[COL_STANDCOUNT].Text = Convert.ToString(m_VariantCountsDict[strVariant][0]);
+                        entryListItem.SubItems[COL_TREECOUNT].Text = Convert.ToString(m_VariantCountsDict[strVariant][1]);
                     }
 
                     //check dsn out registry values
@@ -1152,6 +1168,12 @@ namespace FIA_Biosum_Manager
 
         public void CreateFia2FvsInputFiles()
         {
+            if (this.lstFvsInput.CheckedItems.Count == 0)
+            {
+                MessageBox.Show("No Boxes Are Checked", "Append", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+                return;
+            }
+
             // Make sure the database is chosen and that such a file exists
             bool bValidFile = true;
             if (!String.IsNullOrEmpty(txtFIADatamart.Text))
@@ -1377,6 +1399,7 @@ namespace FIA_Biosum_Manager
             //Growth Removal Mortality section
             p_fvs.bUseGrmCalibrationData = (bool)frmMain.g_oDelegate.GetControlPropertyValue(chkGRM, "Checked", false);
             p_fvs.bUseCullDefect = (bool)frmMain.g_oDelegate.GetControlPropertyValue(chkCull, "Checked", false);
+            p_fvs.bIncludeSeedlings = (bool)frmMain.g_oDelegate.GetControlPropertyValue(chkIncludeSeedlings, "Checked", false);
             p_fvs.strSourceFiaDb = (string)frmMain.g_oDelegate.GetControlPropertyValue((Control)this.txtFIADatamart, "Text", false);
             p_fvs.strSourceFiaDb = p_fvs.strSourceFiaDb.Trim();
             p_fvs.strDataDirectory = (string)frmMain.g_oDelegate.GetControlPropertyValue((Control)this.txtDataDir, "Text", false);
@@ -1489,8 +1512,9 @@ namespace FIA_Biosum_Manager
             m_intError = 0;
             string strCurVariant = "";
             string strVariant = "";
-            //@ToDo: This will be set in AppendRecords when we merge the streams
             m_strDebugFile = this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\biosum_fvs_input_debug.txt";
+            if (File.Exists(m_strDebugFile)) System.IO.File.Delete(m_strDebugFile);
+
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -1503,10 +1527,7 @@ namespace FIA_Biosum_Manager
             ado_data_access oAdo = new ado_data_access();
             try
             {
-                //string strSourceDbDir = (string)frmMain.g_oDelegate.GetControlPropertyValue((Control)this.txtFIADatamart, "Text", false);
-                //strSourceDbDir = strSourceDbDir.Trim();
                 fvs_input p_fvsinput = new fvs_input(this.m_strProjDir, this.m_frmTherm);
-                // @ToDo: For now this is duplicated in this and the legacy process. Some day remove one of them
                 ConfigureFvsInput(p_fvsinput);
 
                 // Get a temporary database name for processing
@@ -1557,9 +1578,11 @@ namespace FIA_Biosum_Manager
                 // Set the index, required to by ODBC to update
                 oDao.CreatePrimaryKeyIndex(strTempMDB, strSourceTreeTableAlias, "TREE_CN");
 
+                int steps = m_VariantCountsDict.Keys.Count * 2;
+                int interval = (int) Math.Floor((double) 90 / steps);
+                int intValue = interval;
                 for (int x = 0; x <= this.lstFvsInput.Items.Count - 1; x++)
                 {
-                    int intValue = Convert.ToInt32((double)(((double)(x + 1) / (double)this.lstFvsInput.Items.Count) * 100));
                     frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar2, "Value", intValue);
                     if ((bool)frmMain.g_oDelegate.GetListViewItemPropertyValue(lstFvsInput, x, "Checked", false) == true)
                     {
@@ -1571,8 +1594,15 @@ namespace FIA_Biosum_Manager
                         {
                             frmMain.g_oDelegate.SetControlPropertyValue(
                                 m_frmTherm.progressBar1,
-                                "Value", 20);
+                                "Value", 1);
                             strCurVariant = strVariant;
+
+                            // Running old BioSum FVSIn process
+                            p_fvsinput.Start(strCurVariant, m_strDebugFile);
+                            intValue = intValue + interval;
+                            frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar2, "Value", intValue);
+                            // Done
+
                             List<string> lstStates = new List<string>();
                             if (m_dictVariantStates != null && 
                                 m_dictVariantStates.ContainsKey(strInDirAndFile))
@@ -1683,7 +1713,6 @@ namespace FIA_Biosum_Manager
                 MessageBox.Show("No Boxes Are Checked", "Append", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
                 return;
             }
-            val_data();
             if (this.m_intError == 0)
             {
                 this.m_frmTherm = new frmTherm(((frmDialog)ParentForm), "APPEND FVS INPUT DATA",
@@ -1713,16 +1742,6 @@ namespace FIA_Biosum_Manager
             }
 
 
-        }
-        private void val_data()
-        {
-            this.m_intError = 0;
-            for (int x = 0; x <= this.lstFvsInput.Items.Count - 1; x++)
-            {
-                if (this.lstFvsInput.Items[x].Checked == true)
-                {
-                }
-            }
         }
 
         public void StopThread()

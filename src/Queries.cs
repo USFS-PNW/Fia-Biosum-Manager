@@ -3564,7 +3564,14 @@ namespace FIA_Biosum_Manager
                         string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
                          " INNER JOIN " + strCondTable + " ON " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".STAND_ID = TRIM(" + strCondTable + ".biosum_cond_id)" +
                          " SET TREE_COUNT = tree_count * condprop_unadj/micrprop_unadj" +
-                         " WHERE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".DIAMETER = 0.1 AND LEFT(" + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".TREE_CN,1) = 'S'";
+                         " WHERE DIAMETER = 0.1 AND LEFT(TREE_CN,1) = 'S'";
+                        return strSQL;
+                    }
+
+                    public static string DeleteSeedlings(string strCondTable)
+                    {
+                        string strSQL = "DELETE FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                         " WHERE DIAMETER = 0.1 AND LEFT(TREE_CN,1) = 'S'";
                         return strSQL;
                     }
 

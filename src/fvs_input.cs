@@ -75,6 +75,7 @@ namespace FIA_Biosum_Manager
 
         //Added for FIA2FVS implementation
         private bool m_bUseCullDefect;
+        private bool m_bIncludeSeedlings;
         private string m_strSourceFiaDb;
         private string m_strDataDirectory;
         private string m_strGroup;
@@ -231,8 +232,8 @@ namespace FIA_Biosum_Manager
 
                 //Create/append to database input files
                 if (this.m_intError != 0) return;
-                CreateFVSInputDbLOC();
-                if (this.m_intError != 0) return;
+                //CreateFVSInputDbLOC();
+                //if (this.m_intError != 0) return;
                 CreateFVSStandInit();
                 if (this.m_intError != 0) return;
                 CreateFVSTreeInit();
@@ -616,6 +617,7 @@ namespace FIA_Biosum_Manager
             stringBuilder.AppendLine("Growth Removal Mortality Calibration data used: " +
                 m_bUseGrmCalibrationData.ToString());
             stringBuilder.AppendLine("Account for tree-level percent defect (cull): " + m_bUseCullDefect.ToString());
+            stringBuilder.AppendLine("Include seedlings: " + m_bIncludeSeedlings.ToString());
             stringBuilder.AppendLine("Source FIA Data Mart database: " + m_strSourceFiaDb);
             stringBuilder.AppendLine("Selected FVS group: " + m_strGroup);
             frmMain.g_oUtils.WriteText(logFile, stringBuilder.ToString());
@@ -668,6 +670,7 @@ namespace FIA_Biosum_Manager
             rows.Add(new string[] { "Litter years excluded", m_strLitterExcludedYears });
             rows.Add(new string[] { "Growth Removal Mortality Calibration data used", m_bUseGrmCalibrationData.ToString() });
             rows.Add(new string[] { "Account for tree-level percent defect (cull)", m_bUseCullDefect.ToString() });
+            rows.Add(new string[] { "Include seedlings", m_bIncludeSeedlings.ToString() });
             rows.Add(new string[] { "Source FIA Data Mart database", m_strSourceFiaDb });
             rows.Add(new string[] { "Selected FVS group", m_strGroup });
             return rows;
@@ -772,7 +775,7 @@ namespace FIA_Biosum_Manager
                 }
 
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
-                    "Writing FVS_StandInit For Variant " + this.m_strVariant);
+                    "Writing BioSum FVS_StandInit For Variant " + this.m_strVariant);
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Minimum", 0);
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Maximum",
                     m_ado.m_DataSet.Tables["standlist"].Rows.Count);
@@ -926,7 +929,7 @@ namespace FIA_Biosum_Manager
                     conn.Open();
                     int intProgressBarCounter = 0;
                     frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
-                        "Writing FVS_TreeInit For Variant " + this.m_strVariant);
+                        "Writing BioSum FVS_TreeInit For Variant " + this.m_strVariant);
                     frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Minimum", 0);
                     frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Maximum", 31);
 
@@ -1329,6 +1332,12 @@ namespace FIA_Biosum_Manager
         {
             set { m_bUseCullDefect = value; }
             get { return m_bUseCullDefect; }
+        }
+
+        public bool bIncludeSeedlings
+        {
+            set { m_bIncludeSeedlings = value; }
+            get { return m_bIncludeSeedlings; }
         }
 
         public string strSourceFiaDb
@@ -3872,9 +3881,6 @@ namespace FIA_Biosum_Manager
             }
 
             int intProgressBarCounter = 0;
-            frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Minimum", intProgressBarCounter++);
-            frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Maximum",
-                7);
 
             SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
             string connTargetDb = oDataMgr.GetConnectionString(strInDirAndFile);
@@ -4044,6 +4050,14 @@ namespace FIA_Biosum_Manager
                 DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.UpdateFromTree(this.m_strTreeTable) + "\r\n", 2);
                 oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.UpdateFromTree(this.m_strTreeTable));
 
+                // Delete seedlings if not desired
+                if (!bIncludeSeedlings)
+                {
+                    frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
+                    DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.DeleteSeedlings(this.m_strTreeTable) + "\r\n", 2);
+                    oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.DeleteSeedlings(this.m_strTreeTable));
+                }
+
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
                 // Update tree_count
                 DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.UpdateTreeCount(this.m_strTreeTable) + "\r\n", 2);
@@ -4064,7 +4078,6 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
                     UpdateDamageCodesForCull(m_strTreeTable, strTempMDB);
                 }
-
 
                 // Delete link to target stand table from temp database
                 string strSql = "DROP TABLE " + Tables.FIA2FVS.DefaultFvsInputStandTableName;
