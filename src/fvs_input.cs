@@ -647,6 +647,35 @@ namespace FIA_Biosum_Manager
             }
         }
 
+        /// <summary>
+        /// Connect to FVSIn for the current variant, add a table with two columns to record configurations
+        /// </summary>
+        private void UpdateFvsInSqliteConfigurationTable()
+        {
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+            string strFvsInPathFile = m_strProjDir + "/fvs/data/" + m_strVariant + "/" + Tables.FIA2FVS.DefaultFvsInputFile;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strFvsInPathFile)))
+            {
+                conn.Open();
+                if (!oDataMgr.TableExist(conn, "biosum_fvsin_configuration"))
+                {
+                    oDataMgr.m_strSQL = "CREATE TABLE biosum_fvsin_configuration (Setting TEXT(255), `Value` TEXT(255));";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    DebugLogSQL(oDataMgr.m_strSQL);
+
+                }
+
+                List<string[]> configs = CreateFVSInConfigurationList();
+                foreach (string[] pair in configs)
+                {
+                    oDataMgr.m_strSQL = String.Format("INSERT INTO biosum_fvsin_configuration (Setting, `Value`) " +
+                                                   "VALUES ('{0}','{1}');", pair[0], pair[1]);
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    DebugLogSQL(oDataMgr.m_strSQL);
+                }
+            }
+        }
+
         private List<string[]> CreateFVSInConfigurationList()
         {
             List<string[]> rows = new List<string[]>();
@@ -3885,6 +3914,7 @@ namespace FIA_Biosum_Manager
             SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
             string connTargetDb = oDataMgr.GetConnectionString(strInDirAndFile);
             this.m_strDebugFile = strDebugFile;
+            DebugLogMessage("*****START*****" + System.DateTime.Now.ToString() + "\r\n");
             using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(connTargetDb))
             {
                 // Connect to target database (FVS_In.db)
@@ -4042,42 +4072,73 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
                     "Customizing FVS_TREEINIT_COND table For Variant " + this.m_strVariant);
-                // Populate the STAND_ID from the BioSum Cond table
-                DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.UpdateFromCond(this.m_strCondTable, strVariant) + "\r\n", 2);
-                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.UpdateFromCond(this.m_strCondTable, strVariant));
+                // Create temp table in MS Access
+                string strTempTreeTable = "temp_tree";
+                if (oAdo.TableExist(oAccessConn, strTempTreeTable))
+                {
+                    oAdo.SqlNonQuery(oAccessConn, "DROP TABLE " + strTempTreeTable);
+                }
+                string strSQL = "SELECT * INTO " + strTempTreeTable + " FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName;
+                DebugLogMessage("Execute SQL: " + strSQL + "\r\n", 2);
+                oAdo.SqlNonQuery(oAccessConn, strSQL);
 
-                // Populate the TREE_ID and BioSum Tree table
-                DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.UpdateFromTree(this.m_strTreeTable) + "\r\n", 2);
-                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.UpdateFromTree(this.m_strTreeTable));
+                // These are the fields we are changing that need to be updated at the end
+                IList<string> lstFields = new List<string>();
 
                 // Delete seedlings if not desired
                 if (!bIncludeSeedlings)
                 {
                     frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
-                    DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.DeleteSeedlings(this.m_strTreeTable) + "\r\n", 2);
-                    oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.DeleteSeedlings(this.m_strTreeTable));
+                    DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.DeleteSeedlings(strTempTreeTable) + "\r\n", 2);
+                    oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.DeleteSeedlings(strTempTreeTable));
+                    DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.DeleteSeedlings(Tables.FIA2FVS.DefaultFvsInputTreeTableName) + "\r\n", 2);
+                    oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.DeleteSeedlings(Tables.FIA2FVS.DefaultFvsInputTreeTableName));
                 }
+
+                // Populate the STAND_ID from the BioSum Cond table
+                DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.UpdateFromCond(this.m_strCondTable, strVariant, strTempTreeTable) + "\r\n", 2);
+                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.UpdateFromCond(this.m_strCondTable, strVariant, strTempTreeTable));
+                lstFields.Add("STAND_ID");
+
+                // Populate the TREE_ID and BioSum Tree table
+                DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.UpdateFromTree(this.m_strTreeTable, strTempTreeTable) + "\r\n", 2);
+                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.UpdateFromTree(this.m_strTreeTable, strTempTreeTable));
+                lstFields.Add("TREE_ID");
 
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
                 // Update tree_count
-                DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.UpdateTreeCount(this.m_strTreeTable) + "\r\n", 2);
-                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.UpdateTreeCount(this.m_strTreeTable));
-                DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.UpdateTreeCountForSeedlings(this.m_strCondTable) + "\r\n", 2);
-                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.UpdateTreeCountForSeedlings(this.m_strCondTable));
+                DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.UpdateTreeCount(this.m_strTreeTable, strTempTreeTable) + "\r\n", 2);
+                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.UpdateTreeCount(this.m_strTreeTable, strTempTreeTable));
+                DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.UpdateTreeCountForSeedlings(this.m_strCondTable, strTempTreeTable) + "\r\n", 2);
+                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.UpdateTreeCountForSeedlings(this.m_strCondTable, strTempTreeTable));
+                lstFields.Add("TREE_COUNT");
 
                 // Copy Grm columns if selected
                 if (bUseGrmCalibrationData)
                 {
                     frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
-                    CopyGrmColumns(oDao, strTempMDB, strVariant);
+                    CopyGrmColumns(oDao, strTempMDB, strVariant, strTempTreeTable);
+                    lstFields.Add("DG");
+                    lstFields.Add("HTG");
                 }
 
                 // Update defect codes for cull if selected
                 if (bUseCullDefect)
                 {
                     frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
-                    UpdateDamageCodesForCull(m_strTreeTable, strTempMDB);
+                    UpdateDamageCodesForCull(m_strTreeTable, strTempMDB, strTempTreeTable);
+                    lstFields.Add("Damage1");
+                    lstFields.Add("Severity1");
+                    lstFields.Add("Damage2");
+                    lstFields.Add("Severity2");
+                    lstFields.Add("Damage3");
+                    lstFields.Add("Severity3");
+                    lstFields.Add("TREEVALUE");
                 }
+
+                // Copy modified fields to final FVSIn.db
+                DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.UpdateFieldsFromTempTable(strTempTreeTable, lstFields) + "\r\n", 2);
+                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.UpdateFieldsFromTempTable(strTempTreeTable, lstFields));
 
                 // Delete link to target stand table from temp database
                 string strSql = "DROP TABLE " + Tables.FIA2FVS.DefaultFvsInputStandTableName;
@@ -4101,6 +4162,8 @@ namespace FIA_Biosum_Manager
                 oDataMgr.SqlNonQuery(con, strSQL);
             }
 
+            UpdateFvsInSqliteConfigurationTable();
+
             // Remove target DSN if it exists
             if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName))
             {
@@ -4114,6 +4177,7 @@ namespace FIA_Biosum_Manager
             {
                 DebugLogMessage("Removed DSN for " + ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName + "\r\n", 2);
             }
+            DebugLogMessage("*****END*****" + System.DateTime.Now.ToString() + "\r\n", 2);
         }
 
         private void CopyFuelColumns(dao_data_access oDao, string strTempMDBFile, string strVariant)
@@ -4158,7 +4222,7 @@ namespace FIA_Biosum_Manager
 
         }
 
-        private void CopyGrmColumns(dao_data_access oDao, string strTempMDBFile, string strVariant)
+        private void CopyGrmColumns(dao_data_access oDao, string strTempMDBFile, string strVariant, string strTempTreeTable)
         {
             ado_data_access oAdo = new ado_data_access();
             this.m_strInDir = m_strDataDirectory + "\\" + strVariant.Trim();
@@ -4180,8 +4244,8 @@ namespace FIA_Biosum_Manager
                         oAccessConn.ConnectionString = strConn;
                         oAccessConn.Open();
                         oAdo.OpenConnection(strConn);
-                        DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.CopyGrmColumns() + "\r\n", 2);
-                        oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.CopyGrmColumns());
+                        DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.CopyGrmColumns(strTempTreeTable) + "\r\n", 2);
+                        oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.CopyGrmColumns(strTempTreeTable));
                     }
                     else
                     {
@@ -4197,10 +4261,10 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void UpdateDamageCodesForCull(string strTreeTable, string strTempMDBFile)
+        private void UpdateDamageCodesForCull(string strTreeTable, string strTempMDBFile, string strTempTreeTable)
         {
             ado_data_access oAdo = new ado_data_access();
-            string[] arrQueries = Queries.FVS.FVSInput.TreeInit.UpdateDamageCodesForCull(strTreeTable);
+            string[] arrQueries = Queries.FVS.FVSInput.TreeInit.UpdateDamageCodesForCull(strTreeTable, strTempTreeTable);
             string strConn = oAdo.getMDBConnString(strTempMDBFile, "", "");
             using (OleDbConnection oAccessConn = new OleDbConnection(strConn))
             {

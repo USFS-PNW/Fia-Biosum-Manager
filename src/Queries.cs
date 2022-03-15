@@ -3530,93 +3530,110 @@ namespace FIA_Biosum_Manager
                         return strSql;
                     }
 
-                    public static string UpdateFromCond(string strCondTable, string strVariant)
+                    public static string UpdateFromCond(string strCondTable, string strVariant, string strTargetTable)
                     {
-                        string strSQL = "UPDATE(" + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
-                            " INNER JOIN cond ON " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".STAND_CN = TRIM(" + strCondTable + ".cn))" +
-                            " INNER JOIN " + Tables.FIA2FVS.DefaultFvsInputStandTableName + " ON " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".STAND_CN = " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".STAND_CN" +
-                            " SET " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".STAND_ID = Trim(" + strCondTable + ".BIOSUM_COND_ID)" +
+                        string strSQL = "UPDATE(" + strTargetTable +
+                            " INNER JOIN cond ON " + strTargetTable + ".STAND_CN = TRIM(" + strCondTable + ".cn))" +
+                            " INNER JOIN " + Tables.FIA2FVS.DefaultFvsInputStandTableName + " ON " + strTargetTable + ".STAND_CN = " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".STAND_CN" +
+                            " SET " + strTargetTable + ".STAND_ID = Trim(" + strCondTable + ".BIOSUM_COND_ID)" +
                             " WHERE " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".VARIANT = '" + strVariant + "'";
                         return strSQL;
                     }
 
-                    public static string UpdateFromTree(string strTreeTable)
+                    public static string UpdateFromTree(string strTreeTable, string strTargetTable)
                     {
-                        string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
-                         " INNER JOIN " + strTreeTable + " ON " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
-                         " AND " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
+                        string strSQL = "UPDATE " + strTargetTable +
+                         " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
+                         " AND " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
                          " SET TREE_ID = trim(fvs_tree_id)";
                         return strSQL;
                     }
 
-                    public static string UpdateTreeCount(string strTreeTable)
+                    public static string UpdateTreeCount(string strTreeTable, string strTargetTable)
                     {
-                        string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
-                         " INNER JOIN " + strTreeTable + " ON " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
-                         " AND " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
+                        string strSQL = "UPDATE " + strTargetTable +
+                         " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
+                         " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
                          " SET TREE_COUNT = tpacurr where statuscd not in (2,3) AND NOT (" +
-                         Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".DIAMETER = 0.1 AND LEFT(" + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".TREE_CN,1) = 'S')";
+                         strTargetTable + ".DIAMETER = 0.1 AND LEFT(" + strTargetTable + ".TREE_CN,1) = 'S')";
                         return strSQL;
                     }
 
-                    public static string UpdateTreeCountForSeedlings(string strCondTable)
+                    public static string UpdateTreeCountForSeedlings(string strCondTable, string strTargetTable)
                     {
-                        string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
-                         " INNER JOIN " + strCondTable + " ON " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".STAND_ID = TRIM(" + strCondTable + ".biosum_cond_id)" +
+                        string strSQL = "UPDATE " + strTargetTable +
+                         " INNER JOIN " + strCondTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strCondTable + ".biosum_cond_id)" +
                          " SET TREE_COUNT = tree_count * condprop_unadj/micrprop_unadj" +
                          " WHERE DIAMETER = 0.1 AND LEFT(TREE_CN,1) = 'S'";
                         return strSQL;
                     }
 
-                    public static string DeleteSeedlings(string strCondTable)
+                    public static string DeleteSeedlings(string strTargetTable)
                     {
-                        string strSQL = "DELETE FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                        string strSQL = "DELETE FROM " + strTargetTable +
                          " WHERE DIAMETER = 0.1 AND LEFT(TREE_CN,1) = 'S'";
                         return strSQL;
                     }
 
-                    public static string CopyGrmColumns()
+                    public static string CopyGrmColumns(string strTargetTable)
                     {
-                        string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
-                         " INNER JOIN FVS_TreeInit ON FVS_TreeInit.Tree_ID = " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".TREE_ID" +
-                         " AND " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".STAND_ID = FVS_TreeInit.Stand_ID" +
-                         " SET FVS_TREEINIT_COND.DG = FVS_TreeInit.DG," +
-                         " FVS_TREEINIT_COND.HTG = FVS_TreeInit.HTG";
+                        string strSQL = "UPDATE " + strTargetTable +
+                         " INNER JOIN FVS_TreeInit ON FVS_TreeInit.Tree_ID = " + strTargetTable + ".TREE_ID" +
+                         " AND " + strTargetTable + ".STAND_ID = FVS_TreeInit.Stand_ID" +
+                         " SET " + strTargetTable + ".DG = FVS_TreeInit.DG, " +
+                         strTargetTable + ".HTG = FVS_TreeInit.HTG";
                          return strSQL;
                     }
 
-                    public static string[] UpdateDamageCodesForCull(string strTreeTable)
+                    public static string[] UpdateDamageCodesForCull(string strTreeTable, string strTargetTable)
                     {
                         string[] arrDamageCodeUpdates = new string[6];
-                        arrDamageCodeUpdates[0] = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
-                            " INNER JOIN " + strTreeTable + " ON " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
-                            " AND " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
+                        arrDamageCodeUpdates[0] = "UPDATE " + strTargetTable +
+                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
+                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
                             " SET Damage1 = 25, Severity1 = (" + strTreeTable + ".CULL + " + strTreeTable + ".ROUGHCULL)" +
                             " WHERE Damage1 IS Null AND History = 1" +
                             " AND(" + strTreeTable + ".cull + " + strTreeTable + ".roughcull) > 0";
-                        arrDamageCodeUpdates[1] = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
-                            " INNER JOIN " + strTreeTable + " ON " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
-                            " AND " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
+                        arrDamageCodeUpdates[1] = "UPDATE " + strTargetTable +
+                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
+                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
                             " SET Damage2 = 25, Severity2 = (" + strTreeTable + ".CULL + " + strTreeTable + ".ROUGHCULL)" +
                             " WHERE Damage1 <> 25 AND Damage2 IS Null AND History = 1" +
                             " AND(" + strTreeTable + ".cull + " + strTreeTable + ".roughcull) > 0";
-                        arrDamageCodeUpdates[2] = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
-                            " INNER JOIN " + strTreeTable + " ON " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
-                            " AND " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
+                        arrDamageCodeUpdates[2] = "UPDATE " + strTargetTable +
+                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
+                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
                             " SET Damage3 = 25, Severity3 = (" + strTreeTable + ".CULL + " + strTreeTable + ".ROUGHCULL)" +
                             " WHERE Damage1 <> 25 AND Damage2 <> 25 AND Damage3 IS Null AND History = 1" +
                             " AND(" + strTreeTable + ".cull + " + strTreeTable + ".roughcull) > 0";
-                        arrDamageCodeUpdates[3] = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                        arrDamageCodeUpdates[3] = "UPDATE " + strTargetTable +
                             " SET TREEVALUE = 1";
-                        arrDamageCodeUpdates[4] = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                        arrDamageCodeUpdates[4] = "UPDATE " + strTargetTable +
                             " SET TREEVALUE = 2" +
                             " WHERE DAMAGE1 IS NOT NULL OR DAMAGE2 IS NOT NULL OR DAMAGE3 IS NOT NULL";
-                        arrDamageCodeUpdates[5] = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                        arrDamageCodeUpdates[5] = "UPDATE " + strTargetTable +
                             " SET TREEVALUE = 3" +
                             " WHERE (DAMAGE1 = 25 AND SEVERITY1 >= 25) OR (DAMAGE2 = 25 AND SEVERITY2 >= 25) OR" +
                             " (DAMAGE3 = 25 AND SEVERITY3 >= 25)";
 
                         return arrDamageCodeUpdates;
+                    }
+
+                    public static string UpdateFieldsFromTempTable(string strSourceTable, IList<string> lstFields)
+                    {
+                        string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                         " INNER JOIN " + strSourceTable + " ON " + strSourceTable + ".TREE_CN = " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".TREE_CN" +
+                         " AND " + strSourceTable + ".STAND_CN = " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".STAND_CN" +
+                         " SET ";
+                        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                        foreach (var item in lstFields)
+                        {
+                            sb.Append(Tables.FIA2FVS.DefaultFvsInputTreeTableName + "." + item + "=" + strSourceTable + "." + item);
+                            sb.Append(",");
+                        }
+                        sb.Length--;    // Remove trailing comma
+                        strSQL = strSQL + sb.ToString();
+                        return strSQL;
                     }
 
                 }
