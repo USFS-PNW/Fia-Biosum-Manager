@@ -2421,8 +2421,12 @@ namespace FIA_Biosum_Manager
             static public string FcsBiosumVolumesInputTable { get { return "fcs_biosum_volumes_input"; } }
             static public string BiosumCalcOutputTable { get { return "biosum_calc_output"; } }
             static public string DefaultSqliteWorkDatabase { get { return "fcs_tree.db"; } }
+            static public string DefaultSqliteConfigDatabase { get { return "BiosumSpeciesConfig.db"; } }
             static public string SqliteWorkTable { get{ return "sqlite_work_table"; } }
             static public string BiosumVolumeCalcTable { get { return "BIOSUM_CALC"; } }
+            static public string BioSumCompsJar { get { return "BioSumComps.jar"; } }
+            static public string FcsTreeCalcBat { get { return "fcs_tree_calc.bat"; } }
+
 
             static public List<Tuple<string, utils.DataType>> ColumnsAndDataTypes
             {
@@ -6416,7 +6420,9 @@ namespace FIA_Biosum_Manager
             static public string DefaultFvsInputTreeTableName { get { return "FVS_TREEINIT_COND"; } }
             static public string DefaultFvsInputKeywordsTableName { get { return "FVS_GROUPADDFILESANDKEYWORDS"; } }
             static public string DefaultFvsInputFolderName { get { return @"\fvs\data"; } }
-
+            static public string KcpFileBiosumKeywords { get { return "BioSum_Keywords.kcp"; } }
+            static public string KcpFilePotfireKeywords { get { return "POTFIRE_Keywords.kcp"; } }
+            static public string KcpFileExtension { get { return ".template"; } }
         }
     }
 }

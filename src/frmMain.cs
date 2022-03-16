@@ -432,6 +432,7 @@ namespace FIA_Biosum_Manager
             g_oGeneralMacroSubstitutionVariable_Collection.Add(oItem);
 
             CheckForBiosumRefData();
+            CheckForFcsFiles();
             
         }
 
@@ -4253,6 +4254,34 @@ namespace FIA_Biosum_Manager
             {
                 MessageBox.Show("!! An error occurred while accessing biosum_ref.accdb at " + 
                     System.IO.Path.GetDirectoryName(strDestFile) + " !!", "FIA Biosum");
+            }
+        }
+
+        /// <summary>
+        /// Manages the required files for FCS 0.3. These files are packaged in the application fcs directory
+        /// and copied to the AppData\FIABioSum folder
+        /// </summary>
+        private void CheckForFcsFiles()
+        {
+            string[] arrRequiredFiles = {Tables.VolumeAndBiomass.BioSumCompsJar, Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase,
+                                         Tables.VolumeAndBiomass.DefaultSqliteConfigDatabase, Tables.VolumeAndBiomass.FcsTreeCalcBat};
+            string strTargetPath = "";
+            try
+            {
+                for (int i = 0; i < arrRequiredFiles.Length; i++)
+                {
+                    strTargetPath = frmMain.g_oEnv.strApplicationDataDirectory.Trim() + frmMain.g_strBiosumDataDir + @"\" + arrRequiredFiles[i];
+                    string strSourcePath = frmMain.g_oEnv.strAppDir + @"\fcs\" + arrRequiredFiles[i];
+                    if (!System.IO.File.Exists(strTargetPath) == true)
+                    {
+                        System.IO.File.Copy(strSourcePath, strTargetPath);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("!! An error occurred while copying fcs file to " +
+                    System.IO.Path.GetDirectoryName(strTargetPath) + " !!", "FIA Biosum");
             }
         }
 

@@ -1639,6 +1639,15 @@ namespace FIA_Biosum_Manager
 
                 }
 
+                // Copy KCP files to output directory
+                string[] arrKcpFiles = {Tables.FIA2FVS.KcpFileBiosumKeywords, Tables.FIA2FVS.KcpFilePotfireKeywords };
+                foreach (var kcp in arrKcpFiles)
+                {
+                    string sourcePath = frmMain.g_oEnv.strAppDir + @"\scripts\" + kcp;
+                    string targetPath = this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\" + kcp + Tables.FIA2FVS.KcpFileExtension;
+                    File.Copy(sourcePath, targetPath, true);
+                }
+
                 odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName);    // Clean up DSN
                 if (!string.IsNullOrEmpty(odbcmgr.m_strError))
                 {
