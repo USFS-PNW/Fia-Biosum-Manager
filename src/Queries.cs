@@ -3587,34 +3587,121 @@ namespace FIA_Biosum_Manager
 
                     public static string[] UpdateDamageCodesForCull(string strTreeTable, string strTargetTable)
                     {
-                        string[] arrDamageCodeUpdates = new string[6];
+                        string[] arrDamageCodeUpdates = new string[18];
+                        // First pass updates the damage code and severity fields with cull (25) if they are null or = 96, 97
                         arrDamageCodeUpdates[0] = "UPDATE " + strTargetTable +
                             " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
                             " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
                             " SET Damage1 = 25, Severity1 = (" + strTreeTable + ".CULL + " + strTreeTable + ".ROUGHCULL)" +
-                            " WHERE Damage1 IS Null AND History = 1" +
+                            " WHERE (Damage1 IS Null or Damage1 in (96,97)) AND History = 1" +
                             " AND(" + strTreeTable + ".cull + " + strTreeTable + ".roughcull) > 0";
                         arrDamageCodeUpdates[1] = "UPDATE " + strTargetTable +
                             " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
                             " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
                             " SET Damage2 = 25, Severity2 = (" + strTreeTable + ".CULL + " + strTreeTable + ".ROUGHCULL)" +
-                            " WHERE Damage1 <> 25 AND Damage2 IS Null AND History = 1" +
+                            " WHERE Damage1 <> 25 AND (Damage2 IS Null or Damage2 in (96,97)) AND History = 1" +
                             " AND(" + strTreeTable + ".cull + " + strTreeTable + ".roughcull) > 0";
                         arrDamageCodeUpdates[2] = "UPDATE " + strTargetTable +
                             " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
                             " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
                             " SET Damage3 = 25, Severity3 = (" + strTreeTable + ".CULL + " + strTreeTable + ".ROUGHCULL)" +
-                            " WHERE Damage1 <> 25 AND Damage2 <> 25 AND Damage3 IS Null AND History = 1" +
+                            " WHERE Damage1 <> 25 AND Damage2 <> 25 AND (Damage3 IS Null or Damage3 in (96,97)) AND History = 1" +
                             " AND(" + strTreeTable + ".cull + " + strTreeTable + ".roughcull) > 0";
+                        // second pass updates the damage code and severity fields with mistletoe (30) if they are null or = 96, 97
                         arrDamageCodeUpdates[3] = "UPDATE " + strTargetTable +
-                            " SET TREEVALUE = 1";
+                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
+                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
+                            " SET Damage1 = 30, Severity1 = " + strTreeTable + ".mist_cl_cd" +
+                            " WHERE (Damage1 IS Null OR Damage1 in (96,97)) AND History = 1" +
+                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd NOT IN (202, 108, 122, 73)";
                         arrDamageCodeUpdates[4] = "UPDATE " + strTargetTable +
-                            " SET TREEVALUE = 2" +
-                            " WHERE DAMAGE1 IS NOT NULL OR DAMAGE2 IS NOT NULL OR DAMAGE3 IS NOT NULL";
+                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
+                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
+                            " SET Damage2 = 30, Severity2 = " + strTreeTable + ".mist_cl_cd" +
+                            " WHERE Damage1 <> 30 AND (Damage2 IS Null OR Damage2 IN (96,97)) AND History = 1" +
+                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd NOT IN (202, 108, 122, 73)";
                         arrDamageCodeUpdates[5] = "UPDATE " + strTargetTable +
-                            " SET TREEVALUE = 3" +
-                            " WHERE (DAMAGE1 = 25 AND SEVERITY1 >= 25) OR (DAMAGE2 = 25 AND SEVERITY2 >= 25) OR" +
-                            " (DAMAGE3 = 25 AND SEVERITY3 >= 25)";
+                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
+                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
+                            " SET Damage3 = 30, Severity3 = " + strTreeTable + ".mist_cl_cd" +
+                            " WHERE Damage1 <> 30 AND Damage2 <> 30 AND (Damage3 IS Null OR Damage3 IN (96,97)) AND History = 1" +
+                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd NOT IN (202, 108, 122, 73)";
+                        // third pass updates the damage code and severity fields with mistletoe (31) if they are null or = 96, 97
+                        arrDamageCodeUpdates[6] = "UPDATE " + strTargetTable +
+                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
+                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
+                            " SET Damage1 = 31, Severity1 = " + strTreeTable + ".mist_cl_cd" +
+                            " WHERE (Damage1 IS Null OR Damage1 in (96,97)) AND History = 1" +
+                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 108";
+                        arrDamageCodeUpdates[7] = "UPDATE " + strTargetTable +
+                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
+                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
+                            " SET Damage2 = 31, Severity2 = " + strTreeTable + ".mist_cl_cd" +
+                            " WHERE Damage1 <> 31 AND (Damage2 IS Null OR Damage2 IN (96,97)) AND History = 1" +
+                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 108";
+                        arrDamageCodeUpdates[8] = "UPDATE " + strTargetTable +
+                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
+                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
+                            " SET Damage3 = 31, Severity3 = " + strTreeTable + ".mist_cl_cd" +
+                            " WHERE Damage1 <> 31 AND Damage2 <> 31 AND (Damage3 IS Null OR Damage3 IN (96,97)) AND History = 1" +
+                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 108";
+                        // fourth pass updates the damage code and severity fields with mistletoe (32) if they are null or = 96, 97
+                        arrDamageCodeUpdates[9] = "UPDATE " + strTargetTable +
+                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
+                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
+                            " SET Damage1 = 32, Severity1 = " + strTreeTable + ".mist_cl_cd" +
+                            " WHERE (Damage1 IS Null OR Damage1 in (96,97)) AND History = 1" +
+                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 73";
+                        arrDamageCodeUpdates[10] = "UPDATE " + strTargetTable +
+                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
+                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
+                            " SET Damage2 = 32, Severity2 = " + strTreeTable + ".mist_cl_cd" +
+                            " WHERE Damage1 <> 32 AND (Damage2 IS Null OR Damage2 IN (96,97)) AND History = 1" +
+                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 73";
+                        arrDamageCodeUpdates[11] = "UPDATE " + strTargetTable +
+                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
+                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
+                            " SET Damage3 = 32, Severity3 = " + strTreeTable + ".mist_cl_cd" +
+                            " WHERE Damage1 <> 32 AND Damage2 <> 32 AND (Damage3 IS Null OR Damage3 IN (96,97)) AND History = 1" +
+                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 73";
+                        // fifth pass updates the damage code and severity fields with mistletoe (33) if they are null or = 96, 97
+                        arrDamageCodeUpdates[12] = "UPDATE " + strTargetTable +
+                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
+                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
+                            " SET Damage1 = 33, Severity1 = " + strTreeTable + ".mist_cl_cd" +
+                            " WHERE (Damage1 IS Null OR Damage1 in (96,97)) AND History = 1" +
+                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 202";
+                        arrDamageCodeUpdates[13] = "UPDATE " + strTargetTable +
+                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
+                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
+                            " SET Damage2 = 33, Severity2 = " + strTreeTable + ".mist_cl_cd" +
+                            " WHERE Damage1 <> 33 AND (Damage2 IS Null OR Damage2 IN (96,97)) AND History = 1" +
+                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 202";
+                        arrDamageCodeUpdates[14] = "UPDATE " + strTargetTable +
+                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
+                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
+                            " SET Damage3 = 33, Severity3 = " + strTreeTable + ".mist_cl_cd" +
+                            " WHERE Damage1 <> 33 AND Damage2 <> 33 AND (Damage3 IS Null OR Damage3 IN (96,97)) AND History = 1" +
+                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 202";
+                        // Final 6th pass updates the damage code and severity fields with mistletoe (34) if they are null or = 96, 97
+                        arrDamageCodeUpdates[15] = "UPDATE " + strTargetTable +
+                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
+                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
+                            " SET Damage1 = 34, Severity1 = " + strTreeTable + ".mist_cl_cd" +
+                            " WHERE (Damage1 IS Null OR Damage1 in (96,97)) AND History = 1" +
+                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 122";
+                        arrDamageCodeUpdates[16] = "UPDATE " + strTargetTable +
+                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
+                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
+                            " SET Damage2 = 34, Severity2 = " + strTreeTable + ".mist_cl_cd" +
+                            " WHERE Damage1 <> 34 AND (Damage2 IS Null OR Damage2 IN (96,97)) AND History = 1" +
+                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 122";
+                        arrDamageCodeUpdates[17] = "UPDATE " + strTargetTable +
+                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
+                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
+                            " SET Damage3 = 34, Severity3 = " + strTreeTable + ".mist_cl_cd" +
+                            " WHERE Damage1 <> 34 AND Damage2 <> 34 AND (Damage3 IS Null OR Damage3 IN (96,97)) AND History = 1" +
+                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 122";
 
                         return arrDamageCodeUpdates;
                     }

@@ -74,7 +74,6 @@ namespace FIA_Biosum_Manager
         private bool m_bUseGrmCalibrationData;
 
         //Added for FIA2FVS implementation
-        private bool m_bUseCullDefect;
         private bool m_bIncludeSeedlings;
         private string m_strSourceFiaDb;
         private string m_strDataDirectory;
@@ -616,7 +615,6 @@ namespace FIA_Biosum_Manager
             stringBuilder.AppendLine("Litter years excluded: " + m_strLitterExcludedYears);
             stringBuilder.AppendLine("Growth Removal Mortality Calibration data used: " +
                 m_bUseGrmCalibrationData.ToString());
-            stringBuilder.AppendLine("Account for tree-level percent defect (cull): " + m_bUseCullDefect.ToString());
             stringBuilder.AppendLine("Include seedlings: " + m_bIncludeSeedlings.ToString());
             stringBuilder.AppendLine("Source FIA Data Mart database: " + m_strSourceFiaDb);
             stringBuilder.AppendLine("Selected FVS group: " + m_strGroup);
@@ -698,7 +696,6 @@ namespace FIA_Biosum_Manager
             rows.Add(new string[] { "Duff years excluded", m_strDuffExcludedYears });
             rows.Add(new string[] { "Litter years excluded", m_strLitterExcludedYears });
             rows.Add(new string[] { "Growth Removal Mortality Calibration data used", m_bUseGrmCalibrationData.ToString() });
-            rows.Add(new string[] { "Account for tree-level percent defect (cull)", m_bUseCullDefect.ToString() });
             rows.Add(new string[] { "Include seedlings", m_bIncludeSeedlings.ToString() });
             rows.Add(new string[] { "Source FIA Data Mart database", m_strSourceFiaDb });
             rows.Add(new string[] { "Selected FVS group", m_strGroup });
@@ -1355,12 +1352,6 @@ namespace FIA_Biosum_Manager
         {
             set { m_bUseGrmCalibrationData = value; }
             get { return m_bUseGrmCalibrationData; }
-        }
-
-        public bool bUseCullDefect
-        {
-            set { m_bUseCullDefect = value; }
-            get { return m_bUseCullDefect; }
         }
 
         public bool bIncludeSeedlings
@@ -4122,19 +4113,16 @@ namespace FIA_Biosum_Manager
                     lstFields.Add("HTG");
                 }
 
-                // Update defect codes for cull if selected
-                if (bUseCullDefect)
-                {
-                    frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
-                    UpdateDamageCodesForCull(m_strTreeTable, strTempMDB, strTempTreeTable);
-                    lstFields.Add("Damage1");
-                    lstFields.Add("Severity1");
-                    lstFields.Add("Damage2");
-                    lstFields.Add("Severity2");
-                    lstFields.Add("Damage3");
-                    lstFields.Add("Severity3");
-                    lstFields.Add("TREEVALUE");
-                }
+                // Update damage codes for cull and mistletoe
+                frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
+                UpdateDamageCodesForCullAndMistletoe(m_strTreeTable, strTempMDB, strTempTreeTable);
+                lstFields.Add("Damage1");
+                lstFields.Add("Severity1");
+                lstFields.Add("Damage2");
+                lstFields.Add("Severity2");
+                lstFields.Add("Damage3");
+                lstFields.Add("Severity3");
+                lstFields.Add("TREEVALUE");
 
                 // Copy modified fields to final FVSIn.db
                 DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.UpdateFieldsFromTempTable(strTempTreeTable, lstFields) + "\r\n", 2);
@@ -4261,7 +4249,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void UpdateDamageCodesForCull(string strTreeTable, string strTempMDBFile, string strTempTreeTable)
+        private void UpdateDamageCodesForCullAndMistletoe(string strTreeTable, string strTempMDBFile, string strTempTreeTable)
         {
             ado_data_access oAdo = new ado_data_access();
             string[] arrQueries = Queries.FVS.FVSInput.TreeInit.UpdateDamageCodesForCull(strTreeTable, strTempTreeTable);

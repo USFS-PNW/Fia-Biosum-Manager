@@ -93,7 +93,6 @@ namespace FIA_Biosum_Manager
         private Button btnRx;
         private TabPage tabPage1;
         private GroupBox otherOptionsGroupBox;
-        private CheckBox chkCull;
         private GroupBox grpGRMOptions;
         private CheckBox chkGRM;
         private GroupBox grpDWMOptions;
@@ -197,7 +196,7 @@ namespace FIA_Biosum_Manager
             this.btnRx = new System.Windows.Forms.Button();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.otherOptionsGroupBox = new System.Windows.Forms.GroupBox();
-            this.chkCull = new System.Windows.Forms.CheckBox();
+            this.chkIncludeSeedlings = new System.Windows.Forms.CheckBox();
             this.grpGRMOptions = new System.Windows.Forms.GroupBox();
             this.chkGRM = new System.Windows.Forms.CheckBox();
             this.grpDWMOptions = new System.Windows.Forms.GroupBox();
@@ -221,7 +220,6 @@ namespace FIA_Biosum_Manager
             this.btnHelp = new System.Windows.Forms.Button();
             this.btnClose = new System.Windows.Forms.Button();
             this.lblTitle = new System.Windows.Forms.Label();
-            this.chkIncludeSeedlings = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -475,7 +473,6 @@ namespace FIA_Biosum_Manager
             // otherOptionsGroupBox
             // 
             this.otherOptionsGroupBox.Controls.Add(this.chkIncludeSeedlings);
-            this.otherOptionsGroupBox.Controls.Add(this.chkCull);
             this.otherOptionsGroupBox.Location = new System.Drawing.Point(451, 96);
             this.otherOptionsGroupBox.Name = "otherOptionsGroupBox";
             this.otherOptionsGroupBox.Size = new System.Drawing.Size(330, 288);
@@ -483,17 +480,17 @@ namespace FIA_Biosum_Manager
             this.otherOptionsGroupBox.TabStop = false;
             this.otherOptionsGroupBox.Text = "Other Options";
             // 
-            // chkCull
+            // chkIncludeSeedlings
             // 
-            this.chkCull.AutoSize = true;
-            this.chkCull.Checked = true;
-            this.chkCull.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkCull.Location = new System.Drawing.Point(6, 25);
-            this.chkCull.Name = "chkCull";
-            this.chkCull.Size = new System.Drawing.Size(295, 21);
-            this.chkCull.TabIndex = 3;
-            this.chkCull.Text = "Account for tree-level percent defect (cull)";
-            this.chkCull.UseVisualStyleBackColor = true;
+            this.chkIncludeSeedlings.AutoSize = true;
+            this.chkIncludeSeedlings.Checked = true;
+            this.chkIncludeSeedlings.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkIncludeSeedlings.Location = new System.Drawing.Point(6, 21);
+            this.chkIncludeSeedlings.Name = "chkIncludeSeedlings";
+            this.chkIncludeSeedlings.Size = new System.Drawing.Size(139, 21);
+            this.chkIncludeSeedlings.TabIndex = 4;
+            this.chkIncludeSeedlings.Text = "Include seedlings";
+            this.chkIncludeSeedlings.UseVisualStyleBackColor = true;
             // 
             // grpGRMOptions
             // 
@@ -731,18 +728,6 @@ namespace FIA_Biosum_Manager
             this.lblTitle.Size = new System.Drawing.Size(794, 32);
             this.lblTitle.TabIndex = 99;
             this.lblTitle.Text = "Create FVS Input";
-            // 
-            // chkIncludeSeedlings
-            // 
-            this.chkIncludeSeedlings.AutoSize = true;
-            this.chkIncludeSeedlings.Checked = true;
-            this.chkIncludeSeedlings.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkIncludeSeedlings.Location = new System.Drawing.Point(6, 52);
-            this.chkIncludeSeedlings.Name = "chkIncludeSeedlings";
-            this.chkIncludeSeedlings.Size = new System.Drawing.Size(139, 21);
-            this.chkIncludeSeedlings.TabIndex = 4;
-            this.chkIncludeSeedlings.Text = "Include seedlings";
-            this.chkIncludeSeedlings.UseVisualStyleBackColor = true;
             // 
             // uc_fvs_input
             // 
@@ -1398,7 +1383,6 @@ namespace FIA_Biosum_Manager
 
             //Growth Removal Mortality section
             p_fvs.bUseGrmCalibrationData = (bool)frmMain.g_oDelegate.GetControlPropertyValue(chkGRM, "Checked", false);
-            p_fvs.bUseCullDefect = (bool)frmMain.g_oDelegate.GetControlPropertyValue(chkCull, "Checked", false);
             p_fvs.bIncludeSeedlings = (bool)frmMain.g_oDelegate.GetControlPropertyValue(chkIncludeSeedlings, "Checked", false);
             p_fvs.strSourceFiaDb = (string)frmMain.g_oDelegate.GetControlPropertyValue((Control)this.txtFIADatamart, "Text", false);
             p_fvs.strSourceFiaDb = p_fvs.strSourceFiaDb.Trim();
