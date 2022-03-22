@@ -2766,8 +2766,8 @@ namespace FIA_Biosum_Manager
                         this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
 
                     //create cond column work table
-                    this.m_strSQL = "SELECT biosum_cond_id, qmd_tot_cm,hwd_qmd_tot_cm," +
-                        "swd_qmd_tot_cm,tpacurr,hwd_tpacurr,swd_tpacurr,ba_ft2_ac," +
+                    this.m_strSQL = "SELECT biosum_cond_id, qmd_all_inch,qmd_hwd_inch," +
+                        "qmd_swd_inch,tpacurr,hwd_tpacurr,swd_tpacurr,ba_ft2_ac," +
                         "hwd_ba_ft2_ac,swd_ba_ft2_ac,vol_ac_grs_stem_ttl_ft3," +
                         "hwd_vol_ac_grs_stem_ttl_ft3,swd_vol_ac_grs_stem_ttl_ft3," +
                         "vol_ac_grs_ft3, hwd_vol_ac_grs_ft3," +
@@ -4335,17 +4335,17 @@ namespace FIA_Biosum_Manager
 
 
 
-				//qmd_tot_cm 
-				// quadratic mean diameter for all the live trees on the condition
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            //qmd_all_inch 
+            // quadratic mean diameter for all the live trees on the condition
+            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 				{
 					p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
 					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
 
-					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,qmd_tot_cm) " + 
-						"SELECT c.biosum_cond_id, SQR(c.ba_ft2_ac/(.005454154 * c.tpacurr)) as qmd_tot_cm " + 
+					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,qmd_all_inch) " +
+                        "SELECT c.biosum_cond_id, SQR(c.ba_ft2_ac/(.005454154 * c.tpacurr)) as qmd_all_inch " + 
 						"FROM " + this.m_strCondTable + " c " + 
 						"WHERE c.biosum_status_cd=9 AND " + 
 						      "c.ba_ft2_ac IS NOT NULL AND " + 
@@ -4367,8 +4367,8 @@ namespace FIA_Biosum_Manager
 
 					p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
 						"INNER JOIN cond_column_updates_work_table u " + 
-						"ON c.biosum_cond_id = u.biosum_cond_id " + 
-						"SET c.qmd_tot_cm = u.qmd_tot_cm;";
+						"ON c.biosum_cond_id = u.biosum_cond_id " +
+                        "SET c.qmd_all_inch = u.qmd_all_inch;";
 
 					strTime = System.DateTime.Now.ToString();
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -4381,8 +4381,8 @@ namespace FIA_Biosum_Manager
                 SetThermValue(m_frmTherm.progressBar1, "Value", 32);
 
 
-				//swd_qmd_tot_cm      
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            //qmd_swd_inch      
+            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 				{
 
 					p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
@@ -4390,8 +4390,8 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
 					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
 
-					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,swd_qmd_tot_cm) " + 
-						"SELECT c.biosum_cond_id, SQR(c.swd_ba_ft2_ac/(.005454154 * c.swd_tpacurr)) as swd_qmd_tot_cm " + 
+					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,qmd_swd_inch) " +
+                        "SELECT c.biosum_cond_id, SQR(c.swd_ba_ft2_ac/(.005454154 * c.swd_tpacurr)) as qmd_swd_inch " + 
 						"FROM " + this.m_strCondTable + " c " + 
 						"WHERE c.biosum_status_cd=9 AND " + 
 						"c.swd_ba_ft2_ac IS NOT NULL AND " + 
@@ -4413,8 +4413,8 @@ namespace FIA_Biosum_Manager
 
 					p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
 						"INNER JOIN cond_column_updates_work_table u " + 
-						"ON c.biosum_cond_id = u.biosum_cond_id " + 
-						"SET c.SWD_qmd_tot_cm = u.SWD_qmd_tot_cm";
+						"ON c.biosum_cond_id = u.biosum_cond_id " +
+                        "SET c.qmd_swd_inch = u.qmd_swd_inch";
 
 					strTime = System.DateTime.Now.ToString();
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -4425,8 +4425,8 @@ namespace FIA_Biosum_Manager
 				}
                 SetThermValue(m_frmTherm.progressBar1, "Value", 34);
 
-				//hwd_qmd_tot_cm    
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            // qmd_hwd_inch    
+            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 				{
 
 					p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
@@ -4434,8 +4434,8 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
 					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
 
-					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,hwd_qmd_tot_cm) " + 
-						"SELECT c.biosum_cond_id, SQR(c.hwd_ba_ft2_ac/(.005454154 * c.hwd_tpacurr)) as hwd_qmd_tot_cm " + 
+					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id, qmd_hwd_inch) " +
+                        "SELECT c.biosum_cond_id, SQR(c.hwd_ba_ft2_ac/(.005454154 * c.hwd_tpacurr)) as qmd_hwd_inch " + 
 						"FROM " + this.m_strCondTable + " c " + 
 						"WHERE c.biosum_status_cd=9 AND " + 
 						"c.hwd_ba_ft2_ac IS NOT NULL AND " + 
@@ -4456,8 +4456,8 @@ namespace FIA_Biosum_Manager
 
 					p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
 						"INNER JOIN cond_column_updates_work_table u " + 
-						"ON c.biosum_cond_id = u.biosum_cond_id " + 
-						"SET c.HWD_qmd_tot_cm = u.HWD_qmd_tot_cm";
+						"ON c.biosum_cond_id = u.biosum_cond_id " +
+                        "SET c.qmd_hwd_inch = u.qmd_hwd_inch";
 
 					strTime = System.DateTime.Now.ToString();
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)

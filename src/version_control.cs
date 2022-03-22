@@ -6327,9 +6327,10 @@ namespace FIA_Biosum_Manager
 
         }
 
-        public void UpdateDatasources_5_8_11()
+        public void UpdateDatasources_5_9_0()
         {
             ado_data_access oAdo = new ado_data_access();
+            dao_data_access oDao = new dao_data_access();
             DataMgr p_dataMgr = new DataMgr();
             string[] arrPopTables = { frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName, frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableName,
                                       frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName, frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName};
@@ -6337,7 +6338,7 @@ namespace FIA_Biosum_Manager
             // Check to see if POP tables exist in master.db; If so make sure they have modified_date column
             string strDestFile = ReferenceProjectDirectory.Trim() + "\\" + frmMain.g_oTables.m_oFIAPlot.DefaultPopTableDbFile;
             string strDestConn = p_dataMgr.GetConnectionString(strDestFile);
-            bool bMissingColumn = true;
+            bool bMissingColumn = false;
             if (System.IO.File.Exists(strDestFile))
             {
                 using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strDestConn))
@@ -6439,6 +6440,19 @@ namespace FIA_Biosum_Manager
                     conn.Open();
                     if (!oAdo.ColumnExist(conn, strCondTable, "stdorgcd"))
                         oAdo.AddColumn(conn, strCondTable, "stdorgcd", "INTEGER", "");
+
+                    if (!oAdo.ColumnExist(conn, strCondTable, "qmd_all_inch"))
+                    {
+                        oDao.RenameField(strCondTableDb, strCondTable, "qmd_tot_cm", "qmd_all_inch");
+                    }
+                    if (!oAdo.ColumnExist(conn, strCondTable, "qmd_hwd_inch"))
+                    {
+                        oDao.RenameField(strCondTableDb, strCondTable, "hwd_qmd_tot_cm", "qmd_hwd_inch");
+                    }
+                    if (!oAdo.ColumnExist(conn, strCondTable, "qmd_swd_inch"))
+                    {
+                        oDao.RenameField(strCondTableDb, strCondTable, "swd_qmd_tot_cm", "qmd_swd_inch");
+                    }
                 }
             }
             else
@@ -6466,6 +6480,18 @@ namespace FIA_Biosum_Manager
                 System.Windows.Forms.MessageBox.Show("The Master Plot table was not found.",
                     "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
                     System.Windows.Forms.MessageBoxIcon.Error);
+            }
+
+            if (oAdo != null)
+            {
+                oAdo.CloseConnection(oAdo.m_OleDbConnection);
+                oAdo = null;
+            }
+
+            if (oDao != null)
+            {
+                oDao.m_DaoWorkspace.Close();
+                oDao = null;
             }
         }
 

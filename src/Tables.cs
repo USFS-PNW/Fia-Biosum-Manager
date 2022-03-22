@@ -4034,9 +4034,9 @@ namespace FIA_Biosum_Manager
                     "stdszcd BYTE," +
                     "habtypcd1 CHAR(10)," +
                     "adforcd INTEGER," +
-                    "qmd_tot_cm SINGLE," +
-                    "hwd_qmd_tot_cm SINGLE," +
-                    "swd_qmd_tot_cm SINGLE," +
+                    "qmd_all_inch SINGLE," +
+                    "qmd_hwd_inch SINGLE," +
+                    "qmd_swd_inch SINGLE," +
                     "acres DOUBLE," +
                     "unitcd LONG," +
                     "vol_loc_grp CHAR(10)," +
@@ -4103,9 +4103,9 @@ namespace FIA_Biosum_Manager
                     "stdszcd TEXT," +
                     "habtypcd1 TEXT," +
                     "adforcd INTEGER," +
-                    "qmd_tot_cm INTEGER," +
-                    "hwd_qmd_tot_cm INTEGER," +
-                    "swd_qmd_tot_cm INTEGER," +
+                    "qmd_all_inch INTEGER," +
+                    "qmd_hwd_inch INTEGER," +
+                    "qmd_swd_inch INTEGER," +
                     "acres REAL," +
                     "unitcd INTEGER," +
                     "vol_loc_grp TEXT," +
