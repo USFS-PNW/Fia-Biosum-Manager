@@ -80,7 +80,7 @@ namespace FIA_Biosum_Manager
         private TabControl tabControl1;
         private TabPage tabPage2;
         private TextBox txtDataDir;
-        private Button btnExecuteAction;
+        private Button btnCreateFvsInput;
         public ListView lstFvsInput;
         private ComboBox cmbAction;
         private Label lblRxCnt;
@@ -183,7 +183,7 @@ namespace FIA_Biosum_Manager
             this.txtFIADatamart = new System.Windows.Forms.TextBox();
             this.lblFiaDatamartFile = new System.Windows.Forms.Label();
             this.txtDataDir = new System.Windows.Forms.TextBox();
-            this.btnExecuteAction = new System.Windows.Forms.Button();
+            this.btnCreateFvsInput = new System.Windows.Forms.Button();
             this.lstFvsInput = new System.Windows.Forms.ListView();
             this.cmbAction = new System.Windows.Forms.ComboBox();
             this.lblRxCnt = new System.Windows.Forms.Label();
@@ -267,7 +267,7 @@ namespace FIA_Biosum_Manager
             this.tabPage2.Controls.Add(this.txtFIADatamart);
             this.tabPage2.Controls.Add(this.lblFiaDatamartFile);
             this.tabPage2.Controls.Add(this.txtDataDir);
-            this.tabPage2.Controls.Add(this.btnExecuteAction);
+            this.tabPage2.Controls.Add(this.btnCreateFvsInput);
             this.tabPage2.Controls.Add(this.lstFvsInput);
             this.tabPage2.Controls.Add(this.cmbAction);
             this.tabPage2.Controls.Add(this.lblRxCnt);
@@ -342,14 +342,14 @@ namespace FIA_Biosum_Manager
             this.txtDataDir.Size = new System.Drawing.Size(629, 23);
             this.txtDataDir.TabIndex = 99;
             // 
-            // btnExecuteAction
+            // btnCreateFvsInput
             // 
-            this.btnExecuteAction.Location = new System.Drawing.Point(647, 424);
-            this.btnExecuteAction.Name = "btnExecuteAction";
-            this.btnExecuteAction.Size = new System.Drawing.Size(110, 32);
-            this.btnExecuteAction.TabIndex = 5;
-            this.btnExecuteAction.Text = "Execute Action";
-            this.btnExecuteAction.Click += new System.EventHandler(this.btnExecuteAction_Click);
+            this.btnCreateFvsInput.Location = new System.Drawing.Point(528, 424);
+            this.btnCreateFvsInput.Name = "btnCreateFvsInput";
+            this.btnCreateFvsInput.Size = new System.Drawing.Size(229, 32);
+            this.btnCreateFvsInput.TabIndex = 5;
+            this.btnCreateFvsInput.Text = "Create FVS Input Database File";
+            this.btnCreateFvsInput.Click += new System.EventHandler(this.btnCreateFvsInput_Click);
             // 
             // lstFvsInput
             // 
@@ -373,11 +373,12 @@ namespace FIA_Biosum_Manager
             this.cmbAction.Items.AddRange(new object[] {
             "Create FVS Input Database Files",
             "Create FVS Input Database Files From FIA2FVS"});
-            this.cmbAction.Location = new System.Drawing.Point(279, 429);
+            this.cmbAction.Location = new System.Drawing.Point(9, 424);
             this.cmbAction.Name = "cmbAction";
             this.cmbAction.Size = new System.Drawing.Size(362, 24);
             this.cmbAction.TabIndex = 4;
             this.cmbAction.Text = "<-------Action Items------->";
+            this.cmbAction.Visible = false;
             this.cmbAction.SelectedIndexChanged += new System.EventHandler(this.cmbAction_SelectedIndexChanged);
             this.cmbAction.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.cmbAction_KeyPress);
             // 
@@ -1138,7 +1139,7 @@ namespace FIA_Biosum_Manager
 
             this.cmbAction.Enabled = true;
             this.btnRefresh.Enabled = true;
-            this.btnExecuteAction.Enabled = true;
+            this.btnCreateFvsInput.Enabled = true;
             this.btnChkAll.Enabled = true;
             this.btnClearAll.Enabled = true;
             this.btnClose.Enabled = true;
@@ -1806,7 +1807,7 @@ namespace FIA_Biosum_Manager
 
                 frmMain.g_oDelegate.SetControlPropertyValue(cmbAction, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnRefresh, "Enabled", true);
-                frmMain.g_oDelegate.SetControlPropertyValue(btnExecuteAction, "Enabled", true);
+                frmMain.g_oDelegate.SetControlPropertyValue(btnCreateFvsInput, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnChkAll, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnClearAll, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnClose, "Enabled", true);
@@ -2127,37 +2128,40 @@ namespace FIA_Biosum_Manager
             get { return _frmDialog; }
         }
 
-        private void btnExecuteAction_Click(object sender, EventArgs e)
+        private void btnCreateFvsInput_Click(object sender, EventArgs e)
         {
             if (this.lstFvsInput.CheckedItems.Count == 0)
             {
                 MessageBox.Show("No Boxes Are Checked", "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
                 return;
             }
-            string strAction = cmbAction.Text.Trim().ToUpper();
-            switch (strAction)
-            {
-                case "CREATE FVS INPUT DATABASE FILES":
-                    btnAppend_Click(null, null);
-                    break;
-                case "CREATE FVS INPUT DATABASE FILES FROM FIA2FVS":
-                    CreateFia2FvsInputFiles();
-                    break;
-                //case "CREATE FVS OUTPUT DATABASE FILES":
-                //    CreateFvsOutFiles();
-                //    break;
-                //13-JAN-2022: No longer needed with FVSOn*
-                //case "DELETE STANDARD FVS OUTPUT TABLES":
-                //    BackupBeforeDelete("S");
-                //    break;
-                //case "DELETE POTFIRE BASE YEAR OUTPUT TABLES":
-                //    BackupBeforeDelete("P");
-                //    break;
-                //case "DELETE BOTH STANDARD AND POTFIRE BASE YEAR OUTPUT TABLES":
-                //    BackupBeforeDelete("B");
-                //    break;
-                //04-FEB-2022: No longer needed with FVSOn
-            }
+
+            CreateFia2FvsInputFiles();
+            //@ToDo: 22-MAR-2022 Delete all references to cmbAction when we are sure we don't need it anymore
+            //string strAction = cmbAction.Text.Trim().ToUpper();
+            //switch (strAction)
+            //{
+            //    case "CREATE FVS INPUT DATABASE FILES":
+            //        btnAppend_Click(null, null);
+            //        break;
+            //    case "CREATE FVS INPUT DATABASE FILES FROM FIA2FVS":
+            //        CreateFia2FvsInputFiles();
+            //        break;
+            //case "CREATE FVS OUTPUT DATABASE FILES":
+            //    CreateFvsOutFiles();
+            //    break;
+            //13-JAN-2022: No longer needed with FVSOn*
+            //case "DELETE STANDARD FVS OUTPUT TABLES":
+            //    BackupBeforeDelete("S");
+            //    break;
+            //case "DELETE POTFIRE BASE YEAR OUTPUT TABLES":
+            //    BackupBeforeDelete("P");
+            //    break;
+            //case "DELETE BOTH STANDARD AND POTFIRE BASE YEAR OUTPUT TABLES":
+            //    BackupBeforeDelete("B");
+            //    break;
+            //04-FEB-2022: No longer needed with FVSOn
+            //}
         }
 
         private void cmbAction_SelectedIndexChanged(object sender, EventArgs e)
@@ -2230,28 +2234,28 @@ namespace FIA_Biosum_Manager
             lstFvsInput.Height = tabPage2.Height - txtDataDir.Bottom - 120;
 
             //btns under lstFvsInput position based on tabControl perimeter
-            btnExecuteAction.Top = lstFvsInput.Bottom + 80;
-            btnExecuteAction.Left = lstFvsInput.Right - btnExecuteAction.Width;
+            btnCreateFvsInput.Top = lstFvsInput.Bottom + 80;
+            btnCreateFvsInput.Left = lstFvsInput.Right - btnCreateFvsInput.Width;
 
-            cmbAction.Top = btnExecuteAction.Top + (int)(btnExecuteAction.Height * .5) - (int)(cmbAction.Height * .5);
-            cmbAction.Left = btnExecuteAction.Left - cmbAction.Width - 5;
+            cmbAction.Top = btnCreateFvsInput.Top + (int)(btnCreateFvsInput.Height * .5) - (int)(cmbAction.Height * .5);
+            cmbAction.Left = btnCreateFvsInput.Left - cmbAction.Width - 5;
 
-            btnChkAll.Top = btnExecuteAction.Top;
+            btnChkAll.Top = btnCreateFvsInput.Top;
             btnChkAll.Left = lstFvsInput.Left;
-            btnClearAll.Top = btnExecuteAction.Top;
+            btnClearAll.Top = btnCreateFvsInput.Top;
             btnClearAll.Left = btnChkAll.Right + 5;
-            btnRefresh.Top = btnExecuteAction.Top;
+            btnRefresh.Top = btnCreateFvsInput.Top;
             btnRefresh.Left = btnClearAll.Right + 5;
 
-            lblFiaDatamartFile.Left = cmbAction.Left;
+            lblFiaDatamartFile.Left = btnCreateFvsInput.Left - 250;
             lblFiaDatamartFile.Top = lstFvsInput.Bottom + 5;
             txtFIADatamart.Left = lblFiaDatamartFile.Left;
             txtFIADatamart.Top = lblFiaDatamartFile.Bottom + 1;
             btnDatamart.Top = txtFIADatamart.Top - 5;
             btnDatamart.Left = txtFIADatamart.Right + 5;
 
-            lblSelectedGroup.Left = cmbAction.Left;
-            lblSelectedGroup.Top = cmbAction.Top - 32;
+            lblSelectedGroup.Left = btnCreateFvsInput.Left - 197;
+            lblSelectedGroup.Top = btnCreateFvsInput.Top - 27;
             cmbSelectedGroup.Left = lblSelectedGroup.Right + 10;
             cmbSelectedGroup.Top = lblSelectedGroup.Top - 2;
         }
