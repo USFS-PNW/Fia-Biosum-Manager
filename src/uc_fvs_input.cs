@@ -1936,9 +1936,6 @@ namespace FIA_Biosum_Manager
                 case 1:
                     helpPage = "INPUT_OPTIONS";
                     break;
-                case 2:
-                    helpPage = "FIA2FVS_INPUT_OPTIONS";
-                    break;
             }
             m_oHelp.ShowHelp(new string[] { "FVS", helpPage });
         }
