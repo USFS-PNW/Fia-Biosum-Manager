@@ -323,44 +323,44 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteEffectiveTableSQL(string p_strTableName)
             {
                 string strSql = "CREATE TABLE " + p_strTableName + " (" +
-                         "biosum_cond_id TEXT," +
-                         "rxpackage TEXT," +
-                         "rx TEXT," +
-                         "rxcycle TEXT," +
-                         "nr_dpa REAL," +
-                         "pre_variable1_name TEXT," +
-                         "post_variable1_name TEXT," +
-                         "pre_variable1_value REAL," +
-                         "post_variable1_value REAL," +
-                         "variable1_change REAL," +
-                         "variable1_better_yn TEXT," +
-                         "variable1_worse_yn TEXT," +
-                         "variable1_effective_yn TEXT," +
-                         "pre_variable2_name TEXT," +
-                         "post_variable2_name TEXT," +
-                         "pre_variable2_value REAL," +
-                         "post_variable2_value REAL," +
-                         "variable2_change REAL," +
-                         "variable2_better_yn TEXT," +
-                         "variable2_worse_yn TEXT," +
-                         "variable2_effective_yn TEXT," +
-                         "pre_variable3_name TEXT," +
-                         "post_variable3_name TEXT," +
-                         "pre_variable3_value REAL," +
-                         "post_variable3_value REAL," +
-                         "variable3_change REAL," +
-                         "variable3_better_yn TEXT," +
-                         "variable3_worse_yn TEXT," +
-                         "variable3_effective_yn TEXT," +
-                         "pre_variable4_name TEXT," +
-                         "post_variable4_name TEXT," +
-                         "pre_variable4_value REAL," +
-                         "post_variable4_value REAL," +
-                         "variable4_change REAL," +
-                         "variable4_better_yn TEXT," +
-                         "variable4_worse_yn TEXT," +
-                         "variable4_effective_yn TEXT," +
-                         "overall_effective_yn TEXT," +
+                         "biosum_cond_id CHAR(25)," +
+                         "rxpackage CHAR(3)," +
+                         "rx CHAR(3)," +
+                         "rxcycle CHAR(1)," +
+                         "nr_dpa DOUBLE," +
+                         "pre_variable1_name CHAR(100)," +
+                         "post_variable1_name CHAR(100)," +
+                         "pre_variable1_value DOUBLE," +
+                         "post_variable1_value DOUBLE," +
+                         "variable1_change DOUBLE," +
+                         "variable1_better_yn CHAR(1)," +
+                         "variable1_worse_yn CHAR(1)," +
+                         "variable1_effective_yn CHAR(1)," +
+                         "pre_variable2_name CHAR(100)," +
+                         "post_variable2_name CHAR(100)," +
+                         "pre_variable2_value DOUBLE," +
+                         "post_variable2_value DOUBLE," +
+                         "variable2_change DOUBLE," +
+                         "variable2_better_yn CHAR(1)," +
+                         "variable2_worse_yn CHAR(1)," +
+                         "variable2_effective_yn CHAR(1)," +
+                         "pre_variable3_name CHAR(100)," +
+                         "post_variable3_name CHAR(100)," +
+                         "pre_variable3_value DOUBLE," +
+                         "post_variable3_value DOUBLE," +
+                         "variable3_change DOUBLE," +
+                         "variable3_better_yn CHAR(1)," +
+                         "variable3_worse_yn CHAR(1)," +
+                         "variable3_effective_yn CHAR(1)," +
+                         "pre_variable4_name CHAR(100)," +
+                         "post_variable4_name CHAR(100)," +
+                         "pre_variable4_value DOUBLE," +
+                         "post_variable4_value DOUBLE," +
+                         "variable4_change DOUBLE," +
+                         "variable4_better_yn CHAR(1)," +
+                         "variable4_worse_yn CHAR(1)," +
+                         "variable4_effective_yn CHAR(1)," +
+                         "overall_effective_yn CHAR(1)," +
                          "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
                 return strSql;
             }
@@ -557,16 +557,16 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteTieBreakerTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "biosum_cond_id TEXT," +
-                    "rxpackage TEXT," +
-                    "rx TEXT," +
-                    "rxcycle TEXT," +
+                    "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "rx CHAR(3)," +
+                    "rxcycle CHAR(1)," +
                     "last_tiebreak_rank INTEGER," +
-                    "pre_variable1_name TEXT," +
-                    "post_variable1_name TEXT," +
-                    "pre_variable1_value REAL," +
-                    "post_variable1_value REAL," +
-                    "variable1_change REAL," +
+                    "pre_variable1_name CHAR(100)," +
+                    "post_variable1_name CHAR(100)," +
+                    "pre_variable1_value DOUBLE," +
+                    "post_variable1_value DOUBLE," +
+                    "variable1_change DOUBLE," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
             }
             //
@@ -596,11 +596,11 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteValidComboTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "biosum_cond_id TEXT," +
-                    "rxpackage TEXT," +
-                    "rx TEXT," +
-                    "rxcycle TEXT," +
-                    "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))"; ;
+                    "biosum_cond_id text(25)," +
+                    "rxpackage text(3)," +
+                    "rx text(3)," +
+                    "rxcycle text(1)," +
+                    "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
             }
             public void CreateValidComboFVSPostTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
@@ -671,12 +671,12 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteValidComboFVSPrePostTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "biosum_cond_id TEXT," +
-                    "rxpackage TEXT," +
-                    "rx TEXT," +
-                    "rxcycle TEXT," +
-                    "fvs_variant TEXT," +
-                    "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))"; ; ;
+                    "biosum_cond_id text(25)," +
+                    "rxpackage text(3)," +
+                    "rx text(3)," +
+                    "rxcycle text(1)," +
+                    "fvs_variant text(2)," +
+                    "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
             }
             //
             //BEST TREATMENT TABLE
@@ -709,15 +709,15 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteBestRxSummaryTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "biosum_cond_id TEXT," +
-                    "rxpackage TEXT," +
-                    "rx TEXT," +
-                    "acres REAL," +
+                    "biosum_cond_id text(25)," +
+                    "rxpackage text(3)," +
+                    "rx text(3)," +
+                    "acres double," +
                     "owngrpcd INTEGER," +
-                    "optimization_value REAL," +
-                    "tiebreaker_value REAL," +
+                    "optimization_value DOUBLE," +
+                    "tiebreaker_value DOUBLE," +
                     "last_tiebreak_rank INTEGER," +
-                    "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id, rx))"; ;
+                    "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id, rx))";
             }
             public void CreateBestRxSummaryCycle1WithIntensityTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
@@ -801,16 +801,16 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteOptimizationTableSQL(string p_strTableName)
             {
                 string strSQL = "CREATE TABLE " + p_strTableName + " (" +
-                    "biosum_cond_id TEXT," +
-                    "rxpackage TEXT," +
-                    "rx TEXT," +
-                    "rxcycle TEXT," +
-                    "pre_variable_name TEXT," +
-                    "post_variable_name TEXT," +
-                    "pre_variable_value REAL," +
-                    "post_variable_value REAL," +
-                    "change_value REAL," +
-                    "affordable_YN TEXT," +
+                    "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "rx CHAR(3)," +
+                    "rxcycle CHAR(1)," +
+                    "pre_variable_name CHAR(100)," +
+                    "post_variable_name CHAR(100)," +
+                    "pre_variable_value DOUBLE," +
+                    "post_variable_value DOUBLE," +
+                    "change_value DOUBLE," +
+                    "affordable_YN CHAR(1)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
                 return strSQL;
             }
@@ -1090,15 +1090,15 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteHaulCostTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "haul_cost_id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    "biosum_plot_id TEXT," +
+                    "haul_cost_id LONG," +
+                    "biosum_plot_id CHAR(24)," +
                     "railhead_id INTEGER," +
                     "psite_id INTEGER," +
-                    "transfer_cost_dpgt REAL DEFAULT 0," +
-                    "road_cost_dpgt REAL DEFAULT 0," +
-                    "rail_cost_dpgt REAL DEFAULT 0," +
-                    "complete_haul_cost_dpgt REAL DEFAULT 0," +
-                    "materialcd TEXT)";
+                    "transfer_cost_dpgt DOUBLE DEFAULT 0," +
+                    "road_cost_dpgt DOUBLE DEFAULT 0," +
+                    "rail_cost_dpgt DOUBLE DEFAULT 0," +
+                    "complete_haul_cost_dpgt DOUBLE DEFAULT 0," +
+                    "materialcd CHAR(2))";
             }
             public void CreateHaulCostWorkTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
@@ -1226,26 +1226,26 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteProductYieldsTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "biosum_cond_id TEXT," +
-                    "rxpackage TEXT," +
-                    "rx TEXT," +
-                    "rxcycle TEXT," +
-                    "chip_vol_cf REAL," +
-                    "merch_vol_cf REAL," +
-                    "chip_wt_gt REAL," +
-                    "merch_wt_gt REAL," +
-                    "chip_val_dpa REAL," +
-                    "merch_val_dpa REAL," +
-                    "harvest_onsite_cost_dpa REAL," +
-                    "chip_haul_cost_dpa REAL," +
-                    "merch_haul_cost_dpa REAL," +
-                    "merch_chip_nr_dpa REAL," +
-                    "merch_nr_dpa REAL," +
-                    "usebiomass_yn TEXT," +
-                    "max_nr_dpa REAL," +
-                    "acres REAL," +
+                    "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "rx CHAR(3)," +
+                    "rxcycle CHAR(1)," +
+                    "chip_vol_cf DOUBLE," +
+                    "merch_vol_cf DOUBLE," +
+                    "chip_wt_gt DOUBLE," +
+                    "merch_wt_gt DOUBLE," +
+                    "chip_val_dpa DOUBLE," +
+                    "merch_val_dpa DOUBLE," +
+                    "harvest_onsite_cost_dpa DOUBLE," +
+                    "chip_haul_cost_dpa DOUBLE," +
+                    "merch_haul_cost_dpa DOUBLE," +
+                    "merch_chip_nr_dpa DOUBLE," +
+                    "merch_nr_dpa DOUBLE," +
+                    "usebiomass_yn CHAR(1)," +
+                    "max_nr_dpa DOUBLE," +
+                    "acres DOUBLE," +
                     "owngrpcd INTEGER," +
-                    "haul_costs_dpa TEXT," +
+                    "haul_costs_dpa CHAR(255)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
             }
 
@@ -1293,25 +1293,25 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteEconByRxUtilTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "biosum_cond_id TEXT," +
-                    "rxpackage TEXT," +
-                    "chip_vol_cf_utilized REAL," +
-                    "merch_vol_cf REAL," +
-                    "chip_wt_gt_utilized REAL," +
-                    "merch_wt_gt REAL," +
-                    "chip_val_dpa_utilized REAL," +
-                    "merch_val_dpa REAL," +
-                    "harvest_onsite_cost_dpa REAL," +
-                    "chip_haul_cost_dpa_utilized REAL," +
-                    "merch_haul_cost_dpa REAL," +
-                    "merch_chip_nr_dpa REAL," +
-                    "merch_nr_dpa REAL," +
-                    "max_nr_dpa REAL," +
-                    "acres REAL," +
-                    "treated_acres REAL," +
+                    "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "chip_vol_cf_utilized DOUBLE," +
+                    "merch_vol_cf DOUBLE," +
+                    "chip_wt_gt_utilized DOUBLE," +
+                    "merch_wt_gt DOUBLE," +
+                    "chip_val_dpa_utilized DOUBLE," +
+                    "merch_val_dpa DOUBLE," +
+                    "harvest_onsite_cost_dpa DOUBLE," +
+                    "chip_haul_cost_dpa_utilized DOUBLE," +
+                    "merch_haul_cost_dpa DOUBLE," +
+                    "merch_chip_nr_dpa DOUBLE," +
+                    "merch_nr_dpa DOUBLE," +
+                    "max_nr_dpa DOUBLE," +
+                    "acres DOUBLE," +
+                    "treated_acres DOUBLE," +
                     "owngrpcd INTEGER," +
-                    "haul_costs_dpa TEXT," +
-                    "hvst_type_by_cycle TEXT," +
+                    "haul_costs_dpa CHAR(255)," +
+                    "hvst_type_by_cycle CHAR(4)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id, rxpackage))";
             }
             //
@@ -1590,8 +1590,8 @@ namespace FIA_Biosum_Manager
             static public string CreateSqlitePostEconomicWeightedTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                       "biosum_cond_id TEXT, " +
-                       "rxpackage TEXT )";
+                       "biosum_cond_id CHAR(25), " +
+                       "rxpackage CHAR(3) )";
             }
             //
             //PSITES WORKTABLE
@@ -1657,11 +1657,11 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteCondPsiteTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "BIOSUM_COND_ID TEXT," +
+                    "BIOSUM_COND_ID CHAR(25)," +
                     "MERCH_PSITE_NUM INTEGER," +
-                    "MERCH_PSITE_NAME TEXT," +
+                    "MERCH_PSITE_NAME CHAR(255)," +
                     "CHIP_PSITE_NUM INTEGER," +
-                    "CHIP_PSITE_NAME TEXT," +
+                    "CHIP_PSITE_NAME CHAR(255)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (BIOSUM_COND_ID))";
             }
 
@@ -3730,6 +3730,8 @@ namespace FIA_Biosum_Manager
             {
                 p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "psite_id");
             }
+
+            // if this is updated, also need to update CreateSqliteProcessingSiteTableSQL
             public string CreateProcessingSiteTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
@@ -3758,20 +3760,20 @@ namespace FIA_Biosum_Manager
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "PSITE_ID INTEGER," +
-                    "NAME TEXT," +
-                    "TRANCD TEXT," +
-                    "TRANCD_DEF TEXT," +
-                    "BIOCD TEXT," +
-                    "BIOCD_DEF TEXT," +
-                    "EXISTS_YN TEXT DEFAULT 'N'," +
-                    "LAT REAL," +
-                    "LON REAL," +
-                    "STATE TEXT," +
-                    "CITY TEXT," +
-                    "MILL_TYPE TEXT," +
-                    "COUNTY TEXT," +
-                    "STATUS TEXT," +
-                    "NOTES TEXT," +
+                    "NAME CHAR(100)," +
+                    "TRANCD BYTE," +
+                    "TRANCD_DEF CHAR(20)," +
+                    "BIOCD BYTE," +
+                    "BIOCD_DEF CHAR(15)," +
+                    "EXISTS_YN CHAR(1) DEFAULT 'N'," +
+                    "LAT DOUBLE," +
+                    "LON DOUBLE," +
+                    "STATE CHAR(2)," +
+                    "CITY CHAR(40)," +
+                    "MILL_TYPE CHAR(40)," +
+                    "COUNTY CHAR(40)," +
+                    "STATUS CHAR(40)," +
+                    "NOTES CHAR(50)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (PSITE_ID))";
             }
             public void CreateTravelTimeTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
@@ -3932,6 +3934,8 @@ namespace FIA_Biosum_Manager
                 p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "num_cond");
                 p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "biosum_status_cd");
             }
+
+            // If this is updated, also need to update CreateSqlitePlotTableSQL
             public string CreatePlotTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
@@ -3973,28 +3977,30 @@ namespace FIA_Biosum_Manager
             public string CreateSqlitePlotTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "biosum_plot_id TEXT," +
+                    "biosum_plot_id CHAR(24)," +
                     "statecd INTEGER," +
                     "invyr INTEGER," +
                     "unitcd INTEGER," +
                     "countycd INTEGER," +
-                    p_strTableName + " INTEGER," +
+                    p_strTableName + " LONG," +
                     "measyear INTEGER," +
                     "measmon INTEGER," +
                     "measday INTEGER," +
                     "elev INTEGER," +
-                    "fvs_variant TEXT," +
+                    "fvs_variant CHAR(2)," +
                     "fvsloccode INTEGER," +
-                    "half_state TEXT," +
-                    "subplot_count_plot TEXT," +
-                    "gis_yard_dist_ft REAL," +
-                    "num_cond TEXT," +
-                    "one_cond_yn TEXT," +
-                    "lat REAL," +
-                    "lon REAL," +
+                    "half_state CHAR(10)," +
+                    "subplot_count_plot BYTE," +
+                    "gis_yard_dist_ft DOUBLE," +
+                    "num_cond BYTE," +
+                    "one_cond_yn CHAR(1)," +
+                    "lat DOUBLE," +
+                    "lon DOUBLE," +
                     "macro_breakpoint_dia INTEGER," +
-                    "biosum_status_cd TEXT," +
-                    "cn TEXT," +
+                    "precipitation DOUBLE," +
+                    "ecosubcd CHAR(7)," +
+                    "biosum_status_cd BYTE," +
+                    "cn CHAR(34)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_plot_id))";
             }
 
@@ -4010,6 +4016,8 @@ namespace FIA_Biosum_Manager
                 p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "biosum_plot_id");
                 p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "condid");
             }
+
+            // If this is updated, also need to update CreateSqliteConditionTableSQL()
             public string CreateConditionTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
@@ -4082,59 +4090,60 @@ namespace FIA_Biosum_Manager
             public string CreateSqliteConditionTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "biosum_cond_id TEXT," +
-                    "biosum_plot_id TEXT," +
+                    "biosum_cond_id CHAR(25)," +
+                    "biosum_plot_id CHAR(24)," +
                     "invyr INTEGER," +
-                    "condid TEXT," +
-                    "condprop REAL," +
-                    "landclcd TEXT," +
+                    "condid BYTE," +
+                    "condprop DOUBLE," +
+                    "landclcd BYTE," +
                     "fortypcd INTEGER," +
-                    "ground_land_class_pnw TEXT," +
+                    "ground_land_class_pnw CHAR(3)," +
                     "owncd INTEGER," +
                     "owngrpcd INTEGER," +
-                    "reservcd TEXT," +
-                    "siteclcd TEXT," +
+                    "reservcd BYTE," +
+                    "siteclcd BYTE," +
                     "sibase INTEGER," +
                     "sicond INTEGER," +
                     "sisp INTEGER," +
                     "slope INTEGER," +
                     "aspect INTEGER," +
                     "stdage INTEGER," +
-                    "stdszcd TEXT," +
-                    "habtypcd1 TEXT," +
+                    "stdszcd BYTE," +
+                    "habtypcd1 CHAR(10)," +
                     "adforcd INTEGER," +
-                    "qmd_all_inch INTEGER," +
-                    "qmd_hwd_inch INTEGER," +
-                    "qmd_swd_inch INTEGER," +
-                    "acres REAL," +
-                    "unitcd INTEGER," +
-                    "vol_loc_grp TEXT," +
-                    "tpacurr REAL," +
-                    "hwd_tpacurr REAL," +
-                    "swd_tpacurr REAL," +
-                    "ba_ft2_ac REAL," +
-                    "hwd_ba_ft2_ac REAL," +
-                    "swd_ba_ft2_ac REAL," +
-                    "vol_ac_grs_stem_ttl_ft3 REAL," +
-                    "hwd_vol_ac_grs_stem_ttl_ft3 REAL," +
-                    "swd_vol_ac_grs_stem_ttl_ft3 REAL," +
-                    "vol_ac_grs_ft3 REAL," +
-                    "hwd_vol_ac_grs_ft3 REAL," +
-                    "swd_vol_ac_grs_ft3 REAL," +
-                    "volcsgrs REAL," +
-                    "hwd_volcsgrs REAL," +
-                    "swd_volcsgrs REAL," +
-                    "gsstkcd REAL," +
-                    "alstkcd REAL," +
-                    "condprop_unadj REAL," +
-                    "micrprop_unadj REAL," +
-                    "subpprop_unadj REAL," +
-                    "macrprop_unadj REAL," +
-                    "cn TEXT," +
-                    "biosum_status_cd TEXT, " +
-                    "model_YN TEXT, " +
-                    "dwm_fuelbed_typcd TEXT," +
-                    "balive DOUBLE," + 
+                    "qmd_all_inch SINGLE," +
+                    "qmd_hwd_inch SINGLE," +
+                    "qmd_swd_inch SINGLE," +
+                    "acres DOUBLE," +
+                    "unitcd LONG," +
+                    "vol_loc_grp CHAR(10)," +
+                    "tpacurr DOUBLE," +
+                    "hwd_tpacurr DOUBLE," +
+                    "swd_tpacurr DOUBLE," +
+                    "ba_ft2_ac DOUBLE," +
+                    "hwd_ba_ft2_ac DOUBLE," +
+                    "swd_ba_ft2_ac DOUBLE," +
+                    "vol_ac_grs_stem_ttl_ft3 DOUBLE," +
+                    "hwd_vol_ac_grs_stem_ttl_ft3 DOUBLE," +
+                    "swd_vol_ac_grs_stem_ttl_ft3 DOUBLE," +
+                    "vol_ac_grs_ft3 DOUBLE," +
+                    "hwd_vol_ac_grs_ft3 DOUBLE," +
+                    "swd_vol_ac_grs_ft3 DOUBLE," +
+                    "volcsgrs DOUBLE," +
+                    "hwd_volcsgrs DOUBLE," +
+                    "swd_volcsgrs DOUBLE," +
+                    "gsstkcd DOUBLE," +
+                    "alstkcd DOUBLE," +
+                    "condprop_unadj DOUBLE," +
+                    "micrprop_unadj DOUBLE," +
+                    "subpprop_unadj DOUBLE," +
+                    "macrprop_unadj DOUBLE," +
+                    "cn CHAR(34)," +
+                    "biosum_status_cd BYTE, " +
+                    "model_YN CHAR(1), " +
+                    "dwm_fuelbed_typcd TEXT(3)," +
+                    "balive DOUBLE, " +
+                    "stdorgcd INTEGER," + 
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id))";
             }
             public void CreateTreeTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
@@ -4809,26 +4818,22 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteHarvestCostsTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                                        //"biosum_cond_id TEXT," +
-                                        //"rxpackage TEXT," +
-                                        //"rx TEXT," +
-                                        //"rxcycle TEXT," +
-                    "biosum_cond_id CHAR(25)," +    //@ToDo: Do Access datatypes allow me to delete rows?
+                    "biosum_cond_id CHAR(25)," +
                     "rxpackage CHAR(3)," +
                     "rx CHAR(3)," +
                     "rxcycle CHAR(1)," +
-                    "complete_cpa REAL DEFAULT 0," +
-                    "harvest_cpa REAL," +
-                    "chip_cpa REAL," +
-                    "assumed_movein_cpa REAL," +
-                    "ideal_complete_cpa REAL," +
-                    "ideal_harvest_cpa REAL," +
-                    "ideal_chip_cpa REAL," +
-                    "ideal_assumed_movein_cpa REAL," +
-                    "harvest_cpa_warning_msg TEXT," +
-                    "place_holder TEXT DEFAULT 'N'," +
-                    "override_YN TEXT DEFAULT 'N'," +
-                    "DateTimeCreated TEXT," +
+                    "complete_cpa DOUBLE DEFAULT 0," +
+                    "harvest_cpa DOUBLE ," +
+                    "chip_cpa DOUBLE ," +
+                    "assumed_movein_cpa DOUBLE ," +
+                    "ideal_complete_cpa DOUBLE ," +
+                    "ideal_harvest_cpa DOUBLE ," +
+                    "ideal_chip_cpa DOUBLE ," +
+                    "ideal_assumed_movein_cpa DOUBLE ," +
+                    "harvest_cpa_warning_msg CHAR(240)," +
+                    "place_holder CHAR(1) DEFAULT 'N'," +
+                    "override_YN CHAR(1) DEFAULT 'N'," +
+                    "DateTimeCreated CHAR(22)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id,rxpackage,rx,rxcycle))";
             }
             public void CreateAdditionalHarvestCostsTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
@@ -4933,28 +4938,28 @@ namespace FIA_Biosum_Manager
                 string strSQL = "CREATE TABLE " + p_strTableName + " (";
                 if (p_bCreateIdColumn)
                 {
-                    strSQL = strSQL + "ID INTEGER PRIMARY KEY AUTOINCREMENT,";
+                    strSQL = strSQL + "ID LONG PRIMARY KEY AUTOINCREMENT,";
                 }
-                strSQL = strSQL + "biosum_cond_id TEXT," +
-                    "rxpackage TEXT," +
-                    "rx TEXT," +
-                    "rxcycle TEXT," +
+                strSQL = strSQL + "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "rx CHAR(3)," +
+                    "rxcycle CHAR(1)," +
                     "species_group INTEGER," +
                     "diam_group INTEGER DEFAULT 0," +
-                    //"biosum_harvest_method_category INTEGER DEFAULT 0," +
-                    "chip_vol_cf REAL," +
-                    "chip_wt_gt REAL," +
-                    "chip_val_dpa REAL," +
-                    "chip_mkt_val_pgt REAL DEFAULT 0," +
-                    "merch_vol_cf REAL," +
-                    "merch_wt_gt REAL," +
-                    "merch_val_dpa REAL," +
-                    "merch_to_chipbin_YN TEXT DEFAULT 'N'," +
-                    "bc_vol_cf REAL," +
-                    "bc_wt_gt REAL," +
-                    "stand_residue_wt_gt REAL," +
-                    "place_holder TEXT DEFAULT 'N'," +
-                    "DateTimeCreated TEXT)";
+                    "biosum_harvest_method_category INTEGER DEFAULT 0," +
+                    "chip_vol_cf DOUBLE," +
+                    "chip_wt_gt DOUBLE," +
+                    "chip_val_dpa DOUBLE," +
+                    "chip_mkt_val_pgt DOUBLE DEFAULT 0," +
+                    "merch_vol_cf DOUBLE," +
+                    "merch_wt_gt DOUBLE," +
+                    "merch_val_dpa DOUBLE," +
+                    "merch_to_chipbin_YN CHAR(1) DEFAULT 'N'," +
+                    "bc_vol_cf DOUBLE," +
+                    "bc_wt_gt DOUBLE," +
+                    "stand_residue_wt_gt DOUBLE," +
+                    "place_holder CHAR(1) DEFAULT 'N'," +
+                    "DateTimeCreated CHAR(22))";
                 return strSQL;
             }
             public void CreateTreeVolValSpeciesDiamGroupsWorkTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)

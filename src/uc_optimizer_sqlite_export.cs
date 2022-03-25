@@ -1139,22 +1139,64 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Created " + strTable + " table \r\n");
                 }
 
-                System.Collections.Generic.IList<string> lstTableNames =
-                    new System.Collections.Generic.List<string>();
-                lstTableNames.Add(frmMain.g_oTables.m_oFIAPlot.DefaultConditionTableName);
-                lstTableNames.Add(frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableName);
-                lstTableNames.Add(Tables.TravelTime.DefaultProcessingSiteTableName);
-                System.Collections.Generic.IList<string[]> lstColumnNames =
-                    new System.Collections.Generic.List<string[]>();
-                System.Collections.Generic.IList<string[]> lstDataTypes =
-                    new System.Collections.Generic.List<string[]>();
-                // Store the column names and data types in lists so we don't have to close/reopen
-                // the ado connection
-                    using (OleDbConnection oAccessConn = new OleDbConnection(strAccdbConnection))
+                    System.Collections.Generic.IList<string> lstTableNames = new System.Collections.Generic.List<string>();
+                    System.Collections.Generic.IList<string> lstDatabases = new System.Collections.Generic.List<string>();
+                    System.Collections.Generic.IDictionary<string, string> dictCustomDb = 
+                        new System.Collections.Generic.Dictionary<string, string>();
+                    Datasource p_datasource = new Datasource(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim(),
+                                                             m_strOptimizerScenario);
+                    int intCondTableType = p_datasource.getDataSourceTableNameRow(Datasource.TableTypes.Condition);
+                    if (p_datasource.DataSourceTableExist(intCondTableType))
                     {
-                        oAccessConn.Open();
+                        lstTableNames.Add(p_datasource.m_strDataSource[intCondTableType, Datasource.TABLE].Trim());
+                        lstDatabases.Add(p_datasource.m_strDataSource[intCondTableType, Datasource.PATH].Trim() + "\\" +
+                                                p_datasource.m_strDataSource[intCondTableType, Datasource.MDBFILE].Trim());
+                        dictCustomDb.Add(p_datasource.m_strDataSource[intCondTableType, Datasource.TABLE].Trim(),
+                                                p_datasource.m_strDataSource[intCondTableType, Datasource.PATH].Trim() + "\\" +
+                                                p_datasource.m_strDataSource[intCondTableType, Datasource.MDBFILE].Trim());
+                    }
+                    int intPlotTableType = p_datasource.getDataSourceTableNameRow(Datasource.TableTypes.Plot);
+                    if (p_datasource.DataSourceTableExist(intPlotTableType))
+                    {
+                        lstTableNames.Add(p_datasource.m_strDataSource[intPlotTableType, Datasource.TABLE].Trim());
+                        lstDatabases.Add(p_datasource.m_strDataSource[intPlotTableType, Datasource.PATH].Trim() + "\\" +
+                                                p_datasource.m_strDataSource[intPlotTableType, Datasource.MDBFILE].Trim());
+                        dictCustomDb.Add(p_datasource.m_strDataSource[intPlotTableType, Datasource.TABLE].Trim(),
+                            p_datasource.m_strDataSource[intPlotTableType, Datasource.PATH].Trim() + "\\" +
+                            p_datasource.m_strDataSource[intPlotTableType, Datasource.MDBFILE].Trim());
+                    }
+                    int intPSiteType = p_datasource.getDataSourceTableNameRow(Datasource.TableTypes.ProcessingSites);
+                    if (p_datasource.DataSourceTableExist(intPSiteType))
+                    {
+                        lstTableNames.Add(p_datasource.m_strDataSource[intPSiteType, Datasource.TABLE].Trim());
+                        lstDatabases.Add(p_datasource.m_strDataSource[intPSiteType, Datasource.PATH].Trim() + "\\" +
+                                                p_datasource.m_strDataSource[intPSiteType, Datasource.MDBFILE].Trim());
+                        dictCustomDb.Add(p_datasource.m_strDataSource[intPSiteType, Datasource.TABLE].Trim(),
+                            p_datasource.m_strDataSource[intPSiteType, Datasource.PATH].Trim() + "\\" +
+                            p_datasource.m_strDataSource[intPSiteType, Datasource.MDBFILE].Trim());
+                    }
+
+                    System.Collections.Generic.IList<string[]> lstColumnNames = new System.Collections.Generic.List<string[]>();
+                    System.Collections.Generic.IList<string[]> lstDataTypes = new System.Collections.Generic.List<string[]>();
+                    // Store the column names and data types in lists so we don't have to close/reopen
+                    // the ado connection
+                    int j = 0;
+                    using (OleDbConnection oAccessConn = new OleDbConnection())
+                    {                        
                         foreach (var strName in lstTableNames)
                         {
+                            string strConn = oAdo.getMDBConnString(lstDatabases[j], "", "");
+                            if (oAccessConn.State == ConnectionState.Closed)
+                            {
+                                oAccessConn.ConnectionString = strConn;
+                                oAccessConn.Open();
+                            }
+                            else if (oAccessConn.ConnectionString != strConn)
+                            {
+                                oAccessConn.Close();
+                                oAccessConn.ConnectionString = strConn;
+                                oAccessConn.Open();
+                            }
                             string[] strColumnNamesArray = new string[0];
                             string[] strDataTypesArray = new string[0];
 
@@ -1169,6 +1211,7 @@ namespace FIA_Biosum_Manager
                                 lstColumnNames.Add(strColumnNamesArray);
                                 lstDataTypes.Add(strDataTypesArray);
                             }
+                            j++;
                         }
                     }
 
@@ -1207,8 +1250,21 @@ namespace FIA_Biosum_Manager
                     }
                     foreach (string strTableName in lstTables)
                     {
-                        if (oAdo.TableExist(oAccessConn, strTableName))
-                        {
+                            string strTempConn = strAccdbConnection;
+                            // Check for connection strings other than results.accdb (cond, plot, etc)
+                            if (dictCustomDb.ContainsKey(strTableName))
+                            {
+                                strTempConn = oAdo.getMDBConnString(dictCustomDb[strTableName], "", "");
+                            }
+                            // Close and reset connection if its different than preceding table
+                            if (oAccessConn.ConnectionString != strTempConn)
+                            {
+                                oAccessConn.Close();
+                                oAccessConn.ConnectionString = strTempConn;
+                                oAccessConn.Open();
+                            }
+                            if (oAdo.TableExist(oAccessConn, strTableName))
+                            {
                             counter += 1;
                             string strMessage = "Writing rows to " + strTableName + " in " + System.IO.Path.GetFileName(m_strResultsDbPath);
                             UpdateProgressBar1(strMessage, counter + (100 / (m_intDatabaseCount * 10)));
@@ -1223,8 +1279,12 @@ namespace FIA_Biosum_Manager
                             {
                                 using (System.Data.SQLite.SQLiteCommandBuilder cb = new System.Data.SQLite.SQLiteCommandBuilder(da))
                                 {
-                                    da.InsertCommand = cb.GetInsertCommand();
-                                    int rows = da.Update(oAdo.m_DataTable);
+                                        using (var transaction = con.BeginTransaction())
+                                        {
+                                            da.InsertCommand = cb.GetInsertCommand();
+                                            int rows = da.Update(oAdo.m_DataTable);
+                                            transaction.Commit();
+                                        }
                                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                                     {
                                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Populated results table " + strTableName + " \r\n");
@@ -1471,35 +1531,35 @@ namespace FIA_Biosum_Manager
         {
             try
             {
-            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strSqliteConn))
-            {
-                SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
-                con.Open();
-                if (strTableName.Contains("optimization"))
+                using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strSqliteConn))
                 {
-                    frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteOptimizationTable(oDataMgr, con, strTableName);
-                }
-                else if (strTableName.Contains("weighted"))
-                {
-                    frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqlitePostEconomicWeightedTable(oDataMgr, con, strTableName);
-                }
-                else
-                {
-                    frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteEffectiveTable(oDataMgr, con, strTableName);
-                }
-                
-                // This code adds any filter fields that change depending on the scenario configuration
-                string[] strSourceColumnsArray = new string[0];
-                m_oDao.getFieldNames(m_strResultsAccdbPath, strTableName, ref strSourceColumnsArray);
-                foreach (string strColumn in strSourceColumnsArray)
-                {
-                    if (!oDataMgr.ColumnExists(con, strTableName, strColumn))
+                    SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+                    con.Open();
+                    if (strTableName.Contains("optimization"))
                     {
-                        oDataMgr.AddColumn(con, strTableName, strColumn, "REAL", "");
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteOptimizationTable(oDataMgr, con, strTableName);
+                    }
+                    else if (strTableName.Contains("weighted"))
+                    {
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqlitePostEconomicWeightedTable(oDataMgr, con, strTableName);
+                    }
+                    else
+                    {
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteEffectiveTable(oDataMgr, con, strTableName);
+                    }
+                
+                    // This code adds any filter fields that change depending on the scenario configuration
+                    string[] strSourceColumnsArray = new string[0];
+                    m_oDao.getFieldNames(m_strResultsAccdbPath, strTableName, ref strSourceColumnsArray);
+                    foreach (string strColumn in strSourceColumnsArray)
+                    {
+                        if (!oDataMgr.ColumnExists(con, strTableName, strColumn))
+                        {
+                            oDataMgr.AddColumn(con, strTableName, strColumn, "DOUBLE", "");
+                        }
                     }
                 }
-            }
-            return true;
+                return true;
             }
             catch (Exception e)
             {
@@ -1553,6 +1613,9 @@ namespace FIA_Biosum_Manager
                             if (!oDataMgr.ColumnExist(con, strTableName, strColumn))
                             {
                                 string strDataType = strDataTypesArray[i];
+                                // Note: Made decision to use SQLite data types here as we don't have a way to get the
+                                // precise Access column definition. We would have to write something new. These data types
+                                // will only be used for ad-hoc columns that aren't in the standard BioSum tables
                                 switch (strDataType.ToUpper())
                                 {
                                     case "SYSTEM.STRING":
@@ -1562,7 +1625,10 @@ namespace FIA_Biosum_Manager
                                         oDataMgr.AddColumn(con, strTableName, strColumn, "INTEGER", "");
                                         break;
                                     case "SYSTEM.DOUBLE":
-                                        oDataMgr.AddColumn(con, strTableName, strColumn, "REAL", "");
+                                        oDataMgr.AddColumn(con, strTableName, strColumn, "DOUBLE", "");
+                                        break;
+                                    case "SYSTEM.SINGLE":
+                                        oDataMgr.AddColumn(con, strTableName, strColumn, "SINGLE", "");
                                         break;
                                     default:
                                         MessageBox.Show("Not found!");
