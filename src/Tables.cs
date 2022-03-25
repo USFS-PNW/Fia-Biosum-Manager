@@ -1724,25 +1724,25 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteHarvestMethodRefTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "RX TEXT," +
-                    "RX_HARVEST_METHOD_LOW TEXT," +
+                    "RX CHAR(3)," +
+                    "RX_HARVEST_METHOD_LOW CHAR(50)," +
                     "RX_HARVEST_METHOD_LOW_ID INTEGER," +
                     "RX_HARVEST_METHOD_LOW_CATEGORY INTEGER," +
-                    "RX_HARVEST_METHOD_LOW_CATEGORY_DESCR TEXT," +
-                    "RX_HARVEST_METHOD_STEEP TEXT," +
+                    "RX_HARVEST_METHOD_LOW_CATEGORY_DESCR CHAR(100)," +
+                    "RX_HARVEST_METHOD_STEEP CHAR(50)," +
                     "RX_HARVEST_METHOD_STEEP_ID INTEGER," +
                     "RX_HARVEST_METHOD_STEEP_CATEGORY INTEGER," +
-                    "RX_HARVEST_METHOD_STEEP_CATEGORY_DESCR TEXT," +
-                    "USE_RX_HARVEST_METHOD_YN TEXT," +
+                    "RX_HARVEST_METHOD_STEEP_CATEGORY_DESCR CHAR(100)," +
+                    "USE_RX_HARVEST_METHOD_YN CHAR(1)," +
                     "STEEP_SLOPE_PCT INTEGER," +
-                    "SCENARIO_HARVEST_METHOD_LOW TEXT," +
+                    "SCENARIO_HARVEST_METHOD_LOW CHAR(50)," +
                     "SCENARIO_HARVEST_METHOD_LOW_ID INTEGER," +
                     "SCENARIO_HARVEST_METHOD_LOW_CATEGORY INTEGER," +
-                    "SCENARIO_HARVEST_METHOD_LOW_CATEGORY_DESCR TEXT," +
-                    "SCENARIO_HARVEST_METHOD_STEEP TEXT," +
+                    "SCENARIO_HARVEST_METHOD_LOW_CATEGORY_DESCR CHAR(100)," +
+                    "SCENARIO_HARVEST_METHOD_STEEP CHAR(50)," +
                     "SCENARIO_HARVEST_METHOD_STEEP_ID INTEGER," +
                     "SCENARIO_HARVEST_METHOD_STEEP_CATEGORY INTEGER," +
-                    "SCENARIO_HARVEST_METHOD_STEEP_CATEGORY_DESCR TEXT," +
+                    "SCENARIO_HARVEST_METHOD_STEEP_CATEGORY_DESCR CHAR(100)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (RX))";
             }
 
@@ -1790,24 +1790,24 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteRxPackageRefTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "RXPACKAGE TEXT," +
-                    "DESCRIPTION TEXT," +
-                    "SIMYEAR1_RX TEXT," +
-                    "SIMYEAR1_RX_CATEGORY TEXT," +
-                    "SIMYEAR1_RX_SUBCATEGORY TEXT," +
-                    "SIMYEAR1_RX_DESCRIPTION TEXT," +
-                    "SIMYEAR2_RX TEXT," +
-                    "SIMYEAR2_RX_CATEGORY TEXT," +
-                    "SIMYEAR2_RX_SUBCATEGORY TEXT," +
-                    "SIMYEAR2_RX_DESCRIPTION TEXT," +
-                    "SIMYEAR3_RX TEXT," +
-                    "SIMYEAR3_RX_CATEGORY TEXT," +
-                    "SIMYEAR3_RX_SUBCATEGORY TEXT," +
-                    "SIMYEAR3_RX_DESCRIPTION TEXT," +
-                    "SIMYEAR4_RX TEXT," +
-                    "SIMYEAR4_RX_CATEGORY TEXT," +
-                    "SIMYEAR4_RX_SUBCATEGORY TEXT," +
-                    "SIMYEAR4_RX_DESCRIPTION TEXT," +
+                    "RXPACKAGE CHAR(3)," +
+                    "DESCRIPTION MEMO," +
+                    "SIMYEAR1_RX CHAR(3)," +
+                    "SIMYEAR1_RX_CATEGORY CHAR(100)," +
+                    "SIMYEAR1_RX_SUBCATEGORY CHAR(100)," +
+                    "SIMYEAR1_RX_DESCRIPTION MEMO," +
+                    "SIMYEAR2_RX CHAR(3)," +
+                    "SIMYEAR2_RX_CATEGORY CHAR(100)," +
+                    "SIMYEAR2_RX_SUBCATEGORY CHAR(100)," +
+                    "SIMYEAR2_RX_DESCRIPTION MEMO," +
+                    "SIMYEAR3_RX CHAR(3)," +
+                    "SIMYEAR3_RX_CATEGORY CHAR(100)," +
+                    "SIMYEAR3_RX_SUBCATEGORY CHAR(100)," +
+                    "SIMYEAR3_RX_DESCRIPTION MEMO," +
+                    "SIMYEAR4_RX CHAR(3)," +
+                    "SIMYEAR4_RX_CATEGORY CHAR(100)," +
+                    "SIMYEAR4_RX_SUBCATEGORY CHAR(100)," +
+                    "SIMYEAR4_RX_DESCRIPTION MEMO," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (RXPACKAGE))";
             }
 
@@ -1847,12 +1847,12 @@ namespace FIA_Biosum_Manager
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "DBH_CLASS_NUM INTEGER," +
-                    "DBH_RANGE_INCHES TEXT," +
+                    "DBH_RANGE_INCHES CHAR(15)," +
                     "SPP_GRP_CODE INTEGER," +
-                    "SPP_GRP TEXT," +
-                    "TO_CHIPS TEXT," +
-                    "MERCH_VAL_DpCF REAL," +
-                    "VALUE_IF_CHIPPED_DpGT REAL," +
+                    "SPP_GRP CHAR(50)," +
+                    "TO_CHIPS CHAR(1)," +
+                    "MERCH_VAL_DpCF DOUBLE," +
+                    "VALUE_IF_CHIPPED_DpGT DOUBLE," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (DBH_CLASS_NUM, SPP_GRP_CODE))";
             }
 
@@ -1878,7 +1878,7 @@ namespace FIA_Biosum_Manager
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "SPP_GRP_CD INTEGER," +
-                    "COMMON_NAME TEXT," +
+                    "COMMON_NAME CHAR(50)," +
                     "FIA_SPCD INTEGER )";
             }
 
@@ -1921,18 +1921,18 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteFvsWeightedVariableRefTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "VARIABLE_NAME TEXT," +
-                    "VARIABLE_DESCRIPTION TEXT," +
-                    "BASELINE_RXPACKAGE TEXT," +
-                    "VARIABLE_SOURCE TEXT," +
-                    "weight_1_pre REAL," +
-                    "weight_1_post REAL," +
-                    "weight_2_pre REAL," +
-                    "weight_2_post REAL," +
-                    "weight_3_pre REAL," +
-                    "weight_3_post REAL," +
-                    "weight_4_pre REAL," +
-                    "weight_4_post REAL," +
+                    "VARIABLE_NAME CHAR(40)," +
+                    "VARIABLE_DESCRIPTION CHAR(255)," +
+                    "BASELINE_RXPACKAGE CHAR(3)," +
+                    "VARIABLE_SOURCE CHAR(100)," +
+                    "weight_1_pre DOUBLE," +
+                    "weight_1_post DOUBLE," +
+                    "weight_2_pre DOUBLE," +
+                    "weight_2_post DOUBLE," +
+                    "weight_3_pre DOUBLE," +
+                    "weight_3_post DOUBLE," +
+                    "weight_4_pre DOUBLE," +
+                    "weight_4_post DOUBLE," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (VARIABLE_NAME))";
             }
             //
@@ -1968,13 +1968,13 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteEconWeightedVariableRefTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "VARIABLE_NAME TEXT," +
-                    "VARIABLE_DESCRIPTION TEXT," +
-                    "VARIABLE_SOURCE TEXT," +
-                    "CYCLE_1_WEIGHT REAL," +
-                    "CYCLE_2_WEIGHT REAL," +
-                    "CYCLE_3_WEIGHT REAL," +
-                    "CYCLE_4_WEIGHT REAL," +
+                    "VARIABLE_NAME CHAR(40)," +
+                    "VARIABLE_DESCRIPTION CHAR(255)," +
+                    "VARIABLE_SOURCE CHAR(100)," +
+                    "CYCLE_1_WEIGHT DOUBLE," +
+                    "CYCLE_2_WEIGHT DOUBLE," +
+                    "CYCLE_3_WEIGHT DOUBLE," +
+                    "CYCLE_4_WEIGHT DOUBLE," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (VARIABLE_NAME))";
             }
             //
@@ -3051,9 +3051,9 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteRxHarvestCostColumnTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "rx TEXT," +
-                    "ColumnName TEXT," +
-                    "Description TEXT," +
+                    "rx CHAR(3)," +
+                    "ColumnName CHAR(50)," +
+                    "Description CHAR(255)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (RX, COLUMNNAME))";
             }
             //
@@ -4938,7 +4938,7 @@ namespace FIA_Biosum_Manager
                 string strSQL = "CREATE TABLE " + p_strTableName + " (";
                 if (p_bCreateIdColumn)
                 {
-                    strSQL = strSQL + "ID LONG PRIMARY KEY AUTOINCREMENT,";
+                    strSQL = strSQL + "ID INTEGER PRIMARY KEY AUTOINCREMENT,";  //SQLite requires this be integer rather than long
                 }
                 strSQL = strSQL + "biosum_cond_id CHAR(25)," +
                     "rxpackage CHAR(3)," +
@@ -6018,9 +6018,9 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteScenarioAdditionalHarvestCostsTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "scenario_id TEXT," +
-                    "biosum_cond_id TEXT," +
-                    "rx TEXT," +
+                    "scenario_id CHAR(20)," +
+                    "biosum_cond_id CHAR(25)," +
+                    "rx CHAR(3)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (scenario_id,biosum_cond_id,rx))";
             }
 

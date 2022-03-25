@@ -591,7 +591,6 @@ namespace FIA_Biosum_Manager
                 strTable = Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName + "_C";
                 if (this.CreateScenarioAdditionalHarvestCostsTable(strConnection, strTable) == true)
                 {
-                    //@ToDo
                     lstTables.Add(strTable);
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     {
@@ -645,9 +644,13 @@ namespace FIA_Biosum_Manager
                             {
                                 using (System.Data.SQLite.SQLiteCommandBuilder cb = new System.Data.SQLite.SQLiteCommandBuilder(da))
                                 {
-                                    da.InsertCommand = cb.GetInsertCommand();
-                                    int rows = da.Update(oAdo.m_DataTable);
-                                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                                        using (var transaction = con.BeginTransaction())
+                                        {
+                                            da.InsertCommand = cb.GetInsertCommand();
+                                            int rows = da.Update(oAdo.m_DataTable);
+                                            transaction.Commit();
+                                        }
+                                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                                     {
                                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Populated context table " + strTableName + " \r\n");
                                     }
@@ -815,9 +818,13 @@ namespace FIA_Biosum_Manager
                             {
                                 using (System.Data.SQLite.SQLiteCommandBuilder cb = new System.Data.SQLite.SQLiteCommandBuilder(da))
                                 {
-                                    da.InsertCommand = cb.GetInsertCommand();
-                                    int rows = da.Update(oAdo.m_DataTable);
-                                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                                        using (var transaction = con.BeginTransaction())
+                                        {
+                                            da.InsertCommand = cb.GetInsertCommand();
+                                            int rows = da.Update(oAdo.m_DataTable);
+                                            transaction.Commit();
+                                        }
+                                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                                     {
                                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Populated fvs context table " + strTable + " \r\n");
                                     }
@@ -1511,7 +1518,7 @@ namespace FIA_Biosum_Manager
                 {
                     if (!oDataMgr.ColumnExists(con, strTableName, strColumn))
                     {
-                        oDataMgr.AddColumn(con, strTableName, strColumn, "REAL", "");
+                        oDataMgr.AddColumn(con, strTableName, strColumn, "DOUBLE", "");
                     }
                 }
             }
