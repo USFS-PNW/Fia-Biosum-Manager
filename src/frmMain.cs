@@ -179,7 +179,7 @@ namespace FIA_Biosum_Manager
 		public static System.Drawing.Font  g_oGridViewFont= new System.Drawing.Font(
 												"Microsoft Sans Serif", 8, System.Drawing.FontStyle.Regular);
 		public static System.Drawing.Color g_oGridViewRowForegroundColor = Color.Black;
-		public static System.Drawing.Color g_oGridViewSelectedRowBackgroundColor=Color.Blue;
+        public static System.Drawing.Color g_oGridViewSelectedRowBackgroundColor = Color.Magenta;
 
         //debugging values
         public static bool g_bDebug=false;
