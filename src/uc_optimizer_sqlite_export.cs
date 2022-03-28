@@ -793,7 +793,7 @@ namespace FIA_Biosum_Manager
                                                 oDataMgr.AddColumn(con, strTable, strColumn, "INTEGER", "");
                                                 break;
                                             case "SYSTEM.DOUBLE":
-                                                oDataMgr.AddColumn(con, strTable, strColumn, "REAL", "");
+                                                oDataMgr.AddColumn(con, strTable, strColumn, "DOUBLE", "");
                                                 break;
                                             default:
                                                 MessageBox.Show("Not found!");
@@ -870,8 +870,12 @@ namespace FIA_Biosum_Manager
                         {
                             using (System.Data.SQLite.SQLiteCommandBuilder cb = new System.Data.SQLite.SQLiteCommandBuilder(da))
                             {
-                                da.InsertCommand = cb.GetInsertCommand();
-                                int rows = da.Update(oAdo.m_DataTable);
+                                    using (var transaction = con.BeginTransaction())
+                                    {
+                                        da.InsertCommand = cb.GetInsertCommand();
+                                        int rows = da.Update(oAdo.m_DataTable);
+                                        transaction.Commit();
+                                    }
                                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                                 {
                                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Populated fvs context table " + strTable + " \r\n");

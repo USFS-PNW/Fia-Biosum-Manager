@@ -889,15 +889,15 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteFvsPrePostSQL(string p_strTableName, bool p_bWeightedVariable)
             {
                 string strSql = "CREATE TABLE " + p_strTableName + " (" +
-                    "biosum_cond_id TEXT," +
-                    "rxpackage TEXT," +
-                    "rx TEXT," +
-                    "rxcycle TEXT," +
-                    "fvs_variant TEXT";
+                    "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "rx CHAR(3)," +
+                    "rxcycle CHAR(1)," +
+                    "fvs_variant CHAR(2)";
                 if (p_bWeightedVariable == false)
                 {
-                    strSql = strSql + ", CaseID TEXT," +
-                    "StandID TEXT," +
+                    strSql = strSql + ", CaseID CHAR(255)," +
+                    "StandID CHAR(255)," +
                     "Year INTEGER)";
                 }
                 else
