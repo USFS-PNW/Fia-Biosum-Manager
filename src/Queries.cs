@@ -3773,7 +3773,7 @@ namespace FIA_Biosum_Manager
                     string p_strInputVolumesTable, string p_strFIATreeTable, string p_strColumns, string p_strValues)
                 {
                     return
-                        $"INSERT INTO {p_strInputVolumesTable} ({p_strColumns}) SELECT {p_strValues} FROM {p_strFIATreeTable} WHERE biosum_status_cd=9";
+                        $"INSERT INTO {p_strInputVolumesTable} ({p_strColumns}) SELECT {p_strValues} FROM {p_strFIATreeTable} WHERE biosum_status_cd=9 and dia >= 1.0";
                 }
 
                 public static string BuildInputTableForVolumeCalculation_Step2(

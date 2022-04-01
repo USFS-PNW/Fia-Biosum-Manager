@@ -1442,7 +1442,7 @@ namespace FIA_Biosum_Manager
                 strColumns = string.Join(",", treeToFcsBiosumVolumesInputTable.Select(e => e.Item1));
                 strValues = string.Join(",", treeToFcsBiosumVolumesInputTable.Select(e => e.Item2));
 
-                m_oAdo.m_strSQL = $"INSERT INTO {Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable} ({strColumns}) SELECT {strValues} FROM {strTable}";
+                m_oAdo.m_strSQL = $"INSERT INTO {Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable} ({strColumns}) SELECT {strValues} FROM {strTable} WHERE DBH >= 1.0";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
                         m_oAdo.m_strSQL + "\r\n\r\n");

@@ -3521,8 +3521,6 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n\r\n");
                         p_ado.SqlNonQuery(this.m_connTempMDBFile, p_ado.m_strSQL);
 
-
-                       // p_ado.m_strSQL = "UPDATE " + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable + " f INNER JOIN " + m_strCondTable + " c ON f.CND_CN = c.BIOSUM_COND_ID SET f.vol_loc_grp=IIF(INSTR(1,c.vol_loc_grp,'22') > 0,'S26LEOR',c.vol_loc_grp)";
                         p_ado.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step2(Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable, m_strTreeTable,m_strPlotTable,m_strCondTable);
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n\r\n");
@@ -3744,6 +3742,8 @@ namespace FIA_Biosum_Manager
                                                 {
                                                     strValues = utils.GetParsedInsertValues(oSQLite.m_DataReader, columnsAndDataTypes);
                                                     command.CommandText = $"INSERT INTO {Tables.VolumeAndBiomass.BiosumCalcOutputTable} ({strColumns}) VALUES ({strValues})";
+                                                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 3)
+                                                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, command.CommandText + "\r\n\r\n");
                                                     command.ExecuteNonQuery();
                                                     SetThermValue(m_frmTherm.progressBar1, "Value", COUNT);
                                                 }
@@ -3771,7 +3771,9 @@ namespace FIA_Biosum_Manager
                                             {
                                                 MSAccess.m_strSQL =
                                                     Queries.VolumeAndBiomass.FIAPlotInput.WriteCalculatedVolumeAndBiomassColumnsToTreeTable(Tables.VolumeAndBiomass.BiosumCalcOutputTable);
-                                                MSAccess.SqlNonQuery(m_connTempMDBFile, MSAccess.m_strSQL);
+                                                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, MSAccess.m_strSQL + "\r\n\r\n");
+                                                    MSAccess.SqlNonQuery(m_connTempMDBFile, MSAccess.m_strSQL);
                                             }
                                         }
 
@@ -8667,13 +8669,41 @@ namespace FIA_Biosum_Manager
             {
                 conn.Open();
                 //pop estimation unit table
-                frmMain.g_oTables.m_oFIAPlot.CreatePopEstnUnitTable(m_ado, conn, this.m_strPopEstUnitTable);
+                if (m_ado.TableExist(conn, this.m_strPopEstUnitTable))
+                {
+                    m_ado.SqlNonQuery(conn, "DELETE * FROM " + this.m_strPopEstUnitTable);
+                }
+                else
+                {
+                    frmMain.g_oTables.m_oFIAPlot.CreatePopEstnUnitTable(m_ado, conn, this.m_strPopEstUnitTable);
+                }
                 //pop eval table
-                frmMain.g_oTables.m_oFIAPlot.CreatePopEvalTable(m_ado, conn, this.m_strPopEvalTable);
+                if (m_ado.TableExist(conn, this.m_strPopEvalTable))
+                {
+                    m_ado.SqlNonQuery(conn, "DELETE * FROM " + this.m_strPopEvalTable);
+                }
+                else
+                {
+                    frmMain.g_oTables.m_oFIAPlot.CreatePopEvalTable(m_ado, conn, this.m_strPopEvalTable);
+                }
                 //pop plot stratum assignment table
-                frmMain.g_oTables.m_oFIAPlot.CreatePopPlotStratumAssgnTable(m_ado, conn, this.m_strPpsaTable);
+                if (m_ado.TableExist(conn, this.m_strPpsaTable))
+                {
+                    m_ado.SqlNonQuery(conn, "DELETE * FROM " + this.m_strPpsaTable);
+                }
+                else
+                {
+                    frmMain.g_oTables.m_oFIAPlot.CreatePopPlotStratumAssgnTable(m_ado, conn, this.m_strPpsaTable);
+                }
                 //pop stratum table
-                frmMain.g_oTables.m_oFIAPlot.CreatePopStratumTable(m_ado, conn, this.m_strPopStratumTable);
+                if (m_ado.TableExist(conn, this.m_strPopStratumTable))
+                {
+                    m_ado.SqlNonQuery(conn, "DELETE * FROM " + this.m_strPopStratumTable);
+                }
+                else
+                {
+                    frmMain.g_oTables.m_oFIAPlot.CreatePopStratumTable(m_ado, conn, this.m_strPopStratumTable);
+                }
             }
 
             //instatiate dao for creating links in the temp table
