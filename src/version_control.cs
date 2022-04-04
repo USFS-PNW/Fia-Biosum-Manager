@@ -538,6 +538,17 @@ namespace FIA_Biosum_Manager
                         UpdateProjectVersionFile(strProjVersionFile);
                         bPerformCheck = false;
                     }
+                    //5.9.0 More new columns for FIADB; No more Oracle interface
+                    else if ((Convert.ToInt16(m_strAppVerArray[APP_VERSION_MAJOR]) == 5 &&
+                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR1]) >= 9) &&
+                        (Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MAJOR]) == 5 &&
+                        Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR1]) == 8 &&
+                        Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR2]) >= 10))
+                    {
+                        UpdateDatasources_5_9_0();
+                        UpdateProjectVersionFile(strProjVersionFile);
+                        bPerformCheck = false;
+                    }
                     else if ((Convert.ToInt16(m_strAppVerArray[APP_VERSION_MAJOR]) == 5 &&
                         Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR1]) > 6) &&
                         (Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MAJOR]) == 5 &&
