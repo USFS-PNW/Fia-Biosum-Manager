@@ -4045,7 +4045,6 @@ namespace FIA_Biosum_Manager
                     (int) m_enumDWMOption.USE_DWM_DATA_ONLY
                 }.Contains(m_intDWMOption))
                 {
-                    //@ToDo: Make sure that other fuel model fields are nulled out too. Should be if we copy from FVSIn.accdb
                     DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.StandInit.SetFuelModelToNull() + "\r\n", 2);
                     oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.SetFuelModelToNull());
                 }
@@ -4058,6 +4057,11 @@ namespace FIA_Biosum_Manager
                 }.Contains(m_intDWMOption))
                 {
                     CopyFuelColumns(oDao, strTempMDB, strVariant);
+                }
+                else
+                {
+                    DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.StandInit.SetDwmColumnsToNull(strVariant) + "\r\n", 2);
+                    oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.SetDwmColumnsToNull(strVariant));
                 }
 
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
@@ -4104,14 +4108,19 @@ namespace FIA_Biosum_Manager
                 oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.UpdateTreeCountForSeedlings(this.m_strCondTable, strTempTreeTable));
                 lstFields.Add("TREE_COUNT");
 
-                // Copy Grm columns if selected
+                // Copy Grm columns if selected; Set to null if not selected
+                frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
                 if (bUseGrmCalibrationData)
                 {
-                    frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
                     CopyGrmColumns(oDao, strTempMDB, strVariant, strTempTreeTable);
-                    lstFields.Add("DG");
-                    lstFields.Add("HTG");
                 }
+                else
+                {
+                    DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.SetGrmColumnsToNull(strTempTreeTable) + "\r\n", 2);
+                    oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.SetGrmColumnsToNull(strTempTreeTable));
+                }
+                lstFields.Add("DG");
+                lstFields.Add("HTG");
 
                 // Update damage codes for cull and mistletoe
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
@@ -4262,6 +4271,14 @@ namespace FIA_Biosum_Manager
                     DebugLogMessage("Execute SQL: " + arrQueries[i] + "\r\n", 2);
                     oAdo.SqlNonQuery(oAccessConn, arrQueries[i]);
 
+                }
+
+                // Update treevalue codes; They are based on damage codes
+                arrQueries = Queries.FVS.FVSInput.TreeInit.UpdateTreeValue(strTempTreeTable);
+                for (int i = 0; i < arrQueries.Length; i++)
+                {
+                    DebugLogMessage("Execute SQL: " + arrQueries[i] + "\r\n", 2);
+                    oAdo.SqlNonQuery(oAccessConn, arrQueries[i]);
                 }
             }
         }

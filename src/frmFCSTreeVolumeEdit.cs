@@ -155,7 +155,9 @@ namespace FIA_Biosum_Manager
 
     private ado_data_access m_oAdo = new ado_data_access();
     private int m_intError = 0;
-    private string m_strError;
+        private ComboBox cboDiaHtCd;
+        private Label label22;
+        private string m_strError;
 
    
 
@@ -347,6 +349,8 @@ namespace FIA_Biosum_Manager
             this.btnLoad = new System.Windows.Forms.Button();
             this.cmbDatasource = new System.Windows.Forms.ComboBox();
             this.btnLinkTableTest = new System.Windows.Forms.Button();
+            this.label22 = new System.Windows.Forms.Label();
+            this.cboDiaHtCd = new System.Windows.Forms.ComboBox();
             this.panel1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -403,6 +407,8 @@ namespace FIA_Biosum_Manager
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.cboDiaHtCd);
+            this.groupBox2.Controls.Add(this.label22);
             this.groupBox2.Controls.Add(this.btnDefaultSingle);
             this.groupBox2.Controls.Add(this.groupBox3);
             this.groupBox2.Controls.Add(this.label14);
@@ -488,7 +494,7 @@ namespace FIA_Biosum_Manager
             this.label21.AutoSize = true;
             this.label21.Location = new System.Drawing.Point(192, 135);
             this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(65, 13);
+            this.label21.Size = new System.Drawing.Size(84, 17);
             this.label21.TabIndex = 21;
             this.label21.Text = "VOLTSGRS";
             // 
@@ -508,7 +514,7 @@ namespace FIA_Biosum_Manager
             this.label20.AutoSize = true;
             this.label20.Location = new System.Drawing.Point(185, 75);
             this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(57, 13);
+            this.label20.Size = new System.Drawing.Size(71, 17);
             this.label20.TabIndex = 19;
             this.label20.Text = "DRYBIOM";
             // 
@@ -539,7 +545,7 @@ namespace FIA_Biosum_Manager
             this.label18.AutoSize = true;
             this.label18.Location = new System.Drawing.Point(41, 75);
             this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(63, 13);
+            this.label18.Size = new System.Drawing.Size(81, 17);
             this.label18.TabIndex = 15;
             this.label18.Text = "VOLCFNET";
             // 
@@ -548,7 +554,7 @@ namespace FIA_Biosum_Manager
             this.label19.AutoSize = true;
             this.label19.Location = new System.Drawing.Point(49, 133);
             this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(55, 13);
+            this.label19.Size = new System.Drawing.Size(69, 17);
             this.label19.TabIndex = 17;
             this.label19.Text = "DRYBIOT";
             // 
@@ -568,7 +574,7 @@ namespace FIA_Biosum_Manager
             this.label17.AutoSize = true;
             this.label17.Location = new System.Drawing.Point(185, 17);
             this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(65, 13);
+            this.label17.Size = new System.Drawing.Size(84, 17);
             this.label17.TabIndex = 11;
             this.label17.Text = "VOLCSGRS";
             this.label17.Click += new System.EventHandler(this.label17_Click);
@@ -589,7 +595,7 @@ namespace FIA_Biosum_Manager
             this.label15.AutoSize = true;
             this.label15.Location = new System.Drawing.Point(41, 17);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(64, 13);
+            this.label15.Size = new System.Drawing.Size(83, 17);
             this.label15.TabIndex = 9;
             this.label15.Text = "VOLCFGRS";
             // 
@@ -598,7 +604,7 @@ namespace FIA_Biosum_Manager
             this.label14.AutoSize = true;
             this.label14.Location = new System.Drawing.Point(363, 79);
             this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(56, 13);
+            this.label14.Size = new System.Drawing.Size(73, 17);
             this.label14.TabIndex = 30;
             this.label14.Text = "RoughCull";
             // 
@@ -606,7 +612,7 @@ namespace FIA_Biosum_Manager
             // 
             this.txtRoughCull.Location = new System.Drawing.Point(425, 76);
             this.txtRoughCull.Name = "txtRoughCull";
-            this.txtRoughCull.Size = new System.Drawing.Size(62, 20);
+            this.txtRoughCull.Size = new System.Drawing.Size(62, 22);
             this.txtRoughCull.TabIndex = 29;
             // 
             // label13
@@ -614,7 +620,7 @@ namespace FIA_Biosum_Manager
             this.label13.AutoSize = true;
             this.label13.Location = new System.Drawing.Point(255, 79);
             this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(24, 13);
+            this.label13.Size = new System.Drawing.Size(31, 17);
             this.label13.TabIndex = 28;
             this.label13.Text = "Cull";
             // 
@@ -622,7 +628,7 @@ namespace FIA_Biosum_Manager
             // 
             this.txtCull.Location = new System.Drawing.Point(286, 79);
             this.txtCull.Name = "txtCull";
-            this.txtCull.Size = new System.Drawing.Size(71, 20);
+            this.txtCull.Size = new System.Drawing.Size(71, 22);
             this.txtCull.TabIndex = 27;
             // 
             // label12
@@ -630,7 +636,7 @@ namespace FIA_Biosum_Manager
             this.label12.AutoSize = true;
             this.label12.Location = new System.Drawing.Point(131, 82);
             this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(51, 13);
+            this.label12.Size = new System.Drawing.Size(67, 17);
             this.label12.TabIndex = 26;
             this.label12.Text = "TreeClCd";
             // 
@@ -638,7 +644,7 @@ namespace FIA_Biosum_Manager
             // 
             this.txtTreeClCd.Location = new System.Drawing.Point(190, 79);
             this.txtTreeClCd.Name = "txtTreeClCd";
-            this.txtTreeClCd.Size = new System.Drawing.Size(59, 20);
+            this.txtTreeClCd.Size = new System.Drawing.Size(59, 22);
             this.txtTreeClCd.TabIndex = 25;
             // 
             // label11
@@ -646,7 +652,7 @@ namespace FIA_Biosum_Manager
             this.label11.AutoSize = true;
             this.label11.Location = new System.Drawing.Point(15, 82);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(50, 13);
+            this.label11.Size = new System.Drawing.Size(65, 17);
             this.label11.TabIndex = 24;
             this.label11.Text = "StatusCd";
             // 
@@ -654,7 +660,7 @@ namespace FIA_Biosum_Manager
             // 
             this.txtStatusCd.Location = new System.Drawing.Point(66, 79);
             this.txtStatusCd.Name = "txtStatusCd";
-            this.txtStatusCd.Size = new System.Drawing.Size(59, 20);
+            this.txtStatusCd.Size = new System.Drawing.Size(59, 22);
             this.txtStatusCd.TabIndex = 23;
             // 
             // label10
@@ -662,7 +668,7 @@ namespace FIA_Biosum_Manager
             this.label10.AutoSize = true;
             this.label10.Location = new System.Drawing.Point(15, 108);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(89, 13);
+            this.label10.Size = new System.Drawing.Size(117, 17);
             this.label10.TabIndex = 22;
             this.label10.Text = "Crown Ratio (CR)";
             // 
@@ -670,7 +676,7 @@ namespace FIA_Biosum_Manager
             // 
             this.txtCR.Location = new System.Drawing.Point(104, 105);
             this.txtCR.Name = "txtCR";
-            this.txtCR.Size = new System.Drawing.Size(80, 20);
+            this.txtCR.Size = new System.Drawing.Size(80, 22);
             this.txtCR.TabIndex = 21;
             // 
             // label9
@@ -678,7 +684,7 @@ namespace FIA_Biosum_Manager
             this.label9.AutoSize = true;
             this.label9.Location = new System.Drawing.Point(363, 59);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(48, 13);
+            this.label9.Size = new System.Drawing.Size(61, 17);
             this.label9.TabIndex = 20;
             this.label9.Text = "ActualHt";
             // 
@@ -686,7 +692,7 @@ namespace FIA_Biosum_Manager
             // 
             this.txtActualHt.Location = new System.Drawing.Point(425, 53);
             this.txtActualHt.Name = "txtActualHt";
-            this.txtActualHt.Size = new System.Drawing.Size(62, 20);
+            this.txtActualHt.Size = new System.Drawing.Size(62, 22);
             this.txtActualHt.TabIndex = 19;
             // 
             // label8
@@ -694,7 +700,7 @@ namespace FIA_Biosum_Manager
             this.label8.AutoSize = true;
             this.label8.Location = new System.Drawing.Point(255, 59);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(18, 13);
+            this.label8.Size = new System.Drawing.Size(22, 17);
             this.label8.TabIndex = 18;
             this.label8.Text = "Ht";
             // 
@@ -702,7 +708,7 @@ namespace FIA_Biosum_Manager
             // 
             this.txtHt.Location = new System.Drawing.Point(286, 55);
             this.txtHt.Name = "txtHt";
-            this.txtHt.Size = new System.Drawing.Size(71, 20);
+            this.txtHt.Size = new System.Drawing.Size(71, 22);
             this.txtHt.TabIndex = 17;
             // 
             // label7
@@ -710,7 +716,7 @@ namespace FIA_Biosum_Manager
             this.label7.AutoSize = true;
             this.label7.Location = new System.Drawing.Point(131, 59);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(30, 13);
+            this.label7.Size = new System.Drawing.Size(37, 17);
             this.label7.TabIndex = 16;
             this.label7.Text = "DBH";
             // 
@@ -718,7 +724,7 @@ namespace FIA_Biosum_Manager
             // 
             this.txtDbh.Location = new System.Drawing.Point(190, 55);
             this.txtDbh.Name = "txtDbh";
-            this.txtDbh.Size = new System.Drawing.Size(59, 20);
+            this.txtDbh.Size = new System.Drawing.Size(59, 22);
             this.txtDbh.TabIndex = 15;
             // 
             // label6
@@ -726,7 +732,7 @@ namespace FIA_Biosum_Manager
             this.label6.AutoSize = true;
             this.label6.Location = new System.Drawing.Point(15, 59);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(33, 13);
+            this.label6.Size = new System.Drawing.Size(42, 17);
             this.label6.TabIndex = 14;
             this.label6.Text = "SpCd";
             // 
@@ -734,7 +740,7 @@ namespace FIA_Biosum_Manager
             // 
             this.txtSpCd.Location = new System.Drawing.Point(66, 55);
             this.txtSpCd.Name = "txtSpCd";
-            this.txtSpCd.Size = new System.Drawing.Size(59, 20);
+            this.txtSpCd.Size = new System.Drawing.Size(59, 22);
             this.txtSpCd.TabIndex = 13;
             // 
             // label5
@@ -742,7 +748,7 @@ namespace FIA_Biosum_Manager
             this.label5.AutoSize = true;
             this.label5.Location = new System.Drawing.Point(363, 37);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(32, 13);
+            this.label5.Size = new System.Drawing.Size(40, 17);
             this.label5.TabIndex = 12;
             this.label5.Text = "InvYr";
             // 
@@ -750,7 +756,7 @@ namespace FIA_Biosum_Manager
             // 
             this.txtInvYr.Location = new System.Drawing.Point(425, 34);
             this.txtInvYr.Name = "txtInvYr";
-            this.txtInvYr.Size = new System.Drawing.Size(62, 20);
+            this.txtInvYr.Size = new System.Drawing.Size(62, 22);
             this.txtInvYr.TabIndex = 11;
             // 
             // label4
@@ -758,7 +764,7 @@ namespace FIA_Biosum_Manager
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(190, 108);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(69, 13);
+            this.label4.Size = new System.Drawing.Size(91, 17);
             this.label4.TabIndex = 10;
             this.label4.Text = "Vol_Loc_Grp";
             // 
@@ -766,7 +772,7 @@ namespace FIA_Biosum_Manager
             // 
             this.txtVolLocGrp.Location = new System.Drawing.Point(265, 105);
             this.txtVolLocGrp.Name = "txtVolLocGrp";
-            this.txtVolLocGrp.Size = new System.Drawing.Size(80, 20);
+            this.txtVolLocGrp.Size = new System.Drawing.Size(80, 22);
             this.txtVolLocGrp.TabIndex = 9;
             // 
             // label3
@@ -774,7 +780,7 @@ namespace FIA_Biosum_Manager
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(15, 37);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(45, 13);
+            this.label3.Size = new System.Drawing.Size(58, 17);
             this.label3.TabIndex = 8;
             this.label3.Text = "StateCd";
             // 
@@ -782,7 +788,7 @@ namespace FIA_Biosum_Manager
             // 
             this.txtStateCd.Location = new System.Drawing.Point(66, 34);
             this.txtStateCd.Name = "txtStateCd";
-            this.txtStateCd.Size = new System.Drawing.Size(59, 20);
+            this.txtStateCd.Size = new System.Drawing.Size(59, 22);
             this.txtStateCd.TabIndex = 7;
             this.txtStateCd.TextChanged += new System.EventHandler(this.txtStateCd_TextChanged);
             // 
@@ -791,7 +797,7 @@ namespace FIA_Biosum_Manager
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(255, 37);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(25, 13);
+            this.label2.Size = new System.Drawing.Size(32, 17);
             this.label2.TabIndex = 6;
             this.label2.Text = "Plot";
             // 
@@ -799,7 +805,7 @@ namespace FIA_Biosum_Manager
             // 
             this.txtPlot.Location = new System.Drawing.Point(286, 34);
             this.txtPlot.Name = "txtPlot";
-            this.txtPlot.Size = new System.Drawing.Size(71, 20);
+            this.txtPlot.Size = new System.Drawing.Size(71, 22);
             this.txtPlot.TabIndex = 5;
             // 
             // label1
@@ -807,7 +813,7 @@ namespace FIA_Biosum_Manager
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(131, 37);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(53, 13);
+            this.label1.Size = new System.Drawing.Size(69, 17);
             this.label1.TabIndex = 4;
             this.label1.Text = "CountyCd";
             // 
@@ -815,7 +821,7 @@ namespace FIA_Biosum_Manager
             // 
             this.txtCountyCd.Location = new System.Drawing.Point(190, 34);
             this.txtCountyCd.Name = "txtCountyCd";
-            this.txtCountyCd.Size = new System.Drawing.Size(59, 20);
+            this.txtCountyCd.Size = new System.Drawing.Size(59, 22);
             this.txtCountyCd.TabIndex = 3;
             // 
             // btnTreeVolSingle
@@ -850,7 +856,7 @@ namespace FIA_Biosum_Manager
             this.lblFSNetwork.Location = new System.Drawing.Point(180, 16);
             this.lblFSNetwork.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblFSNetwork.Name = "lblFSNetwork";
-            this.lblFSNetwork.Size = new System.Drawing.Size(22, 13);
+            this.lblFSNetwork.Size = new System.Drawing.Size(27, 17);
             this.lblFSNetwork.TabIndex = 9;
             this.lblFSNetwork.Text = "NA";
             // 
@@ -860,7 +866,7 @@ namespace FIA_Biosum_Manager
             this.label16.Location = new System.Drawing.Point(5, 16);
             this.label16.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(170, 13);
+            this.label16.Size = new System.Drawing.Size(225, 17);
             this.label16.TabIndex = 8;
             this.label16.Text = "FCS Volume and Biomass Method:";
             // 
@@ -891,7 +897,7 @@ namespace FIA_Biosum_Manager
             "Tree Sample"});
             this.cmbDatasource.Location = new System.Drawing.Point(12, 293);
             this.cmbDatasource.Name = "cmbDatasource";
-            this.cmbDatasource.Size = new System.Drawing.Size(166, 21);
+            this.cmbDatasource.Size = new System.Drawing.Size(166, 24);
             this.cmbDatasource.TabIndex = 5;
             this.cmbDatasource.Text = "Tree Sample";
             // 
@@ -904,6 +910,27 @@ namespace FIA_Biosum_Manager
             this.btnLinkTableTest.Text = "Test FCS_TREE.BIOSUM_CALC Workflow";
             this.btnLinkTableTest.UseVisualStyleBackColor = true;
             this.btnLinkTableTest.Click += new System.EventHandler(this.btnLinkTableTest_Click);
+            // 
+            // label22
+            // 
+            this.label22.AutoSize = true;
+            this.label22.Location = new System.Drawing.Point(351, 108);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(60, 17);
+            this.label22.TabIndex = 33;
+            this.label22.Text = "DiaHtCd";
+            // 
+            // cboDiaHtCd
+            // 
+            this.cboDiaHtCd.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboDiaHtCd.FormattingEnabled = true;
+            this.cboDiaHtCd.Items.AddRange(new object[] {
+            "1",
+            "2"});
+            this.cboDiaHtCd.Location = new System.Drawing.Point(411, 105);
+            this.cboDiaHtCd.Name = "cboDiaHtCd";
+            this.cboDiaHtCd.Size = new System.Drawing.Size(50, 24);
+            this.cboDiaHtCd.TabIndex = 34;
             // 
             // frmFCSTreeVolumeEdit
             // 
@@ -945,6 +972,7 @@ namespace FIA_Biosum_Manager
         this.txtStatusCd.Text = "1";
         this.txtTreeClCd.Text = "2";
         this.txtVolLocGrp.Text = "S26LCA";
+        this.cboDiaHtCd.SelectedIndex = 0;
         selectedRow.Clear();
 
     }
@@ -1019,7 +1047,7 @@ namespace FIA_Biosum_Manager
                         Tuple.Create("BFSND", selectedRow[COL_BFSND]),
                         Tuple.Create("PRECIPITATION", selectedRow[COL_PRECIPITATION]),
                         Tuple.Create("BALIVE", selectedRow[COL_BALIVE]),
-                        Tuple.Create("DIAHTCD", selectedRow[COL_DIAHTCD]),
+                        Tuple.Create("DIAHTCD", cboDiaHtCd.Text.Trim()),
                         Tuple.Create("STANDING_DEAD_CD", selectedRow[COL_STANDING_DEAD_CD]),
                         Tuple.Create("ECODIV", $"'{selectedRow[COL_ECOSUBCD]}'"),
                         Tuple.Create("STDORGCD", selectedRow[COL_STDORGCD]),
@@ -1037,7 +1065,7 @@ namespace FIA_Biosum_Manager
                     Tuple.Create("TREE", "123456"),
                     Tuple.Create("VOL_LOC_GRP", $"'{txtVolLocGrp.Text.Trim()}'"),
                     Tuple.Create("SPCD", txtSpCd.Text.Trim()),
-                    Tuple.Create("DIA", "5.09999990463257"),
+                    Tuple.Create("DIA", txtDbh.Text.Trim()),
                     Tuple.Create("HT", txtHt.Text.Trim()),
                     Tuple.Create("ACTUALHT", txtActualHt.Text.Trim()),
                     Tuple.Create("CR", txtCR.Text.Trim()),
@@ -1068,7 +1096,7 @@ namespace FIA_Biosum_Manager
                     Tuple.Create("BFSND", "NULL"),
                     Tuple.Create("PRECIPITATION", "NULL"),
                     Tuple.Create("BALIVE", "58.9219"),
-                    Tuple.Create("DIAHTCD", "1"),
+                    Tuple.Create("DIAHTCD", cboDiaHtCd.Text.Trim()),
                     Tuple.Create("STANDING_DEAD_CD", "NULL"),
                     Tuple.Create("ECODIV", "NULL"),
                     Tuple.Create("STDORGCD", "NULL"),
@@ -2300,7 +2328,8 @@ namespace FIA_Biosum_Manager
         this.txtStatusCd.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_STATUSCD].ToString().Trim());
         this.txtTreeClCd.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_TREECLCD].ToString().Trim());
         this.txtVolLocGrp.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_VOLLOCGRP].ToString().Trim());
-    }
+            this.cboDiaHtCd.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_DIAHTCD].ToString().Trim());
+        }
 
     private void frmFCSTreeVolumeEdit_Resize(object sender, EventArgs e)
     {

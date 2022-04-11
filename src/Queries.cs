@@ -3258,6 +3258,33 @@ namespace FIA_Biosum_Manager
                          " WHERE " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".VARIANT = '" + strVariant + "'";
                         return strSQL;
                     }
+
+                    public static string SetDwmColumnsToNull(string strVariant)
+                    {
+                        string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                         " SET FUEL_0_25_H = NULL, " +
+                         "FUEL_25_1_H = NULL, " +
+                         "FUEL_1_3_H = NULL, " +
+                         "FUEL_3_6_H = NULL, " +
+                         "FUEL_6_12_H = NULL, " +
+                         "FUEL_12_20_H = NULL, " +
+                         "FUEL_20_35_H = NULL, " +
+                         "FUEL_35_50_H = NULL, " +
+                         "FUEL_GT_50_H = NULL, " +
+                         "FUEL_0_25_S = NULL, " +
+                         "FUEL_25_1_S = NULL, " +
+                         "FUEL_1_3_S = NULL, " +
+                         "FUEL_3_6_S = NULL, " +
+                         "FUEL_6_12_S = NULL, " +
+                         "FUEL_12_20_S = NULL, " +
+                         "FUEL_20_35_S = NULL, " +
+                         "FUEL_35_50_S = NULL, " +
+                         "FUEL_GT_50_S = NULL, " +
+                         "FUEL_LITTER = NULL, " +
+                         "FUEL_DUFF = NULL " +
+                         " WHERE " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".VARIANT = '" + strVariant + "'";
+                        return strSQL;
+                    }
                 }
 
 		        //All the queries necessary to create the FVSIn.accdb FVS_TreeInit table using intermediate tables
@@ -3585,6 +3612,14 @@ namespace FIA_Biosum_Manager
                          return strSQL;
                     }
 
+                    public static string SetGrmColumnsToNull(string strTargetTable)
+                    {
+                        string strSQL = "UPDATE " + strTargetTable +
+                         " SET " + strTargetTable + ".DG = NULL, " +
+                         strTargetTable + ".HTG = NULL";
+                        return strSQL;
+                    }
+
                     public static string[] UpdateDamageCodesForCull(string strTreeTable, string strTargetTable)
                     {
                         string[] arrDamageCodeUpdates = new string[18];
@@ -3706,7 +3741,24 @@ namespace FIA_Biosum_Manager
                         return arrDamageCodeUpdates;
                     }
 
-                    public static string UpdateFieldsFromTempTable(string strSourceTable, IList<string> lstFields)
+                    public static string[] UpdateTreeValue(string strTargetTable)
+                    {
+                        string[] arrTreeValueUpdates = new string[3];
+                        // First pass sets treevalue = 1 for all trees
+                        arrTreeValueUpdates[0] = "UPDATE " + strTargetTable +
+                            " SET TREEVALUE = 1";
+                        // Second pass sets treevalue = 3 for cull trees
+                        arrTreeValueUpdates[1] = "UPDATE " + strTargetTable +
+                            " SET TREEVALUE = 3 WHERE (Damage1 = 25 AND SEVERITY1 >= 25) OR" +
+                            " (Damage2 = 25 AND SEVERITY2 >= 25) OR (Damage3 = 25 AND SEVERITY3 >= 25)";
+                        // Third pass sets treevalue = 2 for all other damage codes
+                        arrTreeValueUpdates[2] = "UPDATE " + strTargetTable +
+                            " SET TREEVALUE = 2 WHERE (Damage1 IS NOT NULL OR Damage2 IS NOT NULL OR Damage3 IS NOT NULL) AND" +
+                            " TREEVALUE <> 3";
+                        return arrTreeValueUpdates;
+                    }
+
+                        public static string UpdateFieldsFromTempTable(string strSourceTable, IList<string> lstFields)
                     {
                         string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
                          " INNER JOIN " + strSourceTable + " ON " + strSourceTable + ".TREE_CN = " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".TREE_CN" +
