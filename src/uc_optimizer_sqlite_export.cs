@@ -667,24 +667,37 @@ namespace FIA_Biosum_Manager
                         string strMasterDbPath = m_frmMain.getProjectDirectory() + @"\" + frmMain.g_oTables.m_oFIAPlot.DefaultPopTableDbFile;
                         oDataMgr.m_strSQL = "ATTACH DATABASE '" + strMasterDbPath + "' AS MASTER";
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
+                            frmMain.g_oUtils.WriteText(m_strDebugFile,
                                 oDataMgr.m_strSQL + "\r\n");
                         oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
 
                         foreach(var nextTable in arrPopTables)
                         {
-                            oDataMgr.m_strSQL = "CREATE TABLE " + nextTable + " AS " +
-                                                "SELECT * FROM MASTER." + nextTable;
+                            // Use the schema from the original tables in master.db to create tables in the context.db
+                            oDataMgr.m_strSQL = "SELECT sql FROM master.sqlite_master WHERE type = 'table' " +
+                                "AND name = '" + nextTable + "'";
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
-                                    oDataMgr.m_strSQL + "\r\n");
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, oDataMgr.m_strSQL + "\r\n");
+                            oDataMgr.m_strSQL = oDataMgr.getSingleStringValueFromSQLQuery(con, oDataMgr.m_strSQL, "sqlite_master");
+                            if (!String.IsNullOrEmpty(oDataMgr.m_strSQL))
+                            {
+                                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                    frmMain.g_oUtils.WriteText(m_strDebugFile, oDataMgr.m_strSQL + "\r\n");
+                                oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
+                            }
+
+                            // Populate the data in the context.db
+                            oDataMgr.m_strSQL = "INSERT INTO " + nextTable +
+                                " SELECT * FROM master." + nextTable;
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, oDataMgr.m_strSQL + "\r\n");
                             oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
                         }
 
                         //detach FIADB database
                         oDataMgr.m_strSQL = "DETACH DATABASE MASTER";
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
+                            frmMain.g_oUtils.WriteText(m_strDebugFile,
                                 oDataMgr.m_strSQL + "\r\n");
                         oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
 

@@ -596,10 +596,10 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteValidComboTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "biosum_cond_id text(25)," +
-                    "rxpackage text(3)," +
-                    "rx text(3)," +
-                    "rxcycle text(1)," +
+                    "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "rx CHAR(3)," +
+                    "rxcycle CHAR(1)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
             }
             public void CreateValidComboFVSPostTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
@@ -671,11 +671,11 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteValidComboFVSPrePostTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "biosum_cond_id text(25)," +
-                    "rxpackage text(3)," +
-                    "rx text(3)," +
-                    "rxcycle text(1)," +
-                    "fvs_variant text(2)," +
+                    "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "rx CHAR(3)," +
+                    "rxcycle CHAR(1)," +
+                    "fvs_variant CHAR(2)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
             }
             //
@@ -709,9 +709,9 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteBestRxSummaryTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "biosum_cond_id text(25)," +
-                    "rxpackage text(3)," +
-                    "rx text(3)," +
+                    "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "rx CHAR(3)," +
                     "acres double," +
                     "owngrpcd INTEGER," +
                     "optimization_value DOUBLE," +
@@ -1062,7 +1062,7 @@ namespace FIA_Biosum_Manager
             static public string CreateHaulCostTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "haul_cost_id LONG," +
+                    "haul_cost_id INTEGER," +
                     "biosum_plot_id CHAR(24)," +
                     "railhead_id INTEGER," +
                     "psite_id INTEGER," +
@@ -1791,23 +1791,23 @@ namespace FIA_Biosum_Manager
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "RXPACKAGE CHAR(3)," +
-                    "DESCRIPTION MEMO," +
+                    "DESCRIPTION CHAR(255)," +
                     "SIMYEAR1_RX CHAR(3)," +
                     "SIMYEAR1_RX_CATEGORY CHAR(100)," +
                     "SIMYEAR1_RX_SUBCATEGORY CHAR(100)," +
-                    "SIMYEAR1_RX_DESCRIPTION MEMO," +
+                    "SIMYEAR1_RX_DESCRIPTION CHAR(255)," +
                     "SIMYEAR2_RX CHAR(3)," +
                     "SIMYEAR2_RX_CATEGORY CHAR(100)," +
                     "SIMYEAR2_RX_SUBCATEGORY CHAR(100)," +
-                    "SIMYEAR2_RX_DESCRIPTION MEMO," +
+                    "SIMYEAR2_RX_DESCRIPTION CHAR(255)," +
                     "SIMYEAR3_RX CHAR(3)," +
                     "SIMYEAR3_RX_CATEGORY CHAR(100)," +
                     "SIMYEAR3_RX_SUBCATEGORY CHAR(100)," +
-                    "SIMYEAR3_RX_DESCRIPTION MEMO," +
+                    "SIMYEAR3_RX_DESCRIPTION CHAR(255)," +
                     "SIMYEAR4_RX CHAR(3)," +
                     "SIMYEAR4_RX_CATEGORY CHAR(100)," +
                     "SIMYEAR4_RX_SUBCATEGORY CHAR(100)," +
-                    "SIMYEAR4_RX_DESCRIPTION MEMO," +
+                    "SIMYEAR4_RX_DESCRIPTION CHAR(255)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (RXPACKAGE))";
             }
 
@@ -3761,9 +3761,9 @@ namespace FIA_Biosum_Manager
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "PSITE_ID INTEGER," +
                     "NAME CHAR(100)," +
-                    "TRANCD BYTE," +
+                    "TRANCD INTEGER," +
                     "TRANCD_DEF CHAR(20)," +
-                    "BIOCD BYTE," +
+                    "BIOCD INTEGER," +
                     "BIOCD_DEF CHAR(15)," +
                     "EXISTS_YN CHAR(1) DEFAULT 'N'," +
                     "LAT DOUBLE," +
@@ -3982,7 +3982,7 @@ namespace FIA_Biosum_Manager
                     "invyr INTEGER," +
                     "unitcd INTEGER," +
                     "countycd INTEGER," +
-                    p_strTableName + " LONG," +
+                    p_strTableName + " INTEGER," +
                     "measyear INTEGER," +
                     "measmon INTEGER," +
                     "measday INTEGER," +
@@ -3990,16 +3990,16 @@ namespace FIA_Biosum_Manager
                     "fvs_variant CHAR(2)," +
                     "fvsloccode INTEGER," +
                     "half_state CHAR(10)," +
-                    "subplot_count_plot BYTE," +
+                    "subplot_count_plot INTEGER," +
                     "gis_yard_dist_ft DOUBLE," +
-                    "num_cond BYTE," +
+                    "num_cond INTEGER," +
                     "one_cond_yn CHAR(1)," +
                     "lat DOUBLE," +
                     "lon DOUBLE," +
                     "macro_breakpoint_dia INTEGER," +
                     "precipitation DOUBLE," +
                     "ecosubcd CHAR(7)," +
-                    "biosum_status_cd BYTE," +
+                    "biosum_status_cd INTEGER," +
                     "cn CHAR(34)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_plot_id))";
             }
@@ -4093,29 +4093,29 @@ namespace FIA_Biosum_Manager
                     "biosum_cond_id CHAR(25)," +
                     "biosum_plot_id CHAR(24)," +
                     "invyr INTEGER," +
-                    "condid BYTE," +
+                    "condid INTEGER," +
                     "condprop DOUBLE," +
-                    "landclcd BYTE," +
+                    "landclcd INTEGER," +
                     "fortypcd INTEGER," +
                     "ground_land_class_pnw CHAR(3)," +
                     "owncd INTEGER," +
                     "owngrpcd INTEGER," +
-                    "reservcd BYTE," +
-                    "siteclcd BYTE," +
+                    "reservcd INTEGER," +
+                    "siteclcd INTEGER," +
                     "sibase INTEGER," +
                     "sicond INTEGER," +
                     "sisp INTEGER," +
                     "slope INTEGER," +
                     "aspect INTEGER," +
                     "stdage INTEGER," +
-                    "stdszcd BYTE," +
+                    "stdszcd INTEGER," +
                     "habtypcd1 CHAR(10)," +
                     "adforcd INTEGER," +
-                    "qmd_all_inch SINGLE," +
-                    "qmd_hwd_inch SINGLE," +
-                    "qmd_swd_inch SINGLE," +
+                    "qmd_all_inch DOUBLE," +
+                    "qmd_hwd_inch DOUBLE," +
+                    "qmd_swd_inch DOUBLE," +
                     "acres DOUBLE," +
-                    "unitcd LONG," +
+                    "unitcd INTEGER," +
                     "vol_loc_grp CHAR(10)," +
                     "tpacurr DOUBLE," +
                     "hwd_tpacurr DOUBLE," +
@@ -4139,9 +4139,9 @@ namespace FIA_Biosum_Manager
                     "subpprop_unadj DOUBLE," +
                     "macrprop_unadj DOUBLE," +
                     "cn CHAR(34)," +
-                    "biosum_status_cd BYTE, " +
+                    "biosum_status_cd INTEGER, " +
                     "model_YN CHAR(1), " +
-                    "dwm_fuelbed_typcd TEXT(3)," +
+                    "dwm_fuelbed_typcd VARCHAR(3)," +
                     "balive DOUBLE, " +
                     "stdorgcd INTEGER," + 
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id))";

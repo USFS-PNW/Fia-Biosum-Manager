@@ -1054,6 +1054,7 @@ namespace FIA_Biosum_Manager
                             "ON fvs.Stand_ID=grm.biosum_cond_id AND fvs.Tree_ID=grm.fvs_tree_id " +
                             "SET fvs.History=7 WHERE grm.micr_component_al_forest='MORTALITY1';"
                             , strTreeInitWorkTable, m_strGrmTreeTable);
+                        DebugLogSQL(m_ado.m_strSQL);
                         m_ado.SqlNonQuery(conn, m_ado.m_strSQL);
 
                         //Set DG and HTG to previous measurements if Micr_Component_Al_Forest='SURVIVOR'
@@ -1063,6 +1064,7 @@ namespace FIA_Biosum_Manager
                             "SET fvs.DG=IIF(grm.dia_begin IS NOT NULL, grm.dia_begin, NULL), " +
                             "fvs.HTG=IIF(grm.ht_begin IS NOT NULL, grm.ht_begin, NULL) " +
                             "WHERE grm.micr_component_al_forest='SURVIVOR';", strTreeInitWorkTable, m_strGrmTreeTable);
+                        DebugLogSQL(m_ado.m_strSQL);
                         m_ado.SqlNonQuery(conn, m_ado.m_strSQL);
                     }
 
