@@ -631,9 +631,6 @@ namespace FIA_Biosum_Manager
 						case "TREESPECIESGROUPTABLE":
 							bReset=true;
 							break;
-						case "TREEREGIONALBIOMASSTABLE":
-							bReset=true;
-							break;
 						case "EUSAREAADJFACTOR":
 							bReset=true;
 							break;

@@ -1153,15 +1153,6 @@ namespace FIA_Biosum_Manager
                                 frmMain.g_oUtils.getFileName(Tables.Audit.DefaultCondRxAuditTableDbFile),
                                 Tables.Audit.DefaultCondRxAuditTableName);
 							break;
-						case "TREE REGIONAL BIOMASS":
-							strDbFile = frmMain.g_oUtils.getFileNameUsingLastIndexOf(frmMain.g_oTables.m_oFIAPlot.DefaultTreeRegionalBiomassTableDbFile);
-							oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-								"('Tree Regional Biomass'," + 
-								"'" + ReferenceProjectDirectory.Trim() + "\\db'," + 
-								"'" + strDbFile.Trim() + "'," + 
-								"'tree_regional_biomass');";
-							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-							break;
 						case "POPULATION EVALUATION":
 							strDbFile = frmMain.g_oUtils.getFileNameUsingLastIndexOf(frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableDbFile);
 							oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
@@ -1449,9 +1440,6 @@ namespace FIA_Biosum_Manager
 								case "PLOT, CONDITION AND TREATMENT RECORD AUDIT":
                                     frmMain.g_oTables.m_oAudit.CreatePlotCondRxAuditTable(oAdoCurrent, oAdoCurrent.m_OleDbConnection, Tables.Audit.DefaultCondRxAuditTableName);
 									break;
-								case "TREE REGIONAL BIOMASS":
-									frmMain.g_oTables.m_oFIAPlot.CreateTreeRegionalBiomassTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultTreeRegionalBiomassTableName);
-									break;
 								case "POPULATION EVALUATION":
 									frmMain.g_oTables.m_oFIAPlot.CreatePopEvalTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName);
 									break;
@@ -1581,10 +1569,6 @@ namespace FIA_Biosum_Manager
 								case "PLOT, CONDITION AND TREATMENT RECORD AUDIT":
                                     strTempTableName = Tables.Audit.DefaultCondRxAuditTableName;
 									frmMain.g_oTables.m_oAudit.CreatePlotCondRxAuditTable(oAdoCurrent,oConn,strTempTableName);
-									break;
-								case "TREE REGIONAL BIOMASS":
-									strTempTableName = frmMain.g_oTables.m_oFIAPlot.DefaultTreeRegionalBiomassTableName;
-									frmMain.g_oTables.m_oFIAPlot.CreateTreeRegionalBiomassTable(oAdoCurrent,oConn,strTempTableName);
 									break;
 								case "POPULATION EVALUATION":
 									strTempTableName = frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName;
@@ -6503,6 +6487,36 @@ namespace FIA_Biosum_Manager
             {
                 oDao.m_DaoWorkspace.Close();
                 oDao = null;
+            }
+        }
+
+        public void UpdateDatasources_5_9_1()
+        {
+            ado_data_access oAdo = new ado_data_access();
+            string projectDbPath = ReferenceProjectDirectory.Trim() + "\\db\\project.mdb";
+            string strConn = oAdo.getMDBConnString(projectDbPath, "", "");
+            using (var conn = new OleDbConnection(strConn))
+            {
+                conn.Open();
+                // Remove TREE REGIONAL BIOMASS table from datasource infrastructure
+                oAdo.m_strSQL = "DELETE FROM datasource WHERE TRIM(UCASE(table_type)) = " +
+                    "'TREE REGIONAL BIOMASS'";
+                oAdo.SqlNonQuery(conn, oAdo.m_strSQL);
+
+                // Delete POP tables from master.mdb
+                conn.Close();
+                conn.ConnectionString = oAdo.getMDBConnString(ReferenceProjectDirectory.Trim() + "\\db\\master.mdb", "", "");
+                conn.Open();
+                    if (oAdo.TableExist(conn, "TREE_REGIONAL_BIOMASS"))
+                    {
+                        oAdo.m_strSQL = "DROP TABLE TREE_REGIONAL_BIOMASS";
+                        oAdo.SqlNonQuery(conn, oAdo.m_strSQL);
+                    }
+            }
+            if (oAdo != null)
+            {
+                oAdo.CloseConnection(oAdo.m_OleDbConnection);
+                oAdo = null;
             }
         }
 

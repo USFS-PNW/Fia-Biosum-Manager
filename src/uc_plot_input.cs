@@ -58,7 +58,6 @@ namespace FIA_Biosum_Manager
 		private string m_strCondTxtInputFile;
 		private string m_strTreeTxtInputFile;
 		private string m_strSiteTreeTxtInputFile;
-		private string m_strTreeRegionalBiomassTxtInputFile;
 		private string m_strPopEvalTxtInputFile;
 		private string m_strLoadedPopEvalTxtInputFile="";
 		private string m_strPopEstUnitTxtInputFile;
@@ -97,7 +96,6 @@ namespace FIA_Biosum_Manager
 		private string m_strCondTable;
 		private string m_strTreeTable;
 		private string m_strSiteTreeTable;
-		private string m_strTreeRegionalBiomassTable;
 		private string m_strPopEvalTable = frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName;
 		private string m_strPopEstUnitTable = frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableName;
 		private string m_strPpsaTable = frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName;
@@ -157,7 +155,6 @@ namespace FIA_Biosum_Manager
 	    private int m_intAddedDwmFwdRows=0;
 	    private int m_intAddedDwmDuffLitterRows=0;
 	    private int m_intAddedDwmTransectSegmentRows=0;
-        private int m_intAddedTreeRegionalBiomassRows = 0;
         private int m_intAddedGrmStandRows = 0;
         private int m_intAddedGrmTreeRows = 0;
 		private System.Windows.Forms.GroupBox grpboxFIADBInv;
@@ -185,7 +182,7 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.ComboBox cmbFiadbCondTable;
 		private System.Windows.Forms.GroupBox groupBox23;
 		private System.Windows.Forms.ComboBox cmbFiadbTreeTable;
-		private System.Windows.Forms.ComboBox cmbFiadbTreeRegionalBiomassTable;
+		private System.Windows.Forms.ComboBox cmbFiadbSeedlingTable;
 		private System.Windows.Forms.ComboBox cmbFiadbPopEvalTable;
 		private System.Windows.Forms.ComboBox cmbFiadbPopEstUnitTable;
 		private System.Windows.Forms.ComboBox cmbFiadbPopStratumTable;
@@ -209,6 +206,7 @@ namespace FIA_Biosum_Manager
         private env m_oEnv;
         private Help m_oHelp;
         private string m_xpsFile = Help.DefaultDatabaseXPSFile;
+        private bool m_bLoadSeedlings = true;
         private CheckBox chkDwmImport;
         private CheckBox chkGrmImport;
         private ComboBox cmbGrmComponentTable;
@@ -277,7 +275,7 @@ namespace FIA_Biosum_Manager
             this.groupBox18 = new System.Windows.Forms.GroupBox();
             this.cmbFiadbPopEvalTable = new System.Windows.Forms.ComboBox();
             this.groupBox19 = new System.Windows.Forms.GroupBox();
-            this.cmbFiadbTreeRegionalBiomassTable = new System.Windows.Forms.ComboBox();
+            this.cmbFiadbSeedlingTable = new System.Windows.Forms.ComboBox();
             this.groupBox20 = new System.Windows.Forms.GroupBox();
             this.cmbFiadbTreeTable = new System.Windows.Forms.ComboBox();
             this.groupBox21 = new System.Windows.Forms.GroupBox();
@@ -325,13 +323,13 @@ namespace FIA_Biosum_Manager
             this.label2 = new System.Windows.Forms.Label();
             this.cmbCondPropPercent = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.rdoFilterNone = new System.Windows.Forms.RadioButton();
+            this.rdoFilterByMenu = new System.Windows.Forms.RadioButton();
             this.chkNonForested = new System.Windows.Forms.CheckBox();
             this.chkForested = new System.Windows.Forms.CheckBox();
             this.btnFilterByFileBrowse = new System.Windows.Forms.Button();
             this.txtFilterByFile = new System.Windows.Forms.TextBox();
             this.rdoFilterByFile = new System.Windows.Forms.RadioButton();
-            this.rdoFilterByMenu = new System.Windows.Forms.RadioButton();
-            this.rdoFilterNone = new System.Windows.Forms.RadioButton();
             this.lblTitle = new System.Windows.Forms.Label();
             this.grpboxFilterByPlot = new System.Windows.Forms.GroupBox();
             this.btnFilterByPlotFinish = new System.Windows.Forms.Button();
@@ -560,7 +558,7 @@ namespace FIA_Biosum_Manager
             // 
             // groupBox19
             // 
-            this.groupBox19.Controls.Add(this.cmbFiadbTreeRegionalBiomassTable);
+            this.groupBox19.Controls.Add(this.cmbFiadbSeedlingTable);
             this.groupBox19.Location = new System.Drawing.Point(24, 275);
             this.groupBox19.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox19.Name = "groupBox19";
@@ -568,15 +566,15 @@ namespace FIA_Biosum_Manager
             this.groupBox19.Size = new System.Drawing.Size(390, 56);
             this.groupBox19.TabIndex = 45;
             this.groupBox19.TabStop = false;
-            this.groupBox19.Text = "Tree Regional Biomass Data";
+            this.groupBox19.Text = "Seedling Data";
             // 
-            // cmbFiadbTreeRegionalBiomassTable
+            // cmbFiadbSeedlingTable
             // 
-            this.cmbFiadbTreeRegionalBiomassTable.Location = new System.Drawing.Point(10, 20);
-            this.cmbFiadbTreeRegionalBiomassTable.Margin = new System.Windows.Forms.Padding(4);
-            this.cmbFiadbTreeRegionalBiomassTable.Name = "cmbFiadbTreeRegionalBiomassTable";
-            this.cmbFiadbTreeRegionalBiomassTable.Size = new System.Drawing.Size(369, 24);
-            this.cmbFiadbTreeRegionalBiomassTable.TabIndex = 3;
+            this.cmbFiadbSeedlingTable.Location = new System.Drawing.Point(10, 20);
+            this.cmbFiadbSeedlingTable.Margin = new System.Windows.Forms.Padding(4);
+            this.cmbFiadbSeedlingTable.Name = "cmbFiadbSeedlingTable";
+            this.cmbFiadbSeedlingTable.Size = new System.Drawing.Size(369, 24);
+            this.cmbFiadbSeedlingTable.TabIndex = 3;
             // 
             // groupBox20
             // 
@@ -1120,6 +1118,28 @@ namespace FIA_Biosum_Manager
             this.label1.TabIndex = 7;
             this.label1.Text = "When a forested condition has a condition proportion less than";
             // 
+            // rdoFilterNone
+            // 
+            this.rdoFilterNone.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rdoFilterNone.Location = new System.Drawing.Point(50, 133);
+            this.rdoFilterNone.Margin = new System.Windows.Forms.Padding(4);
+            this.rdoFilterNone.Name = "rdoFilterNone";
+            this.rdoFilterNone.Size = new System.Drawing.Size(500, 40);
+            this.rdoFilterNone.TabIndex = 0;
+            this.rdoFilterNone.Text = "Input All Plots (Not Recommended)";
+            this.rdoFilterNone.Click += new System.EventHandler(this.rdoFilterNone_Click);
+            // 
+            // rdoFilterByMenu
+            // 
+            this.rdoFilterByMenu.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rdoFilterByMenu.Location = new System.Drawing.Point(50, 98);
+            this.rdoFilterByMenu.Margin = new System.Windows.Forms.Padding(4);
+            this.rdoFilterByMenu.Name = "rdoFilterByMenu";
+            this.rdoFilterByMenu.Size = new System.Drawing.Size(535, 40);
+            this.rdoFilterByMenu.TabIndex = 1;
+            this.rdoFilterByMenu.Text = "Filter Plots By Menu Selection (State, County, And Plot)";
+            this.rdoFilterByMenu.Click += new System.EventHandler(this.rdoFilterByMenu_Click);
+            // 
             // chkNonForested
             // 
             this.chkNonForested.Location = new System.Drawing.Point(166, 180);
@@ -1172,28 +1192,6 @@ namespace FIA_Biosum_Manager
             this.rdoFilterByFile.Text = "Filter By File (Text File Containing Plot_CN numbers)";
             this.rdoFilterByFile.CheckedChanged += new System.EventHandler(this.rdoFilterByFile_CheckedChanged);
             this.rdoFilterByFile.Click += new System.EventHandler(this.rdoFilterByFile_Click);
-            // 
-            // rdoFilterByMenu
-            // 
-            this.rdoFilterByMenu.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rdoFilterByMenu.Location = new System.Drawing.Point(50, 98);
-            this.rdoFilterByMenu.Margin = new System.Windows.Forms.Padding(4);
-            this.rdoFilterByMenu.Name = "rdoFilterByMenu";
-            this.rdoFilterByMenu.Size = new System.Drawing.Size(535, 40);
-            this.rdoFilterByMenu.TabIndex = 1;
-            this.rdoFilterByMenu.Text = "Filter Plots By Menu Selection (State, County, And Plot)";
-            this.rdoFilterByMenu.Click += new System.EventHandler(this.rdoFilterByMenu_Click);
-            // 
-            // rdoFilterNone
-            // 
-            this.rdoFilterNone.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rdoFilterNone.Location = new System.Drawing.Point(50, 133);
-            this.rdoFilterNone.Margin = new System.Windows.Forms.Padding(4);
-            this.rdoFilterNone.Name = "rdoFilterNone";
-            this.rdoFilterNone.Size = new System.Drawing.Size(500, 40);
-            this.rdoFilterNone.TabIndex = 0;
-            this.rdoFilterNone.Text = "Input All Plots (Not Recommended)";
-            this.rdoFilterNone.Click += new System.EventHandler(this.rdoFilterNone_Click);
             // 
             // lblTitle
             // 
@@ -1622,7 +1620,6 @@ namespace FIA_Biosum_Manager
 			this.m_strCondTable = m_oDatasource.getValidDataSourceTableName("CONDITION");
 			this.m_strTreeTable = m_oDatasource.getValidDataSourceTableName("TREE");
 			this.m_strSiteTreeTable = m_oDatasource.getValidDataSourceTableName("SITE TREE");
-			this.m_strTreeRegionalBiomassTable = m_oDatasource.getValidDataSourceTableName("TREE REGIONAL BIOMASS");
             this.m_strBiosumPopStratumAdjustmentFactorsTable = m_oDatasource.getValidDataSourceTableName("BIOSUM POP STRATUM ADJUSTMENT FACTORS");
             this.m_strTreeMacroPlotBreakPointDiaTable = m_oDatasource.getValidDataSourceTableName("FIA TREE MACRO PLOT BREAKPOINT DIAMETER");
 		}
@@ -2464,10 +2461,17 @@ namespace FIA_Biosum_Manager
                 str2 = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbTreeTable, "Text", false);
                 if (p_dao1.m_intError == 0) p_dao1.CreateSQLiteTableLink(this.m_strTempMDBFile, str2.Trim(), "fiadb_tree_input",
                     ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-                //tree regional biomass
-                str2 = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbTreeRegionalBiomassTable, "Text", false);
-                if (p_dao1.m_intError == 0 && str2.Trim().Length > 0 && str2.Trim() != "<Optional Table>") p_dao1.CreateSQLiteTableLink(this.m_strTempMDBFile, str2.Trim(), "fiadb_treeRegionalBiomass_input",
+                //seedling
+                str2 = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbSeedlingTable, "Text", false);
+                if (p_dao1.m_intError == 0 && str2.Trim().Length > 0 && str2.Trim() != "<Optional Table>")
+                {
+                    p_dao1.CreateSQLiteTableLink(this.m_strTempMDBFile, str2.Trim(), "fiadb_seedling_input",
                     ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
+                }
+                else
+                {
+                    m_bLoadSeedlings = false;
+                }
 
                 //site tree
                 str2 = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbSiteTreeTable, "Text", false);
@@ -2492,6 +2496,7 @@ namespace FIA_Biosum_Manager
                 System.Data.DataTable dtFIADBCondSchema = new DataTable();
                 System.Data.DataTable dtFIADBTreeSchema = new DataTable();
                 System.Data.DataTable dtFIADBSiteTreeSchema = new DataTable();
+                DataTable dtFIADBSeedlingSchema = new DataTable();
 
                 //get an ado connection string for the temp mdb file
                 this.m_strTempMDBFileConn = this.m_ado.getMDBConnString(this.m_strTempMDBFile, "", "");
@@ -2507,7 +2512,7 @@ namespace FIA_Biosum_Manager
                     " WHERE biosum_status_cd=9 OR LEN(biosum_plot_id)=0;");
                 DeleteFromTablesWhereFilter(m_ado, m_connTempMDBFile, new string[]
                 {
-                    m_strCondTable, m_strTreeTable, m_strSiteTreeTable, m_strTreeRegionalBiomassTable
+                    m_strCondTable, m_strTreeTable, m_strSiteTreeTable
                 }, " WHERE biosum_status_cd=9;");
 
                 if (m_intError == 0)
@@ -2530,6 +2535,7 @@ namespace FIA_Biosum_Manager
                     dtFIADBPlotSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from fiadb_plot_input");
                     dtFIADBCondSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from fiadb_cond_input");
                     dtFIADBTreeSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from fiadb_tree_input");
+                    dtFIADBSeedlingSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from fiadb_seedling_input");
                     dtFIADBSiteTreeSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from fiadb_site_tree_input");
 
                     m_intError = m_ado.m_intError;
@@ -2807,29 +2813,67 @@ namespace FIA_Biosum_Manager
                 if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
                 {
                     SetThermValue(m_frmTherm.progressBar1, "Value", 75);
-                    //insert the new condition records into the condition table
+                    //insert the new tree records into the tree table
                     m_ado.m_strSQL = "INSERT INTO " + this.m_strTreeTable + " (biosum_cond_id,biosum_status_cd," + strFields + ") " +
                         "SELECT TRIM(biosum_cond_id),biosum_status_cd," + strFields + " FROM temptree";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
                     this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-                    if (m_strTreeRegionalBiomassTable.Trim().Length > 0 && 
-                        m_ado.TableExist(m_connTempMDBFile, m_strTreeRegionalBiomassTable) && 
-                        m_ado.TableExist(m_connTempMDBFile,"fiadb_treeRegionalBiomass_input"))
+                }
+
+                //@ToDo: progress indicator
+                // SEEDLINGS
+                if (m_intError == 0 && m_bLoadSeedlings == true && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                {
+                    SetThermValue(m_frmTherm.progressBar1, "Value", 65);
+                    SetThermValue(m_frmTherm.progressBar2, "Value", 40);
+                    //-------------SEEDLING TABLE----------------//
+                    strSourceTableLink = "fiadb_seedling_input";
+                    SetLabelValue(m_frmTherm.lblMsg, "Text", "Seedling Table: Insert New  Records");
+                    if (this.m_ado.TableExist(this.m_connTempMDBFile, "temptree"))
                     {
-                        m_ado.m_strSQL = "INSERT INTO " + this.m_strTreeRegionalBiomassTable + "  " +
-                            "SELECT s.tre_cn,s.statecd," +
-                            "s.regional_drybiot,s.regional_drybiom," +
-                            "9 AS biosum_status_cd FROM fiadb_treeRegionalBiomass_input s " +
-                            "INNER JOIN " + this.m_strTreeTable + " t " +
-                            "ON trim(t.cn) = s.tre_cn WHERE t.biosum_status_cd=9";
+                        this.m_ado.m_strSQL = "DROP TABLE temptree";
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
                         if (m_ado.m_intError == 0)
                             this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-                        m_intError = m_ado.m_intError;
                     }
+                    this.m_ado.m_strSQL = "SELECT TRIM(p.biosum_plot_id) + TRIM(CSTR(s.condid)) AS biosum_cond_id,9 AS biosum_status_cd, 0.1 as dia, 1 as diahtcd, " +
+                        "'1' + Format(SPCD,'000') + '00' + SUBP AS fvs_tree_id, s.* INTO temptree FROM " + 
+                        strSourceTableLink + " s " + " INNER JOIN " + this.m_strPlotTable + " p ON s.plt_cn=TRIM(p.cn) " +
+                        " WHERE p.biosum_status_cd=9;";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
+                    if (m_ado.m_intError == 0)
+                        this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
+                    //Set DIAHTCD for Seedlings using FIA_TREE_SPECIES_REF.WOODLAND_YN
+                    this.m_ado.m_strSQL = $@"UPDATE temptree t 
+                                             INNER JOIN FIA_TREE_SPECIES_REF ref ON cint(t.spcd)=ref.spcd
+                                             SET t.diahtcd=IIF(ref.woodland_yn='N', 1, 2)";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
+                    if (m_ado.m_intError == 0)
+                        this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
+                    //Prepend CN with "S" to indicate seedlings
+                    this.m_ado.m_strSQL = $@"UPDATE temptree t                                             
+                                             SET CN = 'S' + CN";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
+                    if (m_ado.m_intError == 0)
+                        this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
+                    //build field list string to insert sql by matching FIADB and BioSum Tree columns
+                    strFields = CreateStrFieldsFromDataTables(dtFIADBSeedlingSchema, dtTreeSchema);
+                    //insert the new seedling records into the tree table
+                    m_ado.m_strSQL = "INSERT INTO " + this.m_strTreeTable + " (biosum_cond_id,biosum_status_cd,dia,diahtcd,fvs_tree_id," + strFields + ") " +
+                        "SELECT TRIM(biosum_cond_id),biosum_status_cd,dia,diahtcd,fvs_tree_id," + strFields + " FROM temptree";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
+                    this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
+
+                    m_intError = m_ado.m_intError;
                 }
+
+
 
                 if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
                 {
@@ -2928,8 +2972,6 @@ namespace FIA_Biosum_Manager
                         m_intAddedPlotRows = GetNewRecordCount(m_ado, m_connTempMDBFile, m_strPlotTable);
                         m_intAddedCondRows = GetNewRecordCount(m_ado, m_connTempMDBFile, m_strCondTable);
                         m_intAddedTreeRows = GetNewRecordCount(m_ado, m_connTempMDBFile, m_strTreeTable);
-                        m_intAddedTreeRegionalBiomassRows =
-                            GetNewRecordCount(m_ado, m_connTempMDBFile, m_strTreeRegionalBiomassTable);
                         m_intAddedSiteTreeRows = GetNewRecordCount(m_ado, m_connTempMDBFile, m_strSiteTreeTable);
 
                         if (Checked(chkDwmImport))
@@ -2951,7 +2993,7 @@ namespace FIA_Biosum_Manager
                         //Successfully imported and updated plot data. Set biosum_status_cd to 1
                         string[] arrTables = new string[]{m_strPlotTable, m_strCondTable, m_strTreeTable, m_strPopEvalTable, m_strPopStratumTable,
                             m_strPpsaTable, m_strPopEstUnitTable, m_strSiteTreeTable,
-                            m_strBiosumPopStratumAdjustmentFactorsTable, m_strTreeRegionalBiomassTable,
+                            m_strBiosumPopStratumAdjustmentFactorsTable,
                             m_strDwmCwdTable, m_strDwmFwdTable, m_strDwmDuffLitterTable, m_strDwmTransectSegmentTable,
                             m_strGrmStandTable, m_strGrmTreeTable };
                         foreach (string table in arrTables)
@@ -3002,7 +3044,7 @@ namespace FIA_Biosum_Manager
                             {
                                 m_strPlotTable, m_strCondTable, m_strTreeTable, m_strPopEvalTable, m_strPopStratumTable,
                                 m_strPpsaTable, m_strPopEstUnitTable, m_strSiteTreeTable,
-                                m_strBiosumPopStratumAdjustmentFactorsTable, m_strTreeRegionalBiomassTable,
+                                m_strBiosumPopStratumAdjustmentFactorsTable,
                                 m_strDwmCwdTable, m_strDwmFwdTable, m_strDwmDuffLitterTable,
                                 m_strDwmTransectSegmentTable,
                                 m_strGrmStandTable, m_strGrmTreeTable
@@ -3094,7 +3136,6 @@ namespace FIA_Biosum_Manager
 	                            m_intAddedPlotRows.ToString().Trim() + " Plots\n" +
 	                            m_intAddedCondRows.ToString().Trim() + " Conditions \n" +
 	                            m_intAddedTreeRows.ToString().Trim() + " Trees\n" +
-	                            m_intAddedTreeRegionalBiomassRows.ToString().Trim() + " Tree Biomasses\n" +
 	                            m_intAddedSiteTreeRows.ToString().Trim() + " Site Trees";
 
 	        if (Checked(chkDwmImport))
@@ -3412,8 +3453,10 @@ namespace FIA_Biosum_Manager
             		//Update fvs_tree_id column for tracking a tree between BioSum and FVS for lifetime of project
             		SetLabelValue(m_frmTherm.lblMsg, "Text", "Updating Tree fvs_tree_id Column...Stand By");
             		frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control) this.m_frmTherm, "Refresh");
-            		p_ado.m_strSQL = "UPDATE " + this.m_strTreeTable + " SET fvs_tree_id = CStr(subp*1000+tree);";
-            		this.m_ado.SqlNonQuery(this.m_connTempMDBFile, p_ado.m_strSQL);
+            		p_ado.m_strSQL = "UPDATE " + this.m_strTreeTable + " SET fvs_tree_id = CStr(subp*1000+tree) where dia > 0.1;";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
+                    this.m_ado.SqlNonQuery(this.m_connTempMDBFile, p_ado.m_strSQL);
 
                     SetLabelValue(m_frmTherm.lblMsg,"Text","Updating Tree tpacurr Column...Stand By");
                     frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
@@ -3429,28 +3472,7 @@ namespace FIA_Biosum_Manager
 
                     //
                     //drybiot,drybiom,voltsgrs processing
-                    //
-                    //check if records exist in the tree_regional_drybio table
-                    SetLabelValue(m_frmTherm.lblMsg, "Text", "Updating Tree drybiom,drybiot,voltsgrs Columns...Stand By");
-                    frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
-            int intCount = (int)p_ado.getRecordCount(m_connTempMDBFile, "SELECT COUNT(*) FROM (SELECT TOP 1 * FROM " + m_strTreeRegionalBiomassTable + ")", m_strTreeRegionalBiomassTable);
-                    if (this.m_strTreeRegionalBiomassTable.Trim().Length > 0 &&
-                       p_ado.TableExist(m_connTempMDBFile, this.m_strTreeRegionalBiomassTable.Trim()) &&
-                       intCount > 0)
-                    {
-
-
-                        //update tree drybiom and drybiot columns 
-                        p_ado.m_strSQL = "UPDATE " + this.m_strTreeTable + " t " +
-                            "INNER JOIN " + this.m_strTreeRegionalBiomassTable + " drb " +
-                            "ON t.cn = drb.tre_cn " +
-                            "SET drybiom = IIF(drb.regional_drybiom IS NOT NULL,drb.regional_drybiom,null)," +
-                                "drybiot = IIF(drb.regional_drybiot IS NOT NULL,drb.regional_drybiot,null)";
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-                        p_ado.SqlNonQuery(this.m_connTempMDBFile, p_ado.m_strSQL);
-                    }
-                   
+                    //                   
                         SetLabelValue(m_frmTherm.lblMsg, "Text", "Start Volume and Biomass Calculations...Stand By");
                         frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
 
@@ -7622,13 +7644,13 @@ namespace FIA_Biosum_Manager
                                 this.cmbFiadbPopEvalTable.Items.Clear();
                                 this.cmbFiadbPopStratumTable.Items.Clear();
                                 this.cmbFiadbPpsaTable.Items.Clear();
-                                this.cmbFiadbTreeRegionalBiomassTable.Items.Clear();
+                                this.cmbFiadbSeedlingTable.Items.Clear();
                                 this.cmbFiadbTreeTable.Items.Clear();
                                 this.cmbFiadbSiteTreeTable.Items.Clear();
                                 this.cmbGrmComponentTable.Items.Clear();
 
-                                cmbFiadbTreeRegionalBiomassTable.Items.Add("<Optional Table>");
-                                cmbFiadbTreeRegionalBiomassTable.Text = "<Optional Table>";
+                                cmbFiadbSeedlingTable.Items.Add("<Optional Table>");
+                                cmbFiadbSeedlingTable.Text = "<Optional Table>";
 
                                 for (int x = 0; x <= arrTables.Length-1; x++)
                                 {
@@ -7638,7 +7660,7 @@ namespace FIA_Biosum_Manager
                                     this.cmbFiadbPopEvalTable.Items.Add(arrTables[x]);
                                     this.cmbFiadbPopStratumTable.Items.Add(arrTables[x]);
                                     this.cmbFiadbPpsaTable.Items.Add(arrTables[x]);
-                                    this.cmbFiadbTreeRegionalBiomassTable.Items.Add(arrTables[x]);
+                                    this.cmbFiadbSeedlingTable.Items.Add(arrTables[x]);
                                     this.cmbFiadbTreeTable.Items.Add(arrTables[x]);
                                     this.cmbFiadbSiteTreeTable.Items.Add(arrTables[x]);
                                     this.cmbGrmComponentTable.Items.Add(arrTables[x]);
@@ -7670,8 +7692,8 @@ namespace FIA_Biosum_Manager
                                         case "POP_STRATUM":
                                             this.cmbFiadbPopStratumTable.Text = "POP_STRATUM";
                                             break;
-                                        case "TREE_REGIONAL_BIOMASS":
-                                            this.cmbFiadbTreeRegionalBiomassTable.Text = "TREE_REGIONAL_BIOMASS";
+                                        case "SEEDLING":
+                                            this.cmbFiadbSeedlingTable.Text = "SEEDLING";
                                             break;
                                         case "SITETREE":
                                             this.cmbFiadbSiteTreeTable.Text = "SITETREE";
@@ -7704,7 +7726,7 @@ namespace FIA_Biosum_Manager
 				this.cmbFiadbPopEvalTable.Text.Trim().Length == 0 ||
 				this.cmbFiadbPopStratumTable.Text.Trim().Length == 0 ||
 				this.cmbFiadbPpsaTable.Text.Trim().Length == 0 ||
-				this.cmbFiadbTreeRegionalBiomassTable.Text.Trim().Length == 0 ||
+				this.cmbFiadbSeedlingTable.Text.Trim().Length == 0 ||
 				this.cmbFiadbTreeTable.Text.Trim().Length == 0 ||
 				this.cmbFiadbSiteTreeTable.Text.Trim().Length==0)
 			{

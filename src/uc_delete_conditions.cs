@@ -18,7 +18,6 @@ namespace FIA_Biosum_Manager
         private string m_strCondTable;
         private string m_strTreeTable;
         private string m_strSiteTreeTable;
-        private string m_strTreeRegionalBiomassTable;
         private string m_strPpsaTable;
         private string m_strPopEstUnitTable;
         private string m_strPopStratumTable;

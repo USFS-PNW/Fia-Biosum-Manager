@@ -3896,8 +3896,6 @@ namespace FIA_Biosum_Manager
             public string DefaultConditionTableName { get { return "cond"; } }
             public string DefaultTreeTableDbFile { get { return @"db\master.mdb"; } }
             public string DefaultTreeTableName { get { return "tree"; } }
-            public string DefaultTreeRegionalBiomassTableDbFile { get { return @"db\master.mdb"; } }
-            public string DefaultTreeRegionalBiomassTableName { get { return "tree_regional_biomass"; } }
             public string DefaultPopEstnUnitTableDbFile { get { return @"db\master.mdb"; } }
             public string DefaultPopEstnUnitTableName { get { return "pop_estn_unit"; } }
             public string DefaultPopEvalTableDbFile { get { return @"db\master.mdb"; } }
@@ -4282,24 +4280,6 @@ namespace FIA_Biosum_Manager
                     "condlist INTEGER," +
                     "biosum_status_cd BYTE)";
 
-            }
-            public void CreateTreeRegionalBiomassTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateTreeRegionalBiomassTableSQL(p_strTableName));
-                CreateTreeRegionalBiomassTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateTreeRegionalBiomassTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "tre_cn");
-            }
-            public string CreateTreeRegionalBiomassTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "tre_cn CHAR(34)," +
-                    "statecd INTEGER," +
-                    "regional_drybiot DOUBLE," +
-                    "regional_drybiom DOUBLE," +
-                    "biosum_status_cd BYTE)";
             }
             public void CreatePopEstnUnitTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {

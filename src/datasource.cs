@@ -1114,9 +1114,6 @@ namespace FIA_Biosum_Manager
 				case "TREE SPECIES":
 					frmMain.g_oTables.m_oReference.CreateTreeSpeciesTableIndexes(p_oAdo,p_oConn,p_strTableName);
 					break;
-				case "TREE REGIONAL BIOMASS":
-					frmMain.g_oTables.m_oFIAPlot.CreateTreeRegionalBiomassTableIndexes(p_oAdo,p_oConn,p_strTableName);
-					break;
                 case "FVS COMMANDS":
                     frmMain.g_oTables.m_oReference.CreateFVSCommandsTableIndexes(p_oAdo, p_oConn, p_strTableName);
                     break;
@@ -1215,10 +1212,6 @@ namespace FIA_Biosum_Manager
 				case "TREE SPECIES":
 					oItem.VariableName="TreeSpeciesTable";
 					if (p_strTableName.Trim().Length == 0) p_strTableName=Tables.Reference.DefaultTreeSpeciesTableName;
-					break;
-				case "TREE REGIONAL BIOMASS":
-					oItem.VariableName="TreeRegionalBiomassTable";
-					if (p_strTableName.Trim().Length == 0) p_strTableName=frmMain.g_oTables.m_oFIAPlot.DefaultTreeRegionalBiomassTableName;
 					break;
                 case "BIOSUM POP STRATUM ADJUSTMENT FACTORS":
                     oItem.VariableName="BiosumPopStratumAdjustmentFactorTable";

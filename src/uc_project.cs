@@ -957,8 +957,6 @@ namespace FIA_Biosum_Manager
 				frmMain.g_oTables.m_oFIAPlot.CreatePopStratumTable(p_ado,p_ado.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName);
 				//site tree table
 				frmMain.g_oTables.m_oFIAPlot.CreateSiteTreeTable(p_ado,p_ado.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultSiteTreeTableName);
-				//tree regional biomass table
-				frmMain.g_oTables.m_oFIAPlot.CreateTreeRegionalBiomassTable(p_ado,p_ado.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultTreeRegionalBiomassTableName);
 				//tree table
 				frmMain.g_oTables.m_oFIAPlot.CreateTreeTable(p_ado,p_ado.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName);
                 //biosum pop stratum adjustment factors table
