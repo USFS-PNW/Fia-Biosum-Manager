@@ -3909,6 +3909,7 @@ namespace FIA_Biosum_Manager
             public string DefaultSiteTreeTableDbFile { get { return @"db\master.mdb"; } }
             public string DefaultSiteTreeTableName { get { return "sitetree"; } }
             public string DefaultPopTableDbFile { get { return @"db\master.db"; } }
+            public string DefaultSeedlingTableName { get { return "fiadb_seedling_input"; } }
 
             public string DefaultDWMDbFile { get { return @"db\master_aux.accdb"; } }
             public string DefaultDWMCoarseWoodyDebrisName { get { return "DWM_COARSE_WOODY_DEBRIS"; } }

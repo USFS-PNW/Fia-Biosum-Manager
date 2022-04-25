@@ -96,7 +96,8 @@ namespace FIA_Biosum_Manager
 		private string m_strCondTable;
 		private string m_strTreeTable;
 		private string m_strSiteTreeTable;
-		private string m_strPopEvalTable = frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName;
+        private string m_strSeedlingTable = frmMain.g_oTables.m_oFIAPlot.DefaultSeedlingTableName;
+        private string m_strPopEvalTable = frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName;
 		private string m_strPopEstUnitTable = frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableName;
 		private string m_strPpsaTable = frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName;
 		private string m_strPopStratumTable = frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName;
@@ -157,7 +158,8 @@ namespace FIA_Biosum_Manager
 	    private int m_intAddedDwmTransectSegmentRows=0;
         private int m_intAddedGrmStandRows = 0;
         private int m_intAddedGrmTreeRows = 0;
-		private System.Windows.Forms.GroupBox grpboxFIADBInv;
+        private int m_intAddedSeedlingRows = 0;
+        private System.Windows.Forms.GroupBox grpboxFIADBInv;
 		private System.Windows.Forms.Button btnFIADBInvAppend;
 		private System.Windows.Forms.ListView lstFIADBInv;
 		private System.Windows.Forms.Button btnFIADBInvHelp;
@@ -220,6 +222,7 @@ namespace FIA_Biosum_Manager
         public SQLite.ADO.DataMgr SQLite { get; set; } = new SQLite.ADO.DataMgr();
 
         private Label lblFSNetwork;
+        private CheckBox ckImportSeedlings;
         private Label label16;
     
         public FIA_Biosum_Manager.ado_data_access MSAccess { get; set; }
@@ -356,6 +359,7 @@ namespace FIA_Biosum_Manager
             this.txtMDBPlotTable = new System.Windows.Forms.TextBox();
             this.btnMDBPlotBrowse = new System.Windows.Forms.Button();
             this.txtMDBPlot = new System.Windows.Forms.TextBox();
+            this.ckImportSeedlings = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.grpboxMDBFiadbInput.SuspendLayout();
             this.groupBox24.SuspendLayout();
@@ -1034,6 +1038,7 @@ namespace FIA_Biosum_Manager
             // 
             // groupBox7
             // 
+            this.groupBox7.Controls.Add(this.ckImportSeedlings);
             this.groupBox7.Controls.Add(this.cmbGrmComponentTable);
             this.groupBox7.Controls.Add(this.chkGrmImport);
             this.groupBox7.Controls.Add(this.chkDwmImport);
@@ -1121,7 +1126,7 @@ namespace FIA_Biosum_Manager
             // rdoFilterNone
             // 
             this.rdoFilterNone.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rdoFilterNone.Location = new System.Drawing.Point(50, 133);
+            this.rdoFilterNone.Location = new System.Drawing.Point(50, 112);
             this.rdoFilterNone.Margin = new System.Windows.Forms.Padding(4);
             this.rdoFilterNone.Name = "rdoFilterNone";
             this.rdoFilterNone.Size = new System.Drawing.Size(500, 40);
@@ -1132,7 +1137,7 @@ namespace FIA_Biosum_Manager
             // rdoFilterByMenu
             // 
             this.rdoFilterByMenu.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rdoFilterByMenu.Location = new System.Drawing.Point(50, 98);
+            this.rdoFilterByMenu.Location = new System.Drawing.Point(50, 79);
             this.rdoFilterByMenu.Margin = new System.Windows.Forms.Padding(4);
             this.rdoFilterByMenu.Name = "rdoFilterByMenu";
             this.rdoFilterByMenu.Size = new System.Drawing.Size(535, 40);
@@ -1142,7 +1147,7 @@ namespace FIA_Biosum_Manager
             // 
             // chkNonForested
             // 
-            this.chkNonForested.Location = new System.Drawing.Point(166, 180);
+            this.chkNonForested.Location = new System.Drawing.Point(166, 153);
             this.chkNonForested.Margin = new System.Windows.Forms.Padding(4);
             this.chkNonForested.Name = "chkNonForested";
             this.chkNonForested.Size = new System.Drawing.Size(140, 20);
@@ -1153,7 +1158,7 @@ namespace FIA_Biosum_Manager
             // 
             this.chkForested.Checked = true;
             this.chkForested.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkForested.Location = new System.Drawing.Point(76, 180);
+            this.chkForested.Location = new System.Drawing.Point(76, 153);
             this.chkForested.Margin = new System.Windows.Forms.Padding(4);
             this.chkForested.Name = "chkForested";
             this.chkForested.Size = new System.Drawing.Size(90, 20);
@@ -1163,7 +1168,7 @@ namespace FIA_Biosum_Manager
             // btnFilterByFileBrowse
             // 
             this.btnFilterByFileBrowse.Image = ((System.Drawing.Image)(resources.GetObject("btnFilterByFileBrowse.Image")));
-            this.btnFilterByFileBrowse.Location = new System.Drawing.Point(510, 59);
+            this.btnFilterByFileBrowse.Location = new System.Drawing.Point(510, 42);
             this.btnFilterByFileBrowse.Margin = new System.Windows.Forms.Padding(4);
             this.btnFilterByFileBrowse.Name = "btnFilterByFileBrowse";
             this.btnFilterByFileBrowse.Size = new System.Drawing.Size(40, 40);
@@ -1173,7 +1178,7 @@ namespace FIA_Biosum_Manager
             // txtFilterByFile
             // 
             this.txtFilterByFile.Enabled = false;
-            this.txtFilterByFile.Location = new System.Drawing.Point(76, 68);
+            this.txtFilterByFile.Location = new System.Drawing.Point(76, 51);
             this.txtFilterByFile.Margin = new System.Windows.Forms.Padding(4);
             this.txtFilterByFile.Name = "txtFilterByFile";
             this.txtFilterByFile.Size = new System.Drawing.Size(409, 22);
@@ -1183,7 +1188,7 @@ namespace FIA_Biosum_Manager
             // 
             this.rdoFilterByFile.Checked = true;
             this.rdoFilterByFile.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rdoFilterByFile.Location = new System.Drawing.Point(50, 29);
+            this.rdoFilterByFile.Location = new System.Drawing.Point(50, 12);
             this.rdoFilterByFile.Margin = new System.Windows.Forms.Padding(4);
             this.rdoFilterByFile.Name = "rdoFilterByFile";
             this.rdoFilterByFile.Size = new System.Drawing.Size(500, 40);
@@ -1459,6 +1464,19 @@ namespace FIA_Biosum_Manager
             this.txtMDBPlot.Name = "txtMDBPlot";
             this.txtMDBPlot.Size = new System.Drawing.Size(383, 30);
             this.txtMDBPlot.TabIndex = 0;
+            // 
+            // ckImportSeedlings
+            // 
+            this.ckImportSeedlings.AutoSize = true;
+            this.ckImportSeedlings.Checked = true;
+            this.ckImportSeedlings.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.ckImportSeedlings.Location = new System.Drawing.Point(76, 181);
+            this.ckImportSeedlings.Margin = new System.Windows.Forms.Padding(4);
+            this.ckImportSeedlings.Name = "ckImportSeedlings";
+            this.ckImportSeedlings.Size = new System.Drawing.Size(141, 21);
+            this.ckImportSeedlings.TabIndex = 13;
+            this.ckImportSeedlings.Text = "Include Seedlings";
+            this.ckImportSeedlings.UseVisualStyleBackColor = true;
             // 
             // uc_plot_input
             // 
@@ -2463,9 +2481,9 @@ namespace FIA_Biosum_Manager
                     ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
                 //seedling
                 str2 = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbSeedlingTable, "Text", false);
-                if (p_dao1.m_intError == 0 && str2.Trim().Length > 0 && str2.Trim() != "<Optional Table>")
+                if (p_dao1.m_intError == 0 && str2.Trim().Length > 0 && str2.Trim() != "<Optional Table>" && Checked(ckImportSeedlings))
                 {
-                    p_dao1.CreateSQLiteTableLink(this.m_strTempMDBFile, str2.Trim(), "fiadb_seedling_input",
+                    p_dao1.CreateSQLiteTableLink(this.m_strTempMDBFile, str2.Trim(), frmMain.g_oTables.m_oFIAPlot.DefaultSeedlingTableName,
                     ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
                 }
                 else
@@ -2535,9 +2553,11 @@ namespace FIA_Biosum_Manager
                     dtFIADBPlotSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from fiadb_plot_input");
                     dtFIADBCondSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from fiadb_cond_input");
                     dtFIADBTreeSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from fiadb_tree_input");
-                    dtFIADBSeedlingSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from fiadb_seedling_input");
+                    if (m_bLoadSeedlings)
+                    {
+                        dtFIADBSeedlingSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from " + frmMain.g_oTables.m_oFIAPlot.DefaultSeedlingTableName);
+                    }
                     dtFIADBSiteTreeSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from fiadb_site_tree_input");
-
                     m_intError = m_ado.m_intError;
                 }
 
@@ -2740,7 +2760,7 @@ namespace FIA_Biosum_Manager
 
                 if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
                 {
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 60);
+                    SetThermValue(m_frmTherm.progressBar1, "Value", 50);
                     //insert the new condition records into the condition table
                     m_ado.m_strSQL = "INSERT INTO " + this.m_strCondTable + " (biosum_plot_id,biosum_cond_id,biosum_status_cd," + strFields + ") " +
                         "SELECT TRIM(biosum_plot_id),TRIM(biosum_cond_id),biosum_status_cd," + strFields + " FROM tempcond";
@@ -2789,7 +2809,7 @@ namespace FIA_Biosum_Manager
 
                 if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
                 {
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 65);
+                    SetThermValue(m_frmTherm.progressBar1, "Value", 55);
                     SetThermValue(m_frmTherm.progressBar2, "Value", 40);
                     //-------------TREE TABLE----------------//
                     strSourceTableLink = "fiadb_tree_input";
@@ -2812,7 +2832,7 @@ namespace FIA_Biosum_Manager
 
                 if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
                 {
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 75);
+                    SetThermValue(m_frmTherm.progressBar1, "Value", 60);
                     //insert the new tree records into the tree table
                     m_ado.m_strSQL = "INSERT INTO " + this.m_strTreeTable + " (biosum_cond_id,biosum_status_cd," + strFields + ") " +
                         "SELECT TRIM(biosum_cond_id),biosum_status_cd," + strFields + " FROM temptree";
@@ -2826,9 +2846,8 @@ namespace FIA_Biosum_Manager
                 if (m_intError == 0 && m_bLoadSeedlings == true && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
                 {
                     SetThermValue(m_frmTherm.progressBar1, "Value", 65);
-                    SetThermValue(m_frmTherm.progressBar2, "Value", 40);
                     //-------------SEEDLING TABLE----------------//
-                    strSourceTableLink = "fiadb_seedling_input";
+                    strSourceTableLink = frmMain.g_oTables.m_oFIAPlot.DefaultSeedlingTableName;
                     SetLabelValue(m_frmTherm.lblMsg, "Text", "Seedling Table: Insert New  Records");
                     if (this.m_ado.TableExist(this.m_connTempMDBFile, "temptree"))
                     {
@@ -2863,6 +2882,7 @@ namespace FIA_Biosum_Manager
                         this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
                     //build field list string to insert sql by matching FIADB and BioSum Tree columns
                     strFields = CreateStrFieldsFromDataTables(dtFIADBSeedlingSchema, dtTreeSchema);
+                    SetThermValue(m_frmTherm.progressBar1, "Value", 70);
                     //insert the new seedling records into the tree table
                     m_ado.m_strSQL = "INSERT INTO " + this.m_strTreeTable + " (biosum_cond_id,biosum_status_cd,dia,diahtcd,fvs_tree_id," + strFields + ") " +
                         "SELECT TRIM(biosum_cond_id),biosum_status_cd,dia,diahtcd,fvs_tree_id," + strFields + " FROM temptree";
@@ -2972,6 +2992,7 @@ namespace FIA_Biosum_Manager
                         m_intAddedPlotRows = GetNewRecordCount(m_ado, m_connTempMDBFile, m_strPlotTable);
                         m_intAddedCondRows = GetNewRecordCount(m_ado, m_connTempMDBFile, m_strCondTable);
                         m_intAddedTreeRows = GetNewRecordCount(m_ado, m_connTempMDBFile, m_strTreeTable);
+                        m_intAddedSeedlingRows = GetNewRecordCount(m_ado, m_connTempMDBFile, m_strSeedlingTable);
                         m_intAddedSiteTreeRows = GetNewRecordCount(m_ado, m_connTempMDBFile, m_strSiteTreeTable);
 
                         if (Checked(chkDwmImport))
@@ -3136,7 +3157,8 @@ namespace FIA_Biosum_Manager
 	                            m_intAddedPlotRows.ToString().Trim() + " Plots\n" +
 	                            m_intAddedCondRows.ToString().Trim() + " Conditions \n" +
 	                            m_intAddedTreeRows.ToString().Trim() + " Trees\n" +
-	                            m_intAddedSiteTreeRows.ToString().Trim() + " Site Trees";
+                                m_intAddedSeedlingRows.ToString().Trim() + " Seedlings\n" +
+                                m_intAddedSiteTreeRows.ToString().Trim() + " Site Trees";
 
 	        if (Checked(chkDwmImport))
 	        {
@@ -3166,10 +3188,25 @@ namespace FIA_Biosum_Manager
         /// <returns></returns>
 	    private int GetNewRecordCount(ado_data_access p_ado, OleDbConnection p_conn, string table)
         {
-            if (p_ado.TableExist(p_conn, table))
+            if (p_ado.TableExist(p_conn, table) || table.Equals(m_strSeedlingTable))
             {
-                return (int) p_ado.getRecordCount(p_conn,
+                int intReturn = -1;
+                switch (table)
+                {
+                    case "fiadb_seedling_input":
+                        intReturn = (int)p_ado.getRecordCount(p_conn,
+                            String.Concat("select count(*) from ", m_strTreeTable, " where biosum_status_cd=9 and dia=0.1;"), m_strTreeTable);
+                        break;
+                    case "tree":
+                        intReturn = (int)p_ado.getRecordCount(p_conn,
+                            String.Concat("select count(*) from ", table, " where biosum_status_cd=9 and dia<>0.1;"), table);
+                        break;
+                    default:
+                        intReturn = (int)p_ado.getRecordCount(p_conn,
                     String.Concat("select count(*) from ", table, " where biosum_status_cd=9;"), table);
+                        break;
+                }
+                return intReturn;
             }
             else
             {
