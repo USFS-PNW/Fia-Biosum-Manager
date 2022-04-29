@@ -3776,6 +3776,10 @@ namespace FIA_Biosum_Manager
                                         Tables.VolumeAndBiomass.BiosumVolumeCalcTable));
 
                                     SetThermValue(m_frmTherm.progressBar1, "Maximum", intTotalRecs);
+                                    if (intTotalRecs < 50)
+                                    {
+                                        SetThermValue(m_frmTherm.progressBar1, "Maximum", 50);
+                                    }
 
                                     oSQLite.SqlQueryReader(oSQLite.m_Connection,
                                         $"SELECT * FROM {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} WHERE VOLTSGRS_CALC IS NOT NULL");
