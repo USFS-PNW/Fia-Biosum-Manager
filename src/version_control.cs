@@ -6364,6 +6364,11 @@ namespace FIA_Biosum_Manager
                     "('POPULATION EVALUATION','POPULATION ESTIMATION UNIT','POPULATION STRATUM','POPULATION PLOT STRATUM ASSIGNMENT')";
                 oAdo.SqlNonQuery(conn, oAdo.m_strSQL);
 
+                // Remove TREE REGIONAL BIOMASS table from datasource infrastructure
+                oAdo.m_strSQL = "DELETE FROM datasource WHERE TRIM(UCASE(table_type)) = " +
+                    "'TREE REGIONAL BIOMASS'";
+                oAdo.SqlNonQuery(conn, oAdo.m_strSQL);
+
                 // Delete POP tables from master.mdb
                 conn.Close();
                 conn.ConnectionString = oAdo.getMDBConnString(ReferenceProjectDirectory.Trim() + "\\db\\master.mdb", "", "");
@@ -6376,7 +6381,14 @@ namespace FIA_Biosum_Manager
                         oAdo.m_strSQL = "DROP TABLE " + pTable;
                         oAdo.SqlNonQuery(conn, oAdo.m_strSQL);
                     }
-                }                
+                }
+
+                // Delete TREE_REGIONAL_BIOMASS table from master.mdb
+                if (oAdo.TableExist(conn, "TREE_REGIONAL_BIOMASS"))
+                {
+                    oAdo.m_strSQL = "DROP TABLE TREE_REGIONAL_BIOMASS";
+                    oAdo.SqlNonQuery(conn, oAdo.m_strSQL);
+                }
             }
             // If older version of .db POP tables, create backup copy of master.db and recreate master.db with current pop table schema
             if (bMissingColumn)
@@ -6489,37 +6501,6 @@ namespace FIA_Biosum_Manager
                 oDao = null;
             }
         }
-
-        public void UpdateDatasources_5_9_1()
-        {
-            ado_data_access oAdo = new ado_data_access();
-            string projectDbPath = ReferenceProjectDirectory.Trim() + "\\db\\project.mdb";
-            string strConn = oAdo.getMDBConnString(projectDbPath, "", "");
-            using (var conn = new OleDbConnection(strConn))
-            {
-                conn.Open();
-                // Remove TREE REGIONAL BIOMASS table from datasource infrastructure
-                oAdo.m_strSQL = "DELETE FROM datasource WHERE TRIM(UCASE(table_type)) = " +
-                    "'TREE REGIONAL BIOMASS'";
-                oAdo.SqlNonQuery(conn, oAdo.m_strSQL);
-
-                // Delete POP tables from master.mdb
-                conn.Close();
-                conn.ConnectionString = oAdo.getMDBConnString(ReferenceProjectDirectory.Trim() + "\\db\\master.mdb", "", "");
-                conn.Open();
-                    if (oAdo.TableExist(conn, "TREE_REGIONAL_BIOMASS"))
-                    {
-                        oAdo.m_strSQL = "DROP TABLE TREE_REGIONAL_BIOMASS";
-                        oAdo.SqlNonQuery(conn, oAdo.m_strSQL);
-                    }
-            }
-            if (oAdo != null)
-            {
-                oAdo.CloseConnection(oAdo.m_OleDbConnection);
-                oAdo = null;
-            }
-        }
-
 
         public string ReferenceProjectDirectory
 		{
