@@ -77,8 +77,7 @@ namespace FIA_Biosum_Manager
 		public FIA_Biosum_Manager.btnMainForm m_btnDbTreeDiam;
 		public FIA_Biosum_Manager.btnMainForm m_btnDbTreeSpGps;
 		public FIA_Biosum_Manager.btnMainForm m_btnDbTableMgmt;
-		public FIA_Biosum_Manager.btnMainForm m_btnDbConvertOrWa;
-		public FIA_Biosum_Manager.btnMainForm m_btnDbConvertAzNm;
+        public FIA_Biosum_Manager.btnMainForm m_btnSQLiteTableMgmt;
 		public FIA_Biosum_Manager.btnMainForm m_btnDbRandomTravelTimes;
 		public FIA_Biosum_Manager.btnMainForm m_btnDbDataSource;
 		public FIA_Biosum_Manager.btnMainForm m_btnDbPSite;
@@ -142,9 +141,10 @@ namespace FIA_Biosum_Manager
 		private FIA_Biosum_Manager.frmDialog m_frmFvsVariant;     //plot fvs variant
 		private FIA_Biosum_Manager.frmDialog m_frmDb;                //database utilities
         private FIA_Biosum_Manager.frmDialog m_frmSqlite;            //export to sqlite
+        private FIA_Biosum_Manager.frmDialog m_frmDbSQLite;                //SQLite database utilities
 
 
-		public const int TABLETYPE = 0;
+        public const int TABLETYPE = 0;
 		public const int PATH = 1;
 		public const int MDBFILE = 2;
 		public const int FILESTATUS = 3;
@@ -1754,7 +1754,11 @@ namespace FIA_Biosum_Manager
                         StartManageTablesDialog();
 						break;
 
-					case "PLOT DATA":
+                    case "MANAGE SQLITE TABLES":
+                        StartManageSQLiteTablesDialog();
+                        break;
+
+                    case "PLOT DATA":
 						
 						
 						//check to see if the form has already been loaded
@@ -1827,69 +1831,7 @@ namespace FIA_Biosum_Manager
 					case "WOOD PROCESSING SITES":
                         StartPSiteDialog(this);
 						break;
-					case "TREE DIAMETER GROUPS":
-						//check to see if the form has already been loaded
-						if (this.IsChildWindowVisible("Database: Tree Diameter Groups") == false) 
-						{
-							frmMain.g_sbpInfo.Text = "Loading Tree Diameter Groups...Stand By";
-							this.m_frmTreeDiam = new frmDialog(this);
-							this.m_frmTreeDiam.MaximizeBox = false;
-							this.m_frmTreeDiam.BackColor = System.Drawing.SystemColors.Control;
-							this.m_frmTreeDiam.Text = "Database: Tree Diameter Groups";
-							this.m_frmTreeDiam.MdiParent = this;
-							this.m_frmTreeDiam.Initialize_Plot_Tree_Diam_User_Control();
 
-
-							this.m_frmTreeDiam.Height=0;
-							this.m_frmTreeDiam.Width=0;
-							if (this.m_frmTreeDiam.uc_processor_scenario_tree_diam_groups_list1.Top + this.m_frmTreeDiam.uc_processor_scenario_tree_diam_groups_list1.Height > this.m_frmTreeDiam.ClientSize.Height + 2)
-							{
-								for (int x=1;;x++)
-								{
-									this.m_frmTreeDiam.Height = x;
-									if (this.m_frmTreeDiam.uc_processor_scenario_tree_diam_groups_list1.Top + 
-										this.m_frmTreeDiam.uc_processor_scenario_tree_diam_groups_list1.Height < 
-										this.m_frmTreeDiam.ClientSize.Height)
-									{
-										break;
-									}
-								}
-
-							}
-							if (this.m_frmTreeDiam.uc_processor_scenario_tree_diam_groups_list1.Left + this.m_frmTreeDiam.uc_processor_scenario_tree_diam_groups_list1.Width > this.m_frmTreeDiam.ClientSize.Width + 2)
-							{
-								for (int x=1;;x++)
-								{
-									this.m_frmTreeDiam.Width = x;
-									if (this.m_frmTreeDiam.uc_processor_scenario_tree_diam_groups_list1.Left + 
-										this.m_frmTreeDiam.uc_processor_scenario_tree_diam_groups_list1.Width < 
-										this.m_frmTreeDiam.ClientSize.Width)
-									{
-										break;
-									}
-								}
-
-							}
-							
-
-							this.m_frmTreeDiam.uc_processor_scenario_tree_diam_groups_list1.loadvalues();	
-	  
-							frmMain.g_sbpInfo.Text = "Ready";
-							this.m_frmTreeDiam.Show();
-
-							this.m_frmTreeDiam.Left = 0;
-							this.m_frmTreeDiam.Top = 0;
-							this.m_frmTreeDiam.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-						}
-						else
-						{
-							if (this.m_frmTreeDiam.WindowState == System.Windows.Forms.FormWindowState.Minimized)
-								this.m_frmTreeDiam.WindowState = System.Windows.Forms.FormWindowState.Normal;
-
-							this.m_frmTreeDiam.Focus();
-					
-						}
-						break;
 					case "PROJECT DATA SOURCES":
 						//check to see if the form has already been loaded
 						if (this.IsChildWindowVisible("Database: Project Data Sources") == false) 
@@ -1960,11 +1902,6 @@ namespace FIA_Biosum_Manager
 							this.m_frmDataSource.Focus();
 					
 						}
-						break;
-
-					case "CONVERT OR/CA PREVIOUS STUDY":
-						break;
-					case "CONVERT AZ/NM PREVIOUS STUDY":
 						break;
 
 					case "GENERATE TRAVEL TIMES":
@@ -2382,6 +2319,77 @@ namespace FIA_Biosum_Manager
                     this.m_frmDb.WindowState = System.Windows.Forms.FormWindowState.Normal;
 
                 this.m_frmDb.Focus();
+
+            }
+
+        }
+        public void StartManageSQLiteTablesDialog()
+        {
+            //check to see if the form has already been loaded
+            if (this.IsChildWindowVisible("Database: Manage SQLite Tables") == false)
+            {
+                this.m_frmDbSQLite = new frmDialog(this);
+                this.m_frmDbSQLite.MaximizeBox = true;
+                this.m_frmDbSQLite.BackColor = System.Drawing.SystemColors.Control;
+                this.m_frmDbSQLite.Text = "Database: Manage SQLite Tables";
+                this.m_frmDbSQLite.MdiParent = this;
+
+                FIA_Biosum_Manager.uc_db_sqlite p_uc = new uc_db_sqlite(this.frmProject.uc_project1.txtRootDirectory.Text.Trim());
+                if (p_uc.m_intError < 0)
+                {
+                    this.m_frmDbSQLite.Dispose();
+                    return;
+                }
+                this.m_frmDbSQLite.Controls.Add(p_uc);
+                this.m_frmDbSQLite.DbSQLiteUserControl = p_uc;
+                this.m_frmDbSQLite.Height = 0;
+                this.m_frmDbSQLite.Width = 0;
+                if (p_uc.Top + p_uc.Height > this.m_frmDbSQLite.ClientSize.Height + 2)
+                {
+                    for (int x = 1; ; x++)
+                    {
+                        this.m_frmDbSQLite.Height = x;
+                        if (p_uc.Top +
+                            p_uc.Height <
+                            this.m_frmDbSQLite.ClientSize.Height)
+                        {
+                            break;
+                        }
+                    }
+
+                }
+                if (p_uc.Left + p_uc.Width > this.m_frmDbSQLite.ClientSize.Width + 2)
+                {
+                    for (int x = 1; ; x++)
+                    {
+                        this.m_frmDbSQLite.Width = x;
+                        if (p_uc.Left +
+                            p_uc.Width <
+                            this.m_frmDbSQLite.ClientSize.Width)
+                        {
+                            break;
+                        }
+                    }
+
+                }
+                p_uc.Dock = System.Windows.Forms.DockStyle.Fill;
+                p_uc.loadvalues();
+
+
+                this.m_frmDbSQLite.Left = 0;
+                this.m_frmDbSQLite.Top = 0;
+                this.m_frmDbSQLite.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
+                this.m_frmDbSQLite.DisposeOfFormWhenClosing = true;
+                this.m_frmDbSQLite.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+                this.m_frmDbSQLite.Show();
+
+            }
+            else
+            {
+                if (this.m_frmDbSQLite.WindowState == System.Windows.Forms.FormWindowState.Minimized)
+                    this.m_frmDbSQLite.WindowState = System.Windows.Forms.FormWindowState.Normal;
+
+                this.m_frmDbSQLite.Focus();
 
             }
 
@@ -3632,36 +3640,22 @@ namespace FIA_Biosum_Manager
 			this.m_btnDbTableMgmt.Left  = this.m_btnDbPlotData.Left;
 			this.m_btnDbTableMgmt.Top = this.m_btnDbDataSource.Top + this.m_btnDbDataSource.Height + 5;
 			this.m_btnDbTableMgmt.Text = "Manage Tables";
-			//convert or/ca previous study
-			this.m_btnDbConvertOrWa = new btnMainForm(this);
-			this.m_pnlDb.Controls.Add(this.m_btnDbConvertOrWa);
-			this.m_btnDbConvertOrWa.Size = this.btnMain1.Size;
-			this.m_btnDbConvertOrWa.Left  = this.m_btnDbPlotData.Left;
-			this.m_btnDbConvertOrWa.Top = this.m_btnDbTableMgmt.Top + this.m_btnDbTableMgmt.Height + 5;
-			this.m_btnDbConvertOrWa.Text = "Convert OR/CA Previous Study";
-			this.m_btnDbConvertOrWa.Enabled = false;
-			this.m_btnDbConvertOrWa.Visible=false;
-			//convert az/nm previous study
-			this.m_btnDbConvertAzNm = new btnMainForm(this);
-			this.m_pnlDb.Controls.Add(this.m_btnDbConvertAzNm);
-			this.m_btnDbConvertAzNm.Size = this.btnMain1.Size;
-			this.m_btnDbConvertAzNm.Left  = this.m_btnDbPlotData.Left;
-			this.m_btnDbConvertAzNm.Top = this.m_btnDbConvertOrWa.Top + this.m_btnDbConvertOrWa.Height + 5;
-			this.m_btnDbConvertAzNm.Text = "Convert AZ/NM Previous Study";
-			this.m_btnDbConvertAzNm.Enabled = true;
-			this.m_btnDbConvertAzNm.Visible=false;
+            //table management
+            this.m_btnSQLiteTableMgmt = new btnMainForm(this);
+            this.m_pnlDb.Controls.Add(this.m_btnSQLiteTableMgmt);
+            this.m_btnSQLiteTableMgmt.Size = this.btnMain1.Size;
+            this.m_btnSQLiteTableMgmt.Left = this.m_btnDbPlotData.Left;
+            this.m_btnSQLiteTableMgmt.Top = this.m_btnDbTableMgmt.Top + this.m_btnDbTableMgmt.Height + 5;
+            this.m_btnSQLiteTableMgmt.Text = "Manage SQLite Tables";
 			//generate travel times
 			this.m_btnDbRandomTravelTimes = new btnMainForm(this);
 			this.m_pnlDb.Controls.Add(this.m_btnDbRandomTravelTimes);
 			this.m_btnDbRandomTravelTimes.Size = this.btnMain1.Size;
 			this.m_btnDbRandomTravelTimes.Left  = this.m_btnDbPlotData.Left;
-			this.m_btnDbRandomTravelTimes.Top = this.m_btnDbConvertAzNm.Top + this.m_btnDbConvertAzNm.Height + 5;
+			this.m_btnDbRandomTravelTimes.Top = this.m_btnSQLiteTableMgmt.Top + this.m_btnSQLiteTableMgmt.Height + 5;
 			this.m_btnDbRandomTravelTimes.Text = "Generate Random Travel Times";
 			this.m_btnDbRandomTravelTimes.Enabled=true;
 			this.m_btnDbRandomTravelTimes.Visible=false;
-
-
-
 
 			//FRCS PANEL
 			this.m_pnlFrcs = new Panel();

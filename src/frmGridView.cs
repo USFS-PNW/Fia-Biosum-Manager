@@ -45,9 +45,10 @@ namespace FIA_Biosum_Manager
         private bool _bMinimizeMainForm = false;
         private string _strCallingClient = "";
         private uc_processor_scenario_additional_harvest_cost_columns _uc_processor_scenario_additional_harvest_cost_columns = null;
-        
+        private bool _bUsingSQLite = false;
 
-		public frmGridView()
+
+        public frmGridView()
 		{
 			//
 			// Required for Windows Form Designer support
@@ -275,7 +276,16 @@ namespace FIA_Biosum_Manager
 		private void AddDataSet(string strConn,string strSQL,string strDataSetName)
 		{
 			this.m_intArrayCount++;
-			this.uc_gridview1 = new uc_gridview(strConn,strSQL,strDataSetName);
+            if (!_bUsingSQLite)
+            {
+                this.uc_gridview1 = new uc_gridview(strConn, strSQL, strDataSetName);
+            }
+            else
+            {
+                this.uc_gridview1 = new uc_gridview();
+                this.uc_gridview1.LoadGridViewSqlite(strConn, strSQL, strDataSetName);
+            }
+
 			this.uc_gridview1.ReferenceGridViewForm=this;
 			this.uc_gridview_collection1.Add(this.uc_gridview1);
 			if (this.uc_gridview1.m_intError==0)
@@ -1297,9 +1307,12 @@ namespace FIA_Biosum_Manager
             get { return _uc_processor_scenario_additional_harvest_cost_columns; }
             set { _uc_processor_scenario_additional_harvest_cost_columns = value; }
         }
+        public bool UsingSQLite
+        {
+            get { return _bUsingSQLite; }
+            set { _bUsingSQLite = value; }
+        }
 
-		
 
-
-	}
+    }
 }

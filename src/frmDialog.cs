@@ -57,8 +57,9 @@ namespace FIA_Biosum_Manager
 		public FIA_Biosum_Manager.uc_plot_fvs_variant_edit uc_plot_fvs_variant_edit1;
 		public FIA_Biosum_Manager.uc_contact_edit uc_contact_edit1;
 		public FIA_Biosum_Manager.uc_db uc_db1;
-		//public FIA_Biosum_Manager.uc_scenario_harvest_cost_column_list uc_scenario_harvest_cost_column_list1;
-		public FIA_Biosum_Manager.uc_scenario_harvest_cost_column_edit uc_scenario_harvest_cost_column_edit1;
+        public FIA_Biosum_Manager.uc_db_sqlite uc_db_sqlite_1;
+        //public FIA_Biosum_Manager.uc_scenario_harvest_cost_column_list uc_scenario_harvest_cost_column_list1;
+        public FIA_Biosum_Manager.uc_scenario_harvest_cost_column_edit uc_scenario_harvest_cost_column_edit1;
 		private bool _bDispose=false;
 		private bool _bMinimizeMainForm=false;
 		public FIA_Biosum_Manager.uc_filter_rows_text_datatype uc_filter_rows_text_datatype1;
@@ -791,7 +792,18 @@ namespace FIA_Biosum_Manager
 				return this.uc_db1;
 			}
 		}
-		public bool MinimizeMainForm
+        public FIA_Biosum_Manager.uc_db_sqlite DbSQLiteUserControl
+        {
+            set
+            {
+                this.uc_db_sqlite_1 = value;
+            }
+            get
+            {
+                return this.uc_db_sqlite_1;
+            }
+        }
+        public bool MinimizeMainForm
 		{
 			set {_bMinimizeMainForm=value;}
 			get {return _bMinimizeMainForm;}

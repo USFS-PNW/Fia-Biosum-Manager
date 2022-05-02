@@ -36,8 +36,10 @@ namespace FIA_Biosum_Manager
 	    public  System.Data.DataSet m_ds;
 		private System.Data.OleDb.OleDbDataAdapter m_da;
 		private System.Data.OleDb.OleDbConnection m_conn;
-		//private System.Data.OleDb.OleDbCommand m_command;
-		public int m_intError=0;
+        private System.Data.SQLite.SQLiteDataAdapter m_SQLite_da;
+        private System.Data.SQLite.SQLiteConnection m_SQLite_conn;
+        //private System.Data.OleDb.OleDbCommand m_command;
+        public int m_intError=0;
 		public System.Windows.Forms.DataGrid m_dg;
 		public System.Data.DataView m_dv;
 		private System.Windows.Forms.ToolBar toolBar2;
@@ -122,8 +124,7 @@ namespace FIA_Biosum_Manager
 		public uc_gridview(string strConn, string strSQL,string strDataSetName)
 		{
 			InitializeComponent();
-			LoadGridView(strConn,strSQL,strDataSetName);
-
+            LoadGridView(strConn, strSQL, strDataSetName);
 		}
 		public void LoadGridView(string strConn, string strSQL,string strDataSetName)
 		{
@@ -3474,7 +3475,215 @@ namespace FIA_Biosum_Manager
 			return;
 		}
 
-		private void m_dg_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
+        public void LoadGridViewSqlite(string strConn, string strSQL, string strDataSetName)
+        {
+            string strColumnName = "";
+            this.InitializePopup();
+            this.m_dg.MouseWheel += new MouseEventHandler(m_dg_MouseWheel);
+            this.m_SQLite_conn = new System.Data.SQLite.SQLiteConnection();
+
+            if (strDataSetName != null && strDataSetName.Trim().Length > 0)
+            {
+                this.m_ds = new DataSet(strDataSetName);
+            }
+            else
+            {
+                this.m_ds = new DataSet();
+            }
+
+
+            this.m_SQLite_da = new System.Data.SQLite.SQLiteDataAdapter();
+
+            this.m_dg.Left = 5;
+            this.toolBar1.Left = 5;
+            this.btnClose.Top = this.groupBox1.Top + 10;
+
+            this.m_dg.Width = this.groupBox1.Width - 10;
+            this.btnClose.Left = this.groupBox1.Width - this.btnClose.Width - this.groupBox1.Left - 10;
+            this.toolBar2.Top = this.statusBar1.Top - this.toolBar2.Height - 2;
+            this.toolBar2.Left = (int)(this.groupBox1.Width * .50) - (int)(this.toolBar2.Width * .50);
+            this.m_dg.Height = this.toolBar2.Top - this.m_dg.Top;
+
+            var p_dataMgr = new SQLite.ADO.DataMgr();
+            p_dataMgr.OpenConnection(strConn, ref this.m_SQLite_conn);
+            if (p_dataMgr.m_intError != 0)
+            {
+                this.m_intError = p_dataMgr.m_intError;
+                p_dataMgr = null;
+                return;
+            }
+
+            this.m_SQLite_da.SelectCommand = new System.Data.SQLite.SQLiteCommand(strSQL, this.m_SQLite_conn);
+            try
+            {
+
+                this.m_SQLite_da.Fill(this.m_ds, strDataSetName);
+                this.m_dv = new DataView(this.m_ds.Tables[strDataSetName]);
+
+                this.m_dv.AllowNew = false;       //cannot append new records
+                this.m_dv.AllowDelete = false;    //cannot delete records
+                this.m_dv.AllowEdit = false;
+                this.m_dg.CaptionText = strDataSetName;
+                m_dg.BackgroundColor = frmMain.g_oGridViewBackgroundColor;
+                /***********************************************************************************
+				 **assign the aColumnTextColumn as type DataGridColoredTextBoxColumn object class
+				 ***********************************************************************************/
+                gridview_DataGridColoredTextBoxColumn aColumnTextColumn;
+
+
+                /***************************************************************
+				 **custom define the grid style
+				 ***************************************************************/
+                DataGridTableStyle tableStyle = new DataGridTableStyle();
+
+                /***********************************************************************
+				 **map the data grid table style to the scenario rx intensity dataset
+				 ***********************************************************************/
+                tableStyle.MappingName = strDataSetName;
+                tableStyle.AlternatingBackColor = frmMain.g_oGridViewAlternateRowBackgroundColor;
+                tableStyle.BackColor = frmMain.g_oGridViewRowBackgroundColor;
+                tableStyle.ForeColor = frmMain.g_oGridViewRowForegroundColor;
+                tableStyle.SelectionBackColor = frmMain.g_oGridViewSelectedRowBackgroundColor;
+
+
+                /******************************************************************************
+				 **since the dataset has things like field name and number of columns,
+				 **we will use those to create new columnstyles for the columns in our grid
+				 ******************************************************************************/
+                //get the number of columns from the scenario_rx_intensity data set
+                int numCols = this.m_ds.Tables[strDataSetName].Columns.Count;
+
+
+                /************************************************
+				 **loop through all the columns in the dataset	
+				 ************************************************/
+                for (int i = 0; i < numCols; ++i)
+                {
+                    strColumnName = this.m_ds.Tables[strDataSetName].Columns[i].ColumnName;
+
+
+                    /******************************************************************
+					 **create a new instance of the DataGridColoredTextBoxColumn class
+					 ******************************************************************/
+                    aColumnTextColumn = new gridview_DataGridColoredTextBoxColumn(false, this);
+
+
+                    /***********************************
+					 **all columns are read-only except
+					 **the edit columns
+					 ***********************************/
+                    aColumnTextColumn.ReadOnly = true;
+
+
+                    aColumnTextColumn.HeaderText = strColumnName;
+
+
+
+                    /********************************************************************
+					 **assign the mappingname property the data sets column name
+					 ********************************************************************/
+                    aColumnTextColumn.MappingName = strColumnName;
+                    //aColumnTextColumn
+                    aColumnTextColumn.TextBox.ContextMenu = new ContextMenu(); //this.m_mnuDataGridPopup;
+                    aColumnTextColumn.TextBox.ContextMenu = this.m_mnuDataGridPopup;
+
+                    aColumnTextColumn.TextBox.MouseDown += new System.Windows.Forms.MouseEventHandler(this.m_dg_TextBox_MouseDown);
+                    /********************************************************************
+					 **add the datagridcoloredtextboxcolumn object to the data grid 
+					 **table style object
+					 ********************************************************************/
+                    tableStyle.GridColumnStyles.Add(aColumnTextColumn);
+
+                }
+                /*********************************************************************
+				 ** make the dataGrid use our new tablestyle and bind it to our table
+				 *********************************************************************/
+                if (frmMain.g_oGridViewFont != null) this.m_dg.Font = frmMain.g_oGridViewFont;
+
+                this.m_dg.TableStyles.Clear();
+                this.m_dg.TableStyles.Add(tableStyle);
+
+                this.m_dg.DataSource = this.m_dv;
+
+
+
+                this.m_dg.Expand(-1);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message, "LoadGridViewSqlite", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                this.m_intError = -1;
+                this.m_SQLite_conn.Close();
+                this.m_SQLite_conn = null;
+                this.m_ds.Clear();
+                this.m_ds = null;
+                this.m_SQLite_da.Dispose();
+                this.m_SQLite_da = null;
+                return;
+
+            }
+
+            p_dataMgr = null;
+
+            this.sbMsg.Text = strDataSetName + " (Read Only)";
+            if (this.m_ds.Tables[strDataSetName].Rows.Count == 0)
+            {
+                this.sbQueryRecordCount.Text = "0/0";
+                this.sbDisplayedRecordCount.Text = "0";
+            }
+            else
+            {
+                this.m_intCurrRow = 1;
+                this.sbQueryRecordCount.Text = "1/" + this.m_ds.Tables[strDataSetName].Rows.Count.ToString().Trim();
+
+                this.sbDisplayedRecordCount.Text = Convert.ToString(this.m_dg.BindingContext[this.m_dg.DataSource, this.m_dg.DataMember].Count);
+            }
+
+            this.sbQueryRecordCount.Width =
+                (int)this.CreateGraphics().MeasureString("9999999/9999999", this.statusBar1.Font).Width;
+            this.sbMsg.Width = (int)(this.groupBox1.Width * .50) - (int)(this.sbQueryRecordCount.Width * .50);
+            this.sbDisplayedRecordCount.Width = (int)(this.groupBox1.Width * .50) - (int)(this.sbQueryRecordCount.Width * .50);
+            this.sbDisplayedRecordCount.Alignment = System.Windows.Forms.HorizontalAlignment.Right;
+            this.sbQueryRecordCount.Alignment = System.Windows.Forms.HorizontalAlignment.Center;
+
+            //event handler to keep track of current row and cell movement
+            this.m_dg.CurrentCellChanged += new
+                System.EventHandler(this.m_dg_CurrentCellChanged);
+
+            this.m_strSQL = strSQL;
+            if (this.m_strSQL.Trim().Length > 0) this.btnSQL.Enabled = true;
+
+            /******************************************************************
+			 **if biosum_cond_id or biosum_plot_id is part of the dataset then
+			 **enable the id toolbar button
+			 ******************************************************************/
+            int x = 0;
+            for (x = 0; x <= this.m_ds.Tables[strDataSetName].Columns.Count - 1; x++)
+            {
+                if (this.m_ds.Tables[strDataSetName].Columns[x].ColumnName.Trim().ToUpper() == "BIOSUM_COND_ID")
+                {
+
+                    this.m_intBiosumIdColumn = x;
+                    break;
+                }
+                if (this.m_ds.Tables[strDataSetName].Columns[x].ColumnName.Trim().ToUpper() == "BIOSUM_PLOT_ID")
+                {
+
+                    this.m_intBiosumIdColumn = x;
+                    break;
+                }
+            }
+            if (x <= this.m_ds.Tables[strDataSetName].Columns.Count - 1)
+            {
+                this.toolBar1.Buttons[3].Enabled = true;
+            }
+            else
+            {
+                this.toolBar1.Buttons[3].Enabled = false;
+            }
+        }
+
+        private void m_dg_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
 		{
 			switch (e.Button)
 			{
