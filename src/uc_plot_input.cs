@@ -2833,7 +2833,7 @@ namespace FIA_Biosum_Manager
                 if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
                 {
                     SetThermValue(m_frmTherm.progressBar1, "Value", 60);
-                    //insert the new tree records into the tree table
+                    //insert the new tree records into the tree table; Note that temptree is used later for GRM processing
                     m_ado.m_strSQL = "INSERT INTO " + this.m_strTreeTable + " (biosum_cond_id,biosum_status_cd," + strFields + ") " +
                         "SELECT TRIM(biosum_cond_id),biosum_status_cd," + strFields + " FROM temptree";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -2841,7 +2841,6 @@ namespace FIA_Biosum_Manager
                     this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
                 }
 
-                //@ToDo: progress indicator
                 // SEEDLINGS
                 if (m_intError == 0 && m_bLoadSeedlings == true && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
                 {
@@ -2849,16 +2848,16 @@ namespace FIA_Biosum_Manager
                     //-------------SEEDLING TABLE----------------//
                     strSourceTableLink = frmMain.g_oTables.m_oFIAPlot.DefaultSeedlingTableName;
                     SetLabelValue(m_frmTherm.lblMsg, "Text", "Seedling Table: Insert New  Records");
-                    if (this.m_ado.TableExist(this.m_connTempMDBFile, "temptree"))
+                    if (this.m_ado.TableExist(this.m_connTempMDBFile, "tempseedling"))
                     {
-                        this.m_ado.m_strSQL = "DROP TABLE temptree";
+                        this.m_ado.m_strSQL = "DROP TABLE tempseedling";
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
                         if (m_ado.m_intError == 0)
                             this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
                     }
                     this.m_ado.m_strSQL = "SELECT TRIM(p.biosum_plot_id) + TRIM(CSTR(s.condid)) AS biosum_cond_id,9 AS biosum_status_cd, 0.1 as dia, 1 as diahtcd, " +
-                        "'1' + Format(SPCD,'000') + '00' + SUBP AS fvs_tree_id, s.* INTO temptree FROM " + 
+                        "'1' + Format(SPCD,'000') + '00' + SUBP AS fvs_tree_id, s.* INTO tempseedling FROM " + 
                         strSourceTableLink + " s " + " INNER JOIN " + this.m_strPlotTable + " p ON s.plt_cn=TRIM(p.cn) " +
                         " WHERE p.biosum_status_cd=9;";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -2866,7 +2865,7 @@ namespace FIA_Biosum_Manager
                     if (m_ado.m_intError == 0)
                         this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
                     //Set DIAHTCD for Seedlings using FIA_TREE_SPECIES_REF.WOODLAND_YN
-                    this.m_ado.m_strSQL = $@"UPDATE temptree t 
+                    this.m_ado.m_strSQL = $@"UPDATE tempseedling t 
                                              INNER JOIN FIA_TREE_SPECIES_REF ref ON cint(t.spcd)=ref.spcd
                                              SET t.diahtcd=IIF(ref.woodland_yn='N', 1, 2)";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -2874,7 +2873,7 @@ namespace FIA_Biosum_Manager
                     if (m_ado.m_intError == 0)
                         this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
                     //Prepend CN with "S" to indicate seedlings
-                    this.m_ado.m_strSQL = $@"UPDATE temptree t                                             
+                    this.m_ado.m_strSQL = $@"UPDATE tempseedling t                                             
                                              SET CN = 'S' + CN";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
@@ -2885,7 +2884,7 @@ namespace FIA_Biosum_Manager
                     SetThermValue(m_frmTherm.progressBar1, "Value", 70);
                     //insert the new seedling records into the tree table
                     m_ado.m_strSQL = "INSERT INTO " + this.m_strTreeTable + " (biosum_cond_id,biosum_status_cd,dia,diahtcd,fvs_tree_id," + strFields + ") " +
-                        "SELECT TRIM(biosum_cond_id),biosum_status_cd,dia,diahtcd,fvs_tree_id," + strFields + " FROM temptree";
+                        "SELECT TRIM(biosum_cond_id),biosum_status_cd,dia,diahtcd,fvs_tree_id," + strFields + " FROM tempseedling";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
                     this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
