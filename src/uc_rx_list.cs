@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.ComponentModel;
-using System.Drawing;
+using SQLite.ADO;
 using System.Data;
 using System.IO;
 using System.Linq;
@@ -2431,8 +2431,26 @@ namespace FIA_Biosum_Manager
             oDao.m_DaoWorkspace.Close();
             oDao = null;
 
-
-
+            // Check for SQLite elements
+            DataMgr dataMgr = new DataMgr();
+            string strTreeDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
+            if (!File.Exists(strTreeDb))
+            {
+                dataMgr.CreateDbFile(strTreeDb);
+            }
+            string strConn = dataMgr.GetConnectionString(strTreeDb);
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+            {
+                conn.Open();
+                if (!dataMgr.TableExist(conn, Tables.FVS.DefaultFVSTreeTableName))
+                {
+                    frmMain.g_oTables.m_oFvs.CreateFVSOutTreeTable(dataMgr, conn, Tables.FVS.DefaultFVSTreeTableName);
+                }
+                if (!dataMgr.TableExist(conn, Tables.FVS.DefaultFVSLiveTreeTableName))
+                {
+                    frmMain.g_oTables.m_oFvs.CreateFVSOutTreeTable(dataMgr, conn, Tables.FVS.DefaultFVSLiveTreeTableName);
+                }
+            }
         }
         /// <summary>
         /// Load the Rx Harvest Methods into the processor scenario dropdown combo boxes for 

@@ -2551,6 +2551,9 @@ namespace FIA_Biosum_Manager
             static public string DefaultRxPackageFvsCommandsOrderTableName { get { return "rxpackage_fvs_commands_order"; } }
 
             static public string DefaultFVSTreeTableName { get { return "FVS_Tree"; } }
+            static public string DefaultFVSLiveTreeTableName { get { return "FVS_LiveTree"; } }
+            static public string DefaultFVSTreeListDbFile { get { return @"\fvs\data\FVSOUT_TREE_LIST.db"; } }
+            static public string DefaultFVSOutDbFile { get { return @"\fvs\data\FVSOut.db"; } }
 
 
             static public string DefaultFVSTreeIdWorkTable { get { return "fvs_tree_id_work_table"; } }
@@ -2663,30 +2666,61 @@ namespace FIA_Biosum_Manager
                     "DateTimeCreated CHAR(22))";
 
             }
-            //
-            //FVS tree work table with cutlist.tcuft column table
-            //
-            public void CreateFVSOutTCuFt(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+            public void CreateFVSOutTreeTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
-                p_oAdo.SqlNonQuery(p_oConn, CreateFVSOutTCuFtTableSQL(p_strTableName));
-                CreateFVSOutTCuFtTableIndexes(p_oAdo, p_oConn, p_strTableName);
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateFVSOutTreeTableSQL(p_strTableName));
+                CreateFVSOutTreeTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
             }
-            public void CreateFVSOutTCuFtTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+            public void CreateFVSOutTreeTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx", "fvs_tree_id");
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "fvs_tree_id");
             }
-            public string CreateFVSOutTCuFtTableSQL(string p_strTableName)
+            public string CreateFVSOutTreeTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "biosum_cond_id CHAR(25)," +
                     "rxpackage CHAR(3)," +
                     "rx CHAR(3)," +
                     "rxcycle CHAR(1)," +
                     "rxyear CHAR(4)," +
                     "fvs_variant CHAR(2)," +
-                    "TCuFt DOUBLE," +
-                    "fvs_tree_id CHAR(10))";
+                    "cut_leave CHAR(1)," +
+                    "fvs_species CHAR(6)," +
+                    "tpa DOUBLE," +
+                    "dbh DOUBLE," +
+                    "ht DOUBLE," +
+                    "estht DOUBLE," +
+                    "pctcr DOUBLE," +
+                    "drybio_bole double," +
+                    "drybio_sapling double," +
+                    "drybio_top double," +
+                    "drybio_wdld_spp double," +
+                    "volcfsnd double," +
+                    "drybiom DOUBLE," +
+                    "drybiot DOUBLE," +
+                    "volcfgrs DOUBLE," +
+                    "volcfnet DOUBLE," +
+                    "volcsgrs DOUBLE," +
+                    "voltsgrs DOUBLE," +
+                    "fvs_tree_id CHAR(10)," +
+                    "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
+                    "DateTimeCreated DATE)";
             }
+            public void CreateTreeListWorkTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateTreeListWorkTableSQL(p_strTableName));
+            }
+            public string CreateTreeListWorkTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "caseid CHAR(255)," +
+                    "standid CHAR(255)," +
+                    "year INTEGER," +
+                    "treeid CHAR(255)," +
+                    "treeindex INTEGER)";
+            }
+
             //
             //FVS_tree table audit
             //
