@@ -2643,7 +2643,6 @@ namespace FIA_Biosum_Manager
                     "rxcycle CHAR(1)," +
                     "rxyear CHAR(4)," +
                     "fvs_variant CHAR(2)," +
-                    "cut_leave CHAR(1)," +
                     "fvs_species CHAR(6)," +
                     "tpa DOUBLE," +
                     "dbh DOUBLE," +
@@ -2685,7 +2684,6 @@ namespace FIA_Biosum_Manager
                     "rxcycle CHAR(1)," +
                     "rxyear CHAR(4)," +
                     "fvs_variant CHAR(2)," +
-                    "cut_leave CHAR(1)," +
                     "fvs_species CHAR(6)," +
                     "tpa DOUBLE," +
                     "dbh DOUBLE," +
@@ -2714,6 +2712,7 @@ namespace FIA_Biosum_Manager
             public string CreateTreeListWorkTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
+                    "rowid INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "caseid CHAR(255)," +
                     "standid CHAR(255)," +
                     "year INTEGER," +
@@ -2837,6 +2836,65 @@ namespace FIA_Biosum_Manager
                     "ecosubcd CHAR(7)," +
                     "stdorgcd INTEGER," +
                     //END: ADDED BIOSUM_VOLUME COLUMNS
+                    "volcfnet DOUBLE," +
+                    "volcfgrs DOUBLE," +
+                    "volcsgrs DOUBLE," +
+                    "drybiom DOUBLE," +
+                    "drybiot DOUBLE," +
+                    "voltsgrs DOUBLE," +
+                    "fvs_tree_id CHAR(10)," +
+                    "FvsCreatedTree_YN CHAR(1) DEFAULT 'N')";
+
+            }
+            public string CreateSQLiteInputBiosumVolumesTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "id INTEGER," +
+                    "biosum_cond_id CHAR(25)," +
+                    "invyr INTEGER," +
+                    "fvs_variant CHAR(2)," +
+                    "spcd INTEGER," +
+                    "dbh DOUBLE," +
+                    "ht DOUBLE," +
+                    "actualht DOUBLE," +
+                    "vol_loc_grp CHAR(10)," +
+                    "statuscd INTEGER," +
+                    "treeclcd INTEGER," +
+                    "cr DOUBLE," +
+                    "cull DOUBLE," +
+                    "roughcull DOUBLE," +
+                    "decaycd INTEGER," +
+                    "totage DOUBLE," +
+                    "SUBP INTEGER," +
+                    "FORMCL INTEGER," +
+                    "CULLBF DOUBLE," +
+                    "sitree INTEGER, " +
+                    "wdldstem INTEGER," +
+                    "upper_dia DOUBLE," +
+                    "upper_dia_ht DOUBLE," +
+                    "centroid_dia DOUBLE," +
+                    "centroid_dia_ht_actual DOUBLE," +
+                    "sawht DOUBLE," +
+                    "htdmp DOUBLE," +
+                    "boleht DOUBLE," +
+                    "cullcf DOUBLE," +
+                    "cull_fld DOUBLE," +
+                    "culldead DOUBLE," +
+                    "cullform DOUBLE," +
+                    "cullmstop DOUBLE," +
+                    "cfsnd DOUBLE," +
+                    "bfsnd DOUBLE," +
+                    "precipitation DOUBLE," +
+                    "balive DOUBLE," +
+                    "diahtcd INTEGER," +
+                    "standing_dead_cd INTEGER," +
+                    "volcfsnd_calc DOUBLE," +
+                    "drybio_bole_calc DOUBLE," +
+                    "drybio_top_calc DOUBLE," +
+                    "drybio_sapling_calc DOUBLE," +
+                    "drybio_wdld_spp_calc DOUBLE," +
+                    "ecosubcd CHAR(7)," +
+                    "stdorgcd INTEGER," +
                     "volcfnet DOUBLE," +
                     "volcfgrs DOUBLE," +
                     "volcsgrs DOUBLE," +
@@ -3344,8 +3402,33 @@ namespace FIA_Biosum_Manager
                   "CYCLE3_POST_YN CHAR(1)," +
                   "CYCLE4_PRE_YN CHAR(1)," +
                   "CYCLE4_POST_YN CHAR(1))";
-
             }
+            public void CreateSQLiteFVSOutputPrePostSeqNumAuditGenericTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSQLiteFVSOutputPrePostSeqNumAuditGenericTableSQL(p_strTableName));
+                CreateSQLiteFVSOutputPrePostSeqNumAuditGenericTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
+            }
+            public void CreateSQLiteFVSOutputPrePostSeqNumAuditGenericTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "STANDID,[YEAR]");
+            }
+            public string CreateSQLiteFVSOutputPrePostSeqNumAuditGenericTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                  "SEQNUM INTEGER," +
+                  "STANDID CHAR(255)," +
+                  "YEAR INTEGER," +
+                  "CYCLE1_PRE_YN CHAR(1)," +
+                  "CYCLE1_POST_YN CHAR(1)," +
+                  "CYCLE2_PRE_YN CHAR(1)," +
+                  "CYCLE2_POST_YN CHAR(1)," +
+                  "CYCLE3_PRE_YN CHAR(1)," +
+                  "CYCLE3_POST_YN CHAR(1)," +
+                  "CYCLE4_PRE_YN CHAR(1)," +
+                  "CYCLE4_POST_YN CHAR(1)," +
+                  "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY(SEQNUM, STANDID))";
+            }
+
 
             //
             //FVS Output StrClass PRE-POST Sequence Number Audit
@@ -3396,7 +3479,6 @@ namespace FIA_Biosum_Manager
                             "rxcycle CHAR(1)," +
                             "rxyear CHAR(4)," +
                             "fvs_variant CHAR(2)," +
-                            "cut_leave CHAR(1)," +
                             "fvs_species CHAR(6)," +
                             "tpa DOUBLE," +
                             "dbh DOUBLE," +
@@ -3456,7 +3538,6 @@ namespace FIA_Biosum_Manager
                             "rxcycle CHAR(1)," +
                             "rxyear CHAR(4)," +
                             "fvs_variant CHAR(2)," +
-                            "cut_leave CHAR(1)," +
                             "fvs_species CHAR(6)," +
                             "tpa DOUBLE," +
                             "dbh DOUBLE," +
