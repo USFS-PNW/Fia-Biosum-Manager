@@ -5280,20 +5280,15 @@ namespace FIA_Biosum_Manager
                                                 if (bIdColumnExist)
                                                 {
                                                     //FVS CREATED SEEDLING TREES
-                                                    //@ToDo: This needs to be updated for SQLite, if we use it
                                                     oDataMgr.m_strSQL =
+                                                       "CREATE TABLE cutlist_fvs_created_seedlings_work_table AS " +
                                                        "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + p_strPackage.Trim() + "' AS rxpackage," +
                                                        "'" + strRx.Trim() + "' AS rx,'" + strCycle.Trim() + "' AS rxcycle," +
-                                                       "CSTR(t.year) AS rxyear," +
-                                                       "c.Variant AS fvs_variant, IIf(LEN(TRIM(CSTR(t.id)))=1," +
-                                                       "c.variant+'ES00000'+TRIM(CSTR(t.id)),IIf(LEN(TRIM(CSTR(t.id)))=2," +
-                                                       "c.variant+'ES0000'+TRIM(CSTR(t.id)),IIf(LEN(TRIM(CSTR(t.id)))=3," +
-                                                       "c.variant+'ES000'+TRIM(CSTR(t.id)),IIf(LEN(TRIM(CSTR(t.id)))=4," +
-                                                       "c.variant+'ES00'+TRIM(CSTR(t.id)),IIf(LEN(TRIM(CSTR(t.id)))=5," +
-                                                       "c.variant+'ES0'+TRIM(CSTR(t.id)),c.variant+'ES'+TRIM(CSTR(t.id))))))) AS fvs_tree_id," +
-                                                       "t.Species AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht,t.estht,t.pctcr,t.TCuFt,'Y' AS FvsCreatedTree_YN," +
+                                                       "cast(t.year as text) as rxyear," +
+                                                       "c.Variant AS fvs_variant, " +
+                                                       "Trim(t.treeid) AS fvs_tree_id, " +
+                                                       "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht,t.estht,t.pctcr,t.TCuFt,'Y' AS FvsCreatedTree_YN," +
                                                        "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
-                                                       "INTO cutlist_fvs_created_seedlings_work_table " +
                                                        "FROM " + strCasesTable + " c," + strFVSOutTableLink + " t " +
                                                        "WHERE c.CaseID = t.CaseID AND c.RunTitle = '" + runTitle + "' AND substr(t.treeid, 1, 2) = 'ES' AND dbh >= 1.0";
                                                 }
@@ -5301,22 +5296,18 @@ namespace FIA_Biosum_Manager
                                                 {
                                                     //FVS CREATED SEEDLING TREES 
                                                     oDataMgr.m_strSQL =
+                                                       "CREATE TABLE cutlist_fvs_created_seedlings_work_table AS " +
                                                        "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + p_strPackage.Trim() + "' AS rxpackage," +
                                                        "'" + strRx.Trim() + "' AS rx,'" + strCycle.Trim() + "' AS rxcycle," +
-                                                       "CSTR(t.year) AS rxyear," +
-                                                       "c.Variant AS fvs_variant, IIf(LEN(TRIM(CSTR(r.rowid)))=1," +
-                                                       "c.variant+'ES00000'+TRIM(CSTR(r.rowid)),IIf(LEN(TRIM(CSTR(r.rowid)))=2," +
-                                                       "c.variant+'ES0000'+TRIM(CSTR(r.rowid)),IIf(LEN(TRIM(CSTR(r.rowid)))=3," +
-                                                       "c.variant+'ES000'+TRIM(CSTR(r.rowid)),IIf(LEN(TRIM(CSTR(r.rowid)))=4," +
-                                                       "c.variant+'ES00'+TRIM(CSTR(r.rowid)),IIf(LEN(TRIM(CSTR(r.rowid)))=5," +
-                                                       "c.variant+'ES0'+TRIM(CSTR(r.rowid)),c.variant+'ES'+TRIM(CSTR(r.rowid))))))) AS fvs_tree_id," +
-                                                       "t.Species AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht,t.estht,t.pctcr,t.TCuFt,'Y' AS FvsCreatedTree_YN," +
+                                                       "cast(t.year as text) as rxyear," +
+                                                       "c.Variant AS fvs_variant, " +
+                                                       "Trim(t.treeid) AS fvs_tree_id, " +
+                                                       "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht,t.estht,t.pctcr,t.TCuFt,'Y' AS FvsCreatedTree_YN," +
                                                        "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
-                                                       "INTO cutlist_fvs_created_seedlings_work_table " +
-                                                       "FROM FVSOUT." + strCasesTable + " c," + strFVSOutTableLink + " t,cutlist_rowid_work_table r " +
-                                                       "WHERE c.CaseID = t.CaseID AND MID(t.treeid, 1, 2) = 'ES' AND " +
-                                                             "(r.CaseId = t.CaseId AND r.StandId = t.StandId AND c.RunTitle = '" + runTitle + "' AND r.year = t.year AND r.treeid = t.treeid AND r.treeindex = t.treeindex) AND " +
-                                                             "(r.CaseId = c.CaseId) AND dbh >= 1.0";
+                                                       "FROM FVSOUT." + strCasesTable + " c," + strFVSOutTableLink + " t " +
+                                                       "WHERE c.CaseID = t.CaseID AND substr(t.treeid, 1, 2) = 'ES' AND " +
+                                                       "c.RunTitle = '" + runTitle + "'" +
+                                                       " AND dbh >= 1.0";
                                                 }
 
                                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
@@ -5334,7 +5325,7 @@ namespace FIA_Biosum_Manager
                                                                             "(SELECT standid,year " +
                                                                              "FROM " + seqNumWorkTable + " " +
                                                                              "WHERE CYCLE" + strCycle + "_PRE_YN='Y')  b " +
-                                                                        "WHERE TRIM(a.biosum_cond_id)=TRIM(b.standid) AND CINT(a.rxyear)=b.year";
+                                                                        "WHERE TRIM(a.biosum_cond_id)=TRIM(b.standid) AND cast(a.rxyear as integer)=b.year";
                                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                                     this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
                                                 oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
@@ -5406,20 +5397,20 @@ namespace FIA_Biosum_Manager
                                 frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
                                 if (oDataMgr.TableExist(conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable))
                                         oDataMgr.SqlNonQuery(conn, "DROP TABLE " + Tables.VolumeAndBiomass.BiosumVolumesInputTable);
-                                frmMain.g_oTables.m_oFvs.CreateOracleInputBiosumVolumesTable(oAdo, oConn, Tables.VolumeAndBiomass.BiosumVolumesInputTable);
-                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step1(
+                                    frmMain.g_oTables.m_oFvs.CreateSQLiteInputBiosumVolumesTable(oDataMgr, conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                                    oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step1(
                                                    Tables.VolumeAndBiomass.BiosumVolumesInputTable,
                                                    strFvsTreeTable, p_strPackage);
 
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
+                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
 
-                                oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
+                                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
-                            }
+                            } // Closing SQLite connection in preparation to interact with Access tables                               
 
                                 m_intProgressStepCurrentCount++;
                                 UpdateTherm(m_frmTherm.progressBar1,

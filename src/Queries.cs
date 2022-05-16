@@ -3967,6 +3967,25 @@ namespace FIA_Biosum_Manager
                 }
 
                 /// <summary>
+                /// Insert all FVS_TREEs 
+                /// </summary>
+                /// <param name="p_strInputVolumesTable"></param>
+                /// <param name="p_strFvsTreeTable"></param>
+                /// <param name="p_strRxPackage"></param>
+                /// <returns></returns>
+                public static string BuildInputSQLiteTableForVolumeCalculation_Step1(string p_strInputVolumesTable, string p_strFvsTreeTable, string p_strRxPackage)
+                {
+                    string strColumns = @"id,biosum_cond_id,invyr,fvs_variant,spcd,dbh,ht,actualht,cr,fvs_tree_id, fvscreatedtree_yn";
+                    string strValues = @"id,biosum_cond_id, cast(rxyear as integer) as invyr, fvs_variant, " +
+                        "CASE WHEN FvsCreatedTree_YN='Y' THEN cast(fvs_species as integer) ELSE -1 END AS spcd, " +
+                        "dbh,estht,ht,pctcr,fvs_tree_id, fvscreatedtree_yn";
+                    return $@"INSERT INTO {p_strInputVolumesTable} ({strColumns})  
+                           SELECT {strValues} 
+                           FROM {p_strFvsTreeTable}
+                           WHERE rxpackage='{p_strRxPackage.Trim()}'";
+                }
+
+                /// <summary>
                 /// Insert FVS_TREEs that are not cycle 1 trees
                 /// </summary>
                 /// <param name="p_strInputVolumesTable"></param>

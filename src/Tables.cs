@@ -2846,6 +2846,16 @@ namespace FIA_Biosum_Manager
                     "FvsCreatedTree_YN CHAR(1) DEFAULT 'N')";
 
             }
+            public void CreateSQLiteInputBiosumVolumesTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateOracleInputBiosumVolumesTableSQL(p_strTableName));
+                CreateSQLiteInputBiosumVolumesTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
+            }
+            public void CreateSQLiteInputBiosumVolumesTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "fvs_tree_id");
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "biosum_cond_id");
+            }
             public string CreateSQLiteInputBiosumVolumesTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
@@ -2902,7 +2912,8 @@ namespace FIA_Biosum_Manager
                     "drybiot DOUBLE," +
                     "voltsgrs DOUBLE," +
                     "fvs_tree_id CHAR(10)," +
-                    "FvsCreatedTree_YN CHAR(1) DEFAULT 'N')";
+                    "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
+                    "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY(id))";
 
             }
             public void CreateOracleInputFCSBiosumVolumesTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
