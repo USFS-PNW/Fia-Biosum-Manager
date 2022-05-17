@@ -5410,12 +5410,35 @@ namespace FIA_Biosum_Manager
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
-                            } // Closing SQLite connection in preparation to interact with Access tables                               
+                                    oDataMgr.m_strSQL = 
+                                        Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step1a(Tables.VolumeAndBiomass.BiosumVolumesInputTable, runTitle);
+
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+
+                                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                                } // Closing SQLite connection in preparation to interact with Access tables                               
 
                                 m_intProgressStepCurrentCount++;
                                 UpdateTherm(m_frmTherm.progressBar1,
                                            m_intProgressStepCurrentCount,
                                            m_intProgressStepTotalCount);
+
+                                ODBCMgr odbcMgr = new ODBCMgr();
+                                // Create ODBC entry for the temporary cut list db file
+                                if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName))
+                                {
+                                    odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName);
+                                }
+                                odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName, strTreeTempDbFile);
+                                m_dao.CreateSQLiteTableLink(oConn.DataSource, Tables.VolumeAndBiomass.BiosumVolumesInputTable,
+                                    Tables.VolumeAndBiomass.BiosumVolumesInputTable,
+                                    ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName, strTreeTempDbFile, true);
+
 
                                 //join plot, cond, and tree table to oracle input tree volumes table.
                                 //NOTE: this query handles existing FIADB trees that have been grown forward.
@@ -5464,12 +5487,11 @@ namespace FIA_Biosum_Manager
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
-                                //Update FVSCreatedTrees balive=fvs_summary.BA
-                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step2a(
+                                //Update FVSCreatedTrees precipitation=plot.precipitation
+                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step2a(
                                                    Tables.VolumeAndBiomass.BiosumVolumesInputTable,
                                                    m_oQueries.m_oFIAPlot.m_strPlotTable,
-                                                   m_oQueries.m_oFIAPlot.m_strCondTable,
-                                                   strFvsOutSummaryLink);
+                                                   m_oQueries.m_oFIAPlot.m_strCondTable);
 
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");

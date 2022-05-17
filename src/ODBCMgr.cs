@@ -198,6 +198,7 @@ namespace FIA_Biosum_Manager
             static public string ProcessorRuleDefinitionsDsnName { get { return "PROCESSOR_RULE_DEFINITIONS"; } }
             static public string ProcessorResultsDsnName { get { return "PROCESSOR_RESULTS"; } }
             static public string ProcessorTemporaryDsnName { get { return "PROCESSOR_TEMPORARY"; } }
+            static public string FvsOutTemporaryDsnName { get { return "FVS_OUT_TEMPORARY"; } }
         }
 
     }

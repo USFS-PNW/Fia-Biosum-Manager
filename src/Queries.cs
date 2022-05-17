@@ -4043,6 +4043,40 @@ namespace FIA_Biosum_Manager
                 }
 
                 /// <summary>
+                /// Update biosum_volumes_input fields (precipitation)
+                /// </summary>
+                /// <param name="p_strInputVolumesTable"></param>
+                /// <param name="p_strFIAPlotTable"></param>
+                /// <param name="p_strFIACondTable"></param>
+                /// <returns></returns>
+                public static string BuildInputSQLiteTableForVolumeCalculation_Step2a(string p_strInputVolumesTable, string p_strFIAPlotTable, string p_strFIACondTable)
+                {
+                    return $@"UPDATE (({p_strFIAPlotTable} p INNER JOIN {p_strFIACondTable} c ON p.biosum_plot_id = c.biosum_plot_id) 
+                                INNER JOIN {p_strInputVolumesTable} i ON c.biosum_cond_id = i.biosum_cond_id) 
+                                SET i.precipitation=p.precipitation
+                                WHERE i.fvscreatedtree_yn='Y'";
+                }
+
+                /// <summary>
+                /// Update biosum_volumes_input field (balive) directly from FVSOut.db for FVS-created trees
+                /// </summary>
+                /// <param name="p_strInputVolumesTable"></param>
+                /// <param name="p_strRunTitle"></param>
+                      /// <returns></returns>
+                public static string BuildInputSQLiteTableForVolumeCalculation_Step1a(string p_strInputVolumesTable, string p_strRunTitle)
+                {
+                    return $@"UPDATE {p_strInputVolumesTable} SET balive = 
+                            (SELECT s.ba FROM fvsout.FVS_Summary AS s, fvsout.FVS_Cases c
+                            WHERE {p_strInputVolumesTable}.biosum_cond_id = s.StandId and biosum_volumes_input.invyr = s.Year
+                            and s.CaseID = c.CaseID and c.RunTitle = '{p_strRunTitle}'
+                            and FvsCreatedTree_YN = 'Y') 
+                            WHERE EXISTS (SELECT s.ba
+                                FROM fvsout.FVS_Summary AS s, fvsout.FVS_Cases c
+                                WHERE biosum_volumes_input.biosum_cond_id = s.StandId and biosum_volumes_input.invyr = s.Year 
+                                and s.CaseID = c.CaseID and c.RunTitle = '{p_strRunTitle}' and FvsCreatedTree_YN = 'Y')";
+                }
+
+                /// <summary>
                 /// Update tree fields to have values other than null. Also assign the VOL_LOC_GRP value from the condition table.
                 /// </summary>
                 /// <param name="p_strInputVolumesTable"></param>
