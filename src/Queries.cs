@@ -4164,6 +4164,19 @@ namespace FIA_Biosum_Manager
                     return $@"INSERT INTO {p_strBiosumVolumesTable} ({strColumns}) SELECT {strValues} FROM {p_strInputVolumesTable}";
                 }
 
+                public static string BuildInputSQLiteBiosumCalcTable_Step7(string p_strInputVolumesTable, string p_strBiosumVolumesTable)
+                {
+                    string strColumns = "STATECD,COUNTYCD,PLOT,INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT," +
+                                        "ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE,TRE_CN,CND_CN,PLT_CN, DIAHTCD, BALIVE, PRECIPITATION";
+
+                    string strValues =
+                        "CAST((SUBSTR(BIOSUM_COND_ID,6,2)) AS INTEGER) AS STATECD, CAST((SUBSTR(BIOSUM_COND_ID,12,3)) AS INTEGER) AS COUNTYCD,CAST((SUBSTR(BIOSUM_COND_ID,16,5)) AS INTEGER) AS PLOT," +
+                        "INVYR, TRIM(VOL_LOC_GRP),ID AS TREE,SPCD,DBH AS DIA,ROUND(HT),ROUND(ACTUALHT),CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE," +
+                        "CAST(ID AS TEXT) AS TRE_CN,BIOSUM_COND_ID AS CND_CN,SUBSTR(BIOSUM_COND_ID,1,LENGTH(BIOSUM_COND_ID)-1) AS PLT_CN, DIAHTCD, BALIVE, PRECIPITATION";
+
+                    return $@"INSERT INTO {p_strBiosumVolumesTable} ({strColumns}) SELECT {strValues} FROM {p_strInputVolumesTable}";
+                }
+
 
                 /// <summary>
                 /// Insert records into the fcs oracle linked table
@@ -4202,6 +4215,34 @@ namespace FIA_Biosum_Manager
                            f.volcfsnd=IIF(o.VOLCFSND_CALC IS NOT NULL, o.VOLCFSND_CALC, null),
                            f.volcsgrs=o.VOLCSGRS_CALC,
                            f.voltsgrs=o.VOLTSGRS_CALC ";
+                }
+
+                /// <summary>
+                /// Update the FVS_TREE table with the volumes and biomass
+                /// values that FCS returned
+                /// </summary>
+                /// <param name="p_strFvsTreeTable"></param>
+                /// <param name="p_strBiosumCalcOutputTable"></param>
+                /// <returns></returns>
+                public static string BuildInputSQLiteTableForVolumeCalculation_Step9(string p_strFvsTreeTable, string p_strBiosumCalcOutputTable)
+                {
+                    return $@"UPDATE {p_strFvsTreeTable} 
+                           SET drybio_bole = (SELECT CASE WHEN drybio_bole_calc IS NULL THEN NULL ELSE drybio_bole_calc END
+                                FROM FCS.{p_strBiosumCalcOutputTable} b WHERE b.tree = {p_strFvsTreeTable}.id),
+                               drybio_sapling = (SELECT CASE WHEN drybio_sapling_calc IS NULL THEN NULL ELSE drybio_sapling_calc END
+                                FROM FCS.{p_strBiosumCalcOutputTable} b WHERE b.tree = {p_strFvsTreeTable}.id),
+                               drybio_top = (SELECT CASE WHEN drybio_top_calc IS NULL THEN NULL ELSE drybio_top_calc END
+                                FROM FCS.{p_strBiosumCalcOutputTable} b WHERE b.tree = {p_strFvsTreeTable}.id),
+                               drybio_wdld_spp = (SELECT CASE WHEN drybio_wdld_spp_calc IS NULL THEN NULL ELSE drybio_wdld_spp_calc END
+                                FROM FCS.{p_strBiosumCalcOutputTable} b WHERE b.tree = {p_strFvsTreeTable}.id),
+                               drybiom = (SELECT drybiom_calc FROM FCS.{p_strBiosumCalcOutputTable} b WHERE b.tree = {p_strFvsTreeTable}.id),
+                               drybiot = (SELECT drybiot_calc FROM FCS.{p_strBiosumCalcOutputTable} b WHERE b.tree = {p_strFvsTreeTable}.id),
+                               volcfgrs = (SELECT volcfgrs_calc FROM FCS.{p_strBiosumCalcOutputTable} b WHERE b.tree = {p_strFvsTreeTable}.id),
+                               volcfnet = (SELECT volcfnet_calc FROM FCS.{p_strBiosumCalcOutputTable} b WHERE b.tree = {p_strFvsTreeTable}.id),
+                               volcfsnd = (SELECT CASE WHEN volcfsnd_calc IS NULL THEN NULL ELSE volcfsnd_calc END
+                                FROM FCS.{p_strBiosumCalcOutputTable} b WHERE b.tree = {p_strFvsTreeTable}.id),
+                               volcsgrs = (SELECT volcsgrs_calc FROM FCS.{p_strBiosumCalcOutputTable} b WHERE b.tree = {p_strFvsTreeTable}.id),
+                               voltsgrs = (SELECT voltsgrs_calc FROM FCS.{p_strBiosumCalcOutputTable} b WHERE b.tree = {p_strFvsTreeTable}.id)";
                 }
 
                 /// <summary>

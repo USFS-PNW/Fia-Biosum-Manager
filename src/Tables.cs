@@ -2988,6 +2988,71 @@ namespace FIA_Biosum_Manager
                     "VOLTSGRS_CALC DOUBLE)";
 
             }
+            public void CreateSQLiteInputFCSBiosumVolumesTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSQLiteInputFCSBiosumVolumesTableSQL(p_strTableName));
+            }
+            public string CreateSQLiteInputFCSBiosumVolumesTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "STATECD INTEGER," +
+                    "COUNTYCD INTEGER," +
+                    "PLOT INTEGER," +
+                    "INVYR INTEGER," +
+                    "TREE INTEGER," +
+                    "VOL_LOC_GRP CHAR(10)," +
+                    "SPCD INTEGER," +
+                    "DIA DOUBLE," +
+                    "HT DOUBLE," +
+                    "ACTUALHT DOUBLE," +
+                    "CR DOUBLE," +
+                    "STATUSCD BYTE," +
+                    "TREECLCD BYTE," +
+                    "ROUGHCULL DOUBLE," +
+                    "CULL DOUBLE," +
+                    "DECAYCD BYTE," +
+                    "TOTAGE DOUBLE," +
+                    "SUBP BYTE," +
+                    "FORMCL BYTE," +
+                    "CULLBF DOUBLE," +
+                    "SITREE INTEGER," +
+                    "WDLDSTEM INTEGER," +
+                    "UPPER_DIA DOUBLE," +
+                    "UPPER_DIA_HT DOUBLE," +
+                    "CENTROID_DIA DOUBLE," +
+                    "CENTROID_DIA_HT_ACTUAL DOUBLE," +
+                    "SAWHT INTEGER," +
+                    "HTDMP DOUBLE," +
+                    "BOLEHT INTEGER," +
+                    "CULLCF INTEGER," +
+                    "CULL_FLD INTEGER," +
+                    "CULLDEAD INTEGER," +
+                    "CULLFORM INTEGER," +
+                    "CULLMSTOP INTEGER," +
+                    "CFSND INTEGER," +
+                    "BFSND INTEGER," +
+                    "PRECIPITATION DOUBLE," +
+                    "BALIVE DOUBLE," +
+                    "DIAHTCD INTEGER," +
+                    "STANDING_DEAD_CD INTEGER," +
+                    "VOLCFSND_CALC DOUBLE," +
+                    "DRYBIO_BOLE_CALC DOUBLE," +
+                    "DRYBIO_TOP_CALC DOUBLE," +
+                    "DRYBIO_SAPLING_CALC DOUBLE," +
+                    "DRYBIO_WDLD_SPP_CALC DOUBLE," +
+                    "STDORGCD INTEGER," +
+                    "ECODIV CHAR(7)," +
+                    "TRE_CN CHAR(34)," +
+                    "CND_CN CHAR(34)," +
+                    "PLT_CN CHAR(34)," +
+                    "VOLCFGRS_CALC DOUBLE," +
+                    "VOLCSGRS_CALC DOUBLE," +
+                    "VOLCFNET_CALC DOUBLE," +
+                    "DRYBIOM_CALC DOUBLE," +
+                    "DRYBIOT_CALC DOUBLE," +
+                    "VOLTSGRS_CALC DOUBLE," +
+                    "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY(TRE_CN)";
+            }
             public void CreateOracleInputFCSBiosumVolumesWorkTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
                 p_oAdo.SqlNonQuery(p_oConn, CreateOracleInputFCSBiosumVolumesWorkTableSQL(p_strTableName));
