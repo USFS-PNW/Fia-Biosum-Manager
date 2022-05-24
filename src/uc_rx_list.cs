@@ -2446,9 +2446,9 @@ namespace FIA_Biosum_Manager
                 {
                     frmMain.g_oTables.m_oFvs.CreateFVSOutTreeTable(dataMgr, conn, Tables.FVS.DefaultFVSTreeTableName);
                 }
-                if (!dataMgr.TableExist(conn, Tables.FVS.DefaultFVSLiveTreeTableName))
+                if (!dataMgr.TableExist(conn, Tables.FVS.DefaultFVSResidTreeTableName))
                 {
-                    frmMain.g_oTables.m_oFvs.CreateFVSOutTreeTable(dataMgr, conn, Tables.FVS.DefaultFVSLiveTreeTableName);
+                    frmMain.g_oTables.m_oFvs.CreateFVSOutTreeTable(dataMgr, conn, Tables.FVS.DefaultFVSResidTreeTableName);
                 }
             }
         }

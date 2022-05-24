@@ -2551,7 +2551,7 @@ namespace FIA_Biosum_Manager
             static public string DefaultRxPackageFvsCommandsOrderTableName { get { return "rxpackage_fvs_commands_order"; } }
 
             static public string DefaultFVSTreeTableName { get { return "FVS_Tree"; } }
-            static public string DefaultFVSLiveTreeTableName { get { return "FVS_LiveTree"; } }
+            static public string DefaultFVSResidTreeTableName { get { return "FVS_ResidTree"; } }
             static public string DefaultFVSTreeListDbFile { get { return @"\fvs\data\FVSOUT_TREE_LIST.db"; } }
             static public string DefaultFVSOutDbFile { get { return @"\fvs\data\FVSOut.db"; } }
 
