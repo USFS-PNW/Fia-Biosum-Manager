@@ -20,24 +20,13 @@ namespace FIA_Biosum_Manager
         private IContainer components;
         private Button btnCreateMdbs;
         private string m_strProjDir;
-        private Queries m_oQueries;
-        private Tables m_oTables;
         public int m_intError;
         private ado_data_access m_ado;
-        private dao_data_access m_dao;
         private string m_strTempMDBFileConnectionString;
         private env m_oEnv;
-        private utils m_oUtils;
         private bool m_bDebug;
-        private Datasource m_oDatasource = null;
         private Dictionary<string, List<Tuple<string, utils.DataType>>> m_listDictFVSOutputTablesColumnsDefinitions;
         private Dictionary<string, string> m_dictCreateTableQueries;
-
-        // Mapping of sqlite to Access tables names. Add new entries here.
-        public static Dictionary<string, string> sqliteToAccessTblNames = new Dictionary<string, string>
-        {
-            { "FVS_SUMMARY2", "FVS_SUMMARY" }
-        };
 
         // Mapping of sqlite column names to biosum column names. Add new entries here.
         public static Dictionary<string, string> sqliteToAccessColNames = new Dictionary<string, string>
@@ -54,23 +43,21 @@ namespace FIA_Biosum_Manager
         private ToolTip cancelTooltip;
         private ToolTip exportLogTooltip;
         private Button btnClose;
-        public static Dictionary<string, string> AccessToSqliteTblNames = sqliteToAccessTblNames.ToDictionary((i) => i.Value, (i) => i.Key);
 
         public uc_fvs_create_mdbs(string p_strProjDir)
         {
             InitializeComponent();
-            InitializeDatasource();
             this.m_listDictFVSOutputTablesColumnsDefinitions = new Dictionary<string, List<Tuple<string, utils.DataType>>>();
             this.m_dictCreateTableQueries = new Dictionary<string, string>();
             this.m_strProjDir = p_strProjDir;
-            this.m_oQueries = new Queries();
-            m_oQueries.m_oFvs.LoadDatasource = true;
-            m_oQueries.m_oFIAPlot.LoadDatasource = true;
-            m_oQueries.LoadDatasources(true);
+            Queries oQueries = new Queries();
+            oQueries.m_oFvs.LoadDatasource = true;
+            oQueries.m_oFIAPlot.LoadDatasource = true;
+            oQueries.LoadDatasources(true);
 
-            if (m_oQueries.m_oFvs.m_strFvsTreeTable.Trim().Length == 0)
+            if (oQueries.m_oFvs.m_strFvsTreeTable.Trim().Length == 0)
             {
-                m_oQueries.m_oFvs.m_strFvsTreeTable = Tables.FVS.DefaultFVSTreeTableName;
+                oQueries.m_oFvs.m_strFvsTreeTable = Tables.FVS.DefaultFVSTreeTableName;
             }
 
             textBox1.TextChanged += (sender, e) =>
@@ -82,31 +69,28 @@ namespace FIA_Biosum_Manager
                 }
             };
             this.m_ado = new ado_data_access();
-            this.m_dao = new dao_data_access();
-            this.m_strTempMDBFileConnectionString = this.m_ado.getMDBConnString(this.m_oQueries.m_strTempDbFile, "", "");
+            this.m_strTempMDBFileConnectionString = this.m_ado.getMDBConnString(oQueries.m_strTempDbFile, "", "");
             this.m_ado.OpenConnection(this.m_strTempMDBFileConnectionString);
             if (this.m_ado.m_intError != 0)
             {
+                this.m_ado.CloseAndDisposeConnection(this.m_ado.m_OleDbConnection, true);
                 this.m_intError = this.m_ado.m_intError;
                 this.m_ado = null;
                 return;
-
             }
             this.m_oEnv = new env();
             this.m_bDebug = frmMain.g_bDebug;
         }
 
-        private void InitializeDatasource()
+        private void InitializeDatasource(Datasource p_dataSource)
         {
             string strProjDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
-
-            m_oDatasource = new Datasource();
-            m_oDatasource.LoadTableColumnNamesAndDataTypes = false;
-            m_oDatasource.LoadTableRecordCount = false;
-            m_oDatasource.m_strDataSourceMDBFile = strProjDir.Trim() + "\\db\\project.mdb";
-            m_oDatasource.m_strDataSourceTableName = "datasource";
-            m_oDatasource.m_strScenarioId = "";
-            m_oDatasource.populate_datasource_array();
+            p_dataSource.LoadTableColumnNamesAndDataTypes = false;
+            p_dataSource.LoadTableRecordCount = false;
+            p_dataSource.m_strDataSourceMDBFile = strProjDir.Trim() + "\\db\\project.mdb";
+            p_dataSource.m_strDataSourceTableName = "datasource";
+            p_dataSource.m_strScenarioId = "";
+            p_dataSource.populate_datasource_array();
         }
 
         private void InitializeComponent()
@@ -251,6 +235,7 @@ namespace FIA_Biosum_Manager
                     appendStringToDebugTextbox($@"File exists. Deleting: {strDbPathFile}");
                 }
                 oDao.CreateMDB(strDbPathFile);
+
                 // Open a connection to new file 
                 using (var accessConn = new OleDbConnection(m_ado.getMDBConnString(strDbPathFile, "", "")))
                 {
@@ -297,10 +282,10 @@ namespace FIA_Biosum_Manager
                                                 recordCount++;
                                             }
                                         }
+                                        transaction.Commit();
                                         // Update runtitle as needed
                                         command.CommandText = $"UPDATE {tblName} SET {runTitle} = IIF(IsNull({runTitle}),'{file[2]}',{runTitle})";
                                         command.ExecuteNonQuery();
-                                        transaction.Commit();
                                         appendStringToDebugTextbox($@"Inserted {recordCount} records into {tblName}");
                                     }
                                     catch (Exception err)
@@ -310,6 +295,7 @@ namespace FIA_Biosum_Manager
                                         transaction.Rollback();
                                     }
                                     transaction.Dispose();
+                                    command.Dispose();
                                 }
                                 sqliteDataMgr.m_DataReader.Dispose();
                                 sqliteDataMgr.m_DataReader = null;
@@ -558,10 +544,12 @@ namespace FIA_Biosum_Manager
             var newTblName = tblName;
             if (!tablesSet.Contains(tblName))
             {
-                if (tblName.ToUpper().Contains("SUMMARY"))
-                {
-                    newTblName = "FVS_Summary";
-                }
+                //07-JUN-2022: There is also an fvs_summary2 table created that we do not want
+                // Only publish fvs_summary as named
+                //if (tblName.ToUpper().Contains("SUMMARY"))
+                //{
+                //    newTblName = "FVS_Summary";
+                //}
             }
             return newTblName;
         }
@@ -573,13 +561,16 @@ namespace FIA_Biosum_Manager
         {
             // List of three items; databasename, variant, runtitle.
             var fileNames = new List<List<string>>();
-            var strTempMDB = m_oDatasource.CreateMDBAndTableDataSourceLinks();
-
+            Datasource oDatasource = new Datasource();
+            InitializeDatasource(oDatasource);
+            var strTempMDB = oDatasource.CreateMDBAndTableDataSourceLinks();
+            string strPlotTable = oDatasource.getValidDataSourceTableName("PLOT");
+            string strRxPackageTable = oDatasource.getValidDataSourceTableName("TREATMENT PACKAGES");
             var variantList = new List<string>();
             using (OleDbConnection con = new OleDbConnection(m_ado.getMDBConnString(strTempMDB, "", "")))
             {
                 con.Open();
-                this.m_ado.SqlQueryReader(con, Queries.FVS.GetFVSVariantRxPackageSQL(m_oQueries.m_oFIAPlot.m_strPlotTable, m_oQueries.m_oFvs.m_strRxPackageTable));
+                this.m_ado.SqlQueryReader(con, Queries.FVS.GetFVSVariantRxPackageSQL(strPlotTable, strRxPackageTable));
 
                 while (this.m_ado.m_OleDbDataReader.Read())
                 {
@@ -611,6 +602,7 @@ namespace FIA_Biosum_Manager
                     var fileName = $@"FVSOUT_{strVariant}_P{strPackage}-{strRx1}-{strRx2}-{strRx3}-{strRx4}.MDB";
                     fileNames.Add(new List<string>() { fileName, strVariant, runTitle });
                 }
+                this.m_ado.m_OleDbDataReader.Close();
                 // Add POTFIRE Base year mdbs
                 foreach (var strVariant in variantList)
                 {
@@ -619,6 +611,7 @@ namespace FIA_Biosum_Manager
                     fileNames.Add(new List<string>() { fileName, strVariant, runTitle });
                 }
             }
+            File.Delete(strTempMDB);
             return fileNames;
         }
         /// <summary>Event handler for the Create MDBs button. Spins up the CreateMDBS_Main thread. </summary>
