@@ -2442,9 +2442,9 @@ namespace FIA_Biosum_Manager
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
                 conn.Open();
-                if (!dataMgr.TableExist(conn, Tables.FVS.DefaultFVSTreeTableName))
+                if (!dataMgr.TableExist(conn, Tables.FVS.DefaultFVSCutTreeTableName))
                 {
-                    frmMain.g_oTables.m_oFvs.CreateFVSOutTreeTable(dataMgr, conn, Tables.FVS.DefaultFVSTreeTableName);
+                    frmMain.g_oTables.m_oFvs.CreateFVSOutTreeTable(dataMgr, conn, Tables.FVS.DefaultFVSCutTreeTableName);
                 }
                 if (!dataMgr.TableExist(conn, Tables.FVS.DefaultFVSResidTreeTableName))
                 {
