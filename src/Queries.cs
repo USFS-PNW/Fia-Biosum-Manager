@@ -3963,7 +3963,7 @@ namespace FIA_Biosum_Manager
                     return $@"INSERT INTO {p_strInputVolumesTable} ({strColumns}) 
                            SELECT {strValues} 
                            FROM {p_strFvsTreeTable}
-                           WHERE rxpackage='{p_strRxPackage.Trim()}'";
+                           WHERE rxpackage='{p_strRxPackage.Trim()}' AND DBH >= 1.0";
                 }
 
                 /// <summary>
@@ -3982,7 +3982,7 @@ namespace FIA_Biosum_Manager
                     return $@"INSERT INTO {p_strInputVolumesTable} ({strColumns})  
                            SELECT {strValues} 
                            FROM {p_strFvsTreeTable}
-                           WHERE rxpackage='{p_strRxPackage.Trim()}'";
+                           WHERE rxpackage='{p_strRxPackage.Trim()}' and dbh >= 1.0";
                 }
 
                 /// <summary>

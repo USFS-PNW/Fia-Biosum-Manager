@@ -4367,7 +4367,7 @@ namespace FIA_Biosum_Manager
                                         oAdo.m_strSQL = "SELECT COUNT(*) FROM " +
                                                          "(SELECT TOP 1 c.standid " +
                                                           "FROM " + strCasesTable + " c," + strFVSOutTableLink + " t " +
-                                                          "WHERE c.CaseID = t.CaseID AND MID(t.treeid, 1, 2) = 'ES' AND t.dbh >= 1.0)";
+                                                          "WHERE c.CaseID = t.CaseID AND MID(t.treeid, 1, 2) = 'ES' )";
                                         if ((int)oAdo.getRecordCount(oConn, oAdo.m_strSQL, "temp") > 0)
                                         {
                                             if (bIdColumnExist)
@@ -4387,7 +4387,7 @@ namespace FIA_Biosum_Manager
                                                    "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
                                                    "INTO cutlist_fvs_created_seedlings_work_table " +
                                                    "FROM " + strCasesTable + " c," + strFVSOutTableLink + " t " +
-                                                   "WHERE c.CaseID = t.CaseID AND MID(t.treeid, 1, 2) = 'ES' AND dbh >= 1.0";
+                                                   "WHERE c.CaseID = t.CaseID AND MID(t.treeid, 1, 2) = 'ES' ";
                                             }
                                             else
                                             {
@@ -4408,7 +4408,7 @@ namespace FIA_Biosum_Manager
                                                    "FROM " + strCasesTable + " c," + strFVSOutTableLink + " t,cutlist_rowid_work_table r " +
                                                    "WHERE c.CaseID = t.CaseID AND MID(t.treeid, 1, 2) = 'ES' AND " +
                                                          "(r.CaseId = t.CaseId AND r.StandId = t.StandId AND r.year = t.year AND r.treeid = t.treeid AND r.treeindex = t.treeindex) AND " +
-                                                         "(r.CaseId = c.CaseId) AND dbh >= 1.0";
+                                                         "(r.CaseId = c.CaseId)";
                                             }
 
                                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
@@ -5242,7 +5242,7 @@ namespace FIA_Biosum_Manager
                                                 "(SELECT c.standid " +
                                                 "FROM FVSOUT." + strCasesTable + " c, FVSOUT." + strFVSOutTableLink + " t " +
                                                 "WHERE c.CaseID = t.CaseID AND c.RunTitle = '" + runTitle + "' AND " +
-                                                "substr(t.treeid, 1, 2) = 'ES' AND t.dbh >= 1.0 LIMIT 1)";
+                                                "substr(t.treeid, 1, 2) = 'ES' LIMIT 1)";
 
                                             if ((int)oDataMgr.getRecordCount(conn, oDataMgr.m_strSQL, "temp") > 0)
                                             {
@@ -5263,7 +5263,7 @@ namespace FIA_Biosum_Manager
                                                        "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht,t.estht,t.pctcr,t.TCuFt,'Y' AS FvsCreatedTree_YN," +
                                                        "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
                                                        "FROM " + strCasesTable + " c," + strFVSOutTableLink + " t " +
-                                                       "WHERE c.CaseID = t.CaseID AND c.RunTitle = '" + runTitle + "' AND substr(t.treeid, 1, 2) = 'ES' AND dbh >= 1.0";
+                                                       "WHERE c.CaseID = t.CaseID AND c.RunTitle = '" + runTitle + "' AND substr(t.treeid, 1, 2) = 'ES'";
                                                 }
                                                 else
                                                 {
@@ -5279,8 +5279,7 @@ namespace FIA_Biosum_Manager
                                                        "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
                                                        "FROM FVSOUT." + strCasesTable + " c," + strFVSOutTableLink + " t " +
                                                        "WHERE c.CaseID = t.CaseID AND substr(t.treeid, 1, 2) = 'ES' AND " +
-                                                       "c.RunTitle = '" + runTitle + "'" +
-                                                       " AND dbh >= 1.0";
+                                                       "c.RunTitle = '" + runTitle + "'";
                                                 }
 
                                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
