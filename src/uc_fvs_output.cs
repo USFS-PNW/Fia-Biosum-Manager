@@ -5198,7 +5198,9 @@ namespace FIA_Biosum_Manager
                                                     "cast(t.year as text) as rxyear," +
                                                     "c.Variant AS fvs_variant, " +
                                                     "Trim(t.treeid) AS fvs_tree_id," +
-                                                    "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS DBH , t.Ht,t.estht,t.pctcr,t.TCuFt,'N' AS FvsCreatedTree_YN," +
+                                                    "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS DBH , t.Ht,t.estht,t.pctcr,t.TCuFt," +
+                                                    "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, " +
+                                                    "'N' AS FvsCreatedTree_YN," +
                                                     "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
                                                     "FROM FVSOUT." + strCasesTable + " c, FVSOUT." + strFVSOutTableLink + " t " +
                                                     "WHERE c.CaseID = t.CaseID AND c.RunTitle = '" + runTitle + "' AND SUBSTR(t.treeid, 1, 2) NOT IN ('ES') ";
@@ -5211,9 +5213,12 @@ namespace FIA_Biosum_Manager
                                                 //insert into fvs tree table
                                                 oDataMgr.m_strSQL = "INSERT INTO " + strFvsTreeTable + " " +
                                                                      "(biosum_cond_id, rxpackage,rx,rxcycle,rxyear,fvs_variant, fvs_tree_id," +
-                                                                      "fvs_species, tpa, dbh, ht, estht,pctcr,FvsCreatedTree_YN,DateTimeCreated) " +
+                                                                      "fvs_species, tpa, dbh, ht, estht,pctcr," +
+                                                                      "treeval, mortpa, mdefect, bapctile, dg," +
+                                                                      "FvsCreatedTree_YN,DateTimeCreated) " +
                                                                         "SELECT a.biosum_cond_id, a.rxpackage,a.rx,a.rxcycle,a.rxyear,a.fvs_variant," +
                                                                                "a.fvs_tree_id, a.fvs_species, a.tpa, a.dbh, a.ht, a.estht,a.pctcr," +
+                                                                               "a.treeval, a.mortpa, a.mdefect, a.bapctile, a.dg, " +
                                                                                "a.FvsCreatedTree_YN,a.DateTimeCreated  " +
                                                                         "FROM cutlist_fia_trees_work_table a," +
                                                                             "(SELECT standid,year " +
@@ -5428,10 +5433,12 @@ namespace FIA_Biosum_Manager
 
 
                                     //Set DIAHTCD for FIADB Cycle<>1 trees to their Cycle=1 DIAHTCD values
+                                    //Set standing_dead_code from tree table on FIADB trees
                                     oAdo.m_strSQL = $@"UPDATE {Tables.VolumeAndBiomass.BiosumVolumesInputTable} b 
                                                    INNER JOIN {m_oQueries.m_oFIAPlot.m_strTreeTable} t 
                                                    ON t.biosum_cond_id=b.biosum_cond_id AND t.fvs_tree_id=b.fvs_tree_id
-                                                   SET b.diahtcd=t.diahtcd WHERE b.fvscreatedtree_yn='N'";
+                                                   SET b.diahtcd=t.diahtcd,
+                                                   b.standing_dead_cd=t.standing_dead_cd WHERE b.fvscreatedtree_yn='N'";
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
                                     oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);

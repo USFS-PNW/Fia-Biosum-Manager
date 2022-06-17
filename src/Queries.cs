@@ -4167,12 +4167,12 @@ namespace FIA_Biosum_Manager
                 public static string BuildInputSQLiteBiosumCalcTable_Step7(string p_strInputVolumesTable, string p_strBiosumVolumesTable)
                 {
                     string strColumns = "STATECD,COUNTYCD,PLOT,INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT," +
-                                        "ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE,TRE_CN,CND_CN,PLT_CN, DIAHTCD, BALIVE, PRECIPITATION";
+                                        "ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE,TRE_CN,CND_CN,PLT_CN, DIAHTCD, BALIVE, PRECIPITATION, STANDING_DEAD_CD";
 
                     string strValues =
                         "CAST((SUBSTR(BIOSUM_COND_ID,6,2)) AS INTEGER) AS STATECD, CAST((SUBSTR(BIOSUM_COND_ID,12,3)) AS INTEGER) AS COUNTYCD,CAST((SUBSTR(BIOSUM_COND_ID,16,5)) AS INTEGER) AS PLOT," +
                         "INVYR, TRIM(VOL_LOC_GRP),ID AS TREE,SPCD,DBH AS DIA,ROUND(HT),ROUND(ACTUALHT),CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE," +
-                        "CAST(ID AS TEXT) AS TRE_CN,BIOSUM_COND_ID AS CND_CN,SUBSTR(BIOSUM_COND_ID,1,LENGTH(BIOSUM_COND_ID)-1) AS PLT_CN, DIAHTCD, BALIVE, PRECIPITATION";
+                        "CAST(ID AS TEXT) AS TRE_CN,BIOSUM_COND_ID AS CND_CN,SUBSTR(BIOSUM_COND_ID,1,LENGTH(BIOSUM_COND_ID)-1) AS PLT_CN, DIAHTCD, BALIVE, PRECIPITATION, STANDING_DEAD_CD";
 
                     return $@"INSERT INTO {p_strBiosumVolumesTable} ({strColumns}) SELECT {strValues} FROM {p_strInputVolumesTable}";
                 }
@@ -4242,7 +4242,9 @@ namespace FIA_Biosum_Manager
                                volcfsnd = (SELECT CASE WHEN volcfsnd_calc IS NULL THEN NULL ELSE volcfsnd_calc END
                                 FROM FCS.{p_strBiosumCalcOutputTable} b WHERE b.tree = {p_strFvsTreeTable}.id),
                                volcsgrs = (SELECT volcsgrs_calc FROM FCS.{p_strBiosumCalcOutputTable} b WHERE b.tree = {p_strFvsTreeTable}.id),
-                               voltsgrs = (SELECT voltsgrs_calc FROM FCS.{p_strBiosumCalcOutputTable} b WHERE b.tree = {p_strFvsTreeTable}.id)";
+                               voltsgrs = (SELECT voltsgrs_calc FROM FCS.{p_strBiosumCalcOutputTable} b WHERE b.tree = {p_strFvsTreeTable}.id),
+                               standing_dead_cd = (SELECT standing_dead_cd FROM FCS.{p_strBiosumCalcOutputTable} b WHERE b.tree = {p_strFvsTreeTable}.id)";
+                               // Note: standing_dead_cd isn't calculated by FCS but this was an easy way to populate it from master.tree
                 }
 
                 /// <summary>
