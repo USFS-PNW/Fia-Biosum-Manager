@@ -2695,7 +2695,10 @@ namespace FIA_Biosum_Manager
                     "mortpa DOUBLE," +
                     "mdefect INTEGER," +
                     "bapctile DOUBLE," +
+                    "htg DOUBLE," +
                     "dg DOUBLE," +
+                    "statuscd INTEGER," +
+                    "decaycd INTEGER," +
                     "standing_dead_cd INTEGER," +
                     "drybio_bole double," +
                     "drybio_sapling double," +

@@ -5195,11 +5195,11 @@ namespace FIA_Biosum_Manager
                                                 oDataMgr.m_strSQL = "CREATE TABLE cutlist_fia_trees_work_table AS " +
                                                     "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + p_strPackage.Trim() + "' AS rxpackage," +
                                                     "'" + strRx.Trim() + "' AS rx,'" + strCycle.Trim() + "' AS rxcycle," +
-                                                    "cast(t.year as text) as rxyear," +
-                                                    "c.Variant AS fvs_variant, " +
+                                                    "cast(t.year as text) as rxyear,'" +
+                                                    p_strVariant + "' AS fvs_variant, " +
                                                     "Trim(t.treeid) AS fvs_tree_id," +
                                                     "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS DBH , t.Ht,t.estht,t.pctcr,t.TCuFt," +
-                                                    "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, " +
+                                                    "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
                                                     "'N' AS FvsCreatedTree_YN," +
                                                     "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
                                                     "FROM FVSOUT." + strCasesTable + " c, FVSOUT." + strFVSOutTableLink + " t " +
@@ -5214,11 +5214,11 @@ namespace FIA_Biosum_Manager
                                                 oDataMgr.m_strSQL = "INSERT INTO " + strFvsTreeTable + " " +
                                                                      "(biosum_cond_id, rxpackage,rx,rxcycle,rxyear,fvs_variant, fvs_tree_id," +
                                                                       "fvs_species, tpa, dbh, ht, estht,pctcr," +
-                                                                      "treeval, mortpa, mdefect, bapctile, dg," +
+                                                                      "treeval, mortpa, mdefect, bapctile, dg, htg," +
                                                                       "FvsCreatedTree_YN,DateTimeCreated) " +
                                                                         "SELECT a.biosum_cond_id, a.rxpackage,a.rx,a.rxcycle,a.rxyear,a.fvs_variant," +
                                                                                "a.fvs_tree_id, a.fvs_species, a.tpa, a.dbh, a.ht, a.estht,a.pctcr," +
-                                                                               "a.treeval, a.mortpa, a.mdefect, a.bapctile, a.dg, " +
+                                                                               "a.treeval, a.mortpa, a.mdefect, a.bapctile, a.dg, a.htg," +
                                                                                "a.FvsCreatedTree_YN,a.DateTimeCreated  " +
                                                                         "FROM cutlist_fia_trees_work_table a," +
                                                                             "(SELECT standid,year " +
@@ -5262,8 +5262,8 @@ namespace FIA_Biosum_Manager
                                                        "CREATE TABLE cutlist_fvs_created_seedlings_work_table AS " +
                                                        "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + p_strPackage.Trim() + "' AS rxpackage," +
                                                        "'" + strRx.Trim() + "' AS rx,'" + strCycle.Trim() + "' AS rxcycle," +
-                                                       "cast(t.year as text) as rxyear," +
-                                                       "c.Variant AS fvs_variant, " +
+                                                        "cast(t.year as text) as rxyear,'" +
+                                                       p_strVariant + "' AS fvs_variant, " +
                                                        "Trim(t.treeid) AS fvs_tree_id, " +
                                                        "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht,t.estht,t.pctcr,t.TCuFt,'Y' AS FvsCreatedTree_YN," +
                                                        "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
@@ -5277,8 +5277,8 @@ namespace FIA_Biosum_Manager
                                                        "CREATE TABLE cutlist_fvs_created_seedlings_work_table AS " +
                                                        "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + p_strPackage.Trim() + "' AS rxpackage," +
                                                        "'" + strRx.Trim() + "' AS rx,'" + strCycle.Trim() + "' AS rxcycle," +
-                                                       "cast(t.year as text) as rxyear," +
-                                                       "c.Variant AS fvs_variant, " +
+                                                       "cast(t.year as text) as rxyear,'" +
+                                                       p_strVariant + "' AS fvs_variant, " +
                                                        "Trim(t.treeid) AS fvs_tree_id, " +
                                                        "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht,t.estht,t.pctcr,t.TCuFt,'Y' AS FvsCreatedTree_YN," +
                                                        "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
@@ -5367,7 +5367,7 @@ namespace FIA_Biosum_Manager
                                 frmMain.g_oTables.m_oFvs.CreateSQLiteInputBiosumVolumesTable(oDataMgr, conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable);
                                 oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step1(
                                                    Tables.VolumeAndBiomass.BiosumVolumesInputTable,
-                                                   strFvsTreeTable, p_strPackage);
+                                                   strFvsTreeTable, p_strPackage, p_strVariant);
 
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
