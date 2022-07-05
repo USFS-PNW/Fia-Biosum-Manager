@@ -5407,6 +5407,8 @@ namespace FIA_Biosum_Manager
                                     m_dao.CreateSQLiteTableLink(oConn.DataSource, Tables.VolumeAndBiomass.BiosumVolumesInputTable,
                                         Tables.VolumeAndBiomass.BiosumVolumesInputTable,
                                         ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName, strTreeTempDbFile, true);
+                                    m_dao.CreateSQLiteTableLink(oConn.DataSource, strFvsTreeTable,
+                                        strFvsTreeTable, ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName, strTreeTempDbFile, true);
                                     // Sleep to ensure table link is complete
                                     Thread.Sleep(5000);
 
@@ -5449,6 +5451,26 @@ namespace FIA_Biosum_Manager
                                     oAdo.m_strSQL = $@"UPDATE {Tables.VolumeAndBiomass.BiosumVolumesInputTable} b 
                                                    INNER JOIN {strFiaTreeSpeciesRefTableLink} ref ON cint(b.spcd)=ref.spcd
                                                    SET b.diahtcd=IIF(ref.woodland_yn='N', 1, 2) WHERE b.fvscreatedtree_yn='Y'";
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
+                                    oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                                    //Set STATUSCD for seedlings; It is populated from FCS for all other trees
+                                    oAdo.m_strSQL = $@"UPDATE {strFvsTreeTable} b 
+                                                   INNER JOIN {m_oQueries.m_oFIAPlot.m_strTreeTable} t 
+                                                   ON t.biosum_cond_id=b.biosum_cond_id AND t.fvs_tree_id=b.fvs_tree_id
+                                                   SET b.statuscd=t.statuscd
+                                                   WHERE rxpackage='{p_strPackage.Trim()}' AND fvs_variant='{p_strVariant.Trim()}' and dbh < 1.0";
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
+                                    oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                                    //Drop the table link when statuscd complete
+                                    oAdo.m_strSQL = $@"DROP TABLE {strFvsTreeTable}";
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
                                     oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);

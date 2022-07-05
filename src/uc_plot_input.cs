@@ -2857,7 +2857,7 @@ namespace FIA_Biosum_Manager
                             this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
                     }
                     this.m_ado.m_strSQL = "SELECT TRIM(p.biosum_plot_id) + TRIM(CSTR(s.condid)) AS biosum_cond_id,9 AS biosum_status_cd, 0.1 as dia, 1 as diahtcd, " +
-                        "'1' + Format(SPCD,'000') + '00' + SUBP AS fvs_tree_id, s.* INTO tempseedling FROM " + 
+                        "'1' + Format(SPCD,'000') + '00' + SUBP AS fvs_tree_id, 1 as statuscd, s.* INTO tempseedling FROM " + 
                         strSourceTableLink + " s " + " INNER JOIN " + this.m_strPlotTable + " p ON s.plt_cn=TRIM(p.cn) " +
                         " WHERE p.biosum_status_cd=9;";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -2883,8 +2883,8 @@ namespace FIA_Biosum_Manager
                     strFields = CreateStrFieldsFromDataTables(dtFIADBSeedlingSchema, dtTreeSchema);
                     SetThermValue(m_frmTherm.progressBar1, "Value", 70);
                     //insert the new seedling records into the tree table
-                    m_ado.m_strSQL = "INSERT INTO " + this.m_strTreeTable + " (biosum_cond_id,biosum_status_cd,dia,diahtcd,fvs_tree_id," + strFields + ") " +
-                        "SELECT TRIM(biosum_cond_id),biosum_status_cd,dia,diahtcd,fvs_tree_id," + strFields + " FROM tempseedling";
+                    m_ado.m_strSQL = "INSERT INTO " + this.m_strTreeTable + " (biosum_cond_id,biosum_status_cd,dia,diahtcd,fvs_tree_id,statuscd," + strFields + ") " +
+                        "SELECT TRIM(biosum_cond_id),biosum_status_cd,dia,diahtcd,fvs_tree_id,statuscd, " + strFields + " FROM tempseedling";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
                     this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
