@@ -3581,17 +3581,7 @@ namespace FIA_Biosum_Manager
                         string strSQL = "UPDATE " + strTargetTable +
                          " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
                          " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
-                         " SET TREE_COUNT = tpacurr where statuscd not in (2,3) AND NOT (" +
-                         strTargetTable + ".DIAMETER = 0.1 AND LEFT(" + strTargetTable + ".TREE_CN,1) = 'S')";
-                        return strSQL;
-                    }
-
-                    public static string UpdateTreeCountForSeedlings(string strCondTable, string strTargetTable)
-                    {
-                        string strSQL = "UPDATE " + strTargetTable +
-                         " INNER JOIN " + strCondTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strCondTable + ".biosum_cond_id)" +
-                         " SET TREE_COUNT = tree_count * condprop_unadj/micrprop_unadj" +
-                         " WHERE DIAMETER = 0.1 AND LEFT(TREE_CN,1) = 'S'";
+                         " SET TREE_COUNT = tpacurr where statuscd not in (2,3)";
                         return strSQL;
                     }
 

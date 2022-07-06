@@ -4106,8 +4106,6 @@ namespace FIA_Biosum_Manager
                 // Update tree_count
                 DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.UpdateTreeCount(this.m_strTreeTable, strTempTreeTable) + "\r\n", 2);
                 oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.UpdateTreeCount(this.m_strTreeTable, strTempTreeTable));
-                DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.TreeInit.UpdateTreeCountForSeedlings(this.m_strCondTable, strTempTreeTable) + "\r\n", 2);
-                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.UpdateTreeCountForSeedlings(this.m_strCondTable, strTempTreeTable));
                 lstFields.Add("TREE_COUNT");
 
                 // Copy Grm columns if selected; Set to null if not selected
