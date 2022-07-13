@@ -217,7 +217,7 @@ namespace FIA_Biosum_Manager
                                 "(SELECT p.biosum_plot_id,p.gis_yard_dist_ft,p.elev,d.biosum_cond_id,d.slope FROM " +
                                 p_strPlotTableName + " p INNER JOIN " + p_strCondTableName + " d ON p.biosum_plot_id = d.biosum_plot_id) c " +
                                 "WHERE z.rxpackage='" + p_strRxPackage + "' AND " +
-                                "z.biosum_cond_id = c.biosum_cond_id";
+                                "z.biosum_cond_id = c.biosum_cond_id AND dbh > 1.0";
                 m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
                 if (m_oAdo.m_OleDbDataReader.HasRows)
                 {

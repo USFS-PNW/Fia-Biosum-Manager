@@ -638,9 +638,6 @@
     </Compile>
     <Compile Include="XPSDocumentViewer_xaml.cs" />
     <Content Include="App.ico" />
-    <Content Include="SCRIPT_VB_AddSeedlings.txt" />
-    <Content Include="SCRIPT_VB_DeleteSeedlings.txt" />
-    <Content Include="SCRIPT_VB_PREDISPOSE_FIXTREEID.txt" />
     <Content Include="table-alternate-row-color.bmp" />
     <Content Include="table-row-color.bmp" />
     <Content Include="table-select-row-icon.png" />

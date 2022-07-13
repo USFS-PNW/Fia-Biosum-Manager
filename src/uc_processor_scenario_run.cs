@@ -45,7 +45,6 @@ namespace FIA_Biosum_Manager
         FIA_Biosum_Manager.RxItem_Collection m_oRxItem_Collection = null;
         FIA_Biosum_Manager.RxPackageItem m_oRxPackageItem = null;
         string m_strRxCycleList = "";
-        string[] m_strFVSTreeTableLinkNameArray = null;
         IList<string> m_lstFVSVariantRxPackage = null;
         private ListViewColumnSorter lvwColumnSorter;
         /* Indicates that inactive stands will be included in the analysis:
@@ -72,10 +71,8 @@ namespace FIA_Biosum_Manager
         private const int COL_RXCYCLE2 = 9;
         private const int COL_RXCYCLE3 = 10;
         private const int COL_RXCYCLE4 = 11;
-        private const int COL_FVSTREEFILE = 12;
-        private const int COL_FOUND = 13;
-        private const int COL_FVSTREE_PROCESSINGDATETIME = 14;
-        private const int COL_PROCESSOR_PROCESSINGDATETIME = 15;
+        private const int COL_FVSTREE_PROCESSINGDATETIME = 12;
+        private const int COL_PROCESSOR_PROCESSINGDATETIME = 13;
        
 
         public frmProcessorScenario ReferenceProcessorScenarioForm
@@ -251,8 +248,6 @@ namespace FIA_Biosum_Manager
         {
             
             int x, y;
-            string strTableName="";
-            string strFVSTreeTableLinkNameList="";
             string strErrMsg="";
             bool bUpdate;
             string strDebugFile = frmMain.g_oEnv.strTempDir + "\\biosum_processor_scenario_run_loadvalues.txt";
@@ -324,8 +319,6 @@ namespace FIA_Biosum_Manager
             this.m_lvEx.Columns.Add("Cycle2Rx", 80, HorizontalAlignment.Left);
             this.m_lvEx.Columns.Add("Cycle3Rx", 80, HorizontalAlignment.Left);
             this.m_lvEx.Columns.Add("Cycle4Rx", 80, HorizontalAlignment.Left);
-            this.m_lvEx.Columns.Add("FVSTreeFile", 100, HorizontalAlignment.Left);
-            this.m_lvEx.Columns.Add("File Found", 80, HorizontalAlignment.Left);
             this.m_lvEx.Columns.Add("FVStree_DateTimeCreated", 80, HorizontalAlignment.Left);
             this.m_lvEx.Columns.Add("Processor_DateTimeCreated", 80, HorizontalAlignment.Left);
             this.m_lvEx.Columns[COL_CHECKBOX].Width = -2;
@@ -496,25 +489,23 @@ namespace FIA_Biosum_Manager
             }
 
             // link to PRE_FVS_SUMMARY table
+            //@ToDo: Can we use FVSOUt.db directly?
             oDao.CreateTableLink(m_oQueries.m_strTempDbFile,
                 Tables.FVS.DefaultPreFVSSummaryTableName,
                 frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultPreFVSSummaryDbFile,
                 Tables.FVS.DefaultPreFVSSummaryTableName, true);
-            // link to PRE_FVS_COMPUTE table
-            string strComputeDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultPreFVSComputeDbFile;
-            if (System.IO.File.Exists(strComputeDbPath) &&
-                oDao.TableExists(strComputeDbPath, Tables.FVS.DefaultPreFVSComputeTableName))
+            // Check PRE_FVS_COMPUTE table
+            string strFvsOutDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strFvsOutDb)))
             {
-                oDao.CreateTableLink(m_oQueries.m_strTempDbFile,
-                    Tables.FVS.DefaultPreFVSComputeTableName,
-                    strComputeDbPath, Tables.FVS.DefaultPreFVSComputeTableName, true);
-            }
-            else
-            {
-                m_bIncludeInactiveStands = false;
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                    frmMain.g_oUtils.WriteText(strDebugFile, "loadvalues(): PRE_FVS_COMPUTE table was not found. Stands with no " +
-                        "activity will not be included in analysis! \r\n");
+                conn.Open();
+                if (!m_oDataMgr.TableExist(conn, Tables.FVS.DefaultPreFVSComputeTableName))
+                {
+                    m_bIncludeInactiveStands = false;
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        frmMain.g_oUtils.WriteText(strDebugFile, "loadvalues(): PRE_FVS_COMPUTE table was not found. Stands with no " +
+                            "activity will not be included in analysis! \r\n");
+                }
             }
 
             oDao.m_DaoDbEngine.Idle(1);
@@ -578,25 +569,28 @@ namespace FIA_Biosum_Manager
                 string[] strVariantsArray = frmMain.g_oUtils.ConvertListToArray(strVariantsList, ",");
                 //find the variants that have tree cut list tables
                 m_lstFVSVariantRxPackage = new List<string>();
-                for (x = 0; x <= strVariantsArray.Length - 1; x++)
+                string strFvsTreeListDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
+                string strFvsTreeListConn = m_oDataMgr.GetConnectionString(strFvsTreeListDb) + ";datetimeformat=CurrentCulture";
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strFvsTreeListConn))
                 {
-                    cmbFilter.Items.Add(strVariantsArray[x].Trim());
-                    for (y = 0; y <= m_oRxPackageItem_Collection.Count - 1; y++)
+                    conn.Open();
+                    for (x = 0; x <= strVariantsArray.Length - 1; x++)
                     {
-                        strTableName = "fvs_tree_IN_" + strVariantsArray[x].Trim() + "_P" + m_oRxPackageItem_Collection.Item(y).RxPackageId + "_TREE_CUTLIST";
-                        if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, strTableName))
+                        cmbFilter.Items.Add(strVariantsArray[x].Trim());
+                        for (y = 0; y <= m_oRxPackageItem_Collection.Count - 1; y++)
                         {
-                            strFVSTreeTableLinkNameList = strFVSTreeTableLinkNameList + strTableName + ",";
-                            m_lstFVSVariantRxPackage.Add(strVariantsArray[x].Trim() + "," + m_oRxPackageItem_Collection.Item(y).RxPackageId);
+                            string strSQL = $@"select count(*) from {Tables.FVS.DefaultFVSCutTreeTableName} 
+                                               WHERE fvs_variant = '{strVariantsArray[x].Trim()}' 
+                                               AND RXPACKAGE = '{m_oRxPackageItem_Collection.Item(y).RxPackageId}'"; 
+                            long lRecordCount = m_oDataMgr.getRecordCount(conn, strSQL, Tables.FVS.DefaultFVSCutTreeTableName);
+                            if (lRecordCount > 0)
+                            {
+                                m_lstFVSVariantRxPackage.Add(strVariantsArray[x].Trim() + "," + m_oRxPackageItem_Collection.Item(y).RxPackageId);
+                            }
                         }
                     }
                 }
-                //load the list into an array
-                if (strFVSTreeTableLinkNameList.Trim().Length > 0)
-                {
-                    strFVSTreeTableLinkNameList=strFVSTreeTableLinkNameList.Substring(0,strFVSTreeTableLinkNameList.Length-1);
-                    m_strFVSTreeTableLinkNameArray = frmMain.g_oUtils.ConvertListToArray(strFVSTreeTableLinkNameList,",");
-                }
+
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(strDebugFile, "END: GetListOfFVSVariantsInPlotTable - " + System.DateTime.Now.ToString() + "\r\n");
 
@@ -613,48 +607,67 @@ namespace FIA_Biosum_Manager
                 }
     
                 //populate the listview object
-                for (x = 0; x <= m_strFVSTreeTableLinkNameArray.Length - 1; x++)
+                string strRxPackage = "";
+                string strCount = "";
+                string strVariant = "";
+                m_oDataMgr.m_Connection = new System.Data.SQLite.SQLiteConnection(strFvsTreeListConn);
+                m_oDataMgr.m_Connection.Open();
+
+                /* Method-level variable indicating that this variant-rxPackage is an inactive combination:
+                 * There are no rows in the fvs_cutlist table */
+                for (x = 0; x <= m_lstFVSVariantRxPackage.Count -1; x++)
                 {
-                    string strRxPackage = "";
-                    string strCount = "";
-                    string strVariant = "";
+                    bool _bInactiveVarRxPackage = false;
+                    string[] arrVariantRxPkg = frmMain.g_oUtils.ConvertListToArray(m_lstFVSVariantRxPackage[x], ",");
                     if (frmMain.g_bSuppressProcessorScenarioTableRowCount == false)
                     {
-                        m_oAdo.m_strSQL = "SELECT rxpackage, fvs_variant,COUNT(*) AS rxpackage_variant_count " +
-                                          "FROM " + m_strFVSTreeTableLinkNameArray[x] + " " +
-                                          "GROUP BY rxpackage,fvs_variant";
+                        m_oDataMgr.m_strSQL = "SELECT rxpackage, fvs_variant,COUNT(*) AS rxpackage_variant_count " +
+                                              "FROM " + Tables.FVS.DefaultFVSCutTreeTableName + 
+                                              " WHERE FVS_VARIANT = '" + arrVariantRxPkg[0] + "' AND" +
+                                              " RXPACKAGE = '" + arrVariantRxPkg[1] + "'" +
+                                              " GROUP BY rxpackage,fvs_variant";
                     }
                     else
                     {
-                        m_oAdo.m_strSQL = "SELECT DISTINCT rxpackage,fvs_variant, 1 AS rxpackage_variant_count FROM " + m_strFVSTreeTableLinkNameArray[x];
+                        m_oDataMgr.m_strSQL = "SELECT DISTINCT rxpackage,fvs_variant, 1 AS rxpackage_variant_count FROM " + Tables.FVS.DefaultFVSCutTreeTableName +
+                                              " WHERE FVS_VARIANT = '" + arrVariantRxPkg[0] + "' AND" +
+                                              " RXPACKAGE = '" + arrVariantRxPkg[1] + "'";
                     }
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oAdo.m_strSQL + " "  + System.DateTime.Now.ToString() + "\r\n");
-                    m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                        frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
+                    m_oDataMgr.SqlQueryReader(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(strDebugFile, "END SQL " + System.DateTime.Now.ToString() + "\r\n");
-
-                    /* Method-level variable indicating that this variant-rxPackage is an inactive combination:
-                     * There are no rows in the fvs_cutlist table */
-                    bool _bInactiveVarRxPackage = false;
-                    if (m_oAdo.m_OleDbDataReader.HasRows)
+                    if (m_oDataMgr.m_DataReader.HasRows)
                     {
-                        while (m_oAdo.m_OleDbDataReader.Read())
+                        while (m_oDataMgr.m_DataReader.Read())
                         {
-                            if (m_oAdo.m_OleDbDataReader["rxpackage"] != System.DBNull.Value)
-                                strRxPackage = m_oAdo.m_OleDbDataReader["rxpackage"].ToString().Trim();
-                            if (m_oAdo.m_OleDbDataReader["fvs_variant"] != System.DBNull.Value)
-                                strVariant = m_oAdo.m_OleDbDataReader["fvs_variant"].ToString().Trim();
-                            if (m_oAdo.m_OleDbDataReader["rxpackage_variant_count"] != System.DBNull.Value)
-                                strCount = m_oAdo.m_OleDbDataReader["rxpackage_variant_count"].ToString().Trim();
+                            if (m_oDataMgr.m_DataReader["rxpackage"] != System.DBNull.Value)
+                                strRxPackage = m_oDataMgr.m_DataReader["rxpackage"].ToString().Trim();
+                            if (m_oDataMgr.m_DataReader["fvs_variant"] != System.DBNull.Value)
+                                strVariant = m_oDataMgr.m_DataReader["fvs_variant"].ToString().Trim();
+                            if (m_oDataMgr.m_DataReader["rxpackage_variant_count"] != System.DBNull.Value)
+                                strCount = m_oDataMgr.m_DataReader["rxpackage_variant_count"].ToString().Trim();
                         }
-                        m_oAdo.m_OleDbDataReader.Dispose();
                     }
                     else if (m_bIncludeInactiveStands == true)
                     {
-                        string[] arrVariantRxPkg = frmMain.g_oUtils.ConvertListToArray(m_lstFVSVariantRxPackage[x],",");
-                        int count = m_oAdo.getRecordCount(m_oAdo.m_OleDbConnection, "SELECT COUNT(*) FROM " + Tables.FVS.DefaultPreFVSComputeTableName + " WHERE fvs_variant = '" +
-                                        arrVariantRxPkg[0] + "' AND rxpackage = '" + arrVariantRxPkg[1] + "'", Tables.FVS.DefaultPreFVSComputeTableName);
+                        m_oDataMgr.m_Connection.Close();
+                        m_oDataMgr.m_Connection = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strFvsOutDb));
+                        m_oDataMgr.m_Connection.Open();
+                        string strRunTitle = "";
+                        foreach (RxPackageItem item in m_oRxPackageItem_Collection)
+                        {
+                            if (item.RxPackageId.Equals(arrVariantRxPkg[1]))
+                            {
+                                strRunTitle = $@"FVSOUT_{arrVariantRxPkg[0]}_P{arrVariantRxPkg[1]}-{item.SimulationYear1Rx}-{item.SimulationYear2Rx}-{item.SimulationYear3Rx}-{item.SimulationYear4Rx}";
+                                break;
+                            }
+                        }
+                        //@ToDo: Do we need to add rxyear as a filter? This returns more rows than are in MS Access compute table
+                        string strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultPreFVSComputeTableName} AS s, FVS_Cases c
+                                            WHERE s.CaseID = c.CaseID and c.RunTitle = '{strRunTitle}'";
+                        long count = m_oDataMgr.getRecordCount(m_oDataMgr.m_Connection, strSQL, Tables.FVS.DefaultPreFVSComputeTableName);
                         if (count > 0)
                         {
                             strVariant = arrVariantRxPkg[0];
@@ -662,6 +675,9 @@ namespace FIA_Biosum_Manager
                             strCount = "1";
                             _bInactiveVarRxPackage = true;
                         }
+                        m_oDataMgr.m_Connection.Close();
+                        m_oDataMgr.m_Connection = new System.Data.SQLite.SQLiteConnection(strFvsTreeListConn);
+                        m_oDataMgr.m_Connection.Open();
                     }
 
                     if (!String.IsNullOrEmpty(strVariant))
@@ -802,20 +818,18 @@ namespace FIA_Biosum_Manager
                             else
                                 entryListItem.SubItems.Add("000");
 
-                            entryListItem.SubItems.Add(strVariant + "_P" + strRxPackage + "_tree_cutlist.mdb");  //out mdb file
-                            entryListItem.SubItems.Add("Found");  //file found
                             //fvstree processing date and time variant,rxpackage
                             string strFvsTreeDateCreated = " ";
                             if (_bInactiveVarRxPackage == false)
                             {
-                                m_oAdo.m_strSQL = "SELECT DISTINCT DateTimeCreated " +
-                                              "FROM " + m_strFVSTreeTableLinkNameArray[x] + " t " +
-                                              "WHERE t.rxpackage='" + strRxPackage + "'";
+                                m_oDataMgr.m_strSQL = "SELECT DISTINCT DateTimeCreated " +
+                                              "FROM " + Tables.FVS.DefaultFVSCutTreeTableName + " t " +
+                                              "WHERE t.fvs_variant ='" + strVariant + "' and t.rxpackage='" + strRxPackage + "'";
 
                                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                    frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oAdo.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
+                                    frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
 
-                                strFvsTreeDateCreated = (string)m_oAdo.getSingleStringValueFromSQLQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL, "temp");
+                                strFvsTreeDateCreated = (string)m_oDataMgr.getSingleStringValueFromSQLQuery(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL, "temp");
 
                                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                     frmMain.g_oUtils.WriteText(strDebugFile, "END SQL: " + System.DateTime.Now.ToString() + "\r\n");
@@ -880,11 +894,12 @@ namespace FIA_Biosum_Manager
                         else
                         {
                             //did not find package item so display error
-                            strErrMsg = strErrMsg + "Table " + m_strFVSTreeTableLinkNameArray[x] + " contains RXPACKAGE: " + strRxPackage + " but " + strRxPackage + " is not a defined package. \r\n";
+                            strErrMsg = strErrMsg + "Table " + Tables.FVS.DefaultFVSCutTreeTableName + " contains RXPACKAGE: " + strRxPackage + " but " + strRxPackage + " is not a defined package. \r\n";
                         }
                     }
 
                 }
+                m_oDataMgr.m_Connection.Close();
                 if (strErrMsg.Trim().Length > 0)
                 {
                     MessageBox.Show("Error loading Processor Scenario run list \r\n" + strErrMsg, "FIA Biosum",MessageBoxButtons.OK,MessageBoxIcon.Error);
