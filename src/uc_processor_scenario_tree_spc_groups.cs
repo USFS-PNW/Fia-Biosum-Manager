@@ -81,6 +81,7 @@ namespace FIA_Biosum_Manager
 		Queries m_oQueries = new Queries();
         RxTools m_oRxTools = new RxTools();
         RxPackageItem_Collection m_oRxPackage_Collection = new RxPackageItem_Collection();
+        ODBCMgr m_odbcMgr = new ODBCMgr();
 
         string[] m_strFVSVariantsArray = null;
 
@@ -114,10 +115,6 @@ namespace FIA_Biosum_Manager
             //m_oQueries.m_oFIAPlot.LoadDatasource = true;
             m_oQueries.LoadDatasources(true);
             m_oRxTools.LoadAllRxPackageItems(m_oRxPackage_Collection);
-
-
-            //create links to all the fvstree tables
-            this.m_oRxTools.CreateTableLinksToFVSOutTreeListTables(m_oQueries, m_oQueries.m_strTempDbFile);
 
             this.m_ado = new ado_data_access();
             spc_common_name_collection1 = new spc_common_name_collection();
@@ -800,12 +797,23 @@ namespace FIA_Biosum_Manager
             //append the multiple fvsout tree tables into a single fvsout tree table
             List<string> strSqlCommandList;
 
+            // Link to FVSOUT_TREE_LIST.db
+            if (!m_ado.TableExist(m_ado.m_OleDbConnection, Tables.FVS.DefaultFVSCutTreeTableName))
+            {
+                dao_data_access oDao = new dao_data_access();
+                oDao.CreateSQLiteTableLink(m_ado.m_OleDbConnection.DataSource, Tables.FVS.DefaultFVSCutTreeTableName, Tables.FVS.DefaultFVSCutTreeTableName,
+                    ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                    Tables.FVS.DefaultFVSTreeListDbFile);
+                oDao.m_DaoWorkspace.Close();
+                oDao = null;
+                // Sleep to ensure table link is complete
+                System.Threading.Thread.Sleep(5000);
+            }
+
             strSqlCommandList = Queries.Processor.AuditFvsOut_SelectIntoUnionOfFVSTreeTablesUsingListArray(
                 m_ado,
                 m_ado.m_OleDbConnection,
                 "fvsouttreetemp2",
-                 m_oRxPackage_Collection,
-                 m_strFVSVariantsArray,
                 "fvs_tree_id,fvs_variant,fvs_species,FvsCreatedTree_YN,biosum_cond_id");
 
             for (x = 0; x <= strSqlCommandList.Count - 1; x++)

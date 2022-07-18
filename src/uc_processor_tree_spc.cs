@@ -34,7 +34,8 @@ namespace FIA_Biosum_Manager
 		private string m_strSiteTreeTable;
 		private string m_strTempMDBFile;
 		private FIA_Biosum_Manager.ado_data_access m_ado;
-		private string m_strConn;
+        private ODBCMgr m_odbcmgr = new ODBCMgr();
+        private string m_strConn;
 		private System.Data.DataView m_dv;
 		public int m_intIndex=0;
 		private int m_intCurrRow=0;
@@ -118,10 +119,7 @@ namespace FIA_Biosum_Manager
 			m_oQueries.LoadDatasources(true);
 
 			this.m_strTempMDBFile = m_oQueries.m_oDataSource.CreateMDBAndTableDataSourceLinks();
-            m_oRxTools.LoadAllRxPackageItems(m_oRxPackageItem_Collection);
-			this.m_oRxTools.CreateTableLinksToFVSOutTreeListTables(m_oQueries,m_strTempMDBFile);
-
-			
+            m_oRxTools.LoadAllRxPackageItems(m_oRxPackageItem_Collection);			
 			this.m_ado = new ado_data_access();
 			this.m_strConn = this.m_ado.getMDBConnString(this.m_oQueries.m_strTempDbFile,"","");
 			this.m_ado.OpenConnection(this.m_strConn);
@@ -2577,18 +2575,33 @@ namespace FIA_Biosum_Manager
 
             frmMain.g_oFrmMain.ActivateStandByAnimation(this.ParentForm.WindowState,
                 this.ParentForm.Left, this.ParentForm.Height, this.ParentForm.Width, this.ParentForm.Top);
-			
-			string strTreeListTable = "";
-			string strTreeListFile = "";
-            
-            List<string> strSqlCommandList;
 
-			strSqlCommandList = Queries.Processor.AuditFvsOut_SelectIntoUnionOfFVSTreeTablesUsingListArray(
+            // Set up an ODBC DSN for the FVSOUT_TREE_LIST.db
+            if (m_odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName))
+            {
+                m_odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName);
+            }
+            m_odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName,
+                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                Tables.FVS.DefaultFVSTreeListDbFile);
+            // Link to FVSOUT_TREE_LIST.db
+            if (!oAdo.TableExist(oAdo.m_OleDbConnection, Tables.FVS.DefaultFVSCutTreeTableName))
+            {
+                dao_data_access oDao = new dao_data_access();
+                oDao.CreateSQLiteTableLink(oAdo.m_OleDbConnection.DataSource, Tables.FVS.DefaultFVSCutTreeTableName, Tables.FVS.DefaultFVSCutTreeTableName,
+                    ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                    Tables.FVS.DefaultFVSTreeListDbFile);
+                oDao.m_DaoWorkspace.Close();
+                oDao = null;
+                // Sleep to ensure table link is complete
+                System.Threading.Thread.Sleep(5000);
+            }
+
+            List<string> strSqlCommandList;
+            strSqlCommandList = Queries.Processor.AuditFvsOut_SelectIntoUnionOfFVSTreeTablesUsingListArray(
                 oAdo,
                 oAdo.m_OleDbConnection,
                 "fvsouttreetemp2",
-                m_oRxPackageItem_Collection,
-                m_strFVSVariantsArray,
                 "fvs_tree_id,fvs_variant,fvs_species,biosum_cond_id");
 			
             for (x = 0; x <= strSqlCommandList.Count - 1; x++)
@@ -3058,8 +3071,6 @@ namespace FIA_Biosum_Manager
                 oAdo,
                 oAdo.m_OleDbConnection,
                 "fvsouttreetemp2",
-                m_oRxPackageItem_Collection,
-                m_strFVSVariantsArray,
                 "fvs_tree_id,fvs_species,biosum_cond_id");
 
             for (x = 0; x <= strSqlCommandList.Count - 1; x++)

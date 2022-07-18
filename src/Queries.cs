@@ -4671,47 +4671,25 @@ namespace FIA_Biosum_Manager
 				return strSql;
 				
 			}
-            public static List<string> AuditFvsOut_SelectIntoUnionOfFVSTreeTablesUsingListArray(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strIntoTable, RxPackageItem_Collection p_oRxPackageItem_Collection, string[] p_strFVSVariantsArray, string p_strColumnList)
+            public static List<string> AuditFvsOut_SelectIntoUnionOfFVSTreeTablesUsingListArray(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strIntoTable, string p_strColumnList)
             {
                 List<string> strList = new List<string>();
-
-                string strTable = "";
-
                 string strSql = "";
-                int x, y;
-                for (x = 0; x <= p_strFVSVariantsArray.Length - 1; x++)
+
+                // This is an update from the original implementation when all the cut lists were in separate databases
+                // No more need to generate multiple sql statements by variant, rxpackage
+                if (p_oAdo.TableExist(p_oConn, Tables.FVS.DefaultFVSCutTreeTableName))
                 {
-                    for (y = 0; y <= p_oRxPackageItem_Collection.Count - 1; y++)
+                    strSql = $@"SELECT count(*) FROM {Tables.FVS.DefaultFVSCutTreeTableName}";
+                    long lngCount = p_oAdo.getRecordCount(p_oAdo.m_OleDbConnection, strSql, Tables.FVS.DefaultFVSCutTreeTableName);
+                    if (lngCount > 0)
                     {
-                        
-                        if (p_oAdo.TableExist(p_oConn, "fvs_tree_IN_" + p_strFVSVariantsArray[x].Trim() + "_P" + p_oRxPackageItem_Collection.Item(y).RxPackageId + "_TREE_CUTLIST"))
-                        {
-                            if (strTable.Trim().Length > 0)
-                            {
-                                strTable = "fvs_tree_IN_" + p_strFVSVariantsArray[x].Trim() + "_P" + p_oRxPackageItem_Collection.Item(y).RxPackageId + "_TREE_CUTLIST";
-                                strSql = "INSERT INTO " + p_strIntoTable + " (" + p_strColumnList + ") " +
-                                         "SELECT DISTINCT " + p_strColumnList + " " +
-                                         "FROM " + strTable;
-
-                               
-                            }
-                            else
-                            {
-
-                                strTable = "fvs_tree_IN_" + p_strFVSVariantsArray[x].Trim() + "_P" + p_oRxPackageItem_Collection.Item(y).RxPackageId + "_TREE_CUTLIST";
-
-                                strSql = "SELECT DISTINCT " + p_strColumnList + " " +
-                                         "INTO " + p_strIntoTable + " " +
-                                         "FROM " + strTable;
-                               
-                            }
-                            strList.Add(strSql);
-                            
-                        }
-                    }
+                        strSql = $@"SELECT DISTINCT { p_strColumnList}
+                        INTO {p_strIntoTable} FROM {Tables.FVS.DefaultFVSCutTreeTableName}";
+                        strList.Add(strSql);
+                    }                           
                 }
                 return strList;
-
             }
 			
 		}

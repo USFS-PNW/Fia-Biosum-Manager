@@ -489,7 +489,8 @@ namespace FIA_Biosum_Manager
             }
 
             // link to PRE_FVS_SUMMARY table
-            //@ToDo: Can we use FVSOUt.db directly?
+            //@ToDo: Can we use FVSOUt.db directly? This is complicated by needing the sequence numbers
+            // later on. Leaving it here for now.
             oDao.CreateTableLink(m_oQueries.m_strTempDbFile,
                 Tables.FVS.DefaultPreFVSSummaryTableName,
                 frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultPreFVSSummaryDbFile,
@@ -516,14 +517,14 @@ namespace FIA_Biosum_Manager
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(strDebugFile, "END: Create Links to the Scenario tables - " + System.DateTime.Now.ToString() + "\r\n");
 
-            //
-            //CREATE LINK IN TEMP MDB TO ALL VARIANT CUTLIST TABLES
-            //
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(strDebugFile, "START: CreateTableLinksToFVSOutTreeListTables - " + System.DateTime.Now.ToString() + "\r\n");
-            m_oRxTools.CreateTableLinksToFVSOutTreeListTables(m_oQueries, m_oQueries.m_strTempDbFile);
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(strDebugFile, "END: CreateTableLinksToFVSOutTreeListTables - " + System.DateTime.Now.ToString() + "\r\n");
+            ////
+            ////CREATE LINK IN TEMP MDB TO ALL VARIANT CUTLIST TABLES
+            ////
+            //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //    frmMain.g_oUtils.WriteText(strDebugFile, "START: CreateTableLinksToFVSOutTreeListTables - " + System.DateTime.Now.ToString() + "\r\n");
+            //m_oRxTools.CreateTableLinksToFVSOutTreeListTables(m_oQueries, m_oQueries.m_strTempDbFile);
+            //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //    frmMain.g_oUtils.WriteText(strDebugFile, "END: CreateTableLinksToFVSOutTreeListTables - " + System.DateTime.Now.ToString() + "\r\n");
             //
             //OPEN CONNECTION TO TEMP DB FILE
             //
@@ -3518,13 +3519,12 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
             m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
 
-            string strTable = "fvs_tree_IN_" + p_strVariant + "_P" + p_strRxPackage + "_TREE_CUTLIST";
             m_oAdo.m_strSQL = "DROP TABLE temp_year";
             if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, "temp_year"))
                 m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
             m_oAdo.m_strSQL = "SELECT DISTINCT biosum_cond_id+rxpackage+rx+rxcycle AS STAND,RXYEAR " +
                               "INTO temp_year " +
-                              "FROM " + strTable;
+                              "FROM " + Tables.FVS.DefaultFVSCutTreeTableName;
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
             m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
@@ -5427,7 +5427,7 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oDelegate.SetControlPropertyValue(lblMsg, "Text", "Creating OpCost Input...Stand By");
                             y++;
                             frmMain.g_oDelegate.SetControlPropertyValue(ReferenceProgressBarEx, "Value", y);
-                            m_intError = mainProcessor.CreateOpcostInput(strVariant);
+                            m_intError = mainProcessor.CreateOpcostInput(strVariant, strRxPackage);
 
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             {

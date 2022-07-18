@@ -31,6 +31,15 @@ namespace FIA_Biosum_Manager
             m_strScenarioId = strScenarioId;
             m_bUsingSqlite = bUsingSqlite;
             m_oAdo = oAdo;
+            ODBCMgr odbcmgr = new ODBCMgr();
+            // Set up an ODBC DSN for the FVSOUT_TREE_LIST.db
+            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName))
+            {
+                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName);
+            }
+            odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName,
+                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + 
+                Tables.FVS.DefaultFVSTreeListDbFile);
             if (m_bUsingSqlite)
             {
                 m_oDataMgr = new SQLite.ADO.DataMgr();
@@ -45,7 +54,6 @@ namespace FIA_Biosum_Manager
                 m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, strSql);
                 // Set up an ODBC DSN for the temp database
                 // Check to see if the input SQLite DSN exists and if so, delete so we can add
-                ODBCMgr odbcmgr = new ODBCMgr();
                 if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName))
                 {
                     odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName);
@@ -178,6 +186,19 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//Variant: " + p_strVariant + " Package: " + p_strRxPackage + "\r\n");
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
+            // Link to FVSOUT_TREE_LIST.db
+            if (!m_oAdo.TableExist(m_oAdo.m_OleDbConnection, Tables.FVS.DefaultFVSCutTreeTableName))
+            {
+                dao_data_access oDao = new dao_data_access();
+                oDao.CreateSQLiteTableLink(m_oAdo.m_OleDbConnection.DataSource, Tables.FVS.DefaultFVSCutTreeTableName, Tables.FVS.DefaultFVSCutTreeTableName,
+                    ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                    Tables.FVS.DefaultFVSTreeListDbFile);
+                oDao.m_DaoWorkspace.Close();
+                oDao = null;
+                // Sleep to ensure table link is complete
+                System.Threading.Thread.Sleep(5000);
+            }
+
             //Load prescriptions into reference dictionary
             m_prescriptions = LoadPrescriptions(p_strRxTableName);
             //Load diameter variables into reference object
@@ -191,32 +212,21 @@ namespace FIA_Biosum_Manager
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "loadTrees: Diameter Variables in Use: " + m_scenarioHarvestMethod.ToString() + "\r\n");
             
-            string strTableName = "fvs_tree_IN_" + p_strVariant + "_P" + p_strRxPackage + "_TREE_CUTLIST";
-
             if (m_oAdo.m_intError == 0)
             {
-                //string strSQL = "SELECT z.biosum_cond_id, c.biosum_plot_id, z.rxCycle, z.rx, z.rxYear, " +
-                //                "z.dbh, z.tpa, z.volCfNet, z.drybiot, z.drybiom,z.FvsCreatedTree_YN, " +
-                //                "z.fvs_tree_id, z.fvs_species, z.volTsGrs, z.volCfGrs, " +
-                //                "c.slope, p.elev, p.gis_yard_dist_ft, min(t.travel_time) as travel_time " +
-                //                  "FROM " + strTableName + " z, cond c, plot p, travel_time t " +
-                //                  "WHERE z.rxpackage='" + p_strRxPackage + "' AND " +
-                //                  "z.biosum_cond_id = c.biosum_cond_id AND " +
-                //                  "c.biosum_plot_id = p.biosum_plot_id AND " +
-                //                  "c.biosum_plot_id = t.biosum_plot_id AND " +
-                //                  "mid(z.fvs_tree_id,1,2)='" + p_strVariant + "' AND " +
-                //                  "t.travel_time > 0" +
-                //                  " group by z.biosum_cond_id, c.biosum_plot_id, z.rxCycle, z.rx, z.rxYear, " +
-                //                  "z.dbh, z.tpa, z.volCfNet, z.drybiot, z.drybiom,z.FvsCreatedTree_YN, " +
-                //                  "z.fvs_tree_id, z.fvs_species, z.volTsGrs, z.volCfGrs, " +
-                //                  "c.slope, p.elev, p.gis_yard_dist_ft";
+                //string strSQL = "SELECT z.biosum_cond_id, c.biosum_plot_id, z.rxCycle, z.rx, z.rxYear, z.dbh, z.tpa, 
+                //z.volCfNet, z.drybiot, z.drybiom,z.FvsCreatedTree_YN, z.fvs_tree_id, z.fvs_species, z.volTsGrs, z.volCfGrs, 
+                //c.slope, c.elev, c.gis_yard_dist_ft FROM FVS_CutTree z, (SELECT p.biosum_plot_id,p.gis_yard_dist_ft,p.elev,
+                //d.biosum_cond_id,d.slope FROM plot p 
+                //INNER JOIN cond d ON p.biosum_plot_id = d.biosum_plot_id) c 
+                //WHERE z.rxpackage='001' AND z.fvs_variant = 'BM' AND z.biosum_cond_id = c.biosum_cond_id AND dbh > 1.0"
                 string strSQL = "SELECT z.biosum_cond_id, c.biosum_plot_id, z.rxCycle, z.rx, z.rxYear, z.dbh, z.tpa, " +
                                 "z.volCfNet, z.drybiot, z.drybiom,z.FvsCreatedTree_YN, z.fvs_tree_id, " +
                                 "z.fvs_species, z.volTsGrs, z.volCfGrs, c.slope, c.elev, c.gis_yard_dist_ft " +
-                                "FROM " + strTableName + " z, " +
+                                "FROM " + Tables.FVS.DefaultFVSCutTreeTableName + " z, " +
                                 "(SELECT p.biosum_plot_id,p.gis_yard_dist_ft,p.elev,d.biosum_cond_id,d.slope FROM " +
                                 p_strPlotTableName + " p INNER JOIN " + p_strCondTableName + " d ON p.biosum_plot_id = d.biosum_plot_id) c " +
-                                "WHERE z.rxpackage='" + p_strRxPackage + "' AND " +
+                                "WHERE z.rxpackage='" + p_strRxPackage + "' AND z.fvs_variant = '" + p_strVariant + "' AND " +
                                 "z.biosum_cond_id = c.biosum_cond_id AND dbh > 1.0";
                 m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
                 if (m_oAdo.m_OleDbDataReader.HasRows)
@@ -430,9 +440,8 @@ namespace FIA_Biosum_Manager
             //Query TREE table to get original FIA species codes
             if (m_oAdo.m_intError == 0)
             {
-            string strTableName = "fvs_tree_IN_" + p_strVariant + "_P" + p_strRxPackage + "_TREE_CUTLIST";
             string strSQL = "SELECT DISTINCT t.fvs_tree_id, t.biosum_cond_id, t.spcd " +
-                    "FROM " + p_strTreeTableName + " t, " + strTableName + " z " +
+                    "FROM " + p_strTreeTableName + " t, " + Tables.FVS.DefaultFVSCutTreeTableName + " z " +
                     "WHERE t.fvs_tree_id = z.fvs_tree_id " +
                     "AND t.biosum_cond_id = z.biosum_cond_id " +
                     "AND z.rxpackage='" + p_strRxPackage + "' " +
@@ -645,7 +654,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        public int CreateOpcostInput(string p_strVariant)
+        public int CreateOpcostInput(string p_strVariant, string p_strRxPackage)
         {
             int intReturnVal = -1;
             int intHwdSpeciesCodeThreshold = 299; // Species codes greater than this are hardwoods
@@ -760,7 +769,7 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "createOpcostInput: Load Basal Area for all conditions from PRE_FVS_SUMMARY - " + System.DateTime.Now.ToString() + "\r\n");
 
-                System.Collections.Generic.IDictionary<string, double> dictFvsPreBasalArea = this.LoadFvsPreBasalArea(p_strVariant);
+                System.Collections.Generic.IDictionary<string, double> dictFvsPreBasalArea = this.LoadFvsPreBasalArea(p_strVariant, p_strRxPackage);
 
                 if (dictFvsPreBasalArea.Keys.Count == 0)
                 {
@@ -3102,7 +3111,7 @@ namespace FIA_Biosum_Manager
             return dictTravelTimes;
         }
 
-        private System.Collections.Generic.IDictionary<String, double> LoadFvsPreBasalArea(string p_strVariant)
+        private System.Collections.Generic.IDictionary<String, double> LoadFvsPreBasalArea(string p_strVariant, string p_strRxPackage)
         {
             System.Collections.Generic.IDictionary<String, double> dictPreBasalArea =
                 new System.Collections.Generic.Dictionary<String, double>();
@@ -3110,7 +3119,7 @@ namespace FIA_Biosum_Manager
             {
                 string strSQL = "SELECT TRIM(biosum_cond_id) + TRIM(rxpackage)  + TRIM(rx) + TRIM(rxcycle) as [OpCostStandId], BA" +
                                 " FROM " + Tables.FVS.DefaultPreFVSSummaryTableName + 
-                                " WHERE fvs_variant = '" + p_strVariant + "'";
+                                " WHERE fvs_variant = '" + p_strVariant + "' and rxpackage = '" + p_strRxPackage + "'" ;
                 m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
                 if (m_oAdo.m_OleDbDataReader.HasRows)
                 {
