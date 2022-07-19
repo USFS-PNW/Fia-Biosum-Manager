@@ -2235,17 +2235,6 @@ namespace FIA_Biosum_Manager
 		{
 
 		}
-		public string CreateTableLinksToFVSOutTreeListTables()
-		{
-			Queries oQueries = new Queries();
-			oQueries.m_oFvs.LoadDatasource=true;
-			oQueries.m_oFIAPlot.LoadDatasource=true;
-			oQueries.LoadDatasources(true);
-			CreateTableLinksToFVSOutTreeListTables(oQueries,oQueries.m_strTempDbFile);
-			string strFile = oQueries.m_strTempDbFile;
-			oQueries = null;
-			return strFile;
-		}
 		public void CreateTableLinksToFVSOutTreeListTables(Queries p_oQueries,string p_strDbFile)
 		{
 			

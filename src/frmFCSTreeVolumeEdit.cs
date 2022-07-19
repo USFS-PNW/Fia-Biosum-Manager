@@ -153,8 +153,9 @@ namespace FIA_Biosum_Manager
 
     
 
-    private ado_data_access m_oAdo = new ado_data_access();
-    private int m_intError = 0;
+        private ado_data_access m_oAdo = new ado_data_access();
+        private ODBCMgr m_odbcMgr = new ODBCMgr();
+        private int m_intError = 0;
         private ComboBox cboDiaHtCd;
         private Label label22;
         private string m_strError;
@@ -189,13 +190,21 @@ namespace FIA_Biosum_Manager
           m_oQueries.m_oFvs.LoadDatasource = true;
           m_oQueries.m_oFIAPlot.LoadDatasource = true;
           m_oQueries.LoadDatasources(true);
+          // Set up an ODBC DSN for the FVSOUT_TREE_LIST.db
+          if (m_odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName))
+          {
+            m_odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName);
+          }
+          m_odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName,
+               frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+               Tables.FVS.DefaultFVSTreeListDbFile);
           m_strTempDBFile = m_oQueries.m_strTempDbFile;
           oDao.CreateTableLink(m_strTempDBFile, "treesample", frmMain.g_oEnv.strAppDir + "\\db\\treesample.accdb", "treesample");
+          oDao.CreateSQLiteTableLink(m_strTempDBFile, Tables.FVS.DefaultFVSCutTreeTableName, Tables.FVS.DefaultFVSCutTreeTableName,
+            ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+            Tables.FVS.DefaultFVSTreeListDbFile);
+
           oDao.m_DaoWorkspace.Close();
-          //
-          //CREATE LINK IN TEMP MDB TO ALL VARIANT FVS_CUTLIST TABLES
-          //
-          m_oRxTools.CreateTableLinksToFVSOutTreeListTables(m_oQueries, m_oQueries.m_strTempDbFile);
 
           //
           //CREATE LINK IN TEMP MDB TO ALL VARIANT & PACKAGE FVS_SUMMARY TABLES
@@ -210,28 +219,10 @@ namespace FIA_Biosum_Manager
 
           if (m_oAdo.m_intError == 0)
           {
-              RxPackageItem_Collection oRxPackageItemCollection = new RxPackageItem_Collection();
-              m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_oAdo, m_oAdo.m_OleDbConnection, m_oQueries, oRxPackageItemCollection);
-              //
-              //GET LIST OF VARIANTS
-              //
-              string strVariantsList = m_oRxTools.GetListOfFVSVariantsInPlotTable(m_oAdo, m_oAdo.m_OleDbConnection, m_oQueries.m_oFIAPlot.m_strPlotTable);
-              string[] strVariantsArray = frmMain.g_oUtils.ConvertListToArray(strVariantsList, ",");
-              if (strVariantsArray != null && strVariantsArray[0] != null)
-              {
-                  //find the variants that have tree cut list tables
-                  for (x = 0; x <= strVariantsArray.Length - 1; x++)
-                  {
-                      for (y = 0; y <= oRxPackageItemCollection.Count - 1; y++)
-                      {
-                          strTableName = "fvs_tree_IN_" + strVariantsArray[x].Trim() + "_P" + oRxPackageItemCollection.Item(y).RxPackageId + "_TREE_CUTLIST";
-                          if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, strTableName))
-                          {
-                              strFVSTreeTableLinkNameList = strFVSTreeTableLinkNameList + strTableName + ",";
-                          }
-                      }
-                  }
-              }
+            if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, Tables.FVS.DefaultFVSCutTreeTableName))
+            {
+                  strFVSTreeTableLinkNameList = Tables.FVS.DefaultFVSCutTreeTableName + ",";
+            }
               cmbDatasource.Items.Clear();
               cmbDatasource.Items.Add("Tree Sample");
               cmbDatasource.Items.Add("Tree Table");
@@ -245,11 +236,6 @@ namespace FIA_Biosum_Manager
                       cmbDatasource.Items.Add(m_strFVSTreeTableLinkNameArray[x].Trim());
                   }
               }
-
-              
-             
-              oRxPackageItemCollection.Clear();
-              oRxPackageItemCollection = null;
           }
       }
       else
@@ -1833,11 +1819,11 @@ namespace FIA_Biosum_Manager
         else
         {
            
-            LoadFVSOutTrees(cmbDatasource.Text.Trim().Substring(16,3));
+            LoadFVSOutTrees();
             
         }
     }
-    private void LoadFVSOutTrees(string p_strRxPackage)
+    private void LoadFVSOutTrees()
     {
         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
         {
@@ -1868,17 +1854,13 @@ namespace FIA_Biosum_Manager
         frmMain.g_oTables.m_oFvs.CreateOracleInputFCSBiosumVolumesTable(m_oAdo, m_oAdo.m_OleDbConnection, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
 
         var strFvsTreeTable = this.cmbDatasource.Text; //e.g., fvs_tree_IN_BM_P009_TREE_CUTLIST
-        var regex = new Regex(@"fvs_tree_IN_([A-Z]{2})_(P\d{3}).*");
-        var strVariant = regex.Match(strFvsTreeTable).Groups[1];
-        var strPackage = regex.Match(strFvsTreeTable).Groups[2];
-        var strFvsSummaryTable = $"fvs_summary_IN_{strVariant}_{strPackage}"; //e.g., fvs_tree_IN_BM_P009_TREE_CUTLIST
         var strFiaTreeSpeciesRefTableLink = Tables.ProcessorScenarioRun.DefaultFiaTreeSpeciesRefTableName;
 
         if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, "cull_work_table"))
             m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE cull_work_table");
 
         m_oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step1(
-            Tables.VolumeAndBiomass.BiosumVolumesInputTable, cmbDatasource.Text.Trim(),p_strRxPackage);
+            Tables.VolumeAndBiomass.BiosumVolumesInputTable, cmbDatasource.Text.Trim());
         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_oAdo.m_strSQL + "\r\n\r\n");
         m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
@@ -1906,16 +1888,55 @@ namespace FIA_Biosum_Manager
                              SET b.diahtcd=IIF(ref.woodland_yn='N', 1, 2) WHERE b.fvscreatedtree_yn='Y'";
         m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
 
-        //Update FVSCreatedTrees balive=fvs_summary.BA
-        if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, strFvsSummaryTable))
-        {
-            m_oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step2a(
-                Tables.VolumeAndBiomass.BiosumVolumesInputTable, m_oQueries.m_oFIAPlot.m_strPlotTable,
-                m_oQueries.m_oFIAPlot.m_strCondTable, strFvsSummaryTable);
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_oAdo.m_strSQL + "\r\n\r\n");
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-        }
+            //Update FVSCreatedTrees balive=fvs_summary.BA
+            var regex = new Regex(@"fvs_tree_IN_([A-Z]{2})_(P\d{3}).*");
+            var strVariant = regex.Match(strFvsTreeTable).Groups[1];
+            var strPackage = regex.Match(strFvsTreeTable).Groups[2];
+            //var strFvsSummaryTable = $"fvs_summary_IN_{strVariant}_{strPackage}"; //e.g., fvs_tree_IN_BM_P009_TREE_CUTLIST
+
+            //Get the list of variant, rxpackages from FVS_CutTree that have FVS Created trees
+            IDictionary<string, List<string>> dictVariantRxPackage = new Dictionary<string, List<string>>();
+            m_oAdo.m_strSQL = $@"SELECT DISTINCT FVS_VARIANT, RXPACKAGE FROM {strFvsTreeTable} WHERE fvscreatedtree_yn='Y'";
+            m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+            int intRows = 0;
+            if (m_oAdo.m_OleDbDataReader.HasRows)
+            {
+                while (m_oAdo.m_OleDbDataReader.Read())
+                {
+                    string nextVariant = Convert.ToString(m_oAdo.m_OleDbDataReader["FVS_VARIANT"]).Trim();
+                    string nextPackage = Convert.ToString(m_oAdo.m_OleDbDataReader["RXPACKAGE"]).Trim();
+                    if (!dictVariantRxPackage.ContainsKey(nextVariant))
+                    {
+                        List<string> lstPackages = new List<string>();
+                        lstPackages.Add(nextPackage);
+                        dictVariantRxPackage.Add(nextVariant, lstPackages);
+                    }
+                    else
+                    {
+                        List<string> lstPackages = dictVariantRxPackage[nextVariant];
+                        lstPackages.Add(nextPackage);
+                    }
+                    intRows++;
+                }
+            }
+
+            foreach (var keyVariant in dictVariantRxPackage.Keys)
+            {
+                List<string> lstPackages = dictVariantRxPackage[keyVariant];
+                foreach (var rxPkg in lstPackages)
+                {
+                    var strFvsSummaryTable = $"fvs_summary_IN_{keyVariant}_P{rxPkg}"; //e.g., fvs_summary_IN_BM_P009
+                    if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, strFvsSummaryTable))
+                    {
+                        m_oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step2a(
+                            Tables.VolumeAndBiomass.BiosumVolumesInputTable, m_oQueries.m_oFIAPlot.m_strPlotTable,
+                            m_oQueries.m_oFIAPlot.m_strCondTable, strFvsSummaryTable);
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_oAdo.m_strSQL + "\r\n\r\n");
+                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                    }
+                }
+            }
 
         m_oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step3(
             Tables.VolumeAndBiomass.BiosumVolumesInputTable,

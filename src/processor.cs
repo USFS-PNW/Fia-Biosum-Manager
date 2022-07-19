@@ -154,11 +154,18 @@ namespace FIA_Biosum_Manager
             //CREATE LINK IN TEMP MDB TO ALL VARIANT CUTLIST TABLES
             //
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "START: CreateTableLinksToFVSOutTreeListTables - " + System.DateTime.Now.ToString() + "\r\n");
-            RxTools oRxTools = new RxTools();
-            oRxTools.CreateTableLinksToFVSOutTreeListTables(p_oQueries, p_oQueries.m_strTempDbFile);
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "START: Create ODBC DSN for SQLite FVSOUT_TREE_LIST.db - " + System.DateTime.Now.ToString() + "\r\n");
+            ODBCMgr odbcMgr = new ODBCMgr();
+            if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName))
+            {
+                odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName);
+            }
+            odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName,
+                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                Tables.FVS.DefaultFVSTreeListDbFile);
+
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "END: CreateTableLinksToFVSOutTreeListTables - " + System.DateTime.Now.ToString() + "\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "END: Create ODBC DSN for SQLite FVSOUT_TREE_LIST.db - " + System.DateTime.Now.ToString() + "\r\n");
 
             m_oAdo = new ado_data_access();
             m_oAdo.OpenConnection(m_oAdo.getMDBConnString(p_oQueries.m_strTempDbFile, "", ""));

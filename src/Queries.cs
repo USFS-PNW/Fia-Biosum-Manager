@@ -3986,7 +3986,7 @@ namespace FIA_Biosum_Manager
                 {
                     string strColumns = "id,biosum_cond_id,invyr,fvs_variant,spcd,dbh,ht,actualht,cr,fvs_tree_id";
                     string values = "id,biosum_cond_id,CINT(rxyear) AS invyr, fvs_variant, IIF(FvsCreatedTree_YN='Y',CINT(fvs_species),-1) AS spcd, dbh,estht,ht,pctcr,fvs_tree_id ";
-                    return $@"INSERT INTO {p_strInputVolumesTable} ({strColumns}) SELECT {values} FROM {p_strFvsTreeTable} WHERE rxcycle<>'1'";
+                    return $@"INSERT INTO {p_strInputVolumesTable} ({strColumns}) SELECT {values} FROM {p_strFvsTreeTable}";
                 }
 
                 /// <summary>
