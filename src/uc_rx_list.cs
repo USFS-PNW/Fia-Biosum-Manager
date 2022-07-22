@@ -2383,43 +2383,8 @@ namespace FIA_Biosum_Manager
             }
             return false;
         }
-        public void CheckBiosumCalcElementsExist(string p_strVariant, string p_strPackage)
+        public void CheckTreeListDbExist()
         {
-            string strTreeListFile = "";
-            dao_data_access oDao = new dao_data_access();
-            /***********************************************************************
-             **make sure the treelist\variant_tree_cutlist.mdb file exists and that
-             **the fvs_tree table exists
-             ***********************************************************************/
-            //make sure BiosumCalc directory exists
-            if (System.IO.Directory.Exists(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\fvs\\data\\" + p_strVariant + "\\BiosumCalc") == false)
-            {
-                System.IO.Directory.CreateDirectory(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\fvs\\data\\" + p_strVariant + "\\BiosumCalc");
-            }
-
-
-
-            //create BiosumCalc\MDB file if it does not exist
-            strTreeListFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\fvs\\data\\" + p_strVariant + "\\BiosumCalc\\" + p_strVariant + "_P" + p_strPackage + "_TREE_CUTLIST.MDB";
-
-
-            if (System.IO.File.Exists(strTreeListFile) == false)
-            {
-
-                oDao.CreateMDB(strTreeListFile);
-
-
-            }
-            if (oDao.TableExists(strTreeListFile, Tables.FVS.DefaultFVSTreeTableName) == false)
-            {
-                ado_data_access oAdo = new ado_data_access();
-                oAdo.OpenConnection(oAdo.getMDBConnString(strTreeListFile, "", ""));
-                frmMain.g_oTables.m_oFvs.CreateFVSOutProcessorIn(oAdo, oAdo.m_OleDbConnection, Tables.FVS.DefaultFVSTreeTableName);
-                oAdo.CloseConnection(oAdo.m_OleDbConnection);
-            }
-            oDao.m_DaoWorkspace.Close();
-            oDao = null;
-
             // Check for SQLite elements
             DataMgr dataMgr = new DataMgr();
             string strTreeDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;

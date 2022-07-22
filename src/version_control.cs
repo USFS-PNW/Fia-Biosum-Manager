@@ -3357,7 +3357,8 @@ namespace FIA_Biosum_Manager
                 //
                 //create links to variant\BiosumCalc\variant_package_tree_cutlist.mdb files
                 //
-                oRxTools.CreateTableLinksToFVSOutTreeListTables(oQueries, oQueries.m_strTempDbFile);
+                // 29-JUL-2022: No longer valid method
+                //oRxTools.CreateTableLinksToFVSOutTreeListTables(oQueries, oQueries.m_strTempDbFile);
                 //
                 //reopen the work file containing the links
                 //

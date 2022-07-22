@@ -2851,28 +2851,9 @@ namespace FIA_Biosum_Manager
                             UpdateTherm(m_frmTherm.progressBar1,
                                          m_intProgressStepCurrentCount,
                                          m_intProgressStepTotalCount);
-                            //
-                            //VARIANT_PACKAGE_TREE_CUTLIST.MDB
-                            //
-                            //strCutListDbFile=Production CutList DbFile 
-                            //strCutListTempDbFile=Work CutList Dbfile in temp folder.
-                            //                     It is a copy of strCutListDbFile that
-                            //                     is copied back to strCutListDbFile if no errors during processing.
 
-
-                            //create treelist\variant folder if it does not exist
-                            string strCutListDbFile = strVariant + "_P" + strPackage + "_TREE_CUTLIST.MDB";
-                            string strCutListDbFilePath = this.txtOutDir.Text.Trim() + "\\" + strVariant + "\\BiosumCalc";
-                            m_oRxTools.CheckBiosumCalcElementsExist(strVariant, strPackage);
-                            //get random file name to be used as the work db file
-                            string strCutListTempDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
-                            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Backing up " + strCutListDbFile);
-                            //copy the production file to the temp folder which will be used as the work db file.
-                            if (m_bDebug && frmMain.g_intDebugLevel > 1)
-                                this.WriteText(m_strDebugFile, "\r\nSTART:Copy production file to work file: Source File Name:" + strCutListDbFile + " Destination File Name:" + strCutListTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
-                            System.IO.File.Copy(strCutListDbFilePath + "\\" + strCutListDbFile, strCutListTempDbFile, true);
-                            if (m_bDebug && frmMain.g_intDebugLevel > 1)
-                                this.WriteText(m_strDebugFile, "\r\nEND:Copy production file to work file: Source File Name:" + strCutListDbFile + " Destination File Name:" + strCutListTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
+                            //create treelist DB if it does not exist
+                            m_oRxTools.CheckTreeListDbExist();
                             m_intProgressStepCurrentCount++;
                             UpdateTherm(m_frmTherm.progressBar1,
                                          m_intProgressStepTotalCount,
@@ -2887,7 +2868,7 @@ namespace FIA_Biosum_Manager
                             
                             if (m_bDebug && frmMain.g_intDebugLevel > 1)
                                 this.WriteText(m_strDebugFile, "\r\nSTART: Create PREPOST DbFile table links " + System.DateTime.Now.ToString() + "\r\n");
-                            RunAppend_CreatePREPOSTDbFileAndTableLinks(strOutDirAndFile, strAuditDbFile, strVariant, m_strFvsTreeTable, strCutListTempDbFile);
+                            RunAppend_CreatePREPOSTDbFileAndTableLinks(strOutDirAndFile, strAuditDbFile, strVariant);
                             if (m_bDebug && frmMain.g_intDebugLevel > 1)
                                 this.WriteText(m_strDebugFile, "\r\nEND: Create PREPOST DbFile table links " + System.DateTime.Now.ToString() + "\r\n");
                            
@@ -2921,17 +2902,14 @@ namespace FIA_Biosum_Manager
                             //
                             //SHOW FILE MONITORS
                             //
-                            if (uc_filesize_monitor1.File.Trim().Length > 0) uc_filesize_monitor1.EndMonitoringFile();
-                            uc_filesize_monitor1.BeginMonitoringFile(strCutListTempDbFile, 2000000000, "2GB");
-                            uc_filesize_monitor1.Information = "The temporary DB file listed above is a copy of the production DB file " + strCutListDbFile; 
 
                             if (m_bDebug && frmMain.g_intDebugLevel > 1)
                                 this.WriteText(m_strDebugFile, "checkpoint 6 \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
 
-                            if (uc_filesize_monitor2.File.Trim().Length == 0)
+                            if (uc_filesize_monitor1.File.Trim().Length == 0)
                             {
-                                uc_filesize_monitor2.BeginMonitoringFile(strPotFireBaseYrDbFile, 2000000000, "2GB");
-                                uc_filesize_monitor2.Information = "Base year potential fire table for variant " + strVariant;
+                                uc_filesize_monitor1.BeginMonitoringFile(strPotFireBaseYrDbFile, 2000000000, "2GB");
+                                uc_filesize_monitor1.Information = "Base year potential fire table for variant " + strVariant;
                             }
 
                             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim());
@@ -3000,7 +2978,7 @@ namespace FIA_Biosum_Manager
                             if (intItemError == 0)
                             {
                                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control) this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim() + " Update " + m_strFvsTreeTable + " table");
-                                RunAppend_UpdateFVSTreeTable(strPackage, strVariant, strRx1, strRx2, strRx3, strRx4, m_strFvsTreeTable, ref intItemError, ref strItemError);
+                                //RunAppend_UpdateFVSTreeTable(strPackage, strVariant, strRx1, strRx2, strRx3, strRx4, m_strFvsTreeTable, ref intItemError, ref strItemError);
 
                                 if (intItemError == 0)
                                 {
@@ -3104,8 +3082,6 @@ namespace FIA_Biosum_Manager
                             }
                             m_dao.DisplayErrors = true;
                             System.Threading.Thread.Sleep(5000);
-                            m_dao.CompactMDB(strCutListTempDbFile);
-                            System.Threading.Thread.Sleep(5000);
 
                             if (intItemError == 0)
                             {
@@ -3115,10 +3091,6 @@ namespace FIA_Biosum_Manager
 
                             if (intItemError == 0)
                             {
-                                if (m_bDebug && frmMain.g_intDebugLevel > 1)
-                                    this.WriteText(m_strDebugFile, "Copy work file back to production file: Source File Name:" + strCutListTempDbFile + " Destination File Name:" + strCutListDbFilePath + "\\" + strCutListDbFile);
-                                System.IO.File.Copy(strCutListTempDbFile, strCutListDbFilePath + "\\" + strCutListDbFile, true);
-
                                 frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "BackColor", Color.DarkGreen);
                                 frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "Completed");
                             }
@@ -3264,9 +3236,7 @@ namespace FIA_Biosum_Manager
        
         private void RunAppend_CreatePREPOSTDbFileAndTableLinks(string p_strFVSOutDbFile, 
                                                       string p_strAuditDbFile,
-                                                      string p_strVariant,
-                                                      string p_strBiosumCutlistTreeTable,
-                                                      string p_strFVSOutCutlistTempDbFile)
+                                                      string p_strVariant)
         {
 
             if (m_bDebug && frmMain.g_intDebugLevel > 1)
@@ -3468,17 +3438,6 @@ namespace FIA_Biosum_Manager
                                 //FVS Output CutList Table
                                 if (strTable == "FVS_CUTLIST" || strTable=="FVS_TREELIST" || strTable=="FVS_ATRTLIST")
                                 {
-                                    oTableLinkItem = new TableLinkItem();
-                                    oTableLinkItem.TableName = p_strBiosumCutlistTreeTable;
-                                    oTableLinkItem.Directory = frmMain.g_oUtils.getDirectory(p_strFVSOutCutlistTempDbFile);
-                                    oTableLinkItem.DbFileName = frmMain.g_oUtils.getFileName(p_strFVSOutCutlistTempDbFile);
-                                    
-                                    //create a temporary link to the FVS_TREE cutlist table
-                                    m_dao.CreateTableLink(oDbFileItem.FullPath,
-                                        p_strBiosumCutlistTreeTable,
-                                        p_strFVSOutCutlistTempDbFile,
-                                        p_strBiosumCutlistTreeTable, true);
-                                    oDbFileItem.TableLinkCollection.Add(oTableLinkItem);
                                     //FVS_Cases table
                                     if (m_dao.m_intError == 0)
                                     {
