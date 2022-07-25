@@ -911,7 +911,7 @@ namespace FIA_Biosum_Manager
                         "[Chip trees average volume(ft3)], [CHIPS Average Density (lbs/ft3)], [CHIPS Hwd Percent], [Small log trees per acre],  " +
                         "[Small log trees MerchAsPctOfTotal], [Small log trees ChipPct_Cat1_3], [Small log trees ChipPct_Cat2_4], " +
                         "[Small log trees ChipPct_Cat5], [Small log trees average volume(ft3)], [Small log trees average density(lbs/ft3)], " +
-                        "[Small log trees hardwood percent], [Large log trees per acre], [Large log trees MerchAsPctOfTotal ], " +
+                        "[Small log trees hardwood percent], [Large log trees per acre], [Large log trees MerchAsPctOfTotal], " +
                         "[Large log trees ChipPct_Cat1_3_4], [Large log trees ChipPct_Cat2], [Large log trees ChipPct_Cat5], " +
                         "[Large log trees average vol(ft3)], [Large log trees average density(lbs/ft3)], [Large log trees hardwood percent], " +
                         "BrushCutTPA, [BrushCutAvgVol], RxPackage_Rx_RxCycle, biosum_cond_id, RxPackage, Rx, RxCycle, Move_In_Hours, " +
