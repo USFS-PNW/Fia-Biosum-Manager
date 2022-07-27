@@ -5685,6 +5685,18 @@ namespace FIA_Biosum_Manager
                                                 this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                                             oDataMgr.SqlNonQuery(conn, "DROP TABLE cutlist_save_tree_species_work_table");
                                         }
+
+                                        // DELETE SEEDLINGS FROM CUTTREE TABLE; RESIDTREE TABLE TBD
+                                        if (strFVSOutTable.Equals(Tables.FVS.DefaultFVSCutTreeTableName))
+                                        {
+                                            oDataMgr.m_strSQL = $@"DELETE FROM {strFVSOutTable} WHERE DBH < 1.0" ;
+                                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                                            oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                                this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                        }
+
                                         // DELETE WORK TABLES
                                         string[] arrDeleteTables = new string[] { Tables.VolumeAndBiomass.BiosumVolumesInputTable,
                                             seqNumWorkTable, "cutlist_rowid_work_table"};
@@ -7150,7 +7162,7 @@ namespace FIA_Biosum_Manager
 
                                 strAuditDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)this.txtOutDir, "Text", false);
                                 strAuditDbFile = strAuditDbFile.Trim();
-                                strAuditDbFile = strAuditDbFile + "\\" + strVariant + "\\BiosumCalc\\PostAudit.accdb";
+                                strAuditDbFile = strAuditDbFile + "\\" + strVariant + "\\PostAudit.accdb";
                                 
                                 
 
@@ -7218,8 +7230,6 @@ namespace FIA_Biosum_Manager
                                     {
                                         oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE tree_fvs_tree_id_work_table");
                                     }
-
-
                                     oAdo.CloseConnection(oAdo.m_OleDbConnection);
                                 }
 
@@ -9608,7 +9618,7 @@ namespace FIA_Biosum_Manager
                 string strAuditDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)this.txtOutDir, "Text", false);
                 strAuditDbFile = strAuditDbFile.Trim();
                 string strVariant = lstFvsOutput.SelectedItems[0].SubItems[COL_VARIANT].Text.Trim();
-                strAuditDbFile = strAuditDbFile + "\\" + strVariant + "\\BiosumCalc\\PostAudit.accdb";
+                strAuditDbFile = strAuditDbFile + "\\" + strVariant + "\\PostAudit.accdb";
 
                 if (System.IO.File.Exists(strAuditDbFile))
                     btnPostAppendAuditDb.Enabled = true;
@@ -10378,7 +10388,7 @@ namespace FIA_Biosum_Manager
             string strAuditDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)this.txtOutDir, "Text", false);
             strAuditDbFile = strAuditDbFile.Trim();
             string strVariant = lstFvsOutput.SelectedItems[0].SubItems[COL_VARIANT].Text.Trim();
-            strAuditDbFile = strAuditDbFile + "\\" + strVariant + "\\BiosumCalc\\PostAudit.accdb";
+            strAuditDbFile = strAuditDbFile + "\\" + strVariant + "\\PostAudit.accdb";
 
             if (System.IO.File.Exists(strAuditDbFile))
             {
