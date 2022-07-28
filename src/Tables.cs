@@ -2675,6 +2675,8 @@ namespace FIA_Biosum_Manager
             {
                 p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "fvs_tree_id");
             }
+            // Note: When fields are added here, they also need to be added in CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL
+            // and the code that decides whether to use that SQL to rebuild the table also needs to be updated.
             public string CreateFVSOutTreeTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
@@ -3555,7 +3557,6 @@ namespace FIA_Biosum_Manager
                     public static string CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL(string p_strTableName)
                     {
                         return "CREATE TABLE " + p_strTableName + " (" +
-                            "FVS_TREE_FILE CHAR(26)," +
                             "COLUMN_NAME CHAR(30)," +
                             "ERROR_DESC CHAR(60)," +
                             "id LONG," +
@@ -3597,9 +3598,17 @@ namespace FIA_Biosum_Manager
                     "drybio_top DOUBLE," +
                     "drybio_sapling DOUBLE," +
                     "drybio_wdld_spp DOUBLE," +
-                            "fvs_tree_id CHAR(10)," +
-                            "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
-                            "DateTimeCreated CHAR(22))";
+                    "treeval INTEGER," +
+                    "mortpa DOUBLE," +
+                    "mdefect INTEGER," +
+                    "bapctile DOUBLE," +
+                    "dg DOUBLE," +
+                    "htg DOUBLE," +
+                    "statuscd INTEGER," +
+                    "decaycd INTEGER," +
+                    "fvs_tree_id CHAR(10)," +
+                    "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
+                    "DateTimeCreated CHAR(22))";
 
                     }
                     /// <summary>
@@ -3613,7 +3622,6 @@ namespace FIA_Biosum_Manager
                     public static string CreateFVSPostAuditCutlistNOTFOUND_ERRORtableSQL(string p_strTableName)
                     {
                         return "CREATE TABLE " + p_strTableName + " (" +
-                            "FVS_TREE_FILE CHAR(26)," +
                             "COLUMN_NAME CHAR(30)," +
                             "NOTFOUND_VALUE CHAR(50)," +
                             "ERROR_DESC CHAR(60)," +
@@ -3650,7 +3658,7 @@ namespace FIA_Biosum_Manager
                     {
                         return "CREATE TABLE " + p_strTableName + " (" +
                           "[INDEX] CHAR(3)," +
-                          "FVS_TREE_FILE CHAR(26)," +
+                          "rxpackage CHAR(3)," +
                           "COLUMN_NAME CHAR(30)," +
                           "NOVALUE_ERROR CHAR(10)," +
                           "NF_IN_COND_TABLE_ERROR CHAR(10)," +
@@ -3675,11 +3683,11 @@ namespace FIA_Biosum_Manager
                     public static string CreateFVSPostAuditCutlistFVSFIA_TREEMATCHINGtableSQL(string p_strTableName, string p_strDescriptionColumnName)
                     {
                         return "CREATE TABLE " + p_strTableName + " (" +
-                            "FVS_TREE_FILE CHAR(26)," +
                             "COLUMN_NAME CHAR(30)," +
                              p_strDescriptionColumnName + " CHAR(100)," +
                             "ID LONG," +
                             "BIOSUM_COND_ID CHAR(25)," +
+                            "RXPACKAGE CHAR(3)," +
                             "RXCYCLE CHAR(1)," +
                             "FVS_TREE_FVS_TREE_ID CHAR(10)," +
                             "FIA_TREE_FVS_TREE_ID CHAR(10)," +

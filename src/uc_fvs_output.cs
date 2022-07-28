@@ -7164,14 +7164,8 @@ namespace FIA_Biosum_Manager
                                 strAuditDbFile = strAuditDbFile.Trim();
                                 strAuditDbFile = strAuditDbFile + "\\" + strVariant + "\\PostAudit.accdb";
                                 
-                                
-
-                                strFvsTreeFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)this.txtOutDir, "Text", false);
-                                strFvsTreeFile = strFvsTreeFile.Trim();
-
-                                strFvsTreeFile = strFvsTreeFile + "\\" + strVariant + "\\BiosumCalc\\" + strVariant + "_P" + strPackage + "_TREE_CUTLIST.MDB";
-
-                                strTableLinkName = strVariant + "_P" + strPackage + "_TREE_CUTLIST";
+                                strFvsTreeFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
+                                strTableLinkName = Tables.FVS.DefaultFVSCutTreeTableName;
 
                                 int intTreeTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("TREE");
                                 int intCondTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("CONDITION");
@@ -7238,11 +7232,21 @@ namespace FIA_Biosum_Manager
                                 if (System.IO.File.Exists(strAuditDbFile) == false)
                                     oDao.CreateMDB(strAuditDbFile);
 
-                                oDao.CreateTableLink(strAuditDbFile, strTableLinkName, strFvsTreeFile, "fvs_tree", false);
+                            ODBCMgr odbcmgr = new ODBCMgr();
+                            // Set up an ODBC DSN for the FVSOUT_TREE_LIST.db
+                            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName))
+                            {
+                                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName);
+                            }
+                            odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName,
+                                strFvsTreeFile);
+                            //oDao.CreateTableLink(strAuditDbFile, strTableLinkName, strFvsTreeFile, "fvs_tree", false);
+                            oDao.CreateSQLiteTableLink(strAuditDbFile, Tables.FVS.DefaultFVSCutTreeTableName, Tables.FVS.DefaultFVSCutTreeTableName,
+                                ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName, strFvsTreeFile);
 
 
-                                //tree table link
-                                oDao.CreateTableLink(strAuditDbFile, m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE],
+                            //tree table link
+                            oDao.CreateTableLink(strAuditDbFile, m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE],
                                                       m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.PATH].Trim() + "\\" +
                                                        m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.MDBFILE].Trim(),
                                                       m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE], true);
@@ -7305,7 +7309,7 @@ namespace FIA_Biosum_Manager
                                     m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE],
                                     m_oQueries.m_oDataSource.m_strDataSource[intCondTable,Datasource.TABLE],
                                     "audit_Post_SUMMARY", strTableLinkName,
-                                    frmMain.g_oUtils.getFileName(strFvsTreeFile));
+                                    strPackage);
 
                                 for (y = 0; y <= sqlArray.Length - 1; y++)
                                 {
@@ -7328,7 +7332,7 @@ namespace FIA_Biosum_Manager
                                     "audit_Post_NOVALUE_ERROR",
                                     "audit_Post_SUMMARY",
                                     strTableLinkName,
-                                    frmMain.g_oUtils.getFileName(strFvsTreeFile));
+                                    strPackage);
                                 
                                 //check if NOVALUE_ERROR table exists
                                 if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_NOVALUE_ERROR") == false)
@@ -7337,7 +7341,7 @@ namespace FIA_Biosum_Manager
                                     oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
 
                                 }
-                            else if (!oAdo.ColumnExist(oAdo.m_OleDbConnection, "audit_Post_NOVALUE_ERROR", "drybio_wdld_spp"))
+                            else if (!oAdo.ColumnExist(oAdo.m_OleDbConnection, "audit_Post_NOVALUE_ERROR", "treeval"))
                             {
                                 // Accommodate new fields for v5.8.10
                                 oAdo.m_strSQL = "DROP TABLE audit_Post_NOVALUE_ERROR";
@@ -7361,7 +7365,7 @@ namespace FIA_Biosum_Manager
                                             m_intProgressStepCurrentCount,
                                             m_intProgressStepTotalCount);
                                 //check if any no value errors
-                                int intRowCount = oAdo.getRecordCount(oAdo.m_OleDbConnection, "SELECT COUNT(*) FROM audit_Post_SUMMARY WHERE TRIM(FVS_TREE_FILE)='" + frmMain.g_oUtils.getFileName(strFvsTreeFile) + "' AND NOVALUE_ERROR IS NOT NULL AND LEN(TRIM(NOVALUE_ERROR)) > 0 AND TRIM(NOVALUE_ERROR) <> 'NA' AND VAL(NOVALUE_ERROR) > 0", "AUDIT_POST_SUMMARY");
+                                int intRowCount = oAdo.getRecordCount(oAdo.m_OleDbConnection, "SELECT COUNT(*) FROM audit_Post_SUMMARY WHERE RXPACKAGE='" + strPackage + "' AND NOVALUE_ERROR IS NOT NULL AND LEN(TRIM(NOVALUE_ERROR)) > 0 AND TRIM(NOVALUE_ERROR) <> 'NA' AND VAL(NOVALUE_ERROR) > 0", "AUDIT_POST_SUMMARY");
                                 if (intRowCount > 0)
                                 {
                                     //insert the new audit records
@@ -7384,7 +7388,7 @@ namespace FIA_Biosum_Manager
                                     "audit_Post_VALUE_ERROR",
                                     "audit_Post_SUMMARY",
                                     strTableLinkName,
-                                    frmMain.g_oUtils.getFileName(strFvsTreeFile));
+                                    strPackage);
 
                                 //check if VALUE_ERROR table exists
 
@@ -7393,7 +7397,7 @@ namespace FIA_Biosum_Manager
                                     oAdo.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("audit_Post_VALUE_ERROR");
                                     oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
                                 }
-                            else if (!oAdo.ColumnExist(oAdo.m_OleDbConnection, "audit_Post_VALUE_ERROR", "drybio_wdld_spp"))
+                            else if (!oAdo.ColumnExist(oAdo.m_OleDbConnection, "audit_Post_VALUE_ERROR", "treeval"))
                             {
                                 // Accommodate new fields for v5.8.10
                                 oAdo.m_strSQL = "DROP TABLE audit_Post_VALUE_ERROR";
@@ -7417,7 +7421,7 @@ namespace FIA_Biosum_Manager
                                             m_intProgressStepCurrentCount,
                                             m_intProgressStepTotalCount);
                                 //check if any no value errors
-                                intRowCount = oAdo.getRecordCount(oAdo.m_OleDbConnection, "SELECT COUNT(*) FROM audit_Post_SUMMARY WHERE TRIM(FVS_TREE_FILE)='" + frmMain.g_oUtils.getFileName(strFvsTreeFile) + "' AND VALUE_ERROR IS NOT NULL AND LEN(TRIM(VALUE_ERROR)) > 0 AND TRIM(VALUE_ERROR) <> 'NA' AND VAL(VALUE_ERROR) > 0 AND TRIM(COLUMN_NAME) <> 'DBH'", "AUDIT_POST_SUMMARY");
+                                intRowCount = oAdo.getRecordCount(oAdo.m_OleDbConnection, "SELECT COUNT(*) FROM audit_Post_SUMMARY WHERE RXPACKAGE='" + strPackage + "' AND VALUE_ERROR IS NOT NULL AND LEN(TRIM(VALUE_ERROR)) > 0 AND TRIM(VALUE_ERROR) <> 'NA' AND VAL(VALUE_ERROR) > 0 AND TRIM(COLUMN_NAME) <> 'DBH'", "AUDIT_POST_SUMMARY");
                                 if (intRowCount > 0)
                                 {
                                     //insert the new audit records
@@ -7441,7 +7445,7 @@ namespace FIA_Biosum_Manager
                                     "audit_Post_NOTFOUND_ERROR",
                                     "audit_Post_SUMMARY",
                                     strTableLinkName,
-                                    frmMain.g_oUtils.getFileName(strFvsTreeFile),
+                                    strPackage,
                                      m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE].Trim(),
                                      m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE].Trim(),
                                      m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE].Trim(),
@@ -7472,7 +7476,7 @@ namespace FIA_Biosum_Manager
                                             m_intProgressStepTotalCount);
                                 //check if any not found in table errors
                                 strSQL = "SELECT COUNT(*) FROM audit_Post_SUMMARY " +
-                                         "WHERE TRIM(FVS_TREE_FILE)='" + frmMain.g_oUtils.getFileName(strFvsTreeFile) + "' AND " + 
+                                         "WHERE rxpackage='" + strPackage + "' AND " + 
                                                "(NF_IN_COND_TABLE_ERROR IS NOT NULL AND LEN(TRIM(NF_IN_COND_TABLE_ERROR)) > 0 AND TRIM(NF_IN_COND_TABLE_ERROR) <> 'NA' AND VAL(NF_IN_COND_TABLE_ERROR) > 0) OR " +
                                                "(NF_IN_PLOT_TABLE_ERROR IS NOT NULL AND LEN(TRIM(NF_IN_PLOT_TABLE_ERROR)) > 0 AND TRIM(NF_IN_PLOT_TABLE_ERROR) <> 'NA' AND VAL(NF_IN_PLOT_TABLE_ERROR) > 0) OR " +
                                                "(NF_IN_RX_TABLE_ERROR IS NOT NULL AND LEN(TRIM(NF_IN_RX_TABLE_ERROR)) > 0 AND TRIM(NF_IN_RX_TABLE_ERROR) <> 'NA' AND VAL(NF_IN_RX_TABLE_ERROR) > 0) OR " +
@@ -7506,7 +7510,7 @@ namespace FIA_Biosum_Manager
                                         "audit_Post_SUMMARY",
                                         strTableLinkName,
                                         m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE].Trim(),
-                                        frmMain.g_oUtils.getFileName(strFvsTreeFile));
+                                        strVariant, strPackage);
 
                                 //check if SPCDCHANGE_WARNING table exists
                                 if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_SPCDCHANGE_WARNING") == false)
@@ -7531,7 +7535,7 @@ namespace FIA_Biosum_Manager
                                             m_intProgressStepCurrentCount,
                                             m_intProgressStepTotalCount);
                                 //check if any no value errors
-                                intRowCount = oAdo.getRecordCount(oAdo.m_OleDbConnection, "SELECT COUNT(*) FROM audit_Post_SUMMARY WHERE TRIM(FVS_TREE_FILE)='" + frmMain.g_oUtils.getFileName(strFvsTreeFile) + "' AND TREE_SPECIES_CHANGE_WARNING IS NOT NULL AND LEN(TRIM(TREE_SPECIES_CHANGE_WARNING)) > 0 AND TRIM(TREE_SPECIES_CHANGE_WARNING) <> 'NA' AND VAL(TREE_SPECIES_CHANGE_WARNING) > 0", "AUDIT_POST_SUMMARY");
+                                intRowCount = oAdo.getRecordCount(oAdo.m_OleDbConnection, "SELECT COUNT(*) FROM audit_Post_SUMMARY WHERE RXPACKAGE='" + strPackage + "' AND TREE_SPECIES_CHANGE_WARNING IS NOT NULL AND LEN(TRIM(TREE_SPECIES_CHANGE_WARNING)) > 0 AND TRIM(TREE_SPECIES_CHANGE_WARNING) <> 'NA' AND VAL(TREE_SPECIES_CHANGE_WARNING) > 0", "AUDIT_POST_SUMMARY");
                                 if (intRowCount > 0)
                                 {
                                     //insert the new audit records
@@ -7554,7 +7558,7 @@ namespace FIA_Biosum_Manager
                                            "audit_Post_SUMMARY",
                                            strTableLinkName,
                                            m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE].Trim(),
-                                           frmMain.g_oUtils.getFileName(strFvsTreeFile));
+                                           strVariant, strPackage);
 
                                 //check if TREEMATCH_ERROR table exists
                                 if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_TREEMATCH_ERROR") == false)
@@ -7579,7 +7583,7 @@ namespace FIA_Biosum_Manager
                                             m_intProgressStepTotalCount);
                                 //check if value errors for DBH
                                 strSQL = "SELECT COUNT(*) FROM audit_Post_SUMMARY " +
-                                         "WHERE TRIM(FVS_TREE_FILE)='" + frmMain.g_oUtils.getFileName(strFvsTreeFile) + "' AND " +
+                                         "WHERE RXPACKAGE='" + strPackage + "' AND " +
                                                "TRIM(COLUMN_NAME)='DBH' AND " +
                                                "VALUE_ERROR IS NOT NULL AND " +
                                                "LEN(TRIM(VALUE_ERROR)) > 0 AND " +
@@ -7630,7 +7634,7 @@ namespace FIA_Biosum_Manager
                                     frmMain.g_oUtils.WriteText(m_strLogFile, "\r\n\r\naudit_Post_NOVALUE_ERROR\r\n---------------------------\r\n");
 
                                    //see if any records
-                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,ERROR_DESC FROM audit_Post_NOVALUE_ERROR WHERE TRIM(FVS_TREE_FILE)='" + frmMain.g_oUtils.getFileName(strFvsTreeFile) + "' GROUP BY COLUMN_NAME,ERROR_DESC";
+                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,ERROR_DESC FROM audit_Post_NOVALUE_ERROR WHERE RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,ERROR_DESC";
                                     oAdo.SqlQueryReader(oAdo.m_OleDbConnection, strSQL);
                                     if (oAdo.m_OleDbDataReader.HasRows)
                                     {
@@ -7658,7 +7662,7 @@ namespace FIA_Biosum_Manager
                                     strItemDialogMsg = strItemDialogMsg + "\r\n\r\naudit_Post_NOTFOUND_ERROR\r\n---------------------------\r\n";
                                     frmMain.g_oUtils.WriteText(m_strLogFile, "\r\n\r\naudit_Post_NOTFOUND_ERROR\r\n---------------------------\r\n");
                                     //see if any records
-                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,ERROR_DESC FROM audit_Post_NOTFOUND_ERROR WHERE TRIM(FVS_TREE_FILE)='" + frmMain.g_oUtils.getFileName(strFvsTreeFile) + "' GROUP BY COLUMN_NAME,ERROR_DESC";
+                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,ERROR_DESC FROM audit_Post_NOTFOUND_ERROR WHERE RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,ERROR_DESC";
                                     oAdo.SqlQueryReader(oAdo.m_OleDbConnection, strSQL);
                                     if (oAdo.m_OleDbDataReader.HasRows)
                                     {
@@ -7687,7 +7691,7 @@ namespace FIA_Biosum_Manager
                                     strItemDialogMsg = strItemDialogMsg + "\r\n\r\naudit_Post_VALUE_ERROR\r\n---------------------------\r\n";
                                     frmMain.g_oUtils.WriteText(m_strLogFile, "\r\n\r\naudit_Post_VALUE_ERROR\r\n---------------------------\r\n");
                                     //see if any records
-                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,ERROR_DESC FROM audit_Post_VALUE_ERROR WHERE TRIM(FVS_TREE_FILE)='" + frmMain.g_oUtils.getFileName(strFvsTreeFile) + "' GROUP BY COLUMN_NAME,ERROR_DESC";
+                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,ERROR_DESC FROM audit_Post_VALUE_ERROR WHERE RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,ERROR_DESC";
                                     oAdo.SqlQueryReader(oAdo.m_OleDbConnection, strSQL);
                                     if (oAdo.m_OleDbDataReader.HasRows)
                                     {
@@ -7717,7 +7721,7 @@ namespace FIA_Biosum_Manager
                                     frmMain.g_oUtils.WriteText(m_strLogFile, "\r\n\r\naudit_Post_SPCDCHANGE_WARNING\r\n---------------------------\r\n");
 
                                     //see if any records
-                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,WARNING_DESC FROM audit_Post_SPCDCHANGE_WARNING WHERE TRIM(FVS_TREE_FILE)='" + frmMain.g_oUtils.getFileName(strFvsTreeFile) + "' GROUP BY COLUMN_NAME,WARNING_DESC";
+                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,WARNING_DESC FROM audit_Post_SPCDCHANGE_WARNING WHERE RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,WARNING_DESC";
                                     oAdo.SqlQueryReader(oAdo.m_OleDbConnection, strSQL);
                                     if (oAdo.m_OleDbDataReader.HasRows)
                                     {
