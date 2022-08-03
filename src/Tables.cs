@@ -2675,7 +2675,8 @@ namespace FIA_Biosum_Manager
             {
                 p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "fvs_tree_id");
             }
-            // Note: When fields are added here, they also need to be added in CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL
+            // Note: When fields are added here, they also need to be added in CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL,
+            // CreateFVSPostAuditCutlistNOTFOUND_ERRORtableSQL
             // and the code that decides whether to use that SQL to rebuild the table also needs to be updated.
             public string CreateFVSOutTreeTableSQL(string p_strTableName)
             {
@@ -3644,6 +3645,22 @@ namespace FIA_Biosum_Manager
                             "drybiom DOUBLE," +
                             "drybiot DOUBLE," +
                             "voltsgrs DOUBLE," +
+                            "cfsnd DOUBLE," +
+                            "bfsnd DOUBLE," +
+                            "standing_dead_cd INTEGER," +
+                            "volcfsnd DOUBLE," +
+                            "drybio_bole DOUBLE," +
+                            "drybio_top DOUBLE," +
+                            "drybio_sapling DOUBLE," +
+                            "drybio_wdld_spp DOUBLE," +
+                            "treeval INTEGER," +
+                            "mortpa DOUBLE," +
+                            "mdefect INTEGER," +
+                            "bapctile DOUBLE," +
+                            "dg DOUBLE," +
+                            "htg DOUBLE," +
+                            "statuscd INTEGER," +
+                            "decaycd INTEGER," +
                             "fvs_tree_id CHAR(10)," +
                             "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
                             "DateTimeCreated CHAR(22))";
