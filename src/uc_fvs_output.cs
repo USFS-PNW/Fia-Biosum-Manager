@@ -2684,7 +2684,7 @@ namespace FIA_Biosum_Manager
                     if (m_bDebug && frmMain.g_intDebugLevel > 1)
                         this.WriteText(m_strDebugFile, "checkpoint 5 \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
 
-                    this.m_strDateTimeCreated = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss tt");
+                    this.m_strDateTimeCreated = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
                     m_intProgressStepTotalCount = intCount;
                     m_intProgressStepCurrentCount = 0;
 
@@ -7245,6 +7245,7 @@ namespace FIA_Biosum_Manager
                                 m_strFvsTreeDb);
                             //oDao.CreateTableLink(strAuditDbFile, strTableLinkName, strFvsTreeFile, "fvs_tree", false);
                             // Prepare tmpCutTree for next run
+                            m_dbConn = SQLite.GetConnectionString(m_strFvsTreeDb);
                             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_dbConn))
                             {
                                 conn.Open();
