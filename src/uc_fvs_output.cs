@@ -90,6 +90,7 @@ namespace FIA_Biosum_Manager
 		private string m_strProjDir="";
         private string m_strFvsTreeDb;
         private string m_dbConn = "";
+        private string m_missingFvsOutDb = "This project has no valid /fvs/data/FVSOut.db. Multiple FVS Out functions will not work! Please use FVS to generate an /fvs/data/FVSOut.db file.";
 
         //POTFIRE BASE YEAR
         private string m_strOutPotFireBaseYearMDBFile = "";
@@ -646,22 +647,6 @@ namespace FIA_Biosum_Manager
 		}
 
 		#endregion
-	    public bool createFvsCutListIfDNE(string strOutDirAndFile)
-	    {
-	        bool bCutListPresent = true;
-            ado_data_access oAdo = new ado_data_access();
-            oAdo.OpenConnection(oAdo.getMDBConnString(strOutDirAndFile, "", ""));
-	        if (oAdo.TableExist(oAdo.m_OleDbConnection, "FVS_CUTLIST") == false)
-	        {
-	            Tables.FVS.CreateFVSCutListTable(oAdo);
-	            bCutListPresent = false;
-	        }
-            oAdo.CloseConnection(oAdo.m_OleDbConnection);
-            oAdo.m_OleDbConnection.Dispose();
-            oAdo.m_OleDbConnection = null;
-	        oAdo = null;
-	        return bCutListPresent;
-	    }
 
 		public void loadvalues()
 		{
@@ -766,17 +751,19 @@ namespace FIA_Biosum_Manager
                             this.m_strOutMDBFile.Trim();
 
                     m_strFvsTreeDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
-                    string dbConn = SQLite.GetConnectionString(m_strFvsTreeDb);
                     long lngTreeRecords = 0;
-                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
+                    // Projects will not have an FVSOUT_TREE_LIST.db until FVS Out is run for the first time
+                    if (System.IO.File.Exists(m_strFvsTreeDb))
                     {
-                        conn.Open();
-                        string strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSCutTreeTableName} 
+                        string dbConn = SQLite.GetConnectionString(m_strFvsTreeDb);
+                        using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
+                        {
+                            conn.Open();
+                            string strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSCutTreeTableName} 
                                            WHERE FVS_VARIANT = '{strVariant}' and RXPACKAGE = '{strPackage}'";
-                        lngTreeRecords = SQLite.getRecordCount(conn, strSQL, Tables.FVS.DefaultFVSCutTreeTableName);                           
+                            lngTreeRecords = SQLite.getRecordCount(conn, strSQL, Tables.FVS.DefaultFVSCutTreeTableName);
+                        }
                     }
-
-
                         /************************************************************************
                         /**Check and Assign in the FVS_CASES whether the FVS output has been 
                          **appended to the fvs_tree list table
@@ -784,7 +771,6 @@ namespace FIA_Biosum_Manager
                         if (System.IO.File.Exists(strOutDirAndFile) == true)
 					{
 
-					    createFvsCutListIfDNE(strOutDirAndFile);
 						strTableNames = new string[300];						
 						oDao2.getTableNames(strOutDirAndFile,ref strTableNames);
 						for (x=0;x<=strTableNames.Length-1;x++)
@@ -947,7 +933,14 @@ namespace FIA_Biosum_Manager
 
                    
 				}
-				oDao2.m_DaoWorkspace.Close();
+
+                // Warning for older projects without FVSOut.db (and cutlist)
+                if (!FvsOutWithCutList(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()))
+                {
+                    MessageBox.Show(m_missingFvsOutDb, "FIA Biosum", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                }
+
+                oDao2.m_DaoWorkspace.Close();
 				oDao.m_DaoDatabase.Close();
 				oDao.m_DaoWorkspace.Close();
 
@@ -1053,7 +1046,6 @@ namespace FIA_Biosum_Manager
                         else if (strLinkedTables[x].ToUpper().IndexOf("FVS_CASES", 0) == 0)
                         {
                             string strUpdateStatus = "";
-
                             if (Convert.ToUInt32(oAdo.getRecordCountUInt(oAdo.m_OleDbConnection, "select count(*) from " + strLinkedTables[x].Trim() + " WHERE BIOSUM_Append_YN='N'", "fvs_cases")) > 0)
                             {
                                 strUpdateStatus = strUpdateStatus + "a";
@@ -1309,6 +1301,12 @@ namespace FIA_Biosum_Manager
             {
                 MessageBox.Show("No Boxes Are Checked", "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
                 return;
+            }
+
+            // Warning for older projects without FVSOut.db
+            if (!System.IO.File.Exists(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile))
+            {
+                MessageBox.Show(m_missingFvsOutDb, "FIA Biosum", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
 
             this.m_frmTherm = new frmTherm(((frmDialog)ParentForm), "FVS OUT DATA",
@@ -2983,7 +2981,7 @@ namespace FIA_Biosum_Manager
                             //
                             if (intItemError == 0)
                             {
-                                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control) this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim() + " Update " + m_strFvsTreeTable + " table");
+                                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim() + " Update " + m_strFvsTreeTable + " table");
                                 //RunAppend_UpdateFVSTreeTable(strPackage, strVariant, strRx1, strRx2, strRx3, strRx4, m_strFvsTreeTable, ref intItemError, ref strItemError);
 
                                 if (intItemError == 0)
@@ -2992,30 +2990,33 @@ namespace FIA_Biosum_Manager
                                     strItemError = oAdo.m_strError;
                                 }
 
-                                //get random file name to be used as the work db file
-                                string strTreeTempDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
-                                string strTreeListDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
-                                //copy the production file to the temp folder which will be used as the work db file.
-                                if (m_bDebug && frmMain.g_intDebugLevel > 1)
-                                    this.WriteText(m_strDebugFile, "\r\nSTART:Copy production file to work file: Source File Name:" + strTreeListDbFile + " Destination File Name:" + strTreeTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
-                                System.IO.File.Copy(strTreeListDbFile, strTreeTempDbFile, true);
-                                if (m_bDebug && frmMain.g_intDebugLevel > 1)
-                                    this.WriteText(m_strDebugFile, "\r\nEND:Copy production file to work file: Source File Name:" + strTreeListDbFile + " Destination File Name:" + strTreeTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
-                                RunAppend_UpdateFVSTreeTables(strPackage, strVariant, strRx1, strRx2, strRx3, strRx4, strTreeTempDbFile, ref intItemError, ref strItemError);
-                                //copy the work db file over the production file
-                                if (m_bDebug && frmMain.g_intDebugLevel > 1)
-                                    this.WriteText(m_strDebugFile, "\r\nSTART:Copy work file to production file: Source File Name:" + strTreeTempDbFile + " Destination File Name:" + strTreeListDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
-                                System.IO.File.Copy(strTreeTempDbFile, strTreeListDbFile, true);
-                                if (m_bDebug && frmMain.g_intDebugLevel > 1)
-                                    this.WriteText(m_strDebugFile, "\r\nEND:Copy work file to production file: Source File Name:" + strTreeTempDbFile + " Destination File Name:" + strTreeListDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
+                                // Only try to load if there is a cut list in the FVSOut.db
+                                if (FvsOutWithCutList(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()))
+                                {
+                                    string strTreeTempDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
+                                    string strTreeListDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
+                                    //copy the production file to the temp folder which will be used as the work db file.
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                                        this.WriteText(m_strDebugFile, "\r\nSTART:Copy production file to work file: Source File Name:" + strTreeListDbFile + " Destination File Name:" + strTreeTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
+                                    System.IO.File.Copy(strTreeListDbFile, strTreeTempDbFile, true);
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                                        this.WriteText(m_strDebugFile, "\r\nEND:Copy production file to work file: Source File Name:" + strTreeListDbFile + " Destination File Name:" + strTreeTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
+                                    RunAppend_UpdateFVSTreeTables(strPackage, strVariant, strRx1, strRx2, strRx3, strRx4, strTreeTempDbFile, ref intItemError, ref strItemError);
+                                    //copy the work db file over the production file
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                                        this.WriteText(m_strDebugFile, "\r\nSTART:Copy work file to production file: Source File Name:" + strTreeTempDbFile + " Destination File Name:" + strTreeListDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
+                                    System.IO.File.Copy(strTreeTempDbFile, strTreeListDbFile, true);
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                                        this.WriteText(m_strDebugFile, "\r\nEND:Copy work file to production file: Source File Name:" + strTreeTempDbFile + " Destination File Name:" + strTreeListDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
 
+                                }
+                                UpdateTherm(m_frmTherm.progressBar1,
+                                                m_intProgressStepTotalCount,
+                                                m_intProgressStepTotalCount);
+                                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Finalizing updates");
+                                frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
+                                System.Threading.Thread.Sleep(1000);
                             }
-                            UpdateTherm(m_frmTherm.progressBar1,
-                                            m_intProgressStepTotalCount,
-                                            m_intProgressStepTotalCount);
-                            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Finalizing updates");
-                            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
-                            System.Threading.Thread.Sleep(1000);
 
                             //
                             //clean up for this list item
@@ -10453,6 +10454,23 @@ namespace FIA_Biosum_Manager
             {
                 MessageBox.Show("The file " + strAuditDbFile + " does not exist");
             }
+        }
+
+        private bool FvsOutWithCutList(string strProjectDir)
+        {
+            if (System.IO.File.Exists(strProjectDir + Tables.FVS.DefaultFVSOutDbFile))
+            {
+                string strConn = SQLite.GetConnectionString(strProjectDir + Tables.FVS.DefaultFVSOutDbFile);
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+                    conn.Open();
+                    if (SQLite.TableExist(conn, "FVS_CUTLIST"))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
     }
 }
