@@ -2019,8 +2019,8 @@ namespace FIA_Biosum_Manager
                                          "ON fvs.fvs_tree_id = fia.fvs_tree_id and fvs.biosum_cond_id = fia.biosum_cond_id " +
                                          "WHERE fvs.FvsCreatedTree_YN='N' AND " +
                                                "fvs.RXCYCLE IS NOT NULL AND " +
-                                               "fvs.RXPACKAGE = '" + p_strRxPackage + "' AND" +
-                                               "fvs.FVS_VARIANT = '" + p_strFvsVariant + "' AND" +
+                                               "fvs.RXPACKAGE = '" + p_strRxPackage + "' AND " +
+                                               "fvs.FVS_VARIANT = '" + p_strFvsVariant + "' AND " +
                                                "LEN(TRIM(fvs.RXCYCLE)) > 0 AND " + 
                                                "fvs.RXCYCLE = '1' AND " +
                                                "fvs.FVS_TREE_ID IS NOT NULL AND " +

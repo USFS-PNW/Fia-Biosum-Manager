@@ -7763,8 +7763,37 @@ namespace FIA_Biosum_Manager
                                     oAdo.m_OleDbDataReader.Close();
                                     oAdo.m_OleDbDataReader.Dispose();
                                 }
+                            // TREEMATCH errors
+                            if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_TREEMATCH_ERROR"))
+                            {
+                                strItemDialogMsg = strItemDialogMsg + "\r\n\r\naudit_Post_TREEMATCH_ERROR\r\n---------------------------\r\n";
+                                frmMain.g_oUtils.WriteText(m_strLogFile, "\r\n\r\audit_Post_TREEMATCH_ERROR\r\n---------------------------\r\n");
+                                //see if any records
+                                strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,ERROR_DESC FROM audit_Post_TREEMATCH_ERROR WHERE RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,ERROR_DESC";
+                                oAdo.SqlQueryReader(oAdo.m_OleDbConnection, strSQL);
+                                if (oAdo.m_OleDbDataReader.HasRows)
+                                {
+                                    intItemError = -1;
+                                    strItemError = strItemError + "\r\n\r\naudit_Post_TREEMATCH_ERROR\r\n---------------------------\r\n";
 
-                                if (intItemError == 0 && intItemWarning == 0)
+                                    while (oAdo.m_OleDbDataReader.Read())
+                                    {
+
+                                        strItemError = strItemError + "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
+                                        strItemDialogMsg = strItemDialogMsg + "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
+                                        frmMain.g_oUtils.WriteText(m_strLogFile, "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n");
+                                    }
+                                }
+                                else
+                                {
+                                    strItemDialogMsg = strItemDialogMsg + "OK\r\n";
+                                    frmMain.g_oUtils.WriteText(m_strLogFile, "OK\r\n");
+                                }
+                                oAdo.m_OleDbDataReader.Close();
+                                oAdo.m_OleDbDataReader.Dispose();
+                            }
+
+                            if (intItemError == 0 && intItemWarning == 0)
                                 {
                                     strItemDialogMsg = strItemDialogMsg + "\r\n\r\nPassed Audit";
                                     frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "BackColor", Color.Green);
