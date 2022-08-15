@@ -489,6 +489,7 @@ namespace FIA_Biosum_Manager
             this.mnuTools = new System.Windows.Forms.MenuItem();
             this.mnuToolsFCS = new System.Windows.Forms.MenuItem();
             this.mnuToolsProjectRootFolder = new System.Windows.Forms.MenuItem();
+            this.mnuToolsPath = new System.Windows.Forms.MenuItem();
             this.mnuHelp = new System.Windows.Forms.MenuItem();
             this.mnuHelpBiosummatic = new System.Windows.Forms.MenuItem();
             this.menuItem23 = new System.Windows.Forms.MenuItem();
@@ -518,7 +519,6 @@ namespace FIA_Biosum_Manager
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.txtDropDown = new System.Windows.Forms.TextBox();
-            this.mnuToolsPath = new System.Windows.Forms.MenuItem();
             this.grpboxLeft.SuspendLayout();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
@@ -681,6 +681,12 @@ namespace FIA_Biosum_Manager
             this.mnuToolsProjectRootFolder.Index = 1;
             this.mnuToolsProjectRootFolder.Text = "Scan and Synchronize Project Root Folder Tool";
             this.mnuToolsProjectRootFolder.Click += new System.EventHandler(this.mnuToolsProjectRootFolder_Click);
+            // 
+            // mnuToolsPath
+            // 
+            this.mnuToolsPath.Index = 2;
+            this.mnuToolsPath.Text = "Path Environment Variable Value";
+            this.mnuToolsPath.Click += new System.EventHandler(this.mnuToolsPath_Click);
             // 
             // mnuHelp
             // 
@@ -914,12 +920,6 @@ namespace FIA_Biosum_Manager
             this.txtDropDown.TabIndex = 11;
             this.txtDropDown.Visible = false;
             // 
-            // mnuToolsPath
-            // 
-            this.mnuToolsPath.Index = 2;
-            this.mnuToolsPath.Text = "Path Environment Variable Value";
-            this.mnuToolsPath.Click += new System.EventHandler(this.mnuToolsPath_Click);
-            // 
             // frmMain
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -928,6 +928,7 @@ namespace FIA_Biosum_Manager
             this.Controls.Add(this.grpboxLeft);
             this.Controls.Add(this.tlbMain);
             this.Controls.Add(this.txtDropDown);
+            this.Icon = ((System.Drawing.Icon) Properties.Resources.favicon);
             this.IsMdiContainer = true;
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Menu = this.mnuMain;
