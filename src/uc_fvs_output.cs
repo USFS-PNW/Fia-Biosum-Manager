@@ -5164,7 +5164,7 @@ namespace FIA_Biosum_Manager
                                                     "cast(t.year as text) as rxyear,'" +
                                                     p_strVariant + "' AS fvs_variant, " +
                                                     "Trim(t.treeid) AS fvs_tree_id," +
-                                                    "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS DBH , t.Ht,t.estht,t.pctcr,t.TCuFt," +
+                                                    "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS DBH , t.Ht,t.estht,t.pctcr," +
                                                     "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
                                                     "'N' AS FvsCreatedTree_YN," +
                                                     "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
@@ -5231,7 +5231,9 @@ namespace FIA_Biosum_Manager
                                                         "cast(t.year as text) as rxyear,'" +
                                                        p_strVariant + "' AS fvs_variant, " +
                                                        "Trim(t.treeid) AS fvs_tree_id, " +
-                                                       "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht,t.estht,t.pctcr,t.TCuFt,'Y' AS FvsCreatedTree_YN," +
+                                                       "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht,t.estht,t.pctcr, " +
+                                                       "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
+                                                       "'Y' AS FvsCreatedTree_YN," +
                                                        "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
                                                        "FROM " + strCasesTable + " c," + strFVSOutTableLink + " t " +
                                                        "WHERE c.CaseID = t.CaseID AND c.RunTitle = '" + runTitle + "' AND substr(t.treeid, 1, 2) = 'ES'";
@@ -5246,7 +5248,9 @@ namespace FIA_Biosum_Manager
                                                        "cast(t.year as text) as rxyear,'" +
                                                        p_strVariant + "' AS fvs_variant, " +
                                                        "Trim(t.treeid) AS fvs_tree_id, " +
-                                                       "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht,t.estht,t.pctcr,t.TCuFt,'Y' AS FvsCreatedTree_YN," +
+                                                       "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht,t.estht,t.pctcr, " +
+                                                       "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
+                                                       "'Y' AS FvsCreatedTree_YN," +
                                                        "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
                                                        "FROM FVSOUT." + strCasesTable + " c," + strFVSOutTableLink + " t " +
                                                        "WHERE c.CaseID = t.CaseID AND substr(t.treeid, 1, 2) = 'ES' AND " +
@@ -5260,9 +5264,12 @@ namespace FIA_Biosum_Manager
                                                     this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                                                 oDataMgr.m_strSQL = "INSERT INTO " + strFvsTreeTable + " " +
                                                                      "(biosum_cond_id, rxpackage,rx,rxcycle,rxyear,fvs_variant, fvs_tree_id," +
-                                                                      "fvs_species, tpa, dbh, ht, estht,pctcr,FvsCreatedTree_YN,DateTimeCreated) " +
+                                                                      "fvs_species, tpa, dbh, ht, estht,pctcr, " +
+                                                                      "treeval, mortpa, mdefect, bapctile, dg, htg, " +
+                                                                      "FvsCreatedTree_YN,DateTimeCreated) " +
                                                                         "SELECT a.biosum_cond_id, a.rxpackage,a.rx,a.rxcycle,a.rxyear,a.fvs_variant," +
                                                                                "a.fvs_tree_id, a.fvs_species, a.tpa, a.dbh, a.ht, a.estht,a.pctcr," +
+                                                                               "a.treeval, a.mortpa, a.mdefect, a.bapctile, a.dg, a.htg, " +
                                                                                "a.FvsCreatedTree_YN,a.DateTimeCreated  " +
                                                                         "FROM cutlist_fvs_created_seedlings_work_table a," +
                                                                             "(SELECT standid,year " +
