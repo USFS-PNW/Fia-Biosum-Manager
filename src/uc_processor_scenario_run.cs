@@ -496,17 +496,39 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultPreFVSSummaryDbFile,
                 Tables.FVS.DefaultPreFVSSummaryTableName, true);
             // Check PRE_FVS_COMPUTE table
+            // Note: For the remainder of processing, the BioSum .accdb is used to access this table
             string strFvsOutDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile;
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strFvsOutDb)))
             {
                 conn.Open();
-                if (!m_oDataMgr.TableExist(conn, Tables.FVS.DefaultPreFVSComputeTableName))
+                if (!m_oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSComputeTableName))
                 {
                     m_bIncludeInactiveStands = false;
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(strDebugFile, "loadvalues(): PRE_FVS_COMPUTE table was not found. Stands with no " +
                             "activity will not be included in analysis! \r\n");
                 }
+                else
+                {
+                    //Check for ACTIVITY column so we know if we should include inactive stands
+                    if (!m_oDataMgr.ColumnExist(conn, Tables.FVS.DefaultFVSComputeTableName, "ACTIVITY"))
+                    {
+                        m_bIncludeInactiveStands = false;
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                            frmMain.g_oUtils.WriteText(strDebugFile, "loadvalues(): ACTIVITY field not found inFVS_COMPUTE table. Stands with no " +
+                                "activity will not be included in analysis! \r\n");
+                    }
+                }
+            }
+            // link to PRE_FVS_COMPUTE table
+            string strComputeDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultPreFVSComputeDbFile;
+            if (m_bIncludeInactiveStands && 
+                System.IO.File.Exists(strComputeDbPath) &&
+                oDao.TableExists(strComputeDbPath, Tables.FVS.DefaultPreFVSComputeTableName))
+            {
+                oDao.CreateTableLink(m_oQueries.m_strTempDbFile,
+                    Tables.FVS.DefaultPreFVSComputeTableName,
+                    strComputeDbPath, Tables.FVS.DefaultPreFVSComputeTableName, true);
             }
 
             oDao.m_DaoDbEngine.Idle(1);
@@ -597,15 +619,6 @@ namespace FIA_Biosum_Manager
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(strDebugFile, "START: Populate List " + System.DateTime.Now.ToString() + "\r\n");
-
-                //Check for ACTIVITY column so we know if we should include inactive stands
-                if (m_bIncludeInactiveStands == true)
-                {
-                    if (!m_oAdo.ColumnExist(m_oAdo.m_OleDbConnection, Tables.FVS.DefaultPreFVSComputeTableName, "ACTIVITY"))
-                    {
-                        m_bIncludeInactiveStands = false;
-                    }
-                }
     
                 //populate the listview object
                 string strRxPackage = "";
@@ -666,9 +679,10 @@ namespace FIA_Biosum_Manager
                             }
                         }
                         //@ToDo: Do we need to add rxyear as a filter? This returns more rows than are in MS Access compute table
-                        string strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultPreFVSComputeTableName} AS s, FVS_Cases c
+                        //Not making any changes for now
+                        string strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSComputeTableName} AS s, FVS_Cases c
                                             WHERE s.CaseID = c.CaseID and c.RunTitle = '{strRunTitle}'";
-                        long count = m_oDataMgr.getRecordCount(m_oDataMgr.m_Connection, strSQL, Tables.FVS.DefaultPreFVSComputeTableName);
+                        long count = m_oDataMgr.getRecordCount(m_oDataMgr.m_Connection, strSQL, Tables.FVS.DefaultFVSComputeTableName);
                         if (count > 0)
                         {
                             strVariant = arrVariantRxPkg[0];
