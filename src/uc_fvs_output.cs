@@ -5233,6 +5233,7 @@ namespace FIA_Biosum_Manager
                                                        "Trim(t.treeid) AS fvs_tree_id, " +
                                                        "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht,t.estht,t.pctcr, " +
                                                        "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
+                                                       "CASE WHEN t.dbh < 1.0 AND t.TPA > 0 THEN 1 ELSE null END AS STATUSCD, " +     // @ToDo: fix for sqlite! sets statuscd for seedlings
                                                        "'Y' AS FvsCreatedTree_YN," +
                                                        "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
                                                        "FROM " + strCasesTable + " c," + strFVSOutTableLink + " t " +
@@ -5250,6 +5251,7 @@ namespace FIA_Biosum_Manager
                                                        "Trim(t.treeid) AS fvs_tree_id, " +
                                                        "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht,t.estht,t.pctcr, " +
                                                        "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
+                                                       "CASE WHEN t.dbh < 1.0 AND t.TPA > 0 THEN 1 ELSE null END AS STATUSCD, " +     // @ToDo: fix for sqlite! sets statuscd for seedlings
                                                        "'Y' AS FvsCreatedTree_YN," +
                                                        "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
                                                        "FROM FVSOUT." + strCasesTable + " c," + strFVSOutTableLink + " t " +
@@ -5266,11 +5268,11 @@ namespace FIA_Biosum_Manager
                                                                      "(biosum_cond_id, rxpackage,rx,rxcycle,rxyear,fvs_variant, fvs_tree_id," +
                                                                       "fvs_species, tpa, dbh, ht, estht,pctcr, " +
                                                                       "treeval, mortpa, mdefect, bapctile, dg, htg, " +
-                                                                      "FvsCreatedTree_YN,DateTimeCreated) " +
+                                                                      "statuscd, FvsCreatedTree_YN,DateTimeCreated) " +
                                                                         "SELECT a.biosum_cond_id, a.rxpackage,a.rx,a.rxcycle,a.rxyear,a.fvs_variant," +
                                                                                "a.fvs_tree_id, a.fvs_species, a.tpa, a.dbh, a.ht, a.estht,a.pctcr," +
                                                                                "a.treeval, a.mortpa, a.mdefect, a.bapctile, a.dg, a.htg, " +
-                                                                               "a.FvsCreatedTree_YN,a.DateTimeCreated  " +
+                                                                               "a.statuscd, a.FvsCreatedTree_YN,a.DateTimeCreated  " +
                                                                         "FROM cutlist_fvs_created_seedlings_work_table a," +
                                                                             "(SELECT standid,year " +
                                                                              "FROM " + seqNumWorkTable + " " +
@@ -5435,7 +5437,7 @@ namespace FIA_Biosum_Manager
                                                    INNER JOIN {m_oQueries.m_oFIAPlot.m_strTreeTable} t 
                                                    ON t.biosum_cond_id=b.biosum_cond_id AND t.fvs_tree_id=b.fvs_tree_id
                                                    SET b.statuscd=t.statuscd
-                                                   WHERE rxpackage='{p_strPackage.Trim()}' AND fvs_variant='{p_strVariant.Trim()}' and dbh <= 1.0";
+                                                   WHERE rxpackage='{p_strPackage.Trim()}' AND fvs_variant='{p_strVariant.Trim()}' and dbh < 1.0";
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
                                     oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
@@ -5703,7 +5705,7 @@ namespace FIA_Biosum_Manager
                                         // DELETE SEEDLINGS FROM CUTTREE TABLE; RESIDTREE TABLE TBD
                                         if (strFvsTreeTable.Equals(Tables.FVS.DefaultFVSCutTreeTableName))
                                         {
-                                            oDataMgr.m_strSQL = $@"DELETE FROM {strFvsTreeTable} WHERE DBH <= 1.0" ;
+                                            oDataMgr.m_strSQL = $@"DELETE FROM {strFvsTreeTable} WHERE DBH < 1.0" ;
                                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                                 this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
                                             oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);

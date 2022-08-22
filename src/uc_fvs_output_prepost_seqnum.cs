@@ -37,11 +37,12 @@ namespace FIA_Biosum_Manager
         private ComboBox m_cmbFVSStrClassPost2;
         private ComboBox m_cmbFVSStrClassPost3;
         private ComboBox m_cmbFVSStrClassPost4;
+        private string m_strDebugFile = frmMain.g_oEnv.strTempDir + "\\biosum_fvsout_debug.txt";
 
 
 
 
-       
+
         private static string m_strColumnList = "PREPOST_SEQNUM_ID,TableName,Type," +
                                     "RxCycle1_PRE_SeqNum," +
                                     "RxCycle1_POST_SeqNum," +
@@ -1107,6 +1108,12 @@ namespace FIA_Biosum_Manager
             m_oAdo.OpenConnection(m_oAdo.getMDBConnString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile, "", ""));
             if (m_oAdo.m_intError == 0)
             {
+                if (frmMain.g_intDebugLevel > 1)
+                {
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//savevalues \r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+                }
 
                 for (x = 0; x <= lvFVSTables.Items.Count - 1; x++)
                 {
@@ -1396,17 +1403,30 @@ namespace FIA_Biosum_Manager
                                         m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
                                         if (m_oAdo.m_intError == 0)
                                         {
-                                            string[] strArray = frmMain.g_oUtils.ConvertListToArray(oItem.RxPackageList, ",");
-                                            for (z = 0; z <= strArray.Length - 1; z++)
+                                            if (! String.IsNullOrEmpty(oItem.RxPackageList))
                                             {
-                                                m_oAdo.m_strSQL = "INSERT INTO " + Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable + " " +
-                                                      "(RXPACKAGE,PREPOST_SEQNUM_ID) VALUES " +
-                                                      "('" + strArray[z].Trim() + "'," + oItem.PrePostSeqNumId.ToString().Trim() + ")";
-                                                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                                                if (m_oAdo.m_intError != 0)
+                                                string[] strArray = frmMain.g_oUtils.ConvertListToArray(oItem.RxPackageList, ",");
+                                                for (z = 0; z <= strArray.Length - 1; z++)
                                                 {
-                                                    break;
+                                                    m_oAdo.m_strSQL = "INSERT INTO " + Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable + " " +
+                                                          "(RXPACKAGE,PREPOST_SEQNUM_ID) VALUES " +
+                                                          "('" + strArray[z].Trim() + "'," + oItem.PrePostSeqNumId.ToString().Trim() + ")";
+                                                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                                                    if (m_oAdo.m_intError != 0)
+                                                    {
+                                                        break;
+                                                    }
                                                 }
+                                            }
+                                            else
+                                            {
+                                                if (frmMain.g_intDebugLevel > 2)
+                                                {
+                                                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nNo insert to :" + Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable + " rxPackageList was null \r\n\r\n");
+                                                }
+                                                MessageBox.Show("Custom sequence number assignments must have RxPackages assigned to be saved! It is recommended to assign all packages to the custom assignment.",
+                                                    "FIA Biosum");
+                                                return;
                                             }
                                         }
                                     }
