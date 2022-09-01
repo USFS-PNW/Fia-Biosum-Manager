@@ -65,7 +65,17 @@ namespace FIA_Biosum_Manager
                                     "RxCycle4_PRE_BEFORECUT_YN," +
                                     "RxCycle4_POST_BEFORECUT_YN," + 
                                     "USE_SUMMARY_TABLE_SEQNUM_YN";
-        
+        private const string m_str_1_8_1 = "1-8-1 Treat Every Cycle";
+        private static string[] m_summary_1_8_1 = {"1","2","4","5","7","8","10","11"};
+        private static string[] m_ffe_1_8_1 = { "1","3","4","6","7","9","10","12"};
+        private const string m_str_1_3_1 = "1-3-1 Treat Every Cycle";
+        private static string[] m_summary_1_3_1 = { "1", "2", "4", "5", "7", "8", "10", "11" };
+        private static string[] m_ffe_1_3_1 = { "1", "3", "4", "6", "7", "9", "10", "12" };
+        private const string m_str_1_9_10_10_10 = "1-9-10-10-10 Treat First Cycle Only";
+
+        private const string m_str_1_4_5_5_5 = "1-4-5-5-5 Treat First Cycle Only";
+
+
         public uc_fvs_output_prepost_seqnum()
         {
             int x;
@@ -177,6 +187,9 @@ namespace FIA_Biosum_Manager
             m_cmbFVSStrClassPost4.Text = "0 = Before Tree Removal";
   
             m_cmbFVSStrClassPost4.Hide();
+
+            // Adding new default patterns
+            cmbDefault.Items.Add(m_str_1_8_1);
             
 
             loadvalues();
@@ -291,23 +304,34 @@ namespace FIA_Biosum_Manager
                     {
                         strValueList = Convert.ToString(intRowCount + 1).Trim() + ",'" + Tables.FVS.g_strFVSOutTablesArray[x].Trim() + "','D',";
 
-
-
                         if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper()=="FVS_SUMMARY")
                         {
-                            strValueList = strValueList + "2,3,5,6,8,9,11,12,'N','N','N','N','Y','N','Y','N','Y','N','Y','N','Y'";
+                            for (int i = 0; i < m_summary_1_8_1.Length; i++)
+                            {
+                                strValueList = strValueList + m_summary_1_8_1[i] + ",";
+                            }
+                            strValueList = strValueList + "'N','N','N','N','Y','N','Y','N','Y','N','Y','N','Y'";
                         }
                         else if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper()=="FVS_POTFIRE")
                         {
-                            strValueList = strValueList + "1,2,4,5,7,8,10,11,'N','N','N','N','Y','N','Y','N','Y','N','Y','N','N'";
+                            for (int i = 0; i < m_ffe_1_8_1.Length; i++)
+                            {
+                                strValueList = strValueList + m_ffe_1_8_1[i] + ",";
+                            }
+                            strValueList = strValueList + "'Y','N','N','N','Y','N','Y','N','Y','N','Y','N','N'";    // Sets RXCYCLE1_PRE_BASEYR_YN to 'Y'
                         }
                         else if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_CUTLIST")
                         {
-                            strValueList = strValueList + "1,null,3,null,5,null,7,null,'N','N','N','N','Y','N','Y','N','Y','N','Y','N','Y'";
+                            strValueList = strValueList + $@"{m_summary_1_8_1[0]},null,{m_summary_1_8_1[2]},null,{m_summary_1_8_1[4]},null,{m_summary_1_8_1[6]},null,
+                                'N','N','N','N','Y','N','Y','N','Y','N','Y','N','Y'";
                         }
                         if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_STRCLASS")
                         {
-                            strValueList = strValueList + "2,3,5,6,8,9,11,12,'N','N','N','N','Y','Y','Y','Y','Y','Y','Y','Y','Y'";
+                            for (int i = 0; i < m_summary_1_8_1.Length; i++)
+                            {
+                                strValueList = strValueList + m_summary_1_8_1[i] + ",";
+                            }
+                            strValueList = strValueList + "'N','N','N','N','Y','Y','Y','Y','Y','Y','Y','Y','Y'";
                         }
                         p_oAdo.m_strSQL = "INSERT INTO " + Tables.FVS.DefaultFVSPrePostSeqNumTable + " " +
                                           "(" + m_strColumnList + ") VALUES " +
@@ -316,9 +340,7 @@ namespace FIA_Biosum_Manager
 
                         intRowCount++;
                     }
-
                 }
-
             }
             if (!p_oAdo.TableExist(p_oAdo.m_OleDbConnection, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable))
             {
@@ -748,91 +770,44 @@ namespace FIA_Biosum_Manager
 
         private void btnDefault_Click(object sender, EventArgs e)
         {
-            AssignDefault(cmbDefault.Text.Trim().ToUpper());
+            AssignDefault(cmbDefault.Text.Trim());
         }
         private void AssignDefault(string p_strOption)
         {
             string strTable = "";
             if (m_cmbTableCustom.Visible) strTable = m_cmbTableCustom.Text.Trim().ToUpper();
             else strTable = lblCurTable.Text.Trim().ToUpper();
-            if (p_strOption == "OPTION 1")
+
+            // Assign sequence number arrays by option
+            string[] arrSummarySequence = null;
+            string[] arrFfeSequence = null;
+            switch (p_strOption)
             {
-                if (strTable.IndexOf("POTFIRE", 0) >= 0)
-                {
-                    cmbPRE1.Text = "1"; cmbPOST1.Text = "2";
-                    cmbPRE2.Text = "4"; cmbPOST2.Text = "5";
-                    cmbPRE3.Text = "7"; cmbPOST3.Text = "8";
-                    cmbPRE4.Text = "10"; cmbPOST4.Text = "11";
-
-                    chkPRE1BaseYear.Checked = false;
-                    chkPRE2BaseYear.Checked = false;
-                    chkPRE3BaseYear.Checked = false;
-                    chkPRE4BaseYear.Checked = false;
-                    chkPRE1BaseYear.Show();
-                    chkPRE2BaseYear.Hide();
-                    chkPRE3BaseYear.Hide();
-                    chkPRE4BaseYear.Hide();
-                    
-                    
-                    
-                    
-                }
-                else if (strTable.Trim().ToUpper() == "FVS_CUTLIST")
-                {
-                    cmbPRE1.Text = "1"; cmbPOST1.Text = "Not Used";
-                    cmbPRE2.Text = "3"; cmbPOST2.Text = "Not Used";
-                    cmbPRE3.Text = "5"; cmbPOST3.Text = "Not Used";
-                    cmbPRE4.Text = "7"; cmbPOST4.Text = "Not Used";
-                    chkPRE1BaseYear.Checked = false;
-                    chkPRE2BaseYear.Checked = false;
-                    chkPRE3BaseYear.Checked = false;
-                    chkPRE4BaseYear.Checked = false;
-                    chkPRE1BaseYear.Hide();
-                    chkPRE2BaseYear.Hide();
-                    chkPRE3BaseYear.Hide();
-                    chkPRE4BaseYear.Hide();
-                }
-                else if (strTable.Trim().ToUpper() == "FVS_STRCLASS")
-                {
-                    cmbPRE1.Text = "1"; cmbPOST1.Text = "2";
-                    cmbPRE2.Text = "4"; cmbPOST2.Text = "5";
-                    cmbPRE3.Text = "7"; cmbPOST3.Text = "8";
-                    cmbPRE4.Text = "10"; cmbPOST4.Text = "11";
-                    m_cmbFVSStrClassPre1.SelectedIndex = 0;
-                    m_cmbFVSStrClassPost1.SelectedIndex = 0;
-                    m_cmbFVSStrClassPre2.SelectedIndex = 0;
-                    m_cmbFVSStrClassPost2.SelectedIndex = 0;
-                    m_cmbFVSStrClassPre3.SelectedIndex = 0;
-                    m_cmbFVSStrClassPost3.SelectedIndex = 0;
-                    m_cmbFVSStrClassPre4.SelectedIndex = 0;
-                    m_cmbFVSStrClassPost4.SelectedIndex = 0;
-
-                }
-                else
-                {
-                    cmbPRE1.Text = "2"; cmbPOST1.Text = "3";
-                    cmbPRE2.Text = "5"; cmbPOST2.Text = "6";
-                    cmbPRE3.Text = "8"; cmbPOST3.Text = "9";
-                    cmbPRE4.Text = "11"; cmbPOST4.Text = "12";
-
-                    chkPRE1BaseYear.Checked = false;
-                    chkPRE2BaseYear.Checked = false;
-                    chkPRE3BaseYear.Checked = false;
-                    chkPRE4BaseYear.Checked = false;
-                    chkPRE1BaseYear.Hide();
-                    chkPRE2BaseYear.Hide();
-                    chkPRE3BaseYear.Hide();
-                    chkPRE4BaseYear.Hide();
-                }
+                case m_str_1_8_1:
+                    arrSummarySequence = m_summary_1_8_1;
+                    arrFfeSequence = m_ffe_1_8_1;
+                    break;
+                case m_str_1_3_1:
+                    arrSummarySequence = m_summary_1_3_1;
+                    arrFfeSequence = m_ffe_1_3_1;
+                    break;
+                case m_str_1_9_10_10_10:
+                    Console.WriteLine("Wednesday");
+                    break;
+                case m_str_1_4_5_5_5:
+                    Console.WriteLine("Wednesday");
+                    break;
             }
-            else if (p_strOption == "OPTION 2")
+
+            // Apply the appropriate sequence number array
+            if (arrSummarySequence != null)
             {
                 if (strTable.IndexOf("POTFIRE", 0) >= 0)
                 {
-                    cmbPRE1.Text = "1"; cmbPOST1.Text = "1";
-                    cmbPRE2.Text = "Not Used"; cmbPOST2.Text = "3";
-                    cmbPRE3.Text = "Not Used"; cmbPOST3.Text = "5";
-                    cmbPRE4.Text = "Not Used"; cmbPOST4.Text = "7";
+                    cmbPRE1.Text = arrFfeSequence[0]; cmbPOST1.Text = arrFfeSequence[1];
+                    cmbPRE2.Text = arrFfeSequence[2]; cmbPOST2.Text = arrFfeSequence[3];
+                    cmbPRE3.Text = arrFfeSequence[4]; cmbPOST3.Text = arrFfeSequence[5];
+                    cmbPRE4.Text = arrFfeSequence[6]; cmbPOST4.Text = arrFfeSequence[7];
 
                     chkPRE1BaseYear.Checked = true;
                     chkPRE2BaseYear.Checked = false;
@@ -842,17 +817,13 @@ namespace FIA_Biosum_Manager
                     chkPRE2BaseYear.Hide();
                     chkPRE3BaseYear.Hide();
                     chkPRE4BaseYear.Hide();
-
-
-
-
                 }
                 else if (strTable.Trim().ToUpper() == "FVS_CUTLIST")
                 {
-                    cmbPRE1.Text = "2"; cmbPOST1.Text = "Not Used";
-                    cmbPRE2.Text = "4"; cmbPOST2.Text = "Not Used";
-                    cmbPRE3.Text = "6"; cmbPOST3.Text = "Not Used";
-                    cmbPRE4.Text = "8"; cmbPOST4.Text = "Not Used";
+                    cmbPRE1.Text = arrSummarySequence[0]; cmbPOST1.Text = "Not Used";
+                    cmbPRE2.Text = arrSummarySequence[2]; cmbPOST2.Text = "Not Used";
+                    cmbPRE3.Text = arrSummarySequence[4]; cmbPOST3.Text = "Not Used";
+                    cmbPRE4.Text = arrSummarySequence[6]; cmbPOST4.Text = "Not Used";
                     chkPRE1BaseYear.Checked = false;
                     chkPRE2BaseYear.Checked = false;
                     chkPRE3BaseYear.Checked = false;
@@ -864,10 +835,10 @@ namespace FIA_Biosum_Manager
                 }
                 else if (strTable.Trim().ToUpper() == "FVS_STRCLASS")
                 {
-                    cmbPRE1.Text = "1"; cmbPOST1.Text = "2";
-                    cmbPRE2.Text = "3"; cmbPOST2.Text = "4";
-                    cmbPRE3.Text = "5"; cmbPOST3.Text = "6";
-                    cmbPRE4.Text = "7"; cmbPOST4.Text = "8";
+                    cmbPRE1.Text = arrSummarySequence[0]; cmbPOST1.Text = arrSummarySequence[1];
+                    cmbPRE2.Text = arrSummarySequence[2]; cmbPOST2.Text = arrSummarySequence[3];
+                    cmbPRE3.Text = arrSummarySequence[4]; cmbPOST3.Text = arrSummarySequence[5];
+                    cmbPRE4.Text = arrSummarySequence[6]; cmbPOST4.Text = arrSummarySequence[7];
                     m_cmbFVSStrClassPre1.SelectedIndex = 0;
                     m_cmbFVSStrClassPost1.SelectedIndex = 0;
                     m_cmbFVSStrClassPre2.SelectedIndex = 0;
@@ -880,10 +851,10 @@ namespace FIA_Biosum_Manager
                 }
                 else
                 {
-                    cmbPRE1.Text = "1"; cmbPOST1.Text = "2";
-                    cmbPRE2.Text = "3"; cmbPOST2.Text = "4";
-                    cmbPRE3.Text = "5"; cmbPOST3.Text = "6";
-                    cmbPRE4.Text = "7"; cmbPOST4.Text = "8";
+                    cmbPRE1.Text = arrSummarySequence[0]; cmbPOST1.Text = arrSummarySequence[1];
+                    cmbPRE2.Text = arrSummarySequence[2]; cmbPOST2.Text = arrSummarySequence[3];
+                    cmbPRE3.Text = arrSummarySequence[4]; cmbPOST3.Text = arrSummarySequence[5];
+                    cmbPRE4.Text = arrSummarySequence[6]; cmbPOST4.Text = arrSummarySequence[7];
 
                     chkPRE1BaseYear.Checked = false;
                     chkPRE2BaseYear.Checked = false;
