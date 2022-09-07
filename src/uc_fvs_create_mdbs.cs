@@ -34,8 +34,10 @@ namespace FIA_Biosum_Manager
             { "SPECIESFIA", "SPECIES" }
         };
 
-        // Only 2 tables we want to create for POTFIRE
-        public static List<string> lstPotfireTables = new List<string> { "FVS_Cases", "FVS_PotFire" };
+        // Only tables we want to create from POTFIRE BaseYr runtitle
+        public static List<string> lstPotfireTables = new List<string> { "FVS_Cases", "FVS_PotFire", "FVS_Fuels", "FVS_BurnReport",
+            "FVS_Consumption", "FVS_Mortality", "FVS_SnagSum", "FVS_SnagDet", "FVS_Carbon", "FVS_Hrv_Carbon", "FVS_Down_Wood_Cov",
+            "FVS_Down_Wood_Vol"};
         public static string runTitle = "RUNTITLE";
         private Button btnCancel;
         private Button btnExportLog;

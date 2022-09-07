@@ -190,7 +190,8 @@ namespace FIA_Biosum_Manager
 
             // Adding new default patterns
             cmbDefault.Items.Add(m_str_1_8_1);
-            
+            cmbDefault.Items.Add(m_str_1_3_1);
+
 
             loadvalues();
             

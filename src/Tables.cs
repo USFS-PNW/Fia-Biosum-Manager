@@ -2507,7 +2507,6 @@ namespace FIA_Biosum_Manager
                                                               "FVS_STRCLASS",
                                                               "FVS_POTFIRE",
                                                               "FVS_POTFIRE_EAST",
-                                                              "FVS_CANPROFILE",
                                                               "FVS_FUELS",
                                                               "FVS_BURNREPORT",
                                                               "FVS_CONSUMPTION",
@@ -2521,10 +2520,6 @@ namespace FIA_Biosum_Manager
                                                               "FVS_DM_SPP_SUM",
                                                               "FVS_DM_STND_SUM",
                                                               "FVS_DM_SZ_SUM",
-                                                              "FVS_BM_MAIN",
-                                                              "FVS_BM_BKP",
-                                                              "FVS_BM_TREE",
-                                                              "FVS_BM_VOL",
                                                               "FVS_ECONSUMMARY",
                                                               "FVS_ECONHARVESTVALUE",
                                                               "FVS_CUSTOM"};
