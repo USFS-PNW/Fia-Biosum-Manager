@@ -6380,11 +6380,11 @@ namespace FIA_Biosum_Manager
                 bSkip = !RxTools.ValidFVSTable(p_strFVSOutTables[y]);
                 if (!bSkip)
                 {
-                    if (p_strFVSOutTables[y].Trim().ToUpper() != "FVS_TREELIST" &&
-                        p_strFVSOutTables[y].Trim().ToUpper() != "FVS_CUTLIST" &&
-                        p_strFVSOutTables[y].Trim().ToUpper() != "FVS_ATRTLIST" &&
-                        p_strFVSOutTables[y].Trim().ToUpper() != "FVS_STRCLASS" &&
-                        p_strFVSOutTables[y].Trim().ToUpper() != "FVS_CASES")
+                    IList<string> lstExcludedTables = new List<string>() {"FVS_TREELIST", "FVS_CUTLIST", "FVS_ATRTLIST",
+                                                                          "FVS_STRCLASS", "FVS_CASES", "FVS_DM_SPP_SUM",
+                                                                          "FVS_SNAGDET", "FVS_CLIMATE", "FVS_ECONHARVESTVALUE",
+                                                                          "FVS_DM_SZ_SUM","FVS_RD_DET","FVS_RD_BEETLE"};
+                    if (!lstExcludedTables.Contains(p_strFVSOutTables[y].Trim().ToUpper()))
                     {
                         p_oAdo.m_strSQL = "SELECT DISTINCT b.standid,b.year,b.rowcount " +
                                           "FROM " + p_strFVSOutTables[y] + " a," +
