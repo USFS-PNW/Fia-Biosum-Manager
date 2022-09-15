@@ -27,7 +27,6 @@ namespace FIA_Biosum_Manager
         private bool m_bDebug;
         private Dictionary<string, List<Tuple<string, utils.DataType>>> m_listDictFVSOutputTablesColumnsDefinitions;
         private Dictionary<string, string> m_dictCreateTableQueries;
-        Dictionary<string, List<string>> m_dictRunTitleTables;
 
         // Mapping of sqlite column names to biosum column names. Add new entries here.
         public static Dictionary<string, string> sqliteToAccessColNames = new Dictionary<string, string>
@@ -36,9 +35,7 @@ namespace FIA_Biosum_Manager
         };
 
         // Only tables we want to create from POTFIRE BaseYr runtitle
-        public static List<string> lstPotfireTables = new List<string> { "FVS_Cases", "FVS_PotFire", "FVS_Fuels", "FVS_BurnReport",
-            "FVS_Consumption", "FVS_Mortality", "FVS_SnagSum", "FVS_SnagDet", "FVS_Carbon", "FVS_Hrv_Carbon", "FVS_Down_Wood_Cov",
-            "FVS_Down_Wood_Vol"};
+        public static List<string> lstPotfireTables = new List<string> { "FVS_Cases", "FVS_PotFire" };
         public static string runTitle = "RUNTITLE";
         private Button btnCancel;
         private Button btnExportLog;
@@ -223,7 +220,6 @@ namespace FIA_Biosum_Manager
             {
                 // Create file in root\fvs\data\<variant>\<filename>
                 var strDbPathFile = m_strProjDir + "\\fvs\\data\\" + file[1] + "\\" + file[0];
-                var strRunTitle = System.IO.Path.GetFileNameWithoutExtension(file[0]);
 
                 var fi = new FileInfo(strDbPathFile);
                 if (fi.Exists)
@@ -246,7 +242,7 @@ namespace FIA_Biosum_Manager
                     // Populate tables via these queries
                     appendStringToDebugTextbox($@"Connecting to: {file[0]}");
                     accessConn.Open();
-                    executeSQLListOnAccessConnection(m_dictCreateTableQueries, accessConn, m_ado, strRunTitle);
+                    executeSQLListOnAccessConnection(m_dictCreateTableQueries, accessConn, m_ado);
                     // Populate new tables from SQLite
                     using (var sqliteConn = new System.Data.SQLite.SQLiteConnection(strSQLiteConnection))
                     {
@@ -387,7 +383,7 @@ namespace FIA_Biosum_Manager
                     convertedType = "DOUBLE";
                     break;
                 case "SYSTEM.STRING":
-                    convertedType = "VARCHAR(255)";
+                    convertedType = "TEXT(255)";
                     break;
                 default:
                     convertedType = "UNRECOGNIZED";
@@ -445,7 +441,6 @@ namespace FIA_Biosum_Manager
                 //Build field list string to insert sql by matching up the column names in the biosum plot table and the fiadb plot table
 
                 // Run this loop for each database we need to make.
-                m_dictRunTitleTables = new Dictionary<string, List<string>>();
                 foreach (var tblName in tableNames)
                 {
                     // We only want tables that start with FVS_
@@ -494,40 +489,6 @@ namespace FIA_Biosum_Manager
                         // Populate the table create queries dict and the dictionary of output table columns and their access datatype.
                         m_dictCreateTableQueries[convertSqliteTblNameToBiosumTblName(tblName)] = sb.ToString();
                         m_listDictFVSOutputTablesColumnsDefinitions[convertSqliteTblNameToBiosumTblName(tblName)] = listColDataTypes;
-
-                        oDataMgr.SqlQueryReader(con, $@"SELECT distinct(c.RunTitle) FROM FVS_CASES c 
-                                                        INNER JOIN {tblName} f ON c.CaseID=f.CaseID ");
-                        List<string> lstTables = null;
-                        if (oDataMgr.m_DataReader.HasRows)
-                        {
-                            while (oDataMgr.m_DataReader.Read())
-                            {
-                                string strRunTitle = Convert.ToString(oDataMgr.m_DataReader["RunTitle"]);
-                                // dictionary key: runTitle                                 
-                                if (! m_dictRunTitleTables.Keys.Contains(strRunTitle))
-                                {
-                                    lstTables = new List<string>();
-                                }
-                                else
-                                {
-                                    lstTables = m_dictRunTitleTables[strRunTitle];
-                                }
-                                lstTables.Add(tblName);
-                                m_dictRunTitleTables[strRunTitle] = lstTables;
-                            }
-
-                        }
-                        oDataMgr.m_DataReader.Close();
-                    }
-                }
-                // Add the FVS_CutList if it's missing so that FVS_CUTLIST_PREPOST_SEQNUM_MATRIX is handled
-                // correctly in succeeding steps
-                foreach (var key in m_dictRunTitleTables.Keys)
-                {
-                    List<string> lstTables = m_dictRunTitleTables[key];
-                    if (!lstTables.Contains("FVS_CutList") && !(key.IndexOf("BaseYr") > -1))
-                    {
-                        lstTables.Add("FVS_CutList");
                     }
                 }
             }
@@ -538,32 +499,23 @@ namespace FIA_Biosum_Manager
         /// <param name="queryDict">A <string,string> dict where the key is a table and the value is a query to run.</param>
         /// <param name="accessConn">An OleDbConnection for the access DB to run against.</param>
         /// <param name="oAdo">An ado_data_access instance.</param>
-        private void executeSQLListOnAccessConnection(Dictionary<string, string> queryDict, OleDbConnection accessConn, ado_data_access oAdo,
-            string strRunTitle)
+        private void executeSQLListOnAccessConnection(Dictionary<string, string> queryDict, OleDbConnection accessConn, ado_data_access oAdo)
         {
-            List<string> lstTables = new List<string>();
-            if (m_dictRunTitleTables.Keys.Contains(strRunTitle))
-            {
-                lstTables = m_dictRunTitleTables[strRunTitle];
-            }
             foreach (var tblName in queryDict.Keys)
             {
-                if (lstTables.Contains(tblName))
+                string strDataSource = accessConn.DataSource.ToUpper();
+                if (strDataSource.IndexOf("POTFIRE_BASEYR") > -1) // This is a baseyr database; Only create 2 tables
                 {
-                    string strDataSource = accessConn.DataSource.ToUpper();
-                    if (strDataSource.IndexOf("POTFIRE_BASEYR") > -1) // This is a baseyr database; Only create 2 tables
-                    {
-                        if (lstPotfireTables.Contains(tblName))
-                        {
-                            appendStringToDebugTextbox($@"Creating table: {tblName}");
-                            oAdo.SqlNonQuery(accessConn, queryDict[tblName]);
-                        }
-                    }
-                    else
+                    if (lstPotfireTables.Contains(tblName))
                     {
                         appendStringToDebugTextbox($@"Creating table: {tblName}");
                         oAdo.SqlNonQuery(accessConn, queryDict[tblName]);
                     }
+                }
+                else
+                {
+                    appendStringToDebugTextbox($@"Creating table: {tblName}");
+                    oAdo.SqlNonQuery(accessConn, queryDict[tblName]);
                 }
             }
         }
