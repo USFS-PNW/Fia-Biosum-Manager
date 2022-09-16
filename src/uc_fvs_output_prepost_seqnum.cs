@@ -66,20 +66,20 @@ namespace FIA_Biosum_Manager
                                     "RxCycle4_POST_BEFORECUT_YN," + 
                                     "USE_SUMMARY_TABLE_SEQNUM_YN";
         private const string m_str_pp_1_8_1 = "1-8-1 Treat Every Cycle (pre-post)";
-        private static string[] m_summary_1_8_1 = {"1","2","4","5","7","8","10","11"};
+        private static string[] m_summary_1_8_1 = {"2","3","5","6","8","9","11","12"};
         private static string[] m_ffe_1_8_1 = { "1","3","4","6","7","9","10","12"};
         private const string m_str_pp_1_3_1 = "1-3-1 Treat Every Cycle (pre-post)";
         private const string m_str_pp_1_9_10_10_10_1 = "1-9-10-10-10-1 Treat First Cycle Only (pre-post)";
-        private static string[] m_summary_1_9_10_10_10_1 = { "1", "2", "Not Used", "3", "Not Used", "4", "Not Used", "5" };
+        private static string[] m_summary_1_9_10_10_10_1 = { "2", "3", "Not Used", "4", "Not Used", "5", "6", "7" };
         private static string[] m_ffe_1_9_10_10_10_1 = { "1", "3", "Not Used", "4", "Not Used", "5", "Not Used", "6" };
         private const string m_str_pp_1_4_5_5_5_1 = "1-4-5-5-5-1 Treat First Cycle Only (pre-post)";
         private const string m_str_wtd_1_8_1 = "1-8-1 Treat Every Cycle (40/20-yr wtd mean)";
-        private static string[] m_summary_wtd_1_8_1 = { "2", "4", "5", "7", "8", "10", "11", "12" };
-        private static string[] m_ffe_wtd_1_8_1 = { "2", "3", "5", "6", "8", "9", "11", "12" };
+        private static string[] m_summary_wtd_1_8_1 = { "3", "4", "6", "7", "9", "10", "12", "13" };
+        private static string[] m_ffe_wtd_1_8_1 = { "3", "4", "5", "7", "9", "10", "12", "13" };
         private const string m_str_wtd_1_3_1 = "1-3-1 Treat Every Cycle (40/20-yr wtd mean)";
         private const string m_str_wtd_1_9_10_10_10_1 = "1-9-10-10-10-1 Treat First Cycle Only (40/20-yr wtd mean)";
-        private static string[] m_summary_wtd_1_9_10_10_10_1 = { "2", "3", "Not Used", "4", "Not Used", "5", "Not Used", "6" };
-        private static string[] m_ffe_wtd_1_9_10_10_10_1 = { "2", "3", "Not Used", "4", "Not Used", "5", "Not Used", "6" };
+        private static string[] m_summary_wtd_1_9_10_10_10_1 = { "2", "3", "Not Used", "4", "Not Used", "5", "6", "7" };
+        private static string[] m_ffe_wtd_1_9_10_10_10_1 = { "2", "3", "Not Used", "4", "Not Used", "5", "6", "7" };
         private const string m_str_wtd_1_4_5_5_5_1 = "1-4-5-5-5-1 Treat First Cycle Only (40/20-yr wtd mean)";
 
 
@@ -828,9 +828,6 @@ namespace FIA_Biosum_Manager
                     break;
             }
 
-            // These patterns enable BaseYr
-            IList<string> lstUsesBaseYr = new List<string>() { m_str_pp_1_8_1, m_str_pp_1_3_1, m_str_pp_1_9_10_10_10_1, m_str_pp_1_4_5_5_5_1 };
-
             // Apply the appropriate sequence number array
             if (arrSummarySequence != null)
             {
@@ -841,20 +838,12 @@ namespace FIA_Biosum_Manager
                     cmbPRE3.Text = arrFfeSequence[4]; cmbPOST3.Text = arrFfeSequence[5];
                     cmbPRE4.Text = arrFfeSequence[6]; cmbPOST4.Text = arrFfeSequence[7];
 
-                    if (lstUsesBaseYr.Contains(p_strOption))
-                    {
-                        chkPRE1BaseYear.Checked = true;
-                        chkPRE1BaseYear.Show();
-                    }
-                    else
-                    {
-                        chkPRE1BaseYear.Checked = false;
-                        chkPRE1BaseYear.Hide();
-                    }
-
+                    // 16-SEP-2022: We are no longer recommending BaseYear for FFE tables;  Treating year 1 as BaseYear instead
+                    chkPRE1BaseYear.Checked = false;
                     chkPRE2BaseYear.Checked = false;
                     chkPRE3BaseYear.Checked = false;
                     chkPRE4BaseYear.Checked = false;
+                    chkPRE1BaseYear.Hide();
                     chkPRE2BaseYear.Hide();
                     chkPRE3BaseYear.Hide();
                     chkPRE4BaseYear.Hide();
