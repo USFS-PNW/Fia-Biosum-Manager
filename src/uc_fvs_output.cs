@@ -6381,9 +6381,7 @@ namespace FIA_Biosum_Manager
                 if (!bSkip)
                 {
                     IList<string> lstExcludedTables = new List<string>() {"FVS_TREELIST", "FVS_CUTLIST", "FVS_ATRTLIST",
-                                                                          "FVS_STRCLASS", "FVS_CASES", "FVS_DM_SPP_SUM",
-                                                                          "FVS_SNAGDET", "FVS_CLIMATE", "FVS_ECONHARVESTVALUE",
-                                                                          "FVS_DM_SZ_SUM","FVS_RD_DET","FVS_RD_BEETLE"};
+                                                                          "FVS_STRCLASS", "FVS_CASES", "FVS_CANPROFILE"};
                     if (!lstExcludedTables.Contains(p_strFVSOutTables[y].Trim().ToUpper()))
                     {
                         p_oAdo.m_strSQL = "SELECT DISTINCT b.standid,b.year,b.rowcount " +

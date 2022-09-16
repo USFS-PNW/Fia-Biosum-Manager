@@ -2509,19 +2509,13 @@ namespace FIA_Biosum_Manager
                                                               "FVS_POTFIRE_EAST",
                                                               "FVS_FUELS",
                                                               "FVS_BURNREPORT",
-                                                              "FVS_CONSUMPTION",
-                                                              "FVS_MORTALITY",
                                                               "FVS_SNAGSUM",
-                                                              "FVS_SNAGDET",
                                                               "FVS_CARBON",
                                                               "FVS_HRV_CARBON",
                                                               "FVS_DOWN_WOOD_COV",
                                                               "FVS_DOWN_WOOD_VOL",
-                                                              "FVS_DM_SPP_SUM",
                                                               "FVS_DM_STND_SUM",
-                                                              "FVS_DM_SZ_SUM",
-                                                              "FVS_ECONSUMMARY",
-                                                              "FVS_ECONHARVESTVALUE",
+                                                              "FVS_CANPROFILE",
                                                               "FVS_CUSTOM"};
 
             static public string DefaultRxTableDbFile { get { return @"db\fvsmaster.mdb"; } }
