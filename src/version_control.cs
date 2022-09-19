@@ -549,10 +549,11 @@ namespace FIA_Biosum_Manager
                         UpdateProjectVersionFile(strProjVersionFile);
                         bPerformCheck = false;
                     }
+                    //5.10.0 No schema changes but new version number
                     else if ((Convert.ToInt16(m_strAppVerArray[APP_VERSION_MAJOR]) == 5 &&
-                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR1]) > 6) &&
+                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR1]) >= 10) &&
                         (Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MAJOR]) == 5 &&
-                        Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR1]) > 6))
+                        Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR1]) >= 9))
                     {
                         UpdateProjectVersionFile(strProjVersionFile);
                         bPerformCheck = false;
