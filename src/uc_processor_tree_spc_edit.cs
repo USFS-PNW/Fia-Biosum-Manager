@@ -574,9 +574,10 @@ namespace FIA_Biosum_Manager
             else
             {
                 //check to make sure the spcd exists in fia_tree_species_ref before trying to add
+                string strCommonName = m_ado.FixString(txtCommon.Text.Trim(), "'", "''");
                 this.m_ado.m_strSQL = "SELECT spcd FROM " + m_strTreeSpcTable +
                                       " WHERE spcd <> " + this.txtSpCd.Text.Trim() + " AND TRIM(common_name) = '" +
-                                      txtCommon.Text.Trim() + "';";
+                                      strCommonName + "';";
                 this.m_ado.SqlQueryReader(this.m_ado.m_OleDbConnection, this.m_ado.m_OleDbTransaction, this.m_ado.m_strSQL);
                 if (this.m_ado.m_OleDbDataReader.HasRows)
                 {
