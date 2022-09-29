@@ -387,6 +387,7 @@ namespace FIA_Biosum_Manager
             this.cmbStep.Items.AddRange(new object[] {
             "Step 1 - Define PRE/POST Table SeqNum",
             "Step 2 - Pre-Processing Audit Check",
+            "Step 2a - Create FVSOut_BioSum.db",
             "Step 3 - Append FVS Output Data",
             "Step 4 - Post-Processing Audit Check"});
             this.cmbStep.Location = new System.Drawing.Point(8, 337);
@@ -9907,6 +9908,9 @@ namespace FIA_Biosum_Manager
                 case "Step 4 - Post-Processing Audit Check":
                     this.RunPOSTAudit_Start();
                     break;
+                case "Step 2a - Create FVSOut_BioSum.db":
+                    this.RunCreateFVSOut_BioSum_Start();
+                    break;
             }
 
         }
@@ -9998,6 +10002,151 @@ namespace FIA_Biosum_Manager
                 }
             }
             return false;
+        }
+
+        private void RunCreateFVSOut_BioSum_Start()
+        {
+            this.m_frmTherm = new frmTherm(((frmDialog)ParentForm), "FVS OUT DATA",
+                "Create FVSOut_BioSum.db", "2");
+            this.m_frmTherm.TopMost = true;
+            this.m_frmTherm.lblMsg.Text = "";
+            this.cmbStep.Enabled = false;
+            this.btnExecute.Enabled = false;
+            this.btnChkAll.Enabled = false;
+            this.btnClearAll.Enabled = false;
+            this.btnRefresh.Enabled = false;
+            this.btnClose.Enabled = false;
+            this.btnHelp.Enabled = false;
+            this.btnViewLogFile.Enabled = false;
+            this.btnViewPostLogFile.Enabled = false;
+            this.btnAuditDb.Enabled = false;
+            this.btnPostAppendAuditDb.Enabled = false;
+
+
+            frmMain.g_oDelegate.CurrentThreadProcessAborted = false;
+            frmMain.g_oDelegate.CurrentThreadProcessDone = false;
+            frmMain.g_oDelegate.CurrentThreadProcessStarted = false;
+            frmMain.g_oDelegate.m_oThread = new System.Threading.Thread(new System.Threading.ThreadStart(RunCreateFVSOut_BioSum_Main));
+            frmMain.g_oDelegate.CurrentThreadProcessIdle = false;
+            frmMain.g_oDelegate.InitializeThreadEvents();
+            frmMain.g_oDelegate.m_oThread.IsBackground = true;
+
+            frmMain.g_oDelegate.m_oThread.Start();
+
+        }
+
+        public void RunCreateFVSOut_BioSum_Main()
+        {
+
+            frmMain.g_oDelegate.CurrentThreadProcessStarted = true;
+            this.m_intError = 0;
+            int intCount = 0;
+            m_intProgressOverallTotalCount = 0;
+            m_intProgressStepCurrentCount = 0;
+            m_strError = "";
+            m_strWarning = "";
+            m_intWarning = 0;
+            m_intProgressOverallCurrentCount = 0;
+
+            if (m_bDebug)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "*****START*****" + System.DateTime.Now.ToString() + "\r\n");
+
+            System.DateTime oDate = System.DateTime.Now;
+            string strDateFormat = "yyyy-MM-dd_HH-mm-ss";
+            m_strLogDate = oDate.ToString(strDateFormat);
+            m_strLogDate = m_strLogDate.Replace("/", "_"); m_strLogDate = m_strLogDate.Replace(":", "_");
+
+            try
+            {
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Maximum", 100);
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Minimum", 0);
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Value", 0);
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg2, "Text", "Overall Progress");
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "");
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Visible", true);
+
+                if (m_intError == 0)
+                {
+                    {
+                        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "This is a filler message");
+                        frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
+
+
+                        m_strLogFile = "FVSOut_BioSum_" + m_strLogDate.Replace(" ", "_") + ".txt";
+
+
+                        frmMain.g_oUtils.WriteText(m_strLogFile, "CREATING FVSOUT_BIOSUM.DB \r\n");
+                        frmMain.g_oUtils.WriteText(m_strLogFile, "--------- \r\n\r\n");
+                        frmMain.g_oUtils.WriteText(m_strLogFile, "Date/Time:" + System.DateTime.Now.ToString().Trim() + "\r\n");
+
+                        //check to ensure the variant in the fvs cases table
+                        //matches the current variant
+                        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "This is a filler message");
+
+                        m_intProgressStepCurrentCount++;
+                        UpdateTherm(m_frmTherm.progressBar1,
+                                    m_intProgressStepCurrentCount,
+                                    m_intProgressStepTotalCount);
+
+
+                        m_intProgressStepCurrentCount++;
+                        UpdateTherm(m_frmTherm.progressBar1,
+                                    m_intProgressStepCurrentCount,
+                                    m_intProgressStepTotalCount);
+
+                        m_intProgressStepCurrentCount++;
+                        UpdateTherm(m_frmTherm.progressBar1,
+                                    m_intProgressStepCurrentCount,
+                                    m_intProgressStepTotalCount);
+
+
+                        frmMain.g_oUtils.WriteText(m_strLogFile, "Date/Time:" + System.DateTime.Now.ToString().Trim() + "\r\n\r\n");
+                        frmMain.g_oUtils.WriteText(m_strLogFile, "**EOF**");
+
+
+                        UpdateTherm(m_frmTherm.progressBar2,
+                                m_intProgressOverallCurrentCount,
+                                m_intProgressOverallTotalCount);
+
+                    }
+                    UpdateTherm(m_frmTherm.progressBar1,
+                                       m_intProgressStepTotalCount,
+                                       m_intProgressStepTotalCount);
+                    UpdateTherm(m_frmTherm.progressBar2,
+                                    m_intProgressOverallTotalCount,
+                                    m_intProgressOverallTotalCount);
+
+                    System.Threading.Thread.Sleep(2000);
+                    this.FVSRecordsFinished();
+                }
+            }
+            catch (System.Threading.ThreadInterruptedException err)
+            {
+                MessageBox.Show("Threading Interruption Error " + err.Message.ToString());
+            }
+            catch (System.Threading.ThreadAbortException err)
+            {
+                MessageBox.Show("Threading Abort Error " + err.Message.ToString());
+                this.ThreadCleanUp();
+                this.CleanupThread();
+
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("!!Error!! \n" +
+                    "Module - uc_fvs_output:RunCreateFVSOut_BioSum_Main  \n" +
+                    "Err Msg - " + err.Message.ToString().Trim(),
+                    "FVS Biosum", System.Windows.Forms.MessageBoxButtons.OK,
+                    System.Windows.Forms.MessageBoxIcon.Exclamation);
+                this.m_intError = -1;
+            }
+
+            if (m_bDebug)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "****END*****" + System.DateTime.Now.ToString() + "\r\n");
+            CleanupThread();
+
+            frmMain.g_oDelegate.m_oEventThreadStopped.Set();
+            this.Invoke(frmMain.g_oDelegate.m_oDelegateThreadFinished);
         }
     }
 }

@@ -215,10 +215,12 @@ namespace FIA_Biosum_Manager
             var fileNamesList = new List<List<string>>();
             fileNamesList = getRunTitleFilenames();
             populateTableQueryDictionaries(strSQLiteConnection, sqliteDataMgr);
+            var fvsOutVariantList = populateFvsOutVariableList();
 
             // Iterate over file name list to create new access files and populate them.
             foreach (var file in fileNamesList)
             {
+
                 // Create file in root\fvs\data\<variant>\<filename>
                 var strDbPathFile = m_strProjDir + "\\fvs\\data\\" + file[1] + "\\" + file[0];
                 var strRunTitle = System.IO.Path.GetFileNameWithoutExtension(file[0]);
@@ -236,7 +238,11 @@ namespace FIA_Biosum_Manager
                     }
                     appendStringToDebugTextbox($@"File exists. Deleting: {strDbPathFile}");
                 }
-                oDao.CreateMDB(strDbPathFile);
+
+                // Only create the mdb if variant is in the FVSOut.db
+                if (fvsOutVariantList.Contains(file[1]))
+                {
+                    oDao.CreateMDB(strDbPathFile);
 
                 // Open a connection to new file 
                 using (var accessConn = new OleDbConnection(m_ado.getMDBConnString(strDbPathFile, "", "")))
@@ -252,7 +258,7 @@ namespace FIA_Biosum_Manager
                         foreach (var tblName in m_listDictFVSOutputTablesColumnsDefinitions.Keys)
                         {
                             if (m_ado.TableExist(accessConn, tblName))
-                                // Add this to avoid exceptions and to support POTFIRE (only has 2 tables)
+                            // Add this to avoid exceptions and to support POTFIRE (only has 2 tables)
                             {
                                 var cols = m_listDictFVSOutputTablesColumnsDefinitions[tblName];
                                 // Generate comma-seperated column string for insert statements. Wrap in back-tick to prevent "reserved word" errors.
@@ -313,6 +319,7 @@ namespace FIA_Biosum_Manager
                     // Idea: Use Tyler's access macro on the new and old, and compare of steps and add increments. Use delegate to update bar from background thread.
                     // Update BioSum ready/working indicator in lower right corner of frmMain.
                 }
+            }
             }
             // TODO: PotFireBaseYr (sp?) special case handling. Each DB has two tables, FVS_Cases and FVS_PotFire.
             // Only one PotFireBaseYr db per variant. Probably.
@@ -519,6 +526,25 @@ namespace FIA_Biosum_Manager
                     }
                 }
             }
+        }
+
+        private List<string> populateFvsOutVariableList()
+        {
+            var lstReturn = new List<string>();
+            foreach (var key in m_dictRunTitleTables.Keys)
+            {
+                // The key is the RunTitle: FVSOUT_SO_P001-001-999-999-999
+                string[] arrPieces = key.Split('_');
+                if (arrPieces.Length == 3)
+                {
+                    var strVariant = arrPieces[1];
+                    if (! lstReturn.Contains(strVariant))
+                    {
+                        lstReturn.Add(strVariant);
+                    }
+                }
+            }
+            return lstReturn;
         }
 
         /// <summary>Executes the supplied dictionary of queries on the table name used as the key, using the connection suppled.
