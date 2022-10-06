@@ -262,7 +262,7 @@ namespace FIA_Biosum_Manager
                             {
                                 var cols = m_listDictFVSOutputTablesColumnsDefinitions[tblName];
                                 // Generate comma-seperated column string for insert statements. Wrap in back-tick to prevent "reserved word" errors.
-                                var strColumns = string.Join(",", m_listDictFVSOutputTablesColumnsDefinitions[tblName].Select(item => wrapInBackTick(translateColumn(item.Item1))));
+                                var strColumns = string.Join(",", m_listDictFVSOutputTablesColumnsDefinitions[tblName].Select(item => utils.WrapInBacktick(translateColumn(item.Item1))));
 
                                 // Open up a data manager for the subsetted query for the run title we're on.  
                                 sqliteDataMgr.SqlQueryReader(sqliteConn, generateRuntitleSubsetQuery(tblName, file[2]));
@@ -378,29 +378,6 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        /// <summary>Converts the string representation of an SQLite data type to the equivalent Access data type strings. </summary>
-        /// <param name="dataTypeFromDB">The string representation of an SQLite data type.</param>
-        private string dataTypeConvert(string dataTypeFromDB)
-        {
-            var convertedType = "";
-            switch (dataTypeFromDB)
-            {
-                case "SYSTEM.INT32":
-                    convertedType = "LONG";
-                    break;
-                case "SYSTEM.DOUBLE":
-                    convertedType = "DOUBLE";
-                    break;
-                case "SYSTEM.STRING":
-                    convertedType = "TEXT(255)";
-                    break;
-                default:
-                    convertedType = "UNRECOGNIZED";
-                    break;
-            }
-            return convertedType;
-        }
-
         /// <summary>Generates a select query to subset the supplied table by the given run title. Used to populate access dbs from the SQLite tables. </summary>
         /// <param name="strTableName">The SQLite table name to subset.</param>
         ///  <param name="strRunTitle">The run title to subset the table by.</param>
@@ -478,7 +455,7 @@ namespace FIA_Biosum_Manager
                             listColDataTypes.Add(Tuple.Create(colName, getDataTypeEnumValueFromString(dataType)));
 
                             // Use converted name here. We want SPECIES for the access creation, and SPECIESFIA for the selects.
-                            strCol = wrapInBackTick(convertedColName) + " " + dataTypeConvert(dataType);
+                            strCol = utils.WrapInBacktick(convertedColName) + " " + utils.DataTypeConvert(dataType);
                             if (strFields.Trim().Length == 0)
                             {
                                 strFields = strCol;
@@ -491,7 +468,7 @@ namespace FIA_Biosum_Manager
                         if (!hasRunTitleField)
                         {
                             // Add runTitle field to tables without it
-                            strCol = wrapInBackTick(runTitle) + " " + dataTypeConvert("SYSTEM.STRING");
+                            strCol = utils.WrapInBacktick(runTitle) + " " + utils.DataTypeConvert("SYSTEM.STRING");
                             strFields += "," + strCol;
                         }
 
@@ -721,16 +698,6 @@ namespace FIA_Biosum_Manager
             m_dictCreateTableQueries.Clear();
             m_listDictFVSOutputTablesColumnsDefinitions.Clear();
             this.ParentForm.Enabled = true;
-        }
-        /// <summary>
-        /// Wraps the supplied string in ` characters. 
-        /// This is necessary for certain Access column names, so we just do it for everything.
-        /// </summary>
-        /// <param name="str">The string to wrap in `.</param>
-        /// <returns></returns>
-        private string wrapInBackTick(string str)
-        {
-            return $@"`{str}`";
         }
 
         /// <summary>

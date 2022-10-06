@@ -150,6 +150,12 @@ namespace FIA_Biosum_Manager
         private DbFileItem_Collection m_oPrePostDbFileItem_Collection = null;
         private Button btnPostAppendAuditDb;
 
+        // Mapping of sqlite column types to Access column names. Add new exception entries here.
+        public static Dictionary<string, string> m_SqliteToAccessColTypes = new Dictionary<string, string>
+        {
+            { "SPECIESFIA", "INTEGER" }
+        };
+
         private SQLite.ADO.DataMgr _SQLite = new SQLite.ADO.DataMgr();
         public SQLite.ADO.DataMgr SQLite
         {
@@ -10058,7 +10064,32 @@ namespace FIA_Biosum_Manager
 
             try
             {
-                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Maximum", 100);
+                string strBiosumDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutBiosumDbFile;
+                if (System.IO.File.Exists(strBiosumDbPath))
+                {
+                    var result = MessageBox.Show(strBiosumDbPath + " already exists. Do you wish to overwrite this file?",
+                        "FIA Biosum", MessageBoxButtons.YesNo);
+                    if (result != DialogResult.Yes)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        try
+                        {
+                            System.IO.File.Delete(strBiosumDbPath);
+                        }
+                        catch (Exception)
+                        {
+                            MessageBox.Show("Unable to delete " + strBiosumDbPath + "! Please make sure the file is not open and try again.", "FIA Biosum");
+                            return;
+                        }
+                    }
+                }
+
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Maximum", 10);
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Minimum", 0);
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", 0);
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Minimum", 0);
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Value", 0);
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg2, "Text", "Overall Progress");
@@ -10068,53 +10099,63 @@ namespace FIA_Biosum_Manager
                 if (m_intError == 0)
                 {
                     {
-                        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "This is a filler message");
+                        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Ready to create FVS_OutBioSum.db");
                         frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
 
 
                         m_strLogFile = "FVSOut_BioSum_" + m_strLogDate.Replace(" ", "_") + ".txt";
 
-
                         frmMain.g_oUtils.WriteText(m_strLogFile, "CREATING FVSOUT_BIOSUM.DB \r\n");
                         frmMain.g_oUtils.WriteText(m_strLogFile, "--------- \r\n\r\n");
                         frmMain.g_oUtils.WriteText(m_strLogFile, "Date/Time:" + System.DateTime.Now.ToString().Trim() + "\r\n");
 
-                        //check to ensure the variant in the fvs cases table
-                        //matches the current variant
-                        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "This is a filler message");
+                        SQLite.CreateDbFile(strBiosumDbPath);
+                        frmMain.g_oUtils.WriteText(m_strLogFile, "Created " + strBiosumDbPath + " file \r\n\r\n");
+
+                        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Querying table schemas from FVSOut.db");
+
+                        m_intProgressStepCurrentCount = 1;
+                        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Querying table schemas from FVSOut.db");
+                        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", m_intProgressStepCurrentCount);
+
+                        string strConnection = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile;
+                        Dictionary<string, string> dictCreateTableQueries = populateTableQueryDictionaries(SQLite.GetConnectionString(strConnection));
+                        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Maximum", dictCreateTableQueries.Keys.Count + 5);
 
                         m_intProgressStepCurrentCount++;
-                        UpdateTherm(m_frmTherm.progressBar1,
-                                    m_intProgressStepCurrentCount,
-                                    m_intProgressStepTotalCount);
+                        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", m_intProgressStepCurrentCount);
 
-
-                        m_intProgressStepCurrentCount++;
-                        UpdateTherm(m_frmTherm.progressBar1,
-                                    m_intProgressStepCurrentCount,
-                                    m_intProgressStepTotalCount);
-
-                        m_intProgressStepCurrentCount++;
-                        UpdateTherm(m_frmTherm.progressBar1,
-                                    m_intProgressStepCurrentCount,
-                                    m_intProgressStepTotalCount);
-
+                        using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(strBiosumDbPath)))
+                        {
+                            con.Open();
+                            string strSql = $@"ATTACH DATABASE '{strConnection}' AS SOURCE";
+                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                this.WriteText(m_strLogFile, strSql + "\r\n");
+                            SQLite.SqlNonQuery(con, strSql);
+                            foreach (var tblName in dictCreateTableQueries.Keys)
+                            {
+                                strSql = dictCreateTableQueries[tblName];
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strLogFile, strSql + "\r\n");
+                                SQLite.SqlNonQuery(con, dictCreateTableQueries[tblName]);
+                                m_intProgressStepCurrentCount++;
+                                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", m_intProgressStepCurrentCount);
+                                strSql = $@"INSERT INTO {tblName} SELECT * FROM SOURCE.{tblName}";
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strLogFile, strSql + "\r\n");
+                                SQLite.SqlNonQuery(con, strSql);
+                            }                            
+                        }
 
                         frmMain.g_oUtils.WriteText(m_strLogFile, "Date/Time:" + System.DateTime.Now.ToString().Trim() + "\r\n\r\n");
                         frmMain.g_oUtils.WriteText(m_strLogFile, "**EOF**");
 
-
-                        UpdateTherm(m_frmTherm.progressBar2,
-                                m_intProgressOverallCurrentCount,
-                                m_intProgressOverallTotalCount);
+                        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Value", m_intProgressOverallCurrentCount);
 
                     }
-                    UpdateTherm(m_frmTherm.progressBar1,
-                                       m_intProgressStepTotalCount,
-                                       m_intProgressStepTotalCount);
-                    UpdateTherm(m_frmTherm.progressBar2,
-                                    m_intProgressOverallTotalCount,
-                                    m_intProgressOverallTotalCount);
+
+                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", m_intProgressStepTotalCount);
+                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Value", m_intProgressOverallCurrentCount);
 
                     System.Threading.Thread.Sleep(2000);
                     this.FVSRecordsFinished();
@@ -10147,6 +10188,58 @@ namespace FIA_Biosum_Manager
 
             frmMain.g_oDelegate.m_oEventThreadStopped.Set();
             this.Invoke(frmMain.g_oDelegate.m_oDelegateThreadFinished);
+        }
+
+        /// <summary>This method populates dictionaries storing table creation scripts and 
+        /// for the new Access MDBs, and a dictionary of column definition information for each type of table
+        /// within those Access MDBs. </summary>
+        /// <param name="strConnection">The connection string for the source SQLite table.</param>
+        private Dictionary<string, string> populateTableQueryDictionaries(string strConnection)
+        {
+            Dictionary<string, string> dictCreateTableQueries = new Dictionary<string, string>();
+            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
+            {
+                con.Open();
+                //getTableNames
+                var tableNames = SQLite.getTableNames(con);
+                //Build field list string to insert sql by matching up the column names in the biosum plot table and the fiadb plot table
+
+                // Run this loop for each database we need to make.
+                foreach (var tblName in tableNames)
+                {
+                    DataTable dtSourceSchema = SQLite.getTableSchema(con, $"select * from {tblName}");
+                    var sb = new System.Text.StringBuilder();
+                    var strCol = "";
+                    sb.Append($@"CREATE TABLE {tblName} (");
+                    var strFields = "";
+                    // Iterate over table schema defined in Data Table format. Check debugger to see columns.
+                    for (int y = 0; y <= dtSourceSchema.Rows.Count - 1; y++)
+                    {
+                        var colName = dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper();
+                        var convertedColName = dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper();
+                        var dataType = dtSourceSchema.Rows[y]["datatype"].ToString().ToUpper();
+                        string convertedDataType = utils.DataTypeConvert(dataType);
+                        if (m_SqliteToAccessColTypes.Keys.Contains(convertedColName))
+                        {
+                            convertedDataType = m_SqliteToAccessColTypes[convertedColName];
+                        }                        
+                        strCol = utils.WrapInBacktick(convertedColName) + " " + convertedDataType;
+                        if (strFields.Trim().Length == 0)
+                        {
+                            strFields = strCol;
+                        }
+                        else
+                        {
+                            strFields += "," + strCol;
+                        }
+                    }
+
+                    sb.Append(strFields + ") ");
+                    // Populate the table create queries dict and the dictionary of output table columns and their access datatype.
+                    dictCreateTableQueries[tblName] = sb.ToString();
+                }
+            }
+            return dictCreateTableQueries;
         }
     }
 }

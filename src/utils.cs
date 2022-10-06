@@ -689,6 +689,40 @@ namespace FIA_Biosum_Manager
                         : _typeConverterDict[pair.Item3](reader[pair.Item1]))
                 .ToList());
         }
+
+        /// <summary>
+        /// Wraps the supplied string in ` characters. 
+        /// This is necessary for certain Access column names.
+        /// </summary>
+        /// <param name="str">The string to wrap in `.</param>
+        /// <returns></returns>
+        public static string WrapInBacktick(string str)
+        {
+            return $@"`{str}`";
+        }
+
+        /// <summary>Converts the string representation of an SQLite data type to the equivalent Access data type strings. </summary>
+        /// <param name="dataTypeFromDB">The string representation of an SQLite data type.</param>
+        public static string DataTypeConvert(string dataTypeFromDB)
+        {
+            var convertedType = "";
+            switch (dataTypeFromDB)
+            {
+                case "SYSTEM.INT32":
+                    convertedType = "LONG";
+                    break;
+                case "SYSTEM.DOUBLE":
+                    convertedType = "DOUBLE";
+                    break;
+                case "SYSTEM.STRING":
+                    convertedType = "VARCHAR(255)";
+                    break;
+                default:
+                    convertedType = "UNRECOGNIZED";
+                    break;
+            }
+            return convertedType;
+        }
     }
 
 }
