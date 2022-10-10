@@ -5409,10 +5409,12 @@ namespace FIA_Biosum_Manager
 		{
 			
 			string strMsg="";
-			if (m_frmTherm.Text.Trim() == "FVS Output")
-			   strMsg = "Do you wish to cancel appending and updating fvs out data (Y/N)?";
-			else
-			   strMsg = "Do you wish to cancel audit (Y/N)?";
+            if (m_frmTherm.Text.Trim() == "FVS Output")
+                strMsg = "Do you wish to cancel appending and updating fvs out data (Y/N)?";
+            else if (m_frmTherm.Text.Trim() == "Ready to create FVS_OutBioSum.db")
+                strMsg = "Do you wish to cancel creating the FVSOut_BioSum.db (Y/N)?";
+            else
+                strMsg = "Do you wish to cancel audit (Y/N)?";
 
 			frmMain.g_oDelegate.AbortProcessing("FIA Biosum",strMsg);
 
@@ -10012,8 +10014,31 @@ namespace FIA_Biosum_Manager
 
         private void RunCreateFVSOut_BioSum_Start()
         {
+            string strBiosumDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutBiosumDbFile;
+            if (System.IO.File.Exists(strBiosumDbPath))
+            {
+                var result = MessageBox.Show(strBiosumDbPath + " already exists. Do you wish to overwrite this file?",
+                    "FIA Biosum", MessageBoxButtons.YesNo);
+                if (result != DialogResult.Yes)
+                {
+                    return;
+                }
+                else
+                {
+                    try
+                    {
+                        System.IO.File.Delete(strBiosumDbPath);
+                    }
+                    catch (Exception)
+                    {
+                        MessageBox.Show("Unable to delete " + strBiosumDbPath + "! Please make sure the file is not open and try again.", "FIA Biosum");
+                        return;
+                    }
+                }
+            }
+
             this.m_frmTherm = new frmTherm(((frmDialog)ParentForm), "FVS OUT DATA",
-                "Create FVSOut_BioSum.db", "2");
+                "Create FVSOut_BioSum.db", "1");
             this.m_frmTherm.TopMost = true;
             this.m_frmTherm.lblMsg.Text = "";
             this.cmbStep.Enabled = false;
@@ -10027,7 +10052,6 @@ namespace FIA_Biosum_Manager
             this.btnViewPostLogFile.Enabled = false;
             this.btnAuditDb.Enabled = false;
             this.btnPostAppendAuditDb.Enabled = false;
-
 
             frmMain.g_oDelegate.CurrentThreadProcessAborted = false;
             frmMain.g_oDelegate.CurrentThreadProcessDone = false;
@@ -10064,35 +10088,9 @@ namespace FIA_Biosum_Manager
 
             try
             {
-                string strBiosumDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutBiosumDbFile;
-                if (System.IO.File.Exists(strBiosumDbPath))
-                {
-                    var result = MessageBox.Show(strBiosumDbPath + " already exists. Do you wish to overwrite this file?",
-                        "FIA Biosum", MessageBoxButtons.YesNo);
-                    if (result != DialogResult.Yes)
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        try
-                        {
-                            System.IO.File.Delete(strBiosumDbPath);
-                        }
-                        catch (Exception)
-                        {
-                            MessageBox.Show("Unable to delete " + strBiosumDbPath + "! Please make sure the file is not open and try again.", "FIA Biosum");
-                            return;
-                        }
-                    }
-                }
-
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Maximum", 10);
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Minimum", 0);
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", 0);
-                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Minimum", 0);
-                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Value", 0);
-                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg2, "Text", "Overall Progress");
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "");
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Visible", true);
 
@@ -10103,16 +10101,16 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
 
 
-                        m_strLogFile = "FVSOut_BioSum_" + m_strLogDate.Replace(" ", "_") + ".txt";
+                        m_strLogFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + $@"/fvs/data/FVSOut_BioSum_" + m_strLogDate.Replace(" ", "_") + ".txt";
 
                         frmMain.g_oUtils.WriteText(m_strLogFile, "CREATING FVSOUT_BIOSUM.DB \r\n");
                         frmMain.g_oUtils.WriteText(m_strLogFile, "--------- \r\n\r\n");
                         frmMain.g_oUtils.WriteText(m_strLogFile, "Date/Time:" + System.DateTime.Now.ToString().Trim() + "\r\n");
 
+                        string strBiosumDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutBiosumDbFile;
+
                         SQLite.CreateDbFile(strBiosumDbPath);
                         frmMain.g_oUtils.WriteText(m_strLogFile, "Created " + strBiosumDbPath + " file \r\n\r\n");
-
-                        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Querying table schemas from FVSOut.db");
 
                         m_intProgressStepCurrentCount = 1;
                         frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Querying table schemas from FVSOut.db");
@@ -10138,11 +10136,12 @@ namespace FIA_Biosum_Manager
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strLogFile, strSql + "\r\n");
                                 SQLite.SqlNonQuery(con, dictCreateTableQueries[tblName]);
-                                m_intProgressStepCurrentCount++;
+                                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Inserting records into " + tblName);
                                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", m_intProgressStepCurrentCount);
                                 strSql = $@"INSERT INTO {tblName} SELECT * FROM SOURCE.{tblName}";
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strLogFile, strSql + "\r\n");
+                                m_intProgressStepCurrentCount++;
                                 SQLite.SqlNonQuery(con, strSql);
                             }                            
                         }
@@ -10155,9 +10154,7 @@ namespace FIA_Biosum_Manager
                     }
 
                     frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", m_intProgressStepTotalCount);
-                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Value", m_intProgressOverallCurrentCount);
 
-                    System.Threading.Thread.Sleep(2000);
                     this.FVSRecordsFinished();
                 }
             }
