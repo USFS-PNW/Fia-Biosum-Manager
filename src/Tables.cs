@@ -2516,7 +2516,9 @@ namespace FIA_Biosum_Manager
                                                               "FVS_DOWN_WOOD_VOL",
                                                               "FVS_DM_STND_SUM",
                                                               "FVS_CANPROFILE",
-                                                              "FVS_CUSTOM"};
+                                                              "FVS_CUSTOM",
+                                                              "FVS_ECONSUMMARY",
+                                                              "FVS_CONSUMPTION"};
 
             static public string DefaultRxTableDbFile { get { return @"db\fvsmaster.mdb"; } }
             static public string DefaultRxTableName { get { return "rx"; } }
