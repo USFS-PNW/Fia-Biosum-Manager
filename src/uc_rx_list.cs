@@ -2513,12 +2513,14 @@ namespace FIA_Biosum_Manager
                     oItem = new FVSPrePostSeqNumItem();
                     oItem.PrePostSeqNumId = Convert.ToInt32(p_oAdo.m_OleDbDataReader["PREPOST_SEQNUM_ID"]);
                     oItem.TableName = Convert.ToString(p_oAdo.m_OleDbDataReader["TableName"]).Trim();
+                    int intAssignedCount = 0;
                     //
                     //PRE
                     //
                     if (p_oAdo.m_OleDbDataReader["RXCYCLE1_PRE_SEQNUM"] != DBNull.Value)
                     {
                         oItem.RxCycle1PreSeqNum = Convert.ToString(p_oAdo.m_OleDbDataReader["RXCYCLE1_PRE_SEQNUM"]).Trim();
+                        intAssignedCount++;
                     }
                     else
                     {
@@ -2527,6 +2529,7 @@ namespace FIA_Biosum_Manager
                     if (p_oAdo.m_OleDbDataReader["RXCYCLE2_PRE_SEQNUM"] != DBNull.Value)
                     {
                         oItem.RxCycle2PreSeqNum = Convert.ToString(p_oAdo.m_OleDbDataReader["RXCYCLE2_PRE_SEQNUM"]).Trim();
+                        intAssignedCount++;
                     }
                     else
                     {
@@ -2535,6 +2538,7 @@ namespace FIA_Biosum_Manager
                     if (p_oAdo.m_OleDbDataReader["RXCYCLE3_PRE_SEQNUM"] != DBNull.Value)
                     {
                         oItem.RxCycle3PreSeqNum = Convert.ToString(p_oAdo.m_OleDbDataReader["RXCYCLE3_PRE_SEQNUM"]).Trim();
+                        intAssignedCount++;
                     }
                     else
                     {
@@ -2543,6 +2547,7 @@ namespace FIA_Biosum_Manager
                     if (p_oAdo.m_OleDbDataReader["RXCYCLE4_PRE_SEQNUM"] != DBNull.Value)
                     {
                         oItem.RxCycle4PreSeqNum = Convert.ToString(p_oAdo.m_OleDbDataReader["RXCYCLE4_PRE_SEQNUM"]).Trim();
+                        intAssignedCount++;
                     }
                     else
                     {
@@ -2554,6 +2559,7 @@ namespace FIA_Biosum_Manager
                     if (p_oAdo.m_OleDbDataReader["RXCYCLE1_POST_SEQNUM"] != DBNull.Value)
                     {
                         oItem.RxCycle1PostSeqNum = Convert.ToString(p_oAdo.m_OleDbDataReader["RXCYCLE1_POST_SEQNUM"]).Trim();
+                        intAssignedCount++;
                     }
                     else
                     {
@@ -2562,6 +2568,7 @@ namespace FIA_Biosum_Manager
                     if (p_oAdo.m_OleDbDataReader["RXCYCLE2_POST_SEQNUM"] != DBNull.Value)
                     {
                         oItem.RxCycle2PostSeqNum = Convert.ToString(p_oAdo.m_OleDbDataReader["RXCYCLE2_POST_SEQNUM"]).Trim();
+                        intAssignedCount++;
                     }
                     else
                     {
@@ -2570,6 +2577,7 @@ namespace FIA_Biosum_Manager
                     if (p_oAdo.m_OleDbDataReader["RXCYCLE3_POST_SEQNUM"] != DBNull.Value)
                     {
                         oItem.RxCycle3PostSeqNum = Convert.ToString(p_oAdo.m_OleDbDataReader["RXCYCLE3_POST_SEQNUM"]).Trim();
+                        intAssignedCount++;
                     }
                     else
                     {
@@ -2578,6 +2586,7 @@ namespace FIA_Biosum_Manager
                     if (p_oAdo.m_OleDbDataReader["RXCYCLE4_POST_SEQNUM"] != DBNull.Value)
                     {
                         oItem.RxCycle4PostSeqNum = Convert.ToString(p_oAdo.m_OleDbDataReader["RXCYCLE4_POST_SEQNUM"]).Trim();
+                        intAssignedCount++;
                     }
                     else
                     {
@@ -2696,6 +2705,7 @@ namespace FIA_Biosum_Manager
                     }
 
                     oItem.Type = p_oAdo.m_OleDbDataReader["TYPE"].ToString().Trim();
+                    oItem.AssignedCount = intAssignedCount;
 
                     switch (oItem.TableName.Trim().ToUpper())
                     {
@@ -3514,6 +3524,26 @@ namespace FIA_Biosum_Manager
 
             strLine = strLine + "\r\n\r\nEOF";
             return strLine;
+        }
+
+        public System.Collections.Generic.IList<string> GetFvsOutTableNames(DataMgr oDataMgr, string strConnection)
+        {
+            string[] arrTableNames = null;
+            System.Collections.Generic.List<string> lstTableNames = new System.Collections.Generic.List<string>();
+            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConnection))
+            {
+                oConn.Open();
+                arrTableNames = oDataMgr.getTableNames(oConn);
+            }
+            foreach (var tName in arrTableNames)
+            {
+                if (ValidFVSTable(tName))
+                {
+                    lstTableNames.Add(tName.ToUpper());
+                }
+            }
+            lstTableNames.Sort();
+            return lstTableNames;
         }
 
 	}

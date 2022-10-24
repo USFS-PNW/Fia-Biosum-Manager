@@ -39,14 +39,10 @@
             this.btnSeqNumEdit = new System.Windows.Forms.Button();
             this.rdoCustomTableSeqNumTemplate = new System.Windows.Forms.RadioButton();
             this.btnSeqNum = new System.Windows.Forms.Button();
-            this.label11 = new System.Windows.Forms.Label();
-            this.txtDesc = new System.Windows.Forms.TextBox();
             this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
-            this.lblBlueBackColor = new System.Windows.Forms.Label();
             this.btnSave = new System.Windows.Forms.Button();
             this.chkPRE4BaseYear = new System.Windows.Forms.CheckBox();
             this.chkPRE3BaseYear = new System.Windows.Forms.CheckBox();
@@ -61,7 +57,6 @@
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnDone = new System.Windows.Forms.Button();
             this.btnRemove = new System.Windows.Forms.Button();
-            this.btnNewCustom = new System.Windows.Forms.Button();
             this.btnEdit = new System.Windows.Forms.Button();
             this.lblType = new System.Windows.Forms.Label();
             this.lblTable = new System.Windows.Forms.Label();
@@ -80,8 +75,7 @@
             this.columnHeader_Status = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader_Id = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader_TableName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader_Type = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader_Packages = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader_Count = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
@@ -100,14 +94,10 @@
             this.groupBox1.Controls.Add(this.groupBox3);
             this.groupBox1.Controls.Add(this.groupBox2);
             this.groupBox1.Controls.Add(this.btnSeqNum);
-            this.groupBox1.Controls.Add(this.label11);
-            this.groupBox1.Controls.Add(this.txtDesc);
             this.groupBox1.Controls.Add(this.label9);
             this.groupBox1.Controls.Add(this.label10);
             this.groupBox1.Controls.Add(this.label7);
             this.groupBox1.Controls.Add(this.label8);
-            this.groupBox1.Controls.Add(this.label4);
-            this.groupBox1.Controls.Add(this.lblBlueBackColor);
             this.groupBox1.Controls.Add(this.btnSave);
             this.groupBox1.Controls.Add(this.chkPRE4BaseYear);
             this.groupBox1.Controls.Add(this.chkPRE3BaseYear);
@@ -122,7 +112,6 @@
             this.groupBox1.Controls.Add(this.btnCancel);
             this.groupBox1.Controls.Add(this.btnDone);
             this.groupBox1.Controls.Add(this.btnRemove);
-            this.groupBox1.Controls.Add(this.btnNewCustom);
             this.groupBox1.Controls.Add(this.btnEdit);
             this.groupBox1.Controls.Add(this.lblType);
             this.groupBox1.Controls.Add(this.lblTable);
@@ -147,9 +136,9 @@
             this.groupBox1.Controls.Add(this.lblTitle);
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox1.Location = new System.Drawing.Point(0, 0);
-            this.groupBox1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(4);
             this.groupBox1.Size = new System.Drawing.Size(1207, 678);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
@@ -159,9 +148,9 @@
             this.groupBox3.Controls.Add(this.cmbDefault);
             this.groupBox3.Controls.Add(this.btnDefault);
             this.groupBox3.Location = new System.Drawing.Point(417, 345);
-            this.groupBox3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox3.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox3.Padding = new System.Windows.Forms.Padding(4);
             this.groupBox3.Size = new System.Drawing.Size(305, 89);
             this.groupBox3.TabIndex = 102;
             this.groupBox3.TabStop = false;
@@ -171,7 +160,7 @@
             // 
             this.cmbDefault.FormattingEnabled = true;
             this.cmbDefault.Location = new System.Drawing.Point(19, 23);
-            this.cmbDefault.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cmbDefault.Margin = new System.Windows.Forms.Padding(4);
             this.cmbDefault.Name = "cmbDefault";
             this.cmbDefault.Size = new System.Drawing.Size(275, 24);
             this.cmbDefault.TabIndex = 88;
@@ -182,7 +171,7 @@
             // 
             this.btnDefault.Enabled = false;
             this.btnDefault.Location = new System.Drawing.Point(19, 53);
-            this.btnDefault.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnDefault.Margin = new System.Windows.Forms.Padding(4);
             this.btnDefault.Name = "btnDefault";
             this.btnDefault.Size = new System.Drawing.Size(124, 28);
             this.btnDefault.TabIndex = 86;
@@ -196,9 +185,9 @@
             this.groupBox2.Controls.Add(this.btnSeqNumEdit);
             this.groupBox2.Controls.Add(this.rdoCustomTableSeqNumTemplate);
             this.groupBox2.Location = new System.Drawing.Point(731, 345);
-            this.groupBox2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox2.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox2.Padding = new System.Windows.Forms.Padding(4);
             this.groupBox2.Size = new System.Drawing.Size(405, 114);
             this.groupBox2.TabIndex = 101;
             this.groupBox2.TabStop = false;
@@ -210,7 +199,7 @@
             this.rdoSummaryTableSeqNumTemplate.Checked = true;
             this.rdoSummaryTableSeqNumTemplate.Enabled = false;
             this.rdoSummaryTableSeqNumTemplate.Location = new System.Drawing.Point(20, 23);
-            this.rdoSummaryTableSeqNumTemplate.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.rdoSummaryTableSeqNumTemplate.Margin = new System.Windows.Forms.Padding(4);
             this.rdoSummaryTableSeqNumTemplate.Name = "rdoSummaryTableSeqNumTemplate";
             this.rdoSummaryTableSeqNumTemplate.Size = new System.Drawing.Size(161, 21);
             this.rdoSummaryTableSeqNumTemplate.TabIndex = 98;
@@ -222,7 +211,7 @@
             // 
             this.btnSeqNumEdit.Enabled = false;
             this.btnSeqNumEdit.Location = new System.Drawing.Point(8, 79);
-            this.btnSeqNumEdit.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnSeqNumEdit.Margin = new System.Windows.Forms.Padding(4);
             this.btnSeqNumEdit.Name = "btnSeqNumEdit";
             this.btnSeqNumEdit.Size = new System.Drawing.Size(389, 28);
             this.btnSeqNumEdit.TabIndex = 100;
@@ -235,7 +224,7 @@
             this.rdoCustomTableSeqNumTemplate.AutoSize = true;
             this.rdoCustomTableSeqNumTemplate.Enabled = false;
             this.rdoCustomTableSeqNumTemplate.Location = new System.Drawing.Point(20, 52);
-            this.rdoCustomTableSeqNumTemplate.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.rdoCustomTableSeqNumTemplate.Margin = new System.Windows.Forms.Padding(4);
             this.rdoCustomTableSeqNumTemplate.Name = "rdoCustomTableSeqNumTemplate";
             this.rdoCustomTableSeqNumTemplate.Size = new System.Drawing.Size(105, 21);
             this.rdoCustomTableSeqNumTemplate.TabIndex = 99;
@@ -246,34 +235,13 @@
             // 
             this.btnSeqNum.Enabled = false;
             this.btnSeqNum.Location = new System.Drawing.Point(12, 593);
-            this.btnSeqNum.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnSeqNum.Margin = new System.Windows.Forms.Padding(4);
             this.btnSeqNum.Name = "btnSeqNum";
             this.btnSeqNum.Size = new System.Drawing.Size(307, 28);
             this.btnSeqNum.TabIndex = 97;
             this.btnSeqNum.Text = "View Sequence Number Assignments";
             this.btnSeqNum.UseVisualStyleBackColor = true;
             this.btnSeqNum.Click += new System.EventHandler(this.btnSeqNum_Click);
-            // 
-            // label11
-            // 
-            this.label11.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label11.ForeColor = System.Drawing.Color.ForestGreen;
-            this.label11.Location = new System.Drawing.Point(413, 514);
-            this.label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(120, 30);
-            this.label11.TabIndex = 96;
-            this.label11.Text = "Description";
-            // 
-            // txtDesc
-            // 
-            this.txtDesc.Enabled = false;
-            this.txtDesc.Location = new System.Drawing.Point(417, 544);
-            this.txtDesc.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.txtDesc.Multiline = true;
-            this.txtDesc.Name = "txtDesc";
-            this.txtDesc.Size = new System.Drawing.Size(641, 61);
-            this.txtDesc.TabIndex = 95;
             // 
             // label9
             // 
@@ -323,35 +291,11 @@
             this.label8.Text = "m";
             this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(27, 59);
-            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(35, 17);
-            this.label4.TabIndex = 90;
-            this.label4.Text = "New";
-            // 
-            // lblBlueBackColor
-            // 
-            this.lblBlueBackColor.AutoSize = true;
-            this.lblBlueBackColor.BackColor = System.Drawing.Color.Blue;
-            this.lblBlueBackColor.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblBlueBackColor.ForeColor = System.Drawing.Color.White;
-            this.lblBlueBackColor.Location = new System.Drawing.Point(8, 59);
-            this.lblBlueBackColor.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblBlueBackColor.Name = "lblBlueBackColor";
-            this.lblBlueBackColor.Size = new System.Drawing.Size(17, 17);
-            this.lblBlueBackColor.TabIndex = 89;
-            this.lblBlueBackColor.Text = "+";
-            this.lblBlueBackColor.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
             // btnSave
             // 
             this.btnSave.Enabled = false;
             this.btnSave.Location = new System.Drawing.Point(341, 562);
-            this.btnSave.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnSave.Margin = new System.Windows.Forms.Padding(4);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(64, 28);
             this.btnSave.TabIndex = 87;
@@ -366,7 +310,7 @@
             this.chkPRE4BaseYear.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.chkPRE4BaseYear.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this.chkPRE4BaseYear.Location = new System.Drawing.Point(635, 310);
-            this.chkPRE4BaseYear.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.chkPRE4BaseYear.Margin = new System.Windows.Forms.Padding(4);
             this.chkPRE4BaseYear.Name = "chkPRE4BaseYear";
             this.chkPRE4BaseYear.Size = new System.Drawing.Size(118, 24);
             this.chkPRE4BaseYear.TabIndex = 84;
@@ -381,7 +325,7 @@
             this.chkPRE3BaseYear.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.chkPRE3BaseYear.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this.chkPRE3BaseYear.Location = new System.Drawing.Point(635, 262);
-            this.chkPRE3BaseYear.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.chkPRE3BaseYear.Margin = new System.Windows.Forms.Padding(4);
             this.chkPRE3BaseYear.Name = "chkPRE3BaseYear";
             this.chkPRE3BaseYear.Size = new System.Drawing.Size(118, 24);
             this.chkPRE3BaseYear.TabIndex = 82;
@@ -396,7 +340,7 @@
             this.chkPRE2BaseYear.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.chkPRE2BaseYear.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this.chkPRE2BaseYear.Location = new System.Drawing.Point(635, 217);
-            this.chkPRE2BaseYear.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.chkPRE2BaseYear.Margin = new System.Windows.Forms.Padding(4);
             this.chkPRE2BaseYear.Name = "chkPRE2BaseYear";
             this.chkPRE2BaseYear.Size = new System.Drawing.Size(118, 24);
             this.chkPRE2BaseYear.TabIndex = 80;
@@ -411,7 +355,7 @@
             this.chkPRE1BaseYear.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.chkPRE1BaseYear.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this.chkPRE1BaseYear.Location = new System.Drawing.Point(635, 170);
-            this.chkPRE1BaseYear.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.chkPRE1BaseYear.Margin = new System.Windows.Forms.Padding(4);
             this.chkPRE1BaseYear.Name = "chkPRE1BaseYear";
             this.chkPRE1BaseYear.Size = new System.Drawing.Size(118, 24);
             this.chkPRE1BaseYear.TabIndex = 78;
@@ -458,7 +402,7 @@
             // btnHelp
             // 
             this.btnHelp.Location = new System.Drawing.Point(8, 635);
-            this.btnHelp.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnHelp.Margin = new System.Windows.Forms.Padding(4);
             this.btnHelp.Name = "btnHelp";
             this.btnHelp.Size = new System.Drawing.Size(100, 36);
             this.btnHelp.TabIndex = 74;
@@ -468,7 +412,7 @@
             // btnClose
             // 
             this.btnClose.Location = new System.Drawing.Point(1085, 624);
-            this.btnClose.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnClose.Margin = new System.Windows.Forms.Padding(4);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(100, 32);
             this.btnClose.TabIndex = 73;
@@ -490,7 +434,7 @@
             // btnCancel
             // 
             this.btnCancel.Location = new System.Drawing.Point(672, 617);
-            this.btnCancel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnCancel.Margin = new System.Windows.Forms.Padding(4);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(109, 47);
             this.btnCancel.TabIndex = 69;
@@ -501,7 +445,7 @@
             // btnDone
             // 
             this.btnDone.Location = new System.Drawing.Point(545, 617);
-            this.btnDone.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnDone.Margin = new System.Windows.Forms.Padding(4);
             this.btnDone.Name = "btnDone";
             this.btnDone.Size = new System.Drawing.Size(105, 47);
             this.btnDone.TabIndex = 68;
@@ -513,7 +457,7 @@
             // 
             this.btnRemove.Enabled = false;
             this.btnRemove.Location = new System.Drawing.Point(184, 562);
-            this.btnRemove.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnRemove.Margin = new System.Windows.Forms.Padding(4);
             this.btnRemove.Name = "btnRemove";
             this.btnRemove.Size = new System.Drawing.Size(135, 28);
             this.btnRemove.TabIndex = 67;
@@ -521,21 +465,10 @@
             this.btnRemove.UseVisualStyleBackColor = true;
             this.btnRemove.Click += new System.EventHandler(this.btnRemove_Click);
             // 
-            // btnNewCustom
-            // 
-            this.btnNewCustom.Location = new System.Drawing.Point(73, 562);
-            this.btnNewCustom.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.btnNewCustom.Name = "btnNewCustom";
-            this.btnNewCustom.Size = new System.Drawing.Size(111, 28);
-            this.btnNewCustom.TabIndex = 66;
-            this.btnNewCustom.Text = "Add Custom";
-            this.btnNewCustom.UseVisualStyleBackColor = true;
-            this.btnNewCustom.Click += new System.EventHandler(this.btnNewCustom_Click);
-            // 
             // btnEdit
             // 
             this.btnEdit.Location = new System.Drawing.Point(9, 562);
-            this.btnEdit.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnEdit.Margin = new System.Windows.Forms.Padding(4);
             this.btnEdit.Name = "btnEdit";
             this.btnEdit.Size = new System.Drawing.Size(61, 28);
             this.btnEdit.TabIndex = 65;
@@ -583,7 +516,7 @@
             // 
             this.txtPackages.Enabled = false;
             this.txtPackages.Location = new System.Drawing.Point(413, 466);
-            this.txtPackages.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtPackages.Margin = new System.Windows.Forms.Padding(4);
             this.txtPackages.Multiline = true;
             this.txtPackages.Name = "txtPackages";
             this.txtPackages.Size = new System.Drawing.Size(415, 43);
@@ -594,7 +527,7 @@
             // 
             this.btnAssignPackage.Enabled = false;
             this.btnAssignPackage.Location = new System.Drawing.Point(837, 479);
-            this.btnAssignPackage.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnAssignPackage.Margin = new System.Windows.Forms.Padding(4);
             this.btnAssignPackage.Name = "btnAssignPackage";
             this.btnAssignPackage.Size = new System.Drawing.Size(197, 28);
             this.btnAssignPackage.TabIndex = 60;
@@ -609,7 +542,7 @@
             this.cmbPOST4.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbPOST4.FormattingEnabled = true;
             this.cmbPOST4.Location = new System.Drawing.Point(884, 311);
-            this.cmbPOST4.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cmbPOST4.Margin = new System.Windows.Forms.Padding(4);
             this.cmbPOST4.Name = "cmbPOST4";
             this.cmbPOST4.Size = new System.Drawing.Size(108, 24);
             this.cmbPOST4.TabIndex = 59;
@@ -622,7 +555,7 @@
             this.cmbPRE4.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbPRE4.FormattingEnabled = true;
             this.cmbPRE4.Location = new System.Drawing.Point(517, 310);
-            this.cmbPRE4.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cmbPRE4.Margin = new System.Windows.Forms.Padding(4);
             this.cmbPRE4.Name = "cmbPRE4";
             this.cmbPRE4.Size = new System.Drawing.Size(108, 24);
             this.cmbPRE4.TabIndex = 58;
@@ -636,7 +569,7 @@
             this.cmbPOST3.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbPOST3.FormattingEnabled = true;
             this.cmbPOST3.Location = new System.Drawing.Point(884, 263);
-            this.cmbPOST3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cmbPOST3.Margin = new System.Windows.Forms.Padding(4);
             this.cmbPOST3.Name = "cmbPOST3";
             this.cmbPOST3.Size = new System.Drawing.Size(108, 24);
             this.cmbPOST3.TabIndex = 57;
@@ -649,7 +582,7 @@
             this.cmbPRE3.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbPRE3.FormattingEnabled = true;
             this.cmbPRE3.Location = new System.Drawing.Point(517, 262);
-            this.cmbPRE3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cmbPRE3.Margin = new System.Windows.Forms.Padding(4);
             this.cmbPRE3.Name = "cmbPRE3";
             this.cmbPRE3.Size = new System.Drawing.Size(108, 24);
             this.cmbPRE3.TabIndex = 56;
@@ -663,7 +596,7 @@
             this.cmbPOST2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbPOST2.FormattingEnabled = true;
             this.cmbPOST2.Location = new System.Drawing.Point(884, 218);
-            this.cmbPOST2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cmbPOST2.Margin = new System.Windows.Forms.Padding(4);
             this.cmbPOST2.Name = "cmbPOST2";
             this.cmbPOST2.Size = new System.Drawing.Size(108, 24);
             this.cmbPOST2.TabIndex = 55;
@@ -676,7 +609,7 @@
             this.cmbPRE2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbPRE2.FormattingEnabled = true;
             this.cmbPRE2.Location = new System.Drawing.Point(517, 217);
-            this.cmbPRE2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cmbPRE2.Margin = new System.Windows.Forms.Padding(4);
             this.cmbPRE2.Name = "cmbPRE2";
             this.cmbPRE2.Size = new System.Drawing.Size(108, 24);
             this.cmbPRE2.TabIndex = 54;
@@ -690,7 +623,7 @@
             this.cmbPOST1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbPOST1.FormattingEnabled = true;
             this.cmbPOST1.Location = new System.Drawing.Point(884, 171);
-            this.cmbPOST1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cmbPOST1.Margin = new System.Windows.Forms.Padding(4);
             this.cmbPOST1.Name = "cmbPOST1";
             this.cmbPOST1.Size = new System.Drawing.Size(108, 24);
             this.cmbPOST1.TabIndex = 53;
@@ -703,7 +636,7 @@
             this.cmbPRE1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbPRE1.FormattingEnabled = true;
             this.cmbPRE1.Location = new System.Drawing.Point(517, 170);
-            this.cmbPRE1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cmbPRE1.Margin = new System.Windows.Forms.Padding(4);
             this.cmbPRE1.Name = "cmbPRE1";
             this.cmbPRE1.Size = new System.Drawing.Size(108, 24);
             this.cmbPRE1.TabIndex = 52;
@@ -716,13 +649,12 @@
             this.columnHeader_Status,
             this.columnHeader_Id,
             this.columnHeader_TableName,
-            this.columnHeader_Type,
-            this.columnHeader_Packages});
+            this.columnHeader_Count});
             this.lvFVSTables.FullRowSelect = true;
             this.lvFVSTables.GridLines = true;
             this.lvFVSTables.HideSelection = false;
             this.lvFVSTables.Location = new System.Drawing.Point(4, 84);
-            this.lvFVSTables.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.lvFVSTables.Margin = new System.Windows.Forms.Padding(4);
             this.lvFVSTables.MultiSelect = false;
             this.lvFVSTables.Name = "lvFVSTables";
             this.lvFVSTables.Size = new System.Drawing.Size(400, 470);
@@ -746,13 +678,11 @@
             this.columnHeader_TableName.Text = "TableName";
             this.columnHeader_TableName.Width = 100;
             // 
-            // columnHeader_Type
+            // columnHeader_Count
             // 
-            this.columnHeader_Type.Text = "Type";
-            // 
-            // columnHeader_Packages
-            // 
-            this.columnHeader_Packages.Text = "Packages";
+            this.columnHeader_Count.Text = "AssignedCount";
+            this.columnHeader_Count.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.columnHeader_Count.Width = 85;
             // 
             // label6
             // 
@@ -845,7 +775,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.groupBox1);
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "uc_fvs_output_prepost_seqnum";
             this.Size = new System.Drawing.Size(1207, 678);
             this.groupBox1.ResumeLayout(false);
@@ -869,14 +799,12 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ListView lvFVSTables;
         private System.Windows.Forms.ColumnHeader columnHeader_TableName;
-        private System.Windows.Forms.ColumnHeader columnHeader_Type;
-        private System.Windows.Forms.ColumnHeader columnHeader_Packages;
+        private System.Windows.Forms.ColumnHeader columnHeader_Count;
         private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.Label lblPackages;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Button btnDone;
         private System.Windows.Forms.Button btnRemove;
-        private System.Windows.Forms.Button btnNewCustom;
         private System.Windows.Forms.Button btnEdit;
         private System.Windows.Forms.Label lblType;
         private System.Windows.Forms.Label lblTable;
@@ -903,16 +831,12 @@
         private System.Windows.Forms.CheckBox chkPRE1BaseYear;
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.ComboBox cmbDefault;
-        private System.Windows.Forms.Label lblBlueBackColor;
         private System.Windows.Forms.ImageList imageList1;
         private System.Windows.Forms.ColumnHeader columnHeader_Status;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label label11;
-        private System.Windows.Forms.TextBox txtDesc;
         private System.Windows.Forms.Button btnSeqNum;
         private System.Windows.Forms.Button btnSeqNumEdit;
         private System.Windows.Forms.RadioButton rdoCustomTableSeqNumTemplate;
