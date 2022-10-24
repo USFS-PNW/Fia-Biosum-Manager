@@ -81,6 +81,8 @@ namespace FIA_Biosum_Manager
         private static string[] m_summary_wtd_1_9_10_10_10_1 = { "2", "3", "Not Used", "4", "Not Used", "5", "6", "7" };
         private static string[] m_ffe_wtd_1_9_10_10_10_1 = { "2", "3", "Not Used", "4", "Not Used", "5", "6", "7" };
         private const string m_str_wtd_1_4_5_5_5_1 = "1-4-5-5-5-1 Treat First Cycle Only (40/20-yr wtd mean)";
+        public string m_rxPackages = "";
+        Queries m_oQueries = new Queries();
 
 
         public uc_fvs_output_prepost_seqnum()
@@ -264,7 +266,32 @@ namespace FIA_Biosum_Manager
                 InitializePrePostSeqNumTables(m_oAdo, m_oAdo.m_OleDbConnection);
                 m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(m_oAdo, m_oAdo.m_OleDbConnection, m_oCurFVSPrepostSeqNumItem_Collection);
                 m_oCurFVSPrepostSeqNumItem_Collection.CopyProperties(m_oSavFVSPrepostSeqNumItem_Collection, m_oCurFVSPrepostSeqNumItem_Collection);
+                m_oQueries.m_oFvs.LoadDatasource = true;
+                m_oQueries.LoadDatasources(true);
+                if (m_oRxPackageItem_Collection == null)
+                {
+                    m_oRxPackageItem_Collection = new RxPackageItem_Collection();
+                    this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_oAdo,
+                                                                       m_oAdo.m_OleDbConnection,
+                                                                       m_oQueries,
+                                                                       m_oRxPackageItem_Collection);
+                }
                 m_oAdo.CloseConnection(m_oAdo.m_OleDbConnection);
+                // sort the rxPackages
+                List<string> lstPackages = new List<string>();
+                foreach (RxPackageItem item in m_oRxPackageItem_Collection)
+                {
+                    lstPackages.Add(item.RxPackageId);
+                }
+                lstPackages.Sort();
+                foreach (string strPackage in lstPackages)
+                {
+                    m_rxPackages = m_rxPackages + strPackage + ",";
+                }
+                if (m_rxPackages.Length > 0)
+                {
+                    m_rxPackages = m_rxPackages.TrimEnd(',');
+                }
                 string strDbConnection = oDataMgr.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSOutDbFile);
                 IList<string> lstFvsOutTables = m_oRxTools.GetFvsOutTableNames(oDataMgr, strDbConnection);
                 IList<string> lstExcludedTables = new List<string> { "FVS_CASES", "FVS_CUTLIST", "FVS_TREELIST", "FVS_ATRTLIST" };
@@ -1761,14 +1788,11 @@ namespace FIA_Biosum_Manager
             if (m_oRxPackageItem_Collection == null)
             {
                m_oRxPackageItem_Collection = new RxPackageItem_Collection();
-               Queries oQueries = new Queries();
-               oQueries.m_oFvs.LoadDatasource = true;
-               oQueries.LoadDatasources(true);
                ado_data_access oAdo = new ado_data_access();
-               oAdo.OpenConnection(oAdo.getMDBConnString(oQueries.m_strTempDbFile, "", ""));
+               oAdo.OpenConnection(oAdo.getMDBConnString(m_oQueries.m_strTempDbFile, "", ""));
                this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(oAdo,
                                                                                       oAdo.m_OleDbConnection,
-                                                                                      oQueries,
+                                                                                      m_oQueries,
                                                                                       m_oRxPackageItem_Collection);
                oAdo.CloseConnection(oAdo.m_OleDbConnection);
             }
