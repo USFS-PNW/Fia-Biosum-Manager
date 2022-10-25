@@ -33,7 +33,7 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.cmbDefault = new System.Windows.Forms.ComboBox();
-            this.btnDefault = new System.Windows.Forms.Button();
+            this.btnAssignTemplate = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.rdoSummaryTableSeqNumTemplate = new System.Windows.Forms.RadioButton();
             this.btnSeqNumEdit = new System.Windows.Forms.Button();
@@ -48,7 +48,7 @@
             this.chkPRE3BaseYear = new System.Windows.Forms.CheckBox();
             this.chkPRE2BaseYear = new System.Windows.Forms.CheckBox();
             this.chkPRE1BaseYear = new System.Windows.Forms.CheckBox();
-            this.lblCurType = new System.Windows.Forms.Label();
+            this.lblCurCount = new System.Windows.Forms.Label();
             this.lblCurTable = new System.Windows.Forms.Label();
             this.lblCurId = new System.Windows.Forms.Label();
             this.btnHelp = new System.Windows.Forms.Button();
@@ -62,7 +62,6 @@
             this.lblTable = new System.Windows.Forms.Label();
             this.lblId = new System.Windows.Forms.Label();
             this.txtPackages = new System.Windows.Forms.TextBox();
-            this.btnAssignPackage = new System.Windows.Forms.Button();
             this.cmbPOST4 = new System.Windows.Forms.ComboBox();
             this.cmbPRE4 = new System.Windows.Forms.ComboBox();
             this.cmbPOST3 = new System.Windows.Forms.ComboBox();
@@ -103,7 +102,7 @@
             this.groupBox1.Controls.Add(this.chkPRE3BaseYear);
             this.groupBox1.Controls.Add(this.chkPRE2BaseYear);
             this.groupBox1.Controls.Add(this.chkPRE1BaseYear);
-            this.groupBox1.Controls.Add(this.lblCurType);
+            this.groupBox1.Controls.Add(this.lblCurCount);
             this.groupBox1.Controls.Add(this.lblCurTable);
             this.groupBox1.Controls.Add(this.lblCurId);
             this.groupBox1.Controls.Add(this.btnHelp);
@@ -117,7 +116,6 @@
             this.groupBox1.Controls.Add(this.lblTable);
             this.groupBox1.Controls.Add(this.lblId);
             this.groupBox1.Controls.Add(this.txtPackages);
-            this.groupBox1.Controls.Add(this.btnAssignPackage);
             this.groupBox1.Controls.Add(this.cmbPOST4);
             this.groupBox1.Controls.Add(this.cmbPRE4);
             this.groupBox1.Controls.Add(this.cmbPOST3);
@@ -146,15 +144,15 @@
             // groupBox3
             // 
             this.groupBox3.Controls.Add(this.cmbDefault);
-            this.groupBox3.Controls.Add(this.btnDefault);
+            this.groupBox3.Controls.Add(this.btnAssignTemplate);
             this.groupBox3.Location = new System.Drawing.Point(417, 345);
             this.groupBox3.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBox3.Size = new System.Drawing.Size(305, 89);
+            this.groupBox3.Size = new System.Drawing.Size(336, 89);
             this.groupBox3.TabIndex = 102;
             this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "Default SeqNum Options";
+            this.groupBox3.Text = "Choose a SEQNUM Assignment Template";
             // 
             // cmbDefault
             // 
@@ -167,24 +165,24 @@
             this.cmbDefault.Text = "<Select an Option>";
             this.cmbDefault.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.cmbDefault_KeyPress);
             // 
-            // btnDefault
+            // btnAssignTemplate
             // 
-            this.btnDefault.Enabled = false;
-            this.btnDefault.Location = new System.Drawing.Point(19, 53);
-            this.btnDefault.Margin = new System.Windows.Forms.Padding(4);
-            this.btnDefault.Name = "btnDefault";
-            this.btnDefault.Size = new System.Drawing.Size(124, 28);
-            this.btnDefault.TabIndex = 86;
-            this.btnDefault.Text = "Assign Default";
-            this.btnDefault.UseVisualStyleBackColor = true;
-            this.btnDefault.Click += new System.EventHandler(this.btnDefault_Click);
+            this.btnAssignTemplate.Enabled = false;
+            this.btnAssignTemplate.Location = new System.Drawing.Point(19, 53);
+            this.btnAssignTemplate.Margin = new System.Windows.Forms.Padding(4);
+            this.btnAssignTemplate.Name = "btnAssignTemplate";
+            this.btnAssignTemplate.Size = new System.Drawing.Size(124, 28);
+            this.btnAssignTemplate.TabIndex = 86;
+            this.btnAssignTemplate.Text = "Assign";
+            this.btnAssignTemplate.UseVisualStyleBackColor = true;
+            this.btnAssignTemplate.Click += new System.EventHandler(this.btnAssignTemplate_Click);
             // 
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.rdoSummaryTableSeqNumTemplate);
             this.groupBox2.Controls.Add(this.btnSeqNumEdit);
             this.groupBox2.Controls.Add(this.rdoCustomTableSeqNumTemplate);
-            this.groupBox2.Location = new System.Drawing.Point(731, 345);
+            this.groupBox2.Location = new System.Drawing.Point(780, 345);
             this.groupBox2.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Padding = new System.Windows.Forms.Padding(4);
@@ -241,6 +239,7 @@
             this.btnSeqNum.TabIndex = 97;
             this.btnSeqNum.Text = "View Sequence Number Assignments";
             this.btnSeqNum.UseVisualStyleBackColor = true;
+            this.btnSeqNum.Visible = false;
             this.btnSeqNum.Click += new System.EventHandler(this.btnSeqNum_Click);
             // 
             // label9
@@ -363,17 +362,17 @@
             this.chkPRE1BaseYear.UseVisualStyleBackColor = true;
             this.chkPRE1BaseYear.Visible = false;
             // 
-            // lblCurType
+            // lblCurCount
             // 
-            this.lblCurType.AutoSize = true;
-            this.lblCurType.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblCurType.ForeColor = System.Drawing.Color.Blue;
-            this.lblCurType.Location = new System.Drawing.Point(959, 84);
-            this.lblCurType.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lblCurType.Name = "lblCurType";
-            this.lblCurType.Size = new System.Drawing.Size(34, 20);
-            this.lblCurType.TabIndex = 77;
-            this.lblCurType.Text = "NA";
+            this.lblCurCount.AutoSize = true;
+            this.lblCurCount.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblCurCount.ForeColor = System.Drawing.Color.Blue;
+            this.lblCurCount.Location = new System.Drawing.Point(1016, 84);
+            this.lblCurCount.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lblCurCount.Name = "lblCurCount";
+            this.lblCurCount.Size = new System.Drawing.Size(19, 20);
+            this.lblCurCount.TabIndex = 77;
+            this.lblCurCount.Text = "0";
             // 
             // lblCurTable
             // 
@@ -459,9 +458,9 @@
             this.btnRemove.Location = new System.Drawing.Point(184, 562);
             this.btnRemove.Margin = new System.Windows.Forms.Padding(4);
             this.btnRemove.Name = "btnRemove";
-            this.btnRemove.Size = new System.Drawing.Size(135, 28);
+            this.btnRemove.Size = new System.Drawing.Size(80, 28);
             this.btnRemove.TabIndex = 67;
-            this.btnRemove.Text = "Delete Custom";
+            this.btnRemove.Text = "Delete";
             this.btnRemove.UseVisualStyleBackColor = true;
             this.btnRemove.Click += new System.EventHandler(this.btnRemove_Click);
             // 
@@ -484,9 +483,9 @@
             this.lblType.Location = new System.Drawing.Point(887, 84);
             this.lblType.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblType.Name = "lblType";
-            this.lblType.Size = new System.Drawing.Size(55, 20);
+            this.lblType.Size = new System.Drawing.Size(113, 20);
             this.lblType.TabIndex = 64;
-            this.lblType.Text = "Type:";
+            this.lblType.Text = "Table count:";
             // 
             // lblTable
             // 
@@ -522,18 +521,6 @@
             this.txtPackages.Size = new System.Drawing.Size(415, 43);
             this.txtPackages.TabIndex = 61;
             this.txtPackages.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtPackages_KeyPress);
-            // 
-            // btnAssignPackage
-            // 
-            this.btnAssignPackage.Enabled = false;
-            this.btnAssignPackage.Location = new System.Drawing.Point(837, 479);
-            this.btnAssignPackage.Margin = new System.Windows.Forms.Padding(4);
-            this.btnAssignPackage.Name = "btnAssignPackage";
-            this.btnAssignPackage.Size = new System.Drawing.Size(197, 28);
-            this.btnAssignPackage.TabIndex = 60;
-            this.btnAssignPackage.Text = "Assign/Remove Package(s)";
-            this.btnAssignPackage.UseVisualStyleBackColor = true;
-            this.btnAssignPackage.Click += new System.EventHandler(this.btnAssignPackage_Click);
             // 
             // cmbPOST4
             // 
@@ -810,7 +797,6 @@
         private System.Windows.Forms.Label lblTable;
         private System.Windows.Forms.Label lblId;
         private System.Windows.Forms.TextBox txtPackages;
-        private System.Windows.Forms.Button btnAssignPackage;
         private System.Windows.Forms.ComboBox cmbPOST4;
         private System.Windows.Forms.ComboBox cmbPRE4;
         private System.Windows.Forms.ComboBox cmbPOST3;
@@ -821,10 +807,10 @@
         private System.Windows.Forms.ComboBox cmbPRE1;
         private System.Windows.Forms.ColumnHeader columnHeader_Id;
         private System.Windows.Forms.Button btnHelp;
-        private System.Windows.Forms.Label lblCurType;
+        private System.Windows.Forms.Label lblCurCount;
         private System.Windows.Forms.Label lblCurTable;
         private System.Windows.Forms.Label lblCurId;
-        private System.Windows.Forms.Button btnDefault;
+        private System.Windows.Forms.Button btnAssignTemplate;
         private System.Windows.Forms.CheckBox chkPRE4BaseYear;
         private System.Windows.Forms.CheckBox chkPRE3BaseYear;
         private System.Windows.Forms.CheckBox chkPRE2BaseYear;

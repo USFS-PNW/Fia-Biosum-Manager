@@ -65,22 +65,27 @@ namespace FIA_Biosum_Manager
                                     "RxCycle4_PRE_BEFORECUT_YN," +
                                     "RxCycle4_POST_BEFORECUT_YN," + 
                                     "USE_SUMMARY_TABLE_SEQNUM_YN";
-        private const string m_str_pp_1_8_1 = "1-8-1 Treat Every Cycle (pre-post)";
-        private static string[] m_summary_1_8_1 = {"2","3","5","6","8","9","11","12"};
-        private static string[] m_ffe_1_8_1 = { "1","3","4","6","7","9","10","12"};
-        private const string m_str_pp_1_3_1 = "1-3-1 Treat Every Cycle (pre-post)";
-        private const string m_str_pp_1_9_10_10_10_1 = "1-9-10-10-10-1 Treat First Cycle Only (pre-post)";
-        private static string[] m_summary_1_9_10_10_10_1 = { "2", "3", "Not Used", "4", "Not Used", "5", "6", "7" };
-        private static string[] m_ffe_1_9_10_10_10_1 = { "1", "3", "Not Used", "4", "Not Used", "5", "Not Used", "6" };
-        private const string m_str_pp_1_4_5_5_5_1 = "1-4-5-5-5-1 Treat First Cycle Only (pre-post)";
-        private const string m_str_wtd_1_8_1 = "1-8-1 Treat Every Cycle (40/20-yr wtd mean)";
-        private static string[] m_summary_wtd_1_8_1 = { "3", "4", "6", "7", "9", "10", "12", "13" };
-        private static string[] m_ffe_wtd_1_8_1 = { "3", "4", "5", "7", "9", "10", "12", "13" };
-        private const string m_str_wtd_1_3_1 = "1-3-1 Treat Every Cycle (40/20-yr wtd mean)";
-        private const string m_str_wtd_1_9_10_10_10_1 = "1-9-10-10-10-1 Treat First Cycle Only (40/20-yr wtd mean)";
-        private static string[] m_summary_wtd_1_9_10_10_10_1 = { "2", "3", "Not Used", "4", "Not Used", "5", "6", "7" };
-        private static string[] m_ffe_wtd_1_9_10_10_10_1 = { "2", "3", "Not Used", "4", "Not Used", "5", "6", "7" };
-        private const string m_str_wtd_1_4_5_5_5_1 = "1-4-5-5-5-1 Treat First Cycle Only (40/20-yr wtd mean)";
+        private const string m_str_1181 = "OngoingMgt_PrePost_NoBY";
+        private static string[] m_summary_1181 = {"2","3","5","6","8","9","11","12"};
+        private static string[] m_ffe_1181 = { "1","3","4","6","7","9","10","12"};
+        private const string m_str_pp_1910s = "1timeMgt_PrePost_BaseYr";
+        private static string[] m_summary_1910s = { "1", "2", "3", "4", "5", "6", "6", "6" };
+        private static string[] m_ffe_1910s = { "1", "3", "4", "5", "6", "7", "7", "7" };
+        private const string m_str_wtd_1910s = "1timeMgt_WtdMean_BaseYr";
+        private static string[] m_summary_wtd_1910s = { "2", "3", "4", "5", "6", "6", "6", "6" };
+        private static string[] m_ffe_wtd_1910s = { "3", "4", "5", "6", "7", "7", "7", "7" };
+        private const string m_str_wtd_1181 = "OngoingMgt_WtdMean_NoBY";
+        private static string[] m_summary_ffe_1181 = { "3", "4", "6", "7", "9", "10", "12", "13" };
+        private const string m_str_pp_181 = "OngoingMgt_PrePost_BaseYr";
+        private static string[] m_summary_pp_181 = { "1", "2", "4", "5", "7", "8", "10", "11" };
+        private static string[] m_ffe_pp_181 = { "1", "3", "4", "6", "7", "9", "10", "12" };
+        private const string m_str_11910s = "1timeMgt_NoBY";
+        private static string[] m_summary_11910s = { "2", "3", "4", "5", "6", "7", "8", "8" };
+        private static string[] m_ffe_11910s = { "1", "3", "4", "5", "6", "7", "7", "7" };
+        private const string m_str_wtd_181 = "OngoingMgt_WtdMean_BaseYr";
+        private static string[] m_summary_wtd_181 = { "2", "3", "5", "6", "8", "9", "11", "12" };
+        private static string[] m_ffe_wtd_181 = { "3", "4", "6", "7", "9", "10", "12", "13" };
+
         public string m_rxPackages = "";
         Queries m_oQueries = new Queries();
 
@@ -196,14 +201,13 @@ namespace FIA_Biosum_Manager
             m_cmbFVSStrClassPost4.Hide();
 
             // Adding new default patterns
-            cmbDefault.Items.Add(m_str_pp_1_8_1);
-            cmbDefault.Items.Add(m_str_wtd_1_8_1);
-            cmbDefault.Items.Add(m_str_pp_1_3_1);
-            cmbDefault.Items.Add(m_str_wtd_1_3_1);
-            cmbDefault.Items.Add(m_str_pp_1_9_10_10_10_1);
-            cmbDefault.Items.Add(m_str_wtd_1_9_10_10_10_1);
-            cmbDefault.Items.Add(m_str_pp_1_4_5_5_5_1);
-            cmbDefault.Items.Add(m_str_wtd_1_4_5_5_5_1);
+            cmbDefault.Items.Add(m_str_1181);
+            cmbDefault.Items.Add(m_str_11910s);
+            cmbDefault.Items.Add(m_str_wtd_1181);
+            cmbDefault.Items.Add(m_str_pp_181);
+            cmbDefault.Items.Add(m_str_wtd_181);
+            cmbDefault.Items.Add(m_str_pp_1910s);
+            cmbDefault.Items.Add(m_str_wtd_1910s);
             loadvalues();
                         
         }
@@ -222,7 +226,7 @@ namespace FIA_Biosum_Manager
             lvFVSTables.Items.Clear();
             lblCurId.Text = "NA";
             lblCurTable.Text = "NA";
-            lblCurType.Text= "NA";
+            lblCurCount.Text= "0";
             
            
             
@@ -416,30 +420,30 @@ namespace FIA_Biosum_Manager
 
                         if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper()=="FVS_SUMMARY")
                         {
-                            for (int i = 0; i < m_summary_1_8_1.Length; i++)
+                            for (int i = 0; i < m_summary_1181.Length; i++)
                             {
-                                strValueList = strValueList + m_summary_1_8_1[i] + ",";
+                                strValueList = strValueList + m_summary_1181[i] + ",";
                             }
                             strValueList = strValueList + "'N','N','N','N','Y','N','Y','N','Y','N','Y','N','Y'";
                         }
                         else if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper()=="FVS_POTFIRE")
                         {
-                            for (int i = 0; i < m_ffe_1_8_1.Length; i++)
+                            for (int i = 0; i < m_ffe_1181.Length; i++)
                             {
-                                strValueList = strValueList + m_ffe_1_8_1[i] + ",";
+                                strValueList = strValueList + m_ffe_1181[i] + ",";
                             }
                             strValueList = strValueList + "'Y','N','N','N','Y','N','Y','N','Y','N','Y','N','N'";    // Sets RXCYCLE1_PRE_BASEYR_YN to 'Y'
                         }
                         else if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_CUTLIST")
                         {
-                            strValueList = strValueList + $@"{m_summary_1_8_1[0]},null,{m_summary_1_8_1[2]},null,{m_summary_1_8_1[4]},null,{m_summary_1_8_1[6]},null,
+                            strValueList = strValueList + $@"{m_summary_1181[0]},null,{m_summary_1181[2]},null,{m_summary_1181[4]},null,{m_summary_1181[6]},null,
                                 'N','N','N','N','Y','N','Y','N','Y','N','Y','N','Y'";
                         }
                         if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_STRCLASS")
                         {
-                            for (int i = 0; i < m_summary_1_8_1.Length; i++)
+                            for (int i = 0; i < m_summary_1181.Length; i++)
                             {
-                                strValueList = strValueList + m_summary_1_8_1[i] + ",";
+                                strValueList = strValueList + m_summary_1181[i] + ",";
                             }
                             strValueList = strValueList + "'N','N','N','N','Y','Y','Y','Y','Y','Y','Y','Y','Y'";
                         }
@@ -532,7 +536,7 @@ namespace FIA_Biosum_Manager
              btnCancel.Enabled = p_bEnable;
              btnDone.Enabled = p_bEnable;
              cmbDefault.Enabled = p_bEnable;
-             btnDefault.Enabled = p_bEnable;
+             btnAssignTemplate.Enabled = p_bEnable;
              
            
 
@@ -563,7 +567,6 @@ namespace FIA_Biosum_Manager
                 chkPRE2BaseYear.Enabled = false;
                 chkPRE3BaseYear.Enabled = false;
                 chkPRE4BaseYear.Enabled = false;
-                btnAssignPackage.Enabled = false;
                 txtPackages.Enabled = false;
                 m_cmbFVSStrClassPre1.Enabled = false;
                 m_cmbFVSStrClassPre2.Enabled = false;
@@ -667,6 +670,7 @@ namespace FIA_Biosum_Manager
                     lblCurId.Text = m_oCurFVSPrepostSeqNumItem_Collection.Item(x).PrePostSeqNumId.ToString();
                     lblCurTable.Text = m_oCurFVSPrepostSeqNumItem_Collection.Item(x).TableName;
                     //@ToDo: Add code to update the new Table Count textbox
+                    lblCurCount.Text = Convert.ToString(lvFVSTables.SelectedItems.Count);
                     cmbPRE1.Text = m_oCurFVSPrepostSeqNumItem_Collection.Item(x).RxCycle1PreSeqNum;
                     cmbPRE2.Text = m_oCurFVSPrepostSeqNumItem_Collection.Item(x).RxCycle2PreSeqNum;
                     cmbPRE3.Text = m_oCurFVSPrepostSeqNumItem_Collection.Item(x).RxCycle3PreSeqNum;
@@ -675,6 +679,15 @@ namespace FIA_Biosum_Manager
                     cmbPOST2.Text = m_oCurFVSPrepostSeqNumItem_Collection.Item(x).RxCycle2PostSeqNum;
                     cmbPOST3.Text = m_oCurFVSPrepostSeqNumItem_Collection.Item(x).RxCycle3PostSeqNum;
                     cmbPOST4.Text = m_oCurFVSPrepostSeqNumItem_Collection.Item(x).RxCycle4PostSeqNum;
+
+                    if (m_oCurFVSPrepostSeqNumItem_Collection.Item(x).Type.Equals("C"))
+                    {
+                        txtPackages.Text = m_rxPackages;
+                    }
+                    else
+                    {
+                        txtPackages.Text = "";
+                    }
 
                     rdoSummaryTableSeqNumTemplate.Checked = m_oCurFVSPrepostSeqNumItem_Collection.Item(x).UseSummaryTableSeqNumYN=="Y" ? true : false;
                     rdoCustomTableSeqNumTemplate.Checked = !rdoSummaryTableSeqNumTemplate.Checked;
@@ -824,7 +837,7 @@ namespace FIA_Biosum_Manager
             {
                 if (lvFVSTables.SelectedItems.Count == 0)
                 {
-                    lblCurId.Text = "NA"; lblCurTable.Text = "NA"; lblCurType.Text = "NA";
+                    lblCurId.Text = "NA"; lblCurTable.Text = "NA"; lblCurCount.Text = "0";
                 }
                 else
                 {
@@ -837,11 +850,11 @@ namespace FIA_Biosum_Manager
                 lvFVSTables.Items[m_intCurIndex].Selected = true;
         }
 
-        private void btnDefault_Click(object sender, EventArgs e)
+        private void btnAssignTemplate_Click(object sender, EventArgs e)
         {
-            AssignDefault(cmbDefault.Text.Trim());
+            AssignTemplate(cmbDefault.Text.Trim());
         }
-        private void AssignDefault(string p_strOption)
+        private void AssignTemplate(string p_strOption)
         {
             string strTable = "";
             if (m_cmbTableCustom.Visible) strTable = m_cmbTableCustom.Text.Trim().ToUpper();
@@ -852,37 +865,33 @@ namespace FIA_Biosum_Manager
             string[] arrFfeSequence = null;
             switch (p_strOption)
             {
-                case m_str_pp_1_8_1:
-                    arrSummarySequence = m_summary_1_8_1;
-                    arrFfeSequence = m_ffe_1_8_1;
+                case m_str_1181:
+                    arrSummarySequence = m_summary_1181;
+                    arrFfeSequence = m_ffe_1181;
                     break;
-                case m_str_pp_1_3_1:
-                    arrSummarySequence = m_summary_1_8_1;
-                    arrFfeSequence = m_ffe_1_8_1;
+                case m_str_11910s:
+                    arrSummarySequence = m_summary_11910s;
+                    arrFfeSequence = m_ffe_11910s;
                     break;
-                case m_str_pp_1_9_10_10_10_1:
-                    arrSummarySequence = m_summary_1_9_10_10_10_1;
-                    arrFfeSequence = m_ffe_1_9_10_10_10_1;
+                case m_str_pp_1910s:
+                    arrSummarySequence = m_summary_1910s;
+                    arrFfeSequence = m_ffe_1910s;
                     break;
-                case m_str_pp_1_4_5_5_5_1:
-                    arrSummarySequence = m_summary_1_9_10_10_10_1;
-                    arrFfeSequence = m_ffe_1_9_10_10_10_1;
+                case m_str_wtd_1910s:
+                    arrSummarySequence = m_summary_wtd_1910s;
+                    arrFfeSequence = m_ffe_wtd_1910s;
                     break;
-                case m_str_wtd_1_8_1:
-                    arrSummarySequence = m_summary_wtd_1_8_1;
-                    arrFfeSequence = m_ffe_wtd_1_8_1;
+                case m_str_wtd_1181:
+                    arrSummarySequence = m_summary_ffe_1181;
+                    arrFfeSequence = m_summary_ffe_1181;
                     break;
-                case m_str_wtd_1_3_1:
-                    arrSummarySequence = m_summary_wtd_1_8_1;
-                    arrFfeSequence = m_ffe_wtd_1_8_1;
+                case m_str_pp_181:
+                    arrSummarySequence = m_summary_pp_181;
+                    arrFfeSequence = m_ffe_pp_181;
                     break;
-                case m_str_wtd_1_9_10_10_10_1:
-                    arrSummarySequence = m_summary_wtd_1_9_10_10_10_1;
-                    arrFfeSequence = m_ffe_wtd_1_9_10_10_10_1;
-                    break;
-                case m_str_wtd_1_4_5_5_5_1:
-                    arrSummarySequence = m_summary_wtd_1_9_10_10_10_1;
-                    arrFfeSequence = m_ffe_wtd_1_9_10_10_10_1;
+                case m_str_wtd_181:
+                    arrSummarySequence = m_summary_wtd_181;
+                    arrFfeSequence = m_ffe_wtd_181;
                     break;
             }
 
@@ -896,7 +905,6 @@ namespace FIA_Biosum_Manager
                     cmbPRE3.Text = arrFfeSequence[4]; cmbPOST3.Text = arrFfeSequence[5];
                     cmbPRE4.Text = arrFfeSequence[6]; cmbPOST4.Text = arrFfeSequence[7];
 
-                    // 16-SEP-2022: We are no longer recommending BaseYear for FFE tables;  Treating year 1 as BaseYear instead
                     chkPRE1BaseYear.Checked = false;
                     chkPRE2BaseYear.Checked = false;
                     chkPRE3BaseYear.Checked = false;
@@ -905,6 +913,12 @@ namespace FIA_Biosum_Manager
                     chkPRE2BaseYear.Hide();
                     chkPRE3BaseYear.Hide();
                     chkPRE4BaseYear.Hide();
+                    string[] arrBaseYearTemplates = new string[] { m_str_pp_181, m_str_wtd_181, m_str_pp_1910s, m_str_wtd_1910s };
+                    if (arrBaseYearTemplates.Contains(p_strOption))
+                    {
+                        chkPRE1BaseYear.Show();
+                        chkPRE1BaseYear.Checked = true;
+                    }
                 }
                 else if (strTable.Trim().ToUpper() == "FVS_CUTLIST")
                 {
@@ -1781,48 +1795,6 @@ namespace FIA_Biosum_Manager
 
         }
 
-        private void btnAssignPackage_Click(object sender, EventArgs e)
-        {
-            int x;
-            string strList = "";
-            if (m_oRxPackageItem_Collection == null)
-            {
-               m_oRxPackageItem_Collection = new RxPackageItem_Collection();
-               ado_data_access oAdo = new ado_data_access();
-               oAdo.OpenConnection(oAdo.getMDBConnString(m_oQueries.m_strTempDbFile, "", ""));
-               this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(oAdo,
-                                                                                      oAdo.m_OleDbConnection,
-                                                                                      m_oQueries,
-                                                                                      m_oRxPackageItem_Collection);
-               oAdo.CloseConnection(oAdo.m_OleDbConnection);
-            }
-
-            frmDialog frmTemp = new frmDialog();
-            frmTemp.Text = "FVS Output";
-            frmTemp.uc_previous_expressions1.Visible = true;
-            if (txtPackages.Text.Trim().Length > 0 && txtPackages.Text.Trim() != "NA")
-                frmTemp.uc_previous_expressions1.LoadRxPackageItemCollection(m_oRxPackageItem_Collection,frmMain.g_oUtils.ConvertListToArray(txtPackages.Text.Trim(),","));
-            else
-                frmTemp.uc_previous_expressions1.LoadRxPackageItemCollection(m_oRxPackageItem_Collection, null);
-            DialogResult result = frmTemp.ShowDialog();
-            if (result == DialogResult.OK)
-            {
-                this.txtPackages.Text = "";
-                for (x = 0; x <= frmTemp.uc_previous_expressions1.listView1.CheckedItems.Count - 1; x++)
-                {
-                    strList = strList + frmTemp.uc_previous_expressions1.listView1.CheckedItems[x].SubItems[1].Text.Trim() + ",";
-
-                }
-                if (strList.Trim().Length > 0) strList = strList.Substring(0, strList.Length - 1);
-                txtPackages.Text = strList;
-
-            }
-
-            
-
-            
-        }
-
         private void btnSeqNum_Click(object sender, EventArgs e)
         {
             
@@ -2159,7 +2131,7 @@ namespace FIA_Biosum_Manager
 
         public void CloseForm()
         {
-            if ((btnSave.Enabled || m_bSave) && !btnAssignPackage.Enabled)
+            if ((btnSave.Enabled || m_bSave))
             {
                 DialogResult result = MessageBox.Show("Save Changes? (Y/N)", "FIA Biosum", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
                 switch (result)
