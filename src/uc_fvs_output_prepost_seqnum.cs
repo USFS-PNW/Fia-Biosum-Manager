@@ -27,7 +27,6 @@ namespace FIA_Biosum_Manager
         private ado_data_access m_oAdo = new ado_data_access();
         private DataMgr oDataMgr = new DataMgr();
         private RxTools m_oRxTools = new RxTools();
-        private ComboBox m_cmbTableCustom;
 
         private ComboBox m_cmbFVSStrClassPre1;
         private ComboBox m_cmbFVSStrClassPre2;
@@ -69,19 +68,19 @@ namespace FIA_Biosum_Manager
         private static string[] m_summary_1181 = {"2","3","5","6","8","9","11","12"};
         private static string[] m_ffe_1181 = { "1","3","4","6","7","9","10","12"};
         private const string m_str_pp_1910s = "1timeMgt_PrePost_BaseYr";
-        private static string[] m_summary_1910s = { "1", "2", "3", "4", "5", "6", "6", "6" };
-        private static string[] m_ffe_1910s = { "1", "3", "4", "5", "6", "7", "7", "7" };
+        private static string[] m_summary_1910s = { "1", "2", "3", "4", "5", "6", "Not Used", "Not Used" };
+        private static string[] m_ffe_1910s = { "1", "3", "4", "5", "6", "7", "Not Used", "Not Used" };
         private const string m_str_wtd_1910s = "1timeMgt_WtdMean_BaseYr";
-        private static string[] m_summary_wtd_1910s = { "2", "3", "4", "5", "6", "6", "6", "6" };
-        private static string[] m_ffe_wtd_1910s = { "3", "4", "5", "6", "7", "7", "7", "7" };
+        private static string[] m_summary_wtd_1910s = { "2", "3", "4", "5", "6", "Not Used", "Not Used", "Not Used" };
+        private static string[] m_ffe_wtd_1910s = { "3", "4", "5", "6", "7", "Not Used", "Not Used", "Not Used" };
         private const string m_str_wtd_1181 = "OngoingMgt_WtdMean_NoBY";
         private static string[] m_summary_ffe_1181 = { "3", "4", "6", "7", "9", "10", "12", "13" };
         private const string m_str_pp_181 = "OngoingMgt_PrePost_BaseYr";
         private static string[] m_summary_pp_181 = { "1", "2", "4", "5", "7", "8", "10", "11" };
         private static string[] m_ffe_pp_181 = { "1", "3", "4", "6", "7", "9", "10", "12" };
         private const string m_str_11910s = "1timeMgt_NoBY";
-        private static string[] m_summary_11910s = { "2", "3", "4", "5", "6", "7", "8", "8" };
-        private static string[] m_ffe_11910s = { "1", "3", "4", "5", "6", "7", "7", "7" };
+        private static string[] m_summary_11910s = { "2", "3", "4", "5", "6", "7", "8", "Not Used" };
+        private static string[] m_ffe_11910s = { "1", "3", "4", "5", "6", "7", "Not Used", "Not Used" };
         private const string m_str_wtd_181 = "OngoingMgt_WtdMean_BaseYr";
         private static string[] m_summary_wtd_181 = { "2", "3", "5", "6", "8", "9", "11", "12" };
         private static string[] m_ffe_wtd_181 = { "3", "4", "6", "7", "9", "10", "12", "13" };
@@ -94,25 +93,6 @@ namespace FIA_Biosum_Manager
         {
             int x;
             InitializeComponent();
-
-            //add combo control to groupbox
-            m_cmbTableCustom = new ComboBox();
-            groupBox1.Controls.Add(m_cmbTableCustom);
-            m_cmbTableCustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-            m_cmbTableCustom.ForeColor = lblCurTable.ForeColor;
-            m_cmbTableCustom.BackColor = groupBox1.BackColor;
-            m_cmbTableCustom.Location = lblCurTable.Location;
-            m_cmbTableCustom.Width = lblType.Left - lblCurTable.Left;
-            for (x = 0; x <= Tables.FVS.g_strFVSOutTablesArray.Length - 1; x++)
-            {
-                if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() != "FVS_TREELIST" &&
-                    Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() != "FVS_ATRTLIST" &&
-                    Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() != "FVS_CASES")
-                        m_cmbTableCustom.Items.Add(Tables.FVS.g_strFVSOutTablesArray[x]);
-            }
-            m_cmbTableCustom.Text = "<Select or Enter Table Name>"; 
-            m_cmbTableCustom.Hide();
-            m_cmbTableCustom.SelectedIndexChanged += new System.EventHandler(m_cmbTableCustom_SelectedIndexChanged);
 
             lvFVSTables.Columns[COL_STATUS].TextAlign = HorizontalAlignment.Center;
 
@@ -317,6 +297,7 @@ namespace FIA_Biosum_Manager
                         intId = oItem.PrePostSeqNumId;
                     }
                 }
+                intId++;    //Increment highest id by one so we have a unique key
 
                 // Remove tables that aren't in the list of tables we want
                 FVSPrePostSeqNumItem_Collection oTempItems = new FVSPrePostSeqNumItem_Collection();
@@ -470,7 +451,7 @@ namespace FIA_Biosum_Manager
             lvFVSTables.Items[lvFVSTables.Items.Count - 1].SubItems[COL_STATUS].ForeColor = Color.White;
             for (y = 1; y <= lvFVSTables.Columns.Count - 1; y++)
             {
-                lvFVSTables.Items[lvFVSTables.Items.Count - 1].SubItems.Add(" ");
+                lvFVSTables.Items[lvFVSTables.Items.Count - 1].SubItems.Add(" ");              
             }
             lvFVSTables.Items[lvFVSTables.Items.Count - 1].SubItems[COL_ID].Text =
                 m_oCurFVSPrepostSeqNumItem_Collection.Item(x).PrePostSeqNumId.ToString().Trim();
@@ -521,13 +502,6 @@ namespace FIA_Biosum_Manager
                  cmbPOST4.Enabled = p_bEnable;
                 
              }
-             //
-             //RADIO BUTTON SEQNUM OPTIONS
-             //
-             if (lvFVSTables.SelectedItems.Count > 0)
-                 SetSeqNumConfigObjectsEnabled(lblCurTable.Text.Trim().ToUpper());
-             else
-                 SetSeqNumConfigObjectsEnabled("");
 
              cmbPRE1.Enabled = p_bEnable;
              cmbPRE2.Enabled = p_bEnable;
@@ -576,13 +550,6 @@ namespace FIA_Biosum_Manager
                 m_cmbFVSStrClassPost2.Enabled = false;
                 m_cmbFVSStrClassPost3.Enabled = false;
                 m_cmbFVSStrClassPost4.Enabled = false;
-                
-                if (m_cmbTableCustom.Visible)
-                {
-                    m_cmbTableCustom.Hide();
-                    lblCurTable.Show();
-
-                }
             }
             else
             {
@@ -614,32 +581,30 @@ namespace FIA_Biosum_Manager
         private void lvFVSTables_SelectedIndexChanged(object sender, EventArgs e)
         {
             
-           
-
             ListViewSelectedIndexChanged();
-
         }
+
         private void ListViewSelectedIndexChanged()
         {
             int x;
             if (lvFVSTables.SelectedItems.Count > 0)
             {
                 // Update for FVS_SUMMARY only
-                //if (lvFVSTables.SelectedItems[0].SubItems[COL_TYPE].Text.Trim() == "DEFAULT")
-                //    btnRemove.Enabled = false;
-                //else
-                //{
-                //    btnRemove.Enabled = true;
-                //    if (lvFVSTables.SelectedItems[0].SubItems[COL_STATUS].BackColor==Color.Red)
-                //    {
-                //        btnRemove.Text = "Undelete";
-                       
-                //    }
-                //    else
-                //    {
-                //        btnRemove.Text = "Delete";
-                //    }
-                //}
+                if (lvFVSTables.SelectedItems[0].SubItems[COL_TABLENAME].Text.Trim() == "FVS_SUMMARY")
+                    btnRemove.Enabled = false;
+                else
+                {
+                    btnRemove.Enabled = true;
+                    if (lvFVSTables.SelectedItems[0].SubItems[COL_STATUS].BackColor == Color.Red)
+                    {
+                        btnRemove.Text = "Undelete";
+
+                    }
+                    else
+                    {
+                        btnRemove.Text = "Delete";
+                    }
+                }
                 if (btnRemove.Text == "Undelete")
                 {
                     btnEdit.Enabled = false;
@@ -661,6 +626,7 @@ namespace FIA_Biosum_Manager
                 btnSeqNum.Enabled = false;
                 return;
             }
+
             for (x = 0; x <= m_oCurFVSPrepostSeqNumItem_Collection.Count - 1; x++)
             {
                 if (m_oCurFVSPrepostSeqNumItem_Collection.Item(x).PrePostSeqNumId.ToString().Trim() ==
@@ -669,7 +635,6 @@ namespace FIA_Biosum_Manager
                     m_intCurSeqNumItemIndex = x;
                     lblCurId.Text = m_oCurFVSPrepostSeqNumItem_Collection.Item(x).PrePostSeqNumId.ToString();
                     lblCurTable.Text = m_oCurFVSPrepostSeqNumItem_Collection.Item(x).TableName;
-                    //@ToDo: Add code to update the new Table Count textbox
                     lblCurCount.Text = Convert.ToString(lvFVSTables.SelectedItems.Count);
                     cmbPRE1.Text = m_oCurFVSPrepostSeqNumItem_Collection.Item(x).RxCycle1PreSeqNum;
                     cmbPRE2.Text = m_oCurFVSPrepostSeqNumItem_Collection.Item(x).RxCycle2PreSeqNum;
@@ -680,18 +645,16 @@ namespace FIA_Biosum_Manager
                     cmbPOST3.Text = m_oCurFVSPrepostSeqNumItem_Collection.Item(x).RxCycle3PostSeqNum;
                     cmbPOST4.Text = m_oCurFVSPrepostSeqNumItem_Collection.Item(x).RxCycle4PostSeqNum;
 
-                    if (m_oCurFVSPrepostSeqNumItem_Collection.Item(x).Type.Equals("C"))
-                    {
-                        txtPackages.Text = m_rxPackages;
-                    }
-                    else
-                    {
-                        txtPackages.Text = "";
-                    }
+                    //if (m_oCurFVSPrepostSeqNumItem_Collection.Item(x).Type.Equals("C"))
+                    //{
+                    //    txtPackages.Text = m_rxPackages;
+                    //}
+                    //else
+                    //{
+                    //    txtPackages.Text = "";
+                    //}
+                    txtPackages.Text = m_rxPackages;
 
-                    rdoSummaryTableSeqNumTemplate.Checked = m_oCurFVSPrepostSeqNumItem_Collection.Item(x).UseSummaryTableSeqNumYN=="Y" ? true : false;
-                    rdoCustomTableSeqNumTemplate.Checked = !rdoSummaryTableSeqNumTemplate.Checked;
-                    rdoCustomTableSeqNumTemplate.Text = rdoSummaryTableSeqNumTemplate.Text.Replace("FVS_SUMMARY", lblCurTable.Text.Trim());
                     if (lblCurTable.Text.Trim().ToUpper().IndexOf("POTFIRE", 0) >= 0)
                     {
                         m_cmbFVSStrClassPost1.Hide();
@@ -833,17 +796,6 @@ namespace FIA_Biosum_Manager
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            if (m_cmbTableCustom.Visible)
-            {
-                if (lvFVSTables.SelectedItems.Count == 0)
-                {
-                    lblCurId.Text = "NA"; lblCurTable.Text = "NA"; lblCurCount.Text = "0";
-                }
-                else
-                {
-                    ListViewSelectedIndexChanged();
-                }
-            }
             EnableEdit(false);
             lvFVSTables.Focus();
             if (lvFVSTables.SelectedItems.Count > 0)
@@ -856,9 +808,7 @@ namespace FIA_Biosum_Manager
         }
         private void AssignTemplate(string p_strOption)
         {
-            string strTable = "";
-            if (m_cmbTableCustom.Visible) strTable = m_cmbTableCustom.Text.Trim().ToUpper();
-            else strTable = lblCurTable.Text.Trim().ToUpper();
+            string strTable = lblCurTable.Text.Trim().ToUpper();
 
             // Assign sequence number arrays by option
             string[] arrSummarySequence = null;
@@ -972,73 +922,35 @@ namespace FIA_Biosum_Manager
 
         private void btnDone_Click(object sender, EventArgs e)
         {
+            bool bIsValid = val_data();
             int x;
-            if (m_cmbTableCustom.Visible == false)
+            if (bIsValid)
             {
-                for (x = 0; x <= m_oCurFVSPrepostSeqNumItem_Collection.Count - 1; x++)
+                for (int j = 0; j < lvFVSTables.SelectedItems.Count; j++)
                 {
-                    if (m_oCurFVSPrepostSeqNumItem_Collection.Item(x).PrePostSeqNumId.ToString().Trim() ==
-                        lvFVSTables.SelectedItems[0].SubItems[COL_ID].Text.Trim())
+                    for (x = 0; x <= m_oCurFVSPrepostSeqNumItem_Collection.Count - 1; x++)
                     {
-                        SaveEditValuesToProperties(x);
+                        if (m_oCurFVSPrepostSeqNumItem_Collection.Item(x).PrePostSeqNumId.ToString().Trim() ==
+                            lvFVSTables.SelectedItems[j].SubItems[COL_ID].Text.Trim())
+                        {
+                            SaveEditValuesToProperties(x);
 
-                        m_oCurFVSPrepostSeqNumItem_Collection.Item(x).Modified = true;
-                        m_bSave = true;
-                        EnableEdit(false);
-                        lvFVSTables.SelectedItems[0].SubItems[COL_STATUS].BackColor = Color.Green;
-                        lvFVSTables.SelectedItems[0].SubItems[COL_STATUS].Text = "m";
-                        lvFVSTables.Focus();
-                        lvFVSTables.Items[m_intCurIndex].Selected = true;
-
-
-
-                        break;
+                            m_oCurFVSPrepostSeqNumItem_Collection.Item(x).Modified = true;
+                            m_bSave = true;
+                            EnableEdit(false);
+                            lvFVSTables.SelectedItems[j].SubItems[COL_STATUS].BackColor = Color.Green;
+                            lvFVSTables.SelectedItems[j].SubItems[COL_STATUS].Text = "m";
+                            lvFVSTables.Focus();
+                            lvFVSTables.Items[m_intCurIndex].Selected = true;
+                            break;
+                        }
                     }
-
                 }
-            }
-            else
-            {
-
-                FVSPrePostSeqNumItem oItem = new FVSPrePostSeqNumItem();
-                oItem.PrePostSeqNumId = Convert.ToInt32(lblCurId.Text.Trim());
-                oItem.TableName = m_cmbTableCustom.Text.Trim();
-                oItem.Type = "C";
-                oItem.Add = true;
-                m_oCurFVSPrepostSeqNumItem_Collection.Add(oItem);
-                SaveEditValuesToProperties(m_oCurFVSPrepostSeqNumItem_Collection.Count - 1);
-                AddListViewItemFromProperties(m_oCurFVSPrepostSeqNumItem_Collection.Count - 1);
-
-                m_cmbTableCustom.Hide();
-                lblCurTable.Show();
-                m_bSave = true;
-                EnableEdit(false);
-               
-                m_intCurIndex = lvFVSTables.Items.Count - 1;
-                lvFVSTables.Items[lvFVSTables.Items.Count - 1].SubItems[COL_STATUS].BackColor = Color.Blue;
-                lvFVSTables.Items[lvFVSTables.Items.Count - 1].Text = "+";
-                lvFVSTables.Focus();
-                lvFVSTables.Items[lvFVSTables.Items.Count - 1].Selected = true;
-
-                lvFVSTables.SelectedItems[0].EnsureVisible();
-                
-                
-
             }
         }
         private void SaveEditValuesToProperties(FVSPrePostSeqNumItem p_oItem)
         {
-            if (p_oItem.TableName.Trim().Length == 0)
-            {
-                if (m_cmbTableCustom.Visible)
-                {
-                    p_oItem.TableName = m_cmbTableCustom.Text.Trim().ToUpper();
-                }
-                else
-                {
-                    p_oItem.TableName = lblCurTable.Text.Trim().ToUpper();
-                }
-            }
+
             if (cmbPRE1.Text.Trim().Length > 0)
                 p_oItem.RxCycle1PreSeqNum = cmbPRE1.Text.Trim();
             else
@@ -1163,7 +1075,8 @@ namespace FIA_Biosum_Manager
             {
                 p_oItem.RxCycle4PostStrClassBeforeTreeRemovalYN = "Y";
             }
-            p_oItem.UseSummaryTableSeqNumYN = rdoSummaryTableSeqNumTemplate.Checked ? "Y" : "N";
+            //@ToDo: Always set this to "N" unless setting at the same time as summary
+            p_oItem.UseSummaryTableSeqNumYN = "N";
             p_oItem.RxPackageList = txtPackages.Text;
         }
 
@@ -1189,50 +1102,47 @@ namespace FIA_Biosum_Manager
 
                 for (x = 0; x <= lvFVSTables.Items.Count - 1; x++)
                 {
+                    FVSPrePostSeqNumItem oItem = new FVSPrePostSeqNumItem();
+                    for (y = 0; y <= m_oCurFVSPrepostSeqNumItem_Collection.Count - 1; y++)
+                    {
+                        if (m_oCurFVSPrepostSeqNumItem_Collection.Item(y).PrePostSeqNumId.ToString().Trim() ==
+                           lvFVSTables.Items[x].SubItems[COL_ID].Text.Trim())
+                        {
+                            oItem = m_oCurFVSPrepostSeqNumItem_Collection.Item(y);
+                        }
+                    }
                     //
                     //DELETE
                     //
                     if (lvFVSTables.Items[x].SubItems[COL_STATUS].BackColor == Color.Red)
                     {
-                        for (y = 0; y <= m_oCurFVSPrepostSeqNumItem_Collection.Count - 1; y++)
+                        if (oItem.PrePostSeqNumId.ToString().Trim() == lvFVSTables.Items[x].SubItems[COL_ID].Text.Trim())
                         {
-                            if (m_oCurFVSPrepostSeqNumItem_Collection.Item(y).PrePostSeqNumId.ToString().Trim() ==
-                               lvFVSTables.Items[x].SubItems[COL_ID].Text.Trim())
+                            m_oAdo.m_strSQL = "DELETE FROM " + Tables.FVS.DefaultFVSPrePostSeqNumTable + " " +
+                                             "WHERE PREPOST_SEQNUM_ID=" + oItem.PrePostSeqNumId.ToString().Trim();
+                            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                            if (m_oAdo.m_intError == 0)
                             {
-                                m_oAdo.m_strSQL = "DELETE FROM " + Tables.FVS.DefaultFVSPrePostSeqNumTable + " " +
-                                                 "WHERE PREPOST_SEQNUM_ID=" +
-                                                 m_oCurFVSPrepostSeqNumItem_Collection.Item(y).PrePostSeqNumId.ToString().Trim();
-                                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                                if (m_oAdo.m_intError == 0)
-                                {
 
-                                    bDelete = true;
-
-                                }
-                                m_oAdo.m_strSQL = "DELETE FROM " + Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable + " " +
-                                                 "WHERE PREPOST_SEQNUM_ID=" +
-                                                 m_oCurFVSPrepostSeqNumItem_Collection.Item(y).PrePostSeqNumId.ToString().Trim();
-                                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-
+                                bDelete = true;
 
                             }
+                            m_oAdo.m_strSQL = "DELETE FROM " + Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable + " " +
+                                              "WHERE PREPOST_SEQNUM_ID=" + oItem.PrePostSeqNumId.ToString().Trim();
+                            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
                         }
                     }
                     //
                     //INSERT
                     //
-                    else if (lvFVSTables.Items[x].SubItems[COL_STATUS].BackColor == Color.Blue)
+                    else if (lvFVSTables.Items[x].SubItems[COL_STATUS].BackColor == Color.Green && oItem.Add == true)
                     {
-                        for (y = 0; y <= m_oCurFVSPrepostSeqNumItem_Collection.Count - 1; y++)
-                        {
-                            if (m_oCurFVSPrepostSeqNumItem_Collection.Item(y).PrePostSeqNumId.ToString().Trim() ==
+                            if (oItem.PrePostSeqNumId.ToString().Trim() ==
                                lvFVSTables.Items[x].SubItems[COL_ID].Text.Trim())
                             {
                                 strValues = "";
-                                FVSPrePostSeqNumItem oItem = m_oCurFVSPrepostSeqNumItem_Collection.Item(y);
-                                if (m_oCurFVSPrepostSeqNumItem_Collection.Item(y).Add)
-                                {
-                                    //INSERT
+                            //INSERT
+                            int intAssignedCount = 0;
                                     strValues = oItem.PrePostSeqNumId.ToString().Trim() + ",";
                                     strValues = strValues + "'" + oItem.TableName + "',";
                                     strValues = strValues + "'" + oItem.Type + "',";
@@ -1240,7 +1150,8 @@ namespace FIA_Biosum_Manager
                                         oItem.RxCycle1PreSeqNum.Trim().ToUpper() != "NOT USED")
                                     {
                                         strValues = strValues + oItem.RxCycle1PreSeqNum.Trim() + ",";
-                                    }
+                                intAssignedCount++;
+                            }
                                     else
                                     {
                                         strValues = strValues + "null,";
@@ -1249,7 +1160,8 @@ namespace FIA_Biosum_Manager
                                         oItem.RxCycle1PostSeqNum.Trim().ToUpper() != "NOT USED")
                                     {
                                         strValues = strValues + oItem.RxCycle1PostSeqNum.Trim() + ",";
-                                    }
+                                intAssignedCount++;
+                            }
                                     else
                                     {
                                         strValues = strValues + "null,";
@@ -1258,7 +1170,8 @@ namespace FIA_Biosum_Manager
                                        oItem.RxCycle2PreSeqNum.Trim().ToUpper() != "NOT USED")
                                     {
                                         strValues = strValues + oItem.RxCycle2PreSeqNum.Trim() + ",";
-                                    }
+                                intAssignedCount++;
+                            }
                                     else
                                     {
                                         strValues = strValues + "null,";
@@ -1267,7 +1180,8 @@ namespace FIA_Biosum_Manager
                                         oItem.RxCycle2PostSeqNum.Trim().ToUpper() != "NOT USED")
                                     {
                                         strValues = strValues + oItem.RxCycle2PostSeqNum.Trim() + ",";
-                                    }
+                                intAssignedCount++;
+                            }
                                     else
                                     {
                                         strValues = strValues + "null,";
@@ -1276,7 +1190,8 @@ namespace FIA_Biosum_Manager
                                        oItem.RxCycle3PreSeqNum.Trim().ToUpper() != "NOT USED")
                                     {
                                         strValues = strValues + oItem.RxCycle3PreSeqNum.Trim() + ",";
-                                    }
+                                intAssignedCount++;
+                            }
                                     else
                                     {
                                         strValues = strValues + "null,";
@@ -1285,7 +1200,8 @@ namespace FIA_Biosum_Manager
                                         oItem.RxCycle3PostSeqNum.Trim().ToUpper() != "NOT USED")
                                     {
                                         strValues = strValues + oItem.RxCycle3PostSeqNum.Trim() + ",";
-                                    }
+                                intAssignedCount++;
+                            }
                                     else
                                     {
                                         strValues = strValues + "null,";
@@ -1294,7 +1210,8 @@ namespace FIA_Biosum_Manager
                                        oItem.RxCycle4PreSeqNum.Trim().ToUpper() != "NOT USED")
                                     {
                                         strValues = strValues + oItem.RxCycle4PreSeqNum.Trim() + ",";
-                                    }
+                                intAssignedCount++;
+                            }
                                     else
                                     {
                                         strValues = strValues + "null,";
@@ -1303,7 +1220,8 @@ namespace FIA_Biosum_Manager
                                         oItem.RxCycle4PostSeqNum.Trim().ToUpper() != "NOT USED")
                                     {
                                         strValues = strValues + oItem.RxCycle4PostSeqNum.Trim() + ",";
-                                    }
+                                intAssignedCount++;
+                            }
                                     else
                                     {
                                         strValues = strValues + "null,";
@@ -1350,12 +1268,10 @@ namespace FIA_Biosum_Manager
                                     {
                                         lvFVSTables.Items[x].SubItems[COL_STATUS].BackColor = Color.White;
                                         lvFVSTables.Items[x].SubItems[COL_STATUS].Text = "";
-                                        m_oCurFVSPrepostSeqNumItem_Collection.Item(y).Add = false;
+                                lvFVSTables.Items[x].SubItems[COL_COUNT].Text = Convert.ToString(intAssignedCount);
+                                oItem.Add = false;
                                     }
-                                    break;
-                                }
                             }
-                        }
 
                     }
                     //
@@ -1363,21 +1279,18 @@ namespace FIA_Biosum_Manager
                     //
                     else if (lvFVSTables.Items[x].SubItems[COL_STATUS].BackColor == Color.Green)
                     {
-                        for (y = 0; y <= m_oCurFVSPrepostSeqNumItem_Collection.Count - 1; y++)
-                        {
-                            if (m_oCurFVSPrepostSeqNumItem_Collection.Item(y).PrePostSeqNumId.ToString().Trim() ==
+                            if (oItem.PrePostSeqNumId.ToString().Trim() ==
                                lvFVSTables.Items[x].SubItems[COL_ID].Text)
                             {
-                                strValues = "";
-                                FVSPrePostSeqNumItem oItem = m_oCurFVSPrepostSeqNumItem_Collection.Item(y);
-
-
+                            int intAssignedCount = 0;
+                            strValues = "";
                                 //UPDATE
                                 if (oItem.RxCycle1PreSeqNum.Trim().Length > 0 &&
                                     oItem.RxCycle1PreSeqNum.Trim().ToUpper() != "NOT USED")
                                 {
                                     strValues = strValues + "RXCYCLE1_PRE_SEQNUM=" + oItem.RxCycle1PreSeqNum.Trim() + ",";
-                                }
+                                intAssignedCount++;
+                            }
                                 else
                                 {
                                     strValues = strValues + "RXCYCLE1_PRE_SEQNUM=null,";
@@ -1386,7 +1299,8 @@ namespace FIA_Biosum_Manager
                                    oItem.RxCycle2PreSeqNum.Trim().ToUpper() != "NOT USED")
                                 {
                                     strValues = strValues + "RXCYCLE2_PRE_SEQNUM=" + oItem.RxCycle2PreSeqNum.Trim() + ",";
-                                }
+                                intAssignedCount++;
+                            }
                                 else
                                 {
                                     strValues = strValues + "RXCYCLE2_PRE_SEQNUM=null,";
@@ -1395,7 +1309,8 @@ namespace FIA_Biosum_Manager
                                   oItem.RxCycle3PreSeqNum.Trim().ToUpper() != "NOT USED")
                                 {
                                     strValues = strValues + "RXCYCLE3_PRE_SEQNUM=" + oItem.RxCycle3PreSeqNum.Trim() + ",";
-                                }
+                                intAssignedCount++;
+                            }
                                 else
                                 {
                                     strValues = strValues + "RXCYCLE3_PRE_SEQNUM=null,";
@@ -1404,7 +1319,8 @@ namespace FIA_Biosum_Manager
                                   oItem.RxCycle4PreSeqNum.Trim().ToUpper() != "NOT USED")
                                 {
                                     strValues = strValues + "RXCYCLE4_PRE_SEQNUM=" + oItem.RxCycle4PreSeqNum.Trim() + ",";
-                                }
+                                intAssignedCount++;
+                            }
                                 else
                                 {
                                     strValues = strValues + "RXCYCLE4_PRE_SEQNUM=null,";
@@ -1413,7 +1329,8 @@ namespace FIA_Biosum_Manager
                                     oItem.RxCycle1PostSeqNum.Trim().ToUpper() != "NOT USED")
                                 {
                                     strValues = strValues + "RXCYCLE1_POST_SEQNUM=" + oItem.RxCycle1PostSeqNum.Trim() + ",";
-                                }
+                                intAssignedCount++;
+                            }
                                 else
                                 {
                                     strValues = strValues + "RXCYCLE1_POST_SEQNUM=null,";
@@ -1422,7 +1339,8 @@ namespace FIA_Biosum_Manager
                                    oItem.RxCycle2PostSeqNum.Trim().ToUpper() != "NOT USED")
                                 {
                                     strValues = strValues + "RXCYCLE2_POST_SEQNUM=" + oItem.RxCycle2PostSeqNum.Trim() + ",";
-                                }
+                                intAssignedCount++;
+                            }
                                 else
                                 {
                                     strValues = strValues + "RXCYCLE2_POST_SEQNUM=null,";
@@ -1431,7 +1349,8 @@ namespace FIA_Biosum_Manager
                                   oItem.RxCycle3PostSeqNum.Trim().ToUpper() != "NOT USED")
                                 {
                                     strValues = strValues + "RXCYCLE3_POST_SEQNUM=" + oItem.RxCycle3PostSeqNum.Trim() + ",";
-                                }
+                                intAssignedCount++;
+                            }
                                 else
                                 {
                                     strValues = strValues + "RXCYCLE3_POST_SEQNUM=null,";
@@ -1440,7 +1359,8 @@ namespace FIA_Biosum_Manager
                                     oItem.RxCycle4PostSeqNum.Trim().ToUpper() != "NOT USED")
                                 {
                                     strValues = strValues + "RXCYCLE4_POST_SEQNUM=" + oItem.RxCycle4PostSeqNum.Trim() + ",";
-                                }
+                                intAssignedCount++;
+                            }
                                 else
                                 {
                                     strValues = strValues + "RXCYCLE4_POST_SEQNUM=null,";
@@ -1509,9 +1429,7 @@ namespace FIA_Biosum_Manager
                                     lvFVSTables.Items[x].SubItems[COL_STATUS].BackColor = Color.White;
                                 lvFVSTables.Items[x].SubItems[COL_STATUS].Text = "";
                                 lvFVSTables.Items[x].SubItems[COL_ID].Text = oItem.PrePostSeqNumId.ToString().Trim();
-                                break;
-
-                            }
+                                lvFVSTables.Items[x].SubItems[COL_COUNT].Text = Convert.ToString(intAssignedCount);
                         }
                     }
                 }
@@ -1535,7 +1453,30 @@ namespace FIA_Biosum_Manager
             savevalues();
         }
 
-        private void cmbPRE1_SelectedIndexChanged(object sender, EventArgs e)
+        private bool val_data()
+        {
+            if (lvFVSTables.SelectedItems.Count > 0)
+            {
+                // Base year only allowed if POTFIRE is the only selection
+                if (chkPRE1BaseYear.Checked)
+                {
+                    List<string> lstTables = new List<string>();
+                    for (int i = 0; i < lvFVSTables.SelectedItems.Count; i++)
+                    {
+                        string nextTable = lvFVSTables.SelectedItems[0].SubItems[COL_TABLENAME].Text.Trim();
+                        lstTables.Add(nextTable);
+                    }
+                    if (lstTables.Contains("FVS_POTFIRE") && lstTables.Count > 1)
+                    {
+                        MessageBox.Show("Base Year is only supported for FVS_POTFIRE!", "FIA Biosum");
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+            private void cmbPRE1_SelectedIndexChanged(object sender, EventArgs e)
         {
 
             SetPotFireBaseYearVisible(cmbPRE1, chkPRE1BaseYear);
@@ -1564,15 +1505,12 @@ namespace FIA_Biosum_Manager
                 SetPotFireBaseYearVisible(cmbPRE4, chkPRE4BaseYear);
                 SetStrClassVisible();
                 SetHarvestTreeInputOptions();
-                SetSeqNumConfigObjectsEnabled(m_cmbTableCustom.Text.Trim().ToUpper());
                 
             
         }
         private void SetStrClassVisible()
         {
-            string strTable = "";
-            if (m_cmbTableCustom.Visible) strTable = m_cmbTableCustom.Text.Trim().ToUpper();
-            else strTable = lblCurTable.Text.Trim().ToUpper();
+            string strTable = lblCurTable.Text.Trim().ToUpper();
             if (strTable.IndexOf("FVS_STRCLASS", 0) >= 0)
             {
                 m_cmbFVSStrClassPre1.Show();
@@ -1596,58 +1534,12 @@ namespace FIA_Biosum_Manager
                 m_cmbFVSStrClassPost4.Hide();
             }
         }
-        private void SetSeqNumConfigObjectsEnabled(string p_strTable)
-        {
-            if (lvFVSTables.Enabled)
-            {
-                btnSeqNumEdit.Enabled = false;
-                rdoCustomTableSeqNumTemplate.Enabled = false;
-                rdoSummaryTableSeqNumTemplate.Enabled = false;
-            }
-            else
-            {
-                if (p_strTable.Trim().Length > 0)
-                {
-                    if (p_strTable == "FVS_CUTLIST" ||
-                        p_strTable == "FVS_ATRTLIST" ||
-                        p_strTable == "FVS_MORTALITY" ||
-                        p_strTable == "FVS_SNAGDET" ||
-                        p_strTable == "FVS_SUMMARY")
-                    {
-                        //always use the FVS_SUMMARY
-                        rdoCustomTableSeqNumTemplate.Enabled = false;
-                        rdoSummaryTableSeqNumTemplate.Enabled = false;
-                        rdoSummaryTableSeqNumTemplate.Checked = true;
-                    }
-                    else if (p_strTable == "FVS_POTFIRE" || p_strTable == "FVS_POTFIRE_EAST")
-                    {
-                        rdoCustomTableSeqNumTemplate.Enabled = true;
-                        rdoSummaryTableSeqNumTemplate.Enabled = false;
-                    }
-                    else
-                    {
-                        //option to use FVS Outputs table seqnum or use FVS_SUMMARY
-                        rdoCustomTableSeqNumTemplate.Enabled = true;
-                        rdoSummaryTableSeqNumTemplate.Enabled = true;
-                    }
-                    rdoCustomTableSeqNumTemplate.Text = rdoSummaryTableSeqNumTemplate.Text.Replace("FVS_SUMMARY", p_strTable);
-                    btnSeqNumEdit.Enabled = true;
-                }
-                else
-                {
-                    btnSeqNumEdit.Enabled = false;
-                    rdoSummaryTableSeqNumTemplate.Enabled = false;
-                    rdoCustomTableSeqNumTemplate.Enabled = false;
-                }
-            }
-        }
+
         private void SetPotFireBaseYearVisible(ComboBox p_oCombo, CheckBox p_oCheckBox)
         {
             if (p_oCombo.Text.Trim() == "1")
             {
-                string strTable = "";
-                if (m_cmbTableCustom.Visible) strTable = m_cmbTableCustom.Text.Trim().ToUpper();
-                else strTable = lblCurTable.Text.Trim().ToUpper();
+                string strTable = lblCurTable.Text.Trim().ToUpper();
                 if (strTable.IndexOf("POTFIRE", 0) >= 0)
                 {
                     p_oCheckBox.Enabled = true;
@@ -1667,20 +1559,6 @@ namespace FIA_Biosum_Manager
         }
         private void SetHarvestTreeInputOptions()
         {
-            if (m_cmbTableCustom.Text.Trim().ToUpper() == "FVS_CUTLIST")
-            {
-                cmbPOST1.Text = "Not Used";
-                cmbPOST2.Text = "Not Used";
-                cmbPOST3.Text = "Not Used";
-                cmbPOST4.Text = "Not Used";
-
-                cmbPOST1.Enabled = false;
-                cmbPOST2.Enabled = false;
-                cmbPOST3.Enabled = false;
-                cmbPOST4.Enabled = false;
-            }
-            else
-            {
                 cmbPOST1.Text = "";
                 cmbPOST2.Text = "";
                 cmbPOST3.Text = "";
@@ -1690,7 +1568,6 @@ namespace FIA_Biosum_Manager
                 cmbPOST2.Enabled = true;
                 cmbPOST3.Enabled = true;
                 cmbPOST4.Enabled = true;
-            }
         }
 
         private void cmbPRE1_KeyPress(object sender, KeyPressEventArgs e)
@@ -2177,24 +2054,10 @@ namespace FIA_Biosum_Manager
         private void btnSeqNumEdit_Click(object sender, EventArgs e)
         {
             FVSPrePostSeqNumItem oItem;
-            if (m_cmbTableCustom.Visible)
-            {
-                if (this.m_cmbTableCustom.Text.Trim().ToUpper().IndexOf("FVS_", 0) == 0)
-                {
-                    oItem = new FVSPrePostSeqNumItem();
-                    SaveEditValuesToProperties(oItem);
-                    ViewSeqNumAssignments(m_cmbTableCustom.Text.Trim().ToUpper(), oItem);
-                    oItem = null;
-                }
-            }
-            else
-            {
                 oItem = new FVSPrePostSeqNumItem();
                 SaveEditValuesToProperties(oItem);
                 ViewSeqNumAssignments(lblCurTable.Text.Trim().ToUpper(), oItem);
                 oItem = null;
-            }
-           
         }
 
         private FVSPrePostSeqNumItem CreateNewSequenceNumberItem(int intId, string strTableName)
@@ -2204,6 +2067,7 @@ namespace FIA_Biosum_Manager
             newItem.TableName = strTableName;
             newItem.UseSummaryTableSeqNumYN = "N";
             newItem.Type = "C";
+            newItem.Add = true;
             newItem.AssignedCount = 0;
             //
             //PRE

@@ -34,10 +34,6 @@
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.cmbDefault = new System.Windows.Forms.ComboBox();
             this.btnAssignTemplate = new System.Windows.Forms.Button();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.rdoSummaryTableSeqNumTemplate = new System.Windows.Forms.RadioButton();
-            this.btnSeqNumEdit = new System.Windows.Forms.Button();
-            this.rdoCustomTableSeqNumTemplate = new System.Windows.Forms.RadioButton();
             this.btnSeqNum = new System.Windows.Forms.Button();
             this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
@@ -85,13 +81,11 @@
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
-            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.groupBox3);
-            this.groupBox1.Controls.Add(this.groupBox2);
             this.groupBox1.Controls.Add(this.btnSeqNum);
             this.groupBox1.Controls.Add(this.label9);
             this.groupBox1.Controls.Add(this.label10);
@@ -176,58 +170,6 @@
             this.btnAssignTemplate.Text = "Assign";
             this.btnAssignTemplate.UseVisualStyleBackColor = true;
             this.btnAssignTemplate.Click += new System.EventHandler(this.btnAssignTemplate_Click);
-            // 
-            // groupBox2
-            // 
-            this.groupBox2.Controls.Add(this.rdoSummaryTableSeqNumTemplate);
-            this.groupBox2.Controls.Add(this.btnSeqNumEdit);
-            this.groupBox2.Controls.Add(this.rdoCustomTableSeqNumTemplate);
-            this.groupBox2.Location = new System.Drawing.Point(780, 345);
-            this.groupBox2.Margin = new System.Windows.Forms.Padding(4);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBox2.Size = new System.Drawing.Size(405, 114);
-            this.groupBox2.TabIndex = 101;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "SeqNum Assignments";
-            // 
-            // rdoSummaryTableSeqNumTemplate
-            // 
-            this.rdoSummaryTableSeqNumTemplate.AutoSize = true;
-            this.rdoSummaryTableSeqNumTemplate.Checked = true;
-            this.rdoSummaryTableSeqNumTemplate.Enabled = false;
-            this.rdoSummaryTableSeqNumTemplate.Location = new System.Drawing.Point(20, 23);
-            this.rdoSummaryTableSeqNumTemplate.Margin = new System.Windows.Forms.Padding(4);
-            this.rdoSummaryTableSeqNumTemplate.Name = "rdoSummaryTableSeqNumTemplate";
-            this.rdoSummaryTableSeqNumTemplate.Size = new System.Drawing.Size(161, 21);
-            this.rdoSummaryTableSeqNumTemplate.TabIndex = 98;
-            this.rdoSummaryTableSeqNumTemplate.TabStop = true;
-            this.rdoSummaryTableSeqNumTemplate.Text = "Use FVS_SUMMARY";
-            this.rdoSummaryTableSeqNumTemplate.UseVisualStyleBackColor = true;
-            // 
-            // btnSeqNumEdit
-            // 
-            this.btnSeqNumEdit.Enabled = false;
-            this.btnSeqNumEdit.Location = new System.Drawing.Point(8, 79);
-            this.btnSeqNumEdit.Margin = new System.Windows.Forms.Padding(4);
-            this.btnSeqNumEdit.Name = "btnSeqNumEdit";
-            this.btnSeqNumEdit.Size = new System.Drawing.Size(389, 28);
-            this.btnSeqNumEdit.TabIndex = 100;
-            this.btnSeqNumEdit.Text = "View Sequence Number Assignments";
-            this.btnSeqNumEdit.UseVisualStyleBackColor = true;
-            this.btnSeqNumEdit.Click += new System.EventHandler(this.btnSeqNumEdit_Click);
-            // 
-            // rdoCustomTableSeqNumTemplate
-            // 
-            this.rdoCustomTableSeqNumTemplate.AutoSize = true;
-            this.rdoCustomTableSeqNumTemplate.Enabled = false;
-            this.rdoCustomTableSeqNumTemplate.Location = new System.Drawing.Point(20, 52);
-            this.rdoCustomTableSeqNumTemplate.Margin = new System.Windows.Forms.Padding(4);
-            this.rdoCustomTableSeqNumTemplate.Name = "rdoCustomTableSeqNumTemplate";
-            this.rdoCustomTableSeqNumTemplate.Size = new System.Drawing.Size(105, 21);
-            this.rdoCustomTableSeqNumTemplate.TabIndex = 99;
-            this.rdoCustomTableSeqNumTemplate.Text = "Use Current";
-            this.rdoCustomTableSeqNumTemplate.UseVisualStyleBackColor = true;
             // 
             // btnSeqNum
             // 
@@ -642,7 +584,6 @@
             this.lvFVSTables.HideSelection = false;
             this.lvFVSTables.Location = new System.Drawing.Point(4, 84);
             this.lvFVSTables.Margin = new System.Windows.Forms.Padding(4);
-            this.lvFVSTables.MultiSelect = false;
             this.lvFVSTables.Name = "lvFVSTables";
             this.lvFVSTables.Size = new System.Drawing.Size(400, 470);
             this.lvFVSTables.TabIndex = 51;
@@ -768,8 +709,6 @@
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox3.ResumeLayout(false);
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -824,10 +763,6 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Button btnSeqNum;
-        private System.Windows.Forms.Button btnSeqNumEdit;
-        private System.Windows.Forms.RadioButton rdoCustomTableSeqNumTemplate;
-        private System.Windows.Forms.RadioButton rdoSummaryTableSeqNumTemplate;
         private System.Windows.Forms.GroupBox groupBox3;
-        private System.Windows.Forms.GroupBox groupBox2;
     }
 }

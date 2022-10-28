@@ -4654,7 +4654,7 @@ namespace FIA_Biosum_Manager
                                     {
                                         seqConn.Open();
                                         // Using FVS_SUMMARY_PREPOST_SEQNUM_MATRIX instead of FVS_CUTLIST_PREPOST_SEQNUM_MATRIX
-                                        // because not all rxs generate a cutlist. Sequence numbers should be the same for CUTLIST and SUMMERY
+                                        // because not all rxs generate a cutlist. Sequence numbers should be the same for CUTLIST and SUMMARY
                                         oAdo.m_strSQL = "select * from FVS_SUMMARY_PREPOST_SEQNUM_MATRIX";
                                         oAdo.CreateDataTable(seqConn, oAdo.m_strSQL, seqNumWorkTable, false);
                                         using (System.Data.SQLite.SQLiteDataAdapter da = new System.Data.SQLite.SQLiteDataAdapter("select * from " + seqNumWorkTable, conn))
