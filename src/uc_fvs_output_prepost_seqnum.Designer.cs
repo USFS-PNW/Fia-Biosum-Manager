@@ -52,7 +52,7 @@
             this.lblPackages = new System.Windows.Forms.Label();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnDone = new System.Windows.Forms.Button();
-            this.btnRemove = new System.Windows.Forms.Button();
+            this.btnDelete = new System.Windows.Forms.Button();
             this.btnEdit = new System.Windows.Forms.Button();
             this.lblType = new System.Windows.Forms.Label();
             this.lblTable = new System.Windows.Forms.Label();
@@ -79,12 +79,14 @@
             this.lblCycle1 = new System.Windows.Forms.Label();
             this.lblTitle = new System.Windows.Forms.Label();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
+            this.label4 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.label4);
             this.groupBox1.Controls.Add(this.groupBox3);
             this.groupBox1.Controls.Add(this.btnSeqNum);
             this.groupBox1.Controls.Add(this.label9);
@@ -104,7 +106,7 @@
             this.groupBox1.Controls.Add(this.lblPackages);
             this.groupBox1.Controls.Add(this.btnCancel);
             this.groupBox1.Controls.Add(this.btnDone);
-            this.groupBox1.Controls.Add(this.btnRemove);
+            this.groupBox1.Controls.Add(this.btnDelete);
             this.groupBox1.Controls.Add(this.btnEdit);
             this.groupBox1.Controls.Add(this.lblType);
             this.groupBox1.Controls.Add(this.lblTable);
@@ -174,7 +176,7 @@
             // btnSeqNum
             // 
             this.btnSeqNum.Enabled = false;
-            this.btnSeqNum.Location = new System.Drawing.Point(12, 593);
+            this.btnSeqNum.Location = new System.Drawing.Point(116, 636);
             this.btnSeqNum.Margin = new System.Windows.Forms.Padding(4);
             this.btnSeqNum.Name = "btnSeqNum";
             this.btnSeqNum.Size = new System.Drawing.Size(307, 28);
@@ -235,7 +237,7 @@
             // btnSave
             // 
             this.btnSave.Enabled = false;
-            this.btnSave.Location = new System.Drawing.Point(341, 562);
+            this.btnSave.Location = new System.Drawing.Point(341, 587);
             this.btnSave.Margin = new System.Windows.Forms.Padding(4);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(64, 28);
@@ -321,7 +323,7 @@
             this.lblCurTable.AutoSize = true;
             this.lblCurTable.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblCurTable.ForeColor = System.Drawing.Color.Blue;
-            this.lblCurTable.Location = new System.Drawing.Point(608, 84);
+            this.lblCurTable.Location = new System.Drawing.Point(615, 84);
             this.lblCurTable.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblCurTable.Name = "lblCurTable";
             this.lblCurTable.Size = new System.Drawing.Size(34, 20);
@@ -333,7 +335,7 @@
             this.lblCurId.AutoSize = true;
             this.lblCurId.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblCurId.ForeColor = System.Drawing.Color.Blue;
-            this.lblCurId.Location = new System.Drawing.Point(457, 84);
+            this.lblCurId.Location = new System.Drawing.Point(464, 84);
             this.lblCurId.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblCurId.Name = "lblCurId";
             this.lblCurId.Size = new System.Drawing.Size(34, 20);
@@ -394,21 +396,21 @@
             this.btnDone.UseVisualStyleBackColor = true;
             this.btnDone.Click += new System.EventHandler(this.btnDone_Click);
             // 
-            // btnRemove
+            // btnDelete
             // 
-            this.btnRemove.Enabled = false;
-            this.btnRemove.Location = new System.Drawing.Point(184, 562);
-            this.btnRemove.Margin = new System.Windows.Forms.Padding(4);
-            this.btnRemove.Name = "btnRemove";
-            this.btnRemove.Size = new System.Drawing.Size(80, 28);
-            this.btnRemove.TabIndex = 67;
-            this.btnRemove.Text = "Delete";
-            this.btnRemove.UseVisualStyleBackColor = true;
-            this.btnRemove.Click += new System.EventHandler(this.btnRemove_Click);
+            this.btnDelete.Enabled = false;
+            this.btnDelete.Location = new System.Drawing.Point(137, 587);
+            this.btnDelete.Margin = new System.Windows.Forms.Padding(4);
+            this.btnDelete.Name = "btnDelete";
+            this.btnDelete.Size = new System.Drawing.Size(160, 28);
+            this.btnDelete.TabIndex = 67;
+            this.btnDelete.Text = "Delete Customization";
+            this.btnDelete.UseVisualStyleBackColor = true;
+            this.btnDelete.Click += new System.EventHandler(this.btnDelete_Click);
             // 
             // btnEdit
             // 
-            this.btnEdit.Location = new System.Drawing.Point(9, 562);
+            this.btnEdit.Location = new System.Drawing.Point(9, 587);
             this.btnEdit.Margin = new System.Windows.Forms.Padding(4);
             this.btnEdit.Name = "btnEdit";
             this.btnEdit.Size = new System.Drawing.Size(61, 28);
@@ -434,7 +436,7 @@
             this.lblTable.AutoSize = true;
             this.lblTable.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTable.ForeColor = System.Drawing.Color.ForestGreen;
-            this.lblTable.Location = new System.Drawing.Point(536, 84);
+            this.lblTable.Location = new System.Drawing.Point(543, 84);
             this.lblTable.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblTable.Name = "lblTable";
             this.lblTable.Size = new System.Drawing.Size(61, 20);
@@ -446,7 +448,7 @@
             this.lblId.AutoSize = true;
             this.lblId.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblId.ForeColor = System.Drawing.Color.ForestGreen;
-            this.lblId.Location = new System.Drawing.Point(413, 84);
+            this.lblId.Location = new System.Drawing.Point(420, 84);
             this.lblId.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblId.Name = "lblId";
             this.lblId.Size = new System.Drawing.Size(34, 20);
@@ -582,7 +584,7 @@
             this.lvFVSTables.FullRowSelect = true;
             this.lvFVSTables.GridLines = true;
             this.lvFVSTables.HideSelection = false;
-            this.lvFVSTables.Location = new System.Drawing.Point(4, 84);
+            this.lvFVSTables.Location = new System.Drawing.Point(4, 109);
             this.lvFVSTables.Margin = new System.Windows.Forms.Padding(4);
             this.lvFVSTables.Name = "lvFVSTables";
             this.lvFVSTables.Size = new System.Drawing.Size(400, 470);
@@ -698,6 +700,16 @@
             this.imageList1.Images.SetKeyName(1, "Modified");
             this.imageList1.Images.SetKeyName(2, "Deleted");
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(9, 84);
+            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(322, 17);
+            this.label4.TabIndex = 103;
+            this.label4.Text = "Use Ctrl key when clicking to select multiple tables";
+            // 
             // uc_fvs_output_prepost_seqnum
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -730,7 +742,7 @@
         private System.Windows.Forms.Label lblPackages;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Button btnDone;
-        private System.Windows.Forms.Button btnRemove;
+        private System.Windows.Forms.Button btnDelete;
         private System.Windows.Forms.Button btnEdit;
         private System.Windows.Forms.Label lblType;
         private System.Windows.Forms.Label lblTable;
@@ -764,5 +776,6 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Button btnSeqNum;
         private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.Label label4;
     }
 }

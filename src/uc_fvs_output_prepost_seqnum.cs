@@ -263,6 +263,7 @@ namespace FIA_Biosum_Manager
                 m_oAdo.CloseConnection(m_oAdo.m_OleDbConnection);
                 // sort the rxPackages
                 List<string> lstPackages = new List<string>();
+                m_rxPackages = "";
                 foreach (RxPackageItem item in m_oRxPackageItem_Collection)
                 {
                     lstPackages.Add(item.RxPackageId);
@@ -519,11 +520,10 @@ namespace FIA_Biosum_Manager
                 cmbDefault.Text = "";
                 if (lvFVSTables.SelectedItems.Count > 0)
                 {
-                    //@ToDo: Update for FVS_SUMMARY only
-                    //if (lvFVSTables.SelectedItems[0].SubItems[COL_TYPE].Text.Trim() == "DEFAULT")
-                    //    btnRemove.Enabled = false;
-                    //else
-                    //    btnRemove.Enabled = true;
+                    if (lvFVSTables.SelectedItems[0].SubItems[COL_TABLENAME].Text.Trim() == "FVS_SUMMARY")
+                        btnDelete.Enabled = false;
+                    else
+                        btnDelete.Enabled = true;
 
                     btnEdit.Enabled = true;
                     btnSeqNum.Enabled = true;
@@ -534,7 +534,7 @@ namespace FIA_Biosum_Manager
                 {
                     btnEdit.Enabled = false;
                     btnSave.Enabled = m_bSave;
-                    btnRemove.Enabled = false;
+                    btnDelete.Enabled = false;
                     btnSeqNum.Enabled = false;
                 }
                 chkPRE1BaseYear.Enabled = false;
@@ -553,7 +553,7 @@ namespace FIA_Biosum_Manager
             }
             else
             {
-                btnRemove.Enabled = false;
+                btnDelete.Enabled = false;
                 btnSave.Enabled = false;
                 btnEdit.Enabled = false;
                 btnSeqNum.Enabled = false;
@@ -589,23 +589,47 @@ namespace FIA_Biosum_Manager
             int x;
             if (lvFVSTables.SelectedItems.Count > 0)
             {
+                // FVS_STRCLASS cannot be selected with any other tables
+                if (lvFVSTables.SelectedItems.Count > 1)
+                {
+                    bool bEditStrClass = false;
+                    for (int i = 0; i < lvFVSTables.SelectedItems.Count; i++)
+                    {
+                        if (lvFVSTables.SelectedItems[i].SubItems[COL_TABLENAME].Text.Trim() == "FVS_STRCLASS")
+                        {
+                            bEditStrClass = true;
+                            break;
+                        }
+                    }
+                    if (bEditStrClass == true)
+                    {
+                        for (int i = 0; i < lvFVSTables.Items.Count; i++)
+                        {
+                            if (lvFVSTables.Items[i].SubItems[COL_TABLENAME].Text.Trim() != "FVS_STRCLASS")
+                            {
+                                lvFVSTables.Items[i].Selected = false;
+                            }
+                        }
+                    }
+                }
+                
                 // Update for FVS_SUMMARY only
                 if (lvFVSTables.SelectedItems[0].SubItems[COL_TABLENAME].Text.Trim() == "FVS_SUMMARY")
-                    btnRemove.Enabled = false;
+                    btnDelete.Enabled = false;
                 else
                 {
-                    btnRemove.Enabled = true;
+                    btnDelete.Enabled = true;
                     if (lvFVSTables.SelectedItems[0].SubItems[COL_STATUS].BackColor == Color.Red)
                     {
-                        btnRemove.Text = "Undelete";
+                        btnDelete.Text = "Undelete Customization";
 
                     }
                     else
                     {
-                        btnRemove.Text = "Delete";
+                        btnDelete.Text = "Delete Customization";
                     }
                 }
-                if (btnRemove.Text == "Undelete")
+                if (btnDelete.Text == "Undelete Customization")
                 {
                     btnEdit.Enabled = false;
                     btnSeqNum.Enabled = false;
@@ -622,7 +646,7 @@ namespace FIA_Biosum_Manager
             {
                 btnEdit.Enabled = false;
                 btnSave.Enabled = m_bSave;
-                btnRemove.Enabled = false;
+                btnDelete.Enabled = false;
                 btnSeqNum.Enabled = false;
                 return;
             }
@@ -1075,8 +1099,16 @@ namespace FIA_Biosum_Manager
             {
                 p_oItem.RxCycle4PostStrClassBeforeTreeRemovalYN = "Y";
             }
-            //@ToDo: Always set this to "N" unless setting at the same time as summary
-            p_oItem.UseSummaryTableSeqNumYN = "N";
+            //Always set UseSummaryTableSeqNumYN to "N" unless setting at the same time as summary
+            string[] arrUseSummary = new string[] {"FVS_SUMMARY", "FVS_CUTLIST" };
+            if (arrUseSummary.Contains(p_oItem.TableName))
+            {
+                p_oItem.UseSummaryTableSeqNumYN = "Y";
+            }
+            else
+            {
+                p_oItem.UseSummaryTableSeqNumYN = "N";
+            }
             p_oItem.RxPackageList = txtPackages.Text;
         }
 
@@ -1114,22 +1146,34 @@ namespace FIA_Biosum_Manager
                     //
                     //DELETE
                     //
-                    if (lvFVSTables.Items[x].SubItems[COL_STATUS].BackColor == Color.Red && oItem.Add != true)
+                    if (lvFVSTables.Items[x].SubItems[COL_STATUS].BackColor == Color.Red)
                     {
                         if (oItem.PrePostSeqNumId.ToString().Trim() == lvFVSTables.Items[x].SubItems[COL_ID].Text.Trim())
                         {
-                            m_oAdo.m_strSQL = "DELETE FROM " + Tables.FVS.DefaultFVSPrePostSeqNumTable + " " +
-                                             "WHERE PREPOST_SEQNUM_ID=" + oItem.PrePostSeqNumId.ToString().Trim();
-                            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                            if (m_oAdo.m_intError == 0)
+                            if (oItem.Add != true)
                             {
+                                m_oAdo.m_strSQL = "DELETE FROM " + Tables.FVS.DefaultFVSPrePostSeqNumTable + " " +
+                                    "WHERE PREPOST_SEQNUM_ID=" + oItem.PrePostSeqNumId.ToString().Trim();
+                                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                                if (m_oAdo.m_intError == 0)
+                                {
+                                    bDelete = true;
 
-                                bDelete = true;
-
+                                }
+                                m_oAdo.m_strSQL = "DELETE FROM " + Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable + " " +
+                                                  "WHERE PREPOST_SEQNUM_ID=" + oItem.PrePostSeqNumId.ToString().Trim();
+                                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                                if (m_oAdo.m_intError == 0)
+                                {
+                                    lvFVSTables.Items[x].SubItems[COL_COUNT].Text = "0";
+                                }
                             }
-                            m_oAdo.m_strSQL = "DELETE FROM " + Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable + " " +
-                                              "WHERE PREPOST_SEQNUM_ID=" + oItem.PrePostSeqNumId.ToString().Trim();
-                            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                            else
+                            {
+                                // Nothing to delete, but remove delete indicator from the UI
+                                lvFVSTables.Items[x].SubItems[COL_STATUS].BackColor = Color.White;
+                                lvFVSTables.Items[x].SubItems[COL_STATUS].Text = "";
+                            }
                         }
                     }
                     //
@@ -1424,6 +1468,20 @@ namespace FIA_Biosum_Manager
                                     }
                                 }
 
+                            // Copy any FVS_SUMMARY changes to FVS_CUTLIST
+                            if (oItem.TableName.Equals("FVS_SUMMARY"))
+                            {
+                                // Retrieve the seqnumid for FVS_CUTLIST
+                                string strCutListId = m_oAdo.getSingleStringValueFromSQLQuery(m_oAdo.m_OleDbConnection, "SELECT PREPOST_SEQNUM_ID FROM " +
+                                    Tables.FVS.DefaultFVSPrePostSeqNumTable + " WHERE TABLENAME = 'FVS_CUTLIST'", 
+                                    Tables.FVS.DefaultFVSPrePostSeqNumTable);
+                                if (!String.IsNullOrEmpty(strCutListId))
+                                {
+                                    m_oAdo.m_strSQL = CreateSqlForCutlist(oItem, strCutListId);
+                                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                                }
+                            }
+
 
                                 if (m_oAdo.m_intError == 0)
                                     lvFVSTables.Items[x].SubItems[COL_STATUS].BackColor = Color.White;
@@ -1620,56 +1678,63 @@ namespace FIA_Biosum_Manager
             e.Handled = true;
         }
 
-        private void btnRemove_Click(object sender, EventArgs e)
+        private void btnDelete_Click(object sender, EventArgs e)
         {
-            int x;
-            for (x = 0; x <= m_oCurFVSPrepostSeqNumItem_Collection.Count - 1; x++)
+            for (int i = 0; i < lvFVSTables.SelectedItems.Count; i++)
             {
-                if (m_oCurFVSPrepostSeqNumItem_Collection.Item(x).PrePostSeqNumId.ToString().Trim() ==
-                    lvFVSTables.SelectedItems[0].SubItems[COL_ID].Text.Trim())
+                FVSPrePostSeqNumItem oItem = new FVSPrePostSeqNumItem();
+                for (int x = 0; x <= m_oCurFVSPrepostSeqNumItem_Collection.Count - 1; x++)
                 {
-                    break;
+                    if (m_oCurFVSPrepostSeqNumItem_Collection.Item(x).PrePostSeqNumId.ToString().Trim() ==
+                        lvFVSTables.SelectedItems[i].SubItems[COL_ID].Text.Trim())
+                    {
+                        oItem = m_oCurFVSPrepostSeqNumItem_Collection.Item(x);
+                        break;
+                    }
                 }
-            }
-            if (btnRemove.Text == "Undelete")
-            {
-                //remove deletion mark
-                if (m_oCurFVSPrepostSeqNumItem_Collection.Item(x).Add)
+                if (btnDelete.Text == "Undelete Customization")
                 {
-                    lvFVSTables.SelectedItems[0].SubItems[COL_STATUS].BackColor = Color.Blue;
-                    lvFVSTables.SelectedItems[0].SubItems[COL_STATUS].Text = "+";
-                }
-                else if (m_oCurFVSPrepostSeqNumItem_Collection.Item(x).Modified)
-                {
-                    lvFVSTables.SelectedItems[0].SubItems[COL_STATUS].BackColor = Color.Green;
-                    lvFVSTables.SelectedItems[0].SubItems[COL_STATUS].Text = "m";
+                    //remove deletion mark
+                    if (oItem.Add)
+                    {
+                        lvFVSTables.SelectedItems[i].SubItems[COL_STATUS].BackColor = Color.Blue;
+                        lvFVSTables.SelectedItems[i].SubItems[COL_STATUS].Text = "+";
+                    }
+                    else if (oItem.Modified)
+                    {
+                        lvFVSTables.SelectedItems[i].SubItems[COL_STATUS].BackColor = Color.Green;
+                        lvFVSTables.SelectedItems[i].SubItems[COL_STATUS].Text = "m";
+                    }
+                    else
+                    {
+                        lvFVSTables.SelectedItems[i].SubItems[COL_STATUS].BackColor = Color.White;
+                        lvFVSTables.SelectedItems[i].SubItems[COL_STATUS].Text = "";
+                    }
+                    oItem.Delete = false;
                 }
                 else
                 {
-                    lvFVSTables.SelectedItems[0].SubItems[COL_STATUS].BackColor = Color.White;
-                    lvFVSTables.SelectedItems[0].SubItems[COL_STATUS].Text = "";
+                    //mark for deletion
+                    lvFVSTables.SelectedItems[i].SubItems[COL_STATUS].BackColor = Color.Red;
+                    lvFVSTables.SelectedItems[i].SubItems[COL_STATUS].Text = "x";
+                    oItem.Delete = true;
                 }
-                m_oCurFVSPrepostSeqNumItem_Collection.Item(x).Delete = false;
-                btnRemove.Text = "Delete";
+            }
+            // Set the buttons after we have looped through all the items
+            if (btnDelete.Text == "Undelete Customization")
+            {
+                btnDelete.Text = "Delete Customization";
                 btnEdit.Enabled = true;
                 btnSeqNum.Enabled = true;
             }
             else
             {
-                //mark for deletion
-                lvFVSTables.SelectedItems[0].SubItems[COL_STATUS].BackColor = Color.Red;
-                lvFVSTables.SelectedItems[0].SubItems[COL_STATUS].Text = "x";
-                m_oCurFVSPrepostSeqNumItem_Collection.Item(x).Delete = true;
-                btnRemove.Text = "Undelete";
+                btnDelete.Text = "Undelete Customization";
                 btnSave.Enabled = true;
                 btnEdit.Enabled = false;
                 btnSeqNum.Enabled = false;
-                
-
+                m_bSave = true; // Keeps save button enabled if selection changes
             }
-               
-                
-
         }
 
         private void btnSeqNum_Click(object sender, EventArgs e)
@@ -2051,14 +2116,51 @@ namespace FIA_Biosum_Manager
         
         }
 
-        private void btnSeqNumEdit_Click(object sender, EventArgs e)
+        private string CreateSqlForCutlist(FVSPrePostSeqNumItem oSummaryItem, string strCutlistId)
         {
-            FVSPrePostSeqNumItem oItem;
-                oItem = new FVSPrePostSeqNumItem();
-                SaveEditValuesToProperties(oItem);
-                ViewSeqNumAssignments(lblCurTable.Text.Trim().ToUpper(), oItem);
-                oItem = null;
+            string strValues = "";
+            if (oSummaryItem.RxCycle1PreSeqNum.Trim().Length > 0 &&
+                oSummaryItem.RxCycle1PreSeqNum.Trim().ToUpper() != "NOT USED")
+            {
+                strValues = strValues + "RXCYCLE1_PRE_SEQNUM=" + oSummaryItem.RxCycle1PreSeqNum.Trim() + ",";
+            }
+            else
+            {
+                strValues = strValues + "RXCYCLE1_PRE_SEQNUM=null,";
+            }
+            if (oSummaryItem.RxCycle2PreSeqNum.Trim().Length > 0 &&
+               oSummaryItem.RxCycle2PreSeqNum.Trim().ToUpper() != "NOT USED")
+            {
+                strValues = strValues + "RXCYCLE2_PRE_SEQNUM=" + oSummaryItem.RxCycle2PreSeqNum.Trim() + ",";
+            }
+            else
+            {
+                strValues = strValues + "RXCYCLE2_PRE_SEQNUM=null,";
+            }
+            if (oSummaryItem.RxCycle3PreSeqNum.Trim().Length > 0 &&
+              oSummaryItem.RxCycle3PreSeqNum.Trim().ToUpper() != "NOT USED")
+            {
+                strValues = strValues + "RXCYCLE3_PRE_SEQNUM=" + oSummaryItem.RxCycle3PreSeqNum.Trim() + ",";
+            }
+            else
+            {
+                strValues = strValues + "RXCYCLE3_PRE_SEQNUM=null,";
+            }
+            if (oSummaryItem.RxCycle4PreSeqNum.Trim().Length > 0 &&
+              oSummaryItem.RxCycle4PreSeqNum.Trim().ToUpper() != "NOT USED")
+            {
+                strValues = strValues + "RXCYCLE4_PRE_SEQNUM=" + oSummaryItem.RxCycle4PreSeqNum.Trim() + ",";
+            }
+            else
+            {
+                strValues = strValues + "RXCYCLE4_PRE_SEQNUM=null,";
+            }
+            strValues = strValues + "USE_SUMMARY_TABLE_SEQNUM_YN='" + oSummaryItem.UseSummaryTableSeqNumYN + "'";
+
+            return $@"UPDATE {Tables.FVS.DefaultFVSPrePostSeqNumTable} 
+                      SET {strValues} WHERE PREPOST_SEQNUM_ID={strCutlistId}";
         }
+
 
         private FVSPrePostSeqNumItem CreateNewSequenceNumberItem(int intId, string strTableName)
         {
