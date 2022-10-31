@@ -1631,7 +1631,7 @@ namespace FIA_Biosum_Manager
                     break;
                 }
             }
-            if (btnRemove.Text == "Undelete Custom")
+            if (btnRemove.Text == "Undelete")
             {
                 //remove deletion mark
                 if (m_oCurFVSPrepostSeqNumItem_Collection.Item(x).Add)
@@ -1650,7 +1650,7 @@ namespace FIA_Biosum_Manager
                     lvFVSTables.SelectedItems[0].SubItems[COL_STATUS].Text = "";
                 }
                 m_oCurFVSPrepostSeqNumItem_Collection.Item(x).Delete = false;
-                btnRemove.Text = "Delete Custom";
+                btnRemove.Text = "Delete";
                 btnEdit.Enabled = true;
                 btnSeqNum.Enabled = true;
             }
@@ -1660,7 +1660,7 @@ namespace FIA_Biosum_Manager
                 lvFVSTables.SelectedItems[0].SubItems[COL_STATUS].BackColor = Color.Red;
                 lvFVSTables.SelectedItems[0].SubItems[COL_STATUS].Text = "x";
                 m_oCurFVSPrepostSeqNumItem_Collection.Item(x).Delete = true;
-                btnRemove.Text = "Undelete Custom";
+                btnRemove.Text = "Undelete";
                 btnSave.Enabled = true;
                 btnEdit.Enabled = false;
                 btnSeqNum.Enabled = false;
