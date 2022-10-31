@@ -1114,7 +1114,7 @@ namespace FIA_Biosum_Manager
                     //
                     //DELETE
                     //
-                    if (lvFVSTables.Items[x].SubItems[COL_STATUS].BackColor == Color.Red)
+                    if (lvFVSTables.Items[x].SubItems[COL_STATUS].BackColor == Color.Red && oItem.Add != true)
                     {
                         if (oItem.PrePostSeqNumId.ToString().Trim() == lvFVSTables.Items[x].SubItems[COL_ID].Text.Trim())
                         {

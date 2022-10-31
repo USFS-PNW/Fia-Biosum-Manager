@@ -6787,7 +6787,7 @@ namespace FIA_Biosum_Manager
                                 strAuditDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)this.txtOutDir, "Text", false);
                                 strAuditDbFile = strAuditDbFile.Trim();
                                 strAuditDbFile = strAuditDbFile + "\\" + strVariant + "\\PostAudit.accdb";
-                                                            string strTempCutListTable = "tmpCutTree";
+                                string strTempCutListTable = "tmpCutTree";
                                 //string strTableLinkName = Tables.FVS.DefaultFVSCutTreeTableName;
 
                                 int intTreeTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("TREE");
