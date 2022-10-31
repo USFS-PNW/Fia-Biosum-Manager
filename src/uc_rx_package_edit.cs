@@ -402,6 +402,7 @@ namespace FIA_Biosum_Manager
             this.groupBox5.TabIndex = 26;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "KCP File";
+            this.groupBox5.Visible = false;
             // 
             // btnEditKCPFile
             // 
