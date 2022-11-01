@@ -64,6 +64,21 @@ namespace FIA_Biosum_Manager
                                     "RxCycle4_PRE_BEFORECUT_YN," +
                                     "RxCycle4_POST_BEFORECUT_YN," + 
                                     "USE_SUMMARY_TABLE_SEQNUM_YN";
+        private static string m_strColumnListInit = "PREPOST_SEQNUM_ID,TableName,Type," +
+                            "RxCycle1_PRE_BASEYR_YN," +
+                            "RxCycle2_PRE_BASEYR_YN," +
+                            "RxCycle3_PRE_BASEYR_YN," +
+                            "RxCycle4_PRE_BASEYR_YN," +
+                            "RxCycle1_PRE_BEFORECUT_YN," +
+                            "RxCycle1_POST_BEFORECUT_YN," +
+                            "RxCycle2_PRE_BEFORECUT_YN," +
+                            "RxCycle2_POST_BEFORECUT_YN," +
+                            "RxCycle3_PRE_BEFORECUT_YN," +
+                            "RxCycle3_POST_BEFORECUT_YN," +
+                            "RxCycle4_PRE_BEFORECUT_YN," +
+                            "RxCycle4_POST_BEFORECUT_YN," +
+                            "USE_SUMMARY_TABLE_SEQNUM_YN";
+
         private const string m_str_1181 = "OngoingMgt_PrePost_NoBY";
         private static string[] m_summary_1181 = {"2","3","5","6","8","9","11","12"};
         private static string[] m_ffe_1181 = { "1","3","4","6","7","9","10","12"};
@@ -402,38 +417,24 @@ namespace FIA_Biosum_Manager
 
                         if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper()=="FVS_SUMMARY")
                         {
-                            for (int i = 0; i < m_summary_1181.Length; i++)
-                            {
-                                strValueList = strValueList + m_summary_1181[i] + ",";
-                            }
                             strValueList = strValueList + "'N','N','N','N','Y','N','Y','N','Y','N','Y','N','Y'";
                         }
                         else if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper()=="FVS_POTFIRE")
                         {
-                            for (int i = 0; i < m_ffe_1181.Length; i++)
-                            {
-                                strValueList = strValueList + m_ffe_1181[i] + ",";
-                            }
                             strValueList = strValueList + "'Y','N','N','N','Y','N','Y','N','Y','N','Y','N','N'";    // Sets RXCYCLE1_PRE_BASEYR_YN to 'Y'
                         }
                         else if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_CUTLIST")
                         {
-                            strValueList = strValueList + $@"{m_summary_1181[0]},null,{m_summary_1181[2]},null,{m_summary_1181[4]},null,{m_summary_1181[6]},null,
-                                'N','N','N','N','Y','N','Y','N','Y','N','Y','N','Y'";
+                            strValueList = strValueList + $@"'N','N','N','N','Y','N','Y','N','Y','N','Y','N','Y'";
                         }
                         if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_STRCLASS")
                         {
-                            for (int i = 0; i < m_summary_1181.Length; i++)
-                            {
-                                strValueList = strValueList + m_summary_1181[i] + ",";
-                            }
                             strValueList = strValueList + "'N','N','N','N','Y','Y','Y','Y','Y','Y','Y','Y','Y'";
                         }
                         p_oAdo.m_strSQL = "INSERT INTO " + Tables.FVS.DefaultFVSPrePostSeqNumTable + " " +
-                                          "(" + m_strColumnList + ") VALUES " +
+                                          "(" + m_strColumnListInit + ") VALUES " +
                                           "(" + strValueList + ")";
                         p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection, p_oAdo.m_strSQL);
-
                         intRowCount++;
                     }
                 }
