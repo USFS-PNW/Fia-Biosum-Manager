@@ -4279,15 +4279,12 @@ namespace FIA_Biosum_Manager
                                         if (oAdo.m_OleDbDataReader.HasRows)
                                         {
                                             System.Data.SQLite.SQLiteTransaction transaction;
-
                                             System.Data.SQLite.SQLiteCommand command = oSQLite.m_Connection.CreateCommand();
 
                                             // Start a local transaction
                                             transaction = oSQLite.m_Connection.BeginTransaction(IsolationLevel.ReadCommitted);
                                             // Assign transaction object for a pending local transaction
                                             command.Transaction = transaction;
-
-
                                             try
                                             {
                                                 COUNT = 0;
@@ -4414,7 +4411,9 @@ namespace FIA_Biosum_Manager
                                                 }
                                                 finally
                                                 {
-                                                    if (m_intError == 0)
+                                                transaction.Dispose();
+                                                transaction = null;
+                                                if (m_intError == 0)
                                                     {
                                                         //oAdo.m_strSQL = "UPDATE BIOSUM_VOLUME_INPUT i INNER JOIN BIOSUM_VOLUME_OUTPUT o ON i.TRE_CN = o.TRE_CN SET i.VOLCSGRS_CALC=o.VOLCSGRS_CALC,i.VOLCFGRS_CALC=o.VOLCFGRS_CALC,i.VOLCFNET_CALC=o.VOLCFNET_CALC,i.DRYBIOT_CALC=o.DRYBIOT_CALC,i.DRYBIOM_CALC=o.DRYBIOM_CALC,i.VOLTSGRS_CALC=o.VOLTSGRS_CALC";
                                                         //oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
@@ -4442,8 +4441,6 @@ namespace FIA_Biosum_Manager
                                                             this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                                                     }
                                                 }
-                                                transaction.Dispose();
-                                                transaction = null;
                                                 //intChanges = MSAccessCommitChanges("BIOSUM_VOLUME_INPUT");
                                             }
                                             //_MSAccess.CloseConnection(_MSAccess.m_OleDbConnection);
