@@ -31,6 +31,7 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(uc_fvs_output_prepost_seqnum));
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label4 = new System.Windows.Forms.Label();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.cmbDefault = new System.Windows.Forms.ComboBox();
             this.btnAssignTemplate = new System.Windows.Forms.Button();
@@ -79,7 +80,6 @@
             this.lblCycle1 = new System.Windows.Forms.Label();
             this.lblTitle = new System.Windows.Forms.Label();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
-            this.label4 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.SuspendLayout();
@@ -136,6 +136,16 @@
             this.groupBox1.Size = new System.Drawing.Size(1207, 678);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(9, 84);
+            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(322, 17);
+            this.label4.TabIndex = 103;
+            this.label4.Text = "Use Ctrl key when clicking to select multiple tables";
             // 
             // groupBox3
             // 
@@ -699,16 +709,6 @@
             this.imageList1.Images.SetKeyName(0, "Added");
             this.imageList1.Images.SetKeyName(1, "Modified");
             this.imageList1.Images.SetKeyName(2, "Deleted");
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(9, 84);
-            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(322, 17);
-            this.label4.TabIndex = 103;
-            this.label4.Text = "Use Ctrl key when clicking to select multiple tables";
             // 
             // uc_fvs_output_prepost_seqnum
             // 

@@ -2705,6 +2705,18 @@ namespace FIA_Biosum_Manager
                     }
 
                     oItem.Type = p_oAdo.m_OleDbDataReader["TYPE"].ToString().Trim();
+                    // Check for rxpackages in the fvs_output_prepost_seqnum_rxpackage_assignment for assigned package for "C"
+                    // tables. If missing report 0 because FVS Out won't use assignment without rxPackages
+                    if (oItem.Type.Equals("C"))
+                    {
+                        string strRxPackageSql = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable} 
+                            WHERE PREPOST_SEQNUM_ID = {oItem.PrePostSeqNumId}";
+                        double rxPackageCount = p_oAdo.getSingleDoubleValueFromSQLQuery(p_oConn, strRxPackageSql, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable);
+                        if (rxPackageCount == 0)
+                        {
+                            intAssignedCount = 0;
+                        }
+                    }
                     oItem.AssignedCount = intAssignedCount;
 
                     switch (oItem.TableName.Trim().ToUpper())
@@ -2715,9 +2727,7 @@ namespace FIA_Biosum_Manager
                         case "FVS_SNAG_DET": oItem.MultipleRecordsForASingleStandYearCombination = true; break;
                         case "FVS_TREELIST": oItem.MultipleRecordsForASingleStandYearCombination = true; break;
                         case "FVS_STRCLASS": oItem.MultipleRecordsForASingleStandYearCombination = true; break;
-                        default: oItem.MultipleRecordsForASingleStandYearCombination = false; break;
-
-                        
+                        default: oItem.MultipleRecordsForASingleStandYearCombination = false; break;                        
                     }
 
 
