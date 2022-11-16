@@ -2339,35 +2339,22 @@ namespace FIA_Biosum_Manager
         /// <param name="p_strDbFile">Access database file that is the target file to contain all the table links</param>
 		public void CreateTableLinksToFVSOutSummaryTables(Queries p_oQueries,string p_strDbFile)
 		{
-			
-			ado_data_access oAdo = new ado_data_access();
-			oAdo.OpenConnection(oAdo.getMDBConnString(p_strDbFile,"",""));
-			CreateTableLinksToFVSOutSummaryTables(oAdo,oAdo.m_OleDbConnection,p_oQueries,p_strDbFile);
-			oAdo.CloseConnection(oAdo.m_OleDbConnection);
-		}
-
-        /// <summary>
-        /// Create links to all the FVS Output FVS_SUMMARY tables for every variant and package
-        /// </summary>
-        /// <param name="p_oAdo"></param>
-        /// <param name="p_oConn"></param>
-        /// <param name="p_oQueries">Class that provides query access as well as creating a temp DB file that contains all the needed table links</param>
-        /// <param name="p_strDbFile">Access database file that is the target file to contain all the table links</param>
-		public void CreateTableLinksToFVSOutSummaryTables(ado_data_access p_oAdo,System.Data.OleDb.OleDbConnection p_oConn,Queries p_oQueries,string p_strDbFile)
-		{
-			dao_data_access oDao = new dao_data_access();
+            dao_data_access oDao = new dao_data_access();
             var fvsVariantDataDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\fvs\\data";
             var regex = new Regex(@"FVSOUT_([A-Z]{2})_(P\d{3})-\d{3}-\d{3}-\d{3}-\d{3}\.[(accdb)|(ACCDB)|(mdb)|(MDB)]");
             var fvsOutputDatabases = Directory.GetFiles(fvsVariantDataDir, "*.*", SearchOption.AllDirectories).Where(s => regex.IsMatch(Path.GetFileName(s))).ToArray();
             foreach (var db in fvsOutputDatabases)
             {
-                var strVariant = regex.Match(db).Groups[1];
-                var strPackage = regex.Match(db).Groups[2];
-                oDao.CreateTableLink(p_strDbFile, $"fvs_summary_IN_{strVariant}_{strPackage}", db, "fvs_summary", true);
+                if (oDao.TableExists(db, "fvs_summary"))
+                {
+                    var strVariant = regex.Match(db).Groups[1];
+                    var strPackage = regex.Match(db).Groups[2];
+                    oDao.CreateTableLink(p_strDbFile, $"fvs_summary_IN_{strVariant}_{strPackage}", db, "fvs_summary", true);
+                }
             }
             oDao.m_DaoWorkspace.Close();
-			oDao=null;
-		}
+            oDao = null;
+        }
 
         public static bool ValidFVSTable(string p_strTableName)
         {
