@@ -9203,11 +9203,10 @@ namespace FIA_Biosum_Manager
 
                 //Enable/Disable Open Post Audit Log button
                 btnViewPostLogFile.Enabled = false;
-                strDirectory = this.txtOutDir.Text.Trim() + "\\" + lstFvsOutput.SelectedItems[0].SubItems[COL_VARIANT].Text.Trim() + "\\BiosumCalc";
-                if (System.IO.Directory.Exists(strDirectory) == true)
+                if (System.IO.Directory.Exists(this.txtOutDir.Text.Trim()) == true)
                 {
-                    string strSearch = "??_P???_TREE_CUTLIST.MDB_audit*.txt";
-                    string[] strFiles = System.IO.Directory.GetFiles(strDirectory, strSearch);
+                    string strSearch = "FVSOUT_TREE_LIST.db_audit*.txt";
+                    string[] strFiles = System.IO.Directory.GetFiles(this.txtOutDir.Text.Trim(), strSearch);
                     if (strFiles.Length > 0)
                         btnViewPostLogFile.Enabled = true;
                 }
@@ -9272,11 +9271,9 @@ namespace FIA_Biosum_Manager
                 return;
             }
             
-            string strSearch =  "??_P???_TREE_CUTLIST.MDB_audit*.txt";
+            string strSearch = "FVSOUT_TREE_LIST.db_audit*.txt";
 
-            string strDirectory = this.txtOutDir.Text.Trim() + "\\" + lstFvsOutput.SelectedItems[0].SubItems[COL_VARIANT].Text.Trim() + "\\BiosumCalc";
-
-            string[] strFiles = System.IO.Directory.GetFiles(strDirectory, strSearch);
+            string[] strFiles = System.IO.Directory.GetFiles(this.txtOutDir.Text.Trim(), strSearch);
 
             FIA_Biosum_Manager.frmDialog oDlg = new frmDialog();
 
@@ -9284,10 +9281,10 @@ namespace FIA_Biosum_Manager
             oDlg.uc_select_list_item1.listBox1.Sorted = true;
             for (int x = 0; x <= strFiles.Length - 1; x++)
             {
-                oDlg.uc_select_list_item1.listBox1.Items.Add(strFiles[x].Substring(strDirectory.Length + 1, strFiles[x].Length - strDirectory.Length - 1));
+                oDlg.uc_select_list_item1.listBox1.Items.Add(strFiles[x].Substring(this.txtOutDir.Text.Trim().Length + 1, strFiles[x].Length - this.txtOutDir.Text.Trim().Length - 1));
             }
             if (oDlg.uc_select_list_item1.listBox1.Items.Count > 0) oDlg.uc_select_list_item1.listBox1.SelectedIndex = oDlg.uc_select_list_item1.listBox1.Items.Count - 1;
-            oDlg.uc_select_list_item1.lblMsg.Text = "Log File Contents of " + strDirectory;
+            oDlg.uc_select_list_item1.lblMsg.Text = "Log File Contents of " + this.txtOutDir.Text.Trim();
             oDlg.uc_select_list_item1.lblMsg.Show();
 
             oDlg.uc_select_list_item1.Show();
@@ -9295,7 +9292,7 @@ namespace FIA_Biosum_Manager
             DialogResult result = oDlg.ShowDialog();
             if (result == DialogResult.OK)
             {
-                string strDirAndFile = strDirectory + "\\" + oDlg.uc_select_list_item1.listBox1.SelectedItems[0].ToString().Trim();
+                string strDirAndFile = this.txtOutDir.Text.Trim() + "\\" + oDlg.uc_select_list_item1.listBox1.SelectedItems[0].ToString().Trim();
                 System.Diagnostics.Process proc = new System.Diagnostics.Process();
                 proc.StartInfo.UseShellExecute = true;
                 try
@@ -9319,12 +9316,6 @@ namespace FIA_Biosum_Manager
                 }
                 proc = null;
             }
-
-
-
-            //strOutDirAndFile = strOutDirAndFile  + "\\" + strDbFile;
-
-
         }
 
         //private void ConvertAlphaSpCd()
