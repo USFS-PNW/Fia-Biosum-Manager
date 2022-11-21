@@ -697,29 +697,29 @@ namespace FIA_Biosum_Manager
                         chkPRE4BaseYear.Enabled = false;
 
                         if (cmbPRE1.Text.Trim() == "1") chkPRE1BaseYear.Show();
-                        if (cmbPRE2.Text.Trim() == "1") chkPRE2BaseYear.Show();
-                        if (cmbPRE3.Text.Trim() == "1") chkPRE3BaseYear.Show();
-                        if (cmbPRE4.Text.Trim() == "1") chkPRE4BaseYear.Show();
+                        //if (cmbPRE2.Text.Trim() == "1") chkPRE2BaseYear.Show();
+                        //if (cmbPRE3.Text.Trim() == "1") chkPRE3BaseYear.Show();
+                        //if (cmbPRE4.Text.Trim() == "1") chkPRE4BaseYear.Show();
 
                         if (m_oCurFVSPrepostSeqNumItem_Collection.Item(x).RxCycle1PreSeqNumBaseYearYN == "Y")
                             chkPRE1BaseYear.Checked = true;
                         else
                             chkPRE1BaseYear.Checked = false;
 
-                        if (m_oCurFVSPrepostSeqNumItem_Collection.Item(x).RxCycle2PreSeqNumBaseYearYN == "Y")
-                            chkPRE2BaseYear.Checked = true;
-                        else
-                            chkPRE2BaseYear.Checked = false;
+                        //if (m_oCurFVSPrepostSeqNumItem_Collection.Item(x).RxCycle2PreSeqNumBaseYearYN == "Y")
+                        //    chkPRE2BaseYear.Checked = true;
+                        //else
+                        //    chkPRE2BaseYear.Checked = false;
 
-                        if (m_oCurFVSPrepostSeqNumItem_Collection.Item(x).RxCycle3PreSeqNumBaseYearYN == "Y")
-                            chkPRE3BaseYear.Checked = true;
-                        else
-                            chkPRE3BaseYear.Checked = false;
+                        //if (m_oCurFVSPrepostSeqNumItem_Collection.Item(x).RxCycle3PreSeqNumBaseYearYN == "Y")
+                        //    chkPRE3BaseYear.Checked = true;
+                        //else
+                        //    chkPRE3BaseYear.Checked = false;
 
-                        if (m_oCurFVSPrepostSeqNumItem_Collection.Item(x).RxCycle4PreSeqNumBaseYearYN == "Y")
-                            chkPRE4BaseYear.Checked = true;
-                        else
-                            chkPRE4BaseYear.Checked = false;
+                        //if (m_oCurFVSPrepostSeqNumItem_Collection.Item(x).RxCycle4PreSeqNumBaseYearYN == "Y")
+                        //    chkPRE4BaseYear.Checked = true;
+                        //else
+                        //    chkPRE4BaseYear.Checked = false;
 
 
                     }
