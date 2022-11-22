@@ -392,10 +392,11 @@ namespace FIA_Biosum_Manager
             this.cmbStep.FormattingEnabled = true;
             this.cmbStep.Items.AddRange(new object[] {
             "Step 1 - Define PRE/POST Table SeqNum",
-            "Step 2 - Pre-Processing Audit Check",
-            "Step 2a - Create FVSOut_BioSum.db",
+            "Step 2 - Pre-Processing Audit Check",            
             "Step 3 - Append FVS Output Data",
-            "Step 4 - Post-Processing Audit Check"});
+            "Step 4 - Post-Processing Audit Check",
+            "Step 5 - (Opt) Create FVSOut_BioSum.db"
+            });
             this.cmbStep.Location = new System.Drawing.Point(8, 337);
             this.cmbStep.Name = "cmbStep";
             this.cmbStep.Size = new System.Drawing.Size(298, 28);
@@ -7196,58 +7197,42 @@ namespace FIA_Biosum_Manager
                                             m_intProgressStepTotalCount);
                                 //
                                 //process DATA CORRUPTION: TREES ARE MATCHED UP INCORRECTLY
+                                // 22-NOV-2022: No longer running this audit. DBH will never match when we throw away cycle 1
                                 //
-                                sqlArray = Queries.FVS.FVSOutputTable_AuditPostSummaryDetailFVS_TREEMATCH_ERROR(
-                                           "audit_Post_TREEMATCH_ERROR",
-                                           "audit_Post_SUMMARY",
-                                           strTempCutListTable,
-                                           m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE].Trim(),
-                                           strVariant, strPackage);
+                                //sqlArray = Queries.FVS.FVSOutputTable_AuditPostSummaryDetailFVS_TREEMATCH_ERROR(
+                                //           "audit_Post_TREEMATCH_ERROR",
+                                //           "audit_Post_SUMMARY",
+                                //           strTempCutListTable,
+                                //           m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE].Trim(),
+                                //           strVariant, strPackage);
 
-                                //check if TREEMATCH_ERROR table exists
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_TREEMATCH_ERROR") == false)
-                                {
-                                    oAdo.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistFVSFIA_TREEMATCHINGtableSQL("audit_Post_TREEMATCH_ERROR","ERROR_DESC");
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                                }
-                                else
-                                {
-                                    //delete any records from a previous run for the current variant and rxpackage
-                                    strSQL = sqlArray[0];
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-                                }
                                 m_intProgressStepCurrentCount++;
                                 UpdateTherm(m_frmTherm.progressBar1,
                                             m_intProgressStepCurrentCount,
                                             m_intProgressStepTotalCount);
-                                //check if value errors for DBH
-                                strSQL = "SELECT COUNT(*) FROM audit_Post_SUMMARY " +
-                                         "WHERE RXPACKAGE='" + strPackage + "' AND " +
-                                               "TRIM(COLUMN_NAME)='DBH' AND " +
-                                               "VALUE_ERROR IS NOT NULL AND " +
-                                               "LEN(TRIM(VALUE_ERROR)) > 0 AND " +
-                                               "TRIM(VALUE_ERROR) <> 'NA' AND " + 
-                                               "VAL(VALUE_ERROR) > 0";
-                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
-                                intRowCount = oAdo.getRecordCount(oAdo.m_OleDbConnection,strSQL, "AUDIT_POST_SUMMARY");
-                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-                                if (intRowCount > 0)
-                                {
-                                    //insert the new audit records
-                                    strSQL = sqlArray[1];
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-                                }
+                            //check if value errors for DBH
+                            //strSQL = "SELECT COUNT(*) FROM audit_Post_SUMMARY " +
+                            //         "WHERE RXPACKAGE='" + strPackage + "' AND " +
+                            //               "TRIM(COLUMN_NAME)='DBH' AND " +
+                            //               "VALUE_ERROR IS NOT NULL AND " +
+                            //               "LEN(TRIM(VALUE_ERROR)) > 0 AND " +
+                            //               "TRIM(VALUE_ERROR) <> 'NA' AND " + 
+                            //               "VAL(VALUE_ERROR) > 0";
+                            //if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            //    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
+                            //intRowCount = oAdo.getRecordCount(oAdo.m_OleDbConnection, strSQL, "AUDIT_POST_SUMMARY");
+                            //if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            //    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                            //if (intRowCount > 0)
+                            //    {
+                            //        //insert the new audit records
+                            //        strSQL = sqlArray[1];
+                            //        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            //            this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
+                            //        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
+                            //        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            //            this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                            //    }
                                 //
                                 //SUMMARIZE REPORT
                                 //
@@ -7388,34 +7373,34 @@ namespace FIA_Biosum_Manager
                                     oAdo.m_OleDbDataReader.Dispose();
                                 }
                             // TREEMATCH errors
-                            if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_TREEMATCH_ERROR"))
-                            {
-                                strItemDialogMsg = strItemDialogMsg + "\r\n\r\naudit_Post_TREEMATCH_ERROR\r\n---------------------------\r\n";
-                                frmMain.g_oUtils.WriteText(m_strLogFile, "\r\n\r\audit_Post_TREEMATCH_ERROR\r\n---------------------------\r\n");
-                                //see if any records
-                                strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,ERROR_DESC FROM audit_Post_TREEMATCH_ERROR WHERE RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,ERROR_DESC";
-                                oAdo.SqlQueryReader(oAdo.m_OleDbConnection, strSQL);
-                                if (oAdo.m_OleDbDataReader.HasRows)
-                                {
-                                    intItemError = -1;
-                                    strItemError = strItemError + "\r\n\r\naudit_Post_TREEMATCH_ERROR\r\n---------------------------\r\n";
+                            //if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_TREEMATCH_ERROR"))
+                            //{
+                            //    strItemDialogMsg = strItemDialogMsg + "\r\n\r\naudit_Post_TREEMATCH_ERROR\r\n---------------------------\r\n";
+                            //    frmMain.g_oUtils.WriteText(m_strLogFile, "\r\n\r\audit_Post_TREEMATCH_ERROR\r\n---------------------------\r\n");
+                            //    //see if any records
+                            //    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,ERROR_DESC FROM audit_Post_TREEMATCH_ERROR WHERE RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,ERROR_DESC";
+                            //    oAdo.SqlQueryReader(oAdo.m_OleDbConnection, strSQL);
+                            //    if (oAdo.m_OleDbDataReader.HasRows)
+                            //    {
+                            //        intItemError = -1;
+                            //        strItemError = strItemError + "\r\n\r\naudit_Post_TREEMATCH_ERROR\r\n---------------------------\r\n";
 
-                                    while (oAdo.m_OleDbDataReader.Read())
-                                    {
+                            //        while (oAdo.m_OleDbDataReader.Read())
+                            //        {
 
-                                        strItemError = strItemError + "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
-                                        strItemDialogMsg = strItemDialogMsg + "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
-                                        frmMain.g_oUtils.WriteText(m_strLogFile, "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n");
-                                    }
-                                }
-                                else
-                                {
-                                    strItemDialogMsg = strItemDialogMsg + "OK\r\n";
-                                    frmMain.g_oUtils.WriteText(m_strLogFile, "OK\r\n");
-                                }
-                                oAdo.m_OleDbDataReader.Close();
-                                oAdo.m_OleDbDataReader.Dispose();
-                            }
+                            //            strItemError = strItemError + "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
+                            //            strItemDialogMsg = strItemDialogMsg + "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
+                            //            frmMain.g_oUtils.WriteText(m_strLogFile, "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n");
+                            //        }
+                            //    }
+                            //    else
+                            //    {
+                            //        strItemDialogMsg = strItemDialogMsg + "OK\r\n";
+                            //        frmMain.g_oUtils.WriteText(m_strLogFile, "OK\r\n");
+                            //    }
+                            //    oAdo.m_OleDbDataReader.Close();
+                            //    oAdo.m_OleDbDataReader.Dispose();
+                            //}
 
                             if (intItemError == 0 && intItemWarning == 0)
                                 {
@@ -7576,7 +7561,7 @@ namespace FIA_Biosum_Manager
 
             m_strFVSPostAppendAuditTables = new List<string>();
             m_strFVSPostAppendAuditTables.Add("audit_Post_SPCDCHANGE_WARNING");
-            m_strFVSPostAppendAuditTables.Add("audit_Post_TREEMATCH_ERROR");
+            //m_strFVSPostAppendAuditTables.Add("audit_Post_TREEMATCH_ERROR");
             m_strFVSPostAppendAuditTables.Add("audit_Post_VALUE_ERROR");
             m_strFVSPostAppendAuditTables.Add("audit_Post_NOTFOUND_ERROR");
             m_strFVSPostAppendAuditTables.Add("audit_Post_NOVALUE_ERROR");
@@ -9912,7 +9897,7 @@ namespace FIA_Biosum_Manager
                 case "Step 4 - Post-Processing Audit Check":
                     this.RunPOSTAudit_Start();
                     break;
-                case "Step 2a - Create FVSOut_BioSum.db":
+                case "Step 5 - (Opt) Create FVSOut_BioSum.db":
                     this.RunCreateFVSOut_BioSum_Start();
                     break;
             }
