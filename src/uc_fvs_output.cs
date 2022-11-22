@@ -10124,6 +10124,18 @@ namespace FIA_Biosum_Manager
                                     this.WriteText(m_strLogFile, strSql + "\r\n");
                                 m_intProgressStepCurrentCount++;
                                 SQLite.SqlNonQuery(con, strSql);
+
+                                if (tblName.ToUpper().Contains("FVS_") && !tblName.ToUpper().Equals("FVS_CASES"))
+                                {
+                                    string[] arrQueries = Queries.FVS.AppendRuntitleToFVSOut(tblName);
+                                    for (int i = 0; i < arrQueries.Length; i++)
+                                    {
+                                        strSql = arrQueries[i];
+                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                            this.WriteText(m_strLogFile, strSql + "\r\n");
+                                        SQLite.SqlNonQuery(con, strSql);
+                                    }
+                                }
                             }                            
                         }
 

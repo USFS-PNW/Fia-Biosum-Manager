@@ -2311,6 +2311,14 @@ namespace FIA_Biosum_Manager
                 return sqlArray;
 
             }
+            public static string[] AppendRuntitleToFVSOut(string strTable)
+            {
+                string[] sqlArray = new string[3];
+                sqlArray[0] = $@"alter table {strTable} add column RUNTITLE VARCHAR(255)";
+                sqlArray[1] = $@"create index idx_{strTable}_runtitle on {strTable} (RUNTITLE)";
+                sqlArray[2] = $@"UPDATE {strTable} SET RUNTITLE = (SELECT RUNTITLE FROM FVS_CASES WHERE CASEID = {strTable}.CASEID)";
+                return sqlArray;
+            }
             /*
             /// <summary>
             /// SQL for post-processing audit of the BIOSUMCALC\FVS_TREE tables. List foreign key columns whose values are not found in the foreign tables.
