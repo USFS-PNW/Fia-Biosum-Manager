@@ -105,6 +105,7 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "version_control.PerformVersionCheck: strProjVersionFile=" + strProjVersionFile + "\r\n");
 
             m_strAppVerArray = frmMain.g_oUtils.ConvertListToArray(frmMain.g_strAppVer, ".");
+            string strProjVersion = "";
             if (System.IO.File.Exists(strProjVersionFile))
             {
 
@@ -122,7 +123,7 @@ namespace FIA_Biosum_Manager
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "version_control.PerformVersionCheck:  streamreader.ReadLine\r\n");
                     //Split the first line into the columns       
-                    string strProjVersion = s.ReadLine();
+                    strProjVersion = s.ReadLine();
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "version_control.PerformVersionCheck:  streamreader.ReadLine successful\r\n");
                     s.Close();
@@ -219,7 +220,7 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "version_control.PerformVersionCheck: !!Error opening Application.Version File!! ERROR=" + error.Message + "r\n");
             }
-
+           
             //check for partial update
             if (bPerformCheck)
             {
@@ -6502,6 +6503,50 @@ namespace FIA_Biosum_Manager
                 oDao.m_DaoWorkspace.Close();
                 oDao = null;
             }
+        }
+
+        // Method to compare two versions. 
+        // Returns 1 if v2 is smaller, -1 
+        // if v1 is smaller, 0 if equal 
+        public int VersionCompare(string v1, string v2)
+        {
+            // vnum stores each numeric 
+            // part of version 
+            int vnum1 = 0, vnum2 = 0;
+
+            // loop until both string are 
+            // processed 
+            for (int i = 0, j = 0; (i < v1.Length
+                                    || j < v2.Length);)
+            {
+                // storing numeric part of 
+                // version 1 in vnum1 
+                while (i < v1.Length && v1[i] != '.')
+                {
+                    vnum1 = vnum1 * 10 + (v1[i] - '0');
+                    i++;
+                }
+
+                // storing numeric part of 
+                // version 2 in vnum2 
+                while (j < v2.Length && v2[j] != '.')
+                {
+                    vnum2 = vnum2 * 10 + (v2[j] - '0');
+                    j++;
+                }
+
+                if (vnum1 > vnum2)
+                    return 1;
+                if (vnum2 > vnum1)
+                    return -1;
+
+                // if equal, reset variables and 
+                // go for next numeric part 
+                vnum1 = vnum2 = 0;
+                i++;
+                j++;
+            }
+            return 0;
         }
 
         public string ReferenceProjectDirectory

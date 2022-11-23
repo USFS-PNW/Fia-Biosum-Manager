@@ -2853,7 +2853,37 @@ namespace FIA_Biosum_Manager
 				{
 					oVersCtl.ReferenceMainForm=this;
 					oVersCtl.ReferenceProjectDirectory=this.frmProject.uc_project1.m_strProjectDirectory;
-					oVersCtl.PerformVersionCheck();
+                    // Warn if application version < project version
+                    string strProjVersionFile = this.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\application.version";
+                    string strProjVersion = "";
+                    if (System.IO.File.Exists(strProjVersionFile))
+                    {
+                        using (System.IO.StreamReader reader = new System.IO.StreamReader(strProjVersionFile))
+                        {
+                            string strTemp = reader.ReadLine();
+                            if (strTemp != null)
+                            {
+                                strProjVersion = strTemp.Trim();
+                            }
+                        }
+                    }
+                    if (!string.IsNullOrEmpty(strProjVersion))
+                    {
+                        int retVal = oVersCtl.VersionCompare(frmMain.g_strAppVer, strProjVersion);
+                        if (retVal < 0)
+                        {
+                            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                            sb.Append("WARNING: You are trying to open a project from v" + strProjVersion.Trim() + " with an older version of BioSum! ");
+                            sb.Append("This is not recommended. Click 'Yes' if you wish to continue.");
+                            System.Windows.Forms.DialogResult res =
+                                System.Windows.Forms.MessageBox.Show(sb.ToString(), "FIA Biosum", System.Windows.Forms.MessageBoxButtons.YesNo);
+                            if (res != System.Windows.Forms.DialogResult.Yes)
+                            {
+                                return;
+                            }
+                        }
+                    }
+                    oVersCtl.PerformVersionCheck();
 				}
               
 
