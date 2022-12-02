@@ -3508,7 +3508,8 @@ namespace FIA_Biosum_Manager
                   "CYCLE3_POST_YN CHAR(1)," +
                   "CYCLE4_PRE_YN CHAR(1)," +
                   "CYCLE4_POST_YN CHAR(1)," +
-                  "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY(SEQNUM, STANDID))";
+                  "RXPACKAGE CHAR(3), " +
+                  "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY(SEQNUM, STANDID, RXPACKAGE))";
             }
 
 

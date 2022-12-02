@@ -4652,6 +4652,7 @@ namespace FIA_Biosum_Manager
                                         // because not all rxs generate a cutlist. Sequence numbers should be the same for CUTLIST and SUMMARY
                                         oAdo.m_strSQL = "select * from FVS_SUMMARY_PREPOST_SEQNUM_MATRIX";
                                         oAdo.CreateDataTable(seqConn, oAdo.m_strSQL, seqNumWorkTable, false);
+                                        oAdo.m_DataTable.Columns.Add("RXPACKAGE", typeof(String));  // The SQLite matrix had rxpackage column
                                         using (System.Data.SQLite.SQLiteDataAdapter da = new System.Data.SQLite.SQLiteDataAdapter("select * from " + seqNumWorkTable, conn))
                                         {
                                             using (System.Data.SQLite.SQLiteCommandBuilder cb = new System.Data.SQLite.SQLiteCommandBuilder(da))
@@ -10315,7 +10316,7 @@ namespace FIA_Biosum_Manager
                     this.WriteText(m_strDebugFile, "\r\nEND:Copy production file to work file: Source File Name:" + strTreeListDbFile + " Destination File Name:" + strTreeTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
 
                 // do all the work
-
+                // @ToDo: Loop by rxPackageId; Coding 001 for now
                 CreatePrePostSeqNumMatrixSqliteTables(strTreeTempDbFile, "001", false);
 
 
@@ -10390,10 +10391,9 @@ namespace FIA_Biosum_Manager
                     m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(m_ado, accessConn, m_oFVSPrePostSeqNumItemCollection);
                 }
 
-
-
                 GetPrePostSeqNumConfiguration(p_strSourceTableName, p_strRxPackageId);
-                m_oRxTools.CreateFVSPrePostSeqNumTables(p_strTreeTempDbFile, m_oFVSPrePostSeqNumItem, p_strSourceTableName, p_strSourceTableName, p_bAudit, m_bDebug, m_strDebugFile);
+                m_oRxTools.CreateFVSPrePostSeqNumTables(p_strTreeTempDbFile, m_oFVSPrePostSeqNumItem, p_strSourceTableName, p_strSourceTableName, 
+                    p_bAudit, m_bDebug, m_strDebugFile, p_strRxPackageId);
 
             }
             else
