@@ -395,7 +395,8 @@ namespace FIA_Biosum_Manager
             "Step 2 - Pre-Processing Audit Check",            
             "Step 3 - Append FVS Output Data",
             "Step 4 - Post-Processing Audit Check",
-            "Step 5 - (Opt) Create FVSOut_BioSum.db"
+            "Step 5 - (Opt) Create FVSOut_BioSum.db",
+            "Step 6 - Testing FVS_InForest Table"
             });
             this.cmbStep.Location = new System.Drawing.Point(8, 337);
             this.cmbStep.Name = "cmbStep";
@@ -1298,10 +1299,6 @@ namespace FIA_Biosum_Manager
             }
         }
 
-		private void btnAppend_Click(object sender, System.EventArgs e)
-		{
-            RunAppend_Start();
-		}
         private void RunAppend_Start()
         {
 
@@ -9900,6 +9897,9 @@ namespace FIA_Biosum_Manager
                 case "Step 5 - (Opt) Create FVSOut_BioSum.db":
                     this.RunCreateFVSOut_BioSum_Start();
                     break;
+                case "Step 6 - Testing FVS_InForest Table":
+                    this.RunFVSInForestTable_Start();
+                    break;
             }
 
         }
@@ -10230,6 +10230,179 @@ namespace FIA_Biosum_Manager
                 }
             }
             return dictCreateTableQueries;
+        }
+
+        private void RunFVSInForestTable_Start()
+        {
+            // Warning for older projects without FVSOut.db
+            if (!System.IO.File.Exists(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile))
+            {
+                MessageBox.Show(m_missingFvsOutDb, "FIA Biosum", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+
+            this.m_frmTherm = new frmTherm(((frmDialog)ParentForm), "FVS IN FOREST TABLE",
+                "FVS Output", "2");
+            m_frmTherm.Visible = false;
+            this.m_frmTherm.lblMsg.Text = "";
+            this.m_frmTherm.TopMost = true;
+
+            this.cmbStep.Enabled = false;
+            this.btnExecute.Enabled = false;
+            this.btnChkAll.Enabled = false;
+            this.btnClearAll.Enabled = false;
+            this.btnRefresh.Enabled = false;
+            this.btnClose.Enabled = false;
+            this.btnHelp.Enabled = false;
+            this.btnCancel.Visible = false;
+            this.btnViewLogFile.Enabled = false;
+            this.btnViewPostLogFile.Enabled = false;
+            this.btnAuditDb.Enabled = false;
+            this.btnPostAppendAuditDb.Enabled = false;
+
+            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Maximum", 100);
+            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Minimum", 0);
+            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Value", 0);
+            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg2, "Text", "Overall Progress");
+            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "");
+            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Visible", true);
+            m_frmTherm.Show((frmDialog)ParentForm);
+
+            frmMain.g_oDelegate.CurrentThreadProcessAborted = false;
+            frmMain.g_oDelegate.CurrentThreadProcessDone = false;
+            frmMain.g_oDelegate.CurrentThreadProcessStarted = false;
+            frmMain.g_oDelegate.m_oThread = new System.Threading.Thread(new System.Threading.ThreadStart(RunAppend_UpdateFVSInForestTable));
+            frmMain.g_oDelegate.InitializeThreadEvents();
+            frmMain.g_oDelegate.m_oThread.IsBackground = true;
+            frmMain.g_oDelegate.CurrentThreadProcessIdle = false;
+            frmMain.g_oDelegate.m_oThread.Start();
+        }
+
+        private void RunAppend_UpdateFVSInForestTable()
+        {
+            if (m_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunAppend_UpdateFVSTreeTables\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+
+            ado_data_access oAdo = new ado_data_access();
+
+            bool bTreeList = false;
+            if (System.IO.File.Exists(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile))
+            {
+                string strConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile);
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+                    conn.Open();
+                    if (SQLite.TableExist(conn, "FVS_TREELIST"))
+                    {
+                        bTreeList = true;
+                    }
+                }
+            }
+            // Only try to load if there is a cut list in the FVSOut.db
+            if (bTreeList)
+            {
+                string strTreeTempDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
+                string strTreeListDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
+                //copy the production file to the temp folder which will be used as the work db file.
+                if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                    this.WriteText(m_strDebugFile, "\r\nSTART:Copy production file to work file: Source File Name:" + strTreeListDbFile + " Destination File Name:" + strTreeTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
+                System.IO.File.Copy(strTreeListDbFile, strTreeTempDbFile, true);
+                if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                    this.WriteText(m_strDebugFile, "\r\nEND:Copy production file to work file: Source File Name:" + strTreeListDbFile + " Destination File Name:" + strTreeTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
+
+                // do all the work
+
+                CreatePrePostSeqNumMatrixSqliteTables(strTreeTempDbFile, "001", false);
+
+
+
+                // end of work                               
+                //copy the work db file over the production file
+                if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                    this.WriteText(m_strDebugFile, "\r\nSTART:Copy work file to production file: Source File Name:" + strTreeTempDbFile + " Destination File Name:" + strTreeListDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
+                System.IO.File.Copy(strTreeTempDbFile, strTreeListDbFile, true);
+                if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                    this.WriteText(m_strDebugFile, "\r\nEND:Copy work file to production file: Source File Name:" + strTreeTempDbFile + " Destination File Name:" + strTreeListDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
+
+            }
+
+
+            oAdo.m_intError = 0;
+            oAdo.m_strError = "";
+        }
+
+        private void CreatePrePostSeqNumMatrixSqliteTables(string p_strDbFile, string p_strRxPackageId, bool p_bAudit)
+        {
+            int z;
+            string[] strSourceTableArray = new string[0];
+            string strFvsOutDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(strFvsOutDb)))
+            {
+                conn.Open();
+                strSourceTableArray = SQLite.getTableNames(conn);
+                CreateFVSPrePostSeqNumWorkTables(conn, p_strDbFile, "FVS_SUMMARY", p_strRxPackageId, p_bAudit);
+                CreateFVSPrePostSeqNumWorkTables(conn, p_strDbFile, "FVS_CUTLIST", p_strRxPackageId, p_bAudit);
+                CreateFVSPrePostSeqNumWorkTables(conn, p_strDbFile, "FVS_POTFIRE", p_strRxPackageId, p_bAudit);
+
+                for (z = 0; z <= strSourceTableArray.Length - 1; z++)
+                {
+                    if (strSourceTableArray[z] == null) break;
+
+                    if (RxTools.ValidFVSTable(strSourceTableArray[z]))
+                    {
+                        if (strSourceTableArray[z].Trim().ToUpper() != "FVS_SUMMARY" &&
+                            strSourceTableArray[z].Trim().ToUpper() != "FVS_CUTLIST" &&
+                            strSourceTableArray[z].Trim().ToUpper() != "FVS_POTFIRE")
+                        {
+
+                            CreateFVSPrePostSeqNumWorkTables(conn, p_strDbFile, strSourceTableArray[z], p_strRxPackageId, p_bAudit);
+
+                        }
+                    }
+                }
+            }
+        }
+
+        private void CreateFVSPrePostSeqNumWorkTables(System.Data.SQLite.SQLiteConnection conn, string p_strTreeTempDbFile, string p_strSourceTableName, string p_strRxPackageId, bool p_bAudit)
+        {
+            if (m_bDebug && frmMain.g_intDebugLevel > 1 && !p_bAudit)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//CreateFVSPrePostSeqNumWorkTables\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "Process Table:" + p_strSourceTableName + "\r\n\r\n");
+            }
+
+            if (p_strSourceTableName.Trim().ToUpper() == "FVS_CASES") return;
+
+
+            if (SQLite.TableExist(conn, p_strSourceTableName))
+            {
+                if (m_oFVSPrePostSeqNumItemCollection == null) m_oFVSPrePostSeqNumItemCollection = new FVSPrePostSeqNumItem_Collection();
+                string strParamConn = m_ado.getMDBConnString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile, "", "");
+                using (System.Data.OleDb.OleDbConnection accessConn = new System.Data.OleDb.OleDbConnection(strParamConn))
+                {
+                    accessConn.Open();
+                    m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(m_ado, accessConn, m_oFVSPrePostSeqNumItemCollection);
+                }
+
+
+
+                GetPrePostSeqNumConfiguration(p_strSourceTableName, p_strRxPackageId);
+                m_oRxTools.CreateFVSPrePostSeqNumTables(p_strTreeTempDbFile, m_oFVSPrePostSeqNumItem, p_strSourceTableName, p_strSourceTableName, p_bAudit, m_bDebug, m_strDebugFile);
+
+            }
+            else
+            {
+                if (m_bDebug && frmMain.g_intDebugLevel > 1 && !p_bAudit)
+                {
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, p_strSourceTableName + " table does not exist.\r\n\r\n");
+                }
+            }
         }
     }
 }

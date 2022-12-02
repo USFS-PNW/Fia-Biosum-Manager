@@ -3543,7 +3543,240 @@ namespace FIA_Biosum_Manager
             return lstTableNames;
         }
 
-	}
+        public void CreateFVSPrePostSeqNumTables(string strTargetDb, FVSPrePostSeqNumItem p_oItem, string p_strSourceTableName, string p_strSourceLinkedTableName, bool p_bAudit, bool p_bDebug, string p_strDebugFile)
+        {
+            DataMgr dataMgr = new DataMgr();
+            if (p_strSourceTableName.Trim().ToUpper() == "FVS_CASES") return;
+            int x;
+            string[] strSQLArray = null;
+            string strPrePostSeqNumMatrixTable = p_strSourceTableName + "_PREPOST_SEQNUM_MATRIX";
+            string strAuditPrePostSeqNumCountsTable = "audit_" + p_strSourceTableName + "_prepost_seqnum_counts_table";
+            string strAuditYearCountsTable = "audit_" + p_strSourceTableName + "_year_counts_table";
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dataMgr.GetConnectionString(strTargetDb)))
+            {
+                conn.Open();
+                if (dataMgr.TableExist(conn, strPrePostSeqNumMatrixTable))
+                    dataMgr.SqlNonQuery(conn, "DROP TABLE " + strPrePostSeqNumMatrixTable);
+
+                if (dataMgr.TableExist(conn, strAuditPrePostSeqNumCountsTable))
+                    dataMgr.SqlNonQuery(conn, "DROP TABLE " + strAuditPrePostSeqNumCountsTable);
+
+                if (dataMgr.TableExist(conn, strAuditYearCountsTable))
+                    dataMgr.SqlNonQuery(conn, "DROP TABLE " + strAuditYearCountsTable);
+
+                if (dataMgr.TableExist(conn, "temp_rowcount"))
+                    dataMgr.SqlNonQuery(conn, "DROP TABLE temp_rowcount");
+
+                //
+                //DEFAULT CONFIGURATIONS
+                //
+                if (p_strSourceTableName.Trim().ToUpper() == "FVS_SUMMARY" ||
+                    p_strSourceTableName.Trim().ToUpper() == "FVS_CUTLIST" ||
+                    p_strSourceTableName.Trim().ToUpper().IndexOf("FVS_POTFIRE", 0) >= 0)
+                {
+                    // Attach the FVSOut.db
+                    dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                                        Tables.FVS.DefaultFVSOutDbFile + "' AS FVS";
+                    dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+
+                    //create the audit SeqNum table structure
+                    frmMain.g_oTables.m_oFvs.CreateSQLiteFVSOutputPrePostSeqNumAuditGenericTable(dataMgr, conn, strPrePostSeqNumMatrixTable);
+                    if (p_strSourceTableName.Trim().ToUpper() == "FVS_SUMMARY" ||
+                    p_strSourceTableName.Trim().ToUpper().IndexOf("FVS_POTFIRE", 0) >= 0)
+                    {
+                        if (p_oItem.UseSummaryTableSeqNumYN == "Y")
+                        {
+                            //STANDID + YEAR = ONE RECORD
+                            dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditPrePostGenericSQL("", "FVS_SUMMARY", false);
+                        }
+                        else
+                        {
+                            //STANDID + YEAR = ONE RECORD
+                            dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditPrePostGenericSQL("", p_strSourceTableName, false);
+                        }
+                    }
+                    else
+                    {
+                        //STANDID + YEAR = MULTIPLE RECORDS
+                        dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditPrePostGenericSQL("", "FVS_SUMMARY", false);
+                    }
+                    dataMgr.m_strSQL = "INSERT INTO " + strPrePostSeqNumMatrixTable + " " +
+                                      dataMgr.m_strSQL;
+
+                    if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(p_strDebugFile, dataMgr.m_strSQL + "\r\n\r\n");
+                    dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+
+                    //p_oAdo.m_strSQL = Queries.FVS.FVSOutputTable_AuditUpdatePrePostGenericSQL(
+                    //    p_oItem, strPrePostSeqNumMatrixTable);
+
+                    //if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                    //    frmMain.g_oUtils.WriteText(p_strDebugFile, p_oAdo.m_strSQL + "\r\n\r\n");
+                    //p_oAdo.SqlNonQuery(p_oConn, p_oAdo.m_strSQL);
+
+                    //if (p_bAudit)
+                    //{
+                    //    if (p_strSourceTableName == "FVS_SUMMARY")
+                    //    {
+                    //        p_oAdo.m_strSQL = Queries.FVS.FVSOutputTable_AuditSelectIntoPrePostSeqNumCount
+                    //       (p_oItem, strAuditPrePostSeqNumCountsTable, strPrePostSeqNumMatrixTable);
+
+                    //        if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                    //            frmMain.g_oUtils.WriteText(p_strDebugFile, p_oAdo.m_strSQL + "\r\n\r\n");
+                    //        p_oAdo.SqlNonQuery(p_oConn, p_oAdo.m_strSQL);
+
+                    //        p_oAdo.m_strSQL = Queries.FVS.FVSOutputTable_PrePostGenericSQL(
+                    //           strAuditYearCountsTable, "FVS_SUMMARY", false);
+
+                    //        if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                    //            frmMain.g_oUtils.WriteText(p_strDebugFile, p_oAdo.m_strSQL + "\r\n\r\n");
+                    //        p_oAdo.SqlNonQuery(p_oConn, p_oAdo.m_strSQL);
+
+                    //    }
+                    //    else
+                    //    {
+
+                    //        if (p_oItem.UseSummaryTableSeqNumYN == "N")
+                    //        {
+                    //            p_oAdo.m_strSQL = Queries.FVS.FVSOutputTable_AuditSelectIntoPrePostSeqNumCount
+                    //              (p_oItem, strAuditPrePostSeqNumCountsTable, strPrePostSeqNumMatrixTable);
+
+                    //            if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                    //                frmMain.g_oUtils.WriteText(p_strDebugFile, p_oAdo.m_strSQL + "\r\n\r\n");
+                    //            p_oAdo.SqlNonQuery(p_oConn, p_oAdo.m_strSQL);
+                    //        }
+
+                    //    }
+                    //}
+                    if (p_strSourceTableName == "FVS_SUMMARY") return;
+                }
+            }
+
+
+            //if (p_bAudit)
+            //{
+            //    //
+            //    //stand + year rowcounts for all tables as compared with stand + year in the summary table
+            //    //
+            //    p_oAdo.AddColumn(p_oAdo.m_OleDbConnection, "audit_fvs_summary_year_counts_table", p_strSourceTableName, "INTEGER", "");
+            //    string[] strSQL = Queries.FVS.FVSOutputTable_AuditFVSSummaryTableRowCountsSQL(
+            //        "temp_rowcount",
+            //        "audit_FVS_SUMMARY_year_counts_table",
+            //        p_strSourceTableName,
+            //        p_strSourceTableName);
+
+            //    for (x = 0; x <= strSQL.Length - 1; x++)
+            //    {
+            //        if (p_bDebug && frmMain.g_intDebugLevel > 2)
+            //            frmMain.g_oUtils.WriteText(p_strDebugFile, p_oAdo.m_strSQL + "\r\n\r\n");
+            //        p_oAdo.SqlNonQuery(p_oConn, strSQL[x]);
+            //    }
+            //}
+
+            //if (p_strSourceTableName.Trim().ToUpper() == "FVS_TREELIST" ||
+            //    p_strSourceTableName.Trim().ToUpper() == "FVS_CUTLIST" ||
+            //    p_strSourceTableName.Trim().ToUpper().IndexOf("FVS_POTFIRE", 0) >= 0) return;
+
+            ////check if this table uses a default configuration of a different table
+            //if (p_oItem.TableName.Trim().ToUpper() !=
+            //    p_strSourceTableName.Trim().ToUpper() &&
+            //    p_oItem.Type == "D") return;
+
+            ////
+            ////CUSTOM CONFIGURATIONS
+            ////
+            //if (p_oItem.TableName.Trim().ToUpper() == "FVS_STRCLASS")
+            //{
+            //    frmMain.g_oTables.m_oFvs.CreateFVSOutputPrePostSeqNumAuditStrClassTable(p_oAdo, p_oConn, strPrePostSeqNumMatrixTable);
+            //}
+            //else
+            //{
+            //    frmMain.g_oTables.m_oFvs.CreateFVSOutputPrePostSeqNumAuditGenericTable(p_oAdo, p_oConn, strPrePostSeqNumMatrixTable);
+            //}
+
+            //if (p_oItem.TableName.Trim().ToUpper() == "FVS_STRCLASS")
+            //{
+            //    if (p_oItem.UseSummaryTableSeqNumYN == "N")
+            //    {
+            //        p_oAdo.m_strSQL = Queries.FVS.FVSOutputTable_AuditPrePostStrClassSQL("", p_strSourceTableName, false);
+            //    }
+            //    else
+            //    {
+            //        strSQLArray = Queries.FVS.FVSOutputTable_AuditPrePostFvsStrClassUsingFVSSummarySQL("", "FVS_SUMMARY", false);
+            //    }
+            //}
+            //else
+            //{
+            //    if (p_oItem.UseSummaryTableSeqNumYN == "N")
+            //        //STANDID + YEAR = ONE RECORD
+            //        p_oAdo.m_strSQL = Queries.FVS.FVSOutputTable_AuditPrePostGenericSQL("", p_strSourceTableName, false);
+            //    else
+            //        //STANDID + YEAR = MULTIPLE RECORDS
+            //        p_oAdo.m_strSQL = Queries.FVS.FVSOutputTable_AuditPrePostGenericSQL("", "FVS_SUMMARY", false);
+
+            //}
+
+            //if (p_oItem.TableName.Trim().ToUpper() == "FVS_STRCLASS")
+            //{
+            //    if (p_oItem.UseSummaryTableSeqNumYN == "Y")
+            //    {
+            //        for (x = 0; x <= strSQLArray.Length - 1; x++)
+            //        {
+            //            p_oAdo.m_strSQL = "INSERT INTO " + strPrePostSeqNumMatrixTable + " " +
+            //                                 strSQLArray[x];
+            //            if (p_bDebug && frmMain.g_intDebugLevel > 2)
+            //                frmMain.g_oUtils.WriteText(p_strDebugFile, p_oAdo.m_strSQL + "\r\n\r\n");
+            //            p_oAdo.SqlNonQuery(p_oConn, p_oAdo.m_strSQL);
+            //        }
+            //    }
+            //    else
+            //    {
+            //        p_oAdo.m_strSQL = "INSERT INTO " + strPrePostSeqNumMatrixTable + " " +
+            //                           p_oAdo.m_strSQL;
+            //        if (p_bDebug && frmMain.g_intDebugLevel > 2)
+            //            frmMain.g_oUtils.WriteText(p_strDebugFile, p_oAdo.m_strSQL + "\r\n\r\n");
+            //        p_oAdo.SqlNonQuery(p_oConn, p_oAdo.m_strSQL);
+            //    }
+            //    p_oAdo.m_strSQL = Queries.FVS.FVSOutputTable_AuditUpdatePrePostStrClassSQL(
+            //       p_oItem, strPrePostSeqNumMatrixTable);
+
+            //    if (p_bDebug && frmMain.g_intDebugLevel > 2)
+            //        frmMain.g_oUtils.WriteText(p_strDebugFile, p_oAdo.m_strSQL + "\r\n\r\n");
+            //    p_oAdo.SqlNonQuery(p_oConn, p_oAdo.m_strSQL);
+
+            //}
+            //else
+            //{
+            //    p_oAdo.m_strSQL = "INSERT INTO " + strPrePostSeqNumMatrixTable + " " +
+            //                            p_oAdo.m_strSQL;
+
+            //    if (p_bDebug && frmMain.g_intDebugLevel > 2)
+            //        frmMain.g_oUtils.WriteText(p_strDebugFile, p_oAdo.m_strSQL + "\r\n\r\n");
+            //    p_oAdo.SqlNonQuery(p_oConn, p_oAdo.m_strSQL);
+
+
+            //    p_oAdo.m_strSQL = Queries.FVS.FVSOutputTable_AuditUpdatePrePostGenericSQL(
+            //        p_oItem, strPrePostSeqNumMatrixTable);
+
+            //    if (p_bDebug && frmMain.g_intDebugLevel > 2)
+            //        frmMain.g_oUtils.WriteText(p_strDebugFile, p_oAdo.m_strSQL + "\r\n\r\n");
+            //    p_oAdo.SqlNonQuery(p_oConn, p_oAdo.m_strSQL);
+            //}
+
+
+
+            //if (p_oItem.UseSummaryTableSeqNumYN == "N")
+            //{
+            //    p_oAdo.m_strSQL = Queries.FVS.FVSOutputTable_AuditSelectIntoPrePostSeqNumCount
+            //      (p_oItem, strAuditPrePostSeqNumCountsTable, strPrePostSeqNumMatrixTable);
+
+            //    if (p_bDebug && frmMain.g_intDebugLevel > 2)
+            //        frmMain.g_oUtils.WriteText(p_strDebugFile, p_oAdo.m_strSQL + "\r\n\r\n");
+            //    p_oAdo.SqlNonQuery(p_oConn, p_oAdo.m_strSQL);
+            //}
+        }
+
+    }
 	/*********************************************************************************************************
 	 **RX Item                          
 	 *********************************************************************************************************/

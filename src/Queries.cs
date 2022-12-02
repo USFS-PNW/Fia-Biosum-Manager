@@ -646,6 +646,57 @@ namespace FIA_Biosum_Manager
 
             }
             /// <summary>
+            /// SQL for creating the sequence number configuration table from the FVS Output table.
+            /// </summary>
+            /// <param name="p_strIntoTable">FVSTableName_PREPOST_SEQNUM_MATRIX</param>
+            /// <param name="p_strFVSOutputTable"></param>
+            /// <param name="p_bAllColumns"></param>
+            /// <returns></returns>
+            static public string SqliteFVSOutputTable_AuditPrePostGenericSQL(string p_strIntoTable, string p_strFVSOutputTable, bool p_bAllColumns)
+            {
+                string strSQL = "";
+
+                if (p_strIntoTable.Trim().Length > 0)
+                {
+                    strSQL = "SELECT d.SeqNum,a.standid,a.year," +
+                                   "'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN," +
+                                   "'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN," +
+                                   "'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN," +
+                                   "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN " +
+                             "INTO " + p_strIntoTable + " " +
+                             "FROM FVS." + p_strFVSOutputTable + " a," +
+                                 "(SELECT  SUM(IIF(b.year >= c.year,1,0)) AS SeqNum," +
+                                          "b.standid, b.year " +
+                                  "FROM FVS." + p_strFVSOutputTable + " b," +
+                                        "(SELECT standid,year " +
+                                         "FROM FVS." + p_strFVSOutputTable + ") c " +
+                                 "WHERE b.standid=c.standid " +
+                                 "GROUP BY b.standid,b.year) d " +
+                              "WHERE a.standid=d.standid AND a.year=d.year";
+                }
+                else
+                {
+                    strSQL = "SELECT d.SeqNum,a.standid,a.year," +
+                                   "'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN," +
+                                   "'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN," +
+                                   "'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN," +
+                                   "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN " +
+                             "FROM FVS." + p_strFVSOutputTable + " a," +
+                                "(SELECT  SUM(IIF(b.year >= c.year,1,0)) AS SeqNum," +
+                                         "b.standid, b.year " +
+                                 "FROM FVS." + p_strFVSOutputTable + " b," +
+                                       "(SELECT standid,year " +
+                                        "FROM FVS." + p_strFVSOutputTable + ") c " +
+                                "WHERE b.standid=c.standid " +
+                                "GROUP BY b.standid,b.year) d " +
+                             "WHERE a.standid=d.standid AND a.year=d.year " +
+                             "ORDER BY a.standid,d.SeqNum";
+                }
+
+                return strSQL;
+
+            }
+            /// <summary>
             /// Update SQL for assigning the sequence number to the PRE or POST cycle.
             /// </summary>
             /// <param name="p_oItem"></param>
