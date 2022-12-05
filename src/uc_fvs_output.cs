@@ -10290,7 +10290,12 @@ namespace FIA_Biosum_Manager
 
             ado_data_access oAdo = new ado_data_access();
 
+            try
+            {
+
+
             bool bTreeList = false;
+                IList<string> lstFvsRxPackages = new List<string>();
             if (System.IO.File.Exists(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile))
             {
                 string strConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile);
@@ -10301,6 +10306,17 @@ namespace FIA_Biosum_Manager
                     {
                         bTreeList = true;
                     }
+
+                        SQLite.SqlQueryReader(conn, $@"select distinct(substr(RunTitle, 12, 3)) AS RXPACKAGE " +
+                            "from FVS_SUMMARY, FVS_CASES where FVS_SUMMARY.CaseID = FVS_CASES.CaseID");
+                        if (SQLite.m_DataReader.HasRows)
+                        {
+                            while (SQLite.m_DataReader.Read())
+                            {
+                                lstFvsRxPackages.Add(Convert.ToString(SQLite.m_DataReader["RXPACKAGE"]));
+                            }
+                        }
+                        SQLite.m_DataReader.Close();
                 }
             }
             // Only try to load if there is a cut list in the FVSOut.db
@@ -10315,9 +10331,12 @@ namespace FIA_Biosum_Manager
                 if (m_bDebug && frmMain.g_intDebugLevel > 1)
                     this.WriteText(m_strDebugFile, "\r\nEND:Copy production file to work file: Source File Name:" + strTreeListDbFile + " Destination File Name:" + strTreeTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
 
-                // do all the work
-                // @ToDo: Loop by rxPackageId; Coding 001 for now
-                CreatePrePostSeqNumMatrixSqliteTables(strTreeTempDbFile, "001", false);
+                    // do all the work
+                    foreach (var item in lstFvsRxPackages)
+                    {
+                        CreatePrePostSeqNumMatrixSqliteTables(strTreeTempDbFile, item, false);
+                    }
+                
 
 
 
@@ -10330,10 +10349,36 @@ namespace FIA_Biosum_Manager
                     this.WriteText(m_strDebugFile, "\r\nEND:Copy work file to production file: Source File Name:" + strTreeTempDbFile + " Destination File Name:" + strTreeListDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
 
             }
+            }
+            catch (System.Threading.ThreadInterruptedException err)
+            {
 
+                MessageBox.Show("Threading Interruption Error " + err.Message.ToString());
+            }
+            catch (System.Threading.ThreadAbortException err)
+            {
+                this.ThreadCleanUp();
 
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("!!Error!! \n" +
+                    "Module - uc_fvs_output:RunAppend_UpdateFVSInForestTable  \n" +
+                    "Err Msg - " + err.Message.ToString().Trim(),
+                    "FVS Biosum", System.Windows.Forms.MessageBoxButtons.OK,
+                    System.Windows.Forms.MessageBoxIcon.Exclamation);
+                this.m_intError = -1;
+            }
+
+            this.FVSRecordsFinished();
             oAdo.m_intError = 0;
             oAdo.m_strError = "";
+            frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1, "Ready");
+
+            CleanupThread();
+
+            frmMain.g_oDelegate.m_oEventThreadStopped.Set();
+            this.Invoke(frmMain.g_oDelegate.m_oDelegateThreadFinished);
         }
 
         private void CreatePrePostSeqNumMatrixSqliteTables(string p_strDbFile, string p_strRxPackageId, bool p_bAudit)

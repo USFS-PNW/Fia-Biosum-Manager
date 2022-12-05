@@ -686,12 +686,19 @@ namespace FIA_Biosum_Manager
                                    "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN, " +
                                    "substr(e.RunTitle, 12, 3) AS RXPACKAGE " +
                              "FROM FVS." + p_strFVSOutputTable + " a, FVS.FVS_CASES e," +
-                                "(SELECT  SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum," +
-                                         "b.standid, b.year " +
-                                 "FROM FVS." + p_strFVSOutputTable + " b," +
-                                       "(SELECT standid,year " +
-                                        "FROM FVS." + p_strFVSOutputTable + ") c " +
-                                "WHERE b.standid=c.standid " +
+                              //"(SELECT  SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum," +
+                              //         "b.standid, b.year " +
+                              // "FROM FVS." + p_strFVSOutputTable + " b," +
+                              //       "(SELECT standid,year " +
+                              //        "FROM FVS." + p_strFVSOutputTable + ") c " +
+                              //"WHERE b.standid=c.standid " +
+                              //"GROUP BY b.standid,b.year) d " +
+                              "(SELECT SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum," +
+                                "b.standid, b.year FROM FVS." + p_strFVSOutputTable + " b, FVS.FVS_CASES f," +
+                                "(SELECT g.standid, g.year FROM FVS." + p_strFVSOutputTable + " g, FVS.FVS_CASES h " +
+                                "WHERE g.CaseID = h.CaseID and substr(h.RunTitle, 12, 3) = '" + strRxPackage + "' ) c " +
+                                "WHERE b.standid = c.standid and b.CaseID = f.CaseID " +
+                                "and substr(f.RunTitle, 12, 3) = '" + strRxPackage + "' " +
                                 "GROUP BY b.standid,b.year) d " +
                              "WHERE a.CaseID = e.CaseID AND substr(e.RunTitle, 12, 3) = '" + strRxPackage + 
                              "' AND a.standid=d.standid AND a.year=d.year " +

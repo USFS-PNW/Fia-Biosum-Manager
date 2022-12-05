@@ -241,7 +241,10 @@ namespace FIA_Biosum_Manager
 					break;
 				case "ADD MS ACCESS PLOT,COND,SITE TREE, & TREE TABLE DATA":
 					this.m_frmDialog.uc_plot_input1.StopThread();
-					break;
+                    break;
+                case "FVS IN FOREST TABLE":
+                    this.m_frmDialog.uc_fvs_output1.StopThread();
+                    break;
 
                 default:
 					break;
