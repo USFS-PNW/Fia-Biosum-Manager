@@ -2544,6 +2544,7 @@ namespace FIA_Biosum_Manager
             static public string DefaultFVSTreeTableName { get { return "FVS_Tree"; } }
             static public string DefaultFVSResidTreeTableName { get { return "FVS_ResidTree"; } }
             static public string DefaultFVSCutTreeTableName { get { return "FVS_CutTree"; } }
+            static public string DefaultFVSInForestTreeTableName { get { return "FVS_InForestTree"; } }
             static public string DefaultFVSTreeListDbFile { get { return @"\fvs\data\FVSOUT_TREE_LIST.db"; } }
             static public string DefaultFVSOutDbFile { get { return @"\fvs\data\FVSOut.db"; } }
             static public string DefaultFVSOutBiosumDbFile { get { return @"\fvs\data\FVSOut_BioSum.db"; } }
@@ -2696,6 +2697,52 @@ namespace FIA_Biosum_Manager
                     "statuscd INTEGER," +
                     "decaycd INTEGER," +
                     "standing_dead_cd INTEGER," +
+                    "drybio_bole double," +
+                    "drybio_sapling double," +
+                    "drybio_top double," +
+                    "drybio_wdld_spp double," +
+                    "volcfsnd double," +
+                    "drybiom DOUBLE," +
+                    "drybiot DOUBLE," +
+                    "volcfgrs DOUBLE," +
+                    "volcfnet DOUBLE," +
+                    "volcsgrs DOUBLE," +
+                    "voltsgrs DOUBLE," +
+                    "fvs_tree_id CHAR(10)," +
+                    "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
+                    "DateTimeCreated DATE)";
+            }
+            public void CreateFVSInForestTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateFVSInForestTableSQL(p_strTableName));
+                CreateFVSInForestTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
+            }
+            public void CreateFVSInForestTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "fvs_tree_id");
+            }
+            public string CreateFVSInForestTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "rx CHAR(3)," +
+                    "rxcycle CHAR(1)," +
+                    "year INTEGER," +
+                    "fvs_variant CHAR(2)," +
+                    "fvs_species CHAR(6)," +
+                    "tpa DOUBLE," +
+                    "dbh DOUBLE," +
+                    "ht DOUBLE," +
+                    "estht DOUBLE," +
+                    "pctcr DOUBLE," +
+                    "treeval INTEGER," +
+                    "mortpa DOUBLE," +
+                    "mdefect INTEGER," +
+                    "bapctile DOUBLE," +
+                    "htg DOUBLE," +
+                    "dg DOUBLE," +
                     "drybio_bole double," +
                     "drybio_sapling double," +
                     "drybio_top double," +

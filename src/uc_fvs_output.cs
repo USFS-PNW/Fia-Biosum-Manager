@@ -4839,7 +4839,7 @@ namespace FIA_Biosum_Manager
                                                        "Trim(t.treeid) AS fvs_tree_id, " +
                                                        "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht,t.estht,t.pctcr, " +
                                                        "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
-                                                       "CASE WHEN t.dbh < 1.0 AND t.TPA > 0 THEN 1 ELSE null END AS STATUSCD, " +     // @ToDo: fix for sqlite! sets statuscd for seedlings
+                                                       "CASE WHEN t.dbh < 1.0 AND t.TPA > 0 THEN 1 ELSE null END AS STATUSCD, " +  
                                                        "'Y' AS FvsCreatedTree_YN," +
                                                        "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
                                                        "FROM " + strCasesTable + " c," + strFVSOutTableLink + " t " +
@@ -10281,11 +10281,15 @@ namespace FIA_Biosum_Manager
 
         private void RunAppend_UpdateFVSInForestTable()
         {
+            string strDebugFile = frmMain.g_oEnv.strTempDir + "\\biosum_inforest_debug.txt";
+            if (System.IO.File.Exists(strDebugFile))
+                System.IO.File.Delete(strDebugFile);
+
             if (m_bDebug && frmMain.g_intDebugLevel > 1)
             {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunAppend_UpdateFVSTreeTables\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+                frmMain.g_oUtils.WriteText(strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(strDebugFile, "//RunAppend_UpdateFVSInForestTable\r\n");
+                frmMain.g_oUtils.WriteText(strDebugFile, "//\r\n");
             }
 
             ado_data_access oAdo = new ado_data_access();
@@ -10293,10 +10297,11 @@ namespace FIA_Biosum_Manager
             try
             {
 
-
-            bool bTreeList = false;
+                this.m_strDateTimeCreated = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
+                bool bTreeList = false;
                 IList<string> lstFvsRxPackages = new List<string>();
-            if (System.IO.File.Exists(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile))
+                IList<string> lstRunTitles = new List<string>();
+                if (System.IO.File.Exists(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile))
             {
                 string strConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile);
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
@@ -10307,13 +10312,14 @@ namespace FIA_Biosum_Manager
                         bTreeList = true;
                     }
 
-                        SQLite.SqlQueryReader(conn, $@"select distinct(substr(RunTitle, 12, 3)) AS RXPACKAGE " +
+                        SQLite.SqlQueryReader(conn, $@"select distinct(substr(RunTitle, 12, 3)) AS RXPACKAGE, RunTitle " +
                             "from FVS_SUMMARY, FVS_CASES where FVS_SUMMARY.CaseID = FVS_CASES.CaseID");
                         if (SQLite.m_DataReader.HasRows)
                         {
                             while (SQLite.m_DataReader.Read())
                             {
                                 lstFvsRxPackages.Add(Convert.ToString(SQLite.m_DataReader["RXPACKAGE"]));
+                                lstRunTitles.Add(Convert.ToString(SQLite.m_DataReader["RunTitle"]));
                             }
                         }
                         SQLite.m_DataReader.Close();
@@ -10326,27 +10332,186 @@ namespace FIA_Biosum_Manager
                 string strTreeListDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
                 //copy the production file to the temp folder which will be used as the work db file.
                 if (m_bDebug && frmMain.g_intDebugLevel > 1)
-                    this.WriteText(m_strDebugFile, "\r\nSTART:Copy production file to work file: Source File Name:" + strTreeListDbFile + " Destination File Name:" + strTreeTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
+                    this.WriteText(strDebugFile, "\r\nSTART:Copy production file to work file: Source File Name:" + strTreeListDbFile + " Destination File Name:" + strTreeTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
                 System.IO.File.Copy(strTreeListDbFile, strTreeTempDbFile, true);
                 if (m_bDebug && frmMain.g_intDebugLevel > 1)
-                    this.WriteText(m_strDebugFile, "\r\nEND:Copy production file to work file: Source File Name:" + strTreeListDbFile + " Destination File Name:" + strTreeTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
+                    this.WriteText(strDebugFile, "\r\nEND:Copy production file to work file: Source File Name:" + strTreeListDbFile + " Destination File Name:" + strTreeTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
 
                     // do all the work
-                    foreach (var item in lstFvsRxPackages)
+                    for (int i = 0; i < lstFvsRxPackages.Count; i++)
                     {
-                        CreatePrePostSeqNumMatrixSqliteTables(strTreeTempDbFile, item, false);
+                        CreatePrePostSeqNumMatrixSqliteTables(strTreeTempDbFile, lstFvsRxPackages[i], false);
+
+                        string strConn = SQLite.GetConnectionString(strTreeTempDbFile);
+                        using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                        {
+                            conn.Open();
+                            // Attach FVSOut.db
+                            SQLite.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                                Tables.FVS.DefaultFVSOutDbFile + "' AS FVS";
+                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
+                            if (SQLite.TableExist(conn, "cutlist_fia_trees_work_table"))
+                                SQLite.SqlNonQuery(conn, "DROP TABLE cutlist_fia_trees_work_table");
+
+                            if (SQLite.TableExist(conn, "cutlist_fvs_created_seedlings_work_table"))
+                                SQLite.SqlNonQuery(conn, "DROP TABLE cutlist_fvs_created_seedlings_work_table");
+
+                            if (!SQLite.TableExist(conn, Tables.FVS.DefaultFVSInForestTreeTableName))
+                            {
+                                frmMain.g_oTables.m_oFvs.CreateFVSInForestTable(SQLite, conn, Tables.FVS.DefaultFVSInForestTreeTableName);
+                            }
+                            else
+                            {
+                                SQLite.m_strSQL = $@"DELETE FROM {Tables.FVS.DefaultFVSInForestTreeTableName} WHERE RXPACKAGE ='{lstFvsRxPackages[i]}'";
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                            }
+
+                            //
+                            //FIA TREES
+                            //
+                            //make sure there are records to insert
+                            SQLite.m_strSQL = "SELECT COUNT(*) FROM " +
+                                             "(SELECT c.standid " +
+                                              "FROM FVS.FVS_CASES c, FVS.FVS_TreeList t " +
+                                              "WHERE c.CaseID = t.CaseID AND c.RunTitle = '" + lstRunTitles[i] + "' AND " +
+                                              "substr(t.treeid, 1, 2) NOT IN ('ES') LIMIT 1)";
+
+                            string strFvsVariant = lstRunTitles[i].Substring(7, 2);
+                            if ((int)SQLite.getRecordCount(conn, SQLite.m_strSQL, "temp") > 0)
+                            {
+                                SQLite.m_strSQL = "CREATE TABLE cutlist_fia_trees_work_table AS " +
+                                    "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + lstFvsRxPackages[i] + "' AS rxpackage," +
+                                    "'' as rx, '' as rxcycle, '" + strFvsVariant + "' as fvs_variant, t.year," +
+                                    "Trim(t.treeid) AS fvs_tree_id," +
+                                    "t.SpeciesFia AS fvs_species, t.TPA, t.DBH, t.Ht,t.estht,t.pctcr," +
+                                    "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
+                                    "'N' AS FvsCreatedTree_YN," +
+                                    "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
+                                    "FROM FVS.FVS_CASES c, FVS.FVS_TreeList t " +
+                                    "WHERE c.CaseID = t.CaseID AND c.RunTitle = '" + lstRunTitles[i] + "' AND SUBSTR(t.treeid, 1, 2) NOT IN ('ES') ";
+
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
+                                // Set RxCycle using FVS_SUMMARY_PREPOST_SEQNUM_MATRIX
+                                SQLite.m_strSQL = $@"UPDATE cutlist_fia_trees_work_table                            
+                                                     SET rxcycle = (SELECT CASE WHEN CYCLE1_PRE_YN ='Y' THEN '1' 
+                                                     WHEN CYCLE1_POST_YN ='Y' THEN '1'
+                                                     WHEN CYCLE2_PRE_YN ='Y' THEN '2' 
+                                                     WHEN CYCLE2_POST_YN ='Y' THEN '2'
+                                                     WHEN CYCLE3_PRE_YN ='Y' THEN '3' 
+                                                     WHEN CYCLE3_POST_YN ='Y' THEN '3'
+                                                     WHEN CYCLE4_PRE_YN ='Y' THEN '4' 
+                                                     WHEN CYCLE4_POST_YN ='Y' THEN '4'  
+                                                     ELSE NULL END
+                                                     FROM FVS_SUMMARY_PREPOST_SEQNUM_MATRIX m WHERE 
+                                                     m.STANDID = cutlist_fia_trees_work_table.biosum_cond_id and
+                                                     cutlist_fia_trees_work_table.rxpackage = m.RXPACKAGE and 
+                                                     cutlist_fia_trees_work_table.Year = m.YEAR )
+                                                     WHERE EXISTS ( SELECT * from FVS_SUMMARY_PREPOST_SEQNUM_MATRIX m 
+                                                     WHERE m.STANDID = cutlist_fia_trees_work_table.biosum_cond_id and
+                                                     cutlist_fia_trees_work_table.rxpackage = m.RXPACKAGE)";
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
+                                //Set RX based on runtitle; Example: FVSOUT_BM_P001-101-101-101-101
+                                string[] arrPieces = lstRunTitles[i].Split('-');
+                                if (arrPieces.Length == 5)
+                                {
+                                    SQLite.m_strSQL = $@"UPDATE cutlist_fia_trees_work_table                            
+                                                     SET rx = CASE WHEN RXCYCLE ='1' THEN '{arrPieces[1]}' 
+                                                     WHEN RXCYCLE ='2' THEN '{arrPieces[2]}'
+                                                     WHEN RXCYCLE ='3' THEN '{arrPieces[3]}' 
+                                                     WHEN RXCYCLE ='4' THEN '{arrPieces[4]}'
+                                                     ELSE NULL END";
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                }
+
+                                //insert into fvs tree table
+                                SQLite.m_strSQL = $@"INSERT INTO {Tables.FVS.DefaultFVSInForestTreeTableName} 
+                                                     (biosum_cond_id, rxpackage,rx,rxcycle,year,fvs_variant, fvs_tree_id,
+                                                      fvs_species, tpa, dbh, ht, estht,pctcr,
+                                                      treeval, mortpa, mdefect, bapctile, dg, htg, FvsCreatedTree_YN,DateTimeCreated)
+                                                      SELECT a.biosum_cond_id, a.rxpackage,a.rx,a.rxcycle,a.year,a.fvs_variant,
+                                                      a.fvs_tree_id, a.fvs_species, a.tpa, a.dbh, a.ht, a.estht,a.pctcr,
+                                                      a.treeval, a.mortpa, a.mdefect, a.bapctile, a.dg, a.htg,
+                                                      a.FvsCreatedTree_YN,a.DateTimeCreated  
+                                                      FROM cutlist_fia_trees_work_table a";
+
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                            }
+
+                            //
+                            //FVS CREATED SEEDLING TREES
+                            //
+                            //make sure there are records to insert
+                            SQLite.m_strSQL = "SELECT COUNT(*) FROM " +
+                                "(SELECT c.standid " +
+                                "FROM FVS.FVS_CASES c, FVS.FVS_TreeList t " +
+                                "WHERE c.CaseID = t.CaseID AND c.RunTitle = '" + lstRunTitles[i] + "' AND " +
+                                "substr(t.treeid, 1, 2) = 'ES' LIMIT 1)";
+
+                            if ((int)SQLite.getRecordCount(conn, SQLite.m_strSQL, "temp") > 0)
+                            { 
+                                //FVS CREATED SEEDLING TREES
+                                SQLite.m_strSQL =
+                                       "CREATE TABLE cutlist_fvs_created_seedlings_work_table AS " +
+                                       "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + lstFvsRxPackages[i] + "' AS rxpackage," +
+                                       "'' AS rx,'' AS rxcycle," +
+                                        "cast(t.year as text) as rxyear,'" +
+                                       strFvsVariant + "' AS fvs_variant, " +
+                                       "Trim(t.treeid) AS fvs_tree_id, " +
+                                       "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht,t.estht,t.pctcr, " +
+                                       "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
+                                       "CASE WHEN t.dbh < 1.0 AND t.TPA > 0 THEN 1 ELSE null END AS STATUSCD, " +     // @ToDo: fix for sqlite! sets statuscd for seedlings
+                                       "'Y' AS FvsCreatedTree_YN," +
+                                       "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
+                                       "FROM FVS.FVS_CASES c, FVS.FVS_TreeList t " +
+                                       "WHERE c.CaseID = t.CaseID AND c.RunTitle = '" + lstRunTitles[i] + "' AND substr(t.treeid, 1, 2) = 'ES'";
+
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                SQLite.m_strSQL = $@"INSERT INTO {Tables.FVS.DefaultFVSInForestTreeTableName} 
+                                                    (biosum_cond_id, rxpackage,rx,rxcycle,rxyear,fvs_variant, fvs_tree_id,
+                                                     fvs_species, tpa, dbh, ht, estht,pctcr,
+                                                     treeval, mortpa, mdefect, bapctile, dg, htg,
+                                                     statuscd, FvsCreatedTree_YN,DateTimeCreated) 
+                                                     SELECT a.biosum_cond_id, a.rxpackage,a.rx,a.rxcycle,a.rxyear,a.fvs_variant,
+                                                     a.fvs_tree_id, a.fvs_species, a.tpa, a.dbh, a.ht, a.estht,a.pctcr,
+                                                     a.treeval, a.mortpa, a.mdefect, a.bapctile, a.dg, a.htg, 
+                                                     a.statuscd, a.FvsCreatedTree_YN,a.DateTimeCreated  
+                                                     FROM cutlist_fvs_created_seedlings_work_table ";
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                            }
+
+                        }
                     }
-                
 
-
-
-                // end of work                               
-                //copy the work db file over the production file
-                if (m_bDebug && frmMain.g_intDebugLevel > 1)
-                    this.WriteText(m_strDebugFile, "\r\nSTART:Copy work file to production file: Source File Name:" + strTreeTempDbFile + " Destination File Name:" + strTreeListDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
+                    // end of work                               
+                    //copy the work db file over the production file
+                    if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                    this.WriteText(strDebugFile, "\r\nSTART:Copy work file to production file: Source File Name:" + strTreeTempDbFile + " Destination File Name:" + strTreeListDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
                 System.IO.File.Copy(strTreeTempDbFile, strTreeListDbFile, true);
                 if (m_bDebug && frmMain.g_intDebugLevel > 1)
-                    this.WriteText(m_strDebugFile, "\r\nEND:Copy work file to production file: Source File Name:" + strTreeTempDbFile + " Destination File Name:" + strTreeListDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
+                    this.WriteText(strDebugFile, "\r\nEND:Copy work file to production file: Source File Name:" + strTreeTempDbFile + " Destination File Name:" + strTreeListDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
 
             }
             }

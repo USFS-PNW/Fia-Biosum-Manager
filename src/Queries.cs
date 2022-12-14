@@ -4034,6 +4034,30 @@ namespace FIA_Biosum_Manager
                                 f.drybiom=o.DRYBIOM_CALC,
                                 f.voltsgrs=o.VOLTSGRS_CALC";
                 }
+
+                public static string[] PopulateRxFields(string p_strFvsTreeTable, string p_strSeqNumTable)
+                {
+                    string[] arrQueries = new string[2];
+                    arrQueries[0] = $@"UPDATE {p_strFvsTreeTable}                            
+                                                     SET rxcycle = (SELECT CASE WHEN CYCLE1_PRE_YN ='Y' THEN '1' 
+                                                     WHEN CYCLE1_POST_YN ='Y' THEN '1'
+                                                     WHEN CYCLE2_PRE_YN ='Y' THEN '2' 
+                                                     WHEN CYCLE2_POST_YN ='Y' THEN '2'
+                                                     WHEN CYCLE3_PRE_YN ='Y' THEN '3' 
+                                                     WHEN CYCLE3_POST_YN ='Y' THEN '3'
+                                                     WHEN CYCLE4_PRE_YN ='Y' THEN '4' 
+                                                     WHEN CYCLE4_POST_YN ='Y' THEN '4'  
+                                                     ELSE NULL END
+                                                     FROM FVS_SUMMARY_PREPOST_SEQNUM_MATRIX m WHERE 
+                                                     m.STANDID = cutlist_fia_trees_work_table.biosum_cond_id and
+                                                     cutlist_fia_trees_work_table.rxpackage = m.RXPACKAGE and 
+                                                     cutlist_fia_trees_work_table.Year = m.YEAR )
+                                                     WHERE EXISTS ( SELECT * from FVS_SUMMARY_PREPOST_SEQNUM_MATRIX m 
+                                                     WHERE m.STANDID = cutlist_fia_trees_work_table.biosum_cond_id and
+                                                     cutlist_fia_trees_work_table.rxpackage = m.RXPACKAGE)";
+
+                    return arrQueries;
+                }
             }
         }
 
