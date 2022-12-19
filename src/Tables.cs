@@ -4525,7 +4525,7 @@ namespace FIA_Biosum_Manager
                     "area_used DECIMAL (12,2)," +
                     "area_source CHAR(50)," +
                     "p1pntcnt_eu DECIMAL (12,0)," +
-                    "p1source CHAR(30)," +
+                    "p1source CHAR(50)," +
                     "modified_date DATE, " +
                     "biosum_status_cd BYTE)";
             }
@@ -4580,7 +4580,6 @@ namespace FIA_Biosum_Manager
                     "notes MEMO," +
                     "start_invyr DECIMAL (4,0)," +
                     "end_invyr DECIMAL (4,0)," +
-                    "p1source CHAR(30)," +
                     "modified_date DATE, " +
                     "biosum_status_cd BYTE)";
             }
