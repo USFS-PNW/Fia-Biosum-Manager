@@ -89,7 +89,8 @@ namespace FIA_Biosum_Manager
         private static string[] m_summary_wtd_1910s = { "2", "3", "4", "5", "6", "Not Used", "Not Used", "Not Used" };
         private static string[] m_ffe_wtd_1910s = { "3", "4", "5", "6", "7", "Not Used", "Not Used", "Not Used" };
         private const string m_str_wtd_1181 = "OngoingMgt_WtdMean_NoBY";
-        private static string[] m_summary_ffe_1181 = { "3", "4", "6", "7", "9", "10", "12", "13" };
+        private static string[] m_summary_wtd_1181 = { "2", "3", "5", "6", "8", "9", "11", "13" };
+        private static string[] m_ffe_wtd_1181 = { "1", "3", "4", "6", "7", "9", "10", "13" };
         private const string m_str_pp_181 = "OngoingMgt_PrePost_BaseYr";
         private static string[] m_summary_pp_181 = { "1", "2", "4", "5", "7", "8", "10", "11" };
         private static string[] m_ffe_pp_181 = { "1", "3", "4", "6", "7", "9", "10", "12" };
@@ -97,8 +98,8 @@ namespace FIA_Biosum_Manager
         private static string[] m_summary_11910s = { "2", "3", "4", "5", "6", "7", "8", "Not Used" };
         private static string[] m_ffe_11910s = { "1", "3", "4", "5", "6", "7", "Not Used", "Not Used" };
         private const string m_str_wtd_181 = "OngoingMgt_WtdMean_BaseYr";
-        private static string[] m_summary_wtd_181 = { "2", "3", "5", "6", "8", "9", "11", "12" };
-        private static string[] m_ffe_wtd_181 = { "3", "4", "6", "7", "9", "10", "12", "13" };
+        private static string[] m_summary_wtd_181 = { "1", "2", "5", "6", "8", "9", "11", "13" };
+        private static string[] m_ffe_wtd_181 = { "1", "3", "4", "6", "7", "9", "10", "13" };
 
         public string m_rxPackages = "";
         Queries m_oQueries = new Queries();
@@ -199,10 +200,11 @@ namespace FIA_Biosum_Manager
             cmbDefault.Items.Add(m_str_1181);
             cmbDefault.Items.Add(m_str_11910s);
             cmbDefault.Items.Add(m_str_wtd_1181);
-            cmbDefault.Items.Add(m_str_pp_181);
+            cmbDefault.Items.Add(m_str_pp_181);           
             cmbDefault.Items.Add(m_str_wtd_181);
             cmbDefault.Items.Add(m_str_pp_1910s);
             cmbDefault.Items.Add(m_str_wtd_1910s);
+
             loadvalues();
                         
         }
@@ -857,8 +859,8 @@ namespace FIA_Biosum_Manager
                     arrFfeSequence = m_ffe_wtd_1910s;
                     break;
                 case m_str_wtd_1181:
-                    arrSummarySequence = m_summary_ffe_1181;
-                    arrFfeSequence = m_summary_ffe_1181;
+                    arrSummarySequence = m_summary_wtd_1181;
+                    arrFfeSequence = m_ffe_wtd_1181;
                     break;
                 case m_str_pp_181:
                     arrSummarySequence = m_summary_pp_181;

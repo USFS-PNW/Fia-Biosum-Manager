@@ -3743,7 +3743,7 @@ namespace FIA_Biosum_Manager
                     string strColumns = @"id,biosum_cond_id,invyr,fvs_variant,spcd,dbh,ht,actualht,cr,fvs_tree_id, fvscreatedtree_yn";
                     string strValues = @"id,biosum_cond_id, cast(rxyear as integer) as invyr, fvs_variant, " +
                         "CASE WHEN FvsCreatedTree_YN='Y' THEN cast(fvs_species as integer) ELSE -1 END AS spcd, " +
-                        "dbh,estht,ht,pctcr,fvs_tree_id, fvscreatedtree_yn";
+                        "dbh,ht,ht,pctcr,fvs_tree_id, fvscreatedtree_yn";
                     return $@"INSERT INTO {p_strInputVolumesTable} ({strColumns})  
                            SELECT {strValues} 
                            FROM {p_strFvsTreeTable}
@@ -3759,7 +3759,7 @@ namespace FIA_Biosum_Manager
                 public static string BuildInputTableForVolumeCalculation_Step1(string p_strInputVolumesTable, string p_strFvsTreeTable)
                 {
                     string strColumns = "id,biosum_cond_id,invyr,fvs_variant,spcd,dbh,ht,actualht,cr,fvs_tree_id";
-                    string values = "id,biosum_cond_id,CINT(rxyear) AS invyr, fvs_variant, IIF(FvsCreatedTree_YN='Y',CINT(fvs_species),-1) AS spcd, dbh,estht,ht,pctcr,fvs_tree_id ";
+                    string values = "id,biosum_cond_id,CINT(rxyear) AS invyr, fvs_variant, IIF(FvsCreatedTree_YN='Y',CINT(fvs_species),-1) AS spcd, dbh,ht,ht,pctcr,fvs_tree_id ";
                     return $@"INSERT INTO {p_strInputVolumesTable} ({strColumns}) SELECT {values} FROM {p_strFvsTreeTable}";
                 }
 
@@ -3787,7 +3787,8 @@ namespace FIA_Biosum_Manager
                                 i.balive=c.balive,
                                 i.precipitation=p.precipitation,
                                 i.ecosubcd = p.ecosubcd,
-                                i.stdorgcd = c.stdorgcd";
+                                i.stdorgcd = c.stdorgcd,
+                                i.actualht = IIF(t.actualht <> t.ht, i.ht - t.ht + t.actualht, i.actualht)";
                 }
 
                 /// <summary>
