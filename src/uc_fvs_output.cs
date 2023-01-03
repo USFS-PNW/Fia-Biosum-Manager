@@ -395,8 +395,8 @@ namespace FIA_Biosum_Manager
             "Step 2 - Pre-Processing Audit Check",            
             "Step 3 - Append FVS Output Data",
             "Step 4 - Post-Processing Audit Check",
-            "Step 5 - (Opt) Create FVSOut_BioSum.db",
-            "Step 6 - Testing FVS_InForest Table"
+            "Step 5 - (Opt) Create FVSOut_BioSum.db"
+            //"Step 6 - Testing FVS_InForest Table"
             });
             this.cmbStep.Location = new System.Drawing.Point(8, 337);
             this.cmbStep.Name = "cmbStep";
