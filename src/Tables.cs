@@ -2800,31 +2800,6 @@ namespace FIA_Biosum_Manager
 
             }
             //
-            //FVS Cut list tree audit
-            //
-            //check that a single tree is only cut one time per package
-            public void CreateFVSTreeIdCutAudit(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateFVSTreeIdCutAuditTableSQL(p_strTableName));
-                CreateFVSTreeIdCutAuditTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateFVSTreeIdCutAuditTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "fvs_tree_id");
-            }
-            public string CreateFVSTreeIdCutAuditTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "biosum_cond_id CHAR(25)," +
-                    "rxpackage CHAR(3)," +
-                    "fvs_tree_id CHAR(10)," +
-                    "rxcycle1_YN CHAR(1) DEFAULT 'N'," +
-                    "rxcycle2_YN CHAR(1) DEFAULT 'N'," +
-                    "rxcycle3_YN CHAR(1) DEFAULT 'N'," +
-                    "rxcycle4_YN CHAR(1) DEFAULT 'N'," +
-                    "Multiple_Cuts_YN CHAR(1) DEFAULT 'N')";
-            }
-            //
             //ORACLE biosum_volumes
             //
             public void CreateOracleInputBiosumVolumesTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)

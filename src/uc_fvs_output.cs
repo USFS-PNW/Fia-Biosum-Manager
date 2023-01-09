@@ -76,7 +76,6 @@ namespace FIA_Biosum_Manager
         private string m_strFVSSummaryAuditPrePostSeqNumTable = "fvs_summary_prepost_seqnum_matrix";
         private string m_strFVSSummaryAuditPrePostSeqNumCountsTable = "audit_fvs_summary_prepost_seqnum_counts_table";
         private string m_strFVSTreeIdAuditTable = "audit_fvs_tree_id";
-        private string m_strFVSTreeIdCutCountAuditTable = "audit_fvs_tree_id_cut";
         private string m_strFVSTreeMissingVolumeBiomassValuesTable = "audit_fvs_tree_missing_volume_biomass_values_table";
 		private string[] m_strFVSPrePostYearAuditTablesArray = null;
         private string[] m_strFVSPrePostSeqNumTablesArray = null;
@@ -7554,8 +7553,6 @@ namespace FIA_Biosum_Manager
 
             m_strFVSPreAppendAuditTables.Add("audit_FVS_SUMMARY_year_counts_table");
             m_strFVSPreAppendAuditTables.Add("audit_fvs_tree_id");
-            m_strFVSPreAppendAuditTables.Add("audit_fvs_tree_id_cut");
-
 
             m_strFVSPostAppendAuditTables = new List<string>();
             m_strFVSPostAppendAuditTables.Add("audit_Post_SPCDCHANGE_WARNING");
@@ -8724,128 +8721,6 @@ namespace FIA_Biosum_Manager
                 p_intItemError = -5;
 
             }
-            //
-            //VALIDATE TREE CUT COUNTS
-            //
-            //check to ensure that a single tree is only cut one time
-            //create temp fvs_tree table
-            if (p_oAdo.TableExist(p_oAdo.m_OleDbConnection, "audit_fvs_tree_id_cut"))
-                p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection, "DROP TABLE audit_fvs_tree_id_cut");
-
-            if (p_oAdo.TableExist(p_oAdo.m_OleDbConnection, "treecutcount_work_table"))
-                p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection, "DROP TABLE treecutcount_work_table");
-
-            frmMain.g_oTables.m_oFvs.CreateFVSTreeIdCutAudit(p_oAdo, p_oAdo.m_OleDbConnection, "audit_fvs_tree_id_cut");
-
-            p_oAdo.m_strSQL = "INSERT INTO audit_fvs_tree_id_cut (biosum_cond_id,rxpackage,fvs_tree_id) " +
-                              "SELECT DISTINCT biosum_cond_id,rxpackage,fvs_tree_id FROM audit_fvs_tree_id";
-
-            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + p_oAdo.m_strSQL + "\r\n");
-            p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection, p_oAdo.m_strSQL);
-            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-            //cycle1
-            p_oAdo.m_strSQL = "UPDATE audit_fvs_tree_id_cut a  " +
-                              "INNER JOIN audit_fvs_tree_id b " +
-                              "ON a.biosum_cond_id=b.biosum_cond_id AND " +
-                                 "a.rxpackage=b.rxpackage AND " +
-                                 "a.fvs_tree_id=b.fvs_tree_id " +
-                              "SET a.rxcycle1_YN= 'Y' " +
-                              "WHERE b.rxcycle='1'";
-            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + p_oAdo.m_strSQL + "\r\n");
-            p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection, p_oAdo.m_strSQL);
-            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-            //cycle2
-            p_oAdo.m_strSQL = "UPDATE audit_fvs_tree_id_cut a  " +
-                              "INNER JOIN audit_fvs_tree_id b " +
-                              "ON a.biosum_cond_id=b.biosum_cond_id AND " +
-                                 "a.rxpackage=b.rxpackage AND " +
-                                 "a.fvs_tree_id=b.fvs_tree_id " +
-                              "SET a.rxcycle2_YN= 'Y' " +
-                              "WHERE b.rxcycle='2'";
-            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + p_oAdo.m_strSQL + "\r\n");
-            p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection, p_oAdo.m_strSQL);
-            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-            //cycle3
-            p_oAdo.m_strSQL = "UPDATE audit_fvs_tree_id_cut a  " +
-                              "INNER JOIN audit_fvs_tree_id b " +
-                              "ON a.biosum_cond_id=b.biosum_cond_id AND " +
-                                 "a.rxpackage=b.rxpackage AND " +
-                                 "a.fvs_tree_id=b.fvs_tree_id " +
-                              "SET a.rxcycle3_YN= 'Y' " +
-                              "WHERE b.rxcycle='3'";
-            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + p_oAdo.m_strSQL + "\r\n");
-            p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection, p_oAdo.m_strSQL);
-            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-            //cycle4
-            p_oAdo.m_strSQL = "UPDATE audit_fvs_tree_id_cut a  " +
-                              "INNER JOIN audit_fvs_tree_id b " +
-                              "ON a.biosum_cond_id=b.biosum_cond_id AND " +
-                                 "a.rxpackage=b.rxpackage AND " +
-                                 "a.fvs_tree_id=b.fvs_tree_id " +
-                              "SET a.rxcycle4_YN= 'Y' " +
-                              "WHERE b.rxcycle='4'";
-            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + p_oAdo.m_strSQL + "\r\n");
-            p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection, p_oAdo.m_strSQL);
-            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-            p_oAdo.m_strSQL = "SELECT biosum_cond_id,rxpackage,fvs_tree_id, " +
-                                     "COUNT(*) AS ttlcount " +
-                              "INTO treecutcount_work_table " +
-                              "FROM audit_fvs_tree_id " +
-                              "GROUP BY biosum_cond_id,rxpackage,fvs_tree_id";
-            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + p_oAdo.m_strSQL + "\r\n");
-            p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection, p_oAdo.m_strSQL);
-            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-
-            p_oAdo.m_strSQL = "UPDATE audit_fvs_tree_id_cut a " +
-                              "INNER JOIN treecutcount_work_table b " +
-                              "ON a.biosum_cond_id=b.biosum_cond_id AND " +
-                                 "a.rxpackage=b.rxpackage AND " +
-                                 "a.fvs_tree_id=b.fvs_tree_id " +
-                              "SET a.Multiple_Cuts_YN = IIF(b.ttlcount > 1,'Y','N')";
-            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + p_oAdo.m_strSQL + "\r\n");
-            p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection, p_oAdo.m_strSQL);
-            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-            intCount = (int)p_oAdo.getSingleDoubleValueFromSQLQuery(p_oAdo.m_OleDbConnection, "SELECT COUNT(*) AS TTLCOUNT FROM audit_fvs_tree_id_cut WHERE Multiple_Cuts_YN='Y'", "TEMP");
-
-            if (intCount > 0)
-            {
-                if (p_bAudit)
-                {
-                    p_strItemWarning = p_strItemWarning + "WARNING: " + intCount.ToString() + " trees were detected as being cut more than once for a single package for variant/package " + p_strVariant + "/" + p_strRxPackage + " (See audit table audit_fvs_tree_id_cut)\r\n";
-                    m_strError = m_strError + "WARNING: " + intCount.ToString() + " trees were detected as being cut more than once for a single package for variant/package " + p_strVariant + "/" + p_strRxPackage + " (See audit table audit_fvs_tree_id_cut)\r\n\r\n";
-                }
-                else
-                    p_strItemWarning = p_strItemWarning + " " + intCount.ToString() + " trees were detected as being cut more than once for a single package for variant/package " + p_strVariant + "/" + p_strRxPackage + "  (See audit table audit_fvs_tree_id)\r\n";
-                p_intItemWarning = -1;
-
-            }
-
-            if (p_oAdo.TableExist(p_oAdo.m_OleDbConnection, "treecutcount_work_table"))
-                p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection, "DROP TABLE treecutcount_work_table");
-
-
-
         }
 		
 		private void Validate_PotFire(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn,
