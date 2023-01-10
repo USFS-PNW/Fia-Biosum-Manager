@@ -394,8 +394,8 @@ namespace FIA_Biosum_Manager
             "Step 2 - Pre-Processing Audit Check",            
             "Step 3 - Append FVS Output Data",
             "Step 4 - Post-Processing Audit Check",
-            "Step 5 - (Opt) Create FVSOut_BioSum.db"
-            //"Step 6 - Testing FVS_InForest Table"
+            "Step 5 - (Opt) Create FVSOut_BioSum.db",
+            "Step 6 - Testing FVS_InForest Table"
             });
             this.cmbStep.Location = new System.Drawing.Point(8, 337);
             this.cmbStep.Name = "cmbStep";
@@ -4769,7 +4769,7 @@ namespace FIA_Biosum_Manager
                                                     "cast(t.year as text) as rxyear,'" +
                                                     p_strVariant + "' AS fvs_variant, " +
                                                     "Trim(t.treeid) AS fvs_tree_id," +
-                                                    "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS DBH , t.Ht,t.estht,t.pctcr," +
+                                                    "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS DBH , t.Ht, t.pctcr," +
                                                     "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
                                                     "'N' AS FvsCreatedTree_YN," +
                                                     "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
@@ -4784,11 +4784,11 @@ namespace FIA_Biosum_Manager
                                                 //insert into fvs tree table
                                                 oDataMgr.m_strSQL = "INSERT INTO " + strFvsTreeTable + " " +
                                                                      "(biosum_cond_id, rxpackage,rx,rxcycle,rxyear,fvs_variant, fvs_tree_id," +
-                                                                      "fvs_species, tpa, dbh, ht, estht,pctcr," +
+                                                                      "fvs_species, tpa, dbh, ht, pctcr," +
                                                                       "treeval, mortpa, mdefect, bapctile, dg, htg," +
                                                                       "FvsCreatedTree_YN,DateTimeCreated) " +
                                                                         "SELECT a.biosum_cond_id, a.rxpackage,a.rx,a.rxcycle,a.rxyear,a.fvs_variant," +
-                                                                               "a.fvs_tree_id, a.fvs_species, a.tpa, a.dbh, a.ht, a.estht,a.pctcr," +
+                                                                               "a.fvs_tree_id, a.fvs_species, a.tpa, a.dbh, a.ht, a.pctcr," +
                                                                                "a.treeval, a.mortpa, a.mdefect, a.bapctile, a.dg, a.htg," +
                                                                                "a.FvsCreatedTree_YN,a.DateTimeCreated  " +
                                                                         "FROM cutlist_fia_trees_work_table a," +
@@ -4836,7 +4836,7 @@ namespace FIA_Biosum_Manager
                                                         "cast(t.year as text) as rxyear,'" +
                                                        p_strVariant + "' AS fvs_variant, " +
                                                        "Trim(t.treeid) AS fvs_tree_id, " +
-                                                       "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht,t.estht,t.pctcr, " +
+                                                       "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht, t.pctcr, " +
                                                        "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
                                                        "CASE WHEN t.dbh < 1.0 AND t.TPA > 0 THEN 1 ELSE null END AS STATUSCD, " +  
                                                        "'Y' AS FvsCreatedTree_YN," +
@@ -4854,7 +4854,7 @@ namespace FIA_Biosum_Manager
                                                        "cast(t.year as text) as rxyear,'" +
                                                        p_strVariant + "' AS fvs_variant, " +
                                                        "Trim(t.treeid) AS fvs_tree_id, " +
-                                                       "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht,t.estht,t.pctcr, " +
+                                                       "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht, t.pctcr, " +
                                                        "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
                                                        "CASE WHEN t.dbh < 1.0 AND t.TPA > 0 THEN 1 ELSE null END AS STATUSCD, " +     // @ToDo: fix for sqlite! sets statuscd for seedlings
                                                        "'Y' AS FvsCreatedTree_YN," +
@@ -4871,11 +4871,11 @@ namespace FIA_Biosum_Manager
                                                     this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                                                 oDataMgr.m_strSQL = "INSERT INTO " + strFvsTreeTable + " " +
                                                                      "(biosum_cond_id, rxpackage,rx,rxcycle,rxyear,fvs_variant, fvs_tree_id," +
-                                                                      "fvs_species, tpa, dbh, ht, estht,pctcr, " +
+                                                                      "fvs_species, tpa, dbh, ht, pctcr, " +
                                                                       "treeval, mortpa, mdefect, bapctile, dg, htg, " +
                                                                       "statuscd, FvsCreatedTree_YN,DateTimeCreated) " +
                                                                         "SELECT a.biosum_cond_id, a.rxpackage,a.rx,a.rxcycle,a.rxyear,a.fvs_variant," +
-                                                                               "a.fvs_tree_id, a.fvs_species, a.tpa, a.dbh, a.ht, a.estht,a.pctcr," +
+                                                                               "a.fvs_tree_id, a.fvs_species, a.tpa, a.dbh, a.ht, a.pctcr," +
                                                                                "a.treeval, a.mortpa, a.mdefect, a.bapctile, a.dg, a.htg, " +
                                                                                "a.statuscd, a.FvsCreatedTree_YN,a.DateTimeCreated  " +
                                                                         "FROM cutlist_fvs_created_seedlings_work_table a," +
@@ -10200,7 +10200,7 @@ namespace FIA_Biosum_Manager
                         SQLite.m_DataReader.Close();
                 }
             }
-            // Only try to load if there is a cut list in the FVSOut.db
+            // Only try to load if there is a tree list in the FVSOut.db
             if (bTreeList)
             {
                 string strTreeTempDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
@@ -10263,7 +10263,7 @@ namespace FIA_Biosum_Manager
                                     "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + lstFvsRxPackages[i] + "' AS rxpackage," +
                                     "'' as rx, '' as rxcycle, '" + strFvsVariant + "' as fvs_variant, t.year," +
                                     "Trim(t.treeid) AS fvs_tree_id," +
-                                    "t.SpeciesFia AS fvs_species, t.TPA, t.DBH, t.Ht,t.estht,t.pctcr," +
+                                    "t.SpeciesFia AS fvs_species, t.TPA, t.DBH, t.Ht, t.pctcr," +
                                     "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
                                     "'N' AS FvsCreatedTree_YN," +
                                     "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
@@ -10314,10 +10314,10 @@ namespace FIA_Biosum_Manager
                                 //insert into fvs tree table
                                 SQLite.m_strSQL = $@"INSERT INTO {Tables.FVS.DefaultFVSInForestTreeTableName} 
                                                      (biosum_cond_id, rxpackage,rx,rxcycle,year,fvs_variant, fvs_tree_id,
-                                                      fvs_species, tpa, dbh, ht, estht,pctcr,
+                                                      fvs_species, tpa, dbh, ht, pctcr,
                                                       treeval, mortpa, mdefect, bapctile, dg, htg, FvsCreatedTree_YN,DateTimeCreated)
                                                       SELECT a.biosum_cond_id, a.rxpackage,a.rx,a.rxcycle,a.year,a.fvs_variant,
-                                                      a.fvs_tree_id, a.fvs_species, a.tpa, a.dbh, a.ht, a.estht,a.pctcr,
+                                                      a.fvs_tree_id, a.fvs_species, a.tpa, a.dbh, a.ht, a.pctcr,
                                                       a.treeval, a.mortpa, a.mdefect, a.bapctile, a.dg, a.htg,
                                                       a.FvsCreatedTree_YN,a.DateTimeCreated  
                                                       FROM cutlist_fia_trees_work_table a";
@@ -10347,7 +10347,7 @@ namespace FIA_Biosum_Manager
                                         "cast(t.year as text) as rxyear,'" +
                                        strFvsVariant + "' AS fvs_variant, " +
                                        "Trim(t.treeid) AS fvs_tree_id, " +
-                                       "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht,t.estht,t.pctcr, " +
+                                       "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht, t.pctcr, " +
                                        "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
                                        "CASE WHEN t.dbh < 1.0 AND t.TPA > 0 THEN 1 ELSE null END AS STATUSCD, " +     // @ToDo: fix for sqlite! sets statuscd for seedlings
                                        "'Y' AS FvsCreatedTree_YN," +
@@ -10362,11 +10362,11 @@ namespace FIA_Biosum_Manager
                                     this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                                 SQLite.m_strSQL = $@"INSERT INTO {Tables.FVS.DefaultFVSInForestTreeTableName} 
                                                     (biosum_cond_id, rxpackage,rx,rxcycle,rxyear,fvs_variant, fvs_tree_id,
-                                                     fvs_species, tpa, dbh, ht, estht,pctcr,
+                                                     fvs_species, tpa, dbh, ht, pctcr,
                                                      treeval, mortpa, mdefect, bapctile, dg, htg,
                                                      statuscd, FvsCreatedTree_YN,DateTimeCreated) 
                                                      SELECT a.biosum_cond_id, a.rxpackage,a.rx,a.rxcycle,a.rxyear,a.fvs_variant,
-                                                     a.fvs_tree_id, a.fvs_species, a.tpa, a.dbh, a.ht, a.estht,a.pctcr,
+                                                     a.fvs_tree_id, a.fvs_species, a.tpa, a.dbh, a.ht, a.pctcr,
                                                      a.treeval, a.mortpa, a.mdefect, a.bapctile, a.dg, a.htg, 
                                                      a.statuscd, a.FvsCreatedTree_YN,a.DateTimeCreated  
                                                      FROM cutlist_fvs_created_seedlings_work_table ";
