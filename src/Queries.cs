@@ -4011,14 +4011,15 @@ namespace FIA_Biosum_Manager
                 /// <param name="p_strFvsTreeTable"></param>
                 /// <param name="p_strBiosumCalcOutputTable"></param>
                 /// <returns></returns>
-                public static string BuildInputSQLiteTableForVolumeCalculation_Step9(string p_strFvsTreeTable, string p_strBiosumCalcOutputTable)
+                public static string BuildInputSQLiteTableForVolumeCalculation_Step9(string p_strFvsTreeTable, string p_strBiosumCalcOutputTable, string p_rxPackage)
                 {
                     return $@"UPDATE {p_strFvsTreeTable} 
                            SET (drybio_bole, drybio_sapling, drybio_top, drybio_wdld_spp,
                                drybiom, drybiot, volcfgrs) 
                                = (select drybio_bole_calc, drybio_sapling_calc, drybio_top_calc, drybio_wdld_spp_calc,
                                  drybiom_calc, drybiot_calc, volcfgrs_calc FROM FCS.{p_strBiosumCalcOutputTable}
-                                 WHERE {p_strFvsTreeTable}.id = FCS.{p_strBiosumCalcOutputTable}.tree)";
+                                 WHERE {p_strFvsTreeTable}.id = FCS.{p_strBiosumCalcOutputTable}.tree)
+                                 WHERE rxpackage = '{p_rxPackage}'";
                 }
 
                 /// <summary>
@@ -4028,14 +4029,15 @@ namespace FIA_Biosum_Manager
                 /// <param name="p_strFvsTreeTable"></param>
                 /// <param name="p_strBiosumCalcOutputTable"></param>
                 /// <returns></returns>
-                public static string BuildInputSQLiteTableForVolumeCalculation_Step10(string p_strFvsTreeTable, string p_strBiosumCalcOutputTable)
+                public static string BuildInputSQLiteTableForVolumeCalculation_Step10(string p_strFvsTreeTable, string p_strBiosumCalcOutputTable, string p_rxPackage)
                 {
                     return $@"UPDATE {p_strFvsTreeTable} 
                            SET (volcfnet, volcfsnd, volcsgrs, voltsgrs,
                                standing_dead_cd, statuscd, decaycd) 
                                = (select volcfnet_calc, volcfsnd_calc, volcsgrs_calc, voltsgrs_calc,
                                  standing_dead_cd, statuscd, decaycd FROM FCS.{p_strBiosumCalcOutputTable}
-                                 WHERE {p_strFvsTreeTable}.id = FCS.{p_strBiosumCalcOutputTable}.tree)";
+                                 WHERE {p_strFvsTreeTable}.id = FCS.{p_strBiosumCalcOutputTable}.tree)
+                                 WHERE rxpackage = '{p_rxPackage}'";
                     // Note: standing_dead_cd, statuscd, decaycd aren't calculated by FCS but this was an easy way to populate it from master.tree
                 }
 
@@ -4089,7 +4091,7 @@ namespace FIA_Biosum_Manager
                     return arrQueries;
                 }
 
-                public static string BuildInputSQLiteTableForVolumeCalculation_Step11(string p_strTreeTable)
+                public static string BuildInputSQLiteTableForVolumeCalculation_Step11(string p_strTreeTable, string p_strRxPackage)
                 {
                     return $@"UPDATE {p_strTreeTable} SET FVS_SPECIES = (SELECT TRIM(w.fvs_species) 
                               FROM cutlist_save_tree_species_work_table w WHERE 
@@ -4098,7 +4100,7 @@ namespace FIA_Biosum_Manager
                               WHERE EXISTS(SELECT TRIM(w.fvs_species)
                               FROM cutlist_save_tree_species_work_table w 
                               WHERE {p_strTreeTable}.FVS_TREE_ID = TRIM(w.FVS_TREE_ID) AND 
-                              {p_strTreeTable}.biosum_cond_id = w.biosum_cond_id)";
+                              {p_strTreeTable}.biosum_cond_id = w.biosum_cond_id) AND {p_strTreeTable}.RXPACKAGE = '{p_strRxPackage}'";
                 }
             }
         }
