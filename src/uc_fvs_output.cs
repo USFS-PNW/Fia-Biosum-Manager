@@ -4909,29 +4909,9 @@ namespace FIA_Biosum_Manager
                                     }
                                     //
                                     //SWAP FVS-ONLY SPECIES CODES TO FIA SPECIES CODES IN ORDER FOR FIA TO CALCULATE VOLUMES
-                                    //
                                     //check if original spcd column exists
                                     //save the original spcd
-                                    if ((int)oDataMgr.getRecordCount(conn, "SELECT COUNT(*) AS ROWCOUNT FROM " + strFvsTreeTable + " WHERE TRIM(FVS_SPECIES) IN ('298','999')", strFvsTreeTable) > 0)
-                                    {
-                                        oDataMgr.m_strSQL = "CREATE TABLE cutlist_save_tree_species_work_table as SELECT BIOSUM_COND_ID, FVS_TREE_ID, FVS_SPECIES" +
-                                            " FROM " + strFvsTreeTable + " WHERE TRIM(FVS_SPECIES) IN('298', '999')";
-                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                            this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
-                                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
-                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                            this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-                                        //update the FVS_SPECIES with FIA SPCD for 298,999 trees
-                                        oDataMgr.m_strSQL = "UPDATE " + strFvsTreeTable + " SET FVS_SPECIES = " +
-                                            "CASE WHEN FVS_SPECIES = '298' THEN '299' " +
-                                            "WHEN FVS_SPECIES = '999' THEN '998' END " +
-                                            "WHERE FVS_SPECIES IN ('298','999')";
-                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                            this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
-                                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
-                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                            this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-                                    }
+                                    this.SaveTreeSpeciesWorkTable(conn, strFvsTreeTable);
 
                                 //
                                 //UPDATE VOLUME COLUMNS
@@ -4947,7 +4927,7 @@ namespace FIA_Biosum_Manager
                                 frmMain.g_oTables.m_oFvs.CreateSQLiteInputBiosumVolumesTable(oDataMgr, conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable);
                                 oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step1(
                                                    Tables.VolumeAndBiomass.BiosumVolumesInputTable,
-                                                   strFvsTreeTable, p_strPackage, p_strVariant);
+                                                   strFvsTreeTable, p_strPackage, p_strVariant, "rxYear");
 
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
@@ -5016,11 +4996,7 @@ namespace FIA_Biosum_Manager
 
                                     //Set DIAHTCD for FIADB Cycle<>1 trees to their Cycle=1 DIAHTCD values
                                     //Set standing_dead_code from tree table on FIADB trees
-                                    oAdo.m_strSQL = $@"UPDATE {Tables.VolumeAndBiomass.BiosumVolumesInputTable} b 
-                                                   INNER JOIN {m_oQueries.m_oFIAPlot.m_strTreeTable} t 
-                                                   ON t.biosum_cond_id=b.biosum_cond_id AND t.fvs_tree_id=b.fvs_tree_id
-                                                   SET b.diahtcd=t.diahtcd,
-                                                   b.standing_dead_cd=t.standing_dead_cd WHERE b.fvscreatedtree_yn='N'";
+                                    oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculationDiaHtCdFiadb(m_oQueries.m_oFIAPlot.m_strTreeTable);
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
                                     oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
@@ -5028,9 +5004,7 @@ namespace FIA_Biosum_Manager
                                         this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
                                     //Set DIAHTCD for FVS-Created trees using FIA_TREE_SPECIES_REF.WOODLAND_YN
-                                    oAdo.m_strSQL = $@"UPDATE {Tables.VolumeAndBiomass.BiosumVolumesInputTable} b 
-                                                   INNER JOIN {strFiaTreeSpeciesRefTableLink} ref ON cint(b.spcd)=ref.spcd
-                                                   SET b.diahtcd=IIF(ref.woodland_yn='N', 1, 2) WHERE b.fvscreatedtree_yn='Y'";
+                                    oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculationDiaHtCdFvs(strFiaTreeSpeciesRefTableLink);
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
                                     oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
@@ -5139,7 +5113,6 @@ namespace FIA_Biosum_Manager
                                                m_intProgressStepCurrentCount,
                                                m_intProgressStepTotalCount);
 
-                                    int intTotalRecs = (int)oAdo.getSingleDoubleValueFromSQLQuery(oConn, "SELECT COUNT(*) AS TTLCOUNT FROM " + Tables.VolumeAndBiomass.BiosumVolumesInputTable, "temp");
                                     // Drop link to BiosumVolumesInputTable to avoid conflicts
                                     oAdo.m_strSQL = "DROP TABLE " + Tables.VolumeAndBiomass.BiosumVolumesInputTable;
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
@@ -5241,12 +5214,6 @@ namespace FIA_Biosum_Manager
                                                     "' AS FCS");
                                             }
 
-
-                                            intTotalRecs = Convert.ToInt32(oDataMgr.getSingleDoubleValueFromSQLQuery(oDataMgr.m_Connection,
-                                                $"SELECT COUNT(*) AS ROWCOUNT FROM FCS.{Tables.VolumeAndBiomass.BiosumVolumeCalcTable} WHERE DRYBIOT_CALC IS NOT NULL OR VOLTSGRS_CALC IS NOT NULL",
-                                                Tables.VolumeAndBiomass.BiosumVolumeCalcTable));
-
-
                                             UpdateTherm(m_frmTherm.progressBar1, 3, 6);
 
                                             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + " Write calculation results to " + arrTreeTables[idxTable]);
@@ -5298,14 +5265,7 @@ namespace FIA_Biosum_Manager
                                         if (oDataMgr.TableExist(conn, "cutlist_save_tree_species_work_table"))
                                         {
                                             //update fvs_species
-                                            oDataMgr.m_strSQL = "UPDATE " + strFvsTreeTable + " SET FVS_SPECIES = (SELECT TRIM(w.fvs_species) " +
-                                                "FROM cutlist_save_tree_species_work_table w WHERE " +
-                                                strFvsTreeTable + ".FVS_TREE_ID = TRIM(w.FVS_TREE_ID) AND " + strFvsTreeTable + ".biosum_cond_id = w.biosum_cond_id " +
-                                                "AND LENGTH(TRIM(w.fvs_species)) > 0 AND TRIM(" + strFvsTreeTable + ".fvs_species) <> TRIM(w.fvs_species)) " +
-                                                "WHERE EXISTS(SELECT TRIM(w.fvs_species) " +
-                                                "FROM cutlist_save_tree_species_work_table w " +
-                                                "WHERE " + strFvsTreeTable + ".FVS_TREE_ID = TRIM(w.FVS_TREE_ID) AND " +
-                                                strFvsTreeTable + ".biosum_cond_id = w.biosum_cond_id)";
+                                            oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step11(strFvsTreeTable);
 
                                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                                 this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
@@ -9176,6 +9136,35 @@ namespace FIA_Biosum_Manager
             }
         }
 
+        private void SaveTreeSpeciesWorkTable(System.Data.SQLite.SQLiteConnection conn, string strFvsTreeTable)
+        {
+            //
+            //SWAP FVS-ONLY SPECIES CODES TO FIA SPECIES CODES IN ORDER FOR FIA TO CALCULATE VOLUMES
+            //
+            //check if original spcd column exists
+            //save the original spcd
+            if ((int)SQLite.getRecordCount(conn, "SELECT COUNT(*) AS ROWCOUNT FROM " + strFvsTreeTable + " WHERE TRIM(FVS_SPECIES) IN ('298','999')", strFvsTreeTable) > 0)
+            {
+                SQLite.m_strSQL = "CREATE TABLE cutlist_save_tree_species_work_table as SELECT BIOSUM_COND_ID, FVS_TREE_ID, FVS_SPECIES" +
+                    " FROM " + strFvsTreeTable + " WHERE TRIM(FVS_SPECIES) IN('298', '999')";
+                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                //update the FVS_SPECIES with FIA SPCD for 298,999 trees
+                SQLite.m_strSQL = "UPDATE " + strFvsTreeTable + " SET FVS_SPECIES = " +
+                    "CASE WHEN FVS_SPECIES = '298' THEN '299' " +
+                    "WHEN FVS_SPECIES = '999' THEN '998' END " +
+                    "WHERE FVS_SPECIES IN ('298','999')";
+                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+            }
+        }
+        
         //private void ConvertAlphaSpCd()
         //{
         //    if (this.lstFvsOutput.CheckedItems.Count == 0)
@@ -10174,6 +10163,8 @@ namespace FIA_Biosum_Manager
 
                 this.m_strDateTimeCreated = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
                 bool bTreeList = false;
+                // Keep track of whether there are trees to calculate metrics
+                bool bRunFics = false;
                 IList<string> lstFvsRxPackages = new List<string>();
                 IList<string> lstRunTitles = new List<string>();
                 if (System.IO.File.Exists(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile))
@@ -10212,8 +10203,8 @@ namespace FIA_Biosum_Manager
                 if (m_bDebug && frmMain.g_intDebugLevel > 1)
                     this.WriteText(strDebugFile, "\r\nEND:Copy production file to work file: Source File Name:" + strTreeListDbFile + " Destination File Name:" + strTreeTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
 
-                    // do all the work
-                    for (int i = 0; i < lstFvsRxPackages.Count; i++)
+                    IList<string> lstTestRxPackages = new List<string>() {lstFvsRxPackages[0] };
+                    for (int i = 0; i < lstTestRxPackages.Count; i++)
                     {
                         CreatePrePostSeqNumMatrixSqliteTables(strTreeTempDbFile, lstFvsRxPackages[i], false);
 
@@ -10223,7 +10214,7 @@ namespace FIA_Biosum_Manager
                             conn.Open();
                             // Attach FVSOut.db
                             SQLite.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                                Tables.FVS.DefaultFVSOutDbFile + "' AS FVS";
+                                Tables.FVS.DefaultFVSOutDbFile + "' AS fvsout";
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                 this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                             SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
@@ -10252,13 +10243,16 @@ namespace FIA_Biosum_Manager
                             //make sure there are records to insert
                             SQLite.m_strSQL = "SELECT COUNT(*) FROM " +
                                              "(SELECT c.standid " +
-                                              "FROM FVS.FVS_CASES c, FVS.FVS_TreeList t " +
+                                              "FROM fvsout.FVS_CASES c, fvsout.FVS_TreeList t " +
                                               "WHERE c.CaseID = t.CaseID AND c.RunTitle = '" + lstRunTitles[i] + "' AND " +
                                               "substr(t.treeid, 1, 2) NOT IN ('ES') LIMIT 1)";
 
                             string strFvsVariant = lstRunTitles[i].Substring(7, 2);
+                            string[] arrRx = lstRunTitles[i].Split('-');
+                            string[] arrQueries = null;
                             if ((int)SQLite.getRecordCount(conn, SQLite.m_strSQL, "temp") > 0)
                             {
+                                bRunFics = true;
                                 SQLite.m_strSQL = "CREATE TABLE cutlist_fia_trees_work_table AS " +
                                     "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + lstFvsRxPackages[i] + "' AS rxpackage," +
                                     "'' as rx, '' as rxcycle, '" + strFvsVariant + "' as fvs_variant, t.year," +
@@ -10267,50 +10261,35 @@ namespace FIA_Biosum_Manager
                                     "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
                                     "'N' AS FvsCreatedTree_YN," +
                                     "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
-                                    "FROM FVS.FVS_CASES c, FVS.FVS_TreeList t " +
+                                    "FROM fvsout.FVS_CASES c, fvsout.FVS_TreeList t " +
                                     "WHERE c.CaseID = t.CaseID AND c.RunTitle = '" + lstRunTitles[i] + "' AND SUBSTR(t.treeid, 1, 2) NOT IN ('ES') ";
 
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                                 SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
 
-                                // Set RxCycle using FVS_SUMMARY_PREPOST_SEQNUM_MATRIX
-                                SQLite.m_strSQL = $@"UPDATE cutlist_fia_trees_work_table                            
-                                                     SET rxcycle = (SELECT CASE WHEN CYCLE1_PRE_YN ='Y' THEN '1' 
-                                                     WHEN CYCLE1_POST_YN ='Y' THEN '1'
-                                                     WHEN CYCLE2_PRE_YN ='Y' THEN '2' 
-                                                     WHEN CYCLE2_POST_YN ='Y' THEN '2'
-                                                     WHEN CYCLE3_PRE_YN ='Y' THEN '3' 
-                                                     WHEN CYCLE3_POST_YN ='Y' THEN '3'
-                                                     WHEN CYCLE4_PRE_YN ='Y' THEN '4' 
-                                                     WHEN CYCLE4_POST_YN ='Y' THEN '4'  
-                                                     ELSE NULL END
-                                                     FROM FVS_SUMMARY_PREPOST_SEQNUM_MATRIX m WHERE 
-                                                     m.STANDID = cutlist_fia_trees_work_table.biosum_cond_id and
-                                                     cutlist_fia_trees_work_table.rxpackage = m.RXPACKAGE and 
-                                                     cutlist_fia_trees_work_table.Year = m.YEAR )
-                                                     WHERE EXISTS ( SELECT * from FVS_SUMMARY_PREPOST_SEQNUM_MATRIX m 
-                                                     WHERE m.STANDID = cutlist_fia_trees_work_table.biosum_cond_id and
-                                                     cutlist_fia_trees_work_table.rxpackage = m.RXPACKAGE)";
-                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                    this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
-                                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
-
-                                //Set RX based on runtitle; Example: FVSOUT_BM_P001-101-101-101-101
-                                string[] arrPieces = lstRunTitles[i].Split('-');
-                                if (arrPieces.Length == 5)
+                                if (arrRx.Length == 5)
                                 {
-                                    SQLite.m_strSQL = $@"UPDATE cutlist_fia_trees_work_table                            
-                                                     SET rx = CASE WHEN RXCYCLE ='1' THEN '{arrPieces[1]}' 
-                                                     WHEN RXCYCLE ='2' THEN '{arrPieces[2]}'
-                                                     WHEN RXCYCLE ='3' THEN '{arrPieces[3]}' 
-                                                     WHEN RXCYCLE ='4' THEN '{arrPieces[4]}'
-                                                     ELSE NULL END";
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
-                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                    arrQueries = Queries.VolumeAndBiomass.FVSOut.PopulateRxFields("cutlist_fia_trees_work_table",
+                                        "FVS_SUMMARY_PREPOST_SEQNUM_MATRIX", arrRx[1], arrRx[2], arrRx[3], arrRx[4]);
+                                    if (arrQueries.Length == 2)
+                                    {
+                                        // Set RxCycle using FVS_SUMMARY_PREPOST_SEQNUM_MATRIX
+                                        SQLite.m_strSQL = arrQueries[0];
+                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                            this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                            this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                        //Set RX based on runtitle; Example: FVSOUT_BM_P001-101-101-101-101
+                                        SQLite.m_strSQL = arrQueries[1];
+                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                            this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                            this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                    }
                                 }
-
                                 //insert into fvs tree table
                                 SQLite.m_strSQL = $@"INSERT INTO {Tables.FVS.DefaultFVSInForestTreeTableName} 
                                                      (biosum_cond_id, rxpackage,rx,rxcycle,year,fvs_variant, fvs_tree_id,
@@ -10325,6 +10304,8 @@ namespace FIA_Biosum_Manager
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                                 SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                             }
 
                             //
@@ -10333,50 +10314,367 @@ namespace FIA_Biosum_Manager
                             //make sure there are records to insert
                             SQLite.m_strSQL = "SELECT COUNT(*) FROM " +
                                 "(SELECT c.standid " +
-                                "FROM FVS.FVS_CASES c, FVS.FVS_TreeList t " +
+                                "FROM fvsout.FVS_CASES c, fvsout.FVS_TreeList t " +
                                 "WHERE c.CaseID = t.CaseID AND c.RunTitle = '" + lstRunTitles[i] + "' AND " +
                                 "substr(t.treeid, 1, 2) = 'ES' LIMIT 1)";
 
                             if ((int)SQLite.getRecordCount(conn, SQLite.m_strSQL, "temp") > 0)
-                            { 
+                            {
+                                bRunFics = true;
                                 //FVS CREATED SEEDLING TREES
                                 SQLite.m_strSQL =
                                        "CREATE TABLE cutlist_fvs_created_seedlings_work_table AS " +
                                        "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + lstFvsRxPackages[i] + "' AS rxpackage," +
                                        "'' AS rx,'' AS rxcycle," +
-                                        "cast(t.year as text) as rxyear,'" +
+                                        "t.year,'" +
                                        strFvsVariant + "' AS fvs_variant, " +
                                        "Trim(t.treeid) AS fvs_tree_id, " +
                                        "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht, t.pctcr, " +
                                        "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
-                                       "CASE WHEN t.dbh < 1.0 AND t.TPA > 0 THEN 1 ELSE null END AS STATUSCD, " +     // @ToDo: fix for sqlite! sets statuscd for seedlings
                                        "'Y' AS FvsCreatedTree_YN," +
                                        "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
-                                       "FROM FVS.FVS_CASES c, FVS.FVS_TreeList t " +
+                                       "FROM fvsout.FVS_CASES c, fvsout.FVS_TreeList t " +
                                        "WHERE c.CaseID = t.CaseID AND c.RunTitle = '" + lstRunTitles[i] + "' AND substr(t.treeid, 1, 2) = 'ES'";
 
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                                 SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                    this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                                if (arrRx.Length == 5)
+                                {
+                                    arrQueries = Queries.VolumeAndBiomass.FVSOut.PopulateRxFields("cutlist_fvs_created_seedlings_work_table",
+                                        "FVS_SUMMARY_PREPOST_SEQNUM_MATRIX", arrRx[1], arrRx[2], arrRx[3], arrRx[4]);
+                                    if (arrQueries.Length == 2)
+                                    {
+                                        // Set RxCycle using FVS_SUMMARY_PREPOST_SEQNUM_MATRIX
+                                        SQLite.m_strSQL = arrQueries[0];
+                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                            this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                            this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                        //Set RX based on runtitle; Example: FVSOUT_BM_P001-101-101-101-101
+                                        SQLite.m_strSQL = arrQueries[1];
+                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                            this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                            this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                    }
+                                }
+
                                 SQLite.m_strSQL = $@"INSERT INTO {Tables.FVS.DefaultFVSInForestTreeTableName} 
-                                                    (biosum_cond_id, rxpackage,rx,rxcycle,rxyear,fvs_variant, fvs_tree_id,
+                                                    (biosum_cond_id, rxpackage,rx,rxcycle,year,fvs_variant, fvs_tree_id,
                                                      fvs_species, tpa, dbh, ht, pctcr,
                                                      treeval, mortpa, mdefect, bapctile, dg, htg,
-                                                     statuscd, FvsCreatedTree_YN,DateTimeCreated) 
-                                                     SELECT a.biosum_cond_id, a.rxpackage,a.rx,a.rxcycle,a.rxyear,a.fvs_variant,
+                                                     FvsCreatedTree_YN,DateTimeCreated) 
+                                                     SELECT a.biosum_cond_id, a.rxpackage,a.rx,a.rxcycle,a.year,a.fvs_variant,
                                                      a.fvs_tree_id, a.fvs_species, a.tpa, a.dbh, a.ht, a.pctcr,
                                                      a.treeval, a.mortpa, a.mdefect, a.bapctile, a.dg, a.htg, 
-                                                     a.statuscd, a.FvsCreatedTree_YN,a.DateTimeCreated  
-                                                     FROM cutlist_fvs_created_seedlings_work_table ";
+                                                     a.FvsCreatedTree_YN,a.DateTimeCreated  
+                                                     FROM cutlist_fvs_created_seedlings_work_table a";
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                                 SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                    this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                             }
 
+                            if (SQLite.TableExist(conn, "cutlist_fia_trees_work_table"))
+                                SQLite.SqlNonQuery(conn, "DROP TABLE cutlist_fia_trees_work_table");
+
+                            if (SQLite.TableExist(conn, "cutlist_fvs_created_seedlings_work_table"))
+                                SQLite.SqlNonQuery(conn, "DROP TABLE cutlist_fvs_created_seedlings_work_table");
+
+                            if (SQLite.TableExist(conn, "cutlist_save_tree_species_work_table"))
+                                SQLite.SqlNonQuery(conn, "DROP TABLE cutlist_save_tree_species_work_table");
+
+                            //
+                            //SWAP FVS-ONLY SPECIES CODES TO FIA SPECIES CODES IN ORDER FOR FIA TO CALCULATE VOLUMES
+                            //check if original spcd column exists
+                            //save the original spcd
+                            this.SaveTreeSpeciesWorkTable(conn, Tables.FVS.DefaultFVSInForestTreeTableName);
+
+                            if (SQLite.TableExist(conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable))
+                                SQLite.SqlNonQuery(conn, "DROP TABLE " + Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                            frmMain.g_oTables.m_oFvs.CreateSQLiteInputBiosumVolumesTable(SQLite, conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                            SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step1(
+                                               Tables.VolumeAndBiomass.BiosumVolumesInputTable,
+                                               Tables.FVS.DefaultFVSInForestTreeTableName, lstFvsRxPackages[i], strFvsVariant, "Year");
+
+                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                            SQLite.m_strSQL =
+                                Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step1a(Tables.VolumeAndBiomass.BiosumVolumesInputTable, lstRunTitles[i]);
+                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                        } // Closing SQLite connection in preparation to interact with Access tables
+
+                        if (bRunFics == true)
+                        {
+                            Datasource oDatasource = new Datasource(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim());
+                            string strTempMDBFile = oDatasource.CreateMDBAndTableDataSourceLinks();
+                            strConn = oAdo.getMDBConnString(strTempMDBFile, "", "");
+                            using (System.Data.OleDb.OleDbConnection accessConn = new System.Data.OleDb.OleDbConnection(strConn))
+                            {
+                                accessConn.Open();
+                                ODBCMgr odbcMgr = new ODBCMgr();
+                                // Create ODBC entry for the temporary cut list db file
+                                if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName))
+                                {
+                                    odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName);
+                                }
+                                odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName, strTreeTempDbFile);
+                                m_dao.CreateSQLiteTableLink(strTempMDBFile, Tables.VolumeAndBiomass.BiosumVolumesInputTable,
+                                    Tables.VolumeAndBiomass.BiosumVolumesInputTable,
+                                    ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName, strTreeTempDbFile, true);
+                                // Sleep to ensure table link is complete
+                                Thread.Sleep(5000);
+
+                                //NOTE: this query handles existing FIADB trees that have been grown forward.
+                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step2(
+                                                   Tables.VolumeAndBiomass.BiosumVolumesInputTable,
+                                                   m_oQueries.m_oFIAPlot.m_strTreeTable,
+                                                   m_oQueries.m_oFIAPlot.m_strPlotTable,
+                                                   m_oQueries.m_oFIAPlot.m_strCondTable);
+
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
+                                oAdo.SqlNonQuery(accessConn, oAdo.m_strSQL);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                                //Set DIAHTCD for FIADB Cycle<>1 trees to their Cycle=1 DIAHTCD values
+                                //Set standing_dead_code from tree table on FIADB trees
+                                oAdo.m_strSQL = oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculationDiaHtCdFiadb(m_oQueries.m_oFIAPlot.m_strTreeTable);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
+                                oAdo.SqlNonQuery(accessConn, oAdo.m_strSQL);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                                //Set DIAHTCD for FVS-Created trees using FIA_TREE_SPECIES_REF.WOODLAND_YN
+                                string strFiaTreeSpeciesRefTableLink = Tables.ProcessorScenarioRun.DefaultFiaTreeSpeciesRefTableName;
+                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculationDiaHtCdFvs(strFiaTreeSpeciesRefTableLink);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
+                                oAdo.SqlNonQuery(accessConn, oAdo.m_strSQL);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                                //Update FVSCreatedTrees precipitation=plot.precipitation
+                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step2a(
+                                                   Tables.VolumeAndBiomass.BiosumVolumesInputTable,
+                                                   m_oQueries.m_oFIAPlot.m_strPlotTable,
+                                                   m_oQueries.m_oFIAPlot.m_strCondTable);
+
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
+                                oAdo.SqlNonQuery(accessConn, oAdo.m_strSQL);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                                //Start cull calculations
+                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step3(
+                                                  Tables.VolumeAndBiomass.BiosumVolumesInputTable,
+                                                  m_oQueries.m_oFIAPlot.m_strCondTable);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
+                                oAdo.SqlNonQuery(accessConn, oAdo.m_strSQL);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                                //populate treeclcd column
+                                if (oAdo.TableExist(accessConn, "CULL_TOTAL_WORK_TABLE"))
+                                    oAdo.SqlNonQuery(accessConn, "DROP TABLE CULL_TOTAL_WORK_TABLE");
+                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step4(
+                                                  "cull_total_work_table",
+                                                  Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
+                                oAdo.SqlNonQuery(accessConn, oAdo.m_strSQL);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.PNWRS.BuildInputTableForVolumeCalculation_Step5(
+                                                    "cull_total_work_table",
+                                                    Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
+                                oAdo.SqlNonQuery(accessConn, oAdo.m_strSQL);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                                oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.PNWRS.BuildInputTableForVolumeCalculation_Step6(
+                                                  "cull_total_work_table",
+                                                  Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
+                                oAdo.SqlNonQuery(accessConn, oAdo.m_strSQL);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                                // Drop link to BiosumVolumesInputTable to avoid conflicts
+                                oAdo.m_strSQL = "DROP TABLE " + Tables.VolumeAndBiomass.BiosumVolumesInputTable;
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
+                                oAdo.SqlNonQuery(accessConn, oAdo.m_strSQL);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                                // DELETE ODBC ENTRY
+                                if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName))
+                                {
+                                    odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName);
+                                }
+                            }  // Closing MS Access connection
+
+                            if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase) == false)
+                            {
+                                m_intError = -1;
+                                m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase + " not found";
+                            }
+                            if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR") == false)
+                            {
+                                m_intError = -1;
+                                m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR not found";
+                            }
+                            if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_tree_calc.bat") == false)
+                            {
+                                m_intError = -1;
+                                m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_tree_calc.bat not found";
+                            }
+                            if (m_intError == 0)
+                            {
+                                //
+                                //RE-CONNECT TO SQLITE AND REMOVE DATA FROM FCS SQLITE DB
+                                //
+                                SQLite.OpenConnection(false, 1, strTreeTempDbFile, "BIOSUM");
+                                SQLite.SqlNonQuery(SQLite.m_Connection, "ATTACH DATABASE '" + frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase +
+                                     "' AS FCS");
+                                SQLite.SqlNonQuery(SQLite.m_Connection, $"DELETE FROM FCS.{Tables.VolumeAndBiomass.BiosumVolumeCalcTable}");
+                                System.Threading.Thread.Sleep(2000);
+
+                                //insert records 
+                                //from 
+                                //table biosum_volumes_input (BiosumVolumesInputTable)
+                                //into 
+                                //table fcs_biosum_volumes_input (FcsBiosumVolumesInputTable)
+                                SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteBiosumCalcTable_Step7(
+                                            Tables.VolumeAndBiomass.BiosumVolumesInputTable,
+                                            $"FCS.{Tables.VolumeAndBiomass.BiosumVolumeCalcTable}");
+
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                SQLite.SqlNonQuery(SQLite.m_Connection, SQLite.m_strSQL);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                                //
+                                //RUN JAVA APP TO SEND TO ORACLE AND CALCULATE VOLUME/BIOMASS
+                                //
+                                if (m_intError == 0)
+                                {
+                                    frmMain.g_oUtils.RunProcess(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum", "fcs_tree_calc.bat", "BAT");
+                                    if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_error_msg.txt"))
+                                    {
+                                        // Read entire text file content in one string  
+                                        m_strError = System.IO.File.ReadAllText(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_error_msg.txt");
+                                        if (m_strError.IndexOf("JAVA.EXE", 0) > 0)
+                                            m_strError = "Problem detected running JAVA.EXE";
+                                        m_intError = -2;
+                                    }
+                                }
+                                //
+                                //UPDATE fvs_InForestTree table WITH CALCULATED VALUES
+                                //
+                                if (m_intError == 0)
+                                {
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n SQLite connection status: " + SQLite.m_Connection.State + "\r\n");
+                                    bool bAttached = SQLite.DatabaseAttached(SQLite.m_Connection,
+                                        frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase);
+                                    if (!bAttached)
+                                    {
+                                        SQLite.SqlNonQuery(SQLite.m_Connection, "ATTACH DATABASE '" + frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase +
+                                            "' AS FCS");
+                                    }
+
+                                    //update calculated fields 
+                                    //from 
+                                    //biosum_calc table
+                                    //into 
+                                    //table fvs_tree
+                                    SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step9(
+                                        Tables.FVS.DefaultFVSInForestTreeTableName, Tables.VolumeAndBiomass.BiosumVolumeCalcTable);
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                    SQLite.SqlNonQuery(SQLite.m_Connection, SQLite.m_strSQL);
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                                    // This query is customized because there are some fields missing from inForest that are in fvs_cutTree
+                                    SQLite.m_strSQL = $@"UPDATE {Tables.FVS.DefaultFVSInForestTreeTableName} 
+                                                        SET (volcfnet, volcfsnd, volcsgrs, voltsgrs) 
+                                                        = (select volcfnet_calc, volcfsnd_calc, volcsgrs_calc, voltsgrs_calc
+                                                        FROM FCS.{Tables.VolumeAndBiomass.BiosumVolumeCalcTable}
+                                                        WHERE {Tables.FVS.DefaultFVSInForestTreeTableName}.id = FCS.{Tables.VolumeAndBiomass.BiosumVolumeCalcTable}.tree)";
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                    SQLite.SqlNonQuery(SQLite.m_Connection, SQLite.m_strSQL);
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                                    SQLite.m_strSQL = "DETACH DATABASE 'FCS'";
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                    SQLite.SqlNonQuery(SQLite.m_Connection, SQLite.m_strSQL);
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                    SQLite.CloseAndDisposeConnection(SQLite.m_Connection, true);
+                                }
+                            }
+                        }
+                        if (SQLite.m_intError == 0 && m_intError == 0)
+                        {
+                            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(strTreeTempDbFile)))
+                            {
+                                conn.Open();
+                                if (SQLite.TableExist(conn, "cutlist_save_tree_species_work_table"))
+                                {
+                                    //update fvs_species
+                                    SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step11(Tables.FVS.DefaultFVSInForestTreeTableName);
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                    SQLite.SqlNonQuery(conn, "DROP TABLE cutlist_save_tree_species_work_table");
+                                }
+
+                                // DELETE WORK TABLES
+                                string[] arrDeleteTables = new string[] { Tables.VolumeAndBiomass.BiosumVolumesInputTable, "cutlist_rowid_work_table"};
+                                foreach (var dTable in arrDeleteTables)
+                                {
+                                    if (SQLite.TableExist(conn, dTable))
+                                    {
+                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                            this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + "DROP TABLE " + dTable + "\r\n");
+                                        SQLite.SqlNonQuery(conn, "DROP TABLE " + dTable);
+                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                            this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                    }
+                                }
+                            }
                         }
                     }
 

@@ -2735,7 +2735,6 @@ namespace FIA_Biosum_Manager
                     "tpa DOUBLE," +
                     "dbh DOUBLE," +
                     "ht DOUBLE," +
-                    "estht DOUBLE," +
                     "pctcr DOUBLE," +
                     "treeval INTEGER," +
                     "mortpa DOUBLE," +

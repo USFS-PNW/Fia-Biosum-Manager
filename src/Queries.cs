@@ -3738,10 +3738,15 @@ namespace FIA_Biosum_Manager
                 /// <param name="p_strRxPackage"></param>
                 /// <returns></returns>
                 public static string BuildInputSQLiteTableForVolumeCalculation_Step1(string p_strInputVolumesTable, string p_strFvsTreeTable, 
-                    string p_strRxPackage, string p_strFvsVariant)
+                    string p_strRxPackage, string p_strFvsVariant, string p_strInvYrField)
                 {
+                    string invYear = "year";
+                    if (p_strInvYrField.ToUpper().Equals("RXYEAR"))
+                    {
+                        invYear = "cast(rxyear as integer)";
+                    }
                     string strColumns = @"id,biosum_cond_id,invyr,fvs_variant,spcd,dbh,ht,actualht,cr,fvs_tree_id, fvscreatedtree_yn";
-                    string strValues = @"id,biosum_cond_id, cast(rxyear as integer) as invyr, fvs_variant, " +
+                    string strValues = $@"id,biosum_cond_id, {invYear} as invyr, fvs_variant, " +
                         "CASE WHEN FvsCreatedTree_YN='Y' THEN cast(fvs_species as integer) ELSE -1 END AS spcd, " +
                         "dbh,ht,ht,pctcr,fvs_tree_id, fvscreatedtree_yn";
                     return $@"INSERT INTO {p_strInputVolumesTable} ({strColumns})  
@@ -3789,6 +3794,22 @@ namespace FIA_Biosum_Manager
                                 i.ecosubcd = p.ecosubcd,
                                 i.stdorgcd = c.stdorgcd,
                                 i.actualht = IIF(t.actualht <> t.ht, i.ht - t.ht + t.actualht, i.actualht)";
+                }
+
+                public static string BuildInputTableForVolumeCalculationDiaHtCdFiadb(string strTreeTable)
+                {
+                    return $@"UPDATE {Tables.VolumeAndBiomass.BiosumVolumesInputTable} b 
+                            INNER JOIN {strTreeTable} t 
+                            ON t.biosum_cond_id=b.biosum_cond_id AND t.fvs_tree_id=b.fvs_tree_id
+                            SET b.diahtcd=t.diahtcd,
+                            b.standing_dead_cd=t.standing_dead_cd WHERE b.fvscreatedtree_yn='N'";
+                }
+
+                public static string BuildInputTableForVolumeCalculationDiaHtCdFvs(string strFiaTreeSpeciesRefTable)
+                {
+                    return $@"UPDATE {Tables.VolumeAndBiomass.BiosumVolumesInputTable} b 
+                            INNER JOIN {strFiaTreeSpeciesRefTable} ref ON cint(b.spcd)=ref.spcd
+                            SET b.diahtcd=IIF(ref.woodland_yn='N', 1, 2) WHERE b.fvscreatedtree_yn='Y'";
                 }
 
                 /// <summary>
@@ -4036,7 +4057,8 @@ namespace FIA_Biosum_Manager
                                 f.voltsgrs=o.VOLTSGRS_CALC";
                 }
 
-                public static string[] PopulateRxFields(string p_strFvsTreeTable, string p_strSeqNumTable)
+                public static string[] PopulateRxFields(string p_strFvsTreeTable, string p_strSeqNumTable, string strRx1, string strRx2,
+                    string strRx3, string strRx4)
                 {
                     string[] arrQueries = new string[2];
                     arrQueries[0] = $@"UPDATE {p_strFvsTreeTable}                            
@@ -4049,15 +4071,34 @@ namespace FIA_Biosum_Manager
                                                      WHEN CYCLE4_PRE_YN ='Y' THEN '4' 
                                                      WHEN CYCLE4_POST_YN ='Y' THEN '4'  
                                                      ELSE NULL END
-                                                     FROM FVS_SUMMARY_PREPOST_SEQNUM_MATRIX m WHERE 
-                                                     m.STANDID = cutlist_fia_trees_work_table.biosum_cond_id and
-                                                     cutlist_fia_trees_work_table.rxpackage = m.RXPACKAGE and 
-                                                     cutlist_fia_trees_work_table.Year = m.YEAR )
-                                                     WHERE EXISTS ( SELECT * from FVS_SUMMARY_PREPOST_SEQNUM_MATRIX m 
-                                                     WHERE m.STANDID = cutlist_fia_trees_work_table.biosum_cond_id and
-                                                     cutlist_fia_trees_work_table.rxpackage = m.RXPACKAGE)";
+                                                     FROM {p_strSeqNumTable} m WHERE 
+                                                     m.STANDID = {p_strFvsTreeTable}.biosum_cond_id and
+                                                     {p_strFvsTreeTable}.rxpackage = m.RXPACKAGE and 
+                                                     {p_strFvsTreeTable}.Year = m.YEAR )
+                                                     WHERE EXISTS ( SELECT * from {p_strSeqNumTable} m 
+                                                     WHERE m.STANDID = {p_strFvsTreeTable}.biosum_cond_id and
+                                                     {p_strFvsTreeTable}.rxpackage = m.RXPACKAGE)";
+
+                    arrQueries[1] = $@"UPDATE {p_strFvsTreeTable}                            
+                                                     SET rx = CASE WHEN RXCYCLE ='1' THEN '{strRx1}' 
+                                                     WHEN RXCYCLE ='2' THEN '{strRx2}'
+                                                     WHEN RXCYCLE ='3' THEN '{strRx3}' 
+                                                     WHEN RXCYCLE ='4' THEN '{strRx4}'
+                                                     ELSE NULL END";
 
                     return arrQueries;
+                }
+
+                public static string BuildInputSQLiteTableForVolumeCalculation_Step11(string p_strTreeTable)
+                {
+                    return $@"UPDATE {p_strTreeTable} SET FVS_SPECIES = (SELECT TRIM(w.fvs_species) 
+                              FROM cutlist_save_tree_species_work_table w WHERE 
+                              {p_strTreeTable}.FVS_TREE_ID = TRIM(w.FVS_TREE_ID) AND {p_strTreeTable}.biosum_cond_id = w.biosum_cond_id
+                              AND LENGTH(TRIM(w.fvs_species)) > 0 AND TRIM({p_strTreeTable}.fvs_species) <> TRIM(w.fvs_species))
+                              WHERE EXISTS(SELECT TRIM(w.fvs_species)
+                              FROM cutlist_save_tree_species_work_table w 
+                              WHERE {p_strTreeTable}.FVS_TREE_ID = TRIM(w.FVS_TREE_ID) AND 
+                              {p_strTreeTable}.biosum_cond_id = w.biosum_cond_id)";
                 }
             }
         }
