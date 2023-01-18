@@ -394,8 +394,8 @@ namespace FIA_Biosum_Manager
             "Step 2 - Pre-Processing Audit Check",            
             "Step 3 - Append FVS Output Data",
             "Step 4 - Post-Processing Audit Check",
-            "Step 5 - (Opt) Create FVSOut_BioSum.db"
-            //"Step 6 - Testing FVS_InForest Table"
+            "Step 5 - (Opt) Create FVSOut_BioSum.db",
+            "Step 6 - Testing FVS_InForest Table"
             });
             this.cmbStep.Location = new System.Drawing.Point(8, 337);
             this.cmbStep.Name = "cmbStep";
@@ -10107,7 +10107,7 @@ namespace FIA_Biosum_Manager
             }
 
             this.m_frmTherm = new frmTherm(((frmDialog)ParentForm), "FVS IN FOREST TABLE",
-                "FVS Output", "2");
+                "Update FVS_InForest table", "2");
             m_frmTherm.Visible = false;
             this.m_frmTherm.lblMsg.Text = "";
             this.m_frmTherm.TopMost = true;
@@ -10129,6 +10129,9 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Minimum", 0);
             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Value", 0);
             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg2, "Text", "Overall Progress");
+            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Maximum", 100);
+            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Minimum", 0);
+            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", 0);
             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "");
             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Visible", true);
             m_frmTherm.Show((frmDialog)ParentForm);
@@ -10165,8 +10168,7 @@ namespace FIA_Biosum_Manager
                 bool bTreeList = false;
                 // Keep track of whether there are trees to calculate metrics
                 bool bRunFics = false;
-                IList<string> lstFvsRxPackages = new List<string>();
-                IList<string> lstRunTitles = new List<string>();
+                List<string> lstRunTitles = new List<string>();
                 if (System.IO.File.Exists(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile))
             {
                 string strConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile);
@@ -10184,14 +10186,16 @@ namespace FIA_Biosum_Manager
                         {
                             while (SQLite.m_DataReader.Read())
                             {
-                                lstFvsRxPackages.Add(Convert.ToString(SQLite.m_DataReader["RXPACKAGE"]));
                                 lstRunTitles.Add(Convert.ToString(SQLite.m_DataReader["RunTitle"]));
                             }
+                            lstRunTitles.Sort();
                         }
                         SQLite.m_DataReader.Close();
                 }
             }
-            // Only try to load if there is a tree list in the FVSOut.db
+                // Only try to load if there is a tree list in the FVSOut.db
+                m_intProgressOverallCurrentCount = 1;
+                m_intProgressStepTotalCount = 9;
             if (bTreeList)
             {
                 string strTreeTempDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
@@ -10202,11 +10206,23 @@ namespace FIA_Biosum_Manager
                 System.IO.File.Copy(strTreeListDbFile, strTreeTempDbFile, true);
                 if (m_bDebug && frmMain.g_intDebugLevel > 1)
                     this.WriteText(strDebugFile, "\r\nEND:Copy production file to work file: Source File Name:" + strTreeListDbFile + " Destination File Name:" + strTreeTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
-
-                    IList<string> lstTestRxPackages = new List<string>() {lstFvsRxPackages[0] };
-                    for (int i = 0; i < lstTestRxPackages.Count; i++)
+                    m_intProgressOverallTotalCount = lstRunTitles.Count + 2;
+                    for (int i = 0; i < lstRunTitles.Count; i++)
                     {
-                        CreatePrePostSeqNumMatrixSqliteTables(strTreeTempDbFile, lstFvsRxPackages[i], false);
+                        // Example RunTitle: FVSOUT_BM_P001-101-101-101-101
+                        string strFvsVariant = lstRunTitles[i].Substring(7, 2);
+                        string strRxPackage = lstRunTitles[i].Substring(11, 3);
+                        m_intProgressOverallCurrentCount++;
+                        UpdateTherm(m_frmTherm.progressBar2, m_intProgressOverallCurrentCount, m_intProgressOverallTotalCount);
+                        m_intProgressStepCurrentCount = 1;  // Reset current count for new package
+                        UpdateTherm(m_frmTherm.progressBar1,
+                                    m_intProgressStepCurrentCount,
+                                    m_intProgressStepTotalCount);
+                        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", $@"{strFvsVariant}{strRxPackage} Building sequence number matrix");
+                        frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
+
+
+                        CreatePrePostSeqNumMatrixSqliteTables(strTreeTempDbFile, strRxPackage, false);
 
                         string strConn = SQLite.GetConnectionString(strTreeTempDbFile);
                         using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
@@ -10231,12 +10247,18 @@ namespace FIA_Biosum_Manager
                             }
                             else
                             {
-                                SQLite.m_strSQL = $@"DELETE FROM {Tables.FVS.DefaultFVSInForestTreeTableName} WHERE RXPACKAGE ='{lstFvsRxPackages[i]}'";
+                                SQLite.m_strSQL = $@"DELETE FROM {Tables.FVS.DefaultFVSInForestTreeTableName} WHERE RXPACKAGE ='{strRxPackage}'";
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                                 SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                             }
 
+                            m_intProgressStepCurrentCount++;
+                            UpdateTherm(m_frmTherm.progressBar1,
+                                        m_intProgressStepCurrentCount,
+                                        m_intProgressStepTotalCount);
+                            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", $@"{strFvsVariant}{strRxPackage} Gathering trees");
+                            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
                             //
                             //FIA TREES
                             //
@@ -10247,14 +10269,13 @@ namespace FIA_Biosum_Manager
                                               "WHERE c.CaseID = t.CaseID AND c.RunTitle = '" + lstRunTitles[i] + "' AND " +
                                               "substr(t.treeid, 1, 2) NOT IN ('ES') LIMIT 1)";
 
-                            string strFvsVariant = lstRunTitles[i].Substring(7, 2);
                             string[] arrRx = lstRunTitles[i].Split('-');
                             string[] arrQueries = null;
                             if ((int)SQLite.getRecordCount(conn, SQLite.m_strSQL, "temp") > 0)
                             {
                                 bRunFics = true;
                                 SQLite.m_strSQL = "CREATE TABLE cutlist_fia_trees_work_table AS " +
-                                    "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + lstFvsRxPackages[i] + "' AS rxpackage," +
+                                    "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + strRxPackage + "' AS rxpackage," +
                                     "'' as rx, '' as rxcycle, '" + strFvsVariant + "' as fvs_variant, t.year," +
                                     "Trim(t.treeid) AS fvs_tree_id," +
                                     "t.SpeciesFia AS fvs_species, t.TPA, t.DBH, t.Ht, t.pctcr," +
@@ -10324,7 +10345,7 @@ namespace FIA_Biosum_Manager
                                 //FVS CREATED SEEDLING TREES
                                 SQLite.m_strSQL =
                                        "CREATE TABLE cutlist_fvs_created_seedlings_work_table AS " +
-                                       "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + lstFvsRxPackages[i] + "' AS rxpackage," +
+                                       "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + strRxPackage + "' AS rxpackage," +
                                        "'' AS rx,'' AS rxcycle," +
                                         "t.year,'" +
                                        strFvsVariant + "' AS fvs_variant, " +
@@ -10395,14 +10416,21 @@ namespace FIA_Biosum_Manager
                             //SWAP FVS-ONLY SPECIES CODES TO FIA SPECIES CODES IN ORDER FOR FIA TO CALCULATE VOLUMES
                             //check if original spcd column exists
                             //save the original spcd
-                            this.SaveTreeSpeciesWorkTable(conn, Tables.FVS.DefaultFVSInForestTreeTableName, lstFvsRxPackages[i]);
+                            this.SaveTreeSpeciesWorkTable(conn, Tables.FVS.DefaultFVSInForestTreeTableName, strRxPackage);
+
+                            m_intProgressStepCurrentCount++;
+                            UpdateTherm(m_frmTherm.progressBar1,
+                                        m_intProgressStepCurrentCount,
+                                        m_intProgressStepTotalCount);
+                            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", $@"{strFvsVariant}{strRxPackage} Updating values in biosum_volumes_input");
+                            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
 
                             if (SQLite.TableExist(conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable))
                                 SQLite.SqlNonQuery(conn, "DROP TABLE " + Tables.VolumeAndBiomass.BiosumVolumesInputTable);
                             frmMain.g_oTables.m_oFvs.CreateSQLiteInputBiosumVolumesTable(SQLite, conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable);
                             SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step1(
                                                Tables.VolumeAndBiomass.BiosumVolumesInputTable,
-                                               Tables.FVS.DefaultFVSInForestTreeTableName, lstFvsRxPackages[i], strFvsVariant, "Year");
+                                               Tables.FVS.DefaultFVSInForestTreeTableName, strRxPackage, strFvsVariant, "Year");
 
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                 this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
@@ -10555,6 +10583,13 @@ namespace FIA_Biosum_Manager
                             }
                             if (m_intError == 0)
                             {
+                                m_intProgressStepCurrentCount++;
+                                UpdateTherm(m_frmTherm.progressBar1,
+                                            m_intProgressStepCurrentCount,
+                                            m_intProgressStepTotalCount);
+                                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", $@"{strFvsVariant}{strRxPackage} Preparing to run FICS");
+                                frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
+
                                 //
                                 //RE-CONNECT TO SQLITE AND REMOVE DATA FROM FCS SQLITE DB
                                 //
@@ -10584,6 +10619,13 @@ namespace FIA_Biosum_Manager
                                 //
                                 if (m_intError == 0)
                                 {
+                                    m_intProgressStepCurrentCount++;
+                                    UpdateTherm(m_frmTherm.progressBar1,
+                                                m_intProgressStepCurrentCount,
+                                                m_intProgressStepTotalCount);
+                                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", $@"{strFvsVariant}{strRxPackage} Running FICS");
+                                    frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
+
                                     frmMain.g_oUtils.RunProcess(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum", "fcs_tree_calc.bat", "BAT");
                                     if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_error_msg.txt"))
                                     {
@@ -10614,9 +10656,16 @@ namespace FIA_Biosum_Manager
                                     //biosum_calc table
                                     //into 
                                     //table fvs_tree
+                                    m_intProgressStepCurrentCount++;
+                                    UpdateTherm(m_frmTherm.progressBar1,
+                                                m_intProgressStepCurrentCount,
+                                                m_intProgressStepTotalCount);
+                                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", $@"{strFvsVariant}{strRxPackage} Copying FICS values to FVS_InForest");
+                                    frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
+
                                     SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step9(
                                         Tables.FVS.DefaultFVSInForestTreeTableName, Tables.VolumeAndBiomass.BiosumVolumeCalcTable,
-                                        lstFvsRxPackages[i]);
+                                        strRxPackage);
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                                     SQLite.SqlNonQuery(SQLite.m_Connection, SQLite.m_strSQL);
@@ -10629,7 +10678,7 @@ namespace FIA_Biosum_Manager
                                                         = (select volcfnet_calc, volcfsnd_calc, volcsgrs_calc, voltsgrs_calc
                                                         FROM FCS.{Tables.VolumeAndBiomass.BiosumVolumeCalcTable}
                                                         WHERE {Tables.FVS.DefaultFVSInForestTreeTableName}.id = FCS.{Tables.VolumeAndBiomass.BiosumVolumeCalcTable}.tree)
-                                                        WHERE rxpackage = '{lstFvsRxPackages[i]}'";
+                                                        WHERE rxpackage = '{strRxPackage}'";
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                                     SQLite.SqlNonQuery(SQLite.m_Connection, SQLite.m_strSQL);
@@ -10654,7 +10703,7 @@ namespace FIA_Biosum_Manager
                                 if (SQLite.TableExist(conn, "cutlist_save_tree_species_work_table"))
                                 {
                                     //update fvs_species
-                                    SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step11(Tables.FVS.DefaultFVSInForestTreeTableName, lstFvsRxPackages[i]);
+                                    SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step11(Tables.FVS.DefaultFVSInForestTreeTableName, strRxPackage);
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                                     SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
@@ -10688,7 +10737,11 @@ namespace FIA_Biosum_Manager
                 if (m_bDebug && frmMain.g_intDebugLevel > 1)
                     this.WriteText(strDebugFile, "\r\nEND:Copy work file to production file: Source File Name:" + strTreeTempDbFile + " Destination File Name:" + strTreeListDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
 
-            }
+                    UpdateTherm(m_frmTherm.progressBar1, m_intProgressStepTotalCount, m_intProgressStepTotalCount);
+                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", $@"Finalizing database");
+                    frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
+
+                }
             }
             catch (System.Threading.ThreadInterruptedException err)
             {
@@ -10713,8 +10766,6 @@ namespace FIA_Biosum_Manager
             this.FVSRecordsFinished();
             oAdo.m_intError = 0;
             oAdo.m_strError = "";
-            frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1, "Ready");
-
             CleanupThread();
 
             frmMain.g_oDelegate.m_oEventThreadStopped.Set();
