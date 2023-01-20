@@ -100,14 +100,17 @@ namespace FIA_Biosum_Manager
                 ShutdownThread();
             }
 
+            string strMessage = "BioSum Help screens are currently disabled. We recommend consulting the appropriate User Guide for help.";
+            MessageBox.Show(strMessage, "FIA Biosum");
+
             //load the PageNumber variable from the key values
-            GetItemPageNumber(p_strPrimaryKeyValues);
+            //GetItemPageNumber(p_strPrimaryKeyValues);
 
             //start a new thread containing the document viewer
-            m_oHelpThread = new Thread(new ThreadStart(this.ShowHelp));
-            m_oHelpThread.IsBackground = true;
-            m_oHelpThread.SetApartmentState(System.Threading.ApartmentState.STA);
-            m_oHelpThread.Start();
+            //m_oHelpThread = new Thread(new ThreadStart(this.ShowHelp));
+            //m_oHelpThread.IsBackground = true;
+            //m_oHelpThread.SetApartmentState(System.Threading.ApartmentState.STA);
+            //m_oHelpThread.Start();
 
             
             

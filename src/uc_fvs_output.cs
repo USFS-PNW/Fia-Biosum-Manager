@@ -10735,6 +10735,20 @@ namespace FIA_Biosum_Manager
                                             this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                                     }
                                 }
+
+                                // DELETE SEQUENCE NUMBER MATRICES
+                                string[] arrTables = SQLite.getTableNames(conn);
+                                foreach (var tName in arrTables)
+                                {
+                                    if (tName.ToUpper().IndexOf("SEQNUM_MATRIX") > -1)
+                                    {
+                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                            this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + "DROP TABLE " + tName + "\r\n");
+                                        SQLite.SqlNonQuery(conn, "DROP TABLE " + tName);
+                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                            this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                    }
+                                }
                             }
                         }
                     }
