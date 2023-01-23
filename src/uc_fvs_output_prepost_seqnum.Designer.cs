@@ -80,6 +80,7 @@
             this.lblCycle1 = new System.Windows.Forms.Label();
             this.lblTitle = new System.Windows.Forms.Label();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
+            this.chkFfe = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.SuspendLayout();
@@ -149,13 +150,14 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.chkFfe);
             this.groupBox3.Controls.Add(this.cmbDefault);
             this.groupBox3.Controls.Add(this.btnAssignTemplate);
             this.groupBox3.Location = new System.Drawing.Point(417, 345);
             this.groupBox3.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBox3.Size = new System.Drawing.Size(336, 89);
+            this.groupBox3.Size = new System.Drawing.Size(424, 89);
             this.groupBox3.TabIndex = 102;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Choose a SEQNUM Assignment Template";
@@ -710,6 +712,16 @@
             this.imageList1.Images.SetKeyName(1, "Modified");
             this.imageList1.Images.SetKeyName(2, "Deleted");
             // 
+            // chkFfe
+            // 
+            this.chkFfe.AutoSize = true;
+            this.chkFfe.Location = new System.Drawing.Point(313, 25);
+            this.chkFfe.Name = "chkFfe";
+            this.chkFfe.Size = new System.Drawing.Size(55, 21);
+            this.chkFfe.TabIndex = 89;
+            this.chkFfe.Text = "FFE";
+            this.chkFfe.UseVisualStyleBackColor = true;
+            // 
             // uc_fvs_output_prepost_seqnum
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -721,6 +733,7 @@
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox3.ResumeLayout(false);
+            this.groupBox3.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -777,5 +790,6 @@
         private System.Windows.Forms.Button btnSeqNum;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.CheckBox chkFfe;
     }
 }

@@ -632,6 +632,7 @@ namespace FIA_Biosum_Manager
                         btnDelete.Text = "Delete Customization";
                     }
                 }
+                    
                 if (btnDelete.Text == "Undelete Customization")
                 {
                     btnEdit.Enabled = false;
@@ -930,10 +931,21 @@ namespace FIA_Biosum_Manager
                 }
                 else
                 {
-                    cmbPRE1.Text = arrSummarySequence[0]; cmbPOST1.Text = arrSummarySequence[1];
-                    cmbPRE2.Text = arrSummarySequence[2]; cmbPOST2.Text = arrSummarySequence[3];
-                    cmbPRE3.Text = arrSummarySequence[4]; cmbPOST3.Text = arrSummarySequence[5];
-                    cmbPRE4.Text = arrSummarySequence[6]; cmbPOST4.Text = arrSummarySequence[7];
+                    if (chkFfe.Checked)
+                    {
+                        //Accomodate FFE tables when POTFIRE is not present
+                        cmbPRE1.Text = arrFfeSequence[0]; cmbPOST1.Text = arrFfeSequence[1];
+                        cmbPRE2.Text = arrFfeSequence[2]; cmbPOST2.Text = arrFfeSequence[3];
+                        cmbPRE3.Text = arrFfeSequence[4]; cmbPOST3.Text = arrFfeSequence[5];
+                        cmbPRE4.Text = arrFfeSequence[6]; cmbPOST4.Text = arrFfeSequence[7];
+                    }
+                    else
+                    {
+                        cmbPRE1.Text = arrSummarySequence[0]; cmbPOST1.Text = arrSummarySequence[1];
+                        cmbPRE2.Text = arrSummarySequence[2]; cmbPOST2.Text = arrSummarySequence[3];
+                        cmbPRE3.Text = arrSummarySequence[4]; cmbPOST3.Text = arrSummarySequence[5];
+                        cmbPRE4.Text = arrSummarySequence[6]; cmbPOST4.Text = arrSummarySequence[7];
+                    }
 
                     chkPRE1BaseYear.Checked = false;
                     chkPRE2BaseYear.Checked = false;
