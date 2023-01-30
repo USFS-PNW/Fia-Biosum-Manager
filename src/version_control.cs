@@ -220,8 +220,9 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "version_control.PerformVersionCheck: !!Error opening Application.Version File!! ERROR=" + error.Message + "r\n");
             }
-           
+
             //check for partial update
+            UpdateDatasources_5_10_1();
             if (bPerformCheck)
             {
                 if (m_strProjectVersion.Trim().Length > 0)
@@ -6488,6 +6489,65 @@ namespace FIA_Biosum_Manager
             else
             {
                 System.Windows.Forms.MessageBox.Show("The Master Plot table was not found.",
+                    "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
+                    System.Windows.Forms.MessageBoxIcon.Error);
+            }
+
+            if (oAdo != null)
+            {
+                oAdo.CloseConnection(oAdo.m_OleDbConnection);
+                oAdo = null;
+            }
+
+            if (oDao != null)
+            {
+                oDao.m_DaoWorkspace.Close();
+                oDao = null;
+            }
+        }
+
+        public void UpdateDatasources_5_10_1()
+        {
+            DataMgr oDataMgr = new DataMgr();
+            ado_data_access oAdo = new ado_data_access();
+            dao_data_access oDao = new dao_data_access();
+
+            // issue #287 Delete obsolete FVS_ResidTree table
+            string strConnection = oDataMgr.GetConnectionString($@"{ReferenceProjectDirectory.Trim()}\{Tables.FVS.DefaultFVSTreeListDbFile}");
+            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
+            {
+                con.Open();
+                if (oDataMgr.TableExist(con, Tables.FVS.DefaultFVSResidTreeTableName))
+                {
+                    oDataMgr.SqlNonQuery(con, $@"DROP TABLE {Tables.FVS.DefaultFVSResidTreeTableName}");
+                }
+            }
+
+            //issue #286 Rename landclcd to cond_status_cd
+            Datasource oDs = new Datasource();
+            oDs.m_strDataSourceMDBFile = ReferenceProjectDirectory.Trim() + "\\db\\project.mdb";
+            oDs.m_strDataSourceTableName = "datasource";
+            oDs.m_strScenarioId = "";
+            oDs.LoadTableColumnNamesAndDataTypes = false;
+            oDs.LoadTableRecordCount = false;
+            oDs.populate_datasource_array();
+
+            int intCondTableType = oDs.getDataSourceTableNameRow("CONDITION");
+            if (oDs.DataSourceTableExist(intCondTableType))
+            {
+                string strCondTable = oDs.m_strDataSource[intCondTableType, Datasource.TABLE].Trim();
+                string strCondTableDb = oDs.m_strDataSource[intCondTableType, Datasource.PATH].Trim() + "\\" +
+                                        oDs.m_strDataSource[intCondTableType, Datasource.MDBFILE].Trim();
+                string[] arrFieldNames = null;
+                oDao.getFieldNames(strCondTableDb, strCondTable, ref arrFieldNames);
+                if (!arrFieldNames.Contains("cond_status_cd"))
+                {
+                    oDao.RenameField(strCondTableDb, strCondTable, "landclcd", "cond_status_cd");
+                }                
+            }
+            else
+            {
+                System.Windows.Forms.MessageBox.Show("The Master Cond table was not found.",
                     "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
                     System.Windows.Forms.MessageBoxIcon.Error);
             }

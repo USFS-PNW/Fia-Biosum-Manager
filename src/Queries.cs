@@ -2567,12 +2567,12 @@ namespace FIA_Biosum_Manager
 		                string strBioSumWorkTableSelectStmt =
 		                    "SELECT c.biosum_cond_id, p.fvs_variant, p.measyear, p.lat, p.lon, " +
 		                    "p.fvsloccode, c.habtypcd1, c.stdage, c.aspect, c.slope, p.elev, 0, 1, 999, 1, 0, 1,  " +
-		                    "iif(c.landclcd is null, 0, c.landclcd), 1, 10, 1, 5, 5, c.fortypcd, p.statecd, p.countycd ";
+                            "iif(c.cond_status_cd is null, 0, c.cond_status_cd), 1, 10, 1, 5, 5, c.fortypcd, p.statecd, p.countycd ";
 		                string strFromTableExpr =
 		                    String.Format(
 		                        "FROM {0} c INNER JOIN {1} p ON c.biosum_plot_id = p.biosum_plot_id ",
 		                        strCondTableName, strPlotTableName);
-		                string strFilters = "WHERE c.landclcd = 1 AND ucase(trim(p.fvs_variant)) = \'" +
+		                string strFilters = "WHERE c.cond_status_cd = 1 AND ucase(trim(p.fvs_variant)) = \'" +
 		                                    strVariant.Trim().ToUpper() + "\'";
 		                return strInsertIntoStandInit + strBioSumWorkTableSelectStmt + strFromTableExpr +
 		                       strFilters;
@@ -2908,11 +2908,11 @@ namespace FIA_Biosum_Manager
 		                                "c.adforcd,p.elev,c.condid, c.habtypcd1," +
 		                                "c.stdage,c.slope,c.aspect,c.ground_land_class_pnw," +
 		                                "c.sisp,p.lat,p.lon,c.adforcd,c.habtypcd1, " +
-		                                "p.elev,c.landclcd,c.ba_ft2_ac,c.habtypcd1 " +
+                                        "p.elev,c.cond_status_cd,c.ba_ft2_ac,c.habtypcd1 " +
 		                                "FROM " + strCondTableName + " c," +
 		                                strPlotTableName + " p " +
 		                                "WHERE p.biosum_plot_id = c.biosum_plot_id AND " +
-		                                "c.landclcd=1 AND " +
+                                        "c.cond_status_cd=1 AND " +
 		                                "ucase(trim(p.fvs_variant)) = '" + strVariant.Trim().ToUpper() + "';";
 		                return strSQL;
 		            }
@@ -2974,7 +2974,7 @@ namespace FIA_Biosum_Manager
                              " FROM " + strSourceStandTableAlias +
                              " INNER JOIN " + strCondTable + " ON TRIM(" + strCondTable + ".cn) = " + strSourceStandTableAlias + ".STAND_CN" +
                              " WHERE " + strSourceStandTableAlias + ".VARIANT = '" + strVariant + "'" +
-                             " AND " + strCondTable + ".landclcd = 1";
+                             " AND " + strCondTable + ".cond_status_cd = 1";
                         return strSQL;
                     }
 
@@ -3089,7 +3089,7 @@ namespace FIA_Biosum_Manager
                                                   strTreeTableName + " t ";
                         string strFilters =
                             "WHERE t.biosum_cond_id=c.biosum_cond_id AND p.biosum_plot_id=c.biosum_plot_id " +
-                            "AND t.dia > 0 AND c.landclcd=1 " +
+                            "AND t.dia > 0 AND c.cond_status_cd=1 " +
                             "AND ucase(trim(p.fvs_variant)) = \'" + strVariant.Trim().ToUpper() + "\'";
                         string strSQL = strInsertIntoTreeInit + strBioSumWorkTableSelectStmt + strFromTableExpr +
                                         strFilters;
@@ -3326,7 +3326,7 @@ namespace FIA_Biosum_Manager
                          " AND TRIM(" + strTreeTable + ".cn) = " + strSourceTreeTableAlias + ".TREE_CN" +
                          " AND TRIM(" + strCondTable + ".cn) = " + strSourceStandTableAlias + ".STAND_CN" +
                          " AND TRIM(" + strCondTable + ".cn) = " + strSourceTreeTableAlias + ".STAND_CN" +
-                         " AND " + strCondTable + ".landclcd = 1 AND " + strTreeTable + ".DIA > 0 AND " +
+                         " AND " + strCondTable + ".cond_status_cd = 1 AND " + strTreeTable + ".DIA > 0 AND " +
                          strSourceStandTableAlias + ".VARIANT = '" + strVariant + "'";
                         return strSql;
                     }

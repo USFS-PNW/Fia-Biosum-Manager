@@ -4266,7 +4266,7 @@ namespace FIA_Biosum_Manager
                     "invyr INTEGER," +
                     "condid BYTE," +
                     "condprop DOUBLE," +
-                    "landclcd BYTE," +
+                    "cond_status_cd BYTE," +
                     "fortypcd INTEGER," +
                     "ground_land_class_pnw CHAR(3)," +
                     "owncd INTEGER," +
@@ -4335,7 +4335,7 @@ namespace FIA_Biosum_Manager
                     "invyr INTEGER," +
                     "condid INTEGER," +
                     "condprop DOUBLE," +
-                    "landclcd INTEGER," +
+                    "cond_status_cd INTEGER," +
                     "fortypcd INTEGER," +
                     "ground_land_class_pnw CHAR(3)," +
                     "owncd INTEGER," +

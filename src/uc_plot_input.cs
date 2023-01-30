@@ -2785,7 +2785,7 @@ namespace FIA_Biosum_Manager
                     m_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " d " +
                         "INNER JOIN tempcond s " +
                         "ON d.cn = s.CN_JOIN " +
-                        "SET d.landclcd = s.cond_status_cd";
+                        "SET d.cond_status_cd = s.cond_status_cd";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
                     if (m_ado.m_intError == 0)
