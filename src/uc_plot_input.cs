@@ -208,6 +208,7 @@ namespace FIA_Biosum_Manager
         private env m_oEnv;
         private Help m_oHelp;
         private string m_xpsFile = Help.DefaultDatabaseXPSFile;
+        private string m_pdfFile = @"Help\DATABASE_Help.pdf";
         private bool m_bLoadSeedlings = true;
         private CheckBox chkDwmImport;
         private CheckBox chkGrmImport;
@@ -8821,21 +8822,11 @@ namespace FIA_Biosum_Manager
 
         private void btnMDBFiadbInputHelp_Click(object sender, EventArgs e)
         {
-            //System.Diagnostics.Process proc = new System.Diagnostics.Process();
-            //System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
-            //string page = "2";
-            //string file = @"C:\workspace\biosum\Fia-Biosum-Manager\src\bin\x64\Debug\Help\DATABASE_Help.pdf";
-            //startInfo.Arguments = string.Format(@"/A page={0} {1}", page, file);
-            //startInfo.FileName = "AcroRd.exe";
-            // Using the .pdf file as the FileName also works, but it does not respect the page number
-            //@ToDo: A solution that searches the registry to see which version of acrobat is installed so we use the right executable
-            //proc.StartInfo = startInfo;
-            //proc.Start();
             if (m_oHelp == null)
             {
                 m_oHelp = new Help(m_xpsFile, m_oEnv);
+                m_oHelp.ShowPdfHelp(m_pdfFile, "2");
             }
-            m_oHelp.ShowHelp(new string[] { "DATABASE", "PLOTDATA1" });
         }
 
         private void btnFilterHelp_Click(object sender, EventArgs e)

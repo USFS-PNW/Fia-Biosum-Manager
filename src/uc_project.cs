@@ -84,8 +84,9 @@ namespace FIA_Biosum_Manager
 		private env m_oEnv;
         private Help m_oHelp;
         private string m_xpsFile = Help.DefaultDatabaseXPSFile;
+        private string m_pdfFile = @"Help\DATABASE_Help.pdf";
 
-		public FIA_Biosum_Manager.ResizeFormUsingVisibleScrollBars m_oResizeForm = new ResizeFormUsingVisibleScrollBars();
+        public FIA_Biosum_Manager.ResizeFormUsingVisibleScrollBars m_oResizeForm = new ResizeFormUsingVisibleScrollBars();
 		private System.Windows.Forms.Panel panel1;
 		private System.Windows.Forms.GroupBox groupBox1;
 		private System.Windows.Forms.GroupBox grpboxDescription;
@@ -2544,15 +2545,9 @@ namespace FIA_Biosum_Manager
             {
                 m_oHelp = new Help(m_xpsFile, m_oEnv);
             }
-            m_oHelp.ShowHelp(new string[] { "DATABASE", "NEWPROJECT" });
+            //m_oHelp.ShowHelp(new string[] { "DATABASE", "NEWPROJECT" });
+            m_oHelp.ShowPdfHelp(m_pdfFile, "1");
         }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            m_oHelp.GoToPage(2);
-        }
-
-
 
 		
 	}

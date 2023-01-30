@@ -195,8 +195,11 @@ namespace FIA_Biosum_Manager
         public static string g_strRDirectory = "";
         public static string g_strOPCOSTDirectory = "";
 
-		//substitution macro variable
-		public static FIA_Biosum_Manager.SQLMacroSubstitutionVariable_Collection g_oSQLMacroSubstitutionVariable_Collection= new SQLMacroSubstitutionVariable_Collection();
+        //Path to Acrobat for Help
+        public static string g_strAcrobatExe = "";
+
+        //substitution macro variable
+        public static FIA_Biosum_Manager.SQLMacroSubstitutionVariable_Collection g_oSQLMacroSubstitutionVariable_Collection= new SQLMacroSubstitutionVariable_Collection();
         public static FIA_Biosum_Manager.GeneralMacroSubstitutionVariable_Collection g_oGeneralMacroSubstitutionVariable_Collection = new GeneralMacroSubstitutionVariable_Collection();
         public const int PROJDIR = 0;
         public const int OLDPROJDIR = 1;
@@ -996,7 +999,7 @@ namespace FIA_Biosum_Manager
 		private void frmMain_Load(object sender, System.EventArgs e)
 		{
 			if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory.Trim() + "\\FIABiosum\\settings.cfg"))
-			{
+            {
                 string strSection="";
                 
 				string strColorARGBList="";
@@ -1194,9 +1197,23 @@ namespace FIA_Biosum_Manager
 				s.Close();
 				s=null;
 			}
-		}
 
-		private void btnCoreAnalysis_Click(object sender, System.EventArgs e)
+            // Search the registry for the Adobe executable
+            const string ACROBAT_REG_PATH = "SOFTWARE\\CLASSES\\ACROBAT\\SHELL\\OPEN\\COMMAND\\";
+            Microsoft.Win32.RegistryKey registry = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(ACROBAT_REG_PATH);
+            var pathOtherWay = Convert.ToString(registry.GetValue(""));
+            string[] arrPieces = pathOtherWay.Split('\"');
+            for (int i = 0; i < arrPieces.Length; i++)
+            {
+                if (arrPieces[i].ToUpper().IndexOf("ACROBAT") > -1)
+                {
+                    g_strAcrobatExe = arrPieces[i];
+                    break;
+                }
+            }
+        }
+
+        private void btnCoreAnalysis_Click(object sender, System.EventArgs e)
 		{
 			if (this.btnOptimizer.Enabled == true) 
 			{

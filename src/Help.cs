@@ -240,6 +240,31 @@ namespace FIA_Biosum_Manager
 
         }
 
+        public void ShowPdfHelp(string p_strPdfFile, string p_strPageNumber)
+        {
+            System.Diagnostics.Process proc = new System.Diagnostics.Process();
+            System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
+            startInfo.Arguments = string.Format(@"/A page={0} {1}", p_strPageNumber, p_strPdfFile);
+            if (string.IsNullOrEmpty(frmMain.g_strAcrobatExe))
+            {
+                // Using the .pdf file as the FileName also works, but it does not respect the page number
+                startInfo.FileName = p_strPdfFile;
+            }
+            else
+            {
+                startInfo.FileName = Convert.ToString(frmMain.g_strAcrobatExe);
+            }
+            proc.StartInfo = startInfo;
+            try
+            {
+                proc.Start();
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("An error occurred while trying to access " + p_strPdfFile, "FIA Biosum");
+            }
+        }
+
        
             
         private int _intPageNumber=0;
