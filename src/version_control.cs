@@ -6081,7 +6081,7 @@ namespace FIA_Biosum_Manager
                             // break out of loop if it runs too long
                             if (i > 20)
                             {
-                                System.Windows.Forms.MessageBox.Show("An error occurred while trying to update the harvest_methos table! " +
+                                System.Windows.Forms.MessageBox.Show("An error occurred while trying to update the harvest_methods table! " +
                                 "Validate the contents of this table before trying to run Treatment Optimizer.", "FIA Biosum");
                                 break;
                             }
@@ -6533,12 +6533,12 @@ namespace FIA_Biosum_Manager
             oDs.populate_datasource_array();
 
             int intCondTableType = oDs.getDataSourceTableNameRow("CONDITION");
+            string[] arrFieldNames = null;
             if (oDs.DataSourceTableExist(intCondTableType))
             {
                 string strCondTable = oDs.m_strDataSource[intCondTableType, Datasource.TABLE].Trim();
                 string strCondTableDb = oDs.m_strDataSource[intCondTableType, Datasource.PATH].Trim() + "\\" +
                                         oDs.m_strDataSource[intCondTableType, Datasource.MDBFILE].Trim();
-                string[] arrFieldNames = null;
                 oDao.getFieldNames(strCondTableDb, strCondTable, ref arrFieldNames);
                 if (!arrFieldNames.Contains("cond_status_cd"))
                 {
@@ -6550,6 +6550,70 @@ namespace FIA_Biosum_Manager
                 System.Windows.Forms.MessageBox.Show("The Master Cond table was not found.",
                     "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
                     System.Windows.Forms.MessageBoxIcon.Error);
+            }
+
+            // issue #295: updates to harvest_costs table
+            string strScenarioDir = ReferenceProjectDirectory.Trim() + "\\processor\\db";
+            //open the scenario_processor_rule_definitions.mdb file
+            List<string> lstScenarioDb = new List<string>();
+            using (var conn = new OleDbConnection(oAdo.getMDBConnString(strScenarioDir + "\\scenario_processor_rule_definitions.mdb", "", "")))
+            {
+                conn.Open();
+                //retrieve paths for all scenarios in the project and put them in list
+                oAdo.m_strSQL = "SELECT path from scenario";
+                oAdo.SqlQueryReader(conn, oAdo.m_strSQL);
+                if (oAdo.m_OleDbDataReader.HasRows)
+                {
+                    while (oAdo.m_OleDbDataReader.Read())
+                    {
+                        string strPath = "";
+                        if (oAdo.m_OleDbDataReader["path"] != System.DBNull.Value)
+                            strPath = oAdo.m_OleDbDataReader["path"].ToString().Trim();
+                        if (!String.IsNullOrEmpty(strPath))
+                        {
+                            //Check to see if the .mdb exists before adding it to the list
+                            string strPathToMdb = strPath + "\\db\\scenario_results.mdb";
+                            //sample path: C:\\workspace\\BioSum\\biosum_data\\bluemountains\\processor\\scenario1\\db\\scenario_results.mdb
+                            if (System.IO.File.Exists(strPathToMdb))
+                                lstScenarioDb.Add(strPathToMdb);
+                        }
+                    }
+                    oAdo.m_OleDbDataReader.Close();
+                }
+            }
+
+            // Loop through the scenario_results.mdb looking for harvest_costs table
+            string strTempTable = Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName + "_NEW";
+            string strInsertSql = $@"INSERT INTO {strTempTable} SELECT 
+                biosum_cond_id,rxpackage, rx, rxcycle, complete_cpa, harvest_cpa, chip_cpa, assumed_movein_cpa,
+                harvest_cpa_warning_msg, place_holder, override_YN, DateTimeCreated FROM {Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName}";
+            arrFieldNames = null;
+            foreach (string strPath in lstScenarioDb)
+            {
+                oDao.getFieldNames(strPath, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName, ref arrFieldNames);
+                if (arrFieldNames.Contains("ideal_complete_cpa"))
+                {
+                    // Add columns to harvest_costs table
+                    using (var conn = new OleDbConnection(oAdo.getMDBConnString(strPath, "", "")))
+                    {
+                        conn.Open();
+                        frmMain.g_oTables.m_oProcessor.CreateHarvestCostsTable(oAdo, conn, strTempTable);
+                        oAdo.SqlNonQuery(conn, strInsertSql);
+                        long lngSource = oAdo.getRecordCount(conn, "SELECT COUNT(*) FROM " + strTempTable, strTempTable);
+                        long lngTarget = oAdo.getRecordCount(conn, "SELECT COUNT(*) FROM " + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName,
+                            Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName);
+                        if (lngSource == lngTarget)
+                        {
+                            oAdo.SqlNonQuery(conn, "DROP TABLE " + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName);
+                            oDao.RenameTable(strPath, strTempTable, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName, false, false);
+                        }
+                        else
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while updating the harvest_costs table in " + strPath + ". Please check the database!",
+                                "FIA Biosum");
+                        }
+                    }
+                }
             }
 
             if (oAdo != null)

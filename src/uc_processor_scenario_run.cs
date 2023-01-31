@@ -4218,8 +4218,7 @@ namespace FIA_Biosum_Manager
                         //append the inactive stands to the harvest cost table where complete_cpa > 0
                         m_oAdo.m_strSQL = "INSERT INTO " + p_strHarvestCostsTableName +
                                           " SELECT biosum_cond_id, rxpackage, rx, rxcycle, harvest_cpa, complete_cpa, '" +
-                                          m_strDateTimeCreated + "' as DateTimeCreated, 0 as chip_cpa, 0 as assumed_movein_cpa, " +
-                                          "0 as ideal_complete_cpa, 0 as ideal_harvest_cpa, 0 as ideal_chip_cpa, 0 as ideal_assumed_movein_cpa" +
+                                          m_strDateTimeCreated + "' as DateTimeCreated, 0 as chip_cpa, 0 as assumed_movein_cpa " +
                                           " FROM " + p_strInactiveStandsTableName +
                                           " WHERE complete_cpa > 0";
 
@@ -4500,10 +4499,9 @@ namespace FIA_Biosum_Manager
                         //append the inactive stands to the harvest cost table where complete_cpa > 0
                         m_oDataMgr.m_strSQL = "INSERT INTO " + p_strHarvestCostsTableName +
                                           " (biosum_cond_id, rxpackage, rx, rxcycle, harvest_cpa, complete_cpa,  DateTimeCreated, " +
-                                          "chip_cpa, assumed_movein_cpa, ideal_complete_cpa, ideal_harvest_cpa,ideal_chip_cpa,ideal_assumed_movein_cpa) " +
+                                          "chip_cpa, assumed_movein_cpa) " +
                                           " SELECT biosum_cond_id, rxpackage, rx, rxcycle, harvest_cpa, complete_cpa, '" +
-                                          m_strDateTimeCreated + "' as DateTimeCreated, 0 as chip_cpa, 0 as assumed_movein_cpa, " +
-                                          "0 as ideal_complete_cpa, 0 as ideal_harvest_cpa, 0 as ideal_chip_cpa, 0 as ideal_assumed_movein_cpa" +
+                                          m_strDateTimeCreated + "' as DateTimeCreated, 0 as chip_cpa, 0 as assumed_movein_cpa " +
                                           " FROM " + p_strInactiveStandsTableName +
                                           " WHERE complete_cpa > 0";
 
