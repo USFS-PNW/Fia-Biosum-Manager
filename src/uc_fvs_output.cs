@@ -10016,12 +10016,9 @@ namespace FIA_Biosum_Manager
 
                         frmMain.g_oUtils.WriteText(m_strLogFile, "Date/Time:" + System.DateTime.Now.ToString().Trim() + "\r\n\r\n");
                         frmMain.g_oUtils.WriteText(m_strLogFile, "**EOF**");
-
-                        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Value", m_intProgressOverallCurrentCount);
-
                     }
 
-                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", m_intProgressStepTotalCount);
+                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", 10);
 
                     this.FVSRecordsFinished();
                 }
