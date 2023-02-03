@@ -5020,8 +5020,8 @@ namespace FIA_Biosum_Manager
                     "rx CHAR(3)," +
                     "rxcycle CHAR(1)," +
                     "additional_cpa DOUBLE DEFAULT 0," +
-                    "complete_cpa DOUBLE DEFAULT 0," +
                     "harvest_cpa DOUBLE ," +
+                    "complete_cpa DOUBLE DEFAULT 0," +
                     "chip_cpa DOUBLE ," +
                     "assumed_movein_cpa DOUBLE ," +
                     "harvest_cpa_warning_msg CHAR(240)," +
@@ -5041,8 +5041,8 @@ namespace FIA_Biosum_Manager
                     "rx CHAR(3)," +
                     "rxcycle CHAR(1)," +
                     "additional_cpa DOUBLE DEFAULT 0," +
-                    "complete_cpa DOUBLE DEFAULT 0," +
                     "harvest_cpa DOUBLE ," +
+                    "complete_cpa DOUBLE DEFAULT 0," +
                     "chip_cpa DOUBLE ," +
                     "assumed_movein_cpa DOUBLE ," +
                     "harvest_cpa_warning_msg CHAR(240)," +

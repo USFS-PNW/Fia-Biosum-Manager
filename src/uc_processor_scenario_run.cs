@@ -50,6 +50,7 @@ namespace FIA_Biosum_Manager
         /* Indicates that inactive stands will be included in the analysis:
          * There is a PRE_FVS_COMPUTE table with a column named ACTIVITY  */
         private bool m_bIncludeInactiveStands = true;
+        private bool m_bUseKcpAdditionalCpa = false;
         private string m_strTempSqliteDbFile = null;
         private SQLite.ADO.DataMgr m_oDataMgr = new SQLite.ADO.DataMgr();
 
@@ -503,20 +504,44 @@ namespace FIA_Biosum_Manager
                 conn.Open();
                 if (!m_oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSComputeTableName))
                 {
-                    m_bIncludeInactiveStands = false;
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                        frmMain.g_oUtils.WriteText(strDebugFile, "loadvalues(): PRE_FVS_COMPUTE table was not found. Stands with no " +
-                            "activity will not be included in analysis! \r\n");
+                        frmMain.g_oUtils.WriteText(strDebugFile, "loadvalues(): FVS_COMPUTE table was not found. KCP additional " +
+                            "CPA functionality will not be used ! \r\n");
                 }
                 else
                 {
-                    //Check for ACTIVITY column so we know if we should include inactive stands
-                    if (!m_oDataMgr.ColumnExist(conn, Tables.FVS.DefaultFVSComputeTableName, "ACTIVITY"))
+                    //Check for KCP additional CPA columns so we know if we should include inactive stands
+                    IList<string> lstComponents = new List<string>();
+                    for (int i = 0; i < m_oRxItem_Collection.Count; i++)
                     {
-                        m_bIncludeInactiveStands = false;
+                        var rxItem = m_oRxItem_Collection.Item(i);
+                        var componentCollection = rxItem.ReferenceHarvestCostColumnCollection;
+                        for (int j = 0; j < componentCollection.Count; j++)
+                        {
+                            var component = componentCollection.Item(j);
+                            string blah = component.HarvestCostColumn;
+                            if (!lstComponents.Contains(component.HarvestCostColumn))
+                            {
+                                lstComponents.Add(component.HarvestCostColumn);
+                            }
+                        }
+                    }
+                    for (int i = 0; i < lstComponents.Count; i++)
+                    {
+                        if (m_oDataMgr.ColumnExist(conn, Tables.FVS.DefaultFVSComputeTableName, lstComponents[i]))
+                        {
+                            string strSql = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSComputeTableName} WHERE {lstComponents[i]} = 1";
+                            long lngCount = m_oDataMgr.getRecordCount(conn, strSql, Tables.FVS.DefaultFVSComputeTableName);
+                            m_bUseKcpAdditionalCpa = true;
+                            break;
+                        }
+                    }
+                    if (m_bUseKcpAdditionalCpa == false)
+                    {
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                            frmMain.g_oUtils.WriteText(strDebugFile, "loadvalues(): ACTIVITY field not found inFVS_COMPUTE table. Stands with no " +
+                            frmMain.g_oUtils.WriteText(strDebugFile, "loadvalues(): ACTIVITY field not found in FVS_COMPUTE table. Stands with no " +
                                 "activity will not be included in analysis! \r\n");
+
                     }
                 }
             }

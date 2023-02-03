@@ -5715,7 +5715,12 @@ namespace FIA_Biosum_Manager
                             "INNER JOIN " + p_strTotalAdditionalCostsTableName + " a " +
                             "ON h.biosum_cond_id = a.biosum_cond_id AND h.rx=a.rx," +
                             "scenario_cost_revenue_escalators e " +
-                            "SET h.complete_cpa = " +
+                            "SET h.additional_cpa = " +
+                            "IIF(h.RXCycle='1',(a.complete_additional_cpa)," +
+                            "IIF(h.RXCycle='2',(a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle2," +
+                            "IIF(h.RXCycle='3',(a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle3," +
+                            "IIF(h.RXCycle='4',(a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle4,0))))," + 
+                            "h.complete_cpa = " +
                             "IIF(h.RXCycle='1',(h.harvest_cpa+a.complete_additional_cpa)," +
                             "IIF(h.RXCycle='2',(h.harvest_cpa+a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle2," +
                             "IIF(h.RXCycle='3',(h.harvest_cpa+a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle3," +
@@ -5733,7 +5738,19 @@ namespace FIA_Biosum_Manager
                 else
                 {
                     strSql = "UPDATE " + p_strHarvestCostsTableName + " AS h " +
-                        "SET complete_cpa = " +
+                                                "SET complete_cpa = " +
+                        "(SELECT CASE WHEN h.RXCycle = '1' THEN a.complete_additional_cpa " +
+                        "WHEN h.RXCycle = '2' THEN a.complete_additional_cpa * " +
+                        "(SELECT EscalatorOperatingCosts_Cycle2 from definitions.scenario_cost_revenue_escalators " +
+                        "WHERE TRIM(scenario_id) = '" + p_strScenarioId.Trim() + "') " +
+                        "WHEN h.RXCycle = '3' THEN a.complete_additional_cpa * " +
+                        "(SELECT EscalatorOperatingCosts_Cycle3 from definitions.scenario_cost_revenue_escalators " +
+                        "WHERE TRIM(scenario_id) = '" + p_strScenarioId.Trim() + "') " +
+                        "WHEN h.RXCycle = '4' THEN a.complete_additional_cpa * " +
+                        "(SELECT EscalatorOperatingCosts_Cycle4 from definitions.scenario_cost_revenue_escalators " +
+                        "WHERE TRIM(scenario_id) = '" + p_strScenarioId.Trim() + "') " +
+                        "ELSE 0 END, " +
+                        "complete_cpa = " +
                         "(SELECT CASE WHEN h.RXCycle = '1' THEN h.harvest_cpa + a.complete_additional_cpa " +
                         "WHEN h.RXCycle = '2' THEN h.harvest_cpa + a.complete_additional_cpa * " +
                         "(SELECT EscalatorOperatingCosts_Cycle2 from definitions.scenario_cost_revenue_escalators " +
