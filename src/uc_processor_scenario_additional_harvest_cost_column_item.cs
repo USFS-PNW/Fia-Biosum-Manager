@@ -183,7 +183,7 @@ namespace FIA_Biosum_Manager
             frmTemp.uc_scenario_harvest_cost_column_edit1.lblEdit.Hide();
             
 
-            frmTemp.Text = "Edit Harvest Cost Column";
+            frmTemp.Text = "Edit Additional CPA Component Column";
             System.Windows.Forms.DialogResult result = frmTemp.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {

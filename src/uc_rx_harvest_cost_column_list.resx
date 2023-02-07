@@ -118,6 +118,6 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="lblDesc.Text" xml:space="preserve">
-    <value>Define column name(s) that will contain harvest costs $/ac for this Rx.   These columns represent additional costs which are  not calculated in OpCost. The column $/ac values are not designated now but during the Processor/OpCost analysis.</value>
+    <value>Provide names for, and optionally descriptions of, the additional cost components, above and beyond what is calculated by OpCost, that associate with this prescription. You’ll define the cost per acre (CPA) for these components separately in the Processor workflow, but they need to be named here.</value>
   </data>
 </root>

@@ -1853,7 +1853,7 @@ namespace FIA_Biosum_Manager
 
 
 
-            frmTemp.Text = "Harvest Cost";
+            frmTemp.Text = "Additional CPA Component";
             System.Windows.Forms.DialogResult result = frmTemp.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {

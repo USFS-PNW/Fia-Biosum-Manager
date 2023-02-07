@@ -72,7 +72,7 @@ namespace FIA_Biosum_Manager
 			this.m_oLvAlternateRowColors.InitializeRowCollection();
 			this.lvRxHarvestCostColumns.Columns.Add("",2,HorizontalAlignment.Left);
 			this.lvRxHarvestCostColumns.Columns.Add("Rx", 80, HorizontalAlignment.Left);
-			this.lvRxHarvestCostColumns.Columns.Add("Harvest Cost Component", 200, HorizontalAlignment.Left);
+			this.lvRxHarvestCostColumns.Columns.Add("Additional Cost Component", 200, HorizontalAlignment.Left);
 			this.lvRxHarvestCostColumns.Columns.Add("Description", 300, HorizontalAlignment.Left);
 
 			this.m_intError=0;
@@ -187,9 +187,9 @@ namespace FIA_Biosum_Manager
             this.panel1.Controls.Add(this.lblDesc);
             this.panel1.Controls.Add(this.lvRxHarvestCostColumns);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(3, 16);
+            this.panel1.Location = new System.Drawing.Point(3, 18);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(642, 373);
+            this.panel1.Size = new System.Drawing.Size(642, 371);
             this.panel1.TabIndex = 0;
             this.panel1.Resize += new System.EventHandler(this.panel1_Resize);
             // 
@@ -206,6 +206,7 @@ namespace FIA_Biosum_Manager
             // lvRxHarvestCostColumns
             // 
             this.lvRxHarvestCostColumns.GridLines = true;
+            this.lvRxHarvestCostColumns.HideSelection = false;
             this.lvRxHarvestCostColumns.Location = new System.Drawing.Point(8, 32);
             this.lvRxHarvestCostColumns.MultiSelect = false;
             this.lvRxHarvestCostColumns.Name = "lvRxHarvestCostColumns";
@@ -434,7 +435,7 @@ namespace FIA_Biosum_Manager
 				frmTemp.uc_scenario_harvest_cost_column_edit1.lblEdit.Hide();
 			}
 			
-			frmTemp.Text = strType + " Harvest Cost Component";
+			frmTemp.Text = strType + " Additional CPA Component";
 			System.Windows.Forms.DialogResult result = frmTemp.ShowDialog();
 			if (result==System.Windows.Forms.DialogResult.OK)
 			{

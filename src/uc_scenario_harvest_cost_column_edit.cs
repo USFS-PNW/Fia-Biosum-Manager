@@ -98,14 +98,14 @@ namespace FIA_Biosum_Manager
             // 
             this.lblEdit.Location = new System.Drawing.Point(152, 59);
             this.lblEdit.Name = "lblEdit";
-            this.lblEdit.Size = new System.Drawing.Size(329, 16);
+            this.lblEdit.Size = new System.Drawing.Size(329, 25);
             this.lblEdit.TabIndex = 2;
-            this.lblEdit.Text = "Select An Existing Component Or Enter A New Component\r\nName";
+            this.lblEdit.Text = "Select or enter component name (up to 8 chars)";
             // 
             // label2
             // 
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(18, 80);
+            this.label2.Location = new System.Drawing.Point(18, 87);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(128, 32);
             this.label2.TabIndex = 3;
@@ -114,16 +114,17 @@ namespace FIA_Biosum_Manager
             // cmbCol
             // 
             this.cmbCol.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cmbCol.Location = new System.Drawing.Point(152, 80);
+            this.cmbCol.Location = new System.Drawing.Point(152, 87);
+            this.cmbCol.MaxLength = 8;
             this.cmbCol.Name = "cmbCol";
-            this.cmbCol.Size = new System.Drawing.Size(352, 28);
+            this.cmbCol.Size = new System.Drawing.Size(352, 33);
             this.cmbCol.TabIndex = 4;
             this.cmbCol.Validating += new System.ComponentModel.CancelEventHandler(this.cmbCol_Validating);
             // 
             // label1
             // 
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(18, 177);
+            this.label1.Location = new System.Drawing.Point(18, 184);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(128, 113);
             this.label1.TabIndex = 5;
@@ -132,7 +133,7 @@ namespace FIA_Biosum_Manager
             // txtDesc
             // 
             this.txtDesc.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtDesc.Location = new System.Drawing.Point(152, 192);
+            this.txtDesc.Location = new System.Drawing.Point(152, 199);
             this.txtDesc.Multiline = true;
             this.txtDesc.Name = "txtDesc";
             this.txtDesc.Size = new System.Drawing.Size(344, 72);
@@ -140,7 +141,7 @@ namespace FIA_Biosum_Manager
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(264, 296);
+            this.btnCancel.Location = new System.Drawing.Point(264, 303);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(88, 48);
             this.btnCancel.TabIndex = 0;
@@ -149,7 +150,7 @@ namespace FIA_Biosum_Manager
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(176, 296);
+            this.btnOK.Location = new System.Drawing.Point(176, 303);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(88, 48);
             this.btnOK.TabIndex = 7;
@@ -161,11 +162,11 @@ namespace FIA_Biosum_Manager
             this.lblTitle.Dock = System.Windows.Forms.DockStyle.Top;
             this.lblTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTitle.ForeColor = System.Drawing.Color.Green;
-            this.lblTitle.Location = new System.Drawing.Point(3, 16);
+            this.lblTitle.Location = new System.Drawing.Point(3, 18);
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(514, 32);
             this.lblTitle.TabIndex = 1;
-            this.lblTitle.Text = "Supplemental Cost Component";
+            this.lblTitle.Text = "Additional CPA Component";
             // 
             // uc_scenario_harvest_cost_column_edit
             // 
