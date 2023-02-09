@@ -6586,7 +6586,7 @@ namespace FIA_Biosum_Manager
             string strTempTable = Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName + "_NEW";
             string strInsertSql = $@"INSERT INTO {strTempTable} SELECT 
                 biosum_cond_id,rxpackage, rx, rxcycle, complete_cpa, harvest_cpa, chip_cpa, assumed_movein_cpa,
-                harvest_cpa_warning_msg, place_holder, override_YN, DateTimeCreated FROM {Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName}";
+                place_holder, override_YN, DateTimeCreated FROM {Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName}";
             arrFieldNames = null;
             foreach (string strPath in lstScenarioDb)
             {

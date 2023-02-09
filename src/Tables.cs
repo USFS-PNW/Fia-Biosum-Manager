@@ -5025,7 +5025,6 @@ namespace FIA_Biosum_Manager
                     "complete_cpa DOUBLE DEFAULT 0," +
                     "chip_cpa DOUBLE ," +
                     "assumed_movein_cpa DOUBLE ," +
-                    "harvest_cpa_warning_msg CHAR(240)," +
                     "place_holder CHAR(1) DEFAULT 'N'," +
                     "override_YN CHAR(1) DEFAULT 'N'," +
                     "DateTimeCreated CHAR(22))";
@@ -5046,7 +5045,6 @@ namespace FIA_Biosum_Manager
                     "complete_cpa DOUBLE DEFAULT 0," +
                     "chip_cpa DOUBLE ," +
                     "assumed_movein_cpa DOUBLE ," +
-                    "harvest_cpa_warning_msg CHAR(240)," +
                     "place_holder CHAR(1) DEFAULT 'N'," +
                     "override_YN CHAR(1) DEFAULT 'N'," +
                     "DateTimeCreated CHAR(22)," +
@@ -5439,6 +5437,7 @@ namespace FIA_Biosum_Manager
             static public string DefaultFiaTreeSpeciesRefTableName { get { return "FIA_TREE_SPECIES_REF"; } }
             static public string DefaultOpcostErrorsTableName { get { return @"opcost_errors"; } }
             static public string DefaultSqliteResultsDbFile { get { return @"db\scenario_results.db"; } }
+            static public string DefaultAddKcpCpaTableName { get { return @"additional_kcp_cpa"; } }
 
             public ProcessorScenarioRun()
             {
@@ -5910,6 +5909,25 @@ namespace FIA_Biosum_Manager
                           "RX text," +
                           "complete_additional_cpa real," +
                           "PRIMARY KEY(biosum_cond_id, rx))";
+            }
+
+            public void CreateAdditionalKcpCpaTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+            {
+                p_oAdo.SqlNonQuery(p_oConn, CreateAdditionalKcpCpaTableSQL(p_strTableName));
+                CreateAdditionalKcpCpaTableIndexes(p_oAdo, p_oConn, p_strTableName);
+            }
+            public void CreateAdditionalKcpCpaTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+            {
+                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "biosum_cond_id,rxPackage,rx,rxCycle");
+
+            }
+            static public string CreateAdditionalKcpCpaTableSQL(string p_strTableName)
+            {
+                return $@"CREATE TABLE {p_strTableName}
+                          (biosum_cond_id text (25),
+                           rxPackage text (3),
+                           rx text (3),
+                           rxCycle text (1))";
             }
 
 
