@@ -5927,7 +5927,8 @@ namespace FIA_Biosum_Manager
                           (biosum_cond_id text (25),
                            rxPackage text (3),
                            rx text (3),
-                           rxCycle text (1))";
+                           rxCycle text (1),
+                           additional_cpa double)";
             }
 
 

@@ -5784,7 +5784,35 @@ namespace FIA_Biosum_Manager
                     }
                 }
                     return strSql;
-            }           
+            }
+
+            public static string UpdateHarvestCostsTableWithKcpCostsPerAcre(
+                string p_strKcpAddlCostsTableName,
+                string p_strHarvestCostsTableName,                
+                string p_strScenarioId, bool p_bIncludeZeroHarvestCpa)
+            {
+                string strSql = "";
+                strSql = "UPDATE " + p_strHarvestCostsTableName + " h " +
+                            "INNER JOIN " + p_strKcpAddlCostsTableName + " a " +
+                            "ON h.biosum_cond_id = a.biosum_cond_id AND h.rxpackage=a.rxpackage AND h.rx=a.rx AND h.rxcycle=a.rxcycle, " +
+                            "scenario_cost_revenue_escalators e " +
+                            "SET h.additional_cpa = a.additional_cpa," +
+                            "h.complete_cpa = " +
+                            "IIF(h.RXCycle='1',(h.harvest_cpa+a.additional_cpa)," +
+                            "IIF(h.RXCycle='2',(h.harvest_cpa * e.EscalatorOperatingCosts_Cycle2 + a.additional_cpa)," +
+                            "IIF(h.RXCycle='3',(h.harvest_cpa * e.EscalatorOperatingCosts_Cycle3 + a.additional_cpa)," +
+                            "IIF(h.RXCycle='4',(h.harvest_cpa * e.EscalatorOperatingCosts_Cycle4 + a.additional_cpa),0)))) ";
+                    if (p_bIncludeZeroHarvestCpa == false)
+                    {
+                        strSql += "WHERE h.harvest_cpa IS NOT NULL AND h.harvest_cpa > 0  AND ";
+                    }
+                    else
+                    {
+                        strSql += "WHERE h.harvest_cpa IS NOT NULL AND ";
+                    }
+                    strSql += "TRIM(UCASE(e.scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'";
+                return strSql;
+            }
         }
         
 		public class Reference
