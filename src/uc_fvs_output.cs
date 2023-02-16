@@ -394,8 +394,8 @@ namespace FIA_Biosum_Manager
             "Step 2 - Pre-Processing Audit Check",            
             "Step 3 - Append FVS Output Data",
             "Step 4 - Post-Processing Audit Check",
-            "Step 5 - (Opt) Create FVSOut_BioSum.db"
-            //"(Opt) Create/replace FVS_InForest in FVSOUT_TREE_LIST.db"
+            "Step 5 - (Opt) Create FVSOut_BioSum.db",
+            "(Opt) Create/replace FVS_InForest in FVSOUT_TREE_LIST.db"
             });
             this.cmbStep.Location = new System.Drawing.Point(8, 337);
             this.cmbStep.Name = "cmbStep";
@@ -10357,7 +10357,7 @@ namespace FIA_Biosum_Manager
                                         "t.year,'" +
                                        strFvsVariant + "' AS fvs_variant, " +
                                        "Trim(t.treeid) AS fvs_tree_id, " +
-                                       "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht, t.pctcr, " +
+                                       "t.SpeciesFia AS fvs_species, t.TPA, t.DBH, t.Ht, t.pctcr, " +
                                        "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
                                        "'Y' AS FvsCreatedTree_YN," +
                                        "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
