@@ -4520,17 +4520,34 @@ namespace FIA_Biosum_Manager
                     //        frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                     //    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
                     //}
+                    //INSERT INACTIVE STANDS WITH HARVEST COSTS INTO THE HARVEST COSTS WORK TABLE WHERE ADDITIONAL_CPA > 0
+                    if (m_oAdo.m_intError == 0)
+                    {
+                        m_oAdo.m_strSQL = $@"INSERT INTO {p_strHarvestCostsTableName} ( biosum_cond_id, rxpackage, rx, rxcycle, additional_cpa, harvest_cpa, complete_cpa, 
+                                             place_holder, override_YN, DateTimeCreated )
+                                             SELECT {strKcpCpaWorkTable}.biosum_cond_id, {strKcpCpaWorkTable}.rxpackage, {strKcpCpaWorkTable}.rx, {strKcpCpaWorkTable}.rxcycle, 
+                                             0, 0, 0,'N', 'N', Now() FROM {strKcpCpaWorkTable}
+                                             WHERE {strKcpCpaWorkTable}.additional_cpa > 0 AND (Exists (SELECT 1 
+                                             FROM {p_strHarvestCostsTableName}
+                                             WHERE {p_strHarvestCostsTableName}.biosum_cond_id = {strKcpCpaWorkTable}.biosum_cond_id 
+                                             and {p_strHarvestCostsTableName}.rxpackage = {strKcpCpaWorkTable}.rxpackage
+                                             and {p_strHarvestCostsTableName}.rx = {strKcpCpaWorkTable}.rx 
+                                             and {p_strHarvestCostsTableName}.rxcycle = {strKcpCpaWorkTable}.rxcycle))=False";                        
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                    }
+
                     if (m_oAdo.m_intError == 0)
                     {
                         //Update the harvest costs work table complete costs per acre column;
                         //Also applies the escalators to harvest_costs
                         m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.UpdateHarvestCostsTableWithKcpCostsPerAcre(
                                          strKcpCpaWorkTable,
-                                         p_strHarvestCostsTableName, ScenarioId, false);
-
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                                         p_strHarvestCostsTableName, ScenarioId, true);                    
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
                     }
                 }
             }
@@ -4539,7 +4556,18 @@ namespace FIA_Biosum_Manager
             m_strError = m_oAdo.m_strError;
         }
 
-        private void RunScenario_UpdateHarvestCostsTableWithAdditionalCostsSqlite(string p_strHarvestCostsTableName)
+        private void RunScenario_InsertInactiveStandsIntoHarvestCostsTable(string p_strHarvestCostsTableName, string p_strVariant, string p_strRxPackage)
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_InsertInactiveStandsIntoHarvestCostsTable\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+
+        }
+
+            private void RunScenario_UpdateHarvestCostsTableWithAdditionalCostsSqlite(string p_strHarvestCostsTableName)
         {
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -5643,6 +5671,10 @@ namespace FIA_Biosum_Manager
                         if (m_bUseKcpAdditionalCpa)
                         {
                             RunScenario_UpdateHarvestCostsTableWithKcpAdditionalCosts("HarvestCostsWorkTable", strVariant, strRxPackage);
+                            if (m_intError == 0)
+                            {
+
+                            }
                         }
                         else
                         {
