@@ -4927,7 +4927,7 @@ namespace FIA_Biosum_Manager
                                 frmMain.g_oTables.m_oFvs.CreateSQLiteInputBiosumVolumesTable(oDataMgr, conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable);
                                 oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step1(
                                                    Tables.VolumeAndBiomass.BiosumVolumesInputTable,
-                                                   strFvsTreeTable, p_strPackage, p_strVariant, "rxYear");
+                                                   strFvsTreeTable, p_strPackage, p_strVariant);
 
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
@@ -10283,8 +10283,8 @@ namespace FIA_Biosum_Manager
                                 bRunFics = true;
                                 SQLite.m_strSQL = "CREATE TABLE cutlist_fia_trees_work_table AS " +
                                     "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + strRxPackage + "' AS rxpackage," +
-                                    "'' as rx, '' as rxcycle, '" + strFvsVariant + "' as fvs_variant, t.year," +
-                                    "Trim(t.treeid) AS fvs_tree_id," +
+                                    "'' as rx, '' as rxcycle, '" + strFvsVariant + "' as fvs_variant, t.year as simYear," +
+                                    "cast(t.year as text) as rxyear, Trim(t.treeid) AS fvs_tree_id," +
                                     "t.SpeciesFia AS fvs_species, t.TPA, t.DBH, t.Ht, t.pctcr," +
                                     "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
                                     "'N' AS FvsCreatedTree_YN," +
@@ -10320,10 +10320,10 @@ namespace FIA_Biosum_Manager
                                 }
                                 //insert into fvs tree table
                                 SQLite.m_strSQL = $@"INSERT INTO {Tables.FVS.DefaultFVSInForestTreeTableName} 
-                                                     (biosum_cond_id, rxpackage,rx,rxcycle,year,fvs_variant, fvs_tree_id,
+                                                     (biosum_cond_id, rxpackage,rx,rxcycle,rxyear, simYear,fvs_variant, fvs_tree_id,
                                                       fvs_species, tpa, dbh, ht, pctcr,
                                                       treeval, mortpa, mdefect, bapctile, dg, htg, FvsCreatedTree_YN,DateTimeCreated)
-                                                      SELECT a.biosum_cond_id, a.rxpackage,a.rx,a.rxcycle,a.year,a.fvs_variant,
+                                                      SELECT a.biosum_cond_id, a.rxpackage,a.rx,a.rxcycle,a.rxyear,a.simYear,a.fvs_variant,
                                                       a.fvs_tree_id, a.fvs_species, a.tpa, a.dbh, a.ht, a.pctcr,
                                                       a.treeval, a.mortpa, a.mdefect, a.bapctile, a.dg, a.htg,
                                                       a.FvsCreatedTree_YN,a.DateTimeCreated  
@@ -10353,8 +10353,8 @@ namespace FIA_Biosum_Manager
                                 SQLite.m_strSQL =
                                        "CREATE TABLE cutlist_fvs_created_seedlings_work_table AS " +
                                        "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + strRxPackage + "' AS rxpackage," +
-                                       "'' AS rx,'' AS rxcycle," +
-                                        "t.year,'" +
+                                       "'' AS rx,'' AS rxcycle, cast(t.year as text) as rxyear," +
+                                        "t.year as simYear,'" +
                                        strFvsVariant + "' AS fvs_variant, " +
                                        "Trim(t.treeid) AS fvs_tree_id, " +
                                        "t.SpeciesFia AS fvs_species, t.TPA, t.DBH, t.Ht, t.pctcr, " +
@@ -10394,11 +10394,11 @@ namespace FIA_Biosum_Manager
                                 }
 
                                 SQLite.m_strSQL = $@"INSERT INTO {Tables.FVS.DefaultFVSInForestTreeTableName} 
-                                                    (biosum_cond_id, rxpackage,rx,rxcycle,year,fvs_variant, fvs_tree_id,
+                                                    (biosum_cond_id, rxpackage,rx,rxcycle,rxyear,simYear,fvs_variant, fvs_tree_id,
                                                      fvs_species, tpa, dbh, ht, pctcr,
                                                      treeval, mortpa, mdefect, bapctile, dg, htg,
                                                      FvsCreatedTree_YN,DateTimeCreated) 
-                                                     SELECT a.biosum_cond_id, a.rxpackage,a.rx,a.rxcycle,a.year,a.fvs_variant,
+                                                     SELECT a.biosum_cond_id, a.rxpackage,a.rx,a.rxcycle,a.rxYear,a.simYear,a.fvs_variant,
                                                      a.fvs_tree_id, a.fvs_species, a.tpa, a.dbh, a.ht, a.pctcr,
                                                      a.treeval, a.mortpa, a.mdefect, a.bapctile, a.dg, a.htg, 
                                                      a.FvsCreatedTree_YN,a.DateTimeCreated  
@@ -10437,7 +10437,7 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oTables.m_oFvs.CreateSQLiteInputBiosumVolumesTable(SQLite, conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable);
                             SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step1(
                                                Tables.VolumeAndBiomass.BiosumVolumesInputTable,
-                                               Tables.FVS.DefaultFVSInForestTreeTableName, strRxPackage, strFvsVariant, "Year");
+                                               Tables.FVS.DefaultFVSInForestTreeTableName, strRxPackage, strFvsVariant);
 
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                 this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");

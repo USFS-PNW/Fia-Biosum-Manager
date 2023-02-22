@@ -3738,15 +3738,10 @@ namespace FIA_Biosum_Manager
                 /// <param name="p_strRxPackage"></param>
                 /// <returns></returns>
                 public static string BuildInputSQLiteTableForVolumeCalculation_Step1(string p_strInputVolumesTable, string p_strFvsTreeTable, 
-                    string p_strRxPackage, string p_strFvsVariant, string p_strInvYrField)
+                    string p_strRxPackage, string p_strFvsVariant)
                 {
-                    string invYear = "year";
-                    if (p_strInvYrField.ToUpper().Equals("RXYEAR"))
-                    {
-                        invYear = "cast(rxyear as integer)";
-                    }
                     string strColumns = @"id,biosum_cond_id,invyr,fvs_variant,spcd,dbh,ht,actualht,cr,fvs_tree_id, fvscreatedtree_yn";
-                    string strValues = $@"id,biosum_cond_id, {invYear} as invyr, fvs_variant, " +
+                    string strValues = $@"id,biosum_cond_id, cast(rxyear as integer) as invyr, fvs_variant, " +
                         "CASE WHEN FvsCreatedTree_YN='Y' THEN cast(fvs_species as integer) ELSE -1 END AS spcd, " +
                         "dbh,ht,ht,pctcr,fvs_tree_id, fvscreatedtree_yn";
                     return $@"INSERT INTO {p_strInputVolumesTable} ({strColumns})  
@@ -4076,7 +4071,7 @@ namespace FIA_Biosum_Manager
                                                      FROM {p_strSeqNumTable} m WHERE 
                                                      m.STANDID = {p_strFvsTreeTable}.biosum_cond_id and
                                                      {p_strFvsTreeTable}.rxpackage = m.RXPACKAGE and 
-                                                     {p_strFvsTreeTable}.Year = m.YEAR )
+                                                     {p_strFvsTreeTable}.simYear = m.YEAR )
                                                      WHERE EXISTS ( SELECT * from {p_strSeqNumTable} m 
                                                      WHERE m.STANDID = {p_strFvsTreeTable}.biosum_cond_id and
                                                      {p_strFvsTreeTable}.rxpackage = m.RXPACKAGE)";

@@ -2730,7 +2730,8 @@ namespace FIA_Biosum_Manager
                     "rxpackage CHAR(3)," +
                     "rx CHAR(3)," +
                     "rxcycle CHAR(1)," +
-                    "year INTEGER," +
+                    "rxyear CHAR(4)," +
+                    "simYear INTEGER,"  +
                     "fvs_variant CHAR(2)," +
                     "fvs_species CHAR(6)," +
                     "tpa DOUBLE," +
