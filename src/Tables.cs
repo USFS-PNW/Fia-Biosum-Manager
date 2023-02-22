@@ -5443,34 +5443,7 @@ namespace FIA_Biosum_Manager
             public ProcessorScenarioRun()
             {
             }
-            //
-            //HARVEST COSTS TABLE
-            //
-            static public string CreateHarvestCostsTableSQL(string p_strTableName)
-            {
-                return Tables.Processor.CreateHarvestCostsTableSQL(p_strTableName);
-            }
-            //
-            //TREE VOLUMES AND VALUES BY SPECIES GROUPS AND DIAMETER GROUPS
-            //
-            static public string CreateTreeVolValSpeciesDiamGroupsTableSQL(string p_strTableName)
-            {
-                return Tables.Processor.CreateTreeVolValSpeciesDiamGroupsTableSQL(p_strTableName);
-            }
-            //
-            //DIAMETERS TABLE
-            //
-            public void CreateDiametersTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateDiametersTableSQL(p_strTableName));
-                CreateDiametersTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateDiametersTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "dbh,diam_group,species_group");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "diam_group");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "species_group");
-            }
+
             static public string CreateDiametersTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " " +
@@ -5912,24 +5885,32 @@ namespace FIA_Biosum_Manager
                           "PRIMARY KEY(biosum_cond_id, rx))";
             }
 
-            public void CreateAdditionalKcpCpaTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+            public void CreateAdditionalKcpCpaTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, 
+                string p_strTableName, bool bIsWorktable)
             {
-                p_oAdo.SqlNonQuery(p_oConn, CreateAdditionalKcpCpaTableSQL(p_strTableName));
+                p_oAdo.SqlNonQuery(p_oConn, CreateAdditionalKcpCpaTableSQL(p_strTableName, bIsWorktable));
                 CreateAdditionalKcpCpaTableIndexes(p_oAdo, p_oConn, p_strTableName);
             }
-            public void CreateAdditionalKcpCpaTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+            public void CreateAdditionalKcpCpaTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, 
+                System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
                 p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "biosum_cond_id,rxPackage,rx,rxCycle");
 
             }
-            static public string CreateAdditionalKcpCpaTableSQL(string p_strTableName)
+            static public string CreateAdditionalKcpCpaTableSQL(string p_strTableName, bool bIsWorktable)
             {
-                return $@"CREATE TABLE {p_strTableName}
-                          (biosum_cond_id text (25),
-                           rxPackage text (3),
-                           rx text (3),
-                           rxCycle text (1),
-                           additional_cpa double)";
+                string lastField = "DateTimeCreated CHAR(22)";
+                if (bIsWorktable)
+                {
+                    lastField = "additional_cpa DOUBLE";
+                }
+                string strSql = $@"CREATE TABLE {p_strTableName}
+                          (biosum_cond_id TEXT (25),
+                           rxPackage TEXT (3),
+                           rx TEXT (3),
+                           rxCycle TEXT (1),
+                           {lastField})";
+                return strSql;
             }
 
 

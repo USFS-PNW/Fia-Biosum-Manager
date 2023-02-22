@@ -6614,6 +6614,15 @@ namespace FIA_Biosum_Manager
                         }
                     }
                 }
+                if (!oDao.TableExists(strPath, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName))
+                {
+                    // Add new additional_kcp_cpa
+                    using (var conn = new OleDbConnection(oAdo.getMDBConnString(strPath, "", "")))
+                    {
+                        conn.Open();
+                        frmMain.g_oTables.m_oProcessorScenarioRun.CreateAdditionalKcpCpaTable(oAdo, conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, false);
+                    }
+                }
             }
 
             if (oAdo != null)
