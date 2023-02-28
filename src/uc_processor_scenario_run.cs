@@ -1758,7 +1758,7 @@ namespace FIA_Biosum_Manager
                     if (m_intError == 0)
                     {
                         frmMain.g_oDelegate.SetControlPropertyValue(lblMsg, "Text", "Append New Variant=" + strVariant + " and RxPackage=" + strRxPackage + " Records To Harvest Costs And Tree Vol Val Table...Stand By");
-                        RunScenario_AppendToTreeVolValAndHarvestCostsTable();
+                        RunScenario_AppendToTreeVolValAndHarvestCostsTable("HarvestCostsWorkTable", "");
                     }
 
                     if (m_intError == 0)
@@ -3940,7 +3940,7 @@ namespace FIA_Biosum_Manager
             
 
         }
-        private void RunScenario_AppendToHarvestCosts(string p_strHarvestCostTableName)
+        private void RunScenario_AppendToHarvestCosts(string p_strHarvestCostTableName, bool bInactiveVarRxPackage)
         {
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -3983,13 +3983,14 @@ namespace FIA_Biosum_Manager
                 }
             }
 
-            m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.AppendToOPCOSTHarvestCostsTable(
-                "OpCost_Output", "OpCost_Input", p_strHarvestCostTableName, m_strDateTimeCreated);
-
-            if (m_oAdo.m_intError == 0 && frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-
-            if (m_oAdo.m_intError == 0) m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+            if (! bInactiveVarRxPackage)
+            {
+                m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.AppendToOPCOSTHarvestCostsTable(
+                    "OpCost_Output", "OpCost_Input", p_strHarvestCostTableName, m_strDateTimeCreated);
+                if (m_oAdo.m_intError == 0 && frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                if (m_oAdo.m_intError == 0) m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+            }
         }
         private void RunScenario_UpdateHarvestCostsTableWithAdditionalCosts(string p_strHarvestCostsTableName)
         {
@@ -4245,8 +4246,8 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void RunScenario_UpdateHarvestCostsTableWithKcpAdditionalCosts(string p_strHarvestCostsTableName, string p_strVariant, 
-            string p_strRxPackage, string p_strDateTimeCreated)
+        private void RunScenario_UpdateHarvestCostsTableWithKcpAdditionalCosts(string p_strHarvestCostsTableName, string p_strAddCostsWorktable,
+            string p_strVariant, string p_strRxPackage, string p_strDateTimeCreated)
         {
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -4270,17 +4271,16 @@ namespace FIA_Biosum_Manager
             //    frmMain.g_oUtils.WriteText(m_strDebugFile, $@"Created {strAddCpaWorkTable} \r\n");
 
             //create additional cpa work table to itemize additional costs
-            string strKcpCpaWorkTable = "KcpCpaWorkTable";
-            if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, strKcpCpaWorkTable))
+            if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, p_strAddCostsWorktable))
             {
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, $@"DROP TABLE {strKcpCpaWorkTable}");
+                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, $@"DROP TABLE {p_strAddCostsWorktable}");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, $@"Dropped {strKcpCpaWorkTable} \r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, $@"Dropped {p_strAddCostsWorktable} \r\n");
             }
             frmMain.g_oTables.m_oProcessorScenarioRun.CreateAdditionalKcpCpaTable(
-                m_oAdo, m_oAdo.m_OleDbConnection, strKcpCpaWorkTable, true);
+                m_oAdo, m_oAdo.m_OleDbConnection, p_strAddCostsWorktable, true);
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, $@"Created {strKcpCpaWorkTable} \r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, $@"Created {p_strAddCostsWorktable} \r\n");
 
             //@ToDo: Revisit this when adding scenario-level harvest costs
             if (m_oAdo.m_intError == 0)
@@ -4335,19 +4335,54 @@ namespace FIA_Biosum_Manager
                                 if (m_lstAdditionalCpaColumns.Contains(strCol))
                                 {
                                     //Need to add the column to the table
-                                    m_oAdo.AddColumn(m_oAdo.m_OleDbConnection, strKcpCpaWorkTable, strCol, "DOUBLE", "");
+                                    m_oAdo.AddColumn(m_oAdo.m_OleDbConnection, p_strAddCostsWorktable, strCol, "DOUBLE", "");
                                     //Add the associated flag column to the table
-                                    m_oAdo.AddColumn(m_oAdo.m_OleDbConnection, strKcpCpaWorkTable, strCol + strFlagSuffix, "DOUBLE", "");
+                                    m_oAdo.AddColumn(m_oAdo.m_OleDbConnection, p_strAddCostsWorktable, strCol + strFlagSuffix, "DOUBLE", "");
                                 }
                                 lstScenarioColumnNameList.Add(strCol);
                             }
                         }
                     }
+                    m_oAdo.m_OleDbDataReader.Close();
+
+                    // UPDATE THE COLUMNS AND CREATE THE TABLE LINK TO THE additional_kcp_cpa TABLE AS SOON AS WE KNOW
+                    // WHAT THE COLUMNS SHOULD BE SO THE DAO HAS TIME TO CREATE THE LINK BEFORE WE NEED THE TABLE
+                    string strScenarioResultsMDB =
+                        frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                        "\\processor\\" + ScenarioId + "\\" + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableDbFile;
+                    string strCacheConnString = m_oAdo.m_OleDbConnection.ConnectionString;
+                    m_oAdo.CloseConnection(m_oAdo.m_OleDbConnection);
+                    using (var conn = new System.Data.OleDb.OleDbConnection(m_oAdo.getMDBConnString(strScenarioResultsMDB, "", "")))
+                    {
+                        conn.Open();
+                        foreach (var sName in lstScenarioColumnNameList)
+                        {
+                            if (!m_oAdo.ColumnExist(conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, sName))
+                            {
+                                m_oAdo.AddColumn(conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, sName, "DOUBLE", "");
+                            }
+                        }
+                    }
+
+                    // Create link to additional_kcp_cpa after we have finalized the schema
+                    dao_data_access oDao = new dao_data_access();
+                    oDao.CreateTableLink(m_oQueries.m_strTempDbFile,
+                        Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName,
+                        strScenarioResultsMDB, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, true);
+                    if (oDao != null)
+                    {
+                        oDao.m_DaoWorkspace.Close();
+                        oDao = null;
+                    }
+                    // re-open connection to temp database
+                    m_oAdo.m_OleDbConnection.ConnectionString = strCacheConnString;
+                    m_oAdo.m_OleDbConnection.Open();
+
 
                     // INSERT ROWS FROM PRE_FVS_COMPUTE TABLE; ASSUME ROW COUNT IS SAME FOR BOTH PRE AND POST TABLE
                     // INCLUDES INITIALLY SETTING THE FLAGS FROM THE PRE_FVS_COMPUTE TABLE
                     sb.Clear();
-                    sb.Append($@"INSERT INTO {strKcpCpaWorkTable} (biosum_cond_id,rxpackage, rx, rxcycle");
+                    sb.Append($@"INSERT INTO {p_strAddCostsWorktable} (biosum_cond_id,rxpackage, rx, rxcycle");
                     foreach (var sName in lstScenarioColumnNameList)
                     {
                         sb.Append($@", {sName}{strFlagSuffix}");
@@ -4367,10 +4402,10 @@ namespace FIA_Biosum_Manager
                     m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
 
                     // UPDATE THE FLAGS FROM THE POST_FVS_COMPUTE TABLE
-                    string strUpdate = $@"UPDATE {strKcpCpaWorkTable} INNER JOIN {Tables.FVS.DefaultPostFVSComputeTableName} ON 
-                        {strKcpCpaWorkTable}.biosum_cond_id = {Tables.FVS.DefaultPostFVSComputeTableName}.biosum_cond_id and 
-                        {strKcpCpaWorkTable}.rxpackage = {Tables.FVS.DefaultPostFVSComputeTableName}.rxpackage
-                        and {strKcpCpaWorkTable}.rxcycle = {Tables.FVS.DefaultPostFVSComputeTableName}.rxcycle SET ";
+                    string strUpdate = $@"UPDATE {p_strAddCostsWorktable} INNER JOIN {Tables.FVS.DefaultPostFVSComputeTableName} ON 
+                        {p_strAddCostsWorktable}.biosum_cond_id = {Tables.FVS.DefaultPostFVSComputeTableName}.biosum_cond_id and 
+                        {p_strAddCostsWorktable}.rxpackage = {Tables.FVS.DefaultPostFVSComputeTableName}.rxpackage
+                        and {p_strAddCostsWorktable}.rxcycle = {Tables.FVS.DefaultPostFVSComputeTableName}.rxcycle SET ";
                     sb.Clear();
                     foreach (var sName in lstScenarioColumnNameList)
                     {
@@ -4408,14 +4443,14 @@ namespace FIA_Biosum_Manager
                             }
                         }
                         strSetValues = strSetValues.TrimEnd(',');
-                        m_oAdo.m_strSQL = $@"UPDATE {strKcpCpaWorkTable} SET {strSetValues}";
+                        m_oAdo.m_strSQL = $@"UPDATE {p_strAddCostsWorktable} SET {strSetValues}";
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                         m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
 
                         //APPLY THE ESCALATORS TO ADDITIONAL CPA
                         sb.Clear();
-                        sb.Append($@"UPDATE {strKcpCpaWorkTable} h, scenario_cost_revenue_escalators e SET ");
+                        sb.Append($@"UPDATE {p_strAddCostsWorktable} h, scenario_cost_revenue_escalators e SET ");
                         foreach (var sName in lstScenarioColumnNameList)
                         {
                             sb.Append($@"H.{sName} = IIF(h.RXCycle = '2', (H.{sName} * e.EscalatorOperatingCosts_Cycle2), 
@@ -4430,7 +4465,7 @@ namespace FIA_Biosum_Manager
 
                         //SUM THE COSTS
                         sb.Clear();
-                        sb.Append($@"UPDATE {strKcpCpaWorkTable} SET ADDITIONAL_CPA = (");
+                        sb.Append($@"UPDATE {p_strAddCostsWorktable} SET ADDITIONAL_CPA = (");
                         foreach (var sName in lstScenarioColumnNameList)
                         {
                             sb.Append($@" {sName} +");
@@ -4441,6 +4476,13 @@ namespace FIA_Biosum_Manager
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                         m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+
+                        //DELETE WHERE ADDITIONAL_CPA = 0
+                        m_oAdo.m_strSQL = $@"DELETE FROM {p_strAddCostsWorktable} WHERE ADDITIONAL_CPA = 0";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+
 
                     }
 
@@ -4515,14 +4557,14 @@ namespace FIA_Biosum_Manager
                     {
                         m_oAdo.m_strSQL = $@"INSERT INTO {p_strHarvestCostsTableName} ( biosum_cond_id, rxpackage, rx, rxcycle, additional_cpa, harvest_cpa, complete_cpa, 
                                              place_holder, override_YN, DateTimeCreated )
-                                             SELECT {strKcpCpaWorkTable}.biosum_cond_id, {strKcpCpaWorkTable}.rxpackage, {strKcpCpaWorkTable}.rx, {strKcpCpaWorkTable}.rxcycle, 
-                                             0, 0, 0,'N', 'N', '{p_strDateTimeCreated}' FROM {strKcpCpaWorkTable}
-                                             WHERE {strKcpCpaWorkTable}.additional_cpa > 0 AND (Exists (SELECT 1 
+                                             SELECT {p_strAddCostsWorktable}.biosum_cond_id, {p_strAddCostsWorktable}.rxpackage, {p_strAddCostsWorktable}.rx, {p_strAddCostsWorktable}.rxcycle, 
+                                             0, 0, 0,'N', 'N', '{p_strDateTimeCreated}' FROM {p_strAddCostsWorktable}
+                                             WHERE {p_strAddCostsWorktable}.additional_cpa > 0 AND (Exists (SELECT 1 
                                              FROM {p_strHarvestCostsTableName}
-                                             WHERE {p_strHarvestCostsTableName}.biosum_cond_id = {strKcpCpaWorkTable}.biosum_cond_id 
-                                             and {p_strHarvestCostsTableName}.rxpackage = {strKcpCpaWorkTable}.rxpackage
-                                             and {p_strHarvestCostsTableName}.rx = {strKcpCpaWorkTable}.rx 
-                                             and {p_strHarvestCostsTableName}.rxcycle = {strKcpCpaWorkTable}.rxcycle))=False";                        
+                                             WHERE {p_strHarvestCostsTableName}.biosum_cond_id = {p_strAddCostsWorktable}.biosum_cond_id 
+                                             and {p_strHarvestCostsTableName}.rxpackage = {p_strAddCostsWorktable}.rxpackage
+                                             and {p_strHarvestCostsTableName}.rx = {p_strAddCostsWorktable}.rx 
+                                             and {p_strHarvestCostsTableName}.rxcycle = {p_strAddCostsWorktable}.rxcycle))=False";                        
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                         m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
@@ -4533,43 +4575,12 @@ namespace FIA_Biosum_Manager
                         //Update the harvest costs work table complete costs per acre column;
                         //Also applies the escalators to harvest_costs
                         m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.UpdateHarvestCostsTableWithKcpCostsPerAcre(
-                                         strKcpCpaWorkTable,
+                                         p_strAddCostsWorktable,
                                          p_strHarvestCostsTableName, ScenarioId, true);                    
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                         m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                    }
-                                       
-                    string strScenarioResultsMDB =
-                        frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                        "\\processor\\" + ScenarioId + "\\" + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableDbFile;
-                    string strCacheConnString = m_oAdo.m_OleDbConnection.ConnectionString;
-                    m_oAdo.CloseConnection(m_oAdo.m_OleDbConnection);
-                    using (var conn = new System.Data.OleDb.OleDbConnection(m_oAdo.getMDBConnString(strScenarioResultsMDB, "", "")))
-                    {
-                        conn.Open();
-                        foreach (var sName in lstScenarioColumnNameList)
-                        {
-                            if (!m_oAdo.ColumnExist(conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, sName))
-                            {
-                                m_oAdo.AddColumn(conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, sName, "DOUBLE", "");
-                            }
-                        }
-                    }
-                    // re-open connection to temp database
-                    m_oAdo.m_OleDbConnection.ConnectionString = strCacheConnString;
-                    m_oAdo.m_OleDbConnection.Open();
-
-                    // Create link to additional_kcp_cpa after we have finalized the schema
-                    dao_data_access oDao = new dao_data_access();
-                    oDao.CreateTableLink(m_oQueries.m_strTempDbFile,
-                        Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName,
-                        strScenarioResultsMDB,Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, true);
-                    if (oDao != null)
-                    {
-                        oDao.m_DaoWorkspace.Close();
-                        oDao = null;
-                    }
+                    }                                      
                 }
             }
 
@@ -4869,11 +4880,26 @@ namespace FIA_Biosum_Manager
 
                 m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
             }
+            if (m_oAdo.m_intError == 0 && m_bUseKcpAdditionalCpa == true)
+            {
+                //
+                //DELETE THE VARIANT+RXPACKAGE FROM THE additional_kcp_cpa TABLE
+                //
+                m_oAdo.m_strSQL = $@"DELETE FROM {Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName} t 
+                                  WHERE EXISTS (SELECT c.biosum_cond_id,p.fvs_variant FROM {this.m_oQueries.m_oFIAPlot.m_strCondTable} c,
+                                  {this.m_oQueries.m_oFIAPlot.m_strPlotTable} p
+                                  WHERE trim(t.rxpackage)='{p_strRxPackage}' AND (trim(t.biosum_cond_id)=c.biosum_cond_id AND 
+                                  p.biosum_plot_id=c.biosum_plot_id AND p.fvs_variant='{p_strVariant}'))";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+
+                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+            }
             m_intError = m_oAdo.m_intError;
             m_strError = m_oAdo.m_strError;
 
         }
-        private void RunScenario_AppendToTreeVolValAndHarvestCostsTable()
+        private void RunScenario_AppendToTreeVolValAndHarvestCostsTable(string p_strHarvestCostsTableName, string p_strAddCostsWorktable)
         {
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -4894,17 +4920,54 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                     m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
                 }
-                if (m_oAdo.m_intError == 0 && m_oAdo.TableExist(m_oAdo.m_OleDbConnection, "HarvestCostsWorkTable"))
+                if (m_oAdo.m_intError == 0 && m_oAdo.TableExist(m_oAdo.m_OleDbConnection, p_strHarvestCostsTableName))
                 {
                     //
                     //APPEND TO SCENARIO HARVEST COST TABLE
                     //
                     m_oAdo.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName + " " +
-                                      "SELECT * FROM HarvestCostsWorkTable";
+                                      "SELECT * FROM " + p_strHarvestCostsTableName;
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                     m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
                 }
+                if (!string.IsNullOrEmpty(p_strAddCostsWorktable))
+                {
+                    if (m_oAdo.m_intError == 0 && m_oAdo.TableExist(m_oAdo.m_OleDbConnection, p_strAddCostsWorktable))
+                    {
+                        //
+                        //APPEND TO SCENARIO HARVEST COST TABLE
+                        //
+                        // @ToDo: Need to update this to only populate columns that are in the worktable. Look at plot load for example
+                        var dtSourceSchema = m_oAdo.getTableSchema(m_oAdo.m_OleDbConnection, "select * from " + p_strAddCostsWorktable);
+                        var dtDestSchema = m_oAdo.getTableSchema(m_oAdo.m_OleDbConnection, "select * from " + Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName);
+                        //build field list string to insert sql by matching FIADB and BioSum Tree columns
+                        string strCol = "";
+                        string strFields = "";
+                        for (int x = 0; x <= dtDestSchema.Rows.Count - 1; x++)
+                        {
+                            strCol = dtDestSchema.Rows[x]["columnname"].ToString().Trim();
+                            //see if there is an equivalent FIADB column
+                            for (int y = 0; y <= dtSourceSchema.Rows.Count - 1; y++)
+                            {
+                                if (strCol.Trim().ToUpper() == dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper())
+                                {
+                                    strFields += strCol + ",";
+
+                                    break;
+                                }
+                            }
+                        }
+                        strFields += $@"'{m_strDateTimeCreated}' AS DATETIMECREATED ";
+
+                        m_oAdo.m_strSQL = $@"INSERT INTO {Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName} 
+                                          SELECT {strFields} FROM {p_strAddCostsWorktable}";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                    }
+                }
+
                 m_intError = m_oAdo.m_intError;
                 m_strError = m_oAdo.m_strError;
             }
@@ -4928,13 +4991,13 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                     m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
                 }
-                if (m_oDataMgr.m_intError == 0 && m_oDataMgr.TableExist(m_oDataMgr.m_Connection, "HarvestCostsWorkTable"))
+                if (m_oDataMgr.m_intError == 0 && m_oDataMgr.TableExist(m_oDataMgr.m_Connection, p_strHarvestCostsTableName))
                 {
                     //
                     //APPEND TO SCENARIO HARVEST COST TABLE
                     //
                     m_oDataMgr.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName + " " +
-                                      "SELECT * FROM HarvestCostsWorkTable";
+                                      "SELECT * FROM " + p_strHarvestCostsTableName;
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                     m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
@@ -5564,7 +5627,7 @@ namespace FIA_Biosum_Manager
 
                     //Here we set the maximum number of ticks on the progress bar
                     //y cannot exceed this max number
-                    frmMain.g_oDelegate.SetControlPropertyValue(ReferenceProgressBarEx, "Maximum", 13);
+                    frmMain.g_oDelegate.SetControlPropertyValue(ReferenceProgressBarEx, "Maximum", 12);
                     
                     y = 0;
 
@@ -5680,24 +5743,22 @@ namespace FIA_Biosum_Manager
                     if (m_intError == 0)
                     {
                         frmMain.g_oDelegate.SetControlPropertyValue(lblMsg, "Text", "Append OPCOST Data To Harvest Costs Work Table...Stand By");
-                        RunScenario_AppendToHarvestCosts("HarvestCostsWorkTable");
+                        RunScenario_AppendToHarvestCosts("HarvestCostsWorkTable", _bInactiveVarRxPackage);
                     }
                     if (m_intError == 0)
                     {
                         y++;
                         frmMain.g_oDelegate.SetControlPropertyValue(ReferenceProgressBarEx, "Value", y);
                     }
+                    string strKcpCpaWorkTable = "";
                     if (m_intError == 0)
                     {
                         frmMain.g_oDelegate.SetControlPropertyValue(lblMsg, "Text", "Update Harvest Costs Work Table With Additional Costs...Stand By");
                         if (m_bUseKcpAdditionalCpa)
                         {
-                            RunScenario_UpdateHarvestCostsTableWithKcpAdditionalCosts("HarvestCostsWorkTable", strVariant, 
-                                strRxPackage, m_strDateTimeCreated);
-                            if (m_intError == 0)
-                            {
-
-                            }
+                            strKcpCpaWorkTable = "KcpCpaWorkTable";
+                            RunScenario_UpdateHarvestCostsTableWithKcpAdditionalCosts("HarvestCostsWorkTable", strKcpCpaWorkTable, 
+                                strVariant, strRxPackage, m_strDateTimeCreated);
                         }
                         else
                         {
@@ -5723,7 +5784,7 @@ namespace FIA_Biosum_Manager
                     if (m_intError == 0)
                     {
                         frmMain.g_oDelegate.SetControlPropertyValue(lblMsg, "Text", "Append New Variant=" + strVariant + " and RxPackage=" + strRxPackage + " Records To Harvest Costs And Tree Vol Val Table...Stand By");
-                        RunScenario_AppendToTreeVolValAndHarvestCostsTable();
+                        RunScenario_AppendToTreeVolValAndHarvestCostsTable("HarvestCostsWorkTable", strKcpCpaWorkTable);
                     }
 
                     if (m_intError == 0)
