@@ -12,7 +12,8 @@ using System.IO.Packaging;
 using MS.Internal.Documents.Application;
 using System.Threading;
 using System.Windows.Threading;
-
+using System.Windows.Documents;
+using System.IO;
 
 namespace FIA_Biosum_Manager
 {
@@ -100,20 +101,20 @@ namespace FIA_Biosum_Manager
                 ShutdownThread();
             }
 
-            string strMessage = "BioSum Help screens are currently disabled. We recommend consulting the appropriate User Guide for help.";
-            MessageBox.Show(strMessage, "FIA Biosum");
+            //string strMessage = "BioSum Help screens are currently disabled. We recommend consulting the appropriate User Guide for help.";
+            //MessageBox.Show(strMessage, "FIA Biosum");
 
             //load the PageNumber variable from the key values
-            //GetItemPageNumber(p_strPrimaryKeyValues);
+            GetItemPageNumber(p_strPrimaryKeyValues);
 
             //start a new thread containing the document viewer
-            //m_oHelpThread = new Thread(new ThreadStart(this.ShowHelp));
-            //m_oHelpThread.IsBackground = true;
-            //m_oHelpThread.SetApartmentState(System.Threading.ApartmentState.STA);
-            //m_oHelpThread.Start();
+            m_oHelpThread = new Thread(new ThreadStart(this.ShowHelp));
+            m_oHelpThread.IsBackground = true;
+            m_oHelpThread.SetApartmentState(System.Threading.ApartmentState.STA);
+            m_oHelpThread.Start();
 
-            
-            
+
+
         }
         /// <summary>
         /// Close the document viewer and thread
@@ -143,32 +144,34 @@ namespace FIA_Biosum_Manager
             
             xpsDocumentViewer = new XPSDocumentViewer();
            
-            System.Windows.Xps.Packaging.XpsDocument xpsDoc = new System.Windows.Xps.Packaging.XpsDocument(_env.strAppDir + "\\Help\\" + _strXPSFile, System.IO.FileAccess.Read);
-            xpsDocumentViewer.xpsViewer1.Document = xpsDoc.GetFixedDocumentSequence();
-            xpsDocumentViewer.ReferenceHelp = this;
+            XpsDocument xpsDoc = new XpsDocument(_env.strAppDir + "\\Help\\" + _strXPSFile, System.IO.FileAccess.Read);
+            try
+            {
+                // https://learn.microsoft.com/en-us/answers/questions/1129597/wpf-apps-crash-on-windows-10-11-after-windows-upda?page=2#answers
+                // 28-FEB-2023: Created custom GetFixedDocumentSequence function per above posting to get around patch breaking the built-in
+                // GetFixedDocumentSequence. It seems slower but does work
+                xpsDocumentViewer.xpsViewer1.Document = this.GetFixedDocumentSequence(xpsDoc);
+                xpsDocumentViewer.ReferenceHelp = this;
 
-            
-            
-            m_intCurrentPageNumber = PageNumber;
-            System.Windows.Documents.DocumentPage oPage = xpsDocumentViewer.xpsViewer1.Document.DocumentPaginator.GetPage(PageNumber);
-           
-            xpsDocumentViewer.xpsViewer1.GoToPage(PageNumber);
-            
-            xpsDocumentViewer.WindowState = WindowState.Normal;
-            xpsDocumentViewer.Top = frmMain.g_oFrmMain.Top + 200;
-            xpsDocumentViewer.Height = frmMain.g_oFrmMain.ClientSize.Height - 200;
-            xpsDocumentViewer.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-            xpsDocumentViewer.IsEnabled = true;
-            xpsDocumentViewer.Visibility = Visibility.Visible;
-            
-            m_oXpsDocument = xpsDoc;
-            
-           
+                m_intCurrentPageNumber = PageNumber;
+                DocumentPage oPage = xpsDocumentViewer.xpsViewer1.Document.DocumentPaginator.GetPage(PageNumber);
 
-            xpsDocumentViewer.ShowDialog();
+                xpsDocumentViewer.xpsViewer1.GoToPage(PageNumber);
 
-            
-           
+                xpsDocumentViewer.WindowState = WindowState.Normal;
+                xpsDocumentViewer.Top = frmMain.g_oFrmMain.Top + 200;
+                xpsDocumentViewer.Height = frmMain.g_oFrmMain.ClientSize.Height - 200;
+                xpsDocumentViewer.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                xpsDocumentViewer.IsEnabled = true;
+                xpsDocumentViewer.Visibility = Visibility.Visible;
+
+                m_oXpsDocument = xpsDoc;
+                xpsDocumentViewer.ShowDialog();
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("An error occurred while trying to display the Help! Please contact the BioSum support.", "FIA Biosum");
+            }                     
         }
         /// <summary>
         /// navigate to the designated page
@@ -265,8 +268,83 @@ namespace FIA_Biosum_Manager
             }
         }
 
-       
-            
+        public FixedDocumentSequence GetFixedDocumentSequence(XpsDocument xpsDoc)
+        {
+            var sequence = new FixedDocumentSequence();
+            var pdlgPrint = new PrintDialog();
+
+            var path = $"{System.IO.Path.GetDirectoryName(System.IO.Path.GetTempPath())}\\Resources\\tempfonts\\{this.GetHashCode().ToString()}\\";
+            if (Directory.Exists(path))
+            {
+                Directory.Delete(path, true);
+            }
+            Directory.CreateDirectory(path);
+
+            foreach (var fdReader in xpsDoc.FixedDocumentSequenceReader.FixedDocuments)
+            {
+                var fixedDocument = new FixedDocument();
+                var reference = new DocumentReference();
+                foreach (var fpReader in fdReader.FixedPages)
+                {
+                    while (fpReader.XmlReader.Read())
+                    {
+                        string page = fpReader.XmlReader.ReadOuterXml().Replace("/Resources/", path).Replace("odttf", "ttf");
+                        FixedPage fixedPage = System.Windows.Markup.XamlReader.Load(new MemoryStream(Encoding.Unicode.GetBytes(page))) as FixedPage;
+                        fixedPage.Background = System.Windows.Media.Brushes.White;
+                        fixedPage.Width = pdlgPrint.PrintableAreaWidth;
+                        fixedPage.Height = pdlgPrint.PrintableAreaHeight;
+
+                        ElaborateFonts(fpReader, path);
+
+                        var pageContent = new PageContent();
+                        ((System.Windows.Markup.IAddChild)pageContent).AddChild(fixedPage);
+                        fixedDocument.Pages.Add(pageContent);
+                    }
+                }
+                reference.SetDocument(fixedDocument);
+                sequence.References.Add(reference);
+            }
+
+            return sequence;
+        }
+
+        private void ElaborateFonts(IXpsFixedPageReader fpReader, string path)
+        {
+            foreach (XpsFont font in fpReader.Fonts)
+            {
+                var fontpath = font.Uri.ToString().Replace("/Resources/", path).Replace("odttf", "ttf");
+                if (!File.Exists(fontpath))
+                {
+                    using (Stream stm = font.GetStream())
+                    {
+                        using (FileStream fs = new FileStream(fontpath, FileMode.Create))
+                        {
+                            byte[] dta = new byte[stm.Length];
+                            stm.Read(dta, 0, dta.Length);
+                            if (font.IsObfuscated)
+                            {
+                                string guid = new Guid(System.IO.Path.GetFileName(fontpath).Split('.')[0]).ToString("N");
+                                byte[] guidBytes = new byte[16];
+                                for (int i = 0; i < guidBytes.Length; i++)
+                                {
+                                    guidBytes[i] = Convert.ToByte(guid.Substring(i * 2, 2), 16);
+                                }
+
+                                for (int i = 0; i < 32; i++)
+                                {
+                                    int gi = guidBytes.Length - (i % guidBytes.Length) - 1;
+                                    dta[i] ^= guidBytes[gi];
+                                }
+                            }
+                            fs.Write(dta, 0, dta.Length);
+                        }
+                    }
+                }
+            }
+        }
+
+
+
         private int _intPageNumber=0;
         public int PageNumber
         {
