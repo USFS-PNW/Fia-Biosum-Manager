@@ -935,7 +935,8 @@ namespace FIA_Biosum_Manager
 
         public void ValidateRuleDefinitions(System.Collections.Generic.IList<string> lstRx)
         {
-            m_intError = 0; m_strError = "";
+            m_intError = 0;
+            m_strError = "";
             frmMain.g_sbpInfo.Text = "Validating scenario rule definitions...Stand by";
 
             frmMain.g_oFrmMain.ActivateStandByAnimation(
@@ -952,6 +953,29 @@ namespace FIA_Biosum_Manager
 
             frmMain.g_oFrmMain.DeactivateStandByAnimation();
             frmMain.g_sbpInfo.Text = "Ready";
+        }
+
+        public void ValidateCutList(string strVariant, string strRxPackage)
+        {
+            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
+            string strFvsTreeDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + 
+                Tables.FVS.DefaultFVSTreeListDbFile;
+            string dbConn = dataMgr.GetConnectionString(strFvsTreeDb);
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
+            {
+                conn.Open();
+                long lngTreeRecords = -1;
+                string strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSCutTreeTableName} 
+                                    WHERE FVS_VARIANT = '{strVariant}' and RXPACKAGE = '{strRxPackage}'";
+                lngTreeRecords = dataMgr.getRecordCount(conn, strSQL, Tables.FVS.DefaultFVSCutTreeTableName);
+                if (lngTreeRecords < 1)
+                {
+                    string strMessage = $@"No records were found in {Tables.FVS.DefaultFVSCutTreeTableName} for {strVariant} {strRxPackage}. There is nothing to process!";
+                    MessageBox.Show(strMessage, "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+                    this.m_intError = -1;
+                    return;
+                }
+            }
         }
 
         public void LoadTreeGroupings()

@@ -9060,6 +9060,29 @@ namespace FIA_Biosum_Manager
                 MessageBox.Show("No Boxes Are Checked", "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
                 return;
             }
+
+            m_dbConn = SQLite.GetConnectionString(m_strFvsTreeDb);
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_dbConn))
+            {
+                conn.Open();
+                for (int i = 0; i < this.lstFvsOutput.CheckedItems.Count; i++)
+                {
+                    var lvItem = this.lstFvsOutput.CheckedItems[i];
+                    string strVariant = lvItem.SubItems[COL_VARIANT].Text.Trim();
+                    string strRxPackage = lvItem.SubItems[COL_PACKAGE].Text.Trim();
+                    long lngTreeRecords = -1;
+                    string strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSCutTreeTableName} 
+                                           WHERE FVS_VARIANT = '{strVariant}' and RXPACKAGE = '{strRxPackage}'";
+                    lngTreeRecords = SQLite.getRecordCount(conn, strSQL, Tables.FVS.DefaultFVSCutTreeTableName);
+
+                    if (lngTreeRecords < 1)
+                    {
+                        string strMessage = $@"No records were found in {Tables.FVS.DefaultFVSCutTreeTableName} for {strVariant} {strRxPackage}. There is nothing to audit!";
+                        MessageBox.Show(strMessage, "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+                        return;
+                    }
+                }
+            }
             this.DisplayAuditMessage = true;
             this.m_frmTherm = new frmTherm(((frmDialog)ParentForm), "FVS OUT DATA",
                 "FVS_TREE CUTLIST POST-PROCESSING Audit", "2");

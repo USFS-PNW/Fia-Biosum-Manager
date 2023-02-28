@@ -6090,6 +6090,25 @@ namespace FIA_Biosum_Manager
                         strRx4 = strRx4.Trim();
                         if (!lstRx.Contains(strRx4))
                             lstRx.Add(strRx4);
+
+                        string strVariant = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(m_lvEx, x, COL_VARIANT, "Text", false);
+                        strVariant = strVariant.Trim();
+
+                        string strRxPackage = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(m_lvEx, x, COL_PACKAGE, "Text", false);
+                        strRxPackage = strRxPackage.Trim();
+
+                        string strCutCount = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(m_lvEx, x, COL_CUTCOUNT, "Text", false);
+
+                        // Validate that there are trees on the cut list if the stand isn't inactive
+                        if (!strCutCount.Trim().Equals("0"))
+                        {
+                            ReferenceProcessorScenarioForm.ValidateCutList(strVariant, strRxPackage);
+                            m_intError = ReferenceProcessorScenarioForm.m_intError;
+                            if (this.m_intError != 0)
+                            {
+                                return;
+                            }
+                        }
                     }
                 }
 
