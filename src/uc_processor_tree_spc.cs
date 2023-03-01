@@ -2370,10 +2370,10 @@ namespace FIA_Biosum_Manager
 			{
 				this.AuditSpCdCvt();
 			}
-			else if (this.cmbAudit.Text.Trim()== "Assess Data Readiness: Check If Each FIA Site Tree Spc, FVS Variant, And FVS Tree Spc Combination Is In The Tree Spc Table")
-			{
+			//else if (this.cmbAudit.Text.Trim()== "Assess Data Readiness: Check If Each FIA Site Tree Spc, FVS Variant, And FVS Tree Spc Combination Is In The Tree Spc Table")
+			//{
 
-			}
+			//}
 			else if (this.cmbAudit.Text.Trim()== "Assess Data Readiness: Check If Each FIA Tree Spc, FVS Variant, And FVS Tree Spc Combination Is In The Tree Spc Table")
 			{
 				this.AuditFvsOutSpCdCvt();
@@ -2544,10 +2544,23 @@ namespace FIA_Biosum_Manager
            
 
 			ado_data_access oAdo = new ado_data_access();
-			oAdo.OpenConnection(oAdo.getMDBConnString(this.m_strTempMDBFile,"",""));
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+            string strDbConn = oDataMgr.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                Tables.FVS.DefaultFVSTreeListDbFile);
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strDbConn))
+            {
+                conn.Open();
+                string strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSCutTreeTableName}";
+                long lngTreeRecords = oDataMgr.getRecordCount(conn, strSQL, Tables.FVS.DefaultFVSCutTreeTableName);
+                if (lngTreeRecords < 1)
+                {
+                    string strMessage = $@"No tree records were found in {Tables.FVS.DefaultFVSCutTreeTableName}. There is nothing to audit!";
+                    MessageBox.Show(strMessage, "FIA Biosum", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    return;
+                }
+            }
 
-			
-
+            oAdo.OpenConnection(oAdo.getMDBConnString(this.m_strTempMDBFile,"",""));
 			if (oAdo.TableExist(oAdo.m_OleDbConnection,"treetemp"))
 				oAdo.SqlNonQuery(oAdo.m_OleDbConnection,"DROP TABLE treetemp");
 
@@ -2572,6 +2585,7 @@ namespace FIA_Biosum_Manager
 				oAdo=null;
 				return;
 			}
+            
 
             frmMain.g_oFrmMain.ActivateStandByAnimation(this.ParentForm.WindowState,
                 this.ParentForm.Left, this.ParentForm.Height, this.ParentForm.Width, this.ParentForm.Top);
@@ -2581,7 +2595,7 @@ namespace FIA_Biosum_Manager
             {
                 m_odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName);
             }
-            m_odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName,
+            m_odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName, 
                 frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
                 Tables.FVS.DefaultFVSTreeListDbFile);
             // Link to FVSOUT_TREE_LIST.db
@@ -2626,17 +2640,13 @@ namespace FIA_Biosum_Manager
 				return;
 			}
 
-
-
-
             oAdo.m_strSQL = "SELECT t.spcd,t.fvs_tree_id,t.biosum_cond_id " + 
 				            "INTO treetemp " + 
 				            "FROM " + this.m_oQueries.m_oFIAPlot.m_strTreeTable + " t " +
                             "WHERE t.fvs_tree_id IS NOT NULL AND t.biosum_cond_id IS NOT NULL";
 			oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
 
-			
-
+		
 			//get all the distinct tree spcd, fvs out spcd, and fvs out variant combinations
 			oAdo.m_strSQL = "SELECT DISTINCT t.spcd as treetable_spcd, " + 
 				                             "f.fvs_species as fvsouttable_spcd," + 
