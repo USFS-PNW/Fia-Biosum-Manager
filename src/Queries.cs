@@ -2232,15 +2232,6 @@ namespace FIA_Biosum_Manager
                                                    "TRIM(a.COLUMN_NAME) = 'VOLCFNET' AND " +
                                                    "a.RXPACKAGE='" + p_strRxPackage + "' " +
                                           "UNION " +
-                                          "SELECT a.COLUMN_NAME, 'NULLS NOT ALLOWED' AS ERROR_DESC,FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
-                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE VOLTSGRS IS NULL) FVS_TREE " +
-                                             "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
-                                                   "LEN(TRIM(NOVALUE_ERROR)) > 0 AND " +
-                                                   "a.NOVALUE_ERROR <> 'NA' AND " +
-                                                   "VAL(a.NOVALUE_ERROR) > 0 AND " +
-                                                   "TRIM(a.COLUMN_NAME) = 'VOLTSGRS' AND " +
-                                                   "a.RXPACKAGE='" + p_strRxPackage + "' " +
-                                          "UNION " +
                                           "SELECT a.COLUMN_NAME, 'NULLS NOT ALLOWED WHEN DBH >= 5 INCHES' AS ERROR_DESC,FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
                                             "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE DBH IS NOT NULL AND DBH >= 5 AND VOLCFGRS IS NULL) FVS_TREE " +
                                              "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +

@@ -222,14 +222,14 @@ namespace FIA_Biosum_Manager
             if (m_oAdo.m_intError == 0)
             {
                 //string strSQL = "SELECT z.biosum_cond_id, c.biosum_plot_id, z.rxCycle, z.rx, z.rxYear, z.dbh, z.tpa, 
-                //z.volCfNet, z.drybiot, z.drybiom,z.FvsCreatedTree_YN, z.fvs_tree_id, z.fvs_species, z.volTsGrs, z.volCfGrs, 
+                //z.volCfNet, z.drybiot, z.drybiom,z.FvsCreatedTree_YN, z.fvs_tree_id, z.fvs_species, z.volCfGrs, 
                 //c.slope, c.elev, c.gis_yard_dist_ft FROM FVS_CutTree z, (SELECT p.biosum_plot_id,p.gis_yard_dist_ft,p.elev,
                 //d.biosum_cond_id,d.slope FROM plot p 
                 //INNER JOIN cond d ON p.biosum_plot_id = d.biosum_plot_id) c 
                 //WHERE z.rxpackage='001' AND z.fvs_variant = 'BM' AND z.biosum_cond_id = c.biosum_cond_id AND dbh > 1.0"
                 string strSQL = "SELECT z.biosum_cond_id, c.biosum_plot_id, z.rxCycle, z.rx, z.rxYear, z.dbh, z.tpa, " +
                                 "z.volCfNet, z.drybiot, z.drybiom,z.FvsCreatedTree_YN, z.fvs_tree_id, " +
-                                "z.fvs_species, z.volTsGrs, z.volCfGrs, c.slope, c.elev, c.gis_yard_dist_ft " +
+                                "z.fvs_species, z.volCfGrs, c.slope, c.elev, c.gis_yard_dist_ft " +
                                 "FROM " + Tables.FVS.DefaultFVSCutTreeTableName + " z, " +
                                 "(SELECT p.biosum_plot_id,p.gis_yard_dist_ft,p.elev,d.biosum_cond_id,d.slope FROM " +
                                 p_strPlotTableName + " p INNER JOIN " + p_strCondTableName + " d ON p.biosum_plot_id = d.biosum_plot_id) c " +
@@ -263,7 +263,6 @@ namespace FIA_Biosum_Manager
                             {
                                 newTree.VolCfNet = Convert.ToDouble(m_oAdo.m_OleDbDataReader["volCfNet"]);
                             }
-                            newTree.VolTsGrs = Convert.ToDouble(m_oAdo.m_OleDbDataReader["volTsGrs"]);
                             // Special processing for saplings where volCfGrs may be null
                             if (m_oAdo.m_OleDbDataReader["volCfGrs"] == System.DBNull.Value && newTree.IsSapling)
                             {
@@ -386,7 +385,7 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "//No trees were loaded from the cut list. \r\n");
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "//This query didn't return any rows: \r\n");
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "//SELECT z.biosum_cond_id, c.biosum_plot_id, z.rxCycle, z.rx, z.rxYear, z.dbh, z.tpa, z.volCfNet, z.drybiot, \r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//z.drybiom,z.FvsCreatedTree_YN, z.fvs_tree_id, z.fvs_species, z.volTsGrs, z.volCfGrs, c.slope, c.elev, \r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//z.drybiom,z.FvsCreatedTree_YN, z.fvs_tree_id, z.fvs_species, z.volCfGrs, c.slope, c.elev, \r\n");
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "//c.gis_yard_dist, t.min_traveltime FROM fvs_tree_IN_BM_P001_TREE_CUTLIST z, (SELECT MIN(ONE_WAY_HOURS) AS  \r\n");
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "//min_traveltime, BIOSUM_PLOT_ID FROM TRAVEL_TIME WHERE ONE_WAY_HOURS > 0 GROUP BY BIOSUM_PLOT_ID) t, (SELECT \r\n");
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "//p.biosum_plot_id,p.gis_yard_dist_ft,p.elev,d.biosum_cond_id,d.slope FROM plot p INNER JOIN cond d ON  \r\n");
@@ -645,11 +644,11 @@ namespace FIA_Biosum_Manager
                         }
                         p_oAdo.m_strSQL = "INSERT INTO " + strTableName + " " +
                         "(cn, fvs_tree_id, biosum_cond_id, biosum_plot_id, spcd, merchWtGt, nonMerchWtGt, drybiom, " +
-                        "drybiot, volCfNet, volCfGrs, volTsgrs, odWgt, dryToGreen, tpa, dbh, species_group, " +
+                        "drybiot, volCfNet, volCfGrs, odWgt, dryToGreen, tpa, dbh, species_group, " +
                         "isSapling, isWoodland, isCull, diam_group, merch_value, opcost_type, biosum_category)" +
                         "VALUES ('" + strTempCn + "', '" + strTempTree + "', '" + nextTree.CondId + "', '" + nextTree.PlotId + "', " +
                         nextTree.SpCd + ", " + nextTree.MerchWtGtPa + ", " + nextTree.NonMerchWtGtPa + ", " + nextTree.DryBiom + ", " +
-                        nextTree.DryBiot + ", " + nextTree.VolCfNet + ", " + nextTree.VolCfGrs + ", " + nextTree.VolTsGrs + ", " + nextTree.OdWgt +
+                        nextTree.DryBiot + ", " + nextTree.VolCfNet + ", " + nextTree.VolCfGrs + ", " + nextTree.OdWgt +
                         ", " + nextTree.DryToGreen + ", " + nextTree.Tpa + ", " + nextTree.Dbh + ", " + nextTree.SpeciesGroup + ", " +
                         nextTree.IsSapling + ", " + nextTree.IsWoodlandSpecies + ", " + nextTree.IsCull + ", " + nextTree.DiamGroup + 
                         ", " + nextTree.MerchValue + ", '" + nextTree.TreeType + "', " + nextTree.HarvestMethod.BiosumCategory + " )";
@@ -1803,15 +1802,8 @@ namespace FIA_Biosum_Manager
             //merchVolCfPa
             if (p_tree.IsSapling)
             {
-                if (p_tree.VolTsGrs > 0)
-                {
-                    p_tree.MerchVolCfPa = p_tree.VolTsGrs * ( (double) m_scenarioHarvestMethod.SaplingMerchAsPercentOfTotalVol / 100) * p_tree.Tpa;
-                }
-                else
-                {
-                    //convert drybiot to some kind of volume
-                    p_tree.MerchVolCfPa = (p_tree.DryBiot / p_tree.OdWgt) * p_tree.Tpa * ((double)m_scenarioHarvestMethod.SaplingMerchAsPercentOfTotalVol / 100);
-                }
+                //convert drybiot to some kind of volume
+                p_tree.MerchVolCfPa = (p_tree.DryBiot / p_tree.OdWgt) * p_tree.Tpa * ((double)m_scenarioHarvestMethod.SaplingMerchAsPercentOfTotalVol / 100);
             }
             else if (p_tree.IsWoodlandSpecies)
             {
@@ -1892,7 +1884,6 @@ namespace FIA_Biosum_Manager
             double _dblDbh;
             double _dblTpa;
             double _dblVolCfNet;
-            double _dblVolTsGrs;
             double _dblVolCfGrs;
             double _dblDryBiot;
             double _dblDryBiom;
@@ -1974,11 +1965,6 @@ namespace FIA_Biosum_Manager
             {
                 get { return _dblVolCfNet; }
                 set { _dblVolCfNet = value; }
-            }
-            public double VolTsGrs
-            {
-                get { return _dblVolTsGrs; }
-                set { _dblVolTsGrs = value; }
             }
             public double VolCfGrs
             {
