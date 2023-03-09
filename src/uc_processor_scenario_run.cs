@@ -4594,9 +4594,9 @@ namespace FIA_Biosum_Manager
                     if (m_oAdo.m_intError == 0)
                     {
                         m_oAdo.m_strSQL = $@"INSERT INTO {p_strHarvestCostsTableName} ( biosum_cond_id, rxpackage, rx, rxcycle, additional_cpa, harvest_cpa, complete_cpa, 
-                                             place_holder, override_YN, DateTimeCreated )
+                                             chip_cpa, assumed_movein_cpa, place_holder, override_YN, DateTimeCreated )
                                              SELECT {p_strAddCostsWorktable}.biosum_cond_id, {p_strAddCostsWorktable}.rxpackage, {p_strAddCostsWorktable}.rx, {p_strAddCostsWorktable}.rxcycle, 
-                                             0, 0, 0,'N', 'N', '{p_strDateTimeCreated}' FROM {p_strAddCostsWorktable}
+                                             0, 0, 0,0,0,'N', 'N', '{p_strDateTimeCreated}' FROM {p_strAddCostsWorktable}
                                              WHERE {p_strAddCostsWorktable}.additional_cpa > 0 AND (Exists (SELECT 1 
                                              FROM {p_strHarvestCostsTableName}
                                              WHERE {p_strHarvestCostsTableName}.biosum_cond_id = {p_strAddCostsWorktable}.biosum_cond_id 
@@ -5014,8 +5014,7 @@ namespace FIA_Biosum_Manager
                         if (sb.Length > 4)
                         {
                             string strSetValues = sb.ToString().TrimEnd(',');
-                            m_oAdo.m_strSQL = $@"UPDATE {Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName} {strSetValues} WHERE 
-                                DATETIMECREATED = '{m_strDateTimeCreated}'";
+                            m_oAdo.m_strSQL = $@"UPDATE {Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName} {strSetValues}";
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                             m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
@@ -5220,10 +5219,10 @@ namespace FIA_Biosum_Manager
                             //Insert a placeholder row with default values
                             m_oAdo.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName + " " +
                                 "(biosum_cond_id, rxpackage, rx, rxcycle, " +
-                                "complete_cpa, harvest_cpa," +
+                                "complete_cpa, harvest_cpa, chip_cpa, assumed_movein_cpa," +
                                 "DateTimeCreated, place_holder) " +
                                 "VALUES ('" + cond_id + "', '" + rxpackage + "', '" + rx + "', '" + strRxCycle + "', " +
-                                intValuePlaceholder + ", " + intValuePlaceholder +
+                                intValuePlaceholder + ", " + intValuePlaceholder + ", " + intValuePlaceholder + ", " + intValuePlaceholder +
                                 ", '" + m_strDateTimeCreated + "', 'Y')";
 
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -5869,7 +5868,7 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oDelegate.SetListViewTextValue(m_lvEx, x, COL_VOLVAL, intRowCount.ToString());
 
                             if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, "HarvestCostsWorkTable"))
-                                intRowCount = (int)m_oAdo.getRecordCount(m_oAdo.m_OleDbConnection, "SELECT COUNT(*) FROM HarvestCostsWorkTable", "temp");
+                                intRowCount = (int)m_oAdo.getRecordCount(m_oAdo.m_OleDbConnection, "SELECT COUNT(*) FROM HarvestCostsWorkTable WHERE HARVEST_CPA <> 0", "temp");
                             frmMain.g_oDelegate.SetListViewTextValue(m_lvEx, x, COL_HVSTCOST, intRowCount.ToString());
                         }
                         else
@@ -5880,7 +5879,7 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oDelegate.SetListViewTextValue(m_lvEx, x, COL_VOLVAL, intRowCount.ToString());
 
                             if (m_oDataMgr.TableExist(m_oDataMgr.m_Connection, "HarvestCostsWorkTable"))
-                                intRowCount = (int)m_oDataMgr.getRecordCount(m_oDataMgr.m_Connection, "SELECT COUNT(*) FROM HarvestCostsWorkTable", "temp");
+                                intRowCount = (int)m_oDataMgr.getRecordCount(m_oDataMgr.m_Connection, "SELECT COUNT(*) FROM HarvestCostsWorkTable WHERE HARVEST_CPA <> 0", "temp");
                             frmMain.g_oDelegate.SetListViewTextValue(m_lvEx, x, COL_HVSTCOST, intRowCount.ToString());
 
                         }
