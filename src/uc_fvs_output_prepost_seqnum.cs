@@ -595,20 +595,23 @@ namespace FIA_Biosum_Manager
                 // FVS_STRCLASS cannot be selected with any other tables
                 if (lvFVSTables.SelectedItems.Count > 1)
                 {
-                    bool bEditStrClass = false;
+                    string[] arrSingleTable = new string[] {"FVS_STRCLASS", "FVS_POTFIRE" }; 
+                    bool bEditSingleTable = false;
+                    string strTable1 = "";
                     for (int i = 0; i < lvFVSTables.SelectedItems.Count; i++)
                     {
-                        if (lvFVSTables.SelectedItems[i].SubItems[COL_TABLENAME].Text.Trim() == "FVS_STRCLASS")
+                        if (arrSingleTable.Contains(lvFVSTables.SelectedItems[i].SubItems[COL_TABLENAME].Text.Trim()))
                         {
-                            bEditStrClass = true;
+                            strTable1 = lvFVSTables.SelectedItems[i].SubItems[COL_TABLENAME].Text.Trim();
+                            bEditSingleTable = true;
                             break;
                         }
                     }
-                    if (bEditStrClass == true)
+                    if (bEditSingleTable == true)
                     {
                         for (int i = 0; i < lvFVSTables.Items.Count; i++)
                         {
-                            if (lvFVSTables.Items[i].SubItems[COL_TABLENAME].Text.Trim() != "FVS_STRCLASS")
+                            if (lvFVSTables.Items[i].SubItems[COL_TABLENAME].Text.Trim() != strTable1)
                             {
                                 lvFVSTables.Items[i].Selected = false;
                             }
