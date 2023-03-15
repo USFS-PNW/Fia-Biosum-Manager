@@ -1630,11 +1630,7 @@ namespace FIA_Biosum_Manager
             }
 			
 		}
-        private void RunAppend_Validation(int p_intListViewItem,
-			string p_strVariant,string p_strRxPackage,string p_strRx1,string p_strRx2,string p_strRx3,string p_strRx4,bool p_bAudit,
-			ref int p_intError,ref string p_strError,ref int p_intWarning,ref string p_strWarning)
-        {
-        }
+
         private void GetPrePostTableLinkItems(DbFileItem_Collection p_oCollection, 
                                        string p_strDbFileName,
                                        string p_strFVSOutTableName,
@@ -4537,7 +4533,6 @@ namespace FIA_Biosum_Manager
             string strFiaTreeSpeciesRefTableLink = "";
             string strCasesTable = "FVS_Cases";
             bool bIdColumnExist = false;
-            string[] arrTreeTables = new string[] { Tables.FVS.DefaultFVSCutTreeTableName, Tables.FVS.DefaultFVSResidTreeTableName};
             string[] arrFvsSourceTables = new string[] { "FVS_CutList", "FVS_TreeList" };
             string[] arrTreeAccdbs = new string[] { "PREPOST_FVS_CUTLIST.ACCDB", "PREPOST_FVS_TREELIST.ACCDB" };
 
@@ -4566,7 +4561,7 @@ namespace FIA_Biosum_Manager
                 if (arrTreeAccdbs.Contains(strDbFile))
                 {
                     int idxTable = Array.IndexOf(arrTreeAccdbs, strDbFile);
-                    string strFvsTreeTable = arrTreeTables[idxTable];
+                    string strFvsTreeTable = Tables.FVS.DefaultFVSCutTreeTableName; ;
 
                     for (x = 0; x <= m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Count - 1; x++)
                     {
@@ -4590,7 +4585,7 @@ namespace FIA_Biosum_Manager
                              **delete records in the fvs_tree table that have the current
                              **package
                              **************************************************************/
-                            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Variant:" + p_strVariant.Trim() + " Package:" + p_strPackage.Trim() + ": Deleting Old Package+Variant " + arrTreeTables[idxTable] + " Table Records");
+                            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Variant:" + p_strVariant.Trim() + " Package:" + p_strPackage.Trim() + ": Deleting Old Package+Variant " + strFvsTreeTable + " Table Records");
                             frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Refresh");
 
                             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strTreeTempDbFile)))
@@ -4738,7 +4733,7 @@ namespace FIA_Biosum_Manager
                                             }
 
 
-                                            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + " Rx:" + strRx.Trim() + " Cycle:" + strCycle + ": Insert " + arrTreeTables[idxTable] + " Tree Records");
+                                            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + " Rx:" + strRx.Trim() + " Cycle:" + strCycle + ": Insert " + strFvsTreeTable + " Tree Records");
                                             frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
 
                                             if (oDataMgr.TableExist(conn, "cutlist_fia_trees_work_table"))
@@ -4920,7 +4915,7 @@ namespace FIA_Biosum_Manager
                                 UpdateTherm(m_frmTherm.progressBar1, m_intProgressStepCurrentCount, m_intProgressStepTotalCount);
 
                                 //update growth projected trees with tree volumes
-                                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + " Prepare " + arrTreeTables[idxTable] + " data for volume calculation");
+                                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + " Prepare " + strFvsTreeTable + " data for volume calculation");
                                 frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
                                 if (oDataMgr.TableExist(conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable))
                                         oDataMgr.SqlNonQuery(conn, "DROP TABLE " + Tables.VolumeAndBiomass.BiosumVolumesInputTable);
@@ -5184,7 +5179,7 @@ namespace FIA_Biosum_Manager
                                         //
                                         if (m_intError == 0)
                                         {
-                                            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + " Running volume calculations for " + arrTreeTables[idxTable]);
+                                            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + " Running volume calculations for " + strFvsTreeTable);
                                             frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
 
                                             //oDataMgr.CloseAndDisposeConnection(oDataMgr.m_Connection, true);
@@ -5216,7 +5211,7 @@ namespace FIA_Biosum_Manager
 
                                             UpdateTherm(m_frmTherm.progressBar1, 3, 6);
 
-                                            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + " Write calculation results to " + arrTreeTables[idxTable]);
+                                            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + " Write calculation results to " + strFvsTreeTable);
                                             frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
                                             //update calculated fields 
                                             //from 
