@@ -4533,8 +4533,8 @@ namespace FIA_Biosum_Manager
             string strFiaTreeSpeciesRefTableLink = "";
             string strCasesTable = "FVS_Cases";
             bool bIdColumnExist = false;
-            string[] arrFvsSourceTables = new string[] { "FVS_CutList", "FVS_TreeList" };
-            string[] arrTreeAccdbs = new string[] { "PREPOST_FVS_CUTLIST.ACCDB", "PREPOST_FVS_TREELIST.ACCDB" };
+            string[] arrFvsSourceTables = new string[] { "FVS_CutList"};
+            string[] arrTreeAccdbs = new string[] { "PREPOST_FVS_CUTLIST.ACCDB" };
 
             if (m_bDebug && frmMain.g_intDebugLevel > 1)
             {
