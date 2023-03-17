@@ -550,23 +550,12 @@ namespace FIA_Biosum_Manager
                         UpdateProjectVersionFile(strProjVersionFile);
                         bPerformCheck = false;
                     }
-                    //5.10.0 No schema changes but new version number
+                    //Upgrade to 5.10.1 from 5.9.0 or 5.10.0
                     else if ((Convert.ToInt16(m_strAppVerArray[APP_VERSION_MAJOR]) == 5 &&
                         Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR1]) >= 10 &&
-                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR2]) == 0) &&
+                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR2]) == 1) &&
                         (Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MAJOR]) == 5 &&
                         Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR1]) >= 9))
-                    {
-                        UpdateProjectVersionFile(strProjVersionFile);
-                        bPerformCheck = false;
-                    }
-                    //5.10.1
-                    else if ((Convert.ToInt16(m_strAppVerArray[APP_VERSION_MAJOR]) == 5 &&
-                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR1]) >= 10 &&
-                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR2]) >= 1) &&
-                        (Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MAJOR]) == 5 &&
-                        Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR1]) >= 10 &&
-                        Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR2]) == 0))
                     {
                         UpdateDatasources_5_10_1();
                         UpdateProjectVersionFile(strProjVersionFile);
