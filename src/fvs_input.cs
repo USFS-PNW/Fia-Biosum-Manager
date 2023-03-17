@@ -4036,9 +4036,9 @@ namespace FIA_Biosum_Manager
                 DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.StandInit.UpdateFromCond(this.m_strCondTable, strVariant) + "\r\n", 2);
                 oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.UpdateFromCond(this.m_strCondTable, strVariant));
 
-                //Overwrite FOREST_TYPE with FOREST_TYPE_FIA
-                DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.StandInit.UpdateForestType() + "\r\n", 2);
-                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.UpdateForestType());
+                //Overwrite FOREST_TYPE with FOREST_TYPE_FIA, PV_CODE with PV_FIA_HABTYPCD1
+                DebugLogMessage("Execute SQL: " + Queries.FVS.FVSInput.StandInit.UpdateForestTypeAndPvCode() + "\r\n", 2);
+                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.UpdateForestTypeAndPvCode());
 
                 //Null FUEL_MODEL if not checked
                 if (new int[]
