@@ -4312,8 +4312,8 @@ namespace FIA_Biosum_Manager
                                     m_oAdo.AddColumn(m_oAdo.m_OleDbConnection, p_strAddCostsWorktable, strCol, "DOUBLE", "");
                                     //Add the associated flag column to the table
                                     m_oAdo.AddColumn(m_oAdo.m_OleDbConnection, p_strAddCostsWorktable, strCol + strFlagSuffix, "DOUBLE", "");
+                                    lstScenarioColumnNameList.Add(strCol);
                                 }
-                                lstScenarioColumnNameList.Add(strCol);
                             }
                         }
                     }
