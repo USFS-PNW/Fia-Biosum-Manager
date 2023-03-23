@@ -79,27 +79,27 @@ namespace FIA_Biosum_Manager
                             "RxCycle4_POST_BEFORECUT_YN," +
                             "USE_SUMMARY_TABLE_SEQNUM_YN";
 
-        private const string m_str_1181 = "OngoingMgt_PrePost_NoBY";
+        private const string m_str_1181 = "Mgt4X_PrePost";
         private static string[] m_summary_1181 = {"2","3","5","6","8","9","11","12"};
         private static string[] m_ffe_1181 = { "1","3","4","6","7","9","10","12"};
-        private const string m_str_pp_1910s = "1timeMgt_PrePost_BaseYr";
-        private static string[] m_summary_1910s = { "1", "2", "3", "4", "5", "6", "Not Used", "Not Used" };
-        private static string[] m_ffe_1910s = { "1", "3", "4", "5", "6", "7", "Not Used", "Not Used" };
-        private const string m_str_wtd_1910s = "1timeMgt_WtdMean_BaseYr";
-        private static string[] m_summary_wtd_1910s = { "2", "3", "4", "5", "6", "Not Used", "Not Used", "Not Used" };
-        private static string[] m_ffe_wtd_1910s = { "3", "4", "5", "6", "7", "Not Used", "Not Used", "Not Used" };
-        private const string m_str_wtd_1181 = "OngoingMgt_WtdMean_NoBY";
+        //private const string m_str_pp_1910s = "1timeMgt_PrePost_BaseYr";
+        //private static string[] m_summary_1910s = { "1", "2", "3", "4", "5", "6", "Not Used", "Not Used" };
+        //private static string[] m_ffe_1910s = { "1", "3", "4", "5", "6", "7", "Not Used", "Not Used" };
+        //private const string m_str_wtd_1910s = "1timeMgt_WtdMean_BaseYr";
+        //private static string[] m_summary_wtd_1910s = { "2", "3", "4", "5", "6", "Not Used", "Not Used", "Not Used" };
+        //private static string[] m_ffe_wtd_1910s = { "3", "4", "5", "6", "7", "Not Used", "Not Used", "Not Used" };
+        private const string m_str_wtd_1181 = "Mgt4X_WtdMean";
         private static string[] m_summary_wtd_1181 = { "2", "3", "5", "6", "8", "9", "11", "13" };
         private static string[] m_ffe_wtd_1181 = { "1", "3", "4", "6", "7", "9", "10", "13" };
-        private const string m_str_pp_181 = "OngoingMgt_PrePost_BaseYr";
-        private static string[] m_summary_pp_181 = { "1", "2", "4", "5", "7", "8", "10", "11" };
-        private static string[] m_ffe_pp_181 = { "1", "3", "4", "6", "7", "9", "10", "12" };
-        private const string m_str_11910s = "1timeMgt_NoBY";
+        //private const string m_str_pp_181 = "OngoingMgt_PrePost_BaseYr";
+        //private static string[] m_summary_pp_181 = { "1", "2", "4", "5", "7", "8", "10", "11" };
+        //private static string[] m_ffe_pp_181 = { "1", "3", "4", "6", "7", "9", "10", "12" };
+        private const string m_str_11910s = "Mgt1X";
         private static string[] m_summary_11910s = { "2", "3", "4", "5", "6", "7", "8", "Not Used" };
         private static string[] m_ffe_11910s = { "1", "3", "4", "5", "6", "7", "Not Used", "Not Used" };
-        private const string m_str_wtd_181 = "OngoingMgt_WtdMean_BaseYr";
-        private static string[] m_summary_wtd_181 = { "1", "2", "5", "6", "8", "9", "11", "13" };
-        private static string[] m_ffe_wtd_181 = { "1", "3", "4", "6", "7", "9", "10", "13" };
+        //private const string m_str_wtd_181 = "OngoingMgt_WtdMean_BaseYr";
+        //private static string[] m_summary_wtd_181 = { "1", "2", "5", "6", "8", "9", "11", "13" };
+        //private static string[] m_ffe_wtd_181 = { "1", "3", "4", "6", "7", "9", "10", "13" };
 
         public string m_rxPackages = "";
         Queries m_oQueries = new Queries();
@@ -200,11 +200,6 @@ namespace FIA_Biosum_Manager
             cmbDefault.Items.Add(m_str_1181);
             cmbDefault.Items.Add(m_str_11910s);
             cmbDefault.Items.Add(m_str_wtd_1181);
-            cmbDefault.Items.Add(m_str_pp_181);           
-            cmbDefault.Items.Add(m_str_wtd_181);
-            cmbDefault.Items.Add(m_str_pp_1910s);
-            cmbDefault.Items.Add(m_str_wtd_1910s);
-
             loadvalues();
                         
         }
@@ -854,25 +849,9 @@ namespace FIA_Biosum_Manager
                     arrSummarySequence = m_summary_11910s;
                     arrFfeSequence = m_ffe_11910s;
                     break;
-                case m_str_pp_1910s:
-                    arrSummarySequence = m_summary_1910s;
-                    arrFfeSequence = m_ffe_1910s;
-                    break;
-                case m_str_wtd_1910s:
-                    arrSummarySequence = m_summary_wtd_1910s;
-                    arrFfeSequence = m_ffe_wtd_1910s;
-                    break;
                 case m_str_wtd_1181:
                     arrSummarySequence = m_summary_wtd_1181;
                     arrFfeSequence = m_ffe_wtd_1181;
-                    break;
-                case m_str_pp_181:
-                    arrSummarySequence = m_summary_pp_181;
-                    arrFfeSequence = m_ffe_pp_181;
-                    break;
-                case m_str_wtd_181:
-                    arrSummarySequence = m_summary_wtd_181;
-                    arrFfeSequence = m_ffe_wtd_181;
                     break;
             }
 
@@ -894,12 +873,12 @@ namespace FIA_Biosum_Manager
                     chkPRE2BaseYear.Hide();
                     chkPRE3BaseYear.Hide();
                     chkPRE4BaseYear.Hide();
-                    string[] arrBaseYearTemplates = new string[] { m_str_pp_181, m_str_wtd_181, m_str_pp_1910s, m_str_wtd_1910s };
-                    if (arrBaseYearTemplates.Contains(p_strOption))
-                    {
-                        chkPRE1BaseYear.Show();
-                        chkPRE1BaseYear.Checked = true;
-                    }
+                    //string[] arrBaseYearTemplates = new string[] { m_str_pp_181, m_str_wtd_181, m_str_pp_1910s, m_str_wtd_1910s };
+                    //if (arrBaseYearTemplates.Contains(p_strOption))
+                    //{
+                    //    chkPRE1BaseYear.Show();
+                    //    chkPRE1BaseYear.Checked = true;
+                    //}
                 }
                 else if (strTable.Trim().ToUpper() == "FVS_CUTLIST")
                 {
