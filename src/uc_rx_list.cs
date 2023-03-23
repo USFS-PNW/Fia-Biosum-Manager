@@ -2370,7 +2370,7 @@ namespace FIA_Biosum_Manager
             }
             return false;
         }
-        public void CheckTreeListDbExist()
+        public void CheckCutListDbExist()
         {
             // Check for SQLite elements
             DataMgr dataMgr = new DataMgr();

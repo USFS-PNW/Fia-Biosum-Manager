@@ -394,8 +394,9 @@ namespace FIA_Biosum_Manager
             "Step 2 - Pre-Processing Audit Check",            
             "Step 3 - Append FVS Output Data",
             "Step 4 - Post-Processing Audit Check",
-            "Step 5 - (Opt) Create FVSOut_BioSum.db",
-            "(Opt) Create/replace FVS_InForest in FVSOUT_TREE_LIST.db"
+            "---Optional---",
+            "Create FVSOut_BioSum.db",
+            "Write FVS_InForest to FVSOUT_TREE_LIST.db"
             });
             this.cmbStep.Location = new System.Drawing.Point(8, 337);
             this.cmbStep.Name = "cmbStep";
@@ -767,9 +768,12 @@ namespace FIA_Biosum_Manager
                         using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
                         {
                             conn.Open();
-                            string strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSCutTreeTableName} 
+                            if (SQLite.TableExist(conn, Tables.FVS.DefaultFVSCutTreeTableName))
+                            {
+                                string strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSCutTreeTableName} 
                                            WHERE FVS_VARIANT = '{strVariant}' and RXPACKAGE = '{strPackage}'";
-                            lngTreeRecords = SQLite.getRecordCount(conn, strSQL, Tables.FVS.DefaultFVSCutTreeTableName);
+                                lngTreeRecords = SQLite.getRecordCount(conn, strSQL, Tables.FVS.DefaultFVSCutTreeTableName);
+                            }
                         }
                     }
                         /************************************************************************
@@ -2458,7 +2462,7 @@ namespace FIA_Biosum_Manager
                                          m_intProgressStepTotalCount);
 
                             //create treelist DB if it does not exist
-                            m_oRxTools.CheckTreeListDbExist();
+                            m_oRxTools.CheckCutListDbExist();
                             m_intProgressStepCurrentCount++;
                             UpdateTherm(m_frmTherm.progressBar1,
                                          m_intProgressStepTotalCount,
@@ -9050,12 +9054,6 @@ namespace FIA_Biosum_Manager
         }
         private void RunPOSTAudit_Start()
         {
-            if (this.lstFvsOutput.CheckedItems.Count == 0)
-            {
-                MessageBox.Show("No Boxes Are Checked", "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                return;
-            }
-
             m_dbConn = SQLite.GetConnectionString(m_strFvsTreeDb);
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_dbConn))
             {
@@ -9072,12 +9070,27 @@ namespace FIA_Biosum_Manager
 
                     if (lngTreeRecords < 1)
                     {
-                        string strMessage = $@"No records were found in {Tables.FVS.DefaultFVSCutTreeTableName} for {strVariant} {strRxPackage}. There is nothing to audit!";
-                        MessageBox.Show(strMessage, "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                        return;
+                        DialogResult result = MessageBox.Show("!!Warning!!\r\n-----------\r\nCut Tree Table for  " + strVariant + " " + strRxPackage + " " +
+                            " Does Not Exist. Continue Auditing ?(Y/N)",
+                            "FIA BioSum", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                        if (result == DialogResult.No)
+                            return;
+                        else
+                        {
+                            // Uncheck the box for this variant package; Nothing to audit
+                            lvItem.Checked = false;
+                            m_intError = 0;
+                        }
                     }
                 }
             }
+            // Check checked item count
+            if (this.lstFvsOutput.CheckedItems.Count == 0)
+            {
+                MessageBox.Show("No Boxes Are Checked", "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+                return;
+            }
+
             this.DisplayAuditMessage = true;
             this.m_frmTherm = new frmTherm(((frmDialog)ParentForm), "FVS OUT DATA",
                 "FVS_TREE CUTLIST POST-PROCESSING Audit", "2");
@@ -9787,10 +9800,10 @@ namespace FIA_Biosum_Manager
                 case "Step 4 - Post-Processing Audit Check":
                     this.RunPOSTAudit_Start();
                     break;
-                case "Step 5 - (Opt) Create FVSOut_BioSum.db":
+                case "Create FVSOut_BioSum.db":
                     this.RunCreateFVSOut_BioSum_Start();
                     break;
-                case "(Opt) Create/replace FVS_InForest in FVSOUT_TREE_LIST.db":
+                case "Write FVS_InForest to FVSOUT_TREE_LIST.db":
                     this.RunFVSInForestTable_Start();
                     break;
             }
@@ -10203,26 +10216,25 @@ namespace FIA_Biosum_Manager
                     if (SQLite.TableExist(conn, "FVS_TREELIST"))
                     {
                         bTreeList = true;
-                    }
-
-                        SQLite.SqlQueryReader(conn, $@"select distinct(substr(RunTitle, 12, 3)) AS RXPACKAGE, RunTitle " +
-                            "from FVS_SUMMARY, FVS_CASES where FVS_SUMMARY.CaseID = FVS_CASES.CaseID");
-                        if (SQLite.m_DataReader.HasRows)
-                        {
-                            while (SQLite.m_DataReader.Read())
+                            SQLite.SqlQueryReader(conn, $@"select distinct(substr(RunTitle, 12, 3)) AS RXPACKAGE, RunTitle " +
+                                "from FVS_SUMMARY, FVS_CASES where FVS_SUMMARY.CaseID = FVS_CASES.CaseID");
+                            if (SQLite.m_DataReader.HasRows)
                             {
-                                lstRunTitles.Add(Convert.ToString(SQLite.m_DataReader["RunTitle"]));
+                                while (SQLite.m_DataReader.Read())
+                                {
+                                    lstRunTitles.Add(Convert.ToString(SQLite.m_DataReader["RunTitle"]));
+                                }
+                                lstRunTitles.Sort();
                             }
-                            lstRunTitles.Sort();
+                            SQLite.m_DataReader.Close();
                         }
-                        SQLite.m_DataReader.Close();
                 }
             }
                 // Only try to load if there is a tree list in the FVSOut.db
                 m_intProgressOverallCurrentCount = 1;
                 m_intProgressStepTotalCount = 9;
             if (bTreeList)
-            {
+                {
                 string strTreeTempDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
                 string strTreeListDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
                 //copy the production file to the temp folder which will be used as the work db file.
@@ -10780,6 +10792,10 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", $@"Finalizing database");
                     frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
 
+                }
+                else
+                {
+                    MessageBox.Show($@"The FVSOut.db for this project does not contain an FVS_TreeList table. The {Tables.FVS.DefaultFVSInForestTreeTableName} table cannot be created!", "FIA Biosum");
                 }
             }
             catch (System.Threading.ThreadInterruptedException err)
