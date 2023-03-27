@@ -10111,7 +10111,7 @@ namespace FIA_Biosum_Manager
                         var colName = dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper();
                         var convertedColName = dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper();
                         var dataType = dtSourceSchema.Rows[y]["datatype"].ToString().ToUpper();
-                        string convertedDataType = utils.DataTypeConvert(dataType);
+                        string convertedDataType = utils.DataTypeConvert(dataType, true);
                         if (m_SqliteToAccessColTypes.Keys.Contains(convertedColName))
                         {
                             convertedDataType = m_SqliteToAccessColTypes[convertedColName];

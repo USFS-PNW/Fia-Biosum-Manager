@@ -455,7 +455,7 @@ namespace FIA_Biosum_Manager
                             listColDataTypes.Add(Tuple.Create(colName, getDataTypeEnumValueFromString(dataType)));
 
                             // Use converted name here. We want SPECIES for the access creation, and SPECIESFIA for the selects.
-                            strCol = utils.WrapInBacktick(convertedColName) + " " + utils.DataTypeConvert(dataType);
+                            strCol = utils.WrapInBacktick(convertedColName) + " " + utils.DataTypeConvert(dataType, false);
                             if (strFields.Trim().Length == 0)
                             {
                                 strFields = strCol;
@@ -468,7 +468,7 @@ namespace FIA_Biosum_Manager
                         if (!hasRunTitleField)
                         {
                             // Add runTitle field to tables without it
-                            strCol = utils.WrapInBacktick(runTitle) + " " + utils.DataTypeConvert("SYSTEM.STRING");
+                            strCol = utils.WrapInBacktick(runTitle) + " " + utils.DataTypeConvert("SYSTEM.STRING", false);
                             strFields += "," + strCol;
                         }
 

@@ -703,7 +703,7 @@ namespace FIA_Biosum_Manager
 
         /// <summary>Converts the string representation of an SQLite data type to the equivalent Access data type strings. </summary>
         /// <param name="dataTypeFromDB">The string representation of an SQLite data type.</param>
-        public static string DataTypeConvert(string dataTypeFromDB)
+        public static string DataTypeConvert(string dataTypeFromDB, bool bTargetSqlite)
         {
             var convertedType = "";
             switch (dataTypeFromDB)
@@ -720,6 +720,12 @@ namespace FIA_Biosum_Manager
                 default:
                     convertedType = "UNRECOGNIZED";
                     break;
+            }
+            // MS Access ODBC driver interprets LONG INTEGER as LONG TEXT; If target is an SQLite table
+            // that may be read by MS ACCESS, INT32 needs to be INTEGER
+            if (convertedType.Equals("LONG") && bTargetSqlite)
+            {
+                convertedType = "INTEGER";
             }
             return convertedType;
         }
