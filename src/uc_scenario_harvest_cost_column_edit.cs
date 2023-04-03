@@ -354,12 +354,12 @@ namespace FIA_Biosum_Manager
                 return;
             }
             System.Text.RegularExpressions.Regex rx =
-                new System.Text.RegularExpressions.Regex("^[a-zA-Z_][a-zA-Z0-9_]*$");
+                new System.Text.RegularExpressions.Regex("^[a-zA-Z][a-zA-Z0-9_]*$");
 
             System.Text.RegularExpressions.MatchCollection matches = rx.Matches(comboBox.Text);
             if (matches.Count < 1)
             {
-                MessageBox.Show("The component name contains an invalid character. Only letters, numbers and underscores are permitted!!", "FIA Biosum");
+                MessageBox.Show("The component name contains an invalid character. Only letters, numbers and underscores are permitted. Numbers and underscores are not permitted in the first position.", "FIA Biosum");
                 e.Cancel = true;
             }
         }
