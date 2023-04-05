@@ -732,6 +732,10 @@ namespace FIA_Biosum_Manager
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(strDebugFile, "Add To List Variant:" + strVariant + " RxPackage:" + strRxPackage + " " + System.DateTime.Now.ToString() + "\r\n");
 
+                        if (!cmbFilter.Items.Contains(strVariant))
+                        {
+                            cmbFilter.Items.Add(strVariant);
+                        }
                         //find the package item
                         for (y = 0; y <= m_oRxPackageItem_Collection.Count - 1; y++)
                         {
