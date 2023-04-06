@@ -33,6 +33,7 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label4 = new System.Windows.Forms.Label();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.chkFfe = new System.Windows.Forms.CheckBox();
             this.cmbDefault = new System.Windows.Forms.ComboBox();
             this.btnAssignTemplate = new System.Windows.Forms.Button();
             this.btnSeqNum = new System.Windows.Forms.Button();
@@ -80,7 +81,6 @@
             this.lblCycle1 = new System.Windows.Forms.Label();
             this.lblTitle = new System.Windows.Forms.Label();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
-            this.chkFfe = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.SuspendLayout();
@@ -161,6 +161,16 @@
             this.groupBox3.TabIndex = 102;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Choose a SEQNUM Assignment Template";
+            // 
+            // chkFfe
+            // 
+            this.chkFfe.AutoSize = true;
+            this.chkFfe.Location = new System.Drawing.Point(313, 25);
+            this.chkFfe.Name = "chkFfe";
+            this.chkFfe.Size = new System.Drawing.Size(55, 21);
+            this.chkFfe.TabIndex = 89;
+            this.chkFfe.Text = "FFE";
+            this.chkFfe.UseVisualStyleBackColor = true;
             // 
             // cmbDefault
             // 
@@ -356,13 +366,15 @@
             // 
             // btnHelp
             // 
-            this.btnHelp.Location = new System.Drawing.Point(8, 635);
+            this.btnHelp.ForeColor = System.Drawing.SystemColors.HotTrack;
+            this.btnHelp.Location = new System.Drawing.Point(8, 624);
             this.btnHelp.Margin = new System.Windows.Forms.Padding(4);
             this.btnHelp.Name = "btnHelp";
-            this.btnHelp.Size = new System.Drawing.Size(100, 36);
+            this.btnHelp.Size = new System.Drawing.Size(100, 32);
             this.btnHelp.TabIndex = 74;
             this.btnHelp.Text = "Help";
             this.btnHelp.UseVisualStyleBackColor = true;
+            this.btnHelp.Click += new System.EventHandler(this.btnHelp_Click);
             // 
             // btnClose
             // 
@@ -711,16 +723,6 @@
             this.imageList1.Images.SetKeyName(0, "Added");
             this.imageList1.Images.SetKeyName(1, "Modified");
             this.imageList1.Images.SetKeyName(2, "Deleted");
-            // 
-            // chkFfe
-            // 
-            this.chkFfe.AutoSize = true;
-            this.chkFfe.Location = new System.Drawing.Point(313, 25);
-            this.chkFfe.Name = "chkFfe";
-            this.chkFfe.Size = new System.Drawing.Size(55, 21);
-            this.chkFfe.TabIndex = 89;
-            this.chkFfe.Text = "FFE";
-            this.chkFfe.UseVisualStyleBackColor = true;
             // 
             // uc_fvs_output_prepost_seqnum
             // 

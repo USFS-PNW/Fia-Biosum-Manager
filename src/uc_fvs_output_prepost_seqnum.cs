@@ -37,9 +37,9 @@ namespace FIA_Biosum_Manager
         private ComboBox m_cmbFVSStrClassPost3;
         private ComboBox m_cmbFVSStrClassPost4;
         private string m_strDebugFile = frmMain.g_oEnv.strTempDir + "\\biosum_fvsout_debug.txt";
-
-
-
+        private env m_oEnv;
+        private Help m_oHelp;
+        private string m_xpsFile = Help.DefaultFvsXPSFile;
 
 
         private static string m_strColumnList = "PREPOST_SEQNUM_ID,TableName,Type," +
@@ -109,6 +109,7 @@ namespace FIA_Biosum_Manager
         {
             int x;
             InitializeComponent();
+            this.m_oEnv = new env();
 
             lvFVSTables.Columns[COL_STATUS].TextAlign = HorizontalAlignment.Center;
 
@@ -2201,6 +2202,15 @@ namespace FIA_Biosum_Manager
             newItem.RxCycle3PostStrClassBeforeTreeRemovalYN = "N";
             newItem.RxCycle4PostStrClassBeforeTreeRemovalYN = "N";
             return newItem;
+        }
+
+        private void btnHelp_Click(object sender, EventArgs e)
+        {
+            if (m_oHelp == null)
+            {
+                m_oHelp = new Help(m_xpsFile, m_oEnv);
+            }
+            m_oHelp.ShowHelp(new string[] { "FVS", "SEQUENCE_NUMBERS" });
         }
     }
     /*********************************************************************************************************
