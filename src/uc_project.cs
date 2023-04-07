@@ -1051,16 +1051,6 @@ namespace FIA_Biosum_Manager
                 strSourceFile = this.m_oEnv.strAppDir + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile;
                 strDestFile = this.txtRootDirectory.Text.Trim() + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile;
                 System.IO.File.Copy(strSourceFile, strDestFile, true);
-				//
-				//prepopulated ref fvs commands file
-				//
-				//copy default master database to the new project directory
-				strSourceFile = this.m_oEnv.strAppDir + "\\db\\ref_fvscommands.mdb";
-				strDestFile = this.txtRootDirectory.Text.Trim() + "\\db\\ref_fvscommands.mdb";
-				p_frmTherm.Increment(7);
-				p_frmTherm.lblMsg.Text = strDestFile;
-				p_frmTherm.lblMsg.Refresh();
-				System.IO.File.Copy(strSourceFile, strDestFile,true);
                 //
                 //prepopulated weighted variable optimizer_definitions.accdb file
                 //
@@ -1282,13 +1272,6 @@ namespace FIA_Biosum_Manager
 						"'" + this.txtRootDirectory.Text.ToString().Trim()  + "\\db'," + 
 						"'fvsmaster.mdb'," + 
 						"'rxpackage_fvs_commands_order');";
-					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
-
-					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-						"('FVS Commands'," + 
-						"'" + this.txtRootDirectory.Text.ToString().Trim()  + "\\db'," + 
-						"'ref_fvscommands.mdb'," + 
-						"'fvs_commands');";
 					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
 
                     strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
