@@ -154,6 +154,7 @@ namespace FIA_Biosum_Manager
         {
             { "SPECIESFIA", "INTEGER" }
         };
+        public static string m_colBioSumAppend = "BIOSUM_Append_YN";
 
         private SQLite.ADO.DataMgr _SQLite = new SQLite.ADO.DataMgr();
         public SQLite.ADO.DataMgr SQLite
@@ -663,7 +664,6 @@ namespace FIA_Biosum_Manager
 			
 			
 			string strOutDirAndFile;
-			string strConn;
 			int x,y;
 			int intCount=0;
 			string strRx1="";
@@ -795,35 +795,18 @@ namespace FIA_Biosum_Manager
                             {
                                 oDao2.OpenDb(strOutDirAndFile);
                                 //
-                                //process column BIOSUM_FVSAlphaToFIANumeric_YN
-                                //
-                                if (oDao2.ColumnExist(oDao2.m_DaoDatabase,
-                                                      "FVS_CASES",
-                                                      "BIOSUM_FVSAlphaToFIANumeric_YN") == false)
-                                {
-
-                                    oDao2.AddColumn_TextDataType(
-                                        oDao2.m_DaoDatabase,
-                                        "FVS_CASES",
-                                        "BIOSUM_FVSAlphaToFIANumeric_YN",
-                                        1, "N");
-
-                                    oDao2.m_DaoDatabase.Execute("UPDATE FVS_CASES SET BIOSUM_FVSAlphaToFIANumeric_YN='N';",
-                                                               Microsoft.Office.Interop.Access.Dao.RecordsetOptionEnum.dbFailOnError);
-                                }
-                                //
                                 //process column BIOSUM_Append_YN
                                 //
                                 if (oDao2.ColumnExist(oDao2.m_DaoDatabase,
                                                       "FVS_CASES",
-                                                      "BIOSUM_Append_YN") == false)
+                                                      m_colBioSumAppend) == false)
                                 {
                                     oDao2.AddColumn_TextDataType(
                                         oDao2.m_DaoDatabase,
                                         "FVS_CASES",
-                                        "BIOSUM_Append_YN",
+                                        m_colBioSumAppend,
                                         1, "N");
-                                    oDao2.m_DaoDatabase.Execute("UPDATE FVS_CASES SET BIOSUM_Append_YN='N';",
+                                    oDao2.m_DaoDatabase.Execute($@"UPDATE FVS_CASES SET {m_colBioSumAppend}='N';",
                                                                Microsoft.Office.Interop.Access.Dao.RecordsetOptionEnum.dbFailOnError);
                                 }
                                 else
@@ -831,7 +814,7 @@ namespace FIA_Biosum_Manager
                                     //check if records exist in the cut list for this variant/package
                                     if (lngTreeRecords == 0)
                                     {
-                                        oDao2.m_DaoDatabase.Execute("UPDATE FVS_CASES SET BIOSUM_Append_YN='N';",
+                                        oDao2.m_DaoDatabase.Execute($@"UPDATE FVS_CASES SET {m_colBioSumAppend}='N';",
                                               Microsoft.Office.Interop.Access.Dao.RecordsetOptionEnum.dbFailOnError);
                                     }
                                 }
@@ -1058,7 +1041,7 @@ namespace FIA_Biosum_Manager
                         else if (strLinkedTables[x].ToUpper().IndexOf("FVS_CASES", 0) == 0)
                         {
                             string strUpdateStatus = "";
-                            if (Convert.ToUInt32(oAdo.getRecordCountUInt(oAdo.m_OleDbConnection, "select count(*) from " + strLinkedTables[x].Trim() + " WHERE BIOSUM_Append_YN='N'", "fvs_cases")) > 0)
+                            if (Convert.ToUInt32(oAdo.getRecordCountUInt(oAdo.m_OleDbConnection, "select count(*) from " + strLinkedTables[x].Trim() + " WHERE " + m_colBioSumAppend + "='N'", "fvs_cases")) > 0)
                             {
                                 strUpdateStatus = strUpdateStatus + "a";
                             }
@@ -2630,8 +2613,7 @@ namespace FIA_Biosum_Manager
                             {
                                 ado_data_access oAdoTemp = new ado_data_access();
                                 oAdoTemp.OpenConnection(oAdoTemp.getMDBConnString(strOutDirAndFile, "", ""));
-                                oAdoTemp.m_strSQL = "UPDATE FVS_CASES " +
-                                                    "SET BIOSUM_Append_YN='Y'";
+                                oAdoTemp.m_strSQL = $@"UPDATE FVS_CASES SET {m_colBioSumAppend} ='Y'";
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdoTemp.m_strSQL + "\r\n");
                                 oAdoTemp.SqlNonQuery(oAdoTemp.m_OleDbConnection, oAdoTemp.m_strSQL);

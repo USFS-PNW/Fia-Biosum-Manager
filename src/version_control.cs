@@ -1275,14 +1275,6 @@ namespace FIA_Biosum_Manager
                                 "'rxpackage_fvs_commands_order');";
                             oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
                             break;
-                        case "FVS COMMANDS":
-                            oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-                                "('FVS Commands'," + 
-								"'" + ReferenceProjectDirectory.Trim() + "\\db'," + 
-								"'ref_fvscommands.mdb'," +
-                                "'fvs_commands');";
-							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-                            break;
                         case "HARVEST METHODS":
                             oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
                                 "('Harvest Methods'," +
