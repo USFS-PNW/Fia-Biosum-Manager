@@ -1352,13 +1352,6 @@ namespace FIA_Biosum_Manager
                         "'harvest_methods');";
 					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
 
-					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-						"('Tree Regional Biomass'," + 
-						"'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," + 
-						"'master.mdb'," + 
-						"'tree_regional_biomass');";
-					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
-
                     strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
                         "('BIOSUM Pop Stratum Adjustment Factors'," +
                         "'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," +
