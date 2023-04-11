@@ -2160,7 +2160,56 @@ namespace FIA_Biosum_Manager
 			return strFile;
 
 		}
-		public byte AssignFvsCommandId(FIA_Biosum_Manager.RxItemFvsCommandItem_Collection p_FvsCollection, string p_strFvsCmd)
+        public string GetRxPackageRunTitle(System.Data.OleDb.OleDbDataReader p_OleDbReader)
+        {
+
+            //string strFile = "FVSOUT_" + p_OleDbReader["fvs_variant"].ToString().Trim() + "_P" + p_OleDbReader["rxpackage"].ToString().Trim();
+            string strTitle = $@"FVSOUT_{p_OleDbReader["fvs_variant"].ToString().Trim()}_P{p_OleDbReader["rxpackage"].ToString().Trim()}";
+            if (p_OleDbReader["simyear1_rx"] == System.DBNull.Value ||
+                p_OleDbReader["simyear1_rx"].ToString().Trim().Length == 0 ||
+                p_OleDbReader["simyear1_rx"].ToString().Trim() == "GP")
+            {
+                strTitle = strTitle + "-000";
+            }
+            else
+            {
+                strTitle = strTitle + "-" + p_OleDbReader["simyear1_rx"].ToString().Trim();
+            }
+            if (p_OleDbReader["simyear2_rx"] == System.DBNull.Value ||
+                p_OleDbReader["simyear2_rx"].ToString().Trim().Length == 0 ||
+                p_OleDbReader["simyear2_rx"].ToString().Trim() == "GP")
+            {
+                strTitle = strTitle + "-000";
+            }
+            else
+            {
+                strTitle = strTitle + "-" + p_OleDbReader["simyear2_rx"].ToString().Trim();
+            }
+            if (p_OleDbReader["simyear3_rx"] == System.DBNull.Value ||
+                p_OleDbReader["simyear3_rx"].ToString().Trim().Length == 0 ||
+                p_OleDbReader["simyear3_rx"].ToString().Trim() == "GP")
+            {
+                strTitle = strTitle + "-000";
+            }
+            else
+            {
+                strTitle = strTitle + "-" + p_OleDbReader["simyear3_rx"].ToString().Trim();
+
+            }
+            if (p_OleDbReader["simyear4_rx"] == System.DBNull.Value ||
+                p_OleDbReader["simyear4_rx"].ToString().Trim().Length == 0 ||
+                p_OleDbReader["simyear4_rx"].ToString().Trim() == "GP")
+            {
+                strTitle = strTitle + "-000";
+            }
+            else
+            {
+
+                strTitle = strTitle + "-" + p_OleDbReader["simyear4_rx"].ToString().Trim();
+            }
+            return strTitle;
+        }
+        public byte AssignFvsCommandId(FIA_Biosum_Manager.RxItemFvsCommandItem_Collection p_FvsCollection, string p_strFvsCmd)
 		{
 			byte id=1;
 			for (int x=0;x<=p_FvsCollection.Count-1;x++)

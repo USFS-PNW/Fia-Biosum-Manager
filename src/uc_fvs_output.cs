@@ -87,7 +87,8 @@ namespace FIA_Biosum_Manager
 		private string m_strTempMDBFileConnectionString="";
 		private string m_strTempMDBFile="";
 		private string m_strProjDir="";
-        private string m_strFvsTreeDb;
+        private string m_strFvsTreeDb= frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
+        private string m_strFvsOutDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile;
         private string m_dbConn = "";
         private string m_missingFvsOutDb = "This project has no valid /fvs/data/FVSOut.db. Multiple FVS Out functions will not work! Please use FVS to generate an /fvs/data/FVSOut.db file.";
 
@@ -673,6 +674,7 @@ namespace FIA_Biosum_Manager
 			string strPackage="";
 			string strVariant="";
             string strCurVariant = "";
+            string strCurRunTitle = "";
             int intCurVariantPotFire = -1;
             uint intPotFireBaseYrRecordCount = 0;
             bool bFound = false;
@@ -730,36 +732,31 @@ namespace FIA_Biosum_Manager
 				//load rxpackage properties
 				m_oRxPackageItem_Collection = new RxPackageItem_Collection();
 				this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_ado,m_ado.m_OleDbConnection,m_oQueries,this.m_oRxPackageItem_Collection);
-				
 
-				string strTempDbFile="";
+
+                //@ToDo: Can I delete this dao?
+                string strTempDbFile="";
 				dao_data_access oDao = new dao_data_access();
-				dao_data_access oDao2 = new dao_data_access();
 				strTempDbFile=frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir,"accdb");
 				oDao.CreateMDB(strTempDbFile);
 				oDao.OpenDb(strTempDbFile);
 
 
-				m_ado.m_strSQL = Queries.FVS.GetFVSVariantRxPackageSQL(this.m_oQueries.m_oFIAPlot.m_strPlotTable,this.m_oQueries.m_oFvs.m_strRxPackageTable);
-
-				
+                // Get variants/rxPackages in project
+                m_ado.m_strSQL = Queries.FVS.GetFVSVariantRxPackageSQL(this.m_oQueries.m_oFIAPlot.m_strPlotTable,this.m_oQueries.m_oFvs.m_strRxPackageTable);				
 				this.m_ado.SqlQueryReader(this.m_ado.m_OleDbConnection,this.m_ado.m_strSQL);
-
 				while (this.m_ado.m_OleDbDataReader.Read())
 				{
-
-
                     strVariant = this.m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim();
-                    strPackage = this.m_ado.m_OleDbDataReader["RxPackage"].ToString().Trim();
-
-                   
-
+                    strPackage = this.m_ado.m_OleDbDataReader["RxPackage"].ToString().Trim();                  
                     this.m_strOutMDBFile = this.m_oRxTools.GetRxPackageFvsOutDbFileName(m_ado.m_OleDbDataReader);
+                    // This is the Access DB for this variant/package ie: FVSOUT_CA_P001-001-001-001-001.MDB
                     strOutDirAndFile = this.txtOutDir.Text.Trim() + "\\" +
                            this.m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim() + "\\" +
                             this.m_strOutMDBFile.Trim();
+                    // Example RunTitle: FVSOUT_WC_P999-999-999-999-999
+                    strCurRunTitle = this.m_oRxTools.GetRxPackageRunTitle(m_ado.m_OleDbDataReader);
 
-                    m_strFvsTreeDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
                     long lngTreeRecords = 0;
                     // Projects will not have an FVSOUT_TREE_LIST.db until FVS Out is run for the first time
                     if (System.IO.File.Exists(m_strFvsTreeDb))
@@ -776,170 +773,53 @@ namespace FIA_Biosum_Manager
                             }
                         }
                     }
-                        /************************************************************************
-                        /**Check and Assign in the FVS_CASES whether the FVS output has been 
-                         **appended to the fvs_tree list table
-                         ************************************************************************/
-                        if (System.IO.File.Exists(strOutDirAndFile) == true)
+                    /************************************************************************
+                    /**Check and Assign in the FVS_CASES whether the FVS output has been 
+                     **appended to the fvs_cutTree table
+                     ************************************************************************/
+                    if (System.IO.File.Exists(m_strFvsOutDb) == true)
 					{
-
-						strTableNames = new string[300];						
-						oDao2.getTableNames(strOutDirAndFile,ref strTableNames);
-						for (x=0;x<=strTableNames.Length-1;x++)
-						{
-                            //
-                            //Process FVS_CASES table
-                            //
-							if (strTableNames[x]==null || strTableNames[x].Trim().Length==0) break;
-                            if (strTableNames[x].Trim().ToUpper() == "FVS_CASES")
+                        string dbConn = SQLite.GetConnectionString(m_strFvsOutDb);
+                        using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
+                        {
+                            conn.Open();
+                            if (SQLite.TableExist(conn, Tables.FVS.DefaultFVSCasesTableName))
                             {
-                                oDao2.OpenDb(strOutDirAndFile);
-                                //
-                                //process column BIOSUM_Append_YN
-                                //
-                                if (oDao2.ColumnExist(oDao2.m_DaoDatabase,
-                                                      "FVS_CASES",
-                                                      m_colBioSumAppend) == false)
+                                if (! SQLite.ColumnExist(conn, Tables.FVS.DefaultFVSCasesTableName, m_colBioSumAppend))
                                 {
-                                    oDao2.AddColumn_TextDataType(
-                                        oDao2.m_DaoDatabase,
-                                        "FVS_CASES",
-                                        m_colBioSumAppend,
-                                        1, "N");
-                                    oDao2.m_DaoDatabase.Execute($@"UPDATE FVS_CASES SET {m_colBioSumAppend}='N';",
-                                                               Microsoft.Office.Interop.Access.Dao.RecordsetOptionEnum.dbFailOnError);
+                                    SQLite.AddColumn(conn, Tables.FVS.DefaultFVSCasesTableName, m_colBioSumAppend, "TEXT", "1");
+                                    SQLite.m_strSQL = $@"UPDATE {Tables.FVS.DefaultFVSCasesTableName} SET {m_colBioSumAppend} = 'N'";
+                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                                 }
                                 else
                                 {
                                     //check if records exist in the cut list for this variant/package
                                     if (lngTreeRecords == 0)
                                     {
-                                        oDao2.m_DaoDatabase.Execute($@"UPDATE FVS_CASES SET {m_colBioSumAppend}='N';",
-                                              Microsoft.Office.Interop.Access.Dao.RecordsetOptionEnum.dbFailOnError);
+                                        SQLite.m_strSQL = $@"UPDATE {Tables.FVS.DefaultFVSCasesTableName} SET {m_colBioSumAppend}='N' WHERE RunTitle = '{strCurRunTitle}'";
+                                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                                     }
                                 }
-                                //
-                                //process column POTFIRE_OneYearAdded_YN
-                                //
-                                oDao2.m_DaoDatabase.Close();
-
-                                strLinkTableName = strTableNames[x].Trim() + "_" +
-                                    m_strOutMDBFile.Substring(VARIANT_POS, 2) + "_P" +
-                                    m_strOutMDBFile.Substring(PACKAGE_POS, 3) + "_" +
-                                    m_strOutMDBFile.Substring(RX1_POS, 3) + "_" +
-                                    m_strOutMDBFile.Substring(RX2_POS, 3) + "_" +
-                                    m_strOutMDBFile.Substring(RX3_POS, 3) + "_" +
-                                    m_strOutMDBFile.Substring(RX4_POS, 3);
-
-
-                                oDao.CreateTableLink(oDao.m_DaoDatabase, strLinkTableName, strOutDirAndFile, strTableNames[x]);
                                 intCount++;
-                                strLinkedTables[intCount - 1] = strLinkTableName;
                             }
-                            //
-                            //create the Name of the Table Link
-                            //
-							else if (strTableNames[x].Trim().ToUpper()=="FVS_SUMMARY" ||
-								     strTableNames[x].Trim().ToUpper()=="FVS_TREELIST" ||
-								     strTableNames[x].Trim().ToUpper()=="FVS_CUTLIST" ||
-								     strTableNames[x].Trim().ToUpper()=="FVS_POTFIRE")
-							{
-                                
-								strLinkTableName=strTableNames[x].Trim() + "_" + 
-									m_strOutMDBFile.Substring(VARIANT_POS,2) + "_P" + 
-									m_strOutMDBFile.Substring(PACKAGE_POS,3) + "_" + 
-									m_strOutMDBFile.Substring(RX1_POS,3) + "_" + 
-									m_strOutMDBFile.Substring(RX2_POS,3) + "_" + 
-									m_strOutMDBFile.Substring(RX3_POS,3) + "_" + 
-									m_strOutMDBFile.Substring(RX4_POS,3);
-
-									
-								oDao.CreateTableLink(oDao.m_DaoDatabase,strLinkTableName,strOutDirAndFile,strTableNames[x]);
-								intCount++;
-								strLinkedTables[intCount-1]=strLinkTableName;
-
-							}
-						}
-					}
-					else
-					{
-						intCount++;
-						strLinkedTables[intCount-1] = "FILENOTFOUND_" + 
-							m_strOutMDBFile.Substring(VARIANT_POS,2) + "_P" + 
-							m_strOutMDBFile.Substring(PACKAGE_POS,3) + "_" + 
-							m_strOutMDBFile.Substring(RX1_POS,3) + "_" + 
-							m_strOutMDBFile.Substring(RX2_POS,3) + "_" + 
-							m_strOutMDBFile.Substring(RX3_POS,3) + "_" + 
-							m_strOutMDBFile.Substring(RX4_POS,3);
-					}
-                    /*********************************************************
-                     **FVS POTFIRE BASE YEAR 
-                     *********************************************************/
-                    if (strVariant != strCurVariant)
-                    {
-                        cmbFilter.Items.Add(strVariant);
-                        strCurVariant = strVariant;
-                        strOutDirAndFile = this.txtOutDir.Text.Trim() + "\\" +
-                           strVariant + "\\FVSOUT_" + strVariant + "_POTFIRE_BaseYr.MDB";
-
-
-
-                        if (System.IO.File.Exists(strOutDirAndFile) == true)
-                        {
-                            bFound = false;
-                            strTableNames = new string[300];
-                            oDao2.getTableNames(strOutDirAndFile, ref strTableNames);
-                            for (x = 0; x <= strTableNames.Length - 1; x++)
-                            {
-
-                                if (strTableNames[x] == null || strTableNames[x].Trim().Length == 0) break;
-
-
-                                if (strTableNames[x].Trim().ToUpper() == "FVS_POTFIRE")
-                                {
-                                    strLinkTableName = strTableNames[x].Trim() + "_" +
-                                        strVariant + "_POTFIRE_BaseYr";
-
-
-
-                                    oDao.CreateTableLink(oDao.m_DaoDatabase, strLinkTableName, strOutDirAndFile, strTableNames[x]);
-                                    intPotFireBaseYrCount++;
-                                    strPotFireBaseYrLinkedTables[intPotFireBaseYrCount - 1] = strLinkTableName;
-                                    bFound = true;
-                                    break;
-                                }
-                            }
-                            if (bFound == false)
-                            {
-                                intPotFireBaseYrCount++;
-                                strPotFireBaseYrLinkedTables[intPotFireBaseYrCount - 1] =
-                                    "TABLENOTFOUND_" + strVariant + "_POTFIRE_BaseYr";
-                            }
-                            
                         }
-                        else
+                        if (strVariant != strCurVariant)
                         {
-                            intPotFireBaseYrCount++;
-                            strPotFireBaseYrLinkedTables[intPotFireBaseYrCount - 1] =
-                        "FILENOTFOUND_" + strVariant + "_POTFIRE_BaseYr";
-
+                            cmbFilter.Items.Add(strVariant);
+                            strCurVariant = strVariant;
                         }
-                    }
-
-                   
+                    }   // END IF FVS_OUT.DB EXISTS                   
 				}
 
                 // Warning for older projects without FVSOut.db (and cutlist)
-                if (!FvsOutWithCutList(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()))
+                if (!FvsOutWithCutList())
                 {
                     MessageBox.Show(m_missingFvsOutDb, "FIA Biosum", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 }
 
-                oDao2.m_DaoWorkspace.Close();
 				oDao.m_DaoDatabase.Close();
 				oDao.m_DaoWorkspace.Close();
 
-                oDao2.m_DaoWorkspace = null;
                 oDao.m_DaoDatabase = null;
                 oDao.m_DaoWorkspace = null;
 
@@ -1295,7 +1175,7 @@ namespace FIA_Biosum_Manager
             }
 
             // Warning for older projects without FVSOut.db
-            if (!System.IO.File.Exists(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile))
+            if (!System.IO.File.Exists(m_strFvsOutDb))
             {
                 MessageBox.Show(m_missingFvsOutDb, "FIA Biosum", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
@@ -2579,7 +2459,7 @@ namespace FIA_Biosum_Manager
                                 }
 
                                 // Only try to load if there is a cut list in the FVSOut.db
-                                if (FvsOutWithCutList(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()))
+                                if (FvsOutWithCutList())
                                 {
                                     string strTreeTempDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
                                     string strTreeListDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
@@ -9864,11 +9744,11 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private bool FvsOutWithCutList(string strProjectDir)
+        private bool FvsOutWithCutList()
         {
-            if (System.IO.File.Exists(strProjectDir + Tables.FVS.DefaultFVSOutDbFile))
+            if (System.IO.File.Exists(m_strFvsOutDb))
             {
-                string strConn = SQLite.GetConnectionString(strProjectDir + Tables.FVS.DefaultFVSOutDbFile);
+                string strConn = SQLite.GetConnectionString(m_strFvsOutDb);
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                 {
                     conn.Open();
