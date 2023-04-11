@@ -10795,12 +10795,12 @@ namespace FIA_Biosum_Manager
                 }
                 else
                 {
+                    this.FVSRecordsFinished();
                     MessageBox.Show($@"The FVSOut.db for this project does not contain an FVS_TreeList table. The {Tables.FVS.DefaultFVSInForestTreeTableName} table cannot be created!", "FIA Biosum");
                 }
             }
             catch (System.Threading.ThreadInterruptedException err)
             {
-
                 MessageBox.Show("Threading Interruption Error " + err.Message.ToString());
             }
             catch (System.Threading.ThreadAbortException err)
