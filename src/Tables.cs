@@ -2566,7 +2566,8 @@ namespace FIA_Biosum_Manager
             static public string DefaultPreFVSComputeDbFile { get { return @"\fvs\db\PREPOST_FVS_COMPUTE.ACCDB"; } }
             static public string DefaultFVSComputeTableName { get { return "FVS_COMPUTE"; } }
             static public string DefaultFVSCasesTableName { get { return "FVS_CASES"; } }
-
+            static public string DefaultFVSSummaryTableName { get { return "FVS_SUMMARY"; } }
+            static public string DefaultFVSCutListTableName { get { return "FVS_CUTLIST"; } }
 
 
 
