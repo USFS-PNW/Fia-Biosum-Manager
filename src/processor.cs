@@ -235,7 +235,12 @@ namespace FIA_Biosum_Manager
                                 p_strPlotTableName + " p INNER JOIN " + p_strCondTableName + " d ON p.biosum_plot_id = d.biosum_plot_id) c " +
                                 "WHERE z.rxpackage='" + p_strRxPackage + "' AND z.fvs_variant = '" + p_strVariant + "' AND " +
                                 "z.biosum_cond_id = c.biosum_cond_id";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
                 m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                
                 if (m_oAdo.m_OleDbDataReader.HasRows)
                 {
                     m_trees = new System.Collections.Generic.List<tree>();
