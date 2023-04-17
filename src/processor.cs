@@ -407,7 +407,11 @@ namespace FIA_Biosum_Manager
         {
             if (m_trees == null)
             {
-                System.Windows.MessageBox.Show("No cut trees have been loaded for this scenario, variant, package combination.\r\nAuxillary tree data cannot be appended",
+                System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                sb.Append("No cut trees have been loaded for this scenario, variant, package combination. ");
+                sb.Append("Auxillary tree data cannot be appended!\r\n");
+                sb.Append($@"Review the log at {m_strDebugFile}.");
+                System.Windows.MessageBox.Show(sb.ToString(),
                     "FIA Biosum", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 return -1;
             }
@@ -671,7 +675,11 @@ namespace FIA_Biosum_Manager
             int intHwdSpeciesCodeThreshold = 299; // Species codes greater than this are hardwoods
             if (m_trees.Count < 1)
             {
-                System.Windows.MessageBox.Show("No cut trees have been loaded for this scenario, variant, package combination. \r\n The OpCost input file cannot be created",
+                System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                sb.Append("No cut trees have been loaded for this scenario, variant, package combination. ");
+                sb.Append("The OpCost input file cannot be created!\r\n");
+                sb.Append($@"Review the log at {m_strDebugFile}.");
+                System.Windows.MessageBox.Show(sb.ToString(),
                     "FIA Biosum", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 return intReturnVal;
             }
