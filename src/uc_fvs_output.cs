@@ -2227,6 +2227,10 @@ namespace FIA_Biosum_Manager
 				frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg,"Visible",true);
 
                 this.val_data();
+
+                // Ensure that indexes are on the FVSOut.db
+                m_oRxTools.CreateFvsOutDbIndexes(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +Tables.FVS.DefaultFVSOutDbFile);
+
                 if (m_intError == 0)
                 {
 
@@ -9952,12 +9956,11 @@ namespace FIA_Biosum_Manager
 
         }
 
-        public void RunCreateFVSOut_BioSum_Main()
+        private void RunCreateFVSOut_BioSum_Main()
         {
 
             frmMain.g_oDelegate.CurrentThreadProcessStarted = true;
             this.m_intError = 0;
-            int intCount = 0;
             m_intProgressOverallTotalCount = 0;
             m_intProgressStepCurrentCount = 0;
             m_strError = "";
@@ -10044,6 +10047,8 @@ namespace FIA_Biosum_Manager
                                 }
                             }                            
                         }
+
+                        m_oRxTools.CreateFvsOutDbIndexes(strBiosumDbPath);
 
                         frmMain.g_oUtils.WriteText(m_strLogFile, "Date/Time:" + System.DateTime.Now.ToString().Trim() + "\r\n\r\n");
                         frmMain.g_oUtils.WriteText(m_strLogFile, "**EOF**");
