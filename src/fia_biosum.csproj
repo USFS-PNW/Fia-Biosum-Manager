@@ -637,7 +637,6 @@
     </Compile>
     <Compile Include="XPSDocumentViewer_xaml.cs" />
     <Content Include="App.ico" />
-    <None Include="Resources\flat-icon.png" />
     <None Include="Resources\favicon.ico" />
     <Content Include="table-alternate-row-color.bmp" />
     <Content Include="table-row-color.bmp" />
