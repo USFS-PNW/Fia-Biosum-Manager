@@ -727,7 +727,7 @@ namespace FIA_Biosum_Manager
 				string strVariantRxPackage="";
 				string strCurVariantRxPackage="";
 
-				//load rxpackage properties
+                //load rxpackage properties
 				m_oRxPackageItem_Collection = new RxPackageItem_Collection();
 				this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_ado,m_ado.m_OleDbConnection,m_oQueries,this.m_oRxPackageItem_Collection);
 				
@@ -760,22 +760,22 @@ namespace FIA_Biosum_Manager
                             this.m_strOutMDBFile.Trim();
 
                     m_strFvsTreeDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
-                    long lngTreeRecords = 0;
-                    // Projects will not have an FVSOUT_TREE_LIST.db until FVS Out is run for the first time
-                    if (System.IO.File.Exists(m_strFvsTreeDb))
+                    long lngPreSummaryRecords = 0;
+                    string strSummaryConnect = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultPreFVSSummaryDbFile}";
+                    if (System.IO.File.Exists(strSummaryConnect))
                     {
-                        string dbConn = SQLite.GetConnectionString(m_strFvsTreeDb);
-                        using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
+                        using (System.Data.OleDb.OleDbConnection conn = new System.Data.OleDb.OleDbConnection(oAdo.getMDBConnString(strSummaryConnect, "", "")))
                         {
                             conn.Open();
-                            if (SQLite.TableExist(conn, Tables.FVS.DefaultFVSCutTreeTableName))
+                            if (oAdo.TableExist(conn, Tables.FVS.DefaultPreFVSSummaryTableName))
                             {
-                                string strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSCutTreeTableName} 
-                                           WHERE FVS_VARIANT = '{strVariant}' and RXPACKAGE = '{strPackage}'";
-                                lngTreeRecords = SQLite.getRecordCount(conn, strSQL, Tables.FVS.DefaultFVSCutTreeTableName);
+                                string strSQL = $@"SELECT COUNT(*) FROM(SELECT TOP 1 biosum_cond_id FROM {Tables.FVS.DefaultPreFVSSummaryTableName} WHERE 
+                                    FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strPackage}')";
+                                lngPreSummaryRecords = (long)oAdo.getRecordCount(conn, strSQL, Tables.FVS.DefaultPreFVSSummaryTableName);
                             }
                         }
                     }
+
                         /************************************************************************
                         /**Check and Assign in the FVS_CASES whether the FVS output has been 
                          **appended to the fvs_tree list table
@@ -829,7 +829,7 @@ namespace FIA_Biosum_Manager
                                 else
                                 {
                                     //check if records exist in the cut list for this variant/package
-                                    if (lngTreeRecords == 0)
+                                    if (lngPreSummaryRecords == 0)
                                     {
                                         oDao2.m_DaoDatabase.Execute("UPDATE FVS_CASES SET BIOSUM_Append_YN='N';",
                                               Microsoft.Office.Interop.Access.Dao.RecordsetOptionEnum.dbFailOnError);

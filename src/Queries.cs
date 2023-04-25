@@ -247,12 +247,6 @@ namespace FIA_Biosum_Manager
 					ReferenceQueries.m_intError=-1;
 					return;
 				}
-				if (this.m_strFvsCmdTable.Trim().Length == 0 && !ReferenceQueries.Scenario)
-				{
-					MessageBox.Show("!!Could Not Locate FVS Command Table!!","FIA Biosum",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
-					ReferenceQueries.m_intError=-1;
-					return;
-				}
 				if (this.m_strRxFvsCmdTable.Trim().Length == 0 && !ReferenceQueries.Scenario)
 				{
 					MessageBox.Show("!!Could Not Locate Rx FVS Command Assignments Table!!","FIA Biosum",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
