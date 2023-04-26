@@ -714,7 +714,7 @@ namespace FIA_Biosum_Manager
 
 				this.lstFvsOutput.Columns[COL_CHECKBOX].Width = -2;
 				
-				//load rxpackage properties
+                //load rxpackage properties
 				m_oRxPackageItem_Collection = new RxPackageItem_Collection();
 				this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_ado,m_ado.m_OleDbConnection,m_oQueries,this.m_oRxPackageItem_Collection);
 
@@ -743,19 +743,18 @@ namespace FIA_Biosum_Manager
                     // Example RunTitle: FVSOUT_WC_P999-999-999-999-999
                     strCurRunTitle = this.m_oRxTools.GetRxPackageRunTitle(m_ado.m_OleDbDataReader);
 
-                    long lngTreeRecords = 0;
-                    // Projects will not have an FVSOUT_TREE_LIST.db until FVS Out is run for the first time
-                    if (System.IO.File.Exists(m_strFvsTreeDb))
+                    long lngPreSummaryRecords = 0;
+                    string strSummaryConnect = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultPreFVSSummaryDbFile}";
+                    if (System.IO.File.Exists(strSummaryConnect))
                     {
-                        string dbConn = SQLite.GetConnectionString(m_strFvsTreeDb);
-                        using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
+                        using (System.Data.OleDb.OleDbConnection conn = new System.Data.OleDb.OleDbConnection(oAdo.getMDBConnString(strSummaryConnect, "", "")))
                         {
                             conn.Open();
-                            if (SQLite.TableExist(conn, Tables.FVS.DefaultFVSCutTreeTableName))
+                            if (oAdo.TableExist(conn, Tables.FVS.DefaultPreFVSSummaryTableName))
                             {
-                                string strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSCutTreeTableName} 
-                                           WHERE FVS_VARIANT = '{strVariant}' and RXPACKAGE = '{strPackage}'";
-                                lngTreeRecords = SQLite.getRecordCount(conn, strSQL, Tables.FVS.DefaultFVSCutTreeTableName);
+                                string strSQL = $@"SELECT COUNT(*) FROM(SELECT TOP 1 biosum_cond_id FROM {Tables.FVS.DefaultPreFVSSummaryTableName} WHERE 
+                                    FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strPackage}')";
+                                lngPreSummaryRecords = (long)oAdo.getRecordCount(conn, strSQL, Tables.FVS.DefaultPreFVSSummaryTableName);
                             }
                         }
                     }
@@ -780,7 +779,7 @@ namespace FIA_Biosum_Manager
                                 else
                                 {
                                     //check if records exist in the cut list for this variant/package
-                                    if (lngTreeRecords == 0)
+                                    if (lngPreSummaryRecords == 0)
                                     {
                                         SQLite.m_strSQL = $@"UPDATE {Tables.FVS.DefaultFVSCasesTableName} SET {m_colBioSumAppend}='N' WHERE RunTitle = '{strCurRunTitle}'";
                                         SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
@@ -2021,6 +2020,10 @@ namespace FIA_Biosum_Manager
 				frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg,"Visible",true);
 
                 this.val_data();
+
+                // Ensure that indexes are on the FVSOut.db
+                m_oRxTools.CreateFvsOutDbIndexes(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +Tables.FVS.DefaultFVSOutDbFile);
+
                 if (m_intError == 0)
                 {
 
@@ -9745,12 +9748,11 @@ namespace FIA_Biosum_Manager
 
         }
 
-        public void RunCreateFVSOut_BioSum_Main()
+        private void RunCreateFVSOut_BioSum_Main()
         {
 
             frmMain.g_oDelegate.CurrentThreadProcessStarted = true;
             this.m_intError = 0;
-            int intCount = 0;
             m_intProgressOverallTotalCount = 0;
             m_intProgressStepCurrentCount = 0;
             m_strError = "";
@@ -9837,6 +9839,8 @@ namespace FIA_Biosum_Manager
                                 }
                             }                            
                         }
+
+                        m_oRxTools.CreateFvsOutDbIndexes(strBiosumDbPath);
 
                         frmMain.g_oUtils.WriteText(m_strLogFile, "Date/Time:" + System.DateTime.Now.ToString().Trim() + "\r\n\r\n");
                         frmMain.g_oUtils.WriteText(m_strLogFile, "**EOF**");
@@ -10588,12 +10592,12 @@ namespace FIA_Biosum_Manager
                 }
                 else
                 {
+                    this.FVSRecordsFinished();
                     MessageBox.Show($@"The FVSOut.db for this project does not contain an FVS_TreeList table. The {Tables.FVS.DefaultFVSInForestTreeTableName} table cannot be created!", "FIA Biosum");
                 }
             }
             catch (System.Threading.ThreadInterruptedException err)
             {
-
                 MessageBox.Show("Threading Interruption Error " + err.Message.ToString());
             }
             catch (System.Threading.ThreadAbortException err)

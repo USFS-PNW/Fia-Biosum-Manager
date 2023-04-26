@@ -247,12 +247,6 @@ namespace FIA_Biosum_Manager
 					ReferenceQueries.m_intError=-1;
 					return;
 				}
-				if (this.m_strFvsCmdTable.Trim().Length == 0 && !ReferenceQueries.Scenario)
-				{
-					MessageBox.Show("!!Could Not Locate FVS Command Table!!","FIA Biosum",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
-					ReferenceQueries.m_intError=-1;
-					return;
-				}
 				if (this.m_strRxFvsCmdTable.Trim().Length == 0 && !ReferenceQueries.Scenario)
 				{
 					MessageBox.Show("!!Could Not Locate Rx FVS Command Assignments Table!!","FIA Biosum",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
@@ -2420,8 +2414,9 @@ namespace FIA_Biosum_Manager
             public static string[] AppendRuntitleToFVSOut(string strTable)
             {
                 string[] sqlArray = new string[3];
+                string indexName = strTable.Substring(strTable.IndexOf("FVS_") + "FVS_".Length);
                 sqlArray[0] = $@"alter table {strTable} add column RUNTITLE VARCHAR(255)";
-                sqlArray[1] = $@"create index idx_{strTable}_runtitle on {strTable} (RUNTITLE)";
+                sqlArray[1] = $@"create index IDX_{indexName}_RunTitle on {strTable} (RUNTITLE)";
                 sqlArray[2] = $@"UPDATE {strTable} SET RUNTITLE = (SELECT RUNTITLE FROM FVS_CASES WHERE CASEID = {strTable}.CASEID)";
                 return sqlArray;
             }

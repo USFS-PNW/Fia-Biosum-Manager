@@ -59,7 +59,6 @@ namespace FIA_Biosum_Manager
 			"Treatment Package Assigned FVS Commands",
 			"Treatment Package Members",
 			"Treatment Package FVS Commands Order",
-			"FVS Commands",
 			"FVS PRE-POST SeqNum Definitions",
 			"FVS PRE-POST SeqNum Treatment Package Assign", 
 			"Tree Species",
@@ -72,7 +71,6 @@ namespace FIA_Biosum_Manager
 			"FIADB FVS Variant",
 			"FIA Tree Macro Plot Breakpoint Diameter",
 			Datasource.TableTypes.HarvestMethods,
-			"Tree Regional Biomass",
 			"BIOSUM Pop Stratum Adjustment Factors",
 			"Site Tree",
 			Datasource.TableTypes.FiaTreeSpeciesReference,
@@ -93,7 +91,6 @@ namespace FIA_Biosum_Manager
 	        "Treatment Package Assigned FVS Commands",
 	        "Treatment Package Members",
 	        "Treatment Package FVS Commands Order",
-	        "FVS Commands",
 	        "Tree Species",
 	        "FVS Tree Species",
 	        "Travel Times",
@@ -102,7 +99,6 @@ namespace FIA_Biosum_Manager
 	        "FIADB FVS Variant",
 	        "FIA Tree Macro Plot Breakpoint Diameter",
 	        Datasource.TableTypes.HarvestMethods,
-	        "Tree Regional Biomass",
 	        "BIOSUM Pop Stratum Adjustment Factors",
 	        "Site Tree"
 	    };
@@ -122,7 +118,6 @@ namespace FIA_Biosum_Manager
 	        "Treatment Package Assigned FVS Commands",
 	        "Treatment Package Members",
 	        "Treatment Package FVS Commands Order",
-	        "FVS Commands",
 	        "Tree Species",
 	        "FVS Tree Species",
 	        "Travel Times",
@@ -131,7 +126,6 @@ namespace FIA_Biosum_Manager
 	        "FIADB FVS Variant",
 	        "FIA Tree Macro Plot Breakpoint Diameter",
 	        Datasource.TableTypes.HarvestMethods,
-	        "Tree Regional Biomass",
 	        "BIOSUM Pop Stratum Adjustment Factors",
 	        "Site Tree"
 	    };
@@ -1025,9 +1019,6 @@ namespace FIA_Biosum_Manager
 				case "PROCESSING SITES":
 					p_dao.CreatePrimaryKeyIndex(p_strMDBPathAndFile,p_strTable,"psite_id");
 					break;
-				case "TREE REGIONAL BIOMASS":
-					p_dao.CreatePrimaryKeyIndex(p_strMDBPathAndFile, p_strTable,"tre_cn");
-					break;
 			}
 
 		}
@@ -1074,9 +1065,6 @@ namespace FIA_Biosum_Manager
 					p_dao.CreatePrimaryKeyIndex(p_dao.m_DaoDatabase,p_strTable,"id");
 					p_dao.CreateAutoNumber(p_dao.m_DaoDatabase,p_strTable,"id");
 					break;
-				case "TREE REGIONAL BIOMASS":
-					p_dao.CreatePrimaryKeyIndex(p_dao.m_DaoDatabase,p_strTable,"tre_cn");
-					break;
 			}
 
 		}
@@ -1114,9 +1102,6 @@ namespace FIA_Biosum_Manager
 				case "TREE SPECIES":
 					frmMain.g_oTables.m_oReference.CreateTreeSpeciesTableIndexes(p_oAdo,p_oConn,p_strTableName);
 					break;
-                case "FVS COMMANDS":
-                    frmMain.g_oTables.m_oReference.CreateFVSCommandsTableIndexes(p_oAdo, p_oConn, p_strTableName);
-                    break;
                 case "HARVEST METHODS":
                     frmMain.g_oTables.m_oReference.CreateHarvestMethodsTableIndexes(p_oAdo, p_oConn, p_strTableName);
                     break;

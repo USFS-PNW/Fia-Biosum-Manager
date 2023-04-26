@@ -208,10 +208,12 @@ namespace FIA_Biosum_Manager
             var dbFileName = "fvsout.db";
             var dbPath = "\\fvs\\data\\" + dbFileName;
             string strSQLiteConnection = sqliteDataMgr.GetConnectionString(m_strProjDir + dbPath);
-            // Initialize utils, environment, data access objects
+            // Initialize utils, environment, rxTools, data access objects
             var oUtils = new utils();
             var oEnv = new env();
             dao_data_access oDao = new dao_data_access();
+            var oRxTools = new RxTools();
+            oRxTools.CreateFvsOutDbIndexes(m_strProjDir + dbPath);
             var fileNamesList = new List<List<string>>();
             fileNamesList = getRunTitleFilenames();
             populateTableQueryDictionaries(strSQLiteConnection, sqliteDataMgr);

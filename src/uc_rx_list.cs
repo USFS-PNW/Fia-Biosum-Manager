@@ -3822,6 +3822,50 @@ namespace FIA_Biosum_Manager
             //}
         }
 
+        public void CreateFvsOutDbIndexes(string strFvsOutDbPath)
+        {
+            string idxSummary = "IDX_Summary";  //FVS-created index on fvs_summary.CaseId
+            string idxCases = "IDX_Cases";  //FVS-created index on fvs_cases.CaseId
+            string idxSummaryStandId = "IDX_Summary_StandId";    //Biosum-created index on fvs_summary.StandId
+            string idxCasesRunTitle = "IDX_Cases_RunTitle"; //BioSum-created index on fvs_summary.StandId
+            // Note: We also set some indexes in AppendRuntitleToFVSOut for FVSOut_BioSum.db
+            DataMgr oDataMgr = new DataMgr();
+            if (System.IO.File.Exists(strFvsOutDbPath))
+            {
+                string dbConn = oDataMgr.GetConnectionString(strFvsOutDbPath);
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
+                {
+                    conn.Open();
+                    if (oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSCasesTableName))
+                    {
+                        if (!oDataMgr.IndexExist(conn, idxCasesRunTitle))
+                        {
+                            oDataMgr.AddIndex(conn, Tables.FVS.DefaultFVSCasesTableName, idxCasesRunTitle, "RunTitle");
+                        }
+                        if (strFvsOutDbPath.ToUpper().IndexOf("BIOSUM") > 0 &&
+                            (!oDataMgr.IndexExist(conn, idxCases)))
+                        {
+                            // Replicate index that was on original FVSOut.db
+                            oDataMgr.AddIndex(conn, Tables.FVS.DefaultFVSCasesTableName, idxCases, "CaseId");
+                        }
+                    }
+                    if (oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSSummaryTableName))
+                    {
+                        if (!oDataMgr.IndexExist(conn, idxSummaryStandId))
+                        {
+                            oDataMgr.AddIndex(conn, Tables.FVS.DefaultFVSSummaryTableName, idxSummaryStandId, "StandId");
+                        }
+                        if (strFvsOutDbPath.ToUpper().IndexOf("BIOSUM") > 0 &&
+                            (!oDataMgr.IndexExist(conn, idxSummary)))
+                        {
+                            // Replicate index that was on original FVSOut.db
+                            oDataMgr.AddIndex(conn, Tables.FVS.DefaultFVSSummaryTableName, idxSummary, "CaseId");
+                        }
+                    }
+                }
+            }
+        }
+
     }
 	/*********************************************************************************************************
 	 **RX Item                          
