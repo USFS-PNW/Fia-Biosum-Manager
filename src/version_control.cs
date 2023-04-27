@@ -6618,7 +6618,7 @@ namespace FIA_Biosum_Manager
                 }
             }
 
-            if (oAdo != null)
+            if (oAdo != null && oAdo.m_OleDbConnection != null)
             {
                 oAdo.CloseConnection(oAdo.m_OleDbConnection);
                 oAdo = null;

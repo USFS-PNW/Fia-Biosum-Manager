@@ -1201,14 +1201,20 @@ namespace FIA_Biosum_Manager
             // Search the registry for the Adobe executable
             const string ACROBAT_REG_PATH = "SOFTWARE\\CLASSES\\ACROBAT\\SHELL\\OPEN\\COMMAND\\";
             Microsoft.Win32.RegistryKey registry = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(ACROBAT_REG_PATH);
-            var pathOtherWay = Convert.ToString(registry.GetValue(""));
-            string[] arrPieces = pathOtherWay.Split('\"');
-            for (int i = 0; i < arrPieces.Length; i++)
+            if (registry != null)
             {
-                if (arrPieces[i].ToUpper().IndexOf("ACROBAT") > -1)
+                var pathOtherWay = Convert.ToString(registry.GetValue(""));
+                if (! string.IsNullOrEmpty(pathOtherWay))
                 {
-                    g_strAcrobatExe = arrPieces[i];
-                    break;
+                    string[] arrPieces = pathOtherWay.Split('\"');
+                    for (int i = 0; i < arrPieces.Length; i++)
+                    {
+                        if (arrPieces[i].ToUpper().IndexOf("ACROBAT") > -1)
+                        {
+                            g_strAcrobatExe = arrPieces[i];
+                            break;
+                        }
+                    }
                 }
             }
         }
