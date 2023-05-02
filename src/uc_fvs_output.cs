@@ -680,7 +680,6 @@ namespace FIA_Biosum_Manager
                 cmbFilter.Items.Clear();
                 cmbFilter.Items.Add("All");
                 cmbFilter.Text = "All";
-				ado_data_access oAdo = new ado_data_access();
 				System.Windows.Forms.ListViewItem entryListItem=null;
 				this.m_oLvAlternateColors.InitializeRowCollection();
 				this.m_oLvAlternateColors.ReferenceAlternateBackgroundColor = frmMain.g_oGridViewAlternateRowBackgroundColor;
@@ -718,15 +717,6 @@ namespace FIA_Biosum_Manager
 				m_oRxPackageItem_Collection = new RxPackageItem_Collection();
 				this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_ado,m_ado.m_OleDbConnection,m_oQueries,this.m_oRxPackageItem_Collection);
 
-
-                //@ToDo: Can I delete this dao?
-                string strTempDbFile="";
-				dao_data_access oDao = new dao_data_access();
-				strTempDbFile=frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir,"accdb");
-				oDao.CreateMDB(strTempDbFile);
-				oDao.OpenDb(strTempDbFile);
-
-
                 // Get variants/rxPackages in project
                 m_ado.m_strSQL = Queries.FVS.GetFVSVariantRxPackageSQL(this.m_oQueries.m_oFIAPlot.m_strPlotTable,this.m_oQueries.m_oFvs.m_strRxPackageTable);				
 				this.m_ado.SqlQueryReader(this.m_ado.m_OleDbConnection,this.m_ado.m_strSQL);
@@ -747,6 +737,7 @@ namespace FIA_Biosum_Manager
                     string strSummaryConnect = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultPreFVSSummaryDbFile}";
                     if (System.IO.File.Exists(strSummaryConnect))
                     {
+                        ado_data_access oAdo = new ado_data_access();
                         using (System.Data.OleDb.OleDbConnection conn = new System.Data.OleDb.OleDbConnection(oAdo.getMDBConnString(strSummaryConnect, "", "")))
                         {
                             conn.Open();
@@ -806,18 +797,7 @@ namespace FIA_Biosum_Manager
                 {
                     MessageBox.Show(m_missingFvsOutDb, "FIA Biosum", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 }
-
-				oDao.m_DaoDatabase.Close();
-				oDao.m_DaoWorkspace.Close();
-
-                oDao.m_DaoDatabase = null;
-                oDao.m_DaoWorkspace = null;
-
 				m_ado.m_OleDbDataReader.Close();
-
-				
-
-				oAdo.OpenConnection(oAdo.getMDBConnString(strTempDbFile,"",""));
 
                 strVariant="";
                 strCurVariant="";
@@ -834,8 +814,6 @@ namespace FIA_Biosum_Manager
                     GC.WaitForPendingFinalizers();
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
-
-                    oAdo.DisplayErrors = false;
 
                     strCurRunTitle = lstRunTitles.ElementAt(x);
                     string[] arrVariant = strCurRunTitle.Split('_');
@@ -944,8 +922,6 @@ namespace FIA_Biosum_Manager
                     }
                        				
 				}
-			    oAdo.CloseAndDisposeConnection(oAdo.m_OleDbConnection,true);
-                
 
 			}
 			catch (Exception e)
@@ -1160,11 +1136,7 @@ namespace FIA_Biosum_Manager
             string strOutDirAndFile="";
             string strVariant = "";
             string strCurVariant = "";
-            string strStandardMDB = "";
-            string strStandardMDBFound = "";
             
-            string strPotFireBaseYrMDB = "";
-            string strPotFireBaseYrMDBFound = "";
             string strOutDir = (string)frmMain.g_oDelegate.GetControlPropertyValue(txtOutDir,"Text",false).ToString().Trim();
             string strSummaryCount = "";
             string strCutListCount = "";
@@ -1174,11 +1146,8 @@ namespace FIA_Biosum_Manager
             bool bPotFireBaseYear = true;
             string strRxPackage = "";
             DialogResult result;
-            
-
-            
-
-
+           
+           
             int intCount = 0;
             System.Windows.Forms.ListView oLv = (System.Windows.Forms.ListView)frmMain.g_oDelegate.GetListView(this.lstFvsOutput, false);
             System.Windows.Forms.ListViewItem oLvItem = null;
@@ -1196,10 +1165,6 @@ namespace FIA_Biosum_Manager
                     oLvItem = (System.Windows.Forms.ListViewItem)frmMain.g_oDelegate.GetListViewItem(oLv, x, false);
                     strVariant = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_VARIANT, "Text", false);
                     strRxPackage = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_PACKAGE, "Text", false);
-                    strStandardMDB = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_MDBOUT, "Text", false).ToString().Trim();
-                    strStandardMDBFound = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_FOUND, "Text", false).ToString().Trim();
-                    strPotFireBaseYrMDB = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_POTFIREMDBOUT, "Text", false).ToString().Trim();
-                    strPotFireBaseYrMDBFound = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_POTFIREMDBFOUND, "Text", false).ToString().Trim();
                     strSummaryCount = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_SUMMARYCOUNT, "Text", false).ToString().Trim();
                     strPotFireCount = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_POTFIRECOUNT, "Text", false).ToString().Trim();
                     strCutListCount = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_CUTCOUNT, "Text", false).ToString().Trim();
@@ -1219,24 +1184,6 @@ namespace FIA_Biosum_Manager
                     else 
                          bPotFireBaseYear=false;
 
-                    if (strStandardMDBFound == "No")
-					{
-						MessageBox.Show("!!File " + 
-						    strStandardMDB + " Not Found!!",
-							"FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
-							System.Windows.Forms.MessageBoxIcon.Exclamation);
-						this.m_intError=-1;
-						break;
-					}
-                    if (strPotFireBaseYrMDBFound == "No" && bPotFireBaseYear)
-                    {
-                        MessageBox.Show("!!File " +
-                            strPotFireBaseYrMDB + " Not Found!!",
-                            "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
-                            System.Windows.Forms.MessageBoxIcon.Exclamation);
-                        this.m_intError = -1;
-                        break;
-                    }
                     //open file if suppressing record counts is checked
                     if (frmMain.g_bSuppressFVSOutputTableRowCount)
                     {
@@ -1246,8 +1193,6 @@ namespace FIA_Biosum_Manager
                             oAdoStandard.CloseConnection(oAdoStandard.m_OleDbConnection);
                             oAdoStandard = null;
                         }
-                        strOutDirAndFile = strOutDir + "\\" +
-                             strVariant + "\\" + strStandardMDB;
                         oAdoStandard = new ado_data_access();
                         oAdoStandard.OpenConnection(oAdoStandard.getMDBConnString(strOutDirAndFile, "", ""));
                     }
@@ -1277,8 +1222,7 @@ namespace FIA_Biosum_Manager
                         }
                         if (m_intError != 0)
                         {
-                            MessageBox.Show("!!Summary Table In File  " + strStandardMDB + " " +
-                                " Does Not Exist Or Has 0 Records!!",
+                            MessageBox.Show("!!Summary Table In Does Not Exist Or Has 0 Records!!",
                                 "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
                                 System.Windows.Forms.MessageBoxIcon.Exclamation);
                             break;
@@ -1312,8 +1256,7 @@ namespace FIA_Biosum_Manager
                         if (m_intError != 0)
                         {
                             frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm, "Visible", false);
-                            result = MessageBox.Show("!!Warning!!\r\n-----------\r\nCut Tree Table In File  " + strStandardMDB + " " +
-                                 " Does Not Exist. Continue Processing?(Y/N)",
+                            result = MessageBox.Show("!!Warning!!\r\n-----------\r\nCut_Tree Table Does Not Exist. Continue Processing?(Y/N)",
                                  "FIA Biosum", System.Windows.Forms.MessageBoxButtons.YesNo,
                                  System.Windows.Forms.MessageBoxIcon.Question);
                             frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm, "Visible", true);
@@ -1323,39 +1266,6 @@ namespace FIA_Biosum_Manager
                             {
                                 m_intError = 0;
                             }
-                        }
-					}
-					if (strPotFireCount.Length  == 0)
-					{
-                        
-                        if (frmMain.g_bSuppressFVSOutputTableRowCount == false)
-                        {
-                            this.m_intError = -1;
-                        }
-                        else
-                        {
-                            if (oAdoStandard.TableExist(oAdoStandard.m_OleDbConnection, "FVS_POTFIRE") == false)
-                            {
-                                m_intError = -1;
-                            }
-                            else
-                            {
-                                oAdoStandard.m_strSQL = "SELECT COUNT(*) FROM (SELECT TOP 1 standid FROM FVS_POTFIRE)";
-                                if ((int)oAdoStandard.getRecordCount(oAdoStandard.m_OleDbConnection, oAdoStandard.m_strSQL, "FVS_POTFIRE") == 0)
-                                {
-                                    m_intError = -1;
-                                }
-
-                            }
-
-                        }
-                        if (m_intError != 0)
-                        {
-                            MessageBox.Show("!!Potential Fire Table In File  " + strStandardMDB + " " +
-                                 " Does Not Exist!!",
-                                 "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
-                                 System.Windows.Forms.MessageBoxIcon.Exclamation);
-                            break;
                         }
 					}
                     
@@ -5332,11 +5242,7 @@ namespace FIA_Biosum_Manager
 			string strDbFile;
 			string strCasesTable;
             string strAuditDbFile;
-            string strPotFireBaseYearFile;
-            
-			
-
-			
+           
 			string[] strSourceTableArray=null;
 			ado_data_access oAdo = new ado_data_access();
 			
