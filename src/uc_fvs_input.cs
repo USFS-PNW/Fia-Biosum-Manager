@@ -1625,7 +1625,7 @@ namespace FIA_Biosum_Manager
                 }
 
                 // Copy KCP files to output directory
-                string[] arrKcpFiles = {Tables.FIA2FVS.KcpFileBiosumKeywords, Tables.FIA2FVS.KcpFilePotfireKeywords };
+                string[] arrKcpFiles = {Tables.FIA2FVS.KcpFileBiosumKeywords};
                 foreach (var kcp in arrKcpFiles)
                 {
                     string sourcePath = frmMain.g_oEnv.strAppDir + @"\scripts\" + kcp;
