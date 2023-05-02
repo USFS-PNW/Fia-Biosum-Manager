@@ -6643,7 +6643,6 @@ namespace FIA_Biosum_Manager
             static public string DefaultFvsInputKeywordsTableName { get { return "FVS_GROUPADDFILESANDKEYWORDS"; } }
             static public string DefaultFvsInputFolderName { get { return @"\fvs\data"; } }
             static public string KcpFileBiosumKeywords { get { return "BioSum_Keywords.kcp"; } }
-            static public string KcpFilePotfireKeywords { get { return "POTFIRE_Keywords.kcp"; } }
             static public string KcpFileExtension { get { return ".template"; } }
         }
     }
