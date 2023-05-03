@@ -1138,6 +1138,7 @@ namespace FIA_Biosum_Manager
             string strCurVariant = "";
             
             string strOutDir = (string)frmMain.g_oDelegate.GetControlPropertyValue(txtOutDir,"Text",false).ToString().Trim();
+            string strFvsOutDb = System.IO.Path.GetFileName(Tables.FVS.DefaultFVSOutDbFile);
             string strSummaryCount = "";
             string strCutListCount = "";
             string strTreeListCount = "";
@@ -1187,14 +1188,15 @@ namespace FIA_Biosum_Manager
                     //open file if suppressing record counts is checked
                     if (frmMain.g_bSuppressFVSOutputTableRowCount)
                     {
-                        if (oAdoStandard != null &&
-                             oAdoStandard.m_OleDbConnection.State == System.Data.ConnectionState.Open)
-                        {
-                            oAdoStandard.CloseConnection(oAdoStandard.m_OleDbConnection);
-                            oAdoStandard = null;
-                        }
-                        oAdoStandard = new ado_data_access();
-                        oAdoStandard.OpenConnection(oAdoStandard.getMDBConnString(strOutDirAndFile, "", ""));
+                        strOutDirAndFile = strOutDir + "\\" + strFvsOutDb;
+                        //if (oAdoStandard != null &&
+                        //     oAdoStandard.m_OleDbConnection.State == System.Data.ConnectionState.Open)
+                        //{
+                        //    oAdoStandard.CloseConnection(oAdoStandard.m_OleDbConnection);
+                        //    oAdoStandard = null;
+                        //}
+                        //oAdoStandard = new ado_data_access();
+                        //oAdoStandard.OpenConnection(oAdoStandard.getMDBConnString(strOutDirAndFile, "", ""));
                     }
 					if (strSummaryCount.Length  == 0 ||
 						strSummaryCount == "0")
@@ -1205,24 +1207,28 @@ namespace FIA_Biosum_Manager
                         }
                         else
                         {
-                            if (oAdoStandard.TableExist(oAdoStandard.m_OleDbConnection, "FVS_SUMMARY") == false)
+                            string dbConn = SQLite.GetConnectionString(m_strFvsOutDb);
+                            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
                             {
-                                m_intError = -1;
-                            }
-                            else
-                            {
-                                oAdoStandard.m_strSQL = "SELECT COUNT(*) FROM (SELECT TOP 1 standid FROM FVS_SUMMARY)";
-                                if ((int)oAdoStandard.getRecordCount(oAdoStandard.m_OleDbConnection, oAdoStandard.m_strSQL, "FVS_SUMMARY") == 0)
+                                conn.Open();
+                                if (! SQLite.TableExist(conn, Tables.FVS.DefaultFVSSummaryTableName))
                                 {
                                     m_intError = -1;
                                 }
-
+                                else
+                                {
+                                    SQLite.m_strSQL = $@"SELECT TPA FROM {Tables.FVS.DefaultFVSSummaryTableName} WHERE TPA > 0 LIMIT 1";
+                                    long lngResult = SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSSummaryTableName);
+                                    if (lngResult == 0)
+                                    {
+                                        m_intError = -1;
+                                    }
+                                }
                             }
-
                         }
                         if (m_intError != 0)
                         {
-                            MessageBox.Show("!!Summary Table In Does Not Exist Or Has 0 Records!!",
+                            MessageBox.Show($@"!!Summary Table In {m_strFvsOutDb} Does Not Exist Or Has 0 Records!!",
                                 "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
                                 System.Windows.Forms.MessageBoxIcon.Exclamation);
                             break;
@@ -1274,8 +1280,7 @@ namespace FIA_Biosum_Manager
 
                         if (frmMain.g_bSuppressFVSOutputTableRowCount == false)
                         {
-                            MessageBox.Show("!!Potential Fire Base Year Table In File  " + strPotFireBaseYrMDB + " " +
-                                " Does Not Exist!!",
+                            MessageBox.Show("!!Potential Fire Base Year Table!!",
                                 "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
                                 System.Windows.Forms.MessageBoxIcon.Exclamation);
                             this.m_intError = -1;
@@ -1298,8 +1303,7 @@ namespace FIA_Biosum_Manager
                                 oAdoPotFireBaseYr.OpenConnection(oAdoPotFireBaseYr.getMDBConnString(strOutDirAndFile, "", ""));
                                 if (oAdoPotFireBaseYr.TableExist(oAdoPotFireBaseYr.m_OleDbConnection, "FVS_POTFIRE") == false)
                                 {
-                                    MessageBox.Show("!!Potential Fire Base Year Table In File  " + strPotFireBaseYrMDB + " " +
-                                                   " Does Not Exist!!",
+                                    MessageBox.Show("!!Potential Fire Base Year Table Does Not Exist!!",
                                                    "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
                                                    System.Windows.Forms.MessageBoxIcon.Exclamation);
                                                         this.m_intError = -1;
@@ -1311,8 +1315,7 @@ namespace FIA_Biosum_Manager
                                     if ((int)oAdoPotFireBaseYr.getRecordCount(oAdoPotFireBaseYr.m_OleDbConnection, oAdoPotFireBaseYr.m_strSQL, "FVS_POTFIRE") == 0)
                                     {
                                         m_intError = -1;
-                                        MessageBox.Show("!!Potential Fire Base Year Table In File  " + strPotFireBaseYrMDB + " " +
-                                                        " Has No Records!!",
+                                        MessageBox.Show("!!Potential Fire Base Year Table Has No Records!!",
                                                         "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
                                                         System.Windows.Forms.MessageBoxIcon.Exclamation);
                                         break;
@@ -5222,10 +5225,6 @@ namespace FIA_Biosum_Manager
 			m_strWarning="";
 			m_intWarning=0;
 			m_intProgressOverallCurrentCount=0;
-			string strRx1="";
-			string strRx2="";
-			string strRx3="";
-			string strRx4="";
 			string strPackage="";
 			string strVariant="";
 			string strRx="";
@@ -5366,26 +5365,10 @@ namespace FIA_Biosum_Manager
                             strPackage = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_PACKAGE, "Text", false);
                             strPackage = strPackage.Trim();
 
-                            strRx1 = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_RXCYCLE1, "Text", false);
-                            strRx1 = strRx1.Trim();
-
-                            strRx2 = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_RXCYCLE2, "Text", false);
-                            strRx2 = strRx2.Trim();
-
-                            strRx3 = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_RXCYCLE3, "Text", false);
-                            strRx3 = strRx3.Trim();
-
-                            strRx4 = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_RXCYCLE4, "Text", false);
-                            strRx4 = strRx4.Trim();
-
                             //find the package item in the package collection
                             for (y = 0; y <= this.m_oRxPackageItem_Collection.Count - 1; y++)
                             {
-                                if (this.m_oRxPackageItem_Collection.Item(y).SimulationYear1Rx.Trim() == strRx1.Trim() &&
-                                    this.m_oRxPackageItem_Collection.Item(y).SimulationYear2Rx.Trim() == strRx2.Trim() &&
-                                    this.m_oRxPackageItem_Collection.Item(y).SimulationYear3Rx.Trim() == strRx3.Trim() &&
-                                    this.m_oRxPackageItem_Collection.Item(y).SimulationYear4Rx.Trim() == strRx4.Trim() &&
-                                    this.m_oRxPackageItem_Collection.Item(y).RxPackageId.Trim() == strPackage.Trim())
+                                if (this.m_oRxPackageItem_Collection.Item(y).RxPackageId.Trim() == strPackage.Trim())
                                     break;
 
 
@@ -5399,14 +5382,18 @@ namespace FIA_Biosum_Manager
                             {
                                 this.m_oRxPackageItem = null;
                             }
-                            
+
 
                             //get the list of treatment cycle year fields to reference for this package
                             this.m_strRxCycleList = "";
-                            if (strRx1.Trim().Length > 0 && strRx1.Trim() != "000") this.m_strRxCycleList = "1,";
-                            if (strRx2.Trim().Length > 0 && strRx2.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "2,";
-                            if (strRx3.Trim().Length > 0 && strRx3.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "3,";
-                            if (strRx4.Trim().Length > 0 && strRx4.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "4,";
+                            if (this.m_oRxPackageItem != null)
+                            {
+
+                            }
+                            if (m_oRxPackageItem.SimulationYear1Rx.Trim().Length > 0 && m_oRxPackageItem.SimulationYear1Rx.Trim() != "000") this.m_strRxCycleList = "1,";
+                            if (m_oRxPackageItem.SimulationYear2Rx.Trim().Length > 0 && m_oRxPackageItem.SimulationYear2Rx.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "2,";
+                            if (m_oRxPackageItem.SimulationYear3Rx.Trim().Length > 0 && m_oRxPackageItem.SimulationYear3Rx.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "3,";
+                            if (m_oRxPackageItem.SimulationYear4Rx.Trim().Length > 0 && m_oRxPackageItem.SimulationYear4Rx.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "4,";
 
                             if (this.m_strRxCycleList.Trim().Length > 0)
                                 this.m_strRxCycleList = this.m_strRxCycleList.Substring(0, this.m_strRxCycleList.Length - 1);
@@ -5416,12 +5403,13 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim());
                             frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
 
-                            strDbFile = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_MDBOUT, "Text", false);
-                            strDbFile = strDbFile.Trim();
+                            //strDbFile = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_MDBOUT, "Text", false);
+                            //strDbFile = strDbFile.Trim();
+                            strDbFile = System.IO.Path.GetFileName(Tables.FVS.DefaultFVSOutDbFile);
 
                             strOutDirAndFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)this.txtOutDir, "Text", false);
                             strOutDirAndFile = strOutDirAndFile.Trim();
-                            strOutDirAndFile = strOutDirAndFile + "\\" + strVariant + "\\" + strDbFile;
+                            strOutDirAndFile = strOutDirAndFile + "\\" + strDbFile;
 
                             strAuditDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)this.txtOutDir, "Text", false);
                             strAuditDbFile = strAuditDbFile.Trim();
@@ -5711,7 +5699,9 @@ namespace FIA_Biosum_Manager
 
                                                 if (intItemError == 0)
                                                 {
-                                                    this.Validate_FVSTreeId(oAdo, oAdo.m_OleDbConnection, strAuditDbFile, "FVS_Cases", "FVS_CutList", strVariant, strPackage, strRx1, strRx2, strRx3, strRx4, true, ref intItemWarning, ref strItemWarning, ref intItemError, ref strItemError);
+                                                    this.Validate_FVSTreeId(oAdo, oAdo.m_OleDbConnection, strAuditDbFile, "FVS_Cases", "FVS_CutList", strVariant, strPackage,
+                                                        m_oRxPackageItem.SimulationYear1Rx, m_oRxPackageItem.SimulationYear2Rx,
+                                                        m_oRxPackageItem.SimulationYear3Rx, m_oRxPackageItem.SimulationYear4Rx, true, ref intItemWarning, ref strItemWarning, ref intItemError, ref strItemError);
                                                     if (intItemError != 0)
                                                     {
                                                         if (intItemError == -5)
