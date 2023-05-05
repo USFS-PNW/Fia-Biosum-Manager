@@ -2568,6 +2568,7 @@ namespace FIA_Biosum_Manager
             static public string DefaultFVSCasesTableName { get { return "FVS_CASES"; } }
             static public string DefaultFVSSummaryTableName { get { return "FVS_SUMMARY"; } }
             static public string DefaultFVSCutListTableName { get { return "FVS_CUTLIST"; } }
+            static public string DefaultFVSPotFireTableName { get { return "FVS_POTFIRE"; } }
 
 
 

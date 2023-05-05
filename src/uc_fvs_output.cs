@@ -792,8 +792,8 @@ namespace FIA_Biosum_Manager
                     }   // END IF FVS_OUT.DB EXISTS                   
 				}
 
-                // Warning for older projects without FVSOut.db (and cutlist)
-                if (!FvsOutWithCutList())
+                // Warning for older projects without FVSOut.db
+                if (!System.IO.File.Exists(m_strFvsOutDb))
                 {
                     MessageBox.Show(m_missingFvsOutDb, "FIA Biosum", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 }
@@ -865,12 +865,14 @@ namespace FIA_Biosum_Manager
                         {
                             if (!frmMain.g_bSuppressFVSOutputTableRowCount)
                             {
-                                SQLite.m_strSQL = $@"select count(*) from {Tables.FVS.DefaultFVSSummaryTableName}";
+                                SQLite.m_strSQL = $@"select count(*) from {Tables.FVS.DefaultFVSCasesTableName} c, {Tables.FVS.DefaultFVSSummaryTableName} s 
+                                    WHERE c.CaseID = S.CaseID AND c.RunTitle = '{strCurRunTitle}'";
                                 entryListItem.SubItems[COL_SUMMARYCOUNT].Text = Convert.ToString(Convert.ToUInt32(SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSSummaryTableName)));
                             }
                             else
                             {
-                                SQLite.m_strSQL = $@"SELECT TPA FROM {Tables.FVS.DefaultFVSSummaryTableName} WHERE TPA > 0 LIMIT 1";
+                                SQLite.m_strSQL = $@"SELECT s.tpa FROM {Tables.FVS.DefaultFVSCasesTableName} c, {Tables.FVS.DefaultFVSSummaryTableName} s 
+                                    WHERE c.CaseID = S.CaseID AND c.RunTitle = '{strCurRunTitle}' AND TPA > 0 LIMIT 1";
                                 long lngResult = SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSSummaryTableName);
                                 if (lngResult > 0)
                                 {
@@ -884,7 +886,7 @@ namespace FIA_Biosum_Manager
                         }
                         else
                         {
-                            entryListItem.SubItems[COL_SUMMARYCOUNT].Text = "N";
+                            entryListItem.SubItems[COL_SUMMARYCOUNT].Text = "0";
                         }
 
                         // SET APPEND FLAG
@@ -902,12 +904,14 @@ namespace FIA_Biosum_Manager
                         {
                             if (!frmMain.g_bSuppressFVSOutputTableRowCount)
                             {
-                                SQLite.m_strSQL = $@"select count(*) from {Tables.FVS.DefaultFVSCutListTableName}";
+                                SQLite.m_strSQL = $@"select count(*) from {Tables.FVS.DefaultFVSCasesTableName} c, {Tables.FVS.DefaultFVSCutListTableName} s 
+                                    WHERE c.CaseID = S.CaseID AND c.RunTitle = '{strCurRunTitle}'";
                                 entryListItem.SubItems[COL_CUTCOUNT].Text = Convert.ToString(Convert.ToUInt32(SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSCutListTableName)));
                             }
                             else
                             {
-                                SQLite.m_strSQL = $@"SELECT HT FROM {Tables.FVS.DefaultFVSCutListTableName} WHERE HT > 0 LIMIT 1";
+                                SQLite.m_strSQL = $@"SELECT t.HT from {Tables.FVS.DefaultFVSCasesTableName} c, {Tables.FVS.DefaultFVSCutListTableName} t WHERE 
+                                    c.CaseID = t.CaseID AND c.RunTitle = '{strCurRunTitle}' AND HT > 0 LIMIT 1";
                                 long lngResult = SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSCutListTableName);
                                 if (lngResult > 0)
                                 {
@@ -1131,11 +1135,8 @@ namespace FIA_Biosum_Manager
         /// </summary>
 		private void val_data()
 		{
-            ado_data_access oAdoStandard = null;
-            ado_data_access oAdoPotFireBaseYr = null;
             string strOutDirAndFile="";
             string strVariant = "";
-            string strCurVariant = "";
             
             string strOutDir = (string)frmMain.g_oDelegate.GetControlPropertyValue(txtOutDir,"Text",false).ToString().Trim();
             string strFvsOutDb = System.IO.Path.GetFileName(Tables.FVS.DefaultFVSOutDbFile);
@@ -1143,7 +1144,8 @@ namespace FIA_Biosum_Manager
             string strCutListCount = "";
             string strTreeListCount = "";
             string strPotFireCount = "";
-            string strPotFireBaseYrCount = "";
+            string strCurRunTitle = "";
+            long lngPotFireBaseYrCount = 0;
             bool bPotFireBaseYear = true;
             string strRxPackage = "";
             DialogResult result;
@@ -1170,9 +1172,7 @@ namespace FIA_Biosum_Manager
                     strPotFireCount = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_POTFIRECOUNT, "Text", false).ToString().Trim();
                     strCutListCount = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_CUTCOUNT, "Text", false).ToString().Trim();
                     strTreeListCount = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_LEFTCOUNT, "Text", false).ToString().Trim();
-                    strPotFireBaseYrCount = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_POTFIREBASEYEARCOUNT, "Text", false).ToString().Trim();
-
-
+                    strCurRunTitle =  $@"FVSOUT_{strVariant}_P{strRxPackage}";
 
 
                     GetPrePostSeqNumConfiguration("FVS_POTFIRE",strRxPackage);
@@ -1184,85 +1184,78 @@ namespace FIA_Biosum_Manager
                          bPotFireBaseYear=true;
                     else 
                          bPotFireBaseYear=false;
+                    bPotFireBaseYear = true;
+                    if (bPotFireBaseYear)
+                    {
+                        string strPotFireRunTitle = $@"FVSOUT_{strVariant}_POTFIRE_BaseYr";
+                        string dbConn = SQLite.GetConnectionString(m_strFvsOutDb);
+                        using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
+                        {
+                            conn.Open();
+                            if (frmMain.g_bSuppressFVSOutputTableRowCount)
+                            {
+                                if (SQLite.TableExist(conn, Tables.FVS.DefaultFVSPotFireTableName))
+                                {
+                                    if (!frmMain.g_bSuppressFVSOutputTableRowCount)
+                                    {
+                                        SQLite.m_strSQL = $@"select count(*) from {Tables.FVS.DefaultFVSPotFireTableName} c, {Tables.FVS.DefaultFVSSummaryTableName} s 
+                                            WHERE c.CaseID = S.CaseID AND c.RunTitle = '{strPotFireRunTitle}'";
+                                        lngPotFireBaseYrCount = SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSSummaryTableName);
+                                    }
+                                    else
+                                    {
+                                        SQLite.m_strSQL = $@"SELECT s.tpa FROM {Tables.FVS.DefaultFVSCasesTableName} c, {Tables.FVS.DefaultFVSSummaryTableName} s 
+                                            WHERE c.CaseID = S.CaseID AND c.RunTitle = '{strCurRunTitle}' AND TPA > 0 LIMIT 1";
+                                        lngPotFireBaseYrCount = SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSSummaryTableName);
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     //open file if suppressing record counts is checked
                     if (frmMain.g_bSuppressFVSOutputTableRowCount)
                     {
                         strOutDirAndFile = strOutDir + "\\" + strFvsOutDb;
-                        //if (oAdoStandard != null &&
-                        //     oAdoStandard.m_OleDbConnection.State == System.Data.ConnectionState.Open)
-                        //{
-                        //    oAdoStandard.CloseConnection(oAdoStandard.m_OleDbConnection);
-                        //    oAdoStandard = null;
-                        //}
-                        //oAdoStandard = new ado_data_access();
-                        //oAdoStandard.OpenConnection(oAdoStandard.getMDBConnString(strOutDirAndFile, "", ""));
                     }
-					if (strSummaryCount.Length  == 0 ||
+					if (strSummaryCount.Length == 0 ||
 						strSummaryCount == "0")
 					{
+                        // If we're counting and 0 records are found
                         if (frmMain.g_bSuppressFVSOutputTableRowCount == false)
                         {
                             this.m_intError = -1;
-                        }
-                        else
-                        {
-                            string dbConn = SQLite.GetConnectionString(m_strFvsOutDb);
-                            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
-                            {
-                                conn.Open();
-                                if (! SQLite.TableExist(conn, Tables.FVS.DefaultFVSSummaryTableName))
-                                {
-                                    m_intError = -1;
-                                }
-                                else
-                                {
-                                    SQLite.m_strSQL = $@"SELECT TPA FROM {Tables.FVS.DefaultFVSSummaryTableName} WHERE TPA > 0 LIMIT 1";
-                                    long lngResult = SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSSummaryTableName);
-                                    if (lngResult == 0)
-                                    {
-                                        m_intError = -1;
-                                    }
-                                }
-                            }
-                        }
-                        if (m_intError != 0)
-                        {
-                            MessageBox.Show($@"!!Summary Table In {m_strFvsOutDb} Does Not Exist Or Has 0 Records!!",
-                                "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
-                                System.Windows.Forms.MessageBoxIcon.Exclamation);
-                            break;
                         }
 					}
-					
-					if (strCutListCount.Length  == 0)
-					{
-                        
+                    else if (strSummaryCount.Equals("N"))
+                    {
+                        // If we're not counting
+                        this.m_intError = -1;
+                    }
+                    if (m_intError != 0)
+                    {
+                        MessageBox.Show($@"!!Summary Table In {m_strFvsOutDb} Does Not Exist Or Has 0 Records!!",
+                            "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
+                            System.Windows.Forms.MessageBoxIcon.Exclamation);
+                        break;
+                    }
+
+                    if (strCutListCount.Length == 0 ||
+                        strCutListCount == "0")
+                    {
                         if (frmMain.g_bSuppressFVSOutputTableRowCount == false)
                         {
                             this.m_intError = -1;
                         }
-                        else
-                        {
-                            if (oAdoStandard.TableExist(oAdoStandard.m_OleDbConnection, "FVS_CUTLIST") == false)
-                            {
-                                m_intError = -1;
-                            }
-                            else
-                            {
-                                oAdoStandard.m_strSQL = "SELECT COUNT(*) FROM (SELECT TOP 1 standid FROM FVS_CUTLIST)";
-                                if ((int)oAdoStandard.getRecordCount(oAdoStandard.m_OleDbConnection, oAdoStandard.m_strSQL, "FVS_CUTLIST") == 0)
-                                {
-                                    m_intError = -1;
-                                }
-
-                            }
-
-                        }
+                    }
+                    else if (strCutListCount.Equals("N"))
+                    {
+                        this.m_intError = -1;
+                    }
                         if (m_intError != 0)
                         {
                             frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm, "Visible", false);
-                            result = MessageBox.Show("!!Warning!!\r\n-----------\r\nCut_Tree Table Does Not Exist. Continue Processing?(Y/N)",
+                            result = MessageBox.Show("!!Warning!!\r\n-----------\r\nFVS_CUTLIST Table Does Not Exist. Continue Processing?(Y/N)",
                                  "FIA Biosum", System.Windows.Forms.MessageBoxButtons.YesNo,
                                  System.Windows.Forms.MessageBoxIcon.Question);
                             frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm, "Visible", true);
@@ -1273,72 +1266,19 @@ namespace FIA_Biosum_Manager
                                 m_intError = 0;
                             }
                         }
-					}
-                    
-                    if (strPotFireBaseYrCount.Length == 0 && bPotFireBaseYear)
+
+
+                    if (lngPotFireBaseYrCount == 0 && bPotFireBaseYear)
                     {
-
-                        if (frmMain.g_bSuppressFVSOutputTableRowCount == false)
-                        {
-                            MessageBox.Show("!!Potential Fire Base Year Table!!",
-                                "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
-                                System.Windows.Forms.MessageBoxIcon.Exclamation);
-                            this.m_intError = -1;
-                            break;
-                        }
-                        else
-                        {
-                            if (strVariant != strCurVariant)
-                            {
-                                strCurVariant = strVariant;
-                                if (oAdoPotFireBaseYr != null &&
-                                    oAdoPotFireBaseYr.m_OleDbConnection.State == System.Data.ConnectionState.Open)
-                                {
-                                    oAdoPotFireBaseYr.CloseConnection(oAdoPotFireBaseYr.m_OleDbConnection);
-                                    oAdoPotFireBaseYr = null;
-                                }
-                                strOutDirAndFile = this.txtOutDir.Text.Trim() + "\\" +
-                                     strVariant + "\\FVSOUT_" + strVariant + "_POTFIRE_BaseYr.MDB";
-                                oAdoPotFireBaseYr = new ado_data_access();
-                                oAdoPotFireBaseYr.OpenConnection(oAdoPotFireBaseYr.getMDBConnString(strOutDirAndFile, "", ""));
-                                if (oAdoPotFireBaseYr.TableExist(oAdoPotFireBaseYr.m_OleDbConnection, "FVS_POTFIRE") == false)
-                                {
-                                    MessageBox.Show("!!Potential Fire Base Year Table Does Not Exist!!",
-                                                   "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
-                                                   System.Windows.Forms.MessageBoxIcon.Exclamation);
-                                                        this.m_intError = -1;
-                                     break;
-                                }
-                                else
-                                {
-                                    oAdoPotFireBaseYr.m_strSQL = "SELECT COUNT(*) FROM (SELECT TOP 1 standid FROM FVS_POTFIRE)";
-                                    if ((int)oAdoPotFireBaseYr.getRecordCount(oAdoPotFireBaseYr.m_OleDbConnection, oAdoPotFireBaseYr.m_strSQL, "FVS_POTFIRE") == 0)
-                                    {
-                                        m_intError = -1;
-                                        MessageBox.Show("!!Potential Fire Base Year Table Has No Records!!",
-                                                        "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
-                                                        System.Windows.Forms.MessageBoxIcon.Exclamation);
-                                        break;
-                                    }
-
-                                }
-                            }
-                        }
+                        MessageBox.Show("!!Potential Fire Base Year Table Does Not Exist or has 0 records!!",
+                            "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
+                            System.Windows.Forms.MessageBoxIcon.Exclamation);
+                        this.m_intError = -1;
+                        break;
                     }
                      
 				}
-			}
-            if (oAdoPotFireBaseYr != null)
-            {
-                oAdoPotFireBaseYr.CloseConnection(oAdoPotFireBaseYr.m_OleDbConnection);
-                oAdoPotFireBaseYr = null;
-            }
-            if (oAdoStandard != null)
-            {
-                oAdoStandard.CloseConnection(oAdoStandard.m_OleDbConnection);
-                oAdoStandard = null;
-            }
-			
+			}			
 		}
 
         private void GetPrePostTableLinkItems(DbFileItem_Collection p_oCollection, 
