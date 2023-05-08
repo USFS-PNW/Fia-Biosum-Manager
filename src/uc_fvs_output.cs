@@ -1131,19 +1131,16 @@ namespace FIA_Biosum_Manager
 
         }
         /// <summary>
-        /// Make sure MDB files exist and that they have records
+        /// Make sure required tables exist and that they have records
         /// </summary>
 		private void val_data()
 		{
-            string strOutDirAndFile="";
             string strVariant = "";
             
             string strOutDir = (string)frmMain.g_oDelegate.GetControlPropertyValue(txtOutDir,"Text",false).ToString().Trim();
             string strFvsOutDb = System.IO.Path.GetFileName(Tables.FVS.DefaultFVSOutDbFile);
             string strSummaryCount = "";
             string strCutListCount = "";
-            string strTreeListCount = "";
-            string strPotFireCount = "";
             string strCurRunTitle = "";
             long lngPotFireBaseYrCount = 0;
             bool bPotFireBaseYear = true;
@@ -1169,9 +1166,7 @@ namespace FIA_Biosum_Manager
                     strVariant = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_VARIANT, "Text", false);
                     strRxPackage = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_PACKAGE, "Text", false);
                     strSummaryCount = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_SUMMARYCOUNT, "Text", false).ToString().Trim();
-                    strPotFireCount = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_POTFIRECOUNT, "Text", false).ToString().Trim();
                     strCutListCount = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_CUTCOUNT, "Text", false).ToString().Trim();
-                    strTreeListCount = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_LEFTCOUNT, "Text", false).ToString().Trim();
                     strCurRunTitle =  $@"FVSOUT_{strVariant}_P{strRxPackage}";
 
 
@@ -1184,7 +1179,6 @@ namespace FIA_Biosum_Manager
                          bPotFireBaseYear=true;
                     else 
                          bPotFireBaseYear=false;
-                    bPotFireBaseYear = true;
                     if (bPotFireBaseYear)
                     {
                         string strPotFireRunTitle = $@"FVSOUT_{strVariant}_POTFIRE_BaseYr";
@@ -1213,11 +1207,6 @@ namespace FIA_Biosum_Manager
                         }
                     }
 
-                    //open file if suppressing record counts is checked
-                    if (frmMain.g_bSuppressFVSOutputTableRowCount)
-                    {
-                        strOutDirAndFile = strOutDir + "\\" + strFvsOutDb;
-                    }
 					if (strSummaryCount.Length == 0 ||
 						strSummaryCount == "0")
 					{
