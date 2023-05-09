@@ -169,6 +169,7 @@ namespace FIA_Biosum_Manager
             this.lblCycleLength.Size = new System.Drawing.Size(32, 24);
             this.lblCycleLength.TabIndex = 53;
             this.lblCycleLength.Text = "10";
+            this.lblCycleLength.Visible = false;
             // 
             // lblCycleLengthDesc
             // 
@@ -179,6 +180,7 @@ namespace FIA_Biosum_Manager
             this.lblCycleLengthDesc.Size = new System.Drawing.Size(200, 16);
             this.lblCycleLengthDesc.TabIndex = 52;
             this.lblCycleLengthDesc.Text = "Current Cycle Length (Years):";
+            this.lblCycleLengthDesc.Visible = false;
             // 
             // uc_processor_scenario_escalators_value3
             // 
@@ -239,9 +241,9 @@ namespace FIA_Biosum_Manager
             this.lblCosts.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this.lblCosts.Location = new System.Drawing.Point(37, 150);
             this.lblCosts.Name = "lblCosts";
-            this.lblCosts.Size = new System.Drawing.Size(112, 24);
+            this.lblCosts.Size = new System.Drawing.Size(160, 24);
             this.lblCosts.TabIndex = 46;
-            this.lblCosts.Text = "Operating Costs";
+            this.lblCosts.Text = "Treatment and Haul Costs";
             // 
             // lblCycle3
             // 
@@ -251,7 +253,7 @@ namespace FIA_Biosum_Manager
             this.lblCycle3.Name = "lblCycle3";
             this.lblCycle3.Size = new System.Drawing.Size(112, 24);
             this.lblCycle3.TabIndex = 45;
-            this.lblCycle3.Text = "End Of Cycle 3";
+            this.lblCycle3.Text = "Cycle 4";
             // 
             // lblCycle2
             // 
@@ -261,7 +263,7 @@ namespace FIA_Biosum_Manager
             this.lblCycle2.Name = "lblCycle2";
             this.lblCycle2.Size = new System.Drawing.Size(112, 24);
             this.lblCycle2.TabIndex = 44;
-            this.lblCycle2.Text = "End Of Cycle 2";
+            this.lblCycle2.Text = "Cycle 3";
             // 
             // lblCycle1
             // 
@@ -271,7 +273,7 @@ namespace FIA_Biosum_Manager
             this.lblCycle1.Name = "lblCycle1";
             this.lblCycle1.Size = new System.Drawing.Size(112, 24);
             this.lblCycle1.TabIndex = 43;
-            this.lblCycle1.Text = "End Of Cycle 1";
+            this.lblCycle1.Text = "Cycle 2";
             // 
             // lblDesc
             // 
@@ -279,10 +281,10 @@ namespace FIA_Biosum_Manager
             this.lblDesc.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this.lblDesc.Location = new System.Drawing.Point(16, 48);
             this.lblDesc.Name = "lblDesc";
-            this.lblDesc.Size = new System.Drawing.Size(361, 53);
+            this.lblDesc.Size = new System.Drawing.Size(605, 53);
             this.lblDesc.TabIndex = 42;
-            this.lblDesc.Text = " Enter escalator that will be applied as a multiplier to costs or revenue that oc" +
-    "cur at the end of each cycle\r\n";
+            this.lblDesc.Text = "Enter or edit the escalator that will be applied as a multiplier to costs or reve" +
+    "nue events in each of BioSum cycles 2, 3 and 4\r\n";
             // 
             // lblTitle
             // 

@@ -118,6 +118,6 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="lblNote.Text" xml:space="preserve">
-    <value>Note: Leave the default value of 1 unless it is expected that a revenue or cost will change at a rate that is different than general inflation.  If it is expected that in Simulation Cycle1 inflation will move nominal prices up 10% but energy wood prices up 20%, this can be specified by entering 1 in the first two rows of column 1 and 1.1 in the 3rd row.</value>
+    <value>Note: The default values presume an alternative rate of return (real, after inflation, discount rate) of 4 percent per year. See the BioSum Users’ Guide or Help Screen for guidance on how to calculate escalators for different discount rates and, if desired, for different assumptions about the rate at which particular classes of prices are expected to change over time relative to the general inflation rate.</value>
   </data>
 </root>

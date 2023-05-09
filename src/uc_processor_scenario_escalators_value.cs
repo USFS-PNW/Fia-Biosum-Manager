@@ -104,7 +104,7 @@ namespace FIA_Biosum_Manager
             // txtCycle1
             // 
             this.txtCycle1.Location = new System.Drawing.Point(8, 6);
-            this.txtCycle1.MaxLength = 5;
+            this.txtCycle1.MaxLength = 6;
             this.txtCycle1.Name = "txtCycle1";
             this.txtCycle1.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtCycle1.Size = new System.Drawing.Size(112, 22);
@@ -117,7 +117,7 @@ namespace FIA_Biosum_Manager
             // txtCycle2
             // 
             this.txtCycle2.Location = new System.Drawing.Point(136, 6);
-            this.txtCycle2.MaxLength = 5;
+            this.txtCycle2.MaxLength = 6;
             this.txtCycle2.Name = "txtCycle2";
             this.txtCycle2.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtCycle2.Size = new System.Drawing.Size(112, 22);
@@ -130,7 +130,7 @@ namespace FIA_Biosum_Manager
             // txtCycle3
             // 
             this.txtCycle3.Location = new System.Drawing.Point(264, 6);
-            this.txtCycle3.MaxLength = 5;
+            this.txtCycle3.MaxLength = 6;
             this.txtCycle3.Name = "txtCycle3";
             this.txtCycle3.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtCycle3.Size = new System.Drawing.Size(112, 22);
