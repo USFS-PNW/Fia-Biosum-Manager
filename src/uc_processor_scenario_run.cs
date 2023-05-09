@@ -4977,63 +4977,50 @@ namespace FIA_Biosum_Manager
                 {
                     if (m_oAdo.m_intError == 0 && m_oAdo.TableExist(m_oAdo.m_OleDbConnection, p_strAddCostsWorktable))
                     {
-                        //CHECK FOR DATETIMECREATED IN ADDITIONAL CPA TABLES; MAY BE MISSING IF SEQUENCE NUMBERS ARE INCORRECT
-                        if (!m_oAdo.ColumnExist(m_oAdo.m_OleDbConnection, p_strAddCostsWorktable, "DATETIMECREATED") ||
-                             m_oAdo.ColumnExist(m_oAdo.m_OleDbConnection, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, "DATETIMECREATED"))
+                        //
+                        //APPEND TO SCENARIO HARVEST COST TABLE
+                        //
+                        var dtSourceSchema = m_oAdo.getTableSchema(m_oAdo.m_OleDbConnection, "select * from " + p_strAddCostsWorktable);
+                        var dtDestSchema = m_oAdo.getTableSchema(m_oAdo.m_OleDbConnection, "select * from " + Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName);
+                        //build field list string to insert sql by matching FIADB and BioSum Tree columns
+                        string strCol = "";
+                        string strFields = "";
+                        StringBuilder sb = new StringBuilder();
+                        sb.Append("SET ");
+                        for (int x = 0; x <= dtDestSchema.Rows.Count - 1; x++)
                         {
-                            m_oAdo.m_intError = -1;
-                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                frmMain.g_oUtils.WriteText(m_strDebugFile, $@"DATETIMECREATED is missing from the {p_strAddCostsWorktable} table. The most likely
-                                    cause is that sequence numbers for FVS_COMPUTE are not configured correctly.{Environment.NewLine}");
-                        }
-                        else
-                        {
-                            //
-                            //APPEND TO SCENARIO HARVEST COST TABLE
-                            //
-                            var dtSourceSchema = m_oAdo.getTableSchema(m_oAdo.m_OleDbConnection, "select * from " + p_strAddCostsWorktable);
-                            var dtDestSchema = m_oAdo.getTableSchema(m_oAdo.m_OleDbConnection, "select * from " + Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName);
-                            //build field list string to insert sql by matching FIADB and BioSum Tree columns
-                            string strCol = "";
-                            string strFields = "";
-                            StringBuilder sb = new StringBuilder();
-                            sb.Append("SET ");
-                            for (int x = 0; x <= dtDestSchema.Rows.Count - 1; x++)
+                            strCol = dtDestSchema.Rows[x]["columnname"].ToString().Trim();
+                            //see if there is an equivalent source column
+                            for (int y = 0; y <= dtSourceSchema.Rows.Count - 1; y++)
                             {
-                                strCol = dtDestSchema.Rows[x]["columnname"].ToString().Trim();
-                                //see if there is an equivalent source column
-                                for (int y = 0; y <= dtSourceSchema.Rows.Count - 1; y++)
+                                if (strCol.Trim().ToUpper() == dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper())
                                 {
-                                    if (strCol.Trim().ToUpper() == dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper())
-                                    {
-                                        strFields += strCol + ",";
+                                    strFields += strCol + ",";
 
-                                        break;
-                                    }
-                                }
-                                string blah = dtDestSchema.Rows[x]["datatype"].ToString().ToUpper();
-                                if (dtDestSchema.Rows[x]["datatype"].ToString().ToUpper().Equals("SYSTEM.DOUBLE"))
-                                {
-                                    sb.Append($@"{strCol}=IIF({strCol} IS NULL, 0, {strCol}),");
+                                    break;
                                 }
                             }
-                            strFields += $@"'{m_strDateTimeCreated}' AS DATETIMECREATED ";
+                            if (dtDestSchema.Rows[x]["datatype"].ToString().ToUpper().Equals("SYSTEM.DOUBLE"))
+                            {
+                                sb.Append($@"{strCol}=IIF({strCol} IS NULL, 0, {strCol}),");
+                            }
+                        }
+                        strFields += $@"'{m_strDateTimeCreated}' AS DATETIMECREATED ";
 
-                            m_oAdo.m_strSQL = $@"INSERT INTO {Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName} 
+                        m_oAdo.m_strSQL = $@"INSERT INTO {Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName} 
                                           SELECT {strFields} FROM {p_strAddCostsWorktable}";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+
+                        //SET NULL VALUES TO 0
+                        if (sb.Length > 4)
+                        {
+                            string strSetValues = sb.ToString().TrimEnd(',');
+                            m_oAdo.m_strSQL = $@"UPDATE {Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName} {strSetValues}";
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                             m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-
-                            //SET NULL VALUES TO 0
-                            if (sb.Length > 4)
-                            {
-                                string strSetValues = sb.ToString().TrimEnd(',');
-                                m_oAdo.m_strSQL = $@"UPDATE {Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName} {strSetValues}";
-                                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                            }
                         }
                     }
                 }
