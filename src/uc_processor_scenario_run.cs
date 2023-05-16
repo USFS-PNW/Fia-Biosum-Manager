@@ -4332,7 +4332,7 @@ namespace FIA_Biosum_Manager
                     if (lngCount > 0)
                     {
                         bHasScenarioCosts = true;
-                        m_oAdo.AddColumn(m_oAdo.m_OleDbConnection, p_strAddCostsWorktable, ScenarioId.Trim(), "CHAR", "20");
+                        m_oAdo.AddColumn(m_oAdo.m_OleDbConnection, p_strAddCostsWorktable, ScenarioId.Trim(), "DOUBLE", "");
                     }
 
                     // UPDATE THE COLUMNS AND CREATE THE TABLE LINK TO THE additional_kcp_cpa TABLE AS SOON AS WE KNOW
@@ -4375,41 +4375,53 @@ namespace FIA_Biosum_Manager
 
                     // INSERT ROWS FROM PRE_FVS_COMPUTE TABLE; ASSUME ROW COUNT IS SAME FOR BOTH PRE AND POST TABLE
                     // INCLUDES INITIALLY SETTING THE FLAGS FROM THE PRE_FVS_COMPUTE TABLE
-                    sb.Clear();
-                    sb.Append($@"INSERT INTO {p_strAddCostsWorktable} (biosum_cond_id,rxpackage, rx, rxcycle");
-                    foreach (var sName in lstScenarioColumnNameList)
+                    if (lstScenarioColumnNameList.Count > 0)
                     {
-                        sb.Append($@", {sName}{strFlagSuffix}");
-                    }
-                    sb.Append(")");
-                    StringBuilder sbSelect = new StringBuilder();
-                    sbSelect.Append("SELECT biosum_cond_id,rxpackage, rx, rxcycle");
-                    foreach (var sName in lstScenarioColumnNameList)
-                    {
-                        sbSelect.Append($@", IIF({sName} IS NOT NULL,{sName},0)");
-                    }
-                    m_oAdo.m_strSQL = $@"{sb.ToString()}{sbSelect.ToString()}
+                        sb.Clear();
+                        sb.Append($@"INSERT INTO {p_strAddCostsWorktable} (biosum_cond_id,rxpackage, rx, rxcycle");
+                        foreach (var sName in lstScenarioColumnNameList)
+                        {
+                            sb.Append($@", {sName}{strFlagSuffix}");
+                        }
+                        sb.Append(")");
+                        StringBuilder sbSelect = new StringBuilder();
+                        sbSelect.Append("SELECT biosum_cond_id,rxpackage, rx, rxcycle");
+                        foreach (var sName in lstScenarioColumnNameList)
+                        {
+                            sbSelect.Append($@", IIF({sName} IS NOT NULL,{sName},0)");
+                        }
+                        m_oAdo.m_strSQL = $@"{sb.ToString()}{sbSelect.ToString()}
                                          FROM {Tables.FVS.DefaultPreFVSComputeTableName} WHERE FVS_VARIANT = '{p_strVariant}'
                                          AND RXPACKAGE = '{p_strRxPackage}'";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
 
-                    // UPDATE THE FLAGS FROM THE POST_FVS_COMPUTE TABLE
-                    string strUpdate = $@"UPDATE {p_strAddCostsWorktable} INNER JOIN {Tables.FVS.DefaultPostFVSComputeTableName} ON 
+                        // UPDATE THE FLAGS FROM THE POST_FVS_COMPUTE TABLE
+                        string strUpdate = $@"UPDATE {p_strAddCostsWorktable} INNER JOIN {Tables.FVS.DefaultPostFVSComputeTableName} ON 
                         {p_strAddCostsWorktable}.biosum_cond_id = {Tables.FVS.DefaultPostFVSComputeTableName}.biosum_cond_id and 
                         {p_strAddCostsWorktable}.rxpackage = {Tables.FVS.DefaultPostFVSComputeTableName}.rxpackage
                         and {p_strAddCostsWorktable}.rxcycle = {Tables.FVS.DefaultPostFVSComputeTableName}.rxcycle SET ";
-                    sb.Clear();
-                    foreach (var sName in lstScenarioColumnNameList)
-                    {
-                        sb.Append($@"{sName}{strFlagSuffix} = IIF({Tables.FVS.DefaultPostFVSComputeTableName}.{sName} IS NOT NULL,{sName}{strFlagSuffix} + {Tables.FVS.DefaultPostFVSComputeTableName}.{sName},{sName}{strFlagSuffix}),");
+                        sb.Clear();
+                        foreach (var sName in lstScenarioColumnNameList)
+                        {
+                            sb.Append($@"{sName}{strFlagSuffix} = IIF({Tables.FVS.DefaultPostFVSComputeTableName}.{sName} IS NOT NULL,{sName}{strFlagSuffix} + {Tables.FVS.DefaultPostFVSComputeTableName}.{sName},{sName}{strFlagSuffix}),");
+                        }
+                        string strSetValues = sb.ToString().TrimEnd(',');
+                        m_oAdo.m_strSQL = strUpdate + strSetValues;
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
                     }
-                    string strSetValues = sb.ToString().TrimEnd(',');
-                    m_oAdo.m_strSQL = strUpdate + strSetValues;
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                    else
+                    {
+                        // BUILD THE TABLE FROM OPCOST_OUTPUT WHEN THERE ARE NO FVS_COMPUTE KCP COLUMNS
+                        m_oAdo.m_strSQL = $@"INSERT INTO {p_strAddCostsWorktable} (biosum_cond_id, rxpackage, rx, rxcycle) 
+                                             SELECT biosum_cond_id, rxpackage, rx, rxcycle FROM OpCost_Output";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                    }
 
                     // APPLY THE $/CPA FOR EACH RX
                     // Contains $/CPA
@@ -4420,47 +4432,50 @@ namespace FIA_Biosum_Manager
                     }
                     if (harvestCostItemCollection != null)
                     {
-                        strSetValues = "";
-                        for (int j = 0; j < lstRxItem.Count; j++)
+                        if (lstScenarioColumnNameList.Count > 0)
                         {
-                            var rxItem = lstRxItem[j];
-                            foreach (var sName in lstScenarioColumnNameList)
+                            string strSetValues = "";
+                            for (int j = 0; j < lstRxItem.Count; j++)
                             {
-                                for (int i = 0; i < harvestCostItemCollection.Count; i++)
+                                var rxItem = lstRxItem[j];
+                                foreach (var sName in lstScenarioColumnNameList)
                                 {
-                                    var hCostItem = harvestCostItemCollection.Item(i);
-                                    if (hCostItem.Rx.Equals(rxItem.RxId) && hCostItem.ColumnName.Equals(sName))
+                                    for (int i = 0; i < harvestCostItemCollection.Count; i++)
                                     {
-                                        strSetValues += $@"{sName} = {hCostItem.DefaultCostPerAcre}*{sName}{strFlagSuffix},";
+                                        var hCostItem = harvestCostItemCollection.Item(i);
+                                        if (hCostItem.Rx.Equals(rxItem.RxId) && hCostItem.ColumnName.Equals(sName))
+                                        {
+                                            strSetValues += $@"{sName} = {hCostItem.DefaultCostPerAcre}*{sName}{strFlagSuffix},";
+                                        }
                                     }
                                 }
                             }
-                        }
-                        strSetValues = strSetValues.TrimEnd(',');
-                        m_oAdo.m_strSQL = $@"UPDATE {p_strAddCostsWorktable} SET {strSetValues}";
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                            strSetValues = strSetValues.TrimEnd(',');
+                            m_oAdo.m_strSQL = $@"UPDATE {p_strAddCostsWorktable} SET {strSetValues}";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
 
-                        //APPLY THE ESCALATORS TO ADDITIONAL CPA
-                        sb.Clear();
-                        sb.Append($@"UPDATE {p_strAddCostsWorktable} h, scenario_cost_revenue_escalators e SET ");
-                        foreach (var sName in lstScenarioColumnNameList)
-                        {
-                            sb.Append($@"H.{sName} = IIF(h.RXCycle = '2', (H.{sName} * e.EscalatorOperatingCosts_Cycle2), 
+                            //APPLY THE ESCALATORS TO ADDITIONAL CPA
+                            sb.Clear();
+                            sb.Append($@"UPDATE {p_strAddCostsWorktable} h, scenario_cost_revenue_escalators e SET ");
+                            foreach (var sName in lstScenarioColumnNameList)
+                            {
+                                sb.Append($@"H.{sName} = IIF(h.RXCycle = '2', (H.{sName} * e.EscalatorOperatingCosts_Cycle2), 
                             IIF(h.RXCycle='3',(H.{sName} * e.EscalatorOperatingCosts_Cycle3), 
                             IIF(h.RXCycle='4',(H.{sName} * e.EscalatorOperatingCosts_Cycle4),H.{sName}))),");
+                            }
+                            strSetValues = sb.ToString().TrimEnd(',');
+                            m_oAdo.m_strSQL = $@"{strSetValues} WHERE TRIM(UCASE(e.scenario_id))='{ScenarioId}'";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
                         }
-                        strSetValues = sb.ToString().TrimEnd(',');
-                        m_oAdo.m_strSQL = $@"{strSetValues} WHERE TRIM(UCASE(e.scenario_id))='{ScenarioId}'";
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
 
                         //UPDATE THE SCENARIO-LEVEL COSTS (IF APPLICABLE)
                         if (bHasScenarioCosts)
                         {
-                            strSetValues = "";
+                            string strSetValues = "";
                             sb.Clear();
                             foreach (ProcessorScenarioItem.HarvestCostItem item in harvestCostItemCollection)
                             {
@@ -4483,37 +4498,41 @@ namespace FIA_Biosum_Manager
                                     frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                                 m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
 
-                                //APPLY THE ESCALATORS
+                                //APPLY THE ESCALATORS AND SET ADDITIONAL_CPA = 0 IF NULL
                                 m_oAdo.m_strSQL = $@"UPDATE {p_strAddCostsWorktable} h, scenario_cost_revenue_escalators e SET {ScenarioId.Trim()} = 
                                     IIF(h.RXCycle = '2', (H.{ScenarioId.Trim()} * e.EscalatorOperatingCosts_Cycle2), 
                                     IIF(h.RXCycle='3',(H.{ScenarioId.Trim()} * e.EscalatorOperatingCosts_Cycle3), 
-                                    IIF(h.RXCycle='4',(H.{ScenarioId.Trim()} * e.EscalatorOperatingCosts_Cycle4),H.{ScenarioId.Trim()})))";
+                                    IIF(h.RXCycle='4',(H.{ScenarioId.Trim()} * e.EscalatorOperatingCosts_Cycle4),H.{ScenarioId.Trim()}))),
+                                    ADDITIONAL_CPA = IIF(H.ADDITIONAL_CPA IS NULL, 0, ADDITIONAL_CPA)";
                                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                     frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                                 m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
 
                             }
                         }
-                        
+
                         //SUM THE KCP CPA COSTS
-                        sb.Clear();
-                        sb.Append($@"UPDATE {p_strAddCostsWorktable} SET ADDITIONAL_CPA = (");
-                        foreach (var sName in lstScenarioColumnNameList)
+                        if (lstScenarioColumnNameList.Count > 0)
                         {
-                            sb.Append($@" {sName} +");
+                            sb.Clear();
+                            sb.Append($@"UPDATE {p_strAddCostsWorktable} SET ADDITIONAL_CPA = (");
+                            foreach (var sName in lstScenarioColumnNameList)
+                            {
+                                sb.Append($@" {sName} +");
+                            }
+                            string strSetValues = sb.ToString().TrimEnd('+');
+                            strSetValues = strSetValues + ")";
+                            m_oAdo.m_strSQL = strSetValues;
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
                         }
-                        strSetValues = sb.ToString().TrimEnd('+');
-                        strSetValues = strSetValues + ")";
-                        m_oAdo.m_strSQL = strSetValues;
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
 
                         //ADD ON SCENARIO LEVEL COSTS IF KCP COSTS WERE INCURRED
                         if (bHasScenarioCosts)
                         {
                             m_oAdo.m_strSQL = $@"UPDATE {p_strAddCostsWorktable} SET ADDITIONAL_CPA = 
-                                IIF(ADDITIONAL_CPA >0, ADDITIONAL_CPA + {ScenarioId.Trim()}, ADDITIONAL_CPA)";
+                                IIF(ADDITIONAL_CPA >0, ADDITIONAL_CPA + {ScenarioId.Trim()}, {ScenarioId.Trim()})";
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                             m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
@@ -4524,8 +4543,6 @@ namespace FIA_Biosum_Manager
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                         m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-
-
                     }
 
                     //if (m_oAdo.m_intError == 0)
@@ -5000,7 +5017,6 @@ namespace FIA_Biosum_Manager
                                     break;
                                 }
                             }
-                            string blah = dtDestSchema.Rows[x]["datatype"].ToString().ToUpper();
                             if (dtDestSchema.Rows[x]["datatype"].ToString().ToUpper().Equals("SYSTEM.DOUBLE"))
                             {
                                 sb.Append($@"{strCol}=IIF({strCol} IS NULL, 0, {strCol}),");

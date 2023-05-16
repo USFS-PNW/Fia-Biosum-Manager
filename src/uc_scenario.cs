@@ -723,7 +723,7 @@ namespace FIA_Biosum_Manager
                             Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName);
 
                         frmMain.g_oTables.m_oProcessorScenarioRun.CreateAdditionalKcpCpaTable(
-                            oAdo, OleDbScenarioResultsConn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, true);
+                            oAdo, OleDbScenarioResultsConn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, false);
 
 
                         OleDbScenarioResultsConn.Close();

@@ -34,11 +34,12 @@ namespace FIA_Biosum_Manager
 		private string _strScenarioId="";
 		private frmProcessorScenario _frmProcessorScenario=null;
         private Label lblNote;
-		
-		/// <summary> 
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.Container components = null;
+        private Button btnDefault;
+
+        /// <summary> 
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.Container components = null;
 
 		public frmProcessorScenario ReferenceProcessorScenarioForm
 		{
@@ -97,6 +98,7 @@ namespace FIA_Biosum_Manager
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(uc_processor_scenario_escalators));
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.btnDefault = new System.Windows.Forms.Button();
             this.lblNote = new System.Windows.Forms.Label();
             this.lblCycleLength = new System.Windows.Forms.Label();
             this.lblCycleLengthDesc = new System.Windows.Forms.Label();
@@ -129,6 +131,7 @@ namespace FIA_Biosum_Manager
             // panel1
             // 
             this.panel1.AutoScroll = true;
+            this.panel1.Controls.Add(this.btnDefault);
             this.panel1.Controls.Add(this.lblNote);
             this.panel1.Controls.Add(this.lblCycleLength);
             this.panel1.Controls.Add(this.lblCycleLengthDesc);
@@ -147,6 +150,17 @@ namespace FIA_Biosum_Manager
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(690, 395);
             this.panel1.TabIndex = 31;
+            // 
+            // btnDefault
+            // 
+            this.btnDefault.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnDefault.ForeColor = System.Drawing.Color.Black;
+            this.btnDefault.Location = new System.Drawing.Point(425, 80);
+            this.btnDefault.Name = "btnDefault";
+            this.btnDefault.Size = new System.Drawing.Size(200, 30);
+            this.btnDefault.TabIndex = 55;
+            this.btnDefault.Text = "Load Default Escalators";
+            this.btnDefault.Click += new System.EventHandler(this.btnDefault_Click);
             // 
             // lblNote
             // 
@@ -169,6 +183,7 @@ namespace FIA_Biosum_Manager
             this.lblCycleLength.Size = new System.Drawing.Size(32, 24);
             this.lblCycleLength.TabIndex = 53;
             this.lblCycleLength.Text = "10";
+            this.lblCycleLength.Visible = false;
             // 
             // lblCycleLengthDesc
             // 
@@ -179,13 +194,14 @@ namespace FIA_Biosum_Manager
             this.lblCycleLengthDesc.Size = new System.Drawing.Size(200, 16);
             this.lblCycleLengthDesc.TabIndex = 52;
             this.lblCycleLengthDesc.Text = "Current Cycle Length (Years):";
+            this.lblCycleLengthDesc.Visible = false;
             // 
             // uc_processor_scenario_escalators_value3
             // 
-            this.uc_processor_scenario_escalators_value3.Cycle1 = "1.00";
             this.uc_processor_scenario_escalators_value3.Cycle2 = "1.00";
             this.uc_processor_scenario_escalators_value3.Cycle3 = "1.00";
-            this.uc_processor_scenario_escalators_value3.Location = new System.Drawing.Point(240, 225);
+            this.uc_processor_scenario_escalators_value3.Cycle4 = "1.00";
+            this.uc_processor_scenario_escalators_value3.Location = new System.Drawing.Point(251, 225);
             this.uc_processor_scenario_escalators_value3.Name = "uc_processor_scenario_escalators_value3";
             this.uc_processor_scenario_escalators_value3.ReferenceProcessorScenarioForm = null;
             this.uc_processor_scenario_escalators_value3.Size = new System.Drawing.Size(408, 32);
@@ -193,10 +209,10 @@ namespace FIA_Biosum_Manager
             // 
             // uc_processor_scenario_escalators_value2
             // 
-            this.uc_processor_scenario_escalators_value2.Cycle1 = "1.00";
             this.uc_processor_scenario_escalators_value2.Cycle2 = "1.00";
             this.uc_processor_scenario_escalators_value2.Cycle3 = "1.00";
-            this.uc_processor_scenario_escalators_value2.Location = new System.Drawing.Point(240, 182);
+            this.uc_processor_scenario_escalators_value2.Cycle4 = "1.00";
+            this.uc_processor_scenario_escalators_value2.Location = new System.Drawing.Point(251, 182);
             this.uc_processor_scenario_escalators_value2.Name = "uc_processor_scenario_escalators_value2";
             this.uc_processor_scenario_escalators_value2.ReferenceProcessorScenarioForm = null;
             this.uc_processor_scenario_escalators_value2.Size = new System.Drawing.Size(408, 32);
@@ -204,10 +220,10 @@ namespace FIA_Biosum_Manager
             // 
             // uc_processor_scenario_escalators_value1
             // 
-            this.uc_processor_scenario_escalators_value1.Cycle1 = "1.00";
             this.uc_processor_scenario_escalators_value1.Cycle2 = "1.00";
             this.uc_processor_scenario_escalators_value1.Cycle3 = "1.00";
-            this.uc_processor_scenario_escalators_value1.Location = new System.Drawing.Point(240, 142);
+            this.uc_processor_scenario_escalators_value1.Cycle4 = "1.00";
+            this.uc_processor_scenario_escalators_value1.Location = new System.Drawing.Point(251, 142);
             this.uc_processor_scenario_escalators_value1.Name = "uc_processor_scenario_escalators_value1";
             this.uc_processor_scenario_escalators_value1.ReferenceProcessorScenarioForm = null;
             this.uc_processor_scenario_escalators_value1.Size = new System.Drawing.Size(408, 32);
@@ -239,50 +255,50 @@ namespace FIA_Biosum_Manager
             this.lblCosts.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this.lblCosts.Location = new System.Drawing.Point(37, 150);
             this.lblCosts.Name = "lblCosts";
-            this.lblCosts.Size = new System.Drawing.Size(112, 24);
+            this.lblCosts.Size = new System.Drawing.Size(214, 24);
             this.lblCosts.TabIndex = 46;
-            this.lblCosts.Text = "Operating Costs";
+            this.lblCosts.Text = "Treatment and Haul Costs";
             // 
             // lblCycle3
             // 
             this.lblCycle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblCycle3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblCycle3.Location = new System.Drawing.Point(509, 115);
+            this.lblCycle3.Location = new System.Drawing.Point(520, 115);
             this.lblCycle3.Name = "lblCycle3";
             this.lblCycle3.Size = new System.Drawing.Size(112, 24);
             this.lblCycle3.TabIndex = 45;
-            this.lblCycle3.Text = "End Of Cycle 3";
+            this.lblCycle3.Text = "Cycle 4";
             // 
             // lblCycle2
             // 
             this.lblCycle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblCycle2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblCycle2.Location = new System.Drawing.Point(381, 115);
+            this.lblCycle2.Location = new System.Drawing.Point(392, 115);
             this.lblCycle2.Name = "lblCycle2";
             this.lblCycle2.Size = new System.Drawing.Size(112, 24);
             this.lblCycle2.TabIndex = 44;
-            this.lblCycle2.Text = "End Of Cycle 2";
+            this.lblCycle2.Text = "Cycle 3";
             // 
             // lblCycle1
             // 
             this.lblCycle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblCycle1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblCycle1.Location = new System.Drawing.Point(253, 115);
+            this.lblCycle1.Location = new System.Drawing.Point(264, 115);
             this.lblCycle1.Name = "lblCycle1";
             this.lblCycle1.Size = new System.Drawing.Size(112, 24);
             this.lblCycle1.TabIndex = 43;
-            this.lblCycle1.Text = "End Of Cycle 1";
+            this.lblCycle1.Text = "Cycle 2";
             // 
             // lblDesc
             // 
             this.lblDesc.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblDesc.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblDesc.Location = new System.Drawing.Point(16, 48);
+            this.lblDesc.Location = new System.Drawing.Point(16, 25);
             this.lblDesc.Name = "lblDesc";
-            this.lblDesc.Size = new System.Drawing.Size(361, 53);
+            this.lblDesc.Size = new System.Drawing.Size(605, 53);
             this.lblDesc.TabIndex = 42;
-            this.lblDesc.Text = " Enter escalator that will be applied as a multiplier to costs or revenue that oc" +
-    "cur at the end of each cycle\r\n";
+            this.lblDesc.Text = "Enter or edit the escalator that will be applied as a multiplier to costs or reve" +
+    "nue events in each of BioSum cycles 2, 3 and 4\r\n";
             // 
             // lblTitle
             // 
@@ -363,91 +379,91 @@ namespace FIA_Biosum_Manager
                 //cycle2
                 if (oEscalators.OperatingCostsCycle2.Trim().Length > 0)
                 {
-                    uc_processor_scenario_escalators_value1.Cycle1 =
-                         oEscalators.OperatingCostsCycle2.Trim();
-                }
-                else
-                {
-                    uc_processor_scenario_escalators_value1.Cycle1 = "1.00";
-                }
-                //cycle3
-                if (oEscalators.OperatingCostsCycle3.Trim().Length > 0)
-                {
                     uc_processor_scenario_escalators_value1.Cycle2 =
-                         oEscalators.OperatingCostsCycle3.Trim();
+                         oEscalators.OperatingCostsCycle2.Trim();
                 }
                 else
                 {
                     uc_processor_scenario_escalators_value1.Cycle2 = "1.00";
                 }
-                if (oEscalators.OperatingCostsCycle4.Trim().Length > 0)
+                //cycle3
+                if (oEscalators.OperatingCostsCycle3.Trim().Length > 0)
                 {
                     uc_processor_scenario_escalators_value1.Cycle3 =
-                         oEscalators.OperatingCostsCycle4.Trim();
+                         oEscalators.OperatingCostsCycle3.Trim();
                 }
                 else
                 {
                     uc_processor_scenario_escalators_value1.Cycle3 = "1.00";
                 }
+                if (oEscalators.OperatingCostsCycle4.Trim().Length > 0)
+                {
+                    uc_processor_scenario_escalators_value1.Cycle4 =
+                         oEscalators.OperatingCostsCycle4.Trim();
+                }
+                else
+                {
+                    uc_processor_scenario_escalators_value1.Cycle4 = "1.00";
+                }
                 //merch wood revenue cycle 2,3,4
                 //cycle2
                 if (oEscalators.MerchWoodRevenueCycle2.Trim().Length > 0)
                 {
-                    uc_processor_scenario_escalators_value2.Cycle1 =
-                         oEscalators.MerchWoodRevenueCycle2.Trim();
-                }
-                else
-                {
-                    uc_processor_scenario_escalators_value2.Cycle1 = "1.00";
-                }
-                //cycle3
-                if (oEscalators.MerchWoodRevenueCycle3.Trim().Length > 0)
-                {
                     uc_processor_scenario_escalators_value2.Cycle2 =
-                         oEscalators.MerchWoodRevenueCycle3.Trim();
+                         oEscalators.MerchWoodRevenueCycle2.Trim();
                 }
                 else
                 {
                     uc_processor_scenario_escalators_value2.Cycle2 = "1.00";
                 }
-                if (oEscalators.MerchWoodRevenueCycle4.Trim().Length > 0)
+                //cycle3
+                if (oEscalators.MerchWoodRevenueCycle3.Trim().Length > 0)
                 {
                     uc_processor_scenario_escalators_value2.Cycle3 =
-                         oEscalators.MerchWoodRevenueCycle4.Trim();
+                         oEscalators.MerchWoodRevenueCycle3.Trim();
                 }
                 else
                 {
                     uc_processor_scenario_escalators_value2.Cycle3 = "1.00";
                 }
+                if (oEscalators.MerchWoodRevenueCycle4.Trim().Length > 0)
+                {
+                    uc_processor_scenario_escalators_value2.Cycle4 =
+                         oEscalators.MerchWoodRevenueCycle4.Trim();
+                }
+                else
+                {
+                    uc_processor_scenario_escalators_value2.Cycle4 = "1.00";
+                }
                 //Energy wood revenue cycle 2,3,4
                 //cycle2
                 if (oEscalators.EnergyWoodRevenueCycle2.Trim().Length > 0)
                 {
-                    uc_processor_scenario_escalators_value3.Cycle1 =
-                         oEscalators.EnergyWoodRevenueCycle2.Trim();
-                }
-                else
-                {
-                    uc_processor_scenario_escalators_value3.Cycle1 = "1.00";
-                }
-                //cycle3
-                if (oEscalators.EnergyWoodRevenueCycle3.Trim().Length > 0)
-                {
                     uc_processor_scenario_escalators_value3.Cycle2 =
-                         oEscalators.EnergyWoodRevenueCycle3.Trim();
+                         oEscalators.EnergyWoodRevenueCycle2.Trim();
                 }
                 else
                 {
                     uc_processor_scenario_escalators_value3.Cycle2 = "1.00";
                 }
-                if (oEscalators.EnergyWoodRevenueCycle4.Trim().Length > 0)
+                //cycle3
+                if (oEscalators.EnergyWoodRevenueCycle3.Trim().Length > 0)
                 {
                     uc_processor_scenario_escalators_value3.Cycle3 =
-                         oEscalators.EnergyWoodRevenueCycle4.Trim();
+                         oEscalators.EnergyWoodRevenueCycle3.Trim();
                 }
                 else
                 {
                     uc_processor_scenario_escalators_value3.Cycle3 = "1.00";
+                }
+                if (oEscalators.EnergyWoodRevenueCycle4.Trim().Length > 0)
+                {
+                    uc_processor_scenario_escalators_value3.Cycle4 =
+                         oEscalators.EnergyWoodRevenueCycle4.Trim();
+                }
+                else
+                {
+                    uc_processor_scenario_escalators_value3.Cycle4 = "1.00";
                 }
 
 				
@@ -469,91 +485,91 @@ namespace FIA_Biosum_Manager
                 //cycle2
                 if (oEscalators.OperatingCostsCycle2.Trim().Length > 0)
                 {
-                    uc_processor_scenario_escalators_value1.Cycle1 =
-                         oEscalators.OperatingCostsCycle2.Trim();
-                }
-                else
-                {
-                    uc_processor_scenario_escalators_value1.Cycle1 = "1.00";
-                }
-                //cycle3
-                if (oEscalators.OperatingCostsCycle3.Trim().Length > 0)
-                {
                     uc_processor_scenario_escalators_value1.Cycle2 =
-                         oEscalators.OperatingCostsCycle3.Trim();
+                         oEscalators.OperatingCostsCycle2.Trim();
                 }
                 else
                 {
                     uc_processor_scenario_escalators_value1.Cycle2 = "1.00";
                 }
-                if (oEscalators.OperatingCostsCycle4.Trim().Length > 0)
+                //cycle3
+                if (oEscalators.OperatingCostsCycle3.Trim().Length > 0)
                 {
                     uc_processor_scenario_escalators_value1.Cycle3 =
-                         oEscalators.OperatingCostsCycle4.Trim();
+                         oEscalators.OperatingCostsCycle3.Trim();
                 }
                 else
                 {
                     uc_processor_scenario_escalators_value1.Cycle3 = "1.00";
                 }
+                if (oEscalators.OperatingCostsCycle4.Trim().Length > 0)
+                {
+                    uc_processor_scenario_escalators_value1.Cycle4 =
+                         oEscalators.OperatingCostsCycle4.Trim();
+                }
+                else
+                {
+                    uc_processor_scenario_escalators_value1.Cycle4 = "1.00";
+                }
                 //merch wood revenue cycle 2,3,4
                 //cycle2
                 if (oEscalators.MerchWoodRevenueCycle2.Trim().Length > 0)
                 {
-                    uc_processor_scenario_escalators_value2.Cycle1 =
-                         oEscalators.MerchWoodRevenueCycle2.Trim();
-                }
-                else
-                {
-                    uc_processor_scenario_escalators_value2.Cycle1 = "1.00";
-                }
-                //cycle3
-                if (oEscalators.MerchWoodRevenueCycle3.Trim().Length > 0)
-                {
                     uc_processor_scenario_escalators_value2.Cycle2 =
-                         oEscalators.MerchWoodRevenueCycle3.Trim();
+                         oEscalators.MerchWoodRevenueCycle2.Trim();
                 }
                 else
                 {
                     uc_processor_scenario_escalators_value2.Cycle2 = "1.00";
                 }
-                if (oEscalators.MerchWoodRevenueCycle4.Trim().Length > 0)
+                //cycle3
+                if (oEscalators.MerchWoodRevenueCycle3.Trim().Length > 0)
                 {
                     uc_processor_scenario_escalators_value2.Cycle3 =
-                         oEscalators.MerchWoodRevenueCycle4.Trim();
+                         oEscalators.MerchWoodRevenueCycle3.Trim();
                 }
                 else
                 {
                     uc_processor_scenario_escalators_value2.Cycle3 = "1.00";
                 }
+                if (oEscalators.MerchWoodRevenueCycle4.Trim().Length > 0)
+                {
+                    uc_processor_scenario_escalators_value2.Cycle4 =
+                         oEscalators.MerchWoodRevenueCycle4.Trim();
+                }
+                else
+                {
+                    uc_processor_scenario_escalators_value2.Cycle4 = "1.00";
+                }
                 //Energy wood revenue cycle 2,3,4
                 //cycle2
                 if (oEscalators.EnergyWoodRevenueCycle2.Trim().Length > 0)
                 {
-                    uc_processor_scenario_escalators_value3.Cycle1 =
-                         oEscalators.EnergyWoodRevenueCycle2.Trim();
-                }
-                else
-                {
-                    uc_processor_scenario_escalators_value3.Cycle1 = "1.00";
-                }
-                //cycle3
-                if (oEscalators.EnergyWoodRevenueCycle3.Trim().Length > 0)
-                {
                     uc_processor_scenario_escalators_value3.Cycle2 =
-                         oEscalators.EnergyWoodRevenueCycle3.Trim();
+                         oEscalators.EnergyWoodRevenueCycle2.Trim();
                 }
                 else
                 {
                     uc_processor_scenario_escalators_value3.Cycle2 = "1.00";
                 }
-                if (oEscalators.EnergyWoodRevenueCycle4.Trim().Length > 0)
+                //cycle3
+                if (oEscalators.EnergyWoodRevenueCycle3.Trim().Length > 0)
                 {
                     uc_processor_scenario_escalators_value3.Cycle3 =
-                         oEscalators.EnergyWoodRevenueCycle4.Trim();
+                         oEscalators.EnergyWoodRevenueCycle3.Trim();
                 }
                 else
                 {
                     uc_processor_scenario_escalators_value3.Cycle3 = "1.00";
+                }
+                if (oEscalators.EnergyWoodRevenueCycle4.Trim().Length > 0)
+                {
+                    uc_processor_scenario_escalators_value3.Cycle4 =
+                         oEscalators.EnergyWoodRevenueCycle4.Trim();
+                }
+                else
+                {
+                    uc_processor_scenario_escalators_value3.Cycle4 = "1.00";
                 }
 
 
@@ -618,10 +634,6 @@ namespace FIA_Biosum_Manager
                 //
                 strValues = "'" + ScenarioId.Trim() + "',";
                 //
-                //Operating Cost Cycle1
-                //
-                strValues = strValues + this.uc_processor_scenario_escalators_value1.Cycle1.Trim() + ",";
-                //
                 //Operating Cost Cycle2
                 //
                 strValues = strValues + this.uc_processor_scenario_escalators_value1.Cycle2.Trim() + ",";
@@ -630,9 +642,9 @@ namespace FIA_Biosum_Manager
                 //
                 strValues = strValues + this.uc_processor_scenario_escalators_value1.Cycle3.Trim() + ",";
                 //
-                //Merch Wood Revenue Cycle1
+                //Operating Cost Cycle4
                 //
-                strValues = strValues + this.uc_processor_scenario_escalators_value2.Cycle1.Trim() + ",";
+                strValues = strValues + this.uc_processor_scenario_escalators_value1.Cycle4.Trim() + ",";
                 //
                 //Merch Wood Revenue Cycle2
                 //
@@ -642,9 +654,9 @@ namespace FIA_Biosum_Manager
                 //
                 strValues = strValues + this.uc_processor_scenario_escalators_value2.Cycle3.Trim() + ",";
                 //
-                //Energy Wood Revenue Cycle1
+                //Merch Wood Revenue Cycle4
                 //
-                strValues = strValues + this.uc_processor_scenario_escalators_value3.Cycle1.Trim() + ",";
+                strValues = strValues + this.uc_processor_scenario_escalators_value2.Cycle4.Trim() + ",";
                 //
                 //Energy Wood Revenue Cycle2
                 //
@@ -652,7 +664,11 @@ namespace FIA_Biosum_Manager
                 //
                 //Energy Wood Revenue Cycle3
                 //
-                strValues = strValues + this.uc_processor_scenario_escalators_value3.Cycle3.Trim();
+                strValues = strValues + this.uc_processor_scenario_escalators_value3.Cycle3.Trim() + ",";
+                //
+                //Energy Wood Revenue Cycle4
+                //
+                strValues = strValues + this.uc_processor_scenario_escalators_value3.Cycle4.Trim();
 
                 if (!ReferenceProcessorScenarioForm.m_bUsingSqlite)
                 {
@@ -688,5 +704,30 @@ namespace FIA_Biosum_Manager
 		{
 		
 		}
-	}
+
+        private void btnDefault_Click(object sender, EventArgs e)
+        {
+            string strCycle2 = "0.65";
+            string strCycle3 = "0.44";
+            string strCycle4 = "0.30";
+            if (lblCycleLength.Text.Equals("5"))
+            {
+                strCycle2 = "0.79";
+                strCycle3 = "0.65";
+                strCycle4 = "0.53";
+            }
+
+            this.uc_processor_scenario_escalators_value1.Cycle2 = strCycle2;
+            this.uc_processor_scenario_escalators_value1.Cycle3 = strCycle3;
+            this.uc_processor_scenario_escalators_value1.Cycle4 = strCycle4;
+            this.uc_processor_scenario_escalators_value2.Cycle2 = strCycle2;
+            this.uc_processor_scenario_escalators_value2.Cycle3 = strCycle3;
+            this.uc_processor_scenario_escalators_value2.Cycle4 = strCycle4;
+            this.uc_processor_scenario_escalators_value3.Cycle2 = strCycle2;
+            this.uc_processor_scenario_escalators_value3.Cycle3 = strCycle3;
+            this.uc_processor_scenario_escalators_value3.Cycle4 = strCycle4;
+
+
+        }
+    }
 }

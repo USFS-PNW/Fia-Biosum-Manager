@@ -3193,7 +3193,7 @@ namespace FIA_Biosum_Manager
 
 
             if (p_oQueries != null)
-		    	p_oProcessorScenarioItem.m_oEscalators.CycleLength=Convert.ToInt32(p_oAdo.getSingleDoubleValueFromSQLQuery(p_oAdo.m_OleDbConnection,"SELECT TOP 1 rxcycle_length FROM " + p_oQueries.m_oFvs.m_strRxPackageTable,"temp"));            
+		    	p_oProcessorScenarioItem.m_oEscalators.CycleLength=Convert.ToInt32(p_oAdo.getSingleDoubleValueFromSQLQuery(p_oAdo.m_OleDbConnection,"SELECT max(rxcycle_length) FROM " + p_oQueries.m_oFvs.m_strRxPackageTable,"temp"));            
 
         }
         public void LoadEscalatorsSqlite(Queries p_oQueries, string p_strDbFile, FIA_Biosum_Manager.ProcessorScenarioItem p_oProcessorScenarioItem)
