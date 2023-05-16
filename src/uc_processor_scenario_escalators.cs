@@ -201,7 +201,7 @@ namespace FIA_Biosum_Manager
             this.uc_processor_scenario_escalators_value3.Cycle2 = "1.00";
             this.uc_processor_scenario_escalators_value3.Cycle3 = "1.00";
             this.uc_processor_scenario_escalators_value3.Cycle4 = "1.00";
-            this.uc_processor_scenario_escalators_value3.Location = new System.Drawing.Point(240, 225);
+            this.uc_processor_scenario_escalators_value3.Location = new System.Drawing.Point(251, 225);
             this.uc_processor_scenario_escalators_value3.Name = "uc_processor_scenario_escalators_value3";
             this.uc_processor_scenario_escalators_value3.ReferenceProcessorScenarioForm = null;
             this.uc_processor_scenario_escalators_value3.Size = new System.Drawing.Size(408, 32);
@@ -212,7 +212,7 @@ namespace FIA_Biosum_Manager
             this.uc_processor_scenario_escalators_value2.Cycle2 = "1.00";
             this.uc_processor_scenario_escalators_value2.Cycle3 = "1.00";
             this.uc_processor_scenario_escalators_value2.Cycle4 = "1.00";
-            this.uc_processor_scenario_escalators_value2.Location = new System.Drawing.Point(240, 182);
+            this.uc_processor_scenario_escalators_value2.Location = new System.Drawing.Point(251, 182);
             this.uc_processor_scenario_escalators_value2.Name = "uc_processor_scenario_escalators_value2";
             this.uc_processor_scenario_escalators_value2.ReferenceProcessorScenarioForm = null;
             this.uc_processor_scenario_escalators_value2.Size = new System.Drawing.Size(408, 32);
@@ -223,7 +223,7 @@ namespace FIA_Biosum_Manager
             this.uc_processor_scenario_escalators_value1.Cycle2 = "1.00";
             this.uc_processor_scenario_escalators_value1.Cycle3 = "1.00";
             this.uc_processor_scenario_escalators_value1.Cycle4 = "1.00";
-            this.uc_processor_scenario_escalators_value1.Location = new System.Drawing.Point(240, 142);
+            this.uc_processor_scenario_escalators_value1.Location = new System.Drawing.Point(251, 142);
             this.uc_processor_scenario_escalators_value1.Name = "uc_processor_scenario_escalators_value1";
             this.uc_processor_scenario_escalators_value1.ReferenceProcessorScenarioForm = null;
             this.uc_processor_scenario_escalators_value1.Size = new System.Drawing.Size(408, 32);
@@ -255,7 +255,7 @@ namespace FIA_Biosum_Manager
             this.lblCosts.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this.lblCosts.Location = new System.Drawing.Point(37, 150);
             this.lblCosts.Name = "lblCosts";
-            this.lblCosts.Size = new System.Drawing.Size(160, 24);
+            this.lblCosts.Size = new System.Drawing.Size(214, 24);
             this.lblCosts.TabIndex = 46;
             this.lblCosts.Text = "Treatment and Haul Costs";
             // 
@@ -263,7 +263,7 @@ namespace FIA_Biosum_Manager
             // 
             this.lblCycle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblCycle3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblCycle3.Location = new System.Drawing.Point(509, 115);
+            this.lblCycle3.Location = new System.Drawing.Point(520, 115);
             this.lblCycle3.Name = "lblCycle3";
             this.lblCycle3.Size = new System.Drawing.Size(112, 24);
             this.lblCycle3.TabIndex = 45;
@@ -273,7 +273,7 @@ namespace FIA_Biosum_Manager
             // 
             this.lblCycle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblCycle2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblCycle2.Location = new System.Drawing.Point(381, 115);
+            this.lblCycle2.Location = new System.Drawing.Point(392, 115);
             this.lblCycle2.Name = "lblCycle2";
             this.lblCycle2.Size = new System.Drawing.Size(112, 24);
             this.lblCycle2.TabIndex = 44;
@@ -283,7 +283,7 @@ namespace FIA_Biosum_Manager
             // 
             this.lblCycle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblCycle1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblCycle1.Location = new System.Drawing.Point(253, 115);
+            this.lblCycle1.Location = new System.Drawing.Point(264, 115);
             this.lblCycle1.Name = "lblCycle1";
             this.lblCycle1.Size = new System.Drawing.Size(112, 24);
             this.lblCycle1.TabIndex = 43;
