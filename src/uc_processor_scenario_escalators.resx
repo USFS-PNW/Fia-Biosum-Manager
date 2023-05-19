@@ -118,6 +118,6 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="lblNote.Text" xml:space="preserve">
-    <value>Note: The default values presume an alternative rate of return (real, after inflation, discount rate) of 4 percent per year. See the BioSum Users’ Guide or Help Screen for guidance on how to calculate escalators for different discount rates and, if desired, for different assumptions about the rate at which particular classes of prices are expected to change over time relative to the general inflation rate.</value>
+    <value>Note: Loading the Default Escalators (via the button) will replace whatever is currently entered with values that presume a 4 percent real annual discount rate. See the BioSum Users’ Guide or Help Screen for guidance on how to calculate escalators for different discount rates and, if desired, for different assumptions about the rate at which particular classes of prices are expected to change over time relative to the general inflation rate. Use of the 1.0 values that are the default BEFORE selecting default escalators with the button or entering your own calculated values, is not recommended.</value>
   </data>
 </root>
