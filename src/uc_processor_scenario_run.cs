@@ -46,7 +46,7 @@ namespace FIA_Biosum_Manager
         FIA_Biosum_Manager.RxPackageItem m_oRxPackageItem = null;
         string m_strRxCycleList = "";
         private ListViewColumnSorter lvwColumnSorter;
-        private bool m_bUseKcpAdditionalCpa = false;
+        private bool m_bLinkFvsComputeTables = false;
         private IList<string> m_lstAdditionalCpaColumns = null;
         private string m_strTempSqliteDbFile = null;
         private SQLite.ADO.DataMgr m_oDataMgr = new SQLite.ADO.DataMgr();
@@ -317,7 +317,7 @@ namespace FIA_Biosum_Manager
             this.m_lvEx.Columns.Add("Cycle2Rx", 80, HorizontalAlignment.Left);
             this.m_lvEx.Columns.Add("Cycle3Rx", 80, HorizontalAlignment.Left);
             this.m_lvEx.Columns.Add("Cycle4Rx", 80, HorizontalAlignment.Left);
-            this.m_lvEx.Columns.Add("FVStree_DateTimeCreated", 80, HorizontalAlignment.Left);
+            this.m_lvEx.Columns.Add("FVS_CutTree_DateTimeCreated", 80, HorizontalAlignment.Left);
             this.m_lvEx.Columns.Add("Processor_DateTimeCreated", 80, HorizontalAlignment.Left);
             this.m_lvEx.Columns[COL_CHECKBOX].Width = -2;
             this.m_lvEx.Columns[COL_VOLVAL].Width = -2;
@@ -528,11 +528,11 @@ namespace FIA_Biosum_Manager
                     {
                         if (m_oDataMgr.ColumnExist(conn, Tables.FVS.DefaultFVSComputeTableName, lstComponents[i]))
                         {
-                            string strSql = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSComputeTableName} WHERE {lstComponents[i]} = 1";
+                            string strSql = $@"SELECT YEAR FROM {Tables.FVS.DefaultFVSComputeTableName} WHERE {lstComponents[i]} = 1 LIMIT 1";
                             long lngCount = m_oDataMgr.getRecordCount(conn, strSql, Tables.FVS.DefaultFVSComputeTableName);
                             if (lngCount > 0)
                             {
-                                m_bUseKcpAdditionalCpa = true;
+                                m_bLinkFvsComputeTables = true;
                                 if (!m_lstAdditionalCpaColumns.Contains(lstComponents[i]))
                                 {
                                     m_lstAdditionalCpaColumns.Add(lstComponents[i]);
@@ -540,17 +540,16 @@ namespace FIA_Biosum_Manager
                             }
                         }
                     }
-                    if (m_bUseKcpAdditionalCpa == false)
+                    if (m_bLinkFvsComputeTables == false)
                     {
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                             frmMain.g_oUtils.WriteText(strDebugFile, "loadvalues(): Additional CPA fields set to 1 not found in FVS_COMPUTE table. Using legacy additional CPA calculations!\r\n");
-
                     }
                 }
             }
             // link to PRE_FVS_COMPUTE table
             string strComputeDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultPreFVSComputeDbFile;
-            if (m_bUseKcpAdditionalCpa && 
+            if (m_bLinkFvsComputeTables && 
                 System.IO.File.Exists(strComputeDbPath) &&
                 oDao.TableExists(strComputeDbPath, Tables.FVS.DefaultPreFVSComputeTableName))
             {
@@ -656,9 +655,9 @@ namespace FIA_Biosum_Manager
                     }
                     else
                     {
-                        m_oDataMgr.m_strSQL = "SELECT DISTINCT rxpackage,fvs_variant, 1 AS rxpackage_variant_count FROM " + Tables.FVS.DefaultFVSCutTreeTableName +
+                        m_oDataMgr.m_strSQL = "SELECT rxpackage,fvs_variant, 1 AS rxpackage_variant_count FROM " + Tables.FVS.DefaultFVSCutTreeTableName +
                                               " WHERE FVS_VARIANT = '" + strVariant + "' AND" +
-                                              " RXPACKAGE = '" + strRxPackage + "'";
+                                              " RXPACKAGE = '" + strRxPackage + "' LIMIT 1";
                     }
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
@@ -677,7 +676,7 @@ namespace FIA_Biosum_Manager
                                 strCount = m_oDataMgr.m_DataReader["rxpackage_variant_count"].ToString().Trim();
                         }
                     }
-                    else if (m_bUseKcpAdditionalCpa == true)
+                    else if (m_bLinkFvsComputeTables == true)
                     {
                         IList<RxItem> lstRxItem = this.LoadRxItemsForRxPackage(strRxPackage);
                         for (int j = 0; j < lstRxItem.Count; j++)
@@ -1751,7 +1750,7 @@ namespace FIA_Biosum_Manager
                     if (m_intError == 0)
                     {
                         frmMain.g_oDelegate.SetControlPropertyValue(lblMsg, "Text", "Delete Old Variant=" + strVariant + " and RxPackage=" + strRxPackage + " Records From Harvest Costs And Tree Vol Val Table...Stand By");
-                        RunScenario_DeleteFromTreeVolValAndHarvestCostsTable(strVariant, strRxPackage);
+                        RunScenario_DeleteFromTreeVolValAndHarvestCostsTable(strVariant, strRxPackage, false);
                     }
                     if (m_intError == 0)
                     {
@@ -4539,7 +4538,7 @@ namespace FIA_Biosum_Manager
                         }
 
                         //DELETE WHERE ADDITIONAL_CPA = 0
-                        m_oAdo.m_strSQL = $@"DELETE FROM {p_strAddCostsWorktable} WHERE ADDITIONAL_CPA = 0";
+                        m_oAdo.m_strSQL = $@"DELETE FROM {p_strAddCostsWorktable} WHERE ADDITIONAL_CPA = 0 OR ADDITIONAL_CPA IS NULL";
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                         m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
@@ -4639,7 +4638,18 @@ namespace FIA_Biosum_Manager
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                         m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                    }                                      
+                    }
+
+                    if (m_oAdo.m_intError == 0)
+                    {
+                        //Update the complete_cpa for stands where additional_cpa = 0; This should be the case where stands are in a project
+                        //that uses kcp cpa, but kcp cpa is not defined for them
+                        m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.UpdateHarvestCostsTableWhenZeroKcpCosts(p_strHarvestCostsTableName,
+                            ScenarioId);
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                    }
                 }
             }
 
@@ -4656,6 +4666,55 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
 
+        }
+
+        private bool DoesVariantPackageUseKcpCpa(string p_strVariant, string p_strRxPackage)
+        {
+            bool bUsesKcpCpa = false;
+            IList<string> lstAddCpaCols = new List<string>();
+            // Are any harvest cost components configured for this rxPackage?
+            IList<RxItem> lstRxItem = this.LoadRxItemsForRxPackage(p_strRxPackage);
+            foreach (var rxItem in lstRxItem)
+            {
+                var componentCollection = rxItem.ReferenceHarvestCostColumnCollection;
+                for (int i = 0; i < componentCollection.Count; i++)
+                {
+                    if (!lstAddCpaCols.Contains(componentCollection.Item(i).HarvestCostColumn))
+                    {
+                        lstAddCpaCols.Add(componentCollection.Item(i).HarvestCostColumn);
+                    }
+                }
+            }
+
+            foreach (var aColumn in lstAddCpaCols)
+            {
+                if (m_lstAdditionalCpaColumns.Contains(aColumn))
+                {
+                    // Any rows in PRE_FVS_COMPUTE FOR THIS CPA COLUMN FOR THIS VARIANT/PACKAGE ?
+                    m_oAdo.m_strSQL = $@"SELECT TOP 1 {aColumn} FROM {Tables.FVS.DefaultPreFVSComputeTableName} WHERE FVS_VARIANT = '{p_strVariant}'
+                                    AND RXPACKAGE = '{p_strRxPackage}' AND {aColumn} = 1";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                    int iCount = m_oAdo.getRecordCount(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL, Tables.FVS.DefaultPreFVSComputeTableName);
+                    if (iCount > 0)
+                    {
+                        bUsesKcpCpa = true;
+                        break;
+                    }
+                    // Any rows in PRE_FVS_COMPUTE FOR THIS CPA COLUMN FOR THIS VARIANT/PACKAGE ?
+                    m_oAdo.m_strSQL = $@"SELECT TOP 1 {aColumn} FROM {Tables.FVS.DefaultPostFVSComputeTableName} WHERE FVS_VARIANT = '{p_strVariant}'
+                                    AND RXPACKAGE = '{p_strRxPackage}' WHERE {aColumn} = 1";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                    iCount = m_oAdo.getRecordCount(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL, Tables.FVS.DefaultPostFVSComputeTableName);
+                    if (iCount > 0)
+                    {
+                        bUsesKcpCpa = true;
+                        break;
+                    }
+                }
+            }
+            return bUsesKcpCpa;
         }
 
             private void RunScenario_UpdateHarvestCostsTableWithAdditionalCostsSqlite(string p_strHarvestCostsTableName)
@@ -4897,7 +4956,8 @@ namespace FIA_Biosum_Manager
             m_strError = m_oDataMgr.m_strError;
         }
 
-        private void RunScenario_DeleteFromTreeVolValAndHarvestCostsTable(string p_strVariant, string p_strRxPackage)
+        private void RunScenario_DeleteFromTreeVolValAndHarvestCostsTable(string p_strVariant, string p_strRxPackage,
+            bool bRxPackageUseKcpAdditionalCpa)
         {
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -4939,7 +4999,7 @@ namespace FIA_Biosum_Manager
 
                 m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
             }
-            if (m_oAdo.m_intError == 0 && m_bUseKcpAdditionalCpa == true)
+            if (m_oAdo.m_intError == 0 && bRxPackageUseKcpAdditionalCpa == true)
             {
                 //
                 //DELETE THE VARIANT+RXPACKAGE FROM THE additional_kcp_cpa TABLE
@@ -5825,10 +5885,12 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oDelegate.SetControlPropertyValue(ReferenceProgressBarEx, "Value", y);
                     }
                     string strKcpCpaWorkTable = "";
+                    bool bRxPackageUsesKcpAdditionalCpa = DoesVariantPackageUseKcpCpa(strVariant, strRxPackage);
                     if (m_intError == 0)
                     {
                         frmMain.g_oDelegate.SetControlPropertyValue(lblMsg, "Text", "Update Harvest Costs Work Table With Additional Costs...Stand By");
-                        if (m_bUseKcpAdditionalCpa)
+                        
+                        if (bRxPackageUsesKcpAdditionalCpa)
                         {
                             strKcpCpaWorkTable = "KcpCpaWorkTable";
                             RunScenario_UpdateHarvestCostsTableWithKcpAdditionalCosts("HarvestCostsWorkTable", strKcpCpaWorkTable, 
@@ -5847,7 +5909,7 @@ namespace FIA_Biosum_Manager
                     if (m_intError == 0)
                     {
                         frmMain.g_oDelegate.SetControlPropertyValue(lblMsg, "Text", "Delete Old Variant=" + strVariant + " and RxPackage=" + strRxPackage + " Records From Harvest Costs And Tree Vol Val Table...Stand By");
-                        RunScenario_DeleteFromTreeVolValAndHarvestCostsTable(strVariant, strRxPackage);
+                        RunScenario_DeleteFromTreeVolValAndHarvestCostsTable(strVariant, strRxPackage, bRxPackageUsesKcpAdditionalCpa);
                     }
                     if (m_intError == 0)
                     {

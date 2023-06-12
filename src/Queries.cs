@@ -5794,6 +5794,18 @@ namespace FIA_Biosum_Manager
                     strSql += "TRIM(UCASE(e.scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'";
                 return strSql;
             }
+
+            public static string UpdateHarvestCostsTableWhenZeroKcpCosts(
+                string p_strHarvestCostsTableName,
+                string p_strScenarioId)
+            {
+                string strSql = $@"UPDATE {p_strHarvestCostsTableName} h, {Tables.ProcessorScenarioRuleDefinitions.DefaultCostRevenueEscalatorsTableName} e 
+                                SET h.complete_cpa = IIF(h.RXCycle='1', h.harvest_cpa,IIF(h.rxcycle='2', h.harvest_cpa*e.EscalatorOperatingCosts_Cycle2,
+                                IIF(h.rxcycle='3', h.harvest_cpa*e.EscalatorOperatingCosts_Cycle3, h.harvest_cpa*e.EscalatorOperatingCosts_Cycle4)))
+                                WHERE h.additional_cpa = 0 and h.harvest_cpa IS NOT NULL AND h.harvest_cpa > 0 
+                                and TRIM(UCASE(e.scenario_id))='{p_strScenarioId.ToUpper()}'";
+                return strSql;
+            }
         }
         
 		public class Reference

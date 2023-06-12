@@ -168,7 +168,7 @@ namespace FIA_Biosum_Manager
             this.lblNote.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this.lblNote.Location = new System.Drawing.Point(16, 288);
             this.lblNote.Name = "lblNote";
-            this.lblNote.Size = new System.Drawing.Size(652, 83);
+            this.lblNote.Size = new System.Drawing.Size(652, 100);
             this.lblNote.TabIndex = 54;
             this.lblNote.Text = resources.GetString("lblNote.Text");
             // 
