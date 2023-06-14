@@ -213,7 +213,7 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oFrmMain.Top);
             this.loadvalues();
             //@ToDo
-            //this.loadvalues_sqlite();
+            //this.loadvalues();
             frmMain.g_oFrmMain.DeactivateStandByAnimation();
         }
 
@@ -956,7 +956,7 @@ namespace FIA_Biosum_Manager
         }
         #endregion
 
-        protected void loadvalues_sqlite()
+        protected void loadvalues()
         {
             this.m_intError = 0;
             this.m_strError = "";
@@ -970,10 +970,10 @@ namespace FIA_Biosum_Manager
             }
 
             // Check for SQLite configuration database 
-            if (!System.IO.File.Exists(this.m_strCalculatedVariablesDb))
-            {
-                this.migrate_access_data();
-            }
+           // if (!System.IO.File.Exists(this.m_strCalculatedVariablesDb))
+           // {
+           //    this.migrate_access_data();
+           // }
 
             SQLiteConnect();
             // One and only one transaction for this form
@@ -1042,7 +1042,7 @@ namespace FIA_Biosum_Manager
                 m_oAdo.CloseConnection(m_oAdo.m_OleDbConnection);
         }
 
-        protected void loadvalues()
+        protected void loadvalues_old()
         {
             this.m_intError = 0;
             this.m_strError = "";
