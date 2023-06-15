@@ -979,7 +979,7 @@ namespace FIA_Biosum_Manager
             // One and only one transaction for this form
             m_oDataMgr.m_Transaction = m_oDataMgr.m_Connection.BeginTransaction();
 
-            this.loadLstVariablesSqlite();
+            this.loadLstVariables();
 
             if (m_oDataMgr.TableExist(m_oDataMgr.m_Connection, m_strFvsViewTableName))
             {
@@ -995,7 +995,7 @@ namespace FIA_Biosum_Manager
             init_sqlite_m_dg();
 
             //load datagrid for economic variables
-            loadEconVariablesGridSqlite();
+            loadEconVariablesGrid();
 
             // load listbox for economic variables
             lstEconVariablesList.Items.Clear();
@@ -1055,7 +1055,7 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Form name: " + this.Name + "\r\n\r\n");
             }
 
-            this.loadLstVariables();
+            this.loadLstVariables_old();
 
             //create and set temporary mdb file
             string strDestinationLinkDir = this.m_oEnv.strTempDir;
@@ -1077,7 +1077,7 @@ namespace FIA_Biosum_Manager
             init_m_dg();
 
             //load datagrid for economic variables
-            loadEconVariablesGrid();
+            loadEconVariablesGrid_old();
 
             // load listbox for economic variables
             lstEconVariablesList.Items.Clear();
@@ -1598,7 +1598,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void loadLstVariables()
+        private void loadLstVariables_old()
         {
             //Loading the first (main) groupbox
             //Only instantiate the m_oAdo if it is null so we don't wipe everything out in subsequent refreshes
@@ -1641,7 +1641,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void loadLstVariablesSqlite()
+        private void loadLstVariables()
         {            
             //Loading the first (main) groupbox
             //Only instantiate the m_oAdo if it is null so we don't wipe everything out in subsequent refreshes
@@ -1682,7 +1682,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        public int savevalues(string strVariableType)
+        public int savevalues_old(string strVariableType)
         {
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
             {
@@ -1879,7 +1879,7 @@ namespace FIA_Biosum_Manager
             return oAdo.m_intError;
         }
 
-        public int savevalues_sqlite(string strVariableType)
+        public int savevalues(string strVariableType)
         {
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
             {
@@ -2183,7 +2183,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        protected void loadEconVariablesGrid()
+        protected void loadEconVariablesGrid_old()
         {
             string strCalculatedVariablesACCDB = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
                 "\\" + Tables.OptimizerDefinitions.DefaultDbFile;
@@ -2317,7 +2317,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        protected void loadEconVariablesGridSqlite()
+        protected void loadEconVariablesGrid()
         {
             if (m_oDataMgr.m_intError == 0)
             {
@@ -2864,14 +2864,14 @@ namespace FIA_Biosum_Manager
             string strVariableSource = lstVariables.SelectedItems[0].SubItems[5].Text.Trim();
             string strVariableName = lstVariables.SelectedItems[0].Text.Trim();
 
-            if (!m_bUsingSqlite)
-            {
-                load_properties_accdb(strVariableName, strVariableSource);
-            }
-            else
-            {
-                load_properties_sqlite(strVariableName, strVariableSource);
-            }
+            //if (!m_bUsingSqlite)
+            //{
+            //    load_properties_old(strVariableName, strVariableSource);
+            //}
+           // else
+            //{
+                load_properties(strVariableName, strVariableSource);
+            //}
 
             if (lstVariables.SelectedItems[0].SubItems[2].Text.Trim().Equals(VARIABLE_ECON))
             {
@@ -2895,7 +2895,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void load_properties_accdb(string strVariableName, string strVariableSource)
+        private void load_properties_old(string strVariableName, string strVariableSource)
         {
             ado_data_access oAdo = new ado_data_access();
             string strPropertiesConn = m_oAdo.getMDBConnString(m_strCalculatedVariablesAccdb, "", "");
@@ -3047,7 +3047,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void load_properties_sqlite(string strVariableName, string strVariableSource)
+        private void load_properties(string strVariableName, string strVariableSource)
         {
             if (lstVariables.SelectedItems[0].SubItems[2].Text.Trim().Equals(VARIABLE_ECON))
             {
@@ -3337,14 +3337,14 @@ namespace FIA_Biosum_Manager
                     
                     //Save associated configuration records
                     frmMain.g_sbpInfo.Text = "Saving scenario rule definitions...Stand by";
-                    if (! m_bUsingSqlite)
-                    {
+                    //if (! m_bUsingSqlite)
+                    //{
                         savevalues("FVS");
-                    }
-                    else
-                    {
-                        savevalues_sqlite("FVS");
-                    }
+                    //}
+                    //else
+                    //{
+                    //    savevalues_sqlite("FVS");
+                    //}
                     
 
                     frmMain.g_sbpInfo.Text = "Calculating and saving PRE/POST values...Stand by";
@@ -3448,14 +3448,14 @@ namespace FIA_Biosum_Manager
                     //Reload the main grid
                     if (m_intError == 0)
                     {
-                        if (!m_bUsingSqlite)
-                        {
+                        //if (!m_bUsingSqlite)
+                        //{
                             this.loadLstVariables();
-                        }
-                        else
-                        {
-                            this.loadLstVariablesSqlite();
-                        }
+                        //}
+                        //else
+                        //{
+                        //    this.loadLstVariablesSqlite();
+                        //}
                         
                     }                    
 
@@ -3682,7 +3682,7 @@ namespace FIA_Biosum_Manager
                 m_oAdo.SqlNonQuery(oConn, m_oAdo.m_strSQL);
             }
             // Update UI
-            this.loadLstVariables();
+            this.loadLstVariables_old();
         }
 
         private void BtnHelpCalculatedMenu_Click(object sender, EventArgs e)
@@ -3816,7 +3816,7 @@ namespace FIA_Biosum_Manager
                 m_oDataMgr.ResetTransactionObjectToDataAdapterArray();
             }
             // Update UI
-            this.loadLstVariablesSqlite();
+            this.loadLstVariables();
         }
 
         private void InitializeOleDbTransactionCommands()
@@ -3864,22 +3864,22 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oFrmMain.Top);
 
                 frmMain.g_sbpInfo.Text = "Saving scenario rule definitions...Stand by";
-                if (! m_bUsingSqlite)
-                {
+                // if (! m_bUsingSqlite)
+                // {
                     //Save associated configuration records
                     savevalues("ECON");
 
                     //Reload the main grid
                     this.loadLstVariables();
-                }
-                else
-                {
+                // }
+                // else
+                // {
                     //Save associated configuration records
-                    savevalues_sqlite("ECON");
+                //     savevalues_sqlite("ECON");
 
                     //Reload the main grid
-                    this.loadLstVariablesSqlite();
-                }
+                //     this.loadLstVariablesSqlite();
+                // }
 
                 
                 frmMain.g_sbpInfo.Text = "Ready";
