@@ -870,7 +870,7 @@ namespace FIA_Biosum_Manager
             this.btnDB.Location = new System.Drawing.Point(4, 19);
             this.btnDB.Margin = new System.Windows.Forms.Padding(4);
             this.btnDB.Name = "btnDB";
-            this.btnDB.Size = new System.Drawing.Size(172, 34);
+            this.btnDB.Size = new System.Drawing.Size(172, 40);
             this.btnDB.TabIndex = 0;
             this.btnDB.Text = "Database";
             this.btnDB.Click += new System.EventHandler(this.btnDB_Click);

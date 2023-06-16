@@ -113,7 +113,7 @@ namespace FIA_Biosum_Manager
             // btnOpen
             // 
             this.btnOpen.BackColor = System.Drawing.SystemColors.Control;
-            this.btnOpen.Location = new System.Drawing.Point(321, 400);
+            this.btnOpen.Location = new System.Drawing.Point(321, 414);
             this.btnOpen.Name = "btnOpen";
             this.btnOpen.Size = new System.Drawing.Size(96, 32);
             this.btnOpen.TabIndex = 1;
@@ -125,7 +125,7 @@ namespace FIA_Biosum_Manager
             // 
             this.txtDescription.Enabled = false;
             this.txtDescription.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtDescription.Location = new System.Drawing.Point(265, 193);
+            this.txtDescription.Location = new System.Drawing.Point(265, 243);
             this.txtDescription.Multiline = true;
             this.txtDescription.Name = "txtDescription";
             this.txtDescription.Size = new System.Drawing.Size(448, 152);
@@ -137,7 +137,7 @@ namespace FIA_Biosum_Manager
             // 
             this.lstScenario.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lstScenario.ItemHeight = 25;
-            this.lstScenario.Location = new System.Drawing.Point(8, 74);
+            this.lstScenario.Location = new System.Drawing.Point(8, 96);
             this.lstScenario.Name = "lstScenario";
             this.lstScenario.Size = new System.Drawing.Size(227, 304);
             this.lstScenario.TabIndex = 3;
@@ -145,35 +145,35 @@ namespace FIA_Biosum_Manager
             // 
             // lblScenarioId
             // 
-            this.lblScenarioId.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblScenarioId.Location = new System.Drawing.Point(16, 49);
+            this.lblScenarioId.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblScenarioId.Location = new System.Drawing.Point(16, 63);
             this.lblScenarioId.Name = "lblScenarioId";
-            this.lblScenarioId.Size = new System.Drawing.Size(120, 23);
+            this.lblScenarioId.Size = new System.Drawing.Size(140, 23);
             this.lblScenarioId.TabIndex = 4;
             this.lblScenarioId.Text = "Scenario List";
             // 
             // lblScenarioDescription
             // 
-            this.lblScenarioDescription.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblScenarioDescription.Location = new System.Drawing.Point(265, 166);
+            this.lblScenarioDescription.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblScenarioDescription.Location = new System.Drawing.Point(265, 216);
             this.lblScenarioDescription.Name = "lblScenarioDescription";
-            this.lblScenarioDescription.Size = new System.Drawing.Size(160, 16);
+            this.lblScenarioDescription.Size = new System.Drawing.Size(240, 23);
             this.lblScenarioDescription.TabIndex = 5;
             this.lblScenarioDescription.Text = "Scenario Description";
             // 
             // lblScenarioPath
             // 
-            this.lblScenarioPath.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblScenarioPath.Location = new System.Drawing.Point(265, 109);
+            this.lblScenarioPath.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblScenarioPath.Location = new System.Drawing.Point(265, 148);
             this.lblScenarioPath.Name = "lblScenarioPath";
-            this.lblScenarioPath.Size = new System.Drawing.Size(136, 15);
+            this.lblScenarioPath.Size = new System.Drawing.Size(240, 23);
             this.lblScenarioPath.TabIndex = 6;
             this.lblScenarioPath.Text = "Scenario Directory Path";
             // 
             // txtScenarioPath
             // 
             this.txtScenarioPath.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtScenarioPath.Location = new System.Drawing.Point(265, 129);
+            this.txtScenarioPath.Location = new System.Drawing.Point(265, 174);
             this.txtScenarioPath.Name = "txtScenarioPath";
             this.txtScenarioPath.Size = new System.Drawing.Size(448, 30);
             this.txtScenarioPath.TabIndex = 7;
@@ -192,17 +192,17 @@ namespace FIA_Biosum_Manager
             // 
             // lblNewScenario
             // 
-            this.lblNewScenario.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblNewScenario.Location = new System.Drawing.Point(265, 53);
+            this.lblNewScenario.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblNewScenario.Location = new System.Drawing.Point(265, 82);
             this.lblNewScenario.Name = "lblNewScenario";
-            this.lblNewScenario.Size = new System.Drawing.Size(128, 15);
+            this.lblNewScenario.Size = new System.Drawing.Size(128, 23);
             this.lblNewScenario.TabIndex = 9;
             this.lblNewScenario.Text = "Scenario Id";
             // 
             // txtScenarioId
             // 
             this.txtScenarioId.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtScenarioId.Location = new System.Drawing.Point(265, 75);
+            this.txtScenarioId.Location = new System.Drawing.Point(265, 108);
             this.txtScenarioId.MaxLength = 20;
             this.txtScenarioId.Name = "txtScenarioId";
             this.txtScenarioId.Size = new System.Drawing.Size(120, 30);
@@ -213,7 +213,7 @@ namespace FIA_Biosum_Manager
             // 
             this.btnCancel.BackColor = System.Drawing.SystemColors.Control;
             this.btnCancel.Enabled = false;
-            this.btnCancel.Location = new System.Drawing.Point(433, 400);
+            this.btnCancel.Location = new System.Drawing.Point(433, 414);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(96, 32);
             this.btnCancel.TabIndex = 14;
@@ -246,7 +246,7 @@ namespace FIA_Biosum_Manager
             // lblTitle
             // 
             this.lblTitle.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTitle.ForeColor = System.Drawing.Color.Green;
             this.lblTitle.Location = new System.Drawing.Point(3, 18);
             this.lblTitle.Name = "lblTitle";
