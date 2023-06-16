@@ -18,7 +18,7 @@ namespace FIA_Biosum_Manager
 			//
 			// TODO: Add constructor logic here
 			//
-			this.BackColor = System.Drawing.Color.FromArgb(169,169,169);
+			this.BackColor = System.Drawing.Color.LightGray;
 			this.Click += new System.EventHandler(this.Custom_Click);
 			this.MouseEnter += new System.EventHandler(this.Custom_MouseEnter);
 			this.MouseLeave += new System.EventHandler(this.Custom_MouseLeave);
@@ -36,11 +36,11 @@ namespace FIA_Biosum_Manager
 		}
 		private void Custom_MouseEnter(object sender, System.EventArgs e)
 		{
-         	this.BackColor = System.Drawing.Color.FromArgb(200,200,200);
+         	this.BackColor = System.Drawing.Color.Yellow;
 		}
 		private void Custom_MouseLeave(object sender, System.EventArgs e)
 		{
-			this.BackColor = System.Drawing.Color.FromArgb(169,169,169);
+			this.BackColor = System.Drawing.Color.LightGray;
 		}
 
 		public System.Drawing.Color DisabledColor

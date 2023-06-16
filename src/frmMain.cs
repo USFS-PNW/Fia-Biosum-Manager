@@ -279,7 +279,7 @@ namespace FIA_Biosum_Manager
             intListHtPosition = this.Height - (this.btnDB.Height * 2);
 			
 			this.panel1.Top = intGrpBoxLeftTopPosition;
-			this.panel1.BackColor = System.Drawing.Color.Gray;
+			this.panel1.BackColor = System.Drawing.Color.White;
 			this.btnMain1.Visible=false;
 			this.panel1.Enabled=false;
 			this.panel1.Visible=false;
@@ -830,7 +830,7 @@ namespace FIA_Biosum_Manager
             // btnOptimizer
             // 
             this.btnOptimizer.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.btnOptimizer.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnOptimizer.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnOptimizer.Location = new System.Drawing.Point(4, 465);
             this.btnOptimizer.Margin = new System.Windows.Forms.Padding(4);
             this.btnOptimizer.Name = "btnOptimizer";
@@ -842,7 +842,7 @@ namespace FIA_Biosum_Manager
             // btnFVS
             // 
             this.btnFVS.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.btnFVS.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnFVS.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnFVS.Location = new System.Drawing.Point(4, 499);
             this.btnFVS.Margin = new System.Windows.Forms.Padding(4);
             this.btnFVS.Name = "btnFVS";
@@ -854,7 +854,7 @@ namespace FIA_Biosum_Manager
             // btnProcessor
             // 
             this.btnProcessor.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.btnProcessor.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnProcessor.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnProcessor.Location = new System.Drawing.Point(4, 537);
             this.btnProcessor.Margin = new System.Windows.Forms.Padding(4);
             this.btnProcessor.Name = "btnProcessor";
@@ -866,7 +866,7 @@ namespace FIA_Biosum_Manager
             // btnDB
             // 
             this.btnDB.Dock = System.Windows.Forms.DockStyle.Top;
-            this.btnDB.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnDB.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnDB.Location = new System.Drawing.Point(4, 19);
             this.btnDB.Margin = new System.Windows.Forms.Padding(4);
             this.btnDB.Name = "btnDB";
@@ -931,7 +931,7 @@ namespace FIA_Biosum_Manager
             this.Controls.Add(this.grpboxLeft);
             this.Controls.Add(this.tlbMain);
             this.Controls.Add(this.txtDropDown);
-            this.Icon = ((System.Drawing.Icon) Properties.Resources.favicon);
+            this.Icon = global::FIA_Biosum_Manager.Properties.Resources.favicon;
             this.IsMdiContainer = true;
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Menu = this.mnuMain;
@@ -2910,7 +2910,7 @@ namespace FIA_Biosum_Manager
 				}
               
 
-				btnDB.ForeColor = Color.Red;
+				btnDB.ForeColor = Color.Blue;
 				this.btnContacts.Enabled=true;
 				this.btnOptimizer.Enabled = true;
 				this.btnDB.Enabled=false;
@@ -4109,7 +4109,7 @@ namespace FIA_Biosum_Manager
 			System.Windows.Forms.Button btn = ( Button ) sender;
 			if (btn.Dock==System.Windows.Forms.DockStyle.Top)
 			{
-				btn.ForeColor = Color.Red;
+				btn.ForeColor = Color.Blue;
 			}
 			else
 			{
