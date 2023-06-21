@@ -4028,12 +4028,18 @@ namespace FIA_Biosum_Manager
             oDao.CreateSQLiteTableLink(strTempMDB, Tables.FIA2FVS.DefaultFvsInputStandTableName, Tables.FIA2FVS.DefaultFvsInputStandTableName,
                 ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName, strInDirAndFile);
             // Set the index, required to by ODBC to update
-            oDao.CreatePrimaryKeyIndex(strTempMDB, Tables.FIA2FVS.DefaultFvsInputStandTableName, "STAND_CN");
+            if (!oDao.IndexExists(strTempMDB, Tables.FIA2FVS.DefaultFvsInputStandTableName, "STAND_CN"))
+            {
+                oDao.CreatePrimaryKeyIndex(strTempMDB, Tables.FIA2FVS.DefaultFvsInputStandTableName, "STAND_CN");
+            }
             // Link tree table to temp database
             oDao.CreateSQLiteTableLink(strTempMDB, Tables.FIA2FVS.DefaultFvsInputTreeTableName, Tables.FIA2FVS.DefaultFvsInputTreeTableName,
                 ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName, strInDirAndFile);
             // Set the index, required to by ODBC to update
-            oDao.CreatePrimaryKeyIndex(strTempMDB, Tables.FIA2FVS.DefaultFvsInputTreeTableName, "TREE_CN");
+            if (!oDao.IndexExists(strTempMDB, Tables.FIA2FVS.DefaultFvsInputTreeTableName, "TREE_CN"))
+            {
+                oDao.CreatePrimaryKeyIndex(strTempMDB, Tables.FIA2FVS.DefaultFvsInputTreeTableName, "TREE_CN");
+            }
 
             frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
                 "Populating FVS_STANDINIT_COND and FVS_TREEINIT_COND tables For Variant " + this.m_strVariant);
