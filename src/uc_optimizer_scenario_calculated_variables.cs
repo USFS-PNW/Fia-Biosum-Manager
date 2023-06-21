@@ -969,11 +969,11 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Form name: " + this.Name + "\r\n\r\n");
             }
 
-            // Check for SQLite configuration database 
-           // if (!System.IO.File.Exists(this.m_strCalculatedVariablesDb))
-           // {
-           //    this.migrate_access_data();
-           // }
+            // Check for SQLite configuration database
+             if (!System.IO.File.Exists(this.m_strCalculatedVariablesDb))
+                {
+                    this.migrate_access_data();
+                }
 
             SQLiteConnect();
             // One and only one transaction for this form
@@ -982,10 +982,10 @@ namespace FIA_Biosum_Manager
             this.loadLstVariables();
 
             if (m_oDataMgr.TableExist(m_oDataMgr.m_Connection, m_strFvsViewTableName))
-            {
+                {            {
                 m_oDataMgr.m_strSQL = "DROP TABLE " + m_strFvsViewTableName;
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                {
+
                     frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + "\r\n");
                 }
                 m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
@@ -1042,7 +1042,7 @@ namespace FIA_Biosum_Manager
                 m_oAdo.CloseConnection(m_oAdo.m_OleDbConnection);
         }
 
-        protected void loadvalues_old()
+        protected void loadvalues_access()
         {
             this.m_intError = 0;
             this.m_strError = "";
@@ -5030,6 +5030,20 @@ namespace FIA_Biosum_Manager
             using (var copyConn = new OleDbConnection(strCopyConn))
             {
                 copyConn.Open();
+                m_oAdo.m_strSQL = "DELETE FROM " + targetEcon;
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                {
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n");
+                }
+                m_oAdo.SqlNonQuery(copyConn, this.m_oAdo.m_strSQL);
+
+                m_oAdo.m_strSQL = "DELETE FROM " + targetVariables;
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                {
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n");
+                }
+                m_oAdo.SqlNonQuery(copyConn, this.m_oAdo.m_strSQL);
+
                 m_oAdo.m_strSQL = "INSERT INTO " + targetEcon +
                                   " SELECT * FROM " + Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName;
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
