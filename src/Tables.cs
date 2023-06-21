@@ -2548,6 +2548,7 @@ namespace FIA_Biosum_Manager
             static public string DefaultFVSTreeListDbFile { get { return @"\fvs\data\FVSOUT_TREE_LIST.db"; } }
             static public string DefaultFVSOutDbFile { get { return @"\fvs\data\FVSOut.db"; } }
             static public string DefaultFVSOutBiosumDbFile { get { return @"\fvs\data\FVSOut_BioSum.db"; } }
+            static public string DefaultFVSOutPostAuditDbFile { get { return @"\fvs\data\PostAudit.db"; } }
 
 
             static public string DefaultFVSTreeIdWorkTable { get { return "fvs_tree_id_work_table"; } }

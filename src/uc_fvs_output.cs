@@ -8616,23 +8616,15 @@ namespace FIA_Biosum_Manager
             {
                 m_oLvAlternateColors.DelegateListViewItem(lstFvsOutput.SelectedItems[0]);
 
-                //Enable/Disable PRE-APPEND Audit Tables
-                string strDbFile = this.lstFvsOutput.SelectedItems[0].SubItems[COL_MDBOUT].Text.Trim();
-                strDbFile = strDbFile.Replace(".MDB", "_BIOSUM.ACCDB");
-                string strOutDirAndFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)this.txtOutDir, "Text", false);
-                strOutDirAndFile = strOutDirAndFile.Trim() + "\\" + lstFvsOutput.SelectedItems[0].SubItems[COL_VARIANT].Text.Trim();
-                strOutDirAndFile = strOutDirAndFile + "\\" + strDbFile;
-                if (System.IO.File.Exists(strOutDirAndFile))
+                //Enable/Disable PRE-APPEND Audit Tables; PRE-APPEND audit tables are included in the FVS Out .accdb's
+                string strBiosumDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutBiosumDbFile;
+                if (System.IO.File.Exists(strBiosumDbPath))
                    btnAuditDb.Enabled = true;
                 else
                    btnAuditDb.Enabled = false;
 
-                //Enable/Disable POST-APPEND Audit Tables
-                string strAuditDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)this.txtOutDir, "Text", false);
-                strAuditDbFile = strAuditDbFile.Trim();
-                string strVariant = lstFvsOutput.SelectedItems[0].SubItems[COL_VARIANT].Text.Trim();
-                strAuditDbFile = strAuditDbFile + "\\" + strVariant + "\\PostAudit.accdb";
-
+                //Enable/Disable POST-APPEND Audit Tables; POST-APPEND audit tables are in their own db
+                string strAuditDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPostAuditDbFile;
                 if (System.IO.File.Exists(strAuditDbFile))
                     btnPostAppendAuditDb.Enabled = true;
                 else
