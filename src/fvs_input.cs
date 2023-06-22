@@ -4040,6 +4040,30 @@ namespace FIA_Biosum_Manager
             {
                 oDao.CreatePrimaryKeyIndex(strTempMDB, Tables.FIA2FVS.DefaultFvsInputTreeTableName, "TREE_CN");
             }
+            // Link legacy FVS_StandInit to temp database
+            this.m_strInDir = m_strDataDirectory + "\\" + strVariant.Trim();
+            this.strFVSInMDBFile = "FVSIn.accdb";
+            bool bExistsLegacyFvsIn = false;
+            if (File.Exists(this.m_strInDir + "\\" + this.strFVSInMDBFile))
+            {
+                string strConn = oAdo.getMDBConnString(this.m_strInDir + "\\" + this.strFVSInMDBFile, "", "");
+                using (OleDbConnection oCheckConn = new OleDbConnection(strConn))
+                {
+                    oCheckConn.Open();
+                    if (oAdo.TableExist(oCheckConn, "FVS_StandInit"))
+                    {
+                        //source FVSIn.accdb tables
+                        oDao.CreateTableLink(strTempMDB, "FVS_StandInit", this.m_strInDir + "\\" + this.strFVSInMDBFile,
+                            "FVS_StandInit", true);
+                        DebugLogMessage("Created table link to BioSum FVS_StandInit table \r\n", 2);
+                        bExistsLegacyFvsIn = true;
+                    }
+                    else
+                    {
+                        DebugLogMessage("Unable to locate BioSum FVS_StandInit table. Some updates cannot run \r\n", 2);
+                    }
+                }
+            }
 
             frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
                 "Populating FVS_STANDINIT_COND and FVS_TREEINIT_COND tables For Variant " + this.m_strVariant);
@@ -4079,14 +4103,22 @@ namespace FIA_Biosum_Manager
                     oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.SetFuelModelToNull());
                 }
 
+                    // Copy site index values from BioSum FVSIn.accdb where site index is null from FIADB
+                    if (bExistsLegacyFvsIn)
+                    {
+                        DebugLogSQL(Queries.FVS.FVSInput.StandInit.CopySiteIndexValues(strVariant));
+                        oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.CopySiteIndexValues(strVariant));
+
+                    }
+
                 // Copy DWM fields from FVSIn.accdb
                 if (new int[]
                 {
                     (int) m_enumDWMOption.USE_FUEL_MODEL_OR_DWM_DATA,
                     (int) m_enumDWMOption.USE_DWM_DATA_ONLY
-                }.Contains(m_intDWMOption))
+                }.Contains(m_intDWMOption) && bExistsLegacyFvsIn)
                 {
-                    CopyFuelColumns(oDao, strTempMDB, strVariant);
+                    CopyFuelColumns(strTempMDB, strVariant);
                 }
                 else
                 {
@@ -4215,38 +4247,22 @@ namespace FIA_Biosum_Manager
             DebugLogMessage("*****END*****" + System.DateTime.Now.ToString() + "\r\n", 2);
         }
 
-        private void CopyFuelColumns(dao_data_access oDao, string strTempMDBFile, string strVariant)
+        private void CopyFuelColumns(string strTempMDBFile, string strVariant)
         {
             ado_data_access oAdo = new ado_data_access();
             this.m_strInDir = m_strDataDirectory + "\\" + strVariant.Trim();
             this.strFVSInMDBFile = "FVSIn.accdb";
             if (File.Exists(this.m_strInDir + "\\" + this.strFVSInMDBFile))
             {
-                string strConn = oAdo.getMDBConnString(this.m_strInDir + "\\" + this.strFVSInMDBFile, "", "");
+                string strConn = oAdo.getMDBConnString(strTempMDBFile, "", "");
                 using (OleDbConnection oAccessConn = new OleDbConnection(strConn))
                 {
+                    oAccessConn.ConnectionString = strConn;
                     oAccessConn.Open();
-                    if (oAdo.TableExist(oAccessConn, "FVS_StandInit"))
-                    {
-                        //source FVSIn.accdb tables
-                        oDao.CreateTableLink(strTempMDBFile, "FVS_StandInit", this.m_strInDir + "\\" + this.strFVSInMDBFile,
-                            "FVS_StandInit", true);
-                        DebugLogMessage("Created table link to BioSum FVS_StandInit table \r\n", 2);
-                        strConn = oAdo.getMDBConnString(strTempMDBFile, "", "");
-                        oAccessConn.Close();
-                        oAccessConn.ConnectionString = strConn;
-                        oAccessConn.Open();
-                        oAdo.OpenConnection(strConn);
-                        DebugLogSQL(Queries.FVS.FVSInput.StandInit.CopyDwmColumns(strVariant));
-                        oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.CopyDwmColumns(strVariant));
-                    }
-                    else
-                    {
-                        DebugLogSQL("Error: Unable to locate BioSum FVS_StandInit table. DWM data cannot be copied!!");
-                    }
+                    oAdo.OpenConnection(strConn);
+                    DebugLogSQL(Queries.FVS.FVSInput.StandInit.CopyDwmColumns(strVariant));
+                    oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.CopyDwmColumns(strVariant));
                 }
-
-
             }
             else
             {

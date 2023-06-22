@@ -3045,6 +3045,19 @@ namespace FIA_Biosum_Manager
                          " WHERE " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".VARIANT = '" + strVariant + "'";
                         return strSQL;
                     }
+
+                    public static string CopySiteIndexValues(string strVariant)
+                    {
+                        string strSQL = $@"UPDATE {Tables.FIA2FVS.DefaultFvsInputStandTableName}
+                            INNER JOIN FVS_StandInit ON TRIM(FVS_StandInit.STAND_ID) = {Tables.FIA2FVS.DefaultFvsInputStandTableName}.STAND_ID
+                            SET {Tables.FIA2FVS.DefaultFvsInputStandTableName}.Site_Index = FVS_StandInit.Site_Index,
+                            {Tables.FIA2FVS.DefaultFvsInputStandTableName}.Site_Species = FVS_StandInit.Site_Species,
+                            {Tables.FIA2FVS.DefaultFvsInputStandTableName}.SITE_INDEX_BASE_AG = null
+                            WHERE {Tables.FIA2FVS.DefaultFvsInputStandTableName}.Site_Index IS null and
+                            FVS_StandInit.Site_Index is not null and
+                            {Tables.FIA2FVS.DefaultFvsInputStandTableName}.VARIANT = '{strVariant}'";
+                        return strSQL;
+                    }
                 }
 
 		        //All the queries necessary to create the FVSIn.accdb FVS_TreeInit table using intermediate tables
