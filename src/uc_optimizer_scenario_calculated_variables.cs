@@ -969,11 +969,11 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Form name: " + this.Name + "\r\n\r\n");
             }
 
-            // Check for SQLite configuration database
-             if (!System.IO.File.Exists(this.m_strCalculatedVariablesDb))
-                {
-                    this.migrate_access_data();
-                }
+            //// Check for SQLite configuration database
+            if (!System.IO.File.Exists(this.m_strCalculatedVariablesDb))
+            {
+                this.migrate_access_data();
+            }
 
             SQLiteConnect();
             // One and only one transaction for this form
@@ -1010,6 +1010,7 @@ namespace FIA_Biosum_Manager
                 m_oAdo = new ado_data_access();
             }
             m_dictFVSTables = m_oOptimizerScenarioTools.LoadFvsTablesAndVariables(m_oAdo);
+            //m_dictFVSTables = m_oOptimizerScenarioTools.LoadFvsTablesAndVariables(m_oDataMgr)
 
             foreach (string strKey in m_dictFVSTables.Keys)
             {
@@ -1031,6 +1032,12 @@ namespace FIA_Biosum_Manager
                 if (arrTableNames.Length > 0)
                     BtnRecalculateAll.Enabled = true;
             }
+            //string strPrePostWeightedDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
+            //    "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile;
+            //if (System.IO.File.Exists(strPrePostWeightedDb))
+            //{
+                
+            //}
 
             //@ToDo: Using MS Access to query FVS Out tables
             if (String.IsNullOrEmpty(m_strTempMDB))
@@ -4981,17 +4988,19 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "migrate_access_data \r\n");
             }
 
-            string sourceFile = this.m_oEnv.strAppDir + "\\db\\" + 
+            string sourceFile = this.m_oEnv.strAppDir + "\\db\\" +
                 System.IO.Path.GetFileName(Tables.OptimizerDefinitions.DefaultSqliteDbFile);
             System.IO.File.Copy(sourceFile, this.m_strCalculatedVariablesDb);
+
+            
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
             {
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Copied the database from the application directory \r\n");
             }
 
-            // Check to see if the input SQLite DSN exists and if so, delete so we can add
-            ODBCMgr odbcmgr = new ODBCMgr();
+                // Check to see if the input SQLite DSN exists and if so, delete so we can add
+                ODBCMgr odbcmgr = new ODBCMgr();
             if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.OptimizerCalcVariableDsnName))
             {
                 odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.OptimizerCalcVariableDsnName);
@@ -5026,24 +5035,40 @@ namespace FIA_Biosum_Manager
                 m_oAdo = new ado_data_access();
             }
 
+            if (m_oDataMgr == null)
+            {
+                m_oDataMgr = new DataMgr();
+            }
+
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(this.m_strCalculatedVariablesDb)))
+            {
+                conn.Open();
+                // Delete any existing data from SQLite tables
+                string defaultEcon = Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName;
+                string defaultVariables = Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName;
+
+                m_oDataMgr.m_strSQL = "DELETE FROM " + defaultEcon;
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                {
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n");
+                }
+                m_oDataMgr.SqlNonQuery(conn, this.m_oDataMgr.m_strSQL);
+
+                m_oDataMgr.m_strSQL = "DELETE FROM " + defaultVariables;
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                {
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n");
+                }
+                m_oDataMgr.SqlNonQuery(conn, this.m_oDataMgr.m_strSQL);
+
+                m_oDataMgr.CloseConnection(conn);
+            }
+
             string strCopyConn = m_oAdo.getMDBConnString(strTempAccdb, "", "");
             using (var copyConn = new OleDbConnection(strCopyConn))
             {
                 copyConn.Open();
-                m_oAdo.m_strSQL = "DELETE FROM " + targetEcon;
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                {
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n");
-                }
-                m_oAdo.SqlNonQuery(copyConn, this.m_oAdo.m_strSQL);
-
-                m_oAdo.m_strSQL = "DELETE FROM " + targetVariables;
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                {
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n");
-                }
-                m_oAdo.SqlNonQuery(copyConn, this.m_oAdo.m_strSQL);
-
+              
                 m_oAdo.m_strSQL = "INSERT INTO " + targetEcon +
                                   " SELECT * FROM " + Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName;
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
