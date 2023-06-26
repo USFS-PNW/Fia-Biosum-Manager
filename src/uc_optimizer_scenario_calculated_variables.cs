@@ -970,17 +970,17 @@ namespace FIA_Biosum_Manager
             }
 
             //// Check for SQLite configuration database
-            if (!System.IO.File.Exists(this.m_strCalculatedVariablesDb))
-            {
-                this.migrate_access_data();
-            }
+            //if (!System.IO.File.Exists(this.m_strCalculatedVariablesDb))
+            //{
+            //    this.migrate_access_data();
+            //}
 
             SQLiteConnect();
             // One and only one transaction for this form
             m_oDataMgr.m_Transaction = m_oDataMgr.m_Connection.BeginTransaction();
 
             this.loadLstVariables();
-
+            
             if (m_oDataMgr.TableExist(m_oDataMgr.m_Connection, m_strFvsViewTableName))
                 {            {
                 m_oDataMgr.m_strSQL = "DROP TABLE " + m_strFvsViewTableName;
@@ -1005,13 +1005,19 @@ namespace FIA_Biosum_Manager
             }
 
             //@ToDo: Rework this when FVS out is in Sqlite
-            if (m_oAdo == null)
-            {
-                m_oAdo = new ado_data_access();
-            }
-            m_dictFVSTables = m_oOptimizerScenarioTools.LoadFvsTablesAndVariables(m_oAdo);
-            //m_dictFVSTables = m_oOptimizerScenarioTools.LoadFvsTablesAndVariables(m_oDataMgr)
+            //if (m_oAdo == null)
+            //{
+            //    m_oAdo = new ado_data_access();
+            //}
+            //m_dictFVSTables = m_oOptimizerScenarioTools.LoadFvsTablesAndVariables(m_oAdo);
 
+            // SQLite version
+            if (m_oDataMgr == null)
+            {
+                m_oDataMgr = new DataMgr();
+            }
+            m_dictFVSTables = m_oOptimizerScenarioTools.LoadFvsTablesAndVariablesSqlite(m_oDataMgr);
+ 
             foreach (string strKey in m_dictFVSTables.Keys)
             {
                 // 
@@ -1023,21 +1029,24 @@ namespace FIA_Biosum_Manager
 
             // Enable the refresh button if we have calculated weighted variables
             //@ToDo: Update when weighted variable output moves to sqlite
-            string strPrePostWeightedAccdb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
-                "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile;
-            if (System.IO.File.Exists(strPrePostWeightedAccdb))
+            //string strPrePostWeightedAccdb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
+            //    "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile;
+            //if (System.IO.File.Exists(strPrePostWeightedAccdb))
+            //{
+            //    m_oAdo.OpenConnection(m_oAdo.getMDBConnString(strPrePostWeightedAccdb, "", ""));
+            //    string[] arrTableNames = m_oAdo.getTableNames(m_oAdo.m_OleDbConnection);
+            //    if (arrTableNames.Length > 0)
+            //        BtnRecalculateAll.Enabled = true;
+            //}
+            string strPrePostWeightedDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
+                "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile;
+            if (System.IO.File.Exists(strPrePostWeightedDb))
             {
-                m_oAdo.OpenConnection(m_oAdo.getMDBConnString(strPrePostWeightedAccdb, "", ""));
-                string[] arrTableNames = m_oAdo.getTableNames(m_oAdo.m_OleDbConnection);
+                m_oDataMgr.OpenConnection(m_oDataMgr.GetConnectionString(strPrePostWeightedDb));
+                string[] arrTableNames = m_oDataMgr.getTableNames(m_oDataMgr.m_Connection);
                 if (arrTableNames.Length > 0)
                     BtnRecalculateAll.Enabled = true;
             }
-            //string strPrePostWeightedDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
-            //    "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile;
-            //if (System.IO.File.Exists(strPrePostWeightedDb))
-            //{
-                
-            //}
 
             //@ToDo: Using MS Access to query FVS Out tables
             if (String.IsNullOrEmpty(m_strTempMDB))
@@ -1045,8 +1054,8 @@ namespace FIA_Biosum_Manager
                 m_bUsingSqlite = true;
             }
 
-            if (m_oAdo != null)
-                m_oAdo.CloseConnection(m_oAdo.m_OleDbConnection);
+            //if (m_oAdo != null)
+            //    m_oAdo.CloseConnection(m_oAdo.m_OleDbConnection);
         }
 
         protected void loadvalues_access()

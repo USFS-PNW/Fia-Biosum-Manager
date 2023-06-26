@@ -3853,6 +3853,96 @@ namespace FIA_Biosum_Manager
             return _dictFVSTables;
         }
 
+        public System.Collections.Generic.Dictionary<string, System.Collections.Generic.IList<String>> LoadFvsTablesAndVariablesSqlite(SQLite.ADO.DataMgr p_oDataMgr)
+        {
+            int x, y;
+
+            string strTargetDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\fvs\\db\\PREPOST_FVSOUT.db";
+
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_oDataMgr.GetConnectionString(strTargetDb)))
+            {
+                conn.Open();
+
+                System.Collections.Generic.Dictionary<string, System.Collections.Generic.IList<String>> _dictFVSTables =
+                new System.Collections.Generic.Dictionary<string,
+                System.Collections.Generic.IList<string>>();
+                if (p_oDataMgr.m_intError == 0)
+                {
+                    string[] strTableNamesArray = p_oDataMgr.getTableNames(conn);
+                    for (x = 0; x <= strTableNamesArray.Length - 1; x++)
+                    {
+                        if (strTableNamesArray[x].ToUpper().IndexOf("PRE_", 0) == 0)
+                        {
+                            string strColumnNamesList = "";
+                            string strDataTypesList = "";
+                            p_oDataMgr.getFieldNamesAndDataTypes(conn, "SELECT * FROM " + strTableNamesArray[x],
+                                ref strColumnNamesList, ref strDataTypesList);
+                            string[] strColumnNamesArray = new string[0];
+                            string[] strDataTypesArray = new string[0];
+                            if (!String.IsNullOrEmpty(strColumnNamesList))
+                            {
+                                strColumnNamesArray = strColumnNamesList.Split(",".ToCharArray());
+                                strDataTypesArray = strDataTypesList.Split(",".ToCharArray());
+                            }
+                            System.Collections.Generic.IList<string> lstFVSFields = new System.Collections.Generic.List<string>();
+                            for (y = 0; y <= strColumnNamesArray.Length - 1; y++)
+                            {
+                                switch (strColumnNamesArray[y].Trim().ToUpper())
+                                {
+                                    case "BIOSUM_COND_ID":
+                                        break;
+                                    case "RXPACKAGE":
+                                        break;
+                                    case "RX":
+                                        break;
+                                    case "RXCYCLE":
+                                        break;
+                                    case "STANDID":
+                                        break;
+                                    case "ID":
+                                        break;
+                                    case "CASEID":
+                                        break;
+                                    case "FVS_VARIANT":
+                                        break;
+                                    case "YEAR":
+                                        break;
+                                    default:
+                                        // Text data types can't be have a weight applied
+                                        if (!strDataTypesArray[y].Trim().ToUpper().Equals("SYSTEM.STRING"))
+                                        {
+                                            if (p_oDataMgr.ColumnExist(conn,
+                                                "POST_" + strTableNamesArray[x].Substring(4, strTableNamesArray[x].Length - 4),
+                                                strColumnNamesArray[y]))
+                                            {
+                                                lstFVSFields.Add(strColumnNamesArray[y]);
+                                            }
+                                        }
+                                        break;
+                                }
+
+                            }
+                            if (lstFVSFields.Count > 0)
+                            {
+                                string strFvsTableName = strTableNamesArray[x].Substring(4, strTableNamesArray[x].Length - 4);
+                                if (!_dictFVSTables.ContainsKey(strFvsTableName))
+                                {
+                                    _dictFVSTables.Add(strFvsTableName, lstFVSFields);
+                                }
+                                else
+                                {
+                                    System.Collections.Generic.List<string> lstTemp = (System.Collections.Generic.List<string>)_dictFVSTables[strFvsTableName];
+                                    lstTemp.AddRange(lstFVSFields);
+                                }
+                            }
+                        }
+                    }
+                }
+                p_oDataMgr.CloseConnection(conn);
+                return _dictFVSTables;
+            }
+        }
+
         public void LoadWeightedVariables(ado_data_access p_oAdo, FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables.Variable_Collection p_oWeightedVariableCollection)
         {
             p_oWeightedVariableCollection.Clear();
