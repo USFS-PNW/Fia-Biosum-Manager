@@ -5192,6 +5192,7 @@ namespace FIA_Biosum_Manager
                 m_ado.OpenConnection(m_strTempMDBFileConnectionString);
                
             }
+            // Loads the sequence number configurations from db\fvsmaster.mdb\fvs_output_prepost_seqnum
             m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(m_ado, m_ado.m_OleDbConnection, m_oFVSPrePostSeqNumItemCollection);
 
            
@@ -5252,7 +5253,6 @@ namespace FIA_Biosum_Manager
                         if ((bool)frmMain.g_oDelegate.GetListViewItemPropertyValue(oLv, x, "Checked", false) == true)
                         {
                             m_bPotFireBaseYearTableExist = true;
-                            m_strPotFireBaseYearLinkedTableName = "FVS_POTFIRE_BASEYEAR";
                             m_strPotFireStandardLinkedTableName = "FVS_POTFIRE_STANDARD";
 
                             m_intProgressStepTotalCount = 20;
@@ -5338,16 +5338,20 @@ namespace FIA_Biosum_Manager
 
                             strOutDirAndFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)this.txtOutDir, "Text", false);
                             strOutDirAndFile = strOutDirAndFile.Trim();
-                            strOutDirAndFile = strOutDirAndFile + "\\" + strDbFile;
+                            strOutDirAndFile = strOutDirAndFile + "\\" + Tables.FVS.DefaultFVSOutDbFile;
 
-                            strAuditDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)this.txtOutDir, "Text", false);
-                            strAuditDbFile = strAuditDbFile.Trim();
-                            strAuditDbFile = strAuditDbFile + "\\" + strVariant + "\\" + strDbFile.Replace(".MDB", "_BIOSUM.ACCDB");
+
+                            // We'll add the table links to a temp db rather than the fvs out .mdbs as we did previously
+                            strAuditDbFile = m_oUtils.getRandomFile(m_oEnv.strTempDir, "accdb");
+                            m_dao.CreateMDB(strAuditDbFile);
+                            //strAuditDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)this.txtOutDir, "Text", false);
+                            //strAuditDbFile = strAuditDbFile.Trim();
+                            //strAuditDbFile = strAuditDbFile + "\\" + Tables.FVS.DefaultFVSAuditsDbFile;
 
                             
-                            m_oRxTools.CreateFVSOutputTableLinks(strAuditDbFile, strOutDirAndFile);
+                            //m_oRxTools.CreateFVSOutputTableLinks(strAuditDbFile, strOutDirAndFile);
 
-                            CreatePotFireTables(strAuditDbFile,strOutDirAndFile,strVariant,strPackage);
+                            //CreatePotFireTables(strAuditDbFile,strOutDirAndFile,strVariant,strPackage);
 
                             uc_filesize_monitor1.BeginMonitoringFile(
                             strOutDirAndFile,
@@ -5363,9 +5367,7 @@ namespace FIA_Biosum_Manager
 
                             oAdo.OpenConnection(oAdo.getMDBConnString(strAuditDbFile, "", ""));
 
-                            m_strLogFile = strAuditDbFile.Trim() + "_Audit_" + m_strLogDate.Replace(" ", "_") + ".txt";
-
-
+                            m_strLogFile = $@"FVSOUT_{strVariant}_P{strPackage}_Audit_{m_strLogDate.Replace(" ", "_")}.txt";
                             frmMain.g_oUtils.WriteText(m_strLogFile, "AUDIT LOG \r\n");
                             frmMain.g_oUtils.WriteText(m_strLogFile, "--------- \r\n\r\n");
                             frmMain.g_oUtils.WriteText(m_strLogFile, "Date/Time:" + System.DateTime.Now.ToString().Trim() + "\r\n");
