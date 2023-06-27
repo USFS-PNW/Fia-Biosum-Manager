@@ -8453,11 +8453,8 @@ namespace FIA_Biosum_Manager
                 return;
             }
 
-			string strSearch = this.lstFvsOutput.SelectedItems[0].SubItems[COL_MDBOUT].Text.Trim().ToUpper().Replace(".MDB","_BIOSUM.ACCDB") + "_AUDIT_*.txt";
-			
-			string strDirectory = this.txtOutDir.Text.Trim() + "\\" + lstFvsOutput.SelectedItems[0].SubItems[COL_VARIANT].Text.Trim();
-			
-			string[]  strFiles= System.IO.Directory.GetFiles(strDirectory,strSearch);
+            string strSearch = $@"FVSOUT_{lstFvsOutput.SelectedItems[0].SubItems[COL_VARIANT].Text.Trim()}_P{lstFvsOutput.SelectedItems[0].SubItems[COL_PACKAGE].Text.Trim()}_AUDIT_*.txt";			
+			string[] strFiles= System.IO.Directory.GetFiles(this.txtOutDir.Text.Trim(), strSearch);
 
 			FIA_Biosum_Manager.frmDialog oDlg = new frmDialog();
 
@@ -8465,10 +8462,10 @@ namespace FIA_Biosum_Manager
 			oDlg.uc_select_list_item1.listBox1.Sorted = true;
 			for (int x=0;x<=strFiles.Length - 1;x++)
 			{
-				oDlg.uc_select_list_item1.listBox1.Items.Add(strFiles[x].Substring(strDirectory.Length+1,strFiles[x].Length - strDirectory.Length - 1));
+				oDlg.uc_select_list_item1.listBox1.Items.Add(strFiles[x].Substring(this.txtOutDir.Text.Trim().Length+1,strFiles[x].Length - this.txtOutDir.Text.Trim().Length - 1));
 			}
 			if (oDlg.uc_select_list_item1.listBox1.Items.Count > 0) oDlg.uc_select_list_item1.listBox1.SelectedIndex = oDlg.uc_select_list_item1.listBox1.Items.Count-1;
-			oDlg.uc_select_list_item1.lblMsg.Text = "Log File Contents of " + strDirectory;
+			oDlg.uc_select_list_item1.lblMsg.Text = "Log File Contents of " + this.txtOutDir.Text.Trim();
 			oDlg.uc_select_list_item1.lblMsg.Show();
 
 			oDlg.uc_select_list_item1.Show();
@@ -8476,7 +8473,7 @@ namespace FIA_Biosum_Manager
 			DialogResult result = oDlg.ShowDialog();
 			if (result==DialogResult.OK)
 			{
-				string strDirAndFile = strDirectory + "\\" + oDlg.uc_select_list_item1.listBox1.SelectedItems[0].ToString().Trim();
+				string strDirAndFile = this.txtOutDir.Text.Trim() + "\\" + oDlg.uc_select_list_item1.listBox1.SelectedItems[0].ToString().Trim();
 				System.Diagnostics.Process proc = new System.Diagnostics.Process();
 				proc.StartInfo.UseShellExecute = true;
 				try
@@ -8616,26 +8613,28 @@ namespace FIA_Biosum_Manager
             {
                 m_oLvAlternateColors.DelegateListViewItem(lstFvsOutput.SelectedItems[0]);
 
-                //Enable/Disable PRE-APPEND Audit Tables; PRE-APPEND audit tables are included in the FVS Out .accdb's
-                string strBiosumDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutBiosumDbFile;
-                if (System.IO.File.Exists(strBiosumDbPath))
+                //Enable/Disable PRE-APPEND Audit Tables; PRE-APPEND audit tables are included in the FVS_AUDITS.db
+                string strAuditDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile;
+                //@ToDo: Also look for audit tables (variant/package specific) to verify audit has been run
+                if (System.IO.File.Exists(strAuditDbPath))
                    btnAuditDb.Enabled = true;
                 else
                    btnAuditDb.Enabled = false;
 
-                //Enable/Disable POST-APPEND Audit Tables; POST-APPEND audit tables are in their own db
-                string strAuditDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPostAuditDbFile;
-                if (System.IO.File.Exists(strAuditDbFile))
+                //Enable/Disable POST-APPEND Audit Tables; POST-APPEND audit tables are also included in the FVS_AUDITS.db
+                //@ToDo: Also look for audit tables (variant/package specific) to verify audit has been run
+                if (System.IO.File.Exists(strAuditDbPath))
                     btnPostAppendAuditDb.Enabled = true;
                 else
                     btnPostAppendAuditDb.Enabled = false;
 
                 //Enable/Disable Open Pre Audit Log button
                 btnViewLogFile.Enabled = false;
-                string strDirectory = this.txtOutDir.Text.Trim() + "\\" + lstFvsOutput.SelectedItems[0].SubItems[COL_VARIANT].Text.Trim();
+                // FVSOUT_CA_P010_Audit_2023-01-18_13-53-58.txt
+                string strDirectory = this.txtOutDir.Text.Trim();
                 if (System.IO.Directory.Exists(strDirectory) == true)
                 {
-                    string strSearch = this.lstFvsOutput.SelectedItems[0].SubItems[COL_MDBOUT].Text.Trim().ToUpper().Replace(".MDB","_BIOSUM.ACCDB") + "_AUDIT_*.txt";
+                    string strSearch = $@"FVSOUT_{lstFvsOutput.SelectedItems[0].SubItems[COL_VARIANT].Text.Trim()}_P{lstFvsOutput.SelectedItems[0].SubItems[COL_PACKAGE].Text.Trim()}_AUDIT_*.txt";
                     string[] strFiles = System.IO.Directory.GetFiles(strDirectory, strSearch);
                     if (strFiles.Length > 0)
                         btnViewLogFile.Enabled = true;
