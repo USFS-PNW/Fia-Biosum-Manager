@@ -855,6 +855,7 @@ namespace FIA_Biosum_Manager
                     entryListItem.SubItems.Add(" ");  //file found
                     entryListItem.SubItems.Add(" ");  //potential fire base year record count
 				    entryListItem.SubItems.Add(" ");  //run status
+                    this.m_oLvAlternateColors.ListViewItem(lstFvsOutput.Items[lstFvsOutput.Items.Count - 1]);
 
                     //FVS_SUMMARY
                     string dbConn = SQLite.GetConnectionString(m_strFvsOutDb);
