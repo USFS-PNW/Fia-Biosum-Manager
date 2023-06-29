@@ -5158,7 +5158,6 @@ namespace FIA_Biosum_Manager
 			m_intProgressOverallCurrentCount=0;
 			string strPackage="";
 			string strVariant="";
-			string strRx="";
             System.Windows.Forms.ListView oLv = (System.Windows.Forms.ListView)frmMain.g_oDelegate.GetListView(this.lstFvsOutput, false);
             System.Windows.Forms.ListViewItem oLvItem = null;
 
@@ -5170,7 +5169,6 @@ namespace FIA_Biosum_Manager
 
 			string strOutDirAndFile;
 			string strDbFile;
-			string strCasesTable;
             string strAuditDbFile;
            
 			string[] strSourceTableArray=null;
@@ -5344,8 +5342,9 @@ namespace FIA_Biosum_Manager
 
 
                             // We'll add the table links to a temp db rather than the fvs out .mdbs as we did previously
-                            strAuditDbFile = m_oUtils.getRandomFile(m_oEnv.strTempDir, "accdb");
-                            m_dao.CreateMDB(strAuditDbFile);
+                            strAuditDbFile = m_oUtils.getRandomFile(m_oEnv.strTempDir, "db");
+                            //m_dao.CreateMDB(strAuditDbFile);
+                            SQLite.CreateDbFile(strAuditDbFile);
                             //strAuditDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)this.txtOutDir, "Text", false);
                             //strAuditDbFile = strAuditDbFile.Trim();
                             //strAuditDbFile = strAuditDbFile + "\\" + Tables.FVS.DefaultFVSAuditsDbFile;
@@ -5367,7 +5366,7 @@ namespace FIA_Biosum_Manager
 
 
 
-                            oAdo.OpenConnection(oAdo.getMDBConnString(strAuditDbFile, "", ""));
+                            //oAdo.OpenConnection(oAdo.getMDBConnString(strAuditDbFile, "", ""));
 
                             m_strLogFile = $@"{this.txtOutDir.Text.Trim()}\FVSOUT_{strVariant}_P{strPackage}_Audit_{m_strLogDate.Replace(" ", "_")}.txt";
                             frmMain.g_oUtils.WriteText(m_strLogFile, "AUDIT LOG \r\n");
@@ -5377,7 +5376,6 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oUtils.WriteText(m_strLogFile, "Variant:" + strVariant + " \r\n");
                             frmMain.g_oUtils.WriteText(m_strLogFile, "Package:" + strPackage + " \r\n\r\n");
 
-                            strSourceTableArray = oAdo.getTableNames(oAdo.m_OleDbConnection);
                             string strRunTitle = $@"FVSOUT_{strVariant}{m_oRxPackageItem.RunTitleSuffix}";
 
                             string strConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile);
@@ -5405,7 +5403,8 @@ namespace FIA_Biosum_Manager
                             if (intItemError==0) 
                             {
                                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim() + " Create SeqNum Matrix tables");
-                                CreatePrePostSeqNumMatrixTables(oAdo, oAdo.m_OleDbConnection,strPackage,true);
+                                //CreatePrePostSeqNumMatrixTables(oAdo, oAdo.m_OleDbConnection,strPackage,true);
+                                CreatePrePostSeqNumMatrixSqliteTables(strAuditDbFile, strPackage, true);
                             }
                             m_intProgressStepCurrentCount++;
                             UpdateTherm(m_frmTherm.progressBar1,
@@ -5415,57 +5414,60 @@ namespace FIA_Biosum_Manager
                             //check if summary table exists
                             if (intItemError == 0)
                             {
-                                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim() + " FVS_SUMMARY");
-                                frmMain.g_oUtils.WriteText(m_strLogFile, "-----FVS_SUMMARY-----\r\n");
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "FVS_Summary"))
+                                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                                 {
-                                    frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "Processing Audit...FVS_SUMMARY");
-
-                                    if (intItemError == 0)
+                                    conn.Open();
+                                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim() + " FVS_SUMMARY");
+                                    frmMain.g_oUtils.WriteText(m_strLogFile, "-----FVS_SUMMARY-----\r\n");
+                                    if (SQLite.TableExist(conn, "FVS_Summary"))
                                     {
-                                        //
-                                        //get fvs_summary configuration
-                                        //
-                                        GetPrePostSeqNumConfiguration("FVS_SUMMARY",strPackage);
-                                        //check pre and post-treatment seqnum assignments
-                                        this.Validate_FvsSummaryPrePostSeqNum(oAdo, oAdo.m_OleDbConnection, ref intItemError, ref strItemError, ref intItemWarning, ref strItemWarning, true);
-                                        if (intItemError == 0 && intItemWarning == 0)
+                                        frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "Processing Audit...FVS_SUMMARY");
+
+                                        if (intItemError == 0)
                                         {
-                                            frmMain.g_oUtils.WriteText(m_strLogFile, "OK\r\n\r\n");
+                                            //
+                                            //get fvs_summary configuration
+                                            //
+                                            GetPrePostSeqNumConfiguration("FVS_SUMMARY", strPackage);
+                                            //check pre and post-treatment seqnum assignments
+                                            this.Validate_FvsSummaryPrePostSeqNum(conn, ref intItemError, ref strItemError, ref intItemWarning, ref strItemWarning, true);
+                                            if (intItemError == 0 && intItemWarning == 0)
+                                            {
+                                                frmMain.g_oUtils.WriteText(m_strLogFile, "OK\r\n\r\n");
+                                            }
+                                            else if (intItemWarning != 0)
+                                            {
+                                                frmMain.g_oUtils.WriteText(m_strLogFile, strItemWarning + "\r\n");
+                                                strItemWarning = "See Log File";
+                                            }
                                         }
-                                        else if (intItemWarning != 0)
+                                        if (intItemError != 0)
                                         {
-                                            frmMain.g_oUtils.WriteText(m_strLogFile, strItemWarning + "\r\n");
-                                            strItemWarning = "See Log File";
+                                            switch (intItemError)
+                                            {
+                                                case -2:
+                                                    strItemDialogMsg = strItemDialogMsg + strDbFile + ":FVS_Summary table has no records\r\n";
+                                                    break;
+                                                case -3:
+                                                    strItemDialogMsg = strItemDialogMsg + strDbFile + ":FVS_Summary table has pre-treatment designated sequence numbers that cannot be found\r\n";
+                                                    break;
+                                                case -4:
+                                                    strItemDialogMsg = strItemDialogMsg + strDbFile + ":FVS_Summary table has post-treatment designated sequence numbers that cannot be found\r\n";
+                                                    break;
+
+                                            }
+
                                         }
+
+
                                     }
-                                    if (intItemError != 0)
+                                    else
                                     {
-                                        switch (intItemError)
-                                        {
-                                            case -2:
-                                                strItemDialogMsg = strItemDialogMsg + strDbFile + ":FVS_Summary table has no records\r\n";
-                                                break;
-                                            case -3:
-                                                strItemDialogMsg = strItemDialogMsg + strDbFile + ":FVS_Summary table has pre-treatment designated sequence numbers that cannot be found\r\n";
-                                                break;
-                                            case -4:
-                                                strItemDialogMsg = strItemDialogMsg + strDbFile + ":FVS_Summary table has post-treatment designated sequence numbers that cannot be found\r\n";
-                                                break;
-
-                                        }
-
+                                        intItemError = -1;
+                                        strItemDialogMsg = strItemDialogMsg + strDbFile + ":FVS_Summary table missing\r\n";
+                                        frmMain.g_oUtils.WriteText(m_strLogFile, "ERROR: FVS_Summary table missing\r\n\r\n");
                                     }
-
-
                                 }
-                                else
-                                {
-                                    intItemError = -1;
-                                    strItemDialogMsg = strItemDialogMsg + strDbFile + ":FVS_Summary table missing\r\n";
-                                    frmMain.g_oUtils.WriteText(m_strLogFile, "ERROR: FVS_Summary table missing\r\n\r\n");
-                                }
-
                             }
                             m_intProgressStepCurrentCount++;
                             UpdateTherm(m_frmTherm.progressBar1,
@@ -6074,6 +6076,7 @@ namespace FIA_Biosum_Manager
             }
             oAdo = null;
         }
+        // This is the function called by RunAppend_Main
         private void CreatePrePostSeqNumMatrixTables(string p_strDbFile,string p_strRxPackageId, bool p_bAudit)
         {
             ado_data_access oAdo = new ado_data_access();
@@ -7752,30 +7755,18 @@ namespace FIA_Biosum_Manager
         /// <summary>
         /// Validate that every SeqNum value the user specified for PRE-POST values is found in the FVS_SUMMARY table
         /// </summary>
-        /// <param name="p_oAdo"></param>
         /// <param name="p_oConn"></param>
         /// <param name="p_intItemError"></param>
         /// <param name="p_strItemError"></param>
         /// <param name="p_intItemWarning"></param>
         /// <param name="p_strItemWarning"></param>
         /// <param name="p_bDoWarnings"></param>
-        private void Validate_FvsSummaryPrePostSeqNum(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, ref int p_intItemError, ref string p_strItemError, ref int p_intItemWarning, ref string p_strItemWarning, bool p_bDoWarnings)
-        {
-           
-            
-           
+        private void Validate_FvsSummaryPrePostSeqNum(System.Data.SQLite.SQLiteConnection p_oConn, ref int p_intItemError, ref string p_strItemError, ref int p_intItemWarning, ref string p_strItemWarning, bool p_bDoWarnings)
+        {           
             int intCycleLength = 10;
-           
-
             //get the cycle length for this package
-            if (this.m_oRxPackageItem != null) intCycleLength = this.m_oRxPackageItem.RxCycleLength;
-
-           
-            Validate_SeqNumExistance("FVS_SUMMARY",p_oAdo, p_oConn, ref p_intItemError, ref p_strItemError, ref p_intItemWarning, ref p_strItemWarning, p_bDoWarnings);
-
-
-           
-			
+            if (this.m_oRxPackageItem != null) intCycleLength = this.m_oRxPackageItem.RxCycleLength;           
+            Validate_SeqNumExistence("FVS_SUMMARY", p_oConn, ref p_intItemError, ref p_strItemError, ref p_intItemWarning, ref p_strItemWarning, p_bDoWarnings);			
         }
 
         /// <summary>
@@ -7935,7 +7926,161 @@ namespace FIA_Biosum_Manager
                 }
             
         }
-            
+
+        /// <summary>
+        /// Validate that the user specified SEQNUM exists in the fvs output table
+        /// </summary>
+        /// <param name="p_strFVSOutputTable"></param>
+        /// <param name="p_oAdo"></param>
+        /// <param name="p_oConn"></param>
+        /// <param name="p_intItemError"></param>
+        /// <param name="p_strItemError"></param>
+        /// <param name="p_intItemWarning"></param>
+        /// <param name="p_strItemWarning"></param>
+        /// <param name="p_bDoWarnings">AUDIT:true APPEND:false</param>
+        private void Validate_SeqNumExistence(string p_strFVSOutputTable, System.Data.SQLite.SQLiteConnection conn, ref int p_intItemError, ref string p_strItemError, ref int p_intItemWarning, ref string p_strItemWarning, bool p_bDoWarnings)
+        {
+            string strCol = "";
+            int x, z;
+
+            string strAuditPrePostSeqNumCountsTable = "audit_" + p_strFVSOutputTable + "_prepost_seqnum_counts_table";
+
+            SQLite.m_strSQL = "SELECT * FROM " + strAuditPrePostSeqNumCountsTable + " WHERE standid IS NOT NULL";
+            SQLite.SqlQueryReader(conn, SQLite.m_strSQL);
+            if (SQLite.m_intError == 0)
+            {
+                if (SQLite.m_DataReader.HasRows)
+                {
+                    if (p_bDoWarnings)
+                    {
+                        z = 0;
+                        while (SQLite.m_DataReader.Read())
+                        {
+                            //PRE TREATMENT
+                            for (x = 1; x <= 4; x++)
+                            {
+                                try
+                                {
+                                    strCol = "pre_cycle" + x.ToString().Trim() + "rows";
+                                    if (SQLite.m_DataReader[strCol] != DBNull.Value &&
+                                        Convert.ToInt32(SQLite.m_DataReader[strCol]) == 0)
+                                    {
+                                        switch (x)
+                                        {
+                                            case 1:
+                                                p_strItemWarning = p_strItemWarning + "WARNING: Stand" + SQLite.m_DataReader["standid"].ToString().Trim() + " does not have Sequence Number " + m_oFVSPrePostSeqNumItem.RxCycle1PreSeqNum + " for cycle 1 PRE treatment values.\r\n";
+                                                break;
+                                            case 2:
+                                                p_strItemWarning = p_strItemWarning + "WARNING: Stand" + SQLite.m_DataReader["standid"].ToString().Trim() + " does not have Sequence Number " + m_oFVSPrePostSeqNumItem.RxCycle2PreSeqNum + " for cycle 2 PRE treatment values.\r\n";
+                                                break;
+                                            case 3:
+                                                p_strItemWarning = p_strItemWarning + "WARNING: Stand" + SQLite.m_DataReader["standid"].ToString().Trim() + " does not have Sequence Number " + m_oFVSPrePostSeqNumItem.RxCycle3PreSeqNum + " for cycle 3 PRE treatment values.\r\n";
+                                                break;
+                                            case 4:
+                                                p_strItemWarning = p_strItemWarning + "WARNING: Stand" + SQLite.m_DataReader["standid"].ToString().Trim() + " does not have Sequence Number " + m_oFVSPrePostSeqNumItem.RxCycle4PreSeqNum + " for cycle 4 PRE treatment values.\r\n";
+                                                break;
+                                        }
+                                        p_intItemWarning = -3;
+                                        break;
+                                    }
+                                    else if (SQLite.m_DataReader[strCol] != DBNull.Value &&
+                                       Convert.ToInt32(SQLite.m_DataReader[strCol]) > 1)
+                                    {
+                                        switch (x)
+                                        {
+                                            case 1:
+                                                p_strItemWarning = p_strItemWarning + "WARNING: Stand" + SQLite.m_DataReader["standid"].ToString().Trim() + " has more than one of the same Sequence Number " + m_oFVSPrePostSeqNumItem.RxCycle1PreSeqNum + " for cycle 1 PRE treatment values.\r\n";
+                                                break;
+                                            case 2:
+                                                p_strItemWarning = p_strItemWarning + "WARNING: Stand" + SQLite.m_DataReader["standid"].ToString().Trim() + " has more than one of the same Sequence Number " + m_oFVSPrePostSeqNumItem.RxCycle2PreSeqNum + " for cycle 2 PRE treatment values.\r\n";
+                                                break;
+                                            case 3:
+                                                p_strItemWarning = p_strItemWarning + "WARNING: Stand" + SQLite.m_DataReader["standid"].ToString().Trim() + " has more than one of the same Sequence Number " + m_oFVSPrePostSeqNumItem.RxCycle3PreSeqNum + " for cycle 3 PRE treatment values.\r\n";
+                                                break;
+                                            case 4:
+                                                p_strItemWarning = p_strItemWarning + "WARNING: Stand" + SQLite.m_DataReader["standid"].ToString().Trim() + " has more than one of the same Sequence Number " + m_oFVSPrePostSeqNumItem.RxCycle4PreSeqNum + " for cycle 4 PRE treatment values.\r\n";
+                                                break;
+                                        }
+                                        p_intItemWarning = -4;
+                                        break;
+                                    }
+                                }
+                                catch
+                                {
+                                }
+                            }
+                            //POST TREATMENT
+                            for (x = 1; x <= 4; x++)
+                            {
+
+                                try
+                                {
+                                    strCol = "post_cycle" + x.ToString().Trim() + "rows";
+                                    if (SQLite.m_DataReader[strCol] != DBNull.Value &&
+                                        Convert.ToInt32(SQLite.m_DataReader[strCol]) == 0)
+                                    {
+                                        switch (x)
+                                        {
+                                            case 1:
+                                                p_strItemWarning = p_strItemWarning + "WARNING: Stand" + SQLite.m_DataReader["standid"].ToString().Trim() + " does not have Sequence Number " + m_oFVSPrePostSeqNumItem.RxCycle1PostSeqNum + " for cycle 1 POST treatment values.\r\n";
+                                                break;
+                                            case 2:
+                                                p_strItemWarning = p_strItemWarning + "WARNING: Stand" + SQLite.m_DataReader["standid"].ToString().Trim() + " does not have Sequence Number " + m_oFVSPrePostSeqNumItem.RxCycle2PostSeqNum + " for cycle 2 POST treatment values.\r\n";
+                                                break;
+                                            case 3:
+                                                p_strItemWarning = p_strItemWarning + "WARNING: Stand" + SQLite.m_DataReader["standid"].ToString().Trim() + " does not have Sequence Number " + m_oFVSPrePostSeqNumItem.RxCycle3PostSeqNum + " for cycle 3 POST treatment values.\r\n";
+                                                break;
+                                            case 4:
+                                                p_strItemWarning = p_strItemWarning + "WARNING: Stand" + SQLite.m_DataReader["standid"].ToString().Trim() + " does not have Sequence Number " + m_oFVSPrePostSeqNumItem.RxCycle4PostSeqNum + " for cycle 4 POST treatment values.\r\n";
+                                                break;
+                                        }
+                                        p_intItemWarning = -5;
+                                        break;
+                                    }
+                                    else if (SQLite.m_DataReader[strCol] != DBNull.Value &&
+                                       Convert.ToInt32(SQLite.m_DataReader[strCol]) > 1)
+                                    {
+                                        switch (x)
+                                        {
+                                            case 1:
+                                                p_strItemWarning = p_strItemWarning + "WARNING: Stand" + SQLite.m_DataReader["standid"].ToString().Trim() + " has more than one of the same Sequence Number " + m_oFVSPrePostSeqNumItem.RxCycle1PostSeqNum + " for cycle 1 POST treatment values.\r\n";
+                                                break;
+                                            case 2:
+                                                p_strItemWarning = p_strItemWarning + "WARNING: Stand" + SQLite.m_DataReader["standid"].ToString().Trim() + " has more than one of the same Sequence Number " + m_oFVSPrePostSeqNumItem.RxCycle2PostSeqNum + " for cycle 2 POST treatment values.\r\n";
+                                                break;
+                                            case 3:
+                                                p_strItemWarning = p_strItemWarning + "WARNING: Stand" + SQLite.m_DataReader["standid"].ToString().Trim() + " has more than one of the same Sequence Number " + m_oFVSPrePostSeqNumItem.RxCycle3PostSeqNum + " for cycle 3 POST treatment values.\r\n";
+                                                break;
+                                            case 4:
+                                                p_strItemWarning = p_strItemWarning + "WARNING: Stand" + SQLite.m_DataReader["standid"].ToString().Trim() + " has more than one of the same Sequence Number " + m_oFVSPrePostSeqNumItem.RxCycle4PostSeqNum + " for cycle 4 POST treatment values.\r\n";
+                                                break;
+                                        }
+                                        p_intItemWarning = -6;
+                                        break;
+                                    }
+                                }
+                                catch
+                                {
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    p_intItemError = -2;
+                    p_strItemError = p_strItemError + "ERROR: No records in " + strAuditPrePostSeqNumCountsTable + " table\r\n";
+                }
+                SQLite.m_DataReader.Close();
+            }
+            else
+            {
+                p_intItemError = SQLite.m_intError;
+                p_strItemError = p_strItemError + "ERROR:" + SQLite.m_strError + "\r\n";
+            }
+
+        }
+
         /// <summary>
         /// Validation routine to check the FVS_TreeList,FVS_CutList,and FVS_ATRTLIST tables. Validate Checks:
         /// 1. Check for tree list records

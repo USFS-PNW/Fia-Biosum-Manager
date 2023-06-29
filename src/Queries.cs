@@ -1170,6 +1170,128 @@ namespace FIA_Biosum_Manager
                 strSQL = strSQL.Substring(0, strSQL.Length - 5);
                 return strSQL;
             }
+
+            /// <summary>
+            /// Audit to identify assigned sequence numbers that cannot be found in the Sequence Number Matrix table (FVSTableName_PREPOST_SEQNUM_MATRIX)
+            /// </summary>
+            /// <param name="p_oFVSPrePostSeqNumItem"></param>
+            /// <param name="p_strIntoTable"></param>
+            /// <param name="p_strSourceTable">FVSTableName_PREPOST_SEQNUM_MATRIX</param>
+            /// <returns></returns>
+            static public string FVSOutputTable_AuditSelectIntoPrePostSeqNumCountSqlite(FVSPrePostSeqNumItem p_oFVSPrePostSeqNumItem, string p_strIntoTable, string p_strSourceTable)
+            {
+                string strSQL = "";
+                int x;
+                int z = 0;
+
+                string strAlpha = "cdefghij";
+                int intAlias = 0;
+                string strSelectColumns = "a.standid,b.totalrows,";
+
+                //cycle 1 seqnum
+                if (p_oFVSPrePostSeqNumItem.RxCycle1PreSeqNum.Trim().Length > 0 && p_oFVSPrePostSeqNumItem.RxCycle1PreSeqNum.Trim().ToUpper() != "NOT USED")
+                {
+                    strSQL = strSQL + " (SELECT " +
+                                       "SUM(CASE WHEN SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle1PreSeqNum + " THEN 1 ELSE 0 END) AS pre_cycle1rows," +
+                                       "STANDID " +
+                                       "FROM " + p_strSourceTable + " " +
+                                       "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
+                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle1rows,";
+                    intAlias++;
+                }
+                if (p_oFVSPrePostSeqNumItem.RxCycle1PostSeqNum.Trim().Length > 0 && p_oFVSPrePostSeqNumItem.RxCycle1PostSeqNum.Trim().ToUpper() != "NOT USED")
+                {
+                    strSQL = strSQL + " (SELECT " +
+                                         "SUM(CASE WHEN SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle1PostSeqNum + " THEN 1 ELSE 0 END) AS post_cycle1rows," +
+                                         "STANDID " +
+                                       "FROM " + p_strSourceTable + " " +
+                                       "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
+                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle1rows,";
+                    intAlias++;
+                }
+                //cycle 2 seqnum
+                if (p_oFVSPrePostSeqNumItem.RxCycle2PreSeqNum.Trim().Length > 0 && p_oFVSPrePostSeqNumItem.RxCycle2PreSeqNum.Trim().ToUpper() != "NOT USED")
+                {
+                    strSQL = strSQL + " (SELECT " +
+                                         "SUM(CASE WHEN SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle2PreSeqNum + " THEN 1 ELSE 0 END) AS pre_cycle2rows," +
+                                         "STANDID " +
+                                       "FROM " + p_strSourceTable + " " +
+                                       "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
+                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle2rows,";
+                    intAlias++;
+                }
+                if (p_oFVSPrePostSeqNumItem.RxCycle2PostSeqNum.Trim().Length > 0 && p_oFVSPrePostSeqNumItem.RxCycle2PostSeqNum.Trim().ToUpper() != "NOT USED")
+                {
+                    strSQL = strSQL + " (SELECT " +
+                                         "SUM(CASE WHEN SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle2PostSeqNum + " THEN 1 ELSE 0 END) AS post_cycle2rows," +
+                                         "STANDID " +
+                                       "FROM " + p_strSourceTable + " " +
+                                       "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
+                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle2rows,";
+                    intAlias++;
+                }
+                //cycle 3 seqnum
+                if (p_oFVSPrePostSeqNumItem.RxCycle3PreSeqNum.Trim().Length > 0 && p_oFVSPrePostSeqNumItem.RxCycle3PreSeqNum.Trim().ToUpper() != "NOT USED")
+                {
+                    strSQL = strSQL + " (SELECT " +
+                                         "SUM(CASE WHEN SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle3PreSeqNum + " THEN 1 ELSE 0 END) AS pre_cycle3rows," +
+                                         "STANDID " +
+                                       "FROM " + p_strSourceTable + " " +
+                                       "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
+                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle3rows,";
+                    intAlias++;
+                }
+                if (p_oFVSPrePostSeqNumItem.RxCycle3PostSeqNum.Trim().Length > 0 && p_oFVSPrePostSeqNumItem.RxCycle3PostSeqNum.Trim().ToUpper() != "NOT USED")
+                {
+                    strSQL = strSQL + " (SELECT " +
+                                         "SUM(CASE WHEN SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle3PostSeqNum + " THEN 1 ELSE 0 END) AS post_cycle3rows," +
+                                         "STANDID " +
+                                       "FROM " + p_strSourceTable + " " +
+                                       "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
+                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle3rows,";
+                    intAlias++;
+                }
+                //cycle 4 seqnum
+                if (p_oFVSPrePostSeqNumItem.RxCycle4PreSeqNum.Trim().Length > 0 && p_oFVSPrePostSeqNumItem.RxCycle4PreSeqNum.Trim().ToUpper() != "NOT USED")
+                {
+                    strSQL = strSQL + " (SELECT " +
+                                         "SUM(CASE WHEN SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle4PreSeqNum + " THEN 1 ELSE 0 END) AS pre_cycle4rows," +
+                                         "STANDID " +
+                                       "FROM " + p_strSourceTable + " " +
+                                       "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
+                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle4rows,";
+                    intAlias++;
+                }
+                if (p_oFVSPrePostSeqNumItem.RxCycle4PostSeqNum.Trim().Length > 0 && p_oFVSPrePostSeqNumItem.RxCycle4PostSeqNum.Trim().ToUpper() != "NOT USED")
+                {
+                    strSQL = strSQL + " (SELECT " +
+                                         "SUM(CASE WHEN SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle4PostSeqNum + " THEN 1 ELSE 0 END) AS post_cycle4rows," +
+                                         "STANDID " +
+                                       "FROM " + p_strSourceTable + " " +
+                                       "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
+                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle4rows,";
+                    intAlias++;
+                }
+                strSQL = strSQL.Substring(0, strSQL.Length - 1);
+                strSelectColumns = strSelectColumns.Substring(0, strSelectColumns.Length - 1);
+
+                strSQL = "CREATE TABLE " + p_strIntoTable + " AS " +
+                         "SELECT DISTINCT " + strSelectColumns + " " +
+                         "FROM " + p_strSourceTable + " a," +
+                          "(SELECT COUNT(*) AS totalrows," +
+                          "STANDID " + "FROM " + p_strSourceTable + " " +
+                          "GROUP BY standid) b," +
+                          strSQL + " " + "WHERE a.standid=b.standid AND ";
+
+                for (x = 0; x <= intAlias - 1; x++)
+                {
+                    strSQL = strSQL + "a.standid=" + strAlpha.Substring(x, 1) + ".standid AND ";
+                }
+
+                strSQL = strSQL.Substring(0, strSQL.Length - 5);
+                return strSQL;
+            }
+
             /// <summary>
             /// Load data that will show which fvs_summary SeqNum are associated with harvested tree records
             /// </summary>
