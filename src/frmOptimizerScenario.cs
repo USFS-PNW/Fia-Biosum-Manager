@@ -4,6 +4,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Windows.Forms;
 using System.Data.OleDb;
+using SQLite.ADO;
 
 namespace FIA_Biosum_Manager
 {
@@ -3853,11 +3854,12 @@ namespace FIA_Biosum_Manager
             return _dictFVSTables;
         }
 
-        public System.Collections.Generic.Dictionary<string, System.Collections.Generic.IList<String>> LoadFvsTablesAndVariablesSqlite(SQLite.ADO.DataMgr p_oDataMgr)
+        public System.Collections.Generic.Dictionary<string, System.Collections.Generic.IList<String>> LoadFvsTablesAndVariablesSqlite()
         {
             int x, y;
 
-            string strTargetDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\fvs\\db\\PREPOST_FVSOUT.db";
+            string strTargetDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
+            DataMgr p_oDataMgr = new DataMgr();
 
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_oDataMgr.GetConnectionString(strTargetDb)))
             {
