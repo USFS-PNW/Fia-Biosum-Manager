@@ -857,6 +857,7 @@ namespace FIA_Biosum_Manager
 				    entryListItem.SubItems.Add(" ");  //run status
                     this.m_oLvAlternateColors.ListViewItem(lstFvsOutput.Items[lstFvsOutput.Items.Count - 1]);
 
+
                     //FVS_SUMMARY
                     string dbConn = SQLite.GetConnectionString(m_strFvsOutDb);
                     using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
@@ -5368,83 +5369,31 @@ namespace FIA_Biosum_Manager
 
                             oAdo.OpenConnection(oAdo.getMDBConnString(strAuditDbFile, "", ""));
 
-                            m_strLogFile = $@"FVSOUT_{strVariant}_P{strPackage}_Audit_{m_strLogDate.Replace(" ", "_")}.txt";
+                            m_strLogFile = $@"{this.txtOutDir.Text.Trim()}\FVSOUT_{strVariant}_P{strPackage}_Audit_{m_strLogDate.Replace(" ", "_")}.txt";
                             frmMain.g_oUtils.WriteText(m_strLogFile, "AUDIT LOG \r\n");
                             frmMain.g_oUtils.WriteText(m_strLogFile, "--------- \r\n\r\n");
                             frmMain.g_oUtils.WriteText(m_strLogFile, "Date/Time:" + System.DateTime.Now.ToString().Trim() + "\r\n");
                             frmMain.g_oUtils.WriteText(m_strLogFile, "Database File:" + strDbFile + "\r\n");
                             frmMain.g_oUtils.WriteText(m_strLogFile, "Variant:" + strVariant + " \r\n");
-                            frmMain.g_oUtils.WriteText(m_strLogFile, "Treatment:" + strRx + " \r\n\r\n");
-
-
+                            frmMain.g_oUtils.WriteText(m_strLogFile, "Package:" + strPackage + " \r\n\r\n");
 
                             strSourceTableArray = oAdo.getTableNames(oAdo.m_OleDbConnection);
-                            
+                            string strRunTitle = $@"FVSOUT_{strVariant}{m_oRxPackageItem.RunTitleSuffix}";
 
-                            frmMain.g_oUtils.WriteText(m_strLogFile, "-----FVS_CASES-----\r\n");
-
-                            //check to ensure the variant in the fvs cases table
-                            //matches the current variant
-                            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim() + " FVS_CASES");
-
-                            strCasesTable = "fvs_cases";
-                            bResult = oAdo.ValuesExistNotEqualToTargetValue(oAdo.m_OleDbConnection,
-                                strCasesTable,
-                                "variant",
-                                strVariant.Trim(),
-                                false);
-
-                            m_intProgressStepCurrentCount++;
-                            UpdateTherm(m_frmTherm.progressBar1,
-                                        m_intProgressStepCurrentCount,
-                                        m_intProgressStepTotalCount);
-
-                            if (oAdo.m_intError == oAdo.ErrorCodeNoErrors && bResult == true)
+                            string strConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile);
+                            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                             {
-                                intItemError = -1;
-                                strItemError = strItemError + "ERROR:Incorrect variant found in FVS_Cases.variant column";
-                                strItemDialogMsg = strItemDialogMsg + strDbFile + ": Incorrect variant found in FVS_Cases.variant column\r\n";
-                                frmMain.g_oUtils.WriteText(m_strLogFile, "ERROR:Incorrect variant found in variant column\r\n\r\n");
-
-                            }
-                            else if (oAdo.m_intError == oAdo.ErrorCodeTableNotFound)
-                            {
-                                intItemError = -1;
-                                strItemError = strItemError + "FVS_Cases table missing\r\n";
-                                strItemDialogMsg = strItemDialogMsg + strDbFile + ":FVS_Cases table missing\r\n";
-                                frmMain.g_oUtils.WriteText(m_strLogFile, "ERROR: table missing\r\n\r\n");
-                            }
-                            else if (oAdo.m_intError == oAdo.ErrorCodeColumnNotFound)
-                            {
-                                intItemError = -1;
-                                strItemError = strItemError + "FVS_Cases.variant column not found\r\n";
-                                strItemDialogMsg = strItemDialogMsg + strDbFile + ":FVS_Cases.variant column not found\r\n";
-                                frmMain.g_oUtils.WriteText(m_strLogFile, "ERROR: variant column not found\r\n\r\n");
-                            }
-                            else
-                            {
-                                Validate_FVSCaseId(strCasesTable, oAdo, oAdo.m_OleDbConnection, ref intItemError, ref strItemError, ref intItemWarning, ref strItemWarning, true);
+                                conn.Open();
+                                strSourceTableArray = SQLite.getTableNames(conn);
+                                //
+                                //check for duplicate standid+year records for tables that are 
+                                //only supposed to have one stand+year combination represented
+                                //
                                 if (intItemError == 0)
-                                    frmMain.g_oUtils.WriteText(m_strLogFile, "OK\r\n\r\n");
-                                else
                                 {
-                                    strItemDialogMsg = strItemDialogMsg + strDbFile + "\r\n_________________________________\r\n\r\n" + strItemError;
-                                    frmMain.g_oUtils.WriteText(m_strLogFile, "ERROR: " + strItemError + "\r\n\r\n");
+                                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim() + " Check For duplicate standid+year");
+                                    CheckForDuplicateStandIdandYear(conn, strSourceTableArray, strRunTitle, true, ref strItemError, ref intItemError);
                                 }
-                            }
-                            m_intProgressStepCurrentCount++;
-                            UpdateTherm(m_frmTherm.progressBar1,
-                                        m_intProgressStepCurrentCount,
-                                        m_intProgressStepTotalCount);
-
-                            //
-                            //check for duplicate standid+year records for tables that are 
-                            //only supposed to have one stand+year combination represented
-                            //
-                            if (intItemError == 0)
-                            {
-                                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim() + " Check For duplicate standid+year");
-                                CheckForDuplicateStandIdandYear(oAdo, oAdo.m_OleDbConnection, strSourceTableArray, strVariant, strPackage, true, ref strItemError, ref intItemError);
                             }
                             m_intProgressStepCurrentCount++;
                             UpdateTherm(m_frmTherm.progressBar1,
@@ -5951,14 +5900,13 @@ namespace FIA_Biosum_Manager
         /// <summary>
         /// Check for duplicate standid+year values on FVS output tables 
         /// </summary>
-        /// <param name="p_oAdo"></param>
-        /// <param name="p_oConn">Connection to the FVSOUT_VARIANT_P000-000-000-000-000.MDB file</param>
+
         /// <param name="p_strFVSOutTables">tables in the fvsoutput file</param>
         /// <param name="p_strRxPackage">treatment package</param>
         /// <param name="p_bAudit">audit routine</param>
         /// <param name="p_strError"></param>
         /// <param name="p_intError"></param>
-        private void CheckForDuplicateStandIdandYear(ado_data_access p_oAdo,System.Data.OleDb.OleDbConnection p_oConn,string[] p_strFVSOutTables,string p_strVariant, string p_strRxPackage,bool p_bAudit,ref string p_strError, ref int p_intError)
+        private void CheckForDuplicateStandIdandYear(System.Data.SQLite.SQLiteConnection conn, string[] p_strFVSOutTables,string p_strRunTitle, bool p_bAudit,ref string p_strError, ref int p_intError)
         {
             if (m_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -5981,24 +5929,26 @@ namespace FIA_Biosum_Manager
                                                                           "FVS_STRCLASS", "FVS_CASES", "FVS_CANPROFILE"};
                     if (!lstExcludedTables.Contains(p_strFVSOutTables[y].Trim().ToUpper()))
                     {
-                        p_oAdo.m_strSQL = "SELECT DISTINCT b.standid,b.year,b.rowcount " +
+                        SQLite.m_strSQL = "SELECT DISTINCT b.standid,b.year,b.rowcount " +
                                           "FROM " + p_strFVSOutTables[y] + " a," +
-                                            "(SELECT count(*) as rowcount,standid,year " +
-                                             "FROM " + p_strFVSOutTables[y] + " GROUP BY STANDID,YEAR) b " +
+                                          "(SELECT count(*) as rowcount," + p_strFVSOutTables[y] + ".standid,year " +
+                                          "FROM " + p_strFVSOutTables[y] + ", FVS_CASES C WHERE" +
+                                          " c.StandID = " + p_strFVSOutTables[y] + ".StandID and c.caseid = " + p_strFVSOutTables[y] + ".caseid" +
+                                          " and c.runtitle = '" + p_strRunTitle + "' GROUP BY " + p_strFVSOutTables[y] + ".STANDID,YEAR) b " +
                                           "WHERE a.standid=b.standid AND a.year=b.year AND b.rowcount > 1";
-                        p_oAdo.SqlQueryReader(p_oConn, p_oAdo.m_strSQL);
-                        if (p_oAdo.m_OleDbDataReader.HasRows)
+                        SQLite.SqlQueryReader(conn, SQLite.m_strSQL);
+                        if (SQLite.m_DataReader.HasRows)
                         {
                             p_intError=-1;
-                            while (p_oAdo.m_OleDbDataReader.Read())
+                            while (SQLite.m_DataReader.Read())
                             {
-                                if (p_oAdo.m_OleDbDataReader["standid"] != System.DBNull.Value && 
-                                    p_oAdo.m_OleDbDataReader["year"] != System.DBNull.Value && 
-                                    p_oAdo.m_OleDbDataReader["rowcount"] != System.DBNull.Value)
-                                        p_strError = p_strError + "ERROR: [Duplicate StandId+Year] Variant: " + p_strVariant + " Package: " + p_strRxPackage + " Table:" + p_strFVSOutTables[y] + " StandId: " + p_oAdo.m_OleDbDataReader["standid"].ToString().Trim() + " Year: " + p_oAdo.m_OleDbDataReader["year"].ToString().Trim() + " Row Count:" + p_oAdo.m_OleDbDataReader["rowcount"].ToString().Trim() + "\r\n"; 
+                                if (SQLite.m_DataReader["standid"] != System.DBNull.Value &&
+                                    SQLite.m_DataReader["year"] != System.DBNull.Value &&
+                                    SQLite.m_DataReader["rowcount"] != System.DBNull.Value)
+                                        p_strError = p_strError + "ERROR: [Duplicate StandId+Year] RunTitle: " + p_strRunTitle  + " Table:" + p_strFVSOutTables[y] + " StandId: " + SQLite.m_DataReader["standid"].ToString().Trim() + " Year: " + SQLite.m_DataReader["year"].ToString().Trim() + " Row Count:" + SQLite.m_DataReader["rowcount"].ToString().Trim() + "\r\n"; 
                             }
                         }
-                        p_oAdo.m_OleDbDataReader.Close();
+                        SQLite.m_DataReader.Close();
                     }
                 }
             }
@@ -7798,19 +7748,7 @@ namespace FIA_Biosum_Manager
 
 
 		}
-        private void Validate_FVSCaseId(string p_strTableName,ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, ref int p_intItemError, ref string p_strItemError, ref int p_intItemWarning, ref string p_strItemWarning, bool p_bDoWarnings)
-        {
-            //ERRORS
-           
-             
 
-            Validate_MultipleCaseId(p_strTableName, p_oAdo, p_oConn, ref p_intItemError, ref p_strItemError, ref p_intItemWarning, ref p_strItemWarning, p_bDoWarnings);
-
-            if (p_intItemError != 0) return;
-            if (p_bDoWarnings == false) return;
-
-            
-        }
         /// <summary>
         /// Validate that every SeqNum value the user specified for PRE-POST values is found in the FVS_SUMMARY table
         /// </summary>
@@ -7839,52 +7777,7 @@ namespace FIA_Biosum_Manager
            
 			
         }
-        /// <summary>
-        /// Biosum cannot process FVS Output tables that have multiple caseid for a single standid in the FVS_CASES table.
-        /// </summary>
-        /// <param name="p_strFVSOutputTable"></param>
-        /// <param name="p_oAdo"></param>
-        /// <param name="p_oConn"></param>
-        /// <param name="p_intItemError"></param>
-        /// <param name="p_strItemError"></param>
-        /// <param name="p_intItemWarning"></param>
-        /// <param name="p_strItemWarning"></param>
-        /// <param name="p_bDoWarnings"></param>
-        private void Validate_MultipleCaseId(string p_strFVSOutputTable, ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, ref int p_intItemError, ref string p_strItemError, ref int p_intItemWarning, ref string p_strItemWarning, bool p_bDoWarnings)
-        {
-            if (m_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "// Validate_MultipleCaseId\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
 
-            if (p_oAdo.TableExist(p_oConn, "temp_caseidcount"))
-                p_oAdo.SqlNonQuery(p_oConn, "DROP TABLE temp_caseidcount");
-            //each standid,year should be represented 1 time.
-            p_oAdo.m_strSQL = "SELECT COUNT(*) AS ROWCOUNT,STANDID INTO temp_caseidcount FROM " + p_strFVSOutputTable + " GROUP BY STANDID";
-            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + p_oAdo.m_strSQL + "\r\n");
-            p_oAdo.SqlNonQuery(p_oConn, p_oAdo.m_strSQL);
-            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-            p_oAdo.m_strSQL = "SELECT COUNT(*) AS RECORDCOUNT FROM temp_caseidcount WHERE ROWCOUNT > 1";
-            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + p_oAdo.m_strSQL + "\r\n");
-            if ((int)p_oAdo.getRecordCount(p_oConn, p_oAdo.m_strSQL, "temp_caseidcount") > 0)
-            {
-                p_intItemError = -1;
-                p_strItemError = "FVS_CASEID table cannot contain more than one standid instance.\r\nTo resolve the problem, delete all the FVS Output tables and rerun the FVS treatments.";
-
-            }
-            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-            if (p_oAdo.TableExist(p_oConn, "temp_caseidcount"))
-                p_oAdo.SqlNonQuery(p_oConn, "DROP TABLE temp_caseidcount");
-
-        }
         /// <summary>
         /// Validate that the user specified SEQNUM exists in the fvs output table
         /// </summary>
