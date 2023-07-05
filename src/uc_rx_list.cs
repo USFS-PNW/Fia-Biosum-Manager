@@ -3662,6 +3662,7 @@ namespace FIA_Biosum_Manager
 
                     if (p_bAudit)
                     {
+                        //@ToDo: I think I need to add the runtitle into these audits
                         if (p_strSourceTableName == "FVS_SUMMARY")
                         {
                             dataMgr.m_strSQL = Queries.FVS.FVSOutputTable_AuditSelectIntoPrePostSeqNumCountSqlite
@@ -3671,7 +3672,7 @@ namespace FIA_Biosum_Manager
                                 frmMain.g_oUtils.WriteText(p_strDebugFile, dataMgr.m_strSQL + "\r\n\r\n");
                             dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
 
-                            dataMgr.m_strSQL = Queries.FVS.FVSOutputTable_PrePostGenericSQL(
+                            dataMgr.m_strSQL = Queries.FVS.FVSOutputTable_PrePostGenericSQLite(
                                strAuditYearCountsTable, "FVS_SUMMARY", false);
 
                             if (p_bDebug && frmMain.g_intDebugLevel > 2)

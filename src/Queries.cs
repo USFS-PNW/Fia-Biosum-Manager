@@ -434,6 +434,56 @@ namespace FIA_Biosum_Manager
                 return strSQL;
                
             }
+            /// <summary>
+            ///  Assign a sequence number to each record of the FVS output table and group by standid,year
+            /// </summary>
+            /// <param name="p_strIntoTable"></param>
+            /// <param name="p_strFVSOutputTable"></param>
+            /// <param name="p_bAllColumns"></param>
+            /// <returns></returns>
+            static public string FVSOutputTable_PrePostGenericSQLite(string p_strIntoTable, string p_strFVSOutputTable, bool p_bAllColumns)
+            {
+                string strSQL = "";
+                if (p_bAllColumns)
+                {
+                    strSQL = "SELECT d.SeqNum,a.* " +
+                              "FROM " + p_strFVSOutputTable + " a, " +
+                                 "(SELECT  SUM(CASE WHEN a.year >= b.year THEN 1 ELSE 0 END) AS SeqNum," +
+                                          "b.standid, b.year " +
+                                  "FROM " + p_strFVSOutputTable + " b," +
+                                        "(SELECT standid,year " +
+                                         "FROM " + p_strFVSOutputTable + ") c " +
+                                 "WHERE b.standid=c.standid " +
+                                 "GROUP BY b.standid,b.year) d " +
+                              "WHERE a.standid=d.standid AND a.year=d.year";
+                }
+                else
+                {
+                    if (p_strIntoTable.Trim().Length > 0)
+                    {
+                        strSQL = "CREATE TABLE " + p_strIntoTable + " AS " +
+                                 "SELECT  SUM(CASE WHEN a.year >= b.year THEN 1 ELSE 0 END) AS SeqNum," +
+                                 "a.standid, a.year " +
+                                 "FROM " + p_strFVSOutputTable + " a," +
+                                      "(SELECT standid,year " +
+                                       "FROM " + p_strFVSOutputTable + ") b " +
+                                 "WHERE a.standid=b.standid " +
+                                 "GROUP BY a.standid,a.year";
+                    }
+                    else
+                    {
+                        strSQL = "SELECT SUM(CASE WHEN a.year >= b.year THEN 1 ELSE 0 END) AS SeqNum," +
+                                          "a.standid, a.year " +
+                                 "FROM " + p_strFVSOutputTable + " a," +
+                                      "(SELECT standid,year " +
+                                       "FROM " + p_strFVSOutputTable + ") b " +
+                                 "WHERE a.standid=b.standid " +
+                                 "GROUP BY a.standid,a.year";
+                    }
+                }
+                return strSQL;
+
+            }
             static public string[] FVSOutputTable_PrePostPotFireBaseYearSQL(string p_strPotFireBaseYearTable, string p_strPotFireTable,string p_strWorkTableName)
             {
                 string[] strSQL = new string[9];
