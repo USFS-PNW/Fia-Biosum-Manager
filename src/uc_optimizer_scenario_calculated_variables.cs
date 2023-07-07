@@ -47,6 +47,7 @@ namespace FIA_Biosum_Manager
         private ado_data_access m_oAdoFvs;
         private DataMgr m_oDataMgr = new DataMgr();
         private string m_strTempMDB;
+        private string m_strTempDB;
         private bool m_bUsingSqlite;
 
         const int COLUMN_CHECKBOX = 0;
@@ -1103,20 +1104,16 @@ namespace FIA_Biosum_Manager
 
         private void loadm_dg()
         {
-            dao_data_access oDao = new dao_data_access();
+            DataMgr oDataMgr = new DataMgr();
 
-            //@ToDo: Using MS Access to query FVS Out tables
-            if (m_bUsingSqlite)
-            {
-                m_oAdoFvs = new ado_data_access();
-                m_strTempMDB = m_oUtils.getRandomFile(this.m_oEnv.strTempDir, "accdb");
-                oDao.CreateMDB(m_strTempMDB);
-            }              
-
+            //@ToDo: Using MS Access to query FVS Out tables          
+            m_strTempDB = m_oUtils.getRandomFile(this.m_oEnv.strTempDir, "db");
+            oDataMgr.CreateDbFile(m_strTempDB);
+         
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
             {
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "loadm_dg: Starting to load FVS calculated variable datagrid \r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "Temporary database path: " + m_strTempMDB + "\r\n\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "Temporary database path: " + m_strTempDB + "\r\n\r\n");
             }
 
             string strFvsPreTableName = "";
@@ -1126,9 +1123,8 @@ namespace FIA_Biosum_Manager
             {
                 strFvsPreTableName = "PRE_" + Convert.ToString(lstFVSTablesList.SelectedItem);
                 strFvsPostTableName = "POST_" + Convert.ToString(lstFVSTablesList.SelectedItem);
-                string strSourceDatabaseName = "PREPOST_" + Convert.ToString(lstFVSTablesList.SelectedItem) + ".ACCDB";
-                strFvsPrePostDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
-                    "\\fvs\\db\\" + strSourceDatabaseName;
+                strFvsPrePostDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + 
+                    Tables.FVS.DefaultFVSOutPrePostDbFile;
             }
             if (! String.IsNullOrEmpty(strFvsPreTableName))
             {
@@ -1140,20 +1136,22 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oFrmMain.Top);
                 
                 //Add links to FVS pre/post tables if they don't exist
-                if (!oDao.TableExists(m_strTempMDB, strFvsPreTableName))
-                {
-                    oDao.CreateTableLink(m_strTempMDB, strFvsPreTableName, strFvsPrePostDb, strFvsPreTableName);
-                }
-                if (!oDao.TableExists(m_strTempMDB, strFvsPostTableName))
-                {
-                    oDao.CreateTableLink(m_strTempMDB, strFvsPostTableName, strFvsPrePostDb, strFvsPostTableName);
-                }
+
 
                 //Sleep while table link is being built
-                using (var calculateConn = new OleDbConnection(m_oAdoFvs.getMDBConnString(m_strTempMDB, "", "")))
+                using (var calculateConn = new SQLiteConnection(oDataMgr.GetConnectionString(m_strTempDB)))
                 {
                     calculateConn.Open();
-                    while (!m_oAdoFvs.TableExist(calculateConn, strFvsPreTableName))
+                    if (!oDataMgr.DatabaseAttached(calculateConn, strFvsPrePostDb))
+                    {
+                        oDataMgr.m_strSQL = "ATTACH DATABASE '" + strFvsPrePostDb + "' AS SOURCE";
+                        oDataMgr.SqlNonQuery(calculateConn, oDataMgr.m_strSQL);
+                        oDataMgr.m_strSQL = "CREATE TABLE " + strFvsPreTableName + " AS SELECT * FROM SOURCE." + strFvsPreTableName;
+                        oDataMgr.SqlNonQuery(calculateConn, oDataMgr.m_strSQL);
+                        oDataMgr.m_strSQL = "CREATE TABLE " + strFvsPostTableName + " AS SELECT * FROM SOURCE." + strFvsPostTableName;
+                        oDataMgr.SqlNonQuery(calculateConn, oDataMgr.m_strSQL);
+                    }
+                    while (!oDataMgr.TableExist(calculateConn, strFvsPreTableName))
                     {
                         Thread.Sleep(1000);
                     }
@@ -1168,39 +1166,27 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Query rxPackage for baseline package list \r\n");
                         frmMain.g_oUtils.WriteText(m_strDebugFile, strSql + "\r\n\r\n");
                     }
-                    m_oAdoFvs.SqlQueryReader(calculateConn, strSql);
-                    while (m_oAdoFvs.m_OleDbDataReader.Read())
+                    oDataMgr.SqlQueryReader(calculateConn, strSql);
+                    while(oDataMgr.m_DataReader.Read())
                     {
-                        if (m_oAdoFvs.m_OleDbDataReader["rxpackage"] != System.DBNull.Value)
+                        if (oDataMgr.m_DataReader["rxpackage"] != System.DBNull.Value)
                         {
-                            cboFvsVariableBaselinePkg.Items.Add(Convert.ToString(m_oAdoFvs.m_OleDbDataReader["rxpackage"]));
+                            cboFvsVariableBaselinePkg.Items.Add(Convert.ToString(oDataMgr.m_DataReader["rxpackage"]));
                         }
                     }
 
                     //Create temporary table to populate datagrid
-                    if (! m_bUsingSqlite)
+                    if (oDataMgr.TableExist(calculateConn, m_strFvsViewTableName))
                     {
-                        if (oDao.TableExists(m_strTempMDB, m_strFvsViewTableName))
+                        oDataMgr.m_strSQL = "DROP TABLE " + m_strFvsViewTableName;
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         {
-                            oDao.DeleteTableFromMDB(m_strTempMDB, m_strFvsViewTableName);
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + "\r\n");
                         }
-                        frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioFvsVariableWeightsReferenceTable(m_oAdoFvs,
-                            calculateConn, m_strFvsViewTableName);
+                        oDataMgr.SqlNonQuery(calculateConn, oDataMgr.m_strSQL);
                     }
-                    else
-                    {
-                        if (m_oDataMgr.TableExist(m_oDataMgr.m_Connection, m_strFvsViewTableName))
-                        {
-                            m_oDataMgr.m_strSQL = "DROP TABLE " + m_strFvsViewTableName;
-                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            {
-                                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + "\r\n");
-                            }
-                            m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
-                        }
-                        frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioFvsVariableWeightsReferenceTable(m_oDataMgr,
-                           m_oDataMgr.m_Connection, m_strFvsViewTableName);
-                    }
+                    frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioFvsVariableWeightsReferenceTable(oDataMgr,
+                        calculateConn, m_strFvsViewTableName);
 
                     strSql = "SELECT rxcycle, MIN(Year) as MinYear, \"PRE\" as pre_or_post" +
                                      " FROM " + strFvsPreTableName +
@@ -1212,18 +1198,18 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(m_strDebugFile, strSql + "\r\n\r\n");
                     }
 
-                    m_oAdoFvs.SqlQueryReader(calculateConn, strSql);
-                    while (m_oAdoFvs.m_OleDbDataReader.Read())
+                    oDataMgr.SqlQueryReader(calculateConn, strSql);
+                    while (oDataMgr.m_DataReader.Read())
                     {
                         string strRxCycle = "";
                         int intYear = -99;
-                        if (m_oAdoFvs.m_OleDbDataReader["MinYear"] != System.DBNull.Value)
+                        if (oDataMgr.m_DataReader["MinYear"] != System.DBNull.Value)
                         {
-                            intYear = Convert.ToInt16(m_oAdoFvs.m_OleDbDataReader["MinYear"]);
+                            intYear = Convert.ToInt16(oDataMgr.m_DataReader["MinYear"]);
                         }
-                        if (m_oAdoFvs.m_OleDbDataReader["rxcycle"] != System.DBNull.Value)
+                        if (oDataMgr.m_DataReader["rxcycle"] != System.DBNull.Value)
                         {
-                            strRxCycle = Convert.ToString(m_oAdoFvs.m_OleDbDataReader["rxcycle"]);
+                            strRxCycle = Convert.ToString(oDataMgr.m_DataReader["rxcycle"]);
                         }
 
                         if (!String.IsNullOrEmpty(strRxCycle))
@@ -1237,14 +1223,9 @@ namespace FIA_Biosum_Manager
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Insert records into " + m_strFvsViewTableName + "\r\n");
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, insertSql + "\r\n\r\n");
                             }
-                            if (!m_bUsingSqlite)
-                            {
-                                m_oAdoFvs.SqlNonQuery(calculateConn, insertSql);
-                            }
-                            else
-                            {
-                                m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, insertSql);
-                            }
+
+                            oDataMgr.SqlNonQuery(calculateConn, insertSql);
+
                         }
                     }
 
@@ -1258,18 +1239,18 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(m_strDebugFile, strSql + "\r\n\r\n");
                     }
 
-                    m_oAdoFvs.SqlQueryReader(calculateConn, strSql);
-                    while (m_oAdoFvs.m_OleDbDataReader.Read())
+                    oDataMgr.SqlQueryReader(calculateConn, strSql);
+                    while (oDataMgr.m_DataReader.Read())
                     {
                         string strRxCycle = "";
                         int intYear = -99;
-                        if (m_oAdoFvs.m_OleDbDataReader["MinYear"] != System.DBNull.Value)
+                        if (oDataMgr.m_DataReader["MinYear"] != System.DBNull.Value)
                         {
-                            intYear = Convert.ToInt16(m_oAdoFvs.m_OleDbDataReader["MinYear"]);
+                            intYear = Convert.ToInt16(oDataMgr.m_DataReader["MinYear"]);
                         }
-                        if (m_oAdoFvs.m_OleDbDataReader["rxcycle"] != System.DBNull.Value)
+                        if (oDataMgr.m_DataReader["rxcycle"] != System.DBNull.Value)
                         {
-                            strRxCycle = Convert.ToString(m_oAdoFvs.m_OleDbDataReader["rxcycle"]);
+                            strRxCycle = Convert.ToString(oDataMgr.m_DataReader["rxcycle"]);
                         }
 
                         if (!String.IsNullOrEmpty(strRxCycle))
@@ -1283,41 +1264,15 @@ namespace FIA_Biosum_Manager
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Insert records into " + m_strFvsViewTableName + "\r\n");
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, insertSql + "\r\n\r\n");
                             }
-                            if (!m_bUsingSqlite)
-                            {
-                                m_oAdoFvs.SqlNonQuery(calculateConn, insertSql);
-                            }
-                            else
-                            {
-                                m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, insertSql);
-                            }
+                            m_oDataMgr.SqlNonQuery(calculateConn, insertSql);
                         }
                     }
-                    if (!m_bUsingSqlite)
-                    {
-                        m_oAdoFvs.m_DataSet.Clear();
-                        m_oAdoFvs.m_strSQL = "select * from " + m_strFvsViewTableName + " order by RXYEAR";
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        {
-                            frmMain.g_oUtils.WriteText(m_strDebugFile, "Populating FVS data set with query " + m_oAdoFvs.m_strSQL + " \r\n");
-                        }
-                        m_oAdoFvs.m_OleDbCommand = calculateConn.CreateCommand();
-                        m_oAdoFvs.m_OleDbCommand.CommandText = m_oAdoFvs.m_strSQL;
-                        m_oAdoFvs.m_OleDbDataAdapter = new OleDbDataAdapter();
-                        m_oAdoFvs.m_OleDbDataAdapter.SelectCommand = m_oAdoFvs.m_OleDbCommand;
-                        m_oAdoFvs.m_OleDbDataAdapter.SelectCommand.Transaction = m_oAdoFvs.m_OleDbTransaction;
-                        m_oAdoFvs.m_OleDbDataAdapter.Fill(m_oAdoFvs.m_DataSet, m_strFvsViewTableName);
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        {
-                            frmMain.g_oUtils.WriteText(m_strDebugFile, "FVS dataset filled \r\n");
-                        }
-                    }
-                    else
-                    {
-                        string strPrimaryKeys = "rxcycle, pre_or_post, rxyear";
-                        string strColumns = "rxcycle, pre_or_post, rxyear, weight";
-                        m_oDataMgr.DataAdapterArrayItemConfigureSelectCommand(FVS_DETAILS_TABLE, m_strFvsViewTableName, strColumns, strPrimaryKeys, "");
-                    }
+                    oDataMgr.InitializeDataAdapterArray();
+                    string strPrimaryKeys = "rxcycle, pre_or_post, rxyear";
+                    string strColumns = "rxcycle, pre_or_post, rxyear, weight";
+                    oDataMgr.DataAdapterArrayItemConfigureSelectCommand(FVS_DETAILS_TABLE, m_strFvsViewTableName, strColumns, strPrimaryKeys, "");
+
+                    calculateConn.Close();
                 }
                 BtnFvsImport.Enabled = true;
             }
@@ -1333,11 +1288,7 @@ namespace FIA_Biosum_Manager
                  System.Windows.Forms.MessageBoxIcon.Exclamation);
             }
 
-            if (oDao != null)
-            {
-                oDao.m_DaoWorkspace.Close();
-                oDao = null;
-            }
+
         }
 
         private void init_m_dg()
@@ -2706,14 +2657,7 @@ namespace FIA_Biosum_Manager
             this.enableFvsVariableUc(true);
             lstFVSTablesList.ClearSelected();
 
-            //if (! m_bUsingSqlite)
-            //{
-            //    m_oAdoFvs.m_DataSet.Tables["view_weights"].Rows.Clear();
-            //}
-            //else
-            //{
-                m_oDataMgr.m_DataSet.Tables[m_strFvsViewTableName].Rows.Clear();
-            //}
+            m_oDataMgr.m_DataSet.Tables[m_strFvsViewTableName].Rows.Clear();
 
             lblFvsVariableName.Text = "Not Defined";
             txtFVSVariableDescr.Text = "";
@@ -3671,8 +3615,9 @@ namespace FIA_Biosum_Manager
                     string strConn = m_oDataMgr.GetConnectionString(strPrePostWeightedDb);
                     using (var conn = new SQLiteConnection(strConn))
                     {
+                        conn.Open();
                         bool bNewTables = false;
-                        if (!m_oDataMgr.TableExist(conn, strTargetPreTable))
+                        if (!m_oDataMgr.DatabaseAttached(conn, strFvsPrePostDb))
                         {
                             //Link source tables to output database
                             m_oDataMgr.m_strSQL = "ATTACH DATABASE '" + strFvsPrePostDb + "' AS FVSOUT";
@@ -3680,10 +3625,13 @@ namespace FIA_Biosum_Manager
 
                             // FVS creates a record for
                             // each condition for each cycle regardless of whether there is activity
-                            m_oDataMgr.m_strSQL = "SELECT biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant, CDbl(0) as " +
-                                  lblFvsVariableName.Text + " " +
-                                  "INTO " + strTargetPreTable +
-                                  " FROM " + strSourcePreTable;
+                            //m_oDataMgr.m_strSQL = "SELECT biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant, CDbl(0) as " +
+                            //      lblFvsVariableName.Text + " " +
+                            //      "INTO " + strTargetPreTable +
+                            //      " FROM " + strSourcePreTable;
+                            m_oDataMgr.m_strSQL = "CREATE TABLE " + strTargetPreTable + " AS SELECT " +
+                                "biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant, CAST(0 AS DOUBLE) AS " +
+                                lblFvsVariableName.Text + " FROM " + strSourcePreTable;
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             {
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Creating final pre/post tables. They did not already exist \r\n");
@@ -3691,10 +3639,13 @@ namespace FIA_Biosum_Manager
                             }
 
                             m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
-                            m_oDataMgr.m_strSQL = "SELECT biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant, CDbl(0) as " +
-                                              lblFvsVariableName.Text + " " +
-                                              "INTO " + strTargetPostTable +
-                                              " FROM " + strSourcePostTable;
+                            //m_oDataMgr.m_strSQL = "SELECT biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant, CDbl(0) as " +
+                            //                  lblFvsVariableName.Text + " " +
+                            //                  "INTO " + strTargetPostTable +
+                            //                  " FROM " + strSourcePostTable;
+                            m_oDataMgr.m_strSQL = "CREATE TABLE " + strTargetPostTable + " AS SELECT " +
+                                "biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant, CAST(0 AS DOUBLE) AS " +
+                                lblFvsVariableName.Text + " FROM " + strSourcePostTable;
                             m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
                             bNewTables = true;
 
@@ -3717,6 +3668,7 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oFrmMain.DeactivateStandByAnimation();
 
                         MessageBox.Show("Variable calculation complete! Click Cancel to return to the main Calculated Variables page", "FIA Biosum");
+                        conn.Close();
                     }
                 }
             }
@@ -4797,7 +4749,7 @@ namespace FIA_Biosum_Manager
                             }
                         }
 
-                        string strCalculateConn = m_oAdo.getMDBConnString(strRecalculateAccdb, "", "");
+                        string strCalculateConn = oAdo.getMDBConnString(strRecalculateAccdb, "", "");
                         CalculateVariable(oDao, strCalculateConn, strWeightsByRxPkgPreTable, strSourcePreTable,
                             strWeightsByRxPkgPostTable, strSourcePostTable, strVariableName, strColumn, strBaselinePackage,
                             lstWeights,false, ref counter1);
@@ -4997,26 +4949,27 @@ namespace FIA_Biosum_Manager
                                 string strSourcePreTable = "PRE_" + strTable;
                                 string strSourcePostTable = "POST_" + strTable;
 
-                                if (!strTable.Equals(strCurrentTable))
+                                using (SQLiteConnection connTemp = new SQLiteConnection(oDataMgr.GetConnectionString(strRecalculateDb)))
                                 {
-                                    counter2 = counter2 + counter2Interval;
-                                    UpdateProgressBar2(counter2);
-                                    // We need to create the tables
-                                    string strFvsPrePostDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
-                                         Tables.FVS.DefaultFVSOutPrePostDbFile;
-                                    string strTargetPreTable = "PRE_" + strTable + "_WEIGHTED";
-                                    string strTargetPostTable = "POST_" + strTable + "_WEIGHTED";
+                                    connTemp.Open();
 
-                                    UpdateProgressBar1("Creating tables for " + strTable, counter1);
-                                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                    if (!strTable.Equals(strCurrentTable))
                                     {
-                                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Creating tables for " + strTable + " \r\n\r\n");
-                                    }
-                                    counter1 = counter1 + 3;
+                                        counter2 = counter2 + counter2Interval;
+                                        UpdateProgressBar2(counter2);
+                                        // We need to create the tables
+                                        string strFvsPrePostDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
+                                             Tables.FVS.DefaultFVSOutPrePostDbFile;
+                                        string strTargetPreTable = "PRE_" + strTable + "_WEIGHTED";
+                                        string strTargetPostTable = "POST_" + strTable + "_WEIGHTED";
 
-                                    using (System.Data.SQLite.SQLiteConnection connTemp = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strRecalculateDb)))
-                                    {
-                                        connTemp.Open();
+                                        UpdateProgressBar1("Creating tables for " + strTable, counter1);
+                                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                        {
+                                            frmMain.g_oUtils.WriteText(m_strDebugFile, "Creating tables for " + strTable + " \r\n\r\n");
+                                        }
+                                        counter1 = counter1 + 3;
+
 
                                         //Link to source FVS tables in temp .db if they don't exist from a previous run
                                         if (!oDataMgr.DatabaseAttached(connTemp, strFvsPrePostDb))
@@ -5034,8 +4987,11 @@ namespace FIA_Biosum_Manager
                                         }
 
                                         //Link source tables to output database
-                                        oDataMgr.m_strSQL = "ATTACH DATABASE '" + strFvsPrePostDb + "' AS FVSSOURCE";
-                                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                                        if (!oDataMgr.DatabaseAttached(conn, strFvsPrePostDb))
+                                        {
+                                            oDataMgr.m_strSQL = "ATTACH DATABASE '" + strFvsPrePostDb + "' AS FVSSOURCE";
+                                            oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                                        }
 
                                         // FVS creates a record for
                                         // each condition for each cycle regardless of whether there is activity
@@ -5064,78 +5020,78 @@ namespace FIA_Biosum_Manager
 
                                         strCurrentTable = strTable;
                                     }
-
                                     //Drop strWeightsByRxCyclePreTable if it exists so we can recreate it
-                                    if (oDataMgr.TableExist(conn, strWeightsByRxCyclePreTable))
+                                    if (oDataMgr.TableExist(connTemp, strWeightsByRxCyclePreTable))
                                     {
                                         oDataMgr.m_strSQL = "DROP TABLE " + strWeightsByRxCyclePreTable;
-                                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                                        oDataMgr.SqlNonQuery(connTemp, oDataMgr.m_strSQL);
                                     }
                                     //Drop strWeightsByRxCyclePostTable if it exists so we can recreate it
-                                    if (oDataMgr.TableExist(conn, strWeightsByRxCyclePostTable))
+                                    if (oDataMgr.TableExist(connTemp, strWeightsByRxCyclePostTable))
                                     {
                                         oDataMgr.m_strSQL = "DROP TABLE " + strWeightsByRxCyclePostTable;
-                                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                                        oDataMgr.SqlNonQuery(connTemp, oDataMgr.m_strSQL);
                                     }
                                     //Drop strWeightsByRxPkgPreTable if it exists so we can recreate it
-                                    if (oDataMgr.TableExist(conn, strWeightsByRxPkgPreTable))
+                                    if (oDataMgr.TableExist(connTemp, strWeightsByRxPkgPreTable))
                                     {
                                         oDataMgr.m_strSQL = "DROP TABLE " + strWeightsByRxPkgPreTable;
-                                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                                        oDataMgr.SqlNonQuery(connTemp, oDataMgr.m_strSQL);
                                     }
                                     //Drop strWeightsByRxPkgPostTable if it exists so we can recreate it
-                                    if (oDataMgr.TableExist(conn, strWeightsByRxPkgPostTable))
+                                    if (oDataMgr.TableExist(connTemp, strWeightsByRxPkgPostTable))
                                     {
                                         oDataMgr.m_strSQL = "DROP TABLE " + strWeightsByRxPkgPostTable;
-                                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                                        oDataMgr.SqlNonQuery(connTemp, oDataMgr.m_strSQL);
                                     }
+                                }
 
-                                    IList<string[]> lstWeights = new List<string[]>();
-                                    string strVariableName = "";
-                                    string strBaselinePackage = "";
+                                IList<string[]> lstWeights = new List<string[]>();
+                                string strVariableName = "";
+                                string strBaselinePackage = "";
 
-                                    oDataMgr.m_strSQL = "SELECT ID, VARIABLE_NAME, BASELINE_RXPACKAGE, " + Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName + ".* " +
-                                    "FROM " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + " INNER JOIN " +
-                                    Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName + " ON " +
-                                    Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + ".ID = " +
-                                    Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName + ".CALCULATED_VARIABLES_ID " +
-                                    "WHERE CALCULATED_VARIABLES_ID = " + keyId;
-                                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                oDataMgr.m_strSQL = "SELECT ID, VARIABLE_NAME, BASELINE_RXPACKAGE, " + Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName + ".* " +
+                                "FROM " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + " INNER JOIN " +
+                                Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName + " ON " +
+                                Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + ".ID = " +
+                                Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName + ".CALCULATED_VARIABLES_ID " +
+                                "WHERE CALCULATED_VARIABLES_ID = " + keyId;
+                                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                {
+                                    frmMain.g_oUtils.WriteText(m_strDebugFile, oDataMgr.m_strSQL + "\r\n\r\n");
+                                }
+                                oDataMgr.SqlQueryReader(connCalcVariables, oDataMgr.m_strSQL);
+                                if (oDataMgr.m_intError == 0 && oDataMgr.m_DataReader.HasRows)
+                                {
+                                    while (oDataMgr.m_DataReader.Read())
                                     {
-                                        frmMain.g_oUtils.WriteText(m_strDebugFile, oDataMgr.m_strSQL + "\r\n\r\n");
-                                    }
-                                    oDataMgr.SqlQueryReader(connCalcVariables, oDataMgr.m_strSQL);
-                                    if (oDataMgr.m_intError == 0 && oDataMgr.m_DataReader.HasRows)
-                                    {
-                                        while (oDataMgr.m_DataReader.Read())
+                                        strVariableName = Convert.ToString(oDataMgr.m_DataReader["VARIABLE_NAME"]).Trim();
+                                        strBaselinePackage = Convert.ToString(oDataMgr.m_DataReader["BASELINE_RXPACKAGE"]).Trim();
+                                        for (int rxCycle = 1; rxCycle < 5; rxCycle++)
                                         {
-                                            strVariableName = Convert.ToString(oDataMgr.m_DataReader["VARIABLE_NAME"]).Trim();
-                                            strBaselinePackage = Convert.ToString(oDataMgr.m_DataReader["BASELINE_RXPACKAGE"]).Trim();
-                                            for (int rxCycle = 1; rxCycle < 5; rxCycle++)
-                                            {
-                                                // PRE VALUES
-                                                string[] strPreRow = new string[3];
-                                                string strFieldName = "weight_" + rxCycle + "_pre";
-                                                strPreRow[idxRxCycle] = Convert.ToString(rxCycle);
-                                                strPreRow[idxPreOrPost] = "PRE";
-                                                strPreRow[idxWeight] = Convert.ToString(oDataMgr.m_DataReader[strFieldName]);
-                                                lstWeights.Add(strPreRow);
+                                            // PRE VALUES
+                                            string[] strPreRow = new string[3];
+                                            string strFieldName = "weight_" + rxCycle + "_pre";
+                                            strPreRow[idxRxCycle] = Convert.ToString(rxCycle);
+                                            strPreRow[idxPreOrPost] = "PRE";
+                                            strPreRow[idxWeight] = Convert.ToString(oDataMgr.m_DataReader[strFieldName]);
+                                            lstWeights.Add(strPreRow);
 
-                                                // POST VALUES
-                                                string[] strPostRow = new string[3];
-                                                strFieldName = "weight_" + rxCycle + "_post";
-                                                strPostRow[idxRxCycle] = Convert.ToString(rxCycle);
-                                                strPostRow[idxPreOrPost] = "POST";
-                                                strPostRow[idxWeight] = Convert.ToString(oDataMgr.m_DataReader[strFieldName]);
-                                                lstWeights.Add(strPostRow);
-                                            }
+                                            // POST VALUES
+                                            string[] strPostRow = new string[3];
+                                            strFieldName = "weight_" + rxCycle + "_post";
+                                            strPostRow[idxRxCycle] = Convert.ToString(rxCycle);
+                                            strPostRow[idxPreOrPost] = "POST";
+                                            strPostRow[idxWeight] = Convert.ToString(oDataMgr.m_DataReader[strFieldName]);
+                                            lstWeights.Add(strPostRow);
                                         }
                                     }
-                                    string strCalculateConn = oDataMgr.GetConnectionString(strRecalculateDb);
-                                    CalculateVariableSqlite(strCalculateConn, strWeightsByRxPkgPreTable, strSourcePreTable,
-                                        strWeightsByRxPkgPostTable, strSourcePostTable, strVariableName, strColumn, strBaselinePackage,
-                                        lstWeights, false, ref counter1);
                                 }
+                                   
+                                string strCalculateConn = oDataMgr.GetConnectionString(strRecalculateDb);
+                                CalculateVariableSqlite(strCalculateConn, strWeightsByRxPkgPreTable, strSourcePreTable,
+                                    strWeightsByRxPkgPostTable, strSourcePostTable, strVariableName, strColumn, strBaselinePackage,
+                                    lstWeights, false, ref counter1);
                             }
                         }
                     }
@@ -5196,6 +5152,7 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.CurrentThreadProcessStarted = false;
             StartTherm("2", "Recalculate Calculated Variable Tables");
             frmMain.g_oDelegate.m_oThread = new Thread(new ThreadStart(RecalculateWeightedVariables_ProcessSqlite));
+            frmMain.g_oDelegate.m_oThread = new Thread(new ThreadStart(RecalculateWeightedVariables_Process));
             frmMain.g_oDelegate.m_oThread.IsBackground = true;
             frmMain.g_oDelegate.CurrentThreadProcessIdle = false;
             frmMain.g_oDelegate.m_oThread.Start();
@@ -5218,6 +5175,7 @@ namespace FIA_Biosum_Manager
                                        string strVariableName, string strFieldName, string strBaselinePkg, IList<string[]> lstRows,
                                        bool bNewTables, ref int counter1)
         {
+            ado_data_access oAdo = new ado_data_access();
             if (counter1 > 0)
             {
                 counter1 = counter1 + counter1Interval;
@@ -5235,23 +5193,23 @@ namespace FIA_Biosum_Manager
                 calculateConn.Open();
                 strRefreshAccdb = calculateConn.DataSource;
 
-                m_oAdo.m_strSQL = "SELECT biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant, CDbl(0) as " +
+                oAdo.m_strSQL = "SELECT biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant, CDbl(0) as " +
                                   strVariableName + " " +
                                   "INTO " + strWeightsByRxCyclePreTable +
                                   " FROM " + strSourcePreTable;
-                m_oAdo.SqlNonQuery(calculateConn, m_oAdo.m_strSQL);
+                oAdo.SqlNonQuery(calculateConn, oAdo.m_strSQL);
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 {
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Create temporary table for weights by rx and rxcycle\r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Sql: " + m_oAdo.m_strSQL + "\r\n\r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Sql: " + oAdo.m_strSQL + "\r\n\r\n");
                 }
 
-                m_oAdo.m_strSQL = "SELECT biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant, CDbl(0) as " +
+                oAdo.m_strSQL = "SELECT biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant, CDbl(0) as " +
                               strVariableName + " " +
                               "INTO " + strWeightsByRxCyclePostTable +
                               " FROM " + strSourcePostTable;
-                m_oAdo.SqlNonQuery(calculateConn, m_oAdo.m_strSQL);
+                oAdo.SqlNonQuery(calculateConn, oAdo.m_strSQL);
 
                 //Calculate values for each row in table
                 double dblWeight = -1;
@@ -5278,7 +5236,7 @@ namespace FIA_Biosum_Manager
                     if (Double.TryParse(strWeight, out dblWeight))
                     {
                         // Apply weights to each cycle
-                        m_oAdo.m_strSQL = "UPDATE " + strTargetTableName + " w " +
+                        oAdo.m_strSQL = "UPDATE " + strTargetTableName + " w " +
                                       "INNER JOIN " + strSourceTableName + " p " +
                                       "ON w.biosum_cond_id = p.biosum_cond_id " +
                                       "AND w.rxpackage = p.rxpackage AND w.rx = p.rx " +
@@ -5286,29 +5244,29 @@ namespace FIA_Biosum_Manager
                                       "SET " + strVariableName + " = " +
                                       strFieldName + " * " + dblWeight + " " +
                                       "WHERE w.rxcycle = '" + strRxCycle + "'";
-                        m_oAdo.SqlNonQuery(calculateConn, m_oAdo.m_strSQL);
+                        oAdo.SqlNonQuery(calculateConn, oAdo.m_strSQL);
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         {
                             frmMain.g_oUtils.WriteText(m_strDebugFile, "Calculate values for each row in m_dg \r\n");
-                            frmMain.g_oUtils.WriteText(m_strDebugFile, "sql: " + m_oAdo.m_strSQL + "\r\n\r\n");
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, "sql: " + oAdo.m_strSQL + "\r\n\r\n");
                         }
 
                     }
                 }
 
                 // Sum by rxpackage across cycles
-                m_oAdo.m_strSQL = "SELECT biosum_cond_id, rxpackage, \"0\" as [rx], sum(" + strVariableName + ") as [sum_pre] " +
+                oAdo.m_strSQL = "SELECT biosum_cond_id, rxpackage, \"0\" as [rx], sum(" + strVariableName + ") as [sum_pre] " +
                               "into " + strWeightsByRxPkgPreTable + " " +
                               "from " + strWeightsByRxCyclePreTable + " " +
                               "group by biosum_cond_id, rxpackage";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 {
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Sum by rxpackage across cycles \r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "sql: " + m_oAdo.m_strSQL + "\r\n\r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "sql: " + oAdo.m_strSQL + "\r\n\r\n");
                 }
-                m_oAdo.SqlNonQuery(calculateConn, m_oAdo.m_strSQL);
+                oAdo.SqlNonQuery(calculateConn, oAdo.m_strSQL);
                 // Update rx with rx from cycle 1
-                m_oAdo.m_strSQL = "UPDATE " + strWeightsByRxPkgPreTable + " w " +
+                oAdo.m_strSQL = "UPDATE " + strWeightsByRxPkgPreTable + " w " +
                               "INNER JOIN " + strWeightsByRxCyclePreTable + " r ON w.biosum_cond_id = r.biosum_cond_id " +
                               "AND w.rxpackage = r.rxpackage " +
                               "SET w.rx = r.rx " +
@@ -5316,25 +5274,25 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 {
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Set rx to rx from cycle 1 \r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "sql: " + m_oAdo.m_strSQL + "\r\n\r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "sql: " + oAdo.m_strSQL + "\r\n\r\n");
                 }
-                m_oAdo.SqlNonQuery(calculateConn, m_oAdo.m_strSQL);
-                m_oAdo.m_strSQL = "SELECT biosum_cond_id, rxpackage, \"0\" as [rx], sum(" + strVariableName + ") as [sum_post] " +
+                oAdo.SqlNonQuery(calculateConn, oAdo.m_strSQL);
+                oAdo.m_strSQL = "SELECT biosum_cond_id, rxpackage, \"0\" as [rx], sum(" + strVariableName + ") as [sum_post] " +
                               "into " + strWeightsByRxPkgPostTable + " " +
                               "from " + strWeightsByRxCyclePostTable + " " +
                               "group by biosum_cond_id, rxpackage";
-                m_oAdo.SqlNonQuery(calculateConn, m_oAdo.m_strSQL);
+                oAdo.SqlNonQuery(calculateConn, oAdo.m_strSQL);
                 // Update rx with rx from cycle 1
-                m_oAdo.m_strSQL = "UPDATE " + strWeightsByRxPkgPostTable + " w " +
+                oAdo.m_strSQL = "UPDATE " + strWeightsByRxPkgPostTable + " w " +
                               "INNER JOIN " + strWeightsByRxCyclePostTable + " r ON w.biosum_cond_id = r.biosum_cond_id " +
                               "AND w.rxpackage = r.rxpackage " +
                               "SET w.rx = r.rx " +
                               "WHERE r.rxcycle = '1'";
-                m_oAdo.SqlNonQuery(calculateConn, m_oAdo.m_strSQL);
+                oAdo.SqlNonQuery(calculateConn, oAdo.m_strSQL);
             }   // end using
 
             //Switch connection to the final storage location and prepare the tables to receive the output
-            string strPrePostConn = m_oAdo.getMDBConnString(strPrePostWeightedDb, "", "");
+            string strPrePostConn = oAdo.getMDBConnString(strPrePostWeightedDb, "", "");
             using (var prePostConn = new OleDbConnection(strPrePostConn))
             {
                 prePostConn.Open();
@@ -5342,9 +5300,9 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 {
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Add receiving columns to pre/post tables if they don't exist \r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Warning message if they do! " + m_oAdo.m_strSQL + "\r\n\r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Warning message if they do! " + oAdo.m_strSQL + "\r\n\r\n");
                 }
-                if (m_oAdo.ColumnExist(prePostConn, strTargetPreTable, strVariableName))
+                if (oAdo.ColumnExist(prePostConn, strTargetPreTable, strVariableName))
                 {
                     if (bNewTables == false)
                         MessageBox.Show("Values for " + strVariableName + " were previously calculated! " +
@@ -5352,9 +5310,9 @@ namespace FIA_Biosum_Manager
                 }
                 else
                 {
-                    m_oAdo.AddColumn(prePostConn, strTargetPreTable,
+                    oAdo.AddColumn(prePostConn, strTargetPreTable,
                         strVariableName, "DOUBLE", "");
-                    m_oAdo.AddColumn(prePostConn, strTargetPostTable,
+                    oAdo.AddColumn(prePostConn, strTargetPostTable,
                         strVariableName, "DOUBLE", "");
                 }
             }
@@ -5378,7 +5336,7 @@ namespace FIA_Biosum_Manager
                     UpdateProgressBar1("Calculating values for " + strVariableName, counter1);
                 }
                 calculateConn.Open();
-                m_oAdo.m_strSQL = "UPDATE (" + strWeightsByRxPkgPostTable + " pt " +
+                oAdo.m_strSQL = "UPDATE (" + strWeightsByRxPkgPostTable + " pt " +
                                   "INNER JOIN " + strWeightsByRxPkgPreTable + " pe " +
                                   "ON (pt.biosum_cond_id = pe.biosum_cond_id)) " +
                                   "INNER JOIN " + strTargetPreTable + " f " +
@@ -5390,10 +5348,10 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 {
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Populated weighted PRE table with weighted totals from baseline scenario \r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "SQL: " + m_oAdo.m_strSQL + "\r\n\r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "SQL: " + oAdo.m_strSQL + "\r\n\r\n");
                 }
-                m_oAdo.SqlNonQuery(calculateConn, m_oAdo.m_strSQL);
-                m_oAdo.m_strSQL = "UPDATE (" + strWeightsByRxPkgPostTable + " pt " +
+                oAdo.SqlNonQuery(calculateConn, oAdo.m_strSQL);
+                oAdo.m_strSQL = "UPDATE (" + strWeightsByRxPkgPostTable + " pt " +
                                   "INNER JOIN " + strWeightsByRxPkgPreTable + " pe " +
                                   "ON (pt.rxpackage = pe.rxpackage) AND (pt.biosum_cond_id = pe.biosum_cond_id)) " +
                                   "INNER JOIN " + strTargetPostTable + " f ON (pe.rxpackage = f.rxpackage) AND (pe.biosum_cond_id = f.biosum_cond_id) " +
@@ -5402,9 +5360,9 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 {
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Populated weighted POST table with weighted totals from baseline scenario \r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "SQL: " + m_oAdo.m_strSQL + "\r\n\r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "SQL: " + oAdo.m_strSQL + "\r\n\r\n");
                 }
-                m_oAdo.SqlNonQuery(calculateConn, m_oAdo.m_strSQL);
+                oAdo.SqlNonQuery(calculateConn, oAdo.m_strSQL);
             }
         }
 
@@ -5434,7 +5392,7 @@ namespace FIA_Biosum_Manager
 
                 m_oDataMgr.m_strSQL = "CREATE TABLE " + strWeightsByRxCyclePreTable +
                     " AS SELECT biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant, CAST(0 AS DOUBLE) " +
-                    " AS " + strVariableName + " FROM " + strSourcePreTable;
+                    "AS " + strVariableName + " FROM " + strSourcePreTable;
                 m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -5490,10 +5448,6 @@ namespace FIA_Biosum_Manager
                 }
 
                 // Sum by rxpackage across cycles
-                //m_oDataMgr.m_strSQL = "SELECT biosum_cond_id, rxpackage, \"0\" as [rx], SUM(" + strVariableName + ") as [sum_pre] " +
-                //              "I " + strWeightsByRxPkgPreTable + " " +
-                //              "from " + strWeightsByRxCyclePreTable + " " +
-                //              "group by biosum_cond_id, rxpackage";
                 m_oDataMgr.m_strSQL = "CREATE TABLE " + strWeightsByRxPkgPreTable +
                     " AS SELECT biosum_cond_id, rxpackage, \'0\' AS rx, " +
                     "SUM(" + strVariableName + ") AS sum_pre FROM " + strWeightsByRxCyclePreTable +
@@ -5505,42 +5459,29 @@ namespace FIA_Biosum_Manager
                 }
                 m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
                 // Update rx with rx from cycle 1
-                //m_oDataMgr.m_strSQL = "UPDATE " + strWeightsByRxPkgPreTable + " w " +
-                //              "INNER JOIN " + strWeightsByRxCyclePreTable + " r ON w.biosum_cond_id = r.biosum_cond_id " +
-                //              "AND w.rxpackage = r.rxpackage " +
-                //              "SET w.rx = r.rx " +
-                //              "WHERE r.rxcycle = '1'";
                 m_oDataMgr.m_strSQL = "UPDATE " + strWeightsByRxPkgPreTable + " AS w " +
-                    "SET rx = (SELECT ra.rx FROM " + strWeightsByRxCyclePreTable + " AS ra " +
-                    "WHERE w.biosum_cond_id = ra.biosum_cond_id AND w.rxpackage = ra.rxpackage) " +
-                    "WHERE (SELECT rb.rxcycle FROM " + strWeightsByRxCyclePreTable + " AS rb " +
-                    "WHERE w.biosum_cond_id = rb.biosum_cond_id AND w.rxpackage = rb.rxpackage) = '1'";
+                    "SET rx = (SELECT r.rx FROM " + strWeightsByRxCyclePreTable + " AS r " +
+                    "WHERE w.biosum_cond_id = r.biosum_cond_id AND w.rxpackage = r.rxpackage) " +
+                    "WHERE (SELECT rxcycle FROM " + strWeightsByRxCyclePreTable + " AS r " +
+                    "WHERE w.biosum_cond_id = r.biosum_cond_id AND w.rxpackage = r.rxpackage) = '1'";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 {
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Set rx to rx from cycle 1 \r\n");
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "sql: " + m_oDataMgr.m_strSQL + "\r\n\r\n");
                 }
                 m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
-                //m_oDataMgr.m_strSQL = "SELECT biosum_cond_id, rxpackage, \"0\" as [rx], sum(" + strVariableName + ") as [sum_post] " +
-                //              "into " + strWeightsByRxPkgPostTable + " " +
-                //              "from " + strWeightsByRxCyclePostTable + " " +
-                //              "group by biosum_cond_id, rxpackage";
+
                 m_oDataMgr.m_strSQL = "CREATE TABLE " + strWeightsByRxPkgPostTable +
                     " AS SELECT biosum_cond_id, rxpackage, \'0\' AS rx, " +
                     "SUM(" + strVariableName + ") AS sum_post FROM " + strWeightsByRxCyclePostTable +
                     " GROUP BY biosum_cond_id, rxpackage";
                 m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
                 // Update rx with rx from cycle 1
-                //m_oDataMgr.m_strSQL = "UPDATE " + strWeightsByRxPkgPostTable + " w " +
-                //              "INNER JOIN " + strWeightsByRxCyclePostTable + " r ON w.biosum_cond_id = r.biosum_cond_id " +
-                //              "AND w.rxpackage = r.rxpackage " +
-                //              "SET w.rx = r.rx " +
-                //              "WHERE r.rxcycle = '1'";
                 m_oDataMgr.m_strSQL = "UPDATE " + strWeightsByRxPkgPostTable + " AS w " +
-                   "SET rx = (SELECT ra.rx FROM " + strWeightsByRxCyclePostTable + " AS ra " +
-                   "WHERE w.biosum_cond_id = ra.biosum_cond_id AND w.rxpackage = ra.rxpackage) " +
-                   "WHERE (SELECT rb.rxcycle FROM " + strWeightsByRxCyclePostTable + " AS rb " +
-                   "WHERE w.biosum_cond_id = rb.biosum_cond_id AND w.rxpackage = rb.rxpackage) = '1'";
+                   "SET rx = (SELECT r.rx FROM " + strWeightsByRxCyclePostTable + " AS r " +
+                   "WHERE w.biosum_cond_id = r.biosum_cond_id AND w.rxpackage = r.rxpackage) " +
+                   "WHERE (SELECT rxcycle FROM " + strWeightsByRxCyclePostTable + " AS r " +
+                   "WHERE w.biosum_cond_id = r.biosum_cond_id AND w.rxpackage = r.rxpackage) = '1'";
                 m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
                 calculateConn.Close();
             }   // end using
@@ -5580,10 +5521,6 @@ namespace FIA_Biosum_Manager
                 {
                     m_oDataMgr.m_strSQL = "ATTACH DATABASE '" + strPrePostWeightedDb + "' AS PREPOST_WEIGHTED";
                     m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
-                    m_oDataMgr.m_strSQL = "CREATE TABLE " + strTargetPreTable + " AS SELECT * FROM PREPOST_WEIGHTED." + strTargetPreTable;
-                    m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
-                    m_oDataMgr.m_strSQL = "CREATE TABLE " + strTargetPostTable + " AS SELECT * FROM PREPOST_WEIGHTED." + strTargetPostTable;
-                    m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
                 }
                 if (counter1 > 0)
                 {
@@ -5595,8 +5532,8 @@ namespace FIA_Biosum_Manager
                 m_oDataMgr.m_strSQL = "UPDATE " + strTargetPreTable + " AS f " +
                     "SET " + strVariableName + " = (SELECT (sum_pre + sum_post) FROM " + strWeightsByRxPkgPostTable +
                     " AS pt INNER JOIN " + strWeightsByRxPkgPreTable + " AS pe ON pt.biosum_cond_id = pe.biosum_cond_id " +
-                    "WHERE pt.rxpackage = '" + strBaselinePkg + "' AND pe.rxpackage = '" + strBaselinePkg +
-                    "') WHERE f.rxcycle = '1'";
+                    "WHERE pe.biosum_cond_id = f.biosum_cond_id AND pt.rxpackage = '" + strBaselinePkg + 
+                    "' AND pe.rxpackage = '" + strBaselinePkg + "') WHERE f.rxcycle = '1'";
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 {
