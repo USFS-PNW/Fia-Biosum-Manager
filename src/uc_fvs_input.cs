@@ -1557,11 +1557,15 @@ namespace FIA_Biosum_Manager
                 }
 
                 // Set the index, required to by ODBC to update
-                oDao.CreatePrimaryKeyIndex(strTempMDB, strSourceStandTableAlias, "STAND_CN");
+                //oDao.CreatePrimaryKeyIndex(strTempMDB, strSourceStandTableAlias, "STAND_CN");
                 oDao.CreateSQLiteTableLink(strTempMDB, Tables.FIA2FVS.DefaultFvsInputTreeTableName, strSourceTreeTableAlias,
                     ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName, p_fvsinput.strSourceFiaDb);
                 // Set the index, required to by ODBC to update
-                oDao.CreatePrimaryKeyIndex(strTempMDB, strSourceTreeTableAlias, "TREE_CN");
+                //oDao.CreatePrimaryKeyIndex(strTempMDB, strSourceTreeTableAlias, "TREE_CN");
+                if (oDao.m_intError != 0)
+                {
+                    return;
+                }
 
                 int steps = m_VariantCountsDict.Keys.Count * 2;
                 int interval = (int) Math.Floor((double) 90 / steps);
