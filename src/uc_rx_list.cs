@@ -3589,7 +3589,7 @@ namespace FIA_Biosum_Manager
         }
 
         public void CreateFVSPrePostSeqNumTables(string strTargetDb, FVSPrePostSeqNumItem p_oItem, string p_strSourceTableName, string p_strSourceLinkedTableName, 
-            bool p_bAudit, bool p_bDebug, string p_strDebugFile, string strRxPackage)
+            bool p_bAudit, bool p_bDebug, string p_strDebugFile, string p_strRunTitle)
         {
             DataMgr dataMgr = new DataMgr();
             if (p_strSourceTableName.Trim().ToUpper() == "FVS_CASES") return;
@@ -3633,18 +3633,18 @@ namespace FIA_Biosum_Manager
                         if (p_oItem.UseSummaryTableSeqNumYN == "Y")
                         {
                             //STANDID + YEAR = ONE RECORD
-                            dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditPrePostGenericSQL("", "FVS_SUMMARY", false, strRxPackage);
+                            dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditPrePostGenericSQL("", "FVS_SUMMARY", false, p_strRunTitle);
                         }
                         else
                         {
                             //STANDID + YEAR = ONE RECORD
-                            dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditPrePostGenericSQL("", p_strSourceTableName, false, strRxPackage);
+                            dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditPrePostGenericSQL("", p_strSourceTableName, false, p_strRunTitle);
                         }
                     }
                     else
                     {
                         //STANDID + YEAR = MULTIPLE RECORDS
-                        dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditPrePostGenericSQL("", "FVS_SUMMARY", false, strRxPackage);
+                        dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditPrePostGenericSQL("", "FVS_SUMMARY", false, p_strRunTitle);
                     }
                     dataMgr.m_strSQL = "INSERT INTO " + strPrePostSeqNumMatrixTable + " " +
                                       dataMgr.m_strSQL;

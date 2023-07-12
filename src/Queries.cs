@@ -697,7 +697,7 @@ namespace FIA_Biosum_Manager
             /// <param name="p_bAllColumns"></param>
             /// <returns></returns>
             static public string SqliteFVSOutputTable_AuditPrePostGenericSQL(string p_strIntoTable, string p_strFVSOutputTable, bool p_bAllColumns,
-                string strRxPackage)
+                string p_strRunTitle)
             {
                 string strSQL = "";
 
@@ -718,7 +718,7 @@ namespace FIA_Biosum_Manager
                                          "FROM FVS." + p_strFVSOutputTable + ") c " +
                                  "WHERE b.standid=c.standid " +
                                  "GROUP BY b.standid,b.year) d " +
-                                 "WHERE a.CaseID = e.CaseID AND substr(e.RunTitle, 12, 3) = '" + strRxPackage + 
+                                 "WHERE a.CaseID = e.CaseID AND e.RunTitle = '" + p_strRunTitle + 
                                  "' AND a.standid=d.standid AND a.year=d.year ";
                 }
                 else
@@ -740,11 +740,11 @@ namespace FIA_Biosum_Manager
                               "(SELECT SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum," +
                                 "b.standid, b.year FROM FVS." + p_strFVSOutputTable + " b, FVS.FVS_CASES f," +
                                 "(SELECT g.standid, g.year FROM FVS." + p_strFVSOutputTable + " g, FVS.FVS_CASES h " +
-                                "WHERE g.CaseID = h.CaseID and substr(h.RunTitle, 12, 3) = '" + strRxPackage + "' ) c " +
+                                "WHERE g.CaseID = h.CaseID and h.RunTitle = '" + p_strRunTitle + "' ) c " +
                                 "WHERE b.standid = c.standid and b.CaseID = f.CaseID " +
-                                "and substr(f.RunTitle, 12, 3) = '" + strRxPackage + "' " +
+                                "and f.RunTitle = '" + p_strRunTitle + "' " +
                                 "GROUP BY b.standid,b.year) d " +
-                             "WHERE a.CaseID = e.CaseID AND substr(e.RunTitle, 12, 3) = '" + strRxPackage + 
+                             "WHERE a.CaseID = e.CaseID AND e.RunTitle = '" + p_strRunTitle + 
                              "' AND a.standid=d.standid AND a.year=d.year " +
                              "ORDER BY a.standid,d.SeqNum";
                 }

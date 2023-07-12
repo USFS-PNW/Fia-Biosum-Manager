@@ -5404,7 +5404,7 @@ namespace FIA_Biosum_Manager
                             {
                                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim() + " Create SeqNum Matrix tables");
                                 //CreatePrePostSeqNumMatrixTables(oAdo, oAdo.m_OleDbConnection,strPackage,true);
-                                CreatePrePostSeqNumMatrixSqliteTables(strAuditDbFile, strPackage, true);
+                                CreatePrePostSeqNumMatrixSqliteTables(strAuditDbFile, strRunTitle, true);
                             }
                             m_intProgressStepCurrentCount++;
                             UpdateTherm(m_frmTherm.progressBar1,
@@ -9913,7 +9913,7 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
 
 
-                        CreatePrePostSeqNumMatrixSqliteTables(strTreeTempDbFile, strRxPackage, false);
+                        CreatePrePostSeqNumMatrixSqliteTables(strTreeTempDbFile, lstRunTitles[i], false);
 
                         string strConn = SQLite.GetConnectionString(strTreeTempDbFile);
                         using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
@@ -10481,7 +10481,7 @@ namespace FIA_Biosum_Manager
             this.Invoke(frmMain.g_oDelegate.m_oDelegateThreadFinished);
         }
 
-        private void CreatePrePostSeqNumMatrixSqliteTables(string p_strDbFile, string p_strRxPackageId, bool p_bAudit)
+        private void CreatePrePostSeqNumMatrixSqliteTables(string p_strDbFile, string p_strRunTitle, bool p_bAudit)
         {
             int z;
             string[] strSourceTableArray = new string[0];
@@ -10490,9 +10490,9 @@ namespace FIA_Biosum_Manager
             {
                 conn.Open();
                 strSourceTableArray = SQLite.getTableNames(conn);
-                CreateFVSPrePostSeqNumWorkTables(conn, p_strDbFile, "FVS_SUMMARY", p_strRxPackageId, p_bAudit);
-                CreateFVSPrePostSeqNumWorkTables(conn, p_strDbFile, "FVS_CUTLIST", p_strRxPackageId, p_bAudit);
-                CreateFVSPrePostSeqNumWorkTables(conn, p_strDbFile, "FVS_POTFIRE", p_strRxPackageId, p_bAudit);
+                CreateFVSPrePostSeqNumWorkTables(conn, p_strDbFile, "FVS_SUMMARY", p_strRunTitle, p_bAudit);
+                CreateFVSPrePostSeqNumWorkTables(conn, p_strDbFile, "FVS_CUTLIST", p_strRunTitle, p_bAudit);
+                CreateFVSPrePostSeqNumWorkTables(conn, p_strDbFile, "FVS_POTFIRE", p_strRunTitle, p_bAudit);
 
                 for (z = 0; z <= strSourceTableArray.Length - 1; z++)
                 {
@@ -10505,7 +10505,7 @@ namespace FIA_Biosum_Manager
                             strSourceTableArray[z].Trim().ToUpper() != "FVS_POTFIRE")
                         {
 
-                            CreateFVSPrePostSeqNumWorkTables(conn, p_strDbFile, strSourceTableArray[z], p_strRxPackageId, p_bAudit);
+                            CreateFVSPrePostSeqNumWorkTables(conn, p_strDbFile, strSourceTableArray[z], p_strRunTitle, p_bAudit);
 
                         }
                     }
@@ -10513,7 +10513,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void CreateFVSPrePostSeqNumWorkTables(System.Data.SQLite.SQLiteConnection conn, string p_strTreeTempDbFile, string p_strSourceTableName, string p_strRxPackageId, bool p_bAudit)
+        private void CreateFVSPrePostSeqNumWorkTables(System.Data.SQLite.SQLiteConnection conn, string p_strTreeTempDbFile, string p_strSourceTableName, string p_strRunTitle, bool p_bAudit)
         {
             if (m_bDebug && frmMain.g_intDebugLevel > 1 && !p_bAudit)
             {
@@ -10536,9 +10536,10 @@ namespace FIA_Biosum_Manager
                     m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(m_ado, accessConn, m_oFVSPrePostSeqNumItemCollection);
                 }
 
-                GetPrePostSeqNumConfiguration(p_strSourceTableName, p_strRxPackageId);
+                string strRxPackageId = p_strRunTitle.Substring(11, 3);
+                GetPrePostSeqNumConfiguration(p_strSourceTableName, p_strRunTitle);
                 m_oRxTools.CreateFVSPrePostSeqNumTables(p_strTreeTempDbFile, m_oFVSPrePostSeqNumItem, p_strSourceTableName, p_strSourceTableName, 
-                    p_bAudit, m_bDebug, m_strDebugFile, p_strRxPackageId);
+                    p_bAudit, m_bDebug, m_strDebugFile, p_strRunTitle);
 
             }
             else
