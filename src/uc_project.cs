@@ -1079,6 +1079,7 @@ namespace FIA_Biosum_Manager
                 p_frmTherm.lblMsg.Text = this.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
 				p_frmTherm.lblMsg.Refresh();
                 CreateOptimizerScenarioRuleDefinitionDbAndTables(this.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile);
+				CreateOptimizerScenarioRuleDefinitionSqliteDbAndTables(this.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile);
 				//
 				//processor scenario rule definitions
 				//
@@ -1547,6 +1548,16 @@ namespace FIA_Biosum_Manager
             
             oAdo.CloseConnection(oAdo.m_OleDbConnection);
 			oDao = null;
+		}
+
+		public void CreateOptimizerScenarioRuleDefinitionSqliteDbAndTables(string p_strPathAndFile)
+        {
+			DataMgr dataMgr = new DataMgr();
+
+			string strDestFile = this.txtRootDirectory.Text.Trim() + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile;
+			dataMgr.CreateDbFile(p_strPathAndFile);
+
+
 		}
 
 		public void CreateProcessorScenarioRuleDefinitionDbAndTables(string p_strPathAndFile)

@@ -680,6 +680,7 @@ namespace FIA_Biosum_Manager
 			if (System.IO.File.Exists(strFile1)==false) 
 			{
 				this.ReferenceMainForm.frmProject.uc_project1.CreateOptimizerScenarioRuleDefinitionDbAndTables(strFile1);
+                this.ReferenceMainForm.frmProject.uc_project1.CreateOptimizerScenarioRuleDefinitionSqliteDbAndTables(strFile1);
 				if (System.IO.File.Exists(strFile2)==true)
 				{
 					string[] strTablesToLink = null;
@@ -5390,6 +5391,7 @@ namespace FIA_Biosum_Manager
         {
             ado_data_access oAdo = new ado_data_access();
             dao_data_access oDao = new dao_data_access();
+            DataMgr oDataMgr = new DataMgr();
 
             string strTableSuffix = "_ver_control_" + DateTime.Now.ToString("MMddyyyy");
             frmMain.g_sbpInfo.Text = "Version Update: Creating new Treatment Optimizer databases ...Stand by";
@@ -5405,6 +5407,11 @@ namespace FIA_Biosum_Manager
             if (!System.IO.File.Exists(strDestFile))
             {
                 oDao.CreateMDB(strDestFile);
+            }
+            string strDestFileSqlite = ReferenceProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile;
+            if (!System.IO.File.Exists(strDestFileSqlite))
+            {
+                oDataMgr.CreateDbFile(strDestFileSqlite);
             }
 
             frmMain.g_sbpInfo.Text = "Version Update: Updating file structure for OPTIMIZER name change ...Stand by";

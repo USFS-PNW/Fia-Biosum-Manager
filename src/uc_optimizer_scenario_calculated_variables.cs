@@ -1165,7 +1165,8 @@ namespace FIA_Biosum_Manager
                     //Populate baseline prescription list
                     cboFvsVariableBaselinePkg.Items.Clear();
                     string strSql = "SELECT distinct rxpackage" +
-                                    " FROM " + strFvsPreTableName;
+                                    " FROM " + strFvsPreTableName +
+                                    " ORDER BY rxpackage ASC";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     {
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Query rxPackage for baseline package list \r\n");
@@ -2688,37 +2689,18 @@ namespace FIA_Biosum_Manager
             int intNewId = GetNextId();
             this.m_econ_dv.AllowNew = true;
 
-            //@ToDo: Refine when we complete swap to Sqlite
-            if (! m_bUsingSqlite)
+            string strTableName = Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName;
+            this.m_oDataMgr.m_DataSet.Clear();
+            for (int i = 1; i < 5; i++)
             {
-                this.m_oAdo.m_DataSet.Clear();
-                // Add row to the dataset for each cycle
-                for (int i = 1; i < 5; i++)
-                {
-                    DataRow p_row = this.m_oAdo.m_DataSet.Tables["econ_variable"].NewRow();
-                    p_row["calculated_variables_id"] = intNewId;
-                    p_row["rxcycle"] = Convert.ToString(i);
-                    p_row["weight"] = 0;
-                    this.m_oAdo.m_DataSet.Tables["econ_variable"].Rows.Add(p_row);
-                    p_row = null;
-                }
+                DataRow p_row = m_oDataMgr.m_DataSet.Tables[strTableName].NewRow();
+                p_row["calculated_variables_id"] = intNewId;
+                p_row["rxcycle"] = Convert.ToString(i);
+                p_row["weight"] = 0;
+                m_oDataMgr.m_DataSet.Tables[strTableName].Rows.Add(p_row);
+                p_row = null;
             }
-            else
-            {
-                // Replaced m_oDataMgr.m_DataSet.Tables["econ_variable"] with
-                // m_oDataMgr.m_DataSet.Tables[strTableName]
-                string strTableName = Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName;
-                this.m_oDataMgr.m_DataSet.Clear();
-                for (int i = 1; i < 5; i++)
-                {
-                    DataRow p_row = m_oDataMgr.m_DataSet.Tables[strTableName].NewRow();
-                    p_row["calculated_variables_id"] = intNewId;
-                    p_row["rxcycle"] = Convert.ToString(i);
-                    p_row["weight"] = 0;
-                    m_oDataMgr.m_DataSet.Tables[strTableName].Rows.Add(p_row);
-                    p_row = null;
-                }
-            }
+
 
             this.m_econ_dv.AllowNew = false;
             this.SumWeights(true);
