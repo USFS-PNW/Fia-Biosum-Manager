@@ -177,6 +177,7 @@ namespace FIA_Biosum_Manager
             InitializeComponent();
             this.m_oUtils = new utils();
             this.m_frmMain = p_frmMain;
+            this._frmScenario = new frmOptimizerScenario();
 
             this.grpboxDetails.Top = grpboxSummary.Top;
             this.grpboxDetails.Left = this.grpboxSummary.Left;
@@ -5514,7 +5515,9 @@ namespace FIA_Biosum_Manager
                         //    m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
                         //    oTransaction.Commit();
                         //}
+                        _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
                         m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
+                        _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
 
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         {
@@ -5547,7 +5550,9 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Set rx to rx from cycle 1 \r\n");
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "sql: " + m_oDataMgr.m_strSQL + "\r\n\r\n");
                 }
+                _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
                 m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
+                _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
 
                 m_oDataMgr.m_strSQL = "CREATE TABLE " + strWeightsByRxPkgPostTable +
                     " AS SELECT biosum_cond_id, rxpackage, \'0\' AS rx, " +
@@ -5560,8 +5565,10 @@ namespace FIA_Biosum_Manager
                     "WHERE w.biosum_cond_id = r.biosum_cond_id AND w.rxpackage = r.rxpackage) " +
                     "WHERE (SELECT rxcycle FROM " + strWeightsByRxCyclePostTable + " AS r " +
                     "WHERE w.biosum_cond_id = r.biosum_cond_id AND w.rxpackage = r.rxpackage) = '1'";
+                _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
                 m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
-                    
+                _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
+
                 calculateConn.Close();
             }   // end using
 
@@ -5619,8 +5626,9 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Populated weighted PRE table with weighted totals from baseline scenario \r\n");
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "SQL: " + m_oDataMgr.m_strSQL + "\r\n\r\n");
                 }
-
+                _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
                 m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
+                _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
 
                 m_oDataMgr.m_strSQL = "UPDATE " + strTargetPostTable + " AS f " +
                     "SET " + strVariableName + " = (SELECT (sum_pre + sum_post) FROM " + strWeightsByRxPkgPostTable +
@@ -5631,7 +5639,9 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Populated weighted POST table with weighted totals from baseline scenario \r\n");
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "SQL: " + m_oDataMgr.m_strSQL + "\r\n\r\n");
                 }
+                _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
                 m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
+                _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
                 calculateConn.Close();
             }
         }

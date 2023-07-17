@@ -930,6 +930,19 @@ namespace FIA_Biosum_Manager
 			this.Height = intHt;
 		}
 
+        public void DebugLog(bool start, string strDebugFile, string strSQL)
+        {
+            if (start)
+            {
+                frmMain.g_oUtils.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n");
+                frmMain.g_oUtils.WriteText(strDebugFile, strSQL + "\r\n");
+            }
+            else
+            {
+                frmMain.g_oUtils.WriteText(strDebugFile, "END: " + System.DateTime.Now.ToString() + "\r\n");
+            }
+        }
+
 		public void SetMenu(string strType)
 		{
 			switch (strType)
