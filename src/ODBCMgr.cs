@@ -200,6 +200,7 @@ namespace FIA_Biosum_Manager
             static public string ProcessorTemporaryDsnName { get { return "PROCESSOR_TEMPORARY"; } }
             static public string FvsOutTemporaryDsnName { get { return "FVS_OUT_TEMPORARY"; } }
             static public string FvsOutTreeListDsnName { get { return "FVS_OUT_TREELIST"; } }
+            static public string PrePostFvsWeightedDsnName {  get { return "PREPOST_FVS_WEIGHTED"; } }
         }
 
     }
