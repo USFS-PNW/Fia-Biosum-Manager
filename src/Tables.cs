@@ -3538,7 +3538,8 @@ namespace FIA_Biosum_Manager
                   "CYCLE4_PRE_YN CHAR(1)," +
                   "CYCLE4_POST_YN CHAR(1)," +
                   "RXPACKAGE CHAR(3), " +
-                  "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY(SEQNUM, STANDID, RXPACKAGE))";
+                  "FVS_VARIANT CHAR(2), " +
+                  "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY(SEQNUM, STANDID, RXPACKAGE, FVS_VARIANT))";
             }
 
 
@@ -3764,6 +3765,31 @@ namespace FIA_Biosum_Manager
                 }
                 public static class Pre
                 {
+                    public static string CreateFVSPreYearCountsTableSQL(string p_strTableName)
+                    {
+                        return "CREATE TABLE " + p_strTableName + " (" +
+                               "STANDID VARCHAR(255)," +
+                                "totalrows INTEGER," +
+                                "fvs_variant CHAR(2), " +
+                                "rxPackage CHAR(3)," +
+                                "pre_cycle1rows INTEGER," +
+                                "post_cycle1rows INTEGER, " +
+                                "pre_cycle2rows INTEGER," +
+                                "post_cycle2rows INTEGER," +
+                                "pre_cycle3rows INTEGER," +
+                                "post_cycle3rows INTEGER," +
+                                "pre_cycle4rows INTEGER," +
+                                "post_cycle4rows INTEGER)";                    }
+
+                    public static string CreateFVSPreAuditCountsTableSQL(string p_strTableName)
+                    {
+                        return "CREATE TABLE " + p_strTableName + " (" +
+                                "SeqNum INTEGER, " +
+                                "StandID VARCHAR(255), " +
+                                "Year INTEGER, " +
+                                "fvs_variant CHAR(2), " +
+                                "rxPackage CHAR(3))";
+                    }
                 }
             }
 

@@ -441,7 +441,8 @@ namespace FIA_Biosum_Manager
             /// <param name="p_strFVSOutputTable"></param>
             /// <param name="p_bAllColumns"></param>
             /// <returns></returns>
-            static public string FVSOutputTable_PrePostGenericSQLite(string p_strIntoTable, string p_strFVSOutputTable, bool p_bAllColumns)
+            static public string FVSOutputTable_PrePostGenericSQLite(string p_strIntoTable, string p_strFVSOutputTable, bool p_bAllColumns,
+                string p_strRunTitle)
             {
                 string strSQL = "";
                 if (p_bAllColumns)
@@ -463,7 +464,8 @@ namespace FIA_Biosum_Manager
                     {
                         strSQL = "CREATE TABLE " + p_strIntoTable + " AS " +
                                  "SELECT  SUM(CASE WHEN a.year >= b.year THEN 1 ELSE 0 END) AS SeqNum," +
-                                 "a.standid, a.year " +
+                                 "a.standid, a.year, '" + p_strRunTitle.Substring(7,2) + "' AS fvs_variant, '" +
+                                 p_strRunTitle.Substring(11, 3) + "' AS rxPackage " +
                                  "FROM " + p_strFVSOutputTable + " a," +
                                       "(SELECT standid,year " +
                                        "FROM " + p_strFVSOutputTable + ") b " +
@@ -708,7 +710,7 @@ namespace FIA_Biosum_Manager
                                    "'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN," +
                                    "'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN," +
                                    "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN, " +
-                                   "substr(e.RunTitle, 12, 3) AS RXPACKAGE " +
+                                   "substr(e.RunTitle, 12, 3) AS RXPACKAGE, SUBSTR(E.RUNTITLE,8,2) AS FVS_VARIANT " +
                              "INTO " + p_strIntoTable + " " +
                              "FROM FVS." + p_strFVSOutputTable + " a, FVS.FVS_CASES e," +
                                  "(SELECT  SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum," +
@@ -728,7 +730,7 @@ namespace FIA_Biosum_Manager
                                    "'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN," +
                                    "'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN," +
                                    "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN, " +
-                                   "substr(e.RunTitle, 12, 3) AS RXPACKAGE " +
+                                   "substr(e.RunTitle, 12, 3) AS RXPACKAGE, SUBSTR(E.RUNTITLE,8,2) AS FVS_VARIANT " +
                              "FROM FVS." + p_strFVSOutputTable + " a, FVS.FVS_CASES e," +
                               //"(SELECT  SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum," +
                               //         "b.standid, b.year " +
@@ -1228,7 +1230,8 @@ namespace FIA_Biosum_Manager
             /// <param name="p_strIntoTable"></param>
             /// <param name="p_strSourceTable">FVSTableName_PREPOST_SEQNUM_MATRIX</param>
             /// <returns></returns>
-            static public string FVSOutputTable_AuditSelectIntoPrePostSeqNumCountSqlite(FVSPrePostSeqNumItem p_oFVSPrePostSeqNumItem, string p_strIntoTable, string p_strSourceTable)
+            static public string FVSOutputTable_AuditSelectIntoPrePostSeqNumCountSqlite(FVSPrePostSeqNumItem p_oFVSPrePostSeqNumItem, string p_strIntoTable, 
+                string p_strSourceTable, string p_strRunTitle)
             {
                 string strSQL = "";
                 int x;
@@ -1236,7 +1239,7 @@ namespace FIA_Biosum_Manager
 
                 string strAlpha = "cdefghij";
                 int intAlias = 0;
-                string strSelectColumns = "a.standid,b.totalrows,";
+                string strSelectColumns = $@"a.standid,b.totalrows,'{p_strRunTitle.Substring(11, 3)}' AS RXPACKAGE,'{p_strRunTitle.Substring(7, 2)}' AS FVS_VARIANT,";
 
                 //cycle 1 seqnum
                 if (p_oFVSPrePostSeqNumItem.RxCycle1PreSeqNum.Trim().Length > 0 && p_oFVSPrePostSeqNumItem.RxCycle1PreSeqNum.Trim().ToUpper() != "NOT USED")

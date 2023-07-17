@@ -5341,10 +5341,13 @@ namespace FIA_Biosum_Manager
                             strOutDirAndFile = strOutDirAndFile + "\\" + Tables.FVS.DefaultFVSOutDbFile;
 
 
-                            // We'll add the table links to a temp db rather than the fvs out .mdbs as we did previously
-                            strAuditDbFile = m_oUtils.getRandomFile(m_oEnv.strTempDir, "db");
+                            // We'll add the table links a single audit db rather than the fvs out .mdbs as we did previously
+                            strAuditDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile;
                             //m_dao.CreateMDB(strAuditDbFile);
-                            SQLite.CreateDbFile(strAuditDbFile);
+                            if (! System.IO.File.Exists(strAuditDbFile))
+                            {
+                                SQLite.CreateDbFile(strAuditDbFile);
+                            }
                             //strAuditDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)this.txtOutDir, "Text", false);
                             //strAuditDbFile = strAuditDbFile.Trim();
                             //strAuditDbFile = strAuditDbFile + "\\" + Tables.FVS.DefaultFVSAuditsDbFile;

@@ -3598,17 +3598,50 @@ namespace FIA_Biosum_Manager
             string strPrePostSeqNumMatrixTable = p_strSourceTableName + "_PREPOST_SEQNUM_MATRIX";
             string strAuditPrePostSeqNumCountsTable = "audit_" + p_strSourceTableName + "_prepost_seqnum_counts_table";
             string strAuditYearCountsTable = "audit_" + p_strSourceTableName + "_year_counts_table";
+            string strVariant = p_strRunTitle.Substring(7, 2);
+            string strRxPackage = p_strRunTitle.Substring(11,3);
+
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dataMgr.GetConnectionString(strTargetDb)))
             {
                 conn.Open();
                 if (dataMgr.TableExist(conn, strPrePostSeqNumMatrixTable))
-                    dataMgr.SqlNonQuery(conn, "DROP TABLE " + strPrePostSeqNumMatrixTable);
+                {
+                    // Delete current variant/package from table
+                    dataMgr.m_strSQL = $@"DELETE FROM {strPrePostSeqNumMatrixTable} WHERE FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strRxPackage}'";
+                    dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                }
+                else
+                {
+                    //create the audit SeqNum table structure
+                    frmMain.g_oTables.m_oFvs.CreateSQLiteFVSOutputPrePostSeqNumAuditGenericTable(dataMgr, conn, strPrePostSeqNumMatrixTable);
+                }
 
                 if (dataMgr.TableExist(conn, strAuditPrePostSeqNumCountsTable))
-                    dataMgr.SqlNonQuery(conn, "DROP TABLE " + strAuditPrePostSeqNumCountsTable);
+                {
+                    // Delete current variant/package from table
+                    dataMgr.m_strSQL = $@"DELETE FROM {strAuditPrePostSeqNumCountsTable} WHERE FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strRxPackage}'";
+                    dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                }
+                else
+                {
+                    // Create the table
+                    dataMgr.m_strSQL = Tables.FVS.Audit.Pre.CreateFVSPreYearCountsTableSQL(strAuditPrePostSeqNumCountsTable);
+                    dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                }
 
                 if (dataMgr.TableExist(conn, strAuditYearCountsTable))
-                    dataMgr.SqlNonQuery(conn, "DROP TABLE " + strAuditYearCountsTable);
+                {
+                    // Delete current variant/package from table
+                    dataMgr.m_strSQL = $@"DELETE FROM {strAuditYearCountsTable} WHERE FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strRxPackage}'";
+                    dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+
+                }
+                else
+                {
+                    // Create the table
+                    dataMgr.m_strSQL = Tables.FVS.Audit.Pre.CreateFVSPreAuditCountsTableSQL(strAuditYearCountsTable);
+                    dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                }
 
                 if (dataMgr.TableExist(conn, "temp_rowcount"))
                     dataMgr.SqlNonQuery(conn, "DROP TABLE temp_rowcount");
@@ -3625,8 +3658,6 @@ namespace FIA_Biosum_Manager
                                         Tables.FVS.DefaultFVSOutDbFile + "' AS FVS";
                     dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
 
-                    //create the audit SeqNum table structure
-                    frmMain.g_oTables.m_oFvs.CreateSQLiteFVSOutputPrePostSeqNumAuditGenericTable(dataMgr, conn, strPrePostSeqNumMatrixTable);
                     if (p_strSourceTableName.Trim().ToUpper() == "FVS_SUMMARY" ||
                     p_strSourceTableName.Trim().ToUpper().IndexOf("FVS_POTFIRE", 0) >= 0)
                     {
@@ -3662,18 +3693,19 @@ namespace FIA_Biosum_Manager
 
                     if (p_bAudit)
                     {
-                        //@ToDo: I think I need to add the runtitle into these audits
+
                         if (p_strSourceTableName == "FVS_SUMMARY")
                         {
                             dataMgr.m_strSQL = Queries.FVS.FVSOutputTable_AuditSelectIntoPrePostSeqNumCountSqlite
-                            (p_oItem, strAuditPrePostSeqNumCountsTable, strPrePostSeqNumMatrixTable);
+                            (p_oItem, strAuditPrePostSeqNumCountsTable, strPrePostSeqNumMatrixTable, p_strRunTitle);
 
                             if (p_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(p_strDebugFile, dataMgr.m_strSQL + "\r\n\r\n");
                             dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
 
+                            // @ToDo: This query gives the wrong answer. The SeqNum is the same for all the rows :-(
                             dataMgr.m_strSQL = Queries.FVS.FVSOutputTable_PrePostGenericSQLite(
-                               strAuditYearCountsTable, "FVS_SUMMARY", false);
+                               strAuditYearCountsTable, "FVS_SUMMARY", false, p_strRunTitle);
 
                             if (p_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(p_strDebugFile, dataMgr.m_strSQL + "\r\n\r\n");
