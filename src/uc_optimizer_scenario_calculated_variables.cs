@@ -5944,14 +5944,7 @@ namespace FIA_Biosum_Manager
                             string field = "";
                             string dataType = "";
                             m_oAdo.getFieldNamesAndDataTypes(calcConn, "SELECT " + column + " FROM " + table, ref field, ref dataType);
-                            if (dataType == "System.String")
-                            {
-                                dataType = "CHAR";
-                            }
-                            else if (dataType == "System.Double")
-                            {
-                                dataType = "DOUBLE";
-                            }
+                            dataType = utils.DataTypeConvert(dataType.ToUpper(), true);
                             fieldsAndDataTypes = fieldsAndDataTypes + field + " " + dataType + ", ";
                         }
                         fieldsAndDataTypes = fieldsAndDataTypes.Substring(0, fieldsAndDataTypes.Length - 2);
