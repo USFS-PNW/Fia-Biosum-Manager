@@ -1072,6 +1072,14 @@ namespace FIA_Biosum_Manager
 				p_frmTherm.lblMsg.Refresh();
                 System.IO.File.Copy(strSourceFile, strDestFile, true);
 
+				//copy default optimizer_definitions.db to new project directory
+				strSourceFile = this.m_oEnv.strAppDir + "\\db\\optimizer_definitions.db";
+				strDestFile = this.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultSqliteDbFile;
+				p_frmTherm.Increment(8);
+				p_frmTherm.lblMsg.Text = strDestFile;
+				p_frmTherm.lblMsg.Refresh();
+				System.IO.File.Copy(strSourceFile, strDestFile, true);
+
                 //
                 //optimizer scenario rule definitions
                 //
@@ -1554,8 +1562,8 @@ namespace FIA_Biosum_Manager
         {
 			DataMgr dataMgr = new DataMgr();
 
-			string strDestFile = this.txtRootDirectory.Text.Trim() + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile;
-			dataMgr.CreateDbFile(p_strPathAndFile);
+			string strDestFile = this.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile;
+			dataMgr.CreateDbFile(strDestFile);
 
 
 		}
