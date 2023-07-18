@@ -462,14 +462,15 @@ namespace FIA_Biosum_Manager
                 {
                     if (p_strIntoTable.Trim().Length > 0)
                     {
-                        strSQL = "CREATE TABLE " + p_strIntoTable + " AS " +
-                                 "SELECT  SUM(CASE WHEN a.year >= b.year THEN 1 ELSE 0 END) AS SeqNum," +
+                        strSQL = "INSERT INTO " + p_strIntoTable + 
+                                 " SELECT  SUM(CASE WHEN a.year >= b.year THEN 1 ELSE 0 END) AS SeqNum," +
                                  "a.standid, a.year, '" + p_strRunTitle.Substring(7,2) + "' AS fvs_variant, '" +
                                  p_strRunTitle.Substring(11, 3) + "' AS rxPackage " +
                                  "FROM " + p_strFVSOutputTable + " a," +
-                                      "(SELECT standid,year " +
-                                       "FROM " + p_strFVSOutputTable + ") b " +
-                                 "WHERE a.standid=b.standid " +
+                                 "(SELECT " + p_strFVSOutputTable + ".standid, YEAR FROM " + p_strFVSOutputTable + ", FVS_CASES C " +
+                                 "WHERE " + p_strFVSOutputTable + ".STANDID = C.STANDID AND C.runtitle = '" + p_strRunTitle + "'" +
+                                 " ORDER BY " + p_strFVSOutputTable + ".standid, YEAR) b " +
+                                 "WHERE a.standid=b.standid and a.year = b.year " +
                                  "GROUP BY a.standid,a.year";
                     }
                     else
@@ -1239,7 +1240,9 @@ namespace FIA_Biosum_Manager
 
                 string strAlpha = "cdefghij";
                 int intAlias = 0;
-                string strSelectColumns = $@"a.standid,b.totalrows,'{p_strRunTitle.Substring(11, 3)}' AS RXPACKAGE,'{p_strRunTitle.Substring(7, 2)}' AS FVS_VARIANT,";
+                string strSelectColumns = $@"a.standid,b.totalrows,'{p_strRunTitle.Substring(7, 2)}' AS RXPACKAGE,'{p_strRunTitle.Substring(11, 3)}' AS FVS_VARIANT,";
+                string strVariant = p_strRunTitle.Substring(7, 2);
+                string strRxPackage = p_strRunTitle.Substring(11, 3);
 
                 //cycle 1 seqnum
                 if (p_oFVSPrePostSeqNumItem.RxCycle1PreSeqNum.Trim().Length > 0 && p_oFVSPrePostSeqNumItem.RxCycle1PreSeqNum.Trim().ToUpper() != "NOT USED")
@@ -1247,7 +1250,7 @@ namespace FIA_Biosum_Manager
                     strSQL = strSQL + " (SELECT " +
                                        "SUM(CASE WHEN SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle1PreSeqNum + " THEN 1 ELSE 0 END) AS pre_cycle1rows," +
                                        "STANDID " +
-                                       "FROM " + p_strSourceTable + " " +
+                                       "FROM " + p_strSourceTable + " WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE = '" + strRxPackage + "' " +
                                        "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle1rows,";
                     intAlias++;
@@ -1257,7 +1260,7 @@ namespace FIA_Biosum_Manager
                     strSQL = strSQL + " (SELECT " +
                                          "SUM(CASE WHEN SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle1PostSeqNum + " THEN 1 ELSE 0 END) AS post_cycle1rows," +
                                          "STANDID " +
-                                       "FROM " + p_strSourceTable + " " +
+                                       "FROM " + p_strSourceTable + " WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE = '" + strRxPackage + "' " +
                                        "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle1rows,";
                     intAlias++;
@@ -1268,7 +1271,7 @@ namespace FIA_Biosum_Manager
                     strSQL = strSQL + " (SELECT " +
                                          "SUM(CASE WHEN SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle2PreSeqNum + " THEN 1 ELSE 0 END) AS pre_cycle2rows," +
                                          "STANDID " +
-                                       "FROM " + p_strSourceTable + " " +
+                                       "FROM " + p_strSourceTable + " WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE = '" + strRxPackage + "' " +
                                        "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle2rows,";
                     intAlias++;
@@ -1278,7 +1281,7 @@ namespace FIA_Biosum_Manager
                     strSQL = strSQL + " (SELECT " +
                                          "SUM(CASE WHEN SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle2PostSeqNum + " THEN 1 ELSE 0 END) AS post_cycle2rows," +
                                          "STANDID " +
-                                       "FROM " + p_strSourceTable + " " +
+                                       "FROM " + p_strSourceTable + " WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE = '" + strRxPackage + "' " +
                                        "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle2rows,";
                     intAlias++;
@@ -1289,7 +1292,7 @@ namespace FIA_Biosum_Manager
                     strSQL = strSQL + " (SELECT " +
                                          "SUM(CASE WHEN SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle3PreSeqNum + " THEN 1 ELSE 0 END) AS pre_cycle3rows," +
                                          "STANDID " +
-                                       "FROM " + p_strSourceTable + " " +
+                                       "FROM " + p_strSourceTable + " WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE = '" + strRxPackage + "' " +
                                        "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle3rows,";
                     intAlias++;
@@ -1299,7 +1302,7 @@ namespace FIA_Biosum_Manager
                     strSQL = strSQL + " (SELECT " +
                                          "SUM(CASE WHEN SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle3PostSeqNum + " THEN 1 ELSE 0 END) AS post_cycle3rows," +
                                          "STANDID " +
-                                       "FROM " + p_strSourceTable + " " +
+                                       "FROM " + p_strSourceTable + " WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE = '" + strRxPackage + "' " +
                                        "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle3rows,";
                     intAlias++;
@@ -1310,7 +1313,7 @@ namespace FIA_Biosum_Manager
                     strSQL = strSQL + " (SELECT " +
                                          "SUM(CASE WHEN SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle4PreSeqNum + " THEN 1 ELSE 0 END) AS pre_cycle4rows," +
                                          "STANDID " +
-                                       "FROM " + p_strSourceTable + " " +
+                                       "FROM " + p_strSourceTable + " WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE = '" + strRxPackage + "' " +
                                        "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle4rows,";
                     intAlias++;
@@ -1320,7 +1323,7 @@ namespace FIA_Biosum_Manager
                     strSQL = strSQL + " (SELECT " +
                                          "SUM(CASE WHEN SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle4PostSeqNum + " THEN 1 ELSE 0 END) AS post_cycle4rows," +
                                          "STANDID " +
-                                       "FROM " + p_strSourceTable + " " +
+                                       "FROM " + p_strSourceTable + " WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE = '" + strRxPackage + "' " +
                                        "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle4rows,";
                     intAlias++;
@@ -1328,11 +1331,11 @@ namespace FIA_Biosum_Manager
                 strSQL = strSQL.Substring(0, strSQL.Length - 1);
                 strSelectColumns = strSelectColumns.Substring(0, strSelectColumns.Length - 1);
 
-                strSQL = "CREATE TABLE " + p_strIntoTable + " AS " +
-                         "SELECT DISTINCT " + strSelectColumns + " " +
+                strSQL = "INSERT INTO " + p_strIntoTable +
+                         " SELECT DISTINCT " + strSelectColumns + " " +
                          "FROM " + p_strSourceTable + " a," +
                           "(SELECT COUNT(*) AS totalrows," +
-                          "STANDID " + "FROM " + p_strSourceTable + " " +
+                          "STANDID " + "FROM " + p_strSourceTable + " WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE = '" + strRxPackage + "' " +
                           "GROUP BY standid) b," +
                           strSQL + " " + "WHERE a.standid=b.standid AND ";
 
