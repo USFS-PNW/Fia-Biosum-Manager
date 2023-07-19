@@ -1255,6 +1255,15 @@ namespace FIA_Biosum_Manager
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle1rows,";
                     intAlias++;
                 }
+                else
+                {
+
+                    //@ToDo: Need to handle the -1 values (Not Used) in the audit
+                    strSQL = strSQL + "(SELECT -1 AS pre_cycle1rows, STANDID " +
+                                       "FROM " + p_strSourceTable + " )" + strAlpha.Substring(intAlias, 1) + ",";
+                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle1rows,";
+                    intAlias++;
+                }
                 if (p_oFVSPrePostSeqNumItem.RxCycle1PostSeqNum.Trim().Length > 0 && p_oFVSPrePostSeqNumItem.RxCycle1PostSeqNum.Trim().ToUpper() != "NOT USED")
                 {
                     strSQL = strSQL + " (SELECT " +
@@ -1262,6 +1271,13 @@ namespace FIA_Biosum_Manager
                                          "STANDID " +
                                        "FROM " + p_strSourceTable + " WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE = '" + strRxPackage + "' " +
                                        "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
+                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle1rows,";
+                    intAlias++;
+                }
+                else
+                {
+                    strSQL = strSQL + "(SELECT -1 AS post_cycle1rows, STANDID " +
+                                       "FROM " + p_strSourceTable + " )" + strAlpha.Substring(intAlias, 1) + ",";
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle1rows,";
                     intAlias++;
                 }
@@ -1276,6 +1292,13 @@ namespace FIA_Biosum_Manager
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle2rows,";
                     intAlias++;
                 }
+                else
+                {
+                    strSQL = strSQL + "(SELECT -1 AS pre_cycle2rows, STANDID " +
+                                       "FROM " + p_strSourceTable + " )" + strAlpha.Substring(intAlias, 1) + ",";
+                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle2rows,";
+                    intAlias++;
+                }
                 if (p_oFVSPrePostSeqNumItem.RxCycle2PostSeqNum.Trim().Length > 0 && p_oFVSPrePostSeqNumItem.RxCycle2PostSeqNum.Trim().ToUpper() != "NOT USED")
                 {
                     strSQL = strSQL + " (SELECT " +
@@ -1283,6 +1306,13 @@ namespace FIA_Biosum_Manager
                                          "STANDID " +
                                        "FROM " + p_strSourceTable + " WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE = '" + strRxPackage + "' " +
                                        "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
+                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle2rows,";
+                    intAlias++;
+                }
+                else
+                {
+                    strSQL = strSQL + "(SELECT -1 AS post_cycle2rows, STANDID " +
+                                       "FROM " + p_strSourceTable + " )" + strAlpha.Substring(intAlias, 1) + ",";
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle2rows,";
                     intAlias++;
                 }
@@ -1297,6 +1327,13 @@ namespace FIA_Biosum_Manager
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle3rows,";
                     intAlias++;
                 }
+                else
+                {
+                    strSQL = strSQL + "(SELECT -1 AS pre_cycle3rows, STANDID " +
+                                       "FROM " + p_strSourceTable + " )" + strAlpha.Substring(intAlias, 1) + ",";
+                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle3rows,";
+                    intAlias++;
+                }
                 if (p_oFVSPrePostSeqNumItem.RxCycle3PostSeqNum.Trim().Length > 0 && p_oFVSPrePostSeqNumItem.RxCycle3PostSeqNum.Trim().ToUpper() != "NOT USED")
                 {
                     strSQL = strSQL + " (SELECT " +
@@ -1304,6 +1341,13 @@ namespace FIA_Biosum_Manager
                                          "STANDID " +
                                        "FROM " + p_strSourceTable + " WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE = '" + strRxPackage + "' " +
                                        "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
+                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle3rows,";
+                    intAlias++;
+                }
+                else
+                {
+                    strSQL = strSQL + "(SELECT -1 AS post_cycle3rows, STANDID " +
+                                       "FROM " + p_strSourceTable + " )" + strAlpha.Substring(intAlias, 1) + ",";
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle3rows,";
                     intAlias++;
                 }
@@ -1318,6 +1362,13 @@ namespace FIA_Biosum_Manager
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle4rows,";
                     intAlias++;
                 }
+                else
+                {
+                    strSQL = strSQL + "(SELECT -1 AS pre_cycle4rows, STANDID " +
+                                       "FROM " + p_strSourceTable + " )" + strAlpha.Substring(intAlias, 1) + ",";
+                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle4rows,";
+                    intAlias++;
+                }
                 if (p_oFVSPrePostSeqNumItem.RxCycle4PostSeqNum.Trim().Length > 0 && p_oFVSPrePostSeqNumItem.RxCycle4PostSeqNum.Trim().ToUpper() != "NOT USED")
                 {
                     strSQL = strSQL + " (SELECT " +
@@ -1325,6 +1376,13 @@ namespace FIA_Biosum_Manager
                                          "STANDID " +
                                        "FROM " + p_strSourceTable + " WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE = '" + strRxPackage + "' " +
                                        "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
+                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle4rows,";
+                    intAlias++;
+                }
+                else
+                {
+                    strSQL = strSQL + "(SELECT -1 AS post_cycle4rows, STANDID " +
+                                       "FROM " + p_strSourceTable + " )" + strAlpha.Substring(intAlias, 1) + ",";
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle4rows,";
                     intAlias++;
                 }

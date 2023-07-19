@@ -5432,8 +5432,14 @@ namespace FIA_Biosum_Manager
                                             //get fvs_summary configuration
                                             //
                                             GetPrePostSeqNumConfiguration("FVS_SUMMARY", strPackage);
+
+                                            // attach audit.db
+                                            SQLite.m_strSQL = $@"ATTACH DATABASE '{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile}' AS AUDIT";
+                                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
                                             //check pre and post-treatment seqnum assignments
-                                            this.Validate_FvsSummaryPrePostSeqNum(conn, ref intItemError, ref strItemError, ref intItemWarning, ref strItemWarning, true);
+                                            this.Validate_FvsSummaryPrePostSeqNum(conn, ref intItemError, ref strItemError, ref intItemWarning, ref strItemWarning, true,
+                                                strVariant, strPackage);
                                             if (intItemError == 0 && intItemWarning == 0)
                                             {
                                                 frmMain.g_oUtils.WriteText(m_strLogFile, "OK\r\n\r\n");
@@ -7764,12 +7770,13 @@ namespace FIA_Biosum_Manager
         /// <param name="p_intItemWarning"></param>
         /// <param name="p_strItemWarning"></param>
         /// <param name="p_bDoWarnings"></param>
-        private void Validate_FvsSummaryPrePostSeqNum(System.Data.SQLite.SQLiteConnection p_oConn, ref int p_intItemError, ref string p_strItemError, ref int p_intItemWarning, ref string p_strItemWarning, bool p_bDoWarnings)
+        private void Validate_FvsSummaryPrePostSeqNum(System.Data.SQLite.SQLiteConnection p_oConn, ref int p_intItemError, ref string p_strItemError, ref int p_intItemWarning, 
+            ref string p_strItemWarning, bool p_bDoWarnings, string p_strVariant, string p_strRxPackage)
         {           
             int intCycleLength = 10;
             //get the cycle length for this package
             if (this.m_oRxPackageItem != null) intCycleLength = this.m_oRxPackageItem.RxCycleLength;           
-            Validate_SeqNumExistence("FVS_SUMMARY", p_oConn, ref p_intItemError, ref p_strItemError, ref p_intItemWarning, ref p_strItemWarning, p_bDoWarnings);			
+            Validate_SeqNumExistence("FVS_SUMMARY", p_oConn, ref p_intItemError, ref p_strItemError, ref p_intItemWarning, ref p_strItemWarning, p_bDoWarnings, p_strVariant, p_strRxPackage);			
         }
 
         /// <summary>
@@ -7941,14 +7948,17 @@ namespace FIA_Biosum_Manager
         /// <param name="p_intItemWarning"></param>
         /// <param name="p_strItemWarning"></param>
         /// <param name="p_bDoWarnings">AUDIT:true APPEND:false</param>
-        private void Validate_SeqNumExistence(string p_strFVSOutputTable, System.Data.SQLite.SQLiteConnection conn, ref int p_intItemError, ref string p_strItemError, ref int p_intItemWarning, ref string p_strItemWarning, bool p_bDoWarnings)
+        private void Validate_SeqNumExistence(string p_strFVSOutputTable, System.Data.SQLite.SQLiteConnection conn, ref int p_intItemError, 
+            ref string p_strItemError, ref int p_intItemWarning, ref string p_strItemWarning, bool p_bDoWarnings, string p_FvsVariant,
+            string p_rxPackage)
         {
             string strCol = "";
             int x, z;
 
-            string strAuditPrePostSeqNumCountsTable = "audit_" + p_strFVSOutputTable + "_prepost_seqnum_counts_table";
+            // Add audit alias to table name
+            string strAuditPrePostSeqNumCountsTable = "AUDIT.audit_" + p_strFVSOutputTable + "_prepost_seqnum_counts_table";
 
-            SQLite.m_strSQL = "SELECT * FROM " + strAuditPrePostSeqNumCountsTable + " WHERE standid IS NOT NULL";
+            SQLite.m_strSQL = $@"SELECT * FROM {strAuditPrePostSeqNumCountsTable} WHERE standid IS NOT NULL AND FVS_VARIANT = '{p_FvsVariant}' AND RXPACKAGE = '{p_rxPackage}'";
             SQLite.SqlQueryReader(conn, SQLite.m_strSQL);
             if (SQLite.m_intError == 0)
             {
