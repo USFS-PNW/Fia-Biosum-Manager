@@ -3833,7 +3833,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void btnDeleteFvsVariable_Click(object sender, EventArgs e)
+        private void btnDeleteFvsVariable_Click_access(object sender, EventArgs e)
         {
             ado_data_access oAdo = new ado_data_access();
             string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
@@ -3922,6 +3922,109 @@ namespace FIA_Biosum_Manager
             }
         }
 
+        private void btnDeleteFvsVariable_Click(object sender, EventArgs e)
+        {
+            DataMgr oDataMgr = new DataMgr();
+            string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+            string strScenarioConn = oDataMgr.GetConnectionString(strScenarioDir + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile);
+            string[] strPieces = LblSelectedVariable.Text.Split('.');
+
+            using (SQLiteConnection oRenameConn = new SQLiteConnection(strScenarioConn))
+            {
+                oRenameConn.Open();
+
+                // Check for usage as Effectiveness variable
+                string strWeightedVariableSource = "";
+                if (strPieces.Length == 2)
+                {
+                    strWeightedVariableSource = "PRE_" + strPieces[0] + "_WEIGHTED." + lblFvsVariableName.Text;
+                }
+                else
+                {
+                    return;
+                }
+                oDataMgr.m_strSQL = "SELECT Count(*) FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTableName +
+                    " WHERE (((upper(trim(PRE_FVS_VARIABLE))) = upper(trim('" + strWeightedVariableSource + "'))))" +
+                    " AND CURRENT_YN = 'Y'";
+                if ((int)oDataMgr.getRecordCount(oRenameConn, oDataMgr.m_strSQL, "TEMP") > 0)
+                {
+                    MessageBox.Show("!!This FVS Variable Cannot Be Deleted Because It Is In Use As An Effectiveness Variable!!", "FIA Biosum",
+                      System.Windows.Forms.MessageBoxButtons.OK,
+                      System.Windows.Forms.MessageBoxIcon.Exclamation);
+                    return;
+                }
+                // Check for usage as Optimization variable
+                strWeightedVariableSource = strPieces[0] + "_WEIGHTED." + lblFvsVariableName.Text;
+                oDataMgr.m_strSQL = "SELECT Count(*) FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOptimizationTableName +
+                    " WHERE (((upper(trim(fvs_variable_name))) = upper(trim('" + strWeightedVariableSource + "'))))" +
+                    " AND CURRENT_YN = 'Y'";
+                if ((int)oDataMgr.getRecordCount(oRenameConn, oDataMgr.m_strSQL, "TEMP") > 0)
+                {
+                    MessageBox.Show("!!This FVS Variable Cannot Be Deleted Because It Is In Use As An Optimization Variable!!", "FIA Biosum",
+                      System.Windows.Forms.MessageBoxButtons.OK,
+                      System.Windows.Forms.MessageBoxIcon.Exclamation);
+                    return;
+                }
+                // Check for usage as Tie-Breaker variable
+                oDataMgr.m_strSQL = "SELECT Count(*) FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName +
+                    " WHERE (((upper(trim(fvs_variable_name))) = upper(trim('" + strWeightedVariableSource + "'))))";
+                if ((int)oDataMgr.getRecordCount(oRenameConn, oDataMgr.m_strSQL, "TEMP") > 0)
+                {
+                    MessageBox.Show("!!This FVS Variable Cannot Be Deleted Because It Is In Use As An Tie-Breaker Variable!!", "FIA Biosum",
+                      System.Windows.Forms.MessageBoxButtons.OK,
+                      System.Windows.Forms.MessageBoxIcon.Exclamation);
+                    return;
+                }
+                oRenameConn.Close();
+            }
+            DialogResult objResult = MessageBox.Show("!!You are about to delete an FVS weighted variable. This action cannot be undone. Do you wish to continue?", "FIA Biosum",
+                                        System.Windows.Forms.MessageBoxButtons.YesNo,
+                                        System.Windows.Forms.MessageBoxIcon.Question);
+            if (objResult == DialogResult.Yes)
+            {
+                // Delete data entries from FVS pre/post tables
+                string strPreTable = "PRE_" + strPieces[0] + "_WEIGHTED";
+                string strPostTable = "POST_" + strPieces[0] + "_WEIGHTED";
+                string strField = lblFvsVariableName.Text;
+                string strCopyCols = "";
+                string strPrePostConn = oDataMgr.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile);
+
+                using (SQLiteConnection prePostConn = new SQLiteConnection(strPrePostConn))
+                {
+                    string[] arrColumns = oDataMgr.getFieldNamesArray(prePostConn, "SELECT * FROM " + strPreTable);
+                    foreach (string strColumn in arrColumns)
+                    {
+                        if (strColumn != strField)
+                        {
+                            strCopyCols = strCopyCols + strColumn + ", ";
+                        }
+                    }
+                    strCopyCols = strCopyCols.Substring(0, strCopyCols.Length - 2);
+
+                    oDataMgr.m_strSQL = "CREATE TABLE " + strPreTable + "_1 AS SELECT " + strCopyCols + " FROM " + strPreTable;
+                    oDataMgr.SqlNonQuery(prePostConn, oDataMgr.m_strSQL);
+                    oDataMgr.m_strSQL = "DROP TABLE " + strPreTable;
+                    oDataMgr.SqlNonQuery(prePostConn, oDataMgr.m_strSQL);
+                    oDataMgr.m_strSQL = "ALTER TABLE " + strPreTable + "_1 RENAME TO " + strPreTable;
+
+                    oDataMgr.m_strSQL = "CREATE TABLE " + strPostTable + "_1 AS SELECT " + strCopyCols + " FROM " + strPostTable;
+                    oDataMgr.SqlNonQuery(prePostConn, oDataMgr.m_strSQL);
+                    oDataMgr.m_strSQL = "DROP TABLE " + strPostTable;
+                    oDataMgr.SqlNonQuery(prePostConn, oDataMgr.m_strSQL);
+                    oDataMgr.m_strSQL = "ALTER TABLE " + strPostTable + "_1 RENAME TO " + strPostTable;
+
+                    prePostConn.Close();
+                }
+
+                DeleteVariableSqlite();
+                this.btnFvsDetailsCancel.PerformClick();
+            }
+            else
+            {
+                return;
+            }
+        }
+
         private void DeleteVariableAccdb()
         {
             // Delete entries from configuration database
@@ -3973,7 +4076,7 @@ namespace FIA_Biosum_Manager
             m_oHelp.ShowHelp(new string[] { "TREATMENT_OPTIMIZER", "ECONOMIC_VARIABLE" });
         }
 
-        private void BtnDeleteEconVariable_Click(object sender, EventArgs e)
+        private void BtnDeleteEconVariable_Click_access(object sender, EventArgs e)
         {
             string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
             // @ToDo: Switch this over to sqlite when migrating Optimizer
@@ -4039,6 +4142,68 @@ namespace FIA_Biosum_Manager
                 {
                     DeleteVariableSqlite();
                 }
+                this.btnEconDetailsCancel.PerformClick();
+            }
+        }
+
+        public void BtnDeleteEconVariable_Click(object sender, EventArgs e)
+        {
+            string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+            DataMgr oDataMgr = new DataMgr();
+            string strScenarioConn = oDataMgr.GetConnectionString(strScenarioDir + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile);
+
+            using (SQLiteConnection oScenarioConn = new SQLiteConnection(strScenarioConn))
+            {
+                oScenarioConn.Open();
+
+                // Check for usage as Optimization variable
+                oDataMgr.m_strSQL = "SELECT Count(*) FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOptimizationTableName +
+                    " WHERE (((upper(trim(fvs_variable_name))) = upper(trim('" + lblEconVariableName.Text + "'))))" +
+                    " AND CURRENT_YN = 'Y'";
+                if ((int)oDataMgr.getRecordCount(oScenarioConn, oDataMgr.m_strSQL, "TEMP") > 0)
+                {
+                    MessageBox.Show("!!This Economic Variable Cannot Be Deleted Because It Is In Use As An Optimization Variable!!", "FIA Biosum",
+                      System.Windows.Forms.MessageBoxButtons.OK,
+                      System.Windows.Forms.MessageBoxIcon.Exclamation);
+                    return;
+                }
+
+                // Check for usage as filter
+                oDataMgr.m_strSQL = "SELECT Count(*) FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOptimizationTableName +
+                    " WHERE (((upper(trim(revenue_attribute))) = upper(trim('" + lblEconVariableName.Text + "'))))" +
+                    " AND CURRENT_YN = 'Y'";
+                if ((int)oDataMgr.getRecordCount(oScenarioConn, oDataMgr.m_strSQL, "TEMP") > 0)
+                {
+                    MessageBox.Show("!!This Economic Variable Cannot Be Deleted Because It Is In Use As A Dollars Per Acre Filter!!", "FIA Biosum",
+                      System.Windows.Forms.MessageBoxButtons.OK,
+                      System.Windows.Forms.MessageBoxIcon.Exclamation);
+                    return;
+                }
+
+                // Check for usage as tiebreaker
+                oDataMgr.m_strSQL = "SELECT Count(*) FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName +
+                    " WHERE (((upper(trim(fvs_variable_name))) = upper(trim('" + lblEconVariableName.Text + "'))))";
+                if ((int)oDataMgr.getRecordCount(oScenarioConn, oDataMgr.m_strSQL, "TEMP") > 0)
+                {
+                    MessageBox.Show("!!This Economic Variable Cannot Be Deleted Because It Is In Use As An Tie-Breaker Variable!!", "FIA Biosum",
+                      System.Windows.Forms.MessageBoxButtons.OK,
+                      System.Windows.Forms.MessageBoxIcon.Exclamation);
+                    return;
+                }
+
+                oScenarioConn.Close();
+            }
+
+            DialogResult objResult = MessageBox.Show("!!You are about to delete an Economic weighted variable. This action cannot be undone. Do you wish to continue?", "FIA Biosum",
+                MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Question);
+
+            if (oDataMgr != null)
+            {
+                oDataMgr = null;
+            }
+            if (objResult == DialogResult.Yes)
+            {
+                DeleteVariableSqlite();
                 this.btnEconDetailsCancel.PerformClick();
             }
         }
