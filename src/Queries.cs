@@ -442,7 +442,7 @@ namespace FIA_Biosum_Manager
             /// <param name="p_bAllColumns"></param>
             /// <returns></returns>
             static public string FVSOutputTable_PrePostGenericSQLite(string p_strIntoTable, string p_strFVSOutputTable, bool p_bAllColumns,
-                string p_strRunTitle)
+                string p_strRunTitle, IList<string> lstAddedColumns)
             {
                 string strSQL = "";
                 if (p_bAllColumns)
@@ -462,11 +462,21 @@ namespace FIA_Biosum_Manager
                 {
                     if (p_strIntoTable.Trim().Length > 0)
                     {
-                        strSQL = "INSERT INTO " + p_strIntoTable + 
-                                 " SELECT  SUM(CASE WHEN a.year >= b.year THEN 1 ELSE 0 END) AS SeqNum," +
-                                 "a.standid, a.year, '" + p_strRunTitle.Substring(7,2) + "' AS fvs_variant, '" +
-                                 p_strRunTitle.Substring(11, 3) + "' AS rxPackage " +
-                                 "FROM " + p_strFVSOutputTable + " a," +
+                        strSQL = "INSERT INTO " + p_strIntoTable +
+                                 " SELECT SUM(CASE WHEN a.year >= b.year THEN 1 ELSE 0 END) AS SeqNum,";
+                        strSQL += "a.standid, a.year, '" + p_strRunTitle.Substring(7, 2) + "' AS fvs_variant, '" +
+                                  p_strRunTitle.Substring(11, 3) + "' AS rxPackage ";
+                        if (lstAddedColumns != null)
+                        {
+                            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                            sb.Append(",");
+                            foreach (var item in lstAddedColumns)
+                            {
+                                sb.Append($@" 0 AS {item},");
+                            }
+                            strSQL += sb.ToString().TrimEnd(',') + " ";
+                        }
+                        strSQL += "FROM " + p_strFVSOutputTable + " a," +
                                  "(SELECT " + p_strFVSOutputTable + ".standid, YEAR FROM " + p_strFVSOutputTable + ", FVS_CASES C " +
                                  "WHERE " + p_strFVSOutputTable + ".STANDID = C.STANDID AND C.runtitle = '" + p_strRunTitle + "'" +
                                  " ORDER BY " + p_strFVSOutputTable + ".standid, YEAR) b " +
@@ -1477,27 +1487,52 @@ namespace FIA_Biosum_Manager
 
             }
 
-            static public string[] FVSOutputTable_AuditFVSSummaryTableRowCountsSQL(string p_strIntoTable, string p_strSummaryAuditTable, string p_strFVSOutputTable, string p_strRowCountColumn)
+            static public string[] FVSOutputTable_AuditFVSSummaryTableRowCountsSQL(string p_strIntoTable, string p_strSummaryAuditTable, string p_strFVSOutputTable, 
+                string p_strRowCountColumn, string p_strRunTitle)
             {
                 string[] strSQL = new string[4];
 
-                strSQL[0] =  "SELECT DISTINCT a.standid,a.year,b.rowcount " + 
-                             "INTO " + p_strIntoTable + " " + 
+                strSQL[0] = "SELECT DISTINCT a.standid,a.year,b.rowcount " +
+                             "INTO " + p_strIntoTable + " " +
                              "FROM " + p_strFVSOutputTable + " a," +
-                               "(SELECT COUNT(*) as rowcount,standid,year " + 
-                                "FROM " + p_strFVSOutputTable + " " + 
-                                "GROUP BY standid,year) b " + 
+                               "(SELECT COUNT(*) as rowcount,standid,year " +
+                                "FROM " + p_strFVSOutputTable + " " +
+                                "GROUP BY standid,year) b " +
                              "WHERE a.standid=b.standid AND a.year=b.year";
 
-               strSQL[1] = "UPDATE " + p_strSummaryAuditTable + " a " +  
+                strSQL[1] = "UPDATE " + p_strSummaryAuditTable + " a " +  
                            "INNER JOIN " + p_strIntoTable + " b " + 
                            "ON a.standid=b.standid AND " + 
 	                          "a.year=b.year " + 
                            "SET a." + p_strRowCountColumn + "=b.rowcount";
 
-              strSQL[2] = "UPDATE " + p_strSummaryAuditTable + " " + 
-                          "SET " + p_strRowCountColumn + "=0 " + 
-                          "WHERE " + p_strRowCountColumn + " IS NULL";
+                strSQL[2] = "UPDATE " + p_strSummaryAuditTable + " " +
+                    "SET " + p_strRowCountColumn + "=0 " +
+                    "WHERE " + p_strRowCountColumn + " IS NULL";
+
+
+                // This means we are using SQLite
+                if (!String.IsNullOrEmpty(p_strRunTitle))
+                {
+                    strSQL[0] = $@"CREATE TABLE {p_strIntoTable} AS 
+                        SELECT DISTINCT a.standid,a.year,b.rowcount FROM {p_strFVSOutputTable} a, fvs_CASES C,
+                        (SELECT COUNT(*) as rowcount,{p_strFVSOutputTable}.standid,year 
+                        FROM {p_strFVSOutputTable}, fvs_cases c where {p_strFVSOutputTable}.StandID = c.StandId and {p_strFVSOutputTable}.CaseID = c.CaseID and 
+                        c.RunTitle = '{p_strRunTitle}' GROUP BY fvs_cutlist.standid,year) b 
+                        WHERE a.standid=b.standid AND a.StandID = c.standId AND c.caseId = a.caseid AND 
+                        c.runTitle = '{p_strRunTitle}' AND a.year=b.year ";
+
+                    string strVariant = p_strRunTitle.Substring(7, 2);
+                    string strRxPackage = p_strRunTitle.Substring(11, 3);
+
+                    strSQL[1] = $@"UPDATE {p_strSummaryAuditTable} SET FVS_CUTLIST = (SELECT rowcount
+                        from temp_rowcount b WHERE {p_strSummaryAuditTable}.standid=b.standid AND {p_strSummaryAuditTable}.year=b.year)
+                        WHERE fvs_variant = '{strVariant}' and rxPackage = '{strRxPackage}'";
+
+                    strSQL[2] = "UPDATE " + p_strSummaryAuditTable + " " +
+                        "SET " + p_strRowCountColumn + "=0 " +
+                        "WHERE " + p_strRowCountColumn + " IS NULL AND fvs_variant = '" + strVariant + "' and rxpackage = '" + strRxPackage + "'";
+                }
 
               strSQL[3] = "DROP TABLE " + p_strIntoTable;
 

@@ -2919,7 +2919,7 @@ namespace FIA_Biosum_Manager
                     "temp_rowcount",
                     "audit_FVS_SUMMARY_year_counts_table",
                     p_strSourceTableName,
-                    p_strSourceTableName);
+                    p_strSourceTableName, null);
 
                 for (x = 0; x <= strSQL.Length - 1; x++)
                 {
@@ -3697,15 +3697,26 @@ namespace FIA_Biosum_Manager
                         if (p_strSourceTableName == "FVS_SUMMARY")
                         {
                             dataMgr.m_strSQL = Queries.FVS.FVSOutputTable_AuditSelectIntoPrePostSeqNumCountSqlite
-                            (p_oItem, strAuditPrePostSeqNumCountsTable, strPrePostSeqNumMatrixTable, p_strRunTitle);
+                                (p_oItem, strAuditPrePostSeqNumCountsTable, strPrePostSeqNumMatrixTable, p_strRunTitle);
 
                             if (p_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(p_strDebugFile, dataMgr.m_strSQL + "\r\n\r\n");
                             dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
 
                             // @ToDo: This query gives the wrong answer. The SeqNum is the same for all the rows :-(
+                            string[] arrDefaultColumns = { "SEQNUM", "STANDID", "YEAR", "FVS_VARIANT", "RXPACKAGE" };
+                            string[] arrAllColumns = dataMgr.getFieldNamesArray(conn, "SELECT * FROM " + strAuditYearCountsTable);
+                            System.Collections.Generic.IList<string> lstExtraColumns = 
+                                new System.Collections.Generic.List<string>();
+                            for (int i = 0; i < arrAllColumns.Length; i++)
+                            {
+                                if (!arrDefaultColumns.Contains(arrAllColumns[i].ToUpper()))
+                                {
+                                    lstExtraColumns.Add(arrAllColumns[i]);
+                                }
+                            }
                             dataMgr.m_strSQL = Queries.FVS.FVSOutputTable_PrePostGenericSQLite(
-                               strAuditYearCountsTable, "FVS_SUMMARY", false, p_strRunTitle);
+                               strAuditYearCountsTable, "FVS_SUMMARY", false, p_strRunTitle, lstExtraColumns);
 
                             if (p_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(p_strDebugFile, dataMgr.m_strSQL + "\r\n\r\n");
@@ -3728,41 +3739,45 @@ namespace FIA_Biosum_Manager
                     }
                     if (p_strSourceTableName == "FVS_SUMMARY") return;
                 }
+
+                if (p_bAudit)
+                {
+                    //
+                    //stand + year rowcounts for all tables as compared with stand + year in the summary table
+                    //
+                    if (! dataMgr.ColumnExists(conn, "audit_fvs_summary_year_counts_table", p_strSourceTableName))
+                    {
+                        dataMgr.AddColumn(conn, "audit_fvs_summary_year_counts_table", p_strSourceTableName, "INTEGER", "");
+                    }
+                    //@ToDo: need to fix these queries :-(
+                    string[] strSQL = Queries.FVS.FVSOutputTable_AuditFVSSummaryTableRowCountsSQL(
+                        "temp_rowcount",
+                        "audit_FVS_SUMMARY_year_counts_table",
+                        p_strSourceTableName,
+                        p_strSourceTableName, p_strRunTitle);
+
+                    for (x = 0; x <= strSQL.Length - 1; x++)
+                    {
+                        if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(p_strDebugFile, strSQL[x] + "\r\n\r\n");
+                        dataMgr.SqlNonQuery(conn, strSQL[x]);
+                    }
+                }
             }
 
+            if (p_strSourceTableName.Trim().ToUpper() == "FVS_TREELIST" ||
+                p_strSourceTableName.Trim().ToUpper() == "FVS_CUTLIST" ||
+                p_strSourceTableName.Trim().ToUpper().IndexOf("FVS_POTFIRE", 0) >= 0) return;
 
-            //if (p_bAudit)
-            //{
-            //    //
-            //    //stand + year rowcounts for all tables as compared with stand + year in the summary table
-            //    //
-            //    p_oAdo.AddColumn(p_oAdo.m_OleDbConnection, "audit_fvs_summary_year_counts_table", p_strSourceTableName, "INTEGER", "");
-            //    string[] strSQL = Queries.FVS.FVSOutputTable_AuditFVSSummaryTableRowCountsSQL(
-            //        "temp_rowcount",
-            //        "audit_FVS_SUMMARY_year_counts_table",
-            //        p_strSourceTableName,
-            //        p_strSourceTableName);
+            //check if this table uses a default configuration of a different table
+            if (p_oItem.TableName.Trim().ToUpper() !=
+                p_strSourceTableName.Trim().ToUpper() &&
+                p_oItem.Type == "D") return;
 
-            //    for (x = 0; x <= strSQL.Length - 1; x++)
-            //    {
-            //        if (p_bDebug && frmMain.g_intDebugLevel > 2)
-            //            frmMain.g_oUtils.WriteText(p_strDebugFile, p_oAdo.m_strSQL + "\r\n\r\n");
-            //        p_oAdo.SqlNonQuery(p_oConn, strSQL[x]);
-            //    }
-            //}
-
-            //if (p_strSourceTableName.Trim().ToUpper() == "FVS_TREELIST" ||
-            //    p_strSourceTableName.Trim().ToUpper() == "FVS_CUTLIST" ||
-            //    p_strSourceTableName.Trim().ToUpper().IndexOf("FVS_POTFIRE", 0) >= 0) return;
-
-            ////check if this table uses a default configuration of a different table
-            //if (p_oItem.TableName.Trim().ToUpper() !=
-            //    p_strSourceTableName.Trim().ToUpper() &&
-            //    p_oItem.Type == "D") return;
-
-            ////
-            ////CUSTOM CONFIGURATIONS
-            ////
+            //
+            //CUSTOM CONFIGURATIONS
+            //
+            //@ToDo: Uncomment the following
             //if (p_oItem.TableName.Trim().ToUpper() == "FVS_STRCLASS")
             //{
             //    frmMain.g_oTables.m_oFvs.CreateFVSOutputPrePostSeqNumAuditStrClassTable(p_oAdo, p_oConn, strPrePostSeqNumMatrixTable);

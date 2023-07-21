@@ -5492,8 +5492,6 @@ namespace FIA_Biosum_Manager
                                                 m_intProgressStepCurrentCount,
                                                 m_intProgressStepTotalCount);
 
-
-                                    strSourceTableArray = oAdo.getTableNames(oAdo.m_OleDbConnection);
                                     for (y = 0; y <= strSourceTableArray.Length - 1; y++)
                                     {
 
@@ -5670,7 +5668,8 @@ namespace FIA_Biosum_Manager
                                                 strItemWarning = "";
 
                                                 
-                                                this.Validate_PotFire(oAdo, oAdo.m_OleDbConnection, "FVS_POTFIRE", strVariant, ref intItemError, ref strItemError, ref intItemWarning, ref strItemWarning, true);
+                                                this.Validate_PotFire(strConn, "FVS_POTFIRE", ref intItemError, ref strItemError, 
+                                                    ref intItemWarning, ref strItemWarning, true, strRunTitle);
 
                                                 if (intItemError == 0 && intItemWarning == 0)
                                                 {
@@ -5680,8 +5679,6 @@ namespace FIA_Biosum_Manager
                                                 {
                                                     frmMain.g_oUtils.WriteText(m_strLogFile, strItemWarning + "\r\n");
                                                 }
-
-
 
                                                 if (intItemError != 0)
                                                 {
@@ -5698,9 +5695,10 @@ namespace FIA_Biosum_Manager
                                                 intItemWarning = 0;
                                                 strItemWarning = "";
 
-                                                this.Validate_FVSGenericTable(oAdo, oAdo.m_OleDbConnection, "FVS_STRCLASS", "FVS_STRCLASS", ref intItemError, ref strItemError, ref intItemWarning, ref strItemWarning, true);
+                                            this.Validate_FVSGenericTableSqlite(strConn, "FVS_STRCLASS", "FVS_STRCLASS", ref intItemError, ref strItemError, ref intItemWarning,
+                                                ref strItemWarning, true, strRunTitle);
 
-                                                if (intItemError == 0 && intItemWarning == 0)
+                                            if (intItemError == 0 && intItemWarning == 0)
                                                 {
                                                     frmMain.g_oUtils.WriteText(m_strLogFile, "OK\r\n\r\n");
                                                 }
@@ -5731,8 +5729,8 @@ namespace FIA_Biosum_Manager
                                                     intItemWarning = 0;
                                                     strItemWarning = "";
 
-                                                    this.Validate_FVSGenericTable(oAdo, oAdo.m_OleDbConnection, strSourceTableArray[y].Trim(), strSourceTableArray[y], ref intItemError, ref strItemError, ref intItemWarning, ref strItemWarning, true);
-
+                                                    this.Validate_FVSGenericTableSqlite(strConn, strSourceTableArray[y].Trim(), strSourceTableArray[y], ref intItemError, ref strItemError, ref intItemWarning, 
+                                                        ref strItemWarning, true, strRunTitle);
                                                     if (intItemError == 0 && intItemWarning == 0)
                                                     {
                                                         frmMain.g_oUtils.WriteText(m_strLogFile, "OK\r\n\r\n");
@@ -5741,8 +5739,6 @@ namespace FIA_Biosum_Manager
                                                     {
                                                         frmMain.g_oUtils.WriteText(m_strLogFile, strItemWarning + "\r\n");
                                                     }
-
-
 
                                                     if (intItemError != 0)
                                                     {
@@ -7953,7 +7949,14 @@ namespace FIA_Biosum_Manager
             string p_rxPackage)
         {
             string strCol = "";
-            int x, z;
+            int x;
+
+            // attach audit.db
+            if (! SQLite.DatabaseAttached(conn, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile))
+            {
+                SQLite.m_strSQL = $@"ATTACH DATABASE '{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile}' AS AUDIT";
+                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+            }
 
             // Add audit alias to table name
             string strAuditPrePostSeqNumCountsTable = "AUDIT.audit_" + p_strFVSOutputTable + "_prepost_seqnum_counts_table";
@@ -7966,7 +7969,6 @@ namespace FIA_Biosum_Manager
                 {
                     if (p_bDoWarnings)
                     {
-                        z = 0;
                         while (SQLite.m_DataReader.Read())
                         {
                             //PRE TREATMENT
@@ -8366,45 +8368,49 @@ namespace FIA_Biosum_Manager
 
             }
         }
-		
-		private void Validate_PotFire(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn,
-			string p_strPotFireTableName,string p_strVariant,
-			ref int p_intItemError, ref string p_strItemError, 
-			ref int p_intItemWarning, ref string p_strItemWarning,bool p_bDoWarnings)
-		{
-			
-			
-            
-           
 
-			
+        private void Validate_PotFire(string strConn, string p_strPotFireTableName,
+            ref int p_intItemError, ref string p_strItemError,
+            ref int p_intItemWarning, ref string p_strItemWarning, bool p_bDoWarnings, string p_strRunTitle)
+        {
 
-			//ERRORS
+            //ERRORS
             if ((m_oFVSPrePostSeqNumItem.RxCycle1PreSeqNumBaseYearYN == "Y" ||
                 m_oFVSPrePostSeqNumItem.RxCycle2PreSeqNumBaseYearYN == "Y" ||
                 m_oFVSPrePostSeqNumItem.RxCycle3PreSeqNumBaseYearYN == "Y" ||
                 m_oFVSPrePostSeqNumItem.RxCycle4PreSeqNumBaseYearYN == "Y") &&
-                m_bPotFireBaseYearTableExist==false)
+                m_bPotFireBaseYearTableExist == false)
             {
                 p_intItemError = -2;
                 p_strItemError = "ERROR: POTFIRE Base year file and/or table missing";
                 return;
             }
-			//
-			//see if any records 
-			//
-			p_oAdo.m_strSQL = "SELECT COUNT(*) FROM (SELECT TOP 1 standid FROM " + p_strPotFireTableName + ")";
-			if ((int)p_oAdo.getRecordCount(p_oConn,p_oAdo.m_strSQL,"FVS_POTFIRE") == 0)
-			{ 
-				p_intItemError=-2;
-				p_strItemError=p_strItemError + "ERROR: No fvs potfire records\r\n";
-				return;
-			}
 
-            if (m_oFVSPrePostSeqNumItem.UseSummaryTableSeqNumYN == "N")
-                Validate_SeqNumExistance(p_strPotFireTableName, p_oAdo, p_oConn, ref p_intItemError, ref p_strItemError, ref p_intItemWarning, ref p_strItemWarning, p_bDoWarnings);
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+            {
+                conn.Open();
+                //
+                //see if any records 
+                //
+                SQLite.m_strSQL = $@"SELECT count(*) FROM (select c.standid from {p_strPotFireTableName}, FVS_Cases c 
+                    WHERE {p_strPotFireTableName}.standid = c.standid and runTitle = '{p_strRunTitle}' limit 1)";
+                if ((int)SQLite.getRecordCount(conn, SQLite.m_strSQL, "FVS_POTFIRE") == 0)
+                {
+                    p_intItemError = -2;
+                    p_strItemError = p_strItemError + "ERROR: No fvs potfire records\r\n";
+                    return;
+                }
 
-		}
+                string strFvsVariant = p_strRunTitle.Substring(7, 2);
+                string strRxPackageId = p_strRunTitle.Substring(11, 3);
+                if (m_oFVSPrePostSeqNumItem.UseSummaryTableSeqNumYN == "N")
+                {
+                    Validate_SeqNumExistence(p_strPotFireTableName, conn, ref p_intItemError, ref p_strItemError, ref p_intItemWarning, ref p_strItemWarning,
+                        p_bDoWarnings, strFvsVariant, strRxPackageId);
+                }
+            }
+        }
+
 		
 		private void Validate_FVSGenericTable(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, 
 			string p_strFvsTableName, string p_strFvsLinkedTableName, ref int p_intItemError, ref string p_strItemError, 
@@ -8438,15 +8444,47 @@ namespace FIA_Biosum_Manager
 			
 		}
 
-		
+        private void Validate_FVSGenericTableSqlite(string strConn, string p_strFvsTableName, string p_strFVSOutputTable, ref int p_intItemError, ref string p_strItemError,
+            ref int p_intItemWarning, ref string p_strItemWarning, bool p_bDoWarnings, string p_strRunTitle)
+        {
+            //ERRORS
+            //
+            //see if any records 
+            //
 
-		
-       
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+            {
+                conn.Open();
+                SQLite.m_strSQL = $@"SELECT count(*) FROM (select c.standid from {p_strFvsTableName}, FVS_Cases c 
+                    WHERE {p_strFvsTableName}.standid = c.standid and runTitle = '{p_strRunTitle}' limit 1)";
+                if ((int)SQLite.getRecordCount(conn, SQLite.m_strSQL, p_strFvsTableName) == 0)
+                {
+                    p_intItemError = -2;
+                    p_strItemError = p_strItemError + "ERROR: No " + p_strFvsTableName + " records\r\n";
+                    return;
+                }
 
-		
+                string strFvsVariant = p_strRunTitle.Substring(7, 2);
+                string strRxPackageId = p_strRunTitle.Substring(11, 3);
+                if (m_oFVSPrePostSeqNumItem.UseSummaryTableSeqNumYN == "N")
+                    Validate_SeqNumExistence(p_strFVSOutputTable, conn, ref p_intItemError, ref p_strItemError, ref p_intItemWarning, ref p_strItemWarning,
+                        p_bDoWarnings, strFvsVariant, strRxPackageId);
+            }
 
 
-		private void btnCancel_Click(object sender, System.EventArgs e)
+            if (p_intItemError != 0) return;
+            if (p_bDoWarnings == false) return;
+        }
+
+
+
+
+
+
+
+
+
+        private void btnCancel_Click(object sender, System.EventArgs e)
 		{
 			CancelThread();
 		}
