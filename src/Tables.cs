@@ -3573,6 +3573,33 @@ namespace FIA_Biosum_Manager
                   "CYCLE4_POST_YN CHAR(1))";
             }
 
+            //
+            //FVS Output StrClass PRE-POST Sequence Number Audit
+            //
+            public void CreateSQLiteFVSOutputPrePostSeqNumAuditStrClassTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSQLiteFVSOutputPrePostSeqNumAuditStrClassTableSQL(p_strTableName));
+            }
+            public string CreateSQLiteFVSOutputPrePostSeqNumAuditStrClassTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                  "SEQNUM INTEGER," +
+                  "STANDID CHAR(255)," +
+                  "[YEAR] INTEGER," +
+                  "REMOVAL_CODE INTEGER," +
+                  "CYCLE1_PRE_YN CHAR(1)," +
+                  "CYCLE1_POST_YN CHAR(1)," +
+                  "CYCLE2_PRE_YN CHAR(1)," +
+                  "CYCLE2_POST_YN CHAR(1)," +
+                  "CYCLE3_PRE_YN CHAR(1)," +
+                  "CYCLE3_POST_YN CHAR(1)," +
+                  "CYCLE4_PRE_YN CHAR(1)," +
+                  "CYCLE4_POST_YN CHAR(1), " +
+                  "RXPACKAGE CHAR(3), " +
+                  "FVS_VARIANT CHAR(2), " +
+                  "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (SEQNUM,STANDID,REMOVAL_CODE,RXPACKAGE,FVS_VARIANT))";
+            }
+
             public static class Audit
             {
                 public static class Post
