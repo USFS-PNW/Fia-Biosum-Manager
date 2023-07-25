@@ -981,6 +981,118 @@ namespace FIA_Biosum_Manager
                 }
                 return strSQL;
             }
+
+            /// <summary>
+            /// Update SQL for assigning the sequence number to the PRE or POST cycle.
+            /// </summary>
+            /// <param name="p_oItem"></param>
+            /// <param name="p_strUpdateTable">FVSTableName_PREPOST_SEQNUM_MATRIX</param>
+            /// <returns></returns>
+            static public string SqliteFVSOutputTable_AuditUpdatePrePostStrClassSQL(FVSPrePostSeqNumItem p_oItem, string p_strUpdateTable,
+                string p_strVariant, string p_strRxPackage)
+            {
+                string strSQL = "";
+                if (p_oItem.RxCycle1PreSeqNum.Trim().Length > 0 && p_oItem.RxCycle1PreSeqNum.Trim().ToUpper() != "NOT USED")
+                {
+                    if (p_oItem.RxCycle1PreStrClassBeforeTreeRemovalYN == "N")
+                    {
+                        strSQL = strSQL + "CYCLE1_PRE_YN=CASE WHEN SeqNum=" + p_oItem.RxCycle1PreSeqNum + " AND removal_code=1 THEN 'Y' ELSE 'N' END,";
+                    }
+                    else
+                    {
+                        strSQL = strSQL + "CYCLE1_PRE_YN=CASE WHEN SeqNum=" + p_oItem.RxCycle1PreSeqNum + " AND removal_code=0 THEN 'Y' ELSE 'N' END,";
+                    }
+
+                }
+                if (p_oItem.RxCycle2PreSeqNum.Trim().Length > 0 && p_oItem.RxCycle2PreSeqNum.Trim().ToUpper() != "NOT USED")
+                {
+                    if (p_oItem.RxCycle2PreStrClassBeforeTreeRemovalYN == "N")
+                    {
+                        strSQL = strSQL + "CYCLE2_PRE_YN=CASE WHEN SeqNum=" + p_oItem.RxCycle2PreSeqNum + " AND removal_code=1 THEN 'Y' ELSE 'N' END,";
+                    }
+                    else
+                    {
+                        strSQL = strSQL + "CYCLE2_PRE_YN=CASE WHEN SeqNum=" + p_oItem.RxCycle2PreSeqNum + " AND removal_code=0 THEN 'Y' ELSE 'N' END,";
+                    }
+                }
+
+                if (p_oItem.RxCycle3PreSeqNum.Trim().Length > 0 && p_oItem.RxCycle3PreSeqNum.Trim().ToUpper() != "NOT USED")
+                {
+                    if (p_oItem.RxCycle3PreStrClassBeforeTreeRemovalYN == "N")
+                    {
+                        strSQL = strSQL + "CYCLE3_PRE_YN=CASE WHEN SeqNum=" + p_oItem.RxCycle3PreSeqNum + " AND removal_code=1 THEN 'Y' ELSE 'N' END,";
+                    }
+                    else
+                    {
+                        strSQL = strSQL + "CYCLE3_PRE_YN=CASE WHEN SeqNum=" + p_oItem.RxCycle3PreSeqNum + " AND removal_code=0 THEN 'Y' ELSE 'N' END,";
+                    }
+                }
+                if (p_oItem.RxCycle4PreSeqNum.Trim().Length > 0 && p_oItem.RxCycle4PreSeqNum.Trim().ToUpper() != "NOT USED")
+                {
+                    if (p_oItem.RxCycle4PreStrClassBeforeTreeRemovalYN == "N")
+                    {
+                        strSQL = strSQL + "CYCLE4_PRE_YN=CASE WHEN SeqNum=" + p_oItem.RxCycle4PreSeqNum + " AND removal_code=1 THEN 'Y' ELSE 'N' END,";
+                    }
+                    else
+                    {
+                        strSQL = strSQL + "CYCLE4_PRE_YN=CASE WHEN SeqNum=" + p_oItem.RxCycle4PreSeqNum + " AND removal_code=0 THEN 'Y' ELSE 'N' END,";
+                    }
+                }
+                if (p_oItem.RxCycle1PostSeqNum.Trim().Length > 0 && p_oItem.RxCycle1PostSeqNum.Trim().ToUpper() != "NOT USED")
+                {
+                    if (p_oItem.RxCycle1PostStrClassBeforeTreeRemovalYN == "N")
+                    {
+                        strSQL = strSQL + "CYCLE1_POST_YN=CASE WHEN SeqNum=" + p_oItem.RxCycle1PostSeqNum + " AND removal_code=1 THEN 'Y' ELSE 'N' END,";
+                    }
+                    else
+                    {
+                        strSQL = strSQL + "CYCLE1_POST_YN=CASE WHEN SeqNum=" + p_oItem.RxCycle1PostSeqNum + " AND removal_code=0 THEN 'Y' ELSE 'N' END,";
+                    }
+                }
+                if (p_oItem.RxCycle2PostSeqNum.Trim().Length > 0 && p_oItem.RxCycle2PostSeqNum.Trim().ToUpper() != "NOT USED")
+                {
+                    if (p_oItem.RxCycle2PostStrClassBeforeTreeRemovalYN == "N")
+                    {
+                        strSQL = strSQL + "CYCLE2_POST_YN=CASE WHEN SeqNum=" + p_oItem.RxCycle2PostSeqNum + " AND removal_code=1 THEN 'Y' ELSE 'N' END,";
+                    }
+                    else
+                    {
+                        strSQL = strSQL + "CYCLE2_POST_YN=CASE WHEN SeqNum=" + p_oItem.RxCycle2PostSeqNum + " AND removal_code=0 THEN 'Y' ELSE 'N' END,";
+                    }
+                }
+
+                if (p_oItem.RxCycle3PostSeqNum.Trim().Length > 0 && p_oItem.RxCycle3PostSeqNum.Trim().ToUpper() != "NOT USED")
+                {
+                    if (p_oItem.RxCycle3PostStrClassBeforeTreeRemovalYN == "N")
+                    {
+                        strSQL = strSQL + "CYCLE3_POST_YN=CASE WHEN SeqNum=" + p_oItem.RxCycle3PostSeqNum + " AND removal_code=1 THEN 'Y' ELSE 'N' END,";
+                    }
+                    else
+                    {
+                        strSQL = strSQL + "CYCLE3_POST_YN=CASE WHEN SeqNum=" + p_oItem.RxCycle3PostSeqNum + " AND removal_code=0 THEN 'Y' ELSE 'N' END,";
+                    }
+                }
+                if (p_oItem.RxCycle4PostSeqNum.Trim().Length > 0 && p_oItem.RxCycle4PostSeqNum.Trim().ToUpper() != "NOT USED")
+                {
+                    if (p_oItem.RxCycle4PostStrClassBeforeTreeRemovalYN == "N")
+                    {
+                        strSQL = strSQL + "CYCLE4_POST_YN=CASE WHEN SeqNum=" + p_oItem.RxCycle4PostSeqNum + " AND removal_code=1 THEN 'Y' ELSE 'N' END,";
+                    }
+                    else
+                    {
+                        strSQL = strSQL + "CYCLE4_POST_YN=CASE WHEN SeqNum=" + p_oItem.RxCycle4PostSeqNum + " AND removal_code=0 THEN 'Y' ELSE 'N' END,";
+                    }
+                }
+                if (strSQL.Trim().Length > 0)
+                {
+                    strSQL = strSQL.Substring(0, strSQL.Length - 1);
+                    strSQL = "UPDATE " + p_strUpdateTable + " " +
+                                      "SET " + strSQL;
+                    strSQL = $@"{strSQL} WHERE fvs_variant = '{p_strVariant}' and rxpackage = '{p_strRxPackage}'";
+                }
+                return strSQL;
+            }
+
             /// <summary>
             /// SQL for creating the sequence number configuration table from the FVS Output table FVS_STRCLASS.
             /// </summary>
@@ -1197,7 +1309,7 @@ namespace FIA_Biosum_Manager
                         SELECT d.SeqNum,a.standid,a.year,0 AS removal_code,
                         'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN,'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN,
                         'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN,'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN, 
-                        substr(E.RUNTITLE,8,2) AS FVS_VARIANT, substr(e.RunTitle, 12, 3) AS RXPACKAGE 
+                        substr(e.RunTitle, 12, 3) AS RXPACKAGE, substr(E.RUNTITLE,8,2) AS FVS_VARIANT 
                         FROM FVS.{p_strFVSSummaryTable} a, FVS.FVS_CASES e,
                         (SELECT SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum,b.standid, b.year FROM FVS.{p_strFVSSummaryTable} b, 
                         FVS.FVS_CASES f,(SELECT g.standid, g.year FROM FVS.{p_strFVSSummaryTable} g, FVS.FVS_CASES h 
@@ -1210,7 +1322,7 @@ namespace FIA_Biosum_Manager
                         SELECT d.SeqNum,a.standid,a.year,1 AS removal_code,
                         'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN,'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN,
                         'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN,'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN, 
-                        substr(E.RUNTITLE,8,2) AS FVS_VARIANT, substr(e.RunTitle, 12, 3) AS RXPACKAGE 
+                        substr(e.RunTitle, 12, 3) AS RXPACKAGE, substr(E.RUNTITLE,8,2) AS FVS_VARIANT  
                         FROM FVS.{p_strFVSSummaryTable} a, FVS.FVS_CASES e,
                         (SELECT SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum,b.standid, b.year FROM FVS.{p_strFVSSummaryTable} b, 
                         FVS.FVS_CASES f,(SELECT g.standid, g.year FROM FVS.{p_strFVSSummaryTable} g, FVS.FVS_CASES h 
@@ -1254,7 +1366,7 @@ namespace FIA_Biosum_Manager
                     strSQL[0] = $@"SELECT d.SeqNum,a.standid,a.year,0 AS removal_code,
                         'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN,'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN,
                         'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN,'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN, 
-                        substr(E.RUNTITLE,8,2) AS FVS_VARIANT, substr(e.RunTitle, 12, 3) AS RXPACKAGE 
+                        substr(e.RunTitle, 12, 3) AS RXPACKAGE, substr(E.RUNTITLE,8,2) AS FVS_VARIANT  
                         FROM FVS.{p_strFVSSummaryTable} a, FVS.FVS_CASES e,
                         (SELECT SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum,b.standid, b.year FROM FVS.{p_strFVSSummaryTable} b, 
                         FVS.FVS_CASES f,(SELECT g.standid, g.year FROM FVS.{p_strFVSSummaryTable} g, FVS.FVS_CASES h 
@@ -1267,7 +1379,7 @@ namespace FIA_Biosum_Manager
                     strSQL[1] = $@"SELECT d.SeqNum,a.standid,a.year,1 AS removal_code,
                         'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN,'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN,
                         'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN,'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN, 
-                        substr(E.RUNTITLE,8,2) AS FVS_VARIANT, substr(e.RunTitle, 12, 3) AS RXPACKAGE 
+                        substr(e.RunTitle, 12, 3) AS RXPACKAGE, substr(E.RUNTITLE,8,2) AS FVS_VARIANT  
                         FROM FVS.{p_strFVSSummaryTable} a, FVS.FVS_CASES e,
                         (SELECT SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum,b.standid, b.year FROM FVS.{p_strFVSSummaryTable} b, 
                         FVS.FVS_CASES f,(SELECT g.standid, g.year FROM FVS.{p_strFVSSummaryTable} g, FVS.FVS_CASES h 

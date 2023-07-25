@@ -3852,9 +3852,8 @@ namespace FIA_Biosum_Manager
                         dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
                     }
 
-                    //@ToDo: Need an SQLite version of this update
-                    dataMgr.m_strSQL = Queries.FVS.FVSOutputTable_AuditUpdatePrePostStrClassSQL(
-                       p_oItem, strPrePostSeqNumMatrixTable);
+                    dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditUpdatePrePostStrClassSQL(
+                       p_oItem, strPrePostSeqNumMatrixTable, strVariant, strRxPackage);
 
                     if (p_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(p_strDebugFile, dataMgr.m_strSQL + "\r\n\r\n");
