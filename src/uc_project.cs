@@ -1581,14 +1581,17 @@ namespace FIA_Biosum_Manager
 				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioFVSVariablesOptimizationTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOptimizationTableName);
 				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioFVSVariablesTieBreakerTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName);
 				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioCondFilterMiscTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCondFilterMiscTableName);
-				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioCondFilterMiscTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCondFilterTableName);
+				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioCondFilterTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCondFilterTableName);
 				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioProcessorScenarioSelectTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName);
 				conn.Close();
             }
 
 			//create empty prepost_fvs_weighted.db
 			string strDestFile = this.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile;
-			dataMgr.CreateDbFile(strDestFile);
+			if (!System.IO.File.Exists(strDestFile))
+            {
+				dataMgr.CreateDbFile(strDestFile);
+			}
 		}
 
 		public void CreateProcessorScenarioRuleDefinitionDbAndTables(string p_strPathAndFile)

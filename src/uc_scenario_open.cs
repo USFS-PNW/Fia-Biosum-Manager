@@ -42,6 +42,7 @@ namespace FIA_Biosum_Manager
 		private FIA_Biosum_Manager.frmOptimizerScenario _frmScenario;
 		private FIA_Biosum_Manager.frmProcessorScenario _frmProcessorScenario;
 		private string _strScenarioType="optimizer";
+
 		
 		// public FIA_Biosum_Manager.frmScenario frmscenario1;
 		/// <summary> 
@@ -842,6 +843,12 @@ namespace FIA_Biosum_Manager
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
             {
                 frmMain.g_oUtils.WriteText(strDebugFile, "=====================   OpenScenario   =====================\r\n");
+            }
+			string strOptimizerScenarioDefinitions = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + 
+				System.IO.Path.GetFileName(Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile);
+			if (!System.IO.File.Exists(strOptimizerScenarioDefinitions) && this.ScenarioType == "optimizer")
+            {
+				frmMain.g_oFrmMain.frmProject.uc_scenario1.migrate_access_data_optimizer();
             }
             if (ReferenceProcessorScenarioForm != null && 
                 ReferenceProcessorScenarioForm.m_bUsingSqlite == true)

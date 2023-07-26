@@ -42,22 +42,25 @@ namespace FIA_Biosum_Manager
 		private FIA_Biosum_Manager.frmOptimizerScenario _frmOptimizerScenario;
 		private FIA_Biosum_Manager.frmProcessorScenario _frmProcessorScenario;
 		private string _strScenarioType="optimizer";
-		
-		// public FIA_Biosum_Manager.frmScenario frmscenario1;
-		/// <summary> 
-		/// Required designer variable.
-		/// </summary>
-		
+        private env m_oEnv;
+        private FIA_Biosum_Manager.utils m_oUtils;
 
-		public uc_scenario()
+        // public FIA_Biosum_Manager.frmScenario frmscenario1;
+        /// <summary> 
+        /// Required designer variable.
+        /// </summary>
+
+
+        public uc_scenario()
 		{
 			// This call is required by the Windows.Forms Form Designer.
 			InitializeComponent();
 			this.txtScenarioPath.Enabled=false;
-			
 
+            this.m_oUtils = new utils();
+            this.m_oEnv = new env();
 
-			this.btnClose.Top = this.groupBox1.Height - this.btnClose.Height - 5;
+            this.btnClose.Top = this.groupBox1.Height - this.btnClose.Height - 5;
 			this.btnClose.Left = this.groupBox1.Width - this.btnClose.Width - 5;
 		}
 
@@ -1454,7 +1457,96 @@ namespace FIA_Biosum_Manager
 			
 			}
 		}
-		public FIA_Biosum_Manager.frmProcessorScenario ReferenceProcessorScenarioForm
+        public void migrate_access_data_optimizer()
+        {
+            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
+            string scenarioAccessFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
+                System.IO.Path.GetFileName(Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile);
+
+            // Create SQLite copy of scenario_optimizer_rule_definitions database
+            string scenarioSqliteFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
+                System.IO.Path.GetFileName(Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile);
+           frmMain.g_oFrmMain.frmProject.uc_project1.CreateOptimizerScenarioRuleDefinitionSqliteDbAndTables(scenarioSqliteFile);
+
+
+            ODBCMgr odbcmgr = new ODBCMgr();
+            // Check to see if the input SQLite DSN exists and if so, delete so we can add
+            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName))
+            {
+                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName);
+            }
+            odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, scenarioSqliteFile);
+
+            dao_data_access dao = new dao_data_access();
+            ado_data_access ado = new ado_data_access();
+            // Set new temporary database
+            string strTempAccdb = m_oUtils.getRandomFile(this.m_oEnv.strTempDir, "accdb");
+            dao.CreateMDB(strTempAccdb);
+
+            // Create table links for transferring data
+            string[] sourceTables = {Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCostsTableName,
+            Tables.Scenario.DefaultScenarioDatasourceTableName,
+            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioHarvestCostColumnsTableName,
+            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLandOwnerGroupsTableName,
+            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioMergeTableName,
+            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPlotFilterMiscTableName,
+            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPlotFilterTableName,
+            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName,
+            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLastTieBreakRankTableName,
+            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableName,
+            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTableName,
+            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOverallEffectiveTableName,
+            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOptimizationTableName,
+            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName,
+            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCondFilterMiscTableName,
+            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCondFilterTableName,
+            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName};
+            string[] targetTables = new string[17];
+            foreach (string sourceTableName in sourceTables)
+            {
+                targetTables[Array.IndexOf(sourceTables, sourceTableName)] = sourceTableName + "_1";
+            }
+            // Link to all tables in source database
+            dao.CreateTableLinks(strTempAccdb, scenarioAccessFile);
+            foreach (string targetTableName in targetTables)
+            {
+                dao.CreateSQLiteTableLink(strTempAccdb, sourceTables[Array.IndexOf(targetTables, targetTableName)], targetTableName,
+                    ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, scenarioSqliteFile);
+            }
+
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dataMgr.GetConnectionString(scenarioSqliteFile)))
+            {
+                conn.Open();
+                // Delete any existing data from SQLite tables
+                foreach(string sourceTableName in sourceTables)
+                {
+                    dataMgr.m_strSQL = "DELETE FROM " + sourceTableName;
+                    dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                }
+                conn.Close();
+            }
+
+            string strCopyConn = ado.getMDBConnString(strTempAccdb, "", "");
+            using (var copyConn = new System.Data.OleDb.OleDbConnection(strCopyConn))
+            {
+                copyConn.Open();
+
+                foreach (string targetTableName in targetTables)
+                {
+                    ado.m_strSQL = "INSERT INTO " + targetTableName +
+                        " SELECT * FROM " + sourceTables[Array.IndexOf(targetTables, targetTableName)];
+                    ado.SqlNonQuery(copyConn, ado.m_strSQL);
+                }
+                copyConn.Close();
+            }
+
+            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName))
+            {
+                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName);
+            }
+
+        }
+        public FIA_Biosum_Manager.frmProcessorScenario ReferenceProcessorScenarioForm
 		{
 			get {return _frmProcessorScenario;}
 			set {_frmProcessorScenario=value;}

@@ -3827,6 +3827,14 @@ namespace FIA_Biosum_Manager
             string strScenarioConn = oDataMgr.GetConnectionString(strScenarioDir + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile);
             string[] strPieces = LblSelectedVariable.Text.Split('.');
 
+            if (!System.IO.File.Exists(strScenarioDir + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile))
+            {
+                MessageBox.Show("!!Optimizer Scenario Rule Definitions database does not exist. FVS Variables cannot be deleted!!", "FIA Biosum",
+                    System.Windows.Forms.MessageBoxButtons.OK,
+                    System.Windows.Forms.MessageBoxIcon.Exclamation);
+                return;
+            }
+
             using (SQLiteConnection oRenameConn = new SQLiteConnection(strScenarioConn))
             {
                 oRenameConn.Open();
@@ -5811,10 +5819,10 @@ namespace FIA_Biosum_Manager
             System.IO.File.Copy(variablesSourceFile, this.m_strCalculatedVariablesDb);
 
             // Create SQLite copy of prepost_fvs_weighted database
-            string calculatedPrePostSourceFile = this.m_oEnv.strAppDir + "\\db\\" +
-                System.IO.Path.GetFileName(Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile);
-            //System.IO.File.Copy(calculatedPrePostSourceFile, this.m_strCalculatedPrePostDb);
-            m_oDataMgr.CreateDbFile(m_strCalculatedPrePostDb);
+            if (!System.IO.File.Exists(m_strCalculatedPrePostDb))
+            {
+                m_oDataMgr.CreateDbFile(m_strCalculatedPrePostDb);
+            }
             
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
             {
