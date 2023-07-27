@@ -3914,12 +3914,14 @@ namespace FIA_Biosum_Manager
                     oDataMgr.m_strSQL = "DROP TABLE " + strPreTable;
                     oDataMgr.SqlNonQuery(prePostConn, oDataMgr.m_strSQL);
                     oDataMgr.m_strSQL = "ALTER TABLE " + strPreTable + "_1 RENAME TO " + strPreTable;
+                    oDataMgr.SqlNonQuery(prePostConn, oDataMgr.m_strSQL);
 
                     oDataMgr.m_strSQL = "CREATE TABLE " + strPostTable + "_1 AS SELECT " + strCopyCols + " FROM " + strPostTable;
                     oDataMgr.SqlNonQuery(prePostConn, oDataMgr.m_strSQL);
                     oDataMgr.m_strSQL = "DROP TABLE " + strPostTable;
                     oDataMgr.SqlNonQuery(prePostConn, oDataMgr.m_strSQL);
                     oDataMgr.m_strSQL = "ALTER TABLE " + strPostTable + "_1 RENAME TO " + strPostTable;
+                    oDataMgr.SqlNonQuery(prePostConn, oDataMgr.m_strSQL);
 
                     prePostConn.Close();
                 }
@@ -5554,46 +5556,43 @@ namespace FIA_Biosum_Manager
 
                     }
                 }
-                using (SQLiteTransaction oTransaction = calculateConn.BeginTransaction())
-                {
-                    // Sum by rxpackage across cycles
-                    m_oDataMgr.m_strSQL = "CREATE TABLE " + strWeightsByRxPkgPreTable +
-                    " AS SELECT biosum_cond_id, rxpackage, \'0\' AS rx, " +
-                    "SUM(" + strVariableName + ") AS sum_pre FROM " + strWeightsByRxCyclePreTable +
-                    " GROUP BY biosum_cond_id, rxpackage";
-                    _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
-                    m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
-                    _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
+               // Sum by rxpackage across cycles
+                m_oDataMgr.m_strSQL = "CREATE TABLE " + strWeightsByRxPkgPreTable +
+                " AS SELECT biosum_cond_id, rxpackage, \'0\' AS rx, " +
+                "SUM(" + strVariableName + ") AS sum_pre FROM " + strWeightsByRxCyclePreTable +
+                " GROUP BY biosum_cond_id, rxpackage";
+                _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
+                m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
+                _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
 
-                    // Update rx with rx from cycle 1
-                    m_oDataMgr.m_strSQL = "UPDATE " + strWeightsByRxPkgPreTable + " AS w " +
-                            "SET rx = (SELECT r.rx FROM " + strWeightsByRxCyclePreTable + " AS r " +
-                            "WHERE w.biosum_cond_id = r.biosum_cond_id AND w.rxpackage = r.rxpackage) " +
-                            "WHERE (SELECT rxcycle FROM " + strWeightsByRxCyclePreTable + " AS r " +
-                            "WHERE w.biosum_cond_id = r.biosum_cond_id AND w.rxpackage = r.rxpackage) = '1'";
-                    _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
-                    m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
-                    _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
-
-                    m_oDataMgr.m_strSQL = "CREATE TABLE " + strWeightsByRxPkgPostTable +
-                        " AS SELECT biosum_cond_id, rxpackage, \'0\' AS rx, " +
-                        "SUM(" + strVariableName + ") AS sum_post FROM " + strWeightsByRxCyclePostTable +
-                        " GROUP BY biosum_cond_id, rxpackage";
-                    _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
-                    m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
-                    _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
-
-                    // Update rx with rx from cycle 1
-                    m_oDataMgr.m_strSQL = "UPDATE " + strWeightsByRxPkgPostTable + " AS w " +
-                        "SET rx = (SELECT r.rx FROM " + strWeightsByRxCyclePostTable + " AS r " +
+                // Update rx with rx from cycle 1
+                m_oDataMgr.m_strSQL = "UPDATE " + strWeightsByRxPkgPreTable + " AS w " +
+                        "SET rx = (SELECT r.rx FROM " + strWeightsByRxCyclePreTable + " AS r " +
                         "WHERE w.biosum_cond_id = r.biosum_cond_id AND w.rxpackage = r.rxpackage) " +
-                        "WHERE (SELECT rxcycle FROM " + strWeightsByRxCyclePostTable + " AS r " +
+                        "WHERE (SELECT rxcycle FROM " + strWeightsByRxCyclePreTable + " AS r " +
                         "WHERE w.biosum_cond_id = r.biosum_cond_id AND w.rxpackage = r.rxpackage) = '1'";
-                    _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
-                    m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
-                    _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
-                    calculateConn.Close();
-                }
+                _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
+                m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
+                _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
+
+                m_oDataMgr.m_strSQL = "CREATE TABLE " + strWeightsByRxPkgPostTable +
+                    " AS SELECT biosum_cond_id, rxpackage, \'0\' AS rx, " +
+                    "SUM(" + strVariableName + ") AS sum_post FROM " + strWeightsByRxCyclePostTable +
+                    " GROUP BY biosum_cond_id, rxpackage";
+                _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
+                m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
+                _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
+
+                // Update rx with rx from cycle 1
+                m_oDataMgr.m_strSQL = "UPDATE " + strWeightsByRxPkgPostTable + " AS w " +
+                    "SET rx = (SELECT r.rx FROM " + strWeightsByRxCyclePostTable + " AS r " +
+                    "WHERE w.biosum_cond_id = r.biosum_cond_id AND w.rxpackage = r.rxpackage) " +
+                    "WHERE (SELECT rxcycle FROM " + strWeightsByRxCyclePostTable + " AS r " +
+                    "WHERE w.biosum_cond_id = r.biosum_cond_id AND w.rxpackage = r.rxpackage) = '1'";
+                _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
+                m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
+                _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
+                calculateConn.Close();
             }   // end using
 
             //Switch connection to the final storage location and prepare the tables to receive the output
