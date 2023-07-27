@@ -1460,12 +1460,12 @@ namespace FIA_Biosum_Manager
         public void migrate_access_data_optimizer()
         {
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
-            string scenarioAccessFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
-                System.IO.Path.GetFileName(Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile);
+            string scenarioAccessFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + "\\" +
+                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
 
             // Create SQLite copy of scenario_optimizer_rule_definitions database
-            string scenarioSqliteFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
-                System.IO.Path.GetFileName(Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile);
+            string scenarioSqliteFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + "\\" +
+                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
            frmMain.g_oFrmMain.frmProject.uc_project1.CreateOptimizerScenarioRuleDefinitionSqliteDbAndTables(scenarioSqliteFile);
 
 

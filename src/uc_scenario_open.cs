@@ -400,17 +400,20 @@ namespace FIA_Biosum_Manager
             string strScenarioPath = "";
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
 
-            string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\" +
-                    Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+			string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\db";
+			string strFile = "scenario_" + ScenarioType + "_rule_definitions.db";
+			StringBuilder strFullPath = new StringBuilder(strScenarioDir);
+			strFullPath.Append("\\");
+			strFullPath.Append(strFile);
 
-            string strConn = dataMgr.GetConnectionString(strScenarioDir);
+			string strConn = dataMgr.GetConnectionString(strFullPath.ToString());
             try
             {
                 lstScenario.Items.Clear();
-                using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConn))
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                 {
-                    con.Open();
-                    dataMgr.SqlQueryReader(con, "select * from scenario");
+                    conn.Open();
+                    dataMgr.SqlQueryReader(conn, "select * from scenario");
                     if (dataMgr.m_DataReader.HasRows)
                     {
                         while (dataMgr.m_DataReader.Read())
@@ -844,13 +847,14 @@ namespace FIA_Biosum_Manager
             {
                 frmMain.g_oUtils.WriteText(strDebugFile, "=====================   OpenScenario   =====================\r\n");
             }
-			string strOptimizerScenarioDefinitions = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + 
-				System.IO.Path.GetFileName(Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile);
+			string strOptimizerScenarioDefinitions = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + "\\" +
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
 			if (!System.IO.File.Exists(strOptimizerScenarioDefinitions) && this.ScenarioType == "optimizer")
             {
 				frmMain.g_oFrmMain.frmProject.uc_scenario1.migrate_access_data_optimizer();
             }
-            if (ReferenceProcessorScenarioForm != null && 
+            if (this.ScenarioType == "optimizer" ||
+				ReferenceProcessorScenarioForm != null && 
                 ReferenceProcessorScenarioForm.m_bUsingSqlite == true)
             {
                 this.populate_scenario_listbox_sqlite();
