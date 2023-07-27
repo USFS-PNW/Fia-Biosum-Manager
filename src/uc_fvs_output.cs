@@ -5492,7 +5492,8 @@ namespace FIA_Biosum_Manager
                                                 m_intProgressStepCurrentCount,
                                                 m_intProgressStepTotalCount);
 
-                                    for (y = 0; y <= strSourceTableArray.Length - 1; y++)
+                                string strConnAudit = SQLite.GetConnectionString(strAuditDbFile);
+                                for (y = 0; y <= strSourceTableArray.Length - 1; y++)
                                     {
 
                                         if (strSourceTableArray[y] == null) break;
@@ -5526,7 +5527,8 @@ namespace FIA_Biosum_Manager
 
                                                
 
-                                                this.Validate_TreeListTables(oAdo, oAdo.m_OleDbConnection, "fvs_treelist", "fvs_summary", ref intItemError, ref strItemError, ref intItemWarning, ref strItemWarning, true);
+                                                this.Validate_TreeListTables(strConnAudit, "fvs_treelist", "fvs_summary", ref intItemError, ref strItemError, ref intItemWarning, 
+                                                    ref strItemWarning, true, strRunTitle);
 
                                                 if (intItemError == 0 && intItemWarning == 0)
                                                 {
@@ -5565,7 +5567,8 @@ namespace FIA_Biosum_Manager
                                                 intItemWarning = 0;
                                                 strItemWarning = "";
 
-                                                this.Validate_TreeListTables(oAdo, oAdo.m_OleDbConnection, "fvs_cutlist", "fvs_summary", ref intItemError, ref strItemError, ref intItemWarning, ref strItemWarning, true);
+                                                this.Validate_TreeListTables(strConnAudit, "fvs_cutlist", "fvs_summary", ref intItemError, ref strItemError, ref intItemWarning, 
+                                                    ref strItemWarning, true, strRunTitle);
 
 
 
@@ -5628,7 +5631,8 @@ namespace FIA_Biosum_Manager
 
                                                 
 
-                                                this.Validate_TreeListTables(oAdo, oAdo.m_OleDbConnection, "fvs_atrtlist", "fvs_summary", ref intItemError, ref strItemError, ref intItemWarning, ref strItemWarning, true);
+                                                this.Validate_TreeListTables(strConnAudit, "fvs_atrtlist", "fvs_summary", ref intItemError, ref strItemError, ref intItemWarning, 
+                                                    ref strItemWarning, true, strRunTitle);
 
                                                 if (intItemError == 0 && intItemWarning == 0)
                                                 {
@@ -8112,73 +8116,84 @@ namespace FIA_Biosum_Manager
         /// <param name="p_intItemWarning"></param>
         /// <param name="p_strItemWarning"></param>
         /// <param name="p_bDoWarnings"></param>
-        private void Validate_TreeListTables(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn,
+        private void Validate_TreeListTables(string p_strConnectionString,
             string p_strTreeListTableName, string p_strSummaryTableName,
             ref int p_intItemError, ref string p_strItemError,
-            ref int p_intItemWarning, ref string p_strItemWarning, bool p_bDoWarnings)
+            ref int p_intItemWarning, ref string p_strItemWarning, bool p_bDoWarnings,
+            string p_strRunTitle)
         {
             string strWorkListTable = "";
             int x;
             string strSQL = "";
-            
-            //ERRORS
-            //
-            //see if any records 
-            //
-            p_oAdo.m_strSQL = "SELECT TOP 1 COUNT(*) FROM " + m_strFVSSummaryAuditYearCountsTable + " a WHERE a." + p_strTreeListTableName + " > 0";
-            if ((int)p_oAdo.getRecordCount(p_oConn, p_oAdo.m_strSQL, strWorkListTable) == 0)
+
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_strConnectionString))
             {
-                p_intItemError = -2;
-                p_strItemError = p_strItemError + "ERROR: No trees in " + p_strTreeListTableName.Trim() + " table\r\n";
-                return;
-            }
-            //
-            //ensure the cut list standid,treatment year exists in the fvs summary table
-            //
-            if (p_oAdo.TableExist(p_oConn, "temp_treelist"))
-                p_oAdo.SqlNonQuery(p_oConn, "DROP TABLE temp_treelist");
+                conn.Open();
 
-            if (p_oAdo.TableExist(p_oConn, "temp_summary"))
-                p_oAdo.SqlNonQuery(p_oConn, "DROP TABLE temp_summary");
-
-            if (p_oAdo.TableExist(p_oConn, "temp_missingrows"))
-                p_oAdo.SqlNonQuery(p_oConn, "DROP TABLE temp_missingrows");
-
-            string[] strSQLArray = Queries.FVS.FVSOutputTable_AuditSelectTreeListCyleYearExistInFVSSummaryTableSQL(
-                                         "temp_treelist", "temp_summary","temp_missingrows",p_strTreeListTableName,m_strFVSSummaryAuditYearCountsTable);
-
-            for (x = 0; x <= strSQLArray.Length - 1; x++)
-            {
-                strSQL = strSQLArray[x];
-                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
-                p_oAdo.SqlNonQuery(p_oConn, strSQL);
-                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-            }
-
-
-            p_oAdo.m_strSQL = "SELECT * FROM temp_missingrows";
-            p_oAdo.SqlQueryReader(p_oConn, p_oAdo.m_strSQL);
-
-            if (p_oAdo.m_OleDbDataReader.HasRows)
-            {
-                p_intItemError = -4;
-                while (p_oAdo.m_OleDbDataReader.Read())
+                //@ToDo: Need to attach FVSOut.db
+                
+                //ERRORS
+                //
+                //see if any records 
+                //
+                //p_oAdo.m_strSQL = "SELECT TOP 1 COUNT(*) FROM " + m_strFVSSummaryAuditYearCountsTable + " a WHERE a." + p_strTreeListTableName + " > 0";
+                SQLite.m_strSQL = $@"SELECT count(*) FROM {m_strFVSSummaryAuditYearCountsTable} a WHERE a.{p_strTreeListTableName} > 0 and 
+                    fvs_variant = '{p_strRunTitle.Substring(7, 2)}' and rxpackage = '{p_strRunTitle.Substring(11, 3)}' limit 1";
+                if ((int)SQLite.getRecordCount(conn, SQLite.m_strSQL, strWorkListTable) == 0)
                 {
-                    p_strItemError = p_strItemError + "ERROR: STANDID:" + p_oAdo.m_OleDbDataReader["standid"].ToString().Trim() + " " +
-                        "YEAR:" + p_oAdo.m_OleDbDataReader["year"].ToString().Trim() + " " +
-                        "TREECOUNT:" + p_oAdo.m_OleDbDataReader["treecount"].ToString().Trim() + " Standid and year not found in the fvs_summary table\r\n";
+                    p_intItemError = -2;
+                    p_strItemError = p_strItemError + "ERROR: No trees in " + p_strTreeListTableName.Trim() + " table\r\n";
+                    return;
+                }
+                //
+                //ensure the cut list standid,treatment year exists in the fvs summary table
+                //
+                if (SQLite.TableExist(conn, "temp_treelist"))
+                    SQLite.SqlNonQuery(conn, "DROP TABLE temp_treelist");
+
+                if (SQLite.TableExist(conn, "temp_summary"))
+                    SQLite.SqlNonQuery(conn, "DROP TABLE temp_summary");
+
+                if (SQLite.TableExist(conn, "temp_missingrows"))
+                    SQLite.SqlNonQuery(conn, "DROP TABLE temp_missingrows");
+
+                //@ToDo: need an SQLite version of these queries
+                string[] strSQLArray = Queries.FVS.FVSOutputTable_AuditSelectTreeListCycleYearExistInFVSSummaryTableSQL(
+                                             "temp_treelist", "temp_summary", "temp_missingrows", p_strTreeListTableName, 
+                                             m_strFVSSummaryAuditYearCountsTable, p_strRunTitle);
+
+                for (x = 0; x <= strSQLArray.Length - 1; x++)
+                {
+                    strSQL = strSQLArray[x];
+                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
+                    SQLite.SqlNonQuery(conn, strSQL);
+                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
                 }
 
+
+                SQLite.m_strSQL = "SELECT * FROM temp_missingrows";
+                SQLite.SqlQueryReader(conn, SQLite.m_strSQL);
+
+                if (SQLite.m_DataReader.HasRows)
+                {
+                    p_intItemError = -4;
+                    while (SQLite.m_DataReader.Read())
+                    {
+                        p_strItemError = p_strItemError + "ERROR: STANDID:" + SQLite.m_DataReader["standid"].ToString().Trim() + " " +
+                            "YEAR:" + SQLite.m_DataReader["year"].ToString().Trim() + " " +
+                            "TREECOUNT:" + SQLite.m_DataReader["treecount"].ToString().Trim() + " Standid and year not found in the fvs_summary table\r\n";
+                    }
+
+                }
+                SQLite.m_DataReader.Close();
+
+                if (SQLite.TableExist(conn, "temp_missingrows"))
+                    SQLite.SqlNonQuery(conn, "DROP TABLE temp_missingrows");
+
             }
-            p_oAdo.m_OleDbDataReader.Close();
-
-            if (p_oAdo.TableExist(p_oConn, "temp_missingrows"))
-                p_oAdo.SqlNonQuery(p_oConn, "DROP TABLE temp_missingrows");
-
-
             if (p_intItemError != 0) return;
 
         }
@@ -10588,7 +10603,7 @@ namespace FIA_Biosum_Manager
                 }
 
                 string strRxPackageId = p_strRunTitle.Substring(11, 3);
-                GetPrePostSeqNumConfiguration(p_strSourceTableName, p_strRunTitle);
+                GetPrePostSeqNumConfiguration(p_strSourceTableName, strRxPackageId);
                 m_oRxTools.CreateFVSPrePostSeqNumTables(p_strTreeTempDbFile, m_oFVSPrePostSeqNumItem, p_strSourceTableName, p_strSourceTableName, 
                     p_bAudit, m_bDebug, m_strDebugFile, p_strRunTitle);
 

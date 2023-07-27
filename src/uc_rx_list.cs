@@ -3800,12 +3800,12 @@ namespace FIA_Biosum_Manager
                 {
                     if (!dataMgr.TableExist(conn, strPrePostSeqNumMatrixTable))
                     {
-                        dataMgr.m_strSQL = $@"DELETE FROM {strPrePostSeqNumMatrixTable} WHERE FVS_VARIANT = '{strVariant}' AND RXPACKAGE = {strRxPackage}";
-                        dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                        frmMain.g_oTables.m_oFvs.CreateSQLiteFVSOutputPrePostSeqNumAuditGenericTable(dataMgr, conn, strPrePostSeqNumMatrixTable);
                     }
                     else
                     {
-                        frmMain.g_oTables.m_oFvs.CreateSQLiteFVSOutputPrePostSeqNumAuditGenericTable(dataMgr, conn, strPrePostSeqNumMatrixTable);
+                        dataMgr.m_strSQL = $@"DELETE FROM {strPrePostSeqNumMatrixTable} WHERE FVS_VARIANT = '{strVariant}' AND RXPACKAGE = {strRxPackage}";
+                        dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
                     }
                 }
 

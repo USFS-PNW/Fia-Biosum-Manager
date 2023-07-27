@@ -2074,6 +2074,63 @@ namespace FIA_Biosum_Manager
 
                
 			}
+
+            /// <summary>
+            /// Audit to find missing stand,year combinations.
+            /// Define the SQL Queries that will identify standid,year rows in the tree list tables that
+            /// are not found in the FVS_SUMMARY table.
+            /// </summary>
+            /// <param name="p_strIntoTempTreeListTableName"></param>
+            /// <param name="p_strIntoTempSummaryTableName"></param>
+            /// <param name="p_strIntoTempMissingRowsTableName"></param>
+            /// <param name="p_strTreeListTableName"></param>
+            /// <param name="p_strSummaryTableName"></param>
+            /// <returns></returns>
+            static public string[] FVSOutputTable_AuditSelectTreeListCycleYearExistInFVSSummaryTableSQL(
+                string p_strIntoTempTreeListTableName,
+                string p_strIntoTempSummaryTableName,
+                string p_strIntoTempMissingRowsTableName,
+                string p_strTreeListTableName,
+                string p_strSummaryTableName, string p_strRunTitle)
+            {
+                string[] strSQL = new string[6];
+                //strSQL[0] = "SELECT COUNT(*) AS TREECOUNT, STANDID,YEAR " +
+                //            "INTO " + p_strIntoTempTreeListTableName + " " +
+                //            "FROM " + p_strTreeListTableName + " " +
+                //            "WHERE standid IS NOT NULL and year > 0 " +
+                //            "GROUP BY CASEID,STANDID,YEAR";
+
+                strSQL[0] = $@"CREATE TABLE {p_strIntoTempTreeListTableName} AS SELECT COUNT(*) AS TREECOUNT, STANDID,YEAR 
+                            FROM {p_strTreeListTableName}, fvs_CASES C WHERE standid IS NOT NULL and year > 0 
+                            AND {p_strTreeListTableName}.CASEID = C.CASEID AND {p_strTreeListTableName}.STANDID = C.STANDID AND C.RUNTITLE = '{p_strRunTitle}'
+                            GROUP BY {p_strTreeListTableName}.CASEID,{p_strTreeListTableName}.STANDID,YEAR";
+
+                strSQL[1] = "SELECT DISTINCT STANDID,YEAR " +
+                            "INTO " + p_strIntoTempSummaryTableName + " " +
+                            "FROM " + p_strSummaryTableName + " " +
+                            "WHERE standid IS NOT NULL and year > 0 ";
+
+                strSQL[2] = "SELECT a.STANDID,a.YEAR,a.TREECOUNT, " +
+                              "SUM(IIF(a.standid=b.standid AND a.year=b.year,1,0)) AS ROWCOUNT " +
+                            "INTO " + p_strIntoTempMissingRowsTableName + " " +
+                            "FROM " + p_strIntoTempTreeListTableName + " a," +
+                             "(SELECT DISTINCT STANDID,YEAR " +
+                              "FROM " + p_strIntoTempSummaryTableName + " " +
+                              "WHERE STANDID IS NOT NULL) b " +
+                            "WHERE a.standid=b.standid " +
+                            "GROUP BY a.standid,a.year,a.treecount";
+
+                strSQL[3] = "DELETE FROM " + p_strIntoTempMissingRowsTableName + "  WHERE ROWCOUNT > 0";
+
+                strSQL[4] = "DROP TABLE " + p_strIntoTempSummaryTableName;
+
+                strSQL[5] = "DROP TABLE " + p_strIntoTempTreeListTableName;
+
+
+                return strSQL;
+
+
+            }
             /// <summary>
             /// View the PRE-POST records from the FVS Output table (FVS_STRCLASS) that will be retrieved 
             /// based on sequential number assignment filters and removal code filters
