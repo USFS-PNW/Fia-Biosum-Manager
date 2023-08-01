@@ -2094,21 +2094,16 @@ namespace FIA_Biosum_Manager
                 string p_strSummaryTableName, string p_strRunTitle)
             {
                 string[] strSQL = new string[6];
-                //strSQL[0] = "SELECT COUNT(*) AS TREECOUNT, STANDID,YEAR " +
-                //            "INTO " + p_strIntoTempTreeListTableName + " " +
-                //            "FROM " + p_strTreeListTableName + " " +
-                //            "WHERE standid IS NOT NULL and year > 0 " +
-                //            "GROUP BY CASEID,STANDID,YEAR";
 
-                strSQL[0] = $@"CREATE TABLE {p_strIntoTempTreeListTableName} AS SELECT COUNT(*) AS TREECOUNT, STANDID,YEAR 
-                            FROM {p_strTreeListTableName}, fvs_CASES C WHERE standid IS NOT NULL and year > 0 
+                strSQL[0] = $@"CREATE TABLE {p_strIntoTempTreeListTableName} AS SELECT COUNT(*) AS TREECOUNT, {p_strTreeListTableName}.STANDID,YEAR 
+                            FROM {p_strTreeListTableName}, fvs_CASES C WHERE {p_strTreeListTableName}.standid IS NOT NULL and year > 0 
                             AND {p_strTreeListTableName}.CASEID = C.CASEID AND {p_strTreeListTableName}.STANDID = C.STANDID AND C.RUNTITLE = '{p_strRunTitle}'
                             GROUP BY {p_strTreeListTableName}.CASEID,{p_strTreeListTableName}.STANDID,YEAR";
 
-                strSQL[1] = "SELECT DISTINCT STANDID,YEAR " +
-                            "INTO " + p_strIntoTempSummaryTableName + " " +
-                            "FROM " + p_strSummaryTableName + " " +
-                            "WHERE standid IS NOT NULL and year > 0 ";
+
+                strSQL[1] = $@"CREATE TABLE {p_strIntoTempSummaryTableName} AS SELECT DISTINCT STANDID, YEAR 
+                            FROM {p_strSummaryTableName} WHERE {p_strSummaryTableName}.standid IS NOT NULL and year > 0 
+                            AND FVS_VARIANT = '{p_strRunTitle.Substring(7, 2)}' AND RXPACKAGE = '{p_strRunTitle.Substring(11, 3)}'";
 
                 strSQL[2] = "SELECT a.STANDID,a.YEAR,a.TREECOUNT, " +
                               "SUM(IIF(a.standid=b.standid AND a.year=b.year,1,0)) AS ROWCOUNT " +
@@ -2119,6 +2114,8 @@ namespace FIA_Biosum_Manager
                               "WHERE STANDID IS NOT NULL) b " +
                             "WHERE a.standid=b.standid " +
                             "GROUP BY a.standid,a.year,a.treecount";
+
+                strSQL[2] = $@"CREATE TABLE {}";
 
                 strSQL[3] = "DELETE FROM " + p_strIntoTempMissingRowsTableName + "  WHERE ROWCOUNT > 0";
 

@@ -8131,12 +8131,15 @@ namespace FIA_Biosum_Manager
                 conn.Open();
 
                 //@ToDo: Need to attach FVSOut.db
-                
+                SQLite.m_strSQL = $@"ATTACH DATABASE '{m_strFvsOutDb}' AS FVS";
+                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                    this.WriteText(m_strLogFile, SQLite.m_strSQL + "\r\n");
+                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
                 //ERRORS
                 //
                 //see if any records 
                 //
-                //p_oAdo.m_strSQL = "SELECT TOP 1 COUNT(*) FROM " + m_strFVSSummaryAuditYearCountsTable + " a WHERE a." + p_strTreeListTableName + " > 0";
                 SQLite.m_strSQL = $@"SELECT count(*) FROM {m_strFVSSummaryAuditYearCountsTable} a WHERE a.{p_strTreeListTableName} > 0 and 
                     fvs_variant = '{p_strRunTitle.Substring(7, 2)}' and rxpackage = '{p_strRunTitle.Substring(11, 3)}' limit 1";
                 if ((int)SQLite.getRecordCount(conn, SQLite.m_strSQL, strWorkListTable) == 0)
