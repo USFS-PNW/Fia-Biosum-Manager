@@ -2324,7 +2324,7 @@ namespace FIA_Biosum_Manager
                                                                string p_strRxPackage,
                                                                string p_strRx,
                                                                string p_strRxCycle,
-                                                               string p_strRxYear)
+                                                               string p_strRxYear, string p_strRunTitle)
             {
                 return "INSERT INTO " + p_strFvsTreeIdAuditTable + " " +
                                 "(biosum_cond_id, rxpackage,rx,rxcycle,rxyear,fvs_variant, fvs_tree_id) " +
@@ -2336,7 +2336,7 @@ namespace FIA_Biosum_Manager
                                 "FROM " + p_strCasesTable + " c," + p_strCutListTable + " t," + p_strFVSCutListPrePostSeqNumTable + " p " +
                                 "WHERE c.CaseID = t.CaseID AND t.standid=p.standid AND t.year=p.year AND  " + 
                                       "p.cycle" + p_strRxCycle.Trim() + "_PRE_YN='Y' AND " + 
-                                      "MID(t.treeid, 1, 2) <> 'ES'  AND MID(t.treeid, 1, 2)<> 'CM'";
+                                      "MID(t.treeid, 1, 2) <> 'ES' AND MID(t.treeid, 1, 2)<> 'CM' AND c.Runtitle = '" + p_strRunTitle + "'";
   
             }
             static public string[] FVSOutputTable_AuditPostSummaryFVS(string p_strRxTable,string p_strRxPackageTable,string p_strTreeTable,

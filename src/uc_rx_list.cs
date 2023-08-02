@@ -3641,18 +3641,21 @@ namespace FIA_Biosum_Manager
                     dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
                 }
 
-                if (dataMgr.TableExist(conn, strAuditYearCountsTable))
+                if (p_strSourceTableName == "FVS_SUMMARY")
                 {
-                    // Delete current variant/package from table
-                    dataMgr.m_strSQL = $@"DELETE FROM {strAuditYearCountsTable} WHERE FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strRxPackage}'";
-                    dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                    if (dataMgr.TableExist(conn, strAuditYearCountsTable))
+                    {
+                        // Delete current variant/package from table
+                        dataMgr.m_strSQL = $@"DELETE FROM {strAuditYearCountsTable} WHERE FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strRxPackage}'";
+                        dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
 
-                }
-                else
-                {
-                    // Create the table
-                    dataMgr.m_strSQL = Tables.FVS.Audit.Pre.CreateFVSPreAuditCountsTableSQL(strAuditYearCountsTable);
-                    dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                    }
+                    else
+                    {
+                        // Create the table
+                        dataMgr.m_strSQL = Tables.FVS.Audit.Pre.CreateFVSPreAuditCountsTableSQL(strAuditYearCountsTable);
+                        dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                    }
                 }
 
                 if (dataMgr.TableExist(conn, "temp_rowcount"))

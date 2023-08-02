@@ -5593,9 +5593,14 @@ namespace FIA_Biosum_Manager
                                                 if (intItemError == 0)
                                                 {
                                                 //@ToDo: Convert this to SQLite
-                                                this.Validate_FVSTreeId(oAdo, oAdo.m_OleDbConnection, strAuditDbFile, "FVS_Cases", "FVS_CutList", strVariant, strPackage,
+                                                // Get a temporary database name for processing
+                                                string strTempMDB = frmMain.g_oUtils.getRandomFile(this.m_oEnv.strTempDir, "accdb");
+                                                // Create a temporary mdb that will contain all our required table links
+                                                m_dao.CreateMDB(strTempMDB);
+                                                this.Validate_FVSTreeId(oAdo, strTempMDB, "FVS_Cases", "FVS_CutList", strVariant, strPackage,
                                                         m_oRxPackageItem.SimulationYear1Rx, m_oRxPackageItem.SimulationYear2Rx,
-                                                        m_oRxPackageItem.SimulationYear3Rx, m_oRxPackageItem.SimulationYear4Rx, true, ref intItemWarning, ref strItemWarning, ref intItemError, ref strItemError);
+                                                        m_oRxPackageItem.SimulationYear3Rx, m_oRxPackageItem.SimulationYear4Rx, 
+                                                        strRunTitle, ref intItemWarning, ref strItemWarning, ref intItemError, ref strItemError);
                                                     if (intItemError != 0)
                                                     {
                                                         if (intItemError == -5)
@@ -5813,34 +5818,15 @@ namespace FIA_Biosum_Manager
 
                             frmMain.g_oUtils.WriteText(m_strLogFile, "Date/Time:" + System.DateTime.Now.ToString().Trim() + "\r\n\r\n");
                             frmMain.g_oUtils.WriteText(m_strLogFile, "**EOF**");
-
-                            if (oAdo.TableExist(oAdo.m_OleDbConnection, "ATRTList_work"))
-                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE ATRTlist_work");
-
-                            if (oAdo.TableExist(oAdo.m_OleDbConnection, "cutlist_work"))
-                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE cutlist_work");
-
-                            if (oAdo.TableExist(oAdo.m_OleDbConnection, "treelist_work"))
-                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE treelist_work");
-
-
-                            oAdo.CloseConnection(oAdo.m_OleDbConnection);
                             frmMain.g_oDelegate.ExecuteListViewItemsMethod(oLv, "Refresh");
 
                             //compact and repair
                             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Compact and Repair");
                             frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
-                            System.Threading.Thread.Sleep(5000);
-                            m_dao.CompactMDB(strAuditDbFile);
                             
-
                             UpdateTherm(m_frmTherm.progressBar2,
                                     m_intProgressOverallCurrentCount,
                                     m_intProgressOverallTotalCount);
-
-
-
-
                         }
                     }
                 }
@@ -8225,7 +8211,6 @@ namespace FIA_Biosum_Manager
 		/// <param name="p_intItemError"></param>
 		/// <param name="p_strItemError"></param>
         private void Validate_FVSTreeId(ado_data_access p_oAdo, 
-                                        System.Data.OleDb.OleDbConnection p_oConn,
                                         string p_strFVSOutDBFile,
                                         string p_strFVSCasesTableName,
                                         string p_strFVSTreeTableNameToAudit,
@@ -8235,7 +8220,7 @@ namespace FIA_Biosum_Manager
                                         string p_strRx2,
                                         string p_strRx3,
                                         string p_strRx4,
-                                        bool p_bAudit,
+                                        string p_strRunTitle,
                                         ref int p_intItemWarning, 
                                         ref string p_strItemWarning,
                                         ref int p_intItemError, 
@@ -8249,142 +8234,198 @@ namespace FIA_Biosum_Manager
             int intTreeTable;
             int intCondTable;
             int intPlotTable;
-            string strConn = "";
-            if (p_bAudit)
+            string strAuditTable = "audit_fvs_tree_id";
+            string strSeqNumMatrixTable = "FVS_CUTLIST_PREPOST_SEQNUM_MATRIX";
+
+            string strAuditConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile);
+            using (System.Data.SQLite.SQLiteConnection auditConn = new System.Data.SQLite.SQLiteConnection(strAuditConn))
             {
-                strConn = p_oConn.ConnectionString;
+                auditConn.Open();
+                if (SQLite.TableExist(auditConn, strAuditTable))
+                {
+                    SQLite.m_strSQL = $@"DELETE FROM {strAuditTable} WHERE FVS_VARIANT = '{p_strVariant}' AND RXPACKAGE = '{p_strRxPackage}'";
+                    SQLite.SqlNonQuery(auditConn, SQLite.m_strSQL);
+                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                        this.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                }
+                else
+                {
+                    //create audit_fvs_tree_id table
+                    frmMain.g_oTables.m_oFvs.CreateSQLiteFVSTreeIdAudit(SQLite, auditConn, strAuditTable);
+                }
+            }
+
+            ODBCMgr odbcmgr = new ODBCMgr();
+            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutPreAuditDsnName))
+            {
+                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutPreAuditDsnName);
+            }
+            odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutPreAuditDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile);
+            if (!string.IsNullOrEmpty(odbcmgr.m_strError))
+            {
+                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + "ODBCMgr error: " + odbcmgr.m_strError + "\r\n");
+                return;
+            }
+            else
+            {
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    this.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n" + "Created DSN for " + ODBCMgr.DSN_KEYS.FvsOutPreAuditDsnName + "\r\n");
+                m_dao.CreateSQLiteTableLink(p_strFVSOutDBFile, strAuditTable, strAuditTable,
+                    ODBCMgr.DSN_KEYS.FvsOutPreAuditDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile);
+                m_dao.CreateSQLiteTableLink(p_strFVSOutDBFile, strSeqNumMatrixTable, strSeqNumMatrixTable,
+                    ODBCMgr.DSN_KEYS.FvsOutPreAuditDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile);
+            }
+            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName))
+            {
+                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName);
+            }
+            odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName, m_strFvsOutDb);
+            if (!string.IsNullOrEmpty(odbcmgr.m_strError))
+            {
+                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + "ODBCMgr error: " + odbcmgr.m_strError + "\r\n");
+                return;
+            }
+            else
+            {
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    this.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n" + "Created DSN for " + ODBCMgr.DSN_KEYS.FvsOutPreAuditDsnName + "\r\n");
+                m_dao.CreateSQLiteTableLink(p_strFVSOutDBFile, Tables.FVS.DefaultFVSCasesTableName, Tables.FVS.DefaultFVSCasesTableName,
+                    ODBCMgr.DSN_KEYS.FvsOutPreAuditDsnName, m_strFvsOutDb);
+                m_dao.CreateSQLiteTableLink(p_strFVSOutDBFile, Tables.FVS.DefaultFVSCutListTableName, Tables.FVS.DefaultFVSCutListTableName,
+                    ODBCMgr.DSN_KEYS.FvsOutPreAuditDsnName, m_strFvsOutDb);
+            }
+
+            string strConn = p_oAdo.getMDBConnString(p_strFVSOutDBFile, "", "");
+            using (var pConn = new System.Data.OleDb.OleDbConnection(strConn))
+            {
+                pConn.Open();
                 intTreeTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("TREE");
                 intCondTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("CONDITION");
                 intPlotTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("PLOT");
-                if (p_oAdo.TableExist(p_oAdo.m_OleDbConnection, m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE]))
+                if (p_oAdo.TableExist(pConn, m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE]))
                 {
-                    p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection, "DROP TABLE " + m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE]);
+                    p_oAdo.SqlNonQuery(pConn, "DROP TABLE " + m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE]);
                 }
-                if (p_oAdo.TableExist(p_oAdo.m_OleDbConnection, m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE]))
+                if (p_oAdo.TableExist(pConn, m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE]))
                 {
-                    p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection, "DROP TABLE " + m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE]);
+                    p_oAdo.SqlNonQuery(pConn, "DROP TABLE " + m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE]);
                 }
-                if (p_oAdo.TableExist(p_oAdo.m_OleDbConnection, m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE]))
+                if (p_oAdo.TableExist(pConn, m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE]))
                 {
-                    p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection, "DROP TABLE " + m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE]);
+                    p_oAdo.SqlNonQuery(pConn, "DROP TABLE " + m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE]);
                 }
-                p_oAdo.CloseConnection(p_oAdo.m_OleDbConnection);
-
-
-                dao_data_access oDao = new dao_data_access();
-
+            }
 
                 //tree table link
-                oDao.CreateTableLink(p_strFVSOutDBFile, m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE],
+                m_dao.CreateTableLink(p_strFVSOutDBFile, m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE],
                                       m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.PATH].Trim() + "\\" +
                                        m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.MDBFILE].Trim(),
                                       m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE], true);
                 //condition table link
-
                 m_dao.CreateTableLink(p_strFVSOutDBFile, m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE],
                                       m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.PATH].Trim() + "\\" +
                                        m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.MDBFILE].Trim(),
                                       m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE], true);
                 //plot table link
-
                 m_dao.CreateTableLink(p_strFVSOutDBFile, m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE],
                                       m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.PATH].Trim() + "\\" +
                                        m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.MDBFILE].Trim(),
                                       m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE], true);
 
-                oDao.m_DaoWorkspace.Close();
-                oDao = null;
+                m_dao.m_DaoWorkspace.Close();
                 System.Threading.Thread.Sleep(2000);
-
-                p_oAdo.OpenConnection(strConn);
-            }
 
             //
             //validate fvs_tree_id
             //
-            //create temp fvs_tree table
-            if (p_oAdo.TableExist(p_oAdo.m_OleDbConnection,"audit_fvs_tree_id"))
-                p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection,"DROP TABLE audit_fvs_tree_id");
-
-            frmMain.g_oTables.m_oFvs.CreateFVSTreeIdAudit(p_oAdo, p_oAdo.m_OleDbConnection, "audit_fvs_tree_id");
 
             //
-			//loop through all the rx cycles for this package and append them to the fvs tree
-			//
-            for (x = 0; x <= this.m_strRxCycleArray.Length - 1; x++)
+            //loop through all the rx cycles for this package and append them to the fvs tree
+            //
+            using (var pConn = new System.Data.OleDb.OleDbConnection(strConn))
             {
-                if (m_strRxCycleArray[x] == null ||
-                    m_strRxCycleArray[x].Trim().Length == 0)
+                pConn.Open();
+
+                for (x = 0; x <= this.m_strRxCycleArray.Length - 1; x++)
                 {
-                }
-                else
-                {
-                    strRxCycle = m_strRxCycleArray[x].Trim();
-                    switch (strRxCycle)
+                    if (m_strRxCycleArray[x] == null ||
+                        m_strRxCycleArray[x].Trim().Length == 0)
                     {
-                        case "1":
-                            strRx = p_strRx1;
-                            break;
-                        case "2":
-                            strRx = p_strRx2;
-                            break;
-                        case "3":
-                            strRx = p_strRx3;
-                            break;
-                        case "4":
-                            strRx = p_strRx4;
-                            break;
                     }
-                    strRxYear = "(t.standid=p.standid AND " +
-                        "t.year=p.pre_year" + strRxCycle + ")";
+                    else
+                    {
+                        strRxCycle = m_strRxCycleArray[x].Trim();
+                        switch (strRxCycle)
+                        {
+                            case "1":
+                                strRx = p_strRx1;
+                                break;
+                            case "2":
+                                strRx = p_strRx2;
+                                break;
+                            case "3":
+                                strRx = p_strRx3;
+                                break;
+                            case "4":
+                                strRx = p_strRx4;
+                                break;
+                        }
+                        strRxYear = "(t.standid=p.standid AND " +
+                            "t.year=p.pre_year" + strRxCycle + ")";
 
 
-                    
-                    p_oAdo.m_strSQL = Queries.FVS.FVSOutputTable_AuditFVSTreeId(
-                                                "audit_fvs_tree_id",
-                                                    p_strFVSCasesTableName,
-                                                    p_strFVSTreeTableNameToAudit,
-                                                    "FVS_CUTLIST_PREPOST_SEQNUM_MATRIX",
-                                                    p_strRxPackage,
-                                                    strRx,
-                                                    strRxCycle,
-                                                    strRxYear);
 
-                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + p_oAdo.m_strSQL + "\r\n");
-                    p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection, p_oAdo.m_strSQL);
-                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                        p_oAdo.m_strSQL = Queries.FVS.FVSOutputTable_AuditFVSTreeId(
+                                                    strAuditTable,
+                                                        p_strFVSCasesTableName,
+                                                        p_strFVSTreeTableNameToAudit,
+                                                        strSeqNumMatrixTable,
+                                                        p_strRxPackage,
+                                                        strRx,
+                                                        strRxCycle,
+                                                        strRxYear, p_strRunTitle);
 
+                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + p_oAdo.m_strSQL + "\r\n");
+                        p_oAdo.SqlNonQuery(pConn, p_oAdo.m_strSQL);
+                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                    }
+                }
+                p_oAdo.m_strSQL = "UPDATE audit_fvs_tree_id  i " +
+                                          "INNER JOIN ((" + m_oQueries.m_oFIAPlot.m_strTreeTable + " t " +
+                                                          "INNER JOIN " + m_oQueries.m_oFIAPlot.m_strCondTable + " c " +
+                                                          "ON t.biosum_cond_id=c.biosum_cond_id) " +
+                                                          "INNER JOIN " + m_oQueries.m_oFIAPlot.m_strPlotTable + " p " +
+                                                          "ON p.biosum_plot_id=c.biosum_plot_id) " +
+                                          "ON i.fvs_tree_id=t.fvs_tree_id AND i.biosum_cond_id=t.biosum_cond_id " +
+                                          "SET i.FOUND_FvsTreeId_YN='Y'";
 
-
-
+                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + p_oAdo.m_strSQL + "\r\n");
+                p_oAdo.SqlNonQuery(pConn, p_oAdo.m_strSQL);
+                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutPreAuditDsnName))
+                {
+                    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutPreAuditDsnName);
+                }
+                if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName))
+                {
+                    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName);
                 }
             }
-            p_oAdo.m_strSQL = "UPDATE audit_fvs_tree_id  i " +
-                                      "INNER JOIN ((" + m_oQueries.m_oFIAPlot.m_strTreeTable + " t " +
-                                                      "INNER JOIN " + m_oQueries.m_oFIAPlot.m_strCondTable + " c " +
-                                                      "ON t.biosum_cond_id=c.biosum_cond_id) " +
-                                                      "INNER JOIN " + m_oQueries.m_oFIAPlot.m_strPlotTable + " p " +
-                                                      "ON p.biosum_plot_id=c.biosum_plot_id) " +
-                                      "ON i.fvs_tree_id=t.fvs_tree_id AND i.biosum_cond_id=t.biosum_cond_id " +
-                                      "SET i.FOUND_FvsTreeId_YN='Y'";
-
-            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + p_oAdo.m_strSQL + "\r\n");
-            p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection, p_oAdo.m_strSQL);
-            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-            int intCount = (int)p_oAdo.getSingleDoubleValueFromSQLQuery(p_oAdo.m_OleDbConnection,"SELECT COUNT(*) AS TTLCOUNT FROM audit_fvs_tree_id WHERE FOUND_FvsTreeId_YN='N'","TEMP");
-
-            if (intCount > 0)
+            using (System.Data.SQLite.SQLiteConnection auditConn = new System.Data.SQLite.SQLiteConnection(strAuditConn))
             {
-                if (p_bAudit) p_strItemError = p_strItemError + "ERROR: " + intCount.ToString() + " fvs_cutlist trees for variant " + p_strVariant + " could not be found in the FIADB tree table by matching FVS_Tree_Id (See audit table audit_fvs_tree_id)\r\n";
-                else
-                    p_strItemError = p_strItemError +  " " + intCount.ToString() + " fvs_cutlist trees for variant " + p_strVariant + " could not be found in the FIADB tree table by matching FVS_Tree_Id (See audit table audit_fvs_tree_id)\r\n";
-                p_intItemError = -5;
-
+                auditConn.Open();
+                int intCount = (int)SQLite.getSingleDoubleValueFromSQLQuery(auditConn, "SELECT COUNT(*) AS TTLCOUNT FROM audit_fvs_tree_id WHERE FOUND_FvsTreeId_YN='N'", "TEMP");
+                if (intCount > 0)
+                {
+                    p_strItemError = p_strItemError + "ERROR: " + intCount.ToString() + " fvs_cutlist trees for variant " + p_strVariant + " could not be found in the FIADB tree table by matching FVS_Tree_Id (See audit table audit_fvs_tree_id)\r\n";
+                    p_intItemError = -5;
+                }
             }
         }
 

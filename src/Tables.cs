@@ -2804,7 +2804,32 @@ namespace FIA_Biosum_Manager
                     "fvs_variant CHAR(2)," +
                     "fvs_tree_id CHAR(10)," +
                     "Found_FvsTreeId_YN CHAR(1) DEFAULT 'N')";
+            }
 
+            //
+            //FVS_tree table audit
+            //
+            public void CreateSQLiteFVSTreeIdAudit(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSQLiteFVSTreeIdAuditTableSQL(p_strTableName));
+                CreateSQLiteFVSTreeIdAuditTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
+            }
+            public void CreateSQLiteFVSTreeIdAuditTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "fvs_tree_id");
+            }
+            public string CreateSQLiteFVSTreeIdAuditTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "id INTEGER PRIMARY KEY," +
+                    "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "rx CHAR(3)," +
+                    "rxcycle CHAR(1)," +
+                    "rxyear CHAR(4)," +
+                    "fvs_variant CHAR(2)," +
+                    "fvs_tree_id CHAR(10)," +
+                    "Found_FvsTreeId_YN CHAR(1) DEFAULT 'N')";
             }
             //
             //ORACLE biosum_volumes
