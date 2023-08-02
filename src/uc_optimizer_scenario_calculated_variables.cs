@@ -4517,13 +4517,20 @@ namespace FIA_Biosum_Manager
                 return;
             }
             // assemble the path for the backup database
-            string strDbName = System.IO.Path.GetFileNameWithoutExtension(Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile);
-            string strDbFolder = System.IO.Path.GetDirectoryName(Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile);
+            string strDbName = System.IO.Path.GetFileNameWithoutExtension(Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile);
+            string strDbFolder = System.IO.Path.GetDirectoryName(Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile);
+            string strBackupDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
+                "\\" + strDbFolder + "\\" + strDbName + "_backup.db";
+            System.IO.File.Copy(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile,
+                strBackupDb, true);
+            string strAccdbName = System.IO.Path.GetFileNameWithoutExtension(Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile);
+            string strAccdbFolder = System.IO.Path.GetDirectoryName(Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile);
             string strBackupAccdb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
-                "\\" + strDbFolder + "\\" + strDbName + "_backup.accdb";
+                "\\" + strAccdbFolder + "\\" + strAccdbName + "_backup.accdb";
             System.IO.File.Copy(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile,
                 strBackupAccdb, true);
             RecalculateCalculatedVariables_Start();
+            //RecalculateCalculatedVariables_Start_Access();
         }
 
         private void RecalculateWeightedVariables_Process_access()
@@ -4539,7 +4546,7 @@ namespace FIA_Biosum_Manager
                 {
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "RecalculateCalculatedVariables_Process: BEGIN \r\n");
                 }
-                
+
                 //progress bar 1: single process
                 SetThermValue(m_frmTherm.progressBar1, "Maximum", 100);
                 SetThermValue(m_frmTherm.progressBar1, "Minimum", 0);
@@ -4576,6 +4583,7 @@ namespace FIA_Biosum_Manager
                         }
                     }
                 }
+                counter1Interval = 5;
                 int counter2Interval = 5;
                 counter1 = counter1 + counter1Interval;
                 counter2 = counter2 + counter2Interval;
@@ -5206,6 +5214,8 @@ namespace FIA_Biosum_Manager
                     }
 
                     MessageBox.Show("Variables Recalculated!!", "FIA Biosum");
+
+                    RecalculateWeightedVariables_Process_access();
                     RecalculateCalculatedVariables_Finish();
                 }
             }
@@ -5238,10 +5248,12 @@ namespace FIA_Biosum_Manager
                 m_intError = -1;
             }
 
+
             RecalculateCalculatedVariables_Finish();
 
             frmMain.g_oDelegate.m_oEventThreadStopped.Set();
             Invoke(frmMain.g_oDelegate.m_oDelegateThreadFinished);
+
         }
 
         private void RecalculateCalculatedVariables_Start()
@@ -5254,11 +5266,11 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.CurrentThreadProcessStarted = false;
             StartTherm("2", "Recalculate Calculated Variable Tables");
             frmMain.g_oDelegate.m_oThread = new Thread(new ThreadStart(RecalculateWeightedVariables_Process));
-            frmMain.g_oDelegate.m_oThread = new Thread(new ThreadStart(RecalculateWeightedVariables_Process_access));
             frmMain.g_oDelegate.m_oThread.IsBackground = true;
             frmMain.g_oDelegate.CurrentThreadProcessIdle = false;
             frmMain.g_oDelegate.m_oThread.Start();
         }
+
 
         private void RecalculateCalculatedVariables_Finish()
         {
