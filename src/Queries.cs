@@ -2085,6 +2085,7 @@ namespace FIA_Biosum_Manager
             /// <param name="p_strIntoTempMissingRowsTableName"></param>
             /// <param name="p_strTreeListTableName"></param>
             /// <param name="p_strSummaryTableName"></param>
+            /// <param name="p_strRunTitle"></param>
             /// <returns></returns>
             static public string[] FVSOutputTable_AuditSelectTreeListCycleYearExistInFVSSummaryTableSQL(
                 string p_strIntoTempTreeListTableName,
@@ -2105,17 +2106,20 @@ namespace FIA_Biosum_Manager
                             FROM {p_strSummaryTableName} WHERE {p_strSummaryTableName}.standid IS NOT NULL and year > 0 
                             AND FVS_VARIANT = '{p_strRunTitle.Substring(7, 2)}' AND RXPACKAGE = '{p_strRunTitle.Substring(11, 3)}'";
 
-                strSQL[2] = "SELECT a.STANDID,a.YEAR,a.TREECOUNT, " +
-                              "SUM(IIF(a.standid=b.standid AND a.year=b.year,1,0)) AS ROWCOUNT " +
-                            "INTO " + p_strIntoTempMissingRowsTableName + " " +
-                            "FROM " + p_strIntoTempTreeListTableName + " a," +
-                             "(SELECT DISTINCT STANDID,YEAR " +
-                              "FROM " + p_strIntoTempSummaryTableName + " " +
-                              "WHERE STANDID IS NOT NULL) b " +
-                            "WHERE a.standid=b.standid " +
-                            "GROUP BY a.standid,a.year,a.treecount";
+                //strSQL[2] = "SELECT a.STANDID,a.YEAR,a.TREECOUNT, " +
+                //              "SUM(IIF(a.standid=b.standid AND a.year=b.year,1,0)) AS ROWCOUNT " +
+                //            "INTO " + p_strIntoTempMissingRowsTableName + " " +
+                //            "FROM " + p_strIntoTempTreeListTableName + " a," +
+                //             "(SELECT DISTINCT STANDID,YEAR " +
+                //              "FROM " + p_strIntoTempSummaryTableName + " " +
+                //              "WHERE STANDID IS NOT NULL) b " +
+                //            "WHERE a.standid=b.standid " +
+                //            "GROUP BY a.standid,a.year,a.treecount";
 
-                strSQL[2] = $@"CREATE TABLE {}";
+                strSQL[2] = $@"CREATE TABLE {p_strIntoTempMissingRowsTableName} AS SELECT a.STANDID,a.YEAR,a.TREECOUNT, 
+                            SUM(CASE WHEN a.standid=b.standid AND a.year=b.year THEN 1 ELSE 0 END) AS ROWCOUNT
+                            FROM {p_strIntoTempTreeListTableName} a,(SELECT DISTINCT STANDID,YEAR FROM {p_strIntoTempSummaryTableName} WHERE STANDID IS NOT NULL) b 
+                            WHERE a.standid=b.standid GROUP BY a.standid,a.year,a.treecount";
 
                 strSQL[3] = "DELETE FROM " + p_strIntoTempMissingRowsTableName + "  WHERE ROWCOUNT > 0";
 
@@ -2123,10 +2127,7 @@ namespace FIA_Biosum_Manager
 
                 strSQL[5] = "DROP TABLE " + p_strIntoTempTreeListTableName;
 
-
                 return strSQL;
-
-
             }
             /// <summary>
             /// View the PRE-POST records from the FVS Output table (FVS_STRCLASS) that will be retrieved 
