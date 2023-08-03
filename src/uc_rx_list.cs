@@ -3749,6 +3749,13 @@ namespace FIA_Biosum_Manager
 
                             if (p_oItem.UseSummaryTableSeqNumYN == "N")
                             {
+                                if (!dataMgr.TableExist(conn, strAuditPrePostSeqNumCountsTable))
+                                {
+                                    dataMgr.m_strSQL = Tables.FVS.Audit.Pre.CreateFVSPreYearCountsTableSQL(strAuditPrePostSeqNumCountsTable);
+                                    if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                                        frmMain.g_oUtils.WriteText(p_strDebugFile, dataMgr.m_strSQL + "\r\n\r\n");
+                                    dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                                }
                                 dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditSelectIntoPrePostSeqNumCountSqlite
                                   (p_oItem, strAuditPrePostSeqNumCountsTable, strPrePostSeqNumMatrixTable, p_strRunTitle);
 
