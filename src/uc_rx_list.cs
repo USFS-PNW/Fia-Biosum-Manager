@@ -3615,18 +3615,18 @@ namespace FIA_Biosum_Manager
                     dataMgr.m_strSQL = $@"DELETE FROM {strPrePostSeqNumMatrixTable} WHERE FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strRxPackage}'";
                     dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
                 }
-                else
-                {
-                    if (!p_strSourceTableName.ToUpper().Equals("FVS_STRCLASS"))
-                    {
-                        //create the audit SeqNum table structure
-                        frmMain.g_oTables.m_oFvs.CreateSQLiteFVSOutputPrePostSeqNumAuditGenericTable(dataMgr, conn, strPrePostSeqNumMatrixTable);
-                    }
-                    else
-                    {
-                        frmMain.g_oTables.m_oFvs.CreateSQLiteFVSOutputPrePostSeqNumAuditStrClassTable(dataMgr, conn, strPrePostSeqNumMatrixTable);
-                    }
-                }
+                //else
+                //{
+                //    if (!p_strSourceTableName.ToUpper().Equals("FVS_STRCLASS"))
+                //    {
+                //        //create the audit SeqNum table structure
+                //        frmMain.g_oTables.m_oFvs.CreateSQLiteFVSOutputPrePostSeqNumAuditGenericTable(dataMgr, conn, strPrePostSeqNumMatrixTable)
+                //    }
+                //    else
+                //    {
+                //        frmMain.g_oTables.m_oFvs.CreateSQLiteFVSOutputPrePostSeqNumAuditStrClassTable(dataMgr, conn, strPrePostSeqNumMatrixTable);
+                //    }
+                //}
 
                 if (dataMgr.TableExist(conn, strAuditPrePostSeqNumCountsTable))
                 {
@@ -3634,12 +3634,12 @@ namespace FIA_Biosum_Manager
                     dataMgr.m_strSQL = $@"DELETE FROM {strAuditPrePostSeqNumCountsTable} WHERE FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strRxPackage}'";
                     dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
                 }
-                else
-                {
-                    // Create the table
-                    dataMgr.m_strSQL = Tables.FVS.Audit.Pre.CreateFVSPreYearCountsTableSQL(strAuditPrePostSeqNumCountsTable);
-                    dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
-                }
+                //else
+                //{
+                //    // Create the table
+                //    dataMgr.m_strSQL = Tables.FVS.Audit.Pre.CreateFVSPreYearCountsTableSQL(strAuditPrePostSeqNumCountsTable);
+                //    dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                //}
 
                 if (p_strSourceTableName == "FVS_SUMMARY")
                 {
@@ -3668,6 +3668,10 @@ namespace FIA_Biosum_Manager
                     p_strSourceTableName.Trim().ToUpper() == "FVS_CUTLIST" ||
                     p_strSourceTableName.Trim().ToUpper().IndexOf("FVS_POTFIRE", 0) >= 0)
                 {
+                    if (! dataMgr.TableExist(conn, p_strSourceTableName))
+                    {
+                         frmMain.g_oTables.m_oFvs.CreateSQLiteFVSOutputPrePostSeqNumAuditGenericTable(dataMgr, conn, strPrePostSeqNumMatrixTable);
+                    }
                     if (p_strSourceTableName.Trim().ToUpper() == "FVS_SUMMARY" ||
                     p_strSourceTableName.Trim().ToUpper().IndexOf("FVS_POTFIRE", 0) >= 0)
                     {
@@ -3706,6 +3710,13 @@ namespace FIA_Biosum_Manager
 
                         if (p_strSourceTableName == "FVS_SUMMARY")
                         {
+                            if (! dataMgr.TableExist(conn, strAuditPrePostSeqNumCountsTable))
+                            {
+                                dataMgr.m_strSQL = Tables.FVS.Audit.Pre.CreateFVSPreYearCountsTableSQL(strAuditPrePostSeqNumCountsTable);
+                                if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                                    frmMain.g_oUtils.WriteText(p_strDebugFile, dataMgr.m_strSQL + "\r\n\r\n");
+                                dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                            }
                             dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditSelectIntoPrePostSeqNumCountSqlite
                                 (p_oItem, strAuditPrePostSeqNumCountsTable, strPrePostSeqNumMatrixTable, p_strRunTitle);
 
@@ -3792,11 +3803,6 @@ namespace FIA_Biosum_Manager
                     if (!dataMgr.TableExist(conn, strPrePostSeqNumMatrixTable))
                     {
                         frmMain.g_oTables.m_oFvs.CreateSQLiteFVSOutputPrePostSeqNumAuditStrClassTable(dataMgr, conn, strPrePostSeqNumMatrixTable);
-                    }
-                    else
-                    {
-                        dataMgr.m_strSQL = $@"DELETE FROM {strPrePostSeqNumMatrixTable} WHERE FVS_VARIANT = '{strVariant}' AND RXPACKAGE = {strRxPackage}";
-                        dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
                     }
                 }
                 else

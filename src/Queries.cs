@@ -1887,7 +1887,7 @@ namespace FIA_Biosum_Manager
                     string strVariant = p_strRunTitle.Substring(7, 2);
                     string strRxPackage = p_strRunTitle.Substring(11, 3);
 
-                    strSQL[1] = $@"UPDATE {p_strSummaryAuditTable} SET FVS_CUTLIST = (SELECT rowcount
+                    strSQL[1] = $@"UPDATE {p_strSummaryAuditTable} SET {p_strRowCountColumn} = (SELECT rowcount
                         from temp_rowcount b WHERE {p_strSummaryAuditTable}.standid=b.standid AND {p_strSummaryAuditTable}.year=b.year)
                         WHERE fvs_variant = '{strVariant}' and rxPackage = '{strRxPackage}'";
 
