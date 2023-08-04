@@ -3615,18 +3615,6 @@ namespace FIA_Biosum_Manager
                     dataMgr.m_strSQL = $@"DELETE FROM {strPrePostSeqNumMatrixTable} WHERE FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strRxPackage}'";
                     dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
                 }
-                //else
-                //{
-                //    if (!p_strSourceTableName.ToUpper().Equals("FVS_STRCLASS"))
-                //    {
-                //        //create the audit SeqNum table structure
-                //        frmMain.g_oTables.m_oFvs.CreateSQLiteFVSOutputPrePostSeqNumAuditGenericTable(dataMgr, conn, strPrePostSeqNumMatrixTable);
-                //    }
-                //    else
-                //    {
-                //        frmMain.g_oTables.m_oFvs.CreateSQLiteFVSOutputPrePostSeqNumAuditStrClassTable(dataMgr, conn, strPrePostSeqNumMatrixTable);
-                //    }
-                //}
 
                 if (dataMgr.TableExist(conn, strAuditPrePostSeqNumCountsTable))
                 {
@@ -3634,12 +3622,6 @@ namespace FIA_Biosum_Manager
                     dataMgr.m_strSQL = $@"DELETE FROM {strAuditPrePostSeqNumCountsTable} WHERE FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strRxPackage}'";
                     dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
                 }
-                //else
-                //{
-                //    // Create the table
-                //    dataMgr.m_strSQL = Tables.FVS.Audit.Pre.CreateFVSPreYearCountsTableSQL(strAuditPrePostSeqNumCountsTable);
-                //    dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
-                //}
 
                 if (p_strSourceTableName == "FVS_SUMMARY")
                 {
@@ -3818,11 +3800,6 @@ namespace FIA_Biosum_Manager
                     {
                         frmMain.g_oTables.m_oFvs.CreateSQLiteFVSOutputPrePostSeqNumAuditGenericTable(dataMgr, conn, strPrePostSeqNumMatrixTable);
                     }
-                    //else
-                    //{
-                    //    dataMgr.m_strSQL = $@"DELETE FROM {strPrePostSeqNumMatrixTable} WHERE FVS_VARIANT = '{strVariant}' AND RXPACKAGE = {strRxPackage}";
-                    //    dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
-                    //}
                 }
 
                 if (p_oItem.TableName.Trim().ToUpper() == "FVS_STRCLASS")

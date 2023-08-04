@@ -8334,7 +8334,6 @@ namespace FIA_Biosum_Manager
                                        m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.MDBFILE].Trim(),
                                       m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE], true);
 
-                m_dao.m_DaoWorkspace.Close();
                 System.Threading.Thread.Sleep(2000);
 
             //
