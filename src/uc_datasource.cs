@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Data;
 using System.Windows.Forms;
 using System.Text;
+using SQLite.ADO;
 
 namespace FIA_Biosum_Manager
 {
@@ -1501,6 +1502,51 @@ namespace FIA_Biosum_Manager
             if (strTempMDB.Trim().Length == 0)
 				MessageBox.Show("!!None of the scenario data source tables are found!!");
 			return strTempMDB;
+		}
+		public string CreateSqliteDBAndScenarioTableDataSourceLinks(string strDestinationLinkDir)
+        {
+			string strTempDB = "";
+			int x;
+			this.m_intNumberOfValidTables = 0;
+			//used to get the temporary random file name
+			utils p_utils = new utils();
+			//used to create a link to the table
+			DataMgr p_oDataMgr = new DataMgr();
+			for (x = 0; x <= this.lstRequiredTables.Items.Count - 1; x++)
+            {
+				if (this.lstRequiredTables.Items[x].SubItems[TABLESTATUS].Text.Trim().ToUpper() == "FOUND" &&
+						this.lstRequiredTables.Items[x].SubItems[FILESTATUS].Text.Trim().ToUpper() == "FOUND")
+                {
+					if (strTempDB.Trim().Length == 0)
+					{
+						//get temporary mdb file
+						strTempDB =
+							p_utils.getRandomFile(strDestinationLinkDir, "db");
+
+						//create a temporary mdb that will contain all 
+						//the links to the scenario datasource tables
+						p_oDataMgr.CreateDbFile(strTempDB);
+					}
+					// UNSURE HOW TO CONNECT MDB
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_oDataMgr.GetConnectionString(strTempDB)))
+                    {
+                        conn.Open();
+                        if (!p_oDataMgr.DatabaseAttached(conn, this.lstRequiredTables.Items[x].SubItems[PATH].Text.Trim() + "\\" +
+                                 this.lstRequiredTables.Items[x].SubItems[MDBFILE].Text.Trim()))
+                        {
+                            p_oDataMgr.m_strSQL = "ATTACH DATABASE '" + this.lstRequiredTables.Items[x].SubItems[PATH].Text.Trim() + "\\" +
+                                 this.lstRequiredTables.Items[x].SubItems[MDBFILE].Text.Trim() + "' AS MASTERMDB";
+                            p_oDataMgr.SqlNonQuery(conn, p_oDataMgr.m_strSQL);
+                        }
+                        conn.Close();
+                    }
+                }
+
+			}
+			p_utils = null;
+			if (strTempDB.Trim().Length == 0)
+				MessageBox.Show("!!None of the scenario data source tables are found!!");
+			return strTempDB;
 		}
 
 

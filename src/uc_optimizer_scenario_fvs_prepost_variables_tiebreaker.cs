@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Windows.Forms;
+using SQLite.ADO;
 
 namespace FIA_Biosum_Manager
 {
@@ -1202,7 +1203,184 @@ namespace FIA_Biosum_Manager
             this.uc_scenario_last_tiebreak_rank1.loadgrid(false);
 			
 		}
-		public int savevalues()
+        public void loadvaluessqlite(System.Collections.Generic.IDictionary<string, System.Collections.Generic.IList<String>> p_dictFVSTables)
+        {
+            this.m_intError = 0;
+            this.m_strError = "";
+
+            lstFVSTablesList.Items.Clear();
+            _dictFVSTables = new System.Collections.Generic.Dictionary<string,
+                System.Collections.Generic.IList<string>>(p_dictFVSTables);
+            foreach (string strKey in _dictFVSTables.Keys)
+            {
+                lstFVSTablesList.Items.Add(strKey);
+            }
+
+            lstEconVariablesList.Items.Clear();
+            foreach (uc_optimizer_scenario_calculated_variables.VariableItem vItem in this.ReferenceOptimizerScenarioForm.m_oWeightedVariableCollection)
+            {
+                if (vItem.strVariableType.Equals("ECON"))
+                {
+                    lstEconVariablesList.Items.Add(vItem.strVariableName);
+                }
+            }
+
+            //Stash original location of some controls so we can move them later
+            _objGrpMaxMinLocation = this.grpMaxMin.Location;
+            _objLblTieBreakVarDescrLocation = this.lblTieBreakVarDescr.Location;
+            _objtxtTieBreakVarDescrLocation = this.txtTieBreakVarDescr.Location;
+
+            this.m_oOldTieBreakerCollection.Clear();
+
+            // Stand Attribute
+            uc_optimizer_scenario_fvs_prepost_variables_tiebreaker.TieBreakerItem oItem = new TieBreakerItem();
+            oItem.intListViewIndex = 0;
+            oItem.strFVSVariableName = this.lvFVSVariablesTieBreakerValues.Items[0].SubItems[COLUMN_FVSVARIABLE].Text.Trim();
+            oItem.strMethod = this.lvFVSVariablesTieBreakerValues.Items[0].SubItems[COLUMN_METHOD].Text.Trim();
+            oItem.strValueSource = this.lvFVSVariablesTieBreakerValues.Items[0].SubItems[COLUMN_VALUESOURCE].Text.Trim();   //POST or PRE - POST
+            if (lvFVSVariablesTieBreakerValues.Items[0].SubItems[COLUMN_MAXMIN].Text.Trim().ToUpper() == "MAX")
+            {
+                oItem.strMaxYN = "Y"; oItem.strMinYN = "N";
+            }
+            else if (lvFVSVariablesTieBreakerValues.Items[0].SubItems[COLUMN_MAXMIN].Text.Trim().ToUpper() == "MIN")
+            {
+                oItem.strMaxYN = "N"; oItem.strMinYN = "Y";
+            }
+            oItem.bSelected = this.lvFVSVariablesTieBreakerValues.Items[0].Checked;
+            this.m_oOldTieBreakerCollection.Add(oItem);
+
+            // Economic Attribute
+            oItem = new TieBreakerItem();
+            oItem.intListViewIndex = 1;
+            oItem.strFVSVariableName = this.lvFVSVariablesTieBreakerValues.Items[1].SubItems[COLUMN_FVSVARIABLE].Text.Trim();
+            oItem.strMethod = this.lvFVSVariablesTieBreakerValues.Items[1].SubItems[COLUMN_METHOD].Text.Trim();
+            oItem.strValueSource = this.lvFVSVariablesTieBreakerValues.Items[1].SubItems[COLUMN_VALUESOURCE].Text.Trim();
+            if (lvFVSVariablesTieBreakerValues.Items[1].SubItems[COLUMN_MAXMIN].Text.Trim().ToUpper() == "MAX")
+            {
+                oItem.strMaxYN = "Y"; oItem.strMinYN = "N";
+            }
+            else if (lvFVSVariablesTieBreakerValues.Items[1].SubItems[COLUMN_MAXMIN].Text.Trim().ToUpper() == "MIN")
+            {
+                oItem.strMaxYN = "N"; oItem.strMinYN = "Y";
+            }
+            oItem.bSelected = this.lvFVSVariablesTieBreakerValues.Items[1].Checked;
+            this.m_oOldTieBreakerCollection.Add(oItem);
+
+            // Last Tie-Break Rank
+            oItem = new TieBreakerItem();
+            oItem.intListViewIndex = 2;
+            oItem.strFVSVariableName = this.lvFVSVariablesTieBreakerValues.Items[2].SubItems[COLUMN_FVSVARIABLE].Text.Trim();
+            oItem.strMethod = this.lvFVSVariablesTieBreakerValues.Items[2].SubItems[COLUMN_METHOD].Text.Trim();
+            oItem.strValueSource = this.lvFVSVariablesTieBreakerValues.Items[2].SubItems[COLUMN_VALUESOURCE].Text.Trim();
+            oItem.strMaxYN = "N"; oItem.strMinYN = "N";
+            oItem.bSelected = this.lvFVSVariablesTieBreakerValues.Items[2].Checked;
+            this.m_oOldTieBreakerCollection.Add(oItem);
+
+            DataMgr oDataMgr = new DataMgr();
+
+            string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
+            string strScenarioDB =
+                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
+            {
+                conn.Open();
+                if (oDataMgr.m_intError == 0)
+                {
+                    if (!oDataMgr.TableExist(conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName))
+                    {
+                        frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioFVSVariablesTieBreakerTable(oDataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName);
+                    }
+                    oDataMgr.m_strSQL = "SELECT * FROM " +
+                                    Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName + " " +
+                                    "WHERE TRIM(scenario_id)='" + strScenarioId.Trim() + "'";
+
+                    oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
+                    if (oDataMgr.m_DataReader.HasRows)
+                    {
+                        while (oDataMgr.m_DataReader.Read())
+                        {
+                            if (oDataMgr.m_DataReader["tiebreaker_method"] != System.DBNull.Value)
+                            {
+                                if (oDataMgr.m_DataReader["tiebreaker_method"].ToString().Trim().ToUpper().IndexOf("ATTRIBUTE") > -1)
+                                {
+                                    //idxAttribute = 0 for FVS Variables and 1 for Economic Variables; Most fields are similar
+                                    int idxAttribute = 0;
+                                    if (oDataMgr.m_DataReader["tiebreaker_method"].ToString().Trim().ToUpper().Equals("ECONOMIC ATTRIBUTE"))
+                                    {
+                                        idxAttribute = 1;
+                                    }
+
+                                    //fvs variable name
+                                    this.m_oOldTieBreakerCollection.Item(idxAttribute).strFVSVariableName = oDataMgr.m_DataReader["fvs_variable_name"].ToString().Trim();
+                                    lvFVSVariablesTieBreakerValues.Items[idxAttribute].SubItems[COLUMN_FVSVARIABLE].Text =
+                                        this.m_oOldTieBreakerCollection.Item(idxAttribute).strFVSVariableName;
+
+                                    //fvs value source (POST or POST/PRE change)
+                                    this.m_oOldTieBreakerCollection.Item(idxAttribute).strValueSource = oDataMgr.m_DataReader["value_source"].ToString().Trim();
+                                    lvFVSVariablesTieBreakerValues.Items[idxAttribute].SubItems[COLUMN_VALUESOURCE].Text =
+                                        this.m_oOldTieBreakerCollection.Item(idxAttribute).strValueSource;
+
+                                    //MAX or MIN	
+                                    if (oDataMgr.m_DataReader["max_yn"].ToString().Trim().ToUpper() == "Y")
+                                    {
+                                        lvFVSVariablesTieBreakerValues.Items[idxAttribute].SubItems[COLUMN_MAXMIN].Text = "MAX";
+                                        this.m_oOldTieBreakerCollection.Item(idxAttribute).strMaxYN = "Y";
+                                        this.m_oOldTieBreakerCollection.Item(idxAttribute).strMinYN = "N";
+                                        this.rdoFVSVariablesTieBreakerVariableValuesSelectedMax.Checked = true;
+                                    }
+                                    else if (oDataMgr.m_DataReader["min_yn"].ToString().Trim().ToUpper() == "Y")
+                                    {
+                                        lvFVSVariablesTieBreakerValues.Items[idxAttribute].SubItems[COLUMN_MAXMIN].Text = "MIN";
+                                        this.m_oOldTieBreakerCollection.Item(idxAttribute).strMinYN = "Y";
+                                        this.m_oOldTieBreakerCollection.Item(idxAttribute).strMaxYN = "N";
+                                        this.rdoFVSVariablesTieBreakerVariableValuesSelectedMin.Checked = true;
+                                    }
+                                    if (oDataMgr.m_DataReader["checked_yn"].ToString().Trim().ToUpper() == "Y")
+                                    {
+                                        this.m_oOldTieBreakerCollection.Item(idxAttribute).bSelected = true;
+
+                                    }
+                                    else
+                                    {
+                                        this.m_oOldTieBreakerCollection.Item(idxAttribute).bSelected = false;
+                                    }
+                                    this.lvFVSVariablesTieBreakerValues.Items[idxAttribute].Checked = this.m_oOldTieBreakerCollection.Item(idxAttribute).bSelected;
+                                    // Select stand attribute on the listView by default if is enabled
+                                    if (this.m_oOldTieBreakerCollection.Item(idxAttribute).bSelected == true)
+                                    {
+                                        lvFVSVariablesTieBreakerValues.Items[idxAttribute].Selected = this.m_oOldTieBreakerCollection.Item(idxAttribute).bSelected;
+                                        lvFVSVariablesTieBreakerValues.Select();
+                                    }
+                                }
+                                else if (oDataMgr.m_DataReader["tiebreaker_method"].ToString().Trim().ToUpper() == "LAST TIE-BREAK RANK")
+                                {
+                                    if (oDataMgr.m_DataReader["checked_yn"].ToString().Trim().ToUpper() == "Y")
+                                    {
+                                        this.m_oOldTieBreakerCollection.Item(2).bSelected = true;
+
+                                    }
+                                    else
+                                    {
+                                        this.m_oOldTieBreakerCollection.Item(2).bSelected = false;
+                                    }
+                                    this.lvFVSVariablesTieBreakerValues.Items[2].Checked = this.m_oOldTieBreakerCollection.Item(2).bSelected;
+                                }
+                            }
+                        }
+                    }
+                    oDataMgr.m_DataReader.Close();
+                    this.m_oSavTieBreakerCollection.Copy(this.m_oOldTieBreakerCollection, ref this.m_oSavTieBreakerCollection, true);
+                }
+                conn.Close();
+            }
+            this.m_intError = oDataMgr.m_intError;
+            this.m_strError = oDataMgr.m_strError;
+            this.uc_scenario_last_tiebreak_rank1.loadgridsqlite(false);
+        }
+
+        public int savevalues()
 		{
 			int x=0;
 			string strColumns="";

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Windows.Forms;
+using SQLite.ADO;
 
 namespace FIA_Biosum_Manager
 {
@@ -1758,6 +1759,108 @@ namespace FIA_Biosum_Manager
 			this.m_strError=oAdo.m_strError;
 			oAdo=null;
 			
+		}
+		public void loadvaluessqlite()
+        {
+			this.m_intError = 0;
+			this.m_strError = "";
+
+			DataMgr oDataMgr = new DataMgr();
+
+			this.lstFVSTablesList.Items.Clear();
+			m_dictFVSTables = m_oOptimizerScenarioTools.LoadFvsTablesAndVariablesSqlite();
+			foreach (string strKey in m_dictFVSTables.Keys)
+			{
+				lstFVSTablesList.Items.Add(strKey);
+			}
+
+			m_oOldVar = new Variables();
+			m_oSavVar = new Variables();
+
+			int x = 0;
+			for (x = 0; x <= NUMBER_OF_VARIABLES - 1; x++)
+				this.RemoveVariable(x);
+
+			string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
+			string strScenarioDB =
+				frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
+			{
+				conn.Open();
+
+				int intVarNum = 0;
+
+				//fvs variables
+				oDataMgr.m_strSQL = "SELECT a.* " +
+								"FROM scenario_fvs_variables a " +
+								"WHERE TRIM(a.scenario_id)='" + strScenarioId.Trim() + "' AND " +
+								"a.current_yn='Y' " +
+								"ORDER BY variable_number";
+				oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
+				if (oDataMgr.m_DataReader.HasRows)
+				{
+					while (oDataMgr.m_DataReader.Read())
+					{
+						intVarNum = Convert.ToInt32(oDataMgr.m_DataReader["variable_number"]) - 1;
+
+						m_oOldVar.m_strPreVarArray[intVarNum] =
+							Convert.ToString(oDataMgr.m_DataReader["pre_fvs_variable"]).Trim();
+						m_oOldVar.m_strPostVarArray[intVarNum] =
+							Convert.ToString(oDataMgr.m_DataReader["post_fvs_variable"]).Trim();
+
+						if (oDataMgr.m_DataReader["better_expression"] != System.DBNull.Value)
+							m_oOldVar.m_strBetterExpr[intVarNum] =
+								Convert.ToString(oDataMgr.m_DataReader["better_expression"]).Trim();
+
+						if (oDataMgr.m_DataReader["worse_expression"] != System.DBNull.Value)
+							m_oOldVar.m_strWorseExpr[intVarNum] =
+								Convert.ToString(oDataMgr.m_DataReader["worse_expression"]).Trim();
+
+						if (oDataMgr.m_DataReader["effective_expression"] != System.DBNull.Value)
+							m_oOldVar.m_strEffectiveExpr[intVarNum] =
+								Convert.ToString(oDataMgr.m_DataReader["effective_expression"]).Trim();
+
+
+						this.UpdateListViewVariableItem(intVarNum, intVarNum + 1, m_oOldVar);
+					}
+				}
+				oDataMgr.m_DataReader.Close();
+
+				//overall expression
+				oDataMgr.m_strSQL = "SELECT b.overall_effective_expression, b.current_yn " +
+								"FROM scenario_fvs_variables_overall_effective b " +
+								"WHERE TRIM(b.scenario_id)='" + strScenarioId.Trim() + "' AND " +
+								"b.current_yn='Y'";
+
+				oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
+				if (oDataMgr.m_DataReader.HasRows)
+				{
+					while (oDataMgr.m_DataReader.Read())
+					{
+						if (oDataMgr.m_DataReader["overall_effective_expression"] != System.DBNull.Value &&
+							m_oOldVar.m_strOverallEffectiveExpr.Trim().Length == 0)
+                        {
+							m_oOldVar.m_strOverallEffectiveExpr = Convert.ToString(oDataMgr.m_DataReader["overall_effective_expression"]).Trim();
+                        }
+					}
+				}
+				oDataMgr.m_DataReader.Close();
+
+				conn.Close();
+			}
+			for (x = 0; x <= NUMBER_OF_VARIABLES - 1; x++)
+			{
+				if (m_oOldVar.m_strPreVarArray[x].Trim().Length > 0 &&
+					m_oOldVar.m_strPreVarArray[x].Trim().ToUpper() != "NOT DEFINED")
+					this.btnFVSVariablesPrePostOverall.Enabled = true;
+			}
+			m_oOldVar.Copy(m_oOldVar, ref m_oSavVar);
+
+			this.ReferenceOptimizationUserControl.loadvaluessqlite(m_dictFVSTables);
+			this.ReferenceTieBreakerUserControl.loadvaluessqlite(m_dictFVSTables);
+			this.m_intError = oDataMgr.m_intError;
+			this.m_strError = oDataMgr.m_strError;
 		}
 
         private void loadFVSTableAndField()

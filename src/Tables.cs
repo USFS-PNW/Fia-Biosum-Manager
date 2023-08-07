@@ -2184,7 +2184,7 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteScenarioMergeTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "cmborder BYTE PRIMARY KEY, " +
+                    "cmborder CHAR(1) PRIMARY KEY, " +
                     "mdbpathandfile CHAR(200))";
             }
             public void CreateScenarioPlotFilterTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
@@ -2200,7 +2200,7 @@ namespace FIA_Biosum_Manager
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "scenario_id CHAR(20)," +
-                    "sql_command MEMO," +
+                    "sql_command VARCHAR(4000)," +
                     "current_yn CHAR(1)," +
                     "table_list CHAR(200))";
             }
@@ -2254,7 +2254,7 @@ namespace FIA_Biosum_Manager
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "scenario_id CHAR(20)," +
-                    "sql_command MEMO," +
+                    "sql_command VARCHAR(4000)," +
                     "current_yn CHAR(1)," +
                     "table_list CHAR(200))";
             }
@@ -2330,8 +2330,8 @@ namespace FIA_Biosum_Manager
                     "scenario_id CHAR(20), " +
                     "psite_id INTEGER, " +
                     "name CHAR(100), " +
-                    "trancd BYTE, " +
-                    "biocd BYTE, " +
+                    "trancd CHAR(1), " +
+                    "biocd CHAR(1), " +
                     "selected_yn CHAR(1), " +
                     "PRIMARY KEY (scenario_id, psite_id))";
             }
@@ -2374,9 +2374,9 @@ namespace FIA_Biosum_Manager
                     "fvs_variables_list CHAR(255)," +
                     "pre_fvs_variable CHAR(100)," +
                     "post_fvs_variable CHAR(100)," +
-                    "better_expression MEMO," +
-                    "worse_expression MEMO," +
-                    "effective_expression MEMO," +
+                    "better_expression VARCHAR(4000)," +
+                    "worse_expression VARCHAR(4000)," +
+                    "effective_expression VARCHAR(4000)," +
                     "current_yn CHAR(1))";
             }
             public void CreateSqliteScenarioFVSVariablesTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
@@ -2393,7 +2393,7 @@ namespace FIA_Biosum_Manager
                     "scenario_id CHAR(20)," +
                     "rxcycle CHAR(1)," +
                     "fvs_variables_list CHAR(255)," +
-                    "overall_effective_expression MEMO," +
+                    "overall_effective_expression VARCHAR(4000)," +
                     "nr_dpa_filter_enabled_yn CHAR(1)," +
                     "nr_dpa_filter_operator CHAR(2)," +
                     "nr_dpa_filter_value DOUBLE DEFAULT 0," +
@@ -5517,11 +5517,11 @@ namespace FIA_Biosum_Manager
             public static string CreateSqliteScenarioTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "scenario_id TEXT NOT NULL PRIMARY KEY," +
-                    "description TEXT," +
-                    "path TEXT," +
-                    "file TEXT," +
-                    "notes TEXT)";
+                    "scenario_id CHAR(20) NOT NULL PRIMARY KEY," +
+                    "description VARCHAR(4000)," +
+                    "path CHAR(254)," +
+                    "file CHAR(50)," +
+                    "notes VARCHAR(4000))";
             }
 
             public void CreateScenarioDatasourceTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
@@ -5554,11 +5554,11 @@ namespace FIA_Biosum_Manager
             public static string CreateSqliteScenarioDatasourceTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "scenario_id TEXT," +
-                    "table_type TEXT," +
-                    "path TEXT," +
-                    "file TEXT," +
-                    "table_name TEXT)";
+                    "scenario_id CHAR(20)," +
+                    "table_type CHAR(60)," +
+                    "path CHAR(254)," +
+                    "file CHAR(50)," +
+                    "table_name CHAR(50))";
             }
 
         }
@@ -6082,6 +6082,7 @@ namespace FIA_Biosum_Manager
             static public string DefaultTreeSpeciesGroupsListDbFile { get { return @"\db\scenario_processor_rule_definitions.mdb"; } }
             static public string DefaultTreeSpeciesGroupsListTableName { get { return "scenario_tree_species_groups_list"; } }
             static public string DefaultSqliteDbFile { get { return @"db\scenario_processor_rule_definitions.db"; } }
+            static public string DefaultDbFile { get { return @"\db\scenario_processor_rule_definitions.mdb"; } }
 
 
 

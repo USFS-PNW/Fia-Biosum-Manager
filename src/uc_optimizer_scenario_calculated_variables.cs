@@ -4989,6 +4989,7 @@ namespace FIA_Biosum_Manager
                             }
                         }
                     }
+                    counter1Interval = 5;
                     int counter2Interval = 5;
                     counter1 = counter1 + counter1Interval;
                     counter2 = counter2 + counter2Interval;

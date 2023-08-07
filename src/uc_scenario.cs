@@ -303,15 +303,15 @@ namespace FIA_Biosum_Manager
             string strProjDir = frmMain.g_oFrmMain.getProjectDirectory();
             string strScenarioDir = strProjDir + "\\" + ScenarioType + "\\db";
             System.Collections.Generic.IList<string> lstExistingScenarios = new System.Collections.Generic.List<string>();
-            if (ReferenceProcessorScenarioForm != null &&
-                ReferenceProcessorScenarioForm.m_bUsingSqlite == true)
-            {
+            //if (ReferenceProcessorScenarioForm != null &&
+            //    ReferenceProcessorScenarioForm.m_bUsingSqlite == true)
+            //{
                 lstExistingScenarios = QueryScenarioNamesSqlite(strScenarioDir);
-            }
-            else
-            {
-                lstExistingScenarios = QueryScenarioNames(strScenarioDir);
-            }
+            //}
+            //else
+            //{
+            //    lstExistingScenarios = QueryScenarioNames(strScenarioDir);
+            //}
             
 
             int i = 1;
