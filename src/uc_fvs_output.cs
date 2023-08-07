@@ -1169,8 +1169,20 @@ namespace FIA_Biosum_Manager
                     strRxPackage = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_PACKAGE, "Text", false);
                     strSummaryCount = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_SUMMARYCOUNT, "Text", false).ToString().Trim();
                     strCutListCount = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_CUTCOUNT, "Text", false).ToString().Trim();
-                    strCurRunTitle =  $@"FVSOUT_{strVariant}_P{strRxPackage}";
-
+                    //find the package item in the package collection
+                    var y = -1;
+                    for (y = 0; y <= this.m_oRxPackageItem_Collection.Count - 1; y++)
+                    {
+                        if (this.m_oRxPackageItem_Collection.Item(y).RxPackageId.Trim() == strRxPackage.Trim())
+                            break;
+                    }
+                    if (y <= m_oRxPackageItem_Collection.Count - 1)
+                    {
+                        RxPackageItem tempRxPackageItem = new RxPackageItem();
+                        tempRxPackageItem.CopyProperties(m_oRxPackageItem_Collection.Item(y), tempRxPackageItem);
+                        //FVSOUT_NC_P002-002-999-999-002
+                        strCurRunTitle = $@"FVSOUT_{strVariant}{tempRxPackageItem.RunTitleSuffix}";
+                    }
 
                     GetPrePostSeqNumConfiguration("FVS_POTFIRE",strRxPackage);
                     //dont need to validate base year if baseyear is not being referenced
@@ -1183,29 +1195,10 @@ namespace FIA_Biosum_Manager
                          bPotFireBaseYear=false;
                     if (bPotFireBaseYear)
                     {
-                        string strPotFireRunTitle = $@"FVSOUT_{strVariant}_POTFIRE_BaseYr";
-                        string dbConn = SQLite.GetConnectionString(m_strFvsOutDb);
-                        using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
+                        string strFvsPotfireTableName = GetPotfireTableName(m_strFvsOutDb, strVariant);
+                        if (m_bPotFireBaseYearTableExist)
                         {
-                            conn.Open();
-                            if (frmMain.g_bSuppressFVSOutputTableRowCount)
-                            {
-                                if (SQLite.TableExist(conn, Tables.FVS.DefaultFVSPotFireTableName))
-                                {
-                                    if (!frmMain.g_bSuppressFVSOutputTableRowCount)
-                                    {
-                                        SQLite.m_strSQL = $@"select count(*) from {Tables.FVS.DefaultFVSPotFireTableName} c, {Tables.FVS.DefaultFVSSummaryTableName} s 
-                                            WHERE c.CaseID = S.CaseID AND c.RunTitle = '{strPotFireRunTitle}'";
-                                        lngPotFireBaseYrCount = SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSSummaryTableName);
-                                    }
-                                    else
-                                    {
-                                        SQLite.m_strSQL = $@"SELECT s.tpa FROM {Tables.FVS.DefaultFVSCasesTableName} c, {Tables.FVS.DefaultFVSSummaryTableName} s 
-                                            WHERE c.CaseID = S.CaseID AND c.RunTitle = '{strCurRunTitle}' AND TPA > 0 LIMIT 1";
-                                        lngPotFireBaseYrCount = SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSSummaryTableName);
-                                    }
-                                }
-                            }
+                            lngPotFireBaseYrCount = 1;
                         }
                     }
 
@@ -1770,7 +1763,7 @@ namespace FIA_Biosum_Manager
             p_strError = oAdo.m_strError;
             oAdo=null;
         }
-		private void RunAppend_Main()
+		private void RunAppend_MainAccess()
 		{
 			string strOutDirAndFile;
             string strAuditDbFile;
@@ -6071,6 +6064,141 @@ namespace FIA_Biosum_Manager
                 oAdo.CloseConnection(oAdo.m_OleDbConnection);
             }
             oAdo = null;
+        }
+        /// <summary>
+        /// Create the FVS_POTFIRE table. If the configuration includes baseyear than combine the baseyear POTFIRE table to the 
+        /// standard POTFIRE table.  If the baseyear POTFIRE table is not used then just use the standard POTFIRE table. It is 
+        /// assumed that the standard FVS_POTFIRE table link already exists as a link in the p_strDbFile when this routine is called.
+        /// </summary>
+        /// <param name="p_strDbFile">The FVSOUT_P000-000-000-000_BIOSUM.ACCDB or any accdb file</param>
+        /// <param name="p_strVariant">FVS variant</param>
+        private void CreateSQLitePotFireTables(string p_strAuditDbFile, string p_strFVSOutDbFile, string p_strVariant, string p_strRxPackageId)
+        {
+
+            if (m_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "// CreateSQLitePotFireTables\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+            int x;
+            string strPotFireBaseYearFile = "";
+            string strPotFireTable = "";
+            ado_data_access oAdo;
+            dao_data_access oDao = new dao_data_access();
+
+            //
+            //CHECK TO SEE IF THE BASEYEAR FILE AND TABLE EXIST
+            //RunTitle: FVSOUT_SO_POTFIRE_BaseYr
+            //
+            strPotFireTable = GetPotfireTableName(p_strFVSOutDbFile, p_strVariant);
+
+            //get the PREPOST SeqNum configuration for the POTFIRE table
+            GetPrePostSeqNumConfiguration(strPotFireTable, p_strRxPackageId);
+            //
+            //CHECK TO SEE IF THE CONFIGURATION INCLUDES BASEYEAR
+            //
+            if (m_oFVSPrePostSeqNumItem.RxCycle1PreSeqNumBaseYearYN == "N" &&
+                m_oFVSPrePostSeqNumItem.RxCycle2PreSeqNumBaseYearYN == "N" &&
+                m_oFVSPrePostSeqNumItem.RxCycle3PreSeqNumBaseYearYN == "N" &&
+                m_oFVSPrePostSeqNumItem.RxCycle4PreSeqNumBaseYearYN == "N")
+            {
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(p_strAuditDbFile)))
+                {
+                    conn.Open();
+                    if (SQLite.m_intError == 0)
+                    {
+                        if (SQLite.TableExist(conn, "FVS_POTFIRE_TEMP"))
+                            SQLite.SqlNonQuery(conn, "DROP TABLE FVS_POTFIRE_TEMP");
+
+                        // Attach FVSOut.db
+                        SQLite.m_strSQL = $@"ATTACH DATABASE '{p_strFVSOutDbFile}' AS FVSOUT";
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        //@ToDo: Do we need to this? This is the path that executes of BaseYear is not used
+                        // Historically this overwrote the contents of fvs_potfire with fvs_potfire temp in the output db
+                        // For now I'm going to try to use fvs_potfire_temp if base year is used. Don't want to corrupt fvs_potfire in FVSOut.db
+                        SQLite.m_strSQL = $@"CREATE TABLE FVS_POTFIRE_TEMP AS SELECT * FROM {strPotFireTable}";
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                    }
+                }
+                return;
+            }
+            //create the new FVS_POTFIRE table by inserting the baseyear POTFIRE records
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(p_strAuditDbFile)))
+            {
+                conn.Open();
+                if (SQLite.m_intError == 0)
+                {
+                    if (SQLite.TableExist(conn, "tempBASEYEAR")) SQLite.SqlNonQuery(conn, "DROP TABLE TEMPBASEYEAR");
+                    if (SQLite.TableExist(conn, "BASEYEAR")) SQLite.SqlNonQuery(conn, "DROP TABLE BASEYEAR");
+                    if (SQLite.TableExist(conn, "NONBASEYEAR")) SQLite.SqlNonQuery(conn, "DROP TABLE NONBASEYEAR");
+                    string[] strSQL = Queries.FVS.FVSOutputTable_PrePostPotFireBaseYearSQL(
+                        m_strPotFireBaseYearLinkedTableName,
+                        m_strPotFireStandardLinkedTableName,
+                        "FVS_POTFIRE");
+
+                    for (x = 0; x <= strSQL.Length - 1; x++)
+                    {
+                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL[x] + "\r\n");
+                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL[x]);
+                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                        if (oAdo.m_intError != 0) break;
+                    }
+                }
+            }
+                if (oAdo.m_intError == 0)
+            {
+
+                if (oAdo.m_intError == 0)
+                {
+                    //drop the baseyear_yn column
+                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\nALTER TABLE FVS_POTFIRE DROP COLUMN baseyear_yn\r\n");
+                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "ALTER TABLE FVS_POTFIRE DROP COLUMN baseyear_yn");
+                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                    if (oAdo.TableExist(oAdo.m_OleDbConnection, m_strPotFireStandardLinkedTableName)) oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + m_strPotFireStandardLinkedTableName);
+                    if (oAdo.TableExist(oAdo.m_OleDbConnection, m_strPotFireBaseYearLinkedTableName)) oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + m_strPotFireBaseYearLinkedTableName);
+                }
+                oAdo.CloseConnection(oAdo.m_OleDbConnection);
+            }
+            oAdo = null;
+        }
+
+        private string GetPotfireTableName(string p_strFVSOutDbFile, string p_strVariant)
+        {
+            string strBaseYrRunTitle = $@"FVSOUT_{p_strVariant}_POTFIRE_BaseYr";
+            string strPotFireTableName = "";
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(p_strFVSOutDbFile)))
+            {
+                conn.Open();
+                long lngCount = SQLite.getRecordCount(conn, $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSCasesTableName} WHERE RUNTITLE = '{strBaseYrRunTitle}'", Tables.FVS.DefaultFVSCasesTableName);
+                if (lngCount > 0)
+                {
+                    if (SQLite.TableExist(conn, Tables.FVS.DefaultFVSPotFireTableName))
+                    {
+                        strPotFireTableName = Tables.FVS.DefaultFVSPotFireTableName;
+                    }
+                    else if (SQLite.TableExist(conn, Tables.FVS.DefaultFVSPotFireEastTableName))
+                    {
+                        strPotFireTableName = Tables.FVS.DefaultFVSPotFireEastTableName;
+                    }
+                    if (!string.IsNullOrEmpty(strPotFireTableName))
+                    {
+                        //see which potfire table
+                        SQLite.m_strSQL = $@"SELECT YEAR FROM {strPotFireTableName}, {Tables.FVS.DefaultFVSCasesTableName} c where {strPotFireTableName}.CASEID = C.CASEID
+                            AND RUNTITLE = '{strBaseYrRunTitle}' LIMIT 1";
+                        lngCount = SQLite.getRecordCount(conn, SQLite.m_strSQL, strPotFireTableName);
+                        if (lngCount > 0)
+                        {
+                            m_bPotFireBaseYearTableExist = true;
+                        }
+                    }
+                }
+            }
+            return strPotFireTableName;
         }
         // This is the function called by RunAppend_Main
         private void CreatePrePostSeqNumMatrixTables(string p_strDbFile,string p_strRxPackageId, bool p_bAudit)
@@ -10659,6 +10787,566 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, p_strSourceTableName + " table does not exist.\r\n\r\n");
                 }
             }
+        }
+
+        private void RunAppend_Main()
+        {
+            string strAuditDbFile;
+            string strCurVariant = "";
+            bool bUpdateCondTable = false;
+            string strFVSOutPrePostPathAndDbFile = "";
+            ado_data_access oAdo = new ado_data_access();
+            int intCount;
+            string strRx1 = "";
+            string strRx2 = "";
+            string strRx3 = "";
+            string strRx4 = "";
+            string strPackage = "";
+            string strVariant = "";
+            string strPotFireBaseYrDbFile = "";
+
+            System.Windows.Forms.ListView oLv = (System.Windows.Forms.ListView)frmMain.g_oDelegate.GetListView(lstFvsOutput, false);
+            System.Windows.Forms.ListViewItem oLvItem = null;
+
+            Tables oTables = new Tables();
+
+            frmMain.g_oDelegate.CurrentThreadProcessStarted = true;
+            int x, y;
+            oAdo.DisplayErrors = false;
+            m_intProgressOverallTotalCount = 0;
+            m_intProgressStepCurrentCount = 0;
+            m_intProgressOverallCurrentCount = 0;
+
+            try
+            {
+                if (System.IO.File.Exists(m_strDebugFile))
+                    System.IO.File.Delete(m_strDebugFile);
+
+                m_dao.DisplayErrors = false;
+
+                System.Threading.Thread.Sleep(2000);
+
+                if (m_bDebug)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "*****START*****" + System.DateTime.Now.ToString() + "\r\n");
+
+                intCount = (int)frmMain.g_oDelegate.GetListViewItemsPropertyValue(oLv, "Count", false);
+
+                //inititalize the run status column for each row to blank in the list view
+                for (x = 0; x <= intCount - 1; x++)
+                {
+                    oLvItem = (System.Windows.Forms.ListViewItem)frmMain.g_oDelegate.GetListViewItem(oLv, x, false);
+                    //alternate the row color in the list view
+                    m_oLvAlternateColors.m_oRowCollection.Item(x).m_oColumnCollection.Item(COL_RUNSTATUS).UpdateColumn = true;
+                    m_oLvAlternateColors.DelegateListViewSubItem(oLvItem, x, COL_RUNSTATUS);
+                    //inititalize the run status column for each row to blank in the list view
+                    frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "");
+                    //see if checked
+                    if ((bool)frmMain.g_oDelegate.GetListViewItemPropertyValue(oLv, x, "Checked", false))
+                        this.m_intProgressOverallTotalCount++;
+
+                }
+
+                if (m_oFVSPrePostSeqNumItemCollection == null) m_oFVSPrePostSeqNumItemCollection = new FVSPrePostSeqNumItem_Collection();
+                if (m_ado.m_OleDbConnection.State == ConnectionState.Closed)
+                {
+                    m_ado.OpenConnection(m_strTempMDBFileConnectionString);
+
+                }
+                m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(m_ado, m_ado.m_OleDbConnection, m_oFVSPrePostSeqNumItemCollection);
+
+
+                m_intProgressOverallCurrentCount = 0;
+                this.m_intProgressOverallTotalCount++;
+
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Maximum", 100);
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Minimum", 0);
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Value", 0);
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg2, "Text", "Overall Progress");
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "");
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Visible", true);
+
+                this.val_data();
+
+                // Ensure that indexes are on the FVSOut.db
+                m_oRxTools.CreateFvsOutDbIndexes(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile);
+
+                if (m_intError == 0)
+                {
+
+                    if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                        this.WriteText(m_strDebugFile, "check point 1 \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+
+                    //create a link to each of the selected fvs out files in the temp mdb file
+                    //close the current ado oledb connection
+                    if (this.m_ado.m_OleDbConnection.State != System.Data.ConnectionState.Closed)
+                        this.m_ado.CloseConnection(m_ado.m_OleDbConnection);
+
+                    if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                        this.WriteText(m_strDebugFile, "checkpoint 2 \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+
+                    m_intProgressStepTotalCount = Tables.FVS.g_strFVSOutTablesArray.Length;
+                    m_intProgressStepCurrentCount = 0;
+                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Maximum", 100);
+                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Minimum", 0);
+
+                    //
+                    //backup prepost files
+                    //
+                    System.DateTime oDate = System.DateTime.Now;
+                    string strDateFormat = "yyyy-MM-dd_HH-mm-ss";
+                    string strFileDate = oDate.ToString(strDateFormat);
+                    strFileDate = strFileDate.Replace("/", "_"); strFileDate = strFileDate.Replace(":", "_");
+                    m_intProgressStepCurrentCount++;
+                    UpdateTherm(m_frmTherm.progressBar1,
+                                m_intProgressStepCurrentCount,
+                                m_intProgressStepTotalCount);
+                    strFVSOutPrePostPathAndDbFile = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}{Tables.FVS.DefaultFVSOutPrePostDbFile}";
+                    if (System.IO.File.Exists(strFVSOutPrePostPathAndDbFile))
+                    {
+                        System.IO.File.Copy(strFVSOutPrePostPathAndDbFile, strFVSOutPrePostPathAndDbFile + "_" + strFileDate, true);
+                    }
+
+                    m_intProgressStepCurrentCount++;
+                    UpdateTherm(m_frmTherm.progressBar1,
+                                m_intProgressStepTotalCount,
+                                m_intProgressStepTotalCount);
+
+                    m_intProgressOverallCurrentCount++;
+                    UpdateTherm(m_frmTherm.progressBar2,
+                                m_intProgressOverallCurrentCount,
+                                m_intProgressOverallTotalCount);
+
+                    if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                        this.WriteText(m_strDebugFile, "checkpoint 5 \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+
+                    this.m_strDateTimeCreated = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
+                    m_intProgressStepTotalCount = intCount;
+                    m_intProgressStepCurrentCount = 0;
+
+                    for (x = 0; x <= intCount - 1; x++)
+                    {
+                        oLvItem = (System.Windows.Forms.ListViewItem)frmMain.g_oDelegate.GetListViewItem(oLv, x, false);
+                        this.m_oLvAlternateColors.DelegateListViewSubItem(oLvItem, x, COL_RUNSTATUS);
+
+                        frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "");
+                        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Maximum", 100);
+                        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Minimum", 0);
+                        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", 0);
+
+                        if ((bool)frmMain.g_oDelegate.GetListViewItemPropertyValue(oLv, x, "Checked", false) == true)
+                        {
+                            m_bPotFireBaseYearTableExist = true;
+                            m_strPotFireBaseYearLinkedTableName = "FVS_POTFIRE_BASEYEAR";
+                            m_strPotFireStandardLinkedTableName = "FVS_POTFIRE_STANDARD";
+                            m_oPrePostDbFileItem_Collection = new DbFileItem_Collection();
+
+                            int intItemError = 0;
+                            string strItemError = "";
+
+                            m_intProgressStepTotalCount = 20;
+
+                            //make sure the list view item is selected and visible to the user
+                            frmMain.g_oDelegate.ExecuteControlMethodWithParam((System.Windows.Forms.Control)oLv, "EnsureVisible", new object[] { x });
+                            frmMain.g_oDelegate.SetListViewItemPropertyValue(oLv, x, "Selected", true);
+                            frmMain.g_oDelegate.SetListViewItemPropertyValue(oLv, x, "Focused", true);
+
+                            this.m_oLvAlternateColors.m_oRowCollection.Item(x).m_oColumnCollection.Item(COL_RUNSTATUS).UpdateColumn = false;
+                            frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "BackColor", Color.DarkGoldenrod);
+                            frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "ForeColor", Color.White);
+                            frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "Processing");
+
+                            //get the variant
+                            strVariant = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_VARIANT, "Text", false);
+                            strVariant = strVariant.Trim();
+
+                            //get the package and treatments
+                            strPackage = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_PACKAGE, "Text", false);
+                            strPackage = strPackage.Trim();
+
+                            //find the package item in the package collection
+                            for (y = 0; y <= this.m_oRxPackageItem_Collection.Count - 1; y++)
+                            {
+                                if (this.m_oRxPackageItem_Collection.Item(y).RxPackageId.Trim() == strPackage.Trim())
+                                    break;
+                            }
+                            if (y <= m_oRxPackageItem_Collection.Count - 1)
+                            {
+                                this.m_oRxPackageItem = new RxPackageItem();
+                                m_oRxPackageItem.CopyProperties(m_oRxPackageItem_Collection.Item(y), m_oRxPackageItem);
+                            }
+                            else
+                            {
+                                this.m_oRxPackageItem = null;
+                            }
+                            //get the list of treatment cycle year fields to reference for this package
+                            this.m_strRxCycleList = "";
+                            if (m_oRxPackageItem.SimulationYear1Rx.Trim().Length > 0 && m_oRxPackageItem.SimulationYear1Rx.Trim() != "000") this.m_strRxCycleList = "1,";
+                            if (m_oRxPackageItem.SimulationYear2Rx.Trim().Length > 0 && m_oRxPackageItem.SimulationYear2Rx.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "2,";
+                            if (m_oRxPackageItem.SimulationYear3Rx.Trim().Length > 0 && m_oRxPackageItem.SimulationYear3Rx.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "3,";
+                            if (m_oRxPackageItem.SimulationYear4Rx.Trim().Length > 0 && m_oRxPackageItem.SimulationYear4Rx.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "4,";
+
+                            if (this.m_strRxCycleList.Trim().Length > 0)
+                                this.m_strRxCycleList = this.m_strRxCycleList.Substring(0, this.m_strRxCycleList.Length - 1);
+
+                            this.m_strRxCycleArray = frmMain.g_oUtils.ConvertListToArray(this.m_strRxCycleList, ",");
+
+                            //see if this is a different variant
+                            //only update the pre-treatment tables when the variant changes
+                            if (strVariant.Trim().ToUpper() != strCurVariant.Trim().ToUpper())
+                            {
+                                bUpdateCondTable = true;
+                                strCurVariant = strVariant;
+                            }
+
+                            if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                                this.WriteText(m_strDebugFile, "strOutDirAndFile=" + m_strFvsOutDb + "  \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+
+                            frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1, "Processing " + m_strOutMDBFile + "...Stand By");
+                            //
+                            //FVSOUT_P000-000-000-000-000_BIOSUM.ACCDB
+                            //
+                            strAuditDbFile = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}{Tables.FVS.DefaultFVSAuditsDbFile}";
+
+                            //
+                            //CREATE PREPOST SEQNUM MATRIX TABLES
+                            //
+                            m_intProgressStepCurrentCount++;
+                            UpdateTherm(m_frmTherm.progressBar1,
+                                         m_intProgressStepCurrentCount,
+                                         m_intProgressStepTotalCount);
+                            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Create links to audit db file");
+                            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
+                            if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                                this.WriteText(m_strDebugFile, "\r\nSTART:Create DAO Audit Table Links " + System.DateTime.Now.ToString() + "\r\n");
+
+
+                            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Create POTFIRE table");
+                            if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                                this.WriteText(m_strDebugFile, "\r\nSTART:Create POTFIRE tables " + System.DateTime.Now.ToString() + "\r\n");
+                            CreateSQLitePotFireTables(strAuditDbFile, m_strFvsOutDb, strVariant, strPackage);
+                            m_intProgressStepCurrentCount++;
+                            UpdateTherm(m_frmTherm.progressBar1,
+                                         m_intProgressStepCurrentCount,
+                                         m_intProgressStepTotalCount);
+                            if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                                this.WriteText(m_strDebugFile, "\r\nEND:Create POTFIRE tables " + System.DateTime.Now.ToString() + "\r\n");
+
+                            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Create PREPOST SeqNum Matrix Tables");
+                            if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                                this.WriteText(m_strDebugFile, "\r\nSTART:Create PrePostSeqNumMatrixTables " + System.DateTime.Now.ToString() + "\r\n");
+                            CreatePrePostSeqNumMatrixTables(strAuditDbFile, strPackage, false);
+                            if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                                this.WriteText(m_strDebugFile, "\r\nEND:Create PrePostSeqNumMatrixTables " + System.DateTime.Now.ToString() + "\r\n");
+                            m_intProgressStepCurrentCount++;
+                            UpdateTherm(m_frmTherm.progressBar1,
+                                         m_intProgressStepCurrentCount,
+                                         m_intProgressStepTotalCount);
+
+                            //create treelist DB if it does not exist
+                            m_oRxTools.CheckCutListDbExist();
+                            m_intProgressStepCurrentCount++;
+                            UpdateTherm(m_frmTherm.progressBar1,
+                                         m_intProgressStepTotalCount,
+                                         m_intProgressStepTotalCount);
+                            //
+                            //
+                            //DAO ROUTINES
+                            //
+                            //
+                            //CREATE PREPOST ACCDB AND AND LINKS
+                            //
+
+                            if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                                this.WriteText(m_strDebugFile, "\r\nSTART: Create PREPOST DbFile table links " + System.DateTime.Now.ToString() + "\r\n");
+                            RunAppend_CreatePREPOSTDbFileAndTableLinks(m_strFvsOutDb, strAuditDbFile, strVariant);
+                            if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                                this.WriteText(m_strDebugFile, "\r\nEND: Create PREPOST DbFile table links " + System.DateTime.Now.ToString() + "\r\n");
+
+                            intItemError = m_dao.m_intError;
+                            if (intItemError == 0)
+                            {
+                                if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                                    this.WriteText(m_strDebugFile, "\r\nSTART: Open PREPOST DbFile Connections " + System.DateTime.Now.ToString() + "\r\n");
+                                RunAppend_OpenDbConnections(m_oPrePostDbFileItem_Collection);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                                    this.WriteText(m_strDebugFile, "\r\nEND: Open PREPOST DbFile Connections " + System.DateTime.Now.ToString() + "\r\n");
+
+
+                            }
+                            //m_intProgressStepCurrentCount++;
+                            //UpdateTherm(m_frmTherm.progressBar1,
+                            //        m_intProgressStepCurrentCount,
+                            //        m_intProgressStepTotalCount);
+                            //intItemError = m_intError;
+
+
+
+
+
+                            intItemError = m_dao.m_intError;
+                            strItemError = m_dao.m_strError;
+
+
+
+
+                            //
+                            //SHOW FILE MONITORS
+                            //
+
+                            if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                                this.WriteText(m_strDebugFile, "checkpoint 6 \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+
+                            if (uc_filesize_monitor1.File.Trim().Length == 0)
+                            {
+                                uc_filesize_monitor1.BeginMonitoringFile(strPotFireBaseYrDbFile, 2000000000, "2GB");
+                                uc_filesize_monitor1.Information = "Base year potential fire table for variant " + strVariant;
+                            }
+
+                            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim());
+                            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
+
+                            //UpdateTherm(m_frmTherm.progressBar1,
+                            //             m_intProgressStepTotalCount,
+                            //             m_intProgressStepTotalCount);
+
+                            //
+                            //validation
+                            //
+                            if (intItemError == 0)
+                            {
+                                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim() + " Validate data");
+                                m_intProgressStepCurrentCount = 0;
+                                //RunAppend_Validation(x, strVariant, strPackage, strRx1, strRx2, strRx3, strRx4, false, ref intItemError, ref strItemError, ref intItemWarning, ref strItemWarning);
+                                if (intItemError == 0)
+                                {
+                                    intItemError = oAdo.m_intError;
+                                    strItemError = oAdo.m_strError;
+                                }
+
+
+                            }
+
+
+
+                            //UpdateTherm(m_frmTherm.progressBar1,
+                            //                m_intProgressStepTotalCount,
+                            //                m_intProgressStepTotalCount);
+
+                            System.Threading.Thread.Sleep(1000);
+
+                            m_intProgressStepCurrentCount = 0;
+                            //
+                            //Table Structure Checks And Edits
+                            //
+                            if (intItemError == 0)
+                            {
+
+                                m_intProgressStepCurrentCount = 0;
+                                RunAppend_UpdatePrePostTable(
+                                    strPackage, strVariant, strRx1, strRx2, strRx3, strRx4,
+                                    bUpdateCondTable, x,
+                                    ref intItemError, ref strItemError);
+
+
+
+                                if (intItemError == 0)
+                                {
+                                    intItemError = oAdo.m_intError;
+                                    strItemError = oAdo.m_strError;
+                                }
+
+
+                            }
+                            UpdateTherm(m_frmTherm.progressBar1,
+                                            m_intProgressStepTotalCount,
+                                            m_intProgressStepTotalCount);
+                            System.Threading.Thread.Sleep(1000);
+
+                            //
+                            //update FVSTree table
+                            //
+                            if (intItemError == 0)
+                            {
+                                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim() + " Update " + m_strFvsTreeTable + " table");
+                                //RunAppend_UpdateFVSTreeTable(strPackage, strVariant, strRx1, strRx2, strRx3, strRx4, m_strFvsTreeTable, ref intItemError, ref strItemError);
+
+                                if (intItemError == 0)
+                                {
+                                    intItemError = oAdo.m_intError;
+                                    strItemError = oAdo.m_strError;
+                                }
+
+                                // Only try to load if there is a cut list in the FVSOut.db
+                                if (FvsOutWithCutList())
+                                {
+                                    string strTreeTempDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
+                                    string strTreeListDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
+                                    //copy the production file to the temp folder which will be used as the work db file.
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                                        this.WriteText(m_strDebugFile, "\r\nSTART:Copy production file to work file: Source File Name:" + strTreeListDbFile + " Destination File Name:" + strTreeTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
+                                    System.IO.File.Copy(strTreeListDbFile, strTreeTempDbFile, true);
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                                        this.WriteText(m_strDebugFile, "\r\nEND:Copy production file to work file: Source File Name:" + strTreeListDbFile + " Destination File Name:" + strTreeTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
+                                    RunAppend_UpdateFVSTreeTables(strPackage, strVariant, strRx1, strRx2, strRx3, strRx4, strTreeTempDbFile, ref intItemError, ref strItemError);
+                                    //copy the work db file over the production file
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                                        this.WriteText(m_strDebugFile, "\r\nSTART:Copy work file to production file: Source File Name:" + strTreeTempDbFile + " Destination File Name:" + strTreeListDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
+                                    System.IO.File.Copy(strTreeTempDbFile, strTreeListDbFile, true);
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                                        this.WriteText(m_strDebugFile, "\r\nEND:Copy work file to production file: Source File Name:" + strTreeTempDbFile + " Destination File Name:" + strTreeListDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
+
+                                }
+                                UpdateTherm(m_frmTherm.progressBar1,
+                                                m_intProgressStepTotalCount,
+                                                m_intProgressStepTotalCount);
+                                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Finalizing updates");
+                                frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
+                                System.Threading.Thread.Sleep(1000);
+                            }
+
+                            //
+                            //clean up for this list item
+                            //
+                            if (intItemError == 0)
+                            {
+                                ado_data_access oAdoTemp = new ado_data_access();
+                                oAdoTemp.OpenConnection(oAdoTemp.getMDBConnString(m_strFvsOutDb, "", ""));
+                                oAdoTemp.m_strSQL = $@"UPDATE FVS_CASES SET {m_colBioSumAppend} ='Y'";
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdoTemp.m_strSQL + "\r\n");
+                                oAdoTemp.SqlNonQuery(oAdoTemp.m_OleDbConnection, oAdoTemp.m_strSQL);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                oAdoTemp.CloseConnection(oAdoTemp.m_OleDbConnection);
+                                frmMain.g_oDelegate.SetListViewTextValue(
+                                    oLv, x, COL_CHECKBOX, Convert.ToString(frmMain.g_oDelegate.GetListViewTextValue(oLv, x, COL_CHECKBOX, false).Replace("a", "")));
+                                frmMain.g_oDelegate.SetListViewTextValue(
+                                    oLv, x, COL_CHECKBOX, Convert.ToString(frmMain.g_oDelegate.GetListViewTextValue(oLv, x, COL_CHECKBOX, false).Replace("p", "")));
+                            }
+                            else
+                            {
+                                //variant+package processing
+                                //if an error for the variant+package combination than delete
+                                //all records with this combination
+                                RunAppend_DeleteVariantRxPackageFromPrePostTables(strVariant, strPackage);
+                                //variant only processing
+                                //look to see if the next item in the list is the current variant, if not,
+                                //check if any post-treatment records with the current variant, if not,
+                                //delete the variant from the pre-treatment tables
+                                //if (!bGoodVariant) DeleteVariantFromPreTables(oAdo,oAdo.m_OleDbConnection,x,strSourceTableArray,strVariant);
+
+                            }
+                            //close the ado connection in order to use dao to delete table links
+
+                            //oAdo.CloseConnection(oAdo.m_OleDbConnection);
+
+                            RunAppend_CloseDbConnections(m_oPrePostDbFileItem_Collection);
+
+                            UpdateTherm(m_frmTherm.progressBar1,
+                                           m_intProgressStepTotalCount,
+                                           m_intProgressStepTotalCount);
+
+                            System.Threading.Thread.Sleep(1000);
+
+                            //compact and repair
+                            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Compact and Repair");
+                            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
+                            System.Threading.Thread.Sleep(5000);
+                            m_dao.DisplayErrors = false;
+                            for (y = 0; y <= m_oPrePostDbFileItem_Collection.Count - 1; y++)
+                            {
+                                if (m_oPrePostDbFileItem_Collection.Item(y).DbFileName.Trim().Length > 0)
+                                {
+                                    if (m_oPrePostDbFileItem_Collection.Item(y).Connection != null &&
+                                        m_oPrePostDbFileItem_Collection.Item(y).Connection.State != ConnectionState.Closed)
+                                    {
+                                        m_ado.CloseConnection(m_oPrePostDbFileItem_Collection.Item(y).Connection);
+                                        System.Threading.Thread.Sleep(5000);
+                                    }
+
+                                    m_dao.CompactMDB(m_oPrePostDbFileItem_Collection.Item(y).FullPath.Trim());
+
+
+                                    m_dao.m_intError = 0;
+                                    m_dao.m_strError = "";
+
+                                }
+                            }
+                            m_dao.DisplayErrors = true;
+                            System.Threading.Thread.Sleep(5000);
+
+                            if (intItemError == 0)
+                            {
+                                intItemError = m_dao.m_intError;
+                                strItemError = m_dao.m_strError;
+                            }
+
+                            if (intItemError == 0)
+                            {
+                                frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "BackColor", Color.DarkGreen);
+                                frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "Completed");
+                            }
+                            else if (intItemError != 0)
+                            {
+                                m_intError = intItemError;
+                                frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "BackColor", Color.Red);
+                                frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "ERROR:" + strItemError);
+                                //MessageBox.Show("ERROR:" + strItemError,"FIA Biosum");
+
+                            }
+                            m_intProgressOverallCurrentCount++;
+                            UpdateTherm(m_frmTherm.progressBar2,
+                                    m_intProgressOverallCurrentCount,
+                                    m_intProgressOverallTotalCount);
+
+
+
+
+
+
+
+                        }
+
+                    }
+                }
+
+                UpdateTherm(m_frmTherm.progressBar1,
+                           m_intProgressStepTotalCount,
+                           m_intProgressStepTotalCount);
+                UpdateTherm(m_frmTherm.progressBar2,
+                           m_intProgressOverallTotalCount,
+                          m_intProgressOverallTotalCount);
+                System.Threading.Thread.Sleep(2000);
+                if (m_bDebug)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "*****END*****" + System.DateTime.Now.ToString() + "\r\n");
+                this.FVSRecordsFinished();
+            }
+            catch (System.Threading.ThreadInterruptedException err)
+            {
+
+                MessageBox.Show("Threading Interruption Error " + err.Message.ToString());
+            }
+            catch (System.Threading.ThreadAbortException err)
+            {
+                this.ThreadCleanUp();
+
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("!!Error!! \n" +
+                    "Module - uc_fvs_output:RunAppend_Main  \n" +
+                    "Err Msg - " + err.Message.ToString().Trim(),
+                    "FVS Biosum", System.Windows.Forms.MessageBoxButtons.OK,
+                    System.Windows.Forms.MessageBoxIcon.Exclamation);
+                this.m_intError = -1;
+            }
+            frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1, "Ready");
+
+            CleanupThread();
+
+            frmMain.g_oDelegate.m_oEventThreadStopped.Set();
+            this.Invoke(frmMain.g_oDelegate.m_oDelegateThreadFinished);
+
         }
     }
 }
