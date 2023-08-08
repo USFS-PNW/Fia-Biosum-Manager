@@ -539,50 +539,68 @@ namespace FIA_Biosum_Manager
 
                 return strSQL;
             }
-            static public string[] FVSOutputTable_SQlitePrePostPotFireBaseYearSQL(string p_strPotFireBaseYearTable, string p_strPotFireTable, string p_strWorkTableName,
-                string p_strRunTitle)
+            static public string[] FVSOutputTable_SQlitePrePostPotFireBaseYearStep1SQL(string p_strPotFireTable, string p_strWorkTableName,
+                string p_strBaseYrRunTitle, string p_strRunTitle)
             {
-                string[] strSQL = new string[9];
+                string[] strSQL = new string[4];
 
                 //create a baseyear table that contains only standid's that are in the standard table
-                strSQL[0] = "SELECT DISTINCT a.* " +
-                            "INTO tempBASEYEAR " +
-                            "FROM " + p_strPotFireBaseYearTable + " a " +
-                            "INNER JOIN " + p_strPotFireTable + " b ON a.standid=b.standid";
+                //strSQL[0] = "SELECT DISTINCT a.* " +
+                //            "INTO tempBASEYEAR " +
+                //            "FROM " + p_strPotFireBaseYearTable + " a " +
+                //            "INNER JOIN " + p_strPotFireTable + " b ON a.standid=b.standid";
+
+                strSQL[0] = $@"CREATE TABLE tempBASEYEAR AS SELECT p.*
+                    from {p_strPotFireTable} p, fvs_cases c
+                    where p.caseid = c.caseid and c.runTitle = '{p_strBaseYrRunTitle}' and exists 
+                    (select * from {p_strPotFireTable} p1, fvs_cases c1 where p.standid = p1.standid 
+                    and c1.CaseID = p1.CaseID and c1.RunTitle = '{p_strRunTitle}')";
 
                 //get the potfire base year records into baseyear temp table
-                strSQL[1] = "SELECT 'Y' AS BASEYEAR_YN,a.* " +
-                          "INTO BASEYEAR " +
-                          "FROM tempBASEYEAR a," +
+                //strSQL[1] = "SELECT 'Y' AS BASEYEAR_YN,a.* " +
+                //          "INTO BASEYEAR " +
+                //          "FROM tempBASEYEAR a," +
+                //            "(SELECT STANDID, MIN([YEAR]) AS BASEYEAR, 'Y' AS BASEYEAR_YN " +
+                //             "FROM tempBASEYEAR " +
+                //            "GROUP BY STANDID) b " +
+                //         "WHERE a.standid = b.standid AND a.year=b.baseyear";
+                strSQL[1] = "CREATE TABLE BASEYEAR AS " +
+                            "SELECT 'Y' AS BASEYEAR_YN,a.* FROM tempBASEYEAR a," +
                             "(SELECT STANDID, MIN([YEAR]) AS BASEYEAR, 'Y' AS BASEYEAR_YN " +
-                             "FROM tempBASEYEAR " +
+                            "FROM tempBASEYEAR " +
                             "GROUP BY STANDID) b " +
-                         "WHERE a.standid = b.standid AND a.year=b.baseyear";
+                            "WHERE a.standid = b.standid AND a.year=b.baseyear";
 
                 //get fvs_potfire  records into nonbaseyear temp table and increment the year by 1
-                strSQL[2] = "SELECT 'N' AS BASEYEAR_YN,(a.[YEAR] + 1) AS [NEWYEAR], a.* " +
-                            "INTO NONBASEYEAR " +
-                            "FROM " + p_strPotFireTable + " a ";
+                //strSQL[2] = "SELECT 'N' AS BASEYEAR_YN,(a.[YEAR] + 1) AS [NEWYEAR], a.* " +
+                //            "INTO NONBASEYEAR " +
+                //            "FROM " + p_strPotFireTable + " a ";
+                strSQL[2] = $@"CREATE TABLE NONBASEYEAR AS SELECT 'N' AS BASEYEAR_YN,(a.[YEAR] + 1) AS [NEWYEAR], a.* 
+                            FROM {p_strPotFireTable} a,  fvs_cases c where a.caseid = c.caseid and c.runTitle = '{p_strRunTitle}'";
 
                 //update the year column to the newyear from the previous step
                 strSQL[3] = "UPDATE NONBASEYEAR SET [YEAR]=NEWYEAR";
 
-                //drop the newyear column
-                strSQL[4] = "ALTER TABLE NONBASEYEAR DROP COLUMN NEWYEAR";
+                return strSQL;
+            }
+            static public string[] FVSOutputTable_SQlitePrePostPotFireBaseYearStep2SQL(string p_strWorkTableName,
+                string p_strFields)
+            {
+                string[] strSQL = new string[5];
 
-                strSQL[5] = "SELECT * INTO " + p_strWorkTableName + " FROM BASEYEAR";
+                strSQL[0] = $@"CREATE TABLE {p_strWorkTableName} AS SELECT {p_strFields} FROM BASEYEAR";
 
-                strSQL[6] = "INSERT INTO " + p_strWorkTableName + " SELECT * FROM NONBASEYEAR";
+                strSQL[1] = $@"INSERT INTO {p_strWorkTableName} SELECT {p_strFields} FROM NONBASEYEAR";
 
-                strSQL[7] = "DROP TABLE NONBASEYEAR";
+                strSQL[2] = "DROP TABLE NONBASEYEAR";
 
-                strSQL[8] = "DROP TABLE BASEYEAR";
+                strSQL[3] = "DROP TABLE BASEYEAR";
 
-                strSQL[8] = "DROP TABLE tempBASEYEAR";
+                strSQL[4] = "DROP TABLE tempBASEYEAR";
 
                 return strSQL;
             }
-            static public string[] FVSOutputTable_PrePostPotFireBaseYearIDColumnSQL(string p_strPotFireBaseYearTable, string p_strPotFireTable, string p_strWorkTableName)
+                static public string[] FVSOutputTable_PrePostPotFireBaseYearIDColumnSQL(string p_strPotFireBaseYearTable, string p_strPotFireTable, string p_strWorkTableName)
             {
                 string[] strSQL = new string[12];
 

@@ -93,9 +93,7 @@ namespace FIA_Biosum_Manager
         private string m_missingFvsOutDb = "This project has no valid /fvs/data/FVSOut.db. Multiple FVS Out functions will not work! Please use FVS to generate an /fvs/data/FVSOut.db file.";
 
         //POTFIRE BASE YEAR
-        private string m_strOutPotFireBaseYearMDBFile = "";
-        private string m_strPotFireBaseYearFile = "";
-        private string m_strPotFireStandardFile = "";
+        private string m_strPotFireTable = "FVS_POTFIRE_TEMP";
         private string m_strPotFireBaseYearLinkedTableName = "FVS_POTFIRE_BASEYEAR";
         private string m_strPotFireStandardLinkedTableName = "FVS_POTFIRE_STANDARD";
         private bool m_bPotFireBaseYearTableExist = true;
@@ -6067,12 +6065,15 @@ namespace FIA_Biosum_Manager
         }
         /// <summary>
         /// Create the FVS_POTFIRE table. If the configuration includes baseyear than combine the baseyear POTFIRE table to the 
-        /// standard POTFIRE table.  If the baseyear POTFIRE table is not used then just use the standard POTFIRE table. It is 
-        /// assumed that the standard FVS_POTFIRE table link already exists as a link in the p_strDbFile when this routine is called.
+        /// standard POTFIRE table.  If the baseyear POTFIRE table is not used then just use the standard POTFIRE table. Output
+        /// is written to FVS_POTFIRE_TEMP table in AUDITS.DB
         /// </summary>
-        /// <param name="p_strDbFile">The FVSOUT_P000-000-000-000_BIOSUM.ACCDB or any accdb file</param>
+        /// <param name="p_strAuditDbFile">Audits.db file that contains audit results</param>
+        /// <param name="p_strDbFile">The FVSOut.db file</param>
         /// <param name="p_strVariant">FVS variant</param>
-        private void CreateSQLitePotFireTables(string p_strAuditDbFile, string p_strFVSOutDbFile, string p_strVariant, string p_strRxPackageId)
+        /// <param name="p_strRxPackage">RxPackage</param>
+
+        private void CreateSQLitePotFireTables(string p_strAuditDbFile, string p_strFVSOutDbFile, string p_strFvsVariant, string p_strRxPackage)
         {
 
             if (m_bDebug && frmMain.g_intDebugLevel > 1)
@@ -6082,19 +6083,18 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
             int x;
-            string strPotFireBaseYearFile = "";
             string strPotFireTable = "";
-            ado_data_access oAdo;
-            dao_data_access oDao = new dao_data_access();
 
             //
             //CHECK TO SEE IF THE BASEYEAR FILE AND TABLE EXIST
             //RunTitle: FVSOUT_SO_POTFIRE_BaseYr
             //
-            strPotFireTable = GetPotfireTableName(p_strFVSOutDbFile, p_strVariant);
 
+            string strRunTitle = $@"FVSOUT_{p_strFvsVariant}{m_oRxPackageItem.RunTitleSuffix}";
+            string strBaseYrRunTitle = $@"FVSOUT_{p_strFvsVariant}_POTFIRE_BaseYr";
+            strPotFireTable = GetPotfireTableName(p_strFVSOutDbFile, p_strFvsVariant);
             //get the PREPOST SeqNum configuration for the POTFIRE table
-            GetPrePostSeqNumConfiguration(strPotFireTable, p_strRxPackageId);
+            GetPrePostSeqNumConfiguration(strPotFireTable, p_strRxPackage);
             //
             //CHECK TO SEE IF THE CONFIGURATION INCLUDES BASEYEAR
             //
@@ -6108,8 +6108,8 @@ namespace FIA_Biosum_Manager
                     conn.Open();
                     if (SQLite.m_intError == 0)
                     {
-                        if (SQLite.TableExist(conn, "FVS_POTFIRE_TEMP"))
-                            SQLite.SqlNonQuery(conn, "DROP TABLE FVS_POTFIRE_TEMP");
+                        if (SQLite.TableExist(conn, m_strPotFireTable))
+                            SQLite.SqlNonQuery(conn, "DROP TABLE " + m_strPotFireTable);
 
                         // Attach FVSOut.db
                         SQLite.m_strSQL = $@"ATTACH DATABASE '{p_strFVSOutDbFile}' AS FVSOUT";
@@ -6117,7 +6117,7 @@ namespace FIA_Biosum_Manager
                         //@ToDo: Do we need to this? This is the path that executes of BaseYear is not used
                         // Historically this overwrote the contents of fvs_potfire with fvs_potfire temp in the output db
                         // For now I'm going to try to use fvs_potfire_temp if base year is used. Don't want to corrupt fvs_potfire in FVSOut.db
-                        SQLite.m_strSQL = $@"CREATE TABLE FVS_POTFIRE_TEMP AS SELECT * FROM {strPotFireTable}";
+                        SQLite.m_strSQL = $@"CREATE TABLE {m_strPotFireTable} AS SELECT * FROM {strPotFireTable}";
                         SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                     }
                 }
@@ -6129,42 +6129,54 @@ namespace FIA_Biosum_Manager
                 conn.Open();
                 if (SQLite.m_intError == 0)
                 {
+                    // Attach FVSOut.db
+                    SQLite.m_strSQL = $@"ATTACH DATABASE '{p_strFVSOutDbFile}' AS FVSOUT";
+                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                     if (SQLite.TableExist(conn, "tempBASEYEAR")) SQLite.SqlNonQuery(conn, "DROP TABLE TEMPBASEYEAR");
                     if (SQLite.TableExist(conn, "BASEYEAR")) SQLite.SqlNonQuery(conn, "DROP TABLE BASEYEAR");
                     if (SQLite.TableExist(conn, "NONBASEYEAR")) SQLite.SqlNonQuery(conn, "DROP TABLE NONBASEYEAR");
-                    string[] strSQL = Queries.FVS.FVSOutputTable_PrePostPotFireBaseYearSQL(
-                        m_strPotFireBaseYearLinkedTableName,
-                        m_strPotFireStandardLinkedTableName,
-                        "FVS_POTFIRE");
+                    if (SQLite.TableExist(conn, m_strPotFireTable)) SQLite.SqlNonQuery(conn, "DROP TABLE " + m_strPotFireTable);
+                    string[] strSQL = Queries.FVS.FVSOutputTable_SQlitePrePostPotFireBaseYearStep1SQL(strPotFireTable,
+                        m_strPotFireTable, strBaseYrRunTitle, strRunTitle);
 
                     for (x = 0; x <= strSQL.Length - 1; x++)
                     {
                         if (m_bDebug && frmMain.g_intDebugLevel > 2)
                             this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL[x] + "\r\n");
-                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL[x]);
+                        SQLite.SqlNonQuery(conn, strSQL[x]);
                         if (m_bDebug && frmMain.g_intDebugLevel > 2)
                             this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-                        if (oAdo.m_intError != 0) break;
+                        if (SQLite.m_intError != 0) break;
+                    }
+
+                    // returns a comma-separated string
+                    string strSourceFieldNames = SQLite.getFieldNames(conn, "SELECT * FROM NONBASEYEAR");
+                    string[] arrFieldNames = frmMain.g_oUtils.ConvertListToArray(strSourceFieldNames, ",");
+                    string[] arrRemoveFieldNames = new string[] { "NEWYEAR", "BASEYEAR_YN"};
+                    System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                    for (int i = 0; i < arrFieldNames.Length; i++)
+                    {
+                        string strField = arrFieldNames[i];
+                        if (!arrRemoveFieldNames.Contains(strField.ToUpper()))
+                        {
+                            sb.Append(strField);
+                            sb.Append(",");
+                        }
+                    }
+                    string strTargetFieldNames = sb.ToString();
+                    if (strTargetFieldNames.Trim().Length > 0) strTargetFieldNames = strTargetFieldNames.Substring(0, strTargetFieldNames.Length - 1);
+                    strSQL = Queries.FVS.FVSOutputTable_SQlitePrePostPotFireBaseYearStep2SQL(m_strPotFireTable,strTargetFieldNames);
+                    for (x = 0; x <= strSQL.Length - 1; x++)
+                    {
+                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL[x] + "\r\n");
+                        SQLite.SqlNonQuery(conn, strSQL[x]);
+                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                        if (SQLite.m_intError != 0) break;
                     }
                 }
             }
-                if (oAdo.m_intError == 0)
-            {
-
-                if (oAdo.m_intError == 0)
-                {
-                    //drop the baseyear_yn column
-                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\nALTER TABLE FVS_POTFIRE DROP COLUMN baseyear_yn\r\n");
-                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "ALTER TABLE FVS_POTFIRE DROP COLUMN baseyear_yn");
-                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-                    if (oAdo.TableExist(oAdo.m_OleDbConnection, m_strPotFireStandardLinkedTableName)) oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + m_strPotFireStandardLinkedTableName);
-                    if (oAdo.TableExist(oAdo.m_OleDbConnection, m_strPotFireBaseYearLinkedTableName)) oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + m_strPotFireBaseYearLinkedTableName);
-                }
-                oAdo.CloseConnection(oAdo.m_OleDbConnection);
-            }
-            oAdo = null;
         }
 
         private string GetPotfireTableName(string p_strFVSOutDbFile, string p_strVariant)
