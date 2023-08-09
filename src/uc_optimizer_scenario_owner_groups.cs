@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Windows.Forms;
+using SQLite.ADO;
 
 namespace FIA_Biosum_Manager
 {
@@ -325,6 +326,79 @@ namespace FIA_Biosum_Manager
 
             this.m_OleDbConnectionScenario.Close();
 			p_ado=null;
+			return 0;
+		}
+		public int savevaluessqlite()
+		{
+			int x = 0;
+
+			//const int LANDOWNER_FORESTSERVICE = 10;
+			//const int LANDOWNER_OTHERFEDERAL = 20;
+			//const int LANDOWNER_STATELOCAL = 30;
+			//const int LANDOWNER_PRIVATE = 40;
+
+			//string str="";
+			string strSQL = "";
+			string strConn = "";
+
+
+			DataMgr oDataMgr = new DataMgr();
+			string strScenarioId = ((frmOptimizerScenario)this.ParentForm).uc_scenario1.txtScenarioId.Text.Trim().ToLower();
+			string strScenarioDB =
+				((frmMain)this.ParentForm.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\" +
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+
+			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
+            {
+				conn.Open();
+				if (oDataMgr.m_intError != 0)
+				{
+					x = oDataMgr.m_intError;
+					oDataMgr = null;
+					return x;
+				}
+
+				//delete all records from the scenario wind speed class table
+				strSQL = "DELETE FROM scenario_land_owner_groups WHERE " +
+					" scenario_id = '" + strScenarioId + "';";
+
+				oDataMgr.SqlNonQuery(conn, strSQL);
+				if (oDataMgr.m_intError < 0)
+				{
+					conn.Close();
+					x = oDataMgr.m_intError;
+					oDataMgr = null;
+					return x;
+				}
+
+				if (this.chkOwnGrp10.Checked == true)
+				{
+					oDataMgr.m_strSQL = "INSERT INTO scenario_land_owner_groups (scenario_id,owngrpcd)" +
+						" VALUES ('" + strScenarioId + "',10);";
+					oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+				}
+
+				if (this.chkOwnGrp20.Checked == true)
+				{
+					oDataMgr.m_strSQL = "INSERT INTO scenario_land_owner_groups (scenario_id,owngrpcd)" +
+						" VALUES ('" + strScenarioId + "',20);";
+					oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+				}
+
+				if (this.chkOwnGrp30.Checked == true)
+				{
+					oDataMgr.m_strSQL = "INSERT INTO scenario_land_owner_groups (scenario_id,owngrpcd)" +
+						" VALUES ('" + strScenarioId + "',30);";
+					oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+				}
+				if (this.chkOwnGrp40.Checked == true)
+				{
+					oDataMgr.m_strSQL = "INSERT INTO scenario_land_owner_groups (scenario_id,owngrpcd)" +
+						" VALUES ('" + strScenarioId + "',40);";
+					oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+				}
+				conn.Close();
+			}
 			return 0;
 		}
 		public int ValInput()

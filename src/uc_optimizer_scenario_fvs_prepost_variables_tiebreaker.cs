@@ -1538,11 +1538,169 @@ namespace FIA_Biosum_Manager
 			return 0;
 		}
 
-		
-		
+
+        public int savevaluessqlite()
+        {
+            int x = 0;
+            string strColumns = "";
+            string strValues = "";
+            DataMgr oDataMgr = new DataMgr();
+            string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
+            string strScenarioDB =
+                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
+            {
+                conn.Open();
+                if (oDataMgr.m_intError == 0)
+                {
+                    //delete all records from the scenario fvs variables table
+                    oDataMgr.m_strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName + " " +
+                                    "WHERE LOWER(TRIM(scenario_id)) = '" + strScenarioId + "';";
+
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    if (oDataMgr.m_intError < 0)
+                    {
+                        conn.Close();
+                        x = oDataMgr.m_intError;
+                        oDataMgr = null;
+                        return x;
+                    }
+                    strColumns = "scenario_id,rxcycle,tiebreaker_method,fvs_variable_name,value_source,max_yn,min_yn,checked_yn";
+                    //
+                    //FVS VARIABLE
+                    //
+                    //scenario id
+                    strValues = "'" + strScenarioId + "','1',";
+                    //method
+                    strValues = strValues + "'" + this.lvFVSVariablesTieBreakerValues.Items[0].SubItems[COLUMN_METHOD].Text.Trim() + "',";
+                    this.m_oSavTieBreakerCollection.Item(0).strMethod = lvFVSVariablesTieBreakerValues.Items[0].SubItems[COLUMN_METHOD].Text.Trim();
+                    //fvs variable name
+                    strValues = strValues + "'" + this.lvFVSVariablesTieBreakerValues.Items[0].SubItems[COLUMN_FVSVARIABLE].Text.Trim() + "',";
+                    this.m_oSavTieBreakerCollection.Item(0).strFVSVariableName = lvFVSVariablesTieBreakerValues.Items[0].SubItems[COLUMN_FVSVARIABLE].Text.Trim();
+                    //value source
+                    strValues = strValues + "'" + this.lvFVSVariablesTieBreakerValues.Items[0].SubItems[COLUMN_VALUESOURCE].Text.Trim() + "',";
+                    m_oSavTieBreakerCollection.Item(0).strValueSource = lvFVSVariablesTieBreakerValues.Items[0].SubItems[COLUMN_VALUESOURCE].Text.Trim();
+                    //aggregate MAX or MIN
+                    if (this.lvFVSVariablesTieBreakerValues.Items[0].SubItems[COLUMN_MAXMIN].Text.Trim().ToUpper() == "MAX")
+                    {
+                        strValues = strValues + "'Y','N',";
+                        this.m_oSavTieBreakerCollection.Item(0).strMaxYN = "Y";
+                        this.m_oSavTieBreakerCollection.Item(0).strMinYN = "N";
+                    }
+                    else
+                    {
+                        strValues = strValues + "'N','Y',";
+                        this.m_oSavTieBreakerCollection.Item(0).strMaxYN = "N";
+                        this.m_oSavTieBreakerCollection.Item(0).strMinYN = "Y";
+                    }
+                    //checked
+                    if (this.lvFVSVariablesTieBreakerValues.Items[0].Checked)
+                    {
+                        strValues = strValues + "'Y'";
+                        this.m_oSavTieBreakerCollection.Item(0).bSelected = true;
+                    }
+                    else
+                    {
+                        strValues = strValues + "'N'";
+                        this.m_oSavTieBreakerCollection.Item(0).bSelected = false;
+                    }
+
+                    oDataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName + " " +
+                                    "(" + strColumns + ") VALUES " +
+                                    "(" + strValues + ")";
+
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+                    //
+                    //ECONOMIC VARIABLE
+                    //
+                    //scenario id
+                    strValues = "'" + strScenarioId + "','1',";
+                    //method
+                    strValues = strValues + "'" + this.lvFVSVariablesTieBreakerValues.Items[1].SubItems[COLUMN_METHOD].Text.Trim() + "',";
+                    this.m_oSavTieBreakerCollection.Item(1).strMethod = lvFVSVariablesTieBreakerValues.Items[1].SubItems[COLUMN_METHOD].Text.Trim();
+                    //fvs variable name
+                    strValues = strValues + "'" + this.lvFVSVariablesTieBreakerValues.Items[1].SubItems[COLUMN_FVSVARIABLE].Text.Trim() + "',";
+                    this.m_oSavTieBreakerCollection.Item(1).strFVSVariableName = lvFVSVariablesTieBreakerValues.Items[1].SubItems[COLUMN_FVSVARIABLE].Text.Trim();
+                    //value source
+                    strValues = strValues + "'" + this.lvFVSVariablesTieBreakerValues.Items[1].SubItems[COLUMN_VALUESOURCE].Text.Trim() + "',";
+                    m_oSavTieBreakerCollection.Item(1).strValueSource = lvFVSVariablesTieBreakerValues.Items[1].SubItems[COLUMN_VALUESOURCE].Text.Trim();
+                    //aggregate MAX or MIN
+                    if (this.lvFVSVariablesTieBreakerValues.Items[1].SubItems[COLUMN_MAXMIN].Text.Trim().ToUpper() == "MAX")
+                    {
+                        strValues = strValues + "'Y','N',";
+                        this.m_oSavTieBreakerCollection.Item(1).strMaxYN = "Y";
+                        this.m_oSavTieBreakerCollection.Item(1).strMinYN = "N";
+                    }
+                    else
+                    {
+                        strValues = strValues + "'N','Y',";
+                        this.m_oSavTieBreakerCollection.Item(1).strMaxYN = "N";
+                        this.m_oSavTieBreakerCollection.Item(1).strMinYN = "Y";
+                    }
+                    //checked
+                    if (this.lvFVSVariablesTieBreakerValues.Items[1].Checked)
+                    {
+                        strValues = strValues + "'Y'";
+                        this.m_oSavTieBreakerCollection.Item(1).bSelected = true;
+                    }
+                    else
+                    {
+                        strValues = strValues + "'N'";
+                        this.m_oSavTieBreakerCollection.Item(1).bSelected = false;
+                    }
+
+                    oDataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName + " " +
+                                    "(" + strColumns + ") VALUES " +
+                                    "(" + strValues + ")";
+
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+                    //
+                    //LAST TIE-BREAK RANK
+                    //
+                    //scenario id
+                    strValues = "'" + strScenarioId + "','1',";
+                    //method
+                    strValues = strValues + "'" + this.lvFVSVariablesTieBreakerValues.Items[2].SubItems[COLUMN_METHOD].Text.Trim() + "',";
+                    this.m_oSavTieBreakerCollection.Item(2).strMethod = lvFVSVariablesTieBreakerValues.Items[2].SubItems[COLUMN_METHOD].Text.Trim();
+                    //fvs variable name
+                    strValues = strValues + "'" + this.lvFVSVariablesTieBreakerValues.Items[2].SubItems[COLUMN_FVSVARIABLE].Text.Trim() + "',";
+                    this.m_oSavTieBreakerCollection.Item(2).strFVSVariableName = lvFVSVariablesTieBreakerValues.Items[2].SubItems[COLUMN_FVSVARIABLE].Text.Trim();
+                    //value source
+                    strValues = strValues + "'" + this.lvFVSVariablesTieBreakerValues.Items[2].SubItems[COLUMN_VALUESOURCE].Text.Trim() + "',";
+                    m_oSavTieBreakerCollection.Item(2).strValueSource = lvFVSVariablesTieBreakerValues.Items[2].SubItems[COLUMN_VALUESOURCE].Text.Trim();
+                    //aggregate MAX or MIN
+                    strValues = strValues + "'N','Y',";
+                    this.m_oSavTieBreakerCollection.Item(1).strMaxYN = "N";
+                    this.m_oSavTieBreakerCollection.Item(1).strMinYN = "Y";
+                    //checked
+                    if (this.lvFVSVariablesTieBreakerValues.Items[2].Checked)
+                    {
+                        strValues = strValues + "'Y'";
+                        this.m_oSavTieBreakerCollection.Item(2).bSelected = true;
+                    }
+                    else
+                    {
+                        strValues = strValues + "'N'";
+                        this.m_oSavTieBreakerCollection.Item(2).bSelected = false;
+                    }
+
+                    oDataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName + " " +
+                        "(" + strColumns + ") VALUES " +
+                        "(" + strValues + ")";
+
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+                conn.Close();
+            }
+            this.uc_scenario_last_tiebreak_rank1.savevalues();
+            return 0;
+        }
 
 
-		protected void NextButton(ref System.Windows.Forms.GroupBox p_oGb, ref System.Windows.Forms.Button p_oButton, string strButtonName)
+        protected void NextButton(ref System.Windows.Forms.GroupBox p_oGb, ref System.Windows.Forms.Button p_oButton, string strButtonName)
 		{
            p_oGb.Controls.Add(p_oButton);
 		   p_oButton.Left = p_oGb.Width - p_oButton.Width - 5;

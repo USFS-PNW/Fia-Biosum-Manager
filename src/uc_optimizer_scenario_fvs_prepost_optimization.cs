@@ -1780,7 +1780,107 @@ namespace FIA_Biosum_Manager
 			return 1;
 			
 		}
-		private void CreateListViewOptimizationRow()
+        public int savevaluessqlite()
+        {
+            int x;
+            string strValues = "";
+            string strColumns = "";
+            string strWhere = "";
+            DataMgr oDataMgr = new DataMgr();
+            string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
+            string strScenarioDB =
+                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
+            {
+                conn.Open();
+                if (oDataMgr.m_intError == 0)
+                {
+                    oDataMgr.m_strSQL = "SELECT COUNT(*) FROM scenario_fvs_variables_optimization WHERE " +
+                        " scenario_id = '" + strScenarioId + "' AND current_yn = 'Y';";
+                    if ((int)oDataMgr.getRecordCount(conn, oDataMgr.m_strSQL, "scenario_fvs_variables_optimization") > 0)
+                    {
+                        oDataMgr.m_strSQL = "UPDATE scenario_fvs_variables_optimization SET current_yn = 'N'" +
+                            " WHERE scenario_id = '" + strScenarioId + "' AND current_yn = 'Y';";
+                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    }
+
+                    if (oDataMgr.m_intError < 0)
+                    {
+                        conn.Close();
+                        x = oDataMgr.m_intError;
+                        oDataMgr = null;
+                        return x;
+                    }
+                    strColumns = "scenario_id,rxcycle,optimization_variable,fvs_variable_name,value_source,max_yn,min_yn,filter_enabled_yn,filter_operator,filter_value,checked_yn,current_yn,revenue_attribute";
+
+                    OptimizerScenarioItem.OptimizationVariableItem_Collection oOptimizationVariableItemCollection =
+                        this.ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem_Collection.Item(0).m_oOptimizationVariableItem_Collection;
+                    for (x = 0; x <= oOptimizationVariableItemCollection.Count - 1; x++)
+                    {
+                        strValues = "'" + strScenarioId.Trim() + "','1'";
+                        strWhere = "TRIM(scenario_id)='" + strScenarioId.Trim() + "' AND rxcycle='1' ";
+                        strValues = strValues + ",'" + oOptimizationVariableItemCollection.Item(x).strOptimizedVariable + "'";
+                        strWhere = strWhere + " AND UPPER(TRIM(optimization_variable))='" + oOptimizationVariableItemCollection.Item(x).strOptimizedVariable.Trim().ToUpper() + "'";
+                        strValues = strValues + ",'" + oOptimizationVariableItemCollection.Item(x).strFVSVariableName + "'";
+                        strWhere = strWhere + " AND UPPER(TRIM(fvs_variable_name))='" + oOptimizationVariableItemCollection.Item(x).strFVSVariableName.Trim().ToUpper() + "'";
+
+                        strValues = strValues + ",'" + oOptimizationVariableItemCollection.Item(x).strValueSource + "'";
+                        strWhere = strWhere + " AND UPPER(TRIM(value_source))='" + oOptimizationVariableItemCollection.Item(x).strValueSource.Trim().ToUpper() + "'";
+
+                        strValues = strValues + ",'" + oOptimizationVariableItemCollection.Item(x).strMaxYN + "'";
+                        strWhere = strWhere + " AND UPPER(TRIM(max_yn))='" + oOptimizationVariableItemCollection.Item(x).strMaxYN.Trim().ToUpper() + "'";
+                        strValues = strValues + ",'" + oOptimizationVariableItemCollection.Item(x).strMinYN + "'";
+                        strWhere = strWhere + " AND UPPER(TRIM(min_yn))='" + oOptimizationVariableItemCollection.Item(x).strMinYN.Trim().ToUpper() + "'";
+                        if (oOptimizationVariableItemCollection.Item(x).bUseFilter)
+                        {
+                            strValues = strValues + ",'Y'";
+                            strWhere = strWhere + " AND UPPER(TRIM(filter_enabled_yn))='Y'";
+                        }
+                        else
+                        {
+                            strValues = strValues + ",'N'";
+                            strWhere = strWhere + " AND UPPER(TRIM(filter_enabled_yn))='N'";
+                        }
+
+
+                        strValues = strValues + ",'" + oOptimizationVariableItemCollection.Item(x).strFilterOperator + "'";
+                        strWhere = strWhere + " AND UPPER(TRIM(filter_operator))='" + oOptimizationVariableItemCollection.Item(x).strFilterOperator.Trim().ToUpper() + "'";
+                        strValues = strValues + "," + oOptimizationVariableItemCollection.Item(x).dblFilterValue.ToString().Trim();
+                        strWhere = strWhere + " AND filter_value=" + oOptimizationVariableItemCollection.Item(x).dblFilterValue.ToString().Trim();
+                        if (oOptimizationVariableItemCollection.Item(x).bSelected)
+                            strValues = strValues + ",'Y'";
+                        else
+                            strValues = strValues + ",'N'";
+
+                        strValues = strValues + ",'Y'";
+                        if (!String.IsNullOrEmpty(oOptimizationVariableItemCollection.Item(x).strRevenueAttribute.Trim()))
+                        {
+                            strValues = strValues + ",'" + oOptimizationVariableItemCollection.Item(x).strRevenueAttribute.Trim() + "'";
+                        }
+                        else
+                        {
+                            strValues = strValues + ",''";
+                        }
+
+                        //delete duplicates
+                        oDataMgr.m_strSQL = "DELETE FROM scenario_fvs_variables_optimization WHERE " + strWhere;
+                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+
+
+
+                        oDataMgr.m_strSQL = "INSERT INTO scenario_fvs_variables_optimization " +
+                                "(" + strColumns + ") VALUES " +
+                                "(" + strValues + ")";
+                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    }
+                }
+                conn.Close();
+            }
+            return 1;
+        }
+        private void CreateListViewOptimizationRow()
 		{
 			this.lvOptimizationListValues.Items.Add(" ");
 			this.m_oLvRowColors.AddRow();

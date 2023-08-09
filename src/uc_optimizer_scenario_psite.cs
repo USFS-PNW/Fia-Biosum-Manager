@@ -908,6 +908,118 @@ namespace FIA_Biosum_Manager
 			
 			return x;
 		}
+		public int savevaluessqlite()
+		{
+			string strTranCd;
+			string strBioCd;
+			string strSelected;
+			string strName;
+			string strScenarioId;
+			string strPSiteId;
+			int x;
+
+			DataMgr oDataMgr = new DataMgr();
+			strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
+			string strScenarioDB =
+				frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+
+			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
+			{
+				conn.Open();
+				if (oDataMgr.m_intError != 0)
+				{
+					x = oDataMgr.m_intError;
+					oDataMgr = null;
+					return x;
+				}
+
+				//delete all records from the scenario psites table
+				oDataMgr.m_strSQL = "DELETE FROM scenario_psites WHERE " +
+					" scenario_id = '" + strScenarioId + "';";
+
+				oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+				if (oDataMgr.m_intError < 0)
+				{
+					conn.Close();
+					x = oDataMgr.m_intError;
+					oDataMgr = null;
+					return x;
+				}
+				for (x = 0; x <= this.lstPSites.Items.Count - 1; x++)
+				{
+					strTranCd = "";
+					strBioCd = "";
+					strSelected = "";
+					strName = "";
+					strScenarioId = "";
+					strPSiteId = "";
+
+					oDataMgr.m_strSQL = "INSERT INTO scenario_psites (scenario_id,psite_id,name,trancd,biocd,selected_yn)" +
+								   " VALUES ";
+
+					strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim();
+					strPSiteId = lstPSites.Items[x].SubItems[COLUMN_PSITEID].Text.Trim();
+					strName = lstPSites.Items[x].SubItems[COLUMN_PSITENAME].Text.Trim();
+					strName = oDataMgr.FixString(strName.Trim(), "'", "''");
+					if (lstPSites.Items[x].Checked == true)
+					{
+						strSelected = "Y";
+					}
+					else
+					{
+						strSelected = "N";
+					}
+					if (lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim() == "Processing Site - Road Access Only")
+					{
+						strTranCd = "1";
+					}
+					else
+					{
+						this.m_Combo = (System.Windows.Forms.ComboBox)this.lstPSites.GetEmbeddedControl(COLUMN_PSITEROADRAIL, x);
+						switch (m_Combo.SelectedIndex)
+						{
+							case 0:
+								strTranCd = "2";
+								break;
+							case 1:
+								strTranCd = "3";
+								break;
+							default:
+								strTranCd = "9";
+								break;
+						}
+					}
+					this.m_Combo = (System.Windows.Forms.ComboBox)this.lstPSites.GetEmbeddedControl(COLUMN_PSITEBIOPROCESSTYPE, x);
+					switch (m_Combo.SelectedIndex)
+					{
+						case 0:
+							strBioCd = "1";
+							break;
+						case 1:
+							strBioCd = "2";
+							break;
+						case 2:
+							strBioCd = "3";
+							break;
+						default:
+							strBioCd = "9";
+							break;
+					}
+					oDataMgr.m_strSQL = oDataMgr.m_strSQL + "('" + strScenarioId + "'," +
+														   strPSiteId + ",'" +
+														   strName + "'," +
+														   strTranCd + "," +
+														   strBioCd + ",'" +
+														   strSelected + "')";
+					oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+					if (oDataMgr.m_intError != 0) break;
+				}
+				x = oDataMgr.m_intError;
+				conn.Close();
+			}
+			return x;
+		}
 		public int val_psites()
 		{
 			if (this.lstPSites.CheckedItems.Count == 0)

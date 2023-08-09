@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Data;
 using System.Windows.Forms;
 using System.Text;
+using SQLite.ADO;
 
 namespace FIA_Biosum_Manager
 {
@@ -505,6 +506,146 @@ namespace FIA_Biosum_Manager
 			return 0;
 
 		
+		}
+		public int savevaluessqlite()
+		{
+			int x = 0;
+
+			string str = "";
+			string strSQL = "";
+			string strConn = "";
+			string strNewSQL = "";
+			System.Text.StringBuilder sb = new System.Text.StringBuilder();
+
+			if (this.FilterType == "PLOT")
+			{
+				if (this.m_strCurrentSQL.Trim().ToUpper() == this.txtCurrentSQL.Text.Trim().ToUpper())
+					return 0;
+
+				m_strScenarioTable = "scenario_plot_filter";
+			}
+			else
+			{
+				if (this.m_strCurrentSQL.Trim().ToUpper() == this.txtCurrentSQL.Text.Trim().ToUpper() &&
+					this.m_strCurrentYardDist.Trim() == this.txtYardDist.Text.Trim() &&
+					this.m_strCurrentYardDist2.Trim() == this.txtYardDist2.Text.Trim())
+					return 0;
+				m_strScenarioTable = "scenario_cond_filter";
+			}
+
+			DataMgr oDataMgr = new DataMgr();
+			string strScenarioId = this.ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.ScenarioId.Trim();
+			string strScenarioDB =
+				frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+
+			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
+            {
+				conn.Open();
+				if (oDataMgr.m_intError != 0)
+				{
+					x = oDataMgr.m_intError;
+					oDataMgr = null;
+					return x;
+				}
+
+
+				if (this.m_strCurrentSQL.Trim().ToUpper() != this.txtCurrentSQL.Text.Trim().ToUpper())
+				{
+					strNewSQL = oDataMgr.FixString(this.txtCurrentSQL.Text, "'", "''");
+
+
+
+					//delete any duplicates
+					oDataMgr.m_strSQL = "DELETE FROM " + this.m_strScenarioTable + " WHERE " +
+						" scenario_id='" + strScenarioId + "' AND " +
+						"TRIM(UPPER(sql_command)) = '" + strNewSQL.Trim().ToUpper() + "'";
+					oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+
+					oDataMgr.m_strSQL = "SELECT * FROM " + this.m_strScenarioTable + " WHERE " +
+						" scenario_id = '" + strScenarioId + "' AND current_yn = 'Y';";
+					oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
+
+					if (oDataMgr.m_intError == 0)
+					{
+						//update the current sql as NOT being current
+						if (oDataMgr.m_DataReader.HasRows)
+						{
+							oDataMgr.m_DataReader.Close();
+							oDataMgr.m_strSQL = "UPDATE " + this.m_strScenarioTable + " SET current_yn = 'N'" +
+								" WHERE scenario_id = '" + strScenarioId + "' AND current_yn = 'Y';";
+							oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+						}
+						else
+						{
+							oDataMgr.m_DataReader.Close();
+						}
+
+						for (x = 0; x <= this.m_intNumberOfOptimizerTablesLoadedIntoDatasets - 1; x++)
+						{
+							if (this.m_strOptimizerTables[x].Trim().Length > 0)
+								str = str + this.m_strOptimizerTables[x] + ",";
+						}
+						//remove the last comma
+						if (str.Trim().Length > 0) str = str.Substring(0, str.Length - 1);
+
+						//strNewSQL = p_ado.FixString(this.txtCurrentSQL.Text,"'","''");
+						sb.Append("INSERT INTO " + this.m_strScenarioTable + " (scenario_id,sql_command,current_yn,table_list) Values('");
+						sb.Append(strScenarioId);
+						sb.Append("','");
+						sb.Append(strNewSQL);
+						sb.Append("','Y','");
+						sb.Append(str);
+						sb.Append("');");
+						oDataMgr.SqlNonQuery(conn, sb.ToString());
+					}
+				}
+
+				if (this.FilterType == "COND")
+				{
+					if (this.m_strCurrentYardDist.Trim() != this.txtYardDist.Text.Trim() ||
+						this.m_strCurrentYardDist2.Trim() != this.txtYardDist2.Text.Trim())
+					{
+						//delete all records from the scenario wind speed class table
+						oDataMgr.m_strSQL = "DELETE FROM scenario_cond_filter_misc WHERE " +
+							" scenario_id = '" + strScenarioId + "';";
+
+						oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+						if (oDataMgr.m_intError < 0)
+						{
+							conn.Close();
+							x = oDataMgr.m_intError;
+							oDataMgr = null;
+							return x;
+						}
+						if (this.txtYardDist.Text.Trim().Length == 0)
+						{
+							this.txtYardDist.Text = "1524";
+						}
+						if (this.txtYardDist2.Text.Trim().Length == 0)
+						{
+							this.txtYardDist2.Text = "610";
+						}
+
+						oDataMgr.m_strSQL = "INSERT INTO scenario_cond_filter_misc (scenario_id,yard_dist,yard_dist2)" +
+							" VALUES ('" + strScenarioId + "'," +
+							this.txtYardDist.Text.Trim() + "," + this.txtYardDist2.Text.Trim() + ");";
+						oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+						if (oDataMgr.m_intError < 0)
+						{
+							conn.Close();
+							x = oDataMgr.m_intError;
+							oDataMgr = null;
+							return x;
+						}
+					}
+
+				}
+				conn.Close();
+			}
+			return 0;
 		}
 		private void groupBox1_Resize(object sender, System.EventArgs e)
 		{

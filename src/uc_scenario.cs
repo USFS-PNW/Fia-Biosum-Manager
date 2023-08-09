@@ -888,7 +888,7 @@ namespace FIA_Biosum_Manager
 			string strDesc="";
             string strScenarioDBDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\db";
             if ((ReferenceProcessorScenarioForm != null && !ReferenceProcessorScenarioForm.m_bUsingSqlite)
-                 || ScenarioType.Trim().ToUpper() == "OPTIMIZER")
+                 && ScenarioType.Trim().ToUpper() == "PROCESSOR")
             {
                 ado_data_access oAdo = new ado_data_access();
                 string strScenarioFile = "scenario_" + ScenarioType + "_rule_definitions.mdb";

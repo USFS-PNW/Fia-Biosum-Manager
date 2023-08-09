@@ -441,6 +441,44 @@ namespace FIA_Biosum_Manager
             }
             oAdo.CloseConnection(oAdo.m_OleDbConnection);
         }
+        public void savevaluessqlite()
+        {
+
+            DataMgr oDataMgr = new DataMgr();
+            string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
+            string strScenarioDB =
+                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
+            {
+                conn.Open();
+                oDataMgr.m_strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName + " " +
+                                "WHERE TRIM(UPPER(scenario_id)) = '" +
+                                       ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToUpper() + "';";
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                if (lvProcessorScenario.CheckedItems.Count > 0)
+                {
+                    string strColumnsList = "scenario_id,processor_scenario_id,FullDetailsYN";
+                    string strValuesList = "";
+                    strValuesList = "'" + ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim() + "',";
+                    strValuesList = strValuesList + "'" + lvProcessorScenario.CheckedItems[0].SubItems[COL_SCENARIOID].Text.Trim() + "',";
+                    if (this.chkFullDetails.Checked)
+                        strValuesList = strValuesList + "'Y'";
+                    else
+                        strValuesList = strValuesList + "'N'";
+
+                    oDataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName + " " +
+                                    "(" + strColumnsList + ") " +
+                                    "VALUES " +
+                                    "(" + strValuesList + ")";
+
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+                }
+                conn.Close();
+            }
+            
+        }
 
         private void lvProcessorScenario_SelectedIndexChanged(object sender, EventArgs e)
         {

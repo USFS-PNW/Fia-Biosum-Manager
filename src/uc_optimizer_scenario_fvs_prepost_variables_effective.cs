@@ -2035,8 +2035,146 @@ namespace FIA_Biosum_Manager
            return 1;
 		}
 
-		
-		
+		public int savevaluessqlite()
+		{
+			int x;
+			string strColumns = "";
+			string strValues = "";
+			string strWhere = "";
+
+
+			string strColumn1 = "";
+			string strColumn2 = "";
+			string strColumn3 = "";
+			string strColumn4 = "";
+			string strFVSVariableList = "";
+
+			string[] strArray = null;
+
+
+			this.m_intCurVariableDefinitionStepCount = WIZARD_STEP_VARIABLES_OVERALL_EFFECTIVE;
+
+			strArray = this.m_oUtils.ConvertListToArray(m_oSavVar.m_strPreVarArray[0], ".");
+
+			if (strArray.Length > 0) strColumn1 = strArray[strArray.Length - 1];
+
+			strArray = this.m_oUtils.ConvertListToArray(m_oSavVar.m_strPreVarArray[1], ".");
+
+			if (strArray.Length > 0) strColumn2 = strArray[strArray.Length - 1];
+
+			strArray = this.m_oUtils.ConvertListToArray(m_oSavVar.m_strPreVarArray[2], ".");
+
+			if (strArray.Length > 0) strColumn3 = strArray[strArray.Length - 1];
+
+			strArray = this.m_oUtils.ConvertListToArray(m_oSavVar.m_strPreVarArray[3], ".");
+
+			if (strArray.Length > 0) strColumn4 = strArray[strArray.Length - 1];
+
+			if (strColumn1.Trim().Length > 0 && strColumn1.Trim().ToUpper() != "NOT DEFINED") strFVSVariableList = "1-" + strColumn1 + ",";
+			if (strColumn2.Trim().Length > 0 && strColumn2.Trim().ToUpper() != "NOT DEFINED") strFVSVariableList = strFVSVariableList + "2-" + strColumn2 + ",";
+			if (strColumn3.Trim().Length > 0 && strColumn3.Trim().ToUpper() != "NOT DEFINED") strFVSVariableList = strFVSVariableList + "3-" + strColumn3 + ",";
+			if (strColumn4.Trim().Length > 0 && strColumn4.Trim().ToUpper() != "NOT DEFINED") strFVSVariableList = strFVSVariableList + "4-" + strColumn4 + ",";
+			if (strFVSVariableList.Trim().Length > 0)
+				strFVSVariableList = strFVSVariableList.Substring(0, strFVSVariableList.Length - 1);
+
+			DataMgr oDataMgr = new DataMgr();
+			string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
+			string strScenarioDB =
+				frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
+            {
+				conn.Open();
+				if (oDataMgr.m_intError == 0)
+                {
+					oDataMgr.m_strSQL = "SELECT COUNT(*) FROM scenario_fvs_variables WHERE " +
+						" scenario_id = '" + strScenarioId + "' AND current_yn = 'Y' AND rxcycle='1';";
+					if ((int)oDataMgr.getRecordCount(conn, oDataMgr.m_strSQL, "scenario_fvs_variables") > 0)
+					{
+						oDataMgr.m_strSQL = "UPDATE scenario_fvs_variables SET current_yn = 'N'" +
+							" WHERE scenario_id = '" + strScenarioId + "' AND current_yn = 'Y' AND rxcycle='1';";
+						oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+					}
+
+					if (oDataMgr.m_intError < 0)
+					{
+						conn.Close();
+						x = oDataMgr.m_intError;
+						oDataMgr = null;
+						return x;
+					}
+
+					oDataMgr.m_strSQL = "SELECT COUNT(*) FROM scenario_fvs_variables_overall_effective WHERE " +
+						" scenario_id = '" + strScenarioId + "' AND current_yn = 'Y' AND rxcycle='1';";
+					if ((int)oDataMgr.getRecordCount(conn, oDataMgr.m_strSQL, "scenario_fvs_variables_overall_effective") > 0)
+					{
+						oDataMgr.m_strSQL = "UPDATE scenario_fvs_variables_overall_effective SET current_yn = 'N'" +
+							" WHERE scenario_id = '" + strScenarioId + "' AND current_yn = 'Y' AND rxcycle='1';";
+						oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+					}
+					if (oDataMgr.m_intError < 0)
+					{
+						conn.Close();
+						x = oDataMgr.m_intError;
+						oDataMgr = null;
+						return x;
+					}
+
+					strColumns = "scenario_id,rxcycle,variable_number,fvs_variables_list,pre_fvs_variable,post_fvs_variable,better_expression,worse_expression,effective_expression,current_yn";
+					for (x = 0; x <= NUMBER_OF_VARIABLES - 1; x++)
+					{
+						strValues = "'" + strScenarioId.Trim() + "','1'";
+
+						strWhere = "TRIM(scenario_id)='" + strScenarioId.Trim() + "' AND rxcycle='1' ";
+						if (m_oSavVar.m_strPreVarArray[x].Trim().Length > 0 &&
+							m_oSavVar.m_strPreVarArray[x].Trim().ToUpper() != "NOT DEFINED")
+						{
+							strValues = strValues + "," + Convert.ToString(x + 1).Trim();
+							strWhere = strWhere + " AND variable_number=" + Convert.ToString(x + 1).Trim();
+							strValues = strValues + ",'" + strFVSVariableList + "'";
+							strWhere = strWhere + " AND UPPER(TRIM(fvs_variables_list))='" + strFVSVariableList.Trim().ToUpper() + "'";
+							strValues = strValues + ",'" + m_oSavVar.m_strPreVarArray[x].Trim() + "'";
+							strWhere = strWhere + " AND UPPER(TRIM(pre_fvs_variable))='" + m_oSavVar.m_strPreVarArray[x].Trim().ToUpper() + "'";
+							strValues = strValues + ",'" + m_oSavVar.m_strPostVarArray[x].Trim() + "'";
+							strWhere = strWhere + " AND UPPER(TRIM(post_fvs_variable))='" + m_oSavVar.m_strPostVarArray[x].Trim().ToUpper() + "'";
+							strValues = strValues + ",'" + oDataMgr.FixString(m_oSavVar.m_strBetterExpr[x].Trim(), "'", "''") + "'";
+							strWhere = strWhere + " AND UPPER(TRIM(better_expression))='" + oDataMgr.FixString(m_oSavVar.m_strBetterExpr[x].Trim(), "'", "''").ToUpper() + "'";
+							strValues = strValues + ",'" + oDataMgr.FixString(m_oSavVar.m_strWorseExpr[x].Trim(), "'", "''") + "'";
+							strWhere = strWhere + " AND UPPER(TRIM(worse_expression))='" + oDataMgr.FixString(m_oSavVar.m_strWorseExpr[x].Trim(), "'", "''").ToUpper() + "'";
+							strValues = strValues + ",'" + oDataMgr.FixString(m_oSavVar.m_strEffectiveExpr[x].Trim(), "'", "''") + "'";
+							strWhere = strWhere + " AND UPPER(TRIM(effective_expression))='" + oDataMgr.FixString(m_oSavVar.m_strEffectiveExpr[x].Trim(), "'", "''").ToUpper() + "'";
+							strValues = strValues + ",'Y'";
+
+							//delete duplicates
+							oDataMgr.m_strSQL = "DELETE FROM scenario_fvs_variables WHERE " + strWhere;
+							oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+							//insert the current item
+							oDataMgr.m_strSQL = "INSERT INTO scenario_fvs_variables " +
+											"(" + strColumns + ") VALUES " +
+											"(" + strValues + ")";
+							oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+						}
+					}
+
+					if (m_oSavVar.m_strOverallEffectiveExpr.Trim().Length > 0)
+					{
+						strColumns = "scenario_id,rxcycle,fvs_variables_list,overall_effective_expression,current_yn";
+						strValues = "'" + strScenarioId.Trim() + "','1'";
+						strValues = strValues + ",'" + strFVSVariableList + "'";
+						strValues = strValues + ",'" + oDataMgr.FixString(this.m_oSavVar.m_strOverallEffectiveExpr.Trim(), "'", "''") + "'";
+						strValues = strValues + ",'Y'";
+						oDataMgr.m_strSQL = "INSERT INTO scenario_fvs_variables_overall_effective " +
+							"(" + strColumns + ") VALUES " +
+							"(" + strValues + ")";
+						oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+					}
+				}
+				conn.Close();
+			}
+			return 1;
+		}
+
 
 		private void txtFFE_CI1_KeyPress(object sender, System.Windows.Forms.KeyPressEventArgs e)
 		{

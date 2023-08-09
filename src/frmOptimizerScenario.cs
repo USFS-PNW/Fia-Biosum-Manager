@@ -1241,7 +1241,54 @@ namespace FIA_Biosum_Manager
 			this.m_bSave=false;
 			frmMain.g_sbpInfo.Text = "Ready";
 		}
-		
+		public void SaveRuleDefinitionsSqlite()
+        {
+            int savestatus;
+            int x;
+
+            frmMain.g_sbpInfo.Text = "Saving scenario rule definitions...Stand by";
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 12;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMinimumSteps = 1;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicCurrentStep = 1;
+
+            if (m_lrulesfirsttime == false)
+            {
+                frmMain.g_oFrmMain.ActivateStandByAnimation(
+                    this.WindowState,
+                    this.Left,
+                    this.Height,
+                    this.Width,
+                    this.Top);
+
+                savestatus = this.uc_scenario_fvs_prepost_variables_effective1.savevaluessqlite();
+                if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+                savestatus = this.uc_scenario_fvs_prepost_optimization1.savevaluessqlite();
+                if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+                savestatus = this.uc_scenario_fvs_prepost_variables_tiebreaker1.savevaluessqlite();
+                if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+                savestatus = this.uc_scenario_owner_groups1.savevaluessqlite();
+                if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+                savestatus = this.uc_scenario_costs1.savevaluessqlite();
+                if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+                savestatus = this.uc_scenario_psite1.savevaluessqlite();
+                if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+                savestatus = this.uc_scenario_filter1.savevaluessqlite();
+                if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+                savestatus = this.uc_scenario_cond_filter1.savevaluessqlite();
+                if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+                this.uc_scenario_processor_scenario_select1.savevaluessqlite();
+                if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                frmMain.g_oFrmMain.DeactivateStandByAnimation();
+            }
+            this.uc_scenario_notes1.SaveScenarioNotes();
+            if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+            this.uc_scenario1.UpdateDescription();
+            if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+            this.m_bSave = false;
+            frmMain.g_sbpInfo.Text = "Ready";
+        }
 
 		private void btnClose_Click(object sender, System.EventArgs e)
 		{
@@ -1599,7 +1646,7 @@ namespace FIA_Biosum_Manager
                 if (tabControlScenario.SelectedTab.Text.Trim().ToUpper()=="RULE DEFINITIONS")
 				{
 					if (m_lrulesfirsttime==true)
-						LoadRuleDefinitionsSqlite();
+						LoadRuleDefinitions();
 
 				}
 				else if (tabControlScenario.SelectedTab.Text.Trim().ToUpper() == "NOTES")
