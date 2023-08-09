@@ -38,22 +38,22 @@ namespace FIA_Biosum_Manager
 		private const int COL_CHECKBOX=0;
 		private const int COL_VARIANT = 1;
 	    private const int COL_PACKAGE = 2;
-		private const int COL_RXCYCLE1=3;
-		private const int COL_RXCYCLE2=4;
-		private const int COL_RXCYCLE3=5;
-		private const int COL_RXCYCLE4=6;
-		private const int COL_RUNSTATUS = 7;
-		private const int COL_MDBOUT = 8;
-		private const int COL_FOUND=9;
-		private const int COL_SUMMARYCOUNT = 10;
+		//private const int COL_RXCYCLE1=3;
+		//private const int COL_RXCYCLE2=4;
+		//private const int COL_RXCYCLE3=5;
+		//private const int COL_RXCYCLE4=6;
+		private const int COL_RUNSTATUS = 3;
+		private const int COL_MDBOUT = 4;
+		private const int COL_FOUND=5;
+		private const int COL_SUMMARYCOUNT = 6;
 		//private const int COL_SUMMARYPREYEAR=6;
 		//private const int COL_SUMMARYPOSTYEAR=7;
-		private const int COL_CUTCOUNT = 11;
-		private const int COL_LEFTCOUNT = 12;
-		private const int COL_POTFIRECOUNT = 13;
-        private const int COL_POTFIREMDBOUT = 14;
-        private const int COL_POTFIREMDBFOUND = 15;
-        private const int COL_POTFIREBASEYEARCOUNT = 16;
+		private const int COL_CUTCOUNT = 7;
+		private const int COL_LEFTCOUNT = 8;
+		private const int COL_POTFIRECOUNT = 9;
+        private const int COL_POTFIREMDBOUT = 10;
+        private const int COL_POTFIREMDBFOUND = 11;
+        private const int COL_POTFIREBASEYEARCOUNT = 12;
 
 		//parse FVSOUT file name
 		const int VARIANT_POS = 7;
@@ -664,10 +664,6 @@ namespace FIA_Biosum_Manager
 			
 			string strOutDirAndFile;
 			int x,y;
-			string strRx1="";
-			string strRx2="";
-			string strRx3="";
-			string strRx4="";
 			string strPackage="";
 			string strVariant="";
             string strCurVariant = "";
@@ -692,10 +688,6 @@ namespace FIA_Biosum_Manager
 				this.lstFvsOutput.Columns.Add("",2,HorizontalAlignment.Left);
 				this.lstFvsOutput.Columns.Add("FVS Variant", 100, HorizontalAlignment.Left);
 				this.lstFvsOutput.Columns.Add("RxPackage", 100, HorizontalAlignment.Left);
-				this.lstFvsOutput.Columns.Add("Cycle1Rx", 120, HorizontalAlignment.Left);
-				this.lstFvsOutput.Columns.Add("Cycle2Rx", 120, HorizontalAlignment.Left);
-				this.lstFvsOutput.Columns.Add("Cycle3Rx", 120, HorizontalAlignment.Left);
-				this.lstFvsOutput.Columns.Add("Cycle4Rx", 120, HorizontalAlignment.Left);
 				this.lstFvsOutput.Columns.Add("Run Status",250,HorizontalAlignment.Left);
 				this.lstFvsOutput.Columns.Add("Output File", 100, HorizontalAlignment.Left);
 				this.lstFvsOutput.Columns.Add("File Found", 80, HorizontalAlignment.Left);
@@ -822,10 +814,6 @@ namespace FIA_Biosum_Manager
                         if (arrRx.Length == 5)
                         {
                             strPackage = arrRx[0].Substring(1, 3);
-                            strRx1 = arrRx[1];
-                            strRx2 = arrRx[2];
-                            strRx3 = arrRx[3];
-                            strRx4 = arrRx[4];
                         }
                     }
 
@@ -839,10 +827,6 @@ namespace FIA_Biosum_Manager
 					this.m_oLvAlternateColors.AddColumns(lstFvsOutput.Items.Count-1,lstFvsOutput.Columns.Count);
 					entryListItem.SubItems.Add(strVariant);
 					entryListItem.SubItems.Add(strPackage);
-					entryListItem.SubItems.Add(strRx1);
-					entryListItem.SubItems.Add(strRx2);
-					entryListItem.SubItems.Add(strRx3);
-					entryListItem.SubItems.Add(strRx4);
 					entryListItem.SubItems.Add(" ");  //out mdb file
 					entryListItem.SubItems.Add(" ");  //file found
 					entryListItem.SubItems.Add(" ");  //summary record count
@@ -1977,26 +1961,10 @@ namespace FIA_Biosum_Manager
                             strPackage = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_PACKAGE, "Text", false);
                             strPackage = strPackage.Trim();
 
-                            strRx1 = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_RXCYCLE1, "Text", false);
-                            strRx1 = strRx1.Trim();
-
-                            strRx2 = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_RXCYCLE2, "Text", false);
-                            strRx2 = strRx2.Trim();
-
-                            strRx3 = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_RXCYCLE3, "Text", false);
-                            strRx3 = strRx3.Trim();
-
-                            strRx4 = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_RXCYCLE4, "Text", false);
-                            strRx4 = strRx4.Trim();
-
                             //find the package item in the package collection
                             for (y = 0; y <= this.m_oRxPackageItem_Collection.Count - 1; y++)
                             {
-                                if (this.m_oRxPackageItem_Collection.Item(y).SimulationYear1Rx.Trim() == strRx1.Trim() &&
-                                    this.m_oRxPackageItem_Collection.Item(y).SimulationYear2Rx.Trim() == strRx2.Trim() &&
-                                    this.m_oRxPackageItem_Collection.Item(y).SimulationYear3Rx.Trim() == strRx3.Trim() &&
-                                    this.m_oRxPackageItem_Collection.Item(y).SimulationYear4Rx.Trim() == strRx4.Trim() &&
-                                    this.m_oRxPackageItem_Collection.Item(y).RxPackageId.Trim() == strPackage.Trim())
+                                if (this.m_oRxPackageItem_Collection.Item(y).RxPackageId.Trim() == strPackage.Trim())
                                     break;
 
 
@@ -2011,19 +1979,20 @@ namespace FIA_Biosum_Manager
                                 this.m_oRxPackageItem = null;
                             }
 
+
                             //get the list of treatment cycle year fields to reference for this package
                             this.m_strRxCycleList = "";
-                            if (strRx1.Trim().Length > 0 && strRx1.Trim() != "000") this.m_strRxCycleList = "1,";
-                            if (strRx2.Trim().Length > 0 && strRx2.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "2,";
-                            if (strRx3.Trim().Length > 0 && strRx3.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "3,";
-                            if (strRx4.Trim().Length > 0 && strRx4.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "4,";
+                            if (this.m_oRxPackageItem != null)
+                            {
 
-                            if (this.m_strRxCycleList.Trim().Length > 0)
-                                this.m_strRxCycleList = this.m_strRxCycleList.Substring(0, this.m_strRxCycleList.Length - 1);
+                            }
+                            if (m_oRxPackageItem.SimulationYear1Rx.Trim().Length > 0 && m_oRxPackageItem.SimulationYear1Rx.Trim() != "000") this.m_strRxCycleList = "1,";
+                            if (m_oRxPackageItem.SimulationYear2Rx.Trim().Length > 0 && m_oRxPackageItem.SimulationYear2Rx.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "2,";
+                            if (m_oRxPackageItem.SimulationYear3Rx.Trim().Length > 0 && m_oRxPackageItem.SimulationYear3Rx.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "3,";
+                            if (m_oRxPackageItem.SimulationYear4Rx.Trim().Length > 0 && m_oRxPackageItem.SimulationYear4Rx.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "4,";
 
                             this.m_strRxCycleArray = frmMain.g_oUtils.ConvertListToArray(this.m_strRxCycleList, ",");
                            
-
                             //see if this is a different variant
                             //only update the pre-treatment tables when the variant changes
                             if (strVariant.Trim().ToUpper() != strCurVariant.Trim().ToUpper())
@@ -6399,52 +6368,41 @@ namespace FIA_Biosum_Manager
                             strPackage = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_PACKAGE, "Text", false);
                             strPackage = strPackage.Trim();
 
-                            strRx1 = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_RXCYCLE1, "Text", false);
-                            strRx1 = strRx1.Trim();
+                            //get the package and treatments
+                            strPackage = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_PACKAGE, "Text", false);
+                            strPackage = strPackage.Trim();
 
-                            strRx2 = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_RXCYCLE2, "Text", false);
-                            strRx2 = strRx2.Trim();
-
-                            strRx3 = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_RXCYCLE3, "Text", false);
-                            strRx3 = strRx3.Trim();
-
-                            strRx4 = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_RXCYCLE4, "Text", false);
-                            strRx4 = strRx4.Trim();
-
-                            
-                            //check to see if this variant already processed
-                           
-                                //find the package item in the package collection
-                                for (y = 0; y <= this.m_oRxPackageItem_Collection.Count - 1; y++)
-                                {
-                                    if (this.m_oRxPackageItem_Collection.Item(y).SimulationYear1Rx.Trim() == strRx1.Trim() &&
-                                        this.m_oRxPackageItem_Collection.Item(y).SimulationYear2Rx.Trim() == strRx2.Trim() &&
-                                        this.m_oRxPackageItem_Collection.Item(y).SimulationYear3Rx.Trim() == strRx3.Trim() &&
-                                        this.m_oRxPackageItem_Collection.Item(y).SimulationYear4Rx.Trim() == strRx4.Trim() &&
-                                        this.m_oRxPackageItem_Collection.Item(y).RxPackageId.Trim() == strPackage.Trim())
-                                        break;
+                            //find the package item in the package collection
+                            for (y = 0; y <= this.m_oRxPackageItem_Collection.Count - 1; y++)
+                            {
+                                if (this.m_oRxPackageItem_Collection.Item(y).RxPackageId.Trim() == strPackage.Trim())
+                                    break;
 
 
-                                }
-                                if (y <= m_oRxPackageItem_Collection.Count - 1)
-                                {
-                                    this.m_oRxPackageItem = new RxPackageItem();
-                                    m_oRxPackageItem.CopyProperties(m_oRxPackageItem_Collection.Item(y), m_oRxPackageItem);
-                                }
-                                else
-                                {
-                                    this.m_oRxPackageItem = null;
-                                }
+                            }
+                            if (y <= m_oRxPackageItem_Collection.Count - 1)
+                            {
+                                this.m_oRxPackageItem = new RxPackageItem();
+                                m_oRxPackageItem.CopyProperties(m_oRxPackageItem_Collection.Item(y), m_oRxPackageItem);
+                            }
+                            else
+                            {
+                                this.m_oRxPackageItem = null;
+                            }
 
 
-                                //get the list of treatment cycle year fields to reference for this package
-                                this.m_strRxCycleList = "";
-                                if (strRx1.Trim().Length > 0 && strRx1.Trim() != "000") this.m_strRxCycleList = "1,";
-                                if (strRx2.Trim().Length > 0 && strRx2.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "2,";
-                                if (strRx3.Trim().Length > 0 && strRx3.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "3,";
-                                if (strRx4.Trim().Length > 0 && strRx4.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "4,";
+                            //get the list of treatment cycle year fields to reference for this package
+                            this.m_strRxCycleList = "";
+                            if (this.m_oRxPackageItem != null)
+                            {
 
-                                if (this.m_strRxCycleList.Trim().Length > 0)
+                            }
+                            if (m_oRxPackageItem.SimulationYear1Rx.Trim().Length > 0 && m_oRxPackageItem.SimulationYear1Rx.Trim() != "000") this.m_strRxCycleList = "1,";
+                            if (m_oRxPackageItem.SimulationYear2Rx.Trim().Length > 0 && m_oRxPackageItem.SimulationYear2Rx.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "2,";
+                            if (m_oRxPackageItem.SimulationYear3Rx.Trim().Length > 0 && m_oRxPackageItem.SimulationYear3Rx.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "3,";
+                            if (m_oRxPackageItem.SimulationYear4Rx.Trim().Length > 0 && m_oRxPackageItem.SimulationYear4Rx.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "4,";
+
+                            if (this.m_strRxCycleList.Trim().Length > 0)
                                     this.m_strRxCycleList = this.m_strRxCycleList.Substring(0, this.m_strRxCycleList.Length - 1);
 
                                 this.m_strRxCycleArray = frmMain.g_oUtils.ConvertListToArray(this.m_strRxCycleList, ",");
@@ -8258,10 +8216,9 @@ namespace FIA_Biosum_Manager
             {
                 conn.Open();
 
-                //@ToDo: Need to attach FVSOut.db
                 SQLite.m_strSQL = $@"ATTACH DATABASE '{m_strFvsOutDb}' AS FVS";
                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                    this.WriteText(m_strLogFile, SQLite.m_strSQL + "\r\n");
+                    this.WriteText(m_strDebugFile, SQLite.m_strSQL + "\r\n");
                 SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
 
                 //ERRORS
