@@ -38,22 +38,14 @@ namespace FIA_Biosum_Manager
 		private const int COL_CHECKBOX=0;
 		private const int COL_VARIANT = 1;
 	    private const int COL_PACKAGE = 2;
-		//private const int COL_RXCYCLE1=3;
-		//private const int COL_RXCYCLE2=4;
-		//private const int COL_RXCYCLE3=5;
-		//private const int COL_RXCYCLE4=6;
 		private const int COL_RUNSTATUS = 3;
 		private const int COL_MDBOUT = 4;
 		private const int COL_FOUND=5;
 		private const int COL_SUMMARYCOUNT = 6;
-		//private const int COL_SUMMARYPREYEAR=6;
-		//private const int COL_SUMMARYPOSTYEAR=7;
 		private const int COL_CUTCOUNT = 7;
-		private const int COL_LEFTCOUNT = 8;
-		private const int COL_POTFIRECOUNT = 9;
-        private const int COL_POTFIREMDBOUT = 10;
-        private const int COL_POTFIREMDBFOUND = 11;
-        private const int COL_POTFIREBASEYEARCOUNT = 12;
+        private const int COL_POTFIREMDBOUT = 8;
+        private const int COL_POTFIREMDBFOUND = 9;
+        private const int COL_POTFIREBASEYEARCOUNT = 10;
 
 		//parse FVSOUT file name
 		const int VARIANT_POS = 7;
@@ -688,23 +680,41 @@ namespace FIA_Biosum_Manager
 				this.lstFvsOutput.Columns.Add("",2,HorizontalAlignment.Left);
 				this.lstFvsOutput.Columns.Add("FVS Variant", 100, HorizontalAlignment.Left);
 				this.lstFvsOutput.Columns.Add("RxPackage", 100, HorizontalAlignment.Left);
-				this.lstFvsOutput.Columns.Add("Run Status",250,HorizontalAlignment.Left);
-				this.lstFvsOutput.Columns.Add("Output File", 100, HorizontalAlignment.Left);
-				this.lstFvsOutput.Columns.Add("File Found", 80, HorizontalAlignment.Left);
+				this.lstFvsOutput.Columns.Add("Run Status",200,HorizontalAlignment.Left);
+				this.lstFvsOutput.Columns.Add("Output File", 10, HorizontalAlignment.Left);
+				this.lstFvsOutput.Columns.Add("Found in FVSOut.db", 80, HorizontalAlignment.Left);
 				this.lstFvsOutput.Columns.Add("Summary Count", 100, HorizontalAlignment.Left);
 				this.lstFvsOutput.Columns.Add("Tree Cut List Count", 100, HorizontalAlignment.Left);
-				this.lstFvsOutput.Columns.Add("Tree Standing Count", 100, HorizontalAlignment.Left);
-				this.lstFvsOutput.Columns.Add("Potential Fire Count", 100, HorizontalAlignment.Left);
                 this.lstFvsOutput.Columns.Add("Potential Fire Base Yr Output File", 100, HorizontalAlignment.Left);
                 this.lstFvsOutput.Columns.Add("Potential Fire Base Yr File Found", 100, HorizontalAlignment.Left);
                 this.lstFvsOutput.Columns.Add("Potential Fire Base Yr Count", 100, HorizontalAlignment.Left);
 
-               
-
+              
 				this.lstFvsOutput.Columns[COL_CHECKBOX].Width = -2;
-				
+
+                //ABORT IF THERE IS NO FVSOUT.DB
+                // Warning for older projects without FVSOut.db
+                string dbConn = SQLite.GetConnectionString(m_strFvsOutDb);
+                if (System.IO.File.Exists(m_strFvsOutDb))
+                {
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
+                    {
+                        conn.Open();
+                        if (! SQLite.TableExist(conn, Tables.FVS.DefaultFVSCasesTableName))
+                        {
+                            MessageBox.Show(m_missingFvsOutDb, "FIA Biosum", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    MessageBox.Show(m_missingFvsOutDb, "FIA Biosum", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    return;
+                }
+
                 //load rxpackage properties
-				m_oRxPackageItem_Collection = new RxPackageItem_Collection();
+                m_oRxPackageItem_Collection = new RxPackageItem_Collection();
 				this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_ado,m_ado.m_OleDbConnection,m_oQueries,this.m_oRxPackageItem_Collection);
 
                 // Get variants/rxPackages in project
@@ -722,6 +732,7 @@ namespace FIA_Biosum_Manager
                             this.m_strOutMDBFile.Trim();
                     // Example RunTitle: FVSOUT_WC_P999-999-999-999-999
                     strCurRunTitle = this.m_oRxTools.GetRxPackageRunTitle(m_ado.m_OleDbDataReader);
+                    lstRunTitles.Add(strCurRunTitle);
 
                     long lngPreSummaryRecords = 0;
                     string strSummaryConnect = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultPreFVSSummaryDbFile}";
@@ -745,7 +756,6 @@ namespace FIA_Biosum_Manager
                      ************************************************************************/
                     if (System.IO.File.Exists(m_strFvsOutDb) == true)
 					{
-                        string dbConn = SQLite.GetConnectionString(m_strFvsOutDb);
                         using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
                         {
                             conn.Open();
@@ -766,12 +776,6 @@ namespace FIA_Biosum_Manager
                                         SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                                     }
                                 }
-                                SQLite.m_strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSCasesTableName} WHERE RunTitle = '{strCurRunTitle}'";
-                                long lngCasesCount = SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSCasesTableName);
-                                if (lngCasesCount > 0)
-                                {
-                                    lstRunTitles.Add(strCurRunTitle);
-                                }
                             }
                         }
                         if (strVariant != strCurVariant)
@@ -781,12 +785,6 @@ namespace FIA_Biosum_Manager
                         }
                     }   // END IF FVS_OUT.DB EXISTS                   
 				}
-
-                // Warning for older projects without FVSOut.db
-                if (!System.IO.File.Exists(m_strFvsOutDb))
-                {
-                    MessageBox.Show(m_missingFvsOutDb, "FIA Biosum", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                }
 				m_ado.m_OleDbDataReader.Close();
 
                 strVariant="";
@@ -831,8 +829,6 @@ namespace FIA_Biosum_Manager
 					entryListItem.SubItems.Add(" ");  //file found
 					entryListItem.SubItems.Add(" ");  //summary record count
 					entryListItem.SubItems.Add(" ");  //tree cut list record count
-					entryListItem.SubItems.Add(" ");  //tree standing record count
-					entryListItem.SubItems.Add(" ");  //potential fire record count
                     entryListItem.SubItems.Add(" ");  //potential fire base year out file
                     entryListItem.SubItems.Add(" ");  //file found
                     entryListItem.SubItems.Add(" ");  //potential fire base year record count
@@ -841,10 +837,23 @@ namespace FIA_Biosum_Manager
 
 
                     //FVS_SUMMARY
-                    string dbConn = SQLite.GetConnectionString(m_strFvsOutDb);
                     using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
                     {
                         conn.Open();
+                        // VARIANT/PACKAGE FOUND IN FVS_CASES TABLE?
+                        SQLite.m_strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSCasesTableName} WHERE RunTitle = '{strCurRunTitle}'";
+                        long lngCasesCount = SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSCasesTableName);
+                        if (lngCasesCount > 0)
+                        {
+                            entryListItem.SubItems[COL_FOUND].Text = "Yes";
+                        }
+                        else
+                        {
+                            entryListItem.SubItems[COL_FOUND].ForeColor = System.Drawing.Color.White;
+                            entryListItem.SubItems[COL_FOUND].BackColor = System.Drawing.Color.Red;
+                            this.m_oLvAlternateColors.m_oRowCollection.Item(this.lstFvsOutput.Items.Count - 1).m_oColumnCollection.Item(COL_FOUND).UpdateColumn = false;
+                            entryListItem.SubItems[COL_FOUND].Text = "No";
+                        }
                         if (SQLite.TableExist(conn, Tables.FVS.DefaultFVSSummaryTableName))
                         {
                             if (!frmMain.g_bSuppressFVSOutputTableRowCount)
@@ -9761,6 +9770,12 @@ namespace FIA_Biosum_Manager
 
         private void RunCreateFVSOut_BioSum_Start()
         {
+            // Warning for older projects without FVSOut.db
+            if (!System.IO.File.Exists(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile))
+            {
+                MessageBox.Show(m_missingFvsOutDb, "FIA Biosum", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
             string strBiosumDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutBiosumDbFile;
             if (System.IO.File.Exists(strBiosumDbPath))
             {
@@ -10772,7 +10787,6 @@ namespace FIA_Biosum_Manager
             string strRx4 = "";
             string strPackage = "";
             string strVariant = "";
-            string strPotFireBaseYrDbFile = "";
 
             System.Windows.Forms.ListView oLv = (System.Windows.Forms.ListView)frmMain.g_oDelegate.GetListView(lstFvsOutput, false);
             System.Windows.Forms.ListViewItem oLvItem = null;
@@ -11003,7 +11017,8 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Create PREPOST SeqNum Matrix Tables");
                             if (m_bDebug && frmMain.g_intDebugLevel > 1)
                                 this.WriteText(m_strDebugFile, "\r\nSTART:Create PrePostSeqNumMatrixTables " + System.DateTime.Now.ToString() + "\r\n");
-                            CreatePrePostSeqNumMatrixTables(strAuditDbFile, strPackage, false);
+                            string strRunTitle = $@"FVSOUT_{strVariant}{m_oRxPackageItem.RunTitleSuffix}";
+                            CreatePrePostSeqNumMatrixSqliteTables(strAuditDbFile, strRunTitle, false);
                             if (m_bDebug && frmMain.g_intDebugLevel > 1)
                                 this.WriteText(m_strDebugFile, "\r\nEND:Create PrePostSeqNumMatrixTables " + System.DateTime.Now.ToString() + "\r\n");
                             m_intProgressStepCurrentCount++;
@@ -11017,46 +11032,6 @@ namespace FIA_Biosum_Manager
                             UpdateTherm(m_frmTherm.progressBar1,
                                          m_intProgressStepTotalCount,
                                          m_intProgressStepTotalCount);
-                            //
-                            //
-                            //DAO ROUTINES
-                            //
-                            //
-                            //CREATE PREPOST ACCDB AND AND LINKS
-                            //
-
-                            if (m_bDebug && frmMain.g_intDebugLevel > 1)
-                                this.WriteText(m_strDebugFile, "\r\nSTART: Create PREPOST DbFile table links " + System.DateTime.Now.ToString() + "\r\n");
-                            RunAppend_CreatePREPOSTDbFileAndTableLinks(m_strFvsOutDb, strAuditDbFile, strVariant);
-                            if (m_bDebug && frmMain.g_intDebugLevel > 1)
-                                this.WriteText(m_strDebugFile, "\r\nEND: Create PREPOST DbFile table links " + System.DateTime.Now.ToString() + "\r\n");
-
-                            intItemError = m_dao.m_intError;
-                            if (intItemError == 0)
-                            {
-                                if (m_bDebug && frmMain.g_intDebugLevel > 1)
-                                    this.WriteText(m_strDebugFile, "\r\nSTART: Open PREPOST DbFile Connections " + System.DateTime.Now.ToString() + "\r\n");
-                                RunAppend_OpenDbConnections(m_oPrePostDbFileItem_Collection);
-                                if (m_bDebug && frmMain.g_intDebugLevel > 1)
-                                    this.WriteText(m_strDebugFile, "\r\nEND: Open PREPOST DbFile Connections " + System.DateTime.Now.ToString() + "\r\n");
-
-
-                            }
-                            //m_intProgressStepCurrentCount++;
-                            //UpdateTherm(m_frmTherm.progressBar1,
-                            //        m_intProgressStepCurrentCount,
-                            //        m_intProgressStepTotalCount);
-                            //intItemError = m_intError;
-
-
-
-
-
-                            intItemError = m_dao.m_intError;
-                            strItemError = m_dao.m_strError;
-
-
-
 
                             //
                             //SHOW FILE MONITORS
@@ -11067,8 +11042,8 @@ namespace FIA_Biosum_Manager
 
                             if (uc_filesize_monitor1.File.Trim().Length == 0)
                             {
-                                uc_filesize_monitor1.BeginMonitoringFile(strPotFireBaseYrDbFile, 2000000000, "2GB");
-                                uc_filesize_monitor1.Information = "Base year potential fire table for variant " + strVariant;
+                                uc_filesize_monitor1.BeginMonitoringFile(strFVSOutPrePostPathAndDbFile, 2000000000, "2GB");
+                                uc_filesize_monitor1.Information = "PREPOST_FVSOUT.db";
                             }
 
                             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim());
