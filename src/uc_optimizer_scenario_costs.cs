@@ -483,6 +483,7 @@ namespace FIA_Biosum_Manager
 
 			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
 			{
+				conn.Open();
 				if (oDataMgr.m_intError != 0)
 				{
 					x = oDataMgr.m_intError;

@@ -1051,7 +1051,7 @@ namespace FIA_Biosum_Manager
 
 		private void btnSave_Click(object sender, System.EventArgs e)
 		{
-			SaveRuleDefinitions();
+			SaveRuleDefinitionsSqlite();
 
 
 		}
@@ -1546,7 +1546,7 @@ namespace FIA_Biosum_Manager
 					frmMain.g_oFrmMain.OpenOptimizerScenario("New", this);
 					break;
 				case 2:
-					this.SaveRuleDefinitions();
+					this.SaveRuleDefinitionsSqlite();
 					break;
 				case 3:
                     if (this.uc_scenario_open1 != null)
@@ -1565,7 +1565,7 @@ namespace FIA_Biosum_Manager
                         LoadRuleDefinitions();
                     else
                     {
-                        SaveRuleDefinitions();
+                        SaveRuleDefinitionsSqlite();
                        
                     }
                     FIA_Biosum_Manager.frmDialog frmTemp = new frmDialog();
@@ -1646,7 +1646,7 @@ namespace FIA_Biosum_Manager
                 if (tabControlScenario.SelectedTab.Text.Trim().ToUpper()=="RULE DEFINITIONS")
 				{
 					if (m_lrulesfirsttime==true)
-						LoadRuleDefinitions();
+						LoadRuleDefinitionsSqlite();
 
 				}
 				else if (tabControlScenario.SelectedTab.Text.Trim().ToUpper() == "NOTES")

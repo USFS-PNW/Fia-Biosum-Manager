@@ -181,6 +181,50 @@ namespace FIA_Biosum_Manager
 
 
 		}
+		public int savevaluessqlite()
+		{
+			int x = 0;
+			string strSQL = "";
+			DataMgr oDataMgr = new DataMgr();
+			oDataMgr.m_intError = 0;
+			try
+			{
+				string strScenarioDB =
+				frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+				using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
+                {
+					conn.Open();
+					for (x = 0; x <= this.m_DataSet.Tables["scenario_last_tiebreak_rank"].Rows.Count - 1; x++)
+					{
+						if (m_DataSet.Tables["scenario_last_tiebreak_rank"].Rows[x]["last_tiebreak_rank"] != System.DBNull.Value &&
+							m_DataSet.Tables["scenario_last_tiebreak_rank"].Rows[x]["last_tiebreak_rank"].ToString().Trim().Length > 0)
+						{
+							oDataMgr.m_strSQL = "UPDATE scenario_last_tiebreak_rank SET last_tiebreak_rank = " +
+								this.m_DataSet.Tables["scenario_last_tiebreak_rank"].Rows[x]["last_tiebreak_rank"] +
+								" WHERE TRIM(rxpackage) = '" + this.m_DataSet.Tables["scenario_last_tiebreak_rank"].Rows[x]["rxpackage"].ToString().Trim() + "';";
+						}
+						else
+						{
+							oDataMgr.m_strSQL = "UPDATE scenario_last_tiebreak_rank SET last_tiebreak_rank = null " +
+									 " WHERE TRIM(rxpackage) = '" + this.m_DataSet.Tables["scenario_last_tiebreak_rank"].Rows[x]["rxpackage"].ToString().Trim() + "';";
+						}
+						oDataMgr.SqlNonQuery(conn, strSQL);
+						if (oDataMgr.m_intError < 0) break;
+
+					}
+					conn.Close();
+				}
+			}
+			catch (Exception caught)
+			{
+				MessageBox.Show("Function: uc_optimizer_scenario_last_tiebreak_rank.savevalues ErrMsg:" + caught.Message + " Failed updating scenario_last_tiebreak_rank table with last tiebreak rank ratings");
+			}
+			x = oDataMgr.m_intError;
+			oDataMgr = null;
+			return x;
+
+		}
 
 		public void loadgrid(bool p_bScenarioCopy)
 		{

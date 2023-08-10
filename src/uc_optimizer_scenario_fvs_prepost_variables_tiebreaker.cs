@@ -1695,7 +1695,7 @@ namespace FIA_Biosum_Manager
                 }
                 conn.Close();
             }
-            this.uc_scenario_last_tiebreak_rank1.savevalues();
+            this.uc_scenario_last_tiebreak_rank1.savevaluessqlite();
             return 0;
         }
 

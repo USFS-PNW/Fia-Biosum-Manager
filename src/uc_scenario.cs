@@ -1533,11 +1533,20 @@ namespace FIA_Biosum_Manager
 
                 foreach (string targetTableName in targetTables)
                 {
+                    string sourceTableName = sourceTables[Array.IndexOf(targetTables, targetTableName)];
                     ado.m_strSQL = "INSERT INTO " + targetTableName +
-                        " SELECT * FROM " + sourceTables[Array.IndexOf(targetTables, targetTableName)];
+                        " SELECT * FROM " + sourceTableName;
                     ado.SqlNonQuery(copyConn, ado.m_strSQL);
                 }
                 copyConn.Close();
+            }
+
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dataMgr.GetConnectionString(scenarioSqliteFile)))
+            {
+                conn.Open();
+                dataMgr.m_strSQL = "UPDATE scenario SET file = 'optimizer_scenario_rule_definitions.db'";
+                dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                conn.Close();
             }
 
             if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName))
