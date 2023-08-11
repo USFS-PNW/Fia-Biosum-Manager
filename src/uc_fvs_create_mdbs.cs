@@ -29,11 +29,6 @@ namespace FIA_Biosum_Manager
         private Dictionary<string, string> m_dictCreateTableQueries;
         Dictionary<string, List<string>> m_dictRunTitleTables;
 
-        // Mapping of sqlite column names to biosum column names. Add new entries here.
-        public static Dictionary<string, string> sqliteToAccessColNames = new Dictionary<string, string>
-        {
-            { "SPECIESFIA", "SPECIES" }
-        };
 
         // Only tables we want to create from POTFIRE BaseYr runtitle
         public static List<string> lstPotfireTables = new List<string> { "FVS_Cases", "FVS_PotFire" };
@@ -264,7 +259,7 @@ namespace FIA_Biosum_Manager
                             {
                                 var cols = m_listDictFVSOutputTablesColumnsDefinitions[tblName];
                                 // Generate comma-seperated column string for insert statements. Wrap in back-tick to prevent "reserved word" errors.
-                                var strColumns = string.Join(",", m_listDictFVSOutputTablesColumnsDefinitions[tblName].Select(item => utils.WrapInBacktick(translateColumn(item.Item1))));
+                                var strColumns = string.Join(",", m_listDictFVSOutputTablesColumnsDefinitions[tblName].Select(item => utils.WrapInBacktick(utils.TranslateColumn(item.Item1))));
 
                                 // Open up a data manager for the subsetted query for the run title we're on.  
                                 sqliteDataMgr.SqlQueryReader(sqliteConn, generateRuntitleSubsetQuery(tblName, file[2]));
@@ -447,7 +442,8 @@ namespace FIA_Biosum_Manager
                         {
                             var colName = dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper();
                             // This maps SPECIESFIA to SPECIES currently (and in the future should map any other column name differences between SQLite and target access DB
-                            var convertedColName = translateColumn(dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper());
+                            var convertedColName = utils.TranslateColumn(dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper());
+                            appendStringToDebugTextbox($@"Mapping column {dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper()} to {convertedColName}");
                             if (convertedColName.ToUpper() == runTitle)
                             {
                                 hasRunTitleField = true;
@@ -559,20 +555,6 @@ namespace FIA_Biosum_Manager
                     }
                 }
             }
-        }
-
-        /// <summary>Translates "FVSOut.db" column naming conventions into BioSum ones, e.g. SPECIESFIA -> SPECIES.</summary>
-        /// <param name="strToCheck">String to check. If it matches, map it. Otherwise return the same string.</param>
-        private string translateColumn(string strToCheck)
-        {
-            var translatedStr = strToCheck.ToUpper();
-            // Map SPECIESFIA to SPECIES. In the future, add other column mappings (e.g. stuff that's different in FVSOUT.db from the target Access Mdbs) here.
-            if (sqliteToAccessColNames.Keys.Contains(translatedStr))
-            {
-                translatedStr = sqliteToAccessColNames[translatedStr];
-                appendStringToDebugTextbox($@"Mapping column {strToCheck} to {translatedStr}");
-            }
-            return translatedStr;
         }
 
         /// <summary>Translates "FVSOut.db" table naming conventions into BioSum ones, e.g. Any table with "Summary" in the name -> FVS_Summary.</summary>

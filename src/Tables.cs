@@ -2573,7 +2573,8 @@ namespace FIA_Biosum_Manager
             static public string DefaultFVSCutListTableName { get { return "FVS_CUTLIST"; } }
             static public string DefaultFVSPotFireTableName { get { return "FVS_POTFIRE"; } }
             static public string DefaultFVSPotFireEastTableName { get { return "FVS_POTFIRE_EAST"; } }
-
+            static public string DefaultFVSTreeListTableName { get { return "FVS_TREELIST"; } }
+            static public string DefaultFVSAtrtListTableName { get { return "FVS_ATRTLIST"; } }
 
 
             public FVS()
