@@ -1755,13 +1755,12 @@ namespace FIA_Biosum_Manager
             oAdo=null;
         }
         private void RunAppend_UpdatePrePostTable(string p_strPackage, string p_strVariant, string p_strRx1, string p_strRx2, string p_strRx3, string p_strRx4, bool p_bUpdatePreTableWithVariant,
-            int p_intListViewItem, ref int p_intError, ref string p_strError, string strRunTitle)
+            int p_intListViewItem, ref int p_intError, ref string p_strError, string p_strRunTitle)
         {
 
             int x, y, z, zz;
 
             string strSourceColumnsList = "";
-            string strSourceColumnsFormattedList = "";
             string[] strSourceColumnsArray = null;
             string strDestColumnsList = "";
             string[] strDestColumnsArray = null;
@@ -1769,8 +1768,6 @@ namespace FIA_Biosum_Manager
             bool bFound;
             string strRx = "";
             string strCycle = "";
-
-            System.Data.OleDb.OleDbConnection oConn;
             string strFVSOutTable = "";
 
             if (m_bDebug && frmMain.g_intDebugLevel > 1)
@@ -1780,10 +1777,6 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
 
-            ado_data_access oAdo = new ado_data_access();
-
-            oAdo.m_intError = 0;
-            oAdo.m_strError = "";
             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + p_strVariant.Trim() + " Package:" + p_strPackage.Trim() + " Update PREPOST Tables");
 
             //
@@ -1849,7 +1842,6 @@ namespace FIA_Biosum_Manager
                 //    //uc_filesize_monitor2.Information = "Base year potential fire table for variant " + strVariant;
                 //}
 
-                oConn = new System.Data.OleDb.OleDbConnection();
                 string strConn = SQLite.GetConnectionString(strTempDb);
                 strFVSOutTable = lstTableNames[y].ToUpper();
                 string strFvsOutCustomSeqNumMatrixTable = $@"{strFVSOutTable}_PREPOST_SEQNUM_MATRIX";
@@ -1915,10 +1907,11 @@ namespace FIA_Biosum_Manager
                                 this.WriteText(m_strDebugFile, "CREATE TABLE POST_" + SQLite.m_strSQL + "\r\n\r\n");
                             SQLite.SqlNonQuery(conn, "CREATE TABLE POST_" + SQLite.m_strSQL);
 
-                            SQLite.AddIndex(conn, "PRE_" + strFVSOutTable, "biosumcondididx_pre", "biosum_cond_id");
-                            SQLite.AddIndex(conn, "POST_" + strFVSOutTable, "biosumcondididx_post", "biosum_cond_id");
-                            SQLite.AddIndex(conn, "PRE_" + strFVSOutTable, "biosumcondidrxidx_pre", "biosum_cond_id,rxpackage,rx,rxcycle");
-                            SQLite.AddIndex(conn, "POST_" + strFVSOutTable, "biosumcondidrxidx_post", "biosum_cond_id,rxpackage,rx,rxcycle");
+                            // Indexes must be unique throughout an SQLite .db; Adding the table names to the index name
+                            SQLite.AddIndex(conn, "PRE_" + strFVSOutTable, $@"biosumcondididx_pre_{strFVSOutTable}", "biosum_cond_id");
+                            SQLite.AddIndex(conn, "POST_" + strFVSOutTable, $@"biosumcondididx_post_{strFVSOutTable}", "biosum_cond_id");
+                            SQLite.AddIndex(conn, "PRE_" + strFVSOutTable, $@"biosumcondidrxidx_pre_{strFVSOutTable}", "biosum_cond_id,rxpackage,rx,rxcycle");
+                            SQLite.AddIndex(conn, "POST_" + strFVSOutTable, $@"biosumcondidrxidx_post_{strFVSOutTable}", "biosum_cond_id,rxpackage,rx,rxcycle");
                     }
                 }
                 else
@@ -2006,6 +1999,7 @@ namespace FIA_Biosum_Manager
 
                 // Format the source and select column lists
                     string strFormattedSelectColumnList = "";
+                    string strSourceColumnsFormattedList = "";
                 for (zz = 0; zz <= strSourceColumnsArray.Length - 1; zz++)
                 {
                     // This maps SPECIESFIA to SPECIES currently (and in the future should map any other column name differences between SQLite and target access DB
@@ -2067,8 +2061,10 @@ namespace FIA_Biosum_Manager
                                    "FROM " + strFVSOutTable + " a," +
                                       "(SELECT standid,year " +
                                        "FROM " + m_strFVSSummaryAuditPrePostSeqNumTable + " " +
-                                       "WHERE CYCLE" + strCycle + "_PRE_YN='Y' AND FVS_VARIANT = '" + p_strVariant + "' AND RXPACKAGE = '" + p_strPackage + "')  AS b " +
-                                   "WHERE a.standid=b.standid AND a.year=b.year";
+                                       "WHERE CYCLE" + strCycle + "_PRE_YN='Y' AND FVS_VARIANT = '" + p_strVariant + "' AND RXPACKAGE = '" + p_strPackage + "')  AS b, " +
+                                  "FVS_CASES as c " +
+                                "WHERE a.standid=b.standid AND a.year=b.year " +
+                                "and a.standid=c.standid and a.caseid = c.caseid and c.runtitle = '" + p_strRunTitle + "'";
                             }
                             else
                             {
@@ -2082,8 +2078,11 @@ namespace FIA_Biosum_Manager
                                   "FROM " + strFVSOutTable + " a," +
                                      "(SELECT standid,year " +
                                       "FROM " + strFvsOutCustomSeqNumMatrixTable + " " +
-                                      "WHERE CYCLE" + strCycle + "_PRE_YN='Y' AND FVS_VARIANT = '" + p_strVariant + "' AND RXPACKAGE = '" + p_strPackage + "')  AS b " +
-                                  "WHERE a.standid=b.standid AND a.year=b.year";
+                                      "WHERE CYCLE" + strCycle + "_PRE_YN='Y' AND FVS_VARIANT = '" + p_strVariant + "' AND RXPACKAGE = '" + p_strPackage + "')  AS b, " +
+                                  "FVS_CASES as c " +
+                                    "WHERE a.standid=b.standid AND a.year=b.year " +
+                                    "and a.standid=c.standid and a.caseid = c.caseid and c.runtitle = '" + p_strRunTitle + "'";
+
                             }
                         }
                         else
@@ -2098,8 +2097,10 @@ namespace FIA_Biosum_Manager
                               "FROM " + strFVSOutTable + " a," +
                                  "(SELECT standid,year,removal_code " +
                                   "FROM " + strFvsOutCustomSeqNumMatrixTable + " " +
-                                  "WHERE CYCLE" + strCycle + "_PRE_YN='Y' AND FVS_VARIANT = '" + p_strVariant + "' AND RXPACKAGE = '" + p_strPackage + "')  AS b " +
-                              "WHERE a.standid=b.standid AND a.year=b.year AND a.removal_code=b.removal_code";
+                                  "WHERE CYCLE" + strCycle + "_PRE_YN='Y' AND FVS_VARIANT = '" + p_strVariant + "' AND RXPACKAGE = '" + p_strPackage + "')  AS b, " +
+                                  "FVS_CASES as c " +
+                              "WHERE a.standid=b.standid AND a.year=b.year AND a.removal_code=b.removal_code " +
+                              "and a.standid=c.standid and a.caseid = c.caseid and c.runtitle = '" + p_strRunTitle + "'";
                         }
                         if (m_bDebug && frmMain.g_intDebugLevel > 2)
                             this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
@@ -2123,8 +2124,10 @@ namespace FIA_Biosum_Manager
                                                "FROM " + strFVSOutTable + " a," +
                                                   "(SELECT standid,year " +
                                                    "FROM " + m_strFVSSummaryAuditPrePostSeqNumTable + " " +
-                                                   "WHERE CYCLE" + strCycle + "_POST_YN='Y' AND FVS_VARIANT = '" + p_strVariant + "' AND RXPACKAGE = '" + p_strPackage + "')  AS b " +
-                                               "WHERE a.standid=b.standid AND a.year=b.year";
+                                                   "WHERE CYCLE" + strCycle + "_POST_YN='Y' AND FVS_VARIANT = '" + p_strVariant + "' AND RXPACKAGE = '" + p_strPackage + "')  AS b, " +
+                                                "FVS_CASES as c " +
+                                                "WHERE a.standid=b.standid AND a.year=b.year " +
+                                                "and a.standid=c.standid and a.caseid = c.caseid and c.runtitle = '" + p_strRunTitle + "'";
                                 }
                                 else
                                 {
@@ -2138,8 +2141,10 @@ namespace FIA_Biosum_Manager
                                       "FROM " + strFVSOutTable + " a," +
                                          "(SELECT standid,year " +
                                           "FROM " + strFvsOutCustomSeqNumMatrixTable + " " +
-                                          "WHERE CYCLE" + strCycle + "_POST_YN='Y' AND FVS_VARIANT = '" + p_strVariant + "' AND RXPACKAGE = '" + p_strPackage + "')  AS b " +
-                                      "WHERE a.standid=b.standid AND a.year=b.year";
+                                          "WHERE CYCLE" + strCycle + "_POST_YN='Y' AND FVS_VARIANT = '" + p_strVariant + "' AND RXPACKAGE = '" + p_strPackage + "')  AS b, " +
+                                          "FVS_CASES as c " +
+                                          "WHERE a.standid=b.standid AND a.year=b.year " +
+                                          "and a.standid=c.standid and a.caseid = c.caseid and c.runtitle = '" + p_strRunTitle + "'";
                                 }
                             }
                             else
@@ -2154,8 +2159,10 @@ namespace FIA_Biosum_Manager
                                              "FROM " + strFVSOutTable + " a," +
                                                 "(SELECT standid,year,removal_code " +
                                                  "FROM " + strFvsOutCustomSeqNumMatrixTable + " " +
-                                                 "WHERE CYCLE" + strCycle + "_POST_YN='Y' AND FVS_VARIANT = '" + p_strVariant + "' AND RXPACKAGE = '" + p_strPackage + "')  AS b " +
-                                             "WHERE a.standid=b.standid AND a.year=b.year AND a.removal_code=b.removal_code";
+                                                 "WHERE CYCLE" + strCycle + "_POST_YN='Y' AND FVS_VARIANT = '" + p_strVariant + "' AND RXPACKAGE = '" + p_strPackage + "')  AS b, " +
+                                              "FVS_CASES as c " +
+                                              "WHERE a.standid=b.standid AND a.year=b.year AND a.removal_code=b.removal_code " +
+                                              "and a.standid=c.standid and a.caseid = c.caseid and c.runtitle = '" + p_strRunTitle + "'";
                             }
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                 this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
@@ -2177,40 +2184,35 @@ namespace FIA_Biosum_Manager
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                 this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                     }
-            }  // End using
 
-                    if (oAdo.m_intError == 0)
-                                {
-                                    //update biosum_cond_id column
-                                    oAdo.m_strSQL = "UPDATE POST_" + strFVSOutTable + " " +
-                                        "SET biosum_cond_id = IIF((biosum_cond_id IS NULL OR LEN(TRIM(biosum_cond_id))=0) AND (standid IS NOT NULL AND LEN(TRIM(standid)) = 25),MID(standid,1,25),'') " +
-                                        "WHERE RXPACKAGE='" + p_strPackage.Trim() + "' AND " +
-                                        "RX='" + strRx.Trim() + "' AND " +
-                                        "RXCYCLE='" + strCycle + "' AND " +
-                                        "FVS_VARIANT='" + p_strVariant.Trim() + "'";
 
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
-                                    oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
+                    if (SQLite.m_intError == 0)
+                    {
+                            //update biosum_cond_id column
+                            SQLite.m_strSQL = $@"UPDATE POST_{strFVSOutTable} SET biosum_cond_id = 
+                                CASE WHEN (biosum_cond_id IS NULL OR LENGTH(TRIM(biosum_cond_id))=0) AND (standid IS NOT NULL AND LENGTH(TRIM(standid)) = 25) 
+                                THEN SUBSTR(standid,1,25) ELSE '' END 
+                                WHERE RXPACKAGE='{p_strPackage.Trim()}' AND RX='{strRx}' AND RXCYCLE='{strCycle}' AND FVS_VARIANT='{p_strVariant.Trim()}'"; ;
+
+                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-                                }
-                                if (uc_filesize_monitor3.File.Length > 0) uc_filesize_monitor3.EndMonitoringFile();
-                                else uc_filesize_monitor2.EndMonitoringFile();
+                    }
+                    if (uc_filesize_monitor3.File.Length > 0) uc_filesize_monitor3.EndMonitoringFile();
+                        else uc_filesize_monitor2.EndMonitoringFile();
 
-                                if (oAdo.m_intError != 0) break;
+                    if (SQLite.m_intError != 0) break;
 
-                            }
-
-
-                        if (oAdo.m_intError != 0) break;
-
-                    if (oAdo.m_intError != 0) break;
-            }
-            p_intError = oAdo.m_intError;
-            p_strError = oAdo.m_strError;
-            oAdo = null;
+                }
+                if (SQLite.m_intError != 0) break;
+            } // End using
+        }  
+            p_intError = SQLite.m_intError;
+            p_strError = SQLite.m_strError;
         }
+
         private void RunAppend_MainAccess()
 		{
 			string strOutDirAndFile;
