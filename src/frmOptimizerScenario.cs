@@ -1303,7 +1303,7 @@ namespace FIA_Biosum_Manager
 				result = MessageBox.Show("Save Scenario Changes Y/N","FIA Biosum",System.Windows.Forms.MessageBoxButtons.YesNoCancel,System.Windows.Forms.MessageBoxIcon.Question);
                 if (result == System.Windows.Forms.DialogResult.Yes)
                 {
-                    this.SaveRuleDefinitions();
+                    this.SaveRuleDefinitionsSqlite();
                 }
 			}
             return result;
@@ -1579,7 +1579,7 @@ namespace FIA_Biosum_Manager
                     frmTemp.Show();
                     break;
                 case 5:
-                    CopyScenario();
+                    CopyScenarioSqlite();
                     break;
 			}
 		}
@@ -1631,9 +1631,59 @@ namespace FIA_Biosum_Manager
                 frmMain.g_sbpInfo.Text = "Ready";
                 m_bSave = true;
             }
-           
+
         }
-		private void tbRules_Click(object sender, System.EventArgs e)
+        private void CopyScenarioSqlite()
+        {
+            frmDialog frmTemp = new frmDialog();
+            frmTemp.Initialize_Scenario_Optimizer_Scenario_Copy(this);
+            frmTemp.Text = "FIA Biosum";
+            if (m_oOptimizerScenarioItem.ScenarioId.Trim().Length == 0) LoadRuleDefinitionsSqlite();
+
+            frmTemp.uc_scenario_optimizer_scenario_copy1.ReferenceCurrentScenarioItem = m_oOptimizerScenarioItem;
+            frmTemp.uc_scenario_optimizer_scenario_copy1.loadvaluessqlite();
+            DialogResult result = frmTemp.ShowDialog(this);
+            if (result == DialogResult.OK)
+            {
+
+                frmMain.g_sbpInfo.Text = "Copying scenario rule definitions...Stand by";
+
+                this.uc_scenario_fvs_prepost_variables_effective1.loadvalues_FromPropertiesSqlite();
+
+                this.uc_scenario1.txtDescription.Text = m_oOptimizerScenarioItem.Description;
+                frmMain.g_sbpInfo.Text = "Loading Scenario Notes...Stand By";
+                this.uc_scenario_notes1.ReferenceOptimizerScenarioForm = this;
+                this.uc_scenario_notes1.loadvalues_FromProperties();
+                this.uc_scenario_owner_groups1.loadvalues();
+
+
+                this.uc_scenario_costs1.loadvalues();
+                this.uc_scenario_processor_scenario_select1.loadvaluessqlite(true);
+
+
+                this.uc_scenario_filter1.loadvalues(true);
+                this.uc_scenario_cond_filter1.loadvalues(true);
+                this.uc_scenario_psite1.loadvalues_FromProperties();
+                ProcessorScenarioItem_Collection oProcItemCollection = this.m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection;
+                //if (oProcItemCollection != null && oProcItemCollection.Count > 0)
+                //{
+                //    ProcessorScenarioItem oProcItem = oProcItemCollection.Item(0);
+                //    this.uc_optimizer_scenario_select_packages1.loadvalues_FromProperties(oProcItem);
+                //}
+                foreach (ProcessorScenarioItem psItem in oProcItemCollection)
+                {
+                    if (psItem.Selected == true)
+                    {
+                        this.uc_optimizer_scenario_select_packages1.loadvalues_FromProperties(psItem);
+                    }
+                }
+
+                frmMain.g_sbpInfo.Text = "Ready";
+                m_bSave = true;
+            }
+
+        }
+        private void tbRules_Click(object sender, System.EventArgs e)
 		{
 		}
 
@@ -4838,7 +4888,7 @@ namespace FIA_Biosum_Manager
         {
             p_oOptimizerScenarioItem.OwnerGroupCodeList = "";
             p_oDataMgr.m_strSQL = "SELECT * FROM scenario_land_owner_groups WHERE " +
-                " scenario_id = '" + p_strScenarioId + "';";
+                " TRIM(UPPER(scenario_id)) = '" + p_strScenarioId.Trim().ToUpper() + "';";
             p_oDataMgr.SqlQueryReader(p_oConn, p_oDataMgr.m_strSQL);
 
             if (p_oDataMgr.m_intError == 0)

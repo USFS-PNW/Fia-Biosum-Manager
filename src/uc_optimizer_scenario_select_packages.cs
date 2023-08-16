@@ -211,30 +211,6 @@ namespace FIA_Biosum_Manager
             }
 		}
 
-        public void loadvalues_FromPropertiessqlite(ProcessorScenarioItem oProcItem)
-        {
-            // For now we don't store selected fvs_variant/rxPackages at the scenario level
-            this.loadvaluessqlite(oProcItem);
-        }
-        public void loadvaluessqlite(ProcessorScenarioItem oProcItem)
-        {
-            this.lstRxPackages.Clear();
-            this.m_oLvRowColors.InitializeRowCollection();
-
-            this.lstRxPackages.Columns.Add("", 2, HorizontalAlignment.Left);
-            this.lstRxPackages.Columns.Add("Variant", 75, HorizontalAlignment.Left);
-            this.lstRxPackages.Columns.Add("Package", 300, HorizontalAlignment.Left);
-
-            this.lstRxPackages.Columns[COLUMN_CHECKBOX].Width = -2;
-
-            // Create an instance of a ListView column sorter and assign it 
-            // to the ListView control.
-            lvwColumnSorter = new ListViewColumnSorter();
-            this.lstRxPackages.ListViewItemSorter = lvwColumnSorter;
-
-            m_oEnv = new env();
-            DataMgr oDataMgr = new DataMgr();
-        }
 
         // We do not currently save the list of selected packages. It is reloaded
         // each time a scenario is loaded.

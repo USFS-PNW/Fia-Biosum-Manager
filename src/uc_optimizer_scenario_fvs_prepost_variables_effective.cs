@@ -1639,6 +1639,66 @@ namespace FIA_Biosum_Manager
 
 
         }
+		public void loadvalues_FromPropertiesSqlite()
+		{
+
+			int x;
+
+			for (x = 0; x <= NUMBER_OF_VARIABLES - 1; x++)
+				this.RemoveVariable(x);
+
+			m_oOldVar = new Variables();
+			m_oSavVar = new Variables();
+			//
+			//effective variables
+			//
+			if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Count > 0 &&
+				ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(0) != null)
+			{
+				for (x = 0; x <= NUMBER_OF_VARIABLES - 1; x++)
+				{
+					m_oOldVar.m_strPreVarArray[x] =
+						ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(0).m_strPreVarArray[x].Trim();
+					m_oOldVar.m_strPostVarArray[x] =
+						ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(0).m_strPostVarArray[x].Trim();
+					m_oOldVar.m_strBetterExpr[x] =
+						ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(0).m_strBetterExpr[x].Trim();
+					m_oOldVar.m_strWorseExpr[x] =
+						ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(0).m_strWorseExpr[x].Trim();
+					m_oOldVar.m_strEffectiveExpr[x] =
+						ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(0).m_strEffectiveExpr[x].Trim();
+					this.UpdateListViewVariableItem(x, x + 1, m_oOldVar);
+
+				}
+				//
+				//overall effective
+				//
+				m_oOldVar.m_strOverallEffectiveExpr =
+						  ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(0).m_strOverallEffectiveExpr;
+
+			}
+
+			for (x = 0; x <= NUMBER_OF_VARIABLES - 1; x++)
+			{
+				if (m_oOldVar.m_strPreVarArray[x].Trim().Length > 0 &&
+					m_oOldVar.m_strPreVarArray[x].Trim().ToUpper() != "NOT DEFINED")
+				{
+					this.btnFVSVariablesPrePostOverall.Enabled = true;
+					break;
+				}
+			}
+			if (x > NUMBER_OF_VARIABLES - 1) btnFVSVariablesPrePostOverall.Enabled = false;
+
+			m_oOldVar.Copy(m_oOldVar, ref m_oSavVar);
+			if (m_oCurVar == null) m_oCurVar = new Variables();
+			m_oOldVar.Copy(m_oOldVar, ref m_oCurVar);
+
+			this.ReferenceOptimizationUserControl.loadvalues_FromProperties();
+			this.ReferenceTieBreakerUserControl.loadvalues_FromPropertiesSqlite();
+
+
+
+		}
 		public void loadvalues()
 		{
 			this.m_intError=0;
