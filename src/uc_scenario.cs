@@ -1494,7 +1494,7 @@ namespace FIA_Biosum_Manager
             Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCondFilterMiscTableName,
             Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCondFilterTableName,
             Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName};
-            string[] targetTables = new string[17];
+            string[] targetTables = new string[15];
             foreach (string sourceTableName in sourceTables)
             {
                 targetTables[Array.IndexOf(sourceTables, sourceTableName)] = sourceTableName + "_1";
