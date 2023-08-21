@@ -1570,8 +1570,6 @@ namespace FIA_Biosum_Manager
 				frmMain.g_oTables.m_oScenario.CreateSqliteScenarioDatasourceTable(dataMgr, conn, Tables.Scenario.DefaultScenarioDatasourceTableName);
 				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioHarvestCostColumnsTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioHarvestCostColumnsTableName);
 				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioLandOwnerGroupsTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLandOwnerGroupsTableName);
-				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioMergeTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioMergeTableName);
-				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioPlotFilterMiscTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPlotFilterMiscTableName);
 				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioPlotFilterTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPlotFilterTableName);
 				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioPSitesTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName);
 				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioLastTieBreakRankTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLastTieBreakRankTableName);

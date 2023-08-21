@@ -1309,11 +1309,6 @@ namespace FIA_Biosum_Manager
                     }
                     if (oDataMgr.m_intError == 0)
                     {
-                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPlotFilterMiscTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                        oDataMgr.SqlNonQuery(conn, strSQL);
-                    }
-                    if (oDataMgr.m_intError == 0)
-                    {
                         strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
@@ -1488,8 +1483,6 @@ namespace FIA_Biosum_Manager
             Tables.Scenario.DefaultScenarioDatasourceTableName,
             Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioHarvestCostColumnsTableName,
             Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLandOwnerGroupsTableName,
-            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioMergeTableName,
-            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPlotFilterMiscTableName,
             Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPlotFilterTableName,
             Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName,
             Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLastTieBreakRankTableName,

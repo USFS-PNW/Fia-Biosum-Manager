@@ -202,6 +202,7 @@ namespace FIA_Biosum_Manager
             static public string FvsOutTreeListDsnName { get { return "FVS_OUT_TREELIST"; } }
             static public string PrePostFvsWeightedDsnName {  get { return "PREPOST_FVS_WEIGHTED"; } }
             static public string OptimizerRuleDefinitionsDsnName { get { return "OPTIMIZER_RULE_DEFINITIONS";  } }
+            static public string FvsOutPreAuditDsnName { get { return "FVS_OUT_PREAUDIT"; } }
         }
 
     }

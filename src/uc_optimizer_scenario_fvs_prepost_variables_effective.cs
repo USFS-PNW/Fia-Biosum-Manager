@@ -1931,7 +1931,7 @@ namespace FIA_Biosum_Manager
             if (strPieces.Length == 2 && !String.IsNullOrEmpty(strPieces[0]))
             {
                 string strTable = strPieces[0].TrimStart("PRE_".ToCharArray());
-                for (int index = 0; index < lstFVSTablesList.Items.Count + 1; index++)
+                for (int index = 0; index < lstFVSTablesList.Items.Count; index++)
                 {
                     string item = lstFVSTablesList.Items[index].ToString();
                     if (strTable == item)
@@ -1940,7 +1940,7 @@ namespace FIA_Biosum_Manager
                         break;
                     }
                 }
-                for (int index = 0; index < lstFVSFieldsList.Items.Count + 1; index++)
+                for (int index = 0; index < lstFVSFieldsList.Items.Count; index++)
                 {
                     string item = lstFVSFieldsList.Items[index].ToString();
                     if (strPieces[1] == item)

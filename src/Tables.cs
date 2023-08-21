@@ -2686,6 +2686,7 @@ namespace FIA_Biosum_Manager
             static public string DefaultFVSOutBiosumDbFile { get { return @"\fvs\data\FVSOut_BioSum.db"; } }
             static public string DefaultFVSOutPostAuditDbFile { get { return @"\fvs\data\PostAudit.db"; } }
             static public string DefaultFVSOutPrePostDbFile { get { return @"\fvs\db\PREPOST_FVSOUT.db"; } }
+            static public string DefaultFVSAuditsDbFile { get { return @"\fvs\db\FVS_AUDITS.db"; } }
 
 
             static public string DefaultFVSTreeIdWorkTable { get { return "fvs_tree_id_work_table"; } }
@@ -2707,7 +2708,9 @@ namespace FIA_Biosum_Manager
             static public string DefaultFVSSummaryTableName { get { return "FVS_SUMMARY"; } }
             static public string DefaultFVSCutListTableName { get { return "FVS_CUTLIST"; } }
             static public string DefaultFVSPotFireTableName { get { return "FVS_POTFIRE"; } }
-
+            static public string DefaultFVSPotFireEastTableName { get { return "FVS_POTFIRE_EAST"; } }
+            static public string DefaultFVSTreeListTableName { get { return "FVS_TREELIST"; } }
+            static public string DefaultFVSAtrtListTableName { get { return "FVS_ATRTLIST"; } }
 
 
             public FVS()
@@ -2939,7 +2942,32 @@ namespace FIA_Biosum_Manager
                     "fvs_variant CHAR(2)," +
                     "fvs_tree_id CHAR(10)," +
                     "Found_FvsTreeId_YN CHAR(1) DEFAULT 'N')";
+            }
 
+            //
+            //FVS_tree table audit
+            //
+            public void CreateSQLiteFVSTreeIdAudit(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSQLiteFVSTreeIdAuditTableSQL(p_strTableName));
+                CreateSQLiteFVSTreeIdAuditTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
+            }
+            public void CreateSQLiteFVSTreeIdAuditTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "fvs_tree_id");
+            }
+            public string CreateSQLiteFVSTreeIdAuditTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "id INTEGER PRIMARY KEY," +
+                    "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "rx CHAR(3)," +
+                    "rxcycle CHAR(1)," +
+                    "rxyear CHAR(4)," +
+                    "fvs_variant CHAR(2)," +
+                    "fvs_tree_id CHAR(10)," +
+                    "Found_FvsTreeId_YN CHAR(1) DEFAULT 'N')";
             }
             //
             //ORACLE biosum_volumes
@@ -3673,7 +3701,8 @@ namespace FIA_Biosum_Manager
                   "CYCLE4_PRE_YN CHAR(1)," +
                   "CYCLE4_POST_YN CHAR(1)," +
                   "RXPACKAGE CHAR(3), " +
-                  "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY(SEQNUM, STANDID, RXPACKAGE))";
+                  "FVS_VARIANT CHAR(2), " +
+                  "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY(SEQNUM, STANDID, RXPACKAGE, FVS_VARIANT))";
             }
 
 
@@ -3705,7 +3734,33 @@ namespace FIA_Biosum_Manager
                   "CYCLE3_POST_YN CHAR(1)," +
                   "CYCLE4_PRE_YN CHAR(1)," +
                   "CYCLE4_POST_YN CHAR(1))";
+            }
 
+            //
+            //FVS Output StrClass PRE-POST Sequence Number Audit
+            //
+            public void CreateSQLiteFVSOutputPrePostSeqNumAuditStrClassTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSQLiteFVSOutputPrePostSeqNumAuditStrClassTableSQL(p_strTableName));
+            }
+            public string CreateSQLiteFVSOutputPrePostSeqNumAuditStrClassTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                  "SEQNUM INTEGER," +
+                  "STANDID CHAR(255)," +
+                  "[YEAR] INTEGER," +
+                  "REMOVAL_CODE INTEGER," +
+                  "CYCLE1_PRE_YN CHAR(1)," +
+                  "CYCLE1_POST_YN CHAR(1)," +
+                  "CYCLE2_PRE_YN CHAR(1)," +
+                  "CYCLE2_POST_YN CHAR(1)," +
+                  "CYCLE3_PRE_YN CHAR(1)," +
+                  "CYCLE3_POST_YN CHAR(1)," +
+                  "CYCLE4_PRE_YN CHAR(1)," +
+                  "CYCLE4_POST_YN CHAR(1), " +
+                  "RXPACKAGE CHAR(3), " +
+                  "FVS_VARIANT CHAR(2), " +
+                  "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (SEQNUM,STANDID,REMOVAL_CODE,RXPACKAGE,FVS_VARIANT))";
             }
 
             public static class Audit
@@ -3899,6 +3954,31 @@ namespace FIA_Biosum_Manager
                 }
                 public static class Pre
                 {
+                    public static string CreateFVSPreYearCountsTableSQL(string p_strTableName)
+                    {
+                        return "CREATE TABLE " + p_strTableName + " (" +
+                               "STANDID VARCHAR(255)," +
+                                "totalrows INTEGER," +
+                                "fvs_variant CHAR(2), " +
+                                "rxPackage CHAR(3)," +
+                                "pre_cycle1rows INTEGER," +
+                                "post_cycle1rows INTEGER, " +
+                                "pre_cycle2rows INTEGER," +
+                                "post_cycle2rows INTEGER," +
+                                "pre_cycle3rows INTEGER," +
+                                "post_cycle3rows INTEGER," +
+                                "pre_cycle4rows INTEGER," +
+                                "post_cycle4rows INTEGER)";                    }
+
+                    public static string CreateFVSPreAuditCountsTableSQL(string p_strTableName)
+                    {
+                        return "CREATE TABLE " + p_strTableName + " (" +
+                                "SeqNum INTEGER, " +
+                                "StandID VARCHAR(255), " +
+                                "Year INTEGER, " +
+                                "fvs_variant CHAR(2), " +
+                                "rxPackage CHAR(3))";
+                    }
                 }
             }
 

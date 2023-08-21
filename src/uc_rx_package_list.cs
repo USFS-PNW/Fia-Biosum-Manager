@@ -1048,6 +1048,13 @@ namespace FIA_Biosum_Manager
 			set {_strRxMemberList=value;}
 
 		}
+
+        [CategoryAttribute("General"), DescriptionAttribute("FVS RunTitle")]
+        public string RunTitleSuffix
+        {
+            // The key is the RunTitle: FVSOUT_SO_P001-001-999-999-999
+            get { return $@"_P{RxPackageId}-{SimulationYear1Rx.Trim()}-{SimulationYear2Rx.Trim()}-{SimulationYear3Rx.Trim()}-{SimulationYear4Rx.Trim()}"; }
+        }
 		
 		
 		private string _strKcpFile="";
