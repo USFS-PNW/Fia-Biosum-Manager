@@ -82,8 +82,8 @@ namespace FIA_Biosum_Manager
 
         //POTFIRE BASE YEAR
         private string m_strPotFireTable = "FVS_POTFIRE_TEMP";
-        private string m_strPotFireBaseYearLinkedTableName = "FVS_POTFIRE_BASEYEAR";
-        private string m_strPotFireStandardLinkedTableName = "FVS_POTFIRE_STANDARD";
+        private string m_strPotFireBaseYearAccessLinkedTableName = "FVS_POTFIRE_BASEYEAR";
+        private string m_strPotFireStandardAccessLinkedTableName = "FVS_POTFIRE_STANDARD";
         private bool m_bPotFireBaseYearTableExist = true;
 
 		string m_strLogFile;
@@ -1782,18 +1782,17 @@ namespace FIA_Biosum_Manager
             //
             System.IO.File.Copy(m_strFvsPrePostDb, p_strTempDb, true);
 
-            //
-            //make sure all the tables and columns exist
-            //
-            m_intProgressStepTotalCount = m_oPrePostDbFileItem_Collection.Count;
-            m_intProgressStepCurrentCount = 0;
-
             IList<string> lstTableNames = new List<string>();
             string strFvsOutConn = SQLite.GetConnectionString(m_strFvsOutDb);
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strFvsOutConn))
             {
                 conn.Open();
                 string[] strSourceTableArray = SQLite.getTableNames(conn);
+                //
+                //make sure all the tables and columns exist
+                //
+                m_intProgressStepTotalCount = strSourceTableArray.Length;
+                m_intProgressStepCurrentCount = 0;
                 foreach (var strTable in strSourceTableArray)
                 {
                     if (Tables.FVS.g_strFVSOutTablesArray.Contains(strTable.ToUpper()))
@@ -2419,8 +2418,8 @@ namespace FIA_Biosum_Manager
                         if ((bool)frmMain.g_oDelegate.GetListViewItemPropertyValue(oLv, x, "Checked", false) == true)
                         {
                             m_bPotFireBaseYearTableExist = true;
-                            m_strPotFireBaseYearLinkedTableName = "FVS_POTFIRE_BASEYEAR";
-                            m_strPotFireStandardLinkedTableName = "FVS_POTFIRE_STANDARD";
+                            m_strPotFireBaseYearAccessLinkedTableName = "FVS_POTFIRE_BASEYEAR";
+                            m_strPotFireStandardAccessLinkedTableName = "FVS_POTFIRE_STANDARD";
                             m_oPrePostDbFileItem_Collection = new DbFileItem_Collection();
                             
 
@@ -3168,7 +3167,7 @@ namespace FIA_Biosum_Manager
                                     //FIA Tree Table
                                     if (m_dao.m_intError == 0)
                                     {
-                                        z = m_oQueries.m_oDataSource.getDataSourceTableNameRow("TREE");
+                                    z = m_oQueries.m_oDataSource.getDataSourceTableNameRow("TREE");
                                         oTableLinkItem = new TableLinkItem();
                                         oTableLinkItem.TableName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.TABLE];
                                         oTableLinkItem.DbFileName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.MDBFILE].Trim();
@@ -3179,7 +3178,7 @@ namespace FIA_Biosum_Manager
                                                                 oTableLinkItem.FullPath,
                                                                 oTableLinkItem.TableName,
                                                                 true);
-                                        oDbFileItem.TableLinkCollection.Add(oTableLinkItem);
+                                    oDbFileItem.TableLinkCollection.Add(oTableLinkItem);
 
                                     }
 
@@ -3257,7 +3256,75 @@ namespace FIA_Biosum_Manager
                             m_intProgressStepTotalCount,
                             m_intProgressStepTotalCount);
         }
-		private void RunAppend_DeleteVariantRxPackageFromPrePostTablesAccess(string p_strVariant, string p_strPackage)
+        private string RunAppend_CreateTreeTablesTempDbWithTableLinks()
+        {
+            
+            // Create and connect to a temporary .accdb to work with the master.mdb tables
+            string strTempAccdbPath = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
+            m_dao.CreateMDB(strTempAccdbPath);
+            int z = -1;
+            var oTableLinkItem = new TableLinkItem();
+            //Tree Table Link
+            if (m_dao.m_intError == 0)
+            {
+                z = m_oQueries.m_oDataSource.getDataSourceTableNameRow("TREE");
+                oTableLinkItem = new TableLinkItem();
+                oTableLinkItem.TableName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.TABLE];
+                oTableLinkItem.DbFileName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.MDBFILE].Trim();
+                oTableLinkItem.Directory = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.PATH].Trim();
+                m_dao.CreateTableLink(strTempAccdbPath,
+                                        frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName,
+                                        oTableLinkItem.FullPath,
+                                        oTableLinkItem.TableName,
+                                        true);
+            }
+            //condition table link
+            if (m_dao.m_intError == 0)
+            {
+                z = m_oQueries.m_oDataSource.getDataSourceTableNameRow("CONDITION");
+                oTableLinkItem = new TableLinkItem();
+                oTableLinkItem.TableName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.TABLE];
+                oTableLinkItem.DbFileName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.MDBFILE].Trim();
+                oTableLinkItem.Directory = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.PATH].Trim();
+
+                m_dao.CreateTableLink(strTempAccdbPath,
+                                        frmMain.g_oTables.m_oFIAPlot.DefaultConditionTableName,
+                                        oTableLinkItem.FullPath,
+                                        oTableLinkItem.TableName,
+                                        true);
+            }
+            //plot table link
+            if (m_dao.m_intError == 0)
+            {
+                z = m_oQueries.m_oDataSource.getDataSourceTableNameRow("PLOT");
+                oTableLinkItem = new TableLinkItem();
+                oTableLinkItem.TableName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.TABLE];
+                oTableLinkItem.DbFileName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.MDBFILE].Trim();
+                oTableLinkItem.Directory = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.PATH].Trim();
+                m_dao.CreateTableLink(strTempAccdbPath,
+                                        frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableName,
+                                        oTableLinkItem.FullPath,
+                                        oTableLinkItem.TableName,
+                                        true);
+            }
+            //ref_species table link
+            if (m_dao.m_intError == 0)
+            {
+                z = m_oQueries.m_oDataSource.getDataSourceTableNameRow("FIA Tree Species Reference");
+                oTableLinkItem = new TableLinkItem();
+                oTableLinkItem.TableName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.TABLE];
+                oTableLinkItem.LinkedTableName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.TABLE];
+                oTableLinkItem.DbFileName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.MDBFILE].Trim();
+                oTableLinkItem.Directory = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.PATH].Trim();
+                macrosubst oMacroSub = new macrosubst();
+                oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
+                var strAppDataPath = oMacroSub.GeneralTranslateVariableSubstitution(oTableLinkItem.FullPath);
+                m_dao.CreateTableLink(strTempAccdbPath, Tables.ProcessorScenarioRun.DefaultFiaTreeSpeciesRefTableName, 
+                    strAppDataPath, oTableLinkItem.TableName, true);
+            }
+            return strTempAccdbPath;
+        }
+        private void RunAppend_DeleteVariantRxPackageFromPrePostTablesAccess(string p_strVariant, string p_strPackage)
 		{
 
             if (m_bDebug && frmMain.g_intDebugLevel > 1)
@@ -4701,11 +4768,10 @@ namespace FIA_Biosum_Manager
             string strRx = "";
             string strCycle = "";
 
-            System.Data.OleDb.OleDbConnection oConn;
+            System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
             string strDbFile = "";
             string strFVSOutTable = "";
             string strFVSOutTableLink = "";
-            string strFiaTreeSpeciesRefTableLink = "";
             string strCasesTable = "FVS_Cases";
             bool bIdColumnExist = false;
             string[] arrFvsSourceTables = new string[] { "FVS_CutList"};
@@ -4729,27 +4795,26 @@ namespace FIA_Biosum_Manager
             //
             oAdo.m_strSQL = "";
 
-            string seqNumWorkTable = "cutlist_seq_num_work_table";
-            for (y = 0; y <= m_oPrePostDbFileItem_Collection.Count - 1; y++)
-            {
-                strDbFile = m_oPrePostDbFileItem_Collection.Item(y).DbFileName.Trim().ToUpper();
-                if (arrTreeAccdbs.Contains(strDbFile))
-                {
-                    int idxTable = Array.IndexOf(arrTreeAccdbs, strDbFile);
-                    string strFvsTreeTable = Tables.FVS.DefaultFVSCutTreeTableName; ;
+            //for (y = 0; y <= m_oPrePostDbFileItem_Collection.Count - 1; y++)
+            //{
+                //strDbFile = m_oPrePostDbFileItem_Collection.Item(y).DbFileName.Trim().ToUpper();
+                //if (arrTreeAccdbs.Contains(strDbFile))
+                //{
+                    //int idxTable = Array.IndexOf(arrTreeAccdbs, strDbFile);
+                    string strFvsTreeTable = Tables.FVS.DefaultFVSCutTreeTableName;
 
-                    for (x = 0; x <= m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Count - 1; x++)
-                    {
-                        TableLinkItem oTableLinkItem = m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Item(x);
-                        if (m_oPrePostDbFileItem_Collection.Item(y).TableType.Trim().ToUpper() ==
-                            oTableLinkItem.FVSOutputTableName.Trim().ToUpper() && oTableLinkItem.FVSOutputTable)
-                        {
-                            strFVSOutTable = oTableLinkItem.FVSOutputTableName.Trim().ToUpper();
+                    //for (x = 0; x <= m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Count - 1; x++)
+                    //{
+                        //TableLinkItem oTableLinkItem = m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Item(x);
+                        //if (m_oPrePostDbFileItem_Collection.Item(y).TableType.Trim().ToUpper() ==
+                        //    oTableLinkItem.FVSOutputTableName.Trim().ToUpper() && oTableLinkItem.FVSOutputTable)
+                        //{
+                            //strFVSOutTable = oTableLinkItem.FVSOutputTableName.Trim().ToUpper();
                             //strFVSOutTableLink = oTableLinkItem.LinkedTableName.Trim().ToUpper();
-                            strFVSOutTableLink = arrFvsSourceTables[idxTable];
+                            //strFVSOutTableLink = arrFvsSourceTables[idxTable];
 
-                            oConn = m_oPrePostDbFileItem_Collection.Item(y).Connection;
-                            string strDirectory = m_oPrePostDbFileItem_Collection.Item(y).Directory;
+                            //oConn = m_oPrePostDbFileItem_Collection.Item(y).Connection;
+                            //string strDirectory = m_oPrePostDbFileItem_Collection.Item(y).Directory;
 
                             m_intProgressStepCurrentCount = 0;
                             if (m_strRxCycleArray == null)
@@ -4788,184 +4853,144 @@ namespace FIA_Biosum_Manager
 
                             if (p_intError == 0)
                             {
-
-                                for (z = 0; z <= m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Count - 1; z++)
-                                {
-                                    if (m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Item(z).TableName ==
-                                             m_oQueries.m_oDataSource.getValidDataSourceTableName(Datasource.TableTypes.FiaTreeSpeciesReference))
-                                    {
-                                        strFiaTreeSpeciesRefTableLink = m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Item(z).LinkedTableName;
-                                    }
-                                }
-
                                 // Keep track of whether there are trees to calculate metrics
                                 bool bRunFcs = false;
                                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strTreeTempDbFile)))
                                 {
                                     conn.Open();
+                    //
+                    //ATTACH TO AUDITS.DB for access to FVS_SUMMARY_PREPOST_SEQNUM_MATRIX
+                    // Using FVS_SUMMARY_PREPOST_SEQNUM_MATRIX instead of FVS_CUTLIST_PREPOST_SEQNUM_MATRIX
+                    // because not all rxs generate a cutlist. Sequence numbers should be the same for CUTLIST and SUMMARY
+                    //
+                    string strSeqNumMatrix = "FVS_SUMMARY_PREPOST_SEQNUM_MATRIX";
+                    oDataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                        Tables.FVS.DefaultFVSAuditsDbFile + "' AS AUDITS";
+                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                        this.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
 
-                                    //
-                                    //COPY THE SEQNUM MATRIX TABLE
-                                    //
+                    if (oDataMgr.TableExist(conn, "cutlist_rowid_work_table"))
+                        oDataMgr.SqlNonQuery(conn, "DROP TABLE cutlist_rowid_work_table");
 
-                                    if (oDataMgr.TableExist(conn, seqNumWorkTable))
-                                        oDataMgr.SqlNonQuery(conn, "DROP TABLE " + seqNumWorkTable);
-                                    frmMain.g_oTables.m_oFvs.CreateSQLiteFVSOutputPrePostSeqNumAuditGenericTable(oDataMgr, conn, seqNumWorkTable);
-                                    var seqMdb = $@"/FVSOUT_{p_strVariant}_P{p_strPackage}-{p_strRx1}-{p_strRx2}-{p_strRx3}-{p_strRx4}_BIOSUM.ACCDB";
-                                    string strSeqNumConn = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + @"/fvs/data/" +
-                                        p_strVariant + seqMdb;
-                                    using (System.Data.OleDb.OleDbConnection seqConn = new System.Data.OleDb.OleDbConnection(m_ado.getMDBConnString(strSeqNumConn, "", "")))
-                                    {
-                                        seqConn.Open();
-                                        // Using FVS_SUMMARY_PREPOST_SEQNUM_MATRIX instead of FVS_CUTLIST_PREPOST_SEQNUM_MATRIX
-                                        // because not all rxs generate a cutlist. Sequence numbers should be the same for CUTLIST and SUMMARY
-                                        oAdo.m_strSQL = "select * from FVS_SUMMARY_PREPOST_SEQNUM_MATRIX";
-                                        oAdo.CreateDataTable(seqConn, oAdo.m_strSQL, seqNumWorkTable, false);
-                                        oAdo.m_DataTable.Columns.Add("RXPACKAGE", typeof(String));  // The SQLite matrix had rxpackage column
-                                        using (System.Data.SQLite.SQLiteDataAdapter da = new System.Data.SQLite.SQLiteDataAdapter("select * from " + seqNumWorkTable, conn))
-                                        {
-                                            using (System.Data.SQLite.SQLiteCommandBuilder cb = new System.Data.SQLite.SQLiteCommandBuilder(da))
-                                            {
-                                                using (var transaction = conn.BeginTransaction())
-                                                {
-                                                    da.InsertCommand = cb.GetInsertCommand();
-                                                    int rows = da.Update(oAdo.m_DataTable);
-                                                    transaction.Commit();
-                                                }
-                                                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                                                {
-                                                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Populated results table " + seqNumWorkTable + " \r\n");
-                                                }
-                                            }
-                                        }
-                                    }
-                                    if (oAdo.m_DataSet != null)
-                                    {
-                                        oAdo.m_DataSet.Clear();
-                                        oAdo.m_DataSet.Dispose();
-                                    }
-
-                                    if (oDataMgr.TableExist(conn, "cutlist_rowid_work_table"))
-                                        oDataMgr.SqlNonQuery(conn, "DROP TABLE cutlist_rowid_work_table");
-
-                                    // Attach FVSOut.db
-                                    oDataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                                        Tables.FVS.DefaultFVSOutDbFile + "' AS FVSOUT";
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
-                                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
+                    // Attach FVSOut.db
+                    oDataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                        Tables.FVS.DefaultFVSOutDbFile + "' AS FVSOUT";
+                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                        this.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
                                     
-                                    //check fvs version
-                                    bIdColumnExist = oDataMgr.ColumnExist(conn, "FVSOUT." + strFVSOutTableLink, "ID");
-                                    //create id column
-                                    if (!bIdColumnExist && (int)oDataMgr.getRecordCount(conn, "SELECT COUNT(*) FROM (SELECT t.standid FROM FVSOUT." + strFVSOutTableLink + " t LIMIT 1)", "FVSOUT." + strFVSOutTableLink) > 0)
-                                    {
-                                        //create structure; Includes autonumber column
-                                        frmMain.g_oTables.m_oFvs.CreateTreeListWorkTable(oDataMgr, conn, "cutlist_rowid_work_table");
-                                        //append all the cutlist records into the work table
-                                        oDataMgr.m_strSQL = "INSERT INTO cutlist_rowid_work_table SELECT null,caseid,standid,year,treeid,treeindex FROM FVSOUT." + strFVSOutTableLink;
-                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                            this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
-                                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
-                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                            this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-                                    }
+                    //check fvs version
+                    bIdColumnExist = oDataMgr.ColumnExist(conn, "FVSOUT." + strFVSOutTableLink, "ID");
+                    //create id column
+                    if (!bIdColumnExist && (int)oDataMgr.getRecordCount(conn, "SELECT COUNT(*) FROM (SELECT t.standid FROM FVSOUT." + strFVSOutTableLink + " t LIMIT 1)", "FVSOUT." + strFVSOutTableLink) > 0)
+                    {
+                        //create structure; Includes autonumber column
+                        frmMain.g_oTables.m_oFvs.CreateTreeListWorkTable(oDataMgr, conn, "cutlist_rowid_work_table");
+                        //append all the cutlist records into the work table
+                        oDataMgr.m_strSQL = "INSERT INTO cutlist_rowid_work_table SELECT null,caseid,standid,year,treeid,treeindex FROM FVSOUT." + strFVSOutTableLink;
+                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                    }
 
-                                    //
-                                    //loop through all the rx cycles for this package and append them to the fvs tree
-                                    //
-                                    var runTitle = $@"FVSOUT_{p_strVariant}_P{p_strPackage}-{p_strRx1}-{p_strRx2}-{p_strRx3}-{p_strRx4}";
-                                    for (x = 0; x <= this.m_strRxCycleArray.Length - 1; x++)
-                                    {
-                                        m_intProgressStepCurrentCount++;
-                                        UpdateTherm(m_frmTherm.progressBar1,
-                                                    m_intProgressStepCurrentCount,
-                                                    m_intProgressStepTotalCount);
+                    //
+                    //loop through all the rx cycles for this package and append them to the fvs tree
+                    //
+                    var runTitle = $@"FVSOUT_{p_strVariant}_P{p_strPackage}-{p_strRx1}-{p_strRx2}-{p_strRx3}-{p_strRx4}";
+                    for (x = 0; x <= this.m_strRxCycleArray.Length - 1; x++)
+                    {
+                        m_intProgressStepCurrentCount++;
+                        UpdateTherm(m_frmTherm.progressBar1,
+                            m_intProgressStepCurrentCount,
+                            m_intProgressStepTotalCount);
 
-                                        if (m_strRxCycleArray[x] == null ||
-                                            m_strRxCycleArray[x].Trim().Length == 0)
-                                        {
-                                        }
-                                        else
-                                        {
-                                            strCycle = m_strRxCycleArray[x].Trim();
-                                            switch (strCycle)
-                                            {
-                                                case "1":
-                                                    strRx = p_strRx1;
-                                                    break;
-                                                case "2":
-                                                    strRx = p_strRx2;
-                                                    break;
-                                                case "3":
-                                                    strRx = p_strRx3;
-                                                    break;
-                                                case "4":
-                                                    strRx = p_strRx4;
-                                                    break;
-                                            }
+                        if (m_strRxCycleArray[x] == null ||
+                            m_strRxCycleArray[x].Trim().Length == 0)
+                        {
+                        }
+                        else
+                        {
+                            strCycle = m_strRxCycleArray[x].Trim();
+                            switch (strCycle)
+                            {
+                                case "1":
+                                    strRx = p_strRx1;
+                                    break;
+                                case "2":
+                                    strRx = p_strRx2;
+                                    break;
+                                case "3":
+                                    strRx = p_strRx3;
+                                    break;
+                                case "4":
+                                    strRx = p_strRx4;
+                                    break;
+                        }
 
+                        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + " Rx:" + strRx.Trim() + " Cycle:" + strCycle + ": Insert " + strFvsTreeTable + " Tree Records");
+                        frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
 
-                                            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + " Rx:" + strRx.Trim() + " Cycle:" + strCycle + ": Insert " + strFvsTreeTable + " Tree Records");
-                                            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
+                        if (oDataMgr.TableExist(conn, "cutlist_fia_trees_work_table"))
+                            oDataMgr.SqlNonQuery(conn, "DROP TABLE cutlist_fia_trees_work_table");
 
-                                            if (oDataMgr.TableExist(conn, "cutlist_fia_trees_work_table"))
-                                                oDataMgr.SqlNonQuery(conn, "DROP TABLE cutlist_fia_trees_work_table");
+                        if (oDataMgr.TableExist(conn, "cutlist_fvs_created_seedlings_work_table"))
+                            oDataMgr.SqlNonQuery(conn, "DROP TABLE cutlist_fvs_created_seedlings_work_table");
 
-                                            if (oDataMgr.TableExist(conn, "cutlist_fvs_created_seedlings_work_table"))
-                                                oDataMgr.SqlNonQuery(conn, "DROP TABLE cutlist_fvs_created_seedlings_work_table");
+                        //
+                        //FIA TREES
+                        //
+                        //make sure there are records to insert
+                        oDataMgr.m_strSQL = "SELECT COUNT(*) FROM " +
+                            "(SELECT c.standid " +
+                            "FROM FVSOUT." + strCasesTable + " c, FVSOUT." + strFVSOutTableLink + " t " +
+                            "WHERE c.CaseID = t.CaseID AND c.RunTitle = '" + runTitle + "' AND " +
+                            "substr(t.treeid, 1, 2) NOT IN ('ES') LIMIT 1)";
 
-                                            //
-                                            //FIA TREES
-                                            //
-                                            //make sure there are records to insert
-                                            oDataMgr.m_strSQL = "SELECT COUNT(*) FROM " +
-                                                             "(SELECT c.standid " +
-                                                              "FROM FVSOUT." + strCasesTable + " c, FVSOUT." + strFVSOutTableLink + " t " +
-                                                              "WHERE c.CaseID = t.CaseID AND c.RunTitle = '" + runTitle + "' AND " +
-                                                              "substr(t.treeid, 1, 2) NOT IN ('ES') LIMIT 1)";
+                        if ((int)oDataMgr.getRecordCount(conn, oDataMgr.m_strSQL, "temp") > 0)
+                        {
+                            if (bRunFcs == false)
+                            {
+                                bRunFcs = true;
+                            }
+                            oDataMgr.m_strSQL = "CREATE TABLE cutlist_fia_trees_work_table AS " +
+                                "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + p_strPackage.Trim() + "' AS rxpackage," +
+                                 "'" + strRx.Trim() + "' AS rx,'" + strCycle.Trim() + "' AS rxcycle," +
+                                 "cast(t.year as text) as rxyear,'" +
+                                 p_strVariant + "' AS fvs_variant, " +
+                                 "Trim(t.treeid) AS fvs_tree_id," +
+                                 "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS DBH , t.Ht, t.pctcr," +
+                                 "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
+                                 "'N' AS FvsCreatedTree_YN," +
+                                 "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
+                                 "FROM FVSOUT." + strCasesTable + " c, FVSOUT." + strFVSOutTableLink + " t " +
+                                 "WHERE c.CaseID = t.CaseID AND c.RunTitle = '" + runTitle + "' AND SUBSTR(t.treeid, 1, 2) NOT IN ('ES') ";
 
-                                            if ((int)oDataMgr.getRecordCount(conn, oDataMgr.m_strSQL, "temp") > 0)
-                                            {
-                                                if (bRunFcs == false)
-                                                {
-                                                    bRunFcs = true;
-                                                }
-                                                oDataMgr.m_strSQL = "CREATE TABLE cutlist_fia_trees_work_table AS " +
-                                                    "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + p_strPackage.Trim() + "' AS rxpackage," +
-                                                    "'" + strRx.Trim() + "' AS rx,'" + strCycle.Trim() + "' AS rxcycle," +
-                                                    "cast(t.year as text) as rxyear,'" +
-                                                    p_strVariant + "' AS fvs_variant, " +
-                                                    "Trim(t.treeid) AS fvs_tree_id," +
-                                                    "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS DBH , t.Ht, t.pctcr," +
-                                                    "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
-                                                    "'N' AS FvsCreatedTree_YN," +
-                                                    "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
-                                                    "FROM FVSOUT." + strCasesTable + " c, FVSOUT." + strFVSOutTableLink + " t " +
-                                                    "WHERE c.CaseID = t.CaseID AND c.RunTitle = '" + runTitle + "' AND SUBSTR(t.treeid, 1, 2) NOT IN ('ES') ";
-
-                                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
-                                                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
-                                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-                                                //insert into fvs tree table
-                                                oDataMgr.m_strSQL = "INSERT INTO " + strFvsTreeTable + " " +
-                                                                     "(biosum_cond_id, rxpackage,rx,rxcycle,rxyear,fvs_variant, fvs_tree_id," +
-                                                                      "fvs_species, tpa, dbh, ht, pctcr," +
-                                                                      "treeval, mortpa, mdefect, bapctile, dg, htg," +
-                                                                      "FvsCreatedTree_YN,DateTimeCreated) " +
-                                                                        "SELECT a.biosum_cond_id, a.rxpackage,a.rx,a.rxcycle,a.rxyear,a.fvs_variant," +
-                                                                               "a.fvs_tree_id, a.fvs_species, a.tpa, a.dbh, a.ht, a.pctcr," +
-                                                                               "a.treeval, a.mortpa, a.mdefect, a.bapctile, a.dg, a.htg," +
-                                                                               "a.FvsCreatedTree_YN,a.DateTimeCreated  " +
-                                                                        "FROM cutlist_fia_trees_work_table a," +
-                                                                            "(SELECT standid,year " +
-                                                                             "FROM " + seqNumWorkTable + " " +
-                                                                             "WHERE CYCLE" + strCycle + "_PRE_YN='Y')  b " +
-                                                                        "WHERE TRIM(a.biosum_cond_id)=TRIM(b.standid) AND cast(a.rxyear as integer)=b.year";
+                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                                 oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                 //insert into fvs tree table
+                                 oDataMgr.m_strSQL = "INSERT INTO " + strFvsTreeTable + " " +
+                                    "(biosum_cond_id, rxpackage,rx,rxcycle,rxyear,fvs_variant, fvs_tree_id," +
+                                    "fvs_species, tpa, dbh, ht, pctcr," +
+                                    "treeval, mortpa, mdefect, bapctile, dg, htg," +
+                                    "FvsCreatedTree_YN,DateTimeCreated) " +
+                                    "SELECT a.biosum_cond_id, a.rxpackage,a.rx,a.rxcycle,a.rxyear,a.fvs_variant," +
+                                    "a.fvs_tree_id, a.fvs_species, a.tpa, a.dbh, a.ht, a.pctcr," +
+                                    "a.treeval, a.mortpa, a.mdefect, a.bapctile, a.dg, a.htg," +
+                                    "a.FvsCreatedTree_YN,a.DateTimeCreated  " +
+                                    "FROM cutlist_fia_trees_work_table a," +
+                                    "(SELECT standid, year FROM " + strSeqNumMatrix + 
+                                    " WHERE CYCLE" + strCycle + "_PRE_YN='Y' AND FVS_VARIANT = '" + p_strVariant + "' AND RXPACKAGE = '" + p_strPackage + "')  b " +
+                                    "WHERE TRIM(a.biosum_cond_id)=TRIM(b.standid) AND cast(a.rxyear as integer)=b.year";
 
                                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                                     this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
@@ -5049,9 +5074,8 @@ namespace FIA_Biosum_Manager
                                                                                "a.treeval, a.mortpa, a.mdefect, a.bapctile, a.dg, a.htg, " +
                                                                                "a.statuscd, a.FvsCreatedTree_YN,a.DateTimeCreated  " +
                                                                         "FROM cutlist_fvs_created_seedlings_work_table a," +
-                                                                            "(SELECT standid,year " +
-                                                                             "FROM " + seqNumWorkTable + " " +
-                                                                             "WHERE CYCLE" + strCycle + "_PRE_YN='Y')  b " +
+                                                                        "(SELECT standid, year FROM " + strSeqNumMatrix +
+                                                                        " WHERE CYCLE" + strCycle + "_PRE_YN='Y' AND FVS_VARIANT = '" + p_strVariant + "' AND RXPACKAGE = '" + p_strPackage + "')  b " +
                                                                         "WHERE TRIM(a.biosum_cond_id)=TRIM(b.standid) AND cast(a.rxyear as integer)=b.year";
                                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                                     this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
@@ -5124,23 +5148,24 @@ namespace FIA_Biosum_Manager
                                 UpdateTherm(m_frmTherm.progressBar1,
                                            m_intProgressStepCurrentCount,
                                            m_intProgressStepTotalCount);
-
-                                if (bRunFcs == true)
-                                {
-                                    ODBCMgr odbcMgr = new ODBCMgr();
-                                    // Create ODBC entry for the temporary cut list db file
-                                    if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName))
-                                    {
-                                        odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName);
-                                    }
-                                    odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName, strTreeTempDbFile);
-                                    m_dao.CreateSQLiteTableLink(oConn.DataSource, Tables.VolumeAndBiomass.BiosumVolumesInputTable,
-                                        Tables.VolumeAndBiomass.BiosumVolumesInputTable,
-                                        ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName, strTreeTempDbFile, true);
-                                    m_dao.CreateSQLiteTableLink(oConn.DataSource, strFvsTreeTable,
-                                        strFvsTreeTable, ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName, strTreeTempDbFile, true);
-                                    // Sleep to ensure table link is complete
-                                    Thread.Sleep(5000);
+                if (bRunFcs == true)
+                {
+                    string strTempAccdbPath = RunAppend_CreateTreeTablesTempDbWithTableLinks();
+                    oAdo.OpenConnection(oAdo.getMDBConnString(strTempAccdbPath, "", ""), ref oConn);
+                    ODBCMgr odbcMgr = new ODBCMgr();
+                    // Create ODBC entry for the temporary cut list db file
+                    if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName))
+                    {
+                        odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName);
+                    }
+                    odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName, strTreeTempDbFile);
+                    m_dao.CreateSQLiteTableLink(oConn.DataSource, Tables.VolumeAndBiomass.BiosumVolumesInputTable,
+                        Tables.VolumeAndBiomass.BiosumVolumesInputTable,
+                        ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName, strTreeTempDbFile, true);
+                    m_dao.CreateSQLiteTableLink(oConn.DataSource, strFvsTreeTable,
+                        strFvsTreeTable, ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName, strTreeTempDbFile, true);
+                    // Sleep to ensure table link is complete
+                    Thread.Sleep(5000);
 
                                     //join plot, cond, and tree table to oracle input tree volumes table.
                                     //NOTE: this query handles existing FIADB trees that have been grown forward.
@@ -5174,7 +5199,7 @@ namespace FIA_Biosum_Manager
                                         this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
                                     //Set DIAHTCD for FVS-Created trees using FIA_TREE_SPECIES_REF.WOODLAND_YN
-                                    oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculationDiaHtCdFvs(strFiaTreeSpeciesRefTableLink);
+                                    oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculationDiaHtCdFvs(Tables.ProcessorScenarioRun.DefaultFiaTreeSpeciesRefTableName);
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
                                     oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
@@ -5458,7 +5483,7 @@ namespace FIA_Biosum_Manager
 
                                         // DELETE WORK TABLES
                                         string[] arrDeleteTables = new string[] { Tables.VolumeAndBiomass.BiosumVolumesInputTable,
-                                            seqNumWorkTable, "cutlist_rowid_work_table"};
+                                            "cutlist_rowid_work_table"};
                                         foreach (var dTable in arrDeleteTables)
                                         {
                                             if (oDataMgr.TableExist(conn, dTable))
@@ -5475,14 +5500,11 @@ namespace FIA_Biosum_Manager
                                 p_intError = oDataMgr.m_intError;
                             }
                             p_intError = oDataMgr.m_intError;
-                        }
+                        //}
 
-                        if (oDataMgr.m_intError != 0 || m_intError != 0) break;
-
-                    }
-                    if (oDataMgr.m_intError != 0 || m_intError != 0) break;
-                }
-            }
+                    //}
+                //}
+            //}
             if (oDataMgr.m_intError != 0 || m_intError != 0)
             {
                 if (oDataMgr.m_intError != 0)
@@ -5784,7 +5806,6 @@ namespace FIA_Biosum_Manager
                         if ((bool)frmMain.g_oDelegate.GetListViewItemPropertyValue(oLv, x, "Checked", false) == true)
                         {
                             m_bPotFireBaseYearTableExist = true;
-                            m_strPotFireStandardLinkedTableName = "FVS_POTFIRE_STANDARD";
 
                             m_intProgressStepTotalCount = 20;
                             m_intProgressStepCurrentCount = 0;
@@ -6561,8 +6582,8 @@ namespace FIA_Biosum_Manager
             //PROCESS THE BASEYEAR AND STANDARD POTFIRE TABLES INTO ONE FVS_POTFIRE TABLE
             //
             oDao.OpenDb(p_strAuditDbFile);
-            oDao.RenameTable(oDao.m_DaoDatabase, strPotFireTable,m_strPotFireStandardLinkedTableName,true,true);
-            oDao.CreateTableLink(oDao.m_DaoDatabase,m_strPotFireBaseYearLinkedTableName, strPotFireBaseYearFile,strPotFireTable,true);
+            oDao.RenameTable(oDao.m_DaoDatabase, strPotFireTable, m_strPotFireStandardAccessLinkedTableName, true,true);
+            oDao.CreateTableLink(oDao.m_DaoDatabase, m_strPotFireBaseYearAccessLinkedTableName, strPotFireBaseYearFile,strPotFireTable,true);
             oDao.m_DaoDatabase.Close();
             oDao.m_DaoWorkspace.Close();
             oDao = null;
@@ -6575,8 +6596,8 @@ namespace FIA_Biosum_Manager
                 if (oAdo.TableExist(oAdo.m_OleDbConnection, "BASEYEAR")) oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE BASEYEAR");
                 if (oAdo.TableExist(oAdo.m_OleDbConnection, "NONBASEYEAR")) oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE NONBASEYEAR");
                 string[] strSQL = Queries.FVS.FVSOutputTable_PrePostPotFireBaseYearSQL(
-                    m_strPotFireBaseYearLinkedTableName,
-                    m_strPotFireStandardLinkedTableName,
+                    m_strPotFireBaseYearAccessLinkedTableName,
+                    m_strPotFireStandardAccessLinkedTableName,
                     "FVS_POTFIRE");
 
                 for (x = 0; x <= strSQL.Length - 1; x++)
@@ -6596,8 +6617,8 @@ namespace FIA_Biosum_Manager
                     oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "ALTER TABLE FVS_POTFIRE DROP COLUMN baseyear_yn");
                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                         this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-                    if (oAdo.TableExist(oAdo.m_OleDbConnection, m_strPotFireStandardLinkedTableName)) oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + m_strPotFireStandardLinkedTableName);
-                    if (oAdo.TableExist(oAdo.m_OleDbConnection, m_strPotFireBaseYearLinkedTableName)) oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + m_strPotFireBaseYearLinkedTableName);
+                    if (oAdo.TableExist(oAdo.m_OleDbConnection, m_strPotFireStandardAccessLinkedTableName)) oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + m_strPotFireStandardAccessLinkedTableName);
+                    if (oAdo.TableExist(oAdo.m_OleDbConnection, m_strPotFireBaseYearAccessLinkedTableName)) oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + m_strPotFireBaseYearAccessLinkedTableName);
                 }
                 oAdo.CloseConnection(oAdo.m_OleDbConnection);
             }
@@ -6633,6 +6654,12 @@ namespace FIA_Biosum_Manager
             string strRunTitle = $@"FVSOUT_{p_strFvsVariant}{m_oRxPackageItem.RunTitleSuffix}";
             string strBaseYrRunTitle = $@"FVSOUT_{p_strFvsVariant}_POTFIRE_BaseYr";
             strPotFireTable = GetPotfireTableName(p_strFVSOutDbFile, p_strFvsVariant);
+            if (string.IsNullOrEmpty(strPotFireTable))
+            {
+                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                    this.WriteText(m_strDebugFile, "FVS_POTFIRE/FVS_POTFIRE_EAST table does not exist. Potfire processing skipped\r\n");
+                return;
+            }
             //get the PREPOST SeqNum configuration for the POTFIRE table
             GetPrePostSeqNumConfiguration(strPotFireTable, p_strRxPackage);
             //
@@ -11481,11 +11508,6 @@ namespace FIA_Biosum_Manager
 
                         if ((bool)frmMain.g_oDelegate.GetListViewItemPropertyValue(oLv, x, "Checked", false) == true)
                         {
-                            m_bPotFireBaseYearTableExist = true;
-                            m_strPotFireBaseYearLinkedTableName = "FVS_POTFIRE_BASEYEAR";
-                            m_strPotFireStandardLinkedTableName = "FVS_POTFIRE_STANDARD";
-                            m_oPrePostDbFileItem_Collection = new DbFileItem_Collection();
-
                             int intItemError = 0;
                             string strItemError = "";
 
