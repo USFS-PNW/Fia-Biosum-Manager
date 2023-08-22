@@ -40,22 +40,14 @@ namespace FIA_Biosum_Manager
 		private const int COL_VARIANT = 1;
 	    private const int COL_PACKAGE = 2;
 		private const int COL_RUNSTATUS = 3;
-		private const int COL_MDBOUT = 4;
-		private const int COL_FOUND=5;
-		private const int COL_SUMMARYCOUNT = 6;
-		private const int COL_CUTCOUNT = 7;
-
-		//parse FVSOUT file name
-		const int VARIANT_POS = 7;
-		const int PACKAGE_POS = 11;
-		const int RX1_POS = 15;
-		const int RX2_POS = 19;
-		const int RX3_POS = 23;
-		const int RX4_POS = 27;
+		private const int COL_FOUND=4;
+		private const int COL_SUMMARYCOUNT = 5;
+		private const int COL_CUTCOUNT = 6;
+        private const int COL_MDBOUT = -1;  //@ToDo: Need to remove references from this in the post-audit
 
 
-		//private string m_strVariant;
-		private string m_strOutMDBFile="";
+        //private string m_strVariant;
+        private string m_strOutMDBFile="";
 		private string m_strRxTable="";
 		private string m_strPlotTable="";
 		private string m_strCondTable="";
@@ -675,13 +667,12 @@ namespace FIA_Biosum_Manager
 				if (frmMain.g_oGridViewFont!=null) this.lstFvsOutput.Font = frmMain.g_oGridViewFont;
 				this.lstFvsOutput.Clear();
 				this.lstFvsOutput.Columns.Add("",2,HorizontalAlignment.Left);
-				this.lstFvsOutput.Columns.Add("FVS Variant", 100, HorizontalAlignment.Left);
-				this.lstFvsOutput.Columns.Add("RxPackage", 100, HorizontalAlignment.Left);
-				this.lstFvsOutput.Columns.Add("Run Status",200,HorizontalAlignment.Left);
-				this.lstFvsOutput.Columns.Add("Output File", 10, HorizontalAlignment.Left);
-				this.lstFvsOutput.Columns.Add("Found in FVSOut.db", 80, HorizontalAlignment.Left);
-				this.lstFvsOutput.Columns.Add("Summary Count", 100, HorizontalAlignment.Left);
-				this.lstFvsOutput.Columns.Add("Tree Cut List Count", 100, HorizontalAlignment.Left);
+				this.lstFvsOutput.Columns.Add("FVS Variant", 90, HorizontalAlignment.Left);
+				this.lstFvsOutput.Columns.Add("RxPackage", 90, HorizontalAlignment.Left);
+				this.lstFvsOutput.Columns.Add("Run Status",190,HorizontalAlignment.Left);
+				this.lstFvsOutput.Columns.Add("FVSOut.db Recs", 120, HorizontalAlignment.Left);
+				this.lstFvsOutput.Columns.Add("Summary Recs", 100, HorizontalAlignment.Left);
+				this.lstFvsOutput.Columns.Add("Tree Cut Recs", 100, HorizontalAlignment.Left);
               
 				this.lstFvsOutput.Columns[COL_CHECKBOX].Width = -2;
 
@@ -818,7 +809,6 @@ namespace FIA_Biosum_Manager
 					this.m_oLvAlternateColors.AddColumns(lstFvsOutput.Items.Count-1,lstFvsOutput.Columns.Count);
 					entryListItem.SubItems.Add(strVariant);
 					entryListItem.SubItems.Add(strPackage);
-					entryListItem.SubItems.Add(" ");  //out mdb file
 					entryListItem.SubItems.Add(" ");  //file found
 					entryListItem.SubItems.Add(" ");  //summary record count
 					entryListItem.SubItems.Add(" ");  //tree cut list record count
