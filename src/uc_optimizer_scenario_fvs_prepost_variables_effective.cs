@@ -1828,12 +1828,12 @@ namespace FIA_Biosum_Manager
 			DataMgr oDataMgr = new DataMgr();
 
 			this.lstFVSTablesList.Items.Clear();
+			this.lstFVSTablesList.Sorted = true;
 			m_dictFVSTables = m_oOptimizerScenarioTools.LoadFvsTablesAndVariablesSqlite();
 			foreach (string strKey in m_dictFVSTables.Keys)
 			{
 				lstFVSTablesList.Items.Add(strKey);
 			}
-
 			m_oOldVar = new Variables();
 			m_oSavVar = new Variables();
 

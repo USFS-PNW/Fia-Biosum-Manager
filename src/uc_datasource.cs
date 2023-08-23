@@ -1471,31 +1471,31 @@ namespace FIA_Biosum_Manager
 			utils p_utils = new utils();
 			//used to create a link to the table
 			dao_data_access p_dao = new dao_data_access();
-			for (x=0; x <= this.lstRequiredTables.Items.Count - 1; x++)
+			for (x = 0; x <= this.lstRequiredTables.Items.Count - 1; x++)
 			{
-					if (this.lstRequiredTables.Items[x].SubItems[TABLESTATUS].Text.Trim().ToUpper()=="FOUND" &&
-						this.lstRequiredTables.Items[x].SubItems[FILESTATUS].Text.Trim().ToUpper()=="FOUND")
+				if (this.lstRequiredTables.Items[x].SubItems[TABLESTATUS].Text.Trim().ToUpper() == "FOUND" &&
+					this.lstRequiredTables.Items[x].SubItems[FILESTATUS].Text.Trim().ToUpper() == "FOUND")
+				{
+					if (strTempMDB.Trim().Length == 0)
 					{
-						if (strTempMDB.Trim().Length == 0)
-						{
-							//get temporary mdb file
-							strTempMDB = 
-								p_utils.getRandomFile(strDestinationLinkDir,"accdb");
+						//get temporary mdb file
+						strTempMDB =
+							p_utils.getRandomFile(strDestinationLinkDir, "accdb");
 
-							//create a temporary mdb that will contain all 
-							//the links to the scenario datasource tables
-							p_dao.CreateMDB(strTempMDB);
-
-						}
-						p_dao.CreateTableLink(strTempMDB,
-							this.lstRequiredTables.Items[x].SubItems[TABLE].Text.Trim(),
-							this.lstRequiredTables.Items[x].SubItems[PATH].Text.Trim() + "\\" +
-							     this.lstRequiredTables.Items[x].SubItems[MDBFILE].Text.Trim(),
-							this.lstRequiredTables.Items[x].SubItems[TABLE].Text.Trim());
-						this.m_intNumberOfValidTables++;
-						
+						//create a temporary mdb that will contain all 
+						//the links to the scenario datasource tables
+						p_dao.CreateMDB(strTempMDB);
 
 					}
+					p_dao.CreateTableLink(strTempMDB,
+						this.lstRequiredTables.Items[x].SubItems[TABLE].Text.Trim(),
+						this.lstRequiredTables.Items[x].SubItems[PATH].Text.Trim() + "\\" +
+							 this.lstRequiredTables.Items[x].SubItems[MDBFILE].Text.Trim(),
+						this.lstRequiredTables.Items[x].SubItems[TABLE].Text.Trim());
+					this.m_intNumberOfValidTables++;
+
+
+				}
 			}
 			p_utils = null;
 			p_dao = null;
@@ -1503,50 +1503,49 @@ namespace FIA_Biosum_Manager
 				MessageBox.Show("!!None of the scenario data source tables are found!!");
 			return strTempMDB;
 		}
-		public string CreateSqliteDBAndScenarioTableDataSourceLinks(string strDestinationLinkDir)
+		public string CreateDBAndScenarioTableDataSourceLinks(string strDestinationLinkDir)
         {
 			string strTempDB = "";
 			int x;
 			this.m_intNumberOfValidTables = 0;
-			//used to get the temporary random file name
+			// used to get the temporary random file name
 			utils p_utils = new utils();
-			//used to create a link to the table
-			DataMgr p_oDataMgr = new DataMgr();
+			// used to create a link to the table
+			DataMgr p_dataMgr = new DataMgr();
 			for (x = 0; x <= this.lstRequiredTables.Items.Count - 1; x++)
             {
 				if (this.lstRequiredTables.Items[x].SubItems[TABLESTATUS].Text.Trim().ToUpper() == "FOUND" &&
-						this.lstRequiredTables.Items[x].SubItems[FILESTATUS].Text.Trim().ToUpper() == "FOUND")
+					this.lstRequiredTables.Items[x].SubItems[FILESTATUS].Text.Trim().ToUpper() == "FOUND")
                 {
 					if (strTempDB.Trim().Length == 0)
-					{
-						//get temporary mdb file
-						strTempDB =
-							p_utils.getRandomFile(strDestinationLinkDir, "db");
-
-						//create a temporary mdb that will contain all 
-						//the links to the scenario datasource tables
-						p_oDataMgr.CreateDbFile(strTempDB);
-					}
-					// UNSURE HOW TO CONNECT MDB
-                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_oDataMgr.GetConnectionString(strTempDB)))
                     {
-                        conn.Open();
-                        if (!p_oDataMgr.DatabaseAttached(conn, this.lstRequiredTables.Items[x].SubItems[PATH].Text.Trim() + "\\" +
-                                 this.lstRequiredTables.Items[x].SubItems[MDBFILE].Text.Trim()))
-                        {
-                            p_oDataMgr.m_strSQL = "ATTACH DATABASE '" + this.lstRequiredTables.Items[x].SubItems[PATH].Text.Trim() + "\\" +
-                                 this.lstRequiredTables.Items[x].SubItems[MDBFILE].Text.Trim() + "' AS MASTERMDB";
-                            p_oDataMgr.SqlNonQuery(conn, p_oDataMgr.m_strSQL);
-                        }
-                        conn.Close();
+						// get temporary db file
+						strTempDB = p_utils.getRandomFile(strDestinationLinkDir, "db");
+
+						// create a temporary db that will contain all
+						// the links to the scenario datasource tables
+						p_dataMgr.CreateDbFile(strTempDB);
                     }
+					using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(strTempDB)))
+                    {
+						conn.Open();
+						p_dataMgr.m_strSQL = "ATTACH DATABASE '" + this.lstRequiredTables.Items[x].SubItems[PATH].Text.Trim() + "\\" +
+							 this.lstRequiredTables.Items[x].SubItems[MDBFILE].Text.Trim() + "'";
+						p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+						conn.Close();
+					}
+					this.m_intNumberOfValidTables++;
                 }
 
 			}
 			p_utils = null;
+			p_dataMgr = null;
 			if (strTempDB.Trim().Length == 0)
+            {
 				MessageBox.Show("!!None of the scenario data source tables are found!!");
+            }
 			return strTempDB;
+
 		}
 
 

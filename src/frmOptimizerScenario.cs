@@ -261,10 +261,7 @@ namespace FIA_Biosum_Manager
                 this.m_oEnv = new env();
 
                 //load weighted variable definitions
-                ado_data_access oAdo = new ado_data_access();
-                m_oOptimizerScenarioTools.LoadWeightedVariables(oAdo, m_oWeightedVariableCollection);
-                oAdo.m_OleDbDataReader.Close();
-                oAdo.CloseConnection(oAdo.m_OleDbConnection);
+                m_oOptimizerScenarioTools.LoadWeightedVariablesSqlite(m_oWeightedVariableCollection);
 
 			}
 			catch (Exception p_msg)
@@ -1537,13 +1534,13 @@ namespace FIA_Biosum_Manager
 					//open scenario
 					//
 				case 0:
-					frmMain.g_oFrmMain.OpenOptimizerScenario("Open", this);
+					frmMain.g_oFrmMain.OpenOptimizerScenarioSqlite("Open", this);
 					break;
 					//
 					//new scenario
 					//
 				case 1:
-					frmMain.g_oFrmMain.OpenOptimizerScenario("New", this);
+					frmMain.g_oFrmMain.OpenOptimizerScenarioSqlite("New", this);
 					break;
 				case 2:
 					this.SaveRuleDefinitionsSqlite();
@@ -2855,6 +2852,24 @@ namespace FIA_Biosum_Manager
                 "C");
             LoadAll(p_oQueries.m_strTempDbFile, p_oQueries, p_bProcessorUsingSqlite,
                 p_strScenarioId, p_oOptimizerScenarioItem_Collection);
+        }
+        public void LoadScenarioSqlite(string p_strScenarioId, Queries p_oQueries, bool p_bProcessorUsingSqlite,
+            OptimizerScenarioItem_Collection p_oOptimizerScenarioItem_Collection)
+        {
+
+            //
+            //LOAD PROJECT DATATASOURCES INFO
+            //
+            p_oQueries.m_oFvs.LoadDatasource = true;
+            p_oQueries.m_oFIAPlot.LoadDatasource = true;
+            p_oQueries.m_oProcessor.LoadDatasource = true;
+            p_oQueries.m_oReference.LoadDatasource = true;
+            p_oQueries.LoadDatasourcesSqlite(true, false, "optimizer", p_strScenarioId);
+            p_oQueries.m_oDataSource.CreateScenarioRuleDefinitionTableLinksSqlite(
+                p_oQueries.m_strTempDbFile,
+                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim(),
+                "C");
+            LoadAllSqlite(p_oQueries.m_strTempDbFile, p_oQueries, p_bProcessorUsingSqlite, p_strScenarioId, p_oOptimizerScenarioItem_Collection);
         }
         public void LoadAll(string p_strDbFile, Queries p_oQueries, bool p_bProcessorUsingSqlite, 
             string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem_Collection p_oOptimizerScenarioItem_Collection)
@@ -5106,16 +5121,18 @@ namespace FIA_Biosum_Manager
         {
             int x, y;
 
-            string strTargetDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
             DataMgr p_oDataMgr = new DataMgr();
+            System.Collections.Generic.Dictionary<string, System.Collections.Generic.IList<String>> _dictFVSTables =
+                new System.Collections.Generic.Dictionary<string,
+                System.Collections.Generic.IList<string>>();
+
+            // Connect to and pull from PREPOST_FVSOUT.db
+            string strTargetDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
 
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_oDataMgr.GetConnectionString(strTargetDb)))
             {
                 conn.Open();
 
-                System.Collections.Generic.Dictionary<string, System.Collections.Generic.IList<String>> _dictFVSTables =
-                new System.Collections.Generic.Dictionary<string,
-                System.Collections.Generic.IList<string>>();
                 if (p_oDataMgr.m_intError == 0)
                 {
                     string[] strTableNamesArray = p_oDataMgr.getTableNames(conn);
@@ -5188,9 +5205,81 @@ namespace FIA_Biosum_Manager
                         }
                     }
                 }
-                p_oDataMgr.CloseConnection(conn);
-                return _dictFVSTables;
+                conn.Close();
             }
+            // Connect to and pull from prepost_fvs_weighted.db
+            strTargetDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile;
+
+            using (System.Data.SQLite.SQLiteConnection weightedConn = new System.Data.SQLite.SQLiteConnection(p_oDataMgr.GetConnectionString(strTargetDb)))
+            {
+                weightedConn.Open();
+
+                if (p_oDataMgr.m_intError == 0)
+                {
+                    string[] strTableNamesArray = p_oDataMgr.getTableNames(weightedConn);
+                    for (x = 0; x <= strTableNamesArray.Length - 1; x++)
+                    {
+                        if (strTableNamesArray[x].ToUpper().IndexOf("PRE_", 0) == 0)
+                        {
+                            string strColumnNamesList = "";
+                            string strDataTypesList = "";
+                            p_oDataMgr.getFieldNamesAndDataTypes(weightedConn, "SELECT * FROM " + strTableNamesArray[x],
+                                ref strColumnNamesList, ref strDataTypesList);
+                            string[] strColumnNamesArray = new string[0];
+                            string[] strDataTypesArray = new string[0];
+                            if (!String.IsNullOrEmpty(strColumnNamesList))
+                            {
+                                strColumnNamesArray = strColumnNamesList.Split(",".ToCharArray());
+                                strDataTypesArray = strDataTypesList.Split(",".ToCharArray());
+                            }
+                            System.Collections.Generic.IList<string> lstFVSFields = new System.Collections.Generic.List<string>();
+                            for (y = 0; y <= strColumnNamesArray.Length - 1; y++)
+                            {
+                                switch (strColumnNamesArray[y].Trim().ToUpper())
+                                {
+                                    case "BIOSUM_COND_ID":
+                                        break;
+                                    case "RXPACKAGE":
+                                        break;
+                                    case "RX":
+                                        break;
+                                    case "RXCYCLE":
+                                        break;
+                                    case "FVS_VARIANT":
+                                        break;
+                                    default:
+                                        // Text data types can't be have a weight applied
+                                        if (!strDataTypesArray[y].Trim().ToUpper().Equals("SYSTEM.STRING"))
+                                        {
+                                            if (p_oDataMgr.ColumnExist(weightedConn,
+                                                "POST_" + strTableNamesArray[x].Substring(4, strTableNamesArray[x].Length - 4),
+                                                strColumnNamesArray[y]))
+                                            {
+                                                lstFVSFields.Add(strColumnNamesArray[y]);
+                                            }
+                                        }
+                                        break;
+                                }
+                            }
+                            if (lstFVSFields.Count > 0)
+                            {
+                                string strFvsTableName = strTableNamesArray[x].Substring(4, strTableNamesArray[x].Length - 4);
+                                if (!_dictFVSTables.ContainsKey(strFvsTableName))
+                                {
+                                    _dictFVSTables.Add(strFvsTableName, lstFVSFields);
+                                }
+                                else
+                                {
+                                    System.Collections.Generic.List<string> lstTemp = (System.Collections.Generic.List<string>)_dictFVSTables[strFvsTableName];
+                                    lstTemp.AddRange(lstFVSFields);
+                                }
+                            }
+                        }
+                    }
+                }
+                weightedConn.Close();
+            }
+            return _dictFVSTables;
         }
 
         public void LoadWeightedVariables(ado_data_access p_oAdo, FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables.Variable_Collection p_oWeightedVariableCollection)
@@ -5224,6 +5313,48 @@ namespace FIA_Biosum_Manager
                     }
                     p_oWeightedVariableCollection.Add(oItem);
                 }
+            }
+        }
+
+        public void LoadWeightedVariablesSqlite( FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables.Variable_Collection p_oWeightedVariableCollection)
+        {
+            p_oWeightedVariableCollection.Clear();
+            DataMgr p_oDataMgr = new DataMgr();
+
+            string optimizerDefDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultSqliteDbFile;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_oDataMgr.GetConnectionString(optimizerDefDbFile)))
+            {
+                conn.Open();
+                p_oDataMgr.m_strSQL = "SELECT * " +
+                    "FROM " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName;
+                p_oDataMgr.SqlQueryReader(conn, p_oDataMgr.m_strSQL);
+
+                if (p_oDataMgr.m_intError == 0)
+                {
+                    //load step one with wind class speed definitions
+                    while (p_oDataMgr.m_DataReader.Read())
+                    {
+                        FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables.VariableItem oItem = new uc_optimizer_scenario_calculated_variables.VariableItem();
+                        oItem.intId = Convert.ToInt32(p_oDataMgr.m_DataReader["id"]);
+                        oItem.strVariableName = Convert.ToString(p_oDataMgr.m_DataReader["variable_name"]).Trim();
+                        oItem.strVariableType = Convert.ToString(p_oDataMgr.m_DataReader["VARIABLE_TYPE"]).Trim();
+                        if (p_oDataMgr.m_DataReader["variable_description"] != System.DBNull.Value)
+                        {
+                            oItem.strVariableDescr = Convert.ToString(p_oDataMgr.m_DataReader["variable_description"]).Trim();
+                        }
+                        if (p_oDataMgr.m_DataReader["BASELINE_RXPACKAGE"] != System.DBNull.Value)
+                        {
+                            oItem.strRxPackage = Convert.ToString(p_oDataMgr.m_DataReader["BASELINE_RXPACKAGE"]).Trim();
+                        }
+                        if (p_oDataMgr.m_DataReader["VARIABLE_SOURCE"] != System.DBNull.Value)
+                        {
+                            oItem.strVariableSource = Convert.ToString(p_oDataMgr.m_DataReader["VARIABLE_SOURCE"]).Trim();
+                        }
+                        p_oWeightedVariableCollection.Add(oItem);
+                    }
+                    p_oDataMgr.m_DataReader.Close();
+                }
+                conn.Close();
             }
         }
 

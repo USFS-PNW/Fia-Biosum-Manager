@@ -96,6 +96,42 @@ namespace FIA_Biosum_Manager
 			m_strTempDbFile = this.m_oDataSource.CreateMDBAndTableDataSourceLinks();
 		}
 
+        public void LoadDatasourcesSqlite(bool p_bLimited, bool p_bUsingSqlite, string p_strScenarioType, string p_strScenarioId)
+        {
+            Scenario = true;
+            ScenarioType = p_strScenarioType;
+            if (p_bLimited)
+            {
+                LoadLimitedDatasourcesSqlite(p_strScenarioType, p_strScenarioId);
+            }
+            if (this.m_oDataSource.m_intError < 0)
+            {
+                // An error has occurred in LoadLimitedDatasources
+                // The error originates in populate_datasource_array()
+                MessageBox.Show("An error occurred while loading data sources! Close the current window " +
+                                "and try again. If the problem persists, close and restart FIA Biosum Manager.",
+                                "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+                return;
+            }
+            if (this.m_oFvs.LoadDatasource)
+            {
+                this.m_oFvs.LoadDatasources();
+            }
+            if (this.m_oFIAPlot.LoadDatasource)
+            {
+                this.m_oFIAPlot.LoadDatasources();
+            }
+            if (this.m_oReference.LoadDatasource)
+            {
+                this.m_oReference.LoadDatasources();
+            }
+            if (this.m_oProcessor.LoadDatasource)
+            {
+                this.m_oProcessor.LoadDatasources();
+            }
+            m_strTempDbFile = this.m_oDataSource.CreateDBAndTableDataSourceLinks();
+        }
+
 		protected void LoadLimitedDatasources()
 		{
 			string strProjDir=frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
@@ -129,6 +165,18 @@ namespace FIA_Biosum_Manager
                 m_oDataSource.m_strDataSourceMDBFile = strProjDir.Trim() + "\\" + p_strScenarioType + "\\db\\scenario_" + p_strScenarioType + "_rule_definitions.db";
                 m_oDataSource.populate_datasource_array_sqlite();
             }
+        }
+        protected void LoadLimitedDatasourcesSqlite(string p_strScenarioType, string p_strScenarioId)
+        {
+            string strProjDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+
+            m_oDataSource = new Datasource();
+            m_oDataSource.LoadTableColumnNamesAndDataTypes = false;
+            m_oDataSource.m_strScenarioId = p_strScenarioId.Trim();
+            m_oDataSource.LoadTableRecordCount = false;
+            m_oDataSource.m_strDataSourceTableName = "scenario_datasource";
+            m_oDataSource.m_strDataSourceMDBFile = strProjDir.Trim() + "\\" + p_strScenarioType + "\\db\\scenario_" + p_strScenarioType + "_rul_definitions.db";
+            m_oDataSource.populate_datasource_array_sqlite();
         }
 		static public string GetInsertSQL(string p_strFields, string p_strValues,string p_strTable)
 		{

@@ -1414,8 +1414,8 @@ namespace FIA_Biosum_Manager
 						return;
 					}
 				}
-                if (ReferenceProcessorScenarioForm != null &&
-                    ReferenceProcessorScenarioForm.m_bUsingSqlite)
+                if (ScenarioType.Trim().ToUpper() == "OPTIMIZER" || (ReferenceProcessorScenarioForm != null &&
+                    ReferenceProcessorScenarioForm.m_bUsingSqlite))
                 {
                     this.SaveScenarioPropertiesSqlite();
                 }

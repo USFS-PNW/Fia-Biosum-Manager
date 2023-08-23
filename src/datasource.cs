@@ -162,17 +162,17 @@ namespace FIA_Biosum_Manager
 		/// <param name="strScenarioId">Value is used to query core analysis scenario datasource infornation.</param>
 		public Datasource(string strProjDir, string strScenarioId)
 		{
-            this.m_strDataSourceMDBFile = strProjDir + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
+            this.m_strDataSourceMDBFile = strProjDir + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
 			this.m_strDataSourceTableName = "scenario_datasource";
 			this.m_strScenarioId = strScenarioId;
-			this.populate_datasource_array();
+			this.populate_datasource_array_sqlite();
 		}
 		public Datasource(string p_strProjDir, string p_strScenarioId,string p_strScenarioType)
 		{
-			this.m_strDataSourceMDBFile = p_strProjDir + "\\" + p_strScenarioType + "\\db\\scenario_" + p_strScenarioType + "_rule_definitions.mdb";
+			this.m_strDataSourceMDBFile = p_strProjDir + "\\" + p_strScenarioType + "\\db\\scenario_" + p_strScenarioType + "_rule_definitions.db";
 			this.m_strDataSourceTableName = "scenario_datasource";
 			this.m_strScenarioId = p_strScenarioId;
-			this.populate_datasource_array();
+			this.populate_datasource_array_sqlite();
 		}
 		~Datasource()
 		{
@@ -604,6 +604,63 @@ namespace FIA_Biosum_Manager
 				MessageBox.Show("!!None of the data source tables are found!!");
 			return strTempMDB;
 		}
+		public string CreateDBAndTableDataSourceLinks()
+        {
+			macrosubst oMacroSub = new macrosubst();
+			oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
+			string strTempDB = "";
+			int x;
+
+			FIA_Biosum_Manager.env p_env = new env();
+			this.m_intNumberOfValidTables = 0;
+
+			// used to get the temporary random file name
+			utils p_utils = new utils();
+
+			// used to create a link to the table
+			DataMgr p_dataMgr = new DataMgr();
+
+			for (x=0; x <= this.m_intNumberOfTables - 1; x++)
+            {
+				string strFileStatus = this.m_strDataSource[x, FILESTATUS];
+				if (strFileStatus != null)
+                {
+					strFileStatus = strFileStatus.Trim().ToUpper();
+                }
+				string strTableStatus = this.m_strDataSource[x, TABLESTATUS];
+				if (strTableStatus != null)
+                {
+					strTableStatus = strTableStatus.Trim().ToUpper();
+				}
+				if (strTableStatus == "F" && strFileStatus == "F")
+                {
+					if (strTempDB.Trim().Length == 0)
+                    {
+						// get temporary db file
+						strTempDB = p_utils.getRandomFile(p_env.strTempDir, "db");
+
+						//create a temporary mdb that will contain all 
+						//the links to the scenario datasource tables
+						p_dataMgr.CreateDbFile(strTempDB);
+					}
+					using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(strTempDB)))
+                    {
+						p_dataMgr.m_strSQL = "ATTACH DATABASE '" + oMacroSub.GeneralTranslateVariableSubstitution(this.m_strDataSource[x, PATH].Trim()) + "\\" +
+								 this.m_strDataSource[x, MDBFILE].Trim() + "'";
+						p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+					}
+					this.m_intNumberOfValidTables++;
+				}
+			}
+			p_utils = null;
+			p_dataMgr = null;
+			p_env = null;
+			if (strTempDB.Trim().Length == 0)
+            {
+				MessageBox.Show("!!None of the data source tables are found!!");
+			}
+			return strTempDB;
+		}
         public void CreateScenarioRuleDefinitionTableLinks(string p_strDestDbFile,string p_strProjectPath,string p_strType)
         {
             //used to create a link to the table
@@ -615,6 +672,20 @@ namespace FIA_Biosum_Manager
             oDao.m_DaoTableDef = null;
             oDao.m_DaoDatabase = null;
            
+        }
+		public void CreateScenarioRuleDefinitionTableLinksSqlite(string p_strDestDbFile, string p_strProjectPath, string p_strType)
+        {
+			// NEED TO ADD PROCESSOR TABLES WHEN PROCESSOR IS MIGRATED
+			// used to create a link to the table
+			DataMgr oDataMgr = new DataMgr();
+			string strSourceDB = p_strProjectPath + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(p_strDestDbFile)))
+            {
+				conn.Open();
+				oDataMgr.m_strSQL = "ATTACH DATABASE '" + strSourceDB + "'";
+				oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+				conn.Close();
+            }
         }
         /// <summary>
         /// create links to each of the scenario tables

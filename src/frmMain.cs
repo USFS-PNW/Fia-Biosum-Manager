@@ -182,7 +182,7 @@ namespace FIA_Biosum_Manager
         public static System.Drawing.Color g_oGridViewSelectedRowBackgroundColor = Color.Magenta;
 
         //debugging values
-        public static bool g_bDebug=false;
+        public static bool g_bDebug=true;
         public static int g_intDebugLevel = 3;
         
 
@@ -1382,11 +1382,11 @@ namespace FIA_Biosum_Manager
                     oFrmScenario.Text = "Treatment Optimizer: Optimization Scenario (" + oFrmOptimizerScenario.uc_scenario_open1.txtScenarioId.Text.Trim() + ")";
 					oFrmScenario.m_bScenarioOpen = true;
                     oFrmScenario.HelpChapter = "EDIT_SCENARIO";
-                    oFrmScenario.uc_datasource1.strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+                    oFrmScenario.uc_datasource1.strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
 					oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
                     oFrmScenario.uc_datasource1.strScenarioId = oFrmOptimizerScenario.uc_scenario_open1.txtScenarioId.Text.Trim();
 					oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
-					oFrmScenario.uc_datasource1.LoadValuesSqlite();
+					oFrmScenario.uc_datasource1.LoadValues(frmProject.uc_project1.m_strDebugFile);
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Loaded datasource values\r\n");
 
@@ -1394,7 +1394,7 @@ namespace FIA_Biosum_Manager
                     oFrmScenario.uc_scenario1.strScenarioId = oFrmOptimizerScenario.uc_scenario_open1.strScenarioId;
                     oFrmScenario.uc_scenario1.strScenarioPath = oFrmOptimizerScenario.uc_scenario_open1.strScenarioPath;
                     oFrmScenario.uc_scenario_notes1.ReferenceOptimizerScenarioForm=oFrmScenario;
-					oFrmScenario.uc_scenario_notes1.LoadValuesSqlite();
+					oFrmScenario.uc_scenario_notes1.LoadValues();
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Loaded notes\r\n");
                     oFrmScenario.tlbScenario.Buttons[5].Visible = true; //properties
@@ -1426,7 +1426,7 @@ namespace FIA_Biosum_Manager
 					oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
                     oFrmScenario.uc_datasource1.strScenarioId = oFrmOptimizerScenario.uc_scenario1.txtScenarioId.Text.Trim();
 					oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
-					oFrmScenario.uc_datasource1.LoadValuesSqlite();
+					oFrmScenario.uc_datasource1.LoadValues(frmProject.uc_project1.m_strDebugFile);
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Loaded datasource values\r\n");
 
@@ -1447,7 +1447,102 @@ namespace FIA_Biosum_Manager
 
 		}
 
-		public void OpenProcessorScenario(string p_strType,frmProcessorScenario p_frmProcessorScenario)
+        public void OpenOptimizerScenarioSqlite(string p_strType, frmOptimizerScenario p_frmOptimizerScenario)
+        {
+            FIA_Biosum_Manager.frmOptimizerScenario oFrmOptimizerScenario = new frmOptimizerScenario(this);
+
+            DialogResult result;
+            if (p_strType == "Open")
+            {
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "=====================   OpenOptimizerScenario   =====================\r\n");
+
+
+                oFrmOptimizerScenario.InitializeOpenScenario(frmProject.uc_project1.m_strDebugFile);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: frmOptimizerScenario.InitializeOpenScenario() successful! \r\n");
+                oFrmOptimizerScenario.uc_scenario_open1.Height = oFrmOptimizerScenario.uc_scenario_open1.m_intFullHt;
+                oFrmOptimizerScenario.uc_scenario_open1.Width = oFrmOptimizerScenario.uc_scenario_open1.m_intFullWd;
+                oFrmOptimizerScenario.Height = oFrmOptimizerScenario.uc_scenario_open1.Height + oFrmOptimizerScenario.uc_scenario_open1.Top + 50;
+
+                result = oFrmOptimizerScenario.ShowDialog();
+                if (result == DialogResult.OK)
+                {
+                    frmOptimizerScenario oFrmScenario = new frmOptimizerScenario(this);
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    {
+                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Initialized new frmOptimizerScenario\r\n");
+                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Existing scenario name: " + oFrmOptimizerScenario.uc_scenario_open1.txtScenarioId.Text + "\r\n");
+                    }
+                    oFrmScenario.Text = "Treatment Optimizer: Optimization Scenario (" + oFrmOptimizerScenario.uc_scenario_open1.txtScenarioId.Text.Trim() + ")";
+                    oFrmScenario.m_bScenarioOpen = true;
+                    oFrmScenario.HelpChapter = "EDIT_SCENARIO";
+                    oFrmScenario.uc_datasource1.strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+                    oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
+                    oFrmScenario.uc_datasource1.strScenarioId = oFrmOptimizerScenario.uc_scenario_open1.txtScenarioId.Text.Trim();
+                    oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+                    oFrmScenario.uc_datasource1.LoadValuesSqlite();
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Loaded datasource values\r\n");
+
+                    oFrmScenario.uc_scenario1.strScenarioDescription = oFrmOptimizerScenario.uc_scenario_open1.strScenarioDescription;
+                    oFrmScenario.uc_scenario1.strScenarioId = oFrmOptimizerScenario.uc_scenario_open1.strScenarioId;
+                    oFrmScenario.uc_scenario1.strScenarioPath = oFrmOptimizerScenario.uc_scenario_open1.strScenarioPath;
+                    oFrmScenario.uc_scenario_notes1.ReferenceOptimizerScenarioForm = oFrmScenario;
+                    oFrmScenario.uc_scenario_notes1.LoadValuesSqlite();
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Loaded notes\r\n");
+                    oFrmScenario.tlbScenario.Buttons[5].Visible = true; //properties
+                    oFrmScenario.tlbScenario.Buttons[7].Visible = true; //copy
+                    oFrmScenario.MdiParent = this;
+                    oFrmScenario.Show();
+                }
+            }
+            else
+            {
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Creating new scenario\r\n");
+                oFrmOptimizerScenario.InitializeNewScenario();
+                oFrmOptimizerScenario.MinimizeBox = false;
+                result = oFrmOptimizerScenario.ShowDialog();
+                if (result == DialogResult.OK)
+                {
+                    frmOptimizerScenario oFrmScenario = new frmOptimizerScenario(this);
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    {
+                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Initialized new frmOptimizerScenario\r\n");
+                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: New scenario name: " + oFrmOptimizerScenario.uc_scenario1.txtScenarioId.Text + "\r\n");
+
+                    }
+                    oFrmScenario.Text = "Treatment Optimizer: Optimization Scenario (" + oFrmOptimizerScenario.uc_scenario1.txtScenarioId.Text.Trim() + ")";
+                    oFrmScenario.m_bScenarioOpen = true;
+                    oFrmScenario.HelpChapter = "EDIT_SCENARIO";
+                    oFrmScenario.uc_datasource1.strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+                    oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
+                    oFrmScenario.uc_datasource1.strScenarioId = oFrmOptimizerScenario.uc_scenario1.txtScenarioId.Text.Trim();
+                    oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+                    oFrmScenario.uc_datasource1.LoadValuesSqlite();
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Loaded datasource values\r\n");
+
+                    oFrmScenario.uc_scenario1.strScenarioDescription = oFrmOptimizerScenario.uc_scenario1.strScenarioDescription;
+                    oFrmScenario.uc_scenario1.strScenarioId = oFrmOptimizerScenario.uc_scenario1.strScenarioId;
+                    oFrmScenario.uc_scenario1.strScenarioPath = oFrmOptimizerScenario.uc_scenario1.strScenarioPath;
+                    oFrmScenario.tlbScenario.Buttons[5].Visible = true; //properties
+                    oFrmScenario.tlbScenario.Buttons[7].Visible = true; //copy
+                    oFrmScenario.MdiParent = this;
+                    oFrmScenario.Show();
+                    if (p_frmOptimizerScenario != null)
+                    {
+                        p_frmOptimizerScenario.DialogResult = DialogResult.Cancel;
+                    }
+                }
+            }
+
+
+        }
+
+        public void OpenProcessorScenario(string p_strType,frmProcessorScenario p_frmProcessorScenario)
 		{
 			FIA_Biosum_Manager.frmProcessorScenario oFrmProcessorScenario = new frmProcessorScenario(this);
 
@@ -1685,12 +1780,12 @@ namespace FIA_Biosum_Manager
 					{
 						if (lngCount > 0)
 						{
-							OpenOptimizerScenario("Open", null);
+							OpenOptimizerScenarioSqlite("Open", null);
 						}
 						else
 						{
 
-							OpenOptimizerScenario("New", null);
+							OpenOptimizerScenarioSqlite("New", null);
 						}
 					}
                     oAdo = null;
@@ -2197,12 +2292,12 @@ namespace FIA_Biosum_Manager
                     {
                         if (lngCount > 0)
                         {
-                            OpenOptimizerScenario("Open", null);
+                            OpenOptimizerScenarioSqlite("Open", null);
                         }
                         else
                         {
 
-                            OpenOptimizerScenario("New", null);
+                            OpenOptimizerScenarioSqlite("New", null);
                         }
                     }
                     oDataMgr = null;

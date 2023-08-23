@@ -303,7 +303,7 @@ namespace FIA_Biosum_Manager
 
             this.txtDetails.Text  = "";
 
-            CheckIfScenarioLoaded(lvOptimizerScenario.SelectedItems[0].SubItems[1].Text.Trim(),out x);
+            CheckIfScenarioLoadedSqlite(lvOptimizerScenario.SelectedItems[0].SubItems[1].Text.Trim(),out x);
             
             this.m_oOptimizerScenarioItem = m_oOptimizerScenarioItem_Collection.Item(x);
 
@@ -335,7 +335,7 @@ namespace FIA_Biosum_Manager
             DialogResult result = MessageBox.Show(strMsg, "FIA Biosum", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (result == DialogResult.Yes)
             {
-                CheckIfScenarioLoaded(lvOptimizerScenario.SelectedItems[0].SubItems[1].Text.Trim(), out x);
+                CheckIfScenarioLoadedSqlite(lvOptimizerScenario.SelectedItems[0].SubItems[1].Text.Trim(), out x);
 
                 this.m_oOptimizerScenarioItem = m_oOptimizerScenarioItem_Collection.Item(x);
 
@@ -374,6 +374,29 @@ namespace FIA_Biosum_Manager
                 lblMsg.Refresh();
                 //load the scenario into the collection
                 m_oOptimizerScenarioTools.LoadScenario(
+                    p_strScenarioId.Trim(),
+                    m_oQueries, ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite,
+                    m_oOptimizerScenarioItem_Collection);
+                lblMsg.Hide();
+            }
+        }
+        private void CheckIfScenarioLoadedSqlite(string p_strScenarioId, out int x)
+        {
+
+            //search to see if this scenario was loaded into the collection
+            for (x = 0; x <= m_oOptimizerScenarioItem_Collection.Count - 1; x++)
+            {
+                if (m_oOptimizerScenarioItem_Collection.Item(x).ScenarioId.Trim().ToUpper() ==
+                    p_strScenarioId.Trim().ToUpper()) break;
+            }
+            if (x > m_oOptimizerScenarioItem_Collection.Count - 1)
+            {
+
+                lblMsg.Text = "Loading Treatment Optimizer Scenario " + p_strScenarioId.Trim() + "...Stand By";
+                lblMsg.Show();
+                lblMsg.Refresh();
+                //load the scenario into the collection
+                m_oOptimizerScenarioTools.LoadScenarioSqlite(
                     p_strScenarioId.Trim(),
                     m_oQueries, ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite,
                     m_oOptimizerScenarioItem_Collection);

@@ -2566,7 +2566,7 @@ namespace FIA_Biosum_Manager
             //set FVS table and variable
             if (strPieces.Length == 2)
             {
-                for (int index = 0; index < lstFVSTablesList.Items.Count + 1; index++)
+                for (int index = 0; index < lstFVSTablesList.Items.Count; index++)
                 {
                     string item = lstFVSTablesList.Items[index].ToString();
                     if (strPieces[0] == item)
@@ -2575,7 +2575,7 @@ namespace FIA_Biosum_Manager
                         break;
                     }
                 }
-                for (int index = 0; index < lstFVSFieldsList.Items.Count + 1; index++)
+                for (int index = 0; index < lstFVSFieldsList.Items.Count; index++)
                 {
                     string item = lstFVSFieldsList.Items[index].ToString();
                     if (strPieces[1] == item)
