@@ -1548,18 +1548,18 @@ namespace FIA_Biosum_Manager
 				case 3:
                     if (this.uc_scenario_open1 != null)
 					{
-                        if(uc_scenario1.DeleteScenario(uc_scenario_open1.txtScenarioId.Text.Trim()))
+                        if(uc_scenario1.DeleteScenarioSqlite(uc_scenario_open1.txtScenarioId.Text.Trim()))
 						    uc_scenario_open1.lstScenario.Items.Remove(uc_scenario_open1.lstScenario.SelectedItems[0]);
 					}
 					else
 					{
-						if (uc_scenario1.DeleteScenario(uc_scenario1.txtScenarioId.Text.Trim()))
+						if (uc_scenario1.DeleteScenarioSqlite(uc_scenario1.txtScenarioId.Text.Trim()))
 							this.Close();
 					}
                     break;
                 case 4:
                     if (this.m_lrulesfirsttime == true)
-                        LoadRuleDefinitions();
+                        LoadRuleDefinitionsSqlite();
                     else
                     {
                         SaveRuleDefinitionsSqlite();
