@@ -2402,10 +2402,10 @@ namespace FIA_Biosum_Manager
             }
             static public string[] FVSOutputTable_AuditPostSummaryFVS(string p_strRxTable,string p_strRxPackageTable,string p_strTreeTable,
                 string p_strPlotTable,string p_strCondTable, string p_strPostAuditSummaryTable,string p_strFvsTreeTableName,
-                string p_strRxPackage)
+                string p_strRxPackage, string p_strFvsVariant)
             {
-                string[] sqlArray = new string[15];
-                
+                string[] sqlArray = new string[14];
+
                 sqlArray[0] = "SELECT * INTO rxpackage_work_table FROM (" +
                             "SELECT	 rxpackage, simyear1_fvscycle AS rxcycle, simyear1_rx as RX FROM " + p_strRxPackageTable + " " +
                             "UNION " +
@@ -2446,30 +2446,15 @@ namespace FIA_Biosum_Manager
                                 "'" + p_strRxPackage + "' AS RXPACKAGE," +
                                 "IIF(BIOSUM_COND_ID IS NULL OR LEN(TRIM(BIOSUM_COND_ID)) = 0,''," +
                                 "IIF(LEN(TRIM(BIOSUM_COND_ID)) >= 24,MID(BIOSUM_COND_ID,1,24),BIOSUM_COND_ID)) AS BIOSUM_PLOT_ID," +
-                                "BIOSUM_COND_ID FROM " + p_strFvsTreeTableName;
-                
-                //sqlArray[10] = "SELECT ID," +
-                //                "'" +  p_strFVSTreeFileName + "' AS FVS_TREE_FILE," +
-                //                "IIF(BIOSUM_COND_ID IS NULL OR LEN(TRIM(BIOSUM_COND_ID)) = 0,''," +
-                //                "IIF(LEN(TRIM(BIOSUM_COND_ID)) >= 24,MID(BIOSUM_COND_ID,1,24),BIOSUM_COND_ID)) AS BIOSUM_PLOT_ID," +
-                //                "BIOSUM_COND_ID " +
-                //              "INTO fvs_tree_biosum_plot_id_work_table " +
-                //              "FROM " + p_strFvsTreeTableName;
+                                "BIOSUM_COND_ID FROM " + p_strFvsTreeTableName;                
 
-                //sqlArray[11] = "ALTER TABLE fvs_tree_biosum_plot_id_work_table ALTER COLUMN biosum_plot_id CHAR(24)";
-
-                //sqlArray[12] = "ALTER TABLE fvs_tree_biosum_plot_id_work_table ALTER COLUMN biosum_cond_id CHAR(25)";
-
-                //sqlArray[13] = "ALTER TABLE fvs_tree_biosum_plot_id_work_table ALTER COLUMN fvs_tree_file CHAR(26)";
-
-                sqlArray[12] = $@"DELETE FROM {p_strPostAuditSummaryTable} WHERE RXPACKAGE = '{p_strRxPackage}'"; 
-
-                sqlArray[13] =
+                sqlArray[12] =
                     "INSERT INTO  " + p_strPostAuditSummaryTable + " " +
                     "SELECT * FROM " +
                     "(SELECT DISTINCT " +
-                        "'001' AS [INDEX]," +
+                        "'001' AS idx," +
                         "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                        "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                         "'BIOSUM_COND_ID' AS COLUMN_NAME," +
                         "biosum_cond_id_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                         "biosum_cond_id_not_found_in_cond_table_count.NOT_FOUND_IN_COND_TABLE_COUNT AS NF_IN_COND_TABLE_ERROR," +
@@ -2494,8 +2479,9 @@ namespace FIA_Biosum_Manager
                                            "WHERE b.BIOSUM_PLOT_ID = a.BIOSUM_PLOT_ID)) biosum_cond_id_not_found_in_plot_table_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'002' AS [INDEX]," +
+                   "'002' AS idx," +
                     "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                    "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'RXCYCLE' AS COLUMN_NAME," +
                    "rxcycle_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                    "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2513,8 +2499,9 @@ namespace FIA_Biosum_Manager
                     "WHERE a.RXCYCLE IS NULL OR a.RXCYCLE NOT IN ('1','2','3','4')) rxcycle_value_notvalid_count " +
                      "UNION " +
                      "SELECT DISTINCT " +
-                        "'003' AS [INDEX]," +
+                        "'003' AS idx," +
 						"'" + p_strRxPackage + "' AS RXPACKAGE," +
+                        "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                         "'RXPACKAGE' AS COLUMN_NAME," +
                         "rxpackage_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                         "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2534,8 +2521,9 @@ namespace FIA_Biosum_Manager
                                            "WHERE fvs.rxpackage = rxp.rxpackage)) notfound_in_rxpackage_table " +
                      "UNION " +
                      "SELECT DISTINCT " +
-                        "'004' AS [INDEX]," +
+                        "'004' AS idx," +
                         "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                        "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                         "'RX' AS COLUMN_NAME," +
                         "rx_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                         "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2561,8 +2549,9 @@ namespace FIA_Biosum_Manager
                                                  "TRIM(fvs.rx)=TRIM(rxp.rx))) not_found_rxpackage_rxcycle_rx_combo_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'005' AS [INDEX]," +
+                   "'005' AS idx," +
                     "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                    "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'RXYEAR' AS COLUMN_NAME," +
                    "rxyear_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                    "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2578,8 +2567,9 @@ namespace FIA_Biosum_Manager
                     "WHERE RXYEAR IS NULL OR LEN(TRIM(RXYEAR))=0) rxyear_no_value_count " +
                      "UNION " +
                      "SELECT DISTINCT " +
-                        "'006' AS [INDEX]," +
+                        "'006' AS idx," +
                          "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                         "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                         "'DBH' AS COLUMN_NAME," +
                         "dbh_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                         "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2602,8 +2592,9 @@ namespace FIA_Biosum_Manager
                                "fvs.DBH <> fia.DIA) dia_value_error " +
                      "UNION " +
                      "SELECT DISTINCT " +
-                        "'007' AS [INDEX]," +
+                        "'007' AS idx," +
                         "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                        "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                         "'TPA' AS COLUMN_NAME," +
                         "tpa_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                         "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2619,8 +2610,9 @@ namespace FIA_Biosum_Manager
                          "WHERE TPA IS NULL) tpa_no_value_count " +
                      "UNION " +
                      "SELECT DISTINCT " +
-                        "'008' AS [INDEX]," +
+                        "'008' AS idx," +
                          "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                        "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                         "'VOLCFNET' AS COLUMN_NAME," +
                         "volcfnet_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                         "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2636,8 +2628,9 @@ namespace FIA_Biosum_Manager
                          "WHERE VOLCFNET IS NULL) volcfnet_no_value_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'009' AS [INDEX]," +
+                   "'009' AS idx," +
                     "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                   "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'VOLTSGRS' AS COLUMN_NAME," +
                    "voltsgrs_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                    "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2653,8 +2646,9 @@ namespace FIA_Biosum_Manager
                     "WHERE VOLTSGRS IS NULL) voltsgrs_no_value_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'010' AS [INDEX]," +
+                   "'010' AS idx," +
 				   "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                  "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'VOLCFGRS' AS COLUMN_NAME," +
                    "volcfgrs_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                    "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2670,8 +2664,9 @@ namespace FIA_Biosum_Manager
                      "WHERE DBH IS NOT NULL AND DBH >= 5 AND VOLCFGRS IS NULL) volcfgrs_no_value_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'011' AS [INDEX]," +
+                   "'011' AS idx," +
                    "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                   "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'DRYBIOT' AS COLUMN_NAME," +
                    "drybiot_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                    "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2687,8 +2682,9 @@ namespace FIA_Biosum_Manager
                     "WHERE DRYBIOT IS NULL) drybiot_no_value_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'012' AS [INDEX]," +
+                   "'012' AS idx," +
                    "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                   "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'DRYBIOM' AS COLUMN_NAME," +
                    "drybiom_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                    "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2704,8 +2700,9 @@ namespace FIA_Biosum_Manager
                     "WHERE DBH IS NOT NULL AND DBH >= 5 AND DRYBIOM IS NULL) drybiom_no_value_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'013' AS [INDEX]," +
+                   "'013' AS idx," +
                    "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                   "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'FVS_TREE_ID' AS COLUMN_NAME," +
                    "fvs_tree_id_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                    "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2727,8 +2724,9 @@ namespace FIA_Biosum_Manager
                               "WHERE a.fvs_tree_id = b.fvs_tree_id and a.biosum_cond_id = b.biosum_cond_id)) fvs_tree_id_not_found_in_tree_table_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'014' AS [INDEX]," +
+                   "'014' AS idx," +
                     "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                   "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'FVSCREATEDTREE_YN' AS COLUMN_NAME," +
                    "fvscreatedtree_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                    "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2744,8 +2742,9 @@ namespace FIA_Biosum_Manager
                     "WHERE FvsCreatedTree_YN IS NULL OR LEN(TRIM(FvsCreatedTree_YN))=0) fvscreatedtree_no_value_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'015' AS [INDEX]," +
+                   "'015' AS idx," +
                    "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                   "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'FVS_SPECIES' AS COLUMN_NAME," +
                    "fvs_species_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                    "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2767,8 +2766,8 @@ namespace FIA_Biosum_Manager
                           "a.FVS_TREE_ID IS NOT NULL AND " +
                           "LEN(TRIM(a.FVS_TREE_ID)) >  0 AND " +
                           "VAL(a.FVS_SPECIES) <> b.SPCD) fvs_species_change_count)";
-                sqlArray[14] = $@"UPDATE {p_strPostAuditSummaryTable} SET CREATED_DATE='{DateTime.Now.ToString().Trim()}' 
-                                WHERE RXPACKAGE = '{p_strRxPackage}'";
+                sqlArray[13] = $@"UPDATE {p_strPostAuditSummaryTable} SET CREATED_DATE='{DateTime.Now.ToString().Trim()}' 
+                                WHERE RXPACKAGE = '{p_strRxPackage}' AND FVS_VARIANT = '{p_strFvsVariant}'";
 
                 return sqlArray;
             }

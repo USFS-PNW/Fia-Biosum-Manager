@@ -3751,7 +3751,8 @@ namespace FIA_Biosum_Manager
                     public static string CreateFVSPostAuditCutlistSUMMARYtableSQL(string p_strTableName)
                     {
                         return "CREATE TABLE " + p_strTableName + " (" +
-                          "[INDEX] CHAR(3)," +
+                          "IDX CHAR(3)," +      //Rename index to idx in case sqlite doesn't like it
+                          "FVS_VARIANT CHAR(2)," +
                           "rxpackage CHAR(3)," +
                           "COLUMN_NAME CHAR(30)," +
                           "NOVALUE_ERROR CHAR(10)," +
@@ -3763,7 +3764,8 @@ namespace FIA_Biosum_Manager
                           "NF_IN_RXPACKAGE_TABLE_ERROR CHAR(10)," +
                           "NF_IN_TREE_TABLE_ERROR CHAR(10)," +
                           "TREE_SPECIES_CHANGE_WARNING CHAR(10)," +
-                          "CREATED_DATE DATETIME)";
+                          "CREATED_DATE DATETIME," +
+                          "PRIMARY KEY (IDX, FVS_VARIANT, RXPACKAGE, COLUMN_NAME))";
                     }
                     /// <summary>
                     ///Create the audit table used to check the tree data after appending FVS CUTLIST table data to the BIOSUM FVS_TREE table.
