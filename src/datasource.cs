@@ -604,7 +604,7 @@ namespace FIA_Biosum_Manager
 				MessageBox.Show("!!None of the data source tables are found!!");
 			return strTempMDB;
 		}
-		public string CreateDBAndTableDataSourceLinks()
+		public string CreateDB()
         {
 			macrosubst oMacroSub = new macrosubst();
 			oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
@@ -620,38 +620,40 @@ namespace FIA_Biosum_Manager
 			// used to create a link to the table
 			DataMgr p_dataMgr = new DataMgr();
 
-			for (x=0; x <= this.m_intNumberOfTables - 1; x++)
-            {
-				string strFileStatus = this.m_strDataSource[x, FILESTATUS];
-				if (strFileStatus != null)
-                {
-					strFileStatus = strFileStatus.Trim().ToUpper();
-                }
-				string strTableStatus = this.m_strDataSource[x, TABLESTATUS];
-				if (strTableStatus != null)
-                {
-					strTableStatus = strTableStatus.Trim().ToUpper();
-				}
-				if (strTableStatus == "F" && strFileStatus == "F")
-                {
-					if (strTempDB.Trim().Length == 0)
-                    {
-						// get temporary db file
-						strTempDB = p_utils.getRandomFile(p_env.strTempDir, "db");
+			strTempDB = p_utils.getRandomFile(p_env.strTempDir, "db");
+			p_dataMgr.CreateDbFile(strTempDB);
+			//for (x=0; x <= this.m_intNumberOfTables - 1; x++)
+			//         {
+			//	string strFileStatus = this.m_strDataSource[x, FILESTATUS];
+			//	if (strFileStatus != null)
+			//             {
+			//		strFileStatus = strFileStatus.Trim().ToUpper();
+			//             }
+			//	string strTableStatus = this.m_strDataSource[x, TABLESTATUS];
+			//	if (strTableStatus != null)
+			//             {
+			//		strTableStatus = strTableStatus.Trim().ToUpper();
+			//	}
+			//	if (strTableStatus == "F" && strFileStatus == "F")
+			//             {
+			//		if (strTempDB.Trim().Length == 0)
+			//                 {
+			//			// get temporary db file
+			//			strTempDB = p_utils.getRandomFile(p_env.strTempDir, "db");
 
-						//create a temporary mdb that will contain all 
-						//the links to the scenario datasource tables
-						p_dataMgr.CreateDbFile(strTempDB);
-					}
-					using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(strTempDB)))
-                    {
-						p_dataMgr.m_strSQL = "ATTACH DATABASE '" + oMacroSub.GeneralTranslateVariableSubstitution(this.m_strDataSource[x, PATH].Trim()) + "\\" +
-								 this.m_strDataSource[x, MDBFILE].Trim() + "'";
-						p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
-					}
-					this.m_intNumberOfValidTables++;
-				}
-			}
+			//			//create a temporary mdb that will contain all 
+			//			//the links to the scenario datasource tables
+			//			p_dataMgr.CreateDbFile(strTempDB);
+			//		}
+			//		using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(strTempDB)))
+			//                 {
+			//			p_dataMgr.m_strSQL = "ATTACH DATABASE '" + oMacroSub.GeneralTranslateVariableSubstitution(this.m_strDataSource[x, PATH].Trim()) + "\\" +
+			//					 this.m_strDataSource[x, MDBFILE].Trim() + "'";
+			//			p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+			//		}
+			//		this.m_intNumberOfValidTables++;
+			//	}
+			//}
 			p_utils = null;
 			p_dataMgr = null;
 			p_env = null;
@@ -673,7 +675,7 @@ namespace FIA_Biosum_Manager
             oDao.m_DaoDatabase = null;
            
         }
-		public void CreateScenarioRuleDefinitionTableLinksSqlite(string p_strDestDbFile, string p_strProjectPath, string p_strType)
+		public void CreateScenarioRuleDefinitionTableLinksSqlite(string p_strDestDbFile, string p_strProjectPath)
         {
 			// NEED TO ADD PROCESSOR TABLES WHEN PROCESSOR IS MIGRATED
 			// used to create a link to the table
@@ -682,7 +684,7 @@ namespace FIA_Biosum_Manager
 			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(p_strDestDbFile)))
             {
 				conn.Open();
-				oDataMgr.m_strSQL = "ATTACH DATABASE '" + strSourceDB + "'";
+				oDataMgr.m_strSQL = "ATTACH DATABASE '" + strSourceDB + "' AS SOURCE";
 				oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 				conn.Close();
             }
@@ -862,12 +864,74 @@ namespace FIA_Biosum_Manager
             }
         }
 
-  	///<summary>
-		///Return the location of the specified table within the m_strDataSource array.
-		///-1 is returned if the strTableType is not found or the MDB file is not
-		///found or the table is not found
-	  ///</summary>
-		/// <param name="strTableType">The unique id for the datasource table</param>
+		// link temporary MDB with master database links to optimizer_scenario_rule_definitions.db tables
+		public void CreateScenarioRuleDefinitionTableLinksSqliteToAccess(string strDestFile, string p_strProjectPath)
+        {
+			dao_data_access p_oDao = new dao_data_access();
+			string strPath = p_strProjectPath + "\\";
+			string sqliteFile = strPath + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+
+			// connect to optimizer_scenario_rule_definitions.db DSN
+			ODBCMgr odbcmgr = new ODBCMgr();
+			// Check to see if the input SQLite DSN exists and if so, delete so we can add
+			if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName))
+			{
+				odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName);
+			}
+			odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, sqliteFile);
+
+			// create table links
+			p_oDao.CreateSQLiteTableLink(strDestFile, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableName,
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableName, ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, sqliteFile);
+
+			p_oDao.CreateSQLiteTableLink(strDestFile, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCondFilterTableName,
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCondFilterTableName, ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, sqliteFile);
+
+			p_oDao.CreateSQLiteTableLink(strDestFile, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCostsTableName,
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCostsTableName, ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, sqliteFile);
+
+			p_oDao.CreateSQLiteTableLink(strDestFile, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOptimizationTableName,
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOptimizationTableName, ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, sqliteFile);
+
+			p_oDao.CreateSQLiteTableLink(strDestFile, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOverallEffectiveTableName,
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOverallEffectiveTableName, ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, sqliteFile);
+
+			p_oDao.CreateSQLiteTableLink(strDestFile, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTableName,
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTableName, ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, sqliteFile);
+
+			p_oDao.CreateSQLiteTableLink(strDestFile, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName,
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName, ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, sqliteFile);
+
+			p_oDao.CreateSQLiteTableLink(strDestFile, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioHarvestCostColumnsTableName,
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioHarvestCostColumnsTableName, ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, sqliteFile);
+
+			p_oDao.CreateSQLiteTableLink(strDestFile, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLandOwnerGroupsTableName,
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLandOwnerGroupsTableName, ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, sqliteFile);
+
+			p_oDao.CreateSQLiteTableLink(strDestFile, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPlotFilterTableName,
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPlotFilterTableName, ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, sqliteFile);
+
+			p_oDao.CreateSQLiteTableLink(strDestFile, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName,
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName, ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, sqliteFile);
+
+			p_oDao.CreateSQLiteTableLink(strDestFile, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName,
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName, ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, sqliteFile);
+
+			p_oDao.CreateSQLiteTableLink(strDestFile, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLastTieBreakRankTableName,
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLastTieBreakRankTableName, ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, sqliteFile);
+
+			p_oDao.CreateSQLiteTableLink(strDestFile, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCondFilterMiscTableName,
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCondFilterMiscTableName, ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, sqliteFile);
+
+			p_oDao.CreateSQLiteTableLink(strDestFile, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioDatasourceTableName,
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioDatasourceTableName, ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, sqliteFile);
+		}
+	///<summary>
+	///Return the location of the specified table within the m_strDataSource array.
+	///-1 is returned if the strTableType is not found or the MDB file is not
+	///found or the table is not found
+	///</summary>
+	/// <param name="strTableType">The unique id for the datasource table</param>
 		public int getValidTableNameRow(string strTableType)
 		{
 			int x;

@@ -1195,68 +1195,68 @@ namespace FIA_Biosum_Manager
                 string strScenarioPath = Convert.ToString(oDataMgr.getSingleStringValueFromSQLQuery(conn, 
                     "SELECT path FROM scenario WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'", "scenario")).Trim();
 
-                strSQL = "DELETE FROM scenario WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                strSQL = "DELETE FROM scenario WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                 oDataMgr.SqlNonQuery(conn, strSQL);
                 if (oDataMgr.m_intError == 0)
                 {
-                    strSQL = "DELETE FROM scenario_datasource WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                    strSQL = "DELETE FROM scenario_datasource WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                     oDataMgr.SqlNonQuery(conn, strSQL);
                 }
                 {
-                    strSQL = "DELETE FROM scenario_datasource WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                    strSQL = "DELETE FROM scenario_datasource WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                     oDataMgr.SqlNonQuery(conn, strSQL);
                 }
                 if (oDataMgr.m_intError == 0)
                 {
                     // This table exists in both PROCESSOR and CORE scenario rule definitions
-                    strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestCostColumnsTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                    strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestCostColumnsTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                     oDataMgr.SqlNonQuery(conn, strSQL);
                 }
                 if (ScenarioType.Equals("processor"))
                 {
                     if (oDataMgr.m_intError == 0)
                     {
-                        strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                        strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                     if (oDataMgr.m_intError == 0)
                     {
-                        strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultCostRevenueEscalatorsTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                        strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultCostRevenueEscalatorsTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                     if (oDataMgr.m_intError == 0)
                     {
-                        strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                        strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                     if (oDataMgr.m_intError == 0)
                     {
-                        strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultMoveInCostsTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                        strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultMoveInCostsTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                     if (oDataMgr.m_intError == 0)
                     {
-                        strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultRxHarvestMethodTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                        strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultRxHarvestMethodTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                     if (oDataMgr.m_intError == 0)
                     {
-                        strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                        strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                     if (oDataMgr.m_intError == 0)
                     {
-                        strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                        strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                     if (oDataMgr.m_intError == 0)
                     {
-                        strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                        strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                     if (oDataMgr.m_intError == 0)
                     {
-                        strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                        strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                 }
@@ -1264,66 +1264,65 @@ namespace FIA_Biosum_Manager
                 {
                     if (oDataMgr.m_intError == 0)
                     {
-                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCondFilterTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCondFilterTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                     if (oDataMgr.m_intError == 0)
                     {
-                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCondFilterMiscTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCondFilterMiscTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                     if (oDataMgr.m_intError == 0)
                     {
-                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCostsTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCostsTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                     if (oDataMgr.m_intError == 0)
                     {
-                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                     if (oDataMgr.m_intError == 0)
                     {
-                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOptimizationTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOptimizationTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                     if (oDataMgr.m_intError == 0)
                     {
-                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOverallEffectiveTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOverallEffectiveTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                     if (oDataMgr.m_intError == 0)
                     {
-                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                     if (oDataMgr.m_intError == 0)
                     {
-                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLandOwnerGroupsTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLandOwnerGroupsTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                     if (oDataMgr.m_intError == 0)
                     {
-                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPlotFilterTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPlotFilterTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                     if (oDataMgr.m_intError == 0)
                     {
-                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                     if (oDataMgr.m_intError == 0)
                     {
-                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                     if (oDataMgr.m_intError == 0)
                     {
-                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLastTieBreakRankTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
+                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLastTieBreakRankTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                 }
-                //strFolderToDelete = Convert.ToString(oDataMgr.getSingleStringValueFromSQLQuery(conn, "SELECT path FROM scenario WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'", "scenario")).Trim();
                 strFolderToDelete = strScenarioPath;
             }
 

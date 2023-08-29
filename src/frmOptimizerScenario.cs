@@ -2865,11 +2865,10 @@ namespace FIA_Biosum_Manager
             p_oQueries.m_oProcessor.LoadDatasource = true;
             p_oQueries.m_oReference.LoadDatasource = true;
             p_oQueries.LoadDatasourcesSqlite(true, false, "optimizer", p_strScenarioId);
-            p_oQueries.m_oDataSource.CreateScenarioRuleDefinitionTableLinksSqlite(
+            p_oQueries.m_oDataSource.CreateScenarioRuleDefinitionTableLinksSqliteToAccess(
                 p_oQueries.m_strTempDbFile,
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim(),
-                "C");
-            LoadAllSqlite(p_oQueries.m_strTempDbFile, p_oQueries, p_bProcessorUsingSqlite, p_strScenarioId, p_oOptimizerScenarioItem_Collection);
+                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim());
+            LoadAll(p_oQueries.m_strTempDbFile, p_oQueries, p_bProcessorUsingSqlite, p_strScenarioId, p_oOptimizerScenarioItem_Collection);
         }
         public void LoadAll(string p_strDbFile, Queries p_oQueries, bool p_bProcessorUsingSqlite, 
             string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem_Collection p_oOptimizerScenarioItem_Collection)
