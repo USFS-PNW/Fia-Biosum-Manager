@@ -1323,7 +1323,8 @@ namespace FIA_Biosum_Manager
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                 }
-                strFolderToDelete = Convert.ToString(oDataMgr.getSingleStringValueFromSQLQuery(conn, "SELECT path FROM scenario WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'", "scenario")).Trim();
+                //strFolderToDelete = Convert.ToString(oDataMgr.getSingleStringValueFromSQLQuery(conn, "SELECT path FROM scenario WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'", "scenario")).Trim();
+                strFolderToDelete = strScenarioPath;
             }
 
             if (oDataMgr.m_intError == 0)
