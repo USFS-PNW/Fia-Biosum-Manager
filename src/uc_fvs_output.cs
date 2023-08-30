@@ -7058,10 +7058,44 @@ namespace FIA_Biosum_Manager
                                         this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
                                 }
+                                if (SQLite.TableExist(conn, "audit_Post_NOVALUE_ERROR") == false)
+                                {
+                                    SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("audit_Post_NOVALUE_ERROR");
+                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                }
+                                else
+                                {
+                                    // Delete records for this variant package
+                                    SQLite.m_strSQL = $@"DELETE FROM audit_Post_NOVALUE_ERROR WHERE FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strPackage}'";
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                }
+                                if (SQLite.TableExist(conn, "audit_Post_VALUE_ERROR") == false)
+                                {
+                                    SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("audit_Post_VALUE_ERROR");
+                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                }
+                                else
+                                {
+                                    // Delete records for this variant package
+                                    SQLite.m_strSQL = $@"DELETE FROM audit_Post_VALUE_ERROR WHERE FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strPackage}'";
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                }
                             }
 
                             // Create audit table links to SQLite tables
                             oDao.CreateSQLiteTableLink(strTempAccdb, "audit_Post_SUMMARY", "audit_Post_SUMMARY",
+                                ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
+                            oDao.CreateSQLiteTableLink(strTempAccdb, "audit_Post_NOVALUE_ERROR", "audit_Post_NOVALUE_ERROR",
+                                ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
+                            oDao.CreateSQLiteTableLink(strTempAccdb, "audit_Post_VALUE_ERROR", "audit_Post_VALUE_ERROR",
                                 ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
 
 
@@ -7140,44 +7174,18 @@ namespace FIA_Biosum_Manager
                                     "audit_Post_NOVALUE_ERROR",
                                     "audit_Post_SUMMARY",
                                     strTempCutListTable,
-                                    strPackage);
+                                    strVariant, strPackage);
                                 
-                                //check if NOVALUE_ERROR table exists
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_NOVALUE_ERROR") == false)
-                                {
-                                    oAdo.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("audit_Post_NOVALUE_ERROR");
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-
-                                }
-                            else if (!oAdo.ColumnExist(oAdo.m_OleDbConnection, "audit_Post_NOVALUE_ERROR", "treeval"))
-                            {
-                                // Accommodate new fields for v5.8.10
-                                oAdo.m_strSQL = "DROP TABLE audit_Post_NOVALUE_ERROR";
-                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                                oAdo.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("audit_Post_NOVALUE_ERROR");
-                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                            }
-                            else
-                                {
-                                    //delete any records from a previous run for the current variant and rxpackage
-                                    strSQL = sqlArray[0];
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);    
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-                                                                    
-                                }
                                 m_intProgressStepCurrentCount++;
                                 UpdateTherm(m_frmTherm.progressBar1,
                                             m_intProgressStepCurrentCount,
                                             m_intProgressStepTotalCount);
                                 //check if any no value errors
-                                int intRowCount = oAdo.getRecordCount(oAdo.m_OleDbConnection, "SELECT COUNT(*) FROM audit_Post_SUMMARY WHERE RXPACKAGE='" + strPackage + "' AND NOVALUE_ERROR IS NOT NULL AND LEN(TRIM(NOVALUE_ERROR)) > 0 AND TRIM(NOVALUE_ERROR) <> 'NA' AND VAL(NOVALUE_ERROR) > 0", "AUDIT_POST_SUMMARY");
+                                int intRowCount = oAdo.getRecordCount(oAdo.m_OleDbConnection, "SELECT COUNT(*) FROM audit_Post_SUMMARY WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE='" + strPackage + "' AND NOVALUE_ERROR IS NOT NULL AND LEN(TRIM(NOVALUE_ERROR)) > 0 AND TRIM(NOVALUE_ERROR) <> 'NA' AND VAL(NOVALUE_ERROR) > 0", "AUDIT_POST_SUMMARY");
                                 if (intRowCount > 0)
                                 {
                                     //insert the new audit records
-                                    strSQL = sqlArray[1];
+                                    strSQL = sqlArray[0];
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
                                     oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
@@ -7196,34 +7204,8 @@ namespace FIA_Biosum_Manager
                                     "audit_Post_VALUE_ERROR",
                                     "audit_Post_SUMMARY",
                                     strTempCutListTable,
-                                    strPackage);
+                                    strVariant, strPackage);
 
-                                //check if VALUE_ERROR table exists
-
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_VALUE_ERROR") == false)
-                                {
-                                    oAdo.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("audit_Post_VALUE_ERROR");
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                                }
-                            else if (!oAdo.ColumnExist(oAdo.m_OleDbConnection, "audit_Post_VALUE_ERROR", "treeval"))
-                            {
-                                // Accommodate new fields for v5.8.10
-                                oAdo.m_strSQL = "DROP TABLE audit_Post_VALUE_ERROR";
-                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                                oAdo.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("audit_Post_VALUE_ERROR");
-                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                            }
-                            else
-                                {
-                                    //delete any records from a previous run for the current variant and rxpackage
-                                    strSQL = sqlArray[0];
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-                                }
                                 m_intProgressStepCurrentCount++;
                                 UpdateTherm(m_frmTherm.progressBar1,
                                             m_intProgressStepCurrentCount,
@@ -7233,7 +7215,7 @@ namespace FIA_Biosum_Manager
                                 if (intRowCount > 0)
                                 {
                                     //insert the new audit records
-                                    strSQL = sqlArray[1];
+                                    strSQL = sqlArray[0];
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
                                     oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
