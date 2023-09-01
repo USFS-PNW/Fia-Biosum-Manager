@@ -7093,10 +7093,10 @@ namespace FIA_Biosum_Manager
                             // Create audit table links to SQLite tables
                             oDao.CreateSQLiteTableLink(strTempAccdb, "audit_Post_SUMMARY", "audit_Post_SUMMARY",
                                 ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
-                            oDao.CreateSQLiteTableLink(strTempAccdb, "audit_Post_NOVALUE_ERROR", "audit_Post_NOVALUE_ERROR",
-                                ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
-                            oDao.CreateSQLiteTableLink(strTempAccdb, "audit_Post_VALUE_ERROR", "audit_Post_VALUE_ERROR",
-                                ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
+                            //oDao.CreateSQLiteTableLink(strTempAccdb, "audit_Post_NOVALUE_ERROR", "audit_Post_NOVALUE_ERROR",
+                            //    ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
+                            //oDao.CreateSQLiteTableLink(strTempAccdb, "audit_Post_VALUE_ERROR", "audit_Post_VALUE_ERROR",
+                            //    ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
 
 
 
@@ -7167,6 +7167,19 @@ namespace FIA_Biosum_Manager
                                                 m_intProgressStepTotalCount);
 
                                 }
+
+                            int intRowCount = 0;
+                            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strAuditConn))
+                            {
+                                conn.Open();
+                                // Attach FVSOUT_TREE_LIST.db for access to tmpTreeTable
+                                SQLite.m_strSQL = $@"ATTACH DATABASE '{m_strFvsTreeDb}' AS TREELIST";
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
                                 //
                                 //process NOVALUE_ERROR column
                                 //
@@ -7175,20 +7188,20 @@ namespace FIA_Biosum_Manager
                                     "audit_Post_SUMMARY",
                                     strTempCutListTable,
                                     strVariant, strPackage);
-                                
+
                                 m_intProgressStepCurrentCount++;
                                 UpdateTherm(m_frmTherm.progressBar1,
                                             m_intProgressStepCurrentCount,
                                             m_intProgressStepTotalCount);
                                 //check if any no value errors
-                                int intRowCount = oAdo.getRecordCount(oAdo.m_OleDbConnection, "SELECT COUNT(*) FROM audit_Post_SUMMARY WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE='" + strPackage + "' AND NOVALUE_ERROR IS NOT NULL AND LEN(TRIM(NOVALUE_ERROR)) > 0 AND TRIM(NOVALUE_ERROR) <> 'NA' AND VAL(NOVALUE_ERROR) > 0", "AUDIT_POST_SUMMARY");
+                                intRowCount = (int) SQLite.getRecordCount(conn, "SELECT COUNT(*) FROM audit_Post_SUMMARY WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE='" + strPackage + "' AND NOVALUE_ERROR IS NOT NULL AND LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND TRIM(NOVALUE_ERROR) <> 'NA' AND CAST(NOVALUE_ERROR as int) > 0", "AUDIT_POST_SUMMARY");
                                 if (intRowCount > 0)
                                 {
                                     //insert the new audit records
                                     strSQL = sqlArray[0];
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
+                                    SQLite.SqlNonQuery(conn, strSQL);
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                                 }
@@ -7196,6 +7209,8 @@ namespace FIA_Biosum_Manager
                                 UpdateTherm(m_frmTherm.progressBar1,
                                             m_intProgressStepCurrentCount,
                                             m_intProgressStepTotalCount);
+                            }
+
                                 
                                 //
                                 //process VALUE_ERROR column
