@@ -3631,62 +3631,48 @@ namespace FIA_Biosum_Manager
             {
                 public static class Post
                 {
-
+                    // Note: Be sure that this schema is reconciled with CreateFVSOutTreeTableSQL and CreateFVSPostAuditCutlistNOTFOUND_ERRORtableSQL
                     public static string CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL(string p_strTableName)
                     {
                         return "CREATE TABLE " + p_strTableName + " (" +
                             "COLUMN_NAME CHAR(30)," +
                             "ERROR_DESC CHAR(60)," +
                             "id LONG," +
-                            "biosum_cond_id CHAR(25)," +
-                            "rxpackage CHAR(3)," +
-                            "rx CHAR(3)," +
-                            "rxcycle CHAR(1)," +
-                            "rxyear CHAR(4)," +
-                            "fvs_variant CHAR(2)," +
-                            "fvs_species CHAR(6)," +
-                            "tpa DOUBLE," +
-                            "dbh DOUBLE," +
-                            "ht DOUBLE," +
-                            "estht DOUBLE," +
-                            "pctcr DOUBLE," +
-                            "volcfnet DOUBLE," +
-                            "volcfgrs DOUBLE," +
-                            "volcsgrs DOUBLE," +
-                            "drybiom DOUBLE," +
-                            "drybiot DOUBLE," +
-                            "voltsgrs DOUBLE," +
-                            "sitree INTEGER," +
-                    "upper_dia DOUBLE," +
-                    "upper_dia_ht DOUBLE," +
-                    "centroid_dia DOUBLE," +
-                    "centroid_dia_ht_actual DOUBLE," +
-                    "sawht DOUBLE," +
-                    "htdmp DOUBLE," +
-                    "boleht DOUBLE," +
-                    "cull_fld DOUBLE," +
-                    "culldead DOUBLE," +
-                    "cullform DOUBLE," +
-                    "cullmstop DOUBLE," +
-                    "cfsnd DOUBLE," +
-                    "bfsnd DOUBLE," +
-                    "standing_dead_cd INTEGER," +
-                    "volcfsnd DOUBLE," +
-                    "drybio_bole DOUBLE," +
-                    "drybio_top DOUBLE," +
-                    "drybio_sapling DOUBLE," +
-                    "drybio_wdld_spp DOUBLE," +
+                    "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "rx CHAR(3)," +
+                    "rxcycle CHAR(1)," +
+                    "rxyear CHAR(4)," +
+                    "fvs_variant CHAR(2)," +
+                    "fvs_species CHAR(6)," +
+                    "tpa DOUBLE," +
+                    "dbh DOUBLE," +
+                    "ht DOUBLE," +
+                    "estht DOUBLE," +
+                    "pctcr DOUBLE," +
                     "treeval INTEGER," +
                     "mortpa DOUBLE," +
                     "mdefect INTEGER," +
                     "bapctile DOUBLE," +
-                    "dg DOUBLE," +
                     "htg DOUBLE," +
+                    "dg DOUBLE," +
                     "statuscd INTEGER," +
                     "decaycd INTEGER," +
+                    "standing_dead_cd INTEGER," +
+                    "drybio_bole double," +
+                    "drybio_sapling double," +
+                    "drybio_top double," +
+                    "drybio_wdld_spp double," +
+                    "volcfsnd double," +
+                    "drybiom DOUBLE," +
+                    "drybiot DOUBLE," +
+                    "volcfgrs DOUBLE," +
+                    "volcfnet DOUBLE," +
+                    "volcsgrs DOUBLE," +
+                    "voltsgrs DOUBLE," +
                     "fvs_tree_id CHAR(10)," +
                     "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
-                    "DateTimeCreated CHAR(22))";
+                    "DateTimeCreated DATE)";
 
                     }
                     /// <summary>
@@ -3694,6 +3680,8 @@ namespace FIA_Biosum_Manager
                     /// that are not found in other tables. For example, a BIOSUM_COND_ID in the 
                     /// BIOSUM FVS_TREE table should also exist in the BIOSUM CONDITION table. If it does not
                     /// then this table will be used to document the error.
+                    /// Note: Be sure that this schema is reconciled with CreateFVSOutTreeTableSQL and CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL
+
                     /// </summary>
                     /// <param name="p_strTableName"></param>
                     /// <returns></returns>
@@ -3704,43 +3692,41 @@ namespace FIA_Biosum_Manager
                             "NOTFOUND_VALUE CHAR(50)," +
                             "ERROR_DESC CHAR(60)," +
                             "id LONG," +
-                            "biosum_cond_id CHAR(25)," +
-                            "rxpackage CHAR(3)," +
-                            "rx CHAR(3)," +
-                            "rxcycle CHAR(1)," +
-                            "rxyear CHAR(4)," +
-                            "fvs_variant CHAR(2)," +
-                            "fvs_species CHAR(6)," +
-                            "tpa DOUBLE," +
-                            "dbh DOUBLE," +
-                            "ht DOUBLE," +
-                            "estht DOUBLE," +
-                            "pctcr DOUBLE," +
-                            "volcfnet DOUBLE," +
-                            "volcfgrs DOUBLE," +
-                            "volcsgrs DOUBLE," +
-                            "drybiom DOUBLE," +
-                            "drybiot DOUBLE," +
-                            "voltsgrs DOUBLE," +
-                            "cfsnd DOUBLE," +
-                            "bfsnd DOUBLE," +
-                            "standing_dead_cd INTEGER," +
-                            "volcfsnd DOUBLE," +
-                            "drybio_bole DOUBLE," +
-                            "drybio_top DOUBLE," +
-                            "drybio_sapling DOUBLE," +
-                            "drybio_wdld_spp DOUBLE," +
-                            "treeval INTEGER," +
-                            "mortpa DOUBLE," +
-                            "mdefect INTEGER," +
-                            "bapctile DOUBLE," +
-                            "dg DOUBLE," +
-                            "htg DOUBLE," +
-                            "statuscd INTEGER," +
-                            "decaycd INTEGER," +
-                            "fvs_tree_id CHAR(10)," +
-                            "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
-                            "DateTimeCreated CHAR(22))";
+                    "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "rx CHAR(3)," +
+                    "rxcycle CHAR(1)," +
+                    "rxyear CHAR(4)," +
+                    "fvs_variant CHAR(2)," +
+                    "fvs_species CHAR(6)," +
+                    "tpa DOUBLE," +
+                    "dbh DOUBLE," +
+                    "ht DOUBLE," +
+                    "estht DOUBLE," +
+                    "pctcr DOUBLE," +
+                    "treeval INTEGER," +
+                    "mortpa DOUBLE," +
+                    "mdefect INTEGER," +
+                    "bapctile DOUBLE," +
+                    "htg DOUBLE," +
+                    "dg DOUBLE," +
+                    "statuscd INTEGER," +
+                    "decaycd INTEGER," +
+                    "standing_dead_cd INTEGER," +
+                    "drybio_bole double," +
+                    "drybio_sapling double," +
+                    "drybio_top double," +
+                    "drybio_wdld_spp double," +
+                    "volcfsnd double," +
+                    "drybiom DOUBLE," +
+                    "drybiot DOUBLE," +
+                    "volcfgrs DOUBLE," +
+                    "volcfnet DOUBLE," +
+                    "volcsgrs DOUBLE," +
+                    "voltsgrs DOUBLE," +
+                    "fvs_tree_id CHAR(10)," +
+                    "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
+                    "DateTimeCreated DATE)";
 
                     }
                     /// <summary>
@@ -3783,6 +3769,7 @@ namespace FIA_Biosum_Manager
                              p_strDescriptionColumnName + " CHAR(100)," +
                             "ID LONG," +
                             "BIOSUM_COND_ID CHAR(25)," +
+                            "FVS_VARIANT CHAR(2)," +
                             "RXPACKAGE CHAR(3)," +
                             "RXCYCLE CHAR(1)," +
                             "FVS_TREE_FVS_TREE_ID CHAR(10)," +
