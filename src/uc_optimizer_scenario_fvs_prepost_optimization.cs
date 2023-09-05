@@ -1413,7 +1413,7 @@ namespace FIA_Biosum_Manager
 
                         oDataMgr.m_strSQL = "SELECT * " +
                             "FROM scenario_fvs_variables_optimization " +
-                            "WHERE TRIM(scenario_id)='" + strScenarioId.Trim() + "' AND " +
+                            "WHERE TRIM(UPPER(scenario_id))='" + strScenarioId.Trim().ToUpper() + "' AND " +
                             "current_yn='Y'";
 
                         oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);

@@ -1381,7 +1381,7 @@ namespace FIA_Biosum_Manager
                     }
                     oDataMgr.m_strSQL = "SELECT * FROM " +
                                     Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName + " " +
-                                    "WHERE TRIM(scenario_id)='" + strScenarioId.Trim() + "'";
+                                    "WHERE TRIM(UPPER(scenario_id))='" + strScenarioId.Trim().ToUpper() + "'";
 
                     oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
                     if (oDataMgr.m_DataReader.HasRows)

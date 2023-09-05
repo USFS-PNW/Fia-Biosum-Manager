@@ -1854,7 +1854,7 @@ namespace FIA_Biosum_Manager
 				//fvs variables
 				oDataMgr.m_strSQL = "SELECT a.* " +
 								"FROM scenario_fvs_variables a " +
-								"WHERE TRIM(a.scenario_id)='" + strScenarioId.Trim() + "' AND " +
+								"WHERE TRIM(UPPER(a.scenario_id))='" + strScenarioId.Trim().ToUpper() + "' AND " +
 								"a.current_yn='Y' " +
 								"ORDER BY variable_number";
 				oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
@@ -1890,7 +1890,7 @@ namespace FIA_Biosum_Manager
 				//overall expression
 				oDataMgr.m_strSQL = "SELECT b.overall_effective_expression, b.current_yn " +
 								"FROM scenario_fvs_variables_overall_effective b " +
-								"WHERE TRIM(b.scenario_id)='" + strScenarioId.Trim() + "' AND " +
+								"WHERE TRIM(UPPER(b.scenario_id))='" + strScenarioId.Trim().ToUpper() + "' AND " +
 								"b.current_yn='Y'";
 
 				oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);

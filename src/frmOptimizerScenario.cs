@@ -2930,10 +2930,6 @@ namespace FIA_Biosum_Manager
                     p_oOptimizerScenarioItem_Collection.Remove(x);
                 }
             }
-            ado_data_access oAdo = new ado_data_access();
-            //string strMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
-            //    Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
-            //oAdo.OpenConnection(oAdo.getMDBConnString(strMDBFile, "", ""));
             DataMgr oDataMgr = new DataMgr();
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(p_strDbFile)))
             {
@@ -3806,7 +3802,7 @@ namespace FIA_Biosum_Manager
             {
                 while (p_oDataMgr.m_DataReader.Read())
                 {
-                    strRxPackageTableName = p_oDataMgr.m_DataReader["table_name"].ToString();
+                    strRxPackageTableName = p_oDataMgr.m_DataReader["table_name"].ToString().Trim();
                     strRxDBFile = p_oDataMgr.m_DataReader["path"].ToString().Trim() + "\\" + p_oDataMgr.m_DataReader["file"].ToString().Trim();
                     strRxConn = "Provider=Microsoft.Ace.OLEDB.12.0;" + p_oDataMgr.GetConnectionString(strRxDBFile) + ";User Id=admin;Password=;";
                     break;

@@ -618,7 +618,7 @@ namespace FIA_Biosum_Manager
 					while (p_ado.m_OleDbDataReader.Read())
 					{
 						oDataMgr.m_strSQL = "SELECT * FROM scenario_last_tiebreak_rank " +
-						" where scenario_id = '" + this.strScenarioId + "' and " +
+						" where TRIM(UPPER(scenario_id)) = '" + this.strScenarioId.Trim().ToUpper() + "' and " +
 						"rxpackage = '" + p_ado.m_OleDbDataReader["rxpackage"].ToString() + "';";
 
 						this.m_SQLiteCommand = conn.CreateCommand();
@@ -649,7 +649,7 @@ namespace FIA_Biosum_Manager
 					/****************************************************************************************************
 						**delete any prescriptions from the scenario db that do not exist in the master
 						****************************************************************************************************/
-					oDataMgr.m_strSQL = "SELECT * FROM scenario_last_tiebreak_rank where scenario_id = '" + this.strScenarioId + "';";
+					oDataMgr.m_strSQL = "SELECT * FROM scenario_last_tiebreak_rank where TRIM(UPPER(scenario_id)) = '" + this.strScenarioId.Trim().ToUpper() + "';";
 					oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
 
 					if (oDataMgr.m_intError == 0)
@@ -671,7 +671,7 @@ namespace FIA_Biosum_Manager
 							if (this.m_DataSet.Tables[this.strRxPackageTableName].Rows.Count == 0)
 							{
 								strDeleteSQL[intArrayCount] = "DELETE FROM scenario_last_tiebreak_rank" +
-									" WHERE scenario_id = '" + this.strScenarioId + "'" +
+									" WHERE TRIM(UPPER(scenario_id)) = '" + this.strScenarioId.Trim().ToUpper() + "'" +
 									" AND rxpackage = '" + oDataMgr.m_DataReader["rxpackage"] + "';";
 								intArrayCount++;
 							}
@@ -708,7 +708,7 @@ namespace FIA_Biosum_Manager
 					{
 						if (this.m_DataSet.Tables[this.strRxPackageTableName].Rows[x]["rxpackage"].ToString().Length > 0)
 						{
-							oDataMgr.m_strSQL = "SELECT scenario_id, rxpackage, last_tiebreak_rank from scenario_last_tiebreak_rank where scenario_id = '" + this.strScenarioId + "';";
+							oDataMgr.m_strSQL = "SELECT scenario_id, rxpackage, last_tiebreak_rank from scenario_last_tiebreak_rank where TRIM(UPPER(scenario_id)) = '" + this.strScenarioId.Trim().ToUpper() + "';";
 							break;
 						}
 					}
@@ -731,7 +731,7 @@ namespace FIA_Biosum_Manager
 						*******************************/
 					this.m_SQLiteDataAdapter = new System.Data.SQLite.SQLiteDataAdapter();
 					this.m_SQLiteCommand = conn.CreateCommand();
-					this.m_SQLiteCommand.CommandText = "SELECT scenario_id, rxpackage, last_tiebreak_rank from scenario_last_tiebreak_rank WHERE scenario_id = '" + this.strScenarioId + "';";
+					this.m_SQLiteCommand.CommandText = "SELECT scenario_id, rxpackage, last_tiebreak_rank from scenario_last_tiebreak_rank WHERE TRIM(UPPER(scenario_id)) = '" + this.strScenarioId.Trim().ToUpper() + "';";
 					this.m_SQLiteDataAdapter.SelectCommand = this.m_SQLiteCommand;
 					this.m_SQLiteDataAdapter.Fill(this.m_DataSet, "scenario_last_tiebreak_rank");
 
