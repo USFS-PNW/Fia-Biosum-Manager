@@ -7409,25 +7409,28 @@ namespace FIA_Biosum_Manager
                                 frmMain.g_oUtils.WriteText(m_strLogFile, "Database File:" + frmMain.g_oUtils.getFileName(m_strFvsTreeDb) + "\r\n");
                                 frmMain.g_oUtils.WriteText(m_strLogFile, "Variant:" + strVariant + " \r\n");
                                 frmMain.g_oUtils.WriteText(m_strLogFile, "Package:" + strPackage + " \r\n\r\n");
-                                //NOVALUE ERRORS
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_NOVALUE_ERROR"))
+                            //NOVALUE ERRORS
+                            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strAuditConn))
+                            {
+                                conn.Open();
+                                if (SQLite.TableExist(conn, "audit_Post_NOVALUE_ERROR"))
                                 {
                                     strItemDialogMsg = strItemDialogMsg + "\r\n\r\naudit_Post_NOVALUE_ERROR\r\n---------------------------\r\n";
                                     frmMain.g_oUtils.WriteText(m_strLogFile, "\r\n\r\naudit_Post_NOVALUE_ERROR\r\n---------------------------\r\n");
 
-                                   //see if any records
-                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,ERROR_DESC FROM audit_Post_NOVALUE_ERROR WHERE RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,ERROR_DESC";
-                                    oAdo.SqlQueryReader(oAdo.m_OleDbConnection, strSQL);
-                                    if (oAdo.m_OleDbDataReader.HasRows)
+                                    //see if any records
+                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,ERROR_DESC FROM audit_Post_NOVALUE_ERROR WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,ERROR_DESC";
+                                    SQLite.SqlQueryReader(conn, strSQL);
+                                    if (SQLite.m_DataReader.HasRows)
                                     {
-                                        intItemError=-1;
+                                        intItemError = -1;
                                         strItemError = strItemError + "\r\n\r\naudit_Post_NOVALUE_ERROR\r\n---------------------------\r\n";
-                                        while (oAdo.m_OleDbDataReader.Read())
+                                        while (SQLite.m_DataReader.Read())
                                         {
-                                            
-                                            strItemError = strItemError + "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
-                                            strItemDialogMsg = strItemDialogMsg  + "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
-                                            frmMain.g_oUtils.WriteText(m_strLogFile, "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n");
+
+                                            strItemError = strItemError + "ERROR: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["ERROR_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
+                                            strItemDialogMsg = strItemDialogMsg + "ERROR: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["ERROR_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
+                                            frmMain.g_oUtils.WriteText(m_strLogFile, "ERROR: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["ERROR_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n");
                                         }
                                     }
                                     else
@@ -7435,28 +7438,28 @@ namespace FIA_Biosum_Manager
                                         strItemDialogMsg = strItemDialogMsg + "OK\r\n";
                                         frmMain.g_oUtils.WriteText(m_strLogFile, "OK\r\n");
                                     }
-                                    oAdo.m_OleDbDataReader.Close();
-                                    oAdo.m_OleDbDataReader.Dispose();
+                                    SQLite.m_DataReader.Close();
+                                    SQLite.m_DataReader.Dispose();
                                 }
                                 //NOTFOUND errors
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_NOTFOUND_ERROR"))
+                                if (SQLite.TableExist(conn, "audit_Post_NOTFOUND_ERROR"))
                                 {
                                     strItemDialogMsg = strItemDialogMsg + "\r\n\r\naudit_Post_NOTFOUND_ERROR\r\n---------------------------\r\n";
                                     frmMain.g_oUtils.WriteText(m_strLogFile, "\r\n\r\naudit_Post_NOTFOUND_ERROR\r\n---------------------------\r\n");
                                     //see if any records
-                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,ERROR_DESC FROM audit_Post_NOTFOUND_ERROR WHERE RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,ERROR_DESC";
-                                    oAdo.SqlQueryReader(oAdo.m_OleDbConnection, strSQL);
-                                    if (oAdo.m_OleDbDataReader.HasRows)
+                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,ERROR_DESC FROM audit_Post_NOTFOUND_ERROR WHERE FVS_VARIANT = '" + strVariant + "' AND  RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,ERROR_DESC";
+                                    SQLite.SqlQueryReader(conn, strSQL);
+                                    if (SQLite.m_DataReader.HasRows)
                                     {
                                         intItemError = -1;
                                         strItemError = strItemError + "\r\n\r\naudit_Post_NOTFOUND_ERROR\r\n---------------------------\r\n";
 
-                                        while (oAdo.m_OleDbDataReader.Read())
+                                        while (SQLite.m_DataReader.Read())
                                         {
-                                           
-                                            strItemError = strItemError + "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
-                                            strItemDialogMsg = strItemDialogMsg + "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
-                                            frmMain.g_oUtils.WriteText(m_strLogFile, "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n");
+
+                                            strItemError = strItemError + "ERROR: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["ERROR_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
+                                            strItemDialogMsg = strItemDialogMsg + "ERROR: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["ERROR_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
+                                            frmMain.g_oUtils.WriteText(m_strLogFile, "ERROR: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["ERROR_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n");
                                         }
                                     }
                                     else
@@ -7464,28 +7467,30 @@ namespace FIA_Biosum_Manager
                                         strItemDialogMsg = strItemDialogMsg + "OK\r\n";
                                         frmMain.g_oUtils.WriteText(m_strLogFile, "OK\r\n");
                                     }
-                                    oAdo.m_OleDbDataReader.Close();
-                                    oAdo.m_OleDbDataReader.Dispose();
+                                    SQLite.m_DataReader.Close();
+                                    SQLite.m_DataReader.Dispose();
                                 }
+
+
                                 //VALUE errors
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_VALUE_ERROR"))
+                                if (SQLite.TableExist(conn, "audit_Post_VALUE_ERROR"))
                                 {
                                     strItemDialogMsg = strItemDialogMsg + "\r\n\r\naudit_Post_VALUE_ERROR\r\n---------------------------\r\n";
                                     frmMain.g_oUtils.WriteText(m_strLogFile, "\r\n\r\naudit_Post_VALUE_ERROR\r\n---------------------------\r\n");
                                     //see if any records
-                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,ERROR_DESC FROM audit_Post_VALUE_ERROR WHERE RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,ERROR_DESC";
-                                    oAdo.SqlQueryReader(oAdo.m_OleDbConnection, strSQL);
-                                    if (oAdo.m_OleDbDataReader.HasRows)
+                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,ERROR_DESC FROM audit_Post_VALUE_ERROR WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,ERROR_DESC";
+                                    SQLite.SqlQueryReader(conn, strSQL);
+                                    if (SQLite.m_DataReader.HasRows)
                                     {
                                         intItemError = -1;
                                         strItemError = strItemError + "\r\n\r\naudit_Post_VALUE_ERROR\r\n---------------------------\r\n";
 
-                                        while (oAdo.m_OleDbDataReader.Read())
+                                        while (SQLite.m_DataReader.Read())
                                         {
-                                            
-                                            strItemError = strItemError + "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
-                                            strItemDialogMsg = strItemDialogMsg + "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
-                                            frmMain.g_oUtils.WriteText(m_strLogFile, "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n");
+
+                                            strItemError = strItemError + "ERROR: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["ERROR_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
+                                            strItemDialogMsg = strItemDialogMsg + "ERROR: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["ERROR_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
+                                            frmMain.g_oUtils.WriteText(m_strLogFile, "ERROR: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["ERROR_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n");
                                         }
                                     }
                                     else
@@ -7493,28 +7498,29 @@ namespace FIA_Biosum_Manager
                                         strItemDialogMsg = strItemDialogMsg + "OK\r\n";
                                         frmMain.g_oUtils.WriteText(m_strLogFile, "OK\r\n");
                                     }
-                                    oAdo.m_OleDbDataReader.Close();
-                                    oAdo.m_OleDbDataReader.Dispose();
+                                    SQLite.m_DataReader.Close();
+                                    SQLite.m_DataReader.Dispose();
                                 }
+
                                 //SPCD CHANGE WARNINGS
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_SPCDCHANGE_WARNING"))
+                                if (SQLite.TableExist(conn, "audit_Post_SPCDCHANGE_WARNING"))
                                 {
                                     strItemDialogMsg = strItemDialogMsg + "\r\n\r\naudit_Post_SPCDCHANGE_WARNING\r\n---------------------------\r\n";
                                     frmMain.g_oUtils.WriteText(m_strLogFile, "\r\n\r\naudit_Post_SPCDCHANGE_WARNING\r\n---------------------------\r\n");
 
                                     //see if any records
-                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,WARNING_DESC FROM audit_Post_SPCDCHANGE_WARNING WHERE RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,WARNING_DESC";
-                                    oAdo.SqlQueryReader(oAdo.m_OleDbConnection, strSQL);
-                                    if (oAdo.m_OleDbDataReader.HasRows)
+                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,WARNING_DESC FROM audit_Post_SPCDCHANGE_WARNING WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,WARNING_DESC";
+                                    SQLite.SqlQueryReader(conn, strSQL);
+                                    if (SQLite.m_DataReader.HasRows)
                                     {
                                         intItemWarning = -1;
                                         strItemWarning = strItemWarning + "\r\n\r\naudit_Post_SPCDCHANGE_WARNING\r\n---------------------------\r\n";
-                                        while (oAdo.m_OleDbDataReader.Read())
+                                        while (SQLite.m_DataReader.Read())
                                         {
-                                            
-                                            strItemWarning = strItemWarning + "WARNING: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["WARNING_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
-                                            strItemDialogMsg = strItemDialogMsg + "WARNING: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["WARNING_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
-                                            frmMain.g_oUtils.WriteText(m_strLogFile, "WARNING: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["WARNING_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n");
+
+                                            strItemWarning = strItemWarning + "WARNING: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["WARNING_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
+                                            strItemDialogMsg = strItemDialogMsg + "WARNING: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["WARNING_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
+                                            frmMain.g_oUtils.WriteText(m_strLogFile, "WARNING: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["WARNING_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n");
                                         }
                                     }
                                     else
@@ -7522,38 +7528,10 @@ namespace FIA_Biosum_Manager
                                         strItemDialogMsg = strItemDialogMsg + "OK\r\n";
                                         frmMain.g_oUtils.WriteText(m_strLogFile, "OK\r\n");
                                     }
-                                    oAdo.m_OleDbDataReader.Close();
-                                    oAdo.m_OleDbDataReader.Dispose();
+                                    SQLite.m_DataReader.Close();
+                                    SQLite.m_DataReader.Dispose();
                                 }
-                            // TREEMATCH errors
-                            //if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_TREEMATCH_ERROR"))
-                            //{
-                            //    strItemDialogMsg = strItemDialogMsg + "\r\n\r\naudit_Post_TREEMATCH_ERROR\r\n---------------------------\r\n";
-                            //    frmMain.g_oUtils.WriteText(m_strLogFile, "\r\n\r\audit_Post_TREEMATCH_ERROR\r\n---------------------------\r\n");
-                            //    //see if any records
-                            //    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,ERROR_DESC FROM audit_Post_TREEMATCH_ERROR WHERE RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,ERROR_DESC";
-                            //    oAdo.SqlQueryReader(oAdo.m_OleDbConnection, strSQL);
-                            //    if (oAdo.m_OleDbDataReader.HasRows)
-                            //    {
-                            //        intItemError = -1;
-                            //        strItemError = strItemError + "\r\n\r\naudit_Post_TREEMATCH_ERROR\r\n---------------------------\r\n";
-
-                            //        while (oAdo.m_OleDbDataReader.Read())
-                            //        {
-
-                            //            strItemError = strItemError + "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
-                            //            strItemDialogMsg = strItemDialogMsg + "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
-                            //            frmMain.g_oUtils.WriteText(m_strLogFile, "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n");
-                            //        }
-                            //    }
-                            //    else
-                            //    {
-                            //        strItemDialogMsg = strItemDialogMsg + "OK\r\n";
-                            //        frmMain.g_oUtils.WriteText(m_strLogFile, "OK\r\n");
-                            //    }
-                            //    oAdo.m_OleDbDataReader.Close();
-                            //    oAdo.m_OleDbDataReader.Dispose();
-                            //}
+                            }
 
                             if (intItemError == 0 && intItemWarning == 0)
                                 {
