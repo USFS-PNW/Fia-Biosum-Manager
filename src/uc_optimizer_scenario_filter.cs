@@ -1264,6 +1264,21 @@ namespace FIA_Biosum_Manager
 
 		}
 
+		public int Val_PlotFilterSqlite(string p_strSql)
+        {
+			int intError = 0;
+			if (p_strSql.ToUpper().Contains("PLOT_ACCESSIBLE_YN"))
+			{
+				intError = -1;
+				m_strError = "The Plot filter contains the 'plot_accessible_YN' field. " +
+							 "This field no longer exists on the plot table and must be " +
+							 "removed from the filter !!";
+				return intError;
+			}
+			DataMgr oDataMgr = new DataMgr();
+			return intError;
+		}
+
 		public int Val_CondFilter(System.Data.OleDb.OleDbConnection p_oConn,string p_strSql)
 		{
 			m_intError=0;
