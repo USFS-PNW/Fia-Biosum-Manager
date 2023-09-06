@@ -5722,7 +5722,7 @@ namespace FIA_Biosum_Manager
             // Loads the sequence number configurations from db\fvsmaster.mdb\fvs_output_prepost_seqnum
             m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(m_ado, m_ado.m_OleDbConnection, m_oFVSPrePostSeqNumItemCollection);
 
-           
+            
 
 			
 			int x,y;
@@ -5890,10 +5890,7 @@ namespace FIA_Biosum_Manager
 
                             if (uc_filesize_monitor2.File.Trim().Length > 0) uc_filesize_monitor2.EndMonitoringFile();
                             uc_filesize_monitor2.BeginMonitoringFile(strAuditDbFile, 2000000000, "2GB");
-                            uc_filesize_monitor2.Information = "BIOSUM DB file containing PREPOST SEQNUM MATRIX and AUDIT tables for processing FVS Output DB file " + strDbFile; 
-
-
-
+                            uc_filesize_monitor2.Information = "BIOSUM DB file containing PREPOST SEQNUM MATRIX and AUDIT tables for processing FVS Output DB file " + strDbFile;
 
                             //oAdo.OpenConnection(oAdo.getMDBConnString(strAuditDbFile, "", ""));
 
@@ -5906,6 +5903,13 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oUtils.WriteText(m_strLogFile, "Package:" + strPackage + " \r\n\r\n");
 
                             string strRunTitle = $@"FVSOUT_{strVariant}{m_oRxPackageItem.RunTitleSuffix}";
+
+                            if (m_bDebug)
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, "START: Building FVSOut.db indexes" + System.DateTime.Now.ToString() + "\r\n");
+                            m_oRxTools.CreateFvsOutDbIndexes(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile);
+                            if (m_bDebug)
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, "END: Built FVSOut.db indexes" + System.DateTime.Now.ToString() + "\r\n");
+
 
                             string strConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile);
                             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))

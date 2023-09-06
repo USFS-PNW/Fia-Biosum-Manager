@@ -3894,8 +3894,10 @@ namespace FIA_Biosum_Manager
         {
             string idxSummary = "IDX_Summary";  //FVS-created index on fvs_summary.CaseId
             string idxCases = "IDX_Cases";  //FVS-created index on fvs_cases.CaseId
+            string idxCutlist = "IDX_CutList";  //FVS-created index on fvs_CutList.CaseId
             string idxSummaryStandId = "IDX_Summary_StandId";    //Biosum-created index on fvs_summary.StandId
             string idxCasesRunTitle = "IDX_Cases_RunTitle"; //BioSum-created index on fvs_summary.StandId
+            string idxCutListComposite = "IDX_CutList_Composite"; //BioSum-created index on fvs_cutTree.CaseID,StandId,Year,TreeId
             // Note: We also set some indexes in AppendRuntitleToFVSOut for FVSOut_BioSum.db
             DataMgr oDataMgr = new DataMgr();
             if (System.IO.File.Exists(strFvsOutDbPath))
@@ -3928,6 +3930,19 @@ namespace FIA_Biosum_Manager
                         {
                             // Replicate index that was on original FVSOut.db
                             oDataMgr.AddIndex(conn, Tables.FVS.DefaultFVSSummaryTableName, idxSummary, "CaseId");
+                        }
+                    }
+                    if (oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSCutListTableName))
+                    {
+                        if (!oDataMgr.IndexExist(conn, idxCutListComposite))
+                        {
+                            oDataMgr.AddIndex(conn, Tables.FVS.DefaultFVSCutListTableName, idxCutListComposite, "CaseID,StandId,Year,TreeId");
+                        }
+                        if (strFvsOutDbPath.ToUpper().IndexOf("BIOSUM") > 0 &&
+                            (!oDataMgr.IndexExist(conn, idxCutlist)))
+                        {
+                            // Replicate index that was on original FVSOut.db
+                            oDataMgr.AddIndex(conn, Tables.FVS.DefaultFVSCutListTableName, idxCutlist, "CaseId");
                         }
                     }
                 }

@@ -2568,31 +2568,6 @@ namespace FIA_Biosum_Manager
                      "UNION " +
                      "SELECT DISTINCT " +
                         "'006' AS idx," +
-                         "'" + p_strRxPackage + "' AS RXPACKAGE," +
-                         "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-                        "'DBH' AS COLUMN_NAME," +
-                        "dbh_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-                        "'NA' AS NF_IN_COND_TABLE_ERROR," +
-                        "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-                        "dia_value_error.VALUE_ERROR_COUNT AS  VALUE_ERROR," +
-                        "'NA' AS NF_IN_RX_TABLE_ERROR," +
-                        "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-                        "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-                        "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-                        "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-                     "FROM " + p_strFvsTreeTableName + " fvs," +
-                        "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-                         "WHERE DBH IS NULL) dbh_no_value_count, " +
-                        "(SELECT CSTR(COUNT(*)) AS VALUE_ERROR_COUNT FROM " + p_strFvsTreeTableName + " fvs " +
-                         "INNER JOIN tree_fvs_tree_id_work_table fia ON fvs.fvs_tree_id = fia.fvs_tree_id and fvs.biosum_cond_id = fia.biosum_cond_id " +
-                         "WHERE fvs.FvsCreatedTree_YN='N' AND  " +
-                               "fvs.rxcycle='1' AND " +
-                               "fvs.FVS_TREE_ID IS NOT NULL AND " +
-                               "LEN(TRIM(fvs.FVS_TREE_ID)) >  0 AND " +
-                               "fvs.DBH <> fia.DIA) dia_value_error " +
-                     "UNION " +
-                     "SELECT DISTINCT " +
-                        "'007' AS idx," +
                         "'" + p_strRxPackage + "' AS RXPACKAGE," +
                         "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                         "'TPA' AS COLUMN_NAME," +
@@ -2610,7 +2585,7 @@ namespace FIA_Biosum_Manager
                          "WHERE TPA IS NULL) tpa_no_value_count " +
                      "UNION " +
                      "SELECT DISTINCT " +
-                        "'008' AS idx," +
+                        "'007' AS idx," +
                          "'" + p_strRxPackage + "' AS RXPACKAGE," +
                         "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                         "'VOLCFNET' AS COLUMN_NAME," +
@@ -2628,7 +2603,7 @@ namespace FIA_Biosum_Manager
                          "WHERE VOLCFNET IS NULL) volcfnet_no_value_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'009' AS idx," +
+                   "'008' AS idx," +
                     "'" + p_strRxPackage + "' AS RXPACKAGE," +
                    "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'VOLTSGRS' AS COLUMN_NAME," +
@@ -2646,7 +2621,7 @@ namespace FIA_Biosum_Manager
                     "WHERE VOLTSGRS IS NULL) voltsgrs_no_value_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'010' AS idx," +
+                   "'009' AS idx," +
 				   "'" + p_strRxPackage + "' AS RXPACKAGE," +
                   "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'VOLCFGRS' AS COLUMN_NAME," +
@@ -2664,7 +2639,7 @@ namespace FIA_Biosum_Manager
                      "WHERE DBH IS NOT NULL AND DBH >= 5 AND VOLCFGRS IS NULL) volcfgrs_no_value_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'011' AS idx," +
+                   "'010' AS idx," +
                    "'" + p_strRxPackage + "' AS RXPACKAGE," +
                    "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'DRYBIOT' AS COLUMN_NAME," +
@@ -2682,7 +2657,7 @@ namespace FIA_Biosum_Manager
                     "WHERE DRYBIOT IS NULL) drybiot_no_value_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'012' AS idx," +
+                   "'011' AS idx," +
                    "'" + p_strRxPackage + "' AS RXPACKAGE," +
                    "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'DRYBIOM' AS COLUMN_NAME," +
@@ -2700,7 +2675,7 @@ namespace FIA_Biosum_Manager
                     "WHERE DBH IS NOT NULL AND DBH >= 5 AND DRYBIOM IS NULL) drybiom_no_value_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'013' AS idx," +
+                   "'012' AS idx," +
                    "'" + p_strRxPackage + "' AS RXPACKAGE," +
                    "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'FVS_TREE_ID' AS COLUMN_NAME," +
@@ -2724,7 +2699,7 @@ namespace FIA_Biosum_Manager
                               "WHERE a.fvs_tree_id = b.fvs_tree_id and a.biosum_cond_id = b.biosum_cond_id)) fvs_tree_id_not_found_in_tree_table_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'014' AS idx," +
+                   "'013' AS idx," +
                     "'" + p_strRxPackage + "' AS RXPACKAGE," +
                    "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'FVSCREATEDTREE_YN' AS COLUMN_NAME," +
@@ -2742,7 +2717,7 @@ namespace FIA_Biosum_Manager
                     "WHERE FvsCreatedTree_YN IS NULL OR LEN(TRIM(FvsCreatedTree_YN))=0) fvscreatedtree_no_value_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'015' AS idx," +
+                   "'014' AS idx," +
                    "'" + p_strRxPackage + "' AS RXPACKAGE," +
                    "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'FVS_SPECIES' AS COLUMN_NAME," +
