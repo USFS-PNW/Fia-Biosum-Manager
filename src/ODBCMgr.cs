@@ -200,9 +200,13 @@ namespace FIA_Biosum_Manager
             static public string ProcessorTemporaryDsnName { get { return "PROCESSOR_TEMPORARY"; } }
             static public string FvsOutTemporaryDsnName { get { return "FVS_OUT_TEMPORARY"; } }
             static public string FvsOutTreeListDsnName { get { return "FVS_OUT_TREELIST"; } }
+<<<<<<< HEAD
             static public string PrePostFvsWeightedDsnName {  get { return "PREPOST_FVS_WEIGHTED"; } }
             static public string OptimizerRuleDefinitionsDsnName { get { return "OPTIMIZER_RULE_DEFINITIONS";  } }
             static public string FvsOutPreAuditDsnName { get { return "FVS_OUT_PREAUDIT"; } }
+=======
+            static public string FvsOutAuditsDsnName { get { return "FVS_OUT_AUDITS"; } }
+>>>>>>> 85852b9a66e4bf1d7c19e2d0e93fcf99b9310a21
         }
 
     }

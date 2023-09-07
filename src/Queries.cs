@@ -2450,10 +2450,10 @@ namespace FIA_Biosum_Manager
             }
             static public string[] FVSOutputTable_AuditPostSummaryFVS(string p_strRxTable,string p_strRxPackageTable,string p_strTreeTable,
                 string p_strPlotTable,string p_strCondTable, string p_strPostAuditSummaryTable,string p_strFvsTreeTableName,
-                string p_strRxPackage)
+                string p_strRxPackage, string p_strFvsVariant)
             {
-                string[] sqlArray = new string[15];
-                
+                string[] sqlArray = new string[14];
+
                 sqlArray[0] = "SELECT * INTO rxpackage_work_table FROM (" +
                             "SELECT	 rxpackage, simyear1_fvscycle AS rxcycle, simyear1_rx as RX FROM " + p_strRxPackageTable + " " +
                             "UNION " +
@@ -2494,30 +2494,15 @@ namespace FIA_Biosum_Manager
                                 "'" + p_strRxPackage + "' AS RXPACKAGE," +
                                 "IIF(BIOSUM_COND_ID IS NULL OR LEN(TRIM(BIOSUM_COND_ID)) = 0,''," +
                                 "IIF(LEN(TRIM(BIOSUM_COND_ID)) >= 24,MID(BIOSUM_COND_ID,1,24),BIOSUM_COND_ID)) AS BIOSUM_PLOT_ID," +
-                                "BIOSUM_COND_ID FROM " + p_strFvsTreeTableName;
-                
-                //sqlArray[10] = "SELECT ID," +
-                //                "'" +  p_strFVSTreeFileName + "' AS FVS_TREE_FILE," +
-                //                "IIF(BIOSUM_COND_ID IS NULL OR LEN(TRIM(BIOSUM_COND_ID)) = 0,''," +
-                //                "IIF(LEN(TRIM(BIOSUM_COND_ID)) >= 24,MID(BIOSUM_COND_ID,1,24),BIOSUM_COND_ID)) AS BIOSUM_PLOT_ID," +
-                //                "BIOSUM_COND_ID " +
-                //              "INTO fvs_tree_biosum_plot_id_work_table " +
-                //              "FROM " + p_strFvsTreeTableName;
+                                "BIOSUM_COND_ID FROM " + p_strFvsTreeTableName;                
 
-                //sqlArray[11] = "ALTER TABLE fvs_tree_biosum_plot_id_work_table ALTER COLUMN biosum_plot_id CHAR(24)";
-
-                //sqlArray[12] = "ALTER TABLE fvs_tree_biosum_plot_id_work_table ALTER COLUMN biosum_cond_id CHAR(25)";
-
-                //sqlArray[13] = "ALTER TABLE fvs_tree_biosum_plot_id_work_table ALTER COLUMN fvs_tree_file CHAR(26)";
-
-                sqlArray[12] = $@"DELETE FROM {p_strPostAuditSummaryTable} WHERE RXPACKAGE = '{p_strRxPackage}'"; 
-
-                sqlArray[13] =
+                sqlArray[12] =
                     "INSERT INTO  " + p_strPostAuditSummaryTable + " " +
                     "SELECT * FROM " +
                     "(SELECT DISTINCT " +
-                        "'001' AS [INDEX]," +
+                        "'001' AS idx," +
                         "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                        "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                         "'BIOSUM_COND_ID' AS COLUMN_NAME," +
                         "biosum_cond_id_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                         "biosum_cond_id_not_found_in_cond_table_count.NOT_FOUND_IN_COND_TABLE_COUNT AS NF_IN_COND_TABLE_ERROR," +
@@ -2542,8 +2527,9 @@ namespace FIA_Biosum_Manager
                                            "WHERE b.BIOSUM_PLOT_ID = a.BIOSUM_PLOT_ID)) biosum_cond_id_not_found_in_plot_table_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'002' AS [INDEX]," +
+                   "'002' AS idx," +
                     "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                    "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'RXCYCLE' AS COLUMN_NAME," +
                    "rxcycle_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                    "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2561,8 +2547,9 @@ namespace FIA_Biosum_Manager
                     "WHERE a.RXCYCLE IS NULL OR a.RXCYCLE NOT IN ('1','2','3','4')) rxcycle_value_notvalid_count " +
                      "UNION " +
                      "SELECT DISTINCT " +
-                        "'003' AS [INDEX]," +
+                        "'003' AS idx," +
 						"'" + p_strRxPackage + "' AS RXPACKAGE," +
+                        "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                         "'RXPACKAGE' AS COLUMN_NAME," +
                         "rxpackage_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                         "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2582,8 +2569,9 @@ namespace FIA_Biosum_Manager
                                            "WHERE fvs.rxpackage = rxp.rxpackage)) notfound_in_rxpackage_table " +
                      "UNION " +
                      "SELECT DISTINCT " +
-                        "'004' AS [INDEX]," +
+                        "'004' AS idx," +
                         "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                        "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                         "'RX' AS COLUMN_NAME," +
                         "rx_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                         "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2609,8 +2597,9 @@ namespace FIA_Biosum_Manager
                                                  "TRIM(fvs.rx)=TRIM(rxp.rx))) not_found_rxpackage_rxcycle_rx_combo_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'005' AS [INDEX]," +
+                   "'005' AS idx," +
                     "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                    "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'RXYEAR' AS COLUMN_NAME," +
                    "rxyear_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                    "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2626,32 +2615,9 @@ namespace FIA_Biosum_Manager
                     "WHERE RXYEAR IS NULL OR LEN(TRIM(RXYEAR))=0) rxyear_no_value_count " +
                      "UNION " +
                      "SELECT DISTINCT " +
-                        "'006' AS [INDEX]," +
-                         "'" + p_strRxPackage + "' AS RXPACKAGE," +
-                        "'DBH' AS COLUMN_NAME," +
-                        "dbh_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-                        "'NA' AS NF_IN_COND_TABLE_ERROR," +
-                        "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-                        "dia_value_error.VALUE_ERROR_COUNT AS  VALUE_ERROR," +
-                        "'NA' AS NF_IN_RX_TABLE_ERROR," +
-                        "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-                        "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-                        "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-                        "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-                     "FROM " + p_strFvsTreeTableName + " fvs," +
-                        "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-                         "WHERE DBH IS NULL) dbh_no_value_count, " +
-                        "(SELECT CSTR(COUNT(*)) AS VALUE_ERROR_COUNT FROM " + p_strFvsTreeTableName + " fvs " +
-                         "INNER JOIN tree_fvs_tree_id_work_table fia ON fvs.fvs_tree_id = fia.fvs_tree_id and fvs.biosum_cond_id = fia.biosum_cond_id " +
-                         "WHERE fvs.FvsCreatedTree_YN='N' AND  " +
-                               "fvs.rxcycle='1' AND " +
-                               "fvs.FVS_TREE_ID IS NOT NULL AND " +
-                               "LEN(TRIM(fvs.FVS_TREE_ID)) >  0 AND " +
-                               "fvs.DBH <> fia.DIA) dia_value_error " +
-                     "UNION " +
-                     "SELECT DISTINCT " +
-                        "'007' AS [INDEX]," +
+                        "'006' AS idx," +
                         "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                        "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                         "'TPA' AS COLUMN_NAME," +
                         "tpa_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                         "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2667,8 +2633,9 @@ namespace FIA_Biosum_Manager
                          "WHERE TPA IS NULL) tpa_no_value_count " +
                      "UNION " +
                      "SELECT DISTINCT " +
-                        "'008' AS [INDEX]," +
+                        "'007' AS idx," +
                          "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                        "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                         "'VOLCFNET' AS COLUMN_NAME," +
                         "volcfnet_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                         "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2684,8 +2651,9 @@ namespace FIA_Biosum_Manager
                          "WHERE VOLCFNET IS NULL) volcfnet_no_value_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'009' AS [INDEX]," +
+                   "'008' AS idx," +
                     "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                   "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'VOLTSGRS' AS COLUMN_NAME," +
                    "voltsgrs_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                    "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2701,8 +2669,9 @@ namespace FIA_Biosum_Manager
                     "WHERE VOLTSGRS IS NULL) voltsgrs_no_value_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'010' AS [INDEX]," +
+                   "'009' AS idx," +
 				   "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                  "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'VOLCFGRS' AS COLUMN_NAME," +
                    "volcfgrs_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                    "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2718,8 +2687,9 @@ namespace FIA_Biosum_Manager
                      "WHERE DBH IS NOT NULL AND DBH >= 5 AND VOLCFGRS IS NULL) volcfgrs_no_value_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'011' AS [INDEX]," +
+                   "'010' AS idx," +
                    "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                   "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'DRYBIOT' AS COLUMN_NAME," +
                    "drybiot_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                    "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2735,8 +2705,9 @@ namespace FIA_Biosum_Manager
                     "WHERE DRYBIOT IS NULL) drybiot_no_value_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'012' AS [INDEX]," +
+                   "'011' AS idx," +
                    "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                   "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'DRYBIOM' AS COLUMN_NAME," +
                    "drybiom_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                    "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2752,8 +2723,9 @@ namespace FIA_Biosum_Manager
                     "WHERE DBH IS NOT NULL AND DBH >= 5 AND DRYBIOM IS NULL) drybiom_no_value_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'013' AS [INDEX]," +
+                   "'012' AS idx," +
                    "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                   "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'FVS_TREE_ID' AS COLUMN_NAME," +
                    "fvs_tree_id_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                    "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2775,8 +2747,9 @@ namespace FIA_Biosum_Manager
                               "WHERE a.fvs_tree_id = b.fvs_tree_id and a.biosum_cond_id = b.biosum_cond_id)) fvs_tree_id_not_found_in_tree_table_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'014' AS [INDEX]," +
+                   "'013' AS idx," +
                     "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                   "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'FVSCREATEDTREE_YN' AS COLUMN_NAME," +
                    "fvscreatedtree_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                    "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2792,8 +2765,9 @@ namespace FIA_Biosum_Manager
                     "WHERE FvsCreatedTree_YN IS NULL OR LEN(TRIM(FvsCreatedTree_YN))=0) fvscreatedtree_no_value_count " +
                 "UNION " +
                 "SELECT DISTINCT " +
-                   "'015' AS [INDEX]," +
+                   "'014' AS idx," +
                    "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                   "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
                    "'FVS_SPECIES' AS COLUMN_NAME," +
                    "fvs_species_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                    "'NA' AS NF_IN_COND_TABLE_ERROR," +
@@ -2815,25 +2789,25 @@ namespace FIA_Biosum_Manager
                           "a.FVS_TREE_ID IS NOT NULL AND " +
                           "LEN(TRIM(a.FVS_TREE_ID)) >  0 AND " +
                           "VAL(a.FVS_SPECIES) <> b.SPCD) fvs_species_change_count)";
-                sqlArray[14] = $@"UPDATE {p_strPostAuditSummaryTable} SET CREATED_DATE='{DateTime.Now.ToString().Trim()}' 
-                                WHERE RXPACKAGE = '{p_strRxPackage}'";
+                sqlArray[13] = $@"UPDATE {p_strPostAuditSummaryTable} SET CREATED_DATE='{DateTime.Now.ToString().Trim()}' 
+                                WHERE RXPACKAGE = '{p_strRxPackage}' AND FVS_VARIANT = '{p_strFvsVariant}'";
 
                 return sqlArray;
             }
 
-            public static string[] FVSOutputTable_AuditPostSummaryDetailFVS_SPCDCHANGE_WARNING(string p_strInsertTable, string p_strPostAuditSummaryTable, string p_strFvsTreeTableName,string p_strTreeTable, string p_strFvsVariant, string p_strRxPackage)
+            public static string[] FVSOutputTable_AuditPostSummaryDetailFVS_SPCDCHANGE_WARNING(string p_strInsertTable, string p_strPostAuditSummaryTable, 
+                string p_strFvsTreeTableName,string p_strTreeTable, string p_strFvsVariant, string p_strRxPackage)
             {
-                string[] sqlArray = new string[2];
+                string[] sqlArray = new string[1];
 
-                sqlArray[0] = "DELETE FROM " + p_strInsertTable + " WHERE RXPACKAGE = '" + p_strRxPackage + "'";
-
-                sqlArray[1] = "INSERT INTO  " + p_strInsertTable + " " +
+                sqlArray[0] = "INSERT INTO  " + p_strInsertTable + " " +
                                    "SELECT * FROM " +
                                         "(SELECT 'FVS_SPECIES' AS COLUMN_NAME," +
                                                 "'SPCD DOES NOT MATCH: FVS=' + TRIM(FVS.FVS_SPECIES) + ' FIA=' + TRIM(CSTR(FIA.SPCD)) AS WARNING_DESC," +
                                                 "fvs.ID," +
                                                 "fvs.BIOSUM_COND_ID," +
                                                 "fvs.RXPACKAGE," +
+                                                "fvs.FVS_VARIANT," +
                                                 "fvs.RXCYCLE," +
                                                 "fvs.FVS_TREE_ID AS FVS_TREE_FVS_TREE_ID," +
                                                 "fia.FVS_TREE_ID AS FIA_TREE_FVS_TREE_ID," +
@@ -2943,139 +2917,137 @@ namespace FIA_Biosum_Manager
             /// <param name="p_strFvsTreeTableName"></param>
             /// <param name="p_strFVSTreeFileName"></param>
             /// <returns></returns>
-            public static string[] FVSOutputTable_AuditPostSummaryDetailFVS_NOVALUE_ERROR(string p_strInsertTable,string p_strPostAuditSummaryTable,string p_strFvsTreeTableName,string p_strRxPackage)
+            public static string[] FVSOutputTable_AuditPostSummaryDetailFVS_NOVALUE_ERROR(string p_strInsertTable,string p_strPostAuditSummaryTable,string p_strFvsTreeTableName,
+                string p_strFvsVariant, string p_strRxPackage)
             {
-                
-                string[] sqlArray = new string[2];
+                string[] sqlArray = new string[1];
 
-                sqlArray[0] = "DELETE FROM " + p_strInsertTable + " WHERE RXPACKAGE = '" + p_strRxPackage + "'";
-
-                sqlArray[1] =    "INSERT INTO  " + p_strInsertTable + " " +
+                sqlArray[0] =    "INSERT INTO  " + p_strInsertTable + " " +
                                     "SELECT * FROM " +
                                          "(SELECT a.COLUMN_NAME,'NULLS NOT ALLOWED' AS ERROR_DESC, FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
-                                             "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE BIOSUM_COND_ID IS NULL OR LEN(TRIM(BIOSUM_COND_ID))=0) FVS_TREE " +
+                                             "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE BIOSUM_COND_ID IS NULL OR LENGTH(TRIM(BIOSUM_COND_ID))=0) FVS_TREE " +
                                           "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
-                                                 "LEN(TRIM(NOVALUE_ERROR)) > 0 AND " +
+                                                 "LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND " +
                                                  "a.NOVALUE_ERROR <> 'NA' AND " +
-                                                 "VAL(a.NOVALUE_ERROR) > 0 AND " +
-                                                 "TRIM(a.COLUMN_NAME) = 'BIOSUM_COND_ID' AND a.RXPACKAGE='" + p_strRxPackage + "' " +
+                                                 "CAST(a.NOVALUE_ERROR as INT) > 0 AND " +
+                                                 "TRIM(a.COLUMN_NAME) = 'BIOSUM_COND_ID' AND a.FVS_VARIANT ='" + p_strFvsVariant + "' AND a.RXPACKAGE='" + p_strRxPackage + "' " +
                                           "UNION " +
                                           "SELECT a.COLUMN_NAME,'NULLS NOT ALLOWED' AS ERROR_DESC, FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
-                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE RXCYCLE IS NULL OR LEN(TRIM(RXCYCLE))=0) FVS_TREE " +
+                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE RXCYCLE IS NULL OR LENGTH(TRIM(RXCYCLE))=0) FVS_TREE " +
                                              "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
-                                                   "LEN(TRIM(NOVALUE_ERROR)) > 0 AND " +
+                                                   "LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND " +
                                                    "a.NOVALUE_ERROR <> 'NA' AND " +
-                                                   "VAL(a.NOVALUE_ERROR) > 0 AND " +
+                                                   "CAST(a.NOVALUE_ERROR as INT) > 0 AND " +
                                                    "TRIM(a.COLUMN_NAME) = 'RXCYCLE' AND " +
-                                                   "a.RXPACKAGE='" + p_strRxPackage + "' " +
+                                                   "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE='" + p_strRxPackage + "' " +
                                           "UNION " +
                                           "SELECT a.COLUMN_NAME,'NULLS NOT ALLOWED' AS ERROR_DESC, FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
-                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE RXPACKAGE IS NULL OR LEN(TRIM(RXPACKAGE))=0) FVS_TREE " +
+                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE RXPACKAGE IS NULL OR LENGTH(TRIM(RXPACKAGE))=0) FVS_TREE " +
                                              "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
-                                                   "LEN(TRIM(NOVALUE_ERROR)) > 0 AND " +
+                                                   "LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND " +
                                                    "a.NOVALUE_ERROR <> 'NA' AND " +
-                                                   "VAL(a.NOVALUE_ERROR) > 0 AND " +
+                                                   "CAST(a.NOVALUE_ERROR as INT) > 0 AND " +
                                                    "TRIM(a.COLUMN_NAME) = 'RXPACKAGE' AND " +
-                                                   "a.RXPACKAGE='" + p_strRxPackage + "' " +
+                                                  "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE='" + p_strRxPackage + "' " +
                                           "UNION " +
                                           "SELECT a.COLUMN_NAME,'NULLS NOT ALLOWED' AS ERROR_DESC, FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
-                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE RX IS NULL OR LEN(TRIM(RX))=0) FVS_TREE " +
+                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE RX IS NULL OR LENGTH(TRIM(RX))=0) FVS_TREE " +
                                              "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
-                                                   "LEN(TRIM(NOVALUE_ERROR)) > 0 AND " +
+                                                   "LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND " +
                                                    "a.NOVALUE_ERROR <> 'NA' AND " +
-                                                   "VAL(a.NOVALUE_ERROR) > 0 AND " +
+                                                   "CAST(a.NOVALUE_ERROR as INT) > 0 AND " +
                                                    "TRIM(a.COLUMN_NAME) = 'RX' AND " +
-                                                   "a.RXPACKAGE='" + p_strRxPackage + "' " +
+                                                   "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE='" + p_strRxPackage + "' " +
                                           "UNION " +
                                           "SELECT a.COLUMN_NAME,'NULLS NOT ALLOWED' AS ERROR_DESC, FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
-                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE RXYEAR IS NULL OR LEN(TRIM(RXYEAR))=0) FVS_TREE " +
+                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE RXYEAR IS NULL OR LENGTH(TRIM(RXYEAR))=0) FVS_TREE " +
                                              "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
-                                                   "LEN(TRIM(NOVALUE_ERROR)) > 0 AND " +
+                                                   "LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND " +
                                                    "a.NOVALUE_ERROR <> 'NA' AND " +
-                                                   "VAL(a.NOVALUE_ERROR) > 0 AND " +
+                                                   "CAST(a.NOVALUE_ERROR as INT) > 0 AND " +
                                                    "TRIM(a.COLUMN_NAME) = 'RXYEAR' AND " +
-                                                   "a.RXPACKAGE='" + p_strRxPackage + "' " +
+                                                   "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE='" + p_strRxPackage + "' " +
                                           "UNION " +
                                           "SELECT a.COLUMN_NAME,'NULLS NOT ALLOWED' AS ERROR_DESC, FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
                                             "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE DBH IS NULL) FVS_TREE " +
                                              "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
-                                                   "LEN(TRIM(NOVALUE_ERROR)) > 0 AND " +
+                                                   "LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND " +
                                                    "a.NOVALUE_ERROR <> 'NA' AND " +
-                                                   "VAL(a.NOVALUE_ERROR) > 0 AND " +
+                                                   "CAST(a.NOVALUE_ERROR as INT) > 0 AND " +
                                                    "TRIM(a.COLUMN_NAME) = 'DBH' AND " +
-                                                   "a.RXPACKAGE='" + p_strRxPackage + "' " +
+                                                   "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE='" + p_strRxPackage + "' " +
                                           "UNION " +
                                           "SELECT a.COLUMN_NAME,'NULLS NOT ALLOWED' AS ERROR_DESC, FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
                                             "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE TPA IS NULL) FVS_TREE " +
                                              "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
-                                                   "LEN(TRIM(NOVALUE_ERROR)) > 0 AND " +
+                                                   "LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND " +
                                                    "a.NOVALUE_ERROR <> 'NA' AND " +
-                                                   "VAL(a.NOVALUE_ERROR) > 0 AND " +
+                                                   
                                                    "TRIM(a.COLUMN_NAME) = 'TPA' AND " +
-                                                   "a.RXPACKAGE='" + p_strRxPackage + "' " +
+                                                   "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE='" + p_strRxPackage + "' " +
                                           "UNION " +
                                           "SELECT a.COLUMN_NAME, 'NULLS NOT ALLOWED WHEN DBH >= 5 INCHES' AS ERROR_DESC,FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
                                             "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE DBH IS NOT NULL AND DBH >= 5 AND VOLCFNET IS NULL) FVS_TREE " +
                                              "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
-                                                   "LEN(TRIM(NOVALUE_ERROR)) > 0 AND " +
+                                                   "LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND " +
                                                    "a.NOVALUE_ERROR <> 'NA' AND " +
-                                                   "VAL(a.NOVALUE_ERROR) > 0 AND " +
+                                                   "CAST(a.NOVALUE_ERROR as INT) > 0 AND " +
                                                    "TRIM(a.COLUMN_NAME) = 'VOLCFNET' AND " +
-                                                   "a.RXPACKAGE='" + p_strRxPackage + "' " +
+                                                   "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE='" + p_strRxPackage + "' " +
                                           "UNION " +
                                           "SELECT a.COLUMN_NAME, 'NULLS NOT ALLOWED WHEN DBH >= 5 INCHES' AS ERROR_DESC,FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
                                             "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE DBH IS NOT NULL AND DBH >= 5 AND VOLCFGRS IS NULL) FVS_TREE " +
                                              "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
-                                                   "LEN(TRIM(NOVALUE_ERROR)) > 0 AND " +
+                                                   "LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND " +
                                                    "a.NOVALUE_ERROR <> 'NA' AND " +
-                                                   "VAL(a.NOVALUE_ERROR) > 0 AND " +
+                                                   "CAST(a.NOVALUE_ERROR as INT) > 0 AND " +
                                                    "TRIM(a.COLUMN_NAME) = 'VOLCFGRS' AND " +
-                                                   "a.RXPACKAGE='" + p_strRxPackage + "' " +
+                                                   "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE='" + p_strRxPackage + "' " +
                                           "UNION " +
                                           "SELECT a.COLUMN_NAME, 'NULLS NOT ALLOWED' AS ERROR_DESC,FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
                                             "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE DRYBIOT IS NULL) FVS_TREE " +
                                              "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
-                                                   "LEN(TRIM(NOVALUE_ERROR)) > 0 AND " +
+                                                   "LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND " +
                                                    "a.NOVALUE_ERROR <> 'NA' AND " +
-                                                   "VAL(a.NOVALUE_ERROR) > 0 AND " +
+                                                   "CAST(a.NOVALUE_ERROR as INT) > 0 AND " +
                                                    "TRIM(a.COLUMN_NAME) = 'DRYBIOT' AND " +
-                                                   "a.RXPACKAGE='" + p_strRxPackage + "' " +
-                                          "UNION	" +
+                                                   "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE='" + p_strRxPackage + "' " +
+                                          "UNION " +
                                           "SELECT a.COLUMN_NAME, 'NULLS NOT ALLOWED WHEN DBH >= 5 INCHES' AS ERROR_DESC,FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
                                             "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE DBH IS NOT NULL AND DBH >= 5 AND DRYBIOM IS NULL) FVS_TREE " +
                                              "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
-                                                   "LEN(TRIM(NOVALUE_ERROR)) > 0 AND " +
+                                                   "LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND " +
                                                    "a.NOVALUE_ERROR <> 'NA' AND " +
-                                                   "VAL(a.NOVALUE_ERROR) > 0 AND " +
+                                                   "CAST(a.NOVALUE_ERROR as INT) > 0 AND " +
                                                    "TRIM(a.COLUMN_NAME) = 'DRYBIOM' AND " +
-                                                   "a.RXPACKAGE='" + p_strRxPackage + "' " +
+                                                   "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE = '" + p_strRxPackage + "' " +
                                           "UNION " +
                                           "SELECT a.COLUMN_NAME,'NULLS NOT ALLOWED' AS ERROR_DESC, FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
-                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE FVS_TREE_ID IS NULL OR LEN(TRIM(FVS_TREE_ID))=0) FVS_TREE " +
+                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE FVS_TREE_ID IS NULL OR LENGTH(TRIM(FVS_TREE_ID))=0) FVS_TREE " +
                                              "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
-                                                   "LEN(TRIM(NOVALUE_ERROR)) > 0 AND " +
+                                                  "LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND " +
                                                   "a.NOVALUE_ERROR <> 'NA' AND " +
-                                                  "VAL(a.NOVALUE_ERROR) > 0 AND " +
+                                                  "CAST(a.NOVALUE_ERROR as INT) > 0 AND " +
                                                   "TRIM(a.COLUMN_NAME) = 'FVS_TREE_ID' AND " +
-                                                  "a.RXPACKAGE='" + p_strRxPackage + "' " +
+                                                  "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE='" + p_strRxPackage + "' " +
                                           "UNION " +
                                           "SELECT a.COLUMN_NAME,'NULLS NOT ALLOWED' AS ERROR_DESC, FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
-                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE FVSCREATEDTREE_YN IS NULL OR LEN(TRIM(FVSCREATEDTREE_YN))=0) FVS_TREE " +
+                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE FVSCREATEDTREE_YN IS NULL OR LENGTH(TRIM(FVSCREATEDTREE_YN))=0) FVS_TREE " +
                                              "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
-                                                   "LEN(TRIM(NOVALUE_ERROR)) > 0 AND " +
+                                                   "LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND " +
                                                    "a.NOVALUE_ERROR <> 'NA' AND " +
-                                                   "VAL(a.NOVALUE_ERROR) > 0 AND " +
+                                                   "CAST(a.NOVALUE_ERROR as INT) > 0 AND " +
                                                    "TRIM(a.COLUMN_NAME) = 'FVSCREATEDTREE_YN' AND " +
-                                                  "a.RXPACKAGE='" + p_strRxPackage + "' " +
+                                                  "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE='" + p_strRxPackage + "' " +
                                           "UNION " +
                                           "SELECT a.COLUMN_NAME,'NULLS NOT ALLOWED' AS ERROR_DESC, FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
-                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE FVS_SPECIES IS NULL OR LEN(TRIM(FVS_SPECIES))=0) FVS_TREE " +
+                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE FVS_SPECIES IS NULL OR LENGTH(TRIM(FVS_SPECIES))=0) FVS_TREE " +
                                              "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
-                                                   "LEN(TRIM(NOVALUE_ERROR)) > 0 AND " +
+                                                   "LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND " +
                                                    "a.NOVALUE_ERROR <> 'NA' AND " +
-                                                   "VAL(a.NOVALUE_ERROR) > 0 AND " +
+                                                   "CAST(a.NOVALUE_ERROR as INT) > 0 AND " +
                                                    "TRIM(a.COLUMN_NAME) = 'FVS_SPECIES' AND " +
-                                                   "a.RXPACKAGE='" + p_strRxPackage + "')";
+                                                   "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE='" + p_strRxPackage + "')";
 
                 return sqlArray;
 
@@ -3088,26 +3060,25 @@ namespace FIA_Biosum_Manager
             /// <param name="p_strFvsTreeTableName"></param>
             /// <param name="p_strFVSTreeFileName"></param>
             /// <returns></returns>
-            public static string[] FVSOutputTable_AuditPostSummaryDetailFVS_VALUE_ERROR(string p_strInsertTable, string p_strPostAuditSummaryTable, string p_strFvsTreeTableName, string p_strRxPackage)
+            public static string[] FVSOutputTable_AuditPostSummaryDetailFVS_VALUE_ERROR(string p_strInsertTable, string p_strPostAuditSummaryTable, string p_strFvsTreeTableName, 
+                string p_strFvsVariant, string p_strRxPackage)
             {
 
-                string[] sqlArray = new string[2];
+                string[] sqlArray = new string[1];
 
-                sqlArray[0] = "DELETE FROM " + p_strInsertTable + " WHERE RXPACKAGE = '" + p_strRxPackage + "'";
-
-                sqlArray[1] = "INSERT INTO  " + p_strInsertTable + " " +
+                sqlArray[0] = "INSERT INTO  " + p_strInsertTable + " " +
                                     "SELECT * FROM " +
                                          "(SELECT a.COLUMN_NAME,FVS_TREE.RXCYCLE + ' is not a valid cycle. Valid values are 1,2,3 or 4' AS ERROR_DESC, FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
                                              "(SELECT * " + 
 	                                          "FROM " + p_strFvsTreeTableName + " " +
-	                                          "WHERE RXCYCLE IS NOT NULL AND LEN(TRIM(RXCYCLE)) > 0 AND " +
+	                                          "WHERE RXCYCLE IS NOT NULL AND LENGTH(TRIM(RXCYCLE)) > 0 AND " +
 	                                                "RXCYCLE NOT IN ('1','2','3','4')) FVS_TREE " +
                                           "WHERE a.VALUE_ERROR IS NOT NULL AND " +
-                                                "LEN(TRIM(VALUE_ERROR)) > 0 AND " +
+                                                "LENGTH(TRIM(VALUE_ERROR)) > 0 AND " +
                                                 "a.VALUE_ERROR <> 'NA' AND " +
-                                                "VAL(a.VALUE_ERROR) > 0 AND " +
+                                                "CAST(a.VALUE_ERROR as INT) > 0 AND " +
                                                 "TRIM(a.COLUMN_NAME) = 'RXCYCLE' AND " + 
-                                                "a.rxPackage='" + p_strRxPackage + "')";
+                                                "a.fvs_variant = '" + p_strFvsVariant + "' AND a.rxPackage='" + p_strRxPackage + "')";
 
                 return sqlArray;
 
@@ -3125,7 +3096,6 @@ namespace FIA_Biosum_Manager
                 string p_strInsertTable, 
                 string p_strPostAuditSummaryTable, 
                 string p_strFvsTreeTableName, 
-                string p_strRxPackage,
                 string p_strCondTable,
                 string p_strPlotTable, 
                 string p_strTreeTable,
@@ -3134,11 +3104,9 @@ namespace FIA_Biosum_Manager
                 string p_strRxPackageWorkTable)
             {
 
-                string[] sqlArray = new string[2];
+                string[] sqlArray = new string[1];
 
-                sqlArray[0] = "DELETE FROM " + p_strInsertTable + " WHERE rxpackage = '" + p_strRxPackage + "'";
-
-                sqlArray[1] = "INSERT INTO  " + p_strInsertTable + " " +
+                sqlArray[0] = "INSERT INTO  " + p_strInsertTable + " " +
                                     "SELECT * FROM " +
                                     "(SELECT DISTINCT " +
                                         "'BIOSUM_COND_ID' AS COLUMN_NAME," +

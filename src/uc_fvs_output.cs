@@ -5722,7 +5722,7 @@ namespace FIA_Biosum_Manager
             // Loads the sequence number configurations from db\fvsmaster.mdb\fvs_output_prepost_seqnum
             m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(m_ado, m_ado.m_OleDbConnection, m_oFVSPrePostSeqNumItemCollection);
 
-           
+            
 
 			
 			int x,y;
@@ -5890,10 +5890,7 @@ namespace FIA_Biosum_Manager
 
                             if (uc_filesize_monitor2.File.Trim().Length > 0) uc_filesize_monitor2.EndMonitoringFile();
                             uc_filesize_monitor2.BeginMonitoringFile(strAuditDbFile, 2000000000, "2GB");
-                            uc_filesize_monitor2.Information = "BIOSUM DB file containing PREPOST SEQNUM MATRIX and AUDIT tables for processing FVS Output DB file " + strDbFile; 
-
-
-
+                            uc_filesize_monitor2.Information = "BIOSUM DB file containing PREPOST SEQNUM MATRIX and AUDIT tables for processing FVS Output DB file " + strDbFile;
 
                             //oAdo.OpenConnection(oAdo.getMDBConnString(strAuditDbFile, "", ""));
 
@@ -5906,6 +5903,13 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oUtils.WriteText(m_strLogFile, "Package:" + strPackage + " \r\n\r\n");
 
                             string strRunTitle = $@"FVSOUT_{strVariant}{m_oRxPackageItem.RunTitleSuffix}";
+
+                            if (m_bDebug)
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, "START: Building FVSOut.db indexes" + System.DateTime.Now.ToString() + "\r\n");
+                            m_oRxTools.CreateFvsOutDbIndexes(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile);
+                            if (m_bDebug)
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, "END: Built FVSOut.db indexes" + System.DateTime.Now.ToString() + "\r\n");
+
 
                             string strConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile);
                             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
@@ -6799,36 +6803,15 @@ namespace FIA_Biosum_Manager
 			m_strWarning="";
 			m_intWarning=0;
 			m_intProgressOverallCurrentCount=0;
-			string strRx1="";
-			string strRx2="";
-			string strRx3="";
-			string strRx4="";
 			string strPackage="";
 			string strVariant="";
-			string strRx="";
             string strSQL = "";
             System.Windows.Forms.ListView oLv = (System.Windows.Forms.ListView)frmMain.g_oDelegate.GetListView(this.lstFvsOutput, false);
             System.Windows.Forms.ListViewItem oLvItem = null;
-
-			Tables oTables = new Tables();
-
-            string strVariantList = "";
-           
-			
-
-			string strOutDirAndFile;
-			string strDbFile;
-			
+			Tables oTables = new Tables();	
             string strAuditDbFile;
-            
-			
-
-			
-			string[] strSourceTableArray=null;
 			ado_data_access oAdo = new ado_data_access();
 			
-			bool bSkip;
-			bool bResult=false;
             bool bDisplay = false;
 
             if (m_bDebug)
@@ -6838,19 +6821,10 @@ namespace FIA_Biosum_Manager
 			string strDateFormat = "yyyy-MM-dd_HH-mm-ss";
 			m_strLogDate = oDate.ToString(strDateFormat);
 			m_strLogDate = m_strLogDate.Replace("/","_"); m_strLogDate=m_strLogDate.Replace(":","_");
-
-            
-          
-
-			
 			int x,y;
 
             try
             {
-                bSkip = false;
-
-
-
                 if (this.m_ado.m_OleDbConnection.State == System.Data.ConnectionState.Open)
                     this.m_ado.m_OleDbConnection.Close();
 
@@ -6858,7 +6832,6 @@ namespace FIA_Biosum_Manager
                 {
                     System.Threading.Thread.Sleep(1000);
                 }
-
 
                 intCount = (int)frmMain.g_oDelegate.GetListViewItemsPropertyValue(oLv, "Count", false);
                 for (x = 0; x <= intCount - 1; x++)
@@ -6892,13 +6865,9 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "");
                         this.m_oLvAlternateColors.DelegateListViewSubItem(oLvItem, x, COL_RUNSTATUS);
                         frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "");
-
-                        
-
+                       
                         if ((bool)frmMain.g_oDelegate.GetListViewItemPropertyValue(oLv, x, "Checked", false) == true)
-                        {
-                            
-
+                        {                            
                             m_intProgressStepTotalCount = 30;
                             m_intProgressStepCurrentCount = 0;
                             m_intProgressOverallCurrentCount++;
@@ -6914,10 +6883,6 @@ namespace FIA_Biosum_Manager
                             string strItemError = "";
                             int intItemWarning = 0;
                             string strItemWarning = "";
-                            bSkip = true;
-
-
-
 
                             this.m_oLvAlternateColors.m_oRowCollection.Item(x).m_oColumnCollection.Item(COL_RUNSTATUS).UpdateColumn = false;
                             frmMain.g_oDelegate.ExecuteControlMethodWithParam((System.Windows.Forms.Control)oLv, "EnsureVisible", new object[] { x });
@@ -6940,17 +6905,11 @@ namespace FIA_Biosum_Manager
                             strPackage = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_PACKAGE, "Text", false);
                             strPackage = strPackage.Trim();
 
-                            //get the package and treatments
-                            strPackage = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_PACKAGE, "Text", false);
-                            strPackage = strPackage.Trim();
-
                             //find the package item in the package collection
                             for (y = 0; y <= this.m_oRxPackageItem_Collection.Count - 1; y++)
                             {
                                 if (this.m_oRxPackageItem_Collection.Item(y).RxPackageId.Trim() == strPackage.Trim())
                                     break;
-
-
                             }
                             if (y <= m_oRxPackageItem_Collection.Count - 1)
                             {
@@ -6965,10 +6924,6 @@ namespace FIA_Biosum_Manager
 
                             //get the list of treatment cycle year fields to reference for this package
                             this.m_strRxCycleList = "";
-                            if (this.m_oRxPackageItem != null)
-                            {
-
-                            }
                             if (m_oRxPackageItem.SimulationYear1Rx.Trim().Length > 0 && m_oRxPackageItem.SimulationYear1Rx.Trim() != "000") this.m_strRxCycleList = "1,";
                             if (m_oRxPackageItem.SimulationYear2Rx.Trim().Length > 0 && m_oRxPackageItem.SimulationYear2Rx.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "2,";
                             if (m_oRxPackageItem.SimulationYear3Rx.Trim().Length > 0 && m_oRxPackageItem.SimulationYear3Rx.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "3,";
@@ -6982,18 +6937,12 @@ namespace FIA_Biosum_Manager
                                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim());
                                 frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
 
-                                strDbFile = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_MDBOUT, "Text", false);
-                                strDbFile = strDbFile.Trim();
-
-                                strOutDirAndFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)this.txtOutDir, "Text", false);
-                                strOutDirAndFile = strOutDirAndFile.Trim();
-                                strOutDirAndFile = strOutDirAndFile + "\\" + strVariant + "\\" + strDbFile;
-
-                                strAuditDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)this.txtOutDir, "Text", false);
-                                strAuditDbFile = strAuditDbFile.Trim();
-                                strAuditDbFile = strAuditDbFile + "\\" + strVariant + "\\PostAudit.accdb";
-                                string strTempCutListTable = "tmpCutTree";
-                                //string strTableLinkName = Tables.FVS.DefaultFVSCutTreeTableName;
+                            // With the SQLite rewrite, we run the queries in a temp database instead of PostAudit.accdb
+                            // The permanent audit tables are in the new SQLite audits.db
+                            strAuditDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile;
+                            string strTempAccdb = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
+                            m_dao.CreateMDB(strTempAccdb);
+                            string strTempCutListTable = "tmpCutTree";
 
                                 int intTreeTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("TREE");
                                 int intCondTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("CONDITION");
@@ -7001,9 +6950,9 @@ namespace FIA_Biosum_Manager
                                 int intRxTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("TREATMENT PRESCRIPTIONS");
                                 int intRxPackageTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("TREATMENT PACKAGES");
 
-                                if (System.IO.File.Exists(strAuditDbFile))
+                                if (System.IO.File.Exists(strTempAccdb))
                                 {
-                                    oAdo.OpenConnection(oAdo.getMDBConnString(strAuditDbFile, "", ""));
+                                    oAdo.OpenConnection(oAdo.getMDBConnString(strTempAccdb, "", ""));
                                     if (oAdo.TableExist(oAdo.m_OleDbConnection, m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE]))
                                     {
                                         oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE]);
@@ -7024,41 +6973,38 @@ namespace FIA_Biosum_Manager
                                     {
                                         oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + m_oQueries.m_oDataSource.m_strDataSource[intRxPackageTable, Datasource.TABLE]);
                                     }
-                                    if (oAdo.TableExist(oAdo.m_OleDbConnection, strTempCutListTable))
-                                    {
-                                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + strTempCutListTable);
-                                    }
-                                    if (oAdo.TableExist(oAdo.m_OleDbConnection, "rxpackage_work_table"))
-                                    {
-                                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE rxpackage_work_table");
-                                    }
-                                    if (oAdo.TableExist(oAdo.m_OleDbConnection, "fvs_tree_unique_biosum_plot_id_work_table"))
-                                    {
-                                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE fvs_tree_unique_biosum_plot_id_work_table");
-                                    }
-                                    if (oAdo.TableExist(oAdo.m_OleDbConnection, "fvs_tree_biosum_plot_id_work_table"))
-                                    {
-                                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE fvs_tree_biosum_plot_id_work_table");
-                                    }
-                                    if (oAdo.TableExist(oAdo.m_OleDbConnection, "cond_biosum_cond_id_work_table"))
-                                    {
-                                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE cond_biosum_cond_id_work_table");
-                                    }
-                                    if (oAdo.TableExist(oAdo.m_OleDbConnection, "plot_biosum_plot_id_work_table"))
-                                    {
-                                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE plot_biosum_plot_id_work_table");
-                                    }
-                                    if (oAdo.TableExist(oAdo.m_OleDbConnection, "tree_fvs_tree_id_work_table"))
-                                    {
-                                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE tree_fvs_tree_id_work_table");
-                                    }
-                                    oAdo.CloseConnection(oAdo.m_OleDbConnection);
+                                if (oAdo.TableExist(oAdo.m_OleDbConnection, strTempCutListTable))
+                                {
+                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + strTempCutListTable);
+                                }
+                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "rxpackage_work_table"))
+                                {
+                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE rxpackage_work_table");
+                                }
+                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "fvs_tree_unique_biosum_plot_id_work_table"))
+                                {
+                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE fvs_tree_unique_biosum_plot_id_work_table");
+                                }
+                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "fvs_tree_biosum_plot_id_work_table"))
+                                {
+                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE fvs_tree_biosum_plot_id_work_table");
+                                }
+                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "cond_biosum_cond_id_work_table"))
+                                {
+                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE cond_biosum_cond_id_work_table");
+                                }
+                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "plot_biosum_plot_id_work_table"))
+                                {
+                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE plot_biosum_plot_id_work_table");
+                                }
+                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "tree_fvs_tree_id_work_table"))
+                                {
+                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE tree_fvs_tree_id_work_table");
+                                }
+                                oAdo.CloseConnection(oAdo.m_OleDbConnection);
                                 }
 
                                 dao_data_access oDao = new dao_data_access();
-
-                                if (System.IO.File.Exists(strAuditDbFile) == false)
-                                    oDao.CreateMDB(strAuditDbFile);
 
                             ODBCMgr odbcmgr = new ODBCMgr();
                             // Set up an ODBC DSN for the FVSOUT_TREE_LIST.db
@@ -7068,9 +7014,16 @@ namespace FIA_Biosum_Manager
                             }
                             odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName,
                                 m_strFvsTreeDb);
-                            //oDao.CreateTableLink(strAuditDbFile, strTableLinkName, strFvsTreeFile, "fvs_tree", false);
+                            // Set up an ODBC DSN for the AUDITS.db
+                            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName))
+                            {
+                                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName);
+                            }
+                            odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName,
+                                strAuditDbFile);
                             // Prepare tmpCutTree for next run
                             m_dbConn = SQLite.GetConnectionString(m_strFvsTreeDb);
+                            //@ToDo: Consider moving this to the AUDITS.db
                             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_dbConn))
                             {
                                 conn.Open();
@@ -7086,47 +7039,134 @@ namespace FIA_Biosum_Manager
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "Populated table " + strTempCutListTable + "\r\n");
                             }
-                            oDao.CreateSQLiteTableLink(strAuditDbFile, strTempCutListTable, strTempCutListTable,
+                            oDao.CreateSQLiteTableLink(strTempAccdb, strTempCutListTable, strTempCutListTable,
                                 ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName, m_strFvsTreeDb);
 
+                            string strAuditConn = SQLite.GetConnectionString(strAuditDbFile);
+                            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strAuditConn))
+                            {
+                                conn.Open();
+                                if (SQLite.TableExist(conn, "audit_Post_SUMMARY") == false)
+                                {
+                                    SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistSUMMARYtableSQL("audit_Post_SUMMARY");
+                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                }
+                                else
+                                {
+                                    // Delete records for this variant package
+                                    SQLite.m_strSQL = $@"DELETE FROM audit_Post_SUMMARY WHERE FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strPackage}'";
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                                }
+                                if (SQLite.TableExist(conn, "audit_Post_NOVALUE_ERROR") == false)
+                                {
+                                    SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("audit_Post_NOVALUE_ERROR");
+                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                }
+                                else
+                                {
+                                    // Delete records for this variant package
+                                    SQLite.m_strSQL = $@"DELETE FROM audit_Post_NOVALUE_ERROR WHERE FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strPackage}'";
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                }
+                                if (SQLite.TableExist(conn, "audit_Post_VALUE_ERROR") == false)
+                                {
+                                    SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("audit_Post_VALUE_ERROR");
+                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                }
+                                else
+                                {
+                                    // Delete records for this variant package
+                                    SQLite.m_strSQL = $@"DELETE FROM audit_Post_VALUE_ERROR WHERE FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strPackage}'";
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                }
+                                if (SQLite.TableExist(conn, "audit_Post_NOTFOUND_ERROR") == false)
+                                {
+                                    SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistNOTFOUND_ERRORtableSQL("audit_Post_NOTFOUND_ERROR");
+                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                }
+                                else
+                                {
+                                    // Delete records for this variant package
+                                    SQLite.m_strSQL = $@"DELETE FROM audit_Post_NOTFOUND_ERROR WHERE FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strPackage}'";
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                }
+                                if (SQLite.TableExist(conn, "audit_Post_SPCDCHANGE_WARNING") == false)
+                                {
+                                    SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistFVSFIA_TREEMATCHINGtableSQL("audit_Post_SPCDCHANGE_WARNING", "WARNING_DESC");
+                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                }
+                                else
+                                {
+                                    // Delete records for this variant package
+                                    SQLite.m_strSQL = $@"DELETE FROM audit_Post_SPCDCHANGE_WARNING WHERE FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strPackage}'";
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                }
+                            }
+
+                            // Create audit table links to SQLite tables; The queries to update these tables have dependencies on Access tables
+                            oDao.CreateSQLiteTableLink(strTempAccdb, "audit_Post_SUMMARY", "audit_Post_SUMMARY",
+                                ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
+                            oDao.CreateSQLiteTableLink(strTempAccdb, "audit_Post_NOTFOUND_ERROR", "audit_Post_NOTFOUND_ERROR",
+                                ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
+                            oDao.CreateSQLiteTableLink(strTempAccdb, "audit_Post_SPCDCHANGE_WARNING", "audit_Post_SPCDCHANGE_WARNING",
+                                ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
+
+
+
                             //tree table link
-                            oDao.CreateTableLink(strAuditDbFile, m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE],
+                            oDao.CreateTableLink(strTempAccdb, m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE],
                                                       m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.PATH].Trim() + "\\" +
                                                        m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.MDBFILE].Trim(),
                                                       m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE], true);
-                                //condition table link
-
-                                oDao.CreateTableLink(strAuditDbFile, m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE],
+                            //condition table link
+                            oDao.CreateTableLink(strTempAccdb, m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE],
                                                       m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.PATH].Trim() + "\\" +
                                                        m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.MDBFILE].Trim(),
                                                       m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE], true);
-                                //plot table link
-
-                                oDao.CreateTableLink(strAuditDbFile, m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE],
+                            //plot table link
+                            oDao.CreateTableLink(strTempAccdb, m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE],
                                                       m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.PATH].Trim() + "\\" +
                                                        m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.MDBFILE].Trim(),
                                                       m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE], true);
 
-                                //rx table link
-                                oDao.CreateTableLink(strAuditDbFile, m_oQueries.m_oDataSource.m_strDataSource[intRxTable, Datasource.TABLE],
+                            //rx table link
+                            oDao.CreateTableLink(strTempAccdb, m_oQueries.m_oDataSource.m_strDataSource[intRxTable, Datasource.TABLE],
                                                      m_oQueries.m_oDataSource.m_strDataSource[intRxTable, Datasource.PATH].Trim() + "\\" +
                                                       m_oQueries.m_oDataSource.m_strDataSource[intRxTable, Datasource.MDBFILE].Trim(),
                                                      m_oQueries.m_oDataSource.m_strDataSource[intRxTable, Datasource.TABLE], true);
 
-                                //rx package table link
-                                oDao.CreateTableLink(strAuditDbFile, m_oQueries.m_oDataSource.m_strDataSource[intRxPackageTable, Datasource.TABLE],
+                            //rx package table link
+                            oDao.CreateTableLink(strTempAccdb, m_oQueries.m_oDataSource.m_strDataSource[intRxPackageTable, Datasource.TABLE],
                                                     m_oQueries.m_oDataSource.m_strDataSource[intRxPackageTable, Datasource.PATH].Trim() + "\\" +
                                                      m_oQueries.m_oDataSource.m_strDataSource[intRxPackageTable, Datasource.MDBFILE].Trim(),
                                                     m_oQueries.m_oDataSource.m_strDataSource[intRxPackageTable, Datasource.TABLE], true);
 
-                                oDao.m_DaoWorkspace.Close();
-                                oDao = null;
-                                System.Threading.Thread.Sleep(2000);
+                            oDao.m_DaoWorkspace.Close();
+                            oDao = null;
+                            System.Threading.Thread.Sleep(2000);
 
-                                oAdo.OpenConnection(oAdo.getMDBConnString(strAuditDbFile, "", ""));
-
-
-
+                                oAdo.OpenConnection(oAdo.getMDBConnString(strTempAccdb, "", ""));
 
                                 uc_filesize_monitor1.BeginMonitoringFile(strAuditDbFile, 2000000000, "2GB");
                                 uc_filesize_monitor1.Information = "BIOSUM DB file containing FVS OUTPUT PRE/POST AUDIT tables";
@@ -7137,23 +7177,15 @@ namespace FIA_Biosum_Manager
                                             m_intProgressStepCurrentCount,
                                             m_intProgressStepTotalCount);
 
-                               
-
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_SUMMARY") == false)
-                                {
-                                    oAdo.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistSUMMARYtableSQL("audit_Post_SUMMARY");
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                                }
-                                
-
-                                string[] sqlArray = Queries.FVS.FVSOutputTable_AuditPostSummaryFVS(
+                            // audit_Post_SUMMARY
+                            string[] sqlArray = Queries.FVS.FVSOutputTable_AuditPostSummaryFVS(
                                     m_oQueries.m_oDataSource.m_strDataSource[intRxTable,Datasource.TABLE],
                                     m_oQueries.m_oDataSource.m_strDataSource[intRxPackageTable, Datasource.TABLE],
                                     m_oQueries.m_oDataSource.m_strDataSource[intTreeTable,Datasource.TABLE],
                                     m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE],
                                     m_oQueries.m_oDataSource.m_strDataSource[intCondTable,Datasource.TABLE],
                                     "audit_Post_SUMMARY", strTempCutListTable,
-                                    strPackage);
+                                    strPackage, strVariant);
 
                                 for (y = 0; y <= sqlArray.Length - 1; y++)
                                 {
@@ -7169,6 +7201,19 @@ namespace FIA_Biosum_Manager
                                                 m_intProgressStepTotalCount);
 
                                 }
+
+                            int intRowCount = 0;
+                            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strAuditConn))
+                            {
+                                conn.Open();
+                                // Attach FVSOUT_TREE_LIST.db for access to tmpTreeTable
+                                SQLite.m_strSQL = $@"ATTACH DATABASE '{m_strFvsTreeDb}' AS TREELIST";
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
                                 //
                                 //process NOVALUE_ERROR column
                                 //
@@ -7176,47 +7221,21 @@ namespace FIA_Biosum_Manager
                                     "audit_Post_NOVALUE_ERROR",
                                     "audit_Post_SUMMARY",
                                     strTempCutListTable,
-                                    strPackage);
-                                
-                                //check if NOVALUE_ERROR table exists
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_NOVALUE_ERROR") == false)
-                                {
-                                    oAdo.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("audit_Post_NOVALUE_ERROR");
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
+                                    strVariant, strPackage);
 
-                                }
-                            else if (!oAdo.ColumnExist(oAdo.m_OleDbConnection, "audit_Post_NOVALUE_ERROR", "treeval"))
-                            {
-                                // Accommodate new fields for v5.8.10
-                                oAdo.m_strSQL = "DROP TABLE audit_Post_NOVALUE_ERROR";
-                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                                oAdo.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("audit_Post_NOVALUE_ERROR");
-                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                            }
-                            else
-                                {
-                                    //delete any records from a previous run for the current variant and rxpackage
-                                    strSQL = sqlArray[0];
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);    
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-                                                                    
-                                }
                                 m_intProgressStepCurrentCount++;
                                 UpdateTherm(m_frmTherm.progressBar1,
                                             m_intProgressStepCurrentCount,
                                             m_intProgressStepTotalCount);
                                 //check if any no value errors
-                                int intRowCount = oAdo.getRecordCount(oAdo.m_OleDbConnection, "SELECT COUNT(*) FROM audit_Post_SUMMARY WHERE RXPACKAGE='" + strPackage + "' AND NOVALUE_ERROR IS NOT NULL AND LEN(TRIM(NOVALUE_ERROR)) > 0 AND TRIM(NOVALUE_ERROR) <> 'NA' AND VAL(NOVALUE_ERROR) > 0", "AUDIT_POST_SUMMARY");
+                                intRowCount = (int)SQLite.getRecordCount(conn, "SELECT COUNT(*) FROM audit_Post_SUMMARY WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE='" + strPackage + "' AND NOVALUE_ERROR IS NOT NULL AND LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND TRIM(NOVALUE_ERROR) <> 'NA' AND CAST(NOVALUE_ERROR as int) > 0", "AUDIT_POST_SUMMARY");
                                 if (intRowCount > 0)
                                 {
                                     //insert the new audit records
-                                    strSQL = sqlArray[1];
+                                    strSQL = sqlArray[0];
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
+                                    SQLite.SqlNonQuery(conn, strSQL);
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                                 }
@@ -7224,7 +7243,7 @@ namespace FIA_Biosum_Manager
                                 UpdateTherm(m_frmTherm.progressBar1,
                                             m_intProgressStepCurrentCount,
                                             m_intProgressStepTotalCount);
-                                
+
                                 //
                                 //process VALUE_ERROR column
                                 //
@@ -7232,47 +7251,21 @@ namespace FIA_Biosum_Manager
                                     "audit_Post_VALUE_ERROR",
                                     "audit_Post_SUMMARY",
                                     strTempCutListTable,
-                                    strPackage);
+                                    strVariant, strPackage);
 
-                                //check if VALUE_ERROR table exists
-
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_VALUE_ERROR") == false)
-                                {
-                                    oAdo.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("audit_Post_VALUE_ERROR");
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                                }
-                            else if (!oAdo.ColumnExist(oAdo.m_OleDbConnection, "audit_Post_VALUE_ERROR", "treeval"))
-                            {
-                                // Accommodate new fields for v5.8.10
-                                oAdo.m_strSQL = "DROP TABLE audit_Post_VALUE_ERROR";
-                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                                oAdo.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("audit_Post_VALUE_ERROR");
-                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                            }
-                            else
-                                {
-                                    //delete any records from a previous run for the current variant and rxpackage
-                                    strSQL = sqlArray[0];
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-                                }
                                 m_intProgressStepCurrentCount++;
                                 UpdateTherm(m_frmTherm.progressBar1,
                                             m_intProgressStepCurrentCount,
                                             m_intProgressStepTotalCount);
                                 //check if any no value errors
-                                intRowCount = oAdo.getRecordCount(oAdo.m_OleDbConnection, "SELECT COUNT(*) FROM audit_Post_SUMMARY WHERE RXPACKAGE='" + strPackage + "' AND VALUE_ERROR IS NOT NULL AND LEN(TRIM(VALUE_ERROR)) > 0 AND TRIM(VALUE_ERROR) <> 'NA' AND VAL(VALUE_ERROR) > 0 AND TRIM(COLUMN_NAME) <> 'DBH'", "AUDIT_POST_SUMMARY");
+                                intRowCount = (int) SQLite.getRecordCount(conn, "SELECT COUNT(*) FROM audit_Post_SUMMARY WHERE RXPACKAGE='" + strPackage + "' AND VALUE_ERROR IS NOT NULL AND LENGTH(TRIM(VALUE_ERROR)) > 0 AND TRIM(VALUE_ERROR) <> 'NA' AND CAST(VALUE_ERROR as INT) > 0 AND TRIM(COLUMN_NAME) <> 'DBH'", "AUDIT_POST_SUMMARY");
                                 if (intRowCount > 0)
                                 {
                                     //insert the new audit records
-                                    strSQL = sqlArray[1];
+                                    strSQL = sqlArray[0];
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
+                                    SQLite.SqlNonQuery(conn, strSQL);
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                                 }
@@ -7280,40 +7273,23 @@ namespace FIA_Biosum_Manager
                                 UpdateTherm(m_frmTherm.progressBar1,
                                             m_intProgressStepCurrentCount,
                                             m_intProgressStepTotalCount);
-                                 
 
-                                //
+
+                            }
+                            //
                                 //PROCESS NOT FOUND IN TABLES ERRORS
                                 //
                                 sqlArray = Queries.FVS.FVSOutputTable_AuditPostSummaryDetailFVS_NOTFOUND_ERROR(
                                     "audit_Post_NOTFOUND_ERROR",
                                     "audit_Post_SUMMARY",
                                     strTempCutListTable,
-                                    strPackage,
                                      m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE].Trim(),
                                      m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE].Trim(),
                                      m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE].Trim(),
                                      m_oQueries.m_oDataSource.m_strDataSource[intRxTable, Datasource.TABLE].Trim(),
                                      m_oQueries.m_oDataSource.m_strDataSource[intRxPackageTable, Datasource.TABLE].Trim(),
                                      "rxpackage_work_table");
-                                //check if NOVALUE_ERROR table exists
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_NOTFOUND_ERROR") == false)
-                                {
-                                    oAdo.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistNOTFOUND_ERRORtableSQL("audit_Post_NOTFOUND_ERROR");
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
 
-                                }
-                                else
-                                {
-                                    //delete any records from a previous run for the current variant and rxpackage
-                                    strSQL = sqlArray[0];
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-                                }
                                 m_intProgressStepCurrentCount++;
                                 UpdateTherm(m_frmTherm.progressBar1,
                                             m_intProgressStepCurrentCount,
@@ -7335,7 +7311,7 @@ namespace FIA_Biosum_Manager
                                 if (intRowCount > 0)
                                 {
                                     //insert the new audit records
-                                    strSQL = sqlArray[1];
+                                    strSQL = sqlArray[0];
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
                                     oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
@@ -7356,24 +7332,6 @@ namespace FIA_Biosum_Manager
                                         m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE].Trim(),
                                         strVariant, strPackage);
 
-                                //check if SPCDCHANGE_WARNING table exists
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_SPCDCHANGE_WARNING") == false)
-                                {
-                                    oAdo.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistFVSFIA_TREEMATCHINGtableSQL("audit_Post_SPCDCHANGE_WARNING","WARNING_DESC");
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-
-                                }
-                                else
-                                {
-                                    //delete any records from a previous run for the current variant and rxpackage
-                                    strSQL = sqlArray[0];
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-                                }
                                 m_intProgressStepCurrentCount++;
                                 UpdateTherm(m_frmTherm.progressBar1,
                                             m_intProgressStepCurrentCount,
@@ -7383,7 +7341,7 @@ namespace FIA_Biosum_Manager
                                 if (intRowCount > 0)
                                 {
                                     //insert the new audit records
-                                    strSQL = sqlArray[1];
+                                    strSQL = sqlArray[0];
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
                                     oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
@@ -7455,25 +7413,28 @@ namespace FIA_Biosum_Manager
                                 frmMain.g_oUtils.WriteText(m_strLogFile, "Database File:" + frmMain.g_oUtils.getFileName(m_strFvsTreeDb) + "\r\n");
                                 frmMain.g_oUtils.WriteText(m_strLogFile, "Variant:" + strVariant + " \r\n");
                                 frmMain.g_oUtils.WriteText(m_strLogFile, "Package:" + strPackage + " \r\n\r\n");
-                                //NOVALUE ERRORS
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_NOVALUE_ERROR"))
+                            //NOVALUE ERRORS
+                            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strAuditConn))
+                            {
+                                conn.Open();
+                                if (SQLite.TableExist(conn, "audit_Post_NOVALUE_ERROR"))
                                 {
                                     strItemDialogMsg = strItemDialogMsg + "\r\n\r\naudit_Post_NOVALUE_ERROR\r\n---------------------------\r\n";
                                     frmMain.g_oUtils.WriteText(m_strLogFile, "\r\n\r\naudit_Post_NOVALUE_ERROR\r\n---------------------------\r\n");
 
-                                   //see if any records
-                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,ERROR_DESC FROM audit_Post_NOVALUE_ERROR WHERE RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,ERROR_DESC";
-                                    oAdo.SqlQueryReader(oAdo.m_OleDbConnection, strSQL);
-                                    if (oAdo.m_OleDbDataReader.HasRows)
+                                    //see if any records
+                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,ERROR_DESC FROM audit_Post_NOVALUE_ERROR WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,ERROR_DESC";
+                                    SQLite.SqlQueryReader(conn, strSQL);
+                                    if (SQLite.m_DataReader.HasRows)
                                     {
-                                        intItemError=-1;
+                                        intItemError = -1;
                                         strItemError = strItemError + "\r\n\r\naudit_Post_NOVALUE_ERROR\r\n---------------------------\r\n";
-                                        while (oAdo.m_OleDbDataReader.Read())
+                                        while (SQLite.m_DataReader.Read())
                                         {
-                                            
-                                            strItemError = strItemError + "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
-                                            strItemDialogMsg = strItemDialogMsg  + "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
-                                            frmMain.g_oUtils.WriteText(m_strLogFile, "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n");
+
+                                            strItemError = strItemError + "ERROR: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["ERROR_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
+                                            strItemDialogMsg = strItemDialogMsg + "ERROR: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["ERROR_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
+                                            frmMain.g_oUtils.WriteText(m_strLogFile, "ERROR: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["ERROR_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n");
                                         }
                                     }
                                     else
@@ -7481,28 +7442,28 @@ namespace FIA_Biosum_Manager
                                         strItemDialogMsg = strItemDialogMsg + "OK\r\n";
                                         frmMain.g_oUtils.WriteText(m_strLogFile, "OK\r\n");
                                     }
-                                    oAdo.m_OleDbDataReader.Close();
-                                    oAdo.m_OleDbDataReader.Dispose();
+                                    SQLite.m_DataReader.Close();
+                                    SQLite.m_DataReader.Dispose();
                                 }
                                 //NOTFOUND errors
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_NOTFOUND_ERROR"))
+                                if (SQLite.TableExist(conn, "audit_Post_NOTFOUND_ERROR"))
                                 {
                                     strItemDialogMsg = strItemDialogMsg + "\r\n\r\naudit_Post_NOTFOUND_ERROR\r\n---------------------------\r\n";
                                     frmMain.g_oUtils.WriteText(m_strLogFile, "\r\n\r\naudit_Post_NOTFOUND_ERROR\r\n---------------------------\r\n");
                                     //see if any records
-                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,ERROR_DESC FROM audit_Post_NOTFOUND_ERROR WHERE RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,ERROR_DESC";
-                                    oAdo.SqlQueryReader(oAdo.m_OleDbConnection, strSQL);
-                                    if (oAdo.m_OleDbDataReader.HasRows)
+                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,ERROR_DESC FROM audit_Post_NOTFOUND_ERROR WHERE FVS_VARIANT = '" + strVariant + "' AND  RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,ERROR_DESC";
+                                    SQLite.SqlQueryReader(conn, strSQL);
+                                    if (SQLite.m_DataReader.HasRows)
                                     {
                                         intItemError = -1;
                                         strItemError = strItemError + "\r\n\r\naudit_Post_NOTFOUND_ERROR\r\n---------------------------\r\n";
 
-                                        while (oAdo.m_OleDbDataReader.Read())
+                                        while (SQLite.m_DataReader.Read())
                                         {
-                                           
-                                            strItemError = strItemError + "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
-                                            strItemDialogMsg = strItemDialogMsg + "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
-                                            frmMain.g_oUtils.WriteText(m_strLogFile, "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n");
+
+                                            strItemError = strItemError + "ERROR: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["ERROR_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
+                                            strItemDialogMsg = strItemDialogMsg + "ERROR: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["ERROR_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
+                                            frmMain.g_oUtils.WriteText(m_strLogFile, "ERROR: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["ERROR_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n");
                                         }
                                     }
                                     else
@@ -7510,28 +7471,30 @@ namespace FIA_Biosum_Manager
                                         strItemDialogMsg = strItemDialogMsg + "OK\r\n";
                                         frmMain.g_oUtils.WriteText(m_strLogFile, "OK\r\n");
                                     }
-                                    oAdo.m_OleDbDataReader.Close();
-                                    oAdo.m_OleDbDataReader.Dispose();
+                                    SQLite.m_DataReader.Close();
+                                    SQLite.m_DataReader.Dispose();
                                 }
+
+
                                 //VALUE errors
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_VALUE_ERROR"))
+                                if (SQLite.TableExist(conn, "audit_Post_VALUE_ERROR"))
                                 {
                                     strItemDialogMsg = strItemDialogMsg + "\r\n\r\naudit_Post_VALUE_ERROR\r\n---------------------------\r\n";
                                     frmMain.g_oUtils.WriteText(m_strLogFile, "\r\n\r\naudit_Post_VALUE_ERROR\r\n---------------------------\r\n");
                                     //see if any records
-                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,ERROR_DESC FROM audit_Post_VALUE_ERROR WHERE RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,ERROR_DESC";
-                                    oAdo.SqlQueryReader(oAdo.m_OleDbConnection, strSQL);
-                                    if (oAdo.m_OleDbDataReader.HasRows)
+                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,ERROR_DESC FROM audit_Post_VALUE_ERROR WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,ERROR_DESC";
+                                    SQLite.SqlQueryReader(conn, strSQL);
+                                    if (SQLite.m_DataReader.HasRows)
                                     {
                                         intItemError = -1;
                                         strItemError = strItemError + "\r\n\r\naudit_Post_VALUE_ERROR\r\n---------------------------\r\n";
 
-                                        while (oAdo.m_OleDbDataReader.Read())
+                                        while (SQLite.m_DataReader.Read())
                                         {
-                                            
-                                            strItemError = strItemError + "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
-                                            strItemDialogMsg = strItemDialogMsg + "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
-                                            frmMain.g_oUtils.WriteText(m_strLogFile, "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n");
+
+                                            strItemError = strItemError + "ERROR: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["ERROR_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
+                                            strItemDialogMsg = strItemDialogMsg + "ERROR: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["ERROR_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
+                                            frmMain.g_oUtils.WriteText(m_strLogFile, "ERROR: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["ERROR_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n");
                                         }
                                     }
                                     else
@@ -7539,28 +7502,29 @@ namespace FIA_Biosum_Manager
                                         strItemDialogMsg = strItemDialogMsg + "OK\r\n";
                                         frmMain.g_oUtils.WriteText(m_strLogFile, "OK\r\n");
                                     }
-                                    oAdo.m_OleDbDataReader.Close();
-                                    oAdo.m_OleDbDataReader.Dispose();
+                                    SQLite.m_DataReader.Close();
+                                    SQLite.m_DataReader.Dispose();
                                 }
+
                                 //SPCD CHANGE WARNINGS
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_SPCDCHANGE_WARNING"))
+                                if (SQLite.TableExist(conn, "audit_Post_SPCDCHANGE_WARNING"))
                                 {
                                     strItemDialogMsg = strItemDialogMsg + "\r\n\r\naudit_Post_SPCDCHANGE_WARNING\r\n---------------------------\r\n";
                                     frmMain.g_oUtils.WriteText(m_strLogFile, "\r\n\r\naudit_Post_SPCDCHANGE_WARNING\r\n---------------------------\r\n");
 
                                     //see if any records
-                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,WARNING_DESC FROM audit_Post_SPCDCHANGE_WARNING WHERE RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,WARNING_DESC";
-                                    oAdo.SqlQueryReader(oAdo.m_OleDbConnection, strSQL);
-                                    if (oAdo.m_OleDbDataReader.HasRows)
+                                    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,WARNING_DESC FROM audit_Post_SPCDCHANGE_WARNING WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,WARNING_DESC";
+                                    SQLite.SqlQueryReader(conn, strSQL);
+                                    if (SQLite.m_DataReader.HasRows)
                                     {
                                         intItemWarning = -1;
                                         strItemWarning = strItemWarning + "\r\n\r\naudit_Post_SPCDCHANGE_WARNING\r\n---------------------------\r\n";
-                                        while (oAdo.m_OleDbDataReader.Read())
+                                        while (SQLite.m_DataReader.Read())
                                         {
-                                            
-                                            strItemWarning = strItemWarning + "WARNING: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["WARNING_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
-                                            strItemDialogMsg = strItemDialogMsg + "WARNING: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["WARNING_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
-                                            frmMain.g_oUtils.WriteText(m_strLogFile, "WARNING: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["WARNING_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n");
+
+                                            strItemWarning = strItemWarning + "WARNING: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["WARNING_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
+                                            strItemDialogMsg = strItemDialogMsg + "WARNING: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["WARNING_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
+                                            frmMain.g_oUtils.WriteText(m_strLogFile, "WARNING: COLUMN:" + SQLite.m_DataReader["COLUMN_NAME"].ToString() + " MSG:" + SQLite.m_DataReader["WARNING_DESC"] + " Records:" + SQLite.m_DataReader["ROWCOUNT"].ToString().Trim() + "\r\n");
                                         }
                                     }
                                     else
@@ -7568,38 +7532,10 @@ namespace FIA_Biosum_Manager
                                         strItemDialogMsg = strItemDialogMsg + "OK\r\n";
                                         frmMain.g_oUtils.WriteText(m_strLogFile, "OK\r\n");
                                     }
-                                    oAdo.m_OleDbDataReader.Close();
-                                    oAdo.m_OleDbDataReader.Dispose();
+                                    SQLite.m_DataReader.Close();
+                                    SQLite.m_DataReader.Dispose();
                                 }
-                            // TREEMATCH errors
-                            //if (oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_TREEMATCH_ERROR"))
-                            //{
-                            //    strItemDialogMsg = strItemDialogMsg + "\r\n\r\naudit_Post_TREEMATCH_ERROR\r\n---------------------------\r\n";
-                            //    frmMain.g_oUtils.WriteText(m_strLogFile, "\r\n\r\audit_Post_TREEMATCH_ERROR\r\n---------------------------\r\n");
-                            //    //see if any records
-                            //    strSQL = "SELECT COUNT(*) AS ROWCOUNT,COLUMN_NAME,ERROR_DESC FROM audit_Post_TREEMATCH_ERROR WHERE RXPACKAGE='" + strPackage + "' GROUP BY COLUMN_NAME,ERROR_DESC";
-                            //    oAdo.SqlQueryReader(oAdo.m_OleDbConnection, strSQL);
-                            //    if (oAdo.m_OleDbDataReader.HasRows)
-                            //    {
-                            //        intItemError = -1;
-                            //        strItemError = strItemError + "\r\n\r\naudit_Post_TREEMATCH_ERROR\r\n---------------------------\r\n";
-
-                            //        while (oAdo.m_OleDbDataReader.Read())
-                            //        {
-
-                            //            strItemError = strItemError + "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
-                            //            strItemDialogMsg = strItemDialogMsg + "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n";
-                            //            frmMain.g_oUtils.WriteText(m_strLogFile, "ERROR: COLUMN:" + oAdo.m_OleDbDataReader["COLUMN_NAME"].ToString() + " MSG:" + oAdo.m_OleDbDataReader["ERROR_DESC"] + " Records:" + oAdo.m_OleDbDataReader["ROWCOUNT"].ToString().Trim() + "\r\n");
-                            //        }
-                            //    }
-                            //    else
-                            //    {
-                            //        strItemDialogMsg = strItemDialogMsg + "OK\r\n";
-                            //        frmMain.g_oUtils.WriteText(m_strLogFile, "OK\r\n");
-                            //    }
-                            //    oAdo.m_OleDbDataReader.Close();
-                            //    oAdo.m_OleDbDataReader.Dispose();
-                            //}
+                            }
 
                             if (intItemError == 0 && intItemWarning == 0)
                                 {
@@ -8925,11 +8861,11 @@ namespace FIA_Biosum_Manager
             }
 
             ODBCMgr odbcmgr = new ODBCMgr();
-            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutPreAuditDsnName))
+            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName))
             {
-                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutPreAuditDsnName);
+                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName);
             }
-            odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutPreAuditDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile);
+            odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile);
             if (!string.IsNullOrEmpty(odbcmgr.m_strError))
             {
                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
@@ -8939,11 +8875,11 @@ namespace FIA_Biosum_Manager
             else
             {
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    this.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n" + "Created DSN for " + ODBCMgr.DSN_KEYS.FvsOutPreAuditDsnName + "\r\n");
+                    this.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n" + "Created DSN for " + ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName + "\r\n");
                 m_dao.CreateSQLiteTableLink(p_strFVSOutDBFile, strAuditTable, strAuditTable,
-                    ODBCMgr.DSN_KEYS.FvsOutPreAuditDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile);
+                    ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile);
                 m_dao.CreateSQLiteTableLink(p_strFVSOutDBFile, strSeqNumMatrixTable, strSeqNumMatrixTable,
-                    ODBCMgr.DSN_KEYS.FvsOutPreAuditDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile);
+                    ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile);
             }
             if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName))
             {
@@ -8959,11 +8895,11 @@ namespace FIA_Biosum_Manager
             else
             {
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    this.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n" + "Created DSN for " + ODBCMgr.DSN_KEYS.FvsOutPreAuditDsnName + "\r\n");
+                    this.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n" + "Created DSN for " + ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName + "\r\n");
                 m_dao.CreateSQLiteTableLink(p_strFVSOutDBFile, Tables.FVS.DefaultFVSCasesTableName, Tables.FVS.DefaultFVSCasesTableName,
-                    ODBCMgr.DSN_KEYS.FvsOutPreAuditDsnName, m_strFvsOutDb);
+                    ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, m_strFvsOutDb);
                 m_dao.CreateSQLiteTableLink(p_strFVSOutDBFile, Tables.FVS.DefaultFVSCutListTableName, Tables.FVS.DefaultFVSCutListTableName,
-                    ODBCMgr.DSN_KEYS.FvsOutPreAuditDsnName, m_strFvsOutDb);
+                    ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, m_strFvsOutDb);
             }
 
             string strConn = p_oAdo.getMDBConnString(p_strFVSOutDBFile, "", "");
@@ -9076,9 +9012,9 @@ namespace FIA_Biosum_Manager
                 p_oAdo.SqlNonQuery(pConn, p_oAdo.m_strSQL);
                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                     this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-                if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutPreAuditDsnName))
+                if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName))
                 {
-                    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutPreAuditDsnName);
+                    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName);
                 }
                 if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName))
                 {
