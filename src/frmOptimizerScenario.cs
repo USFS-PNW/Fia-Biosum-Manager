@@ -261,7 +261,7 @@ namespace FIA_Biosum_Manager
                 this.m_oEnv = new env();
 
                 //load weighted variable definitions
-                m_oOptimizerScenarioTools.LoadWeightedVariablesSqlite(m_oWeightedVariableCollection);
+                m_oOptimizerScenarioTools.LoadWeightedVariables(m_oWeightedVariableCollection);
 
 			}
 			catch (Exception p_msg)
@@ -1048,11 +1048,11 @@ namespace FIA_Biosum_Manager
 
 		private void btnSave_Click(object sender, System.EventArgs e)
 		{
-			SaveRuleDefinitionsSqlite();
+			SaveRuleDefinitions();
 
 
 		}
-		private void LoadRuleDefinitions()
+		private void LoadRuleDefinitions_access()
 		{
             int x;
 			frmTherm p_frmTherm = new frmTherm();
@@ -1068,7 +1068,7 @@ namespace FIA_Biosum_Manager
             
             this.m_oOptimizerScenarioItem.ScenarioId = this.uc_scenario1.txtScenarioId.Text.Trim();
 
-            this.m_oOptimizerScenarioTools.LoadAll(
+            this.m_oOptimizerScenarioTools.LoadAll_access(
                 frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + 
                 Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile,
                 oQueries, m_bProcessorUsingSqlite, m_oOptimizerScenarioItem.ScenarioId,
@@ -1088,7 +1088,7 @@ namespace FIA_Biosum_Manager
 			p_frmTherm.lblMsg.Text = "Rule Definitions: FVS Variables Data";
 			p_frmTherm.lblMsg.Refresh();
 
-            this.uc_scenario_fvs_prepost_variables_effective1.loadvalues();
+            this.uc_scenario_fvs_prepost_variables_effective1.loadvalues_access();
  			p_frmTherm.progressBar1.Value=4;
 
 
@@ -1100,13 +1100,13 @@ namespace FIA_Biosum_Manager
 			p_frmTherm.lblMsg.Text = "Rule Definitions: Cost And Revenue Data";
 			p_frmTherm.lblMsg.Refresh();
 			this.uc_scenario_costs1.loadvalues();
-            this.uc_scenario_processor_scenario_select1.loadvalues(false);
+            this.uc_scenario_processor_scenario_select1.loadvalues_access(false);
 			p_frmTherm.progressBar1.Value=6;
 			p_frmTherm.lblMsg.Text = "Rule Definitions: Plot Filter Data";
 			p_frmTherm.lblMsg.Refresh();
 			this.uc_scenario_filter1.loadvalues(false);
 			this.uc_scenario_cond_filter1.loadvalues(false);
-			this.uc_scenario_psite1.loadvalues();
+			this.uc_scenario_psite1.loadvalues_access();
             ProcessorScenarioItem_Collection oProcItemCollection = this.m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection;
             foreach (ProcessorScenarioItem psItem in oProcItemCollection)
             {
@@ -1122,7 +1122,7 @@ namespace FIA_Biosum_Manager
 
 		}
 
-        private void LoadRuleDefinitionsSqlite()
+        private void LoadRuleDefinitions()
         {
             int x;
             frmTherm p_frmTherm = new frmTherm();
@@ -1138,7 +1138,7 @@ namespace FIA_Biosum_Manager
 
             this.m_oOptimizerScenarioItem.ScenarioId = this.uc_scenario1.txtScenarioId.Text.Trim();
 
-            this.m_oOptimizerScenarioTools.LoadAllSqlite(
+            this.m_oOptimizerScenarioTools.LoadAll(
                 frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
                 Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile,
                 oQueries, m_bProcessorUsingSqlite, m_oOptimizerScenarioItem.ScenarioId,
@@ -1158,7 +1158,7 @@ namespace FIA_Biosum_Manager
             p_frmTherm.lblMsg.Text = "Rule Definitions: FVS Variables Data";
             p_frmTherm.lblMsg.Refresh();
 
-            this.uc_scenario_fvs_prepost_variables_effective1.loadvaluessqlite();
+            this.uc_scenario_fvs_prepost_variables_effective1.loadvalues();
             p_frmTherm.progressBar1.Value = 4;
 
 
@@ -1170,13 +1170,13 @@ namespace FIA_Biosum_Manager
             p_frmTherm.lblMsg.Text = "Rule Definitions: Cost And Revenue Data";
             p_frmTherm.lblMsg.Refresh();
             this.uc_scenario_costs1.loadvalues();
-            this.uc_scenario_processor_scenario_select1.loadvaluessqlite(false);
+            this.uc_scenario_processor_scenario_select1.loadvalues(false);
             p_frmTherm.progressBar1.Value = 6;
             p_frmTherm.lblMsg.Text = "Rule Definitions: Plot Filter Data";
             p_frmTherm.lblMsg.Refresh();
             this.uc_scenario_filter1.loadvalues(false);
             this.uc_scenario_cond_filter1.loadvalues(false);
-            this.uc_scenario_psite1.loadvaluessqlite();
+            this.uc_scenario_psite1.loadvalues();
             ProcessorScenarioItem_Collection oProcItemCollection = this.m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection;
             foreach (ProcessorScenarioItem psItem in oProcItemCollection)
             {
@@ -1190,7 +1190,7 @@ namespace FIA_Biosum_Manager
             p_frmTherm = null;
             this.m_lrulesfirsttime = false;
         }
-		public void SaveRuleDefinitions()
+		public void SaveRuleDefinitions_access()
 		{
 			int savestatus;
             int x;
@@ -1209,23 +1209,23 @@ namespace FIA_Biosum_Manager
                     this.Width,
                     this.Top);
                 
-                savestatus = this.uc_scenario_fvs_prepost_variables_effective1.savevalues();
+                savestatus = this.uc_scenario_fvs_prepost_variables_effective1.savevalues_access();
                 if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                savestatus = this.uc_scenario_fvs_prepost_optimization1.savevalues();
+                savestatus = this.uc_scenario_fvs_prepost_optimization1.savevalues_access();
                 if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                savestatus = this.uc_scenario_fvs_prepost_variables_tiebreaker1.savevalues();
+                savestatus = this.uc_scenario_fvs_prepost_variables_tiebreaker1.savevalues_access();
                 if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                savestatus = this.uc_scenario_owner_groups1.savevalues();
+                savestatus = this.uc_scenario_owner_groups1.savevalues_access();
                 if (FIA_Biosum_Manager.RunOptimizer .g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                savestatus = this.uc_scenario_costs1.savevalues();
+                savestatus = this.uc_scenario_costs1.savevalues_access();
                 if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                savestatus = this.uc_scenario_psite1.savevalues();
+                savestatus = this.uc_scenario_psite1.savevalues_access();
                 if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                savestatus = this.uc_scenario_filter1.savevalues();
+                savestatus = this.uc_scenario_filter1.savevalues_access();
                 if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                savestatus = this.uc_scenario_cond_filter1.savevalues();
+                savestatus = this.uc_scenario_cond_filter1.savevalues_access();
                 if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                this.uc_scenario_processor_scenario_select1.savevalues();
+                this.uc_scenario_processor_scenario_select1.savevalues_access();
                 if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                 frmMain.g_oFrmMain.DeactivateStandByAnimation();
@@ -1238,7 +1238,7 @@ namespace FIA_Biosum_Manager
 			this.m_bSave=false;
 			frmMain.g_sbpInfo.Text = "Ready";
 		}
-		public void SaveRuleDefinitionsSqlite()
+		public void SaveRuleDefinitions()
         {
             int savestatus;
             int x;
@@ -1257,23 +1257,23 @@ namespace FIA_Biosum_Manager
                     this.Width,
                     this.Top);
 
-                savestatus = this.uc_scenario_fvs_prepost_variables_effective1.savevaluessqlite();
+                savestatus = this.uc_scenario_fvs_prepost_variables_effective1.savevalues();
                 if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                savestatus = this.uc_scenario_fvs_prepost_optimization1.savevaluessqlite();
+                savestatus = this.uc_scenario_fvs_prepost_optimization1.savevalues();
                 if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                savestatus = this.uc_scenario_fvs_prepost_variables_tiebreaker1.savevaluessqlite();
+                savestatus = this.uc_scenario_fvs_prepost_variables_tiebreaker1.savevalues();
                 if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                savestatus = this.uc_scenario_owner_groups1.savevaluessqlite();
+                savestatus = this.uc_scenario_owner_groups1.savevalues();
                 if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                savestatus = this.uc_scenario_costs1.savevaluessqlite();
+                savestatus = this.uc_scenario_costs1.savevalues();
                 if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                savestatus = this.uc_scenario_psite1.savevaluessqlite();
+                savestatus = this.uc_scenario_psite1.savevalues();
                 if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                savestatus = this.uc_scenario_filter1.savevaluessqlite();
+                savestatus = this.uc_scenario_filter1.savevalues();
                 if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                savestatus = this.uc_scenario_cond_filter1.savevaluessqlite();
+                savestatus = this.uc_scenario_cond_filter1.savevalues();
                 if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                this.uc_scenario_processor_scenario_select1.savevaluessqlite();
+                this.uc_scenario_processor_scenario_select1.savevalues();
                 if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                 frmMain.g_oFrmMain.DeactivateStandByAnimation();
@@ -1300,7 +1300,7 @@ namespace FIA_Biosum_Manager
 				result = MessageBox.Show("Save Scenario Changes Y/N","FIA Biosum",System.Windows.Forms.MessageBoxButtons.YesNoCancel,System.Windows.Forms.MessageBoxIcon.Question);
                 if (result == System.Windows.Forms.DialogResult.Yes)
                 {
-                    this.SaveRuleDefinitionsSqlite();
+                    this.SaveRuleDefinitions();
                 }
 			}
             return result;
@@ -1543,26 +1543,26 @@ namespace FIA_Biosum_Manager
 					frmMain.g_oFrmMain.OpenOptimizerScenarioSqlite("New", this);
 					break;
 				case 2:
-					this.SaveRuleDefinitionsSqlite();
+					this.SaveRuleDefinitions();
 					break;
 				case 3:
                     if (this.uc_scenario_open1 != null)
 					{
-                        if(uc_scenario1.DeleteScenarioSqlite(uc_scenario_open1.txtScenarioId.Text.Trim()))
+                        if(uc_scenario1.DeleteScenario(uc_scenario_open1.txtScenarioId.Text.Trim()))
 						    uc_scenario_open1.lstScenario.Items.Remove(uc_scenario_open1.lstScenario.SelectedItems[0]);
 					}
 					else
 					{
-						if (uc_scenario1.DeleteScenarioSqlite(uc_scenario1.txtScenarioId.Text.Trim()))
+						if (uc_scenario1.DeleteScenario(uc_scenario1.txtScenarioId.Text.Trim()))
 							this.Close();
 					}
                     break;
                 case 4:
                     if (this.m_lrulesfirsttime == true)
-                        LoadRuleDefinitionsSqlite();
+                        LoadRuleDefinitions();
                     else
                     {
-                        SaveRuleDefinitionsSqlite();
+                        SaveRuleDefinitions();
                        
                     }
                     FIA_Biosum_Manager.frmDialog frmTemp = new frmDialog();
@@ -1576,26 +1576,26 @@ namespace FIA_Biosum_Manager
                     frmTemp.Show();
                     break;
                 case 5:
-                    CopyScenarioSqlite();
+                    CopyScenario();
                     break;
 			}
 		}
-        private void CopyScenario()
+        private void CopyScenario_access()
         {
             frmDialog frmTemp = new frmDialog();
             frmTemp.Initialize_Scenario_Optimizer_Scenario_Copy(this);
             frmTemp.Text = "FIA Biosum";
-            if (m_oOptimizerScenarioItem.ScenarioId.Trim().Length == 0) LoadRuleDefinitions();
+            if (m_oOptimizerScenarioItem.ScenarioId.Trim().Length == 0) LoadRuleDefinitions_access();
 
             frmTemp.uc_scenario_optimizer_scenario_copy1.ReferenceCurrentScenarioItem = m_oOptimizerScenarioItem;
-            frmTemp.uc_scenario_optimizer_scenario_copy1.loadvalues();
+            frmTemp.uc_scenario_optimizer_scenario_copy1.loadvalues_access();
             DialogResult result = frmTemp.ShowDialog(this);
             if (result == DialogResult.OK)
             {
 
                 frmMain.g_sbpInfo.Text = "Copying scenario rule definitions...Stand by";
 
-                this.uc_scenario_fvs_prepost_variables_effective1.loadvalues_FromProperties();
+                this.uc_scenario_fvs_prepost_variables_effective1.loadvalues_FromProperties_access();
 
                 this.uc_scenario1.txtDescription.Text = m_oOptimizerScenarioItem.Description;
                 frmMain.g_sbpInfo.Text = "Loading Scenario Notes...Stand By";
@@ -1605,7 +1605,7 @@ namespace FIA_Biosum_Manager
                 
                 
                 this.uc_scenario_costs1.loadvalues();
-                this.uc_scenario_processor_scenario_select1.loadvalues(true);
+                this.uc_scenario_processor_scenario_select1.loadvalues_access(true);
                 
                 
                 this.uc_scenario_filter1.loadvalues(true);
@@ -1630,22 +1630,22 @@ namespace FIA_Biosum_Manager
             }
 
         }
-        private void CopyScenarioSqlite()
+        private void CopyScenario()
         {
             frmDialog frmTemp = new frmDialog();
             frmTemp.Initialize_Scenario_Optimizer_Scenario_Copy(this);
             frmTemp.Text = "FIA Biosum";
-            if (m_oOptimizerScenarioItem.ScenarioId.Trim().Length == 0) LoadRuleDefinitionsSqlite();
+            if (m_oOptimizerScenarioItem.ScenarioId.Trim().Length == 0) LoadRuleDefinitions();
 
             frmTemp.uc_scenario_optimizer_scenario_copy1.ReferenceCurrentScenarioItem = m_oOptimizerScenarioItem;
-            frmTemp.uc_scenario_optimizer_scenario_copy1.loadvaluessqlite();
+            frmTemp.uc_scenario_optimizer_scenario_copy1.loadvalues();
             DialogResult result = frmTemp.ShowDialog(this);
             if (result == DialogResult.OK)
             {
 
                 frmMain.g_sbpInfo.Text = "Copying scenario rule definitions...Stand by";
 
-                this.uc_scenario_fvs_prepost_variables_effective1.loadvalues_FromPropertiesSqlite();
+                this.uc_scenario_fvs_prepost_variables_effective1.loadvalues_FromProperties();
 
                 this.uc_scenario1.txtDescription.Text = m_oOptimizerScenarioItem.Description;
                 frmMain.g_sbpInfo.Text = "Loading Scenario Notes...Stand By";
@@ -1655,7 +1655,7 @@ namespace FIA_Biosum_Manager
 
 
                 this.uc_scenario_costs1.loadvalues();
-                this.uc_scenario_processor_scenario_select1.loadvaluessqlite(true);
+                this.uc_scenario_processor_scenario_select1.loadvalues(true);
 
 
                 this.uc_scenario_filter1.loadvalues(true);
@@ -1693,7 +1693,7 @@ namespace FIA_Biosum_Manager
                 if (tabControlScenario.SelectedTab.Text.Trim().ToUpper()=="RULE DEFINITIONS")
 				{
 					if (m_lrulesfirsttime==true)
-						LoadRuleDefinitionsSqlite();
+						LoadRuleDefinitions();
 
 				}
 				else if (tabControlScenario.SelectedTab.Text.Trim().ToUpper() == "NOTES")
@@ -2834,7 +2834,7 @@ namespace FIA_Biosum_Manager
         public OptimizerScenarioTools()
         {
         }
-        public void LoadScenario(string p_strScenarioId, Queries p_oQueries, bool p_bProcessorUsingSqlite,
+        public void LoadScenario_access(string p_strScenarioId, Queries p_oQueries, bool p_bProcessorUsingSqlite,
             OptimizerScenarioItem_Collection p_oOptimizerScenarioItem_Collection)
         {
            
@@ -2850,10 +2850,10 @@ namespace FIA_Biosum_Manager
                 p_oQueries.m_strTempDbFile,
                 frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim(),
                 "C");
-            LoadAll(p_oQueries.m_strTempDbFile, p_oQueries, p_bProcessorUsingSqlite,
+            LoadAll_access(p_oQueries.m_strTempDbFile, p_oQueries, p_bProcessorUsingSqlite,
                 p_strScenarioId, p_oOptimizerScenarioItem_Collection);
         }
-        public void LoadScenarioSqlite(string p_strScenarioId, Queries p_oQueries, bool p_bProcessorUsingSqlite,
+        public void LoadScenario(string p_strScenarioId, Queries p_oQueries, bool p_bProcessorUsingSqlite,
             OptimizerScenarioItem_Collection p_oOptimizerScenarioItem_Collection)
         {
 
@@ -2868,9 +2868,9 @@ namespace FIA_Biosum_Manager
             p_oQueries.m_oDataSource.CreateScenarioRuleDefinitionTableLinksSqliteToAccess(
                 p_oQueries.m_strTempDbFile,
                 frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim());
-            LoadAll(p_oQueries.m_strTempDbFile, p_oQueries, p_bProcessorUsingSqlite, p_strScenarioId, p_oOptimizerScenarioItem_Collection);
+            LoadAll_access(p_oQueries.m_strTempDbFile, p_oQueries, p_bProcessorUsingSqlite, p_strScenarioId, p_oOptimizerScenarioItem_Collection);
         }
-        public void LoadAll(string p_strDbFile, Queries p_oQueries, bool p_bProcessorUsingSqlite, 
+        public void LoadAll_access(string p_strDbFile, Queries p_oQueries, bool p_bProcessorUsingSqlite, 
             string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem_Collection p_oOptimizerScenarioItem_Collection)
         {
             int x;
@@ -2888,11 +2888,11 @@ namespace FIA_Biosum_Manager
             {
 
                 OptimizerScenarioItem oItem = new OptimizerScenarioItem();
-                this.LoadGeneral(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
-                this.LoadEffectiveVariables(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
-                this.LoadOptimizationVariable(oAdo, oAdo.m_OleDbConnection, p_strScenarioId,oItem);
-                this.LoadTieBreakerVariables(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
-                this.LoadLastTieBreakRank(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
+                this.LoadGeneral_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
+                this.LoadEffectiveVariables_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
+                this.LoadOptimizationVariable_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId,oItem);
+                this.LoadTieBreakerVariables_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
+                this.LoadLastTieBreakRank_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
                 if (!p_bProcessorUsingSqlite)
                 {
                     this.LoadProcessorScenarioItems_old(oAdo, oAdo.m_OleDbConnection, p_bProcessorUsingSqlite, p_strScenarioId, oItem);
@@ -2901,11 +2901,11 @@ namespace FIA_Biosum_Manager
                 {
                     this.LoadProcessorScenarioItemsSqlite(oAdo, oAdo.m_OleDbConnection, p_bProcessorUsingSqlite, p_strScenarioId, oItem);
                 }
-                this.LoadPlotFilter(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
-                this.LoadCondFilter(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
-                this.LoadProcessingSites(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
-                this.LoadLandOwnerGroupFilter(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
-                this.LoadTransportationCosts(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
+                this.LoadPlotFilter_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
+                this.LoadCondFilter_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
+                this.LoadProcessingSites_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
+                this.LoadLandOwnerGroupFilter_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
+                this.LoadTransportationCosts_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
                 p_oOptimizerScenarioItem_Collection.Add(oItem);
                 
 
@@ -2918,7 +2918,7 @@ namespace FIA_Biosum_Manager
             oAdo = null;
         }
 
-        public void LoadAllSqlite(string p_strDbFile, Queries p_oQueries, bool p_bProcessorUsingSqlite,
+        public void LoadAll(string p_strDbFile, Queries p_oQueries, bool p_bProcessorUsingSqlite,
             string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem_Collection p_oOptimizerScenarioItem_Collection)
         {
             int x;
@@ -2937,36 +2937,36 @@ namespace FIA_Biosum_Manager
                 if (oDataMgr.m_intError == 0)
                 {
                     OptimizerScenarioItem oItem = new OptimizerScenarioItem();
-                    this.LoadGeneralSqlite(oDataMgr, conn, p_strScenarioId, oItem);
-                    this.LoadEffectiveVariablesSqlite(oDataMgr, conn, p_strScenarioId, oItem);
-                    this.LoadOptimizationVariableSqlite(oDataMgr, conn, p_strScenarioId, oItem);
-                    this.LoadTieBreakerVariablesSqlite(oDataMgr, conn, p_strScenarioId, oItem);
-                    this.LoadLastTieBreakRankSqlite(oDataMgr, conn, p_strScenarioId, oItem);
+                    this.LoadGeneral(oDataMgr, conn, p_strScenarioId, oItem);
+                    this.LoadEffectiveVariables(oDataMgr, conn, p_strScenarioId, oItem);
+                    this.LoadOptimizationVariable(oDataMgr, conn, p_strScenarioId, oItem);
+                    this.LoadTieBreakerVariables(oDataMgr, conn, p_strScenarioId, oItem);
+                    this.LoadLastTieBreakRank(oDataMgr, conn, p_strScenarioId, oItem);
                     this.LoadProcessorScenarioItems(oDataMgr, conn, p_bProcessorUsingSqlite, p_strScenarioId, oItem);
-                    this.LoadPlotFilterSqlite(oDataMgr, conn, p_strScenarioId, oItem);
-                    this.LoadCondFilterSqlite(oDataMgr, conn, p_strScenarioId, oItem);
-                    this.LoadProcessingSitesSqlite(oDataMgr, conn, p_strScenarioId, oItem);
-                    this.LoadLandOwnerGroupFilterSqlite(oDataMgr, conn, p_strScenarioId, oItem);
-                    this.LoadTransportationCostsSqlite(oDataMgr, conn, p_strScenarioId, oItem);
+                    this.LoadPlotFilter(oDataMgr, conn, p_strScenarioId, oItem);
+                    this.LoadCondFilter(oDataMgr, conn, p_strScenarioId, oItem);
+                    this.LoadProcessingSites(oDataMgr, conn, p_strScenarioId, oItem);
+                    this.LoadLandOwnerGroupFilter(oDataMgr, conn, p_strScenarioId, oItem);
+                    this.LoadTransportationCosts(oDataMgr, conn, p_strScenarioId, oItem);
                     p_oOptimizerScenarioItem_Collection.Add(oItem);
                 }
                 conn.Close();
             }
         }
 
-        public void LoadGeneral(string p_strDbFile, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerAnalysisScenarioItem)
+        public void LoadGeneral_access(string p_strDbFile, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerAnalysisScenarioItem)
         {
             ado_data_access oAdo = new ado_data_access();
             oAdo.OpenConnection(oAdo.getMDBConnString(p_strDbFile, "", ""));
             if (oAdo.m_intError == 0)
             {
-                this.LoadGeneral(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, p_oOptimizerAnalysisScenarioItem);
+                this.LoadGeneral_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, p_oOptimizerAnalysisScenarioItem);
             }
             m_intError = oAdo.m_intError;
             oAdo.CloseConnection(oAdo.m_OleDbConnection);
             oAdo = null;
         }
-        public void LoadGeneral(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
+        public void LoadGeneral_access(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             p_oAdo.SqlQueryReader(p_oConn, "SELECT * FROM scenario " + " WHERE TRIM(UCASE(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'");
 
@@ -3017,7 +3017,7 @@ namespace FIA_Biosum_Manager
                 }
             }
         }
-        public void LoadGeneralSqlite(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
+        public void LoadGeneral(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             p_oDataMgr.SqlQueryReader(p_oConn, "SELECT * FROM scenario WHERE TRIM(UPPER(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'");
             if (p_oDataMgr.m_intError == 0)
@@ -3066,7 +3066,7 @@ namespace FIA_Biosum_Manager
                 }
             }
         }
-        public void LoadEffectiveVariables(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
+        public void LoadEffectiveVariables_access(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             int x = 0, y = 0;
             string strRxCycle = "";
@@ -3172,7 +3172,7 @@ namespace FIA_Biosum_Manager
 
                
         }
-        public void LoadEffectiveVariablesSqlite(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
+        public void LoadEffectiveVariables(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             int x = 0, y = 0;
             string strRxCycle = "";
@@ -3266,7 +3266,7 @@ namespace FIA_Biosum_Manager
             p_oDataMgr.m_DataReader.Close();
 
         }
-        public void LoadOptimizationVariable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
+        public void LoadOptimizationVariable_access(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             int x = 0, y = 0;
             int intVarNum = 0;
@@ -3395,7 +3395,7 @@ namespace FIA_Biosum_Manager
             p_oAdo.m_OleDbDataReader.Close();
 
         }
-        public void LoadOptimizationVariableSqlite(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
+        public void LoadOptimizationVariable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             int x = 0, y = 0;
             int intVarNum = 0;
@@ -3519,7 +3519,7 @@ namespace FIA_Biosum_Manager
             }
             p_oDataMgr.m_DataReader.Close();
         }
-        public void LoadTieBreakerVariables(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
+        public void LoadTieBreakerVariables_access(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             this.m_intError = 0;
             this.m_strError = "";
@@ -3604,7 +3604,7 @@ namespace FIA_Biosum_Manager
             
 
         }
-        public void LoadTieBreakerVariablesSqlite(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
+        public void LoadTieBreakerVariables(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             this.m_intError = 0;
             this.m_strError = "";
@@ -3682,7 +3682,7 @@ namespace FIA_Biosum_Manager
             }
             p_oDataMgr.m_DataReader.Close();
         }
-        public void LoadLastTieBreakRank(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
+        public void LoadLastTieBreakRank_access(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             this.m_intError = 0;
             this.m_strError = "";
@@ -3778,7 +3778,7 @@ namespace FIA_Biosum_Manager
             
 
         }
-        public void LoadLastTieBreakRankSqlite(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
+        public void LoadLastTieBreakRank(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             this.m_intError = 0;
             this.m_strError = "";
@@ -4253,7 +4253,7 @@ namespace FIA_Biosum_Manager
 
 
         }
-        public void LoadPlotFilter(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
+        public void LoadPlotFilter_access(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
 
             p_oAdo.m_strSQL = "SELECT * FROM scenario_plot_filter  WHERE " +
@@ -4292,7 +4292,7 @@ namespace FIA_Biosum_Manager
 
 
         }
-        public void LoadPlotFilterSqlite(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
+        public void LoadPlotFilter(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             p_oDataMgr.m_strSQL = "SELECT * FROM scenario_plot_filter  WHERE " +
               " TRIM(UPPER(scenario_id)) = '" + p_strScenarioId.Trim().ToUpper() + "' AND current_yn = 'Y';";
@@ -4320,7 +4320,7 @@ namespace FIA_Biosum_Manager
                 p_oDataMgr.m_DataReader.Close();
             }
         }
-        public void LoadCondFilter(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
+        public void LoadCondFilter_access(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             p_oAdo.m_strSQL = "SELECT * FROM scenario_cond_filter  WHERE " +
                 " TRIM(UCASE(scenario_id)) = '" + p_strScenarioId.Trim().ToUpper() + "' AND current_yn = 'Y';";
@@ -4380,7 +4380,7 @@ namespace FIA_Biosum_Manager
                 p_oAdo.m_OleDbDataReader.Close();
             }
         }
-        public void LoadCondFilterSqlite(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
+        public void LoadCondFilter(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             p_oDataMgr.m_strSQL = "SELECT * FROM scenario_cond_filter  WHERE " +
                 " TRIM(UPPER(scenario_id)) = '" + p_strScenarioId.Trim().ToUpper() + "' AND current_yn = 'Y';";
@@ -4431,7 +4431,7 @@ namespace FIA_Biosum_Manager
                 p_oDataMgr.m_DataReader.Close();
             }
         }
-        public void LoadProcessingSites(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
+        public void LoadProcessingSites_access(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
 			
 
@@ -4599,7 +4599,7 @@ namespace FIA_Biosum_Manager
 
 			
 		}
-        public void LoadProcessingSitesSqlite(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
+        public void LoadProcessingSites(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             this.m_intError = 0;
             this.m_strError = "";
@@ -4862,7 +4862,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        public void LoadLandOwnerGroupFilter(ado_data_access p_oAdo, 
+        public void LoadLandOwnerGroupFilter_access(ado_data_access p_oAdo, 
                                          System.Data.OleDb.OleDbConnection p_oConn,
                                          string p_strScenarioId, 
                                          OptimizerScenarioItem p_oOptimizerScenarioItem)
@@ -4894,7 +4894,7 @@ namespace FIA_Biosum_Manager
                         p_oOptimizerScenarioItem.OwnerGroupCodeList.Substring(0, p_oOptimizerScenarioItem.OwnerGroupCodeList.Length - 1);
             }
         }
-        public void LoadLandOwnerGroupFilterSqlite(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, OptimizerScenarioItem p_oOptimizerScenarioItem)
+        public void LoadLandOwnerGroupFilter(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             p_oOptimizerScenarioItem.OwnerGroupCodeList = "";
             p_oDataMgr.m_strSQL = "SELECT * FROM scenario_land_owner_groups WHERE " +
@@ -4922,7 +4922,7 @@ namespace FIA_Biosum_Manager
                 }
             }
         }
-        public void LoadTransportationCosts(ado_data_access p_oAdo,
+        public void LoadTransportationCosts_access(ado_data_access p_oAdo,
                                          System.Data.OleDb.OleDbConnection p_oConn,
                                          string p_strScenarioId,
                                          OptimizerScenarioItem p_oOptimizerScenarioItem)
@@ -4969,7 +4969,7 @@ namespace FIA_Biosum_Manager
                
             }
         }
-        public void LoadTransportationCostsSqlite(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, OptimizerScenarioItem p_oOptimizerScenarioItem)
+        public void LoadTransportationCosts(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             p_oOptimizerScenarioItem.m_oTranCosts.RailChipTransferPerGreenTon = "";
             p_oOptimizerScenarioItem.m_oTranCosts.RailHaulCostPerGreenTonPerMile = "";
@@ -5012,7 +5012,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        public System.Collections.Generic.Dictionary<string, System.Collections.Generic.IList<String>> LoadFvsTablesAndVariables(FIA_Biosum_Manager.ado_data_access p_oAdo)
+        public System.Collections.Generic.Dictionary<string, System.Collections.Generic.IList<String>> LoadFvsTablesAndVariables_access(FIA_Biosum_Manager.ado_data_access p_oAdo)
         {
             int x, y;
             RxTools oRxTools = new RxTools();
@@ -5112,7 +5112,7 @@ namespace FIA_Biosum_Manager
             return _dictFVSTables;
         }
 
-        public System.Collections.Generic.Dictionary<string, System.Collections.Generic.IList<String>> LoadFvsTablesAndVariablesSqlite()
+        public System.Collections.Generic.Dictionary<string, System.Collections.Generic.IList<String>> LoadFvsTablesAndVariables()
         {
             int x, y;
 
@@ -5277,7 +5277,7 @@ namespace FIA_Biosum_Manager
             return _dictFVSTables;
         }
 
-        public void LoadWeightedVariables(ado_data_access p_oAdo, FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables.Variable_Collection p_oWeightedVariableCollection)
+        public void LoadWeightedVariables_access(ado_data_access p_oAdo, FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables.Variable_Collection p_oWeightedVariableCollection)
         {
             p_oWeightedVariableCollection.Clear();
             p_oAdo.OpenConnection(p_oAdo.getMDBConnString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultDbFile, "", ""));
@@ -5311,7 +5311,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        public void LoadWeightedVariablesSqlite( FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables.Variable_Collection p_oWeightedVariableCollection)
+        public void LoadWeightedVariables( FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables.Variable_Collection p_oWeightedVariableCollection)
         {
             p_oWeightedVariableCollection.Clear();
             DataMgr p_oDataMgr = new DataMgr();

@@ -1014,7 +1014,7 @@ namespace FIA_Biosum_Manager
             {
                 m_oDataMgr = new DataMgr();
             }
-            m_dictFVSTables = m_oOptimizerScenarioTools.LoadFvsTablesAndVariablesSqlite();
+            m_dictFVSTables = m_oOptimizerScenarioTools.LoadFvsTablesAndVariables();
  
             foreach (string strKey in m_dictFVSTables.Keys)
             {
@@ -1088,7 +1088,7 @@ namespace FIA_Biosum_Manager
                 lstEconVariablesList.Items.Add(strName);
             }
 
-            m_dictFVSTables = m_oOptimizerScenarioTools.LoadFvsTablesAndVariables(m_oAdo);
+            m_dictFVSTables = m_oOptimizerScenarioTools.LoadFvsTablesAndVariables_access(m_oAdo);
             foreach (string strKey in m_dictFVSTables.Keys)
             {
                 // 

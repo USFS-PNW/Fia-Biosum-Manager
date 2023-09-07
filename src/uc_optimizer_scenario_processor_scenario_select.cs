@@ -33,7 +33,7 @@ namespace FIA_Biosum_Manager
             get { return _frmScenario; }
             set { _frmScenario = value; }
         }
-        public void loadvalues(bool p_bScenarioCopy)
+        public void loadvalues_access(bool p_bScenarioCopy)
         {
             int x;
             ProcessorScenarioTools oTools = new ProcessorScenarioTools();
@@ -59,11 +59,11 @@ namespace FIA_Biosum_Manager
                 string[] strScenarioArray = null;
                 if (!ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite)
                 {
-                    strScenarioArray = loadScenarioArray(oAdo);
+                    strScenarioArray = loadScenarioArray_access(oAdo);
                 }
                 else
                 {
-                    strScenarioArray = loadScenarioArraySqlite();
+                    strScenarioArray = loadScenarioArray();
                 }
                 if (strScenarioArray == null) return;
 
@@ -190,7 +190,7 @@ namespace FIA_Biosum_Manager
                 else
                     chkFullDetails.Checked = false;
         }
-        public void loadvaluessqlite(bool p_bScenarioCopy)
+        public void loadvalues(bool p_bScenarioCopy)
         {
             int x;
             ProcessorScenarioTools oTools = new ProcessorScenarioTools();
@@ -218,11 +218,11 @@ namespace FIA_Biosum_Manager
                 // Delete the if/else statement when processor is moved to SQLite
                 if (!ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite)
                 {
-                    strScenarioArray = loadScenarioArray(oAdo);
+                    strScenarioArray = loadScenarioArray_access(oAdo);
                 }
                 else
                 {
-                    strScenarioArray = loadScenarioArraySqlite();
+                    strScenarioArray = loadScenarioArray();
                 }
 
                 if (strScenarioArray == null) return;
@@ -356,7 +356,7 @@ namespace FIA_Biosum_Manager
                 chkFullDetails.Checked = false;
         }
 
-        private string[] loadScenarioArray(ado_data_access oAdo)
+        private string[] loadScenarioArray_access(ado_data_access oAdo)
         {
             //
             //OPEN CONNECTION TO DB FILE CONTAINING PROCESSOR SCENARIO TABLE
@@ -380,7 +380,7 @@ namespace FIA_Biosum_Manager
             oAdo.CloseConnection(oAdo.m_OleDbConnection);
             return strScenarioArray;
         }
-        private string[] loadScenarioArraySqlite()
+        private string[] loadScenarioArray()
         {
             //
             //OPEN CONNECTION TO DB FILE CONTAINING PROCESSOR SCENARIO TABLE
@@ -407,7 +407,7 @@ namespace FIA_Biosum_Manager
             }
             return lstScenarioArray.ToArray();
         }
-        public void savevalues()
+        public void savevalues_access()
         {
             
             ado_data_access oAdo = new ado_data_access();
@@ -441,7 +441,7 @@ namespace FIA_Biosum_Manager
             }
             oAdo.CloseConnection(oAdo.m_OleDbConnection);
         }
-        public void savevaluessqlite()
+        public void savevalues()
         {
 
             DataMgr oDataMgr = new DataMgr();

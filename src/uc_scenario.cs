@@ -401,7 +401,7 @@ namespace FIA_Biosum_Manager
 			}
 		}
 
-		public void SaveScenarioPropertiesSqlite()
+		public void SaveScenarioProperties()
 		{
 			bool bOptimizer;
 			string strDesc="";
@@ -621,7 +621,7 @@ namespace FIA_Biosum_Manager
             }
 		}
 
-        public void SaveScenarioProperties()
+        public void SaveScenarioProperties_access()
         {
             bool bOptimizer;
             string strDesc = "";
@@ -986,7 +986,7 @@ namespace FIA_Biosum_Manager
  
 
 		}
-        public bool DeleteScenario(string p_strScenarioId)
+        public bool DeleteScenario_access(string p_strScenarioId)
         {
 
             StringBuilder strFullPath;
@@ -1167,7 +1167,7 @@ namespace FIA_Biosum_Manager
             return true;
         }
 
-        public bool DeleteScenarioSqlite(string p_strScenarioId)
+        public bool DeleteScenario(string p_strScenarioId)
         {
 
             StringBuilder strFullPath;
@@ -1417,11 +1417,11 @@ namespace FIA_Biosum_Manager
                 if (ScenarioType.Trim().ToUpper() == "OPTIMIZER" || (ReferenceProcessorScenarioForm != null &&
                     ReferenceProcessorScenarioForm.m_bUsingSqlite))
                 {
-                    this.SaveScenarioPropertiesSqlite();
+                    this.SaveScenarioProperties();
                 }
                 else
                 {
-                    this.SaveScenarioProperties();
+                    this.SaveScenarioProperties_access();
                 }
 
 

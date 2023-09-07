@@ -144,7 +144,7 @@ namespace FIA_Biosum_Manager
 		}
 
 
-		public int savevalues()
+		public int savevalues_access()
 		{
 			int x = 0;
 			string strSQL = "";
@@ -181,7 +181,7 @@ namespace FIA_Biosum_Manager
 
 
 		}
-		public int savevaluessqlite()
+		public int savevalues()
 		{
 			int x = 0;
 			string strSQL = "";
@@ -226,7 +226,7 @@ namespace FIA_Biosum_Manager
 
 		}
 
-		public void loadgrid(bool p_bScenarioCopy)
+		public void loadgrid_access(bool p_bScenarioCopy)
 		{
 			string[] strDeleteSQL = new string[25];
 			string strSQL = "";
@@ -554,7 +554,7 @@ namespace FIA_Biosum_Manager
 			}
 		}
 			
-		public void loadgridsqlite(bool p_bScenarioCopy)
+		public void loadgrid(bool p_bScenarioCopy)
         {
 			string[] strDeleteSQL = new string[25];
 			int intArrayCount;

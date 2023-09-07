@@ -1579,7 +1579,7 @@ namespace FIA_Biosum_Manager
 		{
 			this.AllowNumericOnly(e);
 		}
-        public void loadvalues_FromProperties()
+        public void loadvalues_FromProperties_access()
         {
 
             int x;
@@ -1634,12 +1634,12 @@ namespace FIA_Biosum_Manager
             m_oOldVar.Copy(m_oOldVar, ref m_oCurVar);
 
             this.ReferenceOptimizationUserControl.loadvalues_FromProperties();
-            this.ReferenceTieBreakerUserControl.loadvalues_FromProperties();
+            this.ReferenceTieBreakerUserControl.loadvalues_FromProperties_access();
            
 
 
         }
-		public void loadvalues_FromPropertiesSqlite()
+		public void loadvalues_FromProperties()
 		{
 
 			int x;
@@ -1694,12 +1694,12 @@ namespace FIA_Biosum_Manager
 			m_oOldVar.Copy(m_oOldVar, ref m_oCurVar);
 
 			this.ReferenceOptimizationUserControl.loadvalues_FromProperties();
-			this.ReferenceTieBreakerUserControl.loadvalues_FromPropertiesSqlite();
+			this.ReferenceTieBreakerUserControl.loadvalues_FromProperties();
 
 
 
 		}
-		public void loadvalues()
+		public void loadvalues_access()
 		{
 			this.m_intError=0;
 			this.m_strError="";
@@ -1707,7 +1707,7 @@ namespace FIA_Biosum_Manager
             ado_data_access oAdo = new ado_data_access();
 
             this.lstFVSTablesList.Items.Clear();
-            m_dictFVSTables = m_oOptimizerScenarioTools.LoadFvsTablesAndVariables(oAdo);
+            m_dictFVSTables = m_oOptimizerScenarioTools.LoadFvsTablesAndVariables_access(oAdo);
             foreach (string strKey in m_dictFVSTables.Keys)
             {
                 lstFVSTablesList.Items.Add(strKey);
@@ -1813,14 +1813,14 @@ namespace FIA_Biosum_Manager
 			m_oOldVar.Copy(m_oOldVar,ref m_oSavVar);
 
 
-            this.ReferenceOptimizationUserControl.loadvalues(m_dictFVSTables);
-            this.ReferenceTieBreakerUserControl.loadvalues(m_dictFVSTables);
+            this.ReferenceOptimizationUserControl.loadvalues_access(m_dictFVSTables);
+            this.ReferenceTieBreakerUserControl.loadvalues_access(m_dictFVSTables);
 			this.m_intError=oAdo.m_intError;
 			this.m_strError=oAdo.m_strError;
 			oAdo=null;
 			
 		}
-		public void loadvaluessqlite()
+		public void loadvalues()
         {
 			this.m_intError = 0;
 			this.m_strError = "";
@@ -1829,7 +1829,7 @@ namespace FIA_Biosum_Manager
 
 			this.lstFVSTablesList.Items.Clear();
 			this.lstFVSTablesList.Sorted = true;
-			m_dictFVSTables = m_oOptimizerScenarioTools.LoadFvsTablesAndVariablesSqlite();
+			m_dictFVSTables = m_oOptimizerScenarioTools.LoadFvsTablesAndVariables();
 			foreach (string strKey in m_dictFVSTables.Keys)
 			{
 				lstFVSTablesList.Items.Add(strKey);
@@ -1917,8 +1917,8 @@ namespace FIA_Biosum_Manager
 			}
 			m_oOldVar.Copy(m_oOldVar, ref m_oSavVar);
 
-			this.ReferenceOptimizationUserControl.loadvaluessqlite(m_dictFVSTables);
-			this.ReferenceTieBreakerUserControl.loadvaluessqlite(m_dictFVSTables);
+			this.ReferenceOptimizationUserControl.loadvalues(m_dictFVSTables);
+			this.ReferenceTieBreakerUserControl.loadvalues(m_dictFVSTables);
 			this.m_intError = oDataMgr.m_intError;
 			this.m_strError = oDataMgr.m_strError;
 		}
@@ -1952,7 +1952,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-		public int savevalues()
+		public int savevalues_access()
 		{
 			int x;
 			string strColumns="";
@@ -2095,7 +2095,7 @@ namespace FIA_Biosum_Manager
            return 1;
 		}
 
-		public int savevaluessqlite()
+		public int savevalues()
 		{
 			int x;
 			string strColumns = "";

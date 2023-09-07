@@ -4048,7 +4048,7 @@ namespace FIA_Biosum_Manager
 								}
 								else bPromptMsg=true;
 							}
-							temp.SaveRuleDefinitionsSqlite();
+							temp.SaveRuleDefinitions();
 							
 						}
 						temp = null;

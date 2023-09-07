@@ -45,7 +45,7 @@ namespace FIA_Biosum_Manager
             get { return _frmOptimizerScenario; }
             set { _frmOptimizerScenario = value; }
         }
-        public void loadvalues()
+        public void loadvalues_access()
         {
             int x;
             
@@ -121,7 +121,7 @@ namespace FIA_Biosum_Manager
             oAdo.CloseConnection(oAdo.m_OleDbConnection);
 
         }
-        public void loadvaluessqlite()
+        public void loadvalues()
         {
             int x;
 
@@ -373,7 +373,7 @@ namespace FIA_Biosum_Manager
                 lblMsg.Show();
                 lblMsg.Refresh();
                 //load the scenario into the collection
-                m_oOptimizerScenarioTools.LoadScenario(
+                m_oOptimizerScenarioTools.LoadScenario_access(
                     p_strScenarioId.Trim(),
                     m_oQueries, ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite,
                     m_oOptimizerScenarioItem_Collection);
@@ -396,7 +396,7 @@ namespace FIA_Biosum_Manager
                 lblMsg.Show();
                 lblMsg.Refresh();
                 //load the scenario into the collection
-                m_oOptimizerScenarioTools.LoadScenarioSqlite(
+                m_oOptimizerScenarioTools.LoadScenario(
                     p_strScenarioId.Trim(),
                     m_oQueries, ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite,
                     m_oOptimizerScenarioItem_Collection);

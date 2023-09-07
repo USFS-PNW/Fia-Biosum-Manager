@@ -343,7 +343,7 @@ namespace FIA_Biosum_Manager
 			
 		}
        
-		public int savevalues()
+		public int savevalues_access()
 		{
 			int x=0;
             
@@ -430,7 +430,7 @@ namespace FIA_Biosum_Manager
 
 			
 		}
-		public int savevaluessqlite()
+		public int savevalues()
 		{
 			int x = 0;
 

@@ -922,7 +922,7 @@ namespace FIA_Biosum_Manager
 		{
 			this.AllowNumericOnly(e);
 		}
-        public void loadvalues_FromProperties()
+        public void loadvalues_FromProperties_access()
         {
             this.m_intError = 0;
             this.m_strError = "";
@@ -1009,10 +1009,10 @@ namespace FIA_Biosum_Manager
                 }
                 this.m_oSavTieBreakerCollection.Copy(this.m_oOldTieBreakerCollection, ref this.m_oSavTieBreakerCollection, true);
             }
-            this.uc_scenario_last_tiebreak_rank1.loadgrid(true);
+            this.uc_scenario_last_tiebreak_rank1.loadgrid_access(true);
 
         }
-        public void loadvalues_FromPropertiesSqlite()
+        public void loadvalues_FromProperties()
         {
             this.m_intError = 0;
             this.m_strError = "";
@@ -1096,10 +1096,10 @@ namespace FIA_Biosum_Manager
                 }
                 this.m_oSavTieBreakerCollection.Copy(this.m_oOldTieBreakerCollection, ref this.m_oSavTieBreakerCollection, true);
             }
-            this.uc_scenario_last_tiebreak_rank1.loadgridsqlite(true);
+            this.uc_scenario_last_tiebreak_rank1.loadgrid(true);
 
         }
-        public void loadvalues(System.Collections.Generic.IDictionary<string, System.Collections.Generic.IList<String>> p_dictFVSTables)
+        public void loadvalues_access(System.Collections.Generic.IDictionary<string, System.Collections.Generic.IList<String>> p_dictFVSTables)
 		{
 
 			
@@ -1287,10 +1287,10 @@ namespace FIA_Biosum_Manager
 			this.m_strError=oAdo.m_strError;
 			oAdo=null;
 
-            this.uc_scenario_last_tiebreak_rank1.loadgrid(false);
+            this.uc_scenario_last_tiebreak_rank1.loadgrid_access(false);
 			
 		}
-        public void loadvaluessqlite(System.Collections.Generic.IDictionary<string, System.Collections.Generic.IList<String>> p_dictFVSTables)
+        public void loadvalues(System.Collections.Generic.IDictionary<string, System.Collections.Generic.IList<String>> p_dictFVSTables)
         {
             this.m_intError = 0;
             this.m_strError = "";
@@ -1464,10 +1464,10 @@ namespace FIA_Biosum_Manager
             }
             this.m_intError = oDataMgr.m_intError;
             this.m_strError = oDataMgr.m_strError;
-            this.uc_scenario_last_tiebreak_rank1.loadgridsqlite(false);
+            this.uc_scenario_last_tiebreak_rank1.loadgrid(false);
         }
 
-        public int savevalues()
+        public int savevalues_access()
 		{
 			int x=0;
 			string strColumns="";
@@ -1621,12 +1621,12 @@ namespace FIA_Biosum_Manager
 
 				oAdo.CloseConnection(oAdo.m_OleDbConnection);
 			}
-            this.uc_scenario_last_tiebreak_rank1.savevalues();
+            this.uc_scenario_last_tiebreak_rank1.savevalues_access();
 			return 0;
 		}
 
 
-        public int savevaluessqlite()
+        public int savevalues()
         {
             int x = 0;
             string strColumns = "";
@@ -1782,7 +1782,7 @@ namespace FIA_Biosum_Manager
                 }
                 conn.Close();
             }
-            this.uc_scenario_last_tiebreak_rank1.savevaluessqlite();
+            this.uc_scenario_last_tiebreak_rank1.savevalues();
             return 0;
         }
 

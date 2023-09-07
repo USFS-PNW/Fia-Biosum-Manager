@@ -1114,7 +1114,7 @@ namespace FIA_Biosum_Manager
             }
 
         }
-        public void loadvalues(System.Collections.Generic.IDictionary<string, System.Collections.Generic.IList<String>> p_dictFVSTables)
+        public void loadvalues_access(System.Collections.Generic.IDictionary<string, System.Collections.Generic.IList<String>> p_dictFVSTables)
 		{
 			
 			this.m_intError=0;
@@ -1329,7 +1329,7 @@ namespace FIA_Biosum_Manager
 
 			
 		}
-        public void loadvaluessqlite(System.Collections.Generic.IDictionary<string, System.Collections.Generic.IList<String>> p_dictFVSTables)
+        public void loadvalues(System.Collections.Generic.IDictionary<string, System.Collections.Generic.IList<String>> p_dictFVSTables)
         {
             this.m_intError = 0;
             this.m_strError = "";
@@ -1681,7 +1681,7 @@ namespace FIA_Biosum_Manager
             m_oValidate.ValidateDecimal(Convert.ToString(p_oVariableItem.dblFilterValue).Trim());
             p_lvItem.SubItems[COLUMN_FILTER_VALUE].Text = m_oValidate.ReturnValue;
 		}
-		public int savevalues()
+		public int savevalues_access()
 		{
 			int x;
 			string strValues="";
@@ -1780,7 +1780,7 @@ namespace FIA_Biosum_Manager
 			return 1;
 			
 		}
-        public int savevaluessqlite()
+        public int savevalues()
         {
             int x;
             string strValues = "";

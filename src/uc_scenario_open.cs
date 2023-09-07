@@ -319,7 +319,7 @@ namespace FIA_Biosum_Manager
 
 		
 		
-		public void populate_scenario_listbox(string strDebugFile)
+		public void populate_scenario_listbox_access(string strDebugFile)
 		{
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -393,7 +393,7 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(strDebugFile, "=====================   populate_scenario_listbox finished! =====================  \r\n");
         }
 
-        public void populate_scenario_listbox_sqlite()
+        public void populate_scenario_listbox()
         {
             string strScenarioId = "";
             string strDescription = "";
@@ -857,11 +857,11 @@ namespace FIA_Biosum_Manager
 				ReferenceProcessorScenarioForm != null && 
                 ReferenceProcessorScenarioForm.m_bUsingSqlite == true)
             {
-                this.populate_scenario_listbox_sqlite();
+                this.populate_scenario_listbox();
             }
             else
             {
-                this.populate_scenario_listbox(strDebugFile);
+                this.populate_scenario_listbox_access(strDebugFile);
             }
             	        
 			this.btnCancel.Enabled = true;
@@ -877,7 +877,7 @@ namespace FIA_Biosum_Manager
             }
 
         }
-        private void RefreshForm()
+        private void RefreshForm_access()
 		{
 			
 			string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\db";
@@ -919,7 +919,7 @@ namespace FIA_Biosum_Manager
 				p_ado.m_OleDbConnection = null;
 			}
 		}
-        private void RefreshFormSqlite()
+        private void RefreshForm()
         {
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
 			string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\db";
@@ -968,7 +968,7 @@ namespace FIA_Biosum_Manager
                 //if (ReferenceProcessorScenarioForm != null &&
                 //    ReferenceProcessorScenarioForm.m_bUsingSqlite == true)
                 //{
-                    this.RefreshFormSqlite();
+                    this.RefreshForm();
                 //}
                 //else
                 //{

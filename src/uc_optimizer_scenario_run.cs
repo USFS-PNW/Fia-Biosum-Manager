@@ -965,7 +965,7 @@ namespace FIA_Biosum_Manager
                     FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic = (ProgressBarBasic.ProgressBarBasic)listViewEx1.GetEmbeddedControl(1, 1);
 
 
-                    ReferenceOptimizerScenarioForm.SaveRuleDefinitionsSqlite();
+                    ReferenceOptimizerScenarioForm.SaveRuleDefinitions();
 
                     UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
                 }
@@ -6708,7 +6708,7 @@ namespace FIA_Biosum_Manager
                 FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables.Variable_Collection oWeightedVariableCollection =
                     new FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables.Variable_Collection();
                 FIA_Biosum_Manager.OptimizerScenarioTools oOptimizerScenarioTools = new OptimizerScenarioTools();
-                oOptimizerScenarioTools.LoadWeightedVariables(this.m_ado, oWeightedVariableCollection);
+                oOptimizerScenarioTools.LoadWeightedVariables_access(this.m_ado, oWeightedVariableCollection);
                 foreach (string strVariableName in lstFieldNames)
                 {
                     foreach (uc_optimizer_scenario_calculated_variables.VariableItem oVariableItem in oWeightedVariableCollection)

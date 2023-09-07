@@ -149,7 +149,7 @@ namespace FIA_Biosum_Manager
                 }
             }
         }
-		public void loadvalues()
+		public void loadvalues_access()
 		{
 			int x;
 			byte byteTranCd=9;
@@ -464,7 +464,7 @@ namespace FIA_Biosum_Manager
 			p_ado.m_OleDbConnection.Close();
 			p_ado=null;
 		}
-		public void loadvaluessqlite()
+		public void loadvalues()
 		{
 			int x;
 			byte byteTranCd = 9;
@@ -795,7 +795,7 @@ namespace FIA_Biosum_Manager
 			p_ado = null;
 		}
 
-		public int savevalues()
+		public int savevalues_access()
 		{
 			string strTranCd;
 			string strBioCd;
@@ -908,7 +908,7 @@ namespace FIA_Biosum_Manager
 			
 			return x;
 		}
-		public int savevaluessqlite()
+		public int savevalues()
 		{
 			string strTranCd;
 			string strBioCd;
