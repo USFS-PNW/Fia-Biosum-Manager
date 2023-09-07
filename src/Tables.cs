@@ -234,12 +234,14 @@ namespace FIA_Biosum_Manager
             static public string DefaultCalculatedPrePostFVSVariableTableSqliteDbFile { get { return @"optimizer\db\prepost_fvs_weighted.db"; } }
             static public string DefaultScenarioResultsPostEconomicWeightedTableName { get { return @"post_economic_weighted"; } }
             static public string DefaultScenarioResultsDbFile { get { return @"db\optimizer_results.accdb"; } }
+            static public string DefaultScenarioResultsSqliteDbFile { get { return @"db/optimizer_results.db"; } }
             static public string DefaultScenarioResultsEconByRxCycleTableName { get { return @"econ_by_rx_cycle"; } }
             static public string DefaultScenarioResultsEconByRxUtilSumTableName { get { return @"econ_by_rx_utilized_sum"; } }
             static public string DefaultScenarioResultsPSiteAccessibleWorkTableName { get { return @"psite_accessible_work_table"; } }
             static public string DefaultScenarioResultsHaulCostsTableName { get { return @"haul_costs"; } }
             static public string DefaultScenarioResultsCondPsiteTableName { get { return @"cond_psite"; } }
             static public string DefaultScenarioResultsContextDbFile { get { return @"db\context.accdb"; } }
+            static public string DefaultScenarioResultsContextSqliteDbFile { get { return @"db\context.db"; } }
             static public string DefaultScenarioResultsHarvestMethodRefTableName { get { return @"harvest_method_ref_C"; } }
             static public string DefaultScenarioResultsRxPackageRefTableName { get { return @"rxpackage_ref_C"; } }
             static public string DefaultScenarioResultsDiameterSpeciesGroupRefTableName { get { return @"diameter_spp_grp_ref_C"; } }
@@ -247,6 +249,7 @@ namespace FIA_Biosum_Manager
             static public string DefaultScenarioResultsFvsWeightedVariablesRefTableName { get { return @"fvs_weighted_variables_ref_C"; } }
             static public string DefaultScenarioResultsEconWeightedVariablesRefTableName { get { return @"econ_weighted_variables_ref_C"; } }
             static public string DefaultScenarioResultsFvsContextDbFile { get { return @"db\fvs_context.accdb"; } }
+            static public string DefaultScenarioResultsFvsContextSqliteDbFile { get { return @"db\fvs_context.db"; } }
             static public string DefaultScenarioResultsVersionTableName { get { return @"version"; } }
             static public string DefaultScenarioResultsSqliteContextDbFile { get { return @"db\context.db3"; } }
             static public string DefaultScenarioResultsSqliteResultsDbFile { get { return @"db\optimizer_results.db3"; } }

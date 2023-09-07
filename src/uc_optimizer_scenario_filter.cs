@@ -1276,6 +1276,39 @@ namespace FIA_Biosum_Manager
 				return intError;
 			}
 			DataMgr oDataMgr = new DataMgr();
+			FIA_Biosum_Manager.Datasource oDs = new Datasource();
+			oDs.m_strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+			oDs.m_strDataSourceTableName = "scenario_datasource";
+			oDs.m_strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text;
+			oDs.LoadTableColumnNamesAndDataTypes = false;
+			oDs.LoadTableRecordCount = false;
+			oDs.populate_datasource_array_sqlite();
+			if (oDs.m_intError == 0)
+            {
+				string strFile = oDs.CreateMDBAndTableDataSourceLinks();
+				ado_data_access oAdo = new ado_data_access();
+				oAdo.OpenConnection(oAdo.getMDBConnString(strFile, "", ""));
+				if (oAdo.m_intError == 0)
+				{
+					intError = (int)Val_PlotFilter(oAdo.m_OleDbConnection, p_strSql.Trim());
+					if (intError != 0 && String.IsNullOrEmpty(m_strError))
+					{
+						m_strError = "An error occurred while validating the Plot filter!";
+					}
+					oAdo.CloseConnection(oAdo.m_OleDbConnection);
+				}
+				else
+				{
+					intError = oAdo.m_intError;
+					m_intError = intError;
+					m_strError = oAdo.m_strError;
+				}
+				oAdo = null;
+			}
+			oDataMgr = null;
+			oDs = null;
+
 			return intError;
 		}
 
@@ -1363,12 +1396,57 @@ namespace FIA_Biosum_Manager
 			return intError;
 
 		}
+		public int Val_CondFilterSqlite(string p_strSql)
+        {
+			DataMgr oDataMgr = new DataMgr();
+			FIA_Biosum_Manager.Datasource oDs = new Datasource();
+			oDs.m_strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+			oDs.m_strDataSourceTableName = "scenario_datasource";
+			oDs.m_strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text; ;
+			oDs.LoadTableColumnNamesAndDataTypes = false;
+			oDs.LoadTableRecordCount = false;
+			oDs.populate_datasource_array_sqlite();
+			int intError = 0;
+			if (oDs.m_intError == 0)
+            {
+				string strFile = oDs.CreateMDBAndTableDataSourceLinks();
+				ado_data_access oAdo = new ado_data_access();
+				oAdo.OpenConnection(oAdo.getMDBConnString(strFile, "", ""));
+				if (oAdo.m_intError == 0)
+				{
+					intError = (int)Val_CondFilter(oAdo.m_OleDbConnection, p_strSql.Trim());
+					if (intError != 0 && String.IsNullOrEmpty(m_strError))
+					{
+						m_strError = "An error occurred while validating the Condition filter!";
+					}
+					oAdo.CloseConnection(oAdo.m_OleDbConnection);
+				}
+				else
+				{
+					intError = oAdo.m_intError;
+					m_intError = intError;
+					m_strError = oAdo.m_strError;
+				}
+				oAdo = null;
+			}
+			else
+			{
+				intError = oDs.m_intError;
+				m_intError = intError;
+				m_strError = oDs.m_strError;
+			}
+			oDataMgr = null;
+			oDs = null;
+
+			return intError;
+		}
 
 		private void btnValidate_Click(object sender, System.EventArgs e)
 		{
 			int intError=0;
 
-			if (this.FilterType=="PLOT") intError = Val_PlotFilter(this.txtCurrentSQL.Text);
+			if (this.FilterType=="PLOT") intError = Val_PlotFilterSqlite(this.txtCurrentSQL.Text);
 			else intError = Val_CondFilter(this.txtCurrentSQL.Text);
 
 			if (intError!=0)

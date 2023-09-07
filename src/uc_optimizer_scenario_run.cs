@@ -899,7 +899,7 @@ namespace FIA_Biosum_Manager
 			if (this.m_intError==0)  
 			{
                 UpdateThermPercent();
-				this.m_intError= ReferenceOptimizerScenarioForm.uc_scenario_filter1.Val_PlotFilter(ReferenceOptimizerScenarioForm.uc_scenario_filter1.txtCurrentSQL.Text.Trim());
+				this.m_intError= ReferenceOptimizerScenarioForm.uc_scenario_filter1.Val_PlotFilterSqlite(ReferenceOptimizerScenarioForm.uc_scenario_filter1.txtCurrentSQL.Text.Trim());
 				if (this.m_intError!=0)
 					MessageBox.Show(ReferenceOptimizerScenarioForm.uc_scenario_filter1.m_strError,"FIA Biosum");
 
@@ -908,7 +908,7 @@ namespace FIA_Biosum_Manager
 			if (this.m_intError==0)  
 			{
                 UpdateThermPercent();
-				this.m_intError = ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.Val_CondFilter(ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.txtCurrentSQL.Text.Trim());
+				this.m_intError = ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.Val_CondFilterSqlite(ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.txtCurrentSQL.Text.Trim());
 				if (this.m_intError!=0)
 					MessageBox.Show(ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.m_strError,"FIA Biosum");
 
@@ -965,7 +965,7 @@ namespace FIA_Biosum_Manager
                     FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic = (ProgressBarBasic.ProgressBarBasic)listViewEx1.GetEmbeddedControl(1, 1);
 
 
-                    ReferenceOptimizerScenarioForm.SaveRuleDefinitions();
+                    ReferenceOptimizerScenarioForm.SaveRuleDefinitionsSqlite();
 
                     UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
                 }
@@ -1229,8 +1229,8 @@ namespace FIA_Biosum_Manager
 					frmMain.g_oSQLMacroSubstitutionVariable_Collection;
 
 				string strScenarioOutputFolder = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim();
-                this.m_strSystemResultsDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir,"accdb");
-				this.CopyScenarioResultsTable(this.m_strSystemResultsDbPathAndFile,strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile);
+                this.m_strSystemResultsDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir,"db");
+				this.CopyScenarioResultsTableSqlite(this.m_strSystemResultsDbPathAndFile,strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsSqliteDbFile);
 
                 this.m_strContextDbPathAndFile = "";
                 intListViewIndex = FIA_Biosum_Manager.uc_optimizer_scenario_run.GetListViewItemIndex(
@@ -1238,8 +1238,8 @@ namespace FIA_Biosum_Manager
                 oCheckBox = (CheckBox) ReferenceUserControlScenarioRun.listViewEx1.GetEmbeddedControl(0, intListViewIndex);
                 if ((bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)oCheckBox, "Checked", false) == true)
                 {
-                    this.m_strContextDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
-                    this.CopyScenarioResultsTable(this.m_strContextDbPathAndFile, strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsContextDbFile);
+                    this.m_strContextDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
+                    this.CopyScenarioResultsTableSqlite(this.m_strContextDbPathAndFile, strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsContextSqliteDbFile);
                 }
 
                 this.m_strFvsContextDbPathAndFile = "";
@@ -1248,14 +1248,14 @@ namespace FIA_Biosum_Manager
                 oCheckBox = (CheckBox)ReferenceUserControlScenarioRun.listViewEx1.GetEmbeddedControl(0, intListViewIndex);
                 if ((bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)oCheckBox, "Checked", false) == true)
                 {
-                    this.m_strFvsContextDbPathAndFile = strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsContextDbFile;
+                    this.m_strFvsContextDbPathAndFile = strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsContextSqliteDbFile;
                 }
                 
-                this.m_strFVSPreValidComboDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "mdb");
-                this.CopyScenarioResultsTable(this.m_strFVSPreValidComboDbPathAndFile, ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\validcombo.mdb");
+                this.m_strFVSPreValidComboDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
+                this.CopyScenarioResultsTableSqlite(this.m_strFVSPreValidComboDbPathAndFile, ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\validcombo.db");
 
-                this.m_strFVSPostValidComboDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "mdb");
-                this.CopyScenarioResultsTable(this.m_strFVSPostValidComboDbPathAndFile, ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\validcombo.mdb");
+                this.m_strFVSPostValidComboDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
+                this.CopyScenarioResultsTableSqlite(this.m_strFVSPostValidComboDbPathAndFile, ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\validcombo.db");
 
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
@@ -2303,6 +2303,21 @@ namespace FIA_Biosum_Manager
 			oDao.m_DaoWorkspace.Close();
 			oDao=null;
 		}
+
+        private void CopyScenarioResultsTableSqlite(string p_strDestPathAndDbFileName, string p_strSourcePathAndDbFileName)
+        {
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+
+            if (System.IO.File.Exists(p_strSourcePathAndDbFileName))
+            {
+                System.IO.File.Copy(p_strSourcePathAndDbFileName, p_strDestPathAndDbFileName, true);
+            }
+            else
+            {
+                oDataMgr.CreateDbFile(p_strDestPathAndDbFileName);
+            }
+            oDataMgr = null;
+        }
 
 		/// <summary>
 		/// create links to the tables located in the optimizer_results.accdb file

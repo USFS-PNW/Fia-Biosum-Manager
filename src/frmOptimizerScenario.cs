@@ -4869,7 +4869,7 @@ namespace FIA_Biosum_Manager
         {
              p_oOptimizerScenarioItem.OwnerGroupCodeList="";
             string strSQL = "SELECT * FROM scenario_land_owner_groups WHERE " +
-                " scenario_id = '" + p_strScenarioId + "';";
+                " TRIM(scenario_id) = '" + p_strScenarioId + "';";
             p_oAdo.SqlQueryReader(p_oConn, strSQL);
 
 
