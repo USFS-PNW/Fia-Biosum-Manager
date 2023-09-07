@@ -2148,11 +2148,11 @@ namespace FIA_Biosum_Manager
 				if (oDataMgr.m_intError == 0)
                 {
 					oDataMgr.m_strSQL = "SELECT COUNT(*) FROM scenario_fvs_variables WHERE " +
-						" scenario_id = '" + strScenarioId + "' AND current_yn = 'Y' AND rxcycle='1';";
+						" TRIM(UPPER(scenario_id)) = '" + strScenarioId.Trim().ToUpper() + "' AND current_yn = 'Y' AND rxcycle='1';";
 					if ((int)oDataMgr.getRecordCount(conn, oDataMgr.m_strSQL, "scenario_fvs_variables") > 0)
 					{
 						oDataMgr.m_strSQL = "UPDATE scenario_fvs_variables SET current_yn = 'N'" +
-							" WHERE scenario_id = '" + strScenarioId + "' AND current_yn = 'Y' AND rxcycle='1';";
+							" WHERE TRIM(UPPER(scenario_id)) = '" + strScenarioId.Trim().ToUpper() + "' AND current_yn = 'Y' AND rxcycle='1';";
 						oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 					}
 
@@ -2165,11 +2165,11 @@ namespace FIA_Biosum_Manager
 					}
 
 					oDataMgr.m_strSQL = "SELECT COUNT(*) FROM scenario_fvs_variables_overall_effective WHERE " +
-						" scenario_id = '" + strScenarioId + "' AND current_yn = 'Y' AND rxcycle='1';";
+						" TRIM(UPPER(scenario_id)) = '" + strScenarioId.Trim().ToUpper() + "' AND current_yn = 'Y' AND rxcycle='1';";
 					if ((int)oDataMgr.getRecordCount(conn, oDataMgr.m_strSQL, "scenario_fvs_variables_overall_effective") > 0)
 					{
 						oDataMgr.m_strSQL = "UPDATE scenario_fvs_variables_overall_effective SET current_yn = 'N'" +
-							" WHERE scenario_id = '" + strScenarioId + "' AND current_yn = 'Y' AND rxcycle='1';";
+							" WHERE TRIM(UPPER(scenario_id)) = '" + strScenarioId.Trim().ToUpper() + "' AND current_yn = 'Y' AND rxcycle='1';";
 						oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 					}
 					if (oDataMgr.m_intError < 0)

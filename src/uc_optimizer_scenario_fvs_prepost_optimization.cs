@@ -1797,11 +1797,11 @@ namespace FIA_Biosum_Manager
                 if (oDataMgr.m_intError == 0)
                 {
                     oDataMgr.m_strSQL = "SELECT COUNT(*) FROM scenario_fvs_variables_optimization WHERE " +
-                        " scenario_id = '" + strScenarioId + "' AND current_yn = 'Y';";
+                        " TRIM(UPPER(scenario_id)) = '" + strScenarioId.Trim().ToUpper() + "' AND current_yn = 'Y';";
                     if ((int)oDataMgr.getRecordCount(conn, oDataMgr.m_strSQL, "scenario_fvs_variables_optimization") > 0)
                     {
                         oDataMgr.m_strSQL = "UPDATE scenario_fvs_variables_optimization SET current_yn = 'N'" +
-                            " WHERE scenario_id = '" + strScenarioId + "' AND current_yn = 'Y';";
+                            " WHERE TRIM(UPPER(scenario_id)) = '" + strScenarioId.Trim().ToUpper() + "' AND current_yn = 'Y';";
                         oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                     }
 
@@ -1819,7 +1819,7 @@ namespace FIA_Biosum_Manager
                     for (x = 0; x <= oOptimizationVariableItemCollection.Count - 1; x++)
                     {
                         strValues = "'" + strScenarioId.Trim() + "','1'";
-                        strWhere = "TRIM(scenario_id)='" + strScenarioId.Trim() + "' AND rxcycle='1' ";
+                        strWhere = "TRIM(UPPER(scenario_id))='" + strScenarioId.Trim().ToUpper() + "' AND rxcycle='1' ";
                         strValues = strValues + ",'" + oOptimizationVariableItemCollection.Item(x).strOptimizedVariable + "'";
                         strWhere = strWhere + " AND UPPER(TRIM(optimization_variable))='" + oOptimizationVariableItemCollection.Item(x).strOptimizedVariable.Trim().ToUpper() + "'";
                         strValues = strValues + ",'" + oOptimizationVariableItemCollection.Item(x).strFVSVariableName + "'";
@@ -1847,7 +1847,7 @@ namespace FIA_Biosum_Manager
                         strValues = strValues + ",'" + oOptimizationVariableItemCollection.Item(x).strFilterOperator + "'";
                         strWhere = strWhere + " AND UPPER(TRIM(filter_operator))='" + oOptimizationVariableItemCollection.Item(x).strFilterOperator.Trim().ToUpper() + "'";
                         strValues = strValues + "," + oOptimizationVariableItemCollection.Item(x).dblFilterValue.ToString().Trim();
-                        strWhere = strWhere + " AND filter_value=" + oOptimizationVariableItemCollection.Item(x).dblFilterValue.ToString().Trim();
+                        strWhere = strWhere + " AND TRIM(filter_value)=" + oOptimizationVariableItemCollection.Item(x).dblFilterValue.ToString().Trim();
                         if (oOptimizationVariableItemCollection.Item(x).bSelected)
                             strValues = strValues + ",'Y'";
                         else

@@ -3188,7 +3188,7 @@ namespace FIA_Biosum_Manager
             //
             p_oDataMgr.m_strSQL = "SELECT a.* " +
                             "FROM scenario_fvs_variables a " +
-                            "WHERE TRIM(a.scenario_id)='" + p_strScenarioId.Trim() + "' AND " +
+                            "WHERE TRIM(UPPER(a.scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "' AND " +
                             "a.current_yn='Y' ORDER BY a.rxcycle,a.variable_number";
             p_oDataMgr.SqlQueryReader(p_oConn, p_oDataMgr.m_strSQL);
             if (p_oDataMgr.m_DataReader.HasRows)
@@ -3242,7 +3242,7 @@ namespace FIA_Biosum_Manager
             p_oDataMgr.m_strSQL = "SELECT b.overall_effective_expression,b.current_yn," +
                             "b.rxcycle " +
                             "FROM scenario_fvs_variables_overall_effective b " +
-                            "WHERE TRIM(b.scenario_id)='" + p_strScenarioId.Trim() + "' AND " +
+                            "WHERE TRIM(UPPER(b.scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "' AND " +
                             "b.current_yn='Y'";
 
             p_oDataMgr.SqlQueryReader(p_oConn, p_oDataMgr.m_strSQL);
@@ -3410,7 +3410,7 @@ namespace FIA_Biosum_Manager
 
             p_oDataMgr.m_strSQL = "SELECT * " +
                 "FROM scenario_fvs_variables_optimization " +
-                "WHERE TRIM(scenario_id)='" + p_strScenarioId.Trim() + "' AND " +
+                "WHERE TRIM(UPPER(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "' AND " +
                 "current_yn='Y'";
 
             p_oDataMgr.SqlQueryReader(p_oConn, p_oDataMgr.m_strSQL);
@@ -3620,7 +3620,7 @@ namespace FIA_Biosum_Manager
             //
             p_oDataMgr.m_strSQL = "SELECT * FROM " +
                                 Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName + " " +
-                                "WHERE TRIM(scenario_id)='" + p_strScenarioId.Trim() + "'";
+                                "WHERE TRIM(UPPER(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'";
 
             p_oDataMgr.SqlQueryReader(p_oConn, p_oDataMgr.m_strSQL);
             if (p_oDataMgr.m_DataReader.HasRows)

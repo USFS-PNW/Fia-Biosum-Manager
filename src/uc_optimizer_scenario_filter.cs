@@ -558,13 +558,13 @@ namespace FIA_Biosum_Manager
 
 					//delete any duplicates
 					oDataMgr.m_strSQL = "DELETE FROM " + this.m_strScenarioTable + " WHERE " +
-						" scenario_id='" + strScenarioId + "' AND " +
+						" TRIM(UPPER(scenario_id))='" + strScenarioId.Trim().ToUpper() + "' AND " +
 						"TRIM(UPPER(sql_command)) = '" + strNewSQL.Trim().ToUpper() + "'";
 					oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 
 
 					oDataMgr.m_strSQL = "SELECT * FROM " + this.m_strScenarioTable + " WHERE " +
-						" scenario_id = '" + strScenarioId + "' AND current_yn = 'Y';";
+						" TRIM(UPPER(scenario_id)) = '" + strScenarioId.Trim().ToUpper() + "' AND current_yn = 'Y';";
 					oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
 
 					if (oDataMgr.m_intError == 0)
@@ -574,7 +574,7 @@ namespace FIA_Biosum_Manager
 						{
 							oDataMgr.m_DataReader.Close();
 							oDataMgr.m_strSQL = "UPDATE " + this.m_strScenarioTable + " SET current_yn = 'N'" +
-								" WHERE scenario_id = '" + strScenarioId + "' AND current_yn = 'Y';";
+								" WHERE TRIM(UPPER(scenario_id)) = '" + strScenarioId.Trim().ToUpper() + "' AND current_yn = 'Y';";
 							oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 
 						}
@@ -610,7 +610,7 @@ namespace FIA_Biosum_Manager
 					{
 						//delete all records from the scenario wind speed class table
 						oDataMgr.m_strSQL = "DELETE FROM scenario_cond_filter_misc WHERE " +
-							" scenario_id = '" + strScenarioId + "';";
+							" TRIM(UPPER(scenario_id)) = '" + strScenarioId.Trim().ToUpper() + "';";
 
 						oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 						if (oDataMgr.m_intError < 0)

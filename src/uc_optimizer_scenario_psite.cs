@@ -936,7 +936,7 @@ namespace FIA_Biosum_Manager
 
 				//delete all records from the scenario psites table
 				oDataMgr.m_strSQL = "DELETE FROM scenario_psites WHERE " +
-					" scenario_id = '" + strScenarioId + "';";
+					" TRIM(UPPER(scenario_id)) = '" + strScenarioId.Trim().ToUpper() + "';";
 
 				oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 				if (oDataMgr.m_intError < 0)

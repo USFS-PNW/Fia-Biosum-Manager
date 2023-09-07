@@ -1643,7 +1643,7 @@ namespace FIA_Biosum_Manager
                 {
                     //delete all records from the scenario fvs variables table
                     oDataMgr.m_strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName + " " +
-                                    "WHERE LOWER(TRIM(scenario_id)) = '" + strScenarioId + "';";
+                                    "WHERE LOWER(TRIM(scenario_id)) = '" + strScenarioId.Trim().ToLower() + "';";
 
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                     if (oDataMgr.m_intError < 0)

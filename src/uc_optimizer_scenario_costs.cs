@@ -493,7 +493,7 @@ namespace FIA_Biosum_Manager
 
 				//delete all records from the scenario wind speed class table
 				strSQL = "DELETE FROM scenario_costs WHERE " +
-					" scenario_id = '" + strScenarioId + "';";
+					" TRIM(UPPER(scenario_id)) = '" + strScenarioId.Trim().ToUpper() + "';";
 
 				oDataMgr.SqlNonQuery(conn, strSQL);
 				if (oDataMgr.m_intError < 0)
