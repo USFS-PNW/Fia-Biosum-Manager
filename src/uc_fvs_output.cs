@@ -719,18 +719,17 @@ namespace FIA_Biosum_Manager
                     lstRunTitles.Add(strCurRunTitle);
 
                     long lngPreSummaryRecords = 0;
-                    string strSummaryConnect = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultPreFVSSummaryDbFile}";
+                    string strSummaryConnect = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}{Tables.FVS.DefaultFVSOutPrePostDbFile}";
                     if (System.IO.File.Exists(strSummaryConnect))
                     {
-                        ado_data_access oAdo = new ado_data_access();
-                        using (System.Data.OleDb.OleDbConnection conn = new System.Data.OleDb.OleDbConnection(oAdo.getMDBConnString(strSummaryConnect, "", "")))
+                        using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(strSummaryConnect)))
                         {
                             conn.Open();
-                            if (oAdo.TableExist(conn, Tables.FVS.DefaultPreFVSSummaryTableName))
+                            if (SQLite.TableExist(conn, Tables.FVS.DefaultPreFVSSummaryTableName))
                             {
-                                string strSQL = $@"SELECT COUNT(*) FROM(SELECT TOP 1 biosum_cond_id FROM {Tables.FVS.DefaultPreFVSSummaryTableName} WHERE 
-                                    FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strPackage}')";
-                                lngPreSummaryRecords = (long)oAdo.getRecordCount(conn, strSQL, Tables.FVS.DefaultPreFVSSummaryTableName);
+                                string strSQL = $@"SELECT COUNT(*) FROM(SELECT biosum_cond_id FROM {Tables.FVS.DefaultPreFVSSummaryTableName} WHERE 
+                                    FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strPackage}' LIMIT 1)";
+                                lngPreSummaryRecords = SQLite.getRecordCount(conn, strSQL, Tables.FVS.DefaultPreFVSSummaryTableName);
                             }
                         }
                     }
@@ -4838,13 +4837,13 @@ namespace FIA_Biosum_Manager
                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                        this.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");                   
-                    if (! oDataMgr.TableExist(conn, strSeqNumMatrix))
+                        this.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
+                    if (!oDataMgr.AttachedTableExist(conn, strSeqNumMatrix))
                     {
                         // Check for existence of seqnum_matrix
                         if (m_bDebug)
                         {
-                            this.WriteText(m_strDebugFile, $@"Append aborted due to missing missing {strSeqNumMatrix} table from {Tables.FVS.DefaultFVSAuditsDbFile}");
+                            this.WriteText(m_strDebugFile, $@"Append aborted due to missing {strSeqNumMatrix} table from {Tables.FVS.DefaultFVSAuditsDbFile}");
                             return;
                         }
                     }
