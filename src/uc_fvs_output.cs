@@ -752,7 +752,7 @@ namespace FIA_Biosum_Manager
                                 }
                                 else
                                 {
-                                    //check if records exist in the cut list for this variant/package
+                                    //check if records exist in the summary table for this variant/package
                                     if (lngPreSummaryRecords == 0)
                                     {
                                         SQLite.m_strSQL = $@"UPDATE {Tables.FVS.DefaultFVSCasesTableName} SET {m_colBioSumAppend}='N' WHERE RunTitle = '{strCurRunTitle}'";
@@ -2222,6 +2222,17 @@ namespace FIA_Biosum_Manager
         }  
             p_intError = SQLite.m_intError;
             p_strError = SQLite.m_strError;
+
+            //copy the work db file over the production file
+            if (p_intError == 0)
+            {
+                if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                    this.WriteText(m_strDebugFile, "\r\nSTART:Copy work file to production file: Source File Name:" + p_strTempDb + " Destination File Name:" + m_strFvsPrePostDb + " " + System.DateTime.Now.ToString() + "\r\n");
+                System.IO.File.Copy(p_strTempDb, m_strFvsPrePostDb, true);
+                if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                    this.WriteText(m_strDebugFile, "\r\nEND:Copy work file to production file: Source File Name:" + p_strTempDb + " Destination File Name:" + m_strFvsPrePostDb + " " + System.DateTime.Now.ToString() + "\r\n");
+
+            }
         }
 
         private void RunAppend_MainAccess()
@@ -4786,7 +4797,7 @@ namespace FIA_Biosum_Manager
             m_intProgressStepCurrentCount = 0;
             if (m_strRxCycleArray == null)
                 m_strRxCycleArray = new string[1];
-            m_intProgressStepTotalCount = 8 + (m_strRxCycleArray.Length * 5);
+            m_intProgressStepTotalCount = 8 + (m_strRxCycleArray.Length * 4);
 
             /**************************************************************
              **delete records in the fvs_tree table that have the current
@@ -11337,7 +11348,7 @@ namespace FIA_Biosum_Manager
 
 
                 m_intProgressOverallCurrentCount = 0;
-                this.m_intProgressOverallTotalCount++;
+                this.m_intProgressOverallTotalCount += 2;
 
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Maximum", 100);
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Minimum", 0);
@@ -11402,11 +11413,11 @@ namespace FIA_Biosum_Manager
 
                     this.m_strDateTimeCreated = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
                     m_intProgressStepTotalCount = intCount;
-                    m_intProgressStepCurrentCount = 0;
 
                     string strTempDb = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
                     for (x = 0; x <= intCount - 1; x++)
                     {
+                        m_intProgressStepCurrentCount = 0;
                         oLvItem = (System.Windows.Forms.ListViewItem)frmMain.g_oDelegate.GetListViewItem(oLv, x, false);
                         this.m_oLvAlternateColors.DelegateListViewSubItem(oLvItem, x, COL_RUNSTATUS);
 
@@ -11676,16 +11687,6 @@ namespace FIA_Biosum_Manager
                                     m_intProgressOverallCurrentCount,
                                     m_intProgressOverallTotalCount);
                         }
-
-                    }
-                    //copy the work db file over the production file
-                    if (m_intOverallError == 0)
-                    {
-                        if (m_bDebug && frmMain.g_intDebugLevel > 1)
-                            this.WriteText(m_strDebugFile, "\r\nSTART:Copy work file to production file: Source File Name:" + strTempDb + " Destination File Name:" + strFVSOutPrePostPathAndDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
-                        System.IO.File.Copy(strTempDb, strFVSOutPrePostPathAndDbFile, true);
-                        if (m_bDebug && frmMain.g_intDebugLevel > 1)
-                            this.WriteText(m_strDebugFile, "\r\nEND:Copy work file to production file: Source File Name:" + strTempDb + " Destination File Name:" + strFVSOutPrePostPathAndDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
 
                     }
                 }
