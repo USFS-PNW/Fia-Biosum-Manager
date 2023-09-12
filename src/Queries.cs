@@ -2391,13 +2391,13 @@ namespace FIA_Biosum_Manager
                                 "(biosum_cond_id, rxpackage,rx,rxcycle,rxyear,fvs_variant, fvs_tree_id) " +
                                  "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + p_strRxPackage.Trim() + "' AS rxpackage," +
                                 "'" + p_strRx.Trim() + "' AS rx,'" + p_strRxCycle.Trim() + "' AS rxcycle," +
-                                "CSTR(t.year) AS rxyear," +
+                                "cast(t.year as text) AS rxyear," +
                                 "c.Variant AS fvs_variant, " +
                                 "Trim(t.treeid) AS fvs_tree_id " +
                                 "FROM " + p_strCasesTable + " c," + p_strCutListTable + " t," + p_strFVSCutListPrePostSeqNumTable + " p " +
                                 "WHERE c.CaseID = t.CaseID AND t.standid=p.standid AND t.year=p.year AND  " + 
                                       "p.cycle" + p_strRxCycle.Trim() + "_PRE_YN='Y' AND " + 
-                                      "MID(t.treeid, 1, 2) <> 'ES' AND MID(t.treeid, 1, 2)<> 'CM' AND c.Runtitle = '" + p_strRunTitle + "'";
+                                      "SUBSTR(t.treeid, 1, 2) <> 'ES' AND SUBSTR(t.treeid, 1, 2)<> 'CM' AND c.Runtitle = '" + p_strRunTitle + "'";
   
             }
             static public string[] FVSOutputTable_AuditPostSummaryFVS(string p_strRxTable,string p_strRxPackageTable,string p_strTreeTable,
