@@ -6806,12 +6806,12 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.CurrentThreadProcessStarted=true;
 			this.m_intError=0;
 			int intCount=0;
-			m_intProgressOverallTotalCount=0;
+			m_intProgressOverallTotalCount=1;
 			m_intProgressStepCurrentCount=0;
 			m_strError="";
 			m_strWarning="";
 			m_intWarning=0;
-			m_intProgressOverallCurrentCount=0;
+			m_intProgressOverallCurrentCount=1;
 			string strPackage="";
 			string strVariant="";
             string strSQL = "";
@@ -6862,7 +6862,11 @@ namespace FIA_Biosum_Manager
 
                 bDisplay = this.DisplayAuditMessage;
                 this.DisplayAuditMessage = false;
-               
+
+                //total overall progress bar update
+                UpdateTherm(m_frmTherm.progressBar2,
+                        m_intProgressOverallCurrentCount,
+                        m_intProgressOverallTotalCount);
 
                 if (m_intError == 0)
                 {
@@ -6874,7 +6878,7 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "");
                         this.m_oLvAlternateColors.DelegateListViewSubItem(oLvItem, x, COL_RUNSTATUS);
                         frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "");
-                       
+
                         if ((bool)frmMain.g_oDelegate.GetListViewItemPropertyValue(oLv, x, "Checked", false) == true)
                         {                            
                             m_intProgressStepTotalCount = 30;
