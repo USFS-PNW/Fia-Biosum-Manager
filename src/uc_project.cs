@@ -1033,12 +1033,14 @@ namespace FIA_Biosum_Manager
 				frmMain.g_oTables.m_oFvs.CreateRxPackageFvsCommandsOrderTable(p_ado,p_ado.m_OleDbConnection,Tables.FVS.DefaultRxPackageFvsCommandsOrderTableName);
 				p_ado.CloseConnection(p_ado.m_OleDbConnection);
                 //fvs output pre-post seqnum processing
-                uc_fvs_output_prepost_seqnum.InitializePrePostSeqNumTables(p_ado, this.txtRootDirectory.Text.Trim()  + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile);
-				//
-				//prepopulated ref master file
-				//
-				//copy default master database to the new project directory
-				strSourceFile = this.m_oEnv.strAppDir + "\\db\\ref_master.mdb";
+                //uc_fvs_output_prepost_seqnum.InitializePrePostSeqNumTablesAccess(p_ado, this.txtRootDirectory.Text.Trim()  + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableMdbFile);
+                uc_fvs_output_prepost_seqnum.InitializePrePostSeqNumTables();   // This is the SQLite version
+
+                //
+                //prepopulated ref master file
+                //
+                //copy default master database to the new project directory
+                strSourceFile = this.m_oEnv.strAppDir + "\\db\\ref_master.mdb";
 				strDestFile = this.txtRootDirectory.Text.Trim() + "\\db\\ref_master.mdb";
 				p_frmTherm.Increment(6);
 				p_frmTherm.lblMsg.Text = strDestFile;

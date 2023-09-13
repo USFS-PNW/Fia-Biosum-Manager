@@ -25,7 +25,6 @@ namespace FIA_Biosum_Manager
         private FIA_Biosum_Manager.FVSPrePostSeqNumItem_Collection m_oSavFVSPrepostSeqNumItem_Collection = new FVSPrePostSeqNumItem_Collection();
         private FIA_Biosum_Manager.RxPackageItem_Collection m_oRxPackageItem_Collection = null;
         private ado_data_access m_oAdo = new ado_data_access();
-        private DataMgr oDataMgr = new DataMgr();
         private RxTools m_oRxTools = new RxTools();
 
         private ComboBox m_cmbFVSStrClassPre1;
@@ -103,6 +102,13 @@ namespace FIA_Biosum_Manager
 
         public string m_rxPackages = "";
         Queries m_oQueries = new Queries();
+
+        private SQLite.ADO.DataMgr _SQLite = new SQLite.ADO.DataMgr();
+        public SQLite.ADO.DataMgr SQLite
+        {
+            get { return _SQLite; }
+            set { _SQLite = value; }
+        }
 
 
         public uc_fvs_output_prepost_seqnum()
@@ -254,13 +260,28 @@ namespace FIA_Biosum_Manager
                 cmbPOST3.Items.Add(x.ToString().Trim());
                 cmbPOST4.Items.Add(x.ToString().Trim());
             }
-           
-            m_oAdo.OpenConnection(m_oAdo.getMDBConnString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile, "", ""));
+
+            bool bMigrateAccessData = false;
+            if (!System.IO.File.Exists($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}"))
+            {
+                SQLite.CreateDbFile($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
+                ODBCMgr odbcMgr = new ODBCMgr();
+                // Create ODBC entry for the new SQLite fvs_master.db file
+                if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsMasterDbDsnName))
+                {
+                    odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsMasterDbDsnName);
+                }
+                odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsMasterDbDsnName, $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
+                bMigrateAccessData = true;
+            }
+
+            //m_oAdo.OpenConnection(m_oAdo.getMDBConnString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableMdbFile, "", ""));
 
             if (m_oAdo.m_intError == 0)
             {
-
-                InitializePrePostSeqNumTables(m_oAdo, m_oAdo.m_OleDbConnection);
+                //InitializePrePostSeqNumTablesAccess(m_oAdo, m_oAdo.m_OleDbConnection);
+                InitializePrePostSeqNumTables(SQLite, bMigrateAccessData);
+                //@ToDo: start here
                 m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(m_oAdo, m_oAdo.m_OleDbConnection, m_oCurFVSPrepostSeqNumItem_Collection);
                 m_oCurFVSPrepostSeqNumItem_Collection.CopyProperties(m_oSavFVSPrepostSeqNumItem_Collection, m_oCurFVSPrepostSeqNumItem_Collection);
                 m_oQueries.m_oFvs.LoadDatasource = true;
@@ -290,8 +311,8 @@ namespace FIA_Biosum_Manager
                 {
                     m_rxPackages = m_rxPackages.TrimEnd(',');
                 }
-                string strDbConnection = oDataMgr.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSOutDbFile);
-                IList<string> lstFvsOutTables = m_oRxTools.GetFvsOutTableNames(oDataMgr, strDbConnection);
+                string strDbConnection = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSOutDbFile);
+                IList<string> lstFvsOutTables = m_oRxTools.GetFvsOutTableNames(SQLite, strDbConnection);
                 IList<string> lstExcludedTables = new List<string> { "FVS_CASES", "FVS_CUTLIST", "FVS_TREELIST", "FVS_ATRTLIST" };
                 // Remove tables we don't wish to show on the list
                 foreach (var tName in lstExcludedTables)
@@ -380,15 +401,28 @@ namespace FIA_Biosum_Manager
             
            
         }
-        public static void InitializePrePostSeqNumTables(ado_data_access p_oAdo, string p_strDbFile)
+        // This is called by us_project.SaveProjectProperties when a new project is created
+        public static void InitializePrePostSeqNumTablesAccess(ado_data_access p_oAdo, string p_strDbFile)
         {
             p_oAdo.OpenConnection(p_oAdo.getMDBConnString(p_strDbFile, "", ""));
             if (p_oAdo.m_intError == 0)
-                InitializePrePostSeqNumTables(p_oAdo, p_oAdo.m_OleDbConnection);
+                InitializePrePostSeqNumTablesAccess(p_oAdo, p_oAdo.m_OleDbConnection);
             p_oAdo.CloseConnection(p_oAdo.m_OleDbConnection);
         }
 
-        public static void InitializePrePostSeqNumTables(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oOleDbConnection)
+        // This is called by us_project.SaveProjectProperties when a new project is created
+        public static void InitializePrePostSeqNumTables()
+        {
+            DataMgr oDataMgr = new DataMgr();
+            if (! System.IO.File.Exists($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}"))
+            {
+                oDataMgr.CreateDbFile($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
+            }
+            InitializePrePostSeqNumTables(oDataMgr, false);
+        }
+
+        // This is called by InitializePrePostSeqNumTablesAccess() and by LoadValues()
+        public static void InitializePrePostSeqNumTablesAccess(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oOleDbConnection)
         {
             int intRowCount = 0;
 
@@ -441,6 +475,70 @@ namespace FIA_Biosum_Manager
             {
                 frmMain.g_oTables.m_oFvs.CreateFVSOutputPrePostSeqNumRxPackageAssgnTable(p_oAdo, p_oAdo.m_OleDbConnection, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable);
 
+            }
+        }
+        public static void InitializePrePostSeqNumTables(DataMgr p_oDataMgr, bool bMigrateAccessData)
+        {
+            int intRowCount = 0;
+            string strValueList = "";
+            int x;
+
+            string dbConn = p_oDataMgr.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
+            {
+                conn.Open();
+                if (!p_oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSPrePostSeqNumTable))
+                {
+                    frmMain.g_oTables.m_oFvs.CreateFVSOutputSQLitePrePostSeqNumTable(p_oDataMgr, conn, Tables.FVS.DefaultFVSPrePostSeqNumTable);
+                }
+                if (!p_oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable))
+                {
+                    frmMain.g_oTables.m_oFvs.CreateFVSOutputPrePostSQLiteSeqNumRxPackageAssgnTable(p_oDataMgr, conn, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable);
+                }
+            }
+            if (bMigrateAccessData)
+            {
+                migrateAccessData();
+            }
+            //@ToDo: Get rid of this extra connection when migration code moves to version_control
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
+            {
+                conn.Open();
+                if ((int)p_oDataMgr.getRecordCount(conn, "SELECT * FROM " + Tables.FVS.DefaultFVSPrePostSeqNumTable, Tables.FVS.DefaultFVSPrePostSeqNumTable) == 0)
+                {
+                    for (x = 0; x <= Tables.FVS.g_strFVSOutTablesArray.Length - 1; x++)
+                    {
+                        if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_SUMMARY" ||
+                            Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_POTFIRE" ||
+                            Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_CUTLIST" ||
+                            Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_STRCLASS")
+                        {
+                            strValueList = Convert.ToString(intRowCount + 1).Trim() + ",'" + Tables.FVS.g_strFVSOutTablesArray[x].Trim() + "','D',";
+
+                            if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_SUMMARY")
+                            {
+                                strValueList = strValueList + "'N','N','N','N','Y','N','Y','N','Y','N','Y','N','Y'";
+                            }
+                            else if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_POTFIRE")
+                            {
+                                strValueList = strValueList + "'N','N','N','N','Y','N','Y','N','Y','N','Y','N','N'";    // Sets RXCYCLE1_PRE_BASEYR_YN to 'N'
+                            }
+                            else if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_CUTLIST")
+                            {
+                                strValueList = strValueList + $@"'N','N','N','N','Y','N','Y','N','Y','N','Y','N','N'";  // Sets USE_SUMMARY_TABLE_SEQNUM_YN to 'N'
+                            }
+                            if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_STRCLASS")
+                            {
+                                strValueList = strValueList + "'N','N','N','N','Y','Y','Y','Y','Y','Y','Y','Y','Y'";
+                            }
+                            p_oDataMgr.m_strSQL = "INSERT INTO " + Tables.FVS.DefaultFVSPrePostSeqNumTable + " " +
+                                              "(" + m_strColumnListInit + ") VALUES " +
+                                              "(" + strValueList + ")";
+                            p_oDataMgr.SqlNonQuery(conn, p_oDataMgr.m_strSQL);
+                            intRowCount++;
+                        }
+                    }
+                }
             }
         }
         private void AddListViewItemFromProperties(int x)
@@ -1120,7 +1218,7 @@ namespace FIA_Biosum_Manager
             int x, y, z;
             string strValues = "";
             bool bDelete = false;
-            m_oAdo.OpenConnection(m_oAdo.getMDBConnString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile, "", ""));
+            m_oAdo.OpenConnection(m_oAdo.getMDBConnString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableMdbFile, "", ""));
             if (m_oAdo.m_intError == 0)
             {
                 if (frmMain.g_intDebugLevel > 1)
@@ -2211,6 +2309,63 @@ namespace FIA_Biosum_Manager
                 m_oHelp = new Help(m_xpsFile, m_oEnv);
             }
             m_oHelp.ShowHelp(new string[] { "FVS", "SEQUENCE_NUMBERS" });
+        }
+
+        public static void migrateAccessData()
+        {
+            dao_data_access oDao = new dao_data_access();
+            ado_data_access oAdo = new ado_data_access();
+            string strPrePostSeqNumLink = $@"{Tables.FVS.DefaultFVSPrePostSeqNumTable}_1";
+            string strRxPackageAssignLink = $@"{Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable}_1";
+            oDao.CreateSQLiteTableLink(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableMdbFile, Tables.FVS.DefaultFVSPrePostSeqNumTable,
+                strPrePostSeqNumLink, ODBCMgr.DSN_KEYS.FvsMasterDbDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile, true);
+            oDao.CreateSQLiteTableLink(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableMdbFile, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable,
+                strRxPackageAssignLink, ODBCMgr.DSN_KEYS.FvsMasterDbDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile, true);
+            if (oDao != null)
+            {
+                oDao.m_DaoWorkspace.Close();
+                oDao = null;
+            }
+
+            string strCopyConn = oAdo.getMDBConnString(oAdo.getMDBConnString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableMdbFile, "", ""), "","");
+            int i = 0;
+            using (var oCopyConn = new System.Data.OleDb.OleDbConnection(strCopyConn))
+            {
+                oCopyConn.Open();
+                do
+                {
+                    // break out of loop if it runs too long
+                    if (i > 20)
+                    {
+                        System.Windows.Forms.MessageBox.Show("An error occurred while trying to migrate sequence number settings! ", "FIA Biosum");
+                        break;
+                    }
+                    System.Threading.Thread.Sleep(1000);
+                    i++;
+                }
+                while (!oAdo.TableExist(oCopyConn, strRxPackageAssignLink));
+
+                oAdo.m_strSQL = $@"INSERT INTO {strPrePostSeqNumLink} SELECT * FROM {Tables.FVS.DefaultFVSPrePostSeqNumTable}";
+                oAdo.SqlNonQuery(oCopyConn, oAdo.m_strSQL);
+                oAdo.m_strSQL = $@"INSERT INTO {strRxPackageAssignLink} SELECT * FROM {Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable}";
+                oAdo.SqlNonQuery(oCopyConn, oAdo.m_strSQL);
+
+                if (oAdo.TableExist(oCopyConn, strPrePostSeqNumLink))
+                {
+                    oAdo.SqlNonQuery(oCopyConn, "DROP TABLE " + strPrePostSeqNumLink);
+                }
+                if (oAdo.TableExist(oCopyConn, strRxPackageAssignLink))
+                {
+                    oAdo.SqlNonQuery(oCopyConn, "DROP TABLE " + strRxPackageAssignLink);
+                }
+            }
+
+            ODBCMgr odbcMgr = new ODBCMgr();
+            // Remove ODBC entry for the new SQLite fvs_master.db file
+            if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsMasterDbDsnName))
+            {
+                odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsMasterDbDsnName);
+            }
         }
     }
     /*********************************************************************************************************

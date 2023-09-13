@@ -201,6 +201,7 @@ namespace FIA_Biosum_Manager
             static public string FvsOutTemporaryDsnName { get { return "FVS_OUT_TEMPORARY"; } }
             static public string FvsOutTreeListDsnName { get { return "FVS_OUT_TREELIST"; } }
             static public string FvsOutAuditsDsnName { get { return "FVS_OUT_AUDITS"; } }
+            static public string FvsMasterDbDsnName { get { return "FVS_MASTER_DB"; } }
         }
 
     }

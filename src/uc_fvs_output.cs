@@ -11265,7 +11265,7 @@ namespace FIA_Biosum_Manager
             if (SQLite.TableExist(conn, p_strSourceTableName))
             {
                 if (m_oFVSPrePostSeqNumItemCollection == null) m_oFVSPrePostSeqNumItemCollection = new FVSPrePostSeqNumItem_Collection();
-                string strParamConn = m_ado.getMDBConnString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile, "", "");
+                string strParamConn = m_ado.getMDBConnString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableMdbFile, "", "");
                 using (System.Data.OleDb.OleDbConnection accessConn = new System.Data.OleDb.OleDbConnection(strParamConn))
                 {
                     accessConn.Open();
