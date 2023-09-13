@@ -6131,7 +6131,6 @@ namespace FIA_Biosum_Manager
 
                                                 if (intItemError == 0)
                                                 {
-                                                //@ToDo: Convert this to SQLite
                                                 // Get a temporary database name for processing
                                                 string strTempMDB = frmMain.g_oUtils.getRandomFile(this.m_oEnv.strTempDir, "accdb");
                                                 // Create a temporary mdb that will contain all our required table links
@@ -7019,13 +7018,6 @@ namespace FIA_Biosum_Manager
                                 dao_data_access oDao = new dao_data_access();
 
                             ODBCMgr odbcmgr = new ODBCMgr();
-                            // Set up an ODBC DSN for the FVSOUT_TREE_LIST.db
-                            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName))
-                            {
-                                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName);
-                            }
-                            odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName,
-                                m_strFvsTreeDb);
                             // Set up an ODBC DSN for the AUDITS.db
                             if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName))
                             {
@@ -7034,9 +7026,9 @@ namespace FIA_Biosum_Manager
                             odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName,
                                 strAuditDbFile);
                             // Prepare tmpCutTree for next run
-                            m_dbConn = SQLite.GetConnectionString(m_strFvsTreeDb);
-                            //@ToDo: Consider moving this to the AUDITS.db
-                            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_dbConn))
+                            //m_dbConn = SQLite.GetConnectionString(m_strFvsTreeDb);                            
+                            string strAuditConn = SQLite.GetConnectionString(strAuditDbFile);
+                            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strAuditConn))
                             {
                                 conn.Open();
                                 if (SQLite.TableExist(conn, strTempCutListTable))
@@ -7046,18 +7038,14 @@ namespace FIA_Biosum_Manager
                                 frmMain.g_oTables.m_oFvs.CreateFVSOutTreeTable(SQLite, conn, strTempCutListTable);
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "Created table " + strTempCutListTable + "\r\n");
+                                SQLite.SqlNonQuery(conn, $@"ATTACH DATABASE '{m_strFvsTreeDb}' AS TREELIST");
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "Attached database " + m_strFvsTreeDb + "\r\n");
                                 SQLite.SqlNonQuery(conn, $@"INSERT INTO {strTempCutListTable} SELECT * FROM {Tables.FVS.DefaultFVSCutTreeTableName} 
                                                          WHERE FVS_VARIANT ='{strVariant}' AND RXPACKAGE = '{strPackage}'");
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "Populated table " + strTempCutListTable + "\r\n");
-                            }
-                            oDao.CreateSQLiteTableLink(strTempAccdb, strTempCutListTable, strTempCutListTable,
-                                ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName, m_strFvsTreeDb);
 
-                            string strAuditConn = SQLite.GetConnectionString(strAuditDbFile);
-                            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strAuditConn))
-                            {
-                                conn.Open();
                                 if (SQLite.TableExist(conn, "audit_Post_SUMMARY") == false)
                                 {
                                     SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistSUMMARYtableSQL("audit_Post_SUMMARY");
@@ -7137,6 +7125,8 @@ namespace FIA_Biosum_Manager
                             }
 
                             // Create audit table links to SQLite tables; The queries to update these tables have dependencies on Access tables
+                            oDao.CreateSQLiteTableLink(strTempAccdb, strTempCutListTable, strTempCutListTable,
+                                ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
                             oDao.CreateSQLiteTableLink(strTempAccdb, "audit_Post_SUMMARY", "audit_Post_SUMMARY",
                                 ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
                             oDao.CreateSQLiteTableLink(strTempAccdb, "audit_Post_NOTFOUND_ERROR", "audit_Post_NOTFOUND_ERROR",
@@ -7547,6 +7537,11 @@ namespace FIA_Biosum_Manager
                                     SQLite.m_DataReader.Close();
                                     SQLite.m_DataReader.Dispose();
                                 }
+
+                                if (SQLite.TableExist(conn, strTempCutListTable))
+                                {
+                                    SQLite.SqlNonQuery(conn, "DROP TABLE " + strTempCutListTable);
+                                }
                             }
 
                             if (intItemError == 0 && intItemWarning == 0)
@@ -7587,17 +7582,6 @@ namespace FIA_Biosum_Manager
                                 
                                 frmMain.g_oUtils.WriteText(m_strLogFile, "Date/Time:" + System.DateTime.Now.ToString().Trim() + "\r\n\r\n");
                                 frmMain.g_oUtils.WriteText(m_strLogFile, "**EOF**");
-
-                            // Delete tmpCutTree table from SQLite database
-                            m_dbConn = SQLite.GetConnectionString(m_strFvsTreeDb);
-                            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_dbConn))
-                            {
-                                conn.Open();
-                                if (SQLite.TableExist(conn, strTempCutListTable))
-                                {
-                                    SQLite.SqlNonQuery(conn, "DROP TABLE " + strTempCutListTable);
-                                }
-                            }
 
                             oAdo.CloseConnection(oAdo.m_OleDbConnection);
                             oAdo.m_OleDbConnection.Dispose();
