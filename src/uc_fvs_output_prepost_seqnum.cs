@@ -281,20 +281,25 @@ namespace FIA_Biosum_Manager
             {
                 //InitializePrePostSeqNumTablesAccess(m_oAdo, m_oAdo.m_OleDbConnection);
                 InitializePrePostSeqNumTables(SQLite, bMigrateAccessData);
-                //@ToDo: start here
-                m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(m_oAdo, m_oAdo.m_OleDbConnection, m_oCurFVSPrepostSeqNumItem_Collection);
+                string strDbConn = SQLite.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
+                m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(strDbConn, m_oCurFVSPrepostSeqNumItem_Collection);
                 m_oCurFVSPrepostSeqNumItem_Collection.CopyProperties(m_oSavFVSPrepostSeqNumItem_Collection, m_oCurFVSPrepostSeqNumItem_Collection);
                 m_oQueries.m_oFvs.LoadDatasource = true;
                 m_oQueries.LoadDatasources(true);
                 if (m_oRxPackageItem_Collection == null)
                 {
                     m_oRxPackageItem_Collection = new RxPackageItem_Collection();
-                    this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_oAdo,
-                                                                       m_oAdo.m_OleDbConnection,
-                                                                       m_oQueries,
-                                                                       m_oRxPackageItem_Collection);
+                    // get connection to fvs_master
+                    string strRxConnection = m_oAdo.getMDBConnString($@"{m_oQueries.m_oDataSource.getFullPathAndFile("TREATMENT PACKAGES")}","","");
+                    using (var conn = new System.Data.OleDb.OleDbConnection(strRxConnection))
+                    {
+                        conn.Open();
+                        this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_oAdo,
+                                                   conn,
+                                                   m_oQueries,
+                                                   m_oRxPackageItem_Collection);
+                    }
                 }
-                m_oAdo.CloseConnection(m_oAdo.m_OleDbConnection);
                 // sort the rxPackages
                 List<string> lstPackages = new List<string>();
                 m_rxPackages = "";

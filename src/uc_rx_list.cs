@@ -1739,7 +1739,8 @@ namespace FIA_Biosum_Manager
 
 
         }
-		public void LoadAllRxPackageItemsFromTableIntoRxPackageCollection(string p_strDbFile,Queries p_oQueries,RxPackageItem_Collection p_oRxPackageItemCollection)
+        // This method is used by Processor so the connection isn't passed around
+        public void LoadAllRxPackageItemsFromTableIntoRxPackageCollection(string p_strDbFile,Queries p_oQueries,RxPackageItem_Collection p_oRxPackageItemCollection)
 		{
 			ado_data_access oAdo = new ado_data_access();
 			oAdo.OpenConnection(oAdo.getMDBConnString(p_strDbFile,"",""));
@@ -1958,7 +1959,7 @@ namespace FIA_Biosum_Manager
 	
 			
 		}
-		public void LoadAllRxPackageCombinedFvsCommandsIntoCollection(string p_strDbFile,
+        public void LoadAllRxPackageCombinedFvsCommandsIntoCollection(string p_strDbFile,
 			Queries p_oQueries,
 			FIA_Biosum_Manager.RxPackageCombinedFVSCommandsItem_Collection p_oCombinedFvsCommandsCollection)
 		{
@@ -2527,7 +2528,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        public void LoadFVSOutputPrePostRxCycleSeqNum(ado_data_access p_oAdo,
+        public void LoadFVSOutputPrePostRxCycleSeqNumAccess(ado_data_access p_oAdo,
                                         System.Data.OleDb.OleDbConnection p_oConn, 
                                         FVSPrePostSeqNumItem_Collection p_oCollection)
         {
@@ -2804,6 +2805,289 @@ namespace FIA_Biosum_Manager
                     }
                 }
             }
+        }
+
+        public void LoadFVSOutputPrePostRxCycleSeqNum(string strDbConn, FVSPrePostSeqNumItem_Collection p_oCollection)
+        {
+            FVSPrePostSeqNumItem oItem = null;
+            int x;
+
+            p_oCollection.Clear();
+
+            DataMgr oDataMgr = new DataMgr();
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strDbConn))
+            {
+                conn.Open();
+                oDataMgr.m_strSQL = "SELECT * FROM " + Tables.FVS.DefaultFVSPrePostSeqNumTable + " ORDER BY PREPOST_SEQNUM_ID";
+                oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
+                if (oDataMgr.m_DataReader.HasRows)
+                {
+                    while (oDataMgr.m_DataReader.Read())
+                    {
+                        oItem = new FVSPrePostSeqNumItem();
+                        oItem.PrePostSeqNumId = Convert.ToInt32(oDataMgr.m_DataReader["PREPOST_SEQNUM_ID"]);
+                        oItem.TableName = Convert.ToString(oDataMgr.m_DataReader["TableName"]).Trim();
+                        int intAssignedCount = 0;
+                        //
+                        //PRE
+                        //
+                        if (oDataMgr.m_DataReader["RXCYCLE1_PRE_SEQNUM"] != DBNull.Value)
+                        {
+                            oItem.RxCycle1PreSeqNum = Convert.ToString(oDataMgr.m_DataReader["RXCYCLE1_PRE_SEQNUM"]).Trim();
+                            intAssignedCount++;
+                        }
+                        else
+                        {
+                            oItem.RxCycle1PreSeqNum = "Not Used";
+                        }
+                        if (oDataMgr.m_DataReader["RXCYCLE2_PRE_SEQNUM"] != DBNull.Value)
+                        {
+                            oItem.RxCycle2PreSeqNum = Convert.ToString(oDataMgr.m_DataReader["RXCYCLE2_PRE_SEQNUM"]).Trim();
+                            intAssignedCount++;
+                        }
+                        else
+                        {
+                            oItem.RxCycle2PreSeqNum = "Not Used";
+                        }
+                        if (oDataMgr.m_DataReader["RXCYCLE3_PRE_SEQNUM"] != DBNull.Value)
+                        {
+                            oItem.RxCycle3PreSeqNum = Convert.ToString(oDataMgr.m_DataReader["RXCYCLE3_PRE_SEQNUM"]).Trim();
+                            intAssignedCount++;
+                        }
+                        else
+                        {
+                            oItem.RxCycle3PreSeqNum = "Not Used";
+                        }
+                        if (oDataMgr.m_DataReader["RXCYCLE4_PRE_SEQNUM"] != DBNull.Value)
+                        {
+                            oItem.RxCycle4PreSeqNum = Convert.ToString(oDataMgr.m_DataReader["RXCYCLE4_PRE_SEQNUM"]).Trim();
+                            intAssignedCount++;
+                        }
+                        else
+                        {
+                            oItem.RxCycle4PreSeqNum = "Not Used";
+                        }
+                        //
+                        //POST
+                        //
+                        if (oDataMgr.m_DataReader["RXCYCLE1_POST_SEQNUM"] != DBNull.Value)
+                        {
+                            oItem.RxCycle1PostSeqNum = Convert.ToString(oDataMgr.m_DataReader["RXCYCLE1_POST_SEQNUM"]).Trim();
+                            intAssignedCount++;
+                        }
+                        else
+                        {
+                            oItem.RxCycle1PostSeqNum = "Not Used";
+                        }
+                        if (oDataMgr.m_DataReader["RXCYCLE2_POST_SEQNUM"] != DBNull.Value)
+                        {
+                            oItem.RxCycle2PostSeqNum = Convert.ToString(oDataMgr.m_DataReader["RXCYCLE2_POST_SEQNUM"]).Trim();
+                            intAssignedCount++;
+                        }
+                        else
+                        {
+                            oItem.RxCycle2PostSeqNum = "Not Used";
+                        }
+                        if (oDataMgr.m_DataReader["RXCYCLE3_POST_SEQNUM"] != DBNull.Value)
+                        {
+                            oItem.RxCycle3PostSeqNum = Convert.ToString(oDataMgr.m_DataReader["RXCYCLE3_POST_SEQNUM"]).Trim();
+                            intAssignedCount++;
+                        }
+                        else
+                        {
+                            oItem.RxCycle3PostSeqNum = "Not Used";
+                        }
+                        if (oDataMgr.m_DataReader["RXCYCLE4_POST_SEQNUM"] != DBNull.Value)
+                        {
+                            oItem.RxCycle4PostSeqNum = Convert.ToString(oDataMgr.m_DataReader["RXCYCLE4_POST_SEQNUM"]).Trim();
+                            intAssignedCount++;
+                        }
+                        else
+                        {
+                            oItem.RxCycle4PostSeqNum = "Not Used";
+                        }
+                        //
+                        //BASEYEAR
+                        //
+                        if (oDataMgr.m_DataReader["RXCYCLE1_PRE_BASEYR_YN"] != DBNull.Value)
+                        {
+                            oItem.RxCycle1PreSeqNumBaseYearYN = Convert.ToString(oDataMgr.m_DataReader["RXCYCLE1_PRE_BASEYR_YN"]).Trim();
+                        }
+                        else
+                        {
+                            oItem.RxCycle1PreSeqNumBaseYearYN = "N";
+                        }
+                        if (oDataMgr.m_DataReader["RXCYCLE2_PRE_BASEYR_YN"] != DBNull.Value)
+                        {
+                            oItem.RxCycle2PreSeqNumBaseYearYN = Convert.ToString(oDataMgr.m_DataReader["RXCYCLE2_PRE_BASEYR_YN"]).Trim();
+                        }
+                        else
+                        {
+                            oItem.RxCycle2PreSeqNumBaseYearYN = "N";
+                        }
+                        if (oDataMgr.m_DataReader["RXCYCLE3_PRE_BASEYR_YN"] != DBNull.Value)
+                        {
+                            oItem.RxCycle3PreSeqNumBaseYearYN = Convert.ToString(oDataMgr.m_DataReader["RXCYCLE3_PRE_BASEYR_YN"]).Trim();
+                        }
+                        else
+                        {
+                            oItem.RxCycle3PreSeqNumBaseYearYN = "N";
+                        }
+                        if (oDataMgr.m_DataReader["RXCYCLE4_PRE_BASEYR_YN"] != DBNull.Value)
+                        {
+                            oItem.RxCycle4PreSeqNumBaseYearYN = Convert.ToString(oDataMgr.m_DataReader["RXCYCLE4_PRE_BASEYR_YN"]).Trim();
+                        }
+                        else
+                        {
+                            oItem.RxCycle4PreSeqNumBaseYearYN = "N";
+                        }
+                        //
+                        //STRCLASS BEFORE REMOVAL
+                        //
+                        if (oDataMgr.m_DataReader["RXCYCLE1_PRE_BEFORECUT_YN"] != DBNull.Value)
+                        {
+                            oItem.RxCycle1PreStrClassBeforeTreeRemovalYN = Convert.ToString(oDataMgr.m_DataReader["RXCYCLE1_PRE_BEFORECUT_YN"]).Trim();
+                        }
+                        else
+                        {
+                            oItem.RxCycle1PreStrClassBeforeTreeRemovalYN = "Y";
+                        }
+                        if (oDataMgr.m_DataReader["RXCYCLE2_PRE_BEFORECUT_YN"] != DBNull.Value)
+                        {
+                            oItem.RxCycle2PreStrClassBeforeTreeRemovalYN = Convert.ToString(oDataMgr.m_DataReader["RXCYCLE2_PRE_BEFORECUT_YN"]).Trim();
+                        }
+                        else
+                        {
+                            oItem.RxCycle2PreStrClassBeforeTreeRemovalYN = "Y";
+                        }
+                        if (oDataMgr.m_DataReader["RXCYCLE3_PRE_BEFORECUT_YN"] != DBNull.Value)
+                        {
+                            oItem.RxCycle3PreStrClassBeforeTreeRemovalYN = Convert.ToString(oDataMgr.m_DataReader["RXCYCLE3_PRE_BEFORECUT_YN"]).Trim();
+                        }
+                        else
+                        {
+                            oItem.RxCycle3PreStrClassBeforeTreeRemovalYN = "Y";
+                        }
+                        if (oDataMgr.m_DataReader["RXCYCLE4_PRE_BEFORECUT_YN"] != DBNull.Value)
+                        {
+                            oItem.RxCycle4PreStrClassBeforeTreeRemovalYN = Convert.ToString(oDataMgr.m_DataReader["RXCYCLE4_PRE_BEFORECUT_YN"]).Trim();
+                        }
+                        else
+                        {
+                            oItem.RxCycle4PreStrClassBeforeTreeRemovalYN = "Y";
+                        }
+                        if (oDataMgr.m_DataReader["RXCYCLE1_POST_BEFORECUT_YN"] != DBNull.Value)
+                        {
+                            oItem.RxCycle1PostStrClassBeforeTreeRemovalYN = Convert.ToString(oDataMgr.m_DataReader["RXCYCLE1_POST_BEFORECUT_YN"]).Trim();
+                        }
+                        else
+                        {
+                            oItem.RxCycle1PostStrClassBeforeTreeRemovalYN = "N";
+                        }
+                        if (oDataMgr.m_DataReader["RXCYCLE2_POST_BEFORECUT_YN"] != DBNull.Value)
+                        {
+                            oItem.RxCycle2PostStrClassBeforeTreeRemovalYN = Convert.ToString(oDataMgr.m_DataReader["RXCYCLE2_POST_BEFORECUT_YN"]).Trim();
+                        }
+                        else
+                        {
+                            oItem.RxCycle2PostStrClassBeforeTreeRemovalYN = "N";
+                        }
+                        if (oDataMgr.m_DataReader["RXCYCLE3_POST_BEFORECUT_YN"] != DBNull.Value)
+                        {
+                            oItem.RxCycle3PostStrClassBeforeTreeRemovalYN = Convert.ToString(oDataMgr.m_DataReader["RXCYCLE3_POST_BEFORECUT_YN"]).Trim();
+                        }
+                        else
+                        {
+                            oItem.RxCycle3PostStrClassBeforeTreeRemovalYN = "N";
+                        }
+                        if (oDataMgr.m_DataReader["RXCYCLE4_POST_BEFORECUT_YN"] != DBNull.Value)
+                        {
+                            oItem.RxCycle4PostStrClassBeforeTreeRemovalYN = Convert.ToString(oDataMgr.m_DataReader["RXCYCLE4_POST_BEFORECUT_YN"]).Trim();
+                        }
+                        else
+                        {
+                            oItem.RxCycle4PostStrClassBeforeTreeRemovalYN = "N";
+                        }
+
+                        if (oDataMgr.m_DataReader["USE_SUMMARY_TABLE_SEQNUM_YN"] != DBNull.Value)
+                        {
+                            oItem.UseSummaryTableSeqNumYN = Convert.ToString(oDataMgr.m_DataReader["USE_SUMMARY_TABLE_SEQNUM_YN"]).Trim();
+                        }
+                        else
+                        {
+                            oItem.UseSummaryTableSeqNumYN = "Y";
+                        }
+
+                        oItem.Type = oDataMgr.m_DataReader["TYPE"].ToString().Trim();
+                        // Check for rxpackages in the fvs_output_prepost_seqnum_rxpackage_assignment for assigned package for "C"
+                        // tables. If missing report 0 because FVS Out won't use assignment without rxPackages
+                        if (oItem.Type.Equals("C"))
+                        {
+                            string strRxPackageSql = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable} 
+                            WHERE PREPOST_SEQNUM_ID = {oItem.PrePostSeqNumId}";
+                            double rxPackageCount = oDataMgr.getSingleDoubleValueFromSQLQuery(conn, strRxPackageSql, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable);
+                            if (rxPackageCount == 0)
+                            {
+                                intAssignedCount = 0;
+                            }
+                        }
+                        oItem.AssignedCount = intAssignedCount;
+
+                        switch (oItem.TableName.Trim().ToUpper())
+                        {
+                            case "FVS_CUTLIST": oItem.MultipleRecordsForASingleStandYearCombination = true; break;
+                            case "FVS_ATRTLIST": oItem.MultipleRecordsForASingleStandYearCombination = true; break;
+                            case "FVS_MORTALITY": oItem.MultipleRecordsForASingleStandYearCombination = true; break;
+                            case "FVS_SNAG_DET": oItem.MultipleRecordsForASingleStandYearCombination = true; break;
+                            case "FVS_TREELIST": oItem.MultipleRecordsForASingleStandYearCombination = true; break;
+                            case "FVS_STRCLASS": oItem.MultipleRecordsForASingleStandYearCombination = true; break;
+                            default: oItem.MultipleRecordsForASingleStandYearCombination = false; break;
+                        }
+
+
+
+                        p_oCollection.Add(oItem);
+
+
+                    }
+                    oDataMgr.m_DataReader.Close();
+                    //rx package assignments for custom definitions
+                    for (x = 0; x <= p_oCollection.Count - 1; x++)
+                    {
+                        if (p_oCollection.Item(x).Type == "C")
+                        {
+                            if (p_oCollection.Item(x).m_FVSPrePostSeqNumRxPackageAssgnItem_Collection1 == null)
+                                p_oCollection.Item(x).m_FVSPrePostSeqNumRxPackageAssgnItem_Collection1 = new FVSPrePostSeqNumRxPackageAssgnItem_Collection();
+                            else
+                                p_oCollection.Item(x).m_FVSPrePostSeqNumRxPackageAssgnItem_Collection1.Clear();
+
+                            oDataMgr.m_strSQL = "SELECT * FROM " + Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable + " " +
+                                              "WHERE PREPOST_SEQNUM_ID=" + p_oCollection.Item(x).PrePostSeqNumId;
+                            oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
+                            if (oDataMgr.m_DataReader.HasRows)
+                            {
+                                string strList = "";
+                                while (oDataMgr.m_DataReader.Read())
+                                {
+
+                                    FVSPrePostSeqNumRxPackageAssgnItem oPackageItem = new FVSPrePostSeqNumRxPackageAssgnItem();
+                                    oPackageItem.PrePostSeqNumId = p_oCollection.Item(x).PrePostSeqNumId;
+                                    oPackageItem.RxPackageId = oDataMgr.m_DataReader["RXPACKAGE"].ToString().Trim();
+                                    strList = strList + oPackageItem.RxPackageId + ",";
+                                    p_oCollection.Item(x).m_FVSPrePostSeqNumRxPackageAssgnItem_Collection1.Add(oPackageItem);
+
+                                }
+                                if (strList.Trim().Length > 0) strList = strList.Substring(0, strList.Length - 1);
+                                p_oCollection.Item(x).RxPackageList = strList;
+                            }
+                            oDataMgr.m_DataReader.Close();
+                            p_oCollection.Item(x).ReferenceFVSPrePostSeqNumRxPackageAssgnCollection =
+                                p_oCollection.Item(x).m_FVSPrePostSeqNumRxPackageAssgnItem_Collection1;
+                        }
+                    }
+                }
+            }
+            
         }
         public void CreateFVSPrePostSeqNumTables(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, FVSPrePostSeqNumItem p_oItem, string p_strSourceTableName, string p_strSourceLinkedTableName, bool p_bAudit,bool p_bDebug,string p_strDebugFile)
         {

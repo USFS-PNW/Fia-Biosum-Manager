@@ -2315,7 +2315,7 @@ namespace FIA_Biosum_Manager
                     m_ado.OpenConnection(m_strTempMDBFileConnectionString);
 
                 }
-                m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(m_ado, m_ado.m_OleDbConnection, m_oFVSPrePostSeqNumItemCollection);
+                m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNumAccess(m_ado, m_ado.m_OleDbConnection, m_oFVSPrePostSeqNumItemCollection);
             
 
                 m_intProgressOverallCurrentCount = 0;
@@ -5730,13 +5730,11 @@ namespace FIA_Biosum_Manager
                 m_ado.OpenConnection(m_strTempMDBFileConnectionString);
                
             }
-            // Loads the sequence number configurations from db\fvsmaster.mdb\fvs_output_prepost_seqnum
-            m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(m_ado, m_ado.m_OleDbConnection, m_oFVSPrePostSeqNumItemCollection);
+            // Loads the sequence number configurations from db\fvsmaster.db\fvs_output_prepost_seqnum
+            string strDbConn = SQLite.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
+            m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(strDbConn, m_oFVSPrePostSeqNumItemCollection);
 
-            
-
-			
-			int x,y;
+            int x,y;
 			
 			try
 			{
@@ -11249,12 +11247,8 @@ namespace FIA_Biosum_Manager
             if (SQLite.TableExist(conn, p_strSourceTableName))
             {
                 if (m_oFVSPrePostSeqNumItemCollection == null) m_oFVSPrePostSeqNumItemCollection = new FVSPrePostSeqNumItem_Collection();
-                string strParamConn = m_ado.getMDBConnString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableMdbFile, "", "");
-                using (System.Data.OleDb.OleDbConnection accessConn = new System.Data.OleDb.OleDbConnection(strParamConn))
-                {
-                    accessConn.Open();
-                    m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(m_ado, accessConn, m_oFVSPrePostSeqNumItemCollection);
-                }
+                string strParamConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile);
+                m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(strParamConn, m_oFVSPrePostSeqNumItemCollection);
 
                 string strRxPackageId = p_strRunTitle.Substring(11, 3);
                 GetPrePostSeqNumConfiguration(p_strSourceTableName, strRxPackageId);
@@ -11328,13 +11322,8 @@ namespace FIA_Biosum_Manager
                 }
 
                 if (m_oFVSPrePostSeqNumItemCollection == null) m_oFVSPrePostSeqNumItemCollection = new FVSPrePostSeqNumItem_Collection();
-                if (m_ado.m_OleDbConnection.State == ConnectionState.Closed)
-                {
-                    m_ado.OpenConnection(m_strTempMDBFileConnectionString);
-
-                }
-                m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(m_ado, m_ado.m_OleDbConnection, m_oFVSPrePostSeqNumItemCollection);
-
+                string strDbConn = SQLite.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
+                m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(strDbConn, m_oFVSPrePostSeqNumItemCollection);
 
                 m_intProgressOverallCurrentCount = 0;
                 this.m_intProgressOverallTotalCount += 2;
