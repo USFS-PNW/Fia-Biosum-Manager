@@ -1289,14 +1289,14 @@ namespace FIA_Biosum_Manager
                     strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
                         "('FVS PRE-POST SeqNum Definitions'," +
                         "'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," +
-                        "'fvsmaster.mdb'," +
+                        "'fvsmaster.db'," +
                         "'" + Tables.FVS.DefaultFVSPrePostSeqNumTable + "');";
                     p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
 
                     strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
                         "('FVS PRE-POST SeqNum Treatment Package Assign'," +
                         "'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," +
-                        "'fvsmaster.mdb'," +
+                        "'fvsmaster.db'," +
                         "'" + Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable + "');";
                     p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
 
