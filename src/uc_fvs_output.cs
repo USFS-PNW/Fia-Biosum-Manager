@@ -9269,48 +9269,38 @@ namespace FIA_Biosum_Manager
 
             string strConn = "";
 
-
-		    string strDbFile = this.lstFvsOutput.SelectedItems[0].SubItems[COL_MDBOUT].Text.Trim();
-            strDbFile = strDbFile.Replace(".MDB", "_BIOSUM.ACCDB");
-			string strOutDirAndFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)this.txtOutDir,"Text",false);
-			strOutDirAndFile=strOutDirAndFile.Trim()  + "\\" + lstFvsOutput.SelectedItems[0].SubItems[COL_VARIANT].Text.Trim();	
-			strOutDirAndFile = strOutDirAndFile  + "\\" + strDbFile;
+            string strOutDirAndFile = this.m_strProjDir;
+            strOutDirAndFile = strOutDirAndFile + "\\" + Tables.FVS.DefaultFVSAuditsDbFile;
+            string strFVSVariant = lstFvsOutput.SelectedItems[0].SubItems[COL_VARIANT].Text.Trim();
+            string strRxPackage = lstFvsOutput.SelectedItems[0].SubItems[COL_PACKAGE].Text.Trim();
+            frmGridView oFrm = new frmGridView();
+            oFrm.Text = "Database: Browse (PRE-APPEND Audit Tables)";
+            oFrm.UsingSQLite = true;
             if (System.IO.File.Exists(strOutDirAndFile))
             {
-                ado_data_access oAdo = new ado_data_access();
-                strConn = oAdo.getMDBConnString(strOutDirAndFile, "", "");
-                oAdo.OpenConnection(strConn);
-
-                if (!oAdo.TableExist(oAdo.m_OleDbConnection, this.m_strFVSSummaryAuditYearCountsTable))
+                strConn = SQLite.GetConnectionString(strOutDirAndFile);
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                 {
-                    oAdo.CloseConnection(oAdo.m_OleDbConnection);
-                    oAdo = null;
-                    string strWarnMessage = "No PRE-APPEND audit tables exist in the file " + strOutDirAndFile + ". The PRE-APPEND Audit tables cannot be displayed.";
-                    MessageBox.Show(strWarnMessage, "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                    return;
-                }
-
-                FIA_Biosum_Manager.frmGridView oFrm = new frmGridView();
-
-
-
-             
-
-
-
-                oFrm.Text = "Database: Browse (PRE-APPEND Audit Tables)";
-                if (m_strFVSPreAppendAuditTables != null)
-                {
-                    for (int x = 0; x <= m_strFVSPreAppendAuditTables.Count - 1; x++)
+                    conn.Open();
+                    if (!SQLite.TableExist(conn, this.m_strFVSSummaryAuditYearCountsTable))
                     {
-                        if (oAdo.TableExist(oAdo.m_OleDbConnection, m_strFVSPreAppendAuditTables[x].Trim()))
+                        string strWarnMessage = "No PRE-APPEND audit tables exist in the file " + strOutDirAndFile + ". The PRE-APPEND Audit tables cannot be displayed.";
+                        MessageBox.Show(strWarnMessage, "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+                        return;
+                    }
+                    if (m_strFVSPreAppendAuditTables != null)
+                    {
+                        for (int x = 0; x <= m_strFVSPreAppendAuditTables.Count - 1; x++)
                         {
-                            oFrm.LoadDataSet(oAdo.m_OleDbConnection, strConn, "SELECT * FROM " + m_strFVSPreAppendAuditTables[x].Trim(), m_strFVSPreAppendAuditTables[x].Trim());
+                            if (SQLite.TableExist(conn, m_strFVSPreAppendAuditTables[x].Trim()))
+                            {
+                                SQLite.m_strSQL = $@"SELECT * FROM {m_strFVSPreAppendAuditTables[x].Trim()} WHERE RXPACKAGE = '{strRxPackage}' AND FVS_VARIANT = '{strFVSVariant}'";
+                                oFrm.LoadDataSet(strConn, SQLite.m_strSQL, m_strFVSPreAppendAuditTables[x].Trim());
+                            }
                         }
                     }
                 }
 
-                oAdo.CloseConnection(oAdo.m_OleDbConnection);
                 oFrm.TileGridViews();
                 oFrm.Show();
                 oFrm.Focus();
