@@ -6,6 +6,7 @@ using System.Data;
 using System.Windows.Forms;
 using System.Text;
 using System.Data.OleDb;
+using SQLite.ADO;
 
 namespace FIA_Biosum_Manager
 {
@@ -926,7 +927,7 @@ namespace FIA_Biosum_Manager
 			{
                 UpdateThermPercent();
 				ReferenceOptimizerScenarioForm.uc_scenario_fvs_prepost_optimization1.DisplayAuditMessage=false;
-				ReferenceOptimizerScenarioForm.uc_scenario_fvs_prepost_optimization1.Audit();
+				ReferenceOptimizerScenarioForm.uc_scenario_fvs_prepost_optimization1.AuditSqlite();
 				this.m_intError = ReferenceOptimizerScenarioForm.uc_scenario_fvs_prepost_optimization1.m_intError;
 				if (this.m_intError!=0)
 					MessageBox.Show(ReferenceOptimizerScenarioForm.uc_scenario_fvs_prepost_optimization1.m_strError,"FIA Biosum");
@@ -1239,7 +1240,7 @@ namespace FIA_Biosum_Manager
                 if ((bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)oCheckBox, "Checked", false) == true)
                 {
                     this.m_strContextDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
-                    this.CopyScenarioResultsTableSqlite(this.m_strContextDbPathAndFile, strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsContextSqliteDbFile);
+                    this.CopyScenarioResultsTable(this.m_strContextDbPathAndFile, strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsContextDbFile);
                 }
 
                 this.m_strFvsContextDbPathAndFile = "";
@@ -1256,7 +1257,6 @@ namespace FIA_Biosum_Manager
 
                 this.m_strFVSPostValidComboDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
                 this.CopyScenarioResultsTableSqlite(this.m_strFVSPostValidComboDbPathAndFile, ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\validcombo.db");
-
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
@@ -1307,7 +1307,7 @@ namespace FIA_Biosum_Manager
                     m_oDao = new dao_data_access();
                     //compact the optimizer_results.accdb file
 
-                    CompactMDB(m_strSystemResultsDbPathAndFile, null);
+                    ///CompactMDB(m_strSystemResultsDbPathAndFile, null);
 
                     //28-APR-2021
                     //This method should be obsolete; Commented out
@@ -1442,11 +1442,11 @@ namespace FIA_Biosum_Manager
                     this.ReferenceOptimizerScenarioForm.OutputTablePrefix = this.getFileNamePrefix();
                     m_strOptimizationTableName = ReferenceOptimizerScenarioForm.OutputTablePrefix + "_" + m_strOptimizationTableName;
 
-                    CreateAuditTables();
-					CreateOptimizerResultTables();
+                    CreateAuditTablesSqlite();
+					CreateOptimizerResultTablesSqlite();
                     if (!String.IsNullOrEmpty(m_strContextDbPathAndFile))
                         CreateContextTables();
-                    CreateValidComboTables();
+                    CreateValidComboTablesSqlite();
 
 
                     if (this.m_intError != 0)
@@ -1459,7 +1459,7 @@ namespace FIA_Biosum_Manager
                     FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
 					//CREATE TABLE LINKS
-					CreateScenarioResultTableLinks();
+					CreateScenarioResultTableLinksSqlite();
                     if (this.m_intError != 0)
                     {
                         FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
@@ -1964,6 +1964,31 @@ namespace FIA_Biosum_Manager
             oAdo = null;
 
         }
+        private void CreateAuditTablesSqlite()
+        {
+            DataMgr oDataMgr = new DataMgr();
+
+            string strDbPathAndFile = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\" + Tables.Audit.DefaultCondAuditTableSqliteDbFile;
+            if (!System.IO.File.Exists(strDbPathAndFile))
+            {
+                oDataMgr.CreateDbFile(strDbPathAndFile);
+            }
+
+            string strConn = oDataMgr.GetConnectionString(strDbPathAndFile);
+            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
+            {
+                oConn.Open();
+                if (!oDataMgr.TableExist(oConn, Tables.Audit.DefaultCondAuditTableName))
+                {
+                    frmMain.g_oTables.m_oAudit.CreateCondAuditTableSqlite(oDataMgr, oConn, Tables.Audit.DefaultCondAuditTableName);
+                }
+                if (!oDataMgr.TableExist(oConn, Tables.Audit.DefaultCondRxAuditTableName))
+                {
+                    frmMain.g_oTables.m_oAudit.CreatePlotCondRxAuditTableSqlite(oDataMgr, oConn, Tables.Audit.DefaultCondRxAuditTableName);
+                }
+            }
+            oDataMgr = null;
+        }
 		/// <summary>
 		/// create a table structure that will hold
 		/// the plot data that results when running the user 
@@ -2204,6 +2229,53 @@ namespace FIA_Biosum_Manager
             
             oAdo.CloseConnection(oAdo.m_OleDbConnection);
 		}
+        private void CreateOptimizerResultTablesSqlite()
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//CreateOptimizerResultsTables\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+            string[] strTableNames = new string[1];
+            DataMgr oDataMgr = new DataMgr();
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(m_strSystemResultsDbPathAndFile)))
+            {
+                conn.Open();
+                strTableNames = oDataMgr.getTableNames(conn);
+                for (int x = 0; x <= strTableNames.Length - 1; x++)
+                {
+                    if (strTableNames[x] != null && strTableNames[x].Trim().Length > 0)
+                    {
+                        oDataMgr.SqlNonQuery(conn, "DROP TABLE " + strTableNames[x]);
+                    }
+                }
+
+                // Query the optimization variable for the selected revenue attribute so we can pass it to the table
+                string strColumnFilterName = "";
+                if (this.m_oOptimizationVariable.bUseFilter)
+                {
+                    strColumnFilterName = this.m_oOptimizationVariable.strRevenueAttribute;
+                }
+
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteValidComboTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsValidCombosTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteValidComboFVSPrePostTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsValidCombosFVSPrePostTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteTieBreakerTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsTieBreakerTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteOptimizationTable(oDataMgr, conn, this.ReferenceOptimizerScenarioForm.OutputTablePrefix + Tables.OptimizerScenarioResults.DefaultScenarioResultsOptimizationTableSuffix);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteEffectiveTable(oDataMgr, conn, this.ReferenceOptimizerScenarioForm.OutputTablePrefix + Tables.OptimizerScenarioResults.DefaultScenarioResultsEffectiveTableSuffix);
+                string strScenarioResultsBestRxSummaryTableName = this.ReferenceOptimizerScenarioForm.OutputTablePrefix + Tables.OptimizerScenarioResults.DefaultScenarioResultsBestRxSummaryTableSuffix;
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteBestRxSummaryTable(oDataMgr, conn, strScenarioResultsBestRxSummaryTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteBestRxSummaryTable(oDataMgr, conn, strScenarioResultsBestRxSummaryTableName + "_before_tiebreaks");
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteProductYieldsTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteEconByRxUtilSumTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqlitePostEconomicWeightedTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsPostEconomicWeightedTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteHaulCostTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsHaulCostsTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteCondPsiteTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsCondPsiteTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteVersionTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsVersionTableName);
+
+                conn.Close();
+            }
+        }
 
         private void CreateContextTables()
         {
@@ -2362,6 +2434,50 @@ namespace FIA_Biosum_Manager
 
 		
 		}
+        private void CreateScenarioResultTableLinksSqlite()
+        {
+            // attach SQLite results db to tempMDB
+            string[] strTableNames = new string[1];
+            int intCount = 0;
+            dao_data_access p_dao = new dao_data_access();
+            DataMgr p_dataMgr = new DataMgr();
+
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strSystemResultsDbPathAndFile)))
+            {
+                conn.Open();
+                strTableNames = p_dataMgr.getTableNames(conn);
+                intCount = strTableNames.Length;
+                conn.Close();
+            }
+
+            if (p_dataMgr.m_intError == 0)
+            {
+                if (intCount > 0)
+                {
+                    ODBCMgr odbcmgr = new ODBCMgr();
+                    if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.OptimizerResultsDsnName))
+                    {
+                        odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.OptimizerResultsDsnName);
+                    }
+                    odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.OptimizerResultsDsnName, this.m_strSystemResultsDbPathAndFile);
+
+                    for (int x = 0; x <= intCount - 1; x++)
+                    {
+                        p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, strTableNames[x], strTableNames[x], ODBCMgr.DSN_KEYS.OptimizerResultsDsnName, this.m_strSystemResultsDbPathAndFile);
+                        if (p_dao.m_intError != 0)
+                        {
+                            p_dao.m_strError = strTableNames[x] + " !!Error Creating Table Link!!!";
+                            break;
+                        }
+                    }
+
+                    if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.OptimizerResultsDsnName))
+                    {
+                        odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.OptimizerResultsDsnName);
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// create links to the tables located in the context.accdb file
@@ -2522,6 +2638,60 @@ namespace FIA_Biosum_Manager
 
         }
 
+        private void CreateValidComboTablesSqlite()
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//CreateValidComboTables\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+            string[] strTableNames;
+            strTableNames = new string[1];
+            DataMgr oDataMgr = new DataMgr();
+
+            //
+            //FVS PRE VALID COMBO TABLE
+            //
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(this.m_strFVSPreValidComboDbPathAndFile)))
+            {
+                conn.Open();
+
+                strTableNames = oDataMgr.getTableNames(conn);
+                for (int x = 0; x <= strTableNames.Length - 1; x++)
+                {
+                    if (strTableNames[x] != null &&
+                        strTableNames[x].Trim().Length > 0)
+                    {
+                        oDataMgr.SqlNonQuery(conn, "DROP TABLE " + strTableNames[x]);
+                    }
+                }
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteValidComboFVSPreTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsValidCombosFVSPreTableName);
+
+                conn.Close();
+            }
+
+            //
+            //FVS POST VALID COMBO TABLE
+            //
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(this.m_strFVSPostValidComboDbPathAndFile)))
+            {
+                conn.Open();
+
+                strTableNames = oDataMgr.getTableNames(conn);
+                for (int x = 0; x <= strTableNames.Length - 1; x++)
+                {
+                    if (strTableNames[x] != null &&
+                        strTableNames[x].Trim().Length > 0)
+                    {
+                        oDataMgr.SqlNonQuery(conn, "DROP TABLE " + strTableNames[x]);
+                    }
+                }
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteValidComboFVSPostTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsValidCombosFVSPostTableName);
+
+                conn.Close();
+            }
+        }
         /// <summary>
         /// create links to the tables located in the optimizer_results.accdb file
         /// </summary>

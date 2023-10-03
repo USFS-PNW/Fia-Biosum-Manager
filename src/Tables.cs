@@ -234,7 +234,7 @@ namespace FIA_Biosum_Manager
             static public string DefaultCalculatedPrePostFVSVariableTableSqliteDbFile { get { return @"optimizer\db\prepost_fvs_weighted.db"; } }
             static public string DefaultScenarioResultsPostEconomicWeightedTableName { get { return @"post_economic_weighted"; } }
             static public string DefaultScenarioResultsDbFile { get { return @"db\optimizer_results.accdb"; } }
-            static public string DefaultScenarioResultsSqliteDbFile { get { return @"db/optimizer_results.db"; } }
+            static public string DefaultScenarioResultsSqliteDbFile { get { return @"db\optimizer_results.db"; } }
             static public string DefaultScenarioResultsEconByRxCycleTableName { get { return @"econ_by_rx_cycle"; } }
             static public string DefaultScenarioResultsEconByRxUtilSumTableName { get { return @"econ_by_rx_utilized_sum"; } }
             static public string DefaultScenarioResultsPSiteAccessibleWorkTableName { get { return @"psite_accessible_work_table"; } }
@@ -365,6 +365,7 @@ namespace FIA_Biosum_Manager
                          "variable4_effective_yn CHAR(1)," +
                          "overall_effective_yn CHAR(1)," +
                          "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
+
                 return strSql;
             }
             //
@@ -627,6 +628,23 @@ namespace FIA_Biosum_Manager
                             "variable4_yn text(1))";
 
             }
+            public void CreateSqliteValidComboFVSPostTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteValidComboFVSPostTableSQL(p_strTableName));
+            }
+            static public string CreateSqliteValidComboFVSPostTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "rx CHAR(3)," +
+                    "rxcycle CHAR(1)," +
+                    "variable1_yn CHAR(1)," +
+                    "variable2_yn CHAR(1)," +
+                    "variable3_yn CHAR(1)," +
+                    "variable4_yn CHAR(1)," +
+                    "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
+            }
             public void CreateValidComboFVSPreTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
                 p_oAdo.SqlNonQuery(p_oConn, CreateValidComboFVSPreTableSQL(p_strTableName));
@@ -648,6 +666,23 @@ namespace FIA_Biosum_Manager
                     "variable3_yn text(1)," +
                     "variable4_yn text(1))";
 
+            }
+            public void CreateSqliteValidComboFVSPreTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteValidComboFVSPreTableSQL(p_strTableName));
+            }
+            static public string CreateSqliteValidComboFVSPreTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "rx CHAR(3)," +
+                    "rxcycle CHAR(1)," +
+                    "variable1_yn CHAR(1)," +
+                    "variable2_yn CHAR(1)," +
+                    "variable3_yn CHAR(1)," +
+                    "variable4_yn CHAR(1)," +
+                    "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
             }
             public void CreateValidComboFVSPrePostTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
@@ -815,6 +850,7 @@ namespace FIA_Biosum_Manager
                     "change_value DOUBLE," +
                     "affordable_YN CHAR(1)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
+
                 return strSQL;
             }
             //
@@ -1093,7 +1129,7 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteHaulCostTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "haul_cost_id LONG," +
+                    "haul_cost_id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "biosum_plot_id CHAR(24)," +
                     "railhead_id INTEGER," +
                     "psite_id INTEGER," +
@@ -1656,6 +1692,7 @@ namespace FIA_Biosum_Manager
             public void CreateSqliteCondPsiteTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                 p_oDataMgr.SqlNonQuery(p_oConn, CreateCondPsiteTableSQL(p_strTableName));
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "biosum_cond_id");
             }
             static public string CreateSqliteCondPsiteTableSQL(string p_strTableName)
             {
@@ -1679,6 +1716,10 @@ namespace FIA_Biosum_Manager
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "APPLICATION_VERSION CHAR(25))";
+            }
+            public void CreateSqliteVersionTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateVersionTableSQL(p_strTableName));
             }
 
             //
@@ -4282,6 +4323,7 @@ namespace FIA_Biosum_Manager
             public static string DefaultCondAuditTableName { get { return "cond_audit"; } }
             public static string DefaultCondRxAuditTableDbFile { get { return @"audit.accdb"; } }
             public static string DefaultCondRxAuditTableName { get { return "cond_rx_audit"; } }
+            public static string DefaultCondAuditTableSqliteDbFile { get { return @"audit.db"; } }
 
             public Audit()
             {
@@ -4307,6 +4349,22 @@ namespace FIA_Biosum_Manager
                     "psite_merch_yn CHAR(1), " +
                     "psite_chip_yn CHAR(1)) ";
             }
+            public void CreateCondAuditTableSqlite(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateCondAuditTableSqliteSQL(p_strTableName));
+            }
+            public string CreateCondAuditTableSqliteSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "biosum_cond_id CHAR(25) PRIMARY KEY," +
+                    "fvs_prepost_variables_yn CHAR(1)," +
+                    "gis_travel_times_yn CHAR(1)," +
+                    "processor_tree_vol_val_yn CHAR(1), " +
+                    "harvest_costs_yn CHAR(1), " +
+                    "cond_too_far_steep_yn CHAR(1), " +
+                    "psite_merch_yn CHAR(1), " +
+                    "psite_chip_yn CHAR(1)) ";
+            }
             public void CreatePlotCondRxAuditTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
                 p_oAdo.SqlNonQuery(p_oConn, CreatePlotCondRxAuditTableSQL(p_strTableName));
@@ -4321,6 +4379,21 @@ namespace FIA_Biosum_Manager
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "rx CHAR(3)," +
+                    "rxcycle CHAR(1)," +
+                    "fvs_prepost_variables_yn CHAR(1)," +
+                    "processor_tree_vol_val_yn CHAR(1)," +
+                    "harvest_costs_yn CHAR(1))";
+            }
+            public void CreatePlotCondRxAuditTableSqlite(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreatePlotCondRxAuditTableSqliteSQL(p_strTableName));
+            }
+            public string CreatePlotCondRxAuditTableSqliteSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "biosum_cond_id CHAR(25) PRIMARY KEY," +
                     "rxpackage CHAR(3)," +
                     "rx CHAR(3)," +
                     "rxcycle CHAR(1)," +

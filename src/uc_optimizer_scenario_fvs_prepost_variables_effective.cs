@@ -4043,14 +4043,14 @@ namespace FIA_Biosum_Manager
 		private void btnFVSVariablesPrePostAudit_Click(object sender, System.EventArgs e)
 		{
 			DisplayAuditMessage=true;
-			Audit();
+			AuditSqlite();
 
 			
 		}
 		public int Audit(bool bDisplayAuditMsg)
 		{
 			this.DisplayAuditMessage=bDisplayAuditMsg;
-			Audit();
+			AuditSqlite();
 			return m_intError;
 		}
 		public void Audit()
@@ -4214,6 +4214,144 @@ namespace FIA_Biosum_Manager
 
 			if (this.DisplayAuditMessage)
 				MessageBox.Show(m_strError,"FIA Biosum");
+		}
+		private void AuditSqlite()
+        {
+			DataMgr oDataMgr = new DataMgr();
+			string str = "";
+			string strTable = "";
+			string strColumn = "";
+			//bool bOptimized=false;
+			int x, y;
+			this.m_intError = 0;
+			this.m_strError = "Audit Results \r\n";
+			this.m_strError = m_strError + "-------------\r\n\r\n";
+			string fvsDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
+			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(fvsDb)))
+            {
+				conn.Open();
+
+				string weightedDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile;
+				if (!oDataMgr.DatabaseAttached(conn, weightedDb))
+				{
+					oDataMgr.m_strSQL = "ATTACH DATABASE '" + weightedDb + "' AS weighted";
+					oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+				}
+				
+				if (oDataMgr.m_intError == 0)
+                {
+					for (x = 0; x <= NUMBER_OF_VARIABLES - 1; x++)
+                    {
+						if (m_oSavVar.m_strPreVarArray[x].Trim().ToUpper() != "NOT DEFINED")
+                        {
+							strTable = this.m_oSavVar.TableName(m_oSavVar.m_strPreVarArray[x]);
+							if (oDataMgr.TableExist(conn, strTable) || oDataMgr.AttachedTableExist(conn, strTable))
+                            {
+								strColumn = m_oSavVar.ColumnName(m_oSavVar.m_strPreVarArray[x]);
+								if (!oDataMgr.ColumnExist(conn, strTable, strColumn) && !oDataMgr.AttachedColumnExist(conn, strTable, strColumn))
+                                {
+									m_intError = -1;
+									m_strError = m_strError + "Table column " + m_oSavVar.m_strPreVarArray[x] + " does not exist in Db files PREPOST_FVSOUT.db or prepost_fvs_weighted.db\r\n";
+								}
+							}
+							else
+                            {
+								m_intError = -1;
+								m_strError = m_strError + "Table " + strTable + " does not exist in Db files PREPOST_FVSOUT.db or prepost_fvs_weighted.db\r\n";
+							}
+						}
+
+					}
+
+				}
+			}
+			for (x = 0; x <= NUMBER_OF_VARIABLES - 1; x++)
+            {
+				if (m_oSavVar.m_strPreVarArray[x].Trim().ToUpper() == "NOT DEFINED")
+				{
+					this.AuditSearch("VARIABLE" + Convert.ToString(x + 1).Trim());
+				}
+				else
+				{
+
+					if (this.m_oSavVar.m_strBetterExpr[x].Trim().Length == 0)
+					{
+						this.AuditSearch("VARIABLE" + Convert.ToString(x + 1).Trim() + "_BETTER_YN");
+					}
+					if (this.m_oSavVar.m_strWorseExpr[x].Trim().Length == 0)
+					{
+						this.AuditSearch("VARIABLE" + Convert.ToString(x + 1).Trim() + "_WORSE_YN");
+					}
+					if (this.m_oSavVar.m_strEffectiveExpr[x].Trim().Length == 0)
+					{
+						this.AuditSearch("VARIABLE" + Convert.ToString(x + 1).Trim() + "_EFFECTIVE_YN");
+					}
+
+					string[] strPieces = m_oSavVar.m_strPreVarArray[x].Trim().ToUpper().Split('.');
+					if (strPieces.Length == 2)
+					{
+						if (strPieces[0].ToUpper().Contains("_WEIGHTED"))
+						{
+							// Strip PRE_ prefix from the table before sending it to the shared AuditWeightedFvsVariables
+							// function so that it can be shared with optimizer and tie break
+							char[] preArray = "PRE_".ToCharArray();
+							string strTempTableName = strPieces[0].TrimStart(preArray);
+							string strWeightedError = this.m_oOptimizerScenarioTools.AuditWeightedFvsVariablesSqlite(strTempTableName, out m_intError);
+							if (m_intError != 0)
+							{
+								m_strError = m_strError + strWeightedError;
+							}
+						}
+					}
+				}
+			}
+			if (m_oSavVar.m_strOverallEffectiveExpr.Trim().Length == 0)
+			{
+				m_intError = -1;
+				m_strError = m_strError + "Overall effectiveness expression not defined. \r\n";
+			}
+			//make sure no duplicates exist
+			for (x = 0; x <= NUMBER_OF_VARIABLES - 1; x++)
+			{
+				if (this.m_oSavVar.m_strPreVarArray[x].Trim().ToUpper() != "NOT DEFINED")
+				{
+					if (str.IndexOf("," + this.m_oSavVar.m_strPreVarArray[x].Trim() + ",", 0) < 0)
+					{
+						str = str + "," + this.m_oSavVar.m_strPreVarArray[x].Trim() + ",";
+						for (y = x + 1; y <= NUMBER_OF_VARIABLES - 1; y++)
+						{
+							if (this.m_oSavVar.m_strPreVarArray[x].Trim() ==
+								this.m_oSavVar.m_strPreVarArray[y].Trim())
+							{
+								m_intError = -1;
+								m_strError = m_strError + m_oSavVar.m_strPreVarArray[x] + " is defined multiple times\r\n";
+								break;
+							}
+						}
+					}
+				}
+
+			}
+			AuditEffectiveExpressionDefined(m_oSavVar.m_strEffectiveExpr);
+
+			this.ReferenceOptimizationUserControl.ReferenceFVSVariables = this.m_oSavVar;
+
+
+			this.ReferenceOptimizationUserControl.DisplayAuditMessage = false;
+
+			this.ReferenceOptimizationUserControl.AuditSqlite();
+
+			this.m_strError = m_strError + ReferenceOptimizationUserControl.m_strError;
+			x = ReferenceOptimizationUserControl.m_intError;
+			if (x != 0)
+				this.m_intError = x;
+
+			if (m_intError == 0) this.m_strError = m_strError + "Passed Audit";
+			else m_strError = m_strError + "\r\n\r\n" + "Failed Audit";
+
+			if (this.DisplayAuditMessage)
+				MessageBox.Show(m_strError, "FIA Biosum");
+
 		}
         /// <summary>
         /// Check to make sure that at least one effective expression is defined.

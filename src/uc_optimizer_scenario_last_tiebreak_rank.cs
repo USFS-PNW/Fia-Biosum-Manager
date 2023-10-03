@@ -894,7 +894,6 @@ namespace FIA_Biosum_Manager
 		{
 			int x;
 			int y;
-			ado_data_access p_ado = new ado_data_access();
 			if (this.m_DataSet.Tables[this.strRxPackageTableName].Rows.Count==0)
 			{
 				if (p_bDisplayMessage) MessageBox.Show("Run Scenario Failed: No treatments defined");

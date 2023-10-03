@@ -2470,7 +2470,7 @@ namespace FIA_Biosum_Manager
 		private void btnOptimizationAudit_Click(object sender, System.EventArgs e)
 		{
 			this.DisplayAuditMessage=true;
-			Audit();
+			AuditSqlite();
 		}
 		public void Audit()
 		{
@@ -2620,6 +2620,154 @@ namespace FIA_Biosum_Manager
 			}
 
 		}
+        public void AuditSqlite()
+        {
+            int x;
+            this.m_intError = 0;
+            m_strError = "";
+            if (DisplayAuditMessage)
+            {
+                this.m_strError = "Audit Results \r\n";
+                this.m_strError = m_strError + "-------------\r\n\r\n";
+            }
+
+            OptimizerScenarioItem.OptimizationVariableItem_Collection oOptVariableItemCollection =
+                this.ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem_Collection.Item(0).m_oOptimizationVariableItem_Collection;
+            for (x = 0; x <= oOptVariableItemCollection.Count - 1; x++)
+            {
+                if (oOptVariableItemCollection.Item(x).bSelected) break;
+            }
+            if (x > oOptVariableItemCollection.Count - 1)
+            {
+                m_intError = -1;
+                m_strError = m_strError + "No optimization variable was checked. \r\n";
+            }
+            else
+            {
+                if (oOptVariableItemCollection.Item(x).strFVSVariableName.Trim().ToUpper() == "NOT DEFINED" &&
+                    oOptVariableItemCollection.Item(x).bSelected)
+                {
+                    m_intError = -1;
+                    m_strError = m_strError + "Stand Attribute is selected but is not defined\r\n";
+                }
+                else
+                {
+                    if (oOptVariableItemCollection.Item(x).strFVSVariableName.Trim().ToUpper() != "NA" &&
+                        oOptVariableItemCollection.Item(x).strFVSVariableName.Trim().ToUpper() != "NOT DEFINED" &&
+                        oOptVariableItemCollection.Item(x).strFVSVariableName.IndexOf(".") > -1)
+                    {
+                        string fvsPrePostDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
+                        if (System.IO.File.Exists(fvsPrePostDb))
+                        {
+                            DataMgr oDataMgr = new DataMgr();
+                            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(fvsPrePostDb)))
+                            {
+                                conn.Open();
+                                if (oDataMgr.m_intError == 0)
+                                {
+                                    string fvsWeightedDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile;
+                                    if (!oDataMgr.DatabaseAttached(conn, fvsWeightedDb))
+                                    {
+                                        oDataMgr.m_strSQL = "ATTACH DATABASE '" + fvsWeightedDb + "' AS weighted";
+                                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                                    }
+                                    string[] strTableColumnArray = frmMain.g_oUtils.ConvertListToArray(oOptVariableItemCollection.Item(x).strFVSVariableName, ".");
+                                    string strTable = strTableColumnArray[0].Trim();
+                                    string strColumn = strTableColumnArray[1].Trim();
+                                    if (oDataMgr.TableExist(conn, "POST_" + strTable) || oDataMgr.AttachedTableExist(conn, "POST_" + strTable))
+                                    {
+                                        if (!oDataMgr.ColumnExist(conn, "POST_" + strTable, strColumn))
+                                        {
+                                            m_intError = -1;
+                                            m_strError = m_strError + "Table column post_" + strTable + "." + strColumn + " does not exist in Db files PREPOST_FVSOUT.db or prepost_fvs_weighted.db\r\n";
+                                        }
+                                    }
+                                    else
+                                    {
+                                        m_intError = -1;
+                                        m_strError = m_strError + "Table post_" + strTable + " does not exist in Db files PREPOST_FVSOUT.db or prepost_fvs_weighted.db\r\n";
+                                    }
+                                    if (oOptVariableItemCollection.Item(x).strValueSource.Trim().ToUpper() == "POST-PRE")
+                                    {
+                                        if (oDataMgr.TableExist(conn, "PRE_" + strTable) || oDataMgr.AttachedTableExist(conn, "PRE_" + strTable))
+                                        {
+                                            if (!oDataMgr.ColumnExist(conn, "PRE_" + strTable, strColumn))
+                                            {
+                                                m_intError = -1;
+                                                m_strError = m_strError + "Table column pre_" + strTable + "." + strColumn + " does not exist in Db files PREPOST_FVSOUT.db or prepost_fvs_weighted.db\r\n";
+                                            }
+                                        }
+                                        else
+                                        {
+                                            m_intError = -1;
+                                            m_strError = m_strError + "Table pre_" + strTable + " does not exist in Db files PREPOST_FVSOUT.db or prepost_fvs_weighted.db\r\n";
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    m_intError = -1;
+                                    m_strError = m_strError + "Error making a db connection to PREPOST_FVSOUT.db\r\n";
+                                }
+                                conn.Close();
+                            }
+                        }
+                        else
+                        {
+                            m_intError = -1;
+                            m_strError = m_strError + "Db file PREPOST_FVSOUT.db does not exist\r\n";
+                        }
+                        string[] strPieces = oOptVariableItemCollection.Item(x).strFVSVariableName.Trim().ToUpper().Split('.');
+                        FIA_Biosum_Manager.OptimizerScenarioTools oOptimizerScenarioTools = new OptimizerScenarioTools();
+                        if (strPieces.Length == 2)
+                        {
+                            if (strPieces[0].ToUpper().Contains("_WEIGHTED"))
+                            {
+                                string strWeightedError = oOptimizerScenarioTools.AuditWeightedFvsVariablesSqlite(strPieces[0], out m_intError);
+                                if (m_intError != 0)
+                                {
+                                    m_strError = m_strError + strWeightedError;
+                                }
+                            }
+                        }
+                    }
+                    if (oOptVariableItemCollection.Item(x).strMaxYN == "N" &&
+                            oOptVariableItemCollection.Item(x).strMinYN == "N")
+                    {
+                        m_intError = -1;
+                        m_strError = m_strError + "The optimization variable requires a MAXIMUM or MINIMUM definition. \r\n";
+                    }
+
+                    if (oOptVariableItemCollection.Item(x).bUseFilter)
+                    {
+                        switch (oOptVariableItemCollection.Item(x).strFilterOperator.Trim())
+                        {
+                            case ">": break;
+                            case "<": break;
+                            case "<>": break;
+                            case ">=": break;
+                            case "<=": break;
+                            default:
+                                m_intError = -1;
+                                m_strError = m_strError + "Invalid filter operator for the optimization variable. \r\n";
+                                break;
+                        }
+                        if (String.IsNullOrEmpty(oOptVariableItemCollection.Item(x).strRevenueAttribute))
+                        {
+                            m_intError = -1;
+                            m_strError = m_strError + "Net Revenue calculation is required when using Net Revenue filter \r\n";
+                        }
+                    }
+                }
+                this.ReferenceTieBreaker.AuditCheckOptimiztionAndTieBreakerVariable(ref m_intError, ref m_strError);
+            }
+            if (DisplayAuditMessage)
+            {
+                if (m_intError == 0) this.m_strError = m_strError + "Passed Audit";
+                else m_strError = m_strError + "\r\n\r\n" + "Failed Audit";
+                MessageBox.Show(m_strError, "FIA Biosum");
+            }
+        }
 
 		private void lvOptimizationListValues_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
 		{

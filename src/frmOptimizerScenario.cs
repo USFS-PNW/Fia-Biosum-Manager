@@ -5659,6 +5659,49 @@ namespace FIA_Biosum_Manager
 
             return strErrorMessage;
         }
+        public string AuditWeightedFvsVariablesSqlite(string strTableName, out int intError)
+        {
+            intError = 0;
+            string strErrorMessage = "";
+            DataMgr oDataMgr = new DataMgr();
+            int intFvsPreTableCount = -1;
+            int intWeightedPreTableCount = -1;
+            char[] preArray = "PRE_".ToCharArray();
+            string strNamePart1 = strTableName.TrimStart(preArray);
+            string strName = strNamePart1.Substring(0, (strNamePart1.Length - "_WEIGHTED".Length));
+            string strFvsPrePostDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + Tables.FVS.DefaultFVSOutPrePostDbFile;
+            string strCalcConn = oDataMgr.GetConnectionString(strFvsPrePostDb);
+            using (System.Data.SQLite.SQLiteConnection oCalcConn = new System.Data.SQLite.SQLiteConnection(strCalcConn))
+            {
+                oCalcConn.Open();
+                oDataMgr.m_strSQL = "SELECT COUNT(*) AS n FROM (" +
+                    "SELECT DISTINCT biosum_cond_id, rxpackage, fvs_variant" +
+                    " FROM PRE_" + strName + ")";
+                intFvsPreTableCount = Convert.ToInt32(oDataMgr.getRecordCount(oCalcConn, oDataMgr.m_strSQL, "PRE_" + strName));
+                oCalcConn.Close();
+            }
+            strFvsPrePostDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + 
+                "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile;
+            strCalcConn = oDataMgr.GetConnectionString(strFvsPrePostDb);
+            using (System.Data.SQLite.SQLiteConnection oCalcConn = new System.Data.SQLite.SQLiteConnection(strCalcConn))
+            {
+                oCalcConn.Open();
+                oDataMgr.m_strSQL = "SELECT COUNT(*) AS n FROM (" +
+                    "SELECT DISTINCT biosum_cond_id, rxpackage, fvs_variant" +
+                    " FROM PRE_" + strTableName + ")";
+                intWeightedPreTableCount = Convert.ToInt32(oDataMgr.getRecordCount(oCalcConn, oDataMgr.m_strSQL, strTableName));
+            }
+            if (intFvsPreTableCount != intWeightedPreTableCount)
+            {
+                intError = -1;
+                strErrorMessage = "PRE_" + strName + " table has a different number of records (" + intFvsPreTableCount +
+                    ") than " + strTableName + " (" + intWeightedPreTableCount + "). Weighted variables from this table" +
+                    " cannot be used! \r\nConsider running the 'Recalculate All' tool from the 'Calculated Variables'" +
+                    "screen to recalculate all weighted variable \r\n";
+            }
+
+            return strErrorMessage;
+        }
     }
 
     public class GisTools

@@ -1725,6 +1725,7 @@ namespace FIA_Biosum_Manager
         {
             Queries oQueries = new Queries();
             oQueries.m_oFvs.LoadDatasource = true;
+			// pulls from master databases - keep as Access version for now
             oQueries.LoadDatasources(true);
             ado_data_access oAdo = new ado_data_access();
             oAdo.OpenConnection(oAdo.getMDBConnString(oQueries.m_strTempDbFile, "", ""));

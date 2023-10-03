@@ -404,7 +404,7 @@ namespace FIA_Biosum_Manager
                 if (this.m_strScenarioId.Trim().Length > 0)
                 {
                     strSQL = "select table_type,path,file,table_name from scenario_datasource" +
-                             " where trim(scenario_id) = '" + this.m_strScenarioId.Trim() + "';";
+                             " where TRIM(UPPER(scenario_id)) = '" + this.m_strScenarioId.Trim().ToUpper() + "';";
                 }
                 else
                 {
@@ -597,6 +597,7 @@ namespace FIA_Biosum_Manager
 						this.m_intNumberOfValidTables++;
 					}
 			}
+			
 			p_utils = null;
 			p_dao = null;
 			p_env = null;

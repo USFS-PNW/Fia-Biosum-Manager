@@ -2159,7 +2159,7 @@ namespace FIA_Biosum_Manager
                     if (strPieces[0].ToUpper().Contains("_WEIGHTED"))
                     {
                         FIA_Biosum_Manager.OptimizerScenarioTools oOptimizerScenarioTools = new OptimizerScenarioTools();
-                        string strWeightedError = oOptimizerScenarioTools.AuditWeightedFvsVariables(strPieces[0], out m_intError);
+                        string strWeightedError = oOptimizerScenarioTools.AuditWeightedFvsVariablesSqlite(strPieces[0], out m_intError);
                         if (m_intError != 0)
                         {
                             m_strError = m_strError + strWeightedError;

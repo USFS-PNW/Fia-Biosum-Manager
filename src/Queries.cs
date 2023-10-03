@@ -146,6 +146,18 @@ namespace FIA_Biosum_Manager
 			
 			
 		}
+        protected void LoadLimitedDatasourcesSqlite()
+        {
+            string strProjDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+
+            m_oDataSource = new Datasource();
+            m_oDataSource.LoadTableColumnNamesAndDataTypes = false;
+            m_oDataSource.LoadTableRecordCount = false;
+            m_oDataSource.m_strDataSourceMDBFile = strProjDir.Trim() + "\\db\\project.mdb";
+            m_oDataSource.m_strDataSourceTableName = "datasource";
+            m_oDataSource.m_strScenarioId = "";
+            m_oDataSource.populate_datasource_array();
+        }
 		protected void LoadLimitedDatasources(string p_strScenarioType, bool p_bUsingSqlite, string p_strScenarioId)
 		{
 			string strProjDir=frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
