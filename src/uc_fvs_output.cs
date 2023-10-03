@@ -10190,50 +10190,46 @@ namespace FIA_Biosum_Manager
             }
 
             string strConn = "";
-            string strAuditDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)this.txtOutDir, "Text", false);
-            strAuditDbFile = strAuditDbFile.Trim();
-            string strVariant = lstFvsOutput.SelectedItems[0].SubItems[COL_VARIANT].Text.Trim();
-            strAuditDbFile = strAuditDbFile + "\\" + strVariant + "\\PostAudit.accdb";
+            string strOutDirAndFile = this.m_strProjDir;
+            strOutDirAndFile = strOutDirAndFile + "\\" + Tables.FVS.DefaultFVSAuditsDbFile;
+            string strFVSVariant = lstFvsOutput.SelectedItems[0].SubItems[COL_VARIANT].Text.Trim();
+            string strRxPackage = lstFvsOutput.SelectedItems[0].SubItems[COL_PACKAGE].Text.Trim();
 
-            if (System.IO.File.Exists(strAuditDbFile))
+            if (System.IO.File.Exists(strOutDirAndFile))
             {
-                ado_data_access oAdo = new ado_data_access();
-                strConn = oAdo.getMDBConnString(strAuditDbFile, "", "");
-                oAdo.OpenConnection(strConn);
-
-                if (!oAdo.TableExist(oAdo.m_OleDbConnection, "audit_Post_SUMMARY"))
+                strConn = SQLite.GetConnectionString(strOutDirAndFile);
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                 {
-                    oAdo.CloseConnection(oAdo.m_OleDbConnection);
-                    oAdo = null;
-                    string strWarnMessage = "No POST-APPEND audit tables exist in the file " + strAuditDbFile + ". The POST-APPEND Audit tables cannot be displayed.";
-                    MessageBox.Show(strWarnMessage, "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                    return;
-                }
-
-                FIA_Biosum_Manager.frmGridView oFrm = new frmGridView();
-
-
-
-                oFrm.Text = "Database: Browse (POST-APPEND Audit Tables)";
-                if (m_strFVSPostAppendAuditTables != null)
-                {
-                    for (int x = 0; x <= m_strFVSPostAppendAuditTables.Count - 1; x++)
+                    conn.Open();
+                    if (!SQLite.TableExist(conn, "audit_Post_SUMMARY"))
                     {
-                        if (oAdo.TableExist(oAdo.m_OleDbConnection, m_strFVSPostAppendAuditTables[x].Trim()))
+                        string strWarnMessage = "No POST-APPEND audit tables exist in the file " + strOutDirAndFile + ". The POST-APPEND Audit tables cannot be displayed.";
+                        MessageBox.Show(strWarnMessage, "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+                        return;
+                    }
+                    FIA_Biosum_Manager.frmGridView oFrm = new frmGridView();
+                    oFrm.Text = "Database: Browse (POST-APPEND Audit Tables)";
+                    oFrm.UsingSQLite = true;
+
+                    if (m_strFVSPostAppendAuditTables != null)
+                    {
+                        for (int x = 0; x <= m_strFVSPostAppendAuditTables.Count - 1; x++)
                         {
-                            oFrm.LoadDataSet(oAdo.m_OleDbConnection, strConn, "SELECT * FROM " + m_strFVSPostAppendAuditTables[x].Trim(), m_strFVSPostAppendAuditTables[x].Trim());
+                            if (SQLite.TableExist(conn, m_strFVSPostAppendAuditTables[x].Trim()))
+                            {
+                                SQLite.m_strSQL = $@"SELECT * FROM  {m_strFVSPostAppendAuditTables[x].Trim()} WHERE RXPACKAGE = '{strRxPackage}' AND FVS_VARIANT = '{strFVSVariant}'";
+                                oFrm.LoadDataSet(strConn, SQLite.m_strSQL);
+                            }
                         }
                     }
+                    oFrm.TileGridViews();
+                    oFrm.Show();
+                    oFrm.Focus();
                 }
-
-                oAdo.CloseConnection(oAdo.m_OleDbConnection);
-                oFrm.TileGridViews();
-                oFrm.Show();
-                oFrm.Focus();
             }
             else
             {
-                MessageBox.Show("The file " + strAuditDbFile + " does not exist");
+                MessageBox.Show("The file " + strOutDirAndFile + " does not exist");
             }
         }
 

@@ -2741,7 +2741,8 @@ namespace FIA_Biosum_Manager
                           "a.FVS_TREE_ID IS NOT NULL AND " +
                           "LEN(TRIM(a.FVS_TREE_ID)) >  0 AND " +
                           "VAL(a.FVS_SPECIES) <> b.SPCD) fvs_species_change_count)";
-                sqlArray[13] = $@"UPDATE {p_strPostAuditSummaryTable} SET CREATED_DATE='{DateTime.Now.ToString().Trim()}' 
+                string strDateTimeCreated = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                sqlArray[13] = $@"UPDATE {p_strPostAuditSummaryTable} SET DateTimeCreated ='{strDateTimeCreated}' 
                                 WHERE RXPACKAGE = '{p_strRxPackage}' AND FVS_VARIANT = '{p_strFvsVariant}'";
 
                 return sqlArray;

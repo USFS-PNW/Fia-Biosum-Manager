@@ -3732,7 +3732,7 @@ namespace FIA_Biosum_Manager
                     "voltsgrs DOUBLE," +
                     "fvs_tree_id CHAR(10)," +
                     "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
-                    "DateTimeCreated DATE)";
+                    "DateTimeCreated DATETIME)";
 
                     }
                     /// <summary>
@@ -3786,7 +3786,7 @@ namespace FIA_Biosum_Manager
                     "voltsgrs DOUBLE," +
                     "fvs_tree_id CHAR(10)," +
                     "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
-                    "DateTimeCreated DATE)";
+                    "DateTimeCreated DATETIME)";
 
                     }
                     /// <summary>
@@ -3810,7 +3810,7 @@ namespace FIA_Biosum_Manager
                           "NF_IN_RXPACKAGE_TABLE_ERROR CHAR(10)," +
                           "NF_IN_TREE_TABLE_ERROR CHAR(10)," +
                           "TREE_SPECIES_CHANGE_WARNING CHAR(10)," +
-                          "CREATED_DATE DATETIME," +
+                          "DATETIMECREATED DATETIME," +
                           "PRIMARY KEY (IDX, FVS_VARIANT, RXPACKAGE, COLUMN_NAME))";
                     }
                     /// <summary>
