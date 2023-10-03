@@ -9,7 +9,6 @@ namespace FIA_Biosum_Manager
     {
         private string m_strScenarioId = "";
         private ado_data_access  m_oAdo;
-        private SQLite.ADO.DataMgr m_oDataMgr;
         private string m_strOpcostTableName = "OpCost_Input";
         private string m_strTvvTableName = "TreeVolValLowSlope";
         private string m_strDebugFile ="";
@@ -23,6 +22,13 @@ namespace FIA_Biosum_Manager
         private System.Collections.Generic.IList<harvestMethod> m_harvestMethodList;
         private escalators m_escalators;
         public System.Collections.Generic.List<string> m_standsWithNoYardingDistance;
+
+        private SQLite.ADO.DataMgr _SQLite = new SQLite.ADO.DataMgr();
+        public SQLite.ADO.DataMgr SQLite
+        {
+            get { return _SQLite; }
+            set { _SQLite = value; }
+        }
 
         public processor(string strDebugFile, string strScenarioId, ado_data_access oAdo, bool bUsingSqlite,
                          string sqliteConnectionString)
@@ -42,8 +48,7 @@ namespace FIA_Biosum_Manager
                 Tables.FVS.DefaultFVSTreeListDbFile);
             if (m_bUsingSqlite)
             {
-                m_oDataMgr = new SQLite.ADO.DataMgr();
-                m_oDataMgr.OpenConnection(sqliteConnectionString);
+                SQLite.OpenConnection(sqliteConnectionString);
                 // Attach to rule definitions database; Seems to be connection-specific
                 string strScenarioDB =
                     frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
@@ -51,7 +56,7 @@ namespace FIA_Biosum_Manager
                 string strSql = "ATTACH DATABASE '" + strScenarioDB + "' AS definitions";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + strSql + "\r\n");
-                m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, strSql);
+                SQLite.SqlNonQuery(SQLite.m_Connection, strSql);
                 // Set up an ODBC DSN for the temp database
                 // Check to see if the input SQLite DSN exists and if so, delete so we can add
                 if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName))
@@ -59,7 +64,7 @@ namespace FIA_Biosum_Manager
                     odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName);
                 }
                 odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName,
-                    m_oDataMgr.m_Connection.FileName);
+                    SQLite.m_Connection.FileName);
             }
         }
         
@@ -134,12 +139,6 @@ namespace FIA_Biosum_Manager
                 p_oQueries.m_oTravelTime.m_strTravelTimeTable,
                 frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.TravelTime.DefaultTravelTimeTableDbFile,
                 p_oQueries.m_oTravelTime.m_strTravelTimeTable, true);
-
-            // link to PRE_FVS_SUMMARY table
-            oDao.CreateTableLink(p_oQueries.m_strTempDbFile,
-                Tables.FVS.DefaultPreFVSSummaryTableName,
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultPreFVSSummaryDbFile,
-                Tables.FVS.DefaultPreFVSSummaryTableName, true);
 
             oDao.m_DaoDbEngine.Idle(1);
             oDao.m_DaoDbEngine.Idle(8);
@@ -1003,11 +1002,11 @@ namespace FIA_Biosum_Manager
                 else
                 {
                     // drop tree vol val work table (TreeVolValLowSlope) if it exists for next variant/package
-                    if (m_oDataMgr.TableExist(m_oDataMgr.m_Connection, m_strTvvTableName) == true)
-                        m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, "DROP TABLE " + m_strTvvTableName);
+                    if (SQLite.TableExist(SQLite.m_Connection, m_strTvvTableName) == true)
+                        SQLite.SqlNonQuery(SQLite.m_Connection, "DROP TABLE " + m_strTvvTableName);
 
                     // create tree vol val work table (TreeVolValLowSlope); Re-use the sql from tree vol val but don't create the indexes
-                    m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, Tables.Processor.CreateSqliteTreeVolValSpeciesDiamGroupsTableSQL(m_strTvvTableName, false));
+                    SQLite.SqlNonQuery(SQLite.m_Connection, Tables.Processor.CreateSqliteTreeVolValSpeciesDiamGroupsTableSQL(m_strTvvTableName, false));
 
                     // check to see if table link exists; Create it if it doesn't
                     if (! m_oAdo.TableExist(m_oAdo.m_OleDbConnection, m_strTvvTableName))
@@ -1015,7 +1014,7 @@ namespace FIA_Biosum_Manager
                         dao_data_access oDao = new dao_data_access();
                         oDao.CreateSQLiteTableLink(m_oAdo.m_OleDbConnection.DataSource, m_strTvvTableName,
                             m_strTvvTableName, ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName,
-                            m_oDataMgr.m_Connection.FileName);
+                            SQLite.m_Connection.FileName);
                         oDao.m_DaoWorkspace.Close();
                         oDao = null;
                     }
@@ -1268,17 +1267,17 @@ namespace FIA_Biosum_Manager
                 else
                 {
                     //Note: Wrapping this in a transaction made it MUCH faster!!
-                    m_oDataMgr.m_Command = m_oDataMgr.m_Connection.CreateCommand();
-                    using (m_oDataMgr.m_Transaction = m_oDataMgr.m_Connection.BeginTransaction())
+                    SQLite.m_Command = SQLite.m_Connection.CreateCommand();
+                    using (SQLite.m_Transaction = SQLite.m_Connection.BeginTransaction())
                     {
-                        m_oDataMgr.m_Command.Transaction = m_oDataMgr.m_Transaction;
+                        SQLite.m_Command.Transaction = SQLite.m_Transaction;
                         foreach (var item in lstSql)
                         {
-                            m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, item);
-                            if (m_oDataMgr.m_intError != 0) break;
+                            SQLite.SqlNonQuery(SQLite.m_Connection, item);
+                            if (SQLite.m_intError != 0) break;
                             lngCount++;
                         }
-                        m_oDataMgr.m_Transaction.Commit();
+                        SQLite.m_Transaction.Commit();
                     }
                 }
 
@@ -1301,10 +1300,10 @@ namespace FIA_Biosum_Manager
                  frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
 
-            if (m_oDataMgr != null)
+            if (SQLite != null)
             {
-                m_oDataMgr.CloseConnection(m_oDataMgr.m_Connection);
-                m_oDataMgr = null;
+                SQLite.CloseConnection(SQLite.m_Connection);
+                SQLite = null;
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                 {
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
@@ -1339,21 +1338,21 @@ namespace FIA_Biosum_Manager
             }
             else
             {
-                if (m_oDataMgr.m_intError == 0)
+                if (SQLite.m_intError == 0)
                 {
                     string strSQL = "SELECT * FROM definitions." + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName +
                         " WHERE TRIM(scenario_id)='" + m_strScenarioId.Trim() + "'";
-                    m_oDataMgr.SqlQueryReader(m_oDataMgr.m_Connection, strSQL);
-                    if (m_oDataMgr.m_DataReader.HasRows)
+                    SQLite.SqlQueryReader(SQLite.m_Connection, strSQL);
+                    if (SQLite.m_DataReader.HasRows)
                     {
-                        while (m_oDataMgr.m_DataReader.Read())
+                        while (SQLite.m_DataReader.Read())
                         {
-                            int intDiamGroup = Convert.ToInt32(m_oDataMgr.m_DataReader["diam_group"]);
-                            double dblMinDiam = Convert.ToDouble(m_oDataMgr.m_DataReader["min_diam"]);
-                            double dblMaxDiam = Convert.ToDouble(m_oDataMgr.m_DataReader["max_diam"]);
+                            int intDiamGroup = Convert.ToInt32(SQLite.m_DataReader["diam_group"]);
+                            double dblMinDiam = Convert.ToDouble(SQLite.m_DataReader["min_diam"]);
+                            double dblMaxDiam = Convert.ToDouble(SQLite.m_DataReader["max_diam"]);
                             listDiamGroups.Add(new treeDiamGroup(intDiamGroup, dblMinDiam, dblMaxDiam));
                         }
-                        m_oDataMgr.m_DataReader.Close();
+                        SQLite.m_DataReader.Close();
                     }
                 }
             }
@@ -1443,26 +1442,26 @@ namespace FIA_Biosum_Manager
             }
             else
             {
-                if (m_oDataMgr.m_intError == 0)
+                if (SQLite.m_intError == 0)
                 {
                     string strSQL = "SELECT * FROM definitions." +
                                     Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName +
                                     " WHERE scenario_id = '" + p_scenario + "'";
-                    m_oDataMgr.SqlQueryReader(m_oDataMgr.m_Connection, strSQL);
-                    if (m_oDataMgr.m_DataReader.HasRows)
+                    SQLite.SqlQueryReader(SQLite.m_Connection, strSQL);
+                    if (SQLite.m_DataReader.HasRows)
                     {
-                        while (m_oDataMgr.m_DataReader.Read())
+                        while (SQLite.m_DataReader.Read())
                         {
-                            int intSpcGroup = Convert.ToInt32(m_oDataMgr.m_DataReader["species_group"]);
-                            int intDiamGroup = Convert.ToInt32(m_oDataMgr.m_DataReader["diam_group"]);
-                            string strWoodBin = Convert.ToString(m_oDataMgr.m_DataReader["wood_bin"]).Trim();
-                            double dblMerchValue = Convert.ToDouble(m_oDataMgr.m_DataReader["merch_value"]);
-                            double dblChipValue = Convert.ToDouble(m_oDataMgr.m_DataReader["chip_value"]);
+                            int intSpcGroup = Convert.ToInt32(SQLite.m_DataReader["species_group"]);
+                            int intDiamGroup = Convert.ToInt32(SQLite.m_DataReader["diam_group"]);
+                            string strWoodBin = Convert.ToString(SQLite.m_DataReader["wood_bin"]).Trim();
+                            double dblMerchValue = Convert.ToDouble(SQLite.m_DataReader["merch_value"]);
+                            double dblChipValue = Convert.ToDouble(SQLite.m_DataReader["chip_value"]);
                             string strKey = intDiamGroup + "|" + intSpcGroup;
                             dictSpeciesDiamValues.Add(strKey, new speciesDiamValue(intDiamGroup, intSpcGroup,
                                 strWoodBin, dblMerchValue, dblChipValue));
                         }
-                        m_oDataMgr.m_DataReader.Close();
+                        SQLite.m_DataReader.Close();
                     }
                 }
             }
@@ -1575,22 +1574,22 @@ namespace FIA_Biosum_Manager
             }
             else
             {
-                if (m_oDataMgr.m_intError == 0)
+                if (SQLite.m_intError == 0)
                 {
                     string strSQL = "SELECT * FROM definitions." + Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodTableName +
                                     " WHERE scenario_id = '" + p_scenario + "'";
-                    m_oDataMgr.SqlQueryReader(m_oDataMgr.m_Connection, strSQL);
-                    if (m_oDataMgr.m_DataReader.HasRows)
+                    SQLite.SqlQueryReader(SQLite.m_Connection, strSQL);
+                    if (SQLite.m_DataReader.HasRows)
                     {
                         // We should only have one record
-                        m_oDataMgr.m_DataReader.Read();
-                        string strHarvestMethodLowSlope = Convert.ToString(m_oDataMgr.m_DataReader["HarvestMethodLowSlope"]).Trim();
-                        double dblMinChipDbh = Convert.ToDouble(m_oDataMgr.m_DataReader["min_chip_dbh"]);
-                        double dblMinSmallLogDbh = Convert.ToDouble(m_oDataMgr.m_DataReader["min_sm_log_dbh"]);
-                        double dblMinLgLogDbh = Convert.ToDouble(m_oDataMgr.m_DataReader["min_lg_log_dbh"]);
-                        int intMinSlopePct = Convert.ToInt32(m_oDataMgr.m_DataReader["SteepSlope"]);
-                        double dblMinDbhSteepSlope = Convert.ToDouble(m_oDataMgr.m_DataReader["min_dbh_steep_slope"]);
-                        string strHarvestMethodSelection = Convert.ToString(m_oDataMgr.m_DataReader["HarvestMethodSelection"]).Trim();
+                        SQLite.m_DataReader.Read();
+                        string strHarvestMethodLowSlope = Convert.ToString(SQLite.m_DataReader["HarvestMethodLowSlope"]).Trim();
+                        double dblMinChipDbh = Convert.ToDouble(SQLite.m_DataReader["min_chip_dbh"]);
+                        double dblMinSmallLogDbh = Convert.ToDouble(SQLite.m_DataReader["min_sm_log_dbh"]);
+                        double dblMinLgLogDbh = Convert.ToDouble(SQLite.m_DataReader["min_lg_log_dbh"]);
+                        int intMinSlopePct = Convert.ToInt32(SQLite.m_DataReader["SteepSlope"]);
+                        double dblMinDbhSteepSlope = Convert.ToDouble(SQLite.m_DataReader["min_dbh_steep_slope"]);
+                        string strHarvestMethodSelection = Convert.ToString(SQLite.m_DataReader["HarvestMethodSelection"]).Trim();
                         HarvestMethodSelection objHarvestMethodSelection = HarvestMethodSelection.RX;
                         if (strHarvestMethodSelection.Equals(HarvestMethodSelection.LOWEST_COST.Value))
                         {
@@ -1600,10 +1599,10 @@ namespace FIA_Biosum_Manager
                         {
                             objHarvestMethodSelection = HarvestMethodSelection.SELECTED;
                         }
-                        string strHarvestMethodSteepSlope = Convert.ToString(m_oDataMgr.m_DataReader["HarvestMethodSteepSlope"]).Trim();
-                        int intSaplingMerchAsPercentOfTotalVol = Convert.ToInt16(m_oDataMgr.m_DataReader["SaplingMerchAsPercentOfTotalVol"]);
-                        int intWoodlandMerchAsPercentOfTotalVol = Convert.ToInt16(m_oDataMgr.m_DataReader["WoodlandMerchAsPercentOfTotalVol"]);
-                        int intCullPctThreshold = Convert.ToInt16(m_oDataMgr.m_DataReader["CullPctThreshold"]);
+                        string strHarvestMethodSteepSlope = Convert.ToString(SQLite.m_DataReader["HarvestMethodSteepSlope"]).Trim();
+                        int intSaplingMerchAsPercentOfTotalVol = Convert.ToInt16(SQLite.m_DataReader["SaplingMerchAsPercentOfTotalVol"]);
+                        int intWoodlandMerchAsPercentOfTotalVol = Convert.ToInt16(SQLite.m_DataReader["WoodlandMerchAsPercentOfTotalVol"]);
+                        int intCullPctThreshold = Convert.ToInt16(SQLite.m_DataReader["CullPctThreshold"]);
                         harvestMethod objHarvestMethodLowSlope = null;
                         harvestMethod objHarvestMethodSteepSlope = null;
                         foreach (harvestMethod nextMethod in m_harvestMethodList)
@@ -1655,22 +1654,22 @@ namespace FIA_Biosum_Manager
             }
             else
             {
-                if (m_oDataMgr.m_intError == 0)
+                if (SQLite.m_intError == 0)
                 {
                     string strSQL = "SELECT * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultMoveInCostsTableName +
                                     " WHERE scenario_id = '" + p_scenario + "'";
-                    m_oDataMgr.SqlQueryReader(m_oDataMgr.m_Connection, strSQL);
-                    if (m_oDataMgr.m_DataReader.HasRows)
+                    SQLite.SqlQueryReader(SQLite.m_Connection, strSQL);
+                    if (SQLite.m_DataReader.HasRows)
                     {
                         // We should only have one record
-                        m_oDataMgr.m_DataReader.Read();
-                        double dblYardDistThreshold = Convert.ToDouble(m_oDataMgr.m_DataReader["yard_dist_threshold"]);
-                        double dblAssumedHarvestAreaAc = Convert.ToDouble(m_oDataMgr.m_DataReader["assumed_harvest_area_ac"]);
-                        double dblMoveInTimeMultiplier = Convert.ToDouble(m_oDataMgr.m_DataReader["move_in_time_multiplier"]);
-                        double dblMoveInHoursAddend = Convert.ToDouble(m_oDataMgr.m_DataReader["move_in_hours_addend"]);
+                        SQLite.m_DataReader.Read();
+                        double dblYardDistThreshold = Convert.ToDouble(SQLite.m_DataReader["yard_dist_threshold"]);
+                        double dblAssumedHarvestAreaAc = Convert.ToDouble(SQLite.m_DataReader["assumed_harvest_area_ac"]);
+                        double dblMoveInTimeMultiplier = Convert.ToDouble(SQLite.m_DataReader["move_in_time_multiplier"]);
+                        double dblMoveInHoursAddend = Convert.ToDouble(SQLite.m_DataReader["move_in_hours_addend"]);
                         returnVariables = new scenarioMoveInCost(dblYardDistThreshold, dblAssumedHarvestAreaAc,
                                                                  dblMoveInTimeMultiplier, dblMoveInHoursAddend);
-                        m_oDataMgr.m_DataReader.Close();
+                        SQLite.m_DataReader.Close();
                     }
                 }
             }
@@ -1708,22 +1707,22 @@ namespace FIA_Biosum_Manager
             }
             else
             {
-                if (m_oDataMgr.m_intError == 0)
+                if (SQLite.m_intError == 0)
                 {
                     string strSQL = "SELECT * FROM definitions." +
                                     Tables.ProcessorScenarioRuleDefinitions.DefaultCostRevenueEscalatorsTableName +
                                     " WHERE scenario_id = '" + m_strScenarioId + "'";
-                    m_oDataMgr.SqlQueryReader(m_oDataMgr.m_Connection, strSQL);
-                    if (m_oDataMgr.m_DataReader.HasRows)
+                    SQLite.SqlQueryReader(SQLite.m_Connection, strSQL);
+                    if (SQLite.m_DataReader.HasRows)
                     {
                         // We should only have one record
-                        m_oDataMgr.m_DataReader.Read();
-                        double dblEnergyWoodRevCycle2 = Convert.ToDouble(m_oDataMgr.m_DataReader["EscalatorEnergyWoodRevenue_Cycle2"]);
-                        double dblEnergyWoodRevCycle3 = Convert.ToDouble(m_oDataMgr.m_DataReader["EscalatorEnergyWoodRevenue_Cycle3"]);
-                        double dblEnergyWoodRevCycle4 = Convert.ToDouble(m_oDataMgr.m_DataReader["EscalatorEnergyWoodRevenue_Cycle4"]);
-                        double dblMerchWoodRevCycle2 = Convert.ToDouble(m_oDataMgr.m_DataReader["EscalatorMerchWoodRevenue_Cycle2"]);
-                        double dblMerchWoodRevCycle3 = Convert.ToDouble(m_oDataMgr.m_DataReader["EscalatorMerchWoodRevenue_Cycle3"]);
-                        double dblMerchWoodRevCycle4 = Convert.ToDouble(m_oDataMgr.m_DataReader["EscalatorMerchWoodRevenue_Cycle4"]);
+                        SQLite.m_DataReader.Read();
+                        double dblEnergyWoodRevCycle2 = Convert.ToDouble(SQLite.m_DataReader["EscalatorEnergyWoodRevenue_Cycle2"]);
+                        double dblEnergyWoodRevCycle3 = Convert.ToDouble(SQLite.m_DataReader["EscalatorEnergyWoodRevenue_Cycle3"]);
+                        double dblEnergyWoodRevCycle4 = Convert.ToDouble(SQLite.m_DataReader["EscalatorEnergyWoodRevenue_Cycle4"]);
+                        double dblMerchWoodRevCycle2 = Convert.ToDouble(SQLite.m_DataReader["EscalatorMerchWoodRevenue_Cycle2"]);
+                        double dblMerchWoodRevCycle3 = Convert.ToDouble(SQLite.m_DataReader["EscalatorMerchWoodRevenue_Cycle3"]);
+                        double dblMerchWoodRevCycle4 = Convert.ToDouble(SQLite.m_DataReader["EscalatorMerchWoodRevenue_Cycle4"]);
 
 
                         returnEscalators = new escalators(dblEnergyWoodRevCycle2, dblEnergyWoodRevCycle3, dblEnergyWoodRevCycle4,
@@ -3121,21 +3120,24 @@ namespace FIA_Biosum_Manager
         {
             System.Collections.Generic.IDictionary<String, double> dictPreBasalArea =
                 new System.Collections.Generic.Dictionary<String, double>();
-            if (m_oAdo.m_intError == 0)
+            string strConn = SQLite.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSOutPrePostDbFile}");
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
-                string strSQL = "SELECT TRIM(biosum_cond_id) + TRIM(rxpackage)  + TRIM(rx) + TRIM(rxcycle) as [OpCostStandId], BA" +
-                                " FROM " + Tables.FVS.DefaultPreFVSSummaryTableName + 
-                                " WHERE fvs_variant = '" + p_strVariant + "' and rxpackage = '" + p_strRxPackage + "'" ;
-                m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
-                if (m_oAdo.m_OleDbDataReader.HasRows)
+                conn.Open();
+                string strSQL = "SELECT TRIM(biosum_cond_id) || TRIM(rxpackage) || TRIM(rx) || TRIM(rxcycle) as OpCostStandId, BA" +
+                                " FROM " + Tables.FVS.DefaultPreFVSSummaryTableName +
+                                " WHERE fvs_variant = '" + p_strVariant + "' and rxpackage = '" + p_strRxPackage + "'"; 
+                SQLite.SqlQueryReader(conn, strSQL);
+                if (SQLite.m_DataReader.HasRows)
                 {
-                    while (m_oAdo.m_OleDbDataReader.Read())
+                    while (SQLite.m_DataReader.Read())
                     {
-                        string strOpCostStandId = Convert.ToString(m_oAdo.m_OleDbDataReader["OpCostStandId"]).Trim();
-                        double dblBasalArea = Convert.ToDouble(m_oAdo.m_OleDbDataReader["BA"]);
+                        string strOpCostStandId = Convert.ToString(SQLite.m_DataReader["OpCostStandId"]).Trim();
+                        double dblBasalArea = Convert.ToDouble(SQLite.m_DataReader["BA"]);
                         dictPreBasalArea.Add(strOpCostStandId, dblBasalArea);
                     }
                 }
+                SQLite.m_DataReader.Close();
             }
             return dictPreBasalArea;
         }

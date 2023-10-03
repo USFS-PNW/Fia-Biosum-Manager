@@ -4494,7 +4494,7 @@ namespace FIA_Biosum_Manager
                                         strSetValues = $@" SET {ScenarioId.Trim()} = " + sb.ToString().TrimEnd('+');
                                         m_oAdo.m_strSQL = $@"UPDATE {p_strAddCostsWorktable} k 
                                             INNER JOIN {Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName} S ON K.biosum_cond_id = S.biosum_cond_id AND K.rx=S.rx
-                                            {strSetValues} WHERE RX = '{oRx.RxId}' AND TRIM(UCASE(SCENARIO_ID)) = '{ScenarioId.Trim().ToUpper()}'";
+                                            {strSetValues} WHERE K.RX = '{oRx.RxId}' AND TRIM(UCASE(SCENARIO_ID)) = '{ScenarioId.Trim().ToUpper()}'";
                                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                             frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                                         m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
@@ -4533,7 +4533,7 @@ namespace FIA_Biosum_Manager
                                 if (bHasScenarioCosts)
                                 {
                                     m_oAdo.m_strSQL = $@"UPDATE {p_strAddCostsWorktable} SET ADDITIONAL_CPA = 
-                                        IIF(ADDITIONAL_CPA >0, ADDITIONAL_CPA + {ScenarioId.Trim()}, {ScenarioId.Trim()} WHERE RX = '{oRx.RxId}')";
+                                        IIF(ADDITIONAL_CPA >0, ADDITIONAL_CPA + {ScenarioId.Trim()}, {ScenarioId.Trim()}) WHERE RX = '{oRx.RxId}'";
                                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                         frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                                     m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
