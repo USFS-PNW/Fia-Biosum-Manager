@@ -548,17 +548,29 @@ namespace FIA_Biosum_Manager
                 }
             }
             // link to PRE_FVS_COMPUTE table
-            string strComputeDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultPreFVSComputeDbFile;
+            string strComputeDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
             if (m_bLinkFvsComputeTables && 
-                System.IO.File.Exists(strComputeDbPath) &&
-                oDao.TableExists(strComputeDbPath, Tables.FVS.DefaultPreFVSComputeTableName))
+                System.IO.File.Exists(strComputeDbPath))
             {
-                oDao.CreateTableLink(m_oQueries.m_strTempDbFile,
-                    Tables.FVS.DefaultPreFVSComputeTableName,
-                    strComputeDbPath, Tables.FVS.DefaultPreFVSComputeTableName, true);
-                oDao.CreateTableLink(m_oQueries.m_strTempDbFile,
-                    Tables.FVS.DefaultPostFVSComputeTableName,
-                    strComputeDbPath, Tables.FVS.DefaultPostFVSComputeTableName, true);
+                string strConn = m_oDataMgr.GetConnectionString(strComputeDbPath);
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+                    conn.Open();
+                    if (m_oDataMgr.TableExist(conn, Tables.FVS.DefaultPreFVSComputeTableName))
+                    {
+                        // Check to see if the FvsOutPrePost SQLite DSN exists and if so, delete so we can add
+                        if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutPrePostDsnName))
+                        {
+                            odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutPrePostDsnName);
+                        }
+                        odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutPrePostDsnName, strComputeDbPath);
+                    }
+                }
+
+                oDao.CreateSQLiteTableLink(m_oQueries.m_strTempDbFile, Tables.FVS.DefaultPreFVSComputeTableName, Tables.FVS.DefaultPreFVSComputeTableName,
+                    ODBCMgr.DSN_KEYS.FvsOutPrePostDsnName, strComputeDbPath);
+                oDao.CreateSQLiteTableLink(m_oQueries.m_strTempDbFile, Tables.FVS.DefaultPostFVSComputeTableName, Tables.FVS.DefaultPostFVSComputeTableName,
+                    ODBCMgr.DSN_KEYS.FvsOutPrePostDsnName, strComputeDbPath);
             }
 
             oDao.m_DaoDbEngine.Idle(1);

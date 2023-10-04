@@ -1877,25 +1877,24 @@ namespace FIA_Biosum_Manager
                             else
                             {
                                 strFields += "," + strCol;
-                            }
+                            }                   
                         }
-                        sb.Append(strFields + ") ");
-
+                        sb.Append(strFields + ",");
                         if (sb.Length > 0)
                         {
                             SQLite.m_strSQL = sb.ToString();
+                            string strPrimaryKey = $@" CONSTRAINT " + strPreTable + "_pk PRIMARY KEY(biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant))";
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                this.WriteText(m_strDebugFile, "CREATE TABLE " + strPreTable + " " + SQLite.m_strSQL + "\r\n\r\n");
-                                SQLite.SqlNonQuery(conn, "CREATE TABLE " + strPreTable + " " + SQLite.m_strSQL);
+                                this.WriteText(m_strDebugFile, "CREATE TABLE " + strPreTable + " " + SQLite.m_strSQL + strPrimaryKey + "\r\n\r\n");
+                            SQLite.SqlNonQuery(conn, "CREATE TABLE " + strPreTable + " " + SQLite.m_strSQL + strPrimaryKey);
+                            strPrimaryKey = $@" CONSTRAINT " + strPostTable + "_pk PRIMARY KEY(biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant))";
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                this.WriteText(m_strDebugFile, "CREATE TABLE " + strPostTable + " " + SQLite.m_strSQL + "\r\n\r\n");
-                            SQLite.SqlNonQuery(conn, "CREATE TABLE " + strPostTable + " " + SQLite.m_strSQL);
+                                this.WriteText(m_strDebugFile, "CREATE TABLE " + strPostTable + " " + SQLite.m_strSQL + strPrimaryKey + "\r\n\r\n");
+                            SQLite.SqlNonQuery(conn, "CREATE TABLE " + strPostTable + " " + SQLite.m_strSQL + strPrimaryKey);
 
                             // Indexes must be unique throughout an SQLite .db; Adding the table names to the index name
                             SQLite.AddIndex(conn, strPreTable, $@"biosumcondididx_{strPreTable}", "biosum_cond_id");
                             SQLite.AddIndex(conn, strPostTable, $@"biosumcondididx_{strPostTable}", "biosum_cond_id");
-                            SQLite.AddIndex(conn, strPreTable, $@"biosumcondidrxidx_{strPreTable}", "biosum_cond_id,rxpackage,rx,rxcycle");
-                            SQLite.AddIndex(conn, strPostTable, $@"biosumcondidrxidx_{strPostTable}", "biosum_cond_id,rxpackage,rx,rxcycle");
                     }
                 }
                 else
