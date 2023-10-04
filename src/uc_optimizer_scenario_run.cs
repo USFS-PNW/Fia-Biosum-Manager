@@ -1239,7 +1239,7 @@ namespace FIA_Biosum_Manager
                 oCheckBox = (CheckBox) ReferenceUserControlScenarioRun.listViewEx1.GetEmbeddedControl(0, intListViewIndex);
                 if ((bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)oCheckBox, "Checked", false) == true)
                 {
-                    this.m_strContextDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
+                    this.m_strContextDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
                     this.CopyScenarioResultsTable(this.m_strContextDbPathAndFile, strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsContextDbFile);
                 }
 
@@ -1485,17 +1485,17 @@ namespace FIA_Biosum_Manager
 
                     FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
-					this.CreateAuditTableLinks();
+					this.CreateAuditTableLinksSqlite();
 					if (this.m_intError != 0) return;
 
-					this.CreateScenarioTableLinks();
+					this.CreateScenarioTableLinksSqlite();
                     if (this.m_intError != 0)
                     {
                         FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
                         FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
                         return;
                     }
-                    this.CreateValidComboTableLinks();
+                    this.CreateValidComboTableLinksSqlite();
                     if (this.m_intError != 0)
                     {
                         FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
@@ -1506,7 +1506,7 @@ namespace FIA_Biosum_Manager
 
                     FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
-                    m_oRxTools.CreateTableLinksToFVSPrePostTables(m_strTempMDBFile);
+                    m_oRxTools.CreateTableLinksToFVSPrePostTablesSqlite(m_strTempMDBFile);
                     m_intError = m_oRxTools.m_intError;
                     if (this.m_intError != 0)
                     {
@@ -2464,9 +2464,15 @@ namespace FIA_Biosum_Manager
                     for (int x = 0; x <= intCount - 1; x++)
                     {
                         p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, strTableNames[x], strTableNames[x], ODBCMgr.DSN_KEYS.OptimizerResultsDsnName, this.m_strSystemResultsDbPathAndFile);
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        {
+                            frmMain.g_oUtils.WriteText(m_strDebugFile,
+                                "scenario_results\t" + strTableNames[x] + "\r\n");
+                        }
                         if (p_dao.m_intError != 0)
                         {
                             p_dao.m_strError = strTableNames[x] + " !!Error Creating Table Link!!!";
+                            this.m_intError = p_dao.m_intError;
                             break;
                         }
                     }
@@ -2476,6 +2482,11 @@ namespace FIA_Biosum_Manager
                         odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.OptimizerResultsDsnName);
                     }
                 }
+            }
+            else
+            {
+                if (frmMain.g_bDebug) frmMain.g_oUtils.WriteText(m_strDebugFile, p_dataMgr.m_strError + "\r\n");
+                this.m_intError = p_dataMgr.m_intError;
             }
         }
 
@@ -2764,6 +2775,108 @@ namespace FIA_Biosum_Manager
 
 
         }
+        private void CreateValidComboTableLinksSqlite()
+        {
+            // attach SQLite results db to tempMDB
+            string[] strTableNames = new string[1];
+            int intCount = 0;
+            dao_data_access p_dao = new dao_data_access();
+            DataMgr p_dataMgr = new DataMgr();
+
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strFVSPreValidComboDbPathAndFile)))
+            {
+                conn.Open();
+                strTableNames = p_dataMgr.getTableNames(conn);
+                intCount = strTableNames.Length;
+                conn.Close();
+            }
+
+            if (p_dataMgr.m_intError == 0)
+            {
+                if (intCount > 0)
+                {
+                    ODBCMgr odbcmgr = new ODBCMgr();
+                    if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.PreValidComboDsnName))
+                    {
+                        odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.PreValidComboDsnName);
+                    }
+                    odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.PreValidComboDsnName, this.m_strFVSPreValidComboDbPathAndFile);
+
+                    for (int x = 0; x <= intCount - 1; x++)
+                    {
+                        p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, strTableNames[x], strTableNames[x], ODBCMgr.DSN_KEYS.PreValidComboDsnName, this.m_strFVSPreValidComboDbPathAndFile);
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        {
+                            frmMain.g_oUtils.WriteText(m_strDebugFile,
+                                        "validcombo\t" + strTableNames[x] + "\r\n");
+                        }
+                        if (p_dao.m_intError != 0)
+                        {
+                            p_dao.m_strError = strTableNames[x] + " !!Error Creating Table Link!!!";
+                            this.m_intError = p_dao.m_intError;
+                            break;
+                        }
+                    }
+
+                    if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.PreValidComboDsnName))
+                    {
+                        odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.PreValidComboDsnName);
+                    }
+                }
+            }
+            else
+            {
+                if (frmMain.g_bDebug) frmMain.g_oUtils.WriteText(m_strDebugFile, p_dataMgr.m_strError + "\r\n");
+                this.m_intError = p_dataMgr.m_intError;
+            }
+
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strFVSPostValidComboDbPathAndFile)))
+            {
+                conn.Open();
+                strTableNames = p_dataMgr.getTableNames(conn);
+                intCount = strTableNames.Length;
+                conn.Close();
+            }
+
+            if (p_dataMgr.m_intError == 0)
+            {
+                if (intCount > 0)
+                {
+                    ODBCMgr odbcmgr = new ODBCMgr();
+                    if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.PostValidComboDsnName))
+                    {
+                        odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.PostValidComboDsnName);
+                    }
+                    odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.PostValidComboDsnName, this.m_strFVSPostValidComboDbPathAndFile);
+
+                    for (int x = 0; x <= intCount - 1; x++)
+                    {
+                        p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, strTableNames[x], strTableNames[x], ODBCMgr.DSN_KEYS.PostValidComboDsnName, this.m_strFVSPostValidComboDbPathAndFile);
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        {
+                            frmMain.g_oUtils.WriteText(m_strDebugFile,
+                                        "validcombo\t" + strTableNames[x] + "\r\n");
+                        }
+                        if (p_dao.m_intError != 0)
+                        {
+                            p_dao.m_strError = strTableNames[x] + " !!Error Creating Table Link!!!";
+                            this.m_intError = p_dao.m_intError;
+                            break;
+                        }
+                    }
+
+                    if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.PostValidComboDsnName))
+                    {
+                        odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.PostValidComboDsnName);
+                    }
+                }
+            }
+            else
+            {
+                if (frmMain.g_bDebug) frmMain.g_oUtils.WriteText(m_strDebugFile, p_dataMgr.m_strError + "\r\n");
+                this.m_intError = p_dataMgr.m_intError;
+            }
+        }
         private void CreateProcessorScenarioResultTableLinks()
         {
             dao_data_access oDao = new dao_data_access();
@@ -2845,6 +2958,70 @@ namespace FIA_Biosum_Manager
 			oDao = null;
 			
 		}
+        private void CreateAuditTableLinksSqlite()
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//CreateAuditTableLinks\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+
+            string[] strTableNames = new string[1];
+            int intCount = 0;
+            dao_data_access p_dao = new dao_data_access();
+            DataMgr p_dataMgr = new DataMgr();
+
+            string strDbPathAndFile = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\" + Tables.Audit.DefaultCondAuditTableSqliteDbFile;
+            if (System.IO.File.Exists(strDbPathAndFile))
+            {
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(strDbPathAndFile)))
+                {
+                    conn.Open();
+                    strTableNames = p_dataMgr.getTableNames(conn);
+                    intCount = strTableNames.Length;
+                    conn.Close();
+                }
+            }
+
+            if (p_dataMgr.m_intError == 0)
+            {
+                if (intCount > 0)
+                {
+                    ODBCMgr odbcmgr = new ODBCMgr();
+                    if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.CondAuditDsnName))
+                    {
+                        odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.CondAuditDsnName);
+                    }
+                    odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.CondAuditDsnName, strDbPathAndFile);
+
+                    for (int x = 0; x <= intCount - 1; x++)
+                    {
+                        p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, strTableNames[x], strTableNames[x], ODBCMgr.DSN_KEYS.CondAuditDsnName, strDbPathAndFile);
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        {
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, strDbPathAndFile + "\t" + strTableNames[x] + "\r\n");
+                        }
+                        if (p_dao.m_intError != 0)
+                        {
+                            p_dao.m_strError = strTableNames[x] + " !!Error Creating Table Link!!!";
+                            this.m_intError = p_dao.m_intError;
+                            break;
+                        }
+                    }
+
+                    if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.CondAuditDsnName))
+                    {
+                        odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.CondAuditDsnName);
+                    }
+                }
+            }
+            else
+            {
+                if (frmMain.g_bDebug) frmMain.g_oUtils.WriteText(m_strDebugFile, p_dataMgr.m_strError + "\r\n");
+                this.m_intError = p_dataMgr.m_intError;
+            }
+        }
 			
 		/// <summary>
 		/// create links to the scenario tables that contain the 
@@ -2904,7 +3081,67 @@ namespace FIA_Biosum_Manager
 			
 		}
 
-		
+		private void CreateScenarioTableLinksSqlite()
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//CreateScenarioTableLinks\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+
+            string[] strTableNames = new string[1];
+            int intCount = 0;
+            dao_data_access p_dao = new dao_data_access();
+            DataMgr p_dataMgr = new DataMgr();
+
+            string strDbPathAndFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(strDbPathAndFile)))
+            {
+                conn.Open();
+                strTableNames = p_dataMgr.getTableNames(conn);
+                intCount = strTableNames.Length;
+                conn.Close();
+            }
+
+            if (p_dataMgr.m_intError == 0)
+            {
+                if (intCount > 0)
+                {
+                    ODBCMgr odbcmgr = new ODBCMgr();
+                    if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName))
+                    {
+                        odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName);
+                    }
+                    odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, strDbPathAndFile);
+
+                    for (int x = 0; x <= intCount - 1; x++)
+                    {
+                        p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, strTableNames[x], strTableNames[x], ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, strDbPathAndFile);
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        {
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, strDbPathAndFile + "\t" + strTableNames[x] + "\r\n");
+                        }
+                        if (p_dao.m_intError != 0)
+                        {
+                            p_dao.m_strError = strTableNames[x] + " !!Error Creating Table Link!!!";
+                            this.m_intError = p_dao.m_intError;
+                            break;
+                        }
+                    }
+
+                    if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName))
+                    {
+                        odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName);
+                    }
+                }
+            }
+            else
+            {
+                if (frmMain.g_bDebug) frmMain.g_oUtils.WriteText(m_strDebugFile, p_dataMgr.m_strError + "\r\n");
+                this.m_intError = p_dataMgr.m_intError;
+            }
+        }
 
 		/// <summary>
         /// get the names of the Optimizer tables

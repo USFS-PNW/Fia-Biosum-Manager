@@ -205,6 +205,10 @@ namespace FIA_Biosum_Manager
             static public string FvsOutPreAuditDsnName { get { return "FVS_OUT_PREAUDIT"; } }
             static public string FvsOutAuditsDsnName { get { return "FVS_OUT_AUDITS"; } }
             static public string OptimizerResultsDsnName { get { return "OPTIMIZER_RESULTS"; } }
+            static public string CondAuditDsnName { get { return "COND_AUDIT"; } }
+            static public string PreValidComboDsnName { get { return "PRE_VALID_COMBO"; } }
+            static public string PostValidComboDsnName { get { return "POST_VALID_COMBO"; } }
+            static public string FVSPrePostDsnName { get { return "FVSOUT_PREPOST"; } }
         }
 
     }
