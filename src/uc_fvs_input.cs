@@ -502,6 +502,7 @@ namespace FIA_Biosum_Manager
             this.grpGRMOptions.TabIndex = 102;
             this.grpGRMOptions.TabStop = false;
             this.grpGRMOptions.Text = "Growth Removal Mortality";
+            this.grpGRMOptions.Visible = false;
             // 
             // chkGRM
             // 

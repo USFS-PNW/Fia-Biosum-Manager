@@ -4185,13 +4185,14 @@ namespace FIA_Biosum_Manager
                 {
                     CopyGrmColumns(oDao, strTempMDB, strVariant, strTempTreeTable);
                 }
-                else
-                {
-                    DebugLogSQL(Queries.FVS.FVSInput.TreeInit.SetGrmColumnsToNull(strTempTreeTable));
-                    oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.SetGrmColumnsToNull(strTempTreeTable));
-                }
-                lstFields.Add("DG");
-                lstFields.Add("HTG");
+                // 9-OCT-2023: Start using DG and HTG from FIA2FVS. GRM legacy process broken with change to FIADB
+                //else
+                //{
+                //    DebugLogSQL(Queries.FVS.FVSInput.TreeInit.SetGrmColumnsToNull(strTempTreeTable));
+                //    oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.SetGrmColumnsToNull(strTempTreeTable));
+                //}
+                //lstFields.Add("DG");
+                //lstFields.Add("HTG");
 
                 // Update damage codes for cull and mistletoe
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
