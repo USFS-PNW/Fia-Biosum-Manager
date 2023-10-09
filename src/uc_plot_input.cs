@@ -5067,11 +5067,11 @@ namespace FIA_Biosum_Manager
 	            //Insert into GRM_Tree
 	            p_ado.m_strSQL = "INSERT INTO " + m_strGrmTreeTable +
                                  " (biosum_cond_id, biosum_status_cd, fvs_tree_id, tre_cn, prev_tre_cn, " +
-                                     "dia_begin, dia_end, ht_begin, ht_end, " +
+                                     "dia_begin, dia_end, " +
                                      "micr_component_al_forest, tre_statuscd, prev_tre_statuscd) " +
 	                             "SELECT tt.biosum_cond_id, 9 as biosum_status_cd, " +
                                      "tt.SUBP*1000+tt.TREE, tt.CN, grm.PREV_TRE_CN, " +
-                                     "grm.DIA_BEGIN, grm.DIA_END, grm.HT_BEGIN, grm.HT_END, " +
+                                     "grm.DIA_BEGIN, grm.DIA_END, " +
                                      "grm.MICR_COMPONENT_AL_FOREST, tt.STATUSCD, ft.STATUSCD " +
 	                             "FROM (" + m_strGRMComponentTable + " grm " +
                                      "INNER JOIN temptree tt ON grm.TRE_CN = tt.CN) " +
