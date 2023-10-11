@@ -43,7 +43,6 @@ namespace FIA_Biosum_Manager
 		private const int COL_FOUND=4;
 		private const int COL_SUMMARYCOUNT = 5;
 		private const int COL_CUTCOUNT = 6;
-        private const int COL_MDBOUT = -1;  //@ToDo: Need to remove references from this in the post-audit
 
 
         //private string m_strVariant;
@@ -2236,7 +2235,7 @@ namespace FIA_Biosum_Manager
 
         private void RunAppend_MainAccess()
 		{
-			string strOutDirAndFile;
+            string strOutDirAndFile = "";
             string strAuditDbFile;
 			string strCurVariant="";
 			
@@ -2493,12 +2492,12 @@ namespace FIA_Biosum_Manager
                             //FVSOUT_P000-000-000-000-000.MDB
                             //
                             //get the fvs output file. 
-                            strOutDirAndFile = this.txtOutDir.Text.Trim() + "\\" + strVariant + "\\" +
-                                Convert.ToString(frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_MDBOUT, "Text", false)).Trim();
-                            this.m_strOutMDBFile = Convert.ToString(frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_MDBOUT, "Text", false)).Trim();
+                            //strOutDirAndFile = this.txtOutDir.Text.Trim() + "\\" + strVariant + "\\" +
+                            //    Convert.ToString(frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_MDBOUT, "Text", false)).Trim();
+                            //this.m_strOutMDBFile = Convert.ToString(frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_MDBOUT, "Text", false)).Trim();
 
-                            if (m_bDebug && frmMain.g_intDebugLevel > 1)
-                                this.WriteText(m_strDebugFile, "strOutDirAndFile=" + strOutDirAndFile + "  \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                            //if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                            //    this.WriteText(m_strDebugFile, "strOutDirAndFile=" + strOutDirAndFile + "  \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
 
 
                             if (m_bDebug && frmMain.g_intDebugLevel > 1)
@@ -9350,27 +9349,47 @@ namespace FIA_Biosum_Manager
 
 		private void lstFvsOutput_SelectedIndexChanged(object sender, System.EventArgs e)
 		{
+            btnAuditDb.Enabled = false;
+            btnPostAppendAuditDb.Enabled = false;
             if (this.lstFvsOutput.SelectedItems.Count > 0 && frmMain.g_oDelegate.CurrentThreadProcessIdle)
             {
                 m_oLvAlternateColors.DelegateListViewItem(lstFvsOutput.SelectedItems[0]);
 
                 //Enable/Disable PRE-APPEND Audit Tables; PRE-APPEND audit tables are included in the FVS_AUDITS.db
                 string strAuditDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile;
-                //@ToDo: Also look for audit tables (variant/package specific) to verify audit has been run
-                if (System.IO.File.Exists(strAuditDbPath))
-                   btnAuditDb.Enabled = true;
-                else
-                   btnAuditDb.Enabled = false;
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(strAuditDbPath)))
+                {
+                    if (System.IO.File.Exists(strAuditDbPath))
+                    {
+                        conn.Open();
+                        if (SQLite.TableExist(conn, "audit_FVS_SUMMARY_year_counts_table"))
+                        {
+                            SQLite.m_strSQL = $@"SELECT YEAR FROM audit_FVS_SUMMARY_year_counts_table WHERE FVS_VARIANT = '{lstFvsOutput.SelectedItems[0].SubItems[COL_VARIANT].Text.Trim()}' AND RXPACKAGE = '{lstFvsOutput.SelectedItems[0].SubItems[COL_PACKAGE].Text.Trim()}' LIMIT 1";
+                            long lngCount = SQLite.getRecordCount(conn, SQLite.m_strSQL, "audit_FVS_SUMMARY_year_counts_table");
+                            if (lngCount > 0)
+                            {
+                                btnAuditDb.Enabled = true;
+                            }
+                        }
+                        if (SQLite.TableExist(conn, "audit_Post_SUMMARY"))
+                        {
+                            SQLite.m_strSQL = $@"SELECT NOVALUE_ERROR FROM audit_Post_SUMMARY WHERE FVS_VARIANT = '{lstFvsOutput.SelectedItems[0].SubItems[COL_VARIANT].Text.Trim()}' AND RXPACKAGE = '{lstFvsOutput.SelectedItems[0].SubItems[COL_PACKAGE].Text.Trim()}' LIMIT 1";
+                            long lngCount = SQLite.getRecordCount(conn, SQLite.m_strSQL, "audit_FVS_SUMMARY_year_counts_table");
+                            if (lngCount > 0)
+                            {
+                                btnPostAppendAuditDb.Enabled = true;
+                            }
+                        }
 
-                //Enable/Disable POST-APPEND Audit Tables; POST-APPEND audit tables are also included in the FVS_AUDITS.db
-                //@ToDo: Also look for audit tables (variant/package specific) to verify audit has been run
-                if (System.IO.File.Exists(strAuditDbPath))
-                    btnPostAppendAuditDb.Enabled = true;
-                else
-                    btnPostAppendAuditDb.Enabled = false;
+                    }
+                }
 
-                //Enable/Disable Open Pre Audit Log button
-                btnViewLogFile.Enabled = false;
+                    //Enable/Disable POST-APPEND Audit Tables; POST-APPEND audit tables are also included in the FVS_AUDITS.db
+                    //@ToDo: Also look for audit tables (variant/package specific) to verify audit has been run
+
+
+                    //Enable/Disable Open Pre Audit Log button
+                    btnViewLogFile.Enabled = false;
                 // FVSOUT_CA_P010_Audit_2023-01-18_13-53-58.txt
                 string strDirectory = this.txtOutDir.Text.Trim();
                 if (System.IO.Directory.Exists(strDirectory) == true)

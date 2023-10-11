@@ -561,6 +561,15 @@ namespace FIA_Biosum_Manager
                         UpdateProjectVersionFile(strProjVersionFile);
                         bPerformCheck = false;
                     }
+                    //@ToDo: Complete this when we're ready for v5.11.0
+                    //else if ((Convert.ToInt16(m_strAppVerArray[APP_VERSION_MAJOR]) == 5 &&
+                    //    Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR1]) == 11) &&
+                    //    (Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MAJOR]) == 5 &&
+                    //    Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR1]) >= 10))
+                    //{
+                    //    UpdateProjectVersionFile(strProjVersionFile);
+                    //    bPerformCheck = false;
+                    //}
                 }
             }
 
