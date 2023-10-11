@@ -1233,7 +1233,7 @@ namespace FIA_Biosum_Manager
                                     "FROM FVS." + p_strFVSOutputTable + ") c " +
                                     "WHERE b.standid=c.standid AND b.removal_code=c.removal_code " +
                                     "GROUP BY b.standid,b.year) d " +
-                                    "WHERE a.CaseID = e.CaseID AND e.RunTitle = '" + p_strRunTitle +
+                                    "WHERE a.CaseID = e.CaseID and a.standId = e.standId AND e.RunTitle = '" + p_strRunTitle +
                                     "' AND a.standid=d.standid AND a.year=d.year AND a.removal_code=d.removal_code";
                 }
                 else
@@ -1246,14 +1246,14 @@ namespace FIA_Biosum_Manager
                             "substr(e.RunTitle, 12, 3) AS RXPACKAGE, SUBSTR(E.RUNTITLE,8,2) AS FVS_VARIANT " +
                             "FROM FVS." + p_strFVSOutputTable + " a, FVS.FVS_CASES e," +
                             "(SELECT SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum," +
-                            "b.standid, b.year, ,b.removal_code FROM FVS." + p_strFVSOutputTable + " b, FVS.FVS_CASES f," +
+                            "b.standid, b.year, b.removal_code FROM FVS." + p_strFVSOutputTable + " b, FVS.FVS_CASES f," +
                             "(SELECT g.standid, g.year,g.removal_code FROM FVS." + p_strFVSOutputTable + " g, FVS.FVS_CASES h " +
-                            "WHERE g.CaseID = h.CaseID and h.RunTitle = '" + p_strRunTitle + "' ) c " +
+                            "WHERE g.CaseID = h.CaseID and g.standId = h.standId and h.RunTitle = '" + p_strRunTitle + "' ) c " +
                             "WHERE b.standid = c.standid AND b.removal_code=c.removal_code and b.CaseID = f.CaseID " +
-                            "and f.RunTitle = '" + p_strRunTitle + "' " +
+                            "and b.standid = f.standId and f.RunTitle = '" + p_strRunTitle + "' " +
                             "GROUP BY b.standid,b.year,b.removal_code) d " +
-                            "WHERE a.CaseID = e.CaseID AND e.RunTitle = '" + p_strRunTitle +
-                            "' AND a.standid=d.standid AND a.year=d.year AND a.removal_code=d.removal_code" +
+                            "WHERE a.CaseID = e.CaseID AND a.standID = e.standId and e.RunTitle = '" + p_strRunTitle +
+                            "' AND a.standid=d.standid AND a.year=d.year AND a.removal_code=d.removal_code " +
                             "ORDER BY a.standid,d.SeqNum";
                 }
 

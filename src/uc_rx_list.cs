@@ -3914,7 +3914,6 @@ namespace FIA_Biosum_Manager
                         // Delete current variant/package from table
                         dataMgr.m_strSQL = $@"DELETE FROM {strAuditYearCountsTable} WHERE FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strRxPackage}'";
                         dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
-
                     }
                     else
                     {
@@ -3937,10 +3936,9 @@ namespace FIA_Biosum_Manager
                     if (!dataMgr.TableExist(conn, strPrePostSeqNumMatrixTable))
                     {
                         frmMain.g_oTables.m_oFvs.CreateSQLiteFVSOutputPrePostSeqNumAuditGenericTable(dataMgr, conn, strPrePostSeqNumMatrixTable);
-
                     }
                     if (p_strSourceTableName.Trim().ToUpper() == "FVS_SUMMARY" ||
-                    p_strSourceTableName.Trim().ToUpper().IndexOf("FVS_POTFIRE", 0) >= 0)
+                        p_strSourceTableName.Trim().ToUpper().IndexOf("FVS_POTFIRE", 0) >= 0)
                     {
                         if (p_oItem.UseSummaryTableSeqNumYN == "Y")
                         {
@@ -3962,15 +3960,19 @@ namespace FIA_Biosum_Manager
                                       dataMgr.m_strSQL;
 
                     if (p_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(p_strDebugFile, dataMgr.m_strSQL + "\r\n\r\n");
+                        frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + dataMgr.m_strSQL + "\r\n");
                     dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                    if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(p_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
 
                     dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditUpdatePrePostGenericSQL(
                         p_oItem, strPrePostSeqNumMatrixTable, strVariant, strRxPackage);
 
                     if (p_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(p_strDebugFile, dataMgr.m_strSQL + "\r\n\r\n");
+                        frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + dataMgr.m_strSQL + "\r\n");
                     dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                    if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(p_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
 
                     if (p_bAudit)
                     {
@@ -3981,15 +3983,19 @@ namespace FIA_Biosum_Manager
                             {
                                 dataMgr.m_strSQL = Tables.FVS.Audit.Pre.CreateFVSPreYearCountsTableSQL(strAuditPrePostSeqNumCountsTable);
                                 if (p_bDebug && frmMain.g_intDebugLevel > 2)
-                                    frmMain.g_oUtils.WriteText(p_strDebugFile, dataMgr.m_strSQL + "\r\n\r\n");
+                                    frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + dataMgr.m_strSQL + "\r\n");
                                 dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                                if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                                    frmMain.g_oUtils.WriteText(p_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
                             }
                             dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditSelectIntoPrePostSeqNumCountSqlite
                                 (p_oItem, strAuditPrePostSeqNumCountsTable, strPrePostSeqNumMatrixTable, p_strRunTitle);
 
                             if (p_bDebug && frmMain.g_intDebugLevel > 2)
-                                frmMain.g_oUtils.WriteText(p_strDebugFile, dataMgr.m_strSQL + "\r\n\r\n");
+                                frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + dataMgr.m_strSQL + "\r\n");
                             dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                            if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(p_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
 
                             // @ToDo: This query gives the wrong answer. The SeqNum is the same for all the rows :-(
                             string[] arrDefaultColumns = { "SEQNUM", "STANDID", "YEAR", "FVS_VARIANT", "RXPACKAGE" };
@@ -4007,9 +4013,10 @@ namespace FIA_Biosum_Manager
                                strAuditYearCountsTable, "FVS_SUMMARY", false, p_strRunTitle, lstExtraColumns);
 
                             if (p_bDebug && frmMain.g_intDebugLevel > 2)
-                                frmMain.g_oUtils.WriteText(p_strDebugFile, dataMgr.m_strSQL + "\r\n\r\n");
+                                frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + dataMgr.m_strSQL + "\r\n");
                             dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
-
+                            if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(p_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
                         }
                         else
                         {
@@ -4020,15 +4027,19 @@ namespace FIA_Biosum_Manager
                                 {
                                     dataMgr.m_strSQL = Tables.FVS.Audit.Pre.CreateFVSPreYearCountsTableSQL(strAuditPrePostSeqNumCountsTable);
                                     if (p_bDebug && frmMain.g_intDebugLevel > 2)
-                                        frmMain.g_oUtils.WriteText(p_strDebugFile, dataMgr.m_strSQL + "\r\n\r\n");
+                                        frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + dataMgr.m_strSQL + "\r\n");
                                     dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                                    if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                                        frmMain.g_oUtils.WriteText(p_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
                                 }
 
                                 dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditSelectIntoPrePostSeqNumCountSqlite
                                   (p_oItem, strAuditPrePostSeqNumCountsTable, strPrePostSeqNumMatrixTable, p_strRunTitle);
                                 if (p_bDebug && frmMain.g_intDebugLevel > 2)
-                                    frmMain.g_oUtils.WriteText(p_strDebugFile, dataMgr.m_strSQL + "\r\n\r\n");
+                                    frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + dataMgr.m_strSQL + "\r\n");
                                 dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                                if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                                    frmMain.g_oUtils.WriteText(p_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
                             }
                         }
                     }
@@ -4053,8 +4064,10 @@ namespace FIA_Biosum_Manager
                     for (x = 0; x <= strSQL.Length - 1; x++)
                     {
                         if (p_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(p_strDebugFile, strSQL[x] + "\r\n\r\n");
+                            frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + dataMgr.m_strSQL + "\r\n");
                         dataMgr.SqlNonQuery(conn, strSQL[x]);
+                        if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(p_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
                     }
                 }
 
@@ -4116,8 +4129,10 @@ namespace FIA_Biosum_Manager
                             dataMgr.m_strSQL = "INSERT INTO " + strPrePostSeqNumMatrixTable + " " +
                                                  strSQLArray[x];
                             if (p_bDebug && frmMain.g_intDebugLevel > 2)
-                                frmMain.g_oUtils.WriteText(p_strDebugFile, dataMgr.m_strSQL + "\r\n\r\n");
+                                frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + dataMgr.m_strSQL + "\r\n");
                             dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                            if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(p_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
                         }
                     }
                     else
@@ -4125,17 +4140,20 @@ namespace FIA_Biosum_Manager
                         dataMgr.m_strSQL = "INSERT INTO " + strPrePostSeqNumMatrixTable + " " +
                                            dataMgr.m_strSQL;
                         if (p_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(p_strDebugFile, dataMgr.m_strSQL + "\r\n\r\n");
+                            frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + dataMgr.m_strSQL + "\r\n");
                         dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                        if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(p_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
                     }
 
                     dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditUpdatePrePostStrClassSQL(
                        p_oItem, strPrePostSeqNumMatrixTable, strVariant, strRxPackage);
 
                     if (p_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(p_strDebugFile, dataMgr.m_strSQL + "\r\n\r\n");
+                        frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + dataMgr.m_strSQL + "\r\n");
                     dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
-
+                    if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(p_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
                 }
                 else
                 {
@@ -4143,15 +4161,18 @@ namespace FIA_Biosum_Manager
                                             dataMgr.m_strSQL;
 
                     if (p_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(p_strDebugFile, dataMgr.m_strSQL + "\r\n\r\n");
+                        frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + dataMgr.m_strSQL + "\r\n");
                     dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
-
+                    if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(p_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
 
                     dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditUpdatePrePostGenericSQL(p_oItem, strPrePostSeqNumMatrixTable,
                         strVariant, strRxPackage);
                     if (p_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(p_strDebugFile, dataMgr.m_strSQL + "\r\n\r\n");
+                        frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + dataMgr.m_strSQL + "\r\n");
                     dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                    if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(p_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
                 }
 
 
@@ -4161,15 +4182,19 @@ namespace FIA_Biosum_Manager
                     {
                         dataMgr.m_strSQL = Tables.FVS.Audit.Pre.CreateFVSPreYearCountsTableSQL(strAuditPrePostSeqNumCountsTable);
                         if (p_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(p_strDebugFile, dataMgr.m_strSQL + "\r\n\r\n");
+                            frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + dataMgr.m_strSQL + "\r\n");
                         dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                        if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(p_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
                     }
                     dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditSelectIntoPrePostSeqNumCountSqlite
                       (p_oItem, strAuditPrePostSeqNumCountsTable, strPrePostSeqNumMatrixTable, p_strRunTitle);
 
                     if (p_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(p_strDebugFile, dataMgr.m_strSQL + "\r\n\r\n");
+                        frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + dataMgr.m_strSQL + "\r\n");
                     dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                    if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(p_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
                 }
             }
         }

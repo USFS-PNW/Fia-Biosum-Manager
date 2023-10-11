@@ -11192,6 +11192,12 @@ namespace FIA_Biosum_Manager
             {
                 conn.Open();
                 strSourceTableArray = SQLite.getTableNames(conn);
+
+                // Create index on FVS_CASES table
+                if (!SQLite.IndexExist(conn, "idx_fvs_cases_bs"))
+                {
+                    SQLite.AddIndex(conn, Tables.FVS.DefaultFVSCasesTableName, "idx_fvs_cases_bs", "runtitle, caseid, standid");
+                }
                 CreateFVSPrePostSeqNumWorkTables(conn, p_strDbFile, "FVS_SUMMARY", p_strRunTitle, p_bAudit);
                 CreateFVSPrePostSeqNumWorkTables(conn, p_strDbFile, "FVS_CUTLIST", p_strRunTitle, p_bAudit);
                 CreateFVSPrePostSeqNumWorkTables(conn, p_strDbFile, "FVS_POTFIRE", p_strRunTitle, p_bAudit);
@@ -11227,12 +11233,25 @@ namespace FIA_Biosum_Manager
 
             if (p_strSourceTableName.Trim().ToUpper() == "FVS_CASES") return;
 
-
             if (SQLite.TableExist(conn, p_strSourceTableName))
             {
                 if (m_oFVSPrePostSeqNumItemCollection == null) m_oFVSPrePostSeqNumItemCollection = new FVSPrePostSeqNumItem_Collection();
                 string strParamConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile);
                 m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(strParamConn, m_oFVSPrePostSeqNumItemCollection);
+
+                // BUILD INDEXES
+                string strIdxName = $@"idx_fvs_{p_strSourceTableName}_bs";
+                if (! SQLite.IndexExist(conn,strIdxName))
+                {
+                    if (p_strSourceTableName.Trim().ToUpper().Equals("FVS_STRCLASS"))
+                    {
+                        SQLite.AddIndex(conn, p_strSourceTableName, strIdxName, "caseid, standid, year, removal_code");
+                    }
+                    else
+                    {
+                        SQLite.AddIndex(conn, p_strSourceTableName, strIdxName, "caseid, standid, year");
+                    }
+                }
 
                 string strRxPackageId = p_strRunTitle.Substring(11, 3);
                 GetPrePostSeqNumConfiguration(p_strSourceTableName, strRxPackageId);
