@@ -59,8 +59,8 @@ namespace FIA_Biosum_Manager
 			"Treatment Package Assigned FVS Commands",
 			"Treatment Package Members",
 			"Treatment Package FVS Commands Order",
-			"FVS PRE-POST SeqNum Definitions",
-			"FVS PRE-POST SeqNum Treatment Package Assign", 
+			Datasource.TableTypes.SeqNumDefinitions,
+            Datasource.TableTypes.SeqNumRxPackageAssign, 
 			"Tree Species",
 			Datasource.TableTypes.FvsTreeSpecies,
 			"FVS Western Tree Species Translator",
@@ -198,8 +198,10 @@ namespace FIA_Biosum_Manager
 			this.m_intNumberOfTables=0;
 
             FIA_Biosum_Manager.ado_data_access  p_ado = new ado_data_access();
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
 
-			System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
+
+            System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
 			strConn = p_ado.getMDBConnString(this.m_strDataSourceMDBFile,"admin","");
 			oConn.ConnectionString = strConn;
 			this.m_intError = 0;
@@ -251,32 +253,40 @@ namespace FIA_Biosum_Manager
                             this.m_strDataSource[x, FILESTATUS] = "F";
                             this.m_strDataSource[x, TABLE] = oDataReader["table_name"].ToString().Trim();
                             string strExistsConn = oExistsAdo.getMDBConnString(strPathAndFile, "", "");
-
+                            bool bSQLite = false;
+                            if (System.IO.Path.GetExtension(this.m_strDataSource[x, MDBFILE]).Trim().ToUpper().Equals(".DB"))
+                            {
+                                // This is an SQLite data source
+                                bSQLite = true;
+                            }
 
                             // this is the first time the connection is used -> not open yet
-                            if (String.IsNullOrEmpty(oExistsConn.ConnectionString))
+                            if (!bSQLite)
                             {
-                                oExistsConn.ConnectionString = strExistsConn;
-                                oExistsConn.Open();
-                            }
-                            else
-                            {
-                                // close and reopen the connection if the target database has changed
-                                // the connectionString returned by the connection doesn't include the "Password" key that is included
-                                // in strExistsConn
-                                if (oExistsConn.ConnectionString + "Password=;" != strExistsConn)
+                                if (String.IsNullOrEmpty(oExistsConn.ConnectionString))
                                 {
-                                    if (oExistsConn.State != ConnectionState.Closed)
+                                    oExistsConn.ConnectionString = strExistsConn;
+                                    oExistsConn.Open();
+                                }
+                                else
+                                {
+                                    // close and reopen the connection if the target database has changed
+                                    // the connectionString returned by the connection doesn't include the "Password" key that is included
+                                    // in strExistsConn
+                                    if (oExistsConn.ConnectionString + "Password=;" != strExistsConn)
                                     {
-                                        oExistsConn.Close();
-                                        oExistsConn.ConnectionString = strExistsConn;
-                                        oExistsConn.Open();
+                                        if (oExistsConn.State != ConnectionState.Closed)
+                                        {
+                                            oExistsConn.Close();
+                                            oExistsConn.ConnectionString = strExistsConn;
+                                            oExistsConn.Open();
+                                        }
                                     }
                                 }
                             }
                             
                             //see if the table exists in the mdb database container
-                            if (oExistsAdo.TableExist(oExistsConn, oDataReader["table_name"].ToString().Trim()) == true)
+                            if (!bSQLite && oExistsAdo.TableExist(oExistsConn, oDataReader["table_name"].ToString().Trim()) == true)
                             {
                                 this.m_strDataSource[x, TABLESTATUS] = "F";
                                 this.m_strDataSource[x, RECORDCOUNT] = "0";
@@ -296,6 +306,34 @@ namespace FIA_Biosum_Manager
                                         while (p_ado.m_OleDbConnection.State != ConnectionState.Closed)
                                             System.Threading.Thread.Sleep(5000);
                                         p_ado.m_OleDbConnection.Dispose();
+                                    }
+                                }
+                            }
+                            else if (bSQLite)
+                            {
+                                string strDbConn = oDataMgr.GetConnectionString(strPathAndFile);
+                                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strDbConn))
+                                {
+                                    conn.Open();
+                                    if (oDataMgr.TableExist(conn, oDataReader["table_name"].ToString().Trim()) == true)
+                                    {
+                                        this.m_strDataSource[x, TABLESTATUS] = "F";
+                                        this.m_strDataSource[x, RECORDCOUNT] = "0";
+                                        this.m_strDataSource[x, COLUMN_LIST] = "";
+                                        this.m_strDataSource[x, DATATYPE_LIST] = "";
+
+                                        if (this.LoadTableRecordCount || this.LoadTableColumnNamesAndDataTypes)
+                                        {
+                                            oDataMgr.CloseConnection(conn);
+                                            string strDsConn = oDataMgr.GetConnectionString(strPathAndFile);
+                                            oDataMgr.OpenConnection(strDsConn);
+                                            if (oDataMgr.m_intError == 0)
+                                            {
+                                                strSQL = "select count(*) from " + oDataReader["table_name"].ToString();
+                                                if (this.LoadTableRecordCount) this.m_strDataSource[x, RECORDCOUNT] = Convert.ToString(oDataMgr.getRecordCount(conn, strSQL, oDataReader["table_name"].ToString()));
+                                                if (this.LoadTableColumnNamesAndDataTypes) oDataMgr.getFieldNamesAndDataTypes(conn, "select * from " + oDataReader["table_name"].ToString(), ref this.m_strDataSource[x, COLUMN_LIST], ref this.m_strDataSource[x, DATATYPE_LIST]);
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -569,6 +607,12 @@ namespace FIA_Biosum_Manager
 			
 			for (x=0; x <= this.m_intNumberOfTables - 1; x++)
 			{
+                bool bSQLite = false;
+                if (System.IO.Path.GetExtension(this.m_strDataSource[x, MDBFILE].Trim()).ToUpper().Equals(".DB"))
+                {
+                    // This is an SQLite data source
+                    bSQLite = true;
+                }
                 string strFileStatus = this.m_strDataSource[x, FILESTATUS];
                 if (strFileStatus != null)
                     strFileStatus = strFileStatus.Trim().ToUpper();
@@ -576,7 +620,8 @@ namespace FIA_Biosum_Manager
                 if (strTableStatus != null)
                     strTableStatus = strTableStatus.Trim().ToUpper();
                 if (strTableStatus=="F" &&
-					strFileStatus=="F")
+					strFileStatus=="F" &&
+                    bSQLite == false)
 					{
 						if (strTempMDB.Trim().Length == 0)
 						{
@@ -1523,6 +1568,31 @@ namespace FIA_Biosum_Manager
                 }
             }
         }
+        public void UpdateDataSourcePath(string strTableType, string strPath, string strFile, string strTableName)
+        {
+            ado_data_access oAdo = new ado_data_access();
+            string strConn = oAdo.getMDBConnString(this.m_strDataSourceMDBFile, "", "");
+            if (this.m_strScenarioId.Trim().Length > 0)
+            {
+                oAdo.m_strSQL = "UPDATE " + this.m_strDataSourceTableName + " SET path = '" + strPath + "', " +
+                    "file = '" + strFile + "', " +
+                    "table_name = '" + strTableName + "'" +
+                    " WHERE scenario_id = '" + this.m_strScenarioId + "' AND " +
+                    "table_type = '" + strTableType + "';";
+            }
+            else
+            {
+                oAdo.m_strSQL = "UPDATE " + this.m_strDataSourceTableName + " SET path = '" + strPath + "', " +
+                    "file = '" + strFile + "', " +
+                    "table_name = '" + strTableName + "'" +
+                    " WHERE table_type = '" + strTableType + "';";
+            }
+            using (var oConn = new System.Data.OleDb.OleDbConnection(strConn))
+            {
+                oConn.Open();
+                oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
+            }
+        }
 		public bool LoadTableColumnNamesAndDataTypes
 		{
 			get {return this._bLoadFieldNamesAndDatatypes;}
@@ -1546,6 +1616,8 @@ namespace FIA_Biosum_Manager
             static public string Plot = "Plot";
             static public string Condition = "Condition";
             static public string Tree = "Tree";
+            static public string SeqNumDefinitions = "FVS PRE-POST SeqNum Definitions";
+            static public string SeqNumRxPackageAssign = "FVS PRE-POST SeqNum Treatment Package Assign";
         }
 		
 	}

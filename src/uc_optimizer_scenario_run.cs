@@ -1516,7 +1516,7 @@ namespace FIA_Biosum_Manager
                     }
 
 					//CREATE WORK TABLES
-					CreateTableStructureOfHarvestCosts();
+					CreateTableStructureOfHarvestCostsSqlite();
                     if (this.m_intError != 0)
                     {
                         FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
@@ -7692,7 +7692,77 @@ namespace FIA_Biosum_Manager
 
 		}
 
-		private void CreateTableStructureForScenarioProcessingSites()
+        private void CreateTableStructureOfHarvestCostsSqlite()
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//CreateTableStructureOfHarvestCosts\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+
+
+            ado_data_access p_ado = new ado_data_access();
+            DataMgr p_dataMgr = new DataMgr();
+            this.m_strConn = p_ado.getMDBConnString(this.m_strTempMDBFile, "admin", "");
+            p_ado.OpenConnection(this.m_strConn);
+            if (p_ado.m_intError == 0)
+            {
+                /*********************************************
+                 * set the application version in the database
+                 * *******************************************/
+                string strConn = p_dataMgr.GetConnectionString(this.m_strSystemResultsDbPathAndFile);
+                using (System.Data.SQLite.SQLiteConnection versionConn = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+                    versionConn.Open();
+                    p_dataMgr.m_strSQL = "INSERT INTO VERSION (APPLICATION_VERSION)" +
+                                    " VALUES ('" + frmMain.g_strAppVer + "') ";
+                    p_dataMgr.SqlNonQuery(versionConn, p_dataMgr.m_strSQL);
+                    versionConn.Close();
+                }
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+
+                /*********************************************
+				 **get the harvest_costs structure
+				 *********************************************/
+                this.m_strSQL = "SELECT biosum_cond_id,rxpackage,rx,rxcycle, complete_cpa FROM " + this.m_strHvstCostsTable.Trim() + ";";
+
+                /****************************************************************
+				 **get the table structure that results from executing the sql
+				 ****************************************************************/
+                System.Data.DataTable p_dt = p_ado.getTableSchema(p_ado.m_OleDbConnection, this.m_strSQL);
+
+                /*****************************************************************
+				 **create the table structure in the temp mdb file
+				 **and give it the name of harvest_costs_sum
+				 *****************************************************************/
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "--Create harvest_costs_sum Table Schema From harvest_costs table--\r\n");
+                dao_data_access p_dao = new dao_data_access();
+                p_dao.CreateMDBTableFromDataSetTable(this.m_strTempMDBFile, "harvest_costs_sum", p_dt, true);
+                p_dt.Dispose();
+                p_ado.m_OleDbDataReader.Close();
+                p_ado.m_OleDbConnection.Close();
+                if (p_dao.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Creating Table Schema!!!\r\n");
+                    this.m_intError = p_dao.m_intError;
+                    p_ado = null;
+                    p_dao = null;
+                    return;
+                }
+            }
+            else
+            {
+                this.m_intError = p_ado.m_intError;
+            }
+            p_ado = null;
+        }
+
+
+        private void CreateTableStructureForScenarioProcessingSites()
 		{
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {

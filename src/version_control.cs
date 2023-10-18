@@ -3442,7 +3442,7 @@ namespace FIA_Biosum_Manager
             //open the project db file
             oAdo.OpenConnection(oAdo.getMDBConnString(ReferenceProjectDirectory.Trim() + "\\" +
                 frmMain.g_oTables.m_oProject.DefaultProjectTableDbFile, "", ""));
-            uc_fvs_output_prepost_seqnum.InitializePrePostSeqNumTables(oAdo, ReferenceProjectDirectory.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile);
+            //uc_fvs_output_prepost_seqnum.InitializePrePostSeqNumTablesAccess(oAdo, ReferenceProjectDirectory.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableMdbFile);
 
            
 

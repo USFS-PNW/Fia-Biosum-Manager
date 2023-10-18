@@ -548,17 +548,29 @@ namespace FIA_Biosum_Manager
                 }
             }
             // link to PRE_FVS_COMPUTE table
-            string strComputeDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultPreFVSComputeDbFile;
+            string strComputeDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
             if (m_bLinkFvsComputeTables && 
-                System.IO.File.Exists(strComputeDbPath) &&
-                oDao.TableExists(strComputeDbPath, Tables.FVS.DefaultPreFVSComputeTableName))
+                System.IO.File.Exists(strComputeDbPath))
             {
-                oDao.CreateTableLink(m_oQueries.m_strTempDbFile,
-                    Tables.FVS.DefaultPreFVSComputeTableName,
-                    strComputeDbPath, Tables.FVS.DefaultPreFVSComputeTableName, true);
-                oDao.CreateTableLink(m_oQueries.m_strTempDbFile,
-                    Tables.FVS.DefaultPostFVSComputeTableName,
-                    strComputeDbPath, Tables.FVS.DefaultPostFVSComputeTableName, true);
+                string strConn = m_oDataMgr.GetConnectionString(strComputeDbPath);
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+                    conn.Open();
+                    if (m_oDataMgr.TableExist(conn, Tables.FVS.DefaultPreFVSComputeTableName))
+                    {
+                        // Check to see if the FvsOutPrePost SQLite DSN exists and if so, delete so we can add
+                        if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutPrePostDsnName))
+                        {
+                            odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutPrePostDsnName);
+                        }
+                        odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutPrePostDsnName, strComputeDbPath);
+                    }
+                }
+
+                oDao.CreateSQLiteTableLink(m_oQueries.m_strTempDbFile, Tables.FVS.DefaultPreFVSComputeTableName, Tables.FVS.DefaultPreFVSComputeTableName,
+                    ODBCMgr.DSN_KEYS.FvsOutPrePostDsnName, strComputeDbPath);
+                oDao.CreateSQLiteTableLink(m_oQueries.m_strTempDbFile, Tables.FVS.DefaultPostFVSComputeTableName, Tables.FVS.DefaultPostFVSComputeTableName,
+                    ODBCMgr.DSN_KEYS.FvsOutPrePostDsnName, strComputeDbPath);
             }
 
             oDao.m_DaoDbEngine.Idle(1);
@@ -4494,7 +4506,7 @@ namespace FIA_Biosum_Manager
                                         strSetValues = $@" SET {ScenarioId.Trim()} = " + sb.ToString().TrimEnd('+');
                                         m_oAdo.m_strSQL = $@"UPDATE {p_strAddCostsWorktable} k 
                                             INNER JOIN {Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName} S ON K.biosum_cond_id = S.biosum_cond_id AND K.rx=S.rx
-                                            {strSetValues} WHERE RX = '{oRx.RxId}' AND TRIM(UCASE(SCENARIO_ID)) = '{ScenarioId.Trim().ToUpper()}'";
+                                            {strSetValues} WHERE K.RX = '{oRx.RxId}' AND TRIM(UCASE(SCENARIO_ID)) = '{ScenarioId.Trim().ToUpper()}'";
                                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                             frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                                         m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
@@ -4533,7 +4545,7 @@ namespace FIA_Biosum_Manager
                                 if (bHasScenarioCosts)
                                 {
                                     m_oAdo.m_strSQL = $@"UPDATE {p_strAddCostsWorktable} SET ADDITIONAL_CPA = 
-                                        IIF(ADDITIONAL_CPA >0, ADDITIONAL_CPA + {ScenarioId.Trim()}, {ScenarioId.Trim()} WHERE RX = '{oRx.RxId}')";
+                                        IIF(ADDITIONAL_CPA >0, ADDITIONAL_CPA + {ScenarioId.Trim()}, {ScenarioId.Trim()}) WHERE RX = '{oRx.RxId}'";
                                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                         frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                                     m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);

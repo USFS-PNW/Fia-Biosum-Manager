@@ -209,6 +209,8 @@ namespace FIA_Biosum_Manager
             static public string PreValidComboDsnName { get { return "PRE_VALID_COMBO"; } }
             static public string PostValidComboDsnName { get { return "POST_VALID_COMBO"; } }
             static public string FVSPrePostDsnName { get { return "FVSOUT_PREPOST"; } }
+            static public string FvsMasterDbDsnName { get { return "FVS_MASTER_DB"; } }
+            static public string FvsOutPrePostDsnName { get { return "FVS_OUT_PREPOST"; } }
         }
 
     }

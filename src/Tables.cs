@@ -2725,7 +2725,8 @@ namespace FIA_Biosum_Manager
             static public string DefaultFVSTreeIdWorkTable { get { return "fvs_tree_id_work_table"; } }
 
             static public string DefaultFVSPrePostSeqNumTable { get { return "fvs_output_prepost_seqnum"; } }
-            static public string DefaultFVSPrePostSeqNumTableDbFile { get { return @"db\fvsmaster.mdb"; } }
+            static public string DefaultFVSPrePostSeqNumTableMdbFile { get { return @"db\fvsmaster.mdb"; } }
+            static public string DefaultFVSPrePostSeqNumTableDbFile { get { return @"db\fvsmaster.db"; } }
 
             static public string DefaultFVSPrePostSeqNumRxPackageAssgnTable { get { return "fvs_output_prepost_seqnum_rxpackage_assignment"; } }
             static public string DefaultFVSPrePostSeqNumRxPackageAssgnTableDbFile { get { return @"db\fvsmaster.mdb"; } }
@@ -3658,6 +3659,54 @@ namespace FIA_Biosum_Manager
 
             }
             //
+            //FVS Output PRE-POST Sequence Number Definitions
+            //
+            /// <summary>
+            /// Create the table that defines the FVS Output PRE-POST Sequence Number Definitions.
+            /// </summary>
+            /// <param name="p_oAdo"></param>
+            /// <param name="p_oConn"></param>
+            /// <param name="p_strTableName"></param>
+            public void CreateFVSOutputSQLitePrePostSeqNumTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateFVSOutputSQLitePrePostSeqNumTableSQL(p_strTableName));
+                CreateFVSOutputSQLitePrePostSeqNumTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
+            }
+            public void CreateFVSOutputSQLitePrePostSeqNumTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "tablename");
+            }
+            public string CreateFVSOutputSQLitePrePostSeqNumTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "PREPOST_SEQNUM_ID INTEGER," +
+                    "TABLENAME CHAR(75)," +
+                    "TYPE CHAR(1)," +
+                    "RXCYCLE1_PRE_SEQNUM INTEGER," +
+                    "RXCYCLE1_POST_SEQNUM INTEGER," +
+                    "RXCYCLE2_PRE_SEQNUM INTEGER," +
+                    "RXCYCLE2_POST_SEQNUM INTEGER," +
+                    "RXCYCLE3_PRE_SEQNUM INTEGER," +
+                    "RXCYCLE3_POST_SEQNUM INTEGER," +
+                    "RXCYCLE4_PRE_SEQNUM INTEGER," +
+                    "RXCYCLE4_POST_SEQNUM INTEGER," +
+                    "RXCYCLE1_PRE_BASEYR_YN CHAR(1) DEFAULT 'N'," +
+                    "RXCYCLE2_PRE_BASEYR_YN CHAR(1) DEFAULT 'N'," +
+                    "RXCYCLE3_PRE_BASEYR_YN CHAR(1) DEFAULT 'N'," +
+                    "RXCYCLE4_PRE_BASEYR_YN CHAR(1) DEFAULT 'N'," +
+                    "RXCYCLE1_PRE_BEFORECUT_YN CHAR(1) DEFAULT 'N'," +
+                    "RXCYCLE1_POST_BEFORECUT_YN CHAR(1) DEFAULT 'Y'," +
+                    "RXCYCLE2_PRE_BEFORECUT_YN CHAR(1) DEFAULT 'N'," +
+                    "RXCYCLE2_POST_BEFORECUT_YN CHAR(1) DEFAULT 'Y'," +
+                    "RXCYCLE3_PRE_BEFORECUT_YN CHAR(1) DEFAULT 'N'," +
+                    "RXCYCLE3_POST_BEFORECUT_YN CHAR(1) DEFAULT 'Y'," +
+                    "RXCYCLE4_PRE_BEFORECUT_YN CHAR(1) DEFAULT 'N'," +
+                    "RXCYCLE4_POST_BEFORECUT_YN CHAR(1) DEFAULT 'Y'," +
+                    "USE_SUMMARY_TABLE_SEQNUM_YN CHAR(1) DEFAULT 'N'," +
+                    "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY(PREPOST_SEQNUM_ID))";
+
+            }
+            //
             //FVS Output PRE-POST Sequence Number RX Package Assignments
             //
             /// <summary>
@@ -3681,6 +3730,17 @@ namespace FIA_Biosum_Manager
                   "RXPACKAGE CHAR(3)," +
                     "PREPOST_SEQNUM_ID INTEGER)";
 
+            }
+            public void CreateFVSOutputPrePostSQLiteSeqNumRxPackageAssgnTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateFVSOutputPrePostSeqNumRxPackageAssgnTableSQL(p_strTableName));
+            }
+            public string CreateFVSOutputPrePostSQLiteSeqNumRxPackageAssgnTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                  "RXPACKAGE CHAR(3)," +
+                  "PREPOST_SEQNUM_ID INTEGER," +
+                  "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY(RXPACKAGE,PREPOST_SEQNUM_ID))";
             }
             //
             //FVS Output PRE-POST Sequence Number Audit
@@ -3841,7 +3901,7 @@ namespace FIA_Biosum_Manager
                     "voltsgrs DOUBLE," +
                     "fvs_tree_id CHAR(10)," +
                     "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
-                    "DateTimeCreated DATE)";
+                    "DateTimeCreated DATETIME)";
 
                     }
                     /// <summary>
@@ -3895,7 +3955,7 @@ namespace FIA_Biosum_Manager
                     "voltsgrs DOUBLE," +
                     "fvs_tree_id CHAR(10)," +
                     "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
-                    "DateTimeCreated DATE)";
+                    "DateTimeCreated DATETIME)";
 
                     }
                     /// <summary>
@@ -3919,7 +3979,7 @@ namespace FIA_Biosum_Manager
                           "NF_IN_RXPACKAGE_TABLE_ERROR CHAR(10)," +
                           "NF_IN_TREE_TABLE_ERROR CHAR(10)," +
                           "TREE_SPECIES_CHANGE_WARNING CHAR(10)," +
-                          "CREATED_DATE DATETIME," +
+                          "DATETIMECREATED DATETIME," +
                           "PRIMARY KEY (IDX, FVS_VARIANT, RXPACKAGE, COLUMN_NAME))";
                     }
                     /// <summary>
