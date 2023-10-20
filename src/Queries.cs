@@ -770,8 +770,7 @@ namespace FIA_Biosum_Manager
             /// <param name="p_strFVSOutputTable"></param>
             /// <param name="p_bAllColumns"></param>
             /// <returns></returns>
-            static public string SqliteFVSOutputTable_AuditPrePostGenericSQL(string p_strIntoTable, string p_strFVSOutputTable, bool p_bAllColumns,
-                string p_strRunTitle)
+            static public string SqliteFVSOutputTable_AuditPrePostGenericSQL(string p_strIntoTable, string p_strFVSOutputTable, bool p_bAllColumns)
             {
                 string strSQL = "";
 
@@ -782,45 +781,27 @@ namespace FIA_Biosum_Manager
                                    "'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN," +
                                    "'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN," +
                                    "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN, " +
-                                   "substr(e.RunTitle, 12, 3) AS RXPACKAGE, SUBSTR(E.RUNTITLE,8,2) AS FVS_VARIANT " +
+                                   "a.RXPACKAGE, a.FVS_VARIANT " +
                              "INTO " + p_strIntoTable + " " +
-                             "FROM FVS." + p_strFVSOutputTable + " a, FVS.FVS_CASES e," +
+                             "FROM FVS." + p_strFVSOutputTable + " a, " +
                                  "(SELECT  SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum," +
                                           "b.standid, b.year " +
                                   "FROM FVS." + p_strFVSOutputTable + " b," +
                                         "(SELECT standid,year " +
-                                         "FROM FVS." + p_strFVSOutputTable + ") c " +
-                                 "WHERE b.standid=c.standid " +
+                                         "FROM FVS." + p_strFVSOutputTable + " c " +
+                                 "WHERE b.standid=c.standid "+
                                  "GROUP BY b.standid,b.year) d " +
-                                 "WHERE a.CaseID = e.CaseID AND e.RunTitle = '" + p_strRunTitle + 
-                                 "' AND a.standid=d.standid AND a.year=d.year ";
+                                 "WHERE a.standid=d.standid AND a.year=d.year ";
                 }
                 else
                 {
-                    strSQL = "SELECT d.SeqNum,a.standid,a.year," +
-                                   "'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN," +
-                                   "'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN," +
-                                   "'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN," +
-                                   "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN, " +
-                                   "substr(e.RunTitle, 12, 3) AS RXPACKAGE, SUBSTR(E.RUNTITLE,8,2) AS FVS_VARIANT " +
-                             "FROM FVS." + p_strFVSOutputTable + " a, FVS.FVS_CASES e," +
-                              //"(SELECT  SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum," +
-                              //         "b.standid, b.year " +
-                              // "FROM FVS." + p_strFVSOutputTable + " b," +
-                              //       "(SELECT standid,year " +
-                              //        "FROM FVS." + p_strFVSOutputTable + ") c " +
-                              //"WHERE b.standid=c.standid " +
-                              //"GROUP BY b.standid,b.year) d " +
-                              "(SELECT SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum," +
-                                "b.standid, b.year FROM FVS." + p_strFVSOutputTable + " b, FVS.FVS_CASES f," +
-                                "(SELECT g.standid, g.year FROM FVS." + p_strFVSOutputTable + " g, FVS.FVS_CASES h " +
-                                "WHERE g.CaseID = h.CaseID and h.RunTitle = '" + p_strRunTitle + "' ) c " +
-                                "WHERE b.standid = c.standid and b.CaseID = f.CaseID " +
-                                "and f.RunTitle = '" + p_strRunTitle + "' " +
-                                "GROUP BY b.standid,b.year) d " +
-                             "WHERE a.CaseID = e.CaseID AND e.RunTitle = '" + p_strRunTitle + 
-                             "' AND a.standid=d.standid AND a.year=d.year " +
-                             "ORDER BY a.standid,d.SeqNum";
+                    strSQL = $@"SELECT d.SeqNum,a.standid,a.year,'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN,'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN,
+                            'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN,'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN, a.rxPackage, 
+                            a.FVS_VARIANT FROM FVS.{p_strFVSOutputTable} a, 
+                            (SELECT SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum,b.standid, b.year FROM FVS.{p_strFVSOutputTable} b, 
+                            (SELECT g.standid, g.year FROM FVS.{p_strFVSOutputTable} g ) c 
+                            WHERE b.standid = c.standid GROUP BY b.standid,b.year) d 
+                            WHERE a.standid=d.standid AND a.year=d.year ORDER BY a.standid,d.SeqNum";
                 }
 
                 return strSQL;

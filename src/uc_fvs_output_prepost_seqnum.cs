@@ -1576,7 +1576,7 @@ namespace FIA_Biosum_Manager
                                 {
                                     // Retrieve the seqnumid for FVS_CUTLIST
                                     string strCutListId = SQLite.getSingleStringValueFromSQLQuery(conn, "SELECT PREPOST_SEQNUM_ID FROM " +
-                                        Tables.FVS.DefaultFVSPrePostSeqNumTable + " WHERE TABLENAME = 'FVS_CUTLIST'",
+                                        Tables.FVS.DefaultFVSPrePostSeqNumTable + " WHERE TRIM(TABLENAME) = 'FVS_CUTLIST'",
                                         Tables.FVS.DefaultFVSPrePostSeqNumTable);
                                     if (!String.IsNullOrEmpty(strCutListId))
                                     {
