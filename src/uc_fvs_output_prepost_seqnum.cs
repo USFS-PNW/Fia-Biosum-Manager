@@ -1247,6 +1247,11 @@ namespace FIA_Biosum_Manager
                                 oItem = m_oCurFVSPrepostSeqNumItem_Collection.Item(y);
                             }
                         }
+                        // FVS_StrClass always inherits FVS_Summary
+                        if (oItem.TableName.Trim().ToUpper().Equals("FVS_STRCLASS"))
+                        {
+                            oItem.UseSummaryTableSeqNumYN = "Y";
+                        }
                         //
                         //DELETE
                         //

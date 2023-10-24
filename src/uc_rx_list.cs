@@ -3942,21 +3942,13 @@ namespace FIA_Biosum_Manager
                     if (p_strSourceTableName.Trim().ToUpper() == "FVS_SUMMARY" ||
                         p_strSourceTableName.Trim().ToUpper().IndexOf("FVS_POTFIRE", 0) >= 0)
                     {
-                        if (p_oItem.UseSummaryTableSeqNumYN == "Y")
-                        {
-                            //STANDID + YEAR = ONE RECORD
-                            dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditPrePostGenericSQL("", "FVS_SUMMARY", false);
-                        }
-                        else
-                        {
-                            //STANDID + YEAR = ONE RECORD
-                            dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditPrePostGenericSQL("", p_strSourceTableName, false);
-                        }
+                        //STANDID + YEAR = ONE RECORD
+                        dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditPrePostGenericSQL("", p_strTempTable, false);
                     }
                     else
                     {
                         //STANDID + YEAR = MULTIPLE RECORDS
-                        dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditPrePostGenericSQL("", "FVS_SUMMARY", false);
+                        dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditPrePostGenericSQL("", p_strTempTable, false);
                     }
                     dataMgr.m_strSQL = "INSERT INTO " + strPrePostSeqNumMatrixTable + " " +
                                       dataMgr.m_strSQL;
@@ -4105,21 +4097,16 @@ namespace FIA_Biosum_Manager
                 {
                     if (p_oItem.UseSummaryTableSeqNumYN == "N")
                     {
-                        dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditPrePostStrClassSQL("", p_strSourceTableName, false, p_strRunTitle);
+                        dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditPrePostStrClassSQL("", p_strTempTable, false);
                     }
                     else
                     {
-                        strSQLArray = Queries.FVS.SqliteFVSOutputTable_AuditPrePostFvsStrClassUsingFVSSummarySQL("", "FVS_SUMMARY", false, p_strRunTitle);
+                        strSQLArray = Queries.FVS.SqliteFVSOutputTable_AuditPrePostFvsStrClassUsingFVSSummarySQL("", p_strTempTable, false, p_strRunTitle);
                     }
                 }
                 else
                 {
-                    if (p_oItem.UseSummaryTableSeqNumYN == "N")
-                        //STANDID + YEAR = ONE RECORD
-                        dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditPrePostGenericSQL("", p_strSourceTableName, false);
-                    else
-                        //STANDID + YEAR = MULTIPLE RECORDS
-                        dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditPrePostGenericSQL("", "FVS_SUMMARY", false);
+                    dataMgr.m_strSQL = Queries.FVS.SqliteFVSOutputTable_AuditPrePostGenericSQL("", p_strTempTable, false);
                 }
 
                 if (p_oItem.TableName.Trim().ToUpper() == "FVS_STRCLASS")

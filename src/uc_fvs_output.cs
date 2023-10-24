@@ -11281,20 +11281,29 @@ namespace FIA_Biosum_Manager
                 {
                     SQLite.SqlNonQuery(conn, $@"DROP TABLE {tmpTableName}");
                 }
+                // Source table for tmpSequence has a variety of dependencies. FVS_CUTLIST always uses FVS_SUMMARY:
+                GetPrePostSeqNumConfiguration(p_strSourceTableName, p_strRunTitle.Substring(11, 3));
+                string strSourceTable = Tables.FVS.DefaultFVSSummaryTableName;
+                if (m_oFVSPrePostSeqNumItem.UseSummaryTableSeqNumYN != "Y")
+                {
+                    strSourceTable = p_strSourceTableName.Trim();
+                }
                 SQLite.m_strSQL = $@"CREATE TABLE {tmpTableName} AS select s.standid, year, '{p_strRunTitle.Substring(7, 2)}' as fvs_variant, '{p_strRunTitle.Substring(11, 3)}' as rxpackage from 
-                    {p_strSourceTableName.Trim()} s, {Tables.FVS.DefaultFVSCasesTableName} c where s.CaseID = c.CaseID and s.StandID = c.StandID and c.RunTitle = '{p_strRunTitle}'";
+                    {strSourceTable} s, {Tables.FVS.DefaultFVSCasesTableName} c where s.CaseID = c.CaseID and s.StandID = c.StandID and c.RunTitle = '{p_strRunTitle}'";
+                // Need to add removal_code if working with FVS_STRCLASS
+                if (strSourceTable.ToUpper().Equals("FVS_STRCLASS"))
+                {
+                    SQLite.m_strSQL = $@"CREATE TABLE {tmpTableName} AS select s.standid, year, removal_code, '{p_strRunTitle.Substring(7, 2)}' as fvs_variant, '{p_strRunTitle.Substring(11, 3)}' as rxpackage from 
+                    {strSourceTable} s, {Tables.FVS.DefaultFVSCasesTableName} c where s.CaseID = c.CaseID and s.StandID = c.StandID and c.RunTitle = '{p_strRunTitle}'";
+                }
                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                 SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
 
-                string strRxPackageId = p_strRunTitle.Substring(11, 3);
-                string strVariant = p_strRunTitle.Substring(7, 2);
-                GetPrePostSeqNumConfiguration(p_strSourceTableName, strRxPackageId);
                 m_oRxTools.CreateFVSPrePostSeqNumTables(p_strTreeTempDbFile, m_oFVSPrePostSeqNumItem, p_strSourceTableName, p_strSourceTableName, 
                     p_bAudit, m_bDebug, m_strDebugFile, p_strRunTitle, tmpTableName);
-
             }
             else
             {

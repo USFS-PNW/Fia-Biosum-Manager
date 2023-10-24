@@ -1193,7 +1193,7 @@ namespace FIA_Biosum_Manager
             /// <param name="p_bAllColumns"></param>
             /// <returns></returns>
             static public string SqliteFVSOutputTable_AuditPrePostStrClassSQL(string p_strIntoTable, string p_strFVSOutputTable, 
-                bool p_bAllColumns, string p_strRunTitle)
+                bool p_bAllColumns)
             {
                 string strSQL = "";
 
@@ -1204,9 +1204,9 @@ namespace FIA_Biosum_Manager
                                      "'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN," +
                                      "'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN," +
                                      "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN, " +
-                                     "substr(e.RunTitle, 12, 3) AS RXPACKAGE, SUBSTR(E.RUNTITLE,8,2) AS FVS_VARIANT " +
+                                     "RXPACKAGE, FVS_VARIANT " +
                              "INTO " + p_strIntoTable + " " +
-                             "FROM FVS." + p_strFVSOutputTable + " a, FVS.FVS_CASES e," +
+                             "FROM FVS." + p_strFVSOutputTable + " a, " +
                                     "(SELECT  SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum," +
                                     "b.standid, b.year, b.removal_code " +
                                     "FROM FVS." + p_strFVSOutputTable + " b," +
@@ -1214,8 +1214,7 @@ namespace FIA_Biosum_Manager
                                     "FROM FVS." + p_strFVSOutputTable + ") c " +
                                     "WHERE b.standid=c.standid AND b.removal_code=c.removal_code " +
                                     "GROUP BY b.standid,b.year) d " +
-                                    "WHERE a.CaseID = e.CaseID and a.standId = e.standId AND e.RunTitle = '" + p_strRunTitle +
-                                    "' AND a.standid=d.standid AND a.year=d.year AND a.removal_code=d.removal_code";
+                                    "WHERE a.standid=d.standid AND a.year=d.year AND a.removal_code=d.removal_code";
                 }
                 else
                 {
@@ -1224,17 +1223,14 @@ namespace FIA_Biosum_Manager
                             "'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN," +
                             "'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN," +
                             "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN, " +
-                            "substr(e.RunTitle, 12, 3) AS RXPACKAGE, SUBSTR(E.RUNTITLE,8,2) AS FVS_VARIANT " +
-                            "FROM FVS." + p_strFVSOutputTable + " a, FVS.FVS_CASES e," +
+                            "RXPACKAGE, FVS_VARIANT " +
+                            "FROM FVS." + p_strFVSOutputTable + " a, " +
                             "(SELECT SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum," +
-                            "b.standid, b.year, b.removal_code FROM FVS." + p_strFVSOutputTable + " b, FVS.FVS_CASES f," +
-                            "(SELECT g.standid, g.year,g.removal_code FROM FVS." + p_strFVSOutputTable + " g, FVS.FVS_CASES h " +
-                            "WHERE g.CaseID = h.CaseID and g.standId = h.standId and h.RunTitle = '" + p_strRunTitle + "' ) c " +
-                            "WHERE b.standid = c.standid AND b.removal_code=c.removal_code and b.CaseID = f.CaseID " +
-                            "and b.standid = f.standId and f.RunTitle = '" + p_strRunTitle + "' " +
+                            "b.standid, b.year, b.removal_code FROM FVS." + p_strFVSOutputTable + " b, " +
+                            "(SELECT g.standid, g.year,g.removal_code FROM FVS." + p_strFVSOutputTable + " g ) c " +
+                            "WHERE b.standid = c.standid AND b.removal_code=c.removal_code " +
                             "GROUP BY b.standid,b.year,b.removal_code) d " +
-                            "WHERE a.CaseID = e.CaseID AND a.standID = e.standId and e.RunTitle = '" + p_strRunTitle +
-                            "' AND a.standid=d.standid AND a.year=d.year AND a.removal_code=d.removal_code " +
+                            "WHERE a.standid=d.standid AND a.year=d.year AND a.removal_code=d.removal_code " +
                             "ORDER BY a.standid,d.SeqNum";
                 }
 
@@ -1336,10 +1332,11 @@ namespace FIA_Biosum_Manager
                                       "'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN," +
                                       "'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN," +
                                       "'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN," +
-                                      "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN " +
+                                      "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN," +
+                                      "RXPACKAGE, FVS_VARIANT " +
                                 "INTO " + p_strIntoTable + " " +
                                 "FROM " + p_strFVSSummaryTable + " a," +
-                                    "(SELECT  SUM(IIF(b.year >= c.year,1,0)) AS SeqNum," +
+                                    "(SELECT  SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum," +
                                              "b.standid, b.year " +
                                      "FROM " + p_strFVSSummaryTable + " b," +
                                            "(SELECT standid,year " +
@@ -1347,128 +1344,16 @@ namespace FIA_Biosum_Manager
                                     "WHERE b.standid=c.standid " +
                                     "GROUP BY b.standid,b.year) d " +
                                  "WHERE a.standid=d.standid AND a.year=d.year";
-                    strSQL[0] = $@"INSERT INTO {p_strIntoTable} 
-                        SELECT d.SeqNum,a.standid,a.year,0 AS removal_code,
-                        'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN,'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN,
-                        'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN,'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN, 
-                        substr(e.RunTitle, 12, 3) AS RXPACKAGE, substr(E.RUNTITLE,8,2) AS FVS_VARIANT 
-                        FROM FVS.{p_strFVSSummaryTable} a, FVS.FVS_CASES e,
-                        (SELECT SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum,b.standid, b.year FROM FVS.{p_strFVSSummaryTable} b, 
-                        FVS.FVS_CASES f,(SELECT g.standid, g.year FROM FVS.{p_strFVSSummaryTable} g, FVS.FVS_CASES h 
-                        WHERE g.CaseID = h.CaseID and h.RunTitle = '{p_strRunTitle}' ) c 
-                        WHERE b.standid = c.standid and b.CaseID = f.CaseID and f.RunTitle = '{p_strRunTitle}' 
-                        GROUP BY b.standid,b.year) d WHERE a.CaseID = e.CaseID AND e.RunTitle = '{p_strRunTitle}' AND a.standid=d.standid 
-                        AND a.year=d.year ORDER BY a.standid,d.SeqNum";
-
-                    strSQL[1] = $@"INSERT INTO {p_strIntoTable} 
-                        SELECT d.SeqNum,a.standid,a.year,1 AS removal_code,
-                        'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN,'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN,
-                        'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN,'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN, 
-                        substr(e.RunTitle, 12, 3) AS RXPACKAGE, substr(E.RUNTITLE,8,2) AS FVS_VARIANT  
-                        FROM FVS.{p_strFVSSummaryTable} a, FVS.FVS_CASES e,
-                        (SELECT SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum,b.standid, b.year FROM FVS.{p_strFVSSummaryTable} b, 
-                        FVS.FVS_CASES f,(SELECT g.standid, g.year FROM FVS.{p_strFVSSummaryTable} g, FVS.FVS_CASES h 
-                        WHERE g.CaseID = h.CaseID and h.RunTitle = '{p_strRunTitle}' ) c 
-                        WHERE b.standid = c.standid and b.CaseID = f.CaseID and f.RunTitle = '{p_strRunTitle}' 
-                        GROUP BY b.standid,b.year) d WHERE a.CaseID = e.CaseID AND e.RunTitle = '{p_strRunTitle}' AND a.standid=d.standid 
-                        AND a.year=d.year ORDER BY a.standid,d.SeqNum";
-                }
-                else
-                {
-                    //strSQL[0] = "SELECT d.SeqNum,a.standid,a.year,0 AS removal_code," +
-                    //               "'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN," +
-                    //               "'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN," +
-                    //               "'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN," +
-                    //               "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN " +
-                    //         "FROM " + p_strFVSSummaryTable + " a," +
-                    //             "(SELECT  SUM(IIF(b.year >= c.year,1,0)) AS SeqNum," +
-                    //                      "b.standid, b.year " +
-                    //              "FROM " + p_strFVSSummaryTable + " b," +
-                    //                    "(SELECT standid,year " +
-                    //                     "FROM " + p_strFVSSummaryTable + ") c " +
-                    //             "WHERE b.standid=c.standid " +
-                    //             "GROUP BY b.standid,b.year) d " +
-                    //         "WHERE a.standid=d.standid AND a.year=d.year";
-
-                    strSQL[0] = "SELECT d.SeqNum,a.standid,a.year,0 AS removal_code," +
-                  "'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN," +
-                  "'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN," +
-                  "'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN," +
-                  "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN " +
-                    "FROM " + p_strFVSSummaryTable + " a," +
-                "(SELECT  SUM(IIF(b.year >= c.year,1,0)) AS SeqNum," +
-                         "b.standid, b.year " +
-                 "FROM " + p_strFVSSummaryTable + " b," +
-                       "(SELECT standid,year " +
-                        "FROM " + p_strFVSSummaryTable + ") c " +
-                "WHERE b.standid=c.standid " +
-                "GROUP BY b.standid,b.year) d " +
-             "WHERE a.standid=d.standid AND a.year=d.year";
-
-                    strSQL[0] = $@"SELECT d.SeqNum,a.standid,a.year,0 AS removal_code,
-                        'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN,'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN,
-                        'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN,'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN, 
-                        substr(e.RunTitle, 12, 3) AS RXPACKAGE, substr(E.RUNTITLE,8,2) AS FVS_VARIANT  
-                        FROM FVS.{p_strFVSSummaryTable} a, FVS.FVS_CASES e,
-                        (SELECT SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum,b.standid, b.year FROM FVS.{p_strFVSSummaryTable} b, 
-                        FVS.FVS_CASES f,(SELECT g.standid, g.year FROM FVS.{p_strFVSSummaryTable} g, FVS.FVS_CASES h 
-                        WHERE g.CaseID = h.CaseID and h.RunTitle = '{p_strRunTitle}' ) c 
-                        WHERE b.standid = c.standid and b.CaseID = f.CaseID and f.RunTitle = '{p_strRunTitle}' 
-                        GROUP BY b.standid,b.year) d WHERE a.CaseID = e.CaseID AND e.RunTitle = '{p_strRunTitle}' AND a.standid=d.standid 
-                        AND a.year=d.year ORDER BY a.standid,d.SeqNum";
-
-
-                    strSQL[1] = $@"SELECT d.SeqNum,a.standid,a.year,1 AS removal_code,
-                        'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN,'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN,
-                        'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN,'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN, 
-                        substr(e.RunTitle, 12, 3) AS RXPACKAGE, substr(E.RUNTITLE,8,2) AS FVS_VARIANT  
-                        FROM FVS.{p_strFVSSummaryTable} a, FVS.FVS_CASES e,
-                        (SELECT SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum,b.standid, b.year FROM FVS.{p_strFVSSummaryTable} b, 
-                        FVS.FVS_CASES f,(SELECT g.standid, g.year FROM FVS.{p_strFVSSummaryTable} g, FVS.FVS_CASES h 
-                        WHERE g.CaseID = h.CaseID and h.RunTitle = '{p_strRunTitle}' ) c 
-                        WHERE b.standid = c.standid and b.CaseID = f.CaseID and f.RunTitle = '{p_strRunTitle}' 
-                        GROUP BY b.standid,b.year) d WHERE a.CaseID = e.CaseID AND e.RunTitle = '{p_strRunTitle}' AND a.standid=d.standid 
-                        AND a.year=d.year ORDER BY a.standid,d.SeqNum";
-                }
-
-                return strSQL;
-
-            }
-
-            static public string[] SqliteFVSOutputTable_AuditPrePostFvsStrClassUsingFVSSummarySQL(string p_strIntoTable, string p_strFVSSummaryTable, bool p_bAllColumns)
-            {
-                string[] strSQL = new string[2];
-
-                if (p_strIntoTable.Trim().Length > 0)
-                {
-                    strSQL[0] = "SELECT d.SeqNum,a.standid,a.year,0 AS removal_code," +
-                                      "'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN," +
-                                      "'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN," +
-                                      "'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN," +
-                                      "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN " +
-                                "INTO " + p_strIntoTable + " " +
-                                "FROM " + p_strFVSSummaryTable + " a," +
-                                    "(SELECT  SUM(IIF(b.year >= c.year,1,0)) AS SeqNum," +
-                                             "b.standid, b.year " +
-                                     "FROM " + p_strFVSSummaryTable + " b," +
-                                           "(SELECT standid,year " +
-                                            "FROM " + p_strFVSSummaryTable + ") c " +
-                                    "WHERE b.standid=c.standid " +
-                                    "GROUP BY b.standid,b.year) d " +
-                                 "WHERE a.standid=d.standid AND a.year=d.year";
-
-                    strSQL[0] =
-
-
 
                     strSQL[1] = "INSERT INTO " + p_strIntoTable + " " +
                                 "SELECT d.SeqNum,a.standid,a.year,1 AS removal_code," +
                                       "'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN," +
                                       "'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN," +
                                       "'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN," +
-                                      "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN " +
+                                      "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN," +
+                                      "RXPACKAGE, FVS_VARIANT " +
                                 "FROM " + p_strFVSSummaryTable + " a," +
-                                    "(SELECT  SUM(IIF(b.year >= c.year,1,0)) AS SeqNum," +
+                                    "(SELECT  SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum," +
                                              "b.standid, b.year " +
                                      "FROM " + p_strFVSSummaryTable + " b," +
                                            "(SELECT standid,year " +
@@ -1483,9 +1368,10 @@ namespace FIA_Biosum_Manager
                                    "'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN," +
                                    "'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN," +
                                    "'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN," +
-                                   "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN " +
+                                   "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN," +
+                                   "RXPACKAGE, FVS_VARIANT " +
                              "FROM " + p_strFVSSummaryTable + " a," +
-                                 "(SELECT  SUM(IIF(b.year >= c.year,1,0)) AS SeqNum," +
+                                 "(SELECT  SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum," +
                                           "b.standid, b.year " +
                                   "FROM " + p_strFVSSummaryTable + " b," +
                                         "(SELECT standid,year " +
@@ -1498,9 +1384,10 @@ namespace FIA_Biosum_Manager
                                    "'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN," +
                                    "'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN," +
                                    "'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN," +
-                                   "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN " +
+                                   "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN, " +
+                                   "RXPACKAGE, FVS_VARIANT " +
                              "FROM " + p_strFVSSummaryTable + " a," +
-                                 "(SELECT  SUM(IIF(b.year >= c.year,1,0)) AS SeqNum," +
+                                 "(SELECT  SUM(CASE WHEN b.year >= c.year THEN 1 ELSE 0 END) AS SeqNum," +
                                           "b.standid, b.year " +
                                   "FROM " + p_strFVSSummaryTable + " b," +
                                         "(SELECT standid,year " +
