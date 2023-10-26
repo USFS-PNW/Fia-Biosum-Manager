@@ -3970,7 +3970,6 @@ namespace FIA_Biosum_Manager
 
                     if (p_bAudit)
                     {
-
                         if (p_strSourceTableName == "FVS_SUMMARY")
                         {
                             if (! dataMgr.TableExist(conn, strAuditPrePostSeqNumCountsTable))
@@ -3991,7 +3990,6 @@ namespace FIA_Biosum_Manager
                             if (p_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(p_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
 
-                            // @ToDo: This query gives the wrong answer. The SeqNum is the same for all the rows :-(
                             string[] arrDefaultColumns = { "SEQNUM", "STANDID", "YEAR", "FVS_VARIANT", "RXPACKAGE" };
                             string[] arrAllColumns = dataMgr.getFieldNamesArray(conn, "SELECT * FROM " + strAuditYearCountsTable);
                             System.Collections.Generic.IList<string> lstExtraColumns =
@@ -4003,14 +4001,34 @@ namespace FIA_Biosum_Manager
                                     lstExtraColumns.Add(arrAllColumns[i]);
                                 }
                             }
-                            dataMgr.m_strSQL = Queries.FVS.FVSOutputTable_PrePostGenericSQLite(
-                               strAuditYearCountsTable, "FVS_SUMMARY", false, p_strRunTitle, lstExtraColumns);
 
+                            // Build temp table from FVS_SUMMARY with only the current variant/package
+                            string tmpTableName = "tmpSummary";
+                            if (dataMgr.TableExist(conn, tmpTableName))
+                            {
+                                dataMgr.SqlNonQuery(conn, $@"DROP TABLE {tmpTableName}");
+                            }
+                            dataMgr.m_strSQL = $@"CREATE TABLE {tmpTableName} AS select s.standid, year, '{p_strRunTitle.Substring(7, 2)}' as fvs_variant, '{p_strRunTitle.Substring(11, 3)}' as rxpackage from 
+                                FVS_SUMMARY s, {Tables.FVS.DefaultFVSCasesTableName} c where s.CaseID = c.CaseID and s.StandID = c.StandID and c.RunTitle = '{p_strRunTitle}'";
                             if (p_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + dataMgr.m_strSQL + "\r\n");
                             dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
                             if (p_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(p_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
+
+                            dataMgr.m_strSQL = Queries.FVS.FVSOutputTable_PrePostGenericSQLite(
+                               strAuditYearCountsTable, tmpTableName, false, p_strRunTitle, lstExtraColumns);
+                            if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + dataMgr.m_strSQL + "\r\n");
+                            dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                            if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(p_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
+
+                            // Delete FVS_SUMMARY temp table
+                            if (dataMgr.TableExist(conn, tmpTableName))
+                            {
+                                dataMgr.SqlNonQuery(conn, $@"DROP TABLE {tmpTableName}");
+                            }
                         }
                         else
                         {

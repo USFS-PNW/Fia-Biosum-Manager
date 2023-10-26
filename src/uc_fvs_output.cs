@@ -2684,7 +2684,8 @@ namespace FIA_Biosum_Manager
                                 }
 
                                 // Only try to load if there is a cut list in the FVSOut.db
-                                if (FvsOutWithCutList())
+                                string strRunTitle = $@"FVSOUT_{strVariant}{m_oRxPackageItem.RunTitleSuffix}";
+                                if (FvsOutWithCutList(strRunTitle))
                                 {
                                     string strTreeTempDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
                                     string strTreeListDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
@@ -9385,9 +9386,6 @@ namespace FIA_Biosum_Manager
                 }
 
                     //Enable/Disable POST-APPEND Audit Tables; POST-APPEND audit tables are also included in the FVS_AUDITS.db
-                    //@ToDo: Also look for audit tables (variant/package specific) to verify audit has been run
-
-
                     //Enable/Disable Open Pre Audit Log button
                     btnViewLogFile.Enabled = false;
                 // FVSOUT_CA_P010_Audit_2023-01-18_13-53-58.txt
@@ -10250,7 +10248,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private bool FvsOutWithCutList()
+        private bool FvsOutWithCutList(string strRunTitle)
         {
             if (System.IO.File.Exists(m_strFvsOutDb))
             {
@@ -10260,7 +10258,11 @@ namespace FIA_Biosum_Manager
                     conn.Open();
                     if (SQLite.TableExist(conn, "FVS_CUTLIST"))
                     {
-                        return true;
+                        long lngRecords = SQLite.getRecordCount(conn, $@"SELECT DBH FROM {Tables.FVS.DefaultFVSCutListTableName} s, {Tables.FVS.DefaultFVSCasesTableName} c where s.CaseID = c.CaseID and s.StandID = c.StandID and c.RunTitle = '{strRunTitle}' LIMIT 1", Tables.FVS.DefaultFVSCutListTableName);
+                        if (lngRecords > 0)
+                        {
+                            return true;
+                        }                        
                     }
                 }
             }
@@ -11304,6 +11306,13 @@ namespace FIA_Biosum_Manager
 
                 m_oRxTools.CreateFVSPrePostSeqNumTables(p_strTreeTempDbFile, m_oFVSPrePostSeqNumItem, p_strSourceTableName, p_strSourceTableName, 
                     p_bAudit, m_bDebug, m_strDebugFile, p_strRunTitle, tmpTableName);
+
+                // Delete temp table
+                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                SQLite.SqlNonQuery(conn, $@"DROP TABLE {tmpTableName}");
+                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
             }
             else
             {
@@ -11623,7 +11632,7 @@ namespace FIA_Biosum_Manager
                                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim() + " Update " + m_strFvsTreeTable + " table");
 
                                 // Only try to load if there is a cut list in the FVSOut.db
-                                if (FvsOutWithCutList())
+                                if (FvsOutWithCutList(strRunTitle))
                                 {
                                     string strTreeTempDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
                                     string strTreeListDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;

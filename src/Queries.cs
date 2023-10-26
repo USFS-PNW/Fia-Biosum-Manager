@@ -462,10 +462,9 @@ namespace FIA_Biosum_Manager
                 {
                     if (p_strIntoTable.Trim().Length > 0)
                     {
-                        strSQL = "INSERT INTO " + p_strIntoTable +
-                                 " SELECT SUM(CASE WHEN a.year >= b.year THEN 1 ELSE 0 END) AS SeqNum,";
-                        strSQL += "a.standid, a.year, '" + p_strRunTitle.Substring(7, 2) + "' AS fvs_variant, '" +
-                                  p_strRunTitle.Substring(11, 3) + "' AS rxPackage ";
+                        strSQL = $@"INSERT INTO audit_FVS_SUMMARY_year_counts_table 
+                                    SELECT SUM(CASE WHEN a.year >= b.year THEN 1 ELSE 0 END) AS SeqNum,a.standid, a.year, 
+                                    fvs_variant, rxPackage ";
                         if (lstAddedColumns != null)
                         {
                             System.Text.StringBuilder sb = new System.Text.StringBuilder();
@@ -476,12 +475,8 @@ namespace FIA_Biosum_Manager
                             }
                             strSQL += sb.ToString().TrimEnd(',') + " ";
                         }
-                        strSQL += "FROM " + p_strFVSOutputTable + " a," +
-                                 "(SELECT " + p_strFVSOutputTable + ".standid, YEAR FROM " + p_strFVSOutputTable + ", FVS_CASES C " +
-                                 "WHERE " + p_strFVSOutputTable + ".STANDID = C.STANDID AND C.runtitle = '" + p_strRunTitle + "'" +
-                                 " ORDER BY " + p_strFVSOutputTable + ".standid, YEAR) b " +
-                                 "WHERE a.standid=b.standid and a.year = b.year " +
-                                 "GROUP BY a.standid,a.year";
+                        strSQL += $@"FROM {p_strFVSOutputTable} a,(SELECT standid,year FROM {p_strFVSOutputTable}) b 
+                                    WHERE a.standid=b.standid GROUP BY a.standid,a.year";
                     }
                     else
                     {
