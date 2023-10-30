@@ -4073,6 +4073,7 @@ namespace FIA_Biosum_Manager
             public string DefaultTravelTimeOfZeroDbFile { get { return @"gis\db\" + DefaultTravelTimeAccdbFile; } }
             public string DefaultTravelTimeOfZeroTableName { get { return "travel_time_of_zero"; } }
             public static string DefaultMasterTravelTimeAccdbFile { get { return "gis_travel_times_master.accdb"; } }
+            public static string DefaultMasterTravelTimeDbFile { get { return "gis_travel_times_master.db"; } }
 
 
             public TravelTime()
