@@ -4203,8 +4203,14 @@ namespace FIA_Biosum_Manager
         private string m_strPlotTableName = "";
         private string m_masterFolder = frmMain.g_oEnv.strApplicationDataDirectory.Trim() + frmMain.g_strBiosumDataDir;
         dao_data_access m_oDao;
+        private SQLite.ADO.DataMgr _SQLite = new SQLite.ADO.DataMgr();
+        public SQLite.ADO.DataMgr SQLite
+        {
+            get { return _SQLite; }
+            set { _SQLite = value; }
+        }
 
-        
+
         public bool CheckForExistingData(string strReferenceProjectDirectory, out bool bTablesHaveData)
         {
             bool bExistingTables = false;
@@ -4487,6 +4493,68 @@ namespace FIA_Biosum_Manager
                 m_oDao = null;
             }
             return strTempMDB;
+        }
+
+        public void migrate_access_data()
+        {
+            string gisPathAndDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                "\\" + Tables.TravelTime.DefaultTravelTimePathAndDbFile;
+            if (!System.IO.File.Exists(gisPathAndDbFile))
+            {
+                SQLite.CreateDbFile(gisPathAndDbFile);
+            }
+            // Create target tables in new database
+            string strCopyConn = SQLite.GetConnectionString(gisPathAndDbFile);
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strCopyConn))
+            {
+                conn.Open();
+                frmMain.g_oTables.m_oTravelTime.CreateSqliteProcessingSiteTable(SQLite, conn, Tables.TravelTime.DefaultProcessingSiteTableName);
+                frmMain.g_oTables.m_oTravelTime.CreateSqliteTravelTimeTable(SQLite, conn, Tables.TravelTime.DefaultTravelTimeTableName);
+            }
+            // Find path to existing tables
+            m_oProjectDs = new Datasource();
+            m_oProjectDs.m_strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\project.mdb";
+            m_oProjectDs.m_strDataSourceTableName = "datasource";
+            m_oProjectDs.m_strScenarioId = "";
+            m_oProjectDs.LoadTableColumnNamesAndDataTypes = false;
+            m_oProjectDs.LoadTableRecordCount = false;
+            m_oProjectDs.populate_datasource_array();
+            ado_data_access oAdo = new ado_data_access();
+
+            // Travel times
+            int intTable = m_oProjectDs.getTableNameRow(Datasource.TableTypes.TravelTimes);
+            string strDirectoryPath = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
+            string strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
+            string strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
+            string strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strCopyConn))
+            {
+                conn.Open();
+                if (m_oProjectDs.DataSourceTableExist(intTable))
+                {
+                    string strConn = oAdo.getMDBConnString(m_oProjectDs.getFullPathAndFile(Datasource.TableTypes.TravelTimes), "", "");
+                    using (var pConn = new System.Data.OleDb.OleDbConnection(strConn))
+                    {
+                        pConn.Open();
+                        oAdo.m_strSQL = $@"SELECT TRAVELTIME_ID, PSITE_ID, BIOSUM_PLOT_ID, COLLECTOR_ID,RAILHEAD_ID,
+                        TRAVEL_MODE, ONE_WAY_HOURS, PLOT, STATECD FROM {strTableName}";
+                        oAdo.CreateDataTable(pConn, oAdo.m_strSQL, strTableName, false);
+                        using (System.Data.SQLite.SQLiteDataAdapter da = new System.Data.SQLite.SQLiteDataAdapter(oAdo.m_strSQL, conn))
+                        {
+                            using (System.Data.SQLite.SQLiteCommandBuilder cb = new System.Data.SQLite.SQLiteCommandBuilder(da))
+                            {
+                                using (var transaction = conn.BeginTransaction())
+                                {
+                                    da.InsertCommand = cb.GetInsertCommand();
+                                    int rows = da.Update(oAdo.m_DataTable);
+                                    transaction.Commit();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
