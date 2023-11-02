@@ -8948,6 +8948,24 @@ namespace FIA_Biosum_Manager
             using (var pConn = new System.Data.OleDb.OleDbConnection(strConn))
             {
                 pConn.Open();
+                int i = 0;
+                // Ensure that DAO link to fvs_cutlist has completed before continuing
+                do
+                {
+                    // break out of loop if it runs too long
+                    if (i > 10)
+                    {
+                        System.Windows.Forms.MessageBox.Show("An error occurred while trying to validate the FVSTreeId! ", "FIA Biosum");
+                        if (m_bDebug)
+                            this.WriteText(m_strDebugFile, "ERROR: Unable to link to tables in FVSOut.db" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                        p_intItemError = -1;
+                        return;
+                    }
+                    Thread.Sleep(1000);
+                    i++;
+                }
+                while (!p_oAdo.TableExist(pConn, Tables.FVS.DefaultFVSCutListTableName));
+
                 intTreeTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("TREE");
                 intCondTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("CONDITION");
                 intPlotTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("PLOT");
