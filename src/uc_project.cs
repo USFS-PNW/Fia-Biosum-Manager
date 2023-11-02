@@ -994,9 +994,6 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oTables.m_oFIAPlot.CreateDWMFineWoodyDebrisTable(p_ado, p_ado.m_OleDbConnection, frmMain.g_oTables.m_oFIAPlot.DefaultDWMFineWoodyDebrisName);
                 frmMain.g_oTables.m_oFIAPlot.CreateDWMDuffLitterFuelTable(p_ado, p_ado.m_OleDbConnection, frmMain.g_oTables.m_oFIAPlot.DefaultDWMDuffLitterFuelName);
                 frmMain.g_oTables.m_oFIAPlot.CreateDWMTransectSegmentTable(p_ado, p_ado.m_OleDbConnection, frmMain.g_oTables.m_oFIAPlot.DefaultDWMTransectSegmentName);
-                //GRM Section
-                frmMain.g_oTables.m_oFIAPlot.CreateMasterAuxGRMStandTable(p_ado, p_ado.m_OleDbConnection, frmMain.g_oTables.m_oFIAPlot.DefaultMasterAuxGRMStandName);
-                frmMain.g_oTables.m_oFIAPlot.CreateMasterAuxGRMTreeTable(p_ado, p_ado.m_OleDbConnection, frmMain.g_oTables.m_oFIAPlot.DefaultMasterAuxGRMTreeName);
 
 				p_ado.CloseConnection(p_ado.m_OleDbConnection);
 

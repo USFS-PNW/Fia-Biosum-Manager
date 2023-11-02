@@ -93,8 +93,8 @@ namespace FIA_Biosum_Manager
         private Button btnRx;
         private TabPage tabPage1;
         private GroupBox otherOptionsGroupBox;
-        private GroupBox grpGRMOptions;
-        private CheckBox chkGRM;
+        private GroupBox grpCalibOptions;
+        private CheckBox chkUsePrevHt;
         private GroupBox grpDWMOptions;
         private LinkLabel linkLabelFuelModel;
         private GroupBox groupBox2;
@@ -116,6 +116,7 @@ namespace FIA_Biosum_Manager
         private ComboBox cmbSelectedGroup;
         private Label lblSelectedGroup;
         private CheckBox chkIncludeSeedlings;
+        private CheckBox chkUsePrevDia;
 
         delegate string[] GetListBoxItemsDlg(CheckedListBox checkedListBox);
 
@@ -197,8 +198,8 @@ namespace FIA_Biosum_Manager
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.otherOptionsGroupBox = new System.Windows.Forms.GroupBox();
             this.chkIncludeSeedlings = new System.Windows.Forms.CheckBox();
-            this.grpGRMOptions = new System.Windows.Forms.GroupBox();
-            this.chkGRM = new System.Windows.Forms.CheckBox();
+            this.grpCalibOptions = new System.Windows.Forms.GroupBox();
+            this.chkUsePrevHt = new System.Windows.Forms.CheckBox();
             this.grpDWMOptions = new System.Windows.Forms.GroupBox();
             this.linkLabelFuelModel = new System.Windows.Forms.LinkLabel();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
@@ -220,12 +221,13 @@ namespace FIA_Biosum_Manager
             this.btnHelp = new System.Windows.Forms.Button();
             this.btnClose = new System.Windows.Forms.Button();
             this.lblTitle = new System.Windows.Forms.Label();
+            this.chkUsePrevDia = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.otherOptionsGroupBox.SuspendLayout();
-            this.grpGRMOptions.SuspendLayout();
+            this.grpCalibOptions.SuspendLayout();
             this.grpDWMOptions.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -461,7 +463,7 @@ namespace FIA_Biosum_Manager
             // tabPage1
             // 
             this.tabPage1.Controls.Add(this.otherOptionsGroupBox);
-            this.tabPage1.Controls.Add(this.grpGRMOptions);
+            this.tabPage1.Controls.Add(this.grpCalibOptions);
             this.tabPage1.Controls.Add(this.grpDWMOptions);
             this.tabPage1.Location = new System.Drawing.Point(4, 25);
             this.tabPage1.Name = "tabPage1";
@@ -493,26 +495,26 @@ namespace FIA_Biosum_Manager
             this.chkIncludeSeedlings.Text = "Include seedlings";
             this.chkIncludeSeedlings.UseVisualStyleBackColor = true;
             // 
-            // grpGRMOptions
+            // grpCalibOptions
             // 
-            this.grpGRMOptions.Controls.Add(this.chkGRM);
-            this.grpGRMOptions.Location = new System.Drawing.Point(451, 6);
-            this.grpGRMOptions.Name = "grpGRMOptions";
-            this.grpGRMOptions.Size = new System.Drawing.Size(330, 85);
-            this.grpGRMOptions.TabIndex = 102;
-            this.grpGRMOptions.TabStop = false;
-            this.grpGRMOptions.Text = "Growth Removal Mortality";
-            this.grpGRMOptions.Visible = false;
+            this.grpCalibOptions.Controls.Add(this.chkUsePrevDia);
+            this.grpCalibOptions.Controls.Add(this.chkUsePrevHt);
+            this.grpCalibOptions.Location = new System.Drawing.Point(451, 6);
+            this.grpCalibOptions.Name = "grpCalibOptions";
+            this.grpCalibOptions.Size = new System.Drawing.Size(330, 85);
+            this.grpCalibOptions.TabIndex = 102;
+            this.grpCalibOptions.TabStop = false;
+            this.grpCalibOptions.Text = "Calibration Data";
             // 
-            // chkGRM
+            // chkUsePrevHt
             // 
-            this.chkGRM.AutoSize = true;
-            this.chkGRM.Location = new System.Drawing.Point(6, 20);
-            this.chkGRM.Name = "chkGRM";
-            this.chkGRM.Size = new System.Drawing.Size(263, 21);
-            this.chkGRM.TabIndex = 2;
-            this.chkGRM.Text = "Use GRM calibration data if available";
-            this.chkGRM.UseVisualStyleBackColor = true;
+            this.chkUsePrevHt.AutoSize = true;
+            this.chkUsePrevHt.Location = new System.Drawing.Point(6, 20);
+            this.chkUsePrevHt.Name = "chkUsePrevHt";
+            this.chkUsePrevHt.Size = new System.Drawing.Size(156, 21);
+            this.chkUsePrevHt.TabIndex = 2;
+            this.chkUsePrevHt.Text = "Use previous height";
+            this.chkUsePrevHt.UseVisualStyleBackColor = true;
             // 
             // grpDWMOptions
             // 
@@ -731,6 +733,16 @@ namespace FIA_Biosum_Manager
             this.lblTitle.TabIndex = 99;
             this.lblTitle.Text = "Create FVS Input";
             // 
+            // chkUsePrevDia
+            // 
+            this.chkUsePrevDia.AutoSize = true;
+            this.chkUsePrevDia.Location = new System.Drawing.Point(6, 43);
+            this.chkUsePrevDia.Name = "chkUsePrevDia";
+            this.chkUsePrevDia.Size = new System.Drawing.Size(172, 21);
+            this.chkUsePrevDia.TabIndex = 3;
+            this.chkUsePrevDia.Text = "Use previous diameter";
+            this.chkUsePrevDia.UseVisualStyleBackColor = true;
+            // 
             // uc_fvs_input
             // 
             this.Controls.Add(this.groupBox1);
@@ -744,8 +756,8 @@ namespace FIA_Biosum_Manager
             this.tabPage1.ResumeLayout(false);
             this.otherOptionsGroupBox.ResumeLayout(false);
             this.otherOptionsGroupBox.PerformLayout();
-            this.grpGRMOptions.ResumeLayout(false);
-            this.grpGRMOptions.PerformLayout();
+            this.grpCalibOptions.ResumeLayout(false);
+            this.grpCalibOptions.PerformLayout();
             this.grpDWMOptions.ResumeLayout(false);
             this.grpDWMOptions.PerformLayout();
             this.groupBox2.ResumeLayout(false);
@@ -1384,7 +1396,8 @@ namespace FIA_Biosum_Manager
             }
 
             //Growth Removal Mortality section
-            p_fvs.bUseGrmCalibrationData = (bool)frmMain.g_oDelegate.GetControlPropertyValue(chkGRM, "Checked", false);
+            p_fvs.bUsePrevHtCalibrationData = (bool)frmMain.g_oDelegate.GetControlPropertyValue(chkUsePrevHt, "Checked", false);
+            p_fvs.bUsePrevDiaCalibrationData = (bool)frmMain.g_oDelegate.GetControlPropertyValue(chkUsePrevDia, "Checked", false);
             p_fvs.bIncludeSeedlings = (bool)frmMain.g_oDelegate.GetControlPropertyValue(chkIncludeSeedlings, "Checked", false);
             p_fvs.strSourceFiaDb = (string)frmMain.g_oDelegate.GetControlPropertyValue((Control)this.txtFIADatamart, "Text", false);
             p_fvs.strSourceFiaDb = p_fvs.strSourceFiaDb.Trim();

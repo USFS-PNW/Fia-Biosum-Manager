@@ -3945,21 +3945,9 @@ namespace FIA_Biosum_Manager
                         return strSQL;
                     }
 
-                    public static string CopyGrmColumns(string strTargetTable)
+                    public static string SetCalibrationColumnsToNull(string strTargetTable, string strTargetField)
                     {
-                        string strSQL = "UPDATE " + strTargetTable +
-                         " INNER JOIN FVS_TreeInit ON FVS_TreeInit.Tree_ID = " + strTargetTable + ".TREE_ID" +
-                         " AND " + strTargetTable + ".STAND_ID = FVS_TreeInit.Stand_ID" +
-                         " SET " + strTargetTable + ".DG = FVS_TreeInit.DG, " +
-                         strTargetTable + ".HTG = FVS_TreeInit.HTG";
-                         return strSQL;
-                    }
-
-                    public static string SetGrmColumnsToNull(string strTargetTable)
-                    {
-                        string strSQL = "UPDATE " + strTargetTable +
-                         " SET " + strTargetTable + ".DG = NULL, " +
-                         strTargetTable + ".HTG = NULL";
+                        string strSQL = $@"UPDATE {strTargetTable} SET {strTargetTable}.{strTargetField} = NULL ";
                         return strSQL;
                     }
 

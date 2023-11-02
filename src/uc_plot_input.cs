@@ -107,10 +107,6 @@ namespace FIA_Biosum_Manager
         private string m_strDwmFwdTable = frmMain.g_oTables.m_oFIAPlot.DefaultDWMFineWoodyDebrisName;
         private string m_strDwmDuffLitterTable = frmMain.g_oTables.m_oFIAPlot.DefaultDWMDuffLitterFuelName;
         private string m_strDwmTransectSegmentTable = frmMain.g_oTables.m_oFIAPlot.DefaultDWMTransectSegmentName;
-	    private string m_strGRMComponentTable;
-        private string m_strGrmStandTable = frmMain.g_oTables.m_oFIAPlot.DefaultMasterAuxGRMStandName;
-	    private string m_strGrmTreeTable = frmMain.g_oTables.m_oFIAPlot.DefaultMasterAuxGRMTreeName;
-
 		private string m_strSQL;
 
 		private FIA_Biosum_Manager.frmTherm m_frmTherm;
@@ -156,8 +152,6 @@ namespace FIA_Biosum_Manager
 	    private int m_intAddedDwmFwdRows=0;
 	    private int m_intAddedDwmDuffLitterRows=0;
 	    private int m_intAddedDwmTransectSegmentRows=0;
-        private int m_intAddedGrmStandRows = 0;
-        private int m_intAddedGrmTreeRows = 0;
         private int m_intAddedSeedlingRows = 0;
         private System.Windows.Forms.GroupBox grpboxFIADBInv;
 		private System.Windows.Forms.Button btnFIADBInvAppend;
@@ -211,8 +205,6 @@ namespace FIA_Biosum_Manager
         private string m_pdfFile = @"Help\DATABASE_Help.pdf";
         private bool m_bLoadSeedlings = true;
         private CheckBox chkDwmImport;
-        private CheckBox chkGrmImport;
-        private ComboBox cmbGrmComponentTable;
 		
 
 		/// <summary> 
@@ -321,8 +313,7 @@ namespace FIA_Biosum_Manager
             this.btnFilterNext = new System.Windows.Forms.Button();
             this.btnFilterCancel = new System.Windows.Forms.Button();
             this.groupBox7 = new System.Windows.Forms.GroupBox();
-            this.cmbGrmComponentTable = new System.Windows.Forms.ComboBox();
-            this.chkGrmImport = new System.Windows.Forms.CheckBox();
+            this.ckImportSeedlings = new System.Windows.Forms.CheckBox();
             this.chkDwmImport = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
             this.cmbCondPropPercent = new System.Windows.Forms.ComboBox();
@@ -360,7 +351,6 @@ namespace FIA_Biosum_Manager
             this.txtMDBPlotTable = new System.Windows.Forms.TextBox();
             this.btnMDBPlotBrowse = new System.Windows.Forms.Button();
             this.txtMDBPlot = new System.Windows.Forms.TextBox();
-            this.ckImportSeedlings = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.grpboxMDBFiadbInput.SuspendLayout();
             this.groupBox24.SuspendLayout();
@@ -1040,8 +1030,6 @@ namespace FIA_Biosum_Manager
             // groupBox7
             // 
             this.groupBox7.Controls.Add(this.ckImportSeedlings);
-            this.groupBox7.Controls.Add(this.cmbGrmComponentTable);
-            this.groupBox7.Controls.Add(this.chkGrmImport);
             this.groupBox7.Controls.Add(this.chkDwmImport);
             this.groupBox7.Controls.Add(this.label2);
             this.groupBox7.Controls.Add(this.cmbCondPropPercent);
@@ -1061,27 +1049,18 @@ namespace FIA_Biosum_Manager
             this.groupBox7.TabIndex = 1;
             this.groupBox7.TabStop = false;
             // 
-            // cmbGrmComponentTable
+            // ckImportSeedlings
             // 
-            this.cmbGrmComponentTable.Enabled = false;
-            this.cmbGrmComponentTable.FormattingEnabled = true;
-            this.cmbGrmComponentTable.Location = new System.Drawing.Point(76, 260);
-            this.cmbGrmComponentTable.Margin = new System.Windows.Forms.Padding(4);
-            this.cmbGrmComponentTable.Name = "cmbGrmComponentTable";
-            this.cmbGrmComponentTable.Size = new System.Drawing.Size(409, 24);
-            this.cmbGrmComponentTable.TabIndex = 12;
-            // 
-            // chkGrmImport
-            // 
-            this.chkGrmImport.AutoSize = true;
-            this.chkGrmImport.Location = new System.Drawing.Point(76, 238);
-            this.chkGrmImport.Margin = new System.Windows.Forms.Padding(4);
-            this.chkGrmImport.Name = "chkGrmImport";
-            this.chkGrmImport.Size = new System.Drawing.Size(262, 21);
-            this.chkGrmImport.TabIndex = 11;
-            this.chkGrmImport.Text = "Use Growth, Removal, Mortality Data";
-            this.chkGrmImport.UseVisualStyleBackColor = true;
-            this.chkGrmImport.CheckedChanged += new System.EventHandler(this.chkGrmImport_CheckedChanged);
+            this.ckImportSeedlings.AutoSize = true;
+            this.ckImportSeedlings.Checked = true;
+            this.ckImportSeedlings.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.ckImportSeedlings.Location = new System.Drawing.Point(76, 181);
+            this.ckImportSeedlings.Margin = new System.Windows.Forms.Padding(4);
+            this.ckImportSeedlings.Name = "ckImportSeedlings";
+            this.ckImportSeedlings.Size = new System.Drawing.Size(141, 21);
+            this.ckImportSeedlings.TabIndex = 13;
+            this.ckImportSeedlings.Text = "Include Seedlings";
+            this.ckImportSeedlings.UseVisualStyleBackColor = true;
             // 
             // chkDwmImport
             // 
@@ -1465,19 +1444,6 @@ namespace FIA_Biosum_Manager
             this.txtMDBPlot.Name = "txtMDBPlot";
             this.txtMDBPlot.Size = new System.Drawing.Size(383, 30);
             this.txtMDBPlot.TabIndex = 0;
-            // 
-            // ckImportSeedlings
-            // 
-            this.ckImportSeedlings.AutoSize = true;
-            this.ckImportSeedlings.Checked = true;
-            this.ckImportSeedlings.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ckImportSeedlings.Location = new System.Drawing.Point(76, 181);
-            this.ckImportSeedlings.Margin = new System.Windows.Forms.Padding(4);
-            this.ckImportSeedlings.Name = "ckImportSeedlings";
-            this.ckImportSeedlings.Size = new System.Drawing.Size(141, 21);
-            this.ckImportSeedlings.TabIndex = 13;
-            this.ckImportSeedlings.Text = "Include Seedlings";
-            this.ckImportSeedlings.UseVisualStyleBackColor = true;
             // 
             // uc_plot_input
             // 
@@ -2962,14 +2928,14 @@ namespace FIA_Biosum_Manager
                 }
 
 				//Growth Removal Mortality Section
-                if (m_intError == 0 && Checked(chkGrmImport) &&
-                    !GetBooleanValue((System.Windows.Forms.Control) m_frmTherm, "AbortProcess"))
-                {
-                    SetThermValue(m_frmTherm.progressBar1, "Value",
-                        GetThermValue(m_frmTherm.progressBar1, "Maximum"));
-                    SetThermValue(m_frmTherm.progressBar2, "Value", 90);
-                    m_intError = ImportGrowthRemovalMortality(m_ado);
-                }
+                //if (m_intError == 0 && Checked(chkGrmImport) &&
+                //    !GetBooleanValue((System.Windows.Forms.Control) m_frmTherm, "AbortProcess"))
+                //{
+                //    SetThermValue(m_frmTherm.progressBar1, "Value",
+                //        GetThermValue(m_frmTherm.progressBar1, "Maximum"));
+                //    SetThermValue(m_frmTherm.progressBar2, "Value", 90);
+                //    m_intError = ImportGrowthRemovalMortality(m_ado);
+                //}
 
                 //The connection should be closed if necessary and reopened
                 if (m_connTempMDBFile != null && m_connTempMDBFile.State == System.Data.ConnectionState.Open)
@@ -3005,18 +2971,11 @@ namespace FIA_Biosum_Manager
                                 m_strDwmTransectSegmentTable);
                         }
 
-                        if (Checked(chkGrmImport))
-                        {
-                            m_intAddedGrmStandRows = GetNewRecordCount(m_ado, m_connTempMDBFile, m_strGrmStandTable);
-                            m_intAddedGrmTreeRows = GetNewRecordCount(m_ado, m_connTempMDBFile, m_strGrmTreeTable);
-                        }
-
                         //Successfully imported and updated plot data. Set biosum_status_cd to 1
                         string[] arrTables = new string[]{m_strPlotTable, m_strCondTable, m_strTreeTable, m_strPopEvalTable, m_strPopStratumTable,
                             m_strPpsaTable, m_strPopEstUnitTable, m_strSiteTreeTable,
                             m_strBiosumPopStratumAdjustmentFactorsTable,
-                            m_strDwmCwdTable, m_strDwmFwdTable, m_strDwmDuffLitterTable, m_strDwmTransectSegmentTable,
-                            m_strGrmStandTable, m_strGrmTreeTable };
+                            m_strDwmCwdTable, m_strDwmFwdTable, m_strDwmDuffLitterTable, m_strDwmTransectSegmentTable};
                         foreach (string table in arrTables)
                         {
                             if (m_ado.TableExist(m_connTempMDBFile, table))
@@ -3067,8 +3026,7 @@ namespace FIA_Biosum_Manager
                                 m_strPpsaTable, m_strPopEstUnitTable, m_strSiteTreeTable,
                                 m_strBiosumPopStratumAdjustmentFactorsTable,
                                 m_strDwmCwdTable, m_strDwmFwdTable, m_strDwmDuffLitterTable,
-                                m_strDwmTransectSegmentTable,
-                                m_strGrmStandTable, m_strGrmTreeTable
+                                m_strDwmTransectSegmentTable
                             },
                             " WHERE biosum_status_cd=9;");
                         MessageBox.Show("!!Error Occured Adding Plot Records: 0 Records Added!!", "FIA Biosum",
@@ -3167,13 +3125,6 @@ namespace FIA_Biosum_Manager
 	                          m_intAddedDwmCwdRows.ToString().Trim() + " CWD Pieces\r\n" +
 	                          m_intAddedDwmFwdRows.ToString().Trim() + " FWD Transects\r\n" +
 	                          m_intAddedDwmDuffLitterRows.ToString().Trim() + " Duff and Litter Samples";
-	        }
-
-	        if (Checked(chkGrmImport))
-	        {
-	            strMessage += "\r\n" +
-	                          m_intAddedGrmStandRows.ToString().Trim() + " GRM Stands\r\n" +
-	                          m_intAddedGrmTreeRows.ToString().Trim() + " GRM Trees";
 	        }
 
 	        return strMessage;
@@ -4938,147 +4889,147 @@ namespace FIA_Biosum_Manager
 	        return p_ado.m_intError;
 	    }
 
-	    private int ImportGrowthRemovalMortality(ado_data_access p_ado)
-	    {
-		    string strFIADBDbFile = "";
-		    strFIADBDbFile = (string) frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox) txtFiadbInputFile, "Text", false);
-		    strFIADBDbFile = strFIADBDbFile.Trim();
-	        string strMasterAuxDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.accdb";
-            m_strGRMComponentTable = (string) frmMain.g_oDelegate.GetControlPropertyValue(cmbGrmComponentTable, "Text", false);
+	  //  private int ImportGrowthRemovalMortality(ado_data_access p_ado)
+	  //  {
+		 //   string strFIADBDbFile = "";
+		 //   strFIADBDbFile = (string) frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox) txtFiadbInputFile, "Text", false);
+		 //   strFIADBDbFile = strFIADBDbFile.Trim();
+	  //      string strMasterAuxDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.accdb";
+   //         m_strGRMComponentTable = (string) frmMain.g_oDelegate.GetControlPropertyValue(cmbGrmComponentTable, "Text", false);
 
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.ImportGrowthRemovalMortality\r\n");
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//\r\n");
-            }
+   //         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+   //         {
+   //             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "\r\n//\r\n");
+   //             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.ImportGrowthRemovalMortality\r\n");
+   //             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//\r\n");
+   //         }
 
-            DataMgr oDataMgr = new DataMgr();
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strFIADBDbFile)))
-            {
-                conn.Open();
-                if (!oDataMgr.TableExist(conn, m_strGRMComponentTable))
-	            {
-	                DialogResult dlgResult = MessageBox.Show(
-	                    "!!Error!!\nModule - uc_plot_input:ImportGrowthRemovalMortality\n" + "Err Msg - " +
-	                    m_strGRMComponentTable +
-	                    " was not found in FIADB Source!\r\nDo you wish to continue plot data input without GRM Calibration Data?",
-	                    "FIA Biosum", MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation);
+   //         DataMgr oDataMgr = new DataMgr();
+   //         using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strFIADBDbFile)))
+   //         {
+   //             conn.Open();
+   //             if (!oDataMgr.TableExist(conn, m_strGRMComponentTable))
+	  //          {
+	  //              DialogResult dlgResult = MessageBox.Show(
+	  //                  "!!Error!!\nModule - uc_plot_input:ImportGrowthRemovalMortality\n" + "Err Msg - " +
+	  //                  m_strGRMComponentTable +
+	  //                  " was not found in FIADB Source!\r\nDo you wish to continue plot data input without GRM Calibration Data?",
+	  //                  "FIA Biosum", MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation);
 
-	                //Disable functionality related to GRM option down the pipeline
-                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.CheckBox) chkGrmImport, "Checked", false); //unchecked value?
-	                if (dlgResult == DialogResult.No)
-	                {
-	                    return -1; //terminates plot input processing.
-	                }
-	                else if (dlgResult == DialogResult.Yes)
-	                {
-	                    //m_intError == 0 keeps performing plot input.
-	                    return 0;
-	                }
-	            }
-	        }
+	  //              //Disable functionality related to GRM option down the pipeline
+   //                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.CheckBox) chkGrmImport, "Checked", false); //unchecked value?
+	  //              if (dlgResult == DialogResult.No)
+	  //              {
+	  //                  return -1; //terminates plot input processing.
+	  //              }
+	  //              else if (dlgResult == DialogResult.Yes)
+	  //              {
+	  //                  //m_intError == 0 keeps performing plot input.
+	  //                  return 0;
+	  //              }
+	  //          }
+	  //      }
 
-	        using (var conn = new OleDbConnection(p_ado.getMDBConnString(strMasterAuxDb, "","")))
-	        {
-	            conn.Open();
-	            string message = "";
-	            bool bGrmStandTableNotFound = !p_ado.TableExist(conn, m_strGrmStandTable);
-	            bool bGrmTreeTableNotFound = !p_ado.TableExist(conn, m_strGrmTreeTable);
-	            if (bGrmStandTableNotFound)
-	            {
-	                message += m_strGrmStandTable + " could not be found in Master_Aux!\r\n";
-	            }
-	            if (bGrmTreeTableNotFound)
-	            {
-	                message += m_strGrmTreeTable + " could not be found in Master_Aux!\r\n";
-	            }
-	            if (bGrmStandTableNotFound || bGrmTreeTableNotFound)
-	            {
-	                DialogResult dlgResult = MessageBox.Show(
-	                    "!!Error!!\nModule - uc_plot_input:ImportGrowthRemovalMortality\n" + "Err Msg - " +
-	                    message + "\r\nDo you wish to continue plot data input without GRM Calibration Data?",
-	                    "FIA Biosum", MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation);
+	  //      using (var conn = new OleDbConnection(p_ado.getMDBConnString(strMasterAuxDb, "","")))
+	  //      {
+	  //          conn.Open();
+	  //          string message = "";
+	  //          bool bGrmStandTableNotFound = !p_ado.TableExist(conn, m_strGrmStandTable);
+	  //          bool bGrmTreeTableNotFound = !p_ado.TableExist(conn, m_strGrmTreeTable);
+	  //          if (bGrmStandTableNotFound)
+	  //          {
+	  //              message += m_strGrmStandTable + " could not be found in Master_Aux!\r\n";
+	  //          }
+	  //          if (bGrmTreeTableNotFound)
+	  //          {
+	  //              message += m_strGrmTreeTable + " could not be found in Master_Aux!\r\n";
+	  //          }
+	  //          if (bGrmStandTableNotFound || bGrmTreeTableNotFound)
+	  //          {
+	  //              DialogResult dlgResult = MessageBox.Show(
+	  //                  "!!Error!!\nModule - uc_plot_input:ImportGrowthRemovalMortality\n" + "Err Msg - " +
+	  //                  message + "\r\nDo you wish to continue plot data input without GRM Calibration Data?",
+	  //                  "FIA Biosum", MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation);
 
-	                //Disable functionality related to GRM option down the pipeline
-	                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.CheckBox)chkGrmImport, "Checked", false);
-	                if (dlgResult == DialogResult.No)
-	                {
-	                    return -1; //terminates plot input processing.
-	                }
-	                else if (dlgResult == DialogResult.Yes)
-	                {
-	                    //m_intError == 0 keeps performing plot input.
-	                    return 0;
-	                }
-	            }
-	        }
+	  //              //Disable functionality related to GRM option down the pipeline
+	  //              frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.CheckBox)chkGrmImport, "Checked", false);
+	  //              if (dlgResult == DialogResult.No)
+	  //              {
+	  //                  return -1; //terminates plot input processing.
+	  //              }
+	  //              else if (dlgResult == DialogResult.Yes)
+	  //              {
+	  //                  //m_intError == 0 keeps performing plot input.
+	  //                  return 0;
+	  //              }
+	  //          }
+	  //      }
 
-	        dao_data_access p_dao = new dao_data_access();
-            //Link to FIADB source tables in temporary database
-            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, m_strGRMComponentTable, m_strGRMComponentTable, ODBCMgr.DSN_KEYS.PlotInputDsnName,
-                strFIADBDbFile);
-            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbPlotTable,
-                    "Text", false), "FIADB_PLOT_TABLE", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbCondTable,
-                    "Text", false), "FIADB_COND_TABLE", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbTreeTable,
-                    "Text", false), "FIADB_TREE_TABLE", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-	        //Link to Master_AUX.accdb GRM dest tables in temporary database
-	        p_dao.CreateTableLink(m_strTempMDBFile, m_strGrmStandTable, strMasterAuxDb, m_strGrmStandTable);
-	        p_dao.CreateTableLink(m_strTempMDBFile, m_strGrmTreeTable, strMasterAuxDb, m_strGrmTreeTable);
+	  //      dao_data_access p_dao = new dao_data_access();
+   //         //Link to FIADB source tables in temporary database
+   //         p_dao.CreateSQLiteTableLink(m_strTempMDBFile, m_strGRMComponentTable, m_strGRMComponentTable, ODBCMgr.DSN_KEYS.PlotInputDsnName,
+   //             strFIADBDbFile);
+   //         p_dao.CreateSQLiteTableLink(m_strTempMDBFile, (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbPlotTable,
+   //                 "Text", false), "FIADB_PLOT_TABLE", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
+   //         p_dao.CreateSQLiteTableLink(m_strTempMDBFile, (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbCondTable,
+   //                 "Text", false), "FIADB_COND_TABLE", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
+   //         p_dao.CreateSQLiteTableLink(m_strTempMDBFile, (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbTreeTable,
+   //                 "Text", false), "FIADB_TREE_TABLE", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
+	  //      //Link to Master_AUX.accdb GRM dest tables in temporary database
+	  //      p_dao.CreateTableLink(m_strTempMDBFile, m_strGrmStandTable, strMasterAuxDb, m_strGrmStandTable);
+	  //      p_dao.CreateTableLink(m_strTempMDBFile, m_strGrmTreeTable, strMasterAuxDb, m_strGrmTreeTable);
 
-	        m_intError = p_dao.m_intError;
-			if (p_dao.m_intError != 0) {
-				return p_dao.m_intError;
-			}
-	        p_dao.m_DaoWorkspace.Close();
-	        p_dao.m_DaoWorkspace = null;
-	        p_dao.m_DaoDbEngine = null;
-	        p_dao = null;
+	  //      m_intError = p_dao.m_intError;
+			//if (p_dao.m_intError != 0) {
+			//	return p_dao.m_intError;
+			//}
+	  //      p_dao.m_DaoWorkspace.Close();
+	  //      p_dao.m_DaoWorkspace = null;
+	  //      p_dao.m_DaoDbEngine = null;
+	  //      p_dao = null;
 
-	        using (var conn = new OleDbConnection(p_ado.getMDBConnString(m_strTempMDBFile, "", "")))
-	        {
-	            conn.Open();
+	  //      using (var conn = new OleDbConnection(p_ado.getMDBConnString(m_strTempMDBFile, "", "")))
+	  //      {
+	  //          conn.Open();
 
-                //Check if any records with biosum_status_cd=9 exist in the GRM stand and tree tables and remove them
-	            p_ado.m_strSQL = "DELETE FROM " + m_strGrmStandTable + " WHERE biosum_status_cd=9;";
-	            p_ado.SqlNonQuery(conn, p_ado.m_strSQL);
-	            p_ado.m_strSQL = "DELETE FROM " + m_strGrmTreeTable + " WHERE biosum_status_cd=9;";
-	            p_ado.SqlNonQuery(conn, p_ado.m_strSQL);
+   //             //Check if any records with biosum_status_cd=9 exist in the GRM stand and tree tables and remove them
+	  //          p_ado.m_strSQL = "DELETE FROM " + m_strGrmStandTable + " WHERE biosum_status_cd=9;";
+	  //          p_ado.SqlNonQuery(conn, p_ado.m_strSQL);
+	  //          p_ado.m_strSQL = "DELETE FROM " + m_strGrmTreeTable + " WHERE biosum_status_cd=9;";
+	  //          p_ado.SqlNonQuery(conn, p_ado.m_strSQL);
 
-                //Insert into GRM_Stand
-                p_ado.m_strSQL = "INSERT INTO " + m_strGrmStandTable +
-                                 " (biosum_cond_id, biosum_plot_id, biosum_status_cd, plt_cn, prev_plt_cn, measurement_period) " +
-                                 "SELECT c.biosum_cond_id, tp.biosum_plot_id, 9 as biosum_status_cd, tp.cn, fp.cn, " +
-                                     "IIF(tp.remper IS NOT NULL, CInt(tp.remper), CInt(DateDiff('m', " +
-                                     "DateSerial(fp.measyear,fp.measmon,fp.measday), " +
-                                     "DateSerial(tp.measyear,tp.measmon,tp.measday))/12.0)) " +
-                                 "FROM (tempplot tp INNER JOIN fiadb_plot_table fp ON trim(tp.prev_plt_cn) = fp.cn) " +
-                                     "INNER JOIN tempcond c ON trim(c.PLT_CN) = trim(tp.CN);";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-                p_ado.SqlNonQuery(conn, p_ado.m_strSQL);
+   //             //Insert into GRM_Stand
+   //             p_ado.m_strSQL = "INSERT INTO " + m_strGrmStandTable +
+   //                              " (biosum_cond_id, biosum_plot_id, biosum_status_cd, plt_cn, prev_plt_cn, measurement_period) " +
+   //                              "SELECT c.biosum_cond_id, tp.biosum_plot_id, 9 as biosum_status_cd, tp.cn, fp.cn, " +
+   //                                  "IIF(tp.remper IS NOT NULL, CInt(tp.remper), CInt(DateDiff('m', " +
+   //                                  "DateSerial(fp.measyear,fp.measmon,fp.measday), " +
+   //                                  "DateSerial(tp.measyear,tp.measmon,tp.measday))/12.0)) " +
+   //                              "FROM (tempplot tp INNER JOIN fiadb_plot_table fp ON trim(tp.prev_plt_cn) = fp.cn) " +
+   //                                  "INNER JOIN tempcond c ON trim(c.PLT_CN) = trim(tp.CN);";
+   //             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+   //                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
+   //             p_ado.SqlNonQuery(conn, p_ado.m_strSQL);
 
-	            //Insert into GRM_Tree
-	            p_ado.m_strSQL = "INSERT INTO " + m_strGrmTreeTable +
-                                 " (biosum_cond_id, biosum_status_cd, fvs_tree_id, tre_cn, prev_tre_cn, " +
-                                     "dia_begin, dia_end, " +
-                                     "micr_component_al_forest, tre_statuscd, prev_tre_statuscd) " +
-	                             "SELECT tt.biosum_cond_id, 9 as biosum_status_cd, " +
-                                     "tt.SUBP*1000+tt.TREE, tt.CN, grm.PREV_TRE_CN, " +
-                                     "grm.DIA_BEGIN, grm.DIA_END, " +
-                                     "grm.MICR_COMPONENT_AL_FOREST, tt.STATUSCD, ft.STATUSCD " +
-	                             "FROM (" + m_strGRMComponentTable + " grm " +
-                                     "INNER JOIN temptree tt ON grm.TRE_CN = tt.CN) " +
-                                     "LEFT JOIN FIADB_TREE_TABLE ft ON grm.PREV_TRE_CN = ft.CN; ";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-                p_ado.SqlNonQuery(conn, p_ado.m_strSQL);
-	        }
+	  //          //Insert into GRM_Tree
+	  //          p_ado.m_strSQL = "INSERT INTO " + m_strGrmTreeTable +
+   //                              " (biosum_cond_id, biosum_status_cd, fvs_tree_id, tre_cn, prev_tre_cn, " +
+   //                                  "dia_begin, dia_end, " +
+   //                                  "micr_component_al_forest, tre_statuscd, prev_tre_statuscd) " +
+	  //                           "SELECT tt.biosum_cond_id, 9 as biosum_status_cd, " +
+   //                                  "tt.SUBP*1000+tt.TREE, tt.CN, grm.PREV_TRE_CN, " +
+   //                                  "grm.DIA_BEGIN, grm.DIA_END, " +
+   //                                  "grm.MICR_COMPONENT_AL_FOREST, tt.STATUSCD, ft.STATUSCD " +
+	  //                           "FROM (" + m_strGRMComponentTable + " grm " +
+   //                                  "INNER JOIN temptree tt ON grm.TRE_CN = tt.CN) " +
+   //                                  "LEFT JOIN FIADB_TREE_TABLE ft ON grm.PREV_TRE_CN = ft.CN; ";
+   //             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+   //                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
+   //             p_ado.SqlNonQuery(conn, p_ado.m_strSQL);
+	  //      }
 
-	        return p_ado.m_intError;
-	    }
+	  //      return p_ado.m_intError;
+	  //  }
 	
 		private void ThermCancel(object sender, System.EventArgs e)
 		{
@@ -7442,8 +7393,7 @@ namespace FIA_Biosum_Manager
                         new string[]
                         {
                             m_strPlotTable, m_strCondTable, m_strTreeTable, m_strSiteTreeTable, m_strDwmCwdTable,
-                            m_strDwmFwdTable, m_strDwmDuffLitterTable, m_strDwmTransectSegmentTable, m_strGrmStandTable,
-                            m_strGrmTreeTable
+                            m_strDwmFwdTable, m_strDwmDuffLitterTable, m_strDwmTransectSegmentTable
                         },
                         " WHERE biosum_status_cd=9");
 				}
@@ -7684,7 +7634,6 @@ namespace FIA_Biosum_Manager
                                 this.cmbFiadbSeedlingTable.Items.Clear();
                                 this.cmbFiadbTreeTable.Items.Clear();
                                 this.cmbFiadbSiteTreeTable.Items.Clear();
-                                this.cmbGrmComponentTable.Items.Clear();
 
                                 cmbFiadbSeedlingTable.Items.Add("<Optional Table>");
                                 cmbFiadbSeedlingTable.Text = "<Optional Table>";
@@ -7700,12 +7649,6 @@ namespace FIA_Biosum_Manager
                                     this.cmbFiadbSeedlingTable.Items.Add(arrTables[x]);
                                     this.cmbFiadbTreeTable.Items.Add(arrTables[x]);
                                     this.cmbFiadbSiteTreeTable.Items.Add(arrTables[x]);
-                                    this.cmbGrmComponentTable.Items.Add(arrTables[x]);
-                                    if (arrTables[x].Trim().ToUpper().Contains("GRM_COMPONENT"))
-                                    {
-                                        this.cmbGrmComponentTable.Text = arrTables[x]
-                                            .ToString().Trim();
-                                    }
                                     switch (arrTables[x].Trim().ToUpper())
                                     {
                                         case "COND":
@@ -8859,18 +8802,6 @@ namespace FIA_Biosum_Manager
                 m_oHelp = new Help(m_xpsFile, m_oEnv);
             }
             m_oHelp.ShowHelp(new string[] { "DATABASE", "FILTER_BY_PLOT" });
-        }
-
-        private void chkGrmImport_CheckedChanged(object sender, EventArgs e)
-        {
-            if (Checked(chkGrmImport))
-            {
-                cmbGrmComponentTable.Enabled = true;
-            }
-            else
-            {
-                cmbGrmComponentTable.Enabled = false;
-            }
         }
 
         /*

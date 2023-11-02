@@ -4274,11 +4274,6 @@ namespace FIA_Biosum_Manager
             public string DefaultDWMFineWoodyDebrisName { get { return "DWM_FINE_WOODY_DEBRIS"; } }
             public string DefaultDWMTransectSegmentName { get { return "DWM_TRANSECT_SEGMENT"; } }
 
-            public string DefaultGRMDbFile { get { return @"db\master_aux.accdb"; } }
-            public string DefaultMasterAuxGRMStandName { get { return "GRM_STAND"; } }
-            public string DefaultMasterAuxGRMTreeName { get { return "GRM_TREE"; } }
-
-
             public void CreatePlotTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
                 p_oAdo.SqlNonQuery(p_oConn, CreatePlotTableSQL(p_strTableName));
@@ -5052,64 +5047,6 @@ namespace FIA_Biosum_Manager
                        ",HORIZ_LENGTH DOUBLE" +
                        ",HORIZ_BEGNDIST DOUBLE" +
                        ",HORIZ_ENDDIST DOUBLE" +
-                       ")";
-            }
-
-            public void CreateMasterAuxGRMStandTable(FIA_Biosum_Manager.ado_data_access p_oAdo,
-                System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateMasterAuxGRMStandTableSQL(p_strTableName));
-                CreateMasterAuxGRMStandTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-
-            public void CreateMasterAuxGRMStandTableIndexes(ado_data_access p_oAdo,
-                System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "bscid_idx", "biosum_cond_id");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "pltcn_idx", "plt_cn");
-            }
-
-            public string CreateMasterAuxGRMStandTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                       "biosum_cond_id TEXT(25)" +
-                       ",biosum_plot_id TEXT(24)" +
-                       ",plt_cn TEXT(34)" +
-                       ",prev_plt_cn TEXT(34)" +
-                       ",measurement_period LONG" +
-                       ",biosum_status_cd BYTE" +
-                       ")";
-            }
-
-            public void CreateMasterAuxGRMTreeTable(FIA_Biosum_Manager.ado_data_access p_oAdo,
-                    System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateMasterAuxGRMTreeTableSQL(p_strTableName));
-                CreateMasterAuxGRMTreeTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-
-            public void CreateMasterAuxGRMTreeTableIndexes(ado_data_access p_oAdo,
-                System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_bscid_idx", "biosum_cond_id");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_fvstreeid_idx", "fvs_tree_id");
-            }
-
-            public string CreateMasterAuxGRMTreeTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                       "biosum_cond_id TEXT(25)" +
-                       ",fvs_tree_id LONG" +
-                       ",tre_cn TEXT(34)" +
-                       ",prev_tre_cn TEXT(34)" +
-                       ",dia_begin DOUBLE" +
-                       ",dia_end DOUBLE" +
-                       ",ht_begin DOUBLE" +
-                       ",ht_end DOUBLE" +
-                       ",micr_component_al_forest TEXT(255)" +
-                       ",tre_statuscd LONG" +
-                       ",prev_tre_statuscd LONG" +
-                       ",biosum_status_cd BYTE" +
                        ")";
             }
         }
