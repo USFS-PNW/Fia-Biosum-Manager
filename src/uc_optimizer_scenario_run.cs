@@ -1583,14 +1583,14 @@ namespace FIA_Biosum_Manager
 						/******************************************************************
 						 **create table structure of user defined sql plot filter statement
 						 ******************************************************************/
-						CreateTableStructureOfUserDefinedPlotSQL();
+						CreateTableStructureOfUserDefinedPlotSQLSqlite();
 
                         FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
-						/********************************************************************
+                        /********************************************************************
 						 **create table structure for condition table filters
 						 ********************************************************************/
-						this.CreateTableStructureForUserDefinedConditionTable();
+                        this.CreateTableStructureForUserDefinedConditionTableSqlite();
 
                         FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
@@ -2079,13 +2079,126 @@ namespace FIA_Biosum_Manager
 
 
 		}
-		/// <summary>
-		/// create a table structure that will hold
-		/// the plot data that results when running the user 
-		/// defined sql
-		/// </summary>
-		/// <param name="strUserDefinedSQL"></param>
-		private void CreateTableStructureOfUserDefinedSQLOld(string strUserDefinedSQL)
+
+        private void CreateTableStructureOfUserDefinedPlotSQLSqlite()
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//CreateTableStructureOfUserDefinedPlotSQL\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+
+
+            /********************************************************
+			 **get the user defined PLOT filter sql
+			 ********************************************************/
+            this.m_strSQL = this.m_strUserDefinedPlotSQL;
+            /****************************************************************
+			 **get the table structure that results from executing the sql
+			 ****************************************************************/
+            System.Data.DataTable p_dt = this.m_ado.getTableSchema(this.m_TempMDBFileConn, this.m_strSQL);
+
+            /*****************************************************************
+			 **create the table structure in the temporary accdb file
+			 **and give it the name of userdefinedplotfilter_work
+			 *****************************************************************/
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "Create userdefinedplotfilter_work Table Schema From User Defined Plot Filter SQL\r\n");
+            dao_data_access p_dao = new dao_data_access();
+            p_dao.CreateMDBTableFromDataSetTable(this.m_strTempMDBFile, "userdefinedplotfilter_work", p_dt, true);
+            p_dt.Dispose();
+            this.m_ado.m_OleDbDataReader.Close();
+            if (p_dao.m_intError != 0)
+            {
+                if (frmMain.g_bDebug)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "!! Error Creating Table Schema!!\r\n");
+                this.m_intError = p_dao.m_intError;
+                p_dao = null;
+                return;
+            }
+
+            /***********************************************************************
+			 **make a copy of the userdefinedplot filter table and give it the
+			 **name ruledefinitionsplotfilter. This will apply the owngrpcd
+			 **filters and any other future filters to the userdefinedplotfilter_work table.
+			 ***********************************************************************/
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "Delete table ruledefinitionsplotfilter\r\n");
+
+            DataMgr p_dataMgr = new DataMgr();
+            ado_data_access p_ado = new ado_data_access();
+            string strConn = p_dataMgr.GetConnectionString(this.m_strSystemResultsDbPathAndFile);
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+            {
+                conn.Open();
+                if (p_dataMgr.TableExist(conn, "ruledefinitionsplotfilter"))
+                {
+                    p_dataMgr.m_strSQL = "DROP TABLE ruledefinitionsplotfilter";
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    if (p_dao.m_intError != 0)
+                    {
+                        if (frmMain.g_bDebug)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, "!! Error Deleting ruledefinitionsplotfilter Table!!\r\n");
+                        this.m_intError = p_dao.m_intError;
+                        p_dao = null;
+                        return;
+                    }
+                }
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Copy table structure userdefinedplotfilter_work to ruledefinitionsplotfilter\r\n");
+
+                string fieldNames = "";
+                string dataTypes = "";
+                using (OleDbConnection tempConn = new OleDbConnection(p_ado.getMDBConnString(this.m_strTempMDBFile, "", "")))
+                {
+                    tempConn.Open();
+                    string[] arrFields = p_ado.getFieldNamesArray(tempConn, "SELECT * FROM userdefinedplotfilter_work");
+
+                    string fieldsAndDataTypes = "";
+
+                    foreach (string column in arrFields)
+                    {
+                        string field = "";
+                        string dataType = "";
+                        p_ado.getFieldNamesAndDataTypes(tempConn, "SELECT " + column + " FROM userdefinedplotfilter_work", ref field, ref dataType);
+                        dataType = utils.DataTypeConvert(dataType.ToUpper(), true);
+                        fieldsAndDataTypes = fieldsAndDataTypes + field + " " + dataType + ", ";
+                    }
+                    p_dataMgr.m_strSQL = "CREATE TABLE ruledefinitionsplotfilter (" + fieldsAndDataTypes + "PRIMARY KEY (biosum_plot_id))";
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                    p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, "ruledefinitionsplotfilter", "ruledefinitionsplotfilter", ODBCMgr.DSN_KEYS.OptimizerResultsDsnName, this.m_strSystemResultsDbPathAndFile);
+
+                    int i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach ruledefinitionsplotfilter table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!p_ado.TableExist(tempConn, "ruledefinitionsplotfilter"));
+
+                    p_ado.m_strSQL = "INSERT INTO ruledefinitionsplotfilter SELECT * FROM userdefinedplotfilter_work";
+                    p_ado.SqlNonQuery(tempConn, p_ado.m_strSQL);
+                }
+
+            }
+        }
+        /// <summary>
+        /// create a table structure that will hold
+        /// the plot data that results when running the user 
+        /// defined sql
+        /// </summary>
+        /// <param name="strUserDefinedSQL"></param>
+        private void CreateTableStructureOfUserDefinedSQLOld(string strUserDefinedSQL)
 		{
 			
 			
@@ -2477,10 +2590,6 @@ namespace FIA_Biosum_Manager
                         }
                     }
 
-                    if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.OptimizerResultsDsnName))
-                    {
-                        odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.OptimizerResultsDsnName);
-                    }
                 }
             }
             else
@@ -2818,10 +2927,6 @@ namespace FIA_Biosum_Manager
                         }
                     }
 
-                    if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.PreValidComboDsnName))
-                    {
-                        odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.PreValidComboDsnName);
-                    }
                 }
             }
             else
@@ -2863,11 +2968,6 @@ namespace FIA_Biosum_Manager
                             this.m_intError = p_dao.m_intError;
                             break;
                         }
-                    }
-
-                    if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.PostValidComboDsnName))
-                    {
-                        odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.PostValidComboDsnName);
                     }
                 }
             }
@@ -3010,10 +3110,6 @@ namespace FIA_Biosum_Manager
                         }
                     }
 
-                    if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.CondAuditDsnName))
-                    {
-                        odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.CondAuditDsnName);
-                    }
                 }
             }
             else
@@ -3130,10 +3226,6 @@ namespace FIA_Biosum_Manager
                         }
                     }
 
-                    if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName))
-                    {
-                        odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName);
-                    }
                 }
             }
             else
@@ -3762,17 +3854,18 @@ namespace FIA_Biosum_Manager
 			 **has road only or road/rail access and processes 
 			 **merch only or merch/chip
 			 *****************************************************************/
-			this.m_strSQL = "INSERT into all_road_merch_haul_costs_work_table " + 
-				"SELECT t.biosum_plot_id, 0 AS railhead_id," +
-                "0 AS transfer_cost_dpgt, s.psite_id," +
+			this.m_strSQL = "INSERT into all_road_merch_haul_costs_work_table " +
+                "(biosum_plot_id, railhead_id, psite_id, transfer_cost_dpgt, road_cost_dpgt, rail_cost_dpgt, complete_haul_cost_dpgt, materialcd)" +
+                "SELECT t.biosum_plot_id, 0 AS railhead_id," +
+                "s.psite_id, 0 AS transfer_cost_dpgt," +
                 "(" + strTruckHaulCost.Trim() + " * t.one_way_hours) AS road_cost_dpgt," +
                 "0 AS rail_cost_dpgt, (transfer_cost_dpgt+road_cost_dpgt+rail_cost_dpgt) AS complete_haul_cost_dpgt," + 
 				"'M' as materialcd " +
 				"FROM " + this.m_strTravelTimeTable + " t," + 
 				this.m_strPSiteWorkTable + " s " + 
 				"WHERE t.psite_id=s.psite_id AND " + 
-				"(s.trancd=1 OR s.trancd =3) AND " +
-                "(s.biocd=3 OR s.biocd=1)  AND t.one_way_hours > 0;";
+				"(s.trancd='1' OR s.trancd ='3') AND " +
+                "(s.biocd='3' OR s.biocd='1')  AND t.one_way_hours > 0;";
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\ninsert into work table all travel time records where psite has road access and processes merch\r\n");
@@ -3853,8 +3946,8 @@ namespace FIA_Biosum_Manager
                 "FROM " + this.m_strTravelTimeTable + " t," + 
 				this.m_strPSiteWorkTable + " s " + 
 				"WHERE t.psite_id=s.psite_id AND " + 
-				"(s.trancd=1 OR s.trancd=3) AND " +
-                "(s.biocd=3 OR s.biocd=2)  AND t.one_way_hours > 0;";
+				"(s.trancd='1' OR s.trancd='3') AND " +
+                "(s.biocd='3' OR s.biocd='2')  AND t.one_way_hours > 0;";
 
 			if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                 frmMain.g_oUtils.WriteText(m_strDebugFile,"\r\ninsert into work table all travel time records where psite has road access and processes chips.\r\n");
@@ -3933,10 +4026,10 @@ namespace FIA_Biosum_Manager
                 "FROM " + this.m_strTravelTimeTable + " t  " + 
 				"INNER JOIN  " + this.m_strPSiteWorkTable + " s " + 
 				"ON t.collector_id = s.psite_id " +
-                "WHERE  s.trancd=3 And (s.biocd=3 Or s.biocd=1)  AND t.one_way_hours > 0 AND " + 
+                "WHERE  s.trancd='3' And (s.biocd='3' Or s.biocd='1')  AND t.one_way_hours > 0 AND " + 
 				"EXISTS (SELECT ss.psite_id " + 
 				"FROM " + this.m_strPSiteWorkTable + " ss " + 
-				"WHERE t.psite_id=ss.psite_id AND ss.trancd=2 AND (ss.biocd=3 Or ss.biocd=1));";
+				"WHERE t.psite_id=ss.psite_id AND ss.trancd='2' AND (ss.biocd='3' Or ss.biocd='1'));";
 
 
 			if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
@@ -4084,11 +4177,11 @@ namespace FIA_Biosum_Manager
                 "FROM " + this.m_strTravelTimeTable + " t  " + 
 				"INNER JOIN  " + this.m_strPSiteWorkTable + " s " + 
 				"ON t.collector_id = s.psite_id " + 
-				"WHERE s.trancd=3 AND  " +
-                "(s.biocd=3 OR s.biocd=2)  AND t.one_way_hours > 0 AND " + 
+				"WHERE s.trancd='3' AND  " +
+                "(s.biocd='3' OR s.biocd='2')  AND t.one_way_hours > 0 AND " + 
 				"EXISTS (SELECT ss.psite_id " + 
 				"FROM " + this.m_strPSiteWorkTable + " ss " + 
-				"WHERE t.psite_id=ss.psite_id AND ss.trancd=2 AND (ss.biocd=3 Or ss.biocd=2));";
+				"WHERE t.psite_id=ss.psite_id AND ss.trancd='2' AND (ss.biocd='3' Or ss.biocd='2'));";
 
 
 			if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
@@ -5104,7 +5197,7 @@ namespace FIA_Biosum_Manager
                            m_strFVSPostValidComboDbPathAndFile, 2000000000, "2GB");
             _uc_scenario_run.uc_filesize_monitor4.Information = "Valid combinations for FVS Post-Treatment records";
            
-            CompactMDB(m_strFVSPostValidComboDbPathAndFile, m_TempMDBFileConn);
+            //CompactMDB(m_strFVSPostValidComboDbPathAndFile, m_TempMDBFileConn);
 
 			/**********************************************************************
 			 **create valid combiniations of biosum_cond_id and treatment and 
@@ -5149,10 +5242,10 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
             m_ado.SqlNonQuery(this.m_TempMDBFileConn, m_strSQL);
             FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-            CompactMDB(m_strFVSPostValidComboDbPathAndFile, m_TempMDBFileConn);
+            //CompactMDB(m_strFVSPostValidComboDbPathAndFile, m_TempMDBFileConn);
 
             //insert all the possible valid pre plot+rxpackage+rxcycle records
-            CompactMDB(m_strFVSPreValidComboDbPathAndFile, m_TempMDBFileConn);
+            //CompactMDB(m_strFVSPreValidComboDbPathAndFile, m_TempMDBFileConn);
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                 frmMain.g_oUtils.WriteText(m_strDebugFile,"--insert all possible valid PRE plot+rxpackage+rxcycle records--\r\n");
             //cycle1
@@ -5192,7 +5285,7 @@ namespace FIA_Biosum_Manager
             m_ado.SqlNonQuery(this.m_TempMDBFileConn, m_strSQL);
             FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
-            CompactMDB(m_strFVSPreValidComboDbPathAndFile, m_TempMDBFileConn);
+            //CompactMDB(m_strFVSPreValidComboDbPathAndFile, m_TempMDBFileConn);
 			
 
 			string strWhere="";
@@ -5742,8 +5835,8 @@ namespace FIA_Biosum_Manager
                     
 
                     //compact
-                    CompactMDB(ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() 
-                        + "\\db\\" + Tables.Audit.DefaultCondAuditTableDbFile, m_TempMDBFileConn);
+                    //CompactMDB(ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() 
+                        //+ "\\db\\" + Tables.Audit.DefaultCondAuditTableDbFile, m_TempMDBFileConn);
 				
 
 			}
@@ -8200,11 +8293,123 @@ namespace FIA_Biosum_Manager
 
 		}
 
-		/// <summary>
-		/// create temporary work table for summing up wood volumes,values and costs
-		/// by wood processing site
-		/// </summary>
-		private void CreateTableStructureForPSiteSumOld()
+        private void CreateTableStructureForUserDefinedConditionTableSqlite()
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//CreateTableStructureOfUserDefinedPlotSQL\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+
+
+            /********************************************************
+			 **get the user defined PLOT filter sql
+			 ********************************************************/
+            this.m_strSQL = this.m_strUserDefinedCondSQL;
+            /****************************************************************
+			 **get the table structure that results from executing the sql
+			 ****************************************************************/
+            System.Data.DataTable p_dt = this.m_ado.getTableSchema(this.m_TempMDBFileConn, this.m_strSQL);
+
+            /*****************************************************************
+			 **create the table structure in the temporary accdb file
+			 **and give it the name of userdefinedplotfilter_work
+			 *****************************************************************/
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "Create userdefinedcondfilter_work Table Schema From User Defined Plot Filter SQL\r\n");
+            dao_data_access p_dao = new dao_data_access();
+            p_dao.CreateMDBTableFromDataSetTable(this.m_strTempMDBFile, "userdefinedcondfilter_work", p_dt, true);
+            p_dt.Dispose();
+            this.m_ado.m_OleDbDataReader.Close();
+            if (p_dao.m_intError != 0)
+            {
+                if (frmMain.g_bDebug)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "!! Error Creating Table Schema!!\r\n");
+                this.m_intError = p_dao.m_intError;
+                p_dao = null;
+                return;
+            }
+
+            /***********************************************************************
+			 **make a copy of the userdefinedplot filter table and give it the
+			 **name ruledefinitionsplotfilter. This will apply the owngrpcd
+			 **filters and any other future filters to the userdefinedplotfilter_work table.
+			 ***********************************************************************/
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "Delete table ruledefinitionscondfilter\r\n");
+
+            DataMgr p_dataMgr = new DataMgr();
+            ado_data_access p_ado = new ado_data_access();
+            string strConn = p_dataMgr.GetConnectionString(this.m_strSystemResultsDbPathAndFile);
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+            {
+                conn.Open();
+                if (p_dataMgr.TableExist(conn, "ruledefinitionscondfilter"))
+                {
+                    p_dataMgr.m_strSQL = "DROP TABLE ruledefinitionscondfilter";
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    if (p_dao.m_intError != 0)
+                    {
+                        if (frmMain.g_bDebug)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, "!! Error Deleting ruledefinitionscondfilter Table!!\r\n");
+                        this.m_intError = p_dao.m_intError;
+                        p_dao = null;
+                        return;
+                    }
+                }
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Copy table structure userdefinedcondfilter_work to ruledefinitionscondfilter\r\n");
+
+                string fieldNames = "";
+                string dataTypes = "";
+                using (OleDbConnection tempConn = new OleDbConnection(p_ado.getMDBConnString(this.m_strTempMDBFile, "", "")))
+                {
+                    tempConn.Open();
+                    string[] arrFields = p_ado.getFieldNamesArray(tempConn, "SELECT * FROM userdefinedcondfilter_work");
+
+                    string fieldsAndDataTypes = "";
+
+                    foreach (string column in arrFields)
+                    {
+                        string field = "";
+                        string dataType = "";
+                        p_ado.getFieldNamesAndDataTypes(tempConn, "SELECT " + column + " FROM userdefinedcondfilter_work", ref field, ref dataType);
+                        dataType = utils.DataTypeConvert(dataType.ToUpper(), true);
+                        fieldsAndDataTypes = fieldsAndDataTypes + field + " " + dataType + ", ";
+                    }
+                    p_dataMgr.m_strSQL = "CREATE TABLE ruledefinitionscondfilter (" + fieldsAndDataTypes + "PRIMARY KEY (biosum_cond_id))";
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                    p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, "ruledefinitionscondfilter", "ruledefinitionscondfilter", ODBCMgr.DSN_KEYS.OptimizerResultsDsnName, this.m_strSystemResultsDbPathAndFile);
+
+                    int i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach ruledefinitionscondfilter table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!p_ado.TableExist(tempConn, "ruledefinitionscondfilter"));
+
+                    p_ado.m_strSQL = "INSERT INTO ruledefinitionscondfilter SELECT * FROM userdefinedcondfilter_work";
+                    p_ado.SqlNonQuery(tempConn, p_ado.m_strSQL);
+                }
+
+            }
+        }
+        /// <summary>
+        /// create temporary work table for summing up wood volumes,values and costs
+        /// by wood processing site
+        /// </summary>
+        private void CreateTableStructureForPSiteSumOld()
 		{
 			ado_data_access p_ado = new ado_data_access();
 			this.m_strConn= p_ado.getMDBConnString(this.m_strTempMDBFile,"admin","");
