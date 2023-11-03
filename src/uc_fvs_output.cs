@@ -8939,9 +8939,9 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     this.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n" + "Created DSN for " + ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName + "\r\n");
                 m_dao.CreateSQLiteTableLink(p_strFVSOutDBFile, Tables.FVS.DefaultFVSCasesTableName, Tables.FVS.DefaultFVSCasesTableName,
-                    ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, m_strFvsOutDb);
+                    ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName, m_strFvsOutDb);
                 m_dao.CreateSQLiteTableLink(p_strFVSOutDBFile, Tables.FVS.DefaultFVSCutListTableName, Tables.FVS.DefaultFVSCutListTableName,
-                    ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, m_strFvsOutDb);
+                    ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName, m_strFvsOutDb);
             }
 
             string strConn = p_oAdo.getMDBConnString(p_strFVSOutDBFile, "", "");
@@ -8953,7 +8953,7 @@ namespace FIA_Biosum_Manager
                 do
                 {
                     // break out of loop if it runs too long
-                    if (i > 10)
+                    if (i > 20)
                     {
                         System.Windows.Forms.MessageBox.Show("An error occurred while trying to validate the FVSTreeId! ", "FIA Biosum");
                         if (m_bDebug)
