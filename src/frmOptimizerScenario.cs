@@ -4284,6 +4284,72 @@ namespace FIA_Biosum_Manager
             return bExistingTables;
         }
 
+        public bool CheckForExistingDataSqlite(string strReferenceProjectDirectory, out bool bTablesHaveData)
+        {
+            bool bExistingTables = false;
+            bTablesHaveData = false;
+
+            // Load project data sources table
+            m_oProjectDs = new Datasource();
+            m_oProjectDs.m_strDataSourceMDBFile = strReferenceProjectDirectory + "\\db\\project.mdb";
+            m_oProjectDs.m_strDataSourceTableName = "datasource";
+            m_oProjectDs.m_strScenarioId = "";
+            m_oProjectDs.LoadTableColumnNamesAndDataTypes = false;
+            m_oProjectDs.LoadTableRecordCount = false;
+            m_oProjectDs.populate_datasource_array();
+
+            int intTable = m_oProjectDs.getTableNameRow(Datasource.TableTypes.TravelTimes);
+            string strDirectoryPath = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
+            string strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
+            string strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
+            string strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
+            string strSQL = $@"SELECT count(*) FROM {strTableName} LIMIT 1";
+
+            // Check for travel times table and data
+            if (strTableStatus == "F")
+            {
+                bExistingTables = true;
+                string strTestConn = SQLite.GetConnectionString(m_oProjectDs.getFullPathAndFile(Datasource.TableTypes.TravelTimes));
+                using (var oTestConn = new System.Data.SQLite.SQLiteConnection(strTestConn))
+                {
+                    oTestConn.Open();
+                    long lngRecordCount = SQLite.getRecordCount(oTestConn, strSQL, strTableName);
+                    if (lngRecordCount > 0)
+                    {
+                        bTablesHaveData = true;
+                    }
+                }
+            }
+
+            // If no travel times, check for psites table and data
+            if (bExistingTables == false || bTablesHaveData == false)
+            {
+                intTable = m_oProjectDs.getTableNameRow(Datasource.TableTypes.ProcessingSites);
+                strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
+                strDirectoryPath = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
+                strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+                //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
+                strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
+                if (strTableStatus == "F")
+                {
+                    bExistingTables = true;
+                    string strTestConn = SQLite.GetConnectionString(m_oProjectDs.getFullPathAndFile(Datasource.TableTypes.ProcessingSites));
+                    using (var oTestConn = new System.Data.SQLite.SQLiteConnection(strTestConn))
+                    {
+                        oTestConn.Open();
+                        strSQL = $@"SELECT count(*) FROM {strTableName} LIMIT 1";
+                        long lngRecordCount = SQLite.getRecordCount(oTestConn, strSQL, strTableName);
+                        if (lngRecordCount > 0)
+                        {
+                            bTablesHaveData = true;
+                        }
+                    }
+                }
+            }
+            return bExistingTables;
+        }
+
         public bool BackupGisData()
         {
             string strFileSuffix = "_" + DateTime.Now.ToString("MMddyyyy");
@@ -4522,16 +4588,17 @@ namespace FIA_Biosum_Manager
             ado_data_access oAdo = new ado_data_access();
 
             // Travel times
-            int intTable = m_oProjectDs.getTableNameRow(Datasource.TableTypes.TravelTimes);
-            string strDirectoryPath = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-            string strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            int intTravelTable = m_oProjectDs.getTableNameRow(Datasource.TableTypes.TravelTimes);
+            int intPSitesTable = m_oProjectDs.getTableNameRow(Datasource.TableTypes.ProcessingSites);
+            string strDirectoryPath = m_oProjectDs.m_strDataSource[intTravelTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
+            string strFileName = m_oProjectDs.m_strDataSource[intTravelTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
             //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
-            string strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
-            string strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
+            string strTableName = m_oProjectDs.m_strDataSource[intTravelTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
+            string strTableStatus = m_oProjectDs.m_strDataSource[intTravelTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strCopyConn))
             {
                 conn.Open();
-                if (m_oProjectDs.DataSourceTableExist(intTable))
+                if (m_oProjectDs.DataSourceTableExist(intTravelTable))
                 {
                     string strConn = oAdo.getMDBConnString(m_oProjectDs.getFullPathAndFile(Datasource.TableTypes.TravelTimes), "", "");
                     using (var pConn = new System.Data.OleDb.OleDbConnection(strConn))
@@ -4551,6 +4618,29 @@ namespace FIA_Biosum_Manager
                                     transaction.Commit();
                                 }
                             }
+                        }
+                        string strDbName = System.IO.Path.GetFileName(Tables.TravelTime.DefaultTravelTimePathAndDbFile);
+                        string strNewDirectoryPath = System.IO.Path.GetDirectoryName(gisPathAndDbFile);
+                        m_oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.TravelTimes, strNewDirectoryPath, strDbName, strTableName);
+                        if (m_oProjectDs.DataSourceTableExist(intPSitesTable))
+                        {
+                            strTableName = m_oProjectDs.m_strDataSource[intPSitesTable, Datasource.TABLE].Trim();
+                            oAdo.m_strSQL = $@"SELECT PSITE_ID,NAME,TRANCD,TRANCD_DEF,BIOCD,BIOCD_DEF,EXISTS_YN,LAT,LON,
+                                            STATE,CITY,MILL_TYPE,COUNTY,STATUS,NOTES FROM {strTableName}";
+                            oAdo.CreateDataTable(pConn, oAdo.m_strSQL, strTableName, false);
+                            using (System.Data.SQLite.SQLiteDataAdapter da = new System.Data.SQLite.SQLiteDataAdapter(oAdo.m_strSQL, conn))
+                            {
+                                using (System.Data.SQLite.SQLiteCommandBuilder cb = new System.Data.SQLite.SQLiteCommandBuilder(da))
+                                {
+                                    using (var transaction = conn.BeginTransaction())
+                                    {
+                                        da.InsertCommand = cb.GetInsertCommand();
+                                        int rows = da.Update(oAdo.m_DataTable);
+                                        transaction.Commit();
+                                    }
+                                }
+                            }
+                            m_oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.ProcessingSites, strNewDirectoryPath, strDbName, strTableName);
                         }
                     }
                 }

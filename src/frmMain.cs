@@ -1601,12 +1601,13 @@ namespace FIA_Biosum_Manager
                     string gisPathAndDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
                         "\\" + Tables.TravelTime.DefaultTravelTimePathAndDbFile;
                     //@ToDo: Starting work on SQLite conversion
-                    //if (!System.IO.File.Exists(gisPathAndDbFile))
-                    //{
-                    //    oGisTools.migrate_access_data();
-                    //}
-                   bool bTablesHaveData = false;
-                   bool bTablesExist = oGisTools.CheckForExistingData(this.frmProject.uc_project1.m_strProjectDirectory, out bTablesHaveData);
+                    if (!System.IO.File.Exists(gisPathAndDbFile))
+                    {
+                        oGisTools.migrate_access_data();
+                    }
+                    bool bTablesHaveData = false;
+                    //SQLite
+                   bool bTablesExist = oGisTools.CheckForExistingDataSqlite(this.frmProject.uc_project1.m_strProjectDirectory, out bTablesHaveData);
                    bool bCreateBackups = false;
                    bool bSuccess = true;
                    
