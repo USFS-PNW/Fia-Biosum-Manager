@@ -374,6 +374,7 @@ namespace FIA_Biosum_Manager
                 int x = 0;
 
                 p_dao = new dao_data_access();
+                SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(strDebugFile, "LoadValues: Starting to read oDataReader \r\n");
                 while (oDataReader.Read())
@@ -418,7 +419,7 @@ namespace FIA_Biosum_Manager
 							this.m_oLvRowColors.ListViewSubItem(entryListItem.Index,uc_datasource.TABLE,entryListItem.SubItems[entryListItem.SubItems.Count-1],false);
 
                             bool bSQLite = false;
-                            if (System.IO.Path.GetExtension(oDataReader["file"].ToString()).ToUpper().Equals("DB"))
+                            if (System.IO.Path.GetExtension(oDataReader["file"].ToString().Trim()).ToUpper().Equals(".DB"))
                             {
                                 // This is an SQLite data source
                                 bSQLite = true;
@@ -437,7 +438,24 @@ namespace FIA_Biosum_Manager
 								this.m_oLvRowColors.ListViewSubItem(entryListItem.Index,uc_datasource.RECORDCOUNT,entryListItem.SubItems[entryListItem.SubItems.Count-1],false);
 
 							}
-							else 
+                            else if (bSQLite)
+                            {
+                                string strDbConn = oDataMgr.GetConnectionString(strPathAndFile);
+                                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strDbConn))
+                                {
+                                    conn.Open();
+                                    if (oDataMgr.TableExist(conn, oDataReader["table_name"].ToString().Trim()) == true)
+                                    {
+                                        this.lstRequiredTables.Items[x].SubItems.Add("Found");
+                                        this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, TABLESTATUS, entryListItem.SubItems[entryListItem.SubItems.Count - 1], lstRequiredTables.Items[x].Selected);
+                                        strSQL = "select count(*) from " + oDataReader["table_name"].ToString();
+                                        long lngRecordCount = oDataMgr.getRecordCount(conn, strSQL, oDataReader["table_name"].ToString());
+                                        this.lstRequiredTables.Items[x].SubItems.Add(Convert.ToString(lngRecordCount));
+                                        this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, RECORDCOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], lstRequiredTables.Items[x].Selected);
+                                    }
+                                }
+                            }
+                            else 
 							{
 								ListViewItem.ListViewSubItem TableStatusSubItem = 
 									entryListItem.SubItems.Add("Not Found");
