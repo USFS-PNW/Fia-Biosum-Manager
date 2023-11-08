@@ -67,11 +67,8 @@ namespace FIA_Biosum_Manager
         private string m_strMinDuffLitterPitCount;
         private string m_strDuffExcludedYears;
         private string m_strLitterExcludedYears;
-
-        //Growth Removal Mortality fields
-        private string m_strGrmStandTable;
-        private string m_strGrmTreeTable;
-        private bool m_bUseGrmCalibrationData;
+        private bool m_bUsePrevHt;
+        private bool m_bUsePrevDia;
 
         //Added for FIA2FVS implementation
         private bool m_bIncludeSeedlings;
@@ -100,9 +97,6 @@ namespace FIA_Biosum_Manager
             m_strRefForestTypeTable = "REF_FOREST_TYPE";
             m_strRefForestTypeGroupTable = "REF_FOREST_TYPE_GROUP";
             m_strFiaTreeSpeciesRefTable = m_DataSource.getValidDataSourceTableName("FIA Tree Species Reference");
-
-            m_strGrmStandTable = frmMain.g_oTables.m_oFIAPlot.DefaultMasterAuxGRMStandName;
-            m_strGrmTreeTable = frmMain.g_oTables.m_oFIAPlot.DefaultMasterAuxGRMTreeName;
 
             if (this.m_strPlotTable.Trim().Length == 0)
             {
@@ -381,10 +375,6 @@ namespace FIA_Biosum_Manager
             m_dao.CreateTableLink(this.m_strTempMDBFile, m_strDwmDuffLitterTable, m_strProjDir + "\\db\\master_aux.accdb", m_strDwmDuffLitterTable, true);
             m_dao.CreateTableLink(this.m_strTempMDBFile, m_strDwmTransectSegmentTable, m_strProjDir + "\\db\\master_aux.accdb", m_strDwmTransectSegmentTable, true);
 
-            //GRM Source Tables
-            m_dao.CreateTableLink(this.m_strTempMDBFile, m_strGrmStandTable, m_strProjDir + "\\db\\master_aux.accdb", m_strGrmStandTable, true);
-            m_dao.CreateTableLink(this.m_strTempMDBFile, m_strGrmTreeTable, m_strProjDir + "\\db\\master_aux.accdb", m_strGrmTreeTable, true);
-
             if (m_dao.m_DaoDatabase != null)
             {
                 m_dao.m_DaoDatabase.Close();
@@ -496,17 +486,17 @@ namespace FIA_Biosum_Manager
                         m_ado.SqlNonQuery(conn, m_ado.m_strSQL);
                         DebugLogSQL(m_ado.m_strSQL);
 
-                        if (bUseGrmCalibrationData)
-                        {
-                            m_ado.m_strSQL = String.Format(
-                                "UPDATE {0} fvs INNER JOIN {1} grm ON fvs.Stand_ID=grm.biosum_cond_id " +
-                                "SET fvs.DG_Measure=grm.measurement_period, " +
-                                "fvs.HTG_Measure=grm.measurement_period, " +
-                                "fvs.Mort_Measure=grm.measurement_period;",
-                                strStandInitWorkTable, m_strGrmStandTable);
-                            m_ado.SqlNonQuery(conn, m_ado.m_strSQL);
-                            DebugLogSQL(m_ado.m_strSQL);
-                        }
+                        //if (bUseGrmCalibrationData)
+                        //{
+                        //    m_ado.m_strSQL = String.Format(
+                        //        "UPDATE {0} fvs INNER JOIN {1} grm ON fvs.Stand_ID=grm.biosum_cond_id " +
+                        //        "SET fvs.DG_Measure=grm.measurement_period, " +
+                        //        "fvs.HTG_Measure=grm.measurement_period, " +
+                        //        "fvs.Mort_Measure=grm.measurement_period;",
+                        //        strStandInitWorkTable, m_strGrmStandTable);
+                        //    m_ado.SqlNonQuery(conn, m_ado.m_strSQL);
+                        //    DebugLogSQL(m_ado.m_strSQL);
+                        //}
                     }
                 }
 
@@ -613,8 +603,8 @@ namespace FIA_Biosum_Manager
             stringBuilder.AppendLine("Minimum CWD Transect Length (ft): " + m_strMinCwdTransectLengthTotal);
             stringBuilder.AppendLine("Duff years excluded: " + m_strDuffExcludedYears);
             stringBuilder.AppendLine("Litter years excluded: " + m_strLitterExcludedYears);
-            stringBuilder.AppendLine("Growth Removal Mortality Calibration data used: " +
-                m_bUseGrmCalibrationData.ToString());
+            stringBuilder.AppendLine("Previous height calibration data used: " + m_bUsePrevHt.ToString());
+            stringBuilder.AppendLine("Previous diameter calibration data used: " + m_bUsePrevDia.ToString());
             stringBuilder.AppendLine("Include seedlings: " + m_bIncludeSeedlings.ToString());
             stringBuilder.AppendLine("Source FIA Data Mart database: " + m_strSourceFiaDb);
             stringBuilder.AppendLine("Selected FVS group: " + m_strGroup);
@@ -695,7 +685,8 @@ namespace FIA_Biosum_Manager
             rows.Add(new string[] { "Minimum CWD Transect Length (ft)", m_strMinCwdTransectLengthTotal });
             rows.Add(new string[] { "Duff years excluded", m_strDuffExcludedYears });
             rows.Add(new string[] { "Litter years excluded", m_strLitterExcludedYears });
-            rows.Add(new string[] { "Growth Removal Mortality Calibration data used", m_bUseGrmCalibrationData.ToString() });
+            rows.Add(new string[] { "Previous height calibration data used", m_bUsePrevHt.ToString() });
+            rows.Add(new string[] { "Previous diameter calibration data used", m_bUsePrevDia.ToString() });
             rows.Add(new string[] { "Include seedlings", m_bIncludeSeedlings.ToString() });
             rows.Add(new string[] { "Source FIA Data Mart database", m_strSourceFiaDb });
             rows.Add(new string[] { "Selected FVS group", m_strGroup });
@@ -1046,27 +1037,27 @@ namespace FIA_Biosum_Manager
                     }
 
                     //Calibration Data
-                    if (bUseGrmCalibrationData)
-                    {
-                        //Set Tree History: Died during observation if Micr_Component_Al_Forest='MORTALITY1'
-                        m_ado.m_strSQL = String.Format(
-                            "UPDATE {0} fvs INNER JOIN {1} grm " +
-                            "ON fvs.Stand_ID=grm.biosum_cond_id AND fvs.Tree_ID=grm.fvs_tree_id " +
-                            "SET fvs.History=7 WHERE grm.micr_component_al_forest='MORTALITY1';"
-                            , strTreeInitWorkTable, m_strGrmTreeTable);
-                        DebugLogSQL(m_ado.m_strSQL);
-                        m_ado.SqlNonQuery(conn, m_ado.m_strSQL);
+                    //if (bUseGrmCalibrationData)
+                    //{
+                    //    //Set Tree History: Died during observation if Micr_Component_Al_Forest='MORTALITY1'
+                    //    m_ado.m_strSQL = String.Format(
+                    //        "UPDATE {0} fvs INNER JOIN {1} grm " +
+                    //        "ON fvs.Stand_ID=grm.biosum_cond_id AND fvs.Tree_ID=grm.fvs_tree_id " +
+                    //        "SET fvs.History=7 WHERE grm.micr_component_al_forest='MORTALITY1';"
+                    //        , strTreeInitWorkTable, m_strGrmTreeTable);
+                    //    DebugLogSQL(m_ado.m_strSQL);
+                    //    m_ado.SqlNonQuery(conn, m_ado.m_strSQL);
 
-                        //Set DG and HTG to previous measurements if Micr_Component_Al_Forest='SURVIVOR'
-                        m_ado.m_strSQL = String.Format(
-                            "UPDATE {0} fvs INNER JOIN {1} grm " +
-                            "ON fvs.Stand_ID=grm.biosum_cond_id AND fvs.Tree_ID=grm.fvs_tree_id " +
-                            "SET fvs.DG=IIF(grm.dia_begin IS NOT NULL, grm.dia_begin, NULL), " +
-                            "fvs.HTG=IIF(grm.ht_begin IS NOT NULL, grm.ht_begin, NULL) " +
-                            "WHERE grm.micr_component_al_forest='SURVIVOR';", strTreeInitWorkTable, m_strGrmTreeTable);
-                        DebugLogSQL(m_ado.m_strSQL);
-                        m_ado.SqlNonQuery(conn, m_ado.m_strSQL);
-                    }
+                    //    //Set DG and HTG to previous measurements if Micr_Component_Al_Forest='SURVIVOR'
+                    //    m_ado.m_strSQL = String.Format(
+                    //        "UPDATE {0} fvs INNER JOIN {1} grm " +
+                    //        "ON fvs.Stand_ID=grm.biosum_cond_id AND fvs.Tree_ID=grm.fvs_tree_id " +
+                    //        "SET fvs.DG=IIF(grm.dia_begin IS NOT NULL, grm.dia_begin, NULL), " +
+                    //        "fvs.HTG=IIF(grm.ht_begin IS NOT NULL, grm.ht_begin, NULL) " +
+                    //        "WHERE grm.micr_component_al_forest='SURVIVOR';", strTreeInitWorkTable, m_strGrmTreeTable);
+                    //    DebugLogSQL(m_ado.m_strSQL);
+                    //    m_ado.SqlNonQuery(conn, m_ado.m_strSQL);
+                    //}
 
                     //Insert into linked FVS_TreeInit after doing intermediate work in the work table
                     strSQL = Queries.FVS.FVSInput.TreeInit.TranslateWorkTableToTreeInitTable(strTreeInitWorkTable,
@@ -1350,10 +1341,16 @@ namespace FIA_Biosum_Manager
             get { return m_strLitterExcludedYears; }
         }
 
-        public bool bUseGrmCalibrationData
+        public bool bUsePrevHtCalibrationData
         {
-            set { m_bUseGrmCalibrationData = value; }
-            get { return m_bUseGrmCalibrationData; }
+            set { m_bUsePrevHt = value; }
+            get { return m_bUsePrevHt; }
+        }
+
+        public bool bUsePrevDiaCalibrationData
+        {
+            set { m_bUsePrevDia = value; }
+            get { return m_bUsePrevDia; }
         }
 
         public bool bIncludeSeedlings
@@ -4179,19 +4176,21 @@ namespace FIA_Biosum_Manager
                 oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.UpdateTreeCount(this.m_strTreeTable, strTempTreeTable));
                 lstFields.Add("TREE_COUNT");
 
-                // Copy Grm columns if selected; Set to null if not selected
+                // Manage calibraton columns; Set to null if not selected
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
-                if (bUseGrmCalibrationData)
+                // 30-OCT-2023: Start using DG and HTG from FIA2FVS. Set to null if calibration data not selected
+                if (!bUsePrevHtCalibrationData)
                 {
-                    CopyGrmColumns(oDao, strTempMDB, strVariant, strTempTreeTable);
+                    DebugLogSQL(Queries.FVS.FVSInput.TreeInit.SetCalibrationColumnsToNull(strTempTreeTable,"HTG"));
+                    oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.SetCalibrationColumnsToNull(strTempTreeTable, "HTG"));
+                    lstFields.Add("HTG");
                 }
-                else
+                if (!bUsePrevDiaCalibrationData)
                 {
-                    DebugLogSQL(Queries.FVS.FVSInput.TreeInit.SetGrmColumnsToNull(strTempTreeTable));
-                    oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.SetGrmColumnsToNull(strTempTreeTable));
+                    DebugLogSQL(Queries.FVS.FVSInput.TreeInit.SetCalibrationColumnsToNull(strTempTreeTable, "DG"));
+                    oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.SetCalibrationColumnsToNull(strTempTreeTable, "DG"));
+                    lstFields.Add("DG");
                 }
-                lstFields.Add("DG");
-                lstFields.Add("HTG");
 
                 // Update damage codes for cull and mistletoe
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
@@ -4271,45 +4270,6 @@ namespace FIA_Biosum_Manager
             //m_dao.CreateTableLink(this.m_strTempMDBFile, "FVS_TreeInit", this.m_strInDir + "\\" + this.strFVSInMDBFile,
             //    "FVS_TreeInit", true);
 
-        }
-
-        private void CopyGrmColumns(dao_data_access oDao, string strTempMDBFile, string strVariant, string strTempTreeTable)
-        {
-            ado_data_access oAdo = new ado_data_access();
-            this.m_strInDir = m_strDataDirectory + "\\" + strVariant.Trim();
-            this.strFVSInMDBFile = "FVSIn.accdb";
-            if (File.Exists(this.m_strInDir + "\\" + this.strFVSInMDBFile))
-            {
-                string strConn = oAdo.getMDBConnString(this.m_strInDir + "\\" + this.strFVSInMDBFile, "", "");
-                using (OleDbConnection oAccessConn = new OleDbConnection(strConn))
-                {
-                    oAccessConn.Open();
-                    if (oAdo.TableExist(oAccessConn, "FVS_TreeInit"))
-                    {
-                        //source FVSIn.accdb tables
-                        oDao.CreateTableLink(strTempMDBFile, "FVS_TreeInit", this.m_strInDir + "\\" + this.strFVSInMDBFile,
-                            "FVS_TreeInit", true);
-                        DebugLogSQL("Created table link to BioSum FVS_TreeInit table");
-                        strConn = oAdo.getMDBConnString(strTempMDBFile, "", "");
-                        oAccessConn.Close();
-                        oAccessConn.ConnectionString = strConn;
-                        oAccessConn.Open();
-                        oAdo.OpenConnection(strConn);
-                        DebugLogSQL(Queries.FVS.FVSInput.TreeInit.CopyGrmColumns(strTempTreeTable));
-                        oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.CopyGrmColumns(strTempTreeTable));
-                    }
-                    else
-                    {
-                        DebugLogSQL("Error: Unable to locate BioSum FVS_StandInit table. GRM data cannot be copied!!");
-                    }
-                }
-
-
-            }
-            else
-            {
-                DebugLogSQL("Error: Unable to locate BioSum FVSIn.accdb database. GRM data cannot be copied!!");
-            }
         }
 
         private void UpdateDamageCodesForCullAndMistletoe(string strTreeTable, string strTempMDBFile, string strTempTreeTable)

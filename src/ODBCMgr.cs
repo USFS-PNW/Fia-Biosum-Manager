@@ -211,6 +211,8 @@ namespace FIA_Biosum_Manager
             static public string FVSPrePostDsnName { get { return "FVSOUT_PREPOST"; } }
             static public string FvsMasterDbDsnName { get { return "FVS_MASTER_DB"; } }
             static public string FvsOutPrePostDsnName { get { return "FVS_OUT_PREPOST"; } }
+            static public string GisProjectDbDsnName { get { return "GIS_PROJECT"; } }
+            static public string GisMasterDbDsnName { get { return "GIS_MASTER"; } }
         }
 
     }

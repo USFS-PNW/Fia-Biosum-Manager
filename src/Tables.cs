@@ -4237,35 +4237,15 @@ namespace FIA_Biosum_Manager
             public static string DefaultTravelTimeTableName { get { return "travel_time"; } }
             public string DefaultProcessingSiteTableDbFile { get { return @"gis\db\" + DefaultTravelTimeAccdbFile; } }
             public static string DefaultProcessingSiteTableName { get { return "processing_site"; } }
-            public string DefaultDisconnectedRoadTravelTimeOfZeroDbFile { get { return @"gis\db\" + DefaultTravelTimeAccdbFile; } }
-            public string DefaultDisconnectedRoadTravelTimeOfZeroTableName { get { return "disconnected_road_travel_time_of_zero"; } }
-            public string DefaultTravelTimeOfZeroDbFile { get { return @"gis\db\" + DefaultTravelTimeAccdbFile; } }
-            public string DefaultTravelTimeOfZeroTableName { get { return "travel_time_of_zero"; } }
             public static string DefaultMasterTravelTimeAccdbFile { get { return "gis_travel_times_master.accdb"; } }
+            public static string DefaultMasterTravelTimeDbFile { get { return "gis_travel_times_master.db"; } }
+            public static string DefaultTravelTimeDbFile { get { return "gis_travel_times.db"; } }
+            public static string DefaultTravelTimePathAndDbFile { get { return @"gis\db\" + DefaultTravelTimeDbFile; } }
+
 
 
             public TravelTime()
             {
-            }
-            public void CreateDisconnectedRoadTravelTimeOfZeroTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateDisconnectedRoadTravelTimeOfZeroTableSQL(p_strTableName));
-                CreateDisconnectedRoadTravelTimeOfZeroTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateDisconnectedRoadTravelTimeOfZeroTableIndexes(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "traveltime_id");
-                p_oAdo.AddAutoNumber(p_oConn, p_strTableName, "traveltime_id");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "psite_id");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "biosum_plot_id");
-            }
-
-            public string CreateDisconnectedRoadTravelTimeOfZeroTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE disconnected_road_travel_time_of_zero (" +
-                    "traveltime_id LONG," +
-                    "psite_id INTEGER," +
-                    "biosum_plot_id CHAR(24))";
             }
             public void CreateProcessingSiteTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
@@ -4351,30 +4331,30 @@ namespace FIA_Biosum_Manager
                     "PLOT LONG," +
                     "STATECD INTEGER)";
             }
-            public void CreateTravelTimeOfZeroTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+            public void CreateSqliteTravelTimeTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
-                p_oAdo.SqlNonQuery(p_oConn, CreateTravelTimeOfZeroTableSQL(p_strTableName));
-                CreateTravelTimeOfZeroTableIndexes(p_oAdo, p_oConn, p_strTableName);
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteTravelTimeTableSQL(p_strTableName));
+                CreateSqliteTravelTimeTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
             }
-            public void CreateTravelTimeOfZeroTableIndexes(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+            public void CreateSqliteTravelTimeTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "TRAVELTIME_ID");
-                p_oAdo.AddAutoNumber(p_oConn, p_strTableName, "TRAVELTIME_ID");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "PSITE_ID");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "BIOSUM_PLOT_ID");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx3", "COLLECTOR_ID");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx4", "RAILHEAD_ID");
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "PSITE_ID");
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "COLLECTOR_ID");
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx3", "RAILHEAD_ID");
             }
-            public string CreateTravelTimeOfZeroTableSQL(string p_strTableName)
+
+            public string CreateSqliteTravelTimeTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "TRAVELTIME_ID LONG," +
+                    "TRAVELTIME_ID INTEGER PRIMARY KEY AUTOINCREMENT," + 
                     "PSITE_ID INTEGER," +
                     "BIOSUM_PLOT_ID CHAR(24)," +
-                    "COLLECTOR_ID LONG," +
-                    "RAILHEAD_ID LONG," +
-                    "TRAVEL_MODE BYTE," +
-                    "ONE_WAY_HOURS DOUBLE)";
+                    "COLLECTOR_ID INTEGER," +
+                    "RAILHEAD_ID INTEGER," +
+                    "TRAVEL_MODE CHAR(1)," +
+                    "ONE_WAY_HOURS DOUBLE," +
+                    "PLOT INTEGER," +
+                    "STATECD INTEGER)";
             }
         }
         public class Audit
@@ -4494,11 +4474,6 @@ namespace FIA_Biosum_Manager
             public string DefaultDWMDuffLitterFuelName { get { return "DWM_DUFF_LITTER_FUEL"; } }
             public string DefaultDWMFineWoodyDebrisName { get { return "DWM_FINE_WOODY_DEBRIS"; } }
             public string DefaultDWMTransectSegmentName { get { return "DWM_TRANSECT_SEGMENT"; } }
-
-            public string DefaultGRMDbFile { get { return @"db\master_aux.accdb"; } }
-            public string DefaultMasterAuxGRMStandName { get { return "GRM_STAND"; } }
-            public string DefaultMasterAuxGRMTreeName { get { return "GRM_TREE"; } }
-
 
             public void CreatePlotTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
@@ -5273,64 +5248,6 @@ namespace FIA_Biosum_Manager
                        ",HORIZ_LENGTH DOUBLE" +
                        ",HORIZ_BEGNDIST DOUBLE" +
                        ",HORIZ_ENDDIST DOUBLE" +
-                       ")";
-            }
-
-            public void CreateMasterAuxGRMStandTable(FIA_Biosum_Manager.ado_data_access p_oAdo,
-                System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateMasterAuxGRMStandTableSQL(p_strTableName));
-                CreateMasterAuxGRMStandTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-
-            public void CreateMasterAuxGRMStandTableIndexes(ado_data_access p_oAdo,
-                System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "bscid_idx", "biosum_cond_id");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "pltcn_idx", "plt_cn");
-            }
-
-            public string CreateMasterAuxGRMStandTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                       "biosum_cond_id TEXT(25)" +
-                       ",biosum_plot_id TEXT(24)" +
-                       ",plt_cn TEXT(34)" +
-                       ",prev_plt_cn TEXT(34)" +
-                       ",measurement_period LONG" +
-                       ",biosum_status_cd BYTE" +
-                       ")";
-            }
-
-            public void CreateMasterAuxGRMTreeTable(FIA_Biosum_Manager.ado_data_access p_oAdo,
-                    System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateMasterAuxGRMTreeTableSQL(p_strTableName));
-                CreateMasterAuxGRMTreeTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-
-            public void CreateMasterAuxGRMTreeTableIndexes(ado_data_access p_oAdo,
-                System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_bscid_idx", "biosum_cond_id");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_fvstreeid_idx", "fvs_tree_id");
-            }
-
-            public string CreateMasterAuxGRMTreeTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                       "biosum_cond_id TEXT(25)" +
-                       ",fvs_tree_id LONG" +
-                       ",tre_cn TEXT(34)" +
-                       ",prev_tre_cn TEXT(34)" +
-                       ",dia_begin DOUBLE" +
-                       ",dia_end DOUBLE" +
-                       ",ht_begin DOUBLE" +
-                       ",ht_end DOUBLE" +
-                       ",micr_component_al_forest TEXT(255)" +
-                       ",tre_statuscd LONG" +
-                       ",prev_tre_statuscd LONG" +
-                       ",biosum_status_cd BYTE" +
                        ")";
             }
         }

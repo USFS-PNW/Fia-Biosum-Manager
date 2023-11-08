@@ -1247,6 +1247,11 @@ namespace FIA_Biosum_Manager
                                 oItem = m_oCurFVSPrepostSeqNumItem_Collection.Item(y);
                             }
                         }
+                        // FVS_StrClass always inherits FVS_Summary
+                        if (oItem.TableName.Trim().ToUpper().Equals("FVS_STRCLASS"))
+                        {
+                            oItem.UseSummaryTableSeqNumYN = "Y";
+                        }
                         //
                         //DELETE
                         //
@@ -1576,7 +1581,7 @@ namespace FIA_Biosum_Manager
                                 {
                                     // Retrieve the seqnumid for FVS_CUTLIST
                                     string strCutListId = SQLite.getSingleStringValueFromSQLQuery(conn, "SELECT PREPOST_SEQNUM_ID FROM " +
-                                        Tables.FVS.DefaultFVSPrePostSeqNumTable + " WHERE TABLENAME = 'FVS_CUTLIST'",
+                                        Tables.FVS.DefaultFVSPrePostSeqNumTable + " WHERE TRIM(TABLENAME) = 'FVS_CUTLIST'",
                                         Tables.FVS.DefaultFVSPrePostSeqNumTable);
                                     if (!String.IsNullOrEmpty(strCutListId))
                                     {

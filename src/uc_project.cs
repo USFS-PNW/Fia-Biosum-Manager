@@ -922,14 +922,10 @@ namespace FIA_Biosum_Manager
 				p_dao.CreateMDB(strDestFile);
 				strConn = p_ado.getMDBConnString(strDestFile,"admin","");
 				p_ado.OpenConnection(strConn);
-				//disconnected road table
-				frmMain.g_oTables.m_oTravelTime.CreateDisconnectedRoadTravelTimeOfZeroTable(p_ado,p_ado.m_OleDbConnection,frmMain.g_oTables.m_oTravelTime.DefaultDisconnectedRoadTravelTimeOfZeroTableName);
 				//processing site table
 				frmMain.g_oTables.m_oTravelTime.CreateProcessingSiteTable(p_ado,p_ado.m_OleDbConnection,Tables.TravelTime.DefaultProcessingSiteTableName);
 				//travel time table
                 frmMain.g_oTables.m_oTravelTime.CreateTravelTimeTable(p_ado, p_ado.m_OleDbConnection, Tables.TravelTime.DefaultTravelTimeTableName);
-				//travel time of zero table
-				frmMain.g_oTables.m_oTravelTime.CreateTravelTimeOfZeroTable(p_ado,p_ado.m_OleDbConnection,frmMain.g_oTables.m_oTravelTime.DefaultTravelTimeOfZeroTableName);
 				p_ado.CloseConnection(p_ado.m_OleDbConnection);
 				//
 				//master file
@@ -998,9 +994,6 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oTables.m_oFIAPlot.CreateDWMFineWoodyDebrisTable(p_ado, p_ado.m_OleDbConnection, frmMain.g_oTables.m_oFIAPlot.DefaultDWMFineWoodyDebrisName);
                 frmMain.g_oTables.m_oFIAPlot.CreateDWMDuffLitterFuelTable(p_ado, p_ado.m_OleDbConnection, frmMain.g_oTables.m_oFIAPlot.DefaultDWMDuffLitterFuelName);
                 frmMain.g_oTables.m_oFIAPlot.CreateDWMTransectSegmentTable(p_ado, p_ado.m_OleDbConnection, frmMain.g_oTables.m_oFIAPlot.DefaultDWMTransectSegmentName);
-                //GRM Section
-                frmMain.g_oTables.m_oFIAPlot.CreateMasterAuxGRMStandTable(p_ado, p_ado.m_OleDbConnection, frmMain.g_oTables.m_oFIAPlot.DefaultMasterAuxGRMStandName);
-                frmMain.g_oTables.m_oFIAPlot.CreateMasterAuxGRMTreeTable(p_ado, p_ado.m_OleDbConnection, frmMain.g_oTables.m_oFIAPlot.DefaultMasterAuxGRMTreeName);
 
 				p_ado.CloseConnection(p_ado.m_OleDbConnection);
 

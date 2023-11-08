@@ -561,6 +561,15 @@ namespace FIA_Biosum_Manager
                         UpdateProjectVersionFile(strProjVersionFile);
                         bPerformCheck = false;
                     }
+                    //@ToDo: Complete this when we're ready for v5.11.0
+                    //else if ((Convert.ToInt16(m_strAppVerArray[APP_VERSION_MAJOR]) == 5 &&
+                    //    Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR1]) == 11) &&
+                    //    (Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MAJOR]) == 5 &&
+                    //    Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR1]) >= 10))
+                    //{
+                    //    UpdateProjectVersionFile(strProjVersionFile);
+                    //    bPerformCheck = false;
+                    //}
                 }
             }
 
@@ -5579,16 +5588,16 @@ namespace FIA_Biosum_Manager
                 }
             }
 
-            frmMain.g_sbpInfo.Text = "Version Update: Creating empty GRM tables ...Stand by";
-            strDestFile = ReferenceProjectDirectory.Trim() + "\\" + frmMain.g_oTables.m_oFIAPlot.DefaultDWMDbFile;
-            oAdo.OpenConnection(oAdo.getMDBConnString(strDestFile, "", ""));
-            if (!oAdo.TableExist(oAdo.m_OleDbConnection, frmMain.g_oTables.m_oFIAPlot.DefaultMasterAuxGRMStandName))
-            {
-                frmMain.g_oTables.m_oFIAPlot.CreateMasterAuxGRMStandTable(oAdo, oAdo.m_OleDbConnection,
-                    frmMain.g_oTables.m_oFIAPlot.DefaultMasterAuxGRMStandName);
-                frmMain.g_oTables.m_oFIAPlot.CreateMasterAuxGRMTreeTable(oAdo, oAdo.m_OleDbConnection,
-                    frmMain.g_oTables.m_oFIAPlot.DefaultMasterAuxGRMTreeName);
-            }
+            //frmMain.g_sbpInfo.Text = "Version Update: Creating empty GRM tables ...Stand by";
+            //strDestFile = ReferenceProjectDirectory.Trim() + "\\" + frmMain.g_oTables.m_oFIAPlot.DefaultDWMDbFile;
+            //oAdo.OpenConnection(oAdo.getMDBConnString(strDestFile, "", ""));
+            //if (!oAdo.TableExist(oAdo.m_OleDbConnection, frmMain.g_oTables.m_oFIAPlot.DefaultMasterAuxGRMStandName))
+            //{
+            //    frmMain.g_oTables.m_oFIAPlot.CreateMasterAuxGRMStandTable(oAdo, oAdo.m_OleDbConnection,
+            //        frmMain.g_oTables.m_oFIAPlot.DefaultMasterAuxGRMStandName);
+            //    frmMain.g_oTables.m_oFIAPlot.CreateMasterAuxGRMTreeTable(oAdo, oAdo.m_OleDbConnection,
+            //        frmMain.g_oTables.m_oFIAPlot.DefaultMasterAuxGRMTreeName);
+            //}
 
             // Replace opcost_ref.accdb; In the future we want to back it up, but not used much yet
             frmMain.g_sbpInfo.Text = "Version Update: Updating OPCOST configuration database ...Stand by";

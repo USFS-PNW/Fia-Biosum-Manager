@@ -487,13 +487,7 @@ namespace FIA_Biosum_Manager
                     strScenarioResultsMDB);
             }
 
-            // link to PRE_FVS_SUMMARY table
-            //@ToDo: Can we use FVSOUt.db directly? This is complicated by needing the sequence numbers
-            // later on. Leaving it here for now.
-            oDao.CreateTableLink(m_oQueries.m_strTempDbFile,
-                Tables.FVS.DefaultPreFVSSummaryTableName,
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultPreFVSSummaryDbFile,
-                Tables.FVS.DefaultPreFVSSummaryTableName, true);
+            // @ToDo: Removed DAO link to PRE_FVS_SUMMARY table
             // Check PRE_FVS_COMPUTE table
             // Note: For the remainder of processing, the BioSum .accdb is used to access this table
             string strFvsOutDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile;
@@ -547,31 +541,7 @@ namespace FIA_Biosum_Manager
                     }
                 }
             }
-            // link to PRE_FVS_COMPUTE table
-            string strComputeDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
-            if (m_bLinkFvsComputeTables && 
-                System.IO.File.Exists(strComputeDbPath))
-            {
-                string strConn = m_oDataMgr.GetConnectionString(strComputeDbPath);
-                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
-                {
-                    conn.Open();
-                    if (m_oDataMgr.TableExist(conn, Tables.FVS.DefaultPreFVSComputeTableName))
-                    {
-                        // Check to see if the FvsOutPrePost SQLite DSN exists and if so, delete so we can add
-                        if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutPrePostDsnName))
-                        {
-                            odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutPrePostDsnName);
-                        }
-                        odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutPrePostDsnName, strComputeDbPath);
-                    }
-                }
-
-                oDao.CreateSQLiteTableLink(m_oQueries.m_strTempDbFile, Tables.FVS.DefaultPreFVSComputeTableName, Tables.FVS.DefaultPreFVSComputeTableName,
-                    ODBCMgr.DSN_KEYS.FvsOutPrePostDsnName, strComputeDbPath);
-                oDao.CreateSQLiteTableLink(m_oQueries.m_strTempDbFile, Tables.FVS.DefaultPostFVSComputeTableName, Tables.FVS.DefaultPostFVSComputeTableName,
-                    ODBCMgr.DSN_KEYS.FvsOutPrePostDsnName, strComputeDbPath);
-            }
+            // Removed link to PRE_FVS_COMPUTE table
 
             oDao.m_DaoDbEngine.Idle(1);
             oDao.m_DaoDbEngine.Idle(8);
@@ -647,6 +617,12 @@ namespace FIA_Biosum_Manager
                 string strVariant = "";
                 m_oDataMgr.m_Connection = new System.Data.SQLite.SQLiteConnection(strFvsTreeListConn);
                 m_oDataMgr.m_Connection.Open();
+                // link to PRE_FVS_COMPUTE table
+                string strComputeDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
+                if (m_bLinkFvsComputeTables && System.IO.File.Exists(strComputeDbPath))
+                {
+                    m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, $@"ATTACH DATABASE '{strComputeDbPath}' AS FVSPREPOST;");
+                }
 
                 /* Method-level variable indicating that this variant-rxPackage is an inactive combination:
                  * There are no rows in the fvs_cutlist table */
@@ -703,7 +679,7 @@ namespace FIA_Biosum_Manager
                                     // Check PRE_FVS_COMPUTE for 1
                                     string strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultPreFVSComputeTableName} WHERE 
                                         FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strRxPackage}' AND RX = '{rxItem.RxId}' AND {component.HarvestCostColumn}= 1";
-                                    long count = m_oAdo.getRecordCount(m_oAdo.m_OleDbConnection, strSQL, Tables.FVS.DefaultPreFVSComputeTableName);
+                                    long count = m_oDataMgr.getRecordCount(m_oDataMgr.m_Connection, strSQL, Tables.FVS.DefaultPreFVSComputeTableName);
                                     if (count > 0)
                                     {
                                         _bInactiveVarRxPackage = true;
@@ -714,7 +690,7 @@ namespace FIA_Biosum_Manager
                                         // Check POST_FVS_COMPUTE for 1
                                         strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultPostFVSComputeTableName} WHERE 
                                         FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strRxPackage}' AND RX = '{rxItem.RxId}' AND {component.HarvestCostColumn}= 1";
-                                        count = m_oAdo.getRecordCount(m_oAdo.m_OleDbConnection, strSQL, Tables.FVS.DefaultPreFVSComputeTableName);
+                                        count = m_oDataMgr.getRecordCount(m_oDataMgr.m_Connection, strSQL, Tables.FVS.DefaultPreFVSComputeTableName);
                                         if (count > 0)
                                         {
                                             _bInactiveVarRxPackage = true;
