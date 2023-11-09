@@ -631,6 +631,7 @@ namespace FIA_Biosum_Manager
             public void CreateSqliteValidComboFVSPostTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                 p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteValidComboFVSPostTableSQL(p_strTableName));
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "biosum_cond_id");
             }
             static public string CreateSqliteValidComboFVSPostTableSQL(string p_strTableName)
             {
@@ -670,6 +671,7 @@ namespace FIA_Biosum_Manager
             public void CreateSqliteValidComboFVSPreTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                 p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteValidComboFVSPreTableSQL(p_strTableName));
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "biosum_cond_id");
             }
             static public string CreateSqliteValidComboFVSPreTableSQL(string p_strTableName)
             {

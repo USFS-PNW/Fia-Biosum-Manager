@@ -975,11 +975,11 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Form name: " + this.Name + "\r\n\r\n");
             }
 
-            // Check for SQLite configuration database
-            //if (!System.IO.File.Exists(this.m_strCalculatedVariablesDb))
-            //{
-            //    this.migrate_access_data();
-            //}
+             //Check for SQLite configuration database
+            if (!System.IO.File.Exists(this.m_strCalculatedVariablesDb))
+            {
+                this.migrate_access_data();
+            }
 
             SQLiteConnect();
             // One and only one transaction for this form
@@ -5106,13 +5106,17 @@ namespace FIA_Biosum_Manager
 
                                         // FVS creates a record for
                                         // each condition for each cycle regardless of whether there is activity
-                                        oDataMgr.m_strSQL = "CREATE TABLE " + strTargetPreTable +
-                                            " AS SELECT biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant FROM " + strSourcePreTable;
+                                        oDataMgr.m_strSQL = "CREATE TABLE " + strTargetPreTable + " (biosum_cond_id CHAR(25), rxpackage CHAR(3), rx CHAR(3), rxcycle CHAR(1), fvs_variant CHAR(2))";
+                                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                                        oDataMgr.m_strSQL = "INSERT INTO " + strTargetPreTable +
+                                            " SELECT biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant FROM " + strSourcePreTable;
                                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                         {
                                             frmMain.g_oUtils.WriteText(m_strDebugFile, "Creating final pre/post tables. They did not already exist \r\n");
                                             frmMain.g_oUtils.WriteText(m_strDebugFile, "sql: " + oDataMgr.m_strSQL + "\r\n\r\n");
                                         }
+                                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                                        oDataMgr.m_strSQL = "CREATE TABLE " + strTargetPostTable + " (biosum_cond_id CHAR(25), rxpackage CHAR(3), rx CHAR(3), rxcycle CHAR(1), fvs_variant CHAR(2))";
                                         oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                                         oDataMgr.m_strSQL = "CREATE TABLE " + strTargetPostTable +
                                             " AS SELECT biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant FROM " + strSourcePostTable;
@@ -5968,13 +5972,13 @@ namespace FIA_Biosum_Manager
                         sqliteConn.Open();
 
                         string[] arrFields = m_oAdo.getFieldNamesArray(calcConn, "SELECT * FROM " + table);
-                        string fieldsAndDataTypes = "";
+                        string fieldsAndDataTypes = "biosum_cond_id CHAR(25), rxpackage CHAR(3), rx CHAR(3), rxcycle CHAR(1), fvs_variant CHAR(2), ";
 
-                        foreach (string column in arrFields)
+                        for (int x = 5; x <= arrFields.Length - 1; x++)
                         {
                             string field = "";
                             string dataType = "";
-                            m_oAdo.getFieldNamesAndDataTypes(calcConn, "SELECT " + column + " FROM " + table, ref field, ref dataType);
+                            m_oAdo.getFieldNamesAndDataTypes(calcConn, "SELECT " + arrFields[x] + " FROM " + table, ref field, ref dataType);
                             dataType = utils.DataTypeConvert(dataType.ToUpper(), true);
                             fieldsAndDataTypes = fieldsAndDataTypes + field + " " + dataType + ", ";
                         }
