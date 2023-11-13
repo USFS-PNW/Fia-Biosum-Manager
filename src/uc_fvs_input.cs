@@ -509,6 +509,8 @@ namespace FIA_Biosum_Manager
             // chkUsePrevDia
             // 
             this.chkUsePrevDia.AutoSize = true;
+            this.chkUsePrevDia.Checked = true;
+            this.chkUsePrevDia.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkUsePrevDia.Location = new System.Drawing.Point(6, 43);
             this.chkUsePrevDia.Name = "chkUsePrevDia";
             this.chkUsePrevDia.Size = new System.Drawing.Size(172, 21);
@@ -519,6 +521,8 @@ namespace FIA_Biosum_Manager
             // chkUsePrevHt
             // 
             this.chkUsePrevHt.AutoSize = true;
+            this.chkUsePrevHt.Checked = true;
+            this.chkUsePrevHt.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkUsePrevHt.Location = new System.Drawing.Point(6, 20);
             this.chkUsePrevHt.Name = "chkUsePrevHt";
             this.chkUsePrevHt.Size = new System.Drawing.Size(156, 21);
@@ -608,8 +612,6 @@ namespace FIA_Biosum_Manager
             // chkDwmFuelModel
             // 
             this.chkDwmFuelModel.AutoSize = true;
-            this.chkDwmFuelModel.Checked = true;
-            this.chkDwmFuelModel.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkDwmFuelModel.Location = new System.Drawing.Point(7, 19);
             this.chkDwmFuelModel.Name = "chkDwmFuelModel";
             this.chkDwmFuelModel.Size = new System.Drawing.Size(18, 17);
