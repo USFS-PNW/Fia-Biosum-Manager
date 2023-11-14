@@ -6068,6 +6068,7 @@ namespace FIA_Biosum_Manager
             }
 
             ado_data_access oAdo = new ado_data_access();
+            bool bPlotRecords = false;
             if (SQLite.m_intError == 0)
             {
                 frmMain.g_sbpInfo.Text = "Creating temp database and table links...Stand by";
@@ -6084,7 +6085,6 @@ namespace FIA_Biosum_Manager
                     }
                     while (!oAdo.TableExist(oLoadConn, strTravelTimesTableName));
 
-
                     strSql = "INSERT INTO " + strTravelTimesTableName +
                                     " SELECT TRAVELTIME_ID, PSITE_ID, biosum_plot_id," +
                                     " COLLECTOR_ID, RAILHEAD_ID, TRAVEL_MODE, ONE_WAY_HOURS," +
@@ -6095,8 +6095,14 @@ namespace FIA_Biosum_Manager
                     oAdo.SqlNonQuery(oLoadConn, strSql);
                     strSql = "SELECT COUNT(*) FROM " + strTravelTimesTableName;
                     intRecordCount = oAdo.getRecordCount(oLoadConn, strSql, strTravelTimesTableName);
+                    strSql = $@"SELECT COUNT(*) FROM(SELECT TOP 1 plot FROM {m_strPlotTableName})";
+                    if (oAdo.getRecordCount(oLoadConn, strSql, m_strPlotTableName) > 0)
+                    {
+                        bPlotRecords = true;
+                    } 
                 }
 
+                bool bExistsPlotGisTable = false;
                 if (oAdo.m_intError == 0 && intRecordCount > 0)
                 {
                     frmMain.g_sbpInfo.Text = "Loading project processing_site table...Stand by";
@@ -6112,7 +6118,13 @@ namespace FIA_Biosum_Manager
                         SQLite.SqlNonQuery(oLoadConn, strSql);
                         strSql = "SELECT COUNT(*) FROM " + strPSitesTableName;
                         intRecordCount = (int) SQLite.getRecordCount(oLoadConn, strSql, strPSitesTableName);
+                        if (SQLite.AttachedTableExist(oLoadConn, Tables.TravelTime.DefaultPlotGisTableName))
+                        {
+                            bExistsPlotGisTable = true;
+                        }
                     }
+
+
                 }
 
             }

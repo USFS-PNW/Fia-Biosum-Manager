@@ -6131,7 +6131,7 @@ namespace FIA_Biosum_Manager
                                                 string strTempMDB = frmMain.g_oUtils.getRandomFile(this.m_oEnv.strTempDir, "accdb");
                                                 // Create a temporary mdb that will contain all our required table links
                                                 m_dao.CreateMDB(strTempMDB);
-                                                this.Validate_FVSTreeId(oAdo, strTempMDB, "FVS_Cases", "FVS_CutList", strVariant, strPackage,
+                                                this.Validate_FVSTreeId(oAdo, strTempMDB, Tables.FVS.DefaultFVSCasesTableName, Tables.FVS.DefaultFVSCutListTableName, strVariant, strPackage,
                                                         m_oRxPackageItem.SimulationYear1Rx, m_oRxPackageItem.SimulationYear2Rx,
                                                         m_oRxPackageItem.SimulationYear3Rx, m_oRxPackageItem.SimulationYear4Rx, 
                                                         strRunTitle, ref intItemWarning, ref strItemWarning, ref intItemError, ref strItemError);

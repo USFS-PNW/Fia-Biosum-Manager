@@ -4243,6 +4243,7 @@ namespace FIA_Biosum_Manager
             public static string DefaultMasterTravelTimeDbFile { get { return "gis_travel_times_master.db"; } }
             public static string DefaultTravelTimeDbFile { get { return "gis_travel_times.db"; } }
             public static string DefaultTravelTimePathAndDbFile { get { return @"gis\db\" + DefaultTravelTimeDbFile; } }
+            public static string DefaultPlotGisTableName { get { return "plot_gis"; } }
 
 
 
