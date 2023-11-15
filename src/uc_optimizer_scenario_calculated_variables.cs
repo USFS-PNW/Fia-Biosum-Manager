@@ -5118,8 +5118,8 @@ namespace FIA_Biosum_Manager
                                         oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                                         oDataMgr.m_strSQL = "CREATE TABLE " + strTargetPostTable + " (biosum_cond_id CHAR(25), rxpackage CHAR(3), rx CHAR(3), rxcycle CHAR(1), fvs_variant CHAR(2))";
                                         oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
-                                        oDataMgr.m_strSQL = "CREATE TABLE " + strTargetPostTable +
-                                            " AS SELECT biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant FROM " + strSourcePostTable;
+                                        oDataMgr.m_strSQL = "INSERT INTO " + strTargetPostTable +
+                                            " SELECT biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant FROM " + strSourcePostTable;
                                         oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 
                                         if (oDataMgr.TableExist(conn, strSourcePreTable))

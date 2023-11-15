@@ -3490,11 +3490,6 @@ namespace FIA_Biosum_Manager
 							break;
 						}
 					}
-
-					if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.PrePostFvsWeightedDsnName))
-					{
-						odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.PrePostFvsWeightedDsnName);
-					}
 				}
 			}
 		}
