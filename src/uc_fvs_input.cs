@@ -199,6 +199,7 @@ namespace FIA_Biosum_Manager
             this.otherOptionsGroupBox = new System.Windows.Forms.GroupBox();
             this.chkIncludeSeedlings = new System.Windows.Forms.CheckBox();
             this.grpCalibOptions = new System.Windows.Forms.GroupBox();
+            this.chkUsePrevDia = new System.Windows.Forms.CheckBox();
             this.chkUsePrevHt = new System.Windows.Forms.CheckBox();
             this.grpDWMOptions = new System.Windows.Forms.GroupBox();
             this.linkLabelFuelModel = new System.Windows.Forms.LinkLabel();
@@ -221,7 +222,6 @@ namespace FIA_Biosum_Manager
             this.btnHelp = new System.Windows.Forms.Button();
             this.btnClose = new System.Windows.Forms.Button();
             this.lblTitle = new System.Windows.Forms.Label();
-            this.chkUsePrevDia = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -506,9 +506,23 @@ namespace FIA_Biosum_Manager
             this.grpCalibOptions.TabStop = false;
             this.grpCalibOptions.Text = "Calibration Data";
             // 
+            // chkUsePrevDia
+            // 
+            this.chkUsePrevDia.AutoSize = true;
+            this.chkUsePrevDia.Checked = true;
+            this.chkUsePrevDia.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkUsePrevDia.Location = new System.Drawing.Point(6, 43);
+            this.chkUsePrevDia.Name = "chkUsePrevDia";
+            this.chkUsePrevDia.Size = new System.Drawing.Size(172, 21);
+            this.chkUsePrevDia.TabIndex = 3;
+            this.chkUsePrevDia.Text = "Use previous diameter";
+            this.chkUsePrevDia.UseVisualStyleBackColor = true;
+            // 
             // chkUsePrevHt
             // 
             this.chkUsePrevHt.AutoSize = true;
+            this.chkUsePrevHt.Checked = true;
+            this.chkUsePrevHt.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkUsePrevHt.Location = new System.Drawing.Point(6, 20);
             this.chkUsePrevHt.Name = "chkUsePrevHt";
             this.chkUsePrevHt.Size = new System.Drawing.Size(156, 21);
@@ -598,8 +612,6 @@ namespace FIA_Biosum_Manager
             // chkDwmFuelModel
             // 
             this.chkDwmFuelModel.AutoSize = true;
-            this.chkDwmFuelModel.Checked = true;
-            this.chkDwmFuelModel.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkDwmFuelModel.Location = new System.Drawing.Point(7, 19);
             this.chkDwmFuelModel.Name = "chkDwmFuelModel";
             this.chkDwmFuelModel.Size = new System.Drawing.Size(18, 17);
@@ -609,6 +621,8 @@ namespace FIA_Biosum_Manager
             // chkDwmFuelBiomass
             // 
             this.chkDwmFuelBiomass.AutoSize = true;
+            this.chkDwmFuelBiomass.Checked = true;
+            this.chkDwmFuelBiomass.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkDwmFuelBiomass.Location = new System.Drawing.Point(7, 39);
             this.chkDwmFuelBiomass.Name = "chkDwmFuelBiomass";
             this.chkDwmFuelBiomass.Size = new System.Drawing.Size(417, 21);
@@ -644,7 +658,7 @@ namespace FIA_Biosum_Manager
             this.txtMinLargeFwdTL.Name = "txtMinLargeFwdTL";
             this.txtMinLargeFwdTL.Size = new System.Drawing.Size(45, 22);
             this.txtMinLargeFwdTL.TabIndex = 4;
-            this.txtMinLargeFwdTL.Text = "30";
+            this.txtMinLargeFwdTL.Text = "1";
             this.txtMinLargeFwdTL.Validating += new System.ComponentModel.CancelEventHandler(this.txtMinLargeFwdTL_Validating);
             // 
             // txtMinCwdTL
@@ -653,7 +667,7 @@ namespace FIA_Biosum_Manager
             this.txtMinCwdTL.Name = "txtMinCwdTL";
             this.txtMinCwdTL.Size = new System.Drawing.Size(45, 22);
             this.txtMinCwdTL.TabIndex = 5;
-            this.txtMinCwdTL.Text = "48";
+            this.txtMinCwdTL.Text = "1";
             this.txtMinCwdTL.Validating += new System.ComponentModel.CancelEventHandler(this.txtMinCwdTL_Validating);
             // 
             // label3
@@ -673,7 +687,7 @@ namespace FIA_Biosum_Manager
             this.txtMinSmallFwdTL.Name = "txtMinSmallFwdTL";
             this.txtMinSmallFwdTL.Size = new System.Drawing.Size(45, 22);
             this.txtMinSmallFwdTL.TabIndex = 3;
-            this.txtMinSmallFwdTL.Text = "10";
+            this.txtMinSmallFwdTL.Text = "1";
             this.txtMinSmallFwdTL.Validating += new System.ComponentModel.CancelEventHandler(this.txtMinSmallFwdTL_Validating);
             // 
             // btnCancel
@@ -732,16 +746,6 @@ namespace FIA_Biosum_Manager
             this.lblTitle.Size = new System.Drawing.Size(794, 32);
             this.lblTitle.TabIndex = 99;
             this.lblTitle.Text = "Create FVS Input";
-            // 
-            // chkUsePrevDia
-            // 
-            this.chkUsePrevDia.AutoSize = true;
-            this.chkUsePrevDia.Location = new System.Drawing.Point(6, 43);
-            this.chkUsePrevDia.Name = "chkUsePrevDia";
-            this.chkUsePrevDia.Size = new System.Drawing.Size(172, 21);
-            this.chkUsePrevDia.TabIndex = 3;
-            this.chkUsePrevDia.Text = "Use previous diameter";
-            this.chkUsePrevDia.UseVisualStyleBackColor = true;
             // 
             // uc_fvs_input
             // 
