@@ -5106,7 +5106,7 @@ namespace FIA_Biosum_Manager
 
                                         // FVS creates a record for
                                         // each condition for each cycle regardless of whether there is activity
-                                        oDataMgr.m_strSQL = "CREATE TABLE " + strTargetPreTable + " (biosum_cond_id CHAR(25), rxpackage CHAR(3), rx CHAR(3), rxcycle CHAR(1), fvs_variant CHAR(2))";
+                                        oDataMgr.m_strSQL = "CREATE TABLE " + strTargetPreTable + " (biosum_cond_id CHAR(25), rxpackage CHAR(3), rx CHAR(3), rxcycle CHAR(1), fvs_variant CHAR(2), PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
                                         oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                                         oDataMgr.m_strSQL = "INSERT INTO " + strTargetPreTable +
                                             " SELECT biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant FROM " + strSourcePreTable;
@@ -5116,7 +5116,7 @@ namespace FIA_Biosum_Manager
                                             frmMain.g_oUtils.WriteText(m_strDebugFile, "sql: " + oDataMgr.m_strSQL + "\r\n\r\n");
                                         }
                                         oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
-                                        oDataMgr.m_strSQL = "CREATE TABLE " + strTargetPostTable + " (biosum_cond_id CHAR(25), rxpackage CHAR(3), rx CHAR(3), rxcycle CHAR(1), fvs_variant CHAR(2))";
+                                        oDataMgr.m_strSQL = "CREATE TABLE " + strTargetPostTable + " (biosum_cond_id CHAR(25), rxpackage CHAR(3), rx CHAR(3), rxcycle CHAR(1), fvs_variant CHAR(2), PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
                                         oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                                         oDataMgr.m_strSQL = "INSERT INTO " + strTargetPostTable +
                                             " SELECT biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant FROM " + strSourcePostTable;
@@ -5982,8 +5982,8 @@ namespace FIA_Biosum_Manager
                             dataType = utils.DataTypeConvert(dataType.ToUpper(), true);
                             fieldsAndDataTypes = fieldsAndDataTypes + field + " " + dataType + ", ";
                         }
-                        fieldsAndDataTypes = fieldsAndDataTypes.Substring(0, fieldsAndDataTypes.Length - 2);
-                        m_oDataMgr.m_strSQL = "CREATE TABLE " + table + " (" + fieldsAndDataTypes + ")";
+                        //fieldsAndDataTypes = fieldsAndDataTypes.Substring(0, fieldsAndDataTypes.Length - 2);
+                        m_oDataMgr.m_strSQL = "CREATE TABLE " + table + " (" + fieldsAndDataTypes + "PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
                         m_oDataMgr.SqlNonQuery(sqliteConn, m_oDataMgr.m_strSQL);
                         sqliteConn.Close();
                     }

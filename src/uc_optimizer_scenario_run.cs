@@ -5294,8 +5294,8 @@ namespace FIA_Biosum_Manager
 				strTable = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_fvs_prepost_variables_effective1.m_oSavVar.TableName(ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_fvs_prepost_variables_effective1.m_oSavVar.m_strPostVarArray[x]);
 				if (strTable.Trim().Length > 0)
 				{
-                    m_strSQL = "CREATE INDEX validcombos_fvspost_idx1 ON validcombos_fvspost (biosum_cond_id, rxpackage, rx, rxcycle)";
-                    m_ado.SqlNonQuery(this.m_TempMDBFileConn, m_strSQL);
+                    //m_strSQL = "CREATE INDEX validcombos_fvspost_idx1 ON validcombos_fvspost (biosum_cond_id, rxpackage, rx, rxcycle)";
+                    //m_ado.SqlNonQuery(this.m_TempMDBFileConn, m_strSQL);
                     m_strSQL = "UPDATE validcombos_fvspost a INNER JOIN " + strTable + " b ON a.biosum_cond_id = b.biosum_cond_id AND a.rxpackage = b.rxpackage AND a.rx = b.rx AND a.rxcycle = b.rxcycle SET variable" + Convert.ToString(x + 1).Trim() + "_yn='Y'";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
