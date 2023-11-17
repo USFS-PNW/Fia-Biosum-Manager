@@ -5840,13 +5840,13 @@ namespace FIA_Biosum_Manager
                 m_oDataMgr.CreateDbFile(m_strCalculatedPrePostDb);
             }
             
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
             {
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Copied the databases from the application directory \r\n");
             }
 
-                // Check to see if the input SQLite DSN exists for optimizer_definitions and if so, delete so we can add
-                ODBCMgr odbcmgr = new ODBCMgr();
+            // Check to see if the input SQLite DSN exists for optimizer_definitions and if so, delete so we can add
+            ODBCMgr odbcmgr = new ODBCMgr();
             if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.OptimizerCalcVariableDsnName))
             {
                 odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.OptimizerCalcVariableDsnName);
