@@ -5303,13 +5303,7 @@ namespace FIA_Biosum_Manager
 					m_strSQL = "UPDATE validcombos_fvspost SET variable" + Convert.ToString(x + 1).Trim() + "_yn='N' WHERE variable" + Convert.ToString(x + 1).Trim() + "_yn IS NULL OR LEN(TRIM(variable" + Convert.ToString(x + 1).Trim() + "_yn))=0";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
-                    m_ado.m_OleDbCommand = this.m_TempMDBFileConn.CreateCommand();
-                    using (m_ado.m_OleDbTransaction = this.m_TempMDBFileConn.BeginTransaction())
-                    {
-                        m_ado.m_OleDbCommand.Transaction = m_ado.m_OleDbTransaction;
-                        m_ado.SqlNonQuery(this.m_TempMDBFileConn, m_strSQL);
-                        m_ado.m_OleDbTransaction.Commit();
-                    }
+                    m_ado.SqlNonQuery(this.m_TempMDBFileConn, m_strSQL);
 					strWhere=strWhere + "b.variable" + Convert.ToString(x + 1).Trim() + "_yn <> 'N' AND ";
 
 				}

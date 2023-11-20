@@ -976,9 +976,12 @@ namespace FIA_Biosum_Manager
             }
 
              //Check for SQLite configuration database
-            if (!System.IO.File.Exists(this.m_strCalculatedVariablesDb))
+            if (!System.IO.File.Exists(this.m_strCalculatedVariablesDb) || !System.IO.File.Exists(this.m_strCalculatedPrePostDb))
             {
-                this.migrate_access_data();
+                //this.migrate_access_data
+                string errorMsg = "!! optimizer_definitions.db or prepost_fvs_weighted.db not found. Open an Optimization Scenario to migrate data !!";
+                MessageBox.Show(errorMsg, "FIA Biosum");
+                return;
             }
 
             SQLiteConnect();
