@@ -1776,7 +1776,7 @@ namespace FIA_Biosum_Manager
             static public string[] FVSOutputTable_AuditFVSSummaryTableRowCountsSQL(string p_strIntoTable, string p_strSummaryAuditTable, string p_strFVSOutputTable, 
                 string p_strRowCountColumn, string p_strRunTitle)
             {
-                string[] strSQL = new string[4];
+                string[] strSQL = new string[5];
 
                 strSQL[0] = "SELECT DISTINCT a.standid,a.year,b.rowcount " +
                              "INTO " + p_strIntoTable + " " +
@@ -1796,31 +1796,34 @@ namespace FIA_Biosum_Manager
                     "SET " + p_strRowCountColumn + "=0 " +
                     "WHERE " + p_strRowCountColumn + " IS NULL";
 
+                strSQL[3] = "DROP TABLE " + p_strIntoTable;
 
                 // This means we are using SQLite
                 if (!String.IsNullOrEmpty(p_strRunTitle))
                 {
                     strSQL[0] = $@"CREATE TABLE {p_strIntoTable} AS 
-                        SELECT DISTINCT a.standid,a.year,b.rowcount FROM {p_strFVSOutputTable} a, fvs_CASES C,
+                        SELECT DISTINCT a.standid,a.year,b.rowcount FROM {p_strFVSOutputTable} a, {Tables.FVS.DefaultFVSCasesTempTableName} C,
                         (SELECT COUNT(*) as rowcount,{p_strFVSOutputTable}.standid,year 
-                        FROM {p_strFVSOutputTable}, fvs_cases c where {p_strFVSOutputTable}.StandID = c.StandId and {p_strFVSOutputTable}.CaseID = c.CaseID and 
-                        c.RunTitle = '{p_strRunTitle}' GROUP BY {p_strFVSOutputTable}.standid,year) b 
-                        WHERE a.standid=b.standid AND a.StandID = c.standId AND c.caseId = a.caseid AND 
-                        c.runTitle = '{p_strRunTitle}' AND a.year=b.year ";
+                        FROM {p_strFVSOutputTable}, {Tables.FVS.DefaultFVSCasesTempTableName} c where {p_strFVSOutputTable}.StandID = c.StandId GROUP BY {p_strFVSOutputTable}.standid,year) b 
+                        WHERE a.standid=b.standid AND a.StandID = c.standId AND a.year=b.year ";
 
                     string strVariant = p_strRunTitle.Substring(7, 2);
                     string strRxPackage = p_strRunTitle.Substring(11, 3);
 
-                    strSQL[1] = $@"UPDATE {p_strSummaryAuditTable} SET {p_strRowCountColumn} = (SELECT rowcount
+                    strSQL[1] = $@"CREATE INDEX {p_strIntoTable}_standid_year_idx ON {p_strIntoTable} (standid,year)";
+
+                    strSQL[2] = $@"UPDATE {p_strSummaryAuditTable} SET {p_strRowCountColumn} = (SELECT rowcount
                         from temp_rowcount b WHERE {p_strSummaryAuditTable}.standid=b.standid AND {p_strSummaryAuditTable}.year=b.year)
                         WHERE fvs_variant = '{strVariant}' and rxPackage = '{strRxPackage}'";
 
-                    strSQL[2] = "UPDATE " + p_strSummaryAuditTable + " " +
+                    strSQL[3] = "UPDATE " + p_strSummaryAuditTable + " " +
                         "SET " + p_strRowCountColumn + "=0 " +
                         "WHERE " + p_strRowCountColumn + " IS NULL AND fvs_variant = '" + strVariant + "' and rxpackage = '" + strRxPackage + "'";
+
+                    strSQL[4] = "DROP TABLE " + p_strIntoTable;
                 }
 
-              strSQL[3] = "DROP TABLE " + p_strIntoTable;
+
 
               return strSQL;
             }
@@ -2021,8 +2024,8 @@ namespace FIA_Biosum_Manager
                 string[] strSQL = new string[6];
 
                 strSQL[0] = $@"CREATE TABLE {p_strIntoTempTreeListTableName} AS SELECT COUNT(*) AS TREECOUNT, {p_strTreeListTableName}.STANDID,YEAR 
-                            FROM {p_strTreeListTableName}, fvs_CASES C WHERE {p_strTreeListTableName}.standid IS NOT NULL and year > 0 
-                            AND {p_strTreeListTableName}.CASEID = C.CASEID AND {p_strTreeListTableName}.STANDID = C.STANDID AND C.RUNTITLE = '{p_strRunTitle}'
+                            FROM {p_strTreeListTableName}, {Tables.FVS.DefaultFVSCasesTempTableName} C WHERE {p_strTreeListTableName}.standid IS NOT NULL and year > 0 
+                            AND {p_strTreeListTableName}.CASEID = C.CASEID AND {p_strTreeListTableName}.STANDID = C.STANDID 
                             GROUP BY {p_strTreeListTableName}.CASEID,{p_strTreeListTableName}.STANDID,YEAR";
 
 

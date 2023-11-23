@@ -2570,6 +2570,7 @@ namespace FIA_Biosum_Manager
             static public string DefaultPreFVSComputeDbFile { get { return @"\fvs\db\PREPOST_FVS_COMPUTE.ACCDB"; } }
             static public string DefaultFVSComputeTableName { get { return "FVS_COMPUTE"; } }
             static public string DefaultFVSCasesTableName { get { return "FVS_CASES"; } }
+            static public string DefaultFVSCasesTempTableName { get { return "FVS_CASES_TEMP"; } }
             static public string DefaultFVSSummaryTableName { get { return "FVS_SUMMARY"; } }
             static public string DefaultFVSCutListTableName { get { return "FVS_CUTLIST"; } }
             static public string DefaultFVSPotFireTableName { get { return "FVS_POTFIRE"; } }
@@ -3890,7 +3891,8 @@ namespace FIA_Biosum_Manager
                                 "StandID VARCHAR(255), " +
                                 "Year INTEGER, " +
                                 "fvs_variant CHAR(2), " +
-                                "rxPackage CHAR(3))";
+                                "rxPackage CHAR(3), " +
+                                "PRIMARY KEY (StandID, Year, fvs_variant, rxPackage))";
                     }
                 }
             }

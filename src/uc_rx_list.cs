@@ -4009,7 +4009,7 @@ namespace FIA_Biosum_Manager
                                 dataMgr.SqlNonQuery(conn, $@"DROP TABLE {tmpTableName}");
                             }
                             dataMgr.m_strSQL = $@"CREATE TABLE {tmpTableName} AS select s.standid, year, '{p_strRunTitle.Substring(7, 2)}' as fvs_variant, '{p_strRunTitle.Substring(11, 3)}' as rxpackage from 
-                                FVS_SUMMARY s, {Tables.FVS.DefaultFVSCasesTableName} c where s.CaseID = c.CaseID and s.StandID = c.StandID and c.RunTitle = '{p_strRunTitle}'";
+                                FVS_SUMMARY s, {Tables.FVS.DefaultFVSCasesTempTableName} c where s.CaseID = c.CaseID";
                             if (p_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + dataMgr.m_strSQL + "\r\n");
                             dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
@@ -4032,7 +4032,6 @@ namespace FIA_Biosum_Manager
                         }
                         else
                         {
-
                             if (p_oItem.UseSummaryTableSeqNumYN == "N")
                             {
                                 if (!dataMgr.TableExist(conn, strAuditPrePostSeqNumCountsTable))
@@ -4076,7 +4075,7 @@ namespace FIA_Biosum_Manager
                     for (x = 0; x <= strSQL.Length - 1; x++)
                     {
                         if (p_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + dataMgr.m_strSQL + "\r\n");
+                            frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL[x] + "\r\n");
                         dataMgr.SqlNonQuery(conn, strSQL[x]);
                         if (p_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(p_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");

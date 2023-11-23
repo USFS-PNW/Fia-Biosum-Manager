@@ -11304,6 +11304,26 @@ namespace FIA_Biosum_Manager
                     {
                         SQLite.AddIndex(conn, Tables.FVS.DefaultFVSCasesTableName, "idx_fvs_cases_bs", "runtitle, caseid, standid");
                     }
+                    if (SQLite.TableExist(conn, Tables.FVS.DefaultFVSCasesTempTableName))
+                    {
+                        // Delete current variant/package from table
+                        SQLite.m_strSQL = $@"DROP TABLE {Tables.FVS.DefaultFVSCasesTempTableName}";
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                    }
+
+                    // Create temp FVS_CASES table that only contains records for current runTitle
+                    SQLite.m_strSQL = $@"CREATE TABLE {Tables.FVS.DefaultFVSCasesTempTableName} AS SELECT *
+                    FROM {Tables.FVS.DefaultFVSCasesTableName} WHERE RunTitle = '{p_strRunTitle}'";
+                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
+                    if (SQLite.m_intError == 0)
+                    {
+                        string strIndexName = $@"IDX_{Tables.FVS.DefaultFVSCasesTempTableName}_CaseId";
+                        SQLite.AddIndex(conn, Tables.FVS.DefaultFVSCasesTempTableName, strIndexName, "CaseId");
+                    }
                 }
 
                 CreateFVSPrePostSeqNumWorkTables(conn, p_strDbFile, "FVS_SUMMARY", p_strRunTitle, p_bAudit);
@@ -11374,12 +11394,12 @@ namespace FIA_Biosum_Manager
                     strSourceTable = p_strSourceTableName.Trim();
                 }
                 SQLite.m_strSQL = $@"CREATE TABLE {tmpTableName} AS select s.standid, year, '{p_strRunTitle.Substring(7, 2)}' as fvs_variant, '{p_strRunTitle.Substring(11, 3)}' as rxpackage from 
-                    {strSourceTable} s, {Tables.FVS.DefaultFVSCasesTableName} c where s.CaseID = c.CaseID and s.StandID = c.StandID and c.RunTitle = '{p_strRunTitle}'";
+                    {strSourceTable} s, {Tables.FVS.DefaultFVSCasesTempTableName} c where s.CaseID = c.CaseID";
                 // Need to add removal_code if working with FVS_STRCLASS
                 if (strSourceTable.ToUpper().Equals("FVS_STRCLASS"))
                 {
                     SQLite.m_strSQL = $@"CREATE TABLE {tmpTableName} AS select s.standid, year, removal_code, '{p_strRunTitle.Substring(7, 2)}' as fvs_variant, '{p_strRunTitle.Substring(11, 3)}' as rxpackage from 
-                    {strSourceTable} s, {Tables.FVS.DefaultFVSCasesTableName} c where s.CaseID = c.CaseID and s.StandID = c.StandID and c.RunTitle = '{p_strRunTitle}'";
+                    {strSourceTable} s, {Tables.FVS.DefaultFVSCasesTempTableName} c where s.CaseID = c.CaseID";
                 }
                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
