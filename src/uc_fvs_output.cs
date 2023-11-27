@@ -2288,7 +2288,7 @@ namespace FIA_Biosum_Manager
                 this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
             if (SQLite.m_intError == 0)
             {
-                SQLite.m_strSQL = $@"INSERT INTO {strTmpSubset} SELECT F.* FROM {strFVSOutTable} F, {Tables.FVS.DefaultFVSCasesTableName} C
+                SQLite.m_strSQL = $@"INSERT INTO {strTmpSubset} SELECT F.* FROM {strFVSOutTable} F, {Tables.FVS.DefaultFVSCasesTempTableName} C
                         WHERE F.CaseID = c.CaseID and c.RunTitle = '{strRunTitle}'";
                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                     this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
@@ -4001,7 +4001,6 @@ namespace FIA_Biosum_Manager
             string strFiaTreeSpeciesRefTableLink = "";
             string strFVSSummarySeqNumMtxTableLink = "";
             string strFVSOutSeqNumMatrixTableLink = "";
-            string strCasesTable = "";
             string strConn = "";
             bool bIdColumnExist = false;
             
@@ -4075,7 +4074,7 @@ namespace FIA_Biosum_Manager
                                 {
                                     if (m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Item(z).TableName == "FVS_CASES")
                                     {
-                                        strCasesTable = m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Item(z).LinkedTableName;
+                                        //strCasesTable = m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Item(z).LinkedTableName;
                                     }
                                     else if (m_oPrePostDbFileItem_Collection.Item(y).m_oTableLinkItemCollection1.Item(z).TableName == "FVS_SUMMARY")
                                     {
@@ -4189,7 +4188,7 @@ namespace FIA_Biosum_Manager
                                         //make sure there are records to insert
                                         oAdo.m_strSQL = "SELECT COUNT(*) FROM " +
                                                          "(SELECT TOP 1 c.standid " +
-                                                          "FROM " + strCasesTable + " c," + strFVSOutTableLink + " t " +
+                                                          "FROM " + Tables.FVS.DefaultFVSCasesTableName + " c," + strFVSOutTableLink + " t " +
                                                           "WHERE c.CaseID = t.CaseID AND MID(t.treeid, 1, 2) NOT IN ('ES','CM'))";
 
 
@@ -4203,7 +4202,7 @@ namespace FIA_Biosum_Manager
                                                 "t.Species AS fvs_species, t.TPA, ROUND(t.DBH,1) AS DBH , t.Ht,t.estht,t.pctcr,t.TCuFt,'N' AS FvsCreatedTree_YN," +
                                                 "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
                                                 "INTO cutlist_fia_trees_work_table " +
-                                                "FROM " + strCasesTable + " c," + strFVSOutTableLink + " t " +
+                                                "FROM " + Tables.FVS.DefaultFVSCasesTableName + " c," + strFVSOutTableLink + " t " +
                                                 "WHERE c.CaseID = t.CaseID AND MID(t.treeid, 1, 2) NOT IN ('ES','CM') ";
 
                                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
@@ -4243,7 +4242,7 @@ namespace FIA_Biosum_Manager
                                         //make sure there are records to insert
                                         oAdo.m_strSQL = "SELECT COUNT(*) FROM " +
                                                          "(SELECT TOP 1 c.standid " +
-                                                          "FROM " + strCasesTable + " c," + strFVSOutTableLink + " t " +
+                                                          "FROM " + Tables.FVS.DefaultFVSCasesTableName + " c," + strFVSOutTableLink + " t " +
                                                           "WHERE c.CaseID = t.CaseID AND MID(t.treeid, 1, 2) = 'ES' )";
                                         if ((int)oAdo.getRecordCount(oConn, oAdo.m_strSQL, "temp") > 0)
                                         {
@@ -4263,7 +4262,7 @@ namespace FIA_Biosum_Manager
                                                    "t.Species AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht,t.estht,t.pctcr,t.TCuFt,'Y' AS FvsCreatedTree_YN," +
                                                    "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
                                                    "INTO cutlist_fvs_created_seedlings_work_table " +
-                                                   "FROM " + strCasesTable + " c," + strFVSOutTableLink + " t " +
+                                                   "FROM " + Tables.FVS.DefaultFVSCasesTableName + " c," + strFVSOutTableLink + " t " +
                                                    "WHERE c.CaseID = t.CaseID AND MID(t.treeid, 1, 2) = 'ES' ";
                                             }
                                             else
@@ -4282,7 +4281,7 @@ namespace FIA_Biosum_Manager
                                                    "t.Species AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht,t.estht,t.pctcr,t.TCuFt,'Y' AS FvsCreatedTree_YN," +
                                                    "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
                                                    "INTO cutlist_fvs_created_seedlings_work_table " +
-                                                   "FROM " + strCasesTable + " c," + strFVSOutTableLink + " t,cutlist_rowid_work_table r " +
+                                                   "FROM " + Tables.FVS.DefaultFVSCasesTableName + " c," + strFVSOutTableLink + " t,cutlist_rowid_work_table r " +
                                                    "WHERE c.CaseID = t.CaseID AND MID(t.treeid, 1, 2) = 'ES' AND " +
                                                          "(r.CaseId = t.CaseId AND r.StandId = t.StandId AND r.year = t.year AND r.treeid = t.treeid AND r.treeindex = t.treeindex) AND " +
                                                          "(r.CaseId = c.CaseId)";
@@ -4999,7 +4998,7 @@ namespace FIA_Biosum_Manager
                         //make sure there are records to insert
                         oDataMgr.m_strSQL = "SELECT COUNT(*) FROM " +
                             "(SELECT c.standid " +
-                            "FROM FVSOUT." + Tables.FVS.DefaultFVSCasesTableName + " c, FVSOUT." + strFVSOutTableLink + " t " +
+                            "FROM FVSOUT." + Tables.FVS.DefaultFVSCasesTempTableName + " c, FVSOUT." + strFVSOutTableLink + " t " +
                             "WHERE c.CaseID = t.CaseID AND c.RunTitle = '" + runTitle + "' AND " +
                             "substr(t.treeid, 1, 2) NOT IN ('ES') LIMIT 1)";
 
@@ -5019,7 +5018,7 @@ namespace FIA_Biosum_Manager
                                  "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
                                  "'N' AS FvsCreatedTree_YN," +
                                  "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
-                                 "FROM FVSOUT." + Tables.FVS.DefaultFVSCasesTableName + " c, FVSOUT." + strFVSOutTableLink + " t " +
+                                 "FROM FVSOUT." + Tables.FVS.DefaultFVSCasesTempTableName + " c, FVSOUT." + strFVSOutTableLink + " t " +
                                  "WHERE c.CaseID = t.CaseID AND c.RunTitle = '" + runTitle + "' AND SUBSTR(t.treeid, 1, 2) NOT IN ('ES') ";
 
                                  if (m_bDebug && frmMain.g_intDebugLevel > 2)
@@ -5061,7 +5060,7 @@ namespace FIA_Biosum_Manager
                                             //make sure there are records to insert
                                             oDataMgr.m_strSQL = "SELECT COUNT(*) FROM " +
                                                 "(SELECT c.standid " +
-                                                "FROM FVSOUT." + Tables.FVS.DefaultFVSCasesTableName + " c, FVSOUT." + strFVSOutTableLink + " t " +
+                                                "FROM FVSOUT." + Tables.FVS.DefaultFVSCasesTempTableName + " c, FVSOUT." + strFVSOutTableLink + " t " +
                                                 "WHERE c.CaseID = t.CaseID AND c.RunTitle = '" + runTitle + "' AND " +
                                                 "substr(t.treeid, 1, 2) = 'ES' LIMIT 1)";
 
@@ -5086,7 +5085,7 @@ namespace FIA_Biosum_Manager
                                                        "CASE WHEN t.dbh < 1.0 AND t.TPA > 0 THEN 1 ELSE null END AS STATUSCD, " +  
                                                        "'Y' AS FvsCreatedTree_YN," +
                                                        "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
-                                                       "FROM " + Tables.FVS.DefaultFVSCasesTableName + " c," + strFVSOutTableLink + " t " +
+                                                       "FROM " + Tables.FVS.DefaultFVSCasesTempTableName + " c," + strFVSOutTableLink + " t " +
                                                        "WHERE c.CaseID = t.CaseID AND c.RunTitle = '" + runTitle + "' AND substr(t.treeid, 1, 2) = 'ES'";
                                                 }
                                                 else
@@ -5104,7 +5103,7 @@ namespace FIA_Biosum_Manager
                                                        "CASE WHEN t.dbh < 1.0 AND t.TPA > 0 THEN 1 ELSE null END AS STATUSCD, " +  
                                                        "'Y' AS FvsCreatedTree_YN," +
                                                        "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
-                                                       "FROM FVSOUT." + Tables.FVS.DefaultFVSCasesTableName + " c," + strFVSOutTableLink + " t " +
+                                                       "FROM FVSOUT." + Tables.FVS.DefaultFVSCasesTempTableName + " c," + strFVSOutTableLink + " t " +
                                                        "WHERE c.CaseID = t.CaseID AND substr(t.treeid, 1, 2) = 'ES' AND " +
                                                        "c.RunTitle = '" + runTitle + "'";
                                                 }
@@ -6369,9 +6368,18 @@ namespace FIA_Biosum_Manager
                                         }
 
                                     }
-
-
                                 
+                            }
+
+                            // Delete temporary FVS_CASES_TEMP
+                            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                            {
+                                conn.Open();
+                                if (SQLite.TableExist(conn, Tables.FVS.DefaultFVSCasesTempTableName))
+                                {
+                                    SQLite.m_strSQL = $@"DROP TABLE {Tables.FVS.DefaultFVSCasesTempTableName}";
+                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                }
                             }
 
                             m_intProgressStepCurrentCount++;
@@ -11431,7 +11439,6 @@ namespace FIA_Biosum_Manager
             string strAuditDbFile;
             string strCurVariant = "";
             bool bUpdateCondTable = false;
-            string strFVSOutPrePostPathAndDbFile = "";
             ado_data_access oAdo = new ado_data_access();
             int intCount;
             string strRx1 = "";
@@ -11531,11 +11538,6 @@ namespace FIA_Biosum_Manager
                     UpdateTherm(m_frmTherm.progressBar1,
                                 m_intProgressStepCurrentCount,
                                 m_intProgressStepTotalCount);
-                    strFVSOutPrePostPathAndDbFile = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}{Tables.FVS.DefaultFVSOutPrePostDbFile}";
-                    if (System.IO.File.Exists(strFVSOutPrePostPathAndDbFile))
-                    {
-                        System.IO.File.Copy(strFVSOutPrePostPathAndDbFile, strFVSOutPrePostPathAndDbFile + "_" + strFileDate, true);
-                    }
 
                     m_intProgressStepCurrentCount++;
                     UpdateTherm(m_frmTherm.progressBar1,
@@ -11683,8 +11685,8 @@ namespace FIA_Biosum_Manager
 
                             if (uc_filesize_monitor1.File.Trim().Length == 0)
                             {
-                                uc_filesize_monitor1.BeginMonitoringFile(strFVSOutPrePostPathAndDbFile, 2000000000, "2GB");
-                                uc_filesize_monitor1.Information = "PREPOST_FVSOUT.db";
+                                uc_filesize_monitor1.BeginMonitoringFile(strTempDb, 2000000000, "2GB");
+                                uc_filesize_monitor1.Information = strTempDb;
                             }
 
                             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim());
@@ -11771,7 +11773,7 @@ namespace FIA_Biosum_Manager
                                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
                                 {
                                     conn.Open();
-                                    SQLite.m_strSQL = $@"UPDATE FVS_CASES SET {m_colBioSumAppend} ='Y'";
+                                    SQLite.m_strSQL = $@"UPDATE FVS_CASES SET {m_colBioSumAppend} ='Y' WHERE RunTitle = '{strRunTitle}'";
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                                     SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
@@ -11829,6 +11831,19 @@ namespace FIA_Biosum_Manager
 
                     }
                 }
+
+                string strFvsOutConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile);
+                // Delete temporary FVS_CASES_TEMP
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strFvsOutConn))
+                {
+                    conn.Open();
+                    if (SQLite.TableExist(conn, Tables.FVS.DefaultFVSCasesTempTableName))
+                    {
+                        SQLite.m_strSQL = $@"DROP TABLE {Tables.FVS.DefaultFVSCasesTempTableName}";
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                    }
+                }
+
 
                 UpdateTherm(m_frmTherm.progressBar1,
                            m_intProgressStepTotalCount,
