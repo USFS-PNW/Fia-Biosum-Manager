@@ -1606,6 +1606,8 @@ namespace FIA_Biosum_Manager
                         oGisTools.migrate_access_data();
                     }
                     bool bTablesHaveData = false;
+                    bool bUpdatePlotYardingDist = false;
+                    string strMessage = "";
                     //SQLite
                    bool bTablesExist = oGisTools.CheckForExistingDataSqlite(this.frmProject.uc_project1.m_strProjectDirectory, out bTablesHaveData);
                    bool bCreateBackups = false;
@@ -1621,8 +1623,8 @@ namespace FIA_Biosum_Manager
                         return;
                     }
                     if (bTablesHaveData == true)
-                   {
-                       string strMessage = "BioSum has found existing data in your gis data tables. Do you wish to overwrite existing data? " +
+                    {
+                       strMessage = "BioSum has found existing data in your gis data tables. Do you wish to overwrite existing data? " +
                            "This process cannot be reversed!!";
                        DialogResult res = MessageBox.Show(strMessage, "FIA BioSum", MessageBoxButtons.YesNo);
                        if (res != DialogResult.Yes)
@@ -1639,9 +1641,14 @@ namespace FIA_Biosum_Manager
                                bCreateBackups = true;
                            }
                        }
-
                    }
-                   this.ActivateStandByAnimation(
+                   strMessage = "Do you want to update the plot yarding distance from the plot_gis table in the master travel times database ?";
+                    DialogResult res2 = MessageBox.Show(strMessage, "FIA BioSum", MessageBoxButtons.YesNo);
+                    if (res2 != DialogResult.Yes)
+                    {
+                        bUpdatePlotYardingDist = true;
+                    }
+                    this.ActivateStandByAnimation(
                         this.WindowState,
                         this.Left,
                         this.Height,
@@ -1656,7 +1663,7 @@ namespace FIA_Biosum_Manager
                    }
                    if (bSuccess == true)
                    {
-                        int intRowCount = oGisTools.LoadSqliteGisData();
+                       int intRowCount = oGisTools.LoadSqliteGisData();
                        if (intRowCount < 1)
                        {
                            MessageBox.Show("An error occurred while loading the GIS data!!", "FIA BioSum");

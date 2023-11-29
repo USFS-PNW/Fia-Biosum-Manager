@@ -4203,6 +4203,7 @@ namespace FIA_Biosum_Manager
         private string m_strPlotTableName = "";
         private string m_masterFolder = frmMain.g_oEnv.strApplicationDataDirectory.Trim() + frmMain.g_strBiosumDataDir;
         dao_data_access m_oDao;
+        private string m_strTempAccdb;
         private SQLite.ADO.DataMgr _SQLite = new SQLite.ADO.DataMgr();
         public SQLite.ADO.DataMgr SQLite
         {
@@ -4563,8 +4564,8 @@ namespace FIA_Biosum_Manager
             if (SQLite.m_intError == 0)
             {
                 frmMain.g_sbpInfo.Text = "Creating temp database and table links...Stand by";
-                string strTempDb = CreateDBAndTableDataSourceLinks();
-                string strLoadConn = oAdo.getMDBConnString(strTempDb, "", "");
+                CreateDBAndTableDataSourceLinks();
+                string strLoadConn = oAdo.getMDBConnString(m_strTempAccdb, "", "");
                 string strSql = "";
                 using (var oLoadConn = new OleDbConnection(strLoadConn))
                 {
@@ -4614,8 +4615,14 @@ namespace FIA_Biosum_Manager
                             bExistsPlotGisTable = true;
                         }
                     }
-
-
+                }
+                if(!bExistsPlotGisTable)
+                {
+                    MessageBox.Show($@"The {Tables.TravelTime.DefaultPlotGisTableName} table is missing from the master travel times database. Plot yarding distances cannot be updated.", "FIA BioSum");
+                }
+                else if (oAdo.m_intError == 0 && bPlotRecords)
+                {
+                    //@ToDo: Code to update plot table
                 }
 
             }
@@ -4679,13 +4686,12 @@ namespace FIA_Biosum_Manager
             return strTempMDB;
         }
 
-        private string CreateDBAndTableDataSourceLinks()
+        private void CreateDBAndTableDataSourceLinks()
         {
-            string strTempMDB = "";
             //used to get the temporary random file name
             FIA_Biosum_Manager.utils oUtils = new FIA_Biosum_Manager.utils();
             env oEnv = new env();
-            strTempMDB = oUtils.getRandomFile(oEnv.strTempDir, "accdb");
+            m_strTempAccdb = oUtils.getRandomFile(oEnv.strTempDir, "accdb");
 
             //create a temporary mdb that will contain all 
             //the links to the scenario datasource tables
@@ -4693,7 +4699,7 @@ namespace FIA_Biosum_Manager
             {
                 m_oDao = new dao_data_access();
             }
-            m_oDao.CreateMDB(strTempMDB);
+            m_oDao.CreateMDB(m_strTempAccdb);
 
             // Create ODBC Data sources
             ODBCMgr odbcMgr = new ODBCMgr();
@@ -4712,17 +4718,19 @@ namespace FIA_Biosum_Manager
             {
                 odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.GisProjectDbDsnName, m_oProjectDs.getFullPathAndFile(Datasource.TableTypes.TravelTimes));
             }
-            m_oDao.CreateSQLiteTableLink(strTempMDB, strTableName, strTableName, ODBCMgr.DSN_KEYS.GisProjectDbDsnName, m_oProjectDs.getFullPathAndFile(Datasource.TableTypes.TravelTimes));
+            m_oDao.CreateSQLiteTableLink(m_strTempAccdb, strTableName, strTableName, ODBCMgr.DSN_KEYS.GisProjectDbDsnName, m_oProjectDs.getFullPathAndFile(Datasource.TableTypes.TravelTimes));
             intTable = m_oProjectDs.getTableNameRow(Datasource.TableTypes.ProcessingSites);
             strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
             strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
-            m_oDao.CreateSQLiteTableLink(strTempMDB, strTableName, strTableName, ODBCMgr.DSN_KEYS.GisProjectDbDsnName, m_oProjectDs.getFullPathAndFile(Datasource.TableTypes.ProcessingSites));
+            m_oDao.CreateSQLiteTableLink(m_strTempAccdb, strTableName, strTableName, ODBCMgr.DSN_KEYS.GisProjectDbDsnName, m_oProjectDs.getFullPathAndFile(Datasource.TableTypes.ProcessingSites));
 
             // Link to master travel times tables
             odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.GisMasterDbDsnName, $@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
-            m_oDao.CreateSQLiteTableLink(strTempMDB, Tables.TravelTime.DefaultTravelTimeTableName, m_strMasterTravelTime, 
+            m_oDao.CreateSQLiteTableLink(m_strTempAccdb, Tables.TravelTime.DefaultTravelTimeTableName, m_strMasterTravelTime, 
                 ODBCMgr.DSN_KEYS.GisMasterDbDsnName, $@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
-            m_oDao.CreateSQLiteTableLink(strTempMDB, Tables.TravelTime.DefaultProcessingSiteTableName, m_strMasterPSite,
+            m_oDao.CreateSQLiteTableLink(m_strTempAccdb, Tables.TravelTime.DefaultProcessingSiteTableName, m_strMasterPSite,
+                ODBCMgr.DSN_KEYS.GisMasterDbDsnName, $@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
+            m_oDao.CreateSQLiteTableLink(m_strTempAccdb, Tables.TravelTime.DefaultPlotGisTableName, Tables.TravelTime.DefaultPlotGisTableName,
                 ODBCMgr.DSN_KEYS.GisMasterDbDsnName, $@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
 
             //links to the project table we need
@@ -4737,7 +4745,7 @@ namespace FIA_Biosum_Manager
                 strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
                 if (strTableStatus == "F")
                 {
-                    m_oDao.CreateTableLink(strTempMDB, strTableName, strDirectoryPath + "\\" + strFileName, strTableName);
+                    m_oDao.CreateTableLink(m_strTempAccdb, strTableName, strDirectoryPath + "\\" + strFileName, strTableName);
                     if (strTableType.Equals(Datasource.TableTypes.Plot))
                     {
                         m_strPlotTableName = strTableName;
@@ -4750,7 +4758,6 @@ namespace FIA_Biosum_Manager
                 m_oDao.m_DaoWorkspace.Close();
                 m_oDao = null;
             }
-            return strTempMDB;
         }
 
         public void migrate_access_data()
