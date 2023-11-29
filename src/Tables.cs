@@ -4434,7 +4434,7 @@ namespace FIA_Biosum_Manager
             public string CreatePlotCondRxAuditTableSqliteSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "biosum_cond_id CHAR(25) PRIMARY KEY," +
+                    "biosum_cond_id CHAR(25)," +
                     "rxpackage CHAR(3)," +
                     "rx CHAR(3)," +
                     "rxcycle CHAR(1)," +

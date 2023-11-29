@@ -5300,11 +5300,13 @@ namespace FIA_Biosum_Manager
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
 					m_ado.SqlNonQuery(this.m_TempMDBFileConn,m_strSQL);
-					m_strSQL = "UPDATE validcombos_fvspost SET variable" + Convert.ToString(x + 1).Trim() + "_yn='N' WHERE variable" + Convert.ToString(x + 1).Trim() + "_yn IS NULL OR LEN(TRIM(variable" + Convert.ToString(x + 1).Trim() + "_yn))=0";
+                    m_strSQL = "UPDATE validcombos_fvspost SET variable" + Convert.ToString(x + 1).Trim() + "_yn='N' WHERE variable" + Convert.ToString(x + 1).Trim() + "_yn IS NULL";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
                     m_ado.SqlNonQuery(this.m_TempMDBFileConn, m_strSQL);
-					strWhere=strWhere + "b.variable" + Convert.ToString(x + 1).Trim() + "_yn <> 'N' AND ";
+                    m_strSQL = "UPDATE validcombos_fvspost SET variable" + Convert.ToString(x + 1).Trim() + "_yn='N' WHERE LEN(TRIM(variable" + Convert.ToString(x + 1).Trim() + "_yn))=0";
+                    m_ado.SqlNonQuery(this.m_TempMDBFileConn, m_strSQL);
+                    strWhere =strWhere + "b.variable" + Convert.ToString(x + 1).Trim() + "_yn <> 'N' AND ";
 
 				}
 
@@ -5315,11 +5317,13 @@ namespace FIA_Biosum_Manager
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
 					m_ado.SqlNonQuery(this.m_TempMDBFileConn,m_strSQL);
-					m_strSQL = "UPDATE validcombos_fvspre SET variable" + Convert.ToString(x + 1).Trim() + "_yn='N' WHERE variable" + Convert.ToString(x + 1).Trim() + "_yn IS NULL OR LEN(TRIM(variable" + Convert.ToString(x + 1).Trim() + "_yn))=0";
+					m_strSQL = "UPDATE validcombos_fvspre SET variable" + Convert.ToString(x + 1).Trim() + "_yn='N' WHERE variable" + Convert.ToString(x + 1).Trim() + "_yn IS NULL";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
 					m_ado.SqlNonQuery(this.m_TempMDBFileConn,m_strSQL);
-					strWhere=strWhere + "a.variable" + Convert.ToString(x + 1).Trim() + "_yn <> 'N' AND ";
+                    m_strSQL = "UPDATE validcombos_fvspre SET variable" + Convert.ToString(x + 1).Trim() + "_yn='N' WHERE LEN(TRIM(variable" + Convert.ToString(x + 1).Trim() + "_yn))=0";
+                    m_ado.SqlNonQuery(this.m_TempMDBFileConn, m_strSQL);
+                    strWhere =strWhere + "a.variable" + Convert.ToString(x + 1).Trim() + "_yn <> 'N' AND ";
 
 				}
 			}
@@ -5668,6 +5672,8 @@ namespace FIA_Biosum_Manager
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n--cond_rx_audit--\r\n");
                     //cycle1
+                    this.m_strSQL = "ALTER TABLE " + Tables.Audit.DefaultCondRxAuditTableName + " ADD PRIMARY KEY (biosum_cond_id)";
+                    this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
                     this.m_strSQL = "INSERT INTO " + Tables.Audit.DefaultCondRxAuditTableName + 
                          "(biosum_cond_id,rxpackage,rx,rxcycle)  " +
                          "SELECT a.biosum_cond_id, b.rxpackage,b.rx,b.rxcycle " +
