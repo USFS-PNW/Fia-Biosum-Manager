@@ -4211,7 +4211,6 @@ namespace FIA_Biosum_Manager
             set { _SQLite = value; }
         }
 
-
         public bool CheckForExistingData(string strReferenceProjectDirectory, out bool bTablesHaveData)
         {
             bool bExistingTables = false;
@@ -4623,6 +4622,10 @@ namespace FIA_Biosum_Manager
                 else if (oAdo.m_intError == 0 && bPlotRecords)
                 {
                     //@ToDo: Code to update plot table
+                    if (bExistsPlotGisTable)
+                    {
+
+                    }
                 }
 
             }
@@ -4711,6 +4714,10 @@ namespace FIA_Biosum_Manager
             {
                 odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.GisMasterDbDsnName);
             }
+            if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.GisAuditDbDsnName))
+            {
+                odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.GisAuditDbDsnName);
+            }
             int intTable = m_oProjectDs.getTableNameRow(Datasource.TableTypes.TravelTimes);
             string strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
             string strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
@@ -4726,12 +4733,26 @@ namespace FIA_Biosum_Manager
 
             // Link to master travel times tables
             odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.GisMasterDbDsnName, $@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
-            m_oDao.CreateSQLiteTableLink(m_strTempAccdb, Tables.TravelTime.DefaultTravelTimeTableName, m_strMasterTravelTime, 
-                ODBCMgr.DSN_KEYS.GisMasterDbDsnName, $@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
-            m_oDao.CreateSQLiteTableLink(m_strTempAccdb, Tables.TravelTime.DefaultProcessingSiteTableName, m_strMasterPSite,
-                ODBCMgr.DSN_KEYS.GisMasterDbDsnName, $@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
-            m_oDao.CreateSQLiteTableLink(m_strTempAccdb, Tables.TravelTime.DefaultPlotGisTableName, Tables.TravelTime.DefaultPlotGisTableName,
-                ODBCMgr.DSN_KEYS.GisMasterDbDsnName, $@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
+            string strMasterConn = SQLite.GetConnectionString($@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
+            using (var oMasterConn = new System.Data.SQLite.SQLiteConnection(strMasterConn))
+            {
+                oMasterConn.Open();
+                if (SQLite.TableExist(oMasterConn, Tables.TravelTime.DefaultTravelTimeTableName))
+                {
+                    m_oDao.CreateSQLiteTableLink(m_strTempAccdb, Tables.TravelTime.DefaultTravelTimeTableName, m_strMasterTravelTime,
+                        ODBCMgr.DSN_KEYS.GisMasterDbDsnName, $@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
+                }
+                if (SQLite.TableExist(oMasterConn, Tables.TravelTime.DefaultProcessingSiteTableName))
+                {
+                    m_oDao.CreateSQLiteTableLink(m_strTempAccdb, Tables.TravelTime.DefaultProcessingSiteTableName, m_strMasterPSite,
+                        ODBCMgr.DSN_KEYS.GisMasterDbDsnName, $@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
+                }
+                if (SQLite.TableExist(oMasterConn, Tables.TravelTime.DefaultTravelTimeTableName))
+                {
+                    m_oDao.CreateSQLiteTableLink(m_strTempAccdb, Tables.TravelTime.DefaultPlotGisTableName, Tables.TravelTime.DefaultPlotGisTableName,
+                        ODBCMgr.DSN_KEYS.GisMasterDbDsnName, $@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
+                }
+            }
 
             //links to the project table we need
             string[] arrTableTypes = { Datasource.TableTypes.Plot };
@@ -4750,6 +4771,29 @@ namespace FIA_Biosum_Manager
                     {
                         m_strPlotTableName = strTableName;
                     }
+                }
+            }
+
+            // Manage plot yarding distance audit table
+            string strAuditDBPath = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory}\{Tables.TravelTime.DefaultGisAuditPathAndDbFile}";
+            if (! System.IO.File.Exists(strAuditDBPath))
+            {
+                SQLite.CreateDbFile(strAuditDBPath);
+            }
+            string strAuditConn = SQLite.GetConnectionString(strAuditDBPath);
+            using (var oAuditConn = new System.Data.SQLite.SQLiteConnection(strAuditConn))
+            {
+                oAuditConn.Open();
+                if (SQLite.TableExist(oAuditConn, Tables.TravelTime.DefaultGisPlotDistanceAuditTable))
+                {
+                    SQLite.SqlNonQuery(oAuditConn, $@"DROP TABLE {Tables.TravelTime.DefaultGisPlotDistanceAuditTable}");
+                }
+                frmMain.g_oTables.m_oTravelTime.CreateSqliteProcessingSiteTable(SQLite, oAuditConn, strTableName);
+                if (SQLite.TableExist(oAuditConn, Tables.TravelTime.DefaultProcessingSiteTableName))
+                {
+                    odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.GisAuditDbDsnName, strAuditDBPath);
+                    m_oDao.CreateSQLiteTableLink(m_strTempAccdb, Tables.TravelTime.DefaultGisPlotDistanceAuditTable, Tables.TravelTime.DefaultGisPlotDistanceAuditTable,
+                        ODBCMgr.DSN_KEYS.GisAuditDbDsnName, strAuditDBPath);
                 }
             }
 
