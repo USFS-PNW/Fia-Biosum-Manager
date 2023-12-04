@@ -1663,7 +1663,7 @@ namespace FIA_Biosum_Manager
                    }
                    if (bSuccess == true)
                    {
-                       int intRowCount = oGisTools.LoadSqliteGisData();
+                       int intRowCount = oGisTools.LoadSqliteGisData(bUpdatePlotYardingDist);
                        if (intRowCount < 1)
                        {
                            MessageBox.Show("An error occurred while loading the GIS data!!", "FIA BioSum");

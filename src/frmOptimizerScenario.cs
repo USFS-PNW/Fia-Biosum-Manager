@@ -4512,7 +4512,7 @@ namespace FIA_Biosum_Manager
             return intRecordCount;
         }
 
-        public int LoadSqliteGisData()
+        public int LoadSqliteGisData(bool bUpdatePlotYardingDist)
         {
             m_oProjectDs.populate_datasource_array();
 
@@ -4619,10 +4619,10 @@ namespace FIA_Biosum_Manager
                 {
                     MessageBox.Show($@"The {Tables.TravelTime.DefaultPlotGisTableName} table is missing from the master travel times database. Plot yarding distances cannot be updated.", "FIA BioSum");
                 }
-                else if (oAdo.m_intError == 0 && bPlotRecords)
+                else if (oAdo.m_intError == 0 && bUpdatePlotYardingDist)
                 {
                     //@ToDo: Code to update plot table
-                    if (bExistsPlotGisTable)
+                    if (bExistsPlotGisTable && bPlotRecords)
                     {
 
                     }
@@ -4788,7 +4788,7 @@ namespace FIA_Biosum_Manager
                 {
                     SQLite.SqlNonQuery(oAuditConn, $@"DROP TABLE {Tables.TravelTime.DefaultGisPlotDistanceAuditTable}");
                 }
-                frmMain.g_oTables.m_oTravelTime.CreateSqliteProcessingSiteTable(SQLite, oAuditConn, strTableName);
+                frmMain.g_oTables.m_oTravelTime.CreateSqlitePlotDistanceAuditTable(SQLite, oAuditConn, Tables.TravelTime.DefaultGisPlotDistanceAuditTable);
                 if (SQLite.TableExist(oAuditConn, Tables.TravelTime.DefaultProcessingSiteTableName))
                 {
                     odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.GisAuditDbDsnName, strAuditDBPath);
