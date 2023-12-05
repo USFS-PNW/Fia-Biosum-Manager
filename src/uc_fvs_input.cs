@@ -851,7 +851,6 @@ namespace FIA_Biosum_Manager
             string strOutDirAndFile;
             string strConn;
             string[] strValues;
-            bool bFoundDsnOut;
             string strVariant = "";
             string strCurrentVariant = "";
             string strRecordCount = "";
@@ -886,28 +885,12 @@ namespace FIA_Biosum_Manager
                 this.m_ado.SqlQueryReader(m_ado.m_OleDbConnection, this.m_ado.m_strSQL);
 
 
-                //declare a registry key object
-                Microsoft.Win32.RegistryKey regKey; // new Microsoft.Win32 Registry Key 
-                Microsoft.Win32.RegistryKey regKey2;
-                // open the subkey that holds the current odbc data sources
-                regKey = Registry.CurrentUser.OpenSubKey(@"Software\ODBC\ODBC.Ini\Odbc data sources", false);
-                // get string name in string array
-                // then use getValue to get data value.
-                //save the odbc datasources in strDsnNames
-                string[] strDsnNames = regKey.GetValueNames(); // for the 1st time it's only 2 names
-
-                string strRegKey = "";
-
                 //Keep a count of records in FVS_StandInit and FVS_TreeInit tables in each variant
                 m_VariantCountsDict = new Dictionary<string, int[]>();
 
                 while (this.m_ado.m_OleDbDataReader.Read())
                 {
-                    strRegKey = "";
-                    bFoundDsnOut = false;
-
                     // Add a ListItem object to the ListView.
-
                     //add new row
                     System.Windows.Forms.ListViewItem entryListItem =
                         this.lstFvsInput.Items.Add("");
@@ -985,36 +968,6 @@ namespace FIA_Biosum_Manager
                         entryListItem.SubItems[COL_STANDCOUNT].Text = Convert.ToString(m_VariantCountsDict[strVariant][0]);
                         entryListItem.SubItems[COL_TREECOUNT].Text = Convert.ToString(m_VariantCountsDict[strVariant][1]);
                     }
-
-                    //check dsn out registry values
-                    foreach (string strDsnName in strDsnNames)
-                    {
-                        //dsn in
-                        //dsn out
-                        if (this.m_strDsnOut.Trim().ToUpper() == strDsnName.Trim().ToUpper() &&
-                            regKey.GetValue(strDsnName).ToString().Trim().ToUpper() ==
-                            "MICROSOFT ACCESS DRIVER (*.MDB)")
-                        {
-                            strRegKey = "Software\\ODBC\\ODBC.ini\\" + this.m_strDsnOut.Trim();
-                            regKey2 = Registry.CurrentUser.OpenSubKey(strRegKey, false);
-                            strValues = regKey2.GetValueNames(); // for the 1st time it's only 2 names
-                            foreach (string strValue in strValues)
-                            {
-                                if (strValue.Trim().ToUpper() == "DBQ")
-                                {
-                                    if (strOutDirAndFile.Trim().ToUpper() ==
-                                        regKey2.GetValue(strValue).ToString().Trim().ToUpper())
-                                    {
-                                        bFoundDsnOut = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-
-                        if (bFoundDsnOut == true) break;
-                    }
-
 
                     if (System.IO.File.Exists(strOutDirAndFile) == true)
                     {
@@ -1542,6 +1495,11 @@ namespace FIA_Biosum_Manager
                 if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName))
                 {
                     odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName);
+                }
+                // Also delete FIABIOSUM_PLOT_INPUT DSN as it may be pointing to the same database
+                if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.PlotInputDsnName))
+                {
+                    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.PlotInputDsnName);
                 }
                 odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName, p_fvsinput.strSourceFiaDb);
                 if (!string.IsNullOrEmpty(odbcmgr.m_strError))
