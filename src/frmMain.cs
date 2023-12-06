@@ -1644,7 +1644,7 @@ namespace FIA_Biosum_Manager
                    }
                    strMessage = "Do you want to update the plot yarding distance from the plot_gis table in the master travel times database ?";
                     DialogResult res2 = MessageBox.Show(strMessage, "FIA BioSum", MessageBoxButtons.YesNo);
-                    if (res2 != DialogResult.Yes)
+                    if (res2 == DialogResult.Yes)
                     {
                         bUpdatePlotYardingDist = true;
                     }

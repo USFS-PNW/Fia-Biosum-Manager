@@ -4194,7 +4194,7 @@ namespace FIA_Biosum_Manager
 
             public void CreateSqlitePlotDistanceAuditTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
-                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteTravelTimeTableSQL(p_strTableName));
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqlitePlotDistanceAuditTableSQL(p_strTableName));
             }
             public string CreateSqlitePlotDistanceAuditTableSQL(string p_strTableName)
             {

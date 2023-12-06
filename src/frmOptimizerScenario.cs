@@ -4624,8 +4624,25 @@ namespace FIA_Biosum_Manager
                     //@ToDo: Code to update plot table
                     if (bExistsPlotGisTable && bPlotRecords)
                     {
+                        frmMain.g_sbpInfo.Text = "Updating yarding distances on plot table...Stand by";
+                        using (var oLoadConn = new OleDbConnection(strLoadConn))
+                        {
+                            oLoadConn.Open();
+                            // Access wants a primary key so that we can update the plot table from plot_gis
+                            oAdo.AddPrimaryKey(oLoadConn, Tables.TravelTime.DefaultPlotGisTableName, $@"{Tables.TravelTime.DefaultPlotGisTableName}_pk", "PLOT,STATECD");
 
+                            // Run audit before performing the update
+                            strSql = $@"INSERT INTO {Tables.TravelTime.DefaultGisPlotDistanceAuditTable} SELECT biosum_plot_id, PT.statecd, PT.plot, gis_yard_dist_ft, NEARDIST_FT
+                                FROM {m_strPlotTableName} PT LEFT JOIN {Tables.TravelTime.DefaultPlotGisTableName} PG ON (PT.statecd = PG.statecd) AND (PT.plot = PG.PLOT)
+                                WHERE NEARDIST_FT IS NULL";
+                            oAdo.SqlNonQuery(oLoadConn, strSql);
+
+                            strSql = $@"UPDATE {m_strPlotTableName} PT INNER JOIN {Tables.TravelTime.DefaultPlotGisTableName} PG ON 
+                                PT.PLOT = PG.PLOT AND PT.STATECD = PG.STATECD SET GIS_YARD_DIST_FT = NEARDIST_FT";
+                            oAdo.SqlNonQuery(oLoadConn, strSql);
+                        }
                     }
+
                 }
 
             }
@@ -4776,10 +4793,6 @@ namespace FIA_Biosum_Manager
 
             // Manage plot yarding distance audit table
             string strAuditDBPath = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory}\{Tables.TravelTime.DefaultGisAuditPathAndDbFile}";
-            if (! System.IO.File.Exists(strAuditDBPath))
-            {
-                SQLite.CreateDbFile(strAuditDBPath);
-            }
             string strAuditConn = SQLite.GetConnectionString(strAuditDBPath);
             using (var oAuditConn = new System.Data.SQLite.SQLiteConnection(strAuditConn))
             {
@@ -4789,7 +4802,7 @@ namespace FIA_Biosum_Manager
                     SQLite.SqlNonQuery(oAuditConn, $@"DROP TABLE {Tables.TravelTime.DefaultGisPlotDistanceAuditTable}");
                 }
                 frmMain.g_oTables.m_oTravelTime.CreateSqlitePlotDistanceAuditTable(SQLite, oAuditConn, Tables.TravelTime.DefaultGisPlotDistanceAuditTable);
-                if (SQLite.TableExist(oAuditConn, Tables.TravelTime.DefaultProcessingSiteTableName))
+                if (SQLite.TableExist(oAuditConn, Tables.TravelTime.DefaultGisPlotDistanceAuditTable))
                 {
                     odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.GisAuditDbDsnName, strAuditDBPath);
                     m_oDao.CreateSQLiteTableLink(m_strTempAccdb, Tables.TravelTime.DefaultGisPlotDistanceAuditTable, Tables.TravelTime.DefaultGisPlotDistanceAuditTable,
@@ -4812,6 +4825,13 @@ namespace FIA_Biosum_Manager
             {
                 SQLite.CreateDbFile(gisPathAndDbFile);
             }
+            // Create audit db
+           string strAuditDBPath = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory}\{Tables.TravelTime.DefaultGisAuditPathAndDbFile}";
+            if (!System.IO.File.Exists(strAuditDBPath))
+            {
+                SQLite.CreateDbFile(strAuditDBPath);
+            }
+
             // Create target tables in new database
             string strCopyConn = SQLite.GetConnectionString(gisPathAndDbFile);
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strCopyConn))

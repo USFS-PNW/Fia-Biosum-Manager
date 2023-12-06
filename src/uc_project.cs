@@ -913,11 +913,10 @@ namespace FIA_Biosum_Manager
 				//
 				//travel times file and tables
 				//
-				p_frmTherm.Increment(2);
 				p_frmTherm.lblMsg.Text = strDestFile;
                 strDestFile = this.txtRootDirectory.Text.Trim() + "\\" + Tables.TravelTime.DefaultTravelTimePathAndDbFile;
-				p_frmTherm.Increment(2);
-				p_frmTherm.lblMsg.Text = strDestFile;
+                p_frmTherm.Increment(2);
+                p_frmTherm.lblMsg.Text = strDestFile;
 				p_frmTherm.lblMsg.Refresh();
                 p_dataMgr.CreateDbFile(strDestFile);
 				strConn = p_dataMgr.GetConnectionString(strDestFile);
@@ -929,6 +928,9 @@ namespace FIA_Biosum_Manager
                     //travel time table
                     frmMain.g_oTables.m_oTravelTime.CreateSqliteTravelTimeTable(p_dataMgr, oConn, Tables.TravelTime.DefaultTravelTimeTableName);
                 }
+                strDestFile = this.txtRootDirectory.Text.Trim() + "\\" + Tables.TravelTime.DefaultGisAuditPathAndDbFile;
+                p_dataMgr.CreateDbFile(strDestFile);
+
                 //
                 //master file
                 //
