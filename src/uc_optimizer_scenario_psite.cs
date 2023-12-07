@@ -644,10 +644,10 @@ namespace FIA_Biosum_Manager
 								{
 									this.m_Combo.Text = "Rail Collector - PSite With Both Road And Rail Access";
 								}
-								m_Combo.SelectedIndexChanged += new EventHandler(m_Combo_SelectedIndexChanged);
-								this.lstPSites.AddEmbeddedControl(m_Combo, COLUMN_PSITEROADRAIL, x);
-							}
-						}
+                                m_Combo.SelectedIndexChanged += new EventHandler(m_Combo_SelectedIndexChanged);
+                                this.lstPSites.AddEmbeddedControl(m_Combo, COLUMN_PSITEROADRAIL, x);
+                            }
+                        }
 						else
 						{
 							this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Processing Site - Road Access Only");
@@ -664,43 +664,64 @@ namespace FIA_Biosum_Manager
 						/***********************************************
 						 **site bio processing type
 						 ***********************************************/
-						this.m_Combo = new ComboBox();
-						m_Combo.Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
-						this.m_Combo.Items.Add("Merchantable - Logs Only");
-						this.m_Combo.Items.Add("Chips - Chips Only");
-						this.m_Combo.Items.Add("Both - Logs And Chips");
+						//this.m_Combo = new ComboBox();
+						//m_Combo.Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+						//this.m_Combo.Items.Add("Merchantable - Logs Only");
+						//this.m_Combo.Items.Add("Chips - Chips Only");
+						//this.m_Combo.Items.Add("Both - Logs And Chips");
+						//if (p_ado.m_OleDbDataReader["biocd"] != System.DBNull.Value)
+						//{
+						//	byteBioCd = Convert.ToByte(p_ado.m_OleDbDataReader["biocd"]);
+						//	switch (byteBioCd)
+						//	{
+						//		case 1:
+						//			this.m_Combo.Text = "Merchantable - Logs Only";
+						//			break;
+						//		case 2:
+						//			this.m_Combo.Text = "Chips - Chips Only";
+						//			break;
+						//		case 3:
+						//			this.m_Combo.Text = "Both - Logs And Chips";
+						//			break;
+						//	}
+						//}
+						//else
+						//{
+						//	this.m_Combo.Text = "Both - Logs And Chips";
+						//}
+						//                  this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(" ");
+						//                  intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+						//                  this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+
+						//                  this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
+						//                      COLUMN_PSITEBIOPROCESSTYPE,
+						//                      lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITEBIOPROCESSTYPE], false);
+						//                  m_Combo.SelectedIndexChanged += new EventHandler(m_Combo_SelectedIndexChanged);
+						//                  this.lstPSites.AddEmbeddedControl(m_Combo, COLUMN_PSITEBIOPROCESSTYPE, x);
+
 						if (p_ado.m_OleDbDataReader["biocd"] != System.DBNull.Value)
 						{
-							byteBioCd = Convert.ToByte(p_ado.m_OleDbDataReader["biocd"]);
-							switch (byteBioCd)
+							if (p_ado.m_OleDbDataReader["biocd"].ToString().Trim() == "1")
 							{
-								case 1:
-									this.m_Combo.Text = "Merchantable - Logs Only";
-									break;
-								case 2:
-									this.m_Combo.Text = "Chips - Chips Only";
-									break;
-								case 3:
-									this.m_Combo.Text = "Both - Logs And Chips";
-									break;
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Merchantable - Logs Only");
+
+							}
+							else if (p_ado.m_OleDbDataReader["biocd"].ToString().Trim() == "2")
+							{
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Chips - Chips Only");
+							}
+							else if(p_ado.m_OleDbDataReader["biocd"].ToString().Trim() == "3")
+							{
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Both - Logs And Chips");
 							}
 						}
 						else
 						{
-							this.m_Combo.Text = "Both - Logs And Chips";
+							this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Both - Logs And Chips");
 						}
-						this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(" ");
-						intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
-						this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
-
 						this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
 							COLUMN_PSITEBIOPROCESSTYPE,
 							lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITEBIOPROCESSTYPE], false);
-						m_Combo.SelectedIndexChanged += new EventHandler(m_Combo_SelectedIndexChanged);
-						this.lstPSites.AddEmbeddedControl(m_Combo, COLUMN_PSITEBIOPROCESSTYPE, x);
-
-
-
 						x++;
 					}
 				}
@@ -761,24 +782,24 @@ namespace FIA_Biosum_Manager
 
 									}
 								}
-								if (p_ado.m_OleDbDataReader["biocd"] != System.DBNull.Value)
-								{
-									byteBioCd = Convert.ToByte(p_ado.m_OleDbDataReader["biocd"]);
-									this.m_Combo = (System.Windows.Forms.ComboBox)this.lstPSites.GetEmbeddedControl(COLUMN_PSITEBIOPROCESSTYPE, x);
-									switch (byteBioCd)
-									{
-										case 1:
-											this.m_Combo.Text = "Merchantable - Logs Only";
-											break;
-										case 2:
-											this.m_Combo.Text = "Chips - Chips Only";
-											break;
-										case 3:
-											this.m_Combo.Text = "Both - Logs And Chips";
-											break;
-									}
+								//if (p_ado.m_OleDbDataReader["biocd"] != System.DBNull.Value)
+								//{
+								//	byteBioCd = Convert.ToByte(p_ado.m_OleDbDataReader["biocd"]);
+								//	this.m_Combo = (System.Windows.Forms.ComboBox)this.lstPSites.GetEmbeddedControl(COLUMN_PSITEBIOPROCESSTYPE, x);
+								//	switch (byteBioCd)
+								//	{
+								//		case 1:
+								//			this.m_Combo.Text = "Merchantable - Logs Only";
+								//			break;
+								//		case 2:
+								//			this.m_Combo.Text = "Chips - Chips Only";
+								//			break;
+								//		case 3:
+								//			this.m_Combo.Text = "Both - Logs And Chips";
+								//			break;
+								//	}
 
-								}
+								//}
 							}
 						}
 
@@ -1066,7 +1087,7 @@ namespace FIA_Biosum_Manager
 			this.groupBox1.BackColor = System.Drawing.SystemColors.Control;
 			this.groupBox1.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("groupBox1.BackgroundImage")));
 			this.groupBox1.Controls.Add(this.lblTitle);
-			this.groupBox1.Controls.Add(this.btnScenarioPSiteUpdate);
+			//this.groupBox1.Controls.Add(this.btnScenarioPSiteUpdate);
 			this.groupBox1.Controls.Add(this.btnUnselectAll);
 			this.groupBox1.Controls.Add(this.btnSelectAll);
 			this.groupBox1.Controls.Add(this.btnScenarioPSiteDefault);
@@ -1112,31 +1133,31 @@ namespace FIA_Biosum_Manager
 			// 
 			// btnScenarioPSiteUpdate
 			// 
-			this.btnScenarioPSiteUpdate.AccessibleDescription = resources.GetString("btnScenarioPSiteUpdate.AccessibleDescription");
-			this.btnScenarioPSiteUpdate.AccessibleName = resources.GetString("btnScenarioPSiteUpdate.AccessibleName");
-			this.btnScenarioPSiteUpdate.Anchor = ((System.Windows.Forms.AnchorStyles)(resources.GetObject("btnScenarioPSiteUpdate.Anchor")));
-			this.btnScenarioPSiteUpdate.BackColor = System.Drawing.SystemColors.Control;
-			this.btnScenarioPSiteUpdate.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnScenarioPSiteUpdate.BackgroundImage")));
-			this.btnScenarioPSiteUpdate.Dock = ((System.Windows.Forms.DockStyle)(resources.GetObject("btnScenarioPSiteUpdate.Dock")));
-			this.btnScenarioPSiteUpdate.Enabled = ((bool)(resources.GetObject("btnScenarioPSiteUpdate.Enabled")));
-			this.btnScenarioPSiteUpdate.FlatStyle = ((System.Windows.Forms.FlatStyle)(resources.GetObject("btnScenarioPSiteUpdate.FlatStyle")));
-			this.btnScenarioPSiteUpdate.Font = ((System.Drawing.Font)(resources.GetObject("btnScenarioPSiteUpdate.Font")));
-			this.btnScenarioPSiteUpdate.ForeColor = System.Drawing.Color.Black;
-			this.btnScenarioPSiteUpdate.Image = ((System.Drawing.Image)(resources.GetObject("btnScenarioPSiteUpdate.Image")));
-			this.btnScenarioPSiteUpdate.ImageAlign = ((System.Drawing.ContentAlignment)(resources.GetObject("btnScenarioPSiteUpdate.ImageAlign")));
-			this.btnScenarioPSiteUpdate.ImageIndex = ((int)(resources.GetObject("btnScenarioPSiteUpdate.ImageIndex")));
-			this.btnScenarioPSiteUpdate.ImeMode = ((System.Windows.Forms.ImeMode)(resources.GetObject("btnScenarioPSiteUpdate.ImeMode")));
-			this.btnScenarioPSiteUpdate.Location = ((System.Drawing.Point)(resources.GetObject("btnScenarioPSiteUpdate.Location")));
-			this.btnScenarioPSiteUpdate.Name = "btnScenarioPSiteUpdate";
-			this.btnScenarioPSiteUpdate.RightToLeft = ((System.Windows.Forms.RightToLeft)(resources.GetObject("btnScenarioPSiteUpdate.RightToLeft")));
-			this.btnScenarioPSiteUpdate.Size = ((System.Drawing.Size)(resources.GetObject("btnScenarioPSiteUpdate.Size")));
-			this.btnScenarioPSiteUpdate.TabIndex = ((int)(resources.GetObject("btnScenarioPSiteUpdate.TabIndex")));
-			this.btnScenarioPSiteUpdate.Tag = "";
-			this.btnScenarioPSiteUpdate.Text = resources.GetString("btnScenarioPSiteUpdate.Text");
-			this.btnScenarioPSiteUpdate.TextAlign = ((System.Drawing.ContentAlignment)(resources.GetObject("btnScenarioPSiteUpdate.TextAlign")));
-			this.toolTip1.SetToolTip(this.btnScenarioPSiteUpdate, resources.GetString("btnScenarioPSiteUpdate.ToolTip"));
-			this.btnScenarioPSiteUpdate.Visible = ((bool)(resources.GetObject("btnScenarioPSiteUpdate.Visible")));
-			this.btnScenarioPSiteUpdate.Click += new System.EventHandler(this.btnScenarioPSiteUpdate_Click);
+			//this.btnScenarioPSiteUpdate.AccessibleDescription = resources.GetString("btnScenarioPSiteUpdate.AccessibleDescription");
+			//this.btnScenarioPSiteUpdate.AccessibleName = resources.GetString("btnScenarioPSiteUpdate.AccessibleName");
+			//this.btnScenarioPSiteUpdate.Anchor = ((System.Windows.Forms.AnchorStyles)(resources.GetObject("btnScenarioPSiteUpdate.Anchor")));
+			//this.btnScenarioPSiteUpdate.BackColor = System.Drawing.SystemColors.Control;
+			//this.btnScenarioPSiteUpdate.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnScenarioPSiteUpdate.BackgroundImage")));
+			//this.btnScenarioPSiteUpdate.Dock = ((System.Windows.Forms.DockStyle)(resources.GetObject("btnScenarioPSiteUpdate.Dock")));
+			//this.btnScenarioPSiteUpdate.Enabled = ((bool)(resources.GetObject("btnScenarioPSiteUpdate.Enabled")));
+			//this.btnScenarioPSiteUpdate.FlatStyle = ((System.Windows.Forms.FlatStyle)(resources.GetObject("btnScenarioPSiteUpdate.FlatStyle")));
+			//this.btnScenarioPSiteUpdate.Font = ((System.Drawing.Font)(resources.GetObject("btnScenarioPSiteUpdate.Font")));
+			//this.btnScenarioPSiteUpdate.ForeColor = System.Drawing.Color.Black;
+			//this.btnScenarioPSiteUpdate.Image = ((System.Drawing.Image)(resources.GetObject("btnScenarioPSiteUpdate.Image")));
+			//this.btnScenarioPSiteUpdate.ImageAlign = ((System.Drawing.ContentAlignment)(resources.GetObject("btnScenarioPSiteUpdate.ImageAlign")));
+			//this.btnScenarioPSiteUpdate.ImageIndex = ((int)(resources.GetObject("btnScenarioPSiteUpdate.ImageIndex")));
+			//this.btnScenarioPSiteUpdate.ImeMode = ((System.Windows.Forms.ImeMode)(resources.GetObject("btnScenarioPSiteUpdate.ImeMode")));
+			//this.btnScenarioPSiteUpdate.Location = ((System.Drawing.Point)(resources.GetObject("btnScenarioPSiteUpdate.Location")));
+			//this.btnScenarioPSiteUpdate.Name = "btnScenarioPSiteUpdate";
+			//this.btnScenarioPSiteUpdate.RightToLeft = ((System.Windows.Forms.RightToLeft)(resources.GetObject("btnScenarioPSiteUpdate.RightToLeft")));
+			//this.btnScenarioPSiteUpdate.Size = ((System.Drawing.Size)(resources.GetObject("btnScenarioPSiteUpdate.Size")));
+			//this.btnScenarioPSiteUpdate.TabIndex = ((int)(resources.GetObject("btnScenarioPSiteUpdate.TabIndex")));
+			//this.btnScenarioPSiteUpdate.Tag = "";
+			//this.btnScenarioPSiteUpdate.Text = resources.GetString("btnScenarioPSiteUpdate.Text");
+			//this.btnScenarioPSiteUpdate.TextAlign = ((System.Drawing.ContentAlignment)(resources.GetObject("btnScenarioPSiteUpdate.TextAlign")));
+			//this.toolTip1.SetToolTip(this.btnScenarioPSiteUpdate, resources.GetString("btnScenarioPSiteUpdate.ToolTip"));
+			//this.btnScenarioPSiteUpdate.Visible = ((bool)(resources.GetObject("btnScenarioPSiteUpdate.Visible")));
+			//this.btnScenarioPSiteUpdate.Click += new System.EventHandler(this.btnScenarioPSiteUpdate_Click);
 			// 
 			// btnUnselectAll
 			// 

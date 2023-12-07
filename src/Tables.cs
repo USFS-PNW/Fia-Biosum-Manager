@@ -4440,7 +4440,8 @@ namespace FIA_Biosum_Manager
                     "rxcycle CHAR(1)," +
                     "fvs_prepost_variables_yn CHAR(1)," +
                     "processor_tree_vol_val_yn CHAR(1)," +
-                    "harvest_costs_yn CHAR(1))";
+                    "harvest_costs_yn CHAR(1)," +
+                    "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
             }
 
         }
