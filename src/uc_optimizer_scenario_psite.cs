@@ -1215,31 +1215,31 @@ namespace FIA_Biosum_Manager
 			// 
 			// btnScenarioPSiteDefault
 			// 
-			this.btnScenarioPSiteDefault.AccessibleDescription = resources.GetString("btnScenarioPSiteDefault.AccessibleDescription");
-			this.btnScenarioPSiteDefault.AccessibleName = resources.GetString("btnScenarioPSiteDefault.AccessibleName");
-			this.btnScenarioPSiteDefault.Anchor = ((System.Windows.Forms.AnchorStyles)(resources.GetObject("btnScenarioPSiteDefault.Anchor")));
-			this.btnScenarioPSiteDefault.BackColor = System.Drawing.SystemColors.Control;
-			this.btnScenarioPSiteDefault.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnScenarioPSiteDefault.BackgroundImage")));
-			this.btnScenarioPSiteDefault.Dock = ((System.Windows.Forms.DockStyle)(resources.GetObject("btnScenarioPSiteDefault.Dock")));
-			this.btnScenarioPSiteDefault.Enabled = ((bool)(resources.GetObject("btnScenarioPSiteDefault.Enabled")));
-			this.btnScenarioPSiteDefault.FlatStyle = ((System.Windows.Forms.FlatStyle)(resources.GetObject("btnScenarioPSiteDefault.FlatStyle")));
-			this.btnScenarioPSiteDefault.Font = ((System.Drawing.Font)(resources.GetObject("btnScenarioPSiteDefault.Font")));
-			this.btnScenarioPSiteDefault.ForeColor = System.Drawing.Color.Black;
-			this.btnScenarioPSiteDefault.Image = ((System.Drawing.Image)(resources.GetObject("btnScenarioPSiteDefault.Image")));
-			this.btnScenarioPSiteDefault.ImageAlign = ((System.Drawing.ContentAlignment)(resources.GetObject("btnScenarioPSiteDefault.ImageAlign")));
-			this.btnScenarioPSiteDefault.ImageIndex = ((int)(resources.GetObject("btnScenarioPSiteDefault.ImageIndex")));
-			this.btnScenarioPSiteDefault.ImeMode = ((System.Windows.Forms.ImeMode)(resources.GetObject("btnScenarioPSiteDefault.ImeMode")));
-			this.btnScenarioPSiteDefault.Location = ((System.Drawing.Point)(resources.GetObject("btnScenarioPSiteDefault.Location")));
-			this.btnScenarioPSiteDefault.Name = "btnScenarioPSiteDefault";
-			this.btnScenarioPSiteDefault.RightToLeft = ((System.Windows.Forms.RightToLeft)(resources.GetObject("btnScenarioPSiteDefault.RightToLeft")));
-			this.btnScenarioPSiteDefault.Size = ((System.Drawing.Size)(resources.GetObject("btnScenarioPSiteDefault.Size")));
-			this.btnScenarioPSiteDefault.TabIndex = ((int)(resources.GetObject("btnScenarioPSiteDefault.TabIndex")));
-			this.btnScenarioPSiteDefault.Tag = "";
-			this.btnScenarioPSiteDefault.Text = resources.GetString("btnScenarioPSiteDefault.Text");
-			this.btnScenarioPSiteDefault.TextAlign = ((System.Drawing.ContentAlignment)(resources.GetObject("btnScenarioPSiteDefault.TextAlign")));
-			this.toolTip1.SetToolTip(this.btnScenarioPSiteDefault, resources.GetString("btnScenarioPSiteDefault.ToolTip"));
-			this.btnScenarioPSiteDefault.Visible = ((bool)(resources.GetObject("btnScenarioPSiteDefault.Visible")));
-			this.btnScenarioPSiteDefault.Click += new System.EventHandler(this.btnScenarioPSiteDefault_Click);
+			////this.btnScenarioPSiteDefault.AccessibleDescription = resources.GetString("btnScenarioPSiteDefault.AccessibleDescription");
+			////this.btnScenarioPSiteDefault.AccessibleName = resources.GetString("btnScenarioPSiteDefault.AccessibleName");
+			////this.btnScenarioPSiteDefault.Anchor = ((System.Windows.Forms.AnchorStyles)(resources.GetObject("btnScenarioPSiteDefault.Anchor")));
+			////this.btnScenarioPSiteDefault.BackColor = System.Drawing.SystemColors.Control;
+			////this.btnScenarioPSiteDefault.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnScenarioPSiteDefault.BackgroundImage")));
+			////this.btnScenarioPSiteDefault.Dock = ((System.Windows.Forms.DockStyle)(resources.GetObject("btnScenarioPSiteDefault.Dock")));
+			////this.btnScenarioPSiteDefault.Enabled = ((bool)(resources.GetObject("btnScenarioPSiteDefault.Enabled")));
+			////this.btnScenarioPSiteDefault.FlatStyle = ((System.Windows.Forms.FlatStyle)(resources.GetObject("btnScenarioPSiteDefault.FlatStyle")));
+			////this.btnScenarioPSiteDefault.Font = ((System.Drawing.Font)(resources.GetObject("btnScenarioPSiteDefault.Font")));
+			////this.btnScenarioPSiteDefault.ForeColor = System.Drawing.Color.Black;
+			////this.btnScenarioPSiteDefault.Image = ((System.Drawing.Image)(resources.GetObject("btnScenarioPSiteDefault.Image")));
+			////this.btnScenarioPSiteDefault.ImageAlign = ((System.Drawing.ContentAlignment)(resources.GetObject("btnScenarioPSiteDefault.ImageAlign")));
+			////this.btnScenarioPSiteDefault.ImageIndex = ((int)(resources.GetObject("btnScenarioPSiteDefault.ImageIndex")));
+			////this.btnScenarioPSiteDefault.ImeMode = ((System.Windows.Forms.ImeMode)(resources.GetObject("btnScenarioPSiteDefault.ImeMode")));
+			////this.btnScenarioPSiteDefault.Location = ((System.Drawing.Point)(resources.GetObject("btnScenarioPSiteDefault.Location")));
+			////this.btnScenarioPSiteDefault.Name = "btnScenarioPSiteDefault";
+			////this.btnScenarioPSiteDefault.RightToLeft = ((System.Windows.Forms.RightToLeft)(resources.GetObject("btnScenarioPSiteDefault.RightToLeft")));
+			////this.btnScenarioPSiteDefault.Size = ((System.Drawing.Size)(resources.GetObject("btnScenarioPSiteDefault.Size")));
+			////this.btnScenarioPSiteDefault.TabIndex = ((int)(resources.GetObject("btnScenarioPSiteDefault.TabIndex")));
+			////this.btnScenarioPSiteDefault.Tag = "";
+			////this.btnScenarioPSiteDefault.Text = resources.GetString("btnScenarioPSiteDefault.Text");
+			////this.btnScenarioPSiteDefault.TextAlign = ((System.Drawing.ContentAlignment)(resources.GetObject("btnScenarioPSiteDefault.TextAlign")));
+			////this.toolTip1.SetToolTip(this.btnScenarioPSiteDefault, resources.GetString("btnScenarioPSiteDefault.ToolTip"));
+			////this.btnScenarioPSiteDefault.Visible = ((bool)(resources.GetObject("btnScenarioPSiteDefault.Visible")));
+			////this.btnScenarioPSiteDefault.Click += new System.EventHandler(this.btnScenarioPSiteDefault_Click);
 			// 
 			// listView1
 			// 
