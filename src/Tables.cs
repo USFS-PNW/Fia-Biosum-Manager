@@ -2739,6 +2739,7 @@ namespace FIA_Biosum_Manager
             static public string DefaultPreFVSComputeDbFile { get { return @"\fvs\db\PREPOST_FVS_COMPUTE.ACCDB"; } }
             static public string DefaultFVSComputeTableName { get { return "FVS_COMPUTE"; } }
             static public string DefaultFVSCasesTableName { get { return "FVS_CASES"; } }
+            static public string DefaultFVSCasesTempTableName { get { return "FVS_CASES_TEMP"; } }
             static public string DefaultFVSSummaryTableName { get { return "FVS_SUMMARY"; } }
             static public string DefaultFVSCutListTableName { get { return "FVS_CUTLIST"; } }
             static public string DefaultFVSPotFireTableName { get { return "FVS_POTFIRE"; } }
@@ -4059,7 +4060,8 @@ namespace FIA_Biosum_Manager
                                 "StandID VARCHAR(255), " +
                                 "Year INTEGER, " +
                                 "fvs_variant CHAR(2), " +
-                                "rxPackage CHAR(3))";
+                                "rxPackage CHAR(3), " +
+                                "PRIMARY KEY (StandID, Year, fvs_variant, rxPackage))";
                     }
                 }
             }
@@ -4242,8 +4244,9 @@ namespace FIA_Biosum_Manager
             public static string DefaultTravelTimeDbFile { get { return "gis_travel_times.db"; } }
             public static string DefaultTravelTimePathAndDbFile { get { return @"gis\db\" + DefaultTravelTimeDbFile; } }
             public static string DefaultPlotGisTableName { get { return "plot_gis"; } }
-
-
+            public static string DefaultGisAuditDbFile { get { return "gis_audit.db"; } }
+            public static string DefaultGisAuditPathAndDbFile { get { return @"gis\db\" + DefaultGisAuditDbFile; } }
+            public static string DefaultGisPlotDistanceAuditTable { get { return "plot_distance_audit"; } }
 
             public TravelTime()
             {
@@ -4356,6 +4359,20 @@ namespace FIA_Biosum_Manager
                     "ONE_WAY_HOURS DOUBLE," +
                     "PLOT INTEGER," +
                     "STATECD INTEGER)";
+            }
+
+            public void CreateSqlitePlotDistanceAuditTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqlitePlotDistanceAuditTableSQL(p_strTableName));
+            }
+            public string CreateSqlitePlotDistanceAuditTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "BIOSUM_PLOT_ID CHAR(24)," +
+                    "PLOT INTEGER," +
+                    "STATECD INTEGER," +
+                    "GIS_YARD_DIST_FT DOUBLE," +
+                    "NEARDIST_FT DOUBLE)";
             }
         }
         public class Audit

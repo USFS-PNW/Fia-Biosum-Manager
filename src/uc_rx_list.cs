@@ -4098,7 +4098,7 @@ namespace FIA_Biosum_Manager
                                 dataMgr.SqlNonQuery(conn, $@"DROP TABLE {tmpTableName}");
                             }
                             dataMgr.m_strSQL = $@"CREATE TABLE {tmpTableName} AS select s.standid, year, '{p_strRunTitle.Substring(7, 2)}' as fvs_variant, '{p_strRunTitle.Substring(11, 3)}' as rxpackage from 
-                                FVS_SUMMARY s, {Tables.FVS.DefaultFVSCasesTableName} c where s.CaseID = c.CaseID and s.StandID = c.StandID and c.RunTitle = '{p_strRunTitle}'";
+                                FVS_SUMMARY s, {Tables.FVS.DefaultFVSCasesTempTableName} c where s.CaseID = c.CaseID";
                             if (p_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + dataMgr.m_strSQL + "\r\n");
                             dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
@@ -4121,7 +4121,6 @@ namespace FIA_Biosum_Manager
                         }
                         else
                         {
-
                             if (p_oItem.UseSummaryTableSeqNumYN == "N")
                             {
                                 if (!dataMgr.TableExist(conn, strAuditPrePostSeqNumCountsTable))
@@ -4149,6 +4148,20 @@ namespace FIA_Biosum_Manager
 
                 if (p_bAudit)
                 {
+                    // Create extract of p_strSourceTableName to improve performance
+                    const string TMPFVSOUT = "tmpFvsOut";
+                    if (dataMgr.TableExist(conn, TMPFVSOUT))
+                    {
+                        dataMgr.SqlNonQuery(conn, $@"drop table {TMPFVSOUT}");
+                    }
+                    dataMgr.m_strSQL = $@"CREATE TABLE {TMPFVSOUT} AS SELECT * FROM {p_strSourceTableName} s, {Tables.FVS.DefaultFVSCasesTempTableName} c
+                                        where s.CaseID = c.CaseID AND RunTitle = '{p_strRunTitle}'";
+                    if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + dataMgr.m_strSQL + "\r\n");
+                    dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+                    if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(p_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
+
                     //
                     //stand + year rowcounts for all tables as compared with stand + year in the summary table
                     //
@@ -4159,16 +4172,27 @@ namespace FIA_Biosum_Manager
                     string[] strSQL = Queries.FVS.FVSOutputTable_AuditFVSSummaryTableRowCountsSQL(
                         "temp_rowcount",
                         "audit_FVS_SUMMARY_year_counts_table",
-                        p_strSourceTableName,
+                        TMPFVSOUT,
                         p_strSourceTableName, p_strRunTitle);
 
                     for (x = 0; x <= strSQL.Length - 1; x++)
                     {
                         if (p_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + dataMgr.m_strSQL + "\r\n");
+                            frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL[x] + "\r\n");
                         dataMgr.SqlNonQuery(conn, strSQL[x]);
                         if (p_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(p_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
+                    }
+
+                    // Clean up tmp table
+                    if (dataMgr.TableExist(conn, TMPFVSOUT))
+                    {
+                        if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(p_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + $@"drop table {TMPFVSOUT}" + "\r\n");
+                        dataMgr.SqlNonQuery(conn, $@"drop table {TMPFVSOUT}");
+                        if (p_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(p_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
+
                     }
                 }
 

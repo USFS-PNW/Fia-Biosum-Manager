@@ -913,25 +913,29 @@ namespace FIA_Biosum_Manager
 				//
 				//travel times file and tables
 				//
-				p_frmTherm.Increment(2);
 				p_frmTherm.lblMsg.Text = strDestFile;
-                strDestFile = this.txtRootDirectory.Text.Trim() + "\\" + Tables.TravelTime.DefaultTravelTimeTableDbFile;
-				p_frmTherm.Increment(2);
-				p_frmTherm.lblMsg.Text = strDestFile;
+                strDestFile = this.txtRootDirectory.Text.Trim() + "\\" + Tables.TravelTime.DefaultTravelTimePathAndDbFile;
+                p_frmTherm.Increment(2);
+                p_frmTherm.lblMsg.Text = strDestFile;
 				p_frmTherm.lblMsg.Refresh();
-				p_dao.CreateMDB(strDestFile);
-				strConn = p_ado.getMDBConnString(strDestFile,"admin","");
-				p_ado.OpenConnection(strConn);
-				//processing site table
-				frmMain.g_oTables.m_oTravelTime.CreateProcessingSiteTable(p_ado,p_ado.m_OleDbConnection,Tables.TravelTime.DefaultProcessingSiteTableName);
-				//travel time table
-                frmMain.g_oTables.m_oTravelTime.CreateTravelTimeTable(p_ado, p_ado.m_OleDbConnection, Tables.TravelTime.DefaultTravelTimeTableName);
-				p_ado.CloseConnection(p_ado.m_OleDbConnection);
-				//
-				//master file
-				//
-				//copy default master database to the new project directory (not currently used)
-				strSourceFile = this.m_oEnv.strAppDir + "\\db\\master.mdb";
+                p_dataMgr.CreateDbFile(strDestFile);
+				strConn = p_dataMgr.GetConnectionString(strDestFile);
+                using (var oConn = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+                    oConn.Open();
+                    //processing site table
+                    frmMain.g_oTables.m_oTravelTime.CreateSqliteProcessingSiteTable(p_dataMgr, oConn, Tables.TravelTime.DefaultProcessingSiteTableName);
+                    //travel time table
+                    frmMain.g_oTables.m_oTravelTime.CreateSqliteTravelTimeTable(p_dataMgr, oConn, Tables.TravelTime.DefaultTravelTimeTableName);
+                }
+                strDestFile = this.txtRootDirectory.Text.Trim() + "\\" + Tables.TravelTime.DefaultGisAuditPathAndDbFile;
+                p_dataMgr.CreateDbFile(strDestFile);
+
+                //
+                //master file
+                //
+                //copy default master database to the new project directory (not currently used)
+                strSourceFile = this.m_oEnv.strAppDir + "\\db\\master.mdb";
 				strDestFile = this.txtRootDirectory.Text.Trim() + "\\db\\master.mdb";
 				p_frmTherm.Increment(3);
 				p_frmTherm.lblMsg.Text = strDestFile;
@@ -1333,14 +1337,14 @@ namespace FIA_Biosum_Manager
 					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
 						"('Travel Times'," + 
 						"'" + this.txtRootDirectory.Text.ToString().Trim() + "\\gis\\db'," + 
-						"'" + Tables.TravelTime.DefaultTravelTimeAccdbFile + "'," + 
+						"'" + Tables.TravelTime.DefaultTravelTimeDbFile + "'," + 
 						"'travel_time');";
 					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
 
 					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " + 
 						"('Processing Sites'," + 
 						"'" + this.txtRootDirectory.Text.ToString().Trim() + "\\gis\\db'," +
-                        "'" + Tables.TravelTime.DefaultTravelTimeAccdbFile + "'," + 
+                        "'" + Tables.TravelTime.DefaultTravelTimeDbFile + "'," + 
 						"'processing_site');";
 					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
 					

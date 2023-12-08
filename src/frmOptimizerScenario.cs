@@ -5890,13 +5890,13 @@ namespace FIA_Biosum_Manager
         private string m_strPlotTableName = "";
         private string m_masterFolder = frmMain.g_oEnv.strApplicationDataDirectory.Trim() + frmMain.g_strBiosumDataDir;
         dao_data_access m_oDao;
+        private string m_strTempAccdb;
         private SQLite.ADO.DataMgr _SQLite = new SQLite.ADO.DataMgr();
         public SQLite.ADO.DataMgr SQLite
         {
             get { return _SQLite; }
             set { _SQLite = value; }
         }
-
 
         public bool CheckForExistingData(string strReferenceProjectDirectory, out bool bTablesHaveData)
         {
@@ -6199,7 +6199,7 @@ namespace FIA_Biosum_Manager
             return intRecordCount;
         }
 
-        public int LoadSqliteGisData()
+        public int LoadSqliteGisData(bool bUpdatePlotYardingDist)
         {
             m_oProjectDs.populate_datasource_array();
 
@@ -6250,8 +6250,8 @@ namespace FIA_Biosum_Manager
             if (SQLite.m_intError == 0)
             {
                 frmMain.g_sbpInfo.Text = "Creating temp database and table links...Stand by";
-                string strTempDb = CreateDBAndTableDataSourceLinks();
-                string strLoadConn = oAdo.getMDBConnString(strTempDb, "", "");
+                CreateDBAndTableDataSourceLinks();
+                string strLoadConn = oAdo.getMDBConnString(m_strTempAccdb, "", "");
                 string strSql = "";
                 using (var oLoadConn = new OleDbConnection(strLoadConn))
                 {
@@ -6301,7 +6301,34 @@ namespace FIA_Biosum_Manager
                             bExistsPlotGisTable = true;
                         }
                     }
+                }
+                if(!bExistsPlotGisTable)
+                {
+                    MessageBox.Show($@"The {Tables.TravelTime.DefaultPlotGisTableName} table is missing from the master travel times database. Plot yarding distances cannot be updated.", "FIA BioSum");
+                }
+                else if (oAdo.m_intError == 0 && bUpdatePlotYardingDist)
+                {
+                    //@ToDo: Code to update plot table
+                    if (bExistsPlotGisTable && bPlotRecords)
+                    {
+                        frmMain.g_sbpInfo.Text = "Updating yarding distances on plot table...Stand by";
+                        using (var oLoadConn = new OleDbConnection(strLoadConn))
+                        {
+                            oLoadConn.Open();
+                            // Access wants a primary key so that we can update the plot table from plot_gis
+                            oAdo.AddPrimaryKey(oLoadConn, Tables.TravelTime.DefaultPlotGisTableName, $@"{Tables.TravelTime.DefaultPlotGisTableName}_pk", "PLOT,STATECD");
 
+                            // Run audit before performing the update
+                            strSql = $@"INSERT INTO {Tables.TravelTime.DefaultGisPlotDistanceAuditTable} SELECT biosum_plot_id, PT.statecd, PT.plot, gis_yard_dist_ft, NEARDIST_FT
+                                FROM {m_strPlotTableName} PT LEFT JOIN {Tables.TravelTime.DefaultPlotGisTableName} PG ON (PT.statecd = PG.statecd) AND (PT.plot = PG.PLOT)
+                                WHERE NEARDIST_FT IS NULL";
+                            oAdo.SqlNonQuery(oLoadConn, strSql);
+
+                            strSql = $@"UPDATE {m_strPlotTableName} PT INNER JOIN {Tables.TravelTime.DefaultPlotGisTableName} PG ON 
+                                PT.PLOT = PG.PLOT AND PT.STATECD = PG.STATECD SET GIS_YARD_DIST_FT = NEARDIST_FT";
+                            oAdo.SqlNonQuery(oLoadConn, strSql);
+                        }
+                    }
 
                 }
 
@@ -6366,13 +6393,12 @@ namespace FIA_Biosum_Manager
             return strTempMDB;
         }
 
-        private string CreateDBAndTableDataSourceLinks()
+        private void CreateDBAndTableDataSourceLinks()
         {
-            string strTempMDB = "";
             //used to get the temporary random file name
             FIA_Biosum_Manager.utils oUtils = new FIA_Biosum_Manager.utils();
             env oEnv = new env();
-            strTempMDB = oUtils.getRandomFile(oEnv.strTempDir, "accdb");
+            m_strTempAccdb = oUtils.getRandomFile(oEnv.strTempDir, "accdb");
 
             //create a temporary mdb that will contain all 
             //the links to the scenario datasource tables
@@ -6380,7 +6406,7 @@ namespace FIA_Biosum_Manager
             {
                 m_oDao = new dao_data_access();
             }
-            m_oDao.CreateMDB(strTempMDB);
+            m_oDao.CreateMDB(m_strTempAccdb);
 
             // Create ODBC Data sources
             ODBCMgr odbcMgr = new ODBCMgr();
@@ -6392,6 +6418,10 @@ namespace FIA_Biosum_Manager
             {
                 odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.GisMasterDbDsnName);
             }
+            if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.GisAuditDbDsnName))
+            {
+                odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.GisAuditDbDsnName);
+            }
             int intTable = m_oProjectDs.getTableNameRow(Datasource.TableTypes.TravelTimes);
             string strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
             string strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
@@ -6399,18 +6429,34 @@ namespace FIA_Biosum_Manager
             {
                 odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.GisProjectDbDsnName, m_oProjectDs.getFullPathAndFile(Datasource.TableTypes.TravelTimes));
             }
-            m_oDao.CreateSQLiteTableLink(strTempMDB, strTableName, strTableName, ODBCMgr.DSN_KEYS.GisProjectDbDsnName, m_oProjectDs.getFullPathAndFile(Datasource.TableTypes.TravelTimes));
+            m_oDao.CreateSQLiteTableLink(m_strTempAccdb, strTableName, strTableName, ODBCMgr.DSN_KEYS.GisProjectDbDsnName, m_oProjectDs.getFullPathAndFile(Datasource.TableTypes.TravelTimes));
             intTable = m_oProjectDs.getTableNameRow(Datasource.TableTypes.ProcessingSites);
             strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
             strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
-            m_oDao.CreateSQLiteTableLink(strTempMDB, strTableName, strTableName, ODBCMgr.DSN_KEYS.GisProjectDbDsnName, m_oProjectDs.getFullPathAndFile(Datasource.TableTypes.ProcessingSites));
+            m_oDao.CreateSQLiteTableLink(m_strTempAccdb, strTableName, strTableName, ODBCMgr.DSN_KEYS.GisProjectDbDsnName, m_oProjectDs.getFullPathAndFile(Datasource.TableTypes.ProcessingSites));
 
             // Link to master travel times tables
             odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.GisMasterDbDsnName, $@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
-            m_oDao.CreateSQLiteTableLink(strTempMDB, Tables.TravelTime.DefaultTravelTimeTableName, m_strMasterTravelTime, 
-                ODBCMgr.DSN_KEYS.GisMasterDbDsnName, $@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
-            m_oDao.CreateSQLiteTableLink(strTempMDB, Tables.TravelTime.DefaultProcessingSiteTableName, m_strMasterPSite,
-                ODBCMgr.DSN_KEYS.GisMasterDbDsnName, $@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
+            string strMasterConn = SQLite.GetConnectionString($@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
+            using (var oMasterConn = new System.Data.SQLite.SQLiteConnection(strMasterConn))
+            {
+                oMasterConn.Open();
+                if (SQLite.TableExist(oMasterConn, Tables.TravelTime.DefaultTravelTimeTableName))
+                {
+                    m_oDao.CreateSQLiteTableLink(m_strTempAccdb, Tables.TravelTime.DefaultTravelTimeTableName, m_strMasterTravelTime,
+                        ODBCMgr.DSN_KEYS.GisMasterDbDsnName, $@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
+                }
+                if (SQLite.TableExist(oMasterConn, Tables.TravelTime.DefaultProcessingSiteTableName))
+                {
+                    m_oDao.CreateSQLiteTableLink(m_strTempAccdb, Tables.TravelTime.DefaultProcessingSiteTableName, m_strMasterPSite,
+                        ODBCMgr.DSN_KEYS.GisMasterDbDsnName, $@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
+                }
+                if (SQLite.TableExist(oMasterConn, Tables.TravelTime.DefaultTravelTimeTableName))
+                {
+                    m_oDao.CreateSQLiteTableLink(m_strTempAccdb, Tables.TravelTime.DefaultPlotGisTableName, Tables.TravelTime.DefaultPlotGisTableName,
+                        ODBCMgr.DSN_KEYS.GisMasterDbDsnName, $@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
+                }
+            }
 
             //links to the project table we need
             string[] arrTableTypes = { Datasource.TableTypes.Plot };
@@ -6424,11 +6470,30 @@ namespace FIA_Biosum_Manager
                 strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
                 if (strTableStatus == "F")
                 {
-                    m_oDao.CreateTableLink(strTempMDB, strTableName, strDirectoryPath + "\\" + strFileName, strTableName);
+                    m_oDao.CreateTableLink(m_strTempAccdb, strTableName, strDirectoryPath + "\\" + strFileName, strTableName);
                     if (strTableType.Equals(Datasource.TableTypes.Plot))
                     {
                         m_strPlotTableName = strTableName;
                     }
+                }
+            }
+
+            // Manage plot yarding distance audit table
+            string strAuditDBPath = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory}\{Tables.TravelTime.DefaultGisAuditPathAndDbFile}";
+            string strAuditConn = SQLite.GetConnectionString(strAuditDBPath);
+            using (var oAuditConn = new System.Data.SQLite.SQLiteConnection(strAuditConn))
+            {
+                oAuditConn.Open();
+                if (SQLite.TableExist(oAuditConn, Tables.TravelTime.DefaultGisPlotDistanceAuditTable))
+                {
+                    SQLite.SqlNonQuery(oAuditConn, $@"DROP TABLE {Tables.TravelTime.DefaultGisPlotDistanceAuditTable}");
+                }
+                frmMain.g_oTables.m_oTravelTime.CreateSqlitePlotDistanceAuditTable(SQLite, oAuditConn, Tables.TravelTime.DefaultGisPlotDistanceAuditTable);
+                if (SQLite.TableExist(oAuditConn, Tables.TravelTime.DefaultGisPlotDistanceAuditTable))
+                {
+                    odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.GisAuditDbDsnName, strAuditDBPath);
+                    m_oDao.CreateSQLiteTableLink(m_strTempAccdb, Tables.TravelTime.DefaultGisPlotDistanceAuditTable, Tables.TravelTime.DefaultGisPlotDistanceAuditTable,
+                        ODBCMgr.DSN_KEYS.GisAuditDbDsnName, strAuditDBPath);
                 }
             }
 
@@ -6437,7 +6502,6 @@ namespace FIA_Biosum_Manager
                 m_oDao.m_DaoWorkspace.Close();
                 m_oDao = null;
             }
-            return strTempMDB;
         }
 
         public void migrate_access_data()
@@ -6448,6 +6512,13 @@ namespace FIA_Biosum_Manager
             {
                 SQLite.CreateDbFile(gisPathAndDbFile);
             }
+            // Create audit db
+           string strAuditDBPath = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory}\{Tables.TravelTime.DefaultGisAuditPathAndDbFile}";
+            if (!System.IO.File.Exists(strAuditDBPath))
+            {
+                SQLite.CreateDbFile(strAuditDBPath);
+            }
+
             // Create target tables in new database
             string strCopyConn = SQLite.GetConnectionString(gisPathAndDbFile);
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strCopyConn))

@@ -1065,6 +1065,8 @@ namespace FIA_Biosum_Manager
             // chkDwmImport
             // 
             this.chkDwmImport.AutoSize = true;
+            this.chkDwmImport.Checked = true;
+            this.chkDwmImport.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkDwmImport.Location = new System.Drawing.Point(76, 208);
             this.chkDwmImport.Margin = new System.Windows.Forms.Padding(4);
             this.chkDwmImport.Name = "chkDwmImport";
