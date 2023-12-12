@@ -4777,7 +4777,7 @@ namespace FIA_Biosum_Manager
 
 			
 		}
-        public void LoadProcessingSites(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
+        public void LoadProcessingSites_access(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             this.m_intError = 0;
             this.m_strError = "";
@@ -4986,6 +4986,213 @@ namespace FIA_Biosum_Manager
                             }
                         }
                     }
+                }
+                //
+                //SET THE PREVIOUSLY SELECTED
+                //
+                p_oDataMgr.m_strSQL = "SELECT psite_id,trancd,biocd,selected_yn " +
+                                  "FROM scenario_psites WHERE TRIM(UPPER(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'";
+                p_oDataMgr.SqlQueryReader(p_oConn, p_oDataMgr.m_strSQL);
+
+                if (p_oDataMgr.m_DataReader.HasRows == true)
+                {
+                    x = 0;
+                    while (p_oDataMgr.m_DataReader.Read())
+                    {
+
+                        if (p_oDataMgr.m_DataReader["psite_id"] != System.DBNull.Value)
+                        {
+                            for (x = 0; x <= p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Count - 1; x++)
+                            {
+                                if (p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).ProcessingSiteId.Trim() ==
+                                    Convert.ToString(p_oDataMgr.m_DataReader["psite_id"]).Trim())
+                                {
+                                    if (p_oDataMgr.m_DataReader["selected_yn"] != System.DBNull.Value)
+                                    {
+                                        if (Convert.ToString(p_oDataMgr.m_DataReader["selected_yn"]).Trim() == "Y")
+                                        {
+                                            p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).Selected = true;
+                                        }
+                                        else
+                                        {
+                                            p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).Selected = false;
+                                        }
+                                    }
+                                    //transportation code
+                                    if (p_oDataMgr.m_DataReader["trancd"] != System.DBNull.Value)
+                                    {
+                                        p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).TransportationCode =
+                                            Convert.ToString(p_oDataMgr.m_DataReader["trancd"]).Trim();
+                                    }
+                                    //biomass code
+                                    if (p_oDataMgr.m_DataReader["biocd"] != System.DBNull.Value)
+                                    {
+                                        p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).BiomassCode =
+                                            Convert.ToString(p_oDataMgr.m_DataReader["biocd"]).Trim();
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                p_oDataMgr.m_DataReader.Close();
+            }
+        }
+        public void LoadProcessingSites(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
+        {
+            this.m_intError = 0;
+            this.m_strError = "";
+
+            int x, y;
+            //
+            //GET ALL THE PSITES LISTED IN THE TRAVEL TIMES TABLE
+            //
+            /*************************************************************************
+			 **get the travel times db file,table, and connection strings
+			 *************************************************************************/
+            string strTravelTimeDBFile = "";
+            string strTravelTimeTableName = "";
+            string strTravelTimeConn = "";
+            p_oDataMgr.m_strSQL = "select path,file, table_name from scenario_datasource " +
+                          "where TRIM(UPPER(table_type)) = 'TRAVEL TIMES' " +
+                          "and TRIM(UPPER(scenario_id)) = '" + p_strScenarioId.Trim().ToUpper() + "';";
+            p_oDataMgr.SqlQueryReader(p_oConn, p_oDataMgr.m_strSQL);
+            if (p_oDataMgr.m_intError == 0)
+            {
+                while (p_oDataMgr.m_DataReader.Read())
+                {
+                    strTravelTimeTableName = p_oDataMgr.m_DataReader["table_name"].ToString();
+                    strTravelTimeDBFile = p_oDataMgr.m_DataReader["path"].ToString().Trim() + "\\" + p_oDataMgr.m_DataReader["file"].ToString().Trim();
+                    strTravelTimeConn = p_oDataMgr.GetConnectionString(strTravelTimeDBFile);
+                    break;
+                }
+                p_oDataMgr.m_DataReader.Close();
+            }
+
+            //
+            //GET THE PSITE LIST
+            //
+            string strList = "";
+            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strTravelTimeConn))
+            {
+                oConn.Open();
+                p_oDataMgr.SqlQueryReader(oConn, "SELECT RXPACKAGE FROM " + strTravelTimeTableName);
+                if (p_oDataMgr.m_intError == 0)
+                {
+                    if (p_oDataMgr.m_DataReader.HasRows)
+                    {
+                        while (p_oDataMgr.m_DataReader.Read())
+                        {
+                            if (strList.Trim().Length == 0)
+                            {
+
+                                strList = "'" + p_oDataMgr.m_DataReader[0].ToString().Trim() + "'";
+                            }
+                            else
+                            {
+                                strList += ",'" + p_oDataMgr.m_DataReader[0].ToString().Trim() + "'";
+                            }
+                        }
+                    }
+                    p_oDataMgr.m_DataReader.Close();
+                }
+                oConn.Close();
+            }
+            string[] strArray = frmMain.g_oUtils.ConvertListToArray(strList, ",");
+            //
+            //INITIALIZE PSITE COLLECTION
+            //
+            p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Clear();
+            //
+            //FIRST DELETE THE PSITE'S THAT NO LONGER EXIST
+            //
+            if (!String.IsNullOrEmpty(strList))
+            {
+                p_oDataMgr.m_strSQL = "DELETE FROM scenario_psites WHERE TRIM(UPPER(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "' AND psite_id NOT IN (" + strList + ")";
+                p_oDataMgr.SqlNonQuery(p_oConn, p_oDataMgr.m_strSQL);
+                //
+                //LOAD UP THE PSITES THAT EXIST
+                //
+                for (x = 0; x <= strArray.Length - 1; x++)
+                {
+                    OptimizerScenarioItem.ProcessingSiteItem oItem = new OptimizerScenarioItem.ProcessingSiteItem();
+                    oItem.ProcessingSiteId = strArray[x].Trim();
+                    p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Add(oItem);
+                }
+                /*************************************************************************
+                 **get the processing sites mdb file,table, and connection strings
+                 *************************************************************************/
+                string strPSitesDBFile = "";
+                string strPSitesTableName = "";
+                string strPSitesConn = "";
+                p_oDataMgr.m_strSQL = "select path,file, table_name from scenario_datasource " +
+                          "where TRIM(UPPER(table_type)) = 'PROCESSING SITES' " +
+                          "and TRIM(UPPER(scenario_id)) = '" + p_strScenarioId.Trim().ToUpper() + "';";
+                p_oDataMgr.SqlQueryReader(p_oConn, p_oDataMgr.m_strSQL);
+                if (p_oDataMgr.m_intError == 0)
+                {
+                    while (p_oDataMgr.m_DataReader.Read())
+                    {
+                        strPSitesTableName = p_oDataMgr.m_DataReader["table_name"].ToString();
+                        strPSitesDBFile = p_oDataMgr.m_DataReader["path"].ToString().Trim() + "\\" + p_oDataMgr.m_DataReader["file"].ToString().Trim();
+                        strPSitesConn = p_oDataMgr.GetConnectionString(strPSitesDBFile);
+                        break;
+                    }
+                    p_oDataMgr.m_DataReader.Close();
+                }
+
+                using (System.Data.SQLite.SQLiteConnection pSitesConn = new System.Data.SQLite.SQLiteConnection(strPSitesConn))
+                {
+                    pSitesConn.Open();
+                    p_oDataMgr.m_strSQL = "SELECT DISTINCT p.psite_id,p.name,p.trancd,p.trancd_def,p.biocd,p.biocd_def,p.exists_yn " +
+                                 "FROM " + strPSitesTableName + " p WHERE p.psite_id IN (" + strList + ")";
+                    p_oDataMgr.SqlQueryReader(pSitesConn, p_oDataMgr.m_strSQL);
+
+                    if (p_oDataMgr.m_DataReader.HasRows)
+                    {
+                        x = 0;
+                        while (p_oDataMgr.m_DataReader.Read())
+                        {
+                            if (p_oDataMgr.m_DataReader["psite_id"] != System.DBNull.Value)
+                            {
+                                for (x = 0; x <= p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Count - 1; x++)
+                                {
+                                    if (p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).ProcessingSiteId.Trim() ==
+                                        Convert.ToString(p_oDataMgr.m_DataReader["psite_id"]).Trim())
+                                    {
+                                        //processing site name
+                                        if (p_oDataMgr.m_DataReader["name"] != System.DBNull.Value)
+                                        {
+                                            p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).ProcessingSiteName =
+                                                Convert.ToString(p_oDataMgr.m_DataReader["name"]).Trim();
+                                        }
+                                        //transportation code
+                                        if (p_oDataMgr.m_DataReader["trancd"] != System.DBNull.Value)
+                                        {
+                                            p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).TransportationCode =
+                                                Convert.ToString(p_oDataMgr.m_DataReader["trancd"]).Trim();
+                                        }
+                                        //biomass code
+                                        if (p_oDataMgr.m_DataReader["biocd"] != System.DBNull.Value)
+                                        {
+                                            p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).BiomassCode =
+                                                Convert.ToString(p_oDataMgr.m_DataReader["biocd"]).Trim();
+                                        }
+                                        //exists YN
+                                        if (p_oDataMgr.m_DataReader["exists_yn"] != System.DBNull.Value)
+                                        {
+                                            p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).ProcessingSiteExistYN =
+                                                Convert.ToString(p_oDataMgr.m_DataReader["exists_yn"]).Trim();
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    p_oDataMgr.m_DataReader.Close();
+                    pSitesConn.Close();
                 }
                 //
                 //SET THE PREVIOUSLY SELECTED
