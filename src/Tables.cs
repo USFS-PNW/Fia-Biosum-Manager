@@ -2033,6 +2033,7 @@ namespace FIA_Biosum_Manager
             static public string DefaultScenarioCostsTableDbFile { get { return @"optimizer\db\scenario_optimizer_rule_definitions.mdb"; } }
             static public string DefaultScenarioCostsTableName { get { return "scenario_costs"; } }
             static public string DefaultScenarioTableDbFile { get { return @"optimizer\db\scenario_optimizer_rule_definitions.mdb"; } }
+            static public string DefaultScenarioTableSqliteDbFile { get { return @"optimizer\db\scenario_optimizer_rule_definitions.db"; } }
             static public string DefaultScenarioTableName { get { return "scenario"; } }
             static public string DefaultScenarioCondFilterMiscTableDbFile { get { return @"optimizer\db\scenario_optimizer_rule_definitions.mdb"; } }
             static public string DefaultScenarioCondFilterMiscTableName { get { return "scenario_cond_filter_misc"; } }

@@ -4862,6 +4862,7 @@ namespace FIA_Biosum_Manager
             {
                 conn.Open();
                 string[] arrUpdateTableType = new string[2];
+                string[] arrUpdateTableName = new string[2];
                 if (m_oProjectDs.DataSourceTableExist(intTravelTable))
                 {
                     string strDbName = System.IO.Path.GetFileName(Tables.TravelTime.DefaultTravelTimePathAndDbFile);
@@ -4887,6 +4888,7 @@ namespace FIA_Biosum_Manager
                         }
                         m_oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.TravelTimes, strNewDirectoryPath, strDbName, strTableName);
                         arrUpdateTableType[0] = Datasource.TableTypes.TravelTimes;
+                        arrUpdateTableName[0] = strTableName;
                         if (m_oProjectDs.DataSourceTableExist(intPSitesTable))
                         {
                             strTableName = m_oProjectDs.m_strDataSource[intPSitesTable, Datasource.TABLE].Trim();
@@ -4907,22 +4909,23 @@ namespace FIA_Biosum_Manager
                             }
                             m_oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.ProcessingSites, strNewDirectoryPath, strDbName, strTableName);
                             arrUpdateTableType[1] = Datasource.TableTypes.ProcessingSites;
+                            arrUpdateTableName[1] = strTableName;
                         }
                     }
-                    //@ToDo: This will change to SQLite operation when I have Drue's conde
-                    strConn = oAdo.getMDBConnString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableDbFile}", "", "");
-                    using (var pConn = new System.Data.OleDb.OleDbConnection(strConn))
+                    strConn = SQLite.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile}");
+                    using (System.Data.SQLite.SQLiteConnection scenarioConn = new System.Data.SQLite.SQLiteConnection(strConn))
                     {
-                        pConn.Open();
+                        scenarioConn.Open();
+
                         for (int i = 0; i < arrUpdateTableType.Length; i++)
                         {
                             if (!string.IsNullOrEmpty(arrUpdateTableType[i]))
                             {
                                 System.Text.StringBuilder sb = new System.Text.StringBuilder();
                                 sb.Append($@"UPDATE {Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioDatasourceTableName} SET ");
-                                sb.Append($@"PATH = '{strNewDirectoryPath}', file='{strDbName}', table_name = '{strTableName}' ");
-                                sb.Append($@"WHERE table_type = '{arrUpdateTableType[i]}'");
-                                oAdo.SqlNonQuery(pConn, sb.ToString());
+                                sb.Append($@"PATH = '{strNewDirectoryPath}', file='{strDbName}', table_name = '{arrUpdateTableName[i]}' ");
+                                sb.Append($@"WHERE TRIM(table_type) = '{arrUpdateTableType[i]}'");
+                                SQLite.SqlNonQuery(scenarioConn, sb.ToString());
                             }
                         }
                     }
