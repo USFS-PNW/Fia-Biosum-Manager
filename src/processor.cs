@@ -22,6 +22,7 @@ namespace FIA_Biosum_Manager
         private System.Collections.Generic.IList<harvestMethod> m_harvestMethodList;
         private escalators m_escalators;
         public System.Collections.Generic.List<string> m_standsWithNoYardingDistance;
+        private string m_strSqliteConnection;
 
         private SQLite.ADO.DataMgr _SQLite = new SQLite.ADO.DataMgr();
         public SQLite.ADO.DataMgr SQLite
@@ -31,7 +32,7 @@ namespace FIA_Biosum_Manager
         }
 
         public processor(string strDebugFile, string strScenarioId, ado_data_access oAdo, bool bUsingSqlite,
-                         string sqliteConnectionString)
+                         string sqliteTempDb)
         {
             m_strDebugFile = strDebugFile;
             m_strScenarioId = strScenarioId;
@@ -46,9 +47,10 @@ namespace FIA_Biosum_Manager
             odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName,
                 frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + 
                 Tables.FVS.DefaultFVSTreeListDbFile);
+            m_strSqliteConnection = sqliteTempDb;
             if (m_bUsingSqlite)
             {
-                SQLite.OpenConnection(sqliteConnectionString);
+                SQLite.OpenConnection(SQLite.GetConnectionString(m_strSqliteConnection));
                 // Attach to rule definitions database; Seems to be connection-specific
                 string strScenarioDB =
                     frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
@@ -57,15 +59,15 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + strSql + "\r\n");
                 SQLite.SqlNonQuery(SQLite.m_Connection, strSql);
-                // Set up an ODBC DSN for the temp database
-                // Check to see if the input SQLite DSN exists and if so, delete so we can add
-                if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName))
-                {
-                    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName);
-                }
-                odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName,
-                    SQLite.m_Connection.FileName);
             }
+            // Set up an ODBC DSN for the temp database
+            // Check to see if the input SQLite DSN exists and if so, delete so we can add
+            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName))
+            {
+                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName);
+            }
+            odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName,
+                m_strSqliteConnection);
         }
         
         public Queries init()
@@ -988,53 +990,26 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
 
-            if (m_oAdo.m_intError == 0)
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(m_strSqliteConnection)))
             {
-                if (!m_bUsingSqlite)
+                conn.Open();
+                // drop tree vol val work table (TreeVolValLowSlope) if it exists for next variant/package
+                if (SQLite.TableExist(conn, m_strTvvTableName) == true)
+                    SQLite.SqlNonQuery(conn, "DROP TABLE " + m_strTvvTableName);
+
+                // create tree vol val work table (TreeVolValLowSlope); Re-use the sql from tree vol val but don't create the indexes
+                SQLite.SqlNonQuery(conn, Tables.Processor.CreateSqliteTreeVolValSpeciesDiamGroupsTableSQL(m_strTvvTableName, false));
+
+                // check to see if table link exists; Create it if it doesn't
+                if (! m_oAdo.TableExist(m_oAdo.m_OleDbConnection, m_strTvvTableName))
                 {
-                    // drop tree vol val work table (TreeVolValLowSlope) if it exists for next variant/package
-                    if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, m_strTvvTableName) == true)
-                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + m_strTvvTableName);
-
-                    // create tree vol val work table (TreeVolValLowSlope); Re-use the sql from tree vol val but don't create the indexes
-                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, Tables.Processor.CreateTreeVolValSpeciesDiamGroupsTableSQL(m_strTvvTableName));
+                    dao_data_access oDao = new dao_data_access();
+                    oDao.CreateSQLiteTableLink(m_oAdo.m_OleDbConnection.DataSource, m_strTvvTableName,
+                        m_strTvvTableName, ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName,
+                        conn.FileName);
+                    oDao.m_DaoWorkspace.Close();
+                    oDao = null;
                 }
-                else
-                {
-                    // drop tree vol val work table (TreeVolValLowSlope) if it exists for next variant/package
-                    if (SQLite.TableExist(SQLite.m_Connection, m_strTvvTableName) == true)
-                        SQLite.SqlNonQuery(SQLite.m_Connection, "DROP TABLE " + m_strTvvTableName);
-
-                    // create tree vol val work table (TreeVolValLowSlope); Re-use the sql from tree vol val but don't create the indexes
-                    SQLite.SqlNonQuery(SQLite.m_Connection, Tables.Processor.CreateSqliteTreeVolValSpeciesDiamGroupsTableSQL(m_strTvvTableName, false));
-
-                    // check to see if table link exists; Create it if it doesn't
-                    if (! m_oAdo.TableExist(m_oAdo.m_OleDbConnection, m_strTvvTableName))
-                    {
-                        dao_data_access oDao = new dao_data_access();
-                        oDao.CreateSQLiteTableLink(m_oAdo.m_OleDbConnection.DataSource, m_strTvvTableName,
-                            m_strTvvTableName, ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName,
-                            SQLite.m_Connection.FileName);
-                        oDao.m_DaoWorkspace.Close();
-                        oDao = null;
-                    }
-                }
-
-
-                // load opcostIdeal into memory if user asked for low-cost harvest system
-                System.Collections.Generic.IDictionary<String, opcostIdeal> dictIdeal = new System.Collections.Generic.Dictionary<String, opcostIdeal>();
-                bool blnUseIdeal = false;
-                // 2018-30-JUL Disabling lowest-cost harvest method option. blnUseIdeal should always be false and
-                // dictIdeal will never be used.
-                //if (m_scenarioHarvestMethod.HarvMethodSelection.Equals(HarvestMethodSelection.LOWEST_COST))
-                //{
-                //    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                //        frmMain.g_oUtils.WriteText(m_strDebugFile, "createTreeVolValWorkTable: Load opcost_output_ideal into memory - " + System.DateTime.Now.ToString() + "\r\n");
-
-                //    blnUseIdeal = true;
-                //    //key: strCondId + strRxPackage + strRx + strRxCycle;
-                //    dictIdeal = loadOpcostIdeal();
-                //}
                 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "createTreeVolValWorkTable: Read trees into tree vol val - " + System.DateTime.Now.ToString() + "\r\n");
@@ -1043,39 +1018,7 @@ namespace FIA_Biosum_Manager
                 System.Collections.Generic.IDictionary<string, treeVolValInput> dictTvvInput = 
                     new System.Collections.Generic.Dictionary<string, treeVolValInput>();
                 foreach (tree nextTree in m_trees)
-                {
-                    if (blnUseIdeal)
-                    {
-                        string strIdealKey = nextTree.CondId + nextTree.RxPackage + nextTree.Rx + nextTree.RxCycle;
-                        opcostIdeal objIdeal = null;
-                        bool blnIdealFound = dictIdeal.TryGetValue(strIdealKey, out objIdeal);
-                        if (blnIdealFound)
-                        {
-                            harvestMethod objHarvestMethodLowSlope = null;
-                            harvestMethod objHarvestMethodSteepSlope = null;
-                            foreach (harvestMethod nextMethod in m_harvestMethodList)
-                            {
-                                if (nextMethod.Method.Equals(objIdeal.HarvestSystem) && !nextMethod.SteepSlope)
-                                {
-                                    objHarvestMethodLowSlope = nextMethod;
-                                }
-                                else if (nextMethod.Method.Equals(objIdeal.HarvestSystem) && nextMethod.SteepSlope)
-                                {
-                                    objHarvestMethodSteepSlope = nextMethod;
-                                }
-
-                                if (nextTree.Slope < m_scenarioHarvestMethod.SteepSlopePct)
-                                {
-                                    nextTree.LowestCostHarvestMethod = objHarvestMethodLowSlope;
-                                }
-                                else
-                                {
-                                    nextTree.LowestCostHarvestMethod = objHarvestMethodSteepSlope;
-                                }
-                            }
-                        }
-                    }
-                    
+                {                                        
                     treeVolValInput nextInput = null;
                     string strKey = nextTree.CondId + strSeparator + nextTree.RxCycle + strSeparator + nextTree.DiamGroup + strSeparator + nextTree.SpeciesGroup;
                     bool blnFound = dictTvvInput.TryGetValue(strKey, out nextInput);
@@ -1255,38 +1198,19 @@ namespace FIA_Biosum_Manager
                     lstSql.Add(strSQL);
                 }
 
-                if (!m_bUsingSqlite)
+                //Note: Wrapping this in a transaction made it MUCH faster!!
+                SQLite.m_Command = conn.CreateCommand();
+                using (SQLite.m_Transaction = conn.BeginTransaction())
                 {
+                    SQLite.m_Command.Transaction = SQLite.m_Transaction;
                     foreach (var item in lstSql)
                     {
-                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, item);
-                        if (m_oAdo.m_intError != 0) break;
+                        SQLite.SqlNonQuery(conn, item);
+                        if (SQLite.m_intError != 0) break;
                         lngCount++;
                     }
+                    SQLite.m_Transaction.Commit();
                 }
-                else
-                {
-                    //Note: Wrapping this in a transaction made it MUCH faster!!
-                    SQLite.m_Command = SQLite.m_Connection.CreateCommand();
-                    using (SQLite.m_Transaction = SQLite.m_Connection.BeginTransaction())
-                    {
-                        SQLite.m_Command.Transaction = SQLite.m_Transaction;
-                        foreach (var item in lstSql)
-                        {
-                            SQLite.SqlNonQuery(SQLite.m_Connection, item);
-                            if (SQLite.m_intError != 0) break;
-                            lngCount++;
-                        }
-                        SQLite.m_Transaction.Commit();
-                    }
-                }
-
-                //Drop id column because it prevents copying rows into final tree vol val                    
-                if (!m_bUsingSqlite)
-                {
-                    string strSqlAlter = "ALTER TABLE " + m_strTvvTableName + " DROP COLUMN id";
-                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, strSqlAlter);
-                }                    
                 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "END createTreeVolValWorkTable INSERTED " + lngCount + " RECORDS: " + System.DateTime.Now.ToString() + "\r\n");
@@ -1297,20 +1221,9 @@ namespace FIA_Biosum_Manager
             {
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//Processor.createTreeVolValWorkTable \r\n");
-                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
 
-            if (SQLite != null)
-            {
-                SQLite.CloseConnection(SQLite.m_Connection);
-                SQLite = null;
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                {
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//Dispose of DataMgr object END \r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-                }
-            }
             return intReturnVal;
         }
 
