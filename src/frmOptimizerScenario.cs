@@ -5077,7 +5077,7 @@ namespace FIA_Biosum_Manager
             using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strTravelTimeConn))
             {
                 oConn.Open();
-                p_oDataMgr.SqlQueryReader(oConn, "SELECT RXPACKAGE FROM " + strTravelTimeTableName);
+                p_oDataMgr.SqlQueryReader(oConn, "SELECT DISTINCT CAST(psite_id AS text) FROM " + strTravelTimeTableName);
                 if (p_oDataMgr.m_intError == 0)
                 {
                     if (p_oDataMgr.m_DataReader.HasRows)

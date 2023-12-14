@@ -1519,7 +1519,7 @@ namespace FIA_Biosum_Manager
                                 if (dataMgr.TableExist(con, arrSource[TABLE]))
                                 {
                                     arrSource[TABLESTATUS] = "F";
-                                    strSql = "select count from " + arrSource[TABLE];
+                                    strSql = "select count(*) from " + arrSource[TABLE];
                                     long recordCount = dataMgr.getRecordCount(con, strSql, arrSource[TABLE]);
                                     arrSource[RECORDCOUNT] = Convert.ToString(recordCount);
                                 }
