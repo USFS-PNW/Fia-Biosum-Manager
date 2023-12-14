@@ -5509,6 +5509,7 @@ namespace FIA_Biosum_Manager
             static public string DefaultOpcostErrorsTableName { get { return @"opcost_errors"; } }
             static public string DefaultSqliteResultsDbFile { get { return @"db\scenario_results.db"; } }
             static public string DefaultAddKcpCpaTableName { get { return @"additional_kcp_cpa"; } }
+            static public string DefaultScenarioResultsTableDbFile { get { return @"db\scenario_results.db"; } }
 
             public ProcessorScenarioRun()
             {
@@ -5975,14 +5976,33 @@ namespace FIA_Biosum_Manager
                     lastField = "additional_cpa DOUBLE";
                 }
                 string strSql = $@"CREATE TABLE {p_strTableName}
-                          (biosum_cond_id TEXT (25),
-                           rxPackage TEXT (3),
-                           rx TEXT (3),
-                           rxCycle TEXT (1),
+                          (biosum_cond_id CHAR (25),
+                           rxPackage CHAR (3),
+                           rx CHAR (3),
+                           rxCycle CHAR (1),
                            {lastField})";
                 return strSql;
             }
-
+            public void CreateSqliteAdditionalKcpCpaTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn,
+                string p_strTableName, bool bIsWorktable)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteAdditionalKcpCpaTableSQL(p_strTableName, bIsWorktable));
+            }
+            static public string CreateSqliteAdditionalKcpCpaTableSQL(string p_strTableName, bool bIsWorktable)
+            {
+                string lastField = "DateTimeCreated CHAR(22),";
+                if (bIsWorktable)
+                {
+                    lastField = "additional_cpa DOUBLE,";
+                }
+                string strSql = $@"CREATE TABLE {p_strTableName}
+                          (biosum_cond_id CHAR(25),
+                           rxPackage CHAR(3),
+                           rx CHAR(3),
+                           rxCycle CHAR(1),
+                           {lastField} PRIMARY KEY (biosum_cond_id,rxPackage,rx,rxCycle))";
+                return strSql;
+            }
 
 
         }

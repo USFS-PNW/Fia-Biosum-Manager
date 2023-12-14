@@ -4237,7 +4237,7 @@ namespace FIA_Biosum_Manager
         }
 
         private void RunScenario_UpdateHarvestCostsTableWithKcpAdditionalCosts(string p_strHarvestCostsTableName, string p_strAddCostsWorktable,
-            string p_strVariant, string p_strRxPackage, string p_strDateTimeCreated)
+            string p_strTempDb, string p_strVariant, string p_strRxPackage, string p_strDateTimeCreated)
         {
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -4246,17 +4246,22 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
 
-            //create additional cpa work table to itemize additional costs
-            if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, p_strAddCostsWorktable))
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(p_strTempDb)))
             {
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, $@"DROP TABLE {p_strAddCostsWorktable}");
+                conn.Open();
+                //create additional cpa work table to itemize additional costs
+                if (m_oDataMgr.TableExist(conn, p_strAddCostsWorktable))
+                {
+                    m_oDataMgr.SqlNonQuery(conn, $@"DROP TABLE {p_strAddCostsWorktable}");
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, $@"Dropped {p_strAddCostsWorktable} \r\n");
+                }
+                frmMain.g_oTables.m_oProcessorScenarioRun.CreateSqliteAdditionalKcpCpaTable(
+                    m_oDataMgr, conn, p_strAddCostsWorktable, true);
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, $@"Dropped {p_strAddCostsWorktable} \r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, $@"Created {p_strAddCostsWorktable} \r\n");
+
             }
-            frmMain.g_oTables.m_oProcessorScenarioRun.CreateAdditionalKcpCpaTable(
-                m_oAdo, m_oAdo.m_OleDbConnection, p_strAddCostsWorktable, true);
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, $@"Created {p_strAddCostsWorktable} \r\n");
 
             IList<RxItem> lstRxItem = this.LoadRxItemsForRxPackage(p_strRxPackage);
             StringBuilder sb = new StringBuilder();
@@ -4288,21 +4293,26 @@ namespace FIA_Biosum_Manager
                     string strCol = "";
                     if (m_oAdo.m_OleDbDataReader.HasRows)
                     {
-                        while (m_oAdo.m_OleDbDataReader.Read())
+                        using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(p_strTempDb)))
                         {
-                            strCol = "";
-                            //make sure the row is not null values
-                            if (m_oAdo.m_OleDbDataReader["ColumnName"] != System.DBNull.Value &&
-                                m_oAdo.m_OleDbDataReader["ColumnName"].ToString().Trim().Length > 0)
+                            // Open a connection to SQLite so we can add the additional cpa columns
+                            conn.Open();
+                            while (m_oAdo.m_OleDbDataReader.Read())
                             {
-                                strCol = m_oAdo.m_OleDbDataReader["ColumnName"].ToString().Trim();
-                                if (m_lstAdditionalCpaColumns.Contains(strCol))
+                                strCol = "";
+                                //make sure the row is not null values
+                                if (m_oAdo.m_OleDbDataReader["ColumnName"] != System.DBNull.Value &&
+                                    m_oAdo.m_OleDbDataReader["ColumnName"].ToString().Trim().Length > 0)
                                 {
-                                    //Need to add the column to the table
-                                    m_oAdo.AddColumn(m_oAdo.m_OleDbConnection, p_strAddCostsWorktable, strCol, "DOUBLE", "");
-                                    //Add the associated flag column to the table
-                                    m_oAdo.AddColumn(m_oAdo.m_OleDbConnection, p_strAddCostsWorktable, strCol + strFlagSuffix, "DOUBLE", "");
-                                    lstScenarioColumnNameList.Add(strCol);
+                                    strCol = m_oAdo.m_OleDbDataReader["ColumnName"].ToString().Trim();
+                                    if (m_lstAdditionalCpaColumns.Contains(strCol))
+                                    {
+                                        //Need to add the column to the table
+                                        m_oDataMgr.AddColumn(conn, p_strAddCostsWorktable, strCol, "DOUBLE", "");
+                                        //Add the associated flag column to the table
+                                        m_oDataMgr.AddColumn(conn, p_strAddCostsWorktable, strCol + strFlagSuffix, "DOUBLE", "");
+                                        lstScenarioColumnNameList.Add(strCol);
+                                    }
                                 }
                             }
                         }
@@ -4318,49 +4328,54 @@ namespace FIA_Biosum_Manager
                     if (lngCount > 0)
                     {
                         bHasScenarioCosts = true;
-                        m_oAdo.AddColumn(m_oAdo.m_OleDbConnection, p_strAddCostsWorktable, ScenarioId.Trim(), "DOUBLE", "");
+                        using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(p_strTempDb)))
+                        {
+                            conn.Open();
+                            m_oDataMgr.AddColumn(conn, p_strAddCostsWorktable, ScenarioId.Trim(), "DOUBLE", "");
+                        }
                     }
 
                     // UPDATE THE COLUMNS AND CREATE THE TABLE LINK TO THE additional_kcp_cpa TABLE AS SOON AS WE KNOW
                     // WHAT THE COLUMNS SHOULD BE SO THE DAO HAS TIME TO CREATE THE LINK BEFORE WE NEED THE TABLE
-                    string strScenarioResultsMDB =
+                    string strScenarioResultsDb =
                         frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                        "\\processor\\" + ScenarioId + "\\" + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableDbFile;
-                    string strCacheConnString = m_oAdo.m_OleDbConnection.ConnectionString;
-                    m_oAdo.CloseConnection(m_oAdo.m_OleDbConnection);
-                    using (var conn = new System.Data.OleDb.OleDbConnection(m_oAdo.getMDBConnString(strScenarioResultsMDB, "", "")))
+                        "\\processor\\" + ScenarioId + "\\" + Tables.ProcessorScenarioRun.DefaultScenarioResultsTableDbFile;
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strScenarioResultsDb)))
                     {
                         conn.Open();
                         foreach (var sName in lstScenarioColumnNameList)
                         {
-                            if (!m_oAdo.ColumnExist(conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, sName))
+                            if (!m_oDataMgr.ColumnExist(conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, sName))
                             {
-                                m_oAdo.AddColumn(conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, sName, "DOUBLE", "");
+                                m_oDataMgr.AddColumn(conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, sName, "DOUBLE", "");
                             }
                         }
-                        if (bHasScenarioCosts && !m_oAdo.ColumnExist(conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, ScenarioId.Trim()))
+                        if (bHasScenarioCosts && !m_oDataMgr.ColumnExist(conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, ScenarioId.Trim()))
                         {
-                            m_oAdo.AddColumn(conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, ScenarioId.Trim(), "DOUBLE", "");
+                            m_oDataMgr.AddColumn(conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, ScenarioId.Trim(), "DOUBLE", "");
                         }
                     }
 
                     // Create link to additional_kcp_cpa after we have finalized the schema
+                    ODBCMgr odbcmgr = new ODBCMgr();
+                    if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProcessorResultsDsnName))
+                    {
+                        odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProcessorResultsDsnName);
+                    }
+                    odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ProcessorResultsDsnName,
+                        strScenarioResultsDb);
                     dao_data_access oDao = new dao_data_access();
-                    oDao.CreateTableLink(m_oQueries.m_strTempDbFile,
-                        Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName,
-                        strScenarioResultsMDB, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, true);
+                    oDao.CreateSQLiteTableLink(m_oQueries.m_strTempDbFile, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName,
+                        Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, ODBCMgr.DSN_KEYS.ProcessorResultsDsnName, strScenarioResultsDb);
                     if (oDao != null)
                     {
                         oDao.m_DaoWorkspace.Close();
                         oDao = null;
                     }
-                    // re-open connection to temp database
-                    m_oAdo.m_OleDbConnection.ConnectionString = strCacheConnString;
-                    m_oAdo.m_OleDbConnection.Open();
-
 
                     // INSERT ROWS FROM PRE_FVS_COMPUTE TABLE; ASSUME ROW COUNT IS SAME FOR BOTH PRE AND POST TABLE
                     // INCLUDES INITIALLY SETTING THE FLAGS FROM THE PRE_FVS_COMPUTE TABLE
+                    //@ToDo: Start here with SQLite conversion
                     if (lstScenarioColumnNameList.Count > 0)
                     {
                         sb.Clear();
@@ -5881,8 +5896,8 @@ namespace FIA_Biosum_Manager
                         if (bRxPackageUsesKcpAdditionalCpa)
                         {
                             strKcpCpaWorkTable = "KcpCpaWorkTable";
-                            RunScenario_UpdateHarvestCostsTableWithKcpAdditionalCosts("HarvestCostsWorkTable", strKcpCpaWorkTable, 
-                                strVariant, strRxPackage, m_strDateTimeCreated);
+                            RunScenario_UpdateHarvestCostsTableWithKcpAdditionalCosts("HarvestCostsWorkTable", strKcpCpaWorkTable,
+                                m_strTempSqliteDbFile,strVariant, strRxPackage, m_strDateTimeCreated);
                         }
                         else
                         {
