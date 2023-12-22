@@ -4595,15 +4595,17 @@ namespace FIA_Biosum_Manager
                                 oDao = null;
                             }
 
-
-                            foreach (var oRx in lstRxItem)
+                            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(p_strTempDb)))
                             {
-                                // Switch to dataMgr
-                                //DELETE WHERE ADDITIONAL_CPA = 0
-                                m_oAdo.m_strSQL = $@"DELETE FROM {p_strAddCostsWorktable} WHERE (ADDITIONAL_CPA = 0 OR ADDITIONAL_CPA IS NULL) AND RX = '{oRx.RxId}'";
-                                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                                conn.Open();
+                                foreach (var oRx in lstRxItem)
+                                {
+                                    //DELETE WHERE ADDITIONAL_CPA = 0
+                                    m_oDataMgr.m_strSQL = $@"DELETE FROM {p_strAddCostsWorktable} WHERE (ADDITIONAL_CPA = 0 OR ADDITIONAL_CPA IS NULL) AND RX = '{oRx.RxId}'";
+                                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                        frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                                    m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+                                }
                             }
                         }
                     }
@@ -4674,6 +4676,7 @@ namespace FIA_Biosum_Manager
                     //    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
                     //}
                     //INSERT INACTIVE STANDS WITH HARVEST COSTS INTO THE HARVEST COSTS WORK TABLE WHERE ADDITIONAL_CPA > 0
+                    //@ToDo: start here
                     if (m_oAdo.m_intError == 0)
                     {
                         m_oAdo.m_strSQL = $@"INSERT INTO {p_strHarvestCostsTableName} ( biosum_cond_id, rxpackage, rx, rxcycle, additional_cpa, harvest_cpa, complete_cpa, 
