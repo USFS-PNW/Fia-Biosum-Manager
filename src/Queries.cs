@@ -6351,6 +6351,44 @@ namespace FIA_Biosum_Manager
                     return strSql;
             }
 
+            public static string UpdateSqliteHarvestCostsTableWithCompleteCostsPerAcre(
+                string p_strTotalAdditionalCostsTableName,
+                string p_strHarvestCostsTableName, ProcessorScenarioItem.Escalators p_oEscalators,
+                bool p_bIncludeZeroHarvestCpa)
+            {
+                string strSql = $@"UPDATE {p_strHarvestCostsTableName} AS h SET additional_cpa = 
+                        (SELECT CASE WHEN h.RXCycle = '1' THEN a.complete_additional_cpa 
+                        WHEN h.RXCycle = '2' THEN a.complete_additional_cpa * {p_oEscalators.OperatingCostsCycle2}
+                        WHEN h.RXCycle = '3' THEN a.complete_additional_cpa * {p_oEscalators.OperatingCostsCycle3}                        
+                        WHEN h.RXCycle = '4' THEN a.complete_additional_cpa * {p_oEscalators.OperatingCostsCycle4}
+                        ELSE 0 END, complete_cpa = 
+                        (SELECT CASE WHEN h.RXCycle = '1' THEN h.harvest_cpa + a.complete_additional_cpa 
+                        WHEN h.RXCycle = '2' THEN h.harvest_cpa + a.complete_additional_cpa * {p_oEscalators.OperatingCostsCycle2}
+                        WHEN h.RXCycle = '3' THEN h.harvest_cpa + a.complete_additional_cpa * {p_oEscalators.OperatingCostsCycle3}   
+                        WHEN h.RXCycle = '4' THEN h.harvest_cpa + a.complete_additional_cpa * {p_oEscalators.OperatingCostsCycle4}
+                        ELSE 0 END
+                        FROM {p_strTotalAdditionalCostsTableName} AS a WHERE h.biosum_cond_id = a.biosum_cond_id AND h.RX = a.RX ";
+                    if (p_bIncludeZeroHarvestCpa == false)
+                    {
+                        strSql += "AND h.harvest_cpa IS NOT NULL AND h.harvest_cpa > 0) ";
+                    }
+                    else
+                    {
+                        strSql += "AND h.harvest_cpa IS NOT NULL) ";
+                    }
+                    strSql += "WHERE EXISTS( SELECT* FROM " + p_strTotalAdditionalCostsTableName + " AS a " +
+                              "WHERE h.biosum_cond_id = a.biosum_cond_id AND h.RX = a.RX ";
+                    if (p_bIncludeZeroHarvestCpa == false)
+                    {
+                        strSql += "AND h.harvest_cpa IS NOT NULL AND h.harvest_cpa > 0) ";
+                    }
+                    else
+                    {
+                        strSql += "AND h.harvest_cpa IS NOT NULL) ";
+                    }
+                return strSql;
+            }
+
             public static string UpdateHarvestCostsTableWithKcpCostsPerAcre(
                 string p_strKcpAddlCostsTableName,
                 string p_strHarvestCostsTableName,                

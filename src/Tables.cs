@@ -5950,9 +5950,9 @@ namespace FIA_Biosum_Manager
             static public string CreateSqliteTotalAdditionalHarvestCostsTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " " +
-                          "(biosum_cond_id text," +
-                          "RX text," +
-                          "complete_additional_cpa real," +
+                          "(biosum_cond_id char(25)," +
+                          "RX char(3)," +
+                          "complete_additional_cpa double," +
                           "PRIMARY KEY(biosum_cond_id, rx))";
             }
 
