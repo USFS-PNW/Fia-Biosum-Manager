@@ -6379,15 +6379,46 @@ namespace FIA_Biosum_Manager
                 return strSql;
             }
 
+            public static string UpdateSqliteHarvestCostsTableWithKcpCostsPerAcre(string p_strKcpAddlCostsTableName,
+                string p_strHarvestCostsTableName, ProcessorScenarioItem.Escalators p_oEscalators, bool p_bIncludeZeroHarvestCpa)
+            {
+                string strSql = $@"UPDATE {p_strHarvestCostsTableName} 
+                        SET (additional_cpa, complete_cpa) = (SELECT additional_cpa, 
+                        CASE WHEN RXCYCLE = '2' THEN harvest_cpa * {p_oEscalators.OperatingCostsCycle2} + a.additional_cpa 
+                        WHEN RXCYCLE = '3' THEN harvest_cpa * {p_oEscalators.OperatingCostsCycle3} + a.additional_cpa 
+                        WHEN RXCYCLE = '4' THEN harvest_cpa * {p_oEscalators.OperatingCostsCycle4} + a.additional_cpa 
+                        ELSE harvest_cpa+a.additional_cpa END from {p_strKcpAddlCostsTableName} as a
+                        WHERE {p_strHarvestCostsTableName}.biosum_cond_id = a.biosum_cond_id AND {p_strHarvestCostsTableName}.rxpackage=a.rxpackage AND {p_strHarvestCostsTableName}.rx=a.rx 
+                        AND {p_strHarvestCostsTableName}.rxcycle=a.rxcycle) ";
+                if (p_bIncludeZeroHarvestCpa == false)
+                {
+                    strSql += "WHERE harvest_cpa IS NOT NULL AND harvest_cpa > 0";
+                }
+                else
+                {
+                    strSql += "WHERE harvest_cpa IS NOT NULL";
+                }              
+                return strSql;
+            }
+
             public static string UpdateHarvestCostsTableWhenZeroKcpCosts(
-                string p_strHarvestCostsTableName,
-                string p_strScenarioId)
+                string p_strHarvestCostsTableName, string p_strScenarioId)
             {
                 string strSql = $@"UPDATE {p_strHarvestCostsTableName} h, {Tables.ProcessorScenarioRuleDefinitions.DefaultCostRevenueEscalatorsTableName} e 
                                 SET h.complete_cpa = IIF(h.RXCycle='1', h.harvest_cpa,IIF(h.rxcycle='2', h.harvest_cpa*e.EscalatorOperatingCosts_Cycle2,
                                 IIF(h.rxcycle='3', h.harvest_cpa*e.EscalatorOperatingCosts_Cycle3, h.harvest_cpa*e.EscalatorOperatingCosts_Cycle4)))
                                 WHERE h.additional_cpa = 0 and h.harvest_cpa IS NOT NULL AND h.harvest_cpa > 0 
                                 and TRIM(UCASE(e.scenario_id))='{p_strScenarioId.ToUpper()}'";
+                return strSql;
+            }
+            public static string UpdateSqliteHarvestCostsTableWhenZeroKcpCosts(
+                string p_strHarvestCostsTableName, ProcessorScenarioItem.Escalators p_oEscalators)
+            {
+                string strSql = $@"UPDATE {p_strHarvestCostsTableName}
+                                SET complete_cpa = CASE WHEN RXCYCLE = '2' THEN harvest_cpa * {p_oEscalators.OperatingCostsCycle2} 
+                                WHEN RXCYCLE = '3' THEN harvest_cpa * {p_oEscalators.OperatingCostsCycle3} 
+                                WHEN RXCYCLE = '4' THEN harvest_cpa * {p_oEscalators.OperatingCostsCycle4} 
+                                ELSE harvest_cpa END WHERE additional_cpa = 0 and harvest_cpa IS NOT NULL AND harvest_cpa > 0";
                 return strSql;
             }
         }

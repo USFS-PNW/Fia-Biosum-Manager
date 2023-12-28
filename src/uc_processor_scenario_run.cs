@@ -4323,7 +4323,7 @@ namespace FIA_Biosum_Manager
                     bool bHasScenarioCosts = false;
                     m_oAdo.m_strSQL = "SELECT COUNT(*) FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestCostColumnsTableName +
                         " WHERE TRIM(RX)=\"\" AND DEFAULT_CPA > 0 AND trim(ucase(scenario_id))='" + ScenarioId.Trim().ToUpper() + "'";
-                    long lngCount = m_oAdo.getRecordCount(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL, 
+                    long lngCount = m_oAdo.getRecordCount(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL,
                         Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestCostColumnsTableName);
                     if (lngCount > 0)
                     {
@@ -4458,7 +4458,7 @@ namespace FIA_Biosum_Manager
                     // APPLY THE $/CPA FOR EACH RX
                     // Contains $/CPA
                     ProcessorScenarioItem.HarvestCostItem_Collection harvestCostItemCollection = null;
-                    ProcessorScenarioItem.Escalators oEscalators= null;
+                    ProcessorScenarioItem.Escalators oEscalators = null;
                     if (ReferenceProcessorScenarioForm != null)
                     {
                         harvestCostItemCollection = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oHarvestCostItem_Collection;
@@ -4676,10 +4676,12 @@ namespace FIA_Biosum_Manager
                     //    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
                     //}
                     //INSERT INACTIVE STANDS WITH HARVEST COSTS INTO THE HARVEST COSTS WORK TABLE WHERE ADDITIONAL_CPA > 0
-                    //@ToDo: start here
-                    if (m_oAdo.m_intError == 0)
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(p_strTempDb)))
                     {
-                        m_oAdo.m_strSQL = $@"INSERT INTO {p_strHarvestCostsTableName} ( biosum_cond_id, rxpackage, rx, rxcycle, additional_cpa, harvest_cpa, complete_cpa, 
+                        conn.Open();
+                        if (m_oDataMgr.m_intError == 0)
+                        {
+                            m_oDataMgr.m_strSQL = $@"INSERT INTO {p_strHarvestCostsTableName} ( biosum_cond_id, rxpackage, rx, rxcycle, additional_cpa, harvest_cpa, complete_cpa, 
                                              chip_cpa, assumed_movein_cpa, place_holder, override_YN, DateTimeCreated )
                                              SELECT {p_strAddCostsWorktable}.biosum_cond_id, {p_strAddCostsWorktable}.rxpackage, {p_strAddCostsWorktable}.rx, {p_strAddCostsWorktable}.rxcycle, 
                                              0, 0, 0,0,0,'N', 'N', '{p_strDateTimeCreated}' FROM {p_strAddCostsWorktable}
@@ -4688,33 +4690,34 @@ namespace FIA_Biosum_Manager
                                              WHERE {p_strHarvestCostsTableName}.biosum_cond_id = {p_strAddCostsWorktable}.biosum_cond_id 
                                              and {p_strHarvestCostsTableName}.rxpackage = {p_strAddCostsWorktable}.rxpackage
                                              and {p_strHarvestCostsTableName}.rx = {p_strAddCostsWorktable}.rx 
-                                             and {p_strHarvestCostsTableName}.rxcycle = {p_strAddCostsWorktable}.rxcycle))=False";                        
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                    }
+                                             and {p_strHarvestCostsTableName}.rxcycle = {p_strAddCostsWorktable}.rxcycle))=False";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                            m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+                        }
 
-                    if (m_oAdo.m_intError == 0)
-                    {
-                        //Update the harvest costs work table complete costs per acre column;
-                        //Also applies the escalators to harvest_costs
-                        m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.UpdateHarvestCostsTableWithKcpCostsPerAcre(
+                        if (m_oDataMgr.m_intError == 0)
+                        {
+                            //Update the harvest costs work table complete costs per acre column;
+                            //Also applies the escalators to harvest_costs
+                            m_oDataMgr.m_strSQL = Queries.ProcessorScenarioRun.UpdateSqliteHarvestCostsTableWithKcpCostsPerAcre(
                                          p_strAddCostsWorktable,
-                                         p_strHarvestCostsTableName, ScenarioId, true);                    
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                    }
+                                         p_strHarvestCostsTableName, oEscalators, true);
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                            m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+                        }
 
-                    if (m_oAdo.m_intError == 0)
-                    {
-                        //Update the complete_cpa for stands where additional_cpa = 0; This should be the case where stands are in a project
-                        //that uses kcp cpa, but kcp cpa is not defined for them
-                        m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.UpdateHarvestCostsTableWhenZeroKcpCosts(p_strHarvestCostsTableName,
-                            ScenarioId);
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                        if (m_oDataMgr.m_intError == 0)
+                        {
+                            //Update the complete_cpa for stands where additional_cpa = 0; This should be the case where stands are in a project
+                            //that uses kcp cpa, but kcp cpa is not defined for them
+                            m_oDataMgr.m_strSQL = Queries.ProcessorScenarioRun.UpdateSqliteHarvestCostsTableWhenZeroKcpCosts(p_strHarvestCostsTableName,
+                                oEscalators);
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                            m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+                        }
                     }
                 }
             }
@@ -5684,14 +5687,6 @@ namespace FIA_Biosum_Manager
                 //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 //    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                 //m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
-                if (m_oDataMgr.TableExist(conn, "HarvestCostsWorkTable") == true)
-                    m_oDataMgr.SqlNonQuery(conn, "DROP TABLE HarvestCostsWorkTable");
-
-                if (m_oDataMgr.TableExist(conn, "InactiveStandsWorkTable") == true)
-                    m_oDataMgr.SqlNonQuery(conn, "DROP TABLE InactiveStandsWorkTable");
-
-                if (m_oDataMgr.TableExist(conn, "TreeVolValLowSlope") == true)
-                    m_oDataMgr.SqlNonQuery(conn, "DROP TABLE TreeVolValLowSlope");
             }
 
 
@@ -5807,6 +5802,19 @@ namespace FIA_Biosum_Manager
                         {
                             frmMain.g_oUtils.WriteText(m_strDebugFile, "Reopening Access connection because it was closed" + "\r\n");
                         }
+                    }
+
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(m_strTempSqliteDbFile)))
+                    {
+                        conn.Open();
+                        if (m_oDataMgr.TableExist(conn, "HarvestCostsWorkTable") == true)
+                            m_oDataMgr.SqlNonQuery(conn, "DROP TABLE HarvestCostsWorkTable");
+
+                        if (m_oDataMgr.TableExist(conn, "InactiveStandsWorkTable") == true)
+                            m_oDataMgr.SqlNonQuery(conn, "DROP TABLE InactiveStandsWorkTable");
+
+                        if (m_oDataMgr.TableExist(conn, "TreeVolValLowSlope") == true)
+                            m_oDataMgr.SqlNonQuery(conn, "DROP TABLE TreeVolValLowSlope");
                     }
 
                     //@ToDo: Delete this when transition to SQLite is complete
