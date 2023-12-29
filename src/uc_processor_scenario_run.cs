@@ -4255,6 +4255,13 @@ namespace FIA_Biosum_Manager
 
             IList<RxItem> lstRxItem = this.LoadRxItemsForRxPackage(p_strRxPackage);
             StringBuilder sb = new StringBuilder();
+            ProcessorScenarioItem.HarvestCostItem_Collection harvestCostItemCollection = null;
+            ProcessorScenarioItem.Escalators oEscalators = null;
+            if (ReferenceProcessorScenarioForm != null)
+            {
+                harvestCostItemCollection = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oHarvestCostItem_Collection;
+                oEscalators = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oEscalators;
+            }
             if (m_oAdo.m_intError == 0)
             {
                 //
@@ -4270,54 +4277,56 @@ namespace FIA_Biosum_Manager
                     }
                     strWhereRx = sb.ToString().TrimEnd(',') + " )";
                 }
-                m_oAdo.m_strSQL = $@"SELECT distinct(columnname) FROM scenario_harvest_cost_columns 
-                    WHERE trim(ucase(scenario_id))='{ScenarioId.Trim().ToUpper()}' {strWhereRx} group by columnname";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                string strFlagSuffix = "_FLAG";
 
+                IList<string> lstScenarioColumnNameList = new List<string>();
+                bool bHasScenarioCosts = false;
+                for (int i = 0; i < harvestCostItemCollection.Count; i++)
+                {
+                    var oItem = harvestCostItemCollection.Item(i);
+                    if (m_lstAdditionalCpaColumns.Contains(oItem.ColumnName))
+                    {
+                        bool bFoundIt = false;
+                        foreach (var rx in lstRxItem)
+                        {
+                            if (rx.RxId.Equals(oItem.Rx))
+                            {
+                                bFoundIt = true;
+                                break;
+                            }
+                        }
+                        if (bFoundIt && !lstScenarioColumnNameList.Contains(oItem.ColumnName))
+                        {
+                            lstScenarioColumnNameList.Add(oItem.ColumnName);
+                        }
+                    }
+                    if (string.IsNullOrEmpty(oItem.Rx))
+                    {
+                        bHasScenarioCosts = true;
+                    }
+                }
+
+                string strFlagSuffix = "_FLAG";
                 if (m_oAdo.m_intError == 0)
                 {
-                    IList<string> lstScenarioColumnNameList = new List<string>();
-                    string strCol = "";
-                    if (m_oAdo.m_OleDbDataReader.HasRows)
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(p_strTempDb)))
                     {
-                        using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(p_strTempDb)))
+                        // Open a connection to SQLite so we can add the additional cpa columns
+                        conn.Open();
+                        foreach (var oItem in lstScenarioColumnNameList)
                         {
-                            // Open a connection to SQLite so we can add the additional cpa columns
-                            conn.Open();
-                            while (m_oAdo.m_OleDbDataReader.Read())
+                            if (m_lstAdditionalCpaColumns.Contains(oItem))
                             {
-                                strCol = "";
-                                //make sure the row is not null values
-                                if (m_oAdo.m_OleDbDataReader["ColumnName"] != System.DBNull.Value &&
-                                    m_oAdo.m_OleDbDataReader["ColumnName"].ToString().Trim().Length > 0)
-                                {
-                                    strCol = m_oAdo.m_OleDbDataReader["ColumnName"].ToString().Trim();
-                                    if (m_lstAdditionalCpaColumns.Contains(strCol))
-                                    {
-                                        //Need to add the column to the table
-                                        m_oDataMgr.AddColumn(conn, p_strAddCostsWorktable, strCol, "DOUBLE", "");
-                                        //Add the associated flag column to the table
-                                        m_oDataMgr.AddColumn(conn, p_strAddCostsWorktable, strCol + strFlagSuffix, "DOUBLE", "");
-                                        lstScenarioColumnNameList.Add(strCol);
-                                    }
-                                }
+                                //Need to add the column to the table
+                                m_oDataMgr.AddColumn(conn, p_strAddCostsWorktable, oItem, "DOUBLE", "");
+                                //Add the associated flag column to the table
+                                m_oDataMgr.AddColumn(conn, p_strAddCostsWorktable, oItem + strFlagSuffix, "DOUBLE", "");
                             }
                         }
                     }
-                    m_oAdo.m_OleDbDataReader.Close();
 
                     // ADD SCENARIO NAME COLUMN IF THERE ARE SCENARIO LEVEL ADDITIONAL_CPA
-                    bool bHasScenarioCosts = false;
-                    m_oAdo.m_strSQL = "SELECT COUNT(*) FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestCostColumnsTableName +
-                        " WHERE TRIM(RX)=\"\" AND DEFAULT_CPA > 0 AND trim(ucase(scenario_id))='" + ScenarioId.Trim().ToUpper() + "'";
-                    long lngCount = m_oAdo.getRecordCount(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL,
-                        Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestCostColumnsTableName);
-                    if (lngCount > 0)
+                    if (bHasScenarioCosts == true)
                     {
-                        bHasScenarioCosts = true;
                         using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(p_strTempDb)))
                         {
                             conn.Open();
@@ -4447,13 +4456,7 @@ namespace FIA_Biosum_Manager
 
                     // APPLY THE $/CPA FOR EACH RX
                     // Contains $/CPA
-                    ProcessorScenarioItem.HarvestCostItem_Collection harvestCostItemCollection = null;
-                    ProcessorScenarioItem.Escalators oEscalators = null;
-                    if (ReferenceProcessorScenarioForm != null)
-                    {
-                        harvestCostItemCollection = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oHarvestCostItem_Collection;
-                        oEscalators = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oEscalators;
-                    }
+
                     if (harvestCostItemCollection != null && oEscalators != null)
                     {
                         if (lstScenarioColumnNameList.Count > 0)
