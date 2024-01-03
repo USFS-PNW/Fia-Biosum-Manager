@@ -1729,7 +1729,7 @@ namespace FIA_Biosum_Manager
                     if (m_intError == 0)
                     {
                         frmMain.g_oDelegate.SetControlPropertyValue(lblMsg, "Text", "Update Harvest Costs Work Table With Additional Costs...Stand By");
-                        RunScenario_UpdateHarvestCostsTableWithAdditionalCosts("HarvestCostsWorkTable", "");
+                        RunScenario_UpdateHarvestCostsTableWithAdditionalCosts("HarvestCostsWorkTable", "", null, null);
                     }
                     if (m_intError == 0)
                     {
@@ -3984,7 +3984,8 @@ namespace FIA_Biosum_Manager
                 if (m_oAdo.m_intError == 0) m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
             }
         }
-        private void RunScenario_UpdateHarvestCostsTableWithAdditionalCosts(string p_strHarvestCostsTableName, string p_strTempDb)
+        private void RunScenario_UpdateHarvestCostsTableWithAdditionalCosts(string p_strHarvestCostsTableName, string p_strTempDb,
+            processor.Escalators oEscalators, ProcessorScenarioItem.HarvestCostItem_Collection harvestCostItemCollection)
         {
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -4044,13 +4045,6 @@ namespace FIA_Biosum_Manager
                 {
                     string[] strScenarioColumnNameArray = null;
                     string[] strScenarioRxArray = null;
-                    ProcessorScenarioItem.HarvestCostItem_Collection harvestCostItemCollection = null;
-                    ProcessorScenarioItem.Escalators oEscalators = null;
-                    if (ReferenceProcessorScenarioForm != null)
-                    {
-                        harvestCostItemCollection = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oHarvestCostItem_Collection;
-                        oEscalators = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oEscalators;
-                    }
                     if (harvestCostItemCollection.Count > 0)
                     {
                         /*****************************************************************
@@ -4229,7 +4223,8 @@ namespace FIA_Biosum_Manager
         }
 
         private void RunScenario_UpdateHarvestCostsTableWithKcpAdditionalCosts(string p_strHarvestCostsTableName, string p_strAddCostsWorktable,
-            string p_strTempDb, string p_strVariant, string p_strRxPackage, string p_strDateTimeCreated)
+            string p_strTempDb, string p_strVariant, string p_strRxPackage, string p_strDateTimeCreated, processor.Escalators p_oEscalators,
+            ProcessorScenarioItem.HarvestCostItem_Collection p_harvestCostItemCollection)
         {
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -4257,13 +4252,6 @@ namespace FIA_Biosum_Manager
 
             IList<RxItem> lstRxItem = this.LoadRxItemsForRxPackage(p_strRxPackage);
             StringBuilder sb = new StringBuilder();
-            ProcessorScenarioItem.HarvestCostItem_Collection harvestCostItemCollection = null;
-            ProcessorScenarioItem.Escalators oEscalators = null;
-            if (ReferenceProcessorScenarioForm != null)
-            {
-                harvestCostItemCollection = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oHarvestCostItem_Collection;
-                oEscalators = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oEscalators;
-            }
             if (m_oAdo.m_intError == 0)
             {
                 //
@@ -4282,9 +4270,9 @@ namespace FIA_Biosum_Manager
 
                 IList<string> lstScenarioColumnNameList = new List<string>();
                 bool bHasScenarioCosts = false;
-                for (int i = 0; i < harvestCostItemCollection.Count; i++)
+                for (int i = 0; i < p_harvestCostItemCollection.Count; i++)
                 {
-                    var oItem = harvestCostItemCollection.Item(i);
+                    var oItem = p_harvestCostItemCollection.Item(i);
                     if (m_lstAdditionalCpaColumns.Contains(oItem.ColumnName))
                     {
                         bool bFoundIt = false;
@@ -4459,7 +4447,7 @@ namespace FIA_Biosum_Manager
                     // APPLY THE $/CPA FOR EACH RX
                     // Contains $/CPA
 
-                    if (harvestCostItemCollection != null && oEscalators != null)
+                    if (p_harvestCostItemCollection != null && p_oEscalators != null)
                     {
                         if (lstScenarioColumnNameList.Count > 0)
                         {
@@ -4475,9 +4463,9 @@ namespace FIA_Biosum_Manager
                                         string strSetValues = "";
                                         foreach (var sName in lstScenarioColumnNameList)
                                         {
-                                            for (int i = 0; i < harvestCostItemCollection.Count; i++)
+                                            for (int i = 0; i < p_harvestCostItemCollection.Count; i++)
                                             {
-                                                var hCostItem = harvestCostItemCollection.Item(i);
+                                                var hCostItem = p_harvestCostItemCollection.Item(i);
                                                 if (hCostItem.Rx.Equals(oRx.RxId) && hCostItem.ColumnName.Equals(sName))
                                                 {
                                                     strSetValues += $@"{sName} = {hCostItem.DefaultCostPerAcre}*{sName}{strFlagSuffix},";
@@ -4495,9 +4483,9 @@ namespace FIA_Biosum_Manager
                                         sb.Append($@"UPDATE {p_strAddCostsWorktable} SET ");
                                         foreach (var sName in lstScenarioColumnNameList)
                                         {
-                                            sb.Append($@"{sName} = CASE RXCycle WHEN '2' THEN {sName} * {oEscalators.OperatingCostsCycle2}
-                                            WHEN '3' THEN {sName} * {oEscalators.OperatingCostsCycle3}
-                                            WHEN '4' THEN {sName} * {oEscalators.OperatingCostsCycle4} ELSE {sName} END,");
+                                            sb.Append($@"{sName} = CASE RXCycle WHEN '2' THEN {sName} * {p_oEscalators.OperatingCostsCycle2}
+                                            WHEN '3' THEN {sName} * {p_oEscalators.OperatingCostsCycle3}
+                                            WHEN '4' THEN {sName} * {p_oEscalators.OperatingCostsCycle4} ELSE {sName} END,");
                                         }
                                         strSetValues = sb.ToString().TrimEnd(',');
                                         m_oDataMgr.m_strSQL = $@"{strSetValues} WHERE RX = '{oRx.RxId}'";
@@ -4542,7 +4530,7 @@ namespace FIA_Biosum_Manager
 
                                     string strSetValues = "";
                                     sb.Clear();
-                                    foreach (ProcessorScenarioItem.HarvestCostItem item in harvestCostItemCollection)
+                                    foreach (ProcessorScenarioItem.HarvestCostItem item in p_harvestCostItemCollection)
                                     {
                                         if (string.IsNullOrEmpty(item.Rx) && item.DefaultCostPerAcre != null)
                                         {
@@ -4697,7 +4685,7 @@ namespace FIA_Biosum_Manager
                             //Also applies the escalators to harvest_costs
                             m_oDataMgr.m_strSQL = Queries.ProcessorScenarioRun.UpdateSqliteHarvestCostsTableWithKcpCostsPerAcre(
                                          p_strAddCostsWorktable,
-                                         p_strHarvestCostsTableName, oEscalators, true);
+                                         p_strHarvestCostsTableName, p_oEscalators, true);
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                             m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
@@ -4708,7 +4696,7 @@ namespace FIA_Biosum_Manager
                             //Update the complete_cpa for stands where additional_cpa = 0; This should be the case where stands are in a project
                             //that uses kcp cpa, but kcp cpa is not defined for them
                             m_oDataMgr.m_strSQL = Queries.ProcessorScenarioRun.UpdateSqliteHarvestCostsTableWhenZeroKcpCosts(p_strHarvestCostsTableName,
-                                oEscalators);
+                                p_oEscalators);
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                             m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
@@ -5729,6 +5717,7 @@ namespace FIA_Biosum_Manager
             int intRowCount = 0;
 
             dao_data_access oDao = new dao_data_access();
+            ProcessorScenarioTools oProcessorScenarioTools = new ProcessorScenarioTools();
 
             string strRx1, strRx2, strRx3, strRx4, strRxPackage, strVariant, strCutCount;
 
@@ -6068,15 +6057,21 @@ namespace FIA_Biosum_Manager
                     {
                         frmMain.g_oDelegate.SetControlPropertyValue(lblMsg, "Text", "Update Harvest Costs Work Table With Additional Costs...Stand By");
 
+                        // Had to get creative here because the ReferenceScenarioProcessorForm doesn't reflect configuration changes from the current session
+                        processor.Escalators oEscalators = mainProcessor.LoadEscalators();
+                        ProcessorScenarioItem oTempProcessorScenarioItem = new ProcessorScenarioItem();
+                        oTempProcessorScenarioItem.ScenarioId = ScenarioId;
+                        oProcessorScenarioTools.LoadHarvestCostComponents(m_oAdo, m_oAdo.m_OleDbConnection, oTempProcessorScenarioItem);
                         if (bRxPackageUsesKcpAdditionalCpa)
                         {
                             strKcpCpaWorkTable = "KcpCpaWorkTable";
                             RunScenario_UpdateHarvestCostsTableWithKcpAdditionalCosts("HarvestCostsWorkTable", strKcpCpaWorkTable,
-                                m_strTempSqliteDbFile,strVariant, strRxPackage, m_strDateTimeCreated);
+                                m_strTempSqliteDbFile,strVariant, strRxPackage, m_strDateTimeCreated, oEscalators, oTempProcessorScenarioItem.m_oHarvestCostItem_Collection);
                         }
                         else
                         {
-                            RunScenario_UpdateHarvestCostsTableWithAdditionalCosts("HarvestCostsWorkTable", m_strTempSqliteDbFile);
+                            RunScenario_UpdateHarvestCostsTableWithAdditionalCosts("HarvestCostsWorkTable", m_strTempSqliteDbFile, oEscalators,
+                                oTempProcessorScenarioItem.m_oHarvestCostItem_Collection);
                         }
                     }
                     if (m_intError == 0)
@@ -6273,7 +6268,6 @@ namespace FIA_Biosum_Manager
             string strParameterFileName = "params_" + this._strScenarioId + "_" + strFileDate + ".txt";
             string strParameterFilePath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
                 "\\processor\\" + ScenarioId + "\\" + strParameterFileName;
-            ProcessorScenarioTools oProcessorScenarioTools = new ProcessorScenarioTools();
             string strProperties = oProcessorScenarioTools.ScenarioProperties(_frmProcessorScenario.m_oProcessorScenarioItem);
             System.IO.File.WriteAllText(strParameterFilePath, strProperties);
 

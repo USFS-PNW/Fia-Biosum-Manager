@@ -20,7 +20,7 @@ namespace FIA_Biosum_Manager
         private scenarioMoveInCost m_scenarioMoveInCost;
         private System.Collections.Generic.IDictionary<string, prescription> m_prescriptions;
         private System.Collections.Generic.IList<harvestMethod> m_harvestMethodList;
-        private escalators m_escalators;
+        private Escalators m_escalators;
         public System.Collections.Generic.List<string> m_standsWithNoYardingDistance;
         private string m_strSqliteConnection;
 
@@ -1590,9 +1590,9 @@ namespace FIA_Biosum_Manager
             return returnVariables;
         }
 
-        private escalators LoadEscalators()
+        public Escalators LoadEscalators()
         {
-            escalators returnEscalators = null;
+            Escalators returnEscalators = null;
             if (!m_bUsingSqlite)
             {
                 if (m_oAdo.m_intError == 0)
@@ -1611,10 +1611,13 @@ namespace FIA_Biosum_Manager
                         double dblMerchWoodRevCycle2 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorMerchWoodRevenue_Cycle2"]);
                         double dblMerchWoodRevCycle3 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorMerchWoodRevenue_Cycle3"]);
                         double dblMerchWoodRevCycle4 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorMerchWoodRevenue_Cycle4"]);
+                        double dblOperatingCostsCycle2 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorOperatingCosts_Cycle2"]);
+                        double dblOperatingCostsCycle3 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorOperatingCosts_Cycle3"]);
+                        double dblOperatingCostsCycle4 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorOperatingCosts_Cycle4"]);
 
-
-                        returnEscalators = new escalators(dblEnergyWoodRevCycle2, dblEnergyWoodRevCycle3, dblEnergyWoodRevCycle4,
-                                                          dblMerchWoodRevCycle2, dblMerchWoodRevCycle3, dblMerchWoodRevCycle4);
+                        returnEscalators = new Escalators(dblEnergyWoodRevCycle2, dblEnergyWoodRevCycle3, dblEnergyWoodRevCycle4,
+                                                          dblMerchWoodRevCycle2, dblMerchWoodRevCycle3, dblMerchWoodRevCycle4,
+                                                          dblOperatingCostsCycle2, dblOperatingCostsCycle3, dblOperatingCostsCycle4);
                     }
                 }
             }
@@ -1636,10 +1639,14 @@ namespace FIA_Biosum_Manager
                         double dblMerchWoodRevCycle2 = Convert.ToDouble(SQLite.m_DataReader["EscalatorMerchWoodRevenue_Cycle2"]);
                         double dblMerchWoodRevCycle3 = Convert.ToDouble(SQLite.m_DataReader["EscalatorMerchWoodRevenue_Cycle3"]);
                         double dblMerchWoodRevCycle4 = Convert.ToDouble(SQLite.m_DataReader["EscalatorMerchWoodRevenue_Cycle4"]);
+                        double dblOperatingCostsCycle2 = Convert.ToDouble(SQLite.m_DataReader["EscalatorOperatingCosts_Cycle2"]);
+                        double dblOperatingCostsCycle3 = Convert.ToDouble(SQLite.m_DataReader["EscalatorOperatingCosts_Cycle3"]);
+                        double dblOperatingCostsCycle4 = Convert.ToDouble(SQLite.m_DataReader["EscalatorOperatingCosts_Cycle4"]);
 
 
-                        returnEscalators = new escalators(dblEnergyWoodRevCycle2, dblEnergyWoodRevCycle3, dblEnergyWoodRevCycle4,
-                                                          dblMerchWoodRevCycle2, dblMerchWoodRevCycle3, dblMerchWoodRevCycle4);
+                        returnEscalators = new Escalators(dblEnergyWoodRevCycle2, dblEnergyWoodRevCycle3, dblEnergyWoodRevCycle4,
+                                                          dblMerchWoodRevCycle2, dblMerchWoodRevCycle3, dblMerchWoodRevCycle4,
+                                                          dblOperatingCostsCycle2, dblOperatingCostsCycle3, dblOperatingCostsCycle4);
                     }
                 }
             }
@@ -2884,7 +2891,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private class escalators
+        public class Escalators
         {
             double _dblEnergyWoodRevCycle2;
             double _dblEnergyWoodRevCycle3;
@@ -2892,10 +2899,15 @@ namespace FIA_Biosum_Manager
             double _dblMerchWoodRevCycle2;
             double _dblMerchWoodRevCycle3;
             double _dblMerchWoodRevCycle4;
+            double _dblOperatingCostsCycle2;
+            double _dblOperatingCostsCycle3;
+            double _dblOperatingCostsCycle4;
 
 
-            public escalators(double energyWoodRevCycle2, double energyWoodRevCycle3, double energyWoodRevCycle4,
-                              double merchWoodRevCycle2, double merchWoodRevCycle3, double merchWoodRevCycle4)
+
+            public Escalators(double energyWoodRevCycle2, double energyWoodRevCycle3, double energyWoodRevCycle4,
+                              double merchWoodRevCycle2, double merchWoodRevCycle3, double merchWoodRevCycle4,
+                              double operatingCostsCycle2, double operatingCostsCycle3, double operatingCostsCycle4)
             {
                 _dblEnergyWoodRevCycle2 = energyWoodRevCycle2;
                 _dblEnergyWoodRevCycle3 = energyWoodRevCycle3;
@@ -2903,8 +2915,11 @@ namespace FIA_Biosum_Manager
                 _dblMerchWoodRevCycle2 = merchWoodRevCycle2;
                 _dblMerchWoodRevCycle3 = merchWoodRevCycle3;
                 _dblMerchWoodRevCycle4 = merchWoodRevCycle4;
+                _dblOperatingCostsCycle2 = operatingCostsCycle2;
+                _dblOperatingCostsCycle3 = operatingCostsCycle3;
+                _dblOperatingCostsCycle4 = operatingCostsCycle4;
             }
-            
+
             public double EnergyWoodRevCycle2
             {
                 get { return _dblEnergyWoodRevCycle2; }
@@ -2928,6 +2943,18 @@ namespace FIA_Biosum_Manager
             public double MerchWoodRevCycle4
             {
                 get { return _dblMerchWoodRevCycle4; }
+            }
+            public double OperatingCostsCycle2
+            {
+                get { return _dblOperatingCostsCycle2; }
+            }
+            public double OperatingCostsCycle3
+            {
+                get { return _dblOperatingCostsCycle3; }
+            }
+            public double OperatingCostsCycle4
+            {
+                get { return _dblOperatingCostsCycle4; }
             }
         }
 

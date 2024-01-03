@@ -6353,7 +6353,7 @@ namespace FIA_Biosum_Manager
 
             public static string UpdateSqliteHarvestCostsTableWithCompleteCostsPerAcre(
                 string p_strTotalAdditionalCostsTableName,
-                string p_strHarvestCostsTableName, ProcessorScenarioItem.Escalators p_oEscalators,
+                string p_strHarvestCostsTableName, processor.Escalators p_oEscalators,
                 bool p_bIncludeZeroHarvestCpa)
             {
                 string strSql = $@"UPDATE {p_strHarvestCostsTableName} AS h SET additional_cpa = 
@@ -6418,7 +6418,7 @@ namespace FIA_Biosum_Manager
             }
 
             public static string UpdateSqliteHarvestCostsTableWithKcpCostsPerAcre(string p_strKcpAddlCostsTableName,
-                string p_strHarvestCostsTableName, ProcessorScenarioItem.Escalators p_oEscalators, bool p_bIncludeZeroHarvestCpa)
+                string p_strHarvestCostsTableName, processor.Escalators p_oEscalators, bool p_bIncludeZeroHarvestCpa)
             {
                 string strSql = $@"UPDATE {p_strHarvestCostsTableName} 
                         SET (additional_cpa, complete_cpa) = (SELECT additional_cpa, 
@@ -6439,8 +6439,7 @@ namespace FIA_Biosum_Manager
                 return strSql;
             }
 
-            public static string UpdateHarvestCostsTableWhenZeroKcpCosts(
-                string p_strHarvestCostsTableName, string p_strScenarioId)
+            public static string UpdateHarvestCostsTableWhenZeroKcpCosts(string p_strHarvestCostsTableName, string p_strScenarioId)
             {
                 string strSql = $@"UPDATE {p_strHarvestCostsTableName} h, {Tables.ProcessorScenarioRuleDefinitions.DefaultCostRevenueEscalatorsTableName} e 
                                 SET h.complete_cpa = IIF(h.RXCycle='1', h.harvest_cpa,IIF(h.rxcycle='2', h.harvest_cpa*e.EscalatorOperatingCosts_Cycle2,
@@ -6450,7 +6449,7 @@ namespace FIA_Biosum_Manager
                 return strSql;
             }
             public static string UpdateSqliteHarvestCostsTableWhenZeroKcpCosts(
-                string p_strHarvestCostsTableName, ProcessorScenarioItem.Escalators p_oEscalators)
+                string p_strHarvestCostsTableName, processor.Escalators p_oEscalators)
             {
                 string strSql = $@"UPDATE {p_strHarvestCostsTableName}
                                 SET complete_cpa = CASE WHEN RXCYCLE = '2' THEN harvest_cpa * {p_oEscalators.OperatingCostsCycle2} 
