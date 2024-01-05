@@ -973,6 +973,337 @@ namespace FIA_Biosum_Manager
             return -1;
         }
 
+        public int CreateSqliteOpcostInput(string p_strVariant, string p_strRxPackage)
+        {
+            int intReturnVal = -1;
+            int intHwdSpeciesCodeThreshold = 299; // Species codes greater than this are hardwoods
+            if (m_trees.Count < 1)
+            {
+                System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                sb.Append("No cut trees have been loaded for this scenario, variant, package combination. ");
+                sb.Append("The OpCost input file cannot be created!\r\n");
+                sb.Append($@"Review the log at {m_strDebugFile}.");
+                System.Windows.MessageBox.Show(sb.ToString(),
+                    "FIA Biosum", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                return intReturnVal;
+            }
+
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//Processor.CreateSqliteOpcostInput BEGIN \r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+
+            if (SQLite.m_intError == 0)
+            {
+
+                // create opcost input table
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(m_strSqliteConnection)))
+                {
+                    conn.Open();
+                    frmMain.g_oTables.m_oProcessor.CreateNewSQLiteOpcostInputTable(SQLite, conn, m_strOpcostTableName);
+                }
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "createOpcostInput: Read trees into opcost input - " + System.DateTime.Now.ToString() + "\r\n");
+
+                System.Collections.Generic.IDictionary<string, opcostInput> dictOpcostInput =
+                    new System.Collections.Generic.Dictionary<string, opcostInput>();
+
+                foreach (tree nextTree in m_trees)
+                {
+                    opcostInput nextInput = null;
+                    string strStand = nextTree.CondId + nextTree.RxPackage + nextTree.Rx + nextTree.RxCycle;
+                    bool blnFound = dictOpcostInput.TryGetValue(strStand, out nextInput);
+                    if (!blnFound)
+                    {
+                        nextInput = new opcostInput(nextTree.CondId, nextTree.Slope, nextTree.RxCycle, nextTree.RxPackage,
+                                                    nextTree.Rx, nextTree.RxYear, nextTree.YardingDistance, nextTree.Elevation,
+                                                    nextTree.HarvestMethod, nextTree.TravelTime, m_scenarioMoveInCost);
+                        dictOpcostInput.Add(strStand, nextInput);
+                    }
+
+                    // All trees add their BaFracCutNumerator to the total, regardless of treeType
+                    nextInput.TotalBaFracCutNumerator = nextInput.TotalBaFracCutNumerator + nextTree.BaFracCutNumerator;
+
+                    // Metrics for brush cut trees
+                    if (nextTree.TreeType == OpCostTreeType.BC)
+                    {
+                        nextInput.TotalBcTpa = nextInput.TotalBcTpa + nextTree.Tpa;
+                        nextInput.PerAcBcVolCf = nextInput.PerAcBcVolCf + nextTree.BrushCutVolCfPa;
+                    }
+
+                    // Metrics for chip trees
+                    else if (nextTree.TreeType == OpCostTreeType.CT)
+                    {
+                        nextInput.TotalChipTpa = nextInput.TotalChipTpa + nextTree.Tpa;
+                        nextInput.ChipMerchVolCfPa = nextInput.ChipMerchVolCfPa + nextTree.MerchVolCfPa;
+                        nextInput.ChipNonMerchVolCfPa = nextInput.ChipNonMerchVolCfPa + nextTree.NonMerchVolCfPa;
+                        nextInput.ChipVolCfPa = nextInput.ChipVolCfPa + nextTree.TotalVolCfPa;
+                        nextInput.ChipWtGtPa = nextInput.ChipWtGtPa + nextTree.TotalWtGtPa;
+                        if (Convert.ToInt32(nextTree.SpCd) > intHwdSpeciesCodeThreshold)
+                            nextInput.ChipHwdVolCfPa = nextInput.ChipHwdVolCfPa + nextTree.TotalVolCfPa;
+                    }
+
+                    // Metrics for small log trees
+                    else if (nextTree.TreeType == OpCostTreeType.SL)
+                    {
+                        nextInput.TotalSmLogTpa = nextInput.TotalSmLogTpa + nextTree.Tpa;
+                        nextInput.SmLogMerchVolCfPa = nextInput.SmLogMerchVolCfPa + nextTree.MerchVolCfPa;
+                        if (nextTree.IsNonCommercial || nextTree.IsCull)
+                        {
+                            nextInput.SmLogNonCommMerchVolCfPa = nextInput.SmLogNonCommMerchVolCfPa + nextTree.MerchVolCfPa;
+                            nextInput.SmLogNonCommVolCfPa = nextInput.SmLogNonCommVolCfPa + nextTree.TotalVolCfPa;
+                        }
+                        else
+                        {
+                            nextInput.SmLogCommNonMerchVolCfPa = nextInput.SmLogCommNonMerchVolCfPa + nextTree.NonMerchVolCfPa;
+                        }
+                        nextInput.SmLogVolCfPa = nextInput.SmLogVolCfPa + nextTree.TotalVolCfPa;
+                        nextInput.SmLogWtGtPa = nextInput.SmLogWtGtPa + nextTree.TotalWtGtPa;
+                        if (Convert.ToInt32(nextTree.SpCd) > intHwdSpeciesCodeThreshold)
+                            nextInput.SmLogHwdVolCfPa = nextInput.SmLogHwdVolCfPa + nextTree.TotalVolCfPa;
+                        nextInput.TotalSmLogQmdPa = nextInput.TotalSmLogQmdPa + nextTree.QmdPa;
+                    }
+
+                    // Metrics for large log trees
+                    else if (nextTree.TreeType == OpCostTreeType.LL)
+                    {
+                        nextInput.TotalLgLogTpa = nextInput.TotalLgLogTpa + nextTree.Tpa;
+                        nextInput.LgLogMerchVolCfPa = nextInput.LgLogMerchVolCfPa + nextTree.MerchVolCfPa;
+                        if (nextTree.IsNonCommercial || nextTree.IsCull)
+                        {
+                            nextInput.LgLogNonCommMerchVolCfPa = nextInput.LgLogNonCommMerchVolCfPa + nextTree.MerchVolCfPa;
+                            nextInput.LgLogNonCommVolCfPa = nextInput.LgLogNonCommVolCfPa + nextTree.TotalVolCfPa;
+                        }
+                        else
+                        {
+                            nextInput.LgLogCommNonMerchVolCfPa = nextInput.LgLogCommNonMerchVolCfPa + nextTree.NonMerchVolCfPa;
+                        }
+                        nextInput.LgLogVolCfPa = nextInput.LgLogVolCfPa + nextTree.TotalVolCfPa;
+                        nextInput.LgLogWtGtPa = nextInput.LgLogWtGtPa + nextTree.TotalWtGtPa;
+                        if (Convert.ToInt32(nextTree.SpCd) > intHwdSpeciesCodeThreshold)
+                            nextInput.LgLogHwdVolCfPa = nextInput.LgLogHwdVolCfPa + nextTree.TotalVolCfPa;
+                        nextInput.TotalLgLogQmdPa = nextInput.TotalLgLogQmdPa + nextTree.QmdPa;
+                    }
+                }
+                //System.Windows.MessageBox.Show(dictOpcostInput.Keys.Count + " lines in file");
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "createOpcostInput: Finished reading trees - " + System.DateTime.Now.ToString() + "\r\n");
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "createOpcostInput: Load Basal Area for all conditions from PRE_FVS_SUMMARY - " + System.DateTime.Now.ToString() + "\r\n");
+
+                System.Collections.Generic.IDictionary<string, double> dictFvsPreBasalArea = this.LoadFvsPreBasalArea(p_strVariant, p_strRxPackage);
+
+                if (dictFvsPreBasalArea.Keys.Count == 0)
+                {
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "createOpcostInput: NO BASAL AREA (BA) RECORDS FOUND IN PRE_FVS_SUMMARY TABLE!!   \r\n");
+                }
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "createOpcostInput: Begin writing opcost input table - " + System.DateTime.Now.ToString() + "\r\n");
+                long lngCount = 0;
+
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(m_strSqliteConnection)))
+                {
+                    conn.Open();
+                    System.Data.SQLite.SQLiteTransaction transaction;
+                    System.Data.SQLite.SQLiteCommand command = conn.CreateCommand();
+
+                    // Start a local transaction
+                    transaction = conn.BeginTransaction(System.Data.IsolationLevel.ReadCommitted);
+                    // Assign transaction object for a pending local transaction
+                    command.Transaction = transaction;
+
+                    try
+                    {
+                        foreach (string key in dictOpcostInput.Keys)
+                        {
+                    opcostInput nextStand = dictOpcostInput[key];
+
+                    // Some fields we wait to calculate until we have the totals
+                    // *** BRUSH CUT ***
+                    double dblBcAvgVolume = 0;
+
+                    if (nextStand.TotalBcTpa > 0)
+                    { dblBcAvgVolume = nextStand.PerAcBcVolCf / nextStand.TotalBcTpa; }
+
+                    // *** CHIP TREES ***
+                    double dblCtAvgVolume = 0;
+                    if (nextStand.TotalChipTpa > 0)
+                    { dblCtAvgVolume = nextStand.ChipVolCfPa / nextStand.TotalChipTpa; }
+                    double dblCtMerchPctTotal = 0;
+                    double dblCtAvgDensity = 0;
+                    double dblCtHwdPct = 0;
+                    if (nextStand.ChipVolCfPa > 0)
+                    {
+                        dblCtMerchPctTotal = nextStand.ChipMerchVolCfPa / nextStand.ChipVolCfPa * 100;
+                        dblCtAvgDensity = nextStand.ChipWtGtPa * 2000 / nextStand.ChipVolCfPa;
+                        dblCtHwdPct = nextStand.ChipHwdVolCfPa / nextStand.ChipVolCfPa * 100;
+                    }
+
+
+                    // *** SMALL LOGS ***
+                    double dblSmLogAvgVolume = 0;
+                    double dblSmLogAvgVolumeAdj = 0;
+                    if (nextStand.TotalSmLogTpa > 0)
+                    { dblSmLogAvgVolume = nextStand.SmLogVolCfPa / nextStand.TotalSmLogTpa; }
+                    double dblSmLogMerchPctTotal = 0;
+                    double dblSmLogChipPct_Cat1_3 = 0;
+                    double dblSmLogChipPct_Cat2_4 = 0;
+                    double dblSmLogChipPct_Cat5 = 0;
+                    double dblSmLogAvgDensity = 0;
+                    double dblSmLogHwdPct = 0;
+                    if (nextStand.SmLogVolCfPa > 0)
+                    {
+                        dblSmLogMerchPctTotal = nextStand.SmLogMerchVolCfPa / nextStand.SmLogVolCfPa * 100;
+                        dblSmLogChipPct_Cat1_3 = nextStand.SmLogNonCommMerchVolCfPa / nextStand.SmLogVolCfPa * 100;
+                        dblSmLogChipPct_Cat2_4 = (nextStand.SmLogNonCommVolCfPa + nextStand.SmLogCommNonMerchVolCfPa) / nextStand.SmLogVolCfPa * 100;
+                        dblSmLogChipPct_Cat5 = nextStand.SmLogNonCommVolCfPa / nextStand.SmLogVolCfPa * 100;
+                        dblSmLogAvgDensity = nextStand.SmLogWtGtPa * 2000 / nextStand.SmLogVolCfPa;
+                        dblSmLogHwdPct = nextStand.SmLogHwdVolCfPa / nextStand.SmLogVolCfPa * 100;
+                    }
+                    // Apply OpCost value limits
+                    if (nextStand.TotalSmLogTpa > 0)
+                    {
+                        if (nextStand.TotalSmLogTpa < nextStand.HarvestMethod.MinTpa)
+                        {
+                            nextStand.TotalSmLogTpaUnadj = nextStand.TotalSmLogTpa;
+                            nextStand.TotalSmLogTpa = nextStand.HarvestMethod.MinTpa;
+                        }
+                        if (dblSmLogAvgVolume < nextStand.HarvestMethod.MinAvgTreeVolCf)
+                        {
+                            dblSmLogAvgVolumeAdj = dblSmLogAvgVolume;
+                            dblSmLogAvgVolume = nextStand.HarvestMethod.MinAvgTreeVolCf;
+                        }
+                    }
+
+                    // *** LARGE LOGS ***
+                    double dblLgLogAvgVolume = 0;
+                    double dblLgLogAvgVolumeAdj = 0;
+                    if (nextStand.TotalLgLogTpa > 0)
+                    { dblLgLogAvgVolume = nextStand.LgLogVolCfPa / nextStand.TotalLgLogTpa; }
+                    double dblLgLogMerchPctTotal = 0;
+                    double dblLgLogChipPct_Cat1_3_4 = 0;
+                    double dblLgLogChipPct_Cat2 = 0;
+                    double dblLgLogChipPct_Cat5 = 0;
+                    double dblLgLogAvgDensity = 0;
+                    double dblLgLogHwdPct = 0;
+                    if (nextStand.LgLogVolCfPa > 0)
+                    {
+                        dblLgLogMerchPctTotal = nextStand.LgLogMerchVolCfPa / nextStand.LgLogVolCfPa * 100;
+                        dblLgLogChipPct_Cat1_3_4 = nextStand.LgLogNonCommMerchVolCfPa / nextStand.LgLogVolCfPa * 100;
+                        dblLgLogChipPct_Cat2 = (nextStand.LgLogNonCommVolCfPa + nextStand.LgLogCommNonMerchVolCfPa) / nextStand.LgLogVolCfPa * 100;
+                        dblLgLogChipPct_Cat5 = nextStand.LgLogNonCommVolCfPa / nextStand.LgLogVolCfPa * 100;
+                        dblLgLogAvgDensity = nextStand.LgLogWtGtPa * 2000 / nextStand.LgLogVolCfPa;
+                        dblLgLogHwdPct = nextStand.LgLogHwdVolCfPa / nextStand.LgLogVolCfPa * 100;
+                    }
+                    // Apply OpCost value limits
+                    if (nextStand.TotalLgLogTpa > 0)
+                    {
+                        if (dblLgLogAvgVolume < nextStand.HarvestMethod.MinAvgTreeVolCf)
+                        {
+                            dblLgLogAvgVolumeAdj = dblLgLogAvgVolume;
+                            dblLgLogAvgVolume = nextStand.HarvestMethod.MinAvgTreeVolCf;
+                        }
+                    }
+
+                    // ** BA FRAC CUT (INTENSITY) **
+                    if (dictFvsPreBasalArea.ContainsKey(nextStand.OpCostStand))
+                    {
+                        double dblBaFracCutDenominator = dictFvsPreBasalArea[nextStand.OpCostStand];
+                        if (dblBaFracCutDenominator > 0)
+                        {
+                            double dblTestBaFracCut = nextStand.TotalBaFracCutNumerator / dblBaFracCutDenominator;
+                            if (dblTestBaFracCut > 0 &&
+                                dblTestBaFracCut < 1)
+                            {
+                                nextStand.BaFracCut = dblTestBaFracCut;
+                            }
+                            else
+                            {
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, "BA_FRAC_CUT --> INVALID VALUE: " + dblTestBaFracCut + " from opcost stand " + nextStand.OpCostStand + "\r\n");
+                            }
+                        }
+                        else
+                        {
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, "BA_FRAC_CUT --> INVALID VALUE FOR PRE_FVS_SUMMARY.BA: " + dblBaFracCutDenominator + " from opcost stand " + nextStand.OpCostStand + "\r\n");
+                        }
+                    }
+                    else
+                    {
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "BA_FRAC_CUT --> OPCOST STAND MISSING FROM PRE_FVS_SUMMARY TABLE: " + nextStand.OpCostStand + "\r\n");
+                    }
+
+                    SQLite.m_strSQL = "INSERT INTO " + m_strOpcostTableName + " " +
+                    "(Stand, [Percent Slope], [One-way Yarding Distance], YearCostCalc, " +
+                    "[Project Elevation], [Harvesting System], [Chip tree per acre], [Chip trees MerchAsPctOfTotal], " +
+                    "[Chip trees average volume(ft3)], [CHIPS Average Density (lbs/ft3)], [CHIPS Hwd Percent], [Small log trees per acre],  " +
+                    "[Small log trees MerchAsPctOfTotal], [Small log trees ChipPct_Cat1_3], [Small log trees ChipPct_Cat2_4], " +
+                    "[Small log trees ChipPct_Cat5], [Small log trees average volume(ft3)], [Small log trees average density(lbs/ft3)], " +
+                    "[Small log trees hardwood percent], [Large log trees per acre], [Large log trees MerchAsPctOfTotal], " +
+                    "[Large log trees ChipPct_Cat1_3_4], [Large log trees ChipPct_Cat2], [Large log trees ChipPct_Cat5], " +
+                    "[Large log trees average vol(ft3)], [Large log trees average density(lbs/ft3)], [Large log trees hardwood percent], " +
+                    "BrushCutTPA, [BrushCutAvgVol], RxPackage_Rx_RxCycle, biosum_cond_id, RxPackage, Rx, RxCycle, Move_In_Hours, " +
+                    "Harvest_Area_Assumed_Acres, [Unadjusted One-way Yarding distance], " +
+                    "[Unadjusted Small log trees per acre], [Unadjusted Small log trees average volume (ft3)], " +
+                    "[Unadjusted Large log trees per acre], [Unadjusted Large log trees average vol(ft3)], " +
+                    "ba_frac_cut, QMD_SL, QMD_LL )" +
+                    "VALUES ('" + nextStand.OpCostStand + "', " + nextStand.PercentSlope + ", " + nextStand.YardingDistance + ", '" + nextStand.RxYear + "', " +
+                    nextStand.Elev + ", '" + nextStand.HarvestMethod.Method + "', " + nextStand.TotalChipTpa + ", " +
+                    dblCtMerchPctTotal + ", " + dblCtAvgVolume + ", " + dblCtAvgDensity + ", " + dblCtHwdPct + ", " +
+                    nextStand.TotalSmLogTpa + ", " + dblSmLogMerchPctTotal + ", " + dblSmLogChipPct_Cat1_3 + ", " +
+                    dblSmLogChipPct_Cat2_4 + ", " + dblSmLogChipPct_Cat5 + ", " + dblSmLogAvgVolume + ", " + dblSmLogAvgDensity + ", " + dblSmLogHwdPct + ", " +
+                    nextStand.TotalLgLogTpa + ", " + dblLgLogMerchPctTotal + ", " + dblLgLogChipPct_Cat1_3_4 + "," +
+                    dblLgLogChipPct_Cat2 + "," + dblLgLogChipPct_Cat5 + "," + dblLgLogAvgVolume + ", " +
+                    dblLgLogAvgDensity + ", " + dblLgLogHwdPct + "," + nextStand.TotalBcTpa + ", " + dblBcAvgVolume +
+                    ",'" + nextStand.RxPackageRxRxCycle + "', '" + nextStand.CondId + "', '" + nextStand.RxPackage + "', '" +
+                    nextStand.Rx + "', '" + nextStand.RxCycle + "', " + nextStand.MoveInHours + ", " +
+                    nextStand.HarvestAreaAssumedAc + ", " + nextStand.YardingDistanceUnadj + ", " +
+                    nextStand.TotalSmLogTpaUnadj + ", " + dblSmLogAvgVolumeAdj + ", " +
+                    nextStand.TotalLgLogTpaUnadj + ", " + dblLgLogAvgVolumeAdj + ", " + nextStand.BaFracCut + ", " +
+                    nextStand.QMD_SL + ", " + nextStand.QMD_LL +
+                    " )";
+
+                            command.CommandText = SQLite.m_strSQL;
+                            command.ExecuteNonQuery();
+                            lngCount++;
+                            intReturnVal = 0;
+                        }
+                        transaction.Commit();
+                    }
+                    catch (Exception err)
+                    {
+                        SQLite.m_intError = -1;
+                        System.Windows.Forms.MessageBox.Show(err.Message);
+                        transaction.Rollback();
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Processor.createSqliteOpcostInput ERROR " + System.DateTime.Now.ToString() + "\r\n");
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "SQL: " + SQLite.m_strSQL + "\r\n");
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "*********************************************" + "\r\n");
+                    }
+                    transaction.Dispose();
+                    transaction = null;
+                    if (SQLite.m_intError < 0)
+                    {
+                        return SQLite.m_intError;
+                    }
+                }   // end using
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                {
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//Processor.createOpcostInput END \r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//INSERTED " + lngCount + " RECORDS: " + System.DateTime.Now.ToString() + "\r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+                }
+                return intReturnVal;
+            }
+            return -1;
+        }
+
         public int CreateTreeVolValWorkTable(string strDateTimeCreated)
         {
             int intReturnVal = -1;

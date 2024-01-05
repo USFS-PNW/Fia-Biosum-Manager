@@ -3554,26 +3554,50 @@ namespace FIA_Biosum_Manager
 
             //add the year
             //ALTER TABLE YEAR COLUMN
-            m_oAdo.m_strSQL = "ALTER TABLE OPCOST_INPUT ALTER  COLUMN [YearCostCalc] INTEGER;";
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+            // Can't we just define this as an INTEGER to begin with?
+            //m_oAdo.m_strSQL = "ALTER TABLE OPCOST_INPUT ALTER COLUMN [YearCostCalc] INTEGER;";
+            //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+            //m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
 
-            m_oAdo.m_strSQL = "DROP TABLE temp_year";
-            if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, "temp_year"))
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            m_oAdo.m_strSQL = "SELECT DISTINCT biosum_cond_id+rxpackage+rx+rxcycle AS STAND,RXYEAR " +
-                              "INTO temp_year " +
-                              "FROM " + Tables.FVS.DefaultFVSCutTreeTableName;
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            m_oAdo.m_strSQL = "UPDATE opcost_input a INNER JOIN temp_year b ON a.STAND=b.STAND SET a.YearCostCalc=CINT(b.RXYEAR)";
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            m_oAdo.m_strSQL = "DROP TABLE temp_year";
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+            //m_oAdo.m_strSQL = "DROP TABLE temp_year";
+            //if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, "temp_year"))
+            //    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+            //m_oAdo.m_strSQL = "SELECT DISTINCT biosum_cond_id+rxpackage+rx+rxcycle AS STAND,RXYEAR " +
+            //                  "INTO temp_year " +
+            //                  "FROM " + Tables.FVS.DefaultFVSCutTreeTableName;
+            //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+            //m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+            //m_oAdo.m_strSQL = "UPDATE opcost_input a INNER JOIN temp_year b ON a.STAND=b.STAND SET a.YearCostCalc=CINT(b.RXYEAR)";
+            //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+            //m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+            //m_oAdo.m_strSQL = "DROP TABLE temp_year";
+            //m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+
+            m_oDataMgr.m_strSQL = "DROP TABLE temp_year";
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(m_strTempSqliteDbFile)))
+            {
+                conn.Open();
+                if (m_oDataMgr.TableExist(conn, "temp_year"))
+                    m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+                string strFvsTreeListDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
+                m_oDataMgr.m_strSQL = $@"ATTACH DATABASE '{strFvsTreeListDb}' AS FVSOUT";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+                m_oDataMgr.m_strSQL = $@"CREATE TABLE temp_year AS SELECT DISTINCT biosum_cond_id||rxpackage||rx||rxcycle AS STAND,RXYEAR FROM {Tables.FVS.DefaultFVSCutTreeTableName}";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+                m_oDataMgr.m_strSQL = "UPDATE opcost_input SET YearCostCalc = (SELECT cast(rxyear as integer) FROM temp_year b WHERE opcost_input.stand = b.stand)";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+                m_oDataMgr.m_strSQL = "DROP TABLE temp_year";
+                m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+            }
 
             string strOPCOSTErrorFilePath = frmMain.g_oFrmMain.getProjectDirectory() + "\\OPCOST\\Input\\" +
                                              p_strVariant + "_" + p_strRxPackage + "_opcost_error_log.txt";
@@ -5982,7 +6006,8 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oDelegate.SetControlPropertyValue(lblMsg, "Text", "Creating OpCost Input...Stand By");
                             y++;
                             frmMain.g_oDelegate.SetControlPropertyValue(ReferenceProgressBarEx, "Value", y);
-                            m_intError = mainProcessor.CreateOpcostInput(strVariant, strRxPackage);
+                            //m_intError = mainProcessor.CreateOpcostInput(strVariant, strRxPackage);
+                            m_intError = mainProcessor.CreateSqliteOpcostInput(strVariant, strRxPackage);
 
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             {
@@ -5994,8 +6019,8 @@ namespace FIA_Biosum_Manager
 
                         if (m_intError == 0)
                         {
-                            m_oAdo.m_strSQL = "SELECT COUNT(*) AS reccount FROM opcost_input";
-                            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                            //m_oAdo.m_strSQL = "SELECT COUNT(*) AS reccount FROM opcost_input";
+                            //m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
                             y++;
                             frmMain.g_oDelegate.SetControlPropertyValue(ReferenceProgressBarEx, "Value", y);
                         }

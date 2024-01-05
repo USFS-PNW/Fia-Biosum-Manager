@@ -5325,13 +5325,19 @@ namespace FIA_Biosum_Manager
                 // No indexes currently on OpCost input table
             }
 
+            public void CreateNewSQLiteOpcostInputTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, Tables.Processor.CreateNewOpcostInputTableSQL(p_strTableName));
+                // No indexes currently on OpCost input table
+            }
+
             static public string CreateNewOpcostInputTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " " +
                              "(Stand text (255)," +
                              " [Percent Slope] short," +
                              " [One-way Yarding Distance] DOUBLE," +
-                             " YearCostCalc long," +
+                             " YearCostCalc INTEGER," +
                              " [Project Elevation] short," +
                              " [Harvesting System] text (50)," +
                              " [Chip tree per acre] single," +

@@ -4617,7 +4617,8 @@ namespace FIA_Biosum_Manager
                                             transaction = null;
                                         }
                                         strConn = oConn.ConnectionString;
-                                        oAdo.m_OleDbDataReader.Close(); oAdo.m_OleDbDataReader.Dispose();
+                                        oAdo.m_OleDbDataReader.Close();
+                                    oAdo.m_OleDbDataReader.Dispose();
                                         _MSAccess.CloseConnection(oConn);
                                         oConn.Dispose();
                                         //oAdo = null;
