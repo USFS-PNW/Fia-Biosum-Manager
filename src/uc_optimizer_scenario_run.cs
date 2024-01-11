@@ -5558,27 +5558,65 @@ namespace FIA_Biosum_Manager
                 /**********************************************************************
                  **check to see if the plot record exists in the gis travel times table
                  **********************************************************************/
-                 m_ado.m_strSQL="SELECT COUNT(*) FROM " + 
-                                    "(SELECT TOP 1 a.biosum_cond_id " + 
-                                    "FROM " + Tables.Audit.DefaultCondAuditTableName + " AS a," + 
-                                         "ruledefinitionscondfilter b," + 
-                                          m_strTravelTimeTable + " c " + 
-                                    "WHERE a.biosum_cond_id = b.biosum_cond_id AND c.biosum_plot_id=b.biosum_plot_id)";
-                 if ((int)m_ado.getRecordCount(m_TempMDBFileConn, m_ado.m_strSQL, "temp") > 0)
-                 {
-                     this.m_strSQL = "UPDATE " + Tables.Audit.DefaultCondAuditTableName + " a " +
-                                     "SET a.gis_travel_times_yn = 'Y' " +
-                                     "WHERE a.biosum_cond_id " +
-                                     "IN (SELECT biosum_cond_id FROM ruledefinitionscondfilter " +
-                                         "WHERE ruledefinitionscondfilter.biosum_plot_id " +
-                                                "IN (SELECT biosum_plot_id FROM " +
-                                                     this.m_strTravelTimeTable + "));";
-                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                         frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nSet gis_travel_times_yn=Y if plot record exists in " + this.m_strTravelTimeTable + " table\r\n");
-                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
-                     this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
-                 }
+
+                // DO SEPARATELY VIA DATAMGR
+                DataMgr tempDataMgr = new DataMgr();
+                string strAuditDbPathAndFile = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\" + Tables.Audit.DefaultCondAuditTableSqliteDbFile;
+                string strGISDbPathAndFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.TravelTime.DefaultTravelTimePathAndDbFile;
+
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(tempDataMgr.GetConnectionString(strAuditDbPathAndFile)))
+                {
+                    conn.Open();
+                    tempDataMgr.m_strSQL = "ATTACH DATABASE '" + strGISDbPathAndFile + "' AS gis";
+                    tempDataMgr.SqlNonQuery(conn, tempDataMgr.m_strSQL);
+
+                    tempDataMgr.m_strSQL = "ATTACH DATABASE '" + m_strSystemResultsDbPathAndFile + "' AS optimizer_results";
+                    tempDataMgr.SqlNonQuery(conn, tempDataMgr.m_strSQL);
+
+                    tempDataMgr.m_strSQL = "SELECT COUNT(*) FROM " +
+                                    "(SELECT a.biosum_cond_id " +
+                                    "FROM " + Tables.Audit.DefaultCondAuditTableName + " AS a," +
+                                         "ruledefinitionscondfilter b," +
+                                          m_strTravelTimeTable + " c " +
+                                    "WHERE a.biosum_cond_id = b.biosum_cond_id AND c.biosum_plot_id=b.biosum_plot_id LIMIT 1)";
+                    if ((int)tempDataMgr.getRecordCount(conn, tempDataMgr.m_strSQL, "temp") > 0)
+                    {
+                        tempDataMgr.m_strSQL = "UPDATE " + Tables.Audit.DefaultCondAuditTableName + " a " +
+                                       "SET a.gis_travel_times_yn = 'Y' " +
+                                       "WHERE a.biosum_cond_id " +
+                                       "IN (SELECT biosum_cond_id FROM ruledefinitionscondfilter " +
+                                           "WHERE ruledefinitionscondfilter.biosum_plot_id " +
+                                                  "IN (SELECT biosum_plot_id FROM " +
+                                                       this.m_strTravelTimeTable + "));";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nSet gis_travel_times_yn=Y if plot record exists in " + this.m_strTravelTimeTable + " table\r\n");
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+                        tempDataMgr.SqlNonQuery(conn, tempDataMgr.m_strSQL);
+                    }
+                }
+
+                //m_ado.m_strSQL="SELECT COUNT(*) FROM " + 
+                //                    "(SELECT TOP 1 a.biosum_cond_id " + 
+                //                    "FROM " + Tables.Audit.DefaultCondAuditTableName + " AS a," + 
+                //                         "ruledefinitionscondfilter b," + 
+                //                          m_strTravelTimeTable + " c " + 
+                //                    "WHERE a.biosum_cond_id = b.biosum_cond_id AND c.biosum_plot_id=b.biosum_plot_id)";
+                // if ((int)m_ado.getRecordCount(m_TempMDBFileConn, m_ado.m_strSQL, "temp") > 0)
+                // {
+                //     this.m_strSQL = "UPDATE " + Tables.Audit.DefaultCondAuditTableName + " a " +
+                //                     "SET a.gis_travel_times_yn = 'Y' " +
+                //                     "WHERE a.biosum_cond_id " +
+                //                     "IN (SELECT biosum_cond_id FROM ruledefinitionscondfilter " +
+                //                         "WHERE ruledefinitionscondfilter.biosum_plot_id " +
+                //                                "IN (SELECT biosum_plot_id FROM " +
+                //                                     this.m_strTravelTimeTable + "));";
+                //     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                //         frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nSet gis_travel_times_yn=Y if plot record exists in " + this.m_strTravelTimeTable + " table\r\n");
+                //     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                //         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+                //     this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
+                // }
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
                 if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic)) return;

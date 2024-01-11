@@ -698,30 +698,46 @@ namespace FIA_Biosum_Manager
 						//                      lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITEBIOPROCESSTYPE], false);
 						//                  m_Combo.SelectedIndexChanged += new EventHandler(m_Combo_SelectedIndexChanged);
 						//                  this.lstPSites.AddEmbeddedControl(m_Combo, COLUMN_PSITEBIOPROCESSTYPE, x);
-
-						if (p_ado.m_OleDbDataReader["biocd"] != System.DBNull.Value)
+						this.m_Combo = new ComboBox();
+                        m_Combo.Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+                        this.m_Combo.Items.Add("Merchantable - Logs Only");
+                        this.m_Combo.Items.Add("Chips - Chips Only");
+                        this.m_Combo.Items.Add("Both - Logs And Chips");
+                        if (p_ado.m_OleDbDataReader["biocd"] != System.DBNull.Value)
 						{
 							if (p_ado.m_OleDbDataReader["biocd"].ToString().Trim() == "1")
 							{
 								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Merchantable - Logs Only");
-
+								this.m_Combo.Text = "Merchantable - Logs Only";
 							}
 							else if (p_ado.m_OleDbDataReader["biocd"].ToString().Trim() == "2")
 							{
 								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Chips - Chips Only");
+								this.m_Combo.Text = "Chips - Chips Only";
 							}
 							else if(p_ado.m_OleDbDataReader["biocd"].ToString().Trim() == "3")
 							{
 								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Both - Logs And Chips");
+								this.m_Combo.Text = "Both - Logs And Chips";
 							}
 						}
 						else
 						{
 							this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Both - Logs And Chips");
+							this.m_Combo.Text = "Both - Logs And Chips";
 						}
+						this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(" ");
+						intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+						this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+
 						this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
 							COLUMN_PSITEBIOPROCESSTYPE,
 							lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITEBIOPROCESSTYPE], false);
+						m_Combo.SelectedIndexChanged += new EventHandler(m_Combo_SelectedIndexChanged);
+						this.lstPSites.AddEmbeddedControl(m_Combo, COLUMN_PSITEBIOPROCESSTYPE, x);
+						//this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
+						//	COLUMN_PSITEBIOPROCESSTYPE,
+						//	lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITEBIOPROCESSTYPE], false);
 						x++;
 					}
 				}
@@ -782,25 +798,12 @@ namespace FIA_Biosum_Manager
 
 									}
 								}
-								//if (p_ado.m_OleDbDataReader["biocd"] != System.DBNull.Value)
-								//{
-								//	byteBioCd = Convert.ToByte(p_ado.m_OleDbDataReader["biocd"]);
-								//	this.m_Combo = (System.Windows.Forms.ComboBox)this.lstPSites.GetEmbeddedControl(COLUMN_PSITEBIOPROCESSTYPE, x);
-								//	switch (byteBioCd)
-								//	{
-								//		case 1:
-								//			this.m_Combo.Text = "Merchantable - Logs Only";
-								//			break;
-								//		case 2:
-								//			this.m_Combo.Text = "Chips - Chips Only";
-								//			break;
-								//		case 3:
-								//			this.m_Combo.Text = "Both - Logs And Chips";
-								//			break;
-								//	}
-
-								//}
-							}
+                                if (p_ado.m_OleDbDataReader["biocd"] != System.DBNull.Value)
+                                {
+                                    byteBioCd = Convert.ToByte(p_ado.m_OleDbDataReader["biocd"]);
+                                    this.m_Combo = (System.Windows.Forms.ComboBox)this.lstPSites.GetEmbeddedControl(COLUMN_PSITEBIOPROCESSTYPE, x);
+                                }
+                            }
 						}
 
 					}

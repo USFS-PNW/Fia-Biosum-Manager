@@ -468,58 +468,109 @@ namespace FIA_Biosum_Manager
                             {
                                 this.m_strDataSource[x, FILESTATUS] = "F";
                                 this.m_strDataSource[x, TABLE] = dataMgr.m_DataReader["table_name"].ToString().Trim();
-                                string strExistsConn = oExistsAdo.getMDBConnString(strPathAndFile, "", "");
-
-                                // this is the first time the connection is used -> not open yet
-                                if (String.IsNullOrEmpty(oExistsConn.ConnectionString))
+								if (dataMgr.m_DataReader["file"].ToString().Trim().Substring(dataMgr.m_DataReader["file"].ToString().Trim().Length - 4) == "accdb"
+									|| dataMgr.m_DataReader["file"].ToString().Trim().Substring(dataMgr.m_DataReader["file"].ToString().Trim().Length - 3) == "mdb")
                                 {
-                                    oExistsConn.ConnectionString = strExistsConn;
-                                    oExistsConn.Open();
-                                }
+									string strExistsConn = oExistsAdo.getMDBConnString(strPathAndFile, "", "");
+
+									// this is the first time the connection is used -> not open yet
+									if (String.IsNullOrEmpty(oExistsConn.ConnectionString))
+									{
+										oExistsConn.ConnectionString = strExistsConn;
+										oExistsConn.Open();
+									}
+									else
+									{
+										// close and reopen the connection if the target database has changed
+										// the connectionString returned by the connection doesn't include the "Password" key that is included
+										// in strExistsConn
+										if (oExistsConn.ConnectionString + "Password=;" != strExistsConn)
+										{
+											if (oExistsConn.State != ConnectionState.Closed)
+											{
+												oExistsConn.Close();
+												oExistsConn.ConnectionString = strExistsConn;
+												oExistsConn.Open();
+											}
+										}
+									}
+
+									//see if the table exists in the mdb database container
+									if (oExistsAdo.TableExist(oExistsConn, dataMgr.m_DataReader["table_name"].ToString().Trim()) == true)
+									{
+										this.m_strDataSource[x, TABLESTATUS] = "F";
+										this.m_strDataSource[x, RECORDCOUNT] = "0";
+										this.m_strDataSource[x, COLUMN_LIST] = "";
+										this.m_strDataSource[x, DATATYPE_LIST] = "";
+
+										if (this.LoadTableRecordCount || this.LoadTableColumnNamesAndDataTypes)
+										{
+											strConn = p_ado.getMDBConnString(strPathAndFile, "admin", "");
+											p_ado.OpenConnection(strConn);
+											if (p_ado.m_intError == 0)
+											{
+												strSQL = "select count(*) from " + dataMgr.m_DataReader["table_name"].ToString();
+												if (this.LoadTableRecordCount) this.m_strDataSource[x, RECORDCOUNT] = Convert.ToString(p_ado.getRecordCount(strConn, strSQL, dataMgr.m_DataReader["table_name"].ToString()));
+												if (this.LoadTableColumnNamesAndDataTypes) p_ado.getFieldNamesAndDataTypes(strConn, "select * from " + dataMgr.m_DataReader["table_name"].ToString(), ref this.m_strDataSource[x, COLUMN_LIST], ref this.m_strDataSource[x, DATATYPE_LIST]);
+												p_ado.CloseConnection(p_ado.m_OleDbConnection);
+												while (p_ado.m_OleDbConnection.State != ConnectionState.Closed)
+													System.Threading.Thread.Sleep(5000);
+												p_ado.m_OleDbConnection.Dispose();
+											}
+										}
+									}
+									else
+									{
+										this.m_strDataSource[x, TABLESTATUS] = "NF";
+										this.m_strDataSource[x, RECORDCOUNT] = "0";
+									}
+								}
                                 else
                                 {
-                                    // close and reopen the connection if the target database has changed
-                                    // the connectionString returned by the connection doesn't include the "Password" key that is included
-                                    // in strExistsConn
-                                    if (oExistsConn.ConnectionString + "Password=;" != strExistsConn)
+									DataMgr oExistsDataMgr = new DataMgr();
+									string strExistsConn = oExistsDataMgr.GetConnectionString(strPathAndFile);
+									using (System.Data.SQLite.SQLiteConnection existsConn = new System.Data.SQLite.SQLiteConnection(strExistsConn))
                                     {
-                                        if (oExistsConn.State != ConnectionState.Closed)
-                                        {
-                                            oExistsConn.Close();
-                                            oExistsConn.ConnectionString = strExistsConn;
-                                            oExistsConn.Open();
-                                        }
-                                    }
-                                }
+										existsConn.Open();
+										//see if the table exists in the db database container
+										if (oExistsDataMgr.TableExist(existsConn, dataMgr.m_DataReader["table_name"].ToString().Trim()))
+										{
+											this.m_strDataSource[x, TABLESTATUS] = "F";
+											this.m_strDataSource[x, RECORDCOUNT] = "0";
+											this.m_strDataSource[x, COLUMN_LIST] = "";
+											this.m_strDataSource[x, DATATYPE_LIST] = "";
 
-                                //see if the table exists in the mdb database container
-                                if (oExistsAdo.TableExist(oExistsConn, dataMgr.m_DataReader["table_name"].ToString().Trim()) == true)
-                                {
-                                    this.m_strDataSource[x, TABLESTATUS] = "F";
-                                    this.m_strDataSource[x, RECORDCOUNT] = "0";
-                                    this.m_strDataSource[x, COLUMN_LIST] = "";
-                                    this.m_strDataSource[x, DATATYPE_LIST] = "";
-
-                                    if (this.LoadTableRecordCount || this.LoadTableColumnNamesAndDataTypes)
-                                    {
-                                        strConn = p_ado.getMDBConnString(strPathAndFile, "admin", "");
-                                        p_ado.OpenConnection(strConn);
-                                        if (p_ado.m_intError == 0)
-                                        {
-                                            strSQL = "select count(*) from " + dataMgr.m_DataReader["table_name"].ToString();
-                                            if (this.LoadTableRecordCount) this.m_strDataSource[x, RECORDCOUNT] = Convert.ToString(p_ado.getRecordCount(strConn, strSQL, dataMgr.m_DataReader["table_name"].ToString()));
-                                            if (this.LoadTableColumnNamesAndDataTypes) p_ado.getFieldNamesAndDataTypes(strConn, "select * from " + dataMgr.m_DataReader["table_name"].ToString(), ref this.m_strDataSource[x, COLUMN_LIST], ref this.m_strDataSource[x, DATATYPE_LIST]);
-                                            p_ado.CloseConnection(p_ado.m_OleDbConnection);
-                                            while (p_ado.m_OleDbConnection.State != ConnectionState.Closed)
-                                                System.Threading.Thread.Sleep(5000);
-                                            p_ado.m_OleDbConnection.Dispose();
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    this.m_strDataSource[x, TABLESTATUS] = "NF";
-                                    this.m_strDataSource[x, RECORDCOUNT] = "0";
+											if (this.LoadTableRecordCount || this.LoadTableColumnNamesAndDataTypes)
+											{
+												DataMgr sourceDataMgr = new DataMgr();
+												strConn = sourceDataMgr.GetConnectionString(strPathAndFile);
+												sourceDataMgr.OpenConnection(strConn);
+												if (sourceDataMgr.m_intError == 0)
+												{
+													strSQL = "select count(*) from " + dataMgr.m_DataReader["table_name"].ToString();
+													if (this.LoadTableRecordCount)
+													{
+														this.m_strDataSource[x, RECORDCOUNT] = Convert.ToString(sourceDataMgr.getRecordCount(strConn, strSQL, dataMgr.m_DataReader["table_name"].ToString()));
+													}
+													if (this.LoadTableColumnNamesAndDataTypes)
+													{
+														sourceDataMgr.getFieldNamesAndDataTypes(sourceDataMgr.m_Connection, "select * from " + dataMgr.m_DataReader["table_name"].ToString(), ref this.m_strDataSource[x, COLUMN_LIST], ref this.m_strDataSource[x, DATATYPE_LIST]);
+													}
+													sourceDataMgr.CloseConnection(sourceDataMgr.m_Connection);
+													while (sourceDataMgr.m_Connection.State != ConnectionState.Closed)
+													{
+														System.Threading.Thread.Sleep(5000);
+													}
+													sourceDataMgr.m_Connection.Dispose();
+												}
+											}
+										}
+										else
+										{
+											this.m_strDataSource[x, TABLESTATUS] = "NF";
+											this.m_strDataSource[x, RECORDCOUNT] = "0";
+										}
+									}
                                 }
                             }
                             else
