@@ -3875,7 +3875,7 @@ namespace FIA_Biosum_Manager
         //@ToDo: Need to work through all the permutations of Queries.FVS.SqliteFVSOutputTable_AuditPrePostGenericSQL
         // with the tempTable approach
         public void CreateFVSPrePostSeqNumTables(string strTargetDb, FVSPrePostSeqNumItem p_oItem, string p_strSourceTableName, string p_strSourceLinkedTableName, 
-            bool p_bAudit, bool p_bDebug, string p_strDebugFile, string p_strRunTitle, string p_strTempTable)
+            bool p_bAudit, bool p_bDebug, string p_strDebugFile, string p_strRunTitle, string p_strPotfireTableName, string p_strTempTable)
         {
             DataMgr dataMgr = new DataMgr();
             if (p_strSourceTableName.Trim().ToUpper() == "FVS_CASES") return;
@@ -3883,6 +3883,11 @@ namespace FIA_Biosum_Manager
             string[] strSQLArray = null;
             string strPrePostSeqNumMatrixTable = p_strSourceTableName + "_PREPOST_SEQNUM_MATRIX";
             string strAuditPrePostSeqNumCountsTable = "audit_" + p_strSourceTableName + "_prepost_seqnum_counts_table";
+            if (p_strSourceTableName.ToUpper().Equals("FVS_POTFIRE_TEMP"))
+            {
+                strAuditPrePostSeqNumCountsTable = "audit_" + p_strPotfireTableName + "_prepost_seqnum_counts_table";
+                strPrePostSeqNumMatrixTable = p_strPotfireTableName + "_PREPOST_SEQNUM_MATRIX";
+            }
             string strAuditYearCountsTable = "audit_" + p_strSourceTableName + "_year_counts_table";
             string strVariant = p_strRunTitle.Substring(7, 2);
             string strRxPackage = p_strRunTitle.Substring(11,3);
