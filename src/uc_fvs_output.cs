@@ -1955,7 +1955,7 @@ namespace FIA_Biosum_Manager
                     string strTmpSubset = TMPFVSOUT;
                     RunCreateTmpFvsOutTable(conn, oDataTableSchema, strFVSOutTable, strPreRunTitle, strTmpSubset);
                     // Create temp subset of POTFIRE BaseYr data in case we need it
-                    if (strFVSOutTable.ToUpper().Equals("FVS_POTFIRE_TEMP"))
+                    if (strFVSOutTable.ToUpper().Equals(m_strPotFireTable))
                     {
                         RunCreateTmpFvsOutTable(conn, oDataTableSchema, strFVSOutTable, $@"FVSOUT_{ p_strVariant}_POTFIRE_BaseYr", 
                             TMPBASEYROUT);
@@ -2021,7 +2021,7 @@ namespace FIA_Biosum_Manager
                         {
                             case "1":
                                 strRx = p_strRx1;
-                                if (strFVSOutTable.ToUpper().Equals("FVS_POTFIRE_TEMP") &&
+                                if (strFVSOutTable.ToUpper().Equals(m_strPotFireTable) &&
                                     m_oFVSPrePostSeqNumItem.RxCycle1PreSeqNumBaseYearYN == "Y")
                                 {
                                     strTmpSubset = TMPBASEYROUT;
@@ -2029,7 +2029,7 @@ namespace FIA_Biosum_Manager
                                 break;
                             case "2":
                                 strRx = p_strRx2;
-                                if (strFVSOutTable.ToUpper().Equals("FVS_POTFIRE_TEMP") &&
+                                if (strFVSOutTable.ToUpper().Equals(m_strPotFireTable) &&
                                     m_oFVSPrePostSeqNumItem.RxCycle2PreSeqNumBaseYearYN.Equals("Y"))
                                 {
                                     strTmpSubset = TMPBASEYROUT;
@@ -2041,7 +2041,7 @@ namespace FIA_Biosum_Manager
                                 break;
                             case "3":
                                 strRx = p_strRx3;
-                                if (strFVSOutTable.ToUpper().Equals("FVS_POTFIRE_TEMP") &&
+                                if (strFVSOutTable.ToUpper().Equals(m_strPotFireTable) &&
                                     m_oFVSPrePostSeqNumItem.RxCycle3PreSeqNumBaseYearYN.Equals("Y"))
                                 {
                                     strTmpSubset = TMPBASEYROUT;
@@ -2053,7 +2053,7 @@ namespace FIA_Biosum_Manager
                                 break;
                             case "4":
                                 strRx = p_strRx4;
-                                if (strFVSOutTable.ToUpper().Equals("FVS_POTFIRE_TEMP") &&
+                                if (strFVSOutTable.ToUpper().Equals(m_strPotFireTable) &&
                                     m_oFVSPrePostSeqNumItem.RxCycle4PreSeqNumBaseYearYN.Equals("Y"))
                                 {
                                     strTmpSubset = TMPBASEYROUT;
@@ -6375,8 +6375,20 @@ namespace FIA_Biosum_Manager
                                 
                             }
 
+                            // Delete temporary FVS_POTFIRE_TEMP
+                            string strAudit = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile);
+                            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strAudit))
+                            {
+                                conn.Open();
+                                if (SQLite.TableExist(conn, m_strPotFireTable))
+                                {
+                                    SQLite.m_strSQL = $@"DROP TABLE {m_strPotFireTable}";
+                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                }
+                            }
+
                             // Delete temporary FVS_CASES_TEMP
-                            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                             {
                                 conn.Open();
                                 if (SQLite.TableExist(conn, Tables.FVS.DefaultFVSCasesTempTableName))
