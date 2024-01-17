@@ -1078,6 +1078,22 @@ namespace FIA_Biosum_Manager
                     "number_value2 DOUBLE," +
                     "min_intensity INTEGER)";
             }
+            public void CreateIntensityWorkTableSqlite(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateIntensityWorkTableSQLiteSQL(p_strTableName));
+            }
+            static public string CreateIntensityWorkTableSQLiteSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "rx CHAR(3)," +
+                    "rxcycle CHAR(1)," +
+                    "number_value DOUBLE," +
+                    "number_value2 DOUBLE," +
+                    "min_intensity INTEGER," +
+                    "PRIMARY KEY (biosum_cond_id,rxpackage,rx,rxcycle))";
+            }
             //
             //HAUL COST TABLE
             //
@@ -1165,6 +1181,26 @@ namespace FIA_Biosum_Manager
                     "complete_haul_cost_dpgt DOUBLE DEFAULT 0," +
                     "materialcd CHAR(2))";
             }
+            public void CreateSqliteHaulCostWorkTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteHaulCostWorkTableSQL(p_strTableName));
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "psite_id");
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "railhead_id");
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx3", "biosum_plot_id");
+            }
+            static public string CreateSqliteHaulCostWorkTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                   "biosum_plot_id CHAR(24)," +
+                   "railhead_id INTEGER," +
+                   "psite_id INTEGER," +
+                   "transfer_cost_dpgt DOUBLE DEFAULT 0," +
+                   "road_cost_dpgt DOUBLE DEFAULT 0," +
+                   "rail_cost_dpgt DOUBLE DEFAULT 0," +
+                   "complete_haul_cost_dpgt DOUBLE DEFAULT 0," +
+                   "materialcd CHAR(2)," +
+                   "PRIMARY KEY (psite_id,railhead_id,biosum_plot_id))";
+            }
             public void CreateHaulCostRailroadTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
                 p_oAdo.SqlNonQuery(p_oConn, CreateHaulCostTableSQL(p_strTableName));
@@ -1189,6 +1225,24 @@ namespace FIA_Biosum_Manager
                     "rail_cost_dpgt DOUBLE DEFAULT 0," +
                     "complete_haul_cost_dpgt DOUBLE DEFAULT 0," +
                     "materialcd CHAR(2))";
+            }
+            public void CreateSqliteHaulCostRailroadTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteHaulCostRailroadTableSQL(p_strTableName));
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "psite_id");
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "railhead_id");
+            }
+            static public string CreateSqliteHaulCostRailroadTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "railhead_id INTEGER," +
+                    "psite_id INTEGER," +
+                    "transfer_cost_dpgt DOUBLE DEFAULT 0," +
+                    "road_cost_dpgt DOUBLE DEFAULT 0," +
+                    "rail_cost_dpgt DOUBLE DEFAULT 0," +
+                    "complete_haul_cost_dpgt DOUBLE DEFAULT 0," +
+                    "materialcd CHAR(2)," +
+                    "PRIMARY KEY(psite_id, railhead_id))";
             }
             //
             //TREE VOLUME AND VALUE SUM BY RX TABLE
@@ -1663,6 +1717,29 @@ namespace FIA_Biosum_Manager
                     "chip_haul_cost_dpgt DOUBLE DEFAULT 0," +
                     "cond_too_far_steep_yn CHAR(1) DEFAULT 'N'," +
                     "cond_accessible_yn CHAR(1) DEFAULT 'Y')";
+            }
+            static public string CreatePSitesWorktableSQLiteSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "biosum_plot_id CHAR(24)," +
+                    "biosum_cond_id CHAR(25)," +
+                    "merch_haul_cost_id INTEGER," +
+                    "merch_haul_psite INTEGER," +
+                    "merch_haul_psite_name CHAR(255)," +
+                    "merch_haul_cost_dpgt DOUBLE DEFAULT 0," +
+                    "chip_haul_cost_id INTEGER," +
+                    "chip_haul_psite INTEGER," +
+                    "chip_haul_psite_name CHAR(255)," +
+                    "chip_haul_cost_dpgt DOUBLE DEFAULT 0," +
+                    "cond_too_far_steep_yn CHAR(1) DEFAULT 'N'," +
+                    "cond_accessible_yn CHAR(1) DEFAULT 'Y'," +
+                    "PRIMARY KEY (biosum_plot_id, biosum_cond_id))";
+            }
+            public void CreatePSitesWorktableSqlite(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreatePSitesWorktableSQLiteSQL(p_strTableName));
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "biosum_plot_id");
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "biosum_cond_id");
             }
 
             //

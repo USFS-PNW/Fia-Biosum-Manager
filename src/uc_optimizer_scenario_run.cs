@@ -1100,6 +1100,7 @@ namespace FIA_Biosum_Manager
 		public string m_strTempMDBFile;
 		public ado_data_access m_ado;
         private dao_data_access m_oDao;
+        public DataMgr m_dataMgr;
 		public System.Data.OleDb.OleDbConnection m_TempMDBFileConn;
 		public string m_strSystemResultsDbPathAndFile="";
         public string m_strContextDbPathAndFile = "";
@@ -1107,6 +1108,7 @@ namespace FIA_Biosum_Manager
         public string m_strFVSPreValidComboDbPathAndFile = "";
         public string m_strFVSPostValidComboDbPathAndFile = "";
         public string m_strFVSPrePostValidComboDbPathAndFile = "";
+        public string m_strSQLiteWorkTablesDb = "";
         
 		private env m_oEnv;
 		private utils m_oUtils;
@@ -1215,6 +1217,7 @@ namespace FIA_Biosum_Manager
                  **************************************************************************/
                 this.m_oUtils=new utils();
 				this.m_oEnv = new env();
+                this.m_dataMgr = new DataMgr();
 
                 //get the selected processor scenario item
                 if (this.ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_processor_scenario_select1.m_oProcessorScenarioItem != null)
@@ -1452,6 +1455,17 @@ namespace FIA_Biosum_Manager
                         CreateContextTables();
                     CreateValidComboTablesSqlite();
 
+                    // Create temporary SQLite database for work tables
+                    m_strSQLiteWorkTablesDb = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
+                    m_dataMgr.CreateDbFile(m_strSQLiteWorkTablesDb);
+
+                    // Create DSN Key
+                    if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.WorkTablesDsnName))
+                    {
+                        odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.WorkTablesDsnName);
+                    }
+                    odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.WorkTablesDsnName, m_strSQLiteWorkTablesDb);
+                    
 
                     if (this.m_intError != 0)
                     {
@@ -1530,7 +1544,7 @@ namespace FIA_Biosum_Manager
 
                     FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
-					CreateTableStructureForIntensity();
+					CreateTableStructureForIntensitySqlite();
                     if (this.m_intError != 0)
                     {
                         FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
@@ -1540,7 +1554,7 @@ namespace FIA_Biosum_Manager
 
                     FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 					
-                    this.CreateTableStructureForScenarioProcessingSites();
+                    this.CreateTableStructureForScenarioProcessingSitesSqlite();
 
                     if (this.m_intError != 0)
                     {
@@ -1551,7 +1565,7 @@ namespace FIA_Biosum_Manager
 
                     FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 					
-					this.CreateTableStructureForHaulCosts();
+					this.CreateTableStructureForHaulCostsSqlite();
                     if (this.m_intError != 0)
                     {
                         FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
@@ -1561,7 +1575,7 @@ namespace FIA_Biosum_Manager
 
                     FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
-					this.CreateTableStructureForPlotCondAccessiblity();
+					this.CreateTableStructureForPlotCondAccessiblitySqlite();
                     if (this.m_intError != 0)
                     {
                         FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
@@ -2094,33 +2108,71 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
 
-
-            /********************************************************
-			 **get the user defined PLOT filter sql
-			 ********************************************************/
-            this.m_strSQL = this.m_strUserDefinedPlotSQL;
-            /****************************************************************
-			 **get the table structure that results from executing the sql
-			 ****************************************************************/
-            System.Data.DataTable p_dt = this.m_ado.getTableSchema(this.m_TempMDBFileConn, this.m_strSQL);
-
-            /*****************************************************************
-			 **create the table structure in the temporary accdb file
-			 **and give it the name of userdefinedplotfilter_work
-			 *****************************************************************/
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "Create userdefinedplotfilter_work Table Schema From User Defined Plot Filter SQL\r\n");
+            DataMgr p_dataMgr = new DataMgr();
+            ado_data_access p_ado = new ado_data_access();
             dao_data_access p_dao = new dao_data_access();
-            p_dao.CreateMDBTableFromDataSetTable(this.m_strTempMDBFile, "userdefinedplotfilter_work", p_dt, true);
-            p_dt.Dispose();
-            this.m_ado.m_OleDbDataReader.Close();
-            if (p_dao.m_intError != 0)
+
+            string strConn = p_dataMgr.GetConnectionString(this.m_strSQLiteWorkTablesDb);
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
-                if (frmMain.g_bDebug)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "!! Error Creating Table Schema!!\r\n");
-                this.m_intError = p_dao.m_intError;
-                p_dao = null;
-                return;
+                conn.Open();
+                if (p_dataMgr.TableExist(conn, "userdefinedplotfilter_work"))
+                {
+                    p_dataMgr.m_strSQL = "DROP TABLE userdefinedplotfilter_work";
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    if (p_dao.m_intError != 0)
+                    {
+                        if (frmMain.g_bDebug)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, "!! Error Deleting userdefinedplotfilter_work Table!!\r\n");
+                        this.m_intError = p_dao.m_intError;
+                        p_dao = null;
+                        return;
+                    }
+                }
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Create table structure userdefinedplotfilter_work\r\n");
+
+                using (OleDbConnection tempConn = new OleDbConnection(p_ado.getMDBConnString(this.m_strTempMDBFile, "", "")))
+                {
+                    tempConn.Open();
+                    string[] arrFields = p_ado.getFieldNamesArray(tempConn, this.m_strUserDefinedPlotSQL);
+
+                    string fieldsAndDataTypes = "";
+
+                    foreach (string column in arrFields)
+                    {
+                        string field = "";
+                        string dataType = "";
+                        p_ado.getFieldNamesAndDataTypes(tempConn, "SELECT " + column + " FROM plot", ref field, ref dataType);
+                        dataType = utils.DataTypeConvert(dataType.ToUpper(), true);
+                        fieldsAndDataTypes = fieldsAndDataTypes + field + " " + dataType + ", ";
+                    }
+                    p_dataMgr.m_strSQL = "CREATE TABLE userdefinedplotfilter_work (" + fieldsAndDataTypes + "PRIMARY KEY (biosum_plot_id))";
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                    p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, "userdefinedplotfilter_work", "userdefinedplotfilter_work", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+
+                    int i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach ruledefinitionsplotfilter_work table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!p_ado.TableExist(tempConn, "userdefinedplotfilter_work"));
+
+                    p_ado.m_strSQL = "INSERT INTO userdefinedplotfilter_work " + this.m_strUserDefinedPlotSQL;
+                    p_ado.SqlNonQuery(tempConn, p_ado.m_strSQL);
+                    tempConn.Close();
+                }
+                conn.Close();
             }
 
             /***********************************************************************
@@ -2131,9 +2183,8 @@ namespace FIA_Biosum_Manager
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Delete table ruledefinitionsplotfilter\r\n");
 
-            DataMgr p_dataMgr = new DataMgr();
-            ado_data_access p_ado = new ado_data_access();
-            string strConn = p_dataMgr.GetConnectionString(this.m_strSystemResultsDbPathAndFile);
+            
+            strConn = p_dataMgr.GetConnectionString(this.m_strSystemResultsDbPathAndFile);
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
                 conn.Open();
@@ -2154,26 +2205,27 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Copy table structure userdefinedplotfilter_work to ruledefinitionsplotfilter\r\n");
 
-                string fieldNames = "";
-                string dataTypes = "";
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + this.m_strSQLiteWorkTablesDb + "' AS work_tables";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                
+                string[] arrFields = p_dataMgr.getFieldNamesArray(conn, "SELECT * FROM userdefinedplotfilter_work");
+
+                string fieldsAndDataTypes = "";
+
+                foreach (string column in arrFields)
+                {
+                    string field = "";
+                    string dataType = "";
+                    p_dataMgr.getFieldNamesAndDataTypes(conn, "SELECT " + column + " FROM userdefinedplotfilter_work", ref field, ref dataType);
+                    dataType = utils.DataTypeConvert(dataType.ToUpper(), true);
+                    fieldsAndDataTypes = fieldsAndDataTypes + field + " " + dataType + ", ";
+                }
+                p_dataMgr.m_strSQL = "CREATE TABLE ruledefinitionsplotfilter (" + fieldsAndDataTypes + "PRIMARY KEY (biosum_plot_id))";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
                 using (OleDbConnection tempConn = new OleDbConnection(p_ado.getMDBConnString(this.m_strTempMDBFile, "", "")))
                 {
                     tempConn.Open();
-                    string[] arrFields = p_ado.getFieldNamesArray(tempConn, "SELECT * FROM userdefinedplotfilter_work");
-
-                    string fieldsAndDataTypes = "";
-
-                    foreach (string column in arrFields)
-                    {
-                        string field = "";
-                        string dataType = "";
-                        p_ado.getFieldNamesAndDataTypes(tempConn, "SELECT " + column + " FROM userdefinedplotfilter_work", ref field, ref dataType);
-                        dataType = utils.DataTypeConvert(dataType.ToUpper(), true);
-                        fieldsAndDataTypes = fieldsAndDataTypes + field + " " + dataType + ", ";
-                    }
-                    p_dataMgr.m_strSQL = "CREATE TABLE ruledefinitionsplotfilter (" + fieldsAndDataTypes + "PRIMARY KEY (biosum_plot_id))";
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
-
                     p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, "ruledefinitionsplotfilter", "ruledefinitionsplotfilter", ODBCMgr.DSN_KEYS.OptimizerResultsDsnName, this.m_strSystemResultsDbPathAndFile);
 
                     int i = 0;
@@ -2191,10 +2243,12 @@ namespace FIA_Biosum_Manager
                     }
                     while (!p_ado.TableExist(tempConn, "ruledefinitionsplotfilter"));
 
-                    p_ado.m_strSQL = "INSERT INTO ruledefinitionsplotfilter SELECT * FROM userdefinedplotfilter_work";
-                    p_ado.SqlNonQuery(tempConn, p_ado.m_strSQL);
-                }
+                    p_dataMgr.m_strSQL = "INSERT INTO ruledefinitionsplotfilter SELECT * FROM userdefinedplotfilter_work";
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
 
+                    tempConn.Close();
+                }
+                conn.Close();
             }
         }
         /// <summary>
@@ -5581,11 +5635,11 @@ namespace FIA_Biosum_Manager
                                     "WHERE a.biosum_cond_id = b.biosum_cond_id AND c.biosum_plot_id=b.biosum_plot_id LIMIT 1)";
                     if ((int)tempDataMgr.getRecordCount(conn, tempDataMgr.m_strSQL, "temp") > 0)
                     {
-                        tempDataMgr.m_strSQL = "UPDATE " + Tables.Audit.DefaultCondAuditTableName + " a " +
-                                       "SET a.gis_travel_times_yn = 'Y' " +
-                                       "WHERE a.biosum_cond_id " +
+                        tempDataMgr.m_strSQL = "UPDATE " + Tables.Audit.DefaultCondAuditTableName +
+                                       " SET gis_travel_times_yn = 'Y' " +
+                                       "WHERE biosum_cond_id " +
                                        "IN (SELECT biosum_cond_id FROM ruledefinitionscondfilter " +
-                                           "WHERE ruledefinitionscondfilter.biosum_plot_id " +
+                                           "WHERE biosum_plot_id " +
                                                   "IN (SELECT biosum_plot_id FROM " +
                                                        this.m_strTravelTimeTable + "));";
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
@@ -6776,35 +6830,23 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "focused", true);
 
 
-			/*****************************************************
+            /*****************************************************
 			 **get the Chips market value per green ton
 			 *****************************************************/
-			//ado_data_access p_ado = new ado_data_access();
-			//string strScenarioMDB="";
-			//string strScenarioConn="";
-			//p_ado.getScenarioConnStringAndMDBFile(ref strScenarioMDB,ref strScenarioConn, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text);
-			//p_ado.OpenConnection(strScenarioConn);
-			//if (p_ado.m_intError != 0)
-			//{
-			//	this.m_intError = p_ado.m_intError;
-   //             FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
-   //             FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
-			//	p_ado = null;
-			//	return;
-			//}
-
-            DataMgr p_datamgr = new DataMgr();
-            string strScenarioDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
-            string strScenarioConn = p_datamgr.GetConnectionString(strScenarioDb);
-            p_datamgr.OpenConnection(strScenarioConn);
-            if (p_datamgr.m_intError != 0)
+            ado_data_access p_ado = new ado_data_access();
+            string strScenarioMDB = "";
+            string strScenarioConn = "";
+            p_ado.getScenarioConnStringAndMDBFile(ref strScenarioMDB, ref strScenarioConn, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text);
+            p_ado.OpenConnection(strScenarioConn);
+            if (p_ado.m_intError != 0)
             {
-                this.m_intError = p_datamgr.m_intError;
+                this.m_intError = p_ado.m_intError;
                 FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
-                p_datamgr = null;
+                p_ado = null;
                 return;
             }
+
 
             FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
@@ -7154,6 +7196,416 @@ namespace FIA_Biosum_Manager
      
 
 		}
+
+        /// <summary>
+		/// get the wood product yields,
+		/// revenue, and costs of an applied
+		/// treatment on a plot 
+		/// </summary>
+		private void econ_by_rx_cycle_sqlite()
+        {
+
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//econ_by_rx_cycle\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n\r\nWood Product Yields,Revenue, And Costs Table By Treatment\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "-----------------------------------------------\r\n");
+            }
+            int intListViewIndex = -1;
+
+            string[] strUpdateSQL = new string[25];
+
+
+            /**********************************************
+			 **complete harvest cost per acre
+			 **********************************************/
+            intListViewIndex = FIA_Biosum_Manager.uc_optimizer_scenario_run.GetListViewItemIndex(
+                        ReferenceUserControlScenarioRun.listViewEx1, "Summarize Wood Product Volume Yields, Costs, And Net Revenue For A Stand And Treatment");
+
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem = intListViewIndex;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 5;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMinimumSteps = 1;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicCurrentStep = 1;
+            FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic = (ProgressBarBasic.ProgressBarBasic)ReferenceUserControlScenarioRun.listViewEx1.GetEmbeddedControl(1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem);
+            frmMain.g_oDelegate.EnsureListViewExItemVisible(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem);
+            frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "Selected", true);
+            frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "focused", true);
+
+
+            /*****************************************************
+			 **get the Chips market value per green ton
+			 *****************************************************/
+            DataMgr p_datamgr = new DataMgr();
+            string strScenarioDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+            string strScenarioConn = p_datamgr.GetConnectionString(strScenarioDb);
+            using (System.Data.SQLite.SQLiteConnection scenarioConn = new System.Data.SQLite.SQLiteConnection(strScenarioConn))
+            {
+                scenarioConn.Open();
+
+                if (p_datamgr.m_intError != 0)
+                {
+                    this.m_intError = p_datamgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    p_datamgr = null;
+                    return;
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                /********************************************
+			     **delete all records in the table
+			     ********************************************/
+
+                p_datamgr.m_strSQL = "DELETE FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName;
+                p_datamgr.SqlNonQuery(scenarioConn, p_datamgr.m_strSQL);
+
+                if (p_datamgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = this.m_ado.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nInsert Records\r\n");
+
+            }
+
+
+
+            if (m_ado.TableExist(this.m_TempMDBFileConn, this.m_strEconByRxWorkTableName))
+                m_ado.SqlNonQuery(this.m_TempMDBFileConn, "DROP TABLE " + this.m_strEconByRxWorkTableName);
+
+            m_strSQL =
+                "SELECT validcombos.biosum_cond_id,validcombos.rxpackage,validcombos.rx," +
+                       "validcombos.rxcycle," +
+                       this.m_strTreeVolValSumTable.Trim() + ".merch_vol_cf," +
+                       this.m_strTreeVolValSumTable.Trim() + ".chip_vol_cf," +
+                       this.m_strTreeVolValSumTable.Trim() + ".chip_wt_gt," +
+                       this.m_strTreeVolValSumTable.Trim() + ".chip_val_dpa," +
+                       this.m_strTreeVolValSumTable.Trim() + ".merch_wt_gt," +
+                       this.m_strTreeVolValSumTable.Trim() + ".merch_val_dpa," +
+                       this.m_strHvstCostsTable.Trim() + ".complete_cpa AS harvest_onsite_cost_dpa," +
+                      "IIF(" + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + ".merch_haul_cost_dpgt IS NOT NULL," +
+                      "IIF(" + this.m_strTreeVolValSumTable.Trim() + ".rxcycle='2'," + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + ".merch_haul_cost_dpgt * " + this.m_oProcessorScenarioItem.m_oEscalators.MerchWoodRevenueCycle2 + "," +
+                      "IIF(" + this.m_strTreeVolValSumTable.Trim() + ".rxcycle='3'," + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + ".merch_haul_cost_dpgt * " + this.m_oProcessorScenarioItem.m_oEscalators.MerchWoodRevenueCycle3 + "," +
+                      "IIF(" + this.m_strTreeVolValSumTable.Trim() + ".rxcycle='4'," + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + ".merch_haul_cost_dpgt * " + this.m_oProcessorScenarioItem.m_oEscalators.MerchWoodRevenueCycle4 + "," +
+                       Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + ".merch_haul_cost_dpgt))),0) AS escalator_merch_haul_cpa_pt," +
+                      "escalator_merch_haul_cpa_pt * " + this.m_strTreeVolValSumTable.Trim() + ".merch_wt_gt AS merch_haul_cost_dpa," +
+                      "IIF(" + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + ".chip_haul_cost_dpgt IS NOT NULL," +
+                      "IIF(" + this.m_strTreeVolValSumTable.Trim() + ".rxcycle='2'," + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + ".chip_haul_cost_dpgt * " + this.m_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle2 + "," +
+                      "IIF(" + this.m_strTreeVolValSumTable.Trim() + ".rxcycle='3'," + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + ".chip_haul_cost_dpgt * " + this.m_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle3 + "," +
+                      "IIF(" + this.m_strTreeVolValSumTable.Trim() + ".rxcycle='4'," + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + ".chip_haul_cost_dpgt * " + this.m_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle4 + "," +
+                       Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + ".chip_haul_cost_dpgt))),0) AS escalator_chip_haul_cpa_pt," +
+                      "escalator_chip_haul_cpa_pt * " + this.m_strTreeVolValSumTable.Trim() + ".chip_wt_gt AS chip_haul_cost_dpa," +
+                      "MERCH_VAL_DPA + CHIP_VAL_DPA - HARVEST_ONSITE_COST_DPA - (CHIP_HAUL_COST_DPA + MERCH_HAUL_COST_DPA) AS merch_chip_nr_dpa," +
+                      "merch_val_dpa - harvest_onsite_cost_dpa - merch_haul_cost_dpa AS merch_nr_dpa," +
+                      "IIF(" + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + ".chip_haul_psite IS NULL, 'N','Y') AS usebiomass_yn," +
+                      "CDbl(0) AS max_nr_dpa, " +
+                      this.m_strCondTable.Trim() + ".acres, " +
+                      this.m_strCondTable.Trim() + ".owngrpcd, " +
+                      "IIF(usebiomass_yn = 'Y',merch_haul_cost_dpa + chip_haul_cost_dpa, merch_haul_cost_dpa) AS haul_costs_dpa " +
+                      "INTO " + this.m_strEconByRxWorkTableName +
+                      " FROM ((((validcombos " +
+                      "INNER JOIN " + this.m_strCondTable + " " +
+                      "ON validcombos.biosum_cond_id = " + this.m_strCondTable.Trim() + ".biosum_cond_id) " +
+                      "INNER JOIN " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " " +
+                      "ON " +
+                        this.m_strCondTable.Trim() + ".biosum_cond_id=" + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName
+                        + ".biosum_cond_id) " +
+                      "INNER JOIN " + this.m_strTreeVolValSumTable.Trim() + " " +
+                      "ON " +
+                      "(validcombos.biosum_cond_id=" + this.m_strTreeVolValSumTable.Trim() + ".biosum_cond_id) AND " +
+                      "(validcombos.rxpackage=" + this.m_strTreeVolValSumTable.Trim() + ".rxpackage) AND " +
+                      "(validcombos.rx=" + this.m_strTreeVolValSumTable.Trim() + ".rx) AND " +
+                      "(validcombos.rxcycle=" + this.m_strTreeVolValSumTable.Trim() + ".rxcycle)) " +
+                      "INNER JOIN " +
+                        this.m_strHvstCostsTable.Trim() + " " +
+                      "ON " +
+                      "(validcombos.biosum_cond_id=" + this.m_strHvstCostsTable.Trim() + ".biosum_cond_id) AND " +
+                      "(validcombos.rxpackage=" + this.m_strHvstCostsTable.Trim() + ".rxpackage) AND " +
+                      "(validcombos.rx=" + this.m_strHvstCostsTable.Trim() + ".rx) AND " +
+                      "(validcombos.rxcycle=" + this.m_strHvstCostsTable.Trim() + ".rxcycle)) " +
+                      "WHERE " + this.m_strTreeVolValSumTable.Trim() + ".place_holder = 'N'";
+
+
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+            this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
+            if (this.m_ado.m_intError != 0)
+            {
+                if (frmMain.g_bDebug)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                this.m_intError = this.m_ado.m_intError;
+                FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+
+
+                return;
+            }
+
+
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nUpdates to " + this.m_strEconByRxWorkTableName + "\r\n");
+
+            // Get the highest value for chips out of the Processor item. They should all be the same, but just in case ...            
+            string strChipValue = "-1";
+            for (int i = 0; i < this.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Count - 1; i++)
+            {
+                ProcessorScenarioItem.TreeSpeciesAndDbhDollarValuesItem oItem =
+                  this.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(i);
+                if (Convert.ToDouble(strChipValue) < Convert.ToDouble(oItem.ChipsDollarPerCubicFootValue.Trim()))
+                {
+                    strChipValue = oItem.ChipsDollarPerCubicFootValue.Trim();
+                }
+            }
+            // Only use Biomass if chip revenue is higher than the cost of hauling them
+            this.m_strSQL = "UPDATE " + this.m_strEconByRxWorkTableName +
+                            " INNER JOIN " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " " +
+                            "ON " +
+                            this.m_strEconByRxWorkTableName + ".biosum_cond_id=" + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName
+                            + ".biosum_cond_id " +
+                            " SET usebiomass_yn = IIF(" + strChipValue + " < CHIP_HAUL_COST_DPGT, 'N', 'Y')" +
+                            " WHERE usebiomass_yn = 'Y' AND RXCYCLE = '1'";
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+            this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
+            if (this.m_ado.m_intError != 0)
+            {
+                if (frmMain.g_bDebug)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                this.m_intError = this.m_ado.m_intError;
+                FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+
+
+                return;
+            }
+
+            this.m_strSQL = "UPDATE " + this.m_strEconByRxWorkTableName +
+                            " INNER JOIN " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " " +
+                            "ON " +
+                            this.m_strEconByRxWorkTableName + ".biosum_cond_id=" + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName
+                            + ".biosum_cond_id " +
+                            " SET usebiomass_yn = IIF(" + strChipValue + " < CHIP_HAUL_COST_DPGT * " + this.m_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle2 + ", 'N', 'Y')" +
+                            " WHERE usebiomass_yn = 'Y' AND RXCYCLE = '2'";
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+            this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
+            if (this.m_ado.m_intError != 0)
+            {
+                if (frmMain.g_bDebug)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                this.m_intError = this.m_ado.m_intError;
+                FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+
+
+                return;
+            }
+
+            this.m_strSQL = "UPDATE " + this.m_strEconByRxWorkTableName +
+                " INNER JOIN " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " " +
+                "ON " +
+                this.m_strEconByRxWorkTableName + ".biosum_cond_id=" + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName
+                + ".biosum_cond_id " +
+                " SET usebiomass_yn = IIF(" + strChipValue + " < CHIP_HAUL_COST_DPGT * " + this.m_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle3 + ", 'N', 'Y')" +
+                " WHERE usebiomass_yn = 'Y' AND RXCYCLE = '3'";
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+            this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
+            if (this.m_ado.m_intError != 0)
+            {
+                if (frmMain.g_bDebug)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                this.m_intError = this.m_ado.m_intError;
+                FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+
+
+                return;
+            }
+
+            this.m_strSQL = "UPDATE " + this.m_strEconByRxWorkTableName +
+                " INNER JOIN " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " " +
+                "ON " +
+                this.m_strEconByRxWorkTableName + ".biosum_cond_id=" + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName
+                + ".biosum_cond_id " +
+                " SET usebiomass_yn = IIF(" + strChipValue + " < CHIP_HAUL_COST_DPGT * " + this.m_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle4 + ", 'N', 'Y')" +
+                " WHERE usebiomass_yn = 'Y' AND RXCYCLE = '4'";
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+            this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
+            if (this.m_ado.m_intError != 0)
+            {
+                if (frmMain.g_bDebug)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                this.m_intError = this.m_ado.m_intError;
+                FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+
+
+                return;
+            }
+
+            // Don't use Biomass if no chip weight
+            this.m_strSQL = "UPDATE " + this.m_strEconByRxWorkTableName +
+                " SET usebiomass_yn = IIF(CHIP_WT_GT = 0 , 'N', 'Y')" +
+                " WHERE usebiomass_yn = 'Y'";
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+            this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
+            if (this.m_ado.m_intError != 0)
+            {
+                if (frmMain.g_bDebug)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                this.m_intError = this.m_ado.m_intError;
+                FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+
+
+                return;
+            }
+
+            // Update fields based on USEBIOMASS_YN
+            this.m_strSQL = "UPDATE " + this.m_strEconByRxWorkTableName +
+                            " SET HAUL_COSTS_DPA = IIF(USEBIOMASS_YN = 'N', MERCH_HAUL_COST_DPA, MERCH_HAUL_COST_DPA + CHIP_HAUL_COST_DPA ), " +
+                            " MAX_NR_DPA = IIF(USEBIOMASS_YN = 'N' = 'Y', MERCH_NR_DPA, MERCH_CHIP_NR_DPA)";
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+            this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
+            if (this.m_ado.m_intError != 0)
+            {
+                if (frmMain.g_bDebug)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                this.m_intError = this.m_ado.m_intError;
+                FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+
+
+                return;
+            }
+
+            FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+            // Create temp table with inactive stands from harvest_costs table
+            // This should only contain the inactive stands missing from the econ_by_rx_cycle worktable, but we will
+            // do an outer join when appending them to be sure
+            string strInactiveStandsWorkTable = "InactiveStandsWorkTable";
+            this.m_strSQL = "SELECT validcombos.biosum_cond_id,validcombos.rxpackage,validcombos.rx,validcombos.rxcycle," +
+                            " 0 AS merch_vol_cf, 0 as chip_vol_cf, 0 as chip_wt_gt," +
+                            " 0 as chip_val_dpa, 0 as merch_wt_gt, 0 AS merch_val_dpa," +
+                            " harvest_costs.complete_cpa AS harvest_onsite_cost_dpa, 0 AS escalator_merch_haul_cpa_pt," +
+                            " 0 AS merch_haul_cost_dpa, 0 AS escalator_chip_haul_cpa_pt, 0 AS chip_haul_cost_dpa," +
+                            " 0 AS merch_chip_nr_dpa, 0 AS merch_nr_dpa, 0 AS max_nr_dpa," +
+                            " cond.acres, cond.owngrpcd, 0 AS haul_costs_dpa" +
+                            " INTO " + strInactiveStandsWorkTable + " FROM" +
+                            " ((validcombos INNER JOIN cond ON validcombos.biosum_cond_id = cond.biosum_cond_id)" +
+                            " INNER JOIN harvest_costs ON (validcombos.biosum_cond_id=harvest_costs.biosum_cond_id) AND" +
+                            " (validcombos.rxpackage=harvest_costs.rxpackage) AND" +
+                            " (validcombos.rx=harvest_costs.rx) AND (validcombos.rxcycle=harvest_costs.rxcycle))" +
+                            " WHERE harvest_costs.harvest_cpa = 0 and harvest_costs.complete_cpa <> 0";
+
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+            this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
+            if (this.m_ado.m_intError != 0)
+            {
+                if (frmMain.g_bDebug)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                this.m_intError = this.m_ado.m_intError;
+                FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                return;
+            }
+
+            this.m_strSQL = "INSERT INTO " + this.m_strEconByRxWorkTableName +
+                            " SELECT " + strInactiveStandsWorkTable + ".biosum_cond_id," + strInactiveStandsWorkTable + ".rxPackage, " +
+                            strInactiveStandsWorkTable + ".rx, " + strInactiveStandsWorkTable + ".rxcycle," +
+                            strInactiveStandsWorkTable + ".merch_vol_cf, " + strInactiveStandsWorkTable + ".chip_vol_cf," +
+                            strInactiveStandsWorkTable + ".chip_wt_gt, " + strInactiveStandsWorkTable + ".chip_val_dpa," +
+                            strInactiveStandsWorkTable + ".merch_wt_gt, " + strInactiveStandsWorkTable + ".merch_val_dpa," +
+                            strInactiveStandsWorkTable + ".harvest_onsite_cost_dpa, " + strInactiveStandsWorkTable + ".escalator_merch_haul_cpa_pt," +
+                            strInactiveStandsWorkTable + ".merch_haul_cost_dpa, " + strInactiveStandsWorkTable + ".escalator_chip_haul_cpa_pt," +
+                            strInactiveStandsWorkTable + ".chip_haul_cost_dpa, " + strInactiveStandsWorkTable + ".merch_chip_nr_dpa," +
+                            strInactiveStandsWorkTable + ".merch_nr_dpa, 'N' as usebiomass_yn, " +
+                            strInactiveStandsWorkTable + ".max_nr_dpa, " + strInactiveStandsWorkTable + ".acres," +
+                            strInactiveStandsWorkTable + ".owngrpcd, " + strInactiveStandsWorkTable + ".haul_costs_dpa" +
+                            " FROM " + strInactiveStandsWorkTable +
+                            " LEFT outer join " + this.m_strEconByRxWorkTableName + " on " +
+                            this.m_strEconByRxWorkTableName + ".biosum_cond_id = " + strInactiveStandsWorkTable + ".biosum_cond_id" +
+                            " and " + this.m_strEconByRxWorkTableName + ".rxpackage = " + strInactiveStandsWorkTable + ".rxpackage" +
+                            " and " + this.m_strEconByRxWorkTableName + ".rx = " + strInactiveStandsWorkTable + ".rx" +
+                            " and " + this.m_strEconByRxWorkTableName + ".rxcycle = " + strInactiveStandsWorkTable + ".rxcycle" +
+                            " where " + this.m_strEconByRxWorkTableName + ".biosum_cond_id is null";
+
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+            this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
+            if (this.m_ado.m_intError != 0)
+            {
+                if (frmMain.g_bDebug)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                this.m_intError = this.m_ado.m_intError;
+                FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                return;
+            }
+
+            FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+            this.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName +
+                                "(biosum_cond_id,rxpackage,rx,rxcycle," +
+                                "merch_vol_cf,chip_vol_cf," +
+                                "chip_wt_gt,chip_val_dpa," +
+                                "merch_wt_gt,merch_val_dpa,harvest_onsite_cost_dpa," +
+                                "merch_haul_cost_dpa,chip_haul_cost_dpa,merch_chip_nr_dpa," +
+                                "merch_nr_dpa,usebiomass_yn,max_nr_dpa,acres,owngrpcd,haul_costs_dpa) " +
+                            "SELECT biosum_cond_id,rxpackage,rx,rxcycle," +
+                                "merch_vol_cf,chip_vol_cf," +
+                                "chip_wt_gt,chip_val_dpa," +
+                                "merch_wt_gt,merch_val_dpa,harvest_onsite_cost_dpa," +
+                                "merch_haul_cost_dpa,chip_haul_cost_dpa,merch_chip_nr_dpa," +
+                                "merch_nr_dpa,usebiomass_yn,max_nr_dpa,acres,owngrpcd,haul_costs_dpa " +
+                            "FROM " + this.m_strEconByRxWorkTableName;
+
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+            this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
+            if (this.m_ado.m_intError != 0)
+            {
+                if (frmMain.g_bDebug)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                this.m_intError = this.m_ado.m_intError;
+                FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                return;
+            }
+
+            FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+
+            if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+            if (this.m_intError == 0)
+            {
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
+            }
+
+
+        }
 
         private void calculate_weighted_econ_variables()
         {
@@ -7843,8 +8295,7 @@ namespace FIA_Biosum_Manager
 
             ado_data_access p_ado = new ado_data_access();
             DataMgr p_dataMgr = new DataMgr();
-            this.m_strConn = p_ado.getMDBConnString(this.m_strTempMDBFile, "admin", "");
-            p_ado.OpenConnection(this.m_strConn);
+            dao_data_access p_dao = new dao_data_access();
             if (p_ado.m_intError == 0)
             {
                 /*********************************************
@@ -7862,42 +8313,84 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
 
-                /*********************************************
-				 **get the harvest_costs structure
-				 *********************************************/
-                this.m_strSQL = "SELECT biosum_cond_id,rxpackage,rx,rxcycle, complete_cpa FROM " + this.m_strHvstCostsTable.Trim() + ";";
 
-                /****************************************************************
-				 **get the table structure that results from executing the sql
-				 ****************************************************************/
-                System.Data.DataTable p_dt = p_ado.getTableSchema(p_ado.m_OleDbConnection, this.m_strSQL);
-
-                /*****************************************************************
-				 **create the table structure in the temp mdb file
-				 **and give it the name of harvest_costs_sum
-				 *****************************************************************/
+                /**************************************************
+				 **create harvest_cost_sum table structure 
+				 **in the temp work table db file
+				 **************************************************/
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "--Create harvest_costs_sum Table Schema From harvest_costs table--\r\n");
-                dao_data_access p_dao = new dao_data_access();
-                p_dao.CreateMDBTableFromDataSetTable(this.m_strTempMDBFile, "harvest_costs_sum", p_dt, true);
-                p_dt.Dispose();
-                p_ado.m_OleDbDataReader.Close();
-                p_ado.m_OleDbConnection.Close();
-                if (p_dao.m_intError != 0)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Delete table harvest_costs_sum\r\n");
+
+                strConn = p_dataMgr.GetConnectionString(this.m_strSQLiteWorkTablesDb);
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                 {
-                    if (frmMain.g_bDebug)
-                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Creating Table Schema!!!\r\n");
-                    this.m_intError = p_dao.m_intError;
-                    p_ado = null;
-                    p_dao = null;
-                    return;
+                    conn.Open();
+                    if (p_dataMgr.TableExist(conn, "harvest_costs_sum"))
+                    {
+                        p_dataMgr.m_strSQL = "DROP TABLE harvest_costs_sum";
+                        p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                        if (p_dataMgr.m_intError != 0)
+                        {
+                            if (frmMain.g_bDebug)
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, "!! Error Deleting harvest_costs_sum Table!!\r\n");
+                            this.m_intError = p_dataMgr.m_intError;
+                            p_dataMgr = null;
+                            return;
+                        }
+                    }
+
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Copy table structure harest_costs to harvest_costs_sum\r\n");
+
+                    using (OleDbConnection tempConn = new OleDbConnection(p_ado.getMDBConnString(this.m_strTempMDBFile, "", "")))
+                    {
+                        tempConn.Open();
+                        string[] arrFields = p_ado.getFieldNamesArray(tempConn, "SELECT biosum_cond_id,rxpackage,rx,rxcycle, complete_cpa FROM harvest_costs");
+
+                        string fieldsAndDataTypes = "";
+
+                        foreach (string column in arrFields)
+                        {
+                            string field = "";
+                            string dataType = "";
+                            p_ado.getFieldNamesAndDataTypes(tempConn, "SELECT " + column + " FROM harvest_costs", ref field, ref dataType);
+                            dataType = utils.DataTypeConvert(dataType.ToUpper(), true);
+                            fieldsAndDataTypes = fieldsAndDataTypes + field + " " + dataType + ", ";
+                        }
+                        p_dataMgr.m_strSQL = "CREATE TABLE harvest_costs_sum (" + fieldsAndDataTypes + "PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
+                        p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                        p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, "harvest_costs_sum", "harvest_costs_sum", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+
+                        int i = 0;
+                        do
+                        {
+                            // break out of loop if it runs too long
+                            if (i > 20)
+                            {
+                                System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach harvest_costs_sum table! " +
+                                "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                                break;
+                            }
+                            System.Threading.Thread.Sleep(1000);
+                            i++;
+                        }
+                        while (!p_ado.TableExist(tempConn, "harvest_costs_sum"));
+
+                        p_ado.m_strSQL = "INSERT INTO harvest_costs_sum SELECT biosum_cond_id,rxpackage,rx,rxcycle, complete_cpa FROM harvest_costs";
+                        p_ado.SqlNonQuery(tempConn, p_ado.m_strSQL);
+
+                        tempConn.Close();
+                    }
+
+                    conn.Close();
+
                 }
             }
-            else
-            {
-                this.m_intError = p_ado.m_intError;
-            }
+
             p_ado = null;
+            p_dao = null;
+            p_dataMgr = null;
         }
 
 
@@ -7962,11 +8455,104 @@ namespace FIA_Biosum_Manager
 			p_ado=null;
 
 		}
-		/// <summary>
-		/// create temporary work tables for getting 
-		/// a plot's cheapest merch and chip haul cost
-		/// </summary>
-		private void CreateTableStructureForHaulCosts()
+
+        private void CreateTableStructureForScenarioProcessingSitesSqlite()
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//CreateTableStructureForScenarioProcessingSites\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+            ado_data_access p_ado = new ado_data_access();
+            DataMgr p_dataMgr = new DataMgr();
+            dao_data_access p_dao = new dao_data_access();
+
+            this.m_strConn = p_ado.getMDBConnString(this.m_strTempMDBFile, "admin", "");
+            p_ado.OpenConnection(this.m_strConn);
+
+            /***********************************************************************
+            **make a copy of the scenario_psites table and give it the
+            **name scenario_psites_work_table
+            ***********************************************************************/
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "Delete table scenario_psites_work_table\r\n");
+
+            string strConn = p_dataMgr.GetConnectionString(this.m_strSQLiteWorkTablesDb);
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+            {
+                conn.Open();
+                if (p_dataMgr.TableExist(conn, "scenario_psites_work_table"))
+                {
+                    p_dataMgr.m_strSQL = "DROP TABLE scenario_psites_work_table";
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    if (p_dataMgr.m_intError != 0)
+                    {
+                        if (frmMain.g_bDebug)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, "!! Error Deleting scenario_psites_work_table Table!!\r\n");
+                        this.m_intError = p_dataMgr.m_intError;
+                        p_dao = null;
+                        p_dataMgr = null;
+                        return;
+                    }
+                }
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Copy table structure scenario_psites to scenario_psites_work_tabler\r\n");
+
+                string strRuleDefinitionsDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + strRuleDefinitionsDb + "' AS rule_defs";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                string[] arrFields = p_dataMgr.getFieldNamesArray(conn, "SELECT psite_id,trancd,biocd FROM scenario_psites");
+
+                string fieldsAndDataTypes = "";
+
+                foreach (string column in arrFields)
+                {
+                    string field = "";
+                    string dataType = "";
+                    p_dataMgr.getFieldNamesAndDataTypes(conn, "SELECT " + column + " FROM scenario_psites", ref field, ref dataType);
+                    dataType = utils.DataTypeConvert(dataType.ToUpper(), true);
+                    fieldsAndDataTypes = fieldsAndDataTypes + field + " " + dataType + ", ";
+                }
+
+                p_dataMgr.m_strSQL = "CREATE TABLE scenario_psites_work_table (" + fieldsAndDataTypes.Substring(0, fieldsAndDataTypes.Length - 2) + ")";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, "scenario_psites_work_table", "scenario_psites_work_table", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+
+                int i = 0;
+                do
+                {
+                    // break out of loop if it runs too long
+                    if (i > 20)
+                    {
+                        System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach scenario_psites_work_table table! " +
+                        "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                        break;
+                    }
+                    System.Threading.Thread.Sleep(1000);
+                    i++;
+                }
+                while (!p_ado.TableExist(this.m_strConn, "scenario_psites_work_table"));
+
+                p_dataMgr.m_strSQL = "INSERT INTO scenario_psites_work_table SELECT psite_id,trancd,biocd FROM scenario_psites";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                conn.Close();
+            }
+            p_ado.CloseConnection(p_ado.m_OleDbConnection);
+
+            p_ado = null;
+            p_dao = null;
+            p_dataMgr = null;
+        }
+        /// <summary>
+        /// create temporary work tables for getting 
+        /// a plot's cheapest merch and chip haul cost
+        /// </summary>
+        private void CreateTableStructureForHaulCosts()
 		{
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
@@ -8152,11 +8738,458 @@ namespace FIA_Biosum_Manager
 			oAdo=null;
 
 		}
-				
-		/// <summary>
-		/// create a temporary work tables for finding best treatments
-		/// </summary>
-		private void CreateTableStructureForIntensity()
+
+        private void CreateTableStructureForHaulCostsSqlite()
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//CreateTableStructureForHaulCosts\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+            ado_data_access oAdo = new ado_data_access();
+            DataMgr oDataMgr = new DataMgr();
+            dao_data_access oDao = new dao_data_access();
+
+            this.m_strConn = oAdo.getMDBConnString(this.m_strTempMDBFile, "admin", "");
+            oAdo.OpenConnection(this.m_strConn);
+
+            if (oAdo.m_intError == 0)
+            {
+                /*****************************************************************
+                 **create the table structures in the temp work tables db file
+                 **and give them the name OF all_road_merch_haul_costs_work_table and 
+                 **                          all_road_chip_haul_costs_work_table
+                 **                          cheapest_road_merch_haul_costs_work_table
+                 **                          cheapest_road_chip_haul_costs_work_table
+                 **                          cheapest_rail_merch_haul_costs_work_table
+                 **                          cheapest_rail_chip_haul_costs_work_table
+                 **                          merch_plot_to_rh_to_collector_haul_costs_work_table
+                 **                          chip_plot_to_rh_to_collector_haul_costs_work_table
+                 **                          combine_chip_rail_road_haul_costs_work_table
+                 **                          combine_merch_rail_road_haul_costs_work_table
+                 **                          psite_accessible_work_table
+                 *****************************************************************/
+
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(this.m_strSQLiteWorkTablesDb)))
+                {
+                    conn.Open();
+
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "--Create psite_accessible_work_table\r\n");
+
+                    if (oDataMgr.TableExist(conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName))
+                        oDataMgr.SqlNonQuery(conn, "DROP TABLE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName);
+
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "--Create haul costs work tables from the haul_costs table SQL\r\n");
+
+                    if (oDataMgr.m_intError == 0)
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreatePSitesWorktableSqlite(
+                            oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName);
+
+                    oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName, Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName,
+                        ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+
+                    int i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!oAdo.TableExist(this.m_strConn, Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName));
+
+
+                    if (oDataMgr.m_intError == 0)
+                        if (oDataMgr.TableExist(conn, "all_road_chip_haul_costs_work_table"))
+                            oDataMgr.SqlNonQuery(conn, "DROP TABLE all_road_chip_haul_costs_work_table");
+
+                    if (oDataMgr.m_intError == 0)
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteHaulCostTable(
+                            oDataMgr, conn, "all_road_chip_haul_costs_work_table");
+
+                    oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, "all_road_chip_haul_costs_work_table", "all_road_chip_haul_costs_work_table", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+
+                    i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach all_road_chip_haul_costs_work_table table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!oAdo.TableExist(this.m_strConn, "all_road_chip_haul_costs_work_table"));
+
+
+                    if (oDataMgr.m_intError == 0)
+                        if (oDataMgr.TableExist(conn, "all_road_merch_haul_costs_work_table"))
+                            oDataMgr.SqlNonQuery(conn, "DROP TABLE all_road_merch_haul_costs_work_table");
+
+                    if (oDataMgr.m_intError == 0)
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteHaulCostTable(
+                            oDataMgr, conn, "all_road_merch_haul_costs_work_table");
+
+                    oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, "all_road_merch_haul_costs_work_table", "all_road_merch_haul_costs_work_table", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+
+                    i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach all_road_merch_haul_costs_work_table table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!oAdo.TableExist(this.m_strConn, "all_road_merch_haul_costs_work_table"));
+
+                    if (oDataMgr.m_intError == 0)
+                        if (oDataMgr.TableExist(conn, "cheapest_road_merch_haul_costs_work_table"))
+                            oDataMgr.SqlNonQuery(conn, "DROP TABLE cheapest_road_merch_haul_costs_work_table");
+
+                    if (oDataMgr.m_intError == 0)
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteHaulCostTable(
+                            oDataMgr, conn, "cheapest_road_merch_haul_costs_work_table");
+
+                    oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, "cheapest_road_merch_haul_costs_work_table", "cheapest_road_merch_haul_costs_work_table", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+
+                    i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach cheapest_road_merch_haul_costs_work_table table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!oAdo.TableExist(this.m_strConn, "cheapest_road_merch_haul_costs_work_table"));
+
+                    if (oDataMgr.m_intError == 0)
+                        if (oDataMgr.TableExist(conn, "cheapest_road_chip_haul_costs_work_table"))
+                            oDataMgr.SqlNonQuery(conn, "DROP TABLE cheapest_road_chip_haul_costs_work_table");
+
+                    if (oDataMgr.m_intError == 0)
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteHaulCostTable(
+                            oDataMgr, conn, "cheapest_road_chip_haul_costs_work_table");
+
+                    oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, "cheapest_road_chip_haul_costs_work_table", "cheapest_road_chip_haul_costs_work_table", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+
+                    i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach cheapest_road_chip_haul_costs_work_table table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!oAdo.TableExist(this.m_strConn, "cheapest_road_chip_haul_costs_work_table"));
+
+                    if (oDataMgr.m_intError == 0)
+                        if (oDataMgr.TableExist(conn, "cheapest_rail_merch_haul_costs_work_table"))
+                            oDataMgr.SqlNonQuery(conn, "DROP TABLE cheapest_rail_merch_haul_costs_work_table");
+
+                    if (oDataMgr.m_intError == 0)
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteHaulCostTable(
+                            oDataMgr, conn, "cheapest_rail_merch_haul_costs_work_table");
+
+                    oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, "cheapest_rail_merch_haul_costs_work_table", "cheapest_rail_merch_haul_costs_work_table", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+
+                    i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach cheapest_rail_merch_haul_costs_work_table table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!oAdo.TableExist(this.m_strConn, "cheapest_rail_merch_haul_costs_work_table"));
+
+                    if (oDataMgr.m_intError == 0)
+                        if (oDataMgr.TableExist(conn, "cheapest_rail_chip_haul_costs_work_table"))
+                            oDataMgr.SqlNonQuery(conn, "DROP TABLE cheapest_rail_chip_haul_costs_work_table");
+
+                    if (oDataMgr.m_intError == 0)
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteHaulCostTable(
+                            oDataMgr, conn, "cheapest_rail_chip_haul_costs_work_table");
+
+                    oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, "cheapest_rail_chip_haul_costs_work_table", "cheapest_rail_chip_haul_costs_work_table", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+
+                    i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach cheapest_rail_chip_haul_costs_work_table table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!oAdo.TableExist(this.m_strConn, "cheapest_rail_chip_haul_costs_work_table"));
+
+                    if (oDataMgr.m_intError == 0)
+                        if (oDataMgr.TableExist(conn, "cheapest_merch_haul_costs_work_table"))
+                            oDataMgr.SqlNonQuery(conn, "DROP TABLE cheapest_merch_haul_costs_work_table");
+
+                    if (oDataMgr.m_intError == 0)
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteHaulCostWorkTable(
+                            oDataMgr, conn, "cheapest_merch_haul_costs_work_table");
+
+                    oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, "cheapest_merch_haul_costs_work_table", "cheapest_merch_haul_costs_work_table", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+
+                    i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach cheapest_merch_haul_costs_work_table table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!oAdo.TableExist(this.m_strConn, "cheapest_merch_haul_costs_work_table"));
+
+                    if (oDataMgr.m_intError == 0)
+                        if (oDataMgr.TableExist(conn, "cheapest_chip_haul_costs_work_table"))
+                            oDataMgr.SqlNonQuery(conn, "DROP TABLE cheapest_chip_haul_costs_work_table");
+
+                    if (oDataMgr.m_intError == 0)
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteHaulCostWorkTable(
+                            oDataMgr, conn, "cheapest_chip_haul_costs_work_table");
+
+                    oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, "cheapest_chip_haul_costs_work_table", "cheapest_chip_haul_costs_work_table", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+
+                    i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach cheapest_chip_haul_costs_work_table table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!oAdo.TableExist(this.m_strConn, "cheapest_chip_haul_costs_work_table"));
+
+
+                    if (oDataMgr.m_intError == 0)
+                        if (oDataMgr.TableExist(conn, "chip_plot_to_rh_to_collector_haul_costs_work_table"))
+                            oDataMgr.SqlNonQuery(conn, "DROP TABLE chip_plot_to_rh_to_collector_haul_costs_work_table");
+
+                    if (oDataMgr.m_intError == 0)
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteHaulCostTable(
+                            oDataMgr, conn, "chip_plot_to_rh_to_collector_haul_costs_work_table");
+
+                    oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, "chip_plot_to_rh_to_collector_haul_costs_work_table", "chip_plot_to_rh_to_collector_haul_costs_work_table", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+
+                    i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach chip_plot_to_rh_to_collector_haul_costs_work_table table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!oAdo.TableExist(this.m_strConn, "chip_plot_to_rh_to_collector_haul_costs_work_table"));
+
+                    if (oDataMgr.m_intError == 0)
+                        if (oDataMgr.TableExist(conn, "merch_plot_to_rh_to_collector_haul_costs_work_table"))
+                            oDataMgr.SqlNonQuery(conn, "DROP TABLE merch_plot_to_rh_to_collector_haul_costs_work_table");
+
+                    if (oDataMgr.m_intError == 0)
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteHaulCostTable(
+                            oDataMgr, conn, "merch_plot_to_rh_to_collector_haul_costs_work_table");
+
+                    oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, "merch_plot_to_rh_to_collector_haul_costs_work_table", "merch_plot_to_rh_to_collector_haul_costs_work_table", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+
+                    i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach merch_plot_to_rh_to_collector_haul_costs_work_table table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!oAdo.TableExist(this.m_strConn, "merch_plot_to_rh_to_collector_haul_costs_work_table"));
+
+                    if (oDataMgr.m_intError == 0)
+                        if (oDataMgr.TableExist(conn, "combine_chip_rail_road_haul_costs_work_table"))
+                            oDataMgr.SqlNonQuery(conn, "DROP TABLE combine_chip_rail_road_haul_costs_work_table");
+
+                    if (oDataMgr.m_intError == 0)
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteHaulCostTable(
+                            oDataMgr, conn, "combine_chip_rail_road_haul_costs_work_table");
+
+                    oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, "combine_chip_rail_road_haul_costs_work_table", "combine_chip_rail_road_haul_costs_work_table", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+
+                    i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach combine_chip_rail_road_haul_costs_work_table table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!oAdo.TableExist(this.m_strConn, "combine_chip_rail_road_haul_costs_work_table"));
+
+                    if (oDataMgr.m_intError == 0)
+                        if (oDataMgr.TableExist(conn, "combine_merch_rail_road_haul_costs_work_table"))
+                            oDataMgr.SqlNonQuery(conn, "DROP TABLE combine_merch_rail_road_haul_costs_work_table");
+
+                    if (oDataMgr.m_intError == 0)
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteHaulCostTable(
+                            oDataMgr, conn, "combine_merch_rail_road_haul_costs_work_table");
+
+                    oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, "combine_merch_rail_road_haul_costs_work_table", "combine_merch_rail_road_haul_costs_work_table", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+
+                    i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach combine_merch_rail_road_haul_costs_work_table table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!oAdo.TableExist(this.m_strConn, "combine_merch_rail_road_haul_costs_work_table"));
+
+
+                    if (oDataMgr.m_intError == 0)
+                        if (oDataMgr.TableExist(conn, "merch_rh_to_collector_haul_costs_work_table"))
+                            oDataMgr.SqlNonQuery(conn, "DROP TABLE merch_rh_to_collector_haul_costs_work_table");
+
+                    /*****************************************************************
+                     **create the railroad table structures in the temp work tables file
+                     **and give them the name OF merch_rh_to_collector_haul_costs_work_table
+                     **                          chip_rh_to_collector_haul_costs_work_table
+                     *****************************************************************/
+                    if (oDataMgr.m_intError == 0)
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteHaulCostRailroadTable(
+                            oDataMgr, conn, "merch_rh_to_collector_haul_costs_work_table");
+
+                    oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, "merch_rh_to_collector_haul_costs_work_table", "merch_rh_to_collector_haul_costs_work_table", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+
+                    i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach merch_rh_to_collector_haul_costs_work_table table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!oAdo.TableExist(this.m_strConn, "merch_rh_to_collector_haul_costs_work_table"));
+
+
+                    if (oDataMgr.m_intError == 0)
+                        if (oDataMgr.TableExist(conn, "chip_rh_to_collector_haul_costs_work_table"))
+                            oDataMgr.SqlNonQuery(conn, "DROP TABLE chip_rh_to_collector_haul_costs_work_table");
+
+                    if (oDataMgr.m_intError == 0)
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteHaulCostRailroadTable(
+                            oDataMgr, conn, "chip_rh_to_collector_haul_costs_work_table");
+
+                    oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, "chip_rh_to_collector_haul_costs_work_table", "chip_rh_to_collector_haul_costs_work_table", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+
+                    i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach chip_rh_to_collector_haul_costs_work_table table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!oAdo.TableExist(this.m_strConn, "chip_rh_to_collector_haul_costs_work_table"));
+
+                    if (oDataMgr.m_intError != 0)
+                    {
+
+                        if (frmMain.g_bDebug)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Creating Table Schema!!!\r\n");
+                        this.m_intError = oDataMgr.m_intError;
+                        conn.Close();
+                        return;
+                    }
+
+                    conn.Close();
+                }
+            }
+
+            oAdo.CloseConnection(oAdo.m_OleDbConnection);
+            oAdo = null;
+            oDao = null;
+            oDataMgr = null;
+        }
+
+        /// <summary>
+        /// create a temporary work tables for finding best treatments
+        /// </summary>
+        private void CreateTableStructureForIntensity()
 		{
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -8200,10 +9233,115 @@ namespace FIA_Biosum_Manager
 
 		}
 
-		/// <summary>
-		/// create a temporary work tables for identifying inaccessible plots and conditions
-		/// </summary>
-		private void CreateTableStructureForPlotCondAccessiblity()
+        private void CreateTableStructureForIntensitySqlite()
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//CreateTableStructureForIntensity\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+            ado_data_access oAdo = new ado_data_access();
+            DataMgr oDataMgr = new DataMgr();
+            dao_data_access oDao = new dao_data_access();
+
+            this.m_strConn = oAdo.getMDBConnString(this.m_strTempMDBFile, "admin", "");
+            oAdo.OpenConnection(this.m_strConn);
+
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(this.m_strSQLiteWorkTablesDb)))
+            {
+                conn.Open();
+
+                if (oDataMgr.m_intError == 0)
+                {
+
+                    /*****************************************************************
+				    **create the table structure in the temp work tables db file
+				    **and give it the name of rx_intensity_work_table
+				    *****************************************************************/
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "--Create rx_intensity_work_table Schema--\r\n");
+
+                    frmMain.g_oTables.m_oOptimizerScenarioResults.CreateIntensityWorkTableSqlite(oDataMgr, conn, "rx_intensity_duplicates_work_table");
+                    if (oDataMgr.m_intError == 0)
+                    {
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateIntensityWorkTableSqlite(oDataMgr, conn, "rx_intensity_duplicates_work_table2");
+                    }
+                    if (oDataMgr.m_intError == 0)
+                    {
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateIntensityWorkTableSqlite(oDataMgr, conn, "rx_intensity_unique_work_table");
+                    }
+
+                    if (oDataMgr.m_intError != 0)
+                    {
+                        if (frmMain.g_bDebug)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Creating Table Schema!!!\r\n");
+                        this.m_intError = oDataMgr.m_intError;
+                        conn.Close();
+                        return;
+                    }
+
+                    oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, "rx_intensity_duplicates_work_table", "rx_intensity_duplicates_work_table", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+                    int i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach rx_intensity_duplicates_work_table table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!oAdo.TableExist(this.m_strConn, "rx_intensity_duplicates_work_table"));
+
+                    oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, "rx_intensity_duplicates_work_table2", "rx_intensity_duplicates_work_table2", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+                    i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach rx_intensity_duplicates_work_table2 table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!oAdo.TableExist(this.m_strConn, "rx_intensity_duplicates_work_table2"));
+
+                    oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, "rx_intensity_unique_work_table", "rx_intensity_unique_work_table", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+                    i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach rx_intensity_unique_work_table table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!oAdo.TableExist(this.m_strConn, "rx_intensity_unique_work_table"));
+
+                    oAdo.CloseConnection(oAdo.m_OleDbConnection);
+                }
+                conn.Close();
+            }
+            oAdo = null;
+            oDao = null;
+            oDataMgr = null;
+        }
+
+        /// <summary>
+        /// create a temporary work tables for identifying inaccessible plots and conditions
+        /// </summary>
+        private void CreateTableStructureForPlotCondAccessiblity()
 		{
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -8255,7 +9393,120 @@ namespace FIA_Biosum_Manager
 			p_ado=null;
 
 		}
-		private void CreateTableStructureForUserDefinedConditionTable()
+        private void CreateTableStructureForPlotCondAccessiblitySqlite()
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//CreateTableStructureForPlotCondAccessiblity\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+            ado_data_access p_ado = new ado_data_access();
+            DataMgr p_dataMgr = new DataMgr();
+            dao_data_access p_dao = new dao_data_access();
+
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "Delete table plot_cond_accessible_work_table\r\n");
+
+            string strConn = p_dataMgr.GetConnectionString(this.m_strSQLiteWorkTablesDb);
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+            {
+                conn.Open();
+                if (p_dataMgr.TableExist(conn, "plot_cond_accessible_work_table"))
+                {
+                    p_dataMgr.m_strSQL = "DROP TABLE plot_cond_accessible_work_table";
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    if (p_dataMgr.m_intError != 0)
+                    {
+                        if (frmMain.g_bDebug)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, "!! Error Deleting plot_cond_accessible_work_table Table!!\r\n");
+                        this.m_intError = p_dataMgr.m_intError;
+                        p_dataMgr = null;
+                        return;
+                    }
+                }
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Copy table structure plot to plot_cond_accessible_work_table\r\n");
+
+                using (OleDbConnection tempConn = new OleDbConnection(p_ado.getMDBConnString(this.m_strTempMDBFile, "", "")))
+                {
+                    tempConn.Open();
+                    string[] arrFields = p_ado.getFieldNamesArray(tempConn, "SELECT biosum_plot_id, num_cond FROM " + this.m_strPlotTable);
+
+                    string fieldsAndDataTypes = "";
+                    string numCondDataType = "";
+
+                    foreach (string column in arrFields)
+                    {
+                        string field = "";
+                        string dataType = "";
+                        p_ado.getFieldNamesAndDataTypes(tempConn, "SELECT " + column + " FROM " + this.m_strPlotTable, ref field, ref dataType);
+                        dataType = utils.DataTypeConvert(dataType.ToUpper(), true);
+                        if (field == "num_cond")
+                        {
+                            numCondDataType = dataType;
+                        }
+                        fieldsAndDataTypes = fieldsAndDataTypes + field + " " + dataType + ", ";
+                    }
+                    p_dataMgr.m_strSQL = "CREATE TABLE plot_cond_accessible_work_table (" + fieldsAndDataTypes + "num_cond_not_accessible " + numCondDataType + ", PRIMARY KEY (biosum_plot_id))";
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    
+                    p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, "plot_cond_accessible_work_table", "plot_cond_accessible_work_table", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+
+                    int i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach plot_cond_accessible_work_table table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!p_ado.TableExist(tempConn, "plot_cond_accessible_work_table"));
+
+                    p_ado.m_strSQL = "INSERT INTO plot_cond_accessible_work_table SELECT biosum_plot_id, num_cond, num_cond AS num_cond_not_accessible FROM " + this.m_strPlotTable;
+                    p_ado.SqlNonQuery(tempConn, p_ado.m_strSQL);
+
+                    p_dataMgr.m_strSQL = "CREATE TABLE plot_cond_accessible_work_table2 (" + fieldsAndDataTypes + "num_cond_not_accessible " + numCondDataType + ", PRIMARY KEY (biosum_plot_id))";
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                    p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, "plot_cond_accessible_work_table2", "plot_cond_accessible_work_table2", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+
+                    i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach plot_cond_accessible_work_table2 table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!p_ado.TableExist(tempConn, "plot_cond_accessible_work_table2"));
+
+                    p_ado.m_strSQL = "INSERT INTO plot_cond_accessible_work_table2 SELECT biosum_plot_id, num_cond, num_cond AS num_cond_not_accessible FROM " + this.m_strPlotTable;
+                    p_ado.SqlNonQuery(tempConn, p_ado.m_strSQL);
+
+                    tempConn.Close();
+                }
+
+                conn.Close();
+
+            }
+            p_ado = null;
+            p_dao = null;
+            p_dataMgr = null;
+        }
+
+        private void CreateTableStructureForUserDefinedConditionTable()
 		{
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -8344,37 +9595,76 @@ namespace FIA_Biosum_Manager
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//CreateTableStructureOfUserDefinedPlotSQL\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//CreateTableStructureOfUserDefinedCondSQL\r\n");
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
 
 
-            /********************************************************
-			 **get the user defined PLOT filter sql
-			 ********************************************************/
-            this.m_strSQL = this.m_strUserDefinedCondSQL;
-            /****************************************************************
-			 **get the table structure that results from executing the sql
-			 ****************************************************************/
-            System.Data.DataTable p_dt = this.m_ado.getTableSchema(this.m_TempMDBFileConn, this.m_strSQL);
-
-            /*****************************************************************
-			 **create the table structure in the temporary accdb file
-			 **and give it the name of userdefinedplotfilter_work
-			 *****************************************************************/
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "Create userdefinedcondfilter_work Table Schema From User Defined Plot Filter SQL\r\n");
+            DataMgr p_dataMgr = new DataMgr();
+            ado_data_access p_ado = new ado_data_access();
             dao_data_access p_dao = new dao_data_access();
-            p_dao.CreateMDBTableFromDataSetTable(this.m_strTempMDBFile, "userdefinedcondfilter_work", p_dt, true);
-            p_dt.Dispose();
-            this.m_ado.m_OleDbDataReader.Close();
-            if (p_dao.m_intError != 0)
+
+            string strConn = p_dataMgr.GetConnectionString(this.m_strSQLiteWorkTablesDb);
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
-                if (frmMain.g_bDebug)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "!! Error Creating Table Schema!!\r\n");
-                this.m_intError = p_dao.m_intError;
-                p_dao = null;
-                return;
+                conn.Open();
+                if (p_dataMgr.TableExist(conn, "userdefinedcondfilter_work"))
+                {
+                    p_dataMgr.m_strSQL = "DROP TABLE userdefinedcondfilter_work";
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    if (p_dao.m_intError != 0)
+                    {
+                        if (frmMain.g_bDebug)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, "!! Error Deleting userdefinedcondfilter_work Table!!\r\n");
+                        this.m_intError = p_dao.m_intError;
+                        p_dao = null;
+                        return;
+                    }
+                }
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Create table structure userdefinedcondfilter_work\r\n");
+
+                using (OleDbConnection tempConn = new OleDbConnection(p_ado.getMDBConnString(this.m_strTempMDBFile, "", "")))
+                {
+                    tempConn.Open();
+                    string[] arrFields = p_ado.getFieldNamesArray(tempConn, this.m_strUserDefinedCondSQL);
+
+                    string fieldsAndDataTypes = "";
+
+                    foreach (string column in arrFields)
+                    {
+                        string field = "";
+                        string dataType = "";
+                        p_ado.getFieldNamesAndDataTypes(tempConn, "SELECT " + column + " FROM cond", ref field, ref dataType);
+                        dataType = utils.DataTypeConvert(dataType.ToUpper(), true);
+                        fieldsAndDataTypes = fieldsAndDataTypes + field + " " + dataType + ", ";
+                    }
+                    p_dataMgr.m_strSQL = "CREATE TABLE userdefinedcondfilter_work (" + fieldsAndDataTypes + "PRIMARY KEY (biosum_plot_id))";
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                    p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, "userdefinedcondfilter_work", "userdefinedcondfilter_work", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+
+                    int i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach ruledefinedcondfilter_work table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!p_ado.TableExist(tempConn, "userdefinedcondfilter_work"));
+
+                    p_ado.m_strSQL = "INSERT INTO userdefinedcondfilter_work " + this.m_strUserDefinedCondSQL;
+                    p_ado.SqlNonQuery(tempConn, p_ado.m_strSQL);
+                    tempConn.Close();
+                }
+                conn.Close();
             }
 
             /***********************************************************************
@@ -8385,9 +9675,7 @@ namespace FIA_Biosum_Manager
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Delete table ruledefinitionscondfilter\r\n");
 
-            DataMgr p_dataMgr = new DataMgr();
-            ado_data_access p_ado = new ado_data_access();
-            string strConn = p_dataMgr.GetConnectionString(this.m_strSystemResultsDbPathAndFile);
+            strConn = p_dataMgr.GetConnectionString(this.m_strSystemResultsDbPathAndFile);
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
                 conn.Open();
@@ -8408,12 +9696,14 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Copy table structure userdefinedcondfilter_work to ruledefinitionscondfilter\r\n");
 
-                string fieldNames = "";
-                string dataTypes = "";
                 using (OleDbConnection tempConn = new OleDbConnection(p_ado.getMDBConnString(this.m_strTempMDBFile, "", "")))
                 {
                     tempConn.Open();
-                    string[] arrFields = p_ado.getFieldNamesArray(tempConn, "SELECT * FROM userdefinedcondfilter_work");
+
+                    p_dataMgr.m_strSQL = "ATTACH DATABASE '" + this.m_strSQLiteWorkTablesDb + "' AS work_tables";
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                    string[] arrFields = p_dataMgr.getFieldNamesArray(conn, "SELECT * FROM userdefinedcondfilter_work");
 
                     string fieldsAndDataTypes = "";
 
@@ -8421,7 +9711,7 @@ namespace FIA_Biosum_Manager
                     {
                         string field = "";
                         string dataType = "";
-                        p_ado.getFieldNamesAndDataTypes(tempConn, "SELECT " + column + " FROM userdefinedcondfilter_work", ref field, ref dataType);
+                        p_dataMgr.getFieldNamesAndDataTypes(conn, "SELECT " + column + " FROM userdefinedcondfilter_work", ref field, ref dataType);
                         dataType = utils.DataTypeConvert(dataType.ToUpper(), true);
                         fieldsAndDataTypes = fieldsAndDataTypes + field + " " + dataType + ", ";
                     }
@@ -8445,8 +9735,8 @@ namespace FIA_Biosum_Manager
                     }
                     while (!p_ado.TableExist(tempConn, "ruledefinitionscondfilter"));
 
-                    p_ado.m_strSQL = "INSERT INTO ruledefinitionscondfilter SELECT * FROM userdefinedcondfilter_work";
-                    p_ado.SqlNonQuery(tempConn, p_ado.m_strSQL);
+                    p_dataMgr.m_strSQL = "INSERT INTO ruledefinitionscondfilter SELECT * FROM userdefinedcondfilter_work";
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
                 }
 
             }

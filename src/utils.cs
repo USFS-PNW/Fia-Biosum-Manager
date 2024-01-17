@@ -723,6 +723,9 @@ namespace FIA_Biosum_Manager
 				case "SYSTEM.SINGLE":
 					convertedType = "INTEGER";
 					break;
+				case "SYSTEM.INT64":
+					convertedType = "INTEGER";
+					break;
                 default:
                     convertedType = "UNRECOGNIZED";
                     break;
