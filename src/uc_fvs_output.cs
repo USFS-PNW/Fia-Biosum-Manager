@@ -1775,7 +1775,7 @@ namespace FIA_Biosum_Manager
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strFvsOutConn))
             {
                 conn.Open();
-                string[] strSourceTableArray = SQLite.getTableNames(conn);
+                string[] strSourceTableArray = GetValidFVSTables(conn, Tables.FVS.DefaultFVSCasesTempTableName, p_strRunTitle);
                 //
                 //make sure all the tables and columns exist
                 //
