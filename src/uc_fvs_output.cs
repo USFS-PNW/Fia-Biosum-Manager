@@ -1878,6 +1878,9 @@ namespace FIA_Biosum_Manager
                                 strFields += "," + strCol;
                             }                   
                         }
+                        // Add runtitle column
+                        strCol = $@"RUNTITLE CHAR(255)";
+                        strFields += "," + strCol;
                         sb.Append(strFields + ",");
                         if (sb.Length > 0)
                         {
@@ -1947,7 +1950,16 @@ namespace FIA_Biosum_Manager
                             }
                         }
                     }
-                }
+                        // Make sure runtitle field is there
+                        if (!SQLite.ColumnExist(conn, strPreTable,"RUNTITLE"))
+                        {
+                            SQLite.AddColumn(conn, strPreTable, "RUNTITLE", "CHAR", "255");
+                        }
+                        if (!SQLite.ColumnExist(conn, strPostTable, "RUNTITLE"))
+                        {
+                            SQLite.AddColumn(conn, strPostTable, "RUNTITLE", "CHAR", "255");
+                        }
+                    }
 
                     // Create temp FVS Out table with subset for this variant package and primary key
                     const string TMPFVSOUT = "tmpFvsOut";
@@ -2181,10 +2193,10 @@ namespace FIA_Biosum_Manager
 
                     if (SQLite.m_intError == 0)
                     {
-                        //update biosum_cond_id column
+                        //update biosum_cond_id column and runtitle
                         SQLite.m_strSQL = $@"UPDATE {strPreTable} SET biosum_cond_id = 
                             CASE WHEN (biosum_cond_id IS NULL OR LENGTH(TRIM(biosum_cond_id))=0) AND (standid IS NOT NULL AND LENGTH(TRIM(standid)) = 25) 
-                            THEN SUBSTR(standid,1,25) ELSE '' END 
+                            THEN SUBSTR(standid,1,25) ELSE '' END, RUNTITLE = '{p_strRunTitle}' 
                             WHERE RXPACKAGE='{p_strPackage.Trim()}' AND RX='{strRx}' AND RXCYCLE='{strCycle}' AND FVS_VARIANT='{p_strVariant.Trim()}'";
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                 this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
@@ -2196,10 +2208,10 @@ namespace FIA_Biosum_Manager
 
                     if (SQLite.m_intError == 0)
                     {
-                            //update biosum_cond_id column
+                            //update biosum_cond_id column and runtitle
                             SQLite.m_strSQL = $@"UPDATE {strPostTable} SET biosum_cond_id = 
                                 CASE WHEN (biosum_cond_id IS NULL OR LENGTH(TRIM(biosum_cond_id))=0) AND (standid IS NOT NULL AND LENGTH(TRIM(standid)) = 25) 
-                                THEN SUBSTR(standid,1,25) ELSE '' END 
+                                THEN SUBSTR(standid,1,25) ELSE '' END, RUNTITLE = '{p_strRunTitle}' 
                                 WHERE RXPACKAGE='{p_strPackage.Trim()}' AND RX='{strRx}' AND RXCYCLE='{strCycle}' AND FVS_VARIANT='{p_strVariant.Trim()}'";
 
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
