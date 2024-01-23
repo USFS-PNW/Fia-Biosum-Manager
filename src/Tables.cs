@@ -1274,6 +1274,26 @@ namespace FIA_Biosum_Manager
                     "merch_val_dpa DOUBLE," +
                     "place_holder CHAR(1) DEFAULT 'N')";
             }
+            public void CreateSqliteTreeVolValSumTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteTreeVolValSumTableSQL(p_strTableName));
+            }
+            static public string CreateSqliteTreeVolValSumTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "rx CHAR(3)," +
+                    "rxcycle CHAR(1)," +
+                    "chip_vol_cf DOUBLE," +
+                    "chip_wt_gt DOUBLE," +
+                    "chip_val_dpa DOUBLE," +
+                    "merch_vol_cf DOUBLE," +
+                    "merch_wt_gt DOUBLE," +
+                    "merch_val_dpa DOUBLE," +
+                    "place_holder CHAR(1) DEFAULT 'N'," +
+                    "PRIMARY KEY (biosum_cond_id,rxpackage,rx,rxcycle))";
+            }
 
             //
             //PRODUCT YIELDS NET REVENUE/COSTS SUMMARY TABLE
