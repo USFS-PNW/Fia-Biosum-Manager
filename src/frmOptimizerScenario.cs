@@ -4916,7 +4916,22 @@ namespace FIA_Biosum_Manager
                     using (System.Data.SQLite.SQLiteConnection scenarioConn = new System.Data.SQLite.SQLiteConnection(strConn))
                     {
                         scenarioConn.Open();
-
+                        for (int i = 0; i < arrUpdateTableType.Length; i++)
+                        {
+                            if (!string.IsNullOrEmpty(arrUpdateTableType[i]))
+                            {
+                                System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                                sb.Append($@"UPDATE {Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioDatasourceTableName} SET ");
+                                sb.Append($@"PATH = '{strNewDirectoryPath}', file='{strDbName}', table_name = '{arrUpdateTableName[i]}' ");
+                                sb.Append($@"WHERE TRIM(table_type) = '{arrUpdateTableType[i]}'");
+                                SQLite.SqlNonQuery(scenarioConn, sb.ToString());
+                            }
+                        }
+                    }
+                    strConn = SQLite.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\processor\{Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile}");
+                    using (System.Data.SQLite.SQLiteConnection scenarioConn = new System.Data.SQLite.SQLiteConnection(strConn))
+                    {
+                        scenarioConn.Open();
                         for (int i = 0; i < arrUpdateTableType.Length; i++)
                         {
                             if (!string.IsNullOrEmpty(arrUpdateTableType[i]))
