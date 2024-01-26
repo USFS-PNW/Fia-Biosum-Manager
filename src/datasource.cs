@@ -692,6 +692,42 @@ namespace FIA_Biosum_Manager
 							this.m_strDataSource[x,TABLE].Trim());
 						this.m_intNumberOfValidTables++;
 					}
+				else if (strTableStatus=="F" &&
+					strFileStatus=="F" &&
+					bSQLite == true)
+                {
+					if (strTempMDB.Trim().Length == 0)
+					{
+						//get temporary mdb file
+						strTempMDB =
+							p_utils.getRandomFile(p_env.strTempDir, "accdb");
+
+						//create a temporary mdb that will contain all 
+						//the links to the scenario datasource tables
+						p_dao.CreateMDB(strTempMDB);
+					}
+					ODBCMgr p_odbc = new ODBCMgr();
+					string strDSN = "";
+					if (this.m_strDataSource[x, MDBFILE].Trim().ToUpper() == "GIS_TRAVEL_TIMES.DB")
+                    {
+						strDSN = ODBCMgr.DSN_KEYS.GisTravelTimesDsnName;
+                    }
+                    if (p_odbc.CurrentUserDSNKeyExist(strDSN))
+                    {
+						p_odbc.RemoveUserDSN(strDSN);
+                    }
+					p_odbc.CreateUserSQLiteDSN(strDSN, oMacroSub.GeneralTranslateVariableSubstitution(this.m_strDataSource[x, PATH].Trim()) + "\\" +
+						this.m_strDataSource[x, MDBFILE].Trim());
+
+					p_dao.CreateSQLiteTableLink(strTempMDB, this.m_strDataSource[x, TABLE].Trim(),
+						this.m_strDataSource[x, TABLE].Trim(), strDSN, oMacroSub.GeneralTranslateVariableSubstitution(this.m_strDataSource[x, PATH].Trim()) + "\\" +
+						this.m_strDataSource[x, MDBFILE].Trim());
+
+					if (p_odbc.CurrentUserDSNKeyExist(strDSN))
+					{
+						p_odbc.RemoveUserDSN(strDSN);
+					}
+				}
 			}
 			
 			p_utils = null;

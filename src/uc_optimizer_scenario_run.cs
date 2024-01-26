@@ -1690,7 +1690,7 @@ namespace FIA_Biosum_Manager
 
                            
 
-							this.getHaulCosts();
+							this.getHaulCostsSqlite();
 
 						}
 						else
@@ -4884,11 +4884,993 @@ namespace FIA_Biosum_Manager
             
 		}
 
+        private void getHaulCostsSqlite()
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//getHaulCosts\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+            string strTruckHaulCost;
+            string strRailHaulCost;
+            string strTransferMerchCost;
+            string strTransferChipCost;
 
-		/// <summary>
-		/// sum the tree_vol_val_by_species_diam_groups table values to tree_vol_val_sum_by_rx_cycle_work
-		/// </summary>
-		private void sumTreeVolVal()
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 27;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMinimumSteps = 1;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicCurrentStep = 1;
+
+            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.lblMsg, "Text", "Processing Haul Costs");
+            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.lblMsg, "Visible", true);
+            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.lblMsg, "Refresh");
+
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n\r\nDelete all records from haul_costs table\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "-------------------------------------------------------------\r\n");
+            }
+
+            // connect to temp work tables db
+            DataMgr p_dataMgr = new DataMgr();
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strSQLiteWorkTablesDb)))
+            {
+                conn.Open();
+
+                // attach scenario results db
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + this.m_strSystemResultsDbPathAndFile + "' AS results";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                // attach gis travel times db
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.TravelTime.DefaultTravelTimePathAndDbFile + "' AS travel_times";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                /********************************************
+                **delete all records in the table
+                ********************************************/
+                p_dataMgr.m_strSQL = "delete from " + Tables.OptimizerScenarioResults.DefaultScenarioResultsHaulCostsTableName;
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                {
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n\r\nUpdate Plot And Haul Cost Tables With Merch And Chip Haul Costs\r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "-------------------------------------------------------------\r\n");
+                }
+
+                /********************************************
+			    **get the haul cost per green ton per hour
+			    ********************************************/
+                strTruckHaulCost = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_costs1.RoadHaulCostDollarsPerGreenTonPerHour.Replace("$", "").ToString();
+                strTruckHaulCost = strTruckHaulCost.Replace(",", "");
+
+                if (strTruckHaulCost.Trim().Length == 1) strTruckHaulCost = "0.00";
+
+                strRailHaulCost = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_costs1.RailHaulCostDollarsPerGreenTonPerMile.Replace("$", "").ToString();
+                strRailHaulCost = strRailHaulCost.Replace(",", "");
+                if (strRailHaulCost.Trim().Length == 1) strRailHaulCost = "0.00";
+
+                /***********************************************
+                 **get the transfer cost per green to per hour
+                 ***********************************************/
+                strTransferMerchCost = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_costs1.RailMerchTransferCostDollarsPerGreenTonPerHour.Replace("$", "").ToString();
+                strTransferMerchCost = strTransferMerchCost.Replace(",", "");
+                if (strTransferMerchCost.Trim().Length == 1) strTransferMerchCost = "0.00";
+
+                strTransferChipCost = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_costs1.RailChipTransferCostDollarsPerGreenTonPerHour.Replace("$", "").ToString();
+                strTransferChipCost = strTransferChipCost.Replace(",", "");
+                if (strTransferChipCost.Trim().Length == 1) strTransferChipCost = "0.00";
+
+                /*******************************************************************************
+			    **zap the haul_costs table
+			    *******************************************************************************/
+                p_dataMgr.m_strSQL = "DELETE FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsHaulCostsTableName;
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\ndelete records in haul_costs table\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.lblMsg, "Text", "Null The PSite Work Table's Haul Cost Fields");
+                frmMain.g_oDelegate.ExecuteControlMethod((Control)ReferenceUserControlScenarioRun.lblMsg, "Refresh");
+
+                p_dataMgr.m_strSQL = "UPDATE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName +
+                    " SET merch_haul_cost_id = null," +
+                    "merch_haul_psite = null, " +
+                    "merch_haul_psite_name = null, " +
+                    "merch_haul_cost_dpgt = null ," +
+                    "chip_haul_cost_id = null," +
+                    "chip_haul_psite = null," +
+                    "chip_haul_psite_name = null," +
+                    "chip_haul_cost_dpgt = null;";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nnull the psite work table's haul cost fields\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                /*****************************************************************
+			    **delete any records that may exist in the work tables
+			    *****************************************************************/
+
+
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.lblMsg, "Text", "Delete Records In Work Tables");
+
+                frmMain.g_oDelegate.ExecuteControlMethod((Control)ReferenceUserControlScenarioRun.lblMsg, "Refresh");
+
+                //all plots and road-accessible psite  work table
+                p_dataMgr.m_strSQL = "delete from all_road_merch_haul_costs_work_table";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.m_strSQL = "delete from all_road_chip_haul_costs_work_table";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                //railheads to rail-accessible collector psite work tables
+                p_dataMgr.m_strSQL = "delete from merch_rh_to_collector_haul_costs_work_table;";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.m_strSQL = "delete from chip_rh_to_collector_haul_costs_work_table;";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                //plots to railheads to rail-accessible collector psite work tables
+                p_dataMgr.m_strSQL = "delete from merch_plot_to_rh_to_collector_haul_costs_work_table;";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.m_strSQL = "delete from chip_plot_to_rh_to_collector_haul_costs_work_table;";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                //cheapest merch road route work table
+                p_dataMgr.m_strSQL = "delete from cheapest_road_merch_haul_costs_work_table;";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                //cheapest chip road route work table
+                p_dataMgr.m_strSQL = "delete from cheapest_road_chip_haul_costs_work_table;";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                //cheapest merch rail route work table
+                p_dataMgr.m_strSQL = "delete from cheapest_rail_merch_haul_costs_work_table;";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                //cheapest chip rail route work table
+                p_dataMgr.m_strSQL = "delete from cheapest_rail_chip_haul_costs_work_table;";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+
+                //combine cheapest road and rail into single table
+                p_dataMgr.m_strSQL = "DELETE FROM combine_merch_rail_road_haul_costs_work_table;";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.m_strSQL = "DELETE FROM combine_chip_rail_road_haul_costs_work_table;";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                //overall cheapest routes for merch and chip
+                p_dataMgr.m_strSQL = "delete from cheapest_merch_haul_costs_work_table;";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.m_strSQL = "delete from cheapest_chip_haul_costs_work_table;";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                //MERCH AND CHIP ROAD PROCESSING SITE HAUL COSTS
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.lblMsg, "Text", "Road Haul Costs For Merchantable Wood Processing Sites");
+                frmMain.g_oDelegate.ExecuteControlMethod((Control)ReferenceUserControlScenarioRun.lblMsg, "Refresh");
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n\r\n--Merchantable wood processing site haul costs--\r\n");
+
+                /***************************************************************
+			    **process the merch travel times first
+			    ***************************************************************/
+                /*****************************************************************
+                 **Insert into a table all travel time records where the psite 
+                 **has road only or road/rail access and processes 
+                 **merch only or merch/chip
+                 *****************************************************************/
+                p_dataMgr.m_strSQL = "INSERT into all_road_merch_haul_costs_work_table " +
+                    "(biosum_plot_id, railhead_id, psite_id, transfer_cost_dpgt, road_cost_dpgt, rail_cost_dpgt, complete_haul_cost_dpgt, materialcd)" +
+                    "SELECT t.biosum_plot_id, 0 AS railhead_id," +
+                    "s.psite_id, 0 AS transfer_cost_dpgt," +
+                    "(" + strTruckHaulCost.Trim() + " * t.one_way_hours) AS road_cost_dpgt," +
+                    "0 AS rail_cost_dpgt, (" + strTruckHaulCost.Trim() + " * t.one_way_hours) AS complete_haul_cost_dpgt," +
+                    "'M' as materialcd " +
+                    "FROM " + this.m_strTravelTimeTable + " AS t," +
+                    this.m_strPSiteWorkTable + " AS s " + 
+                    "WHERE t.psite_id=s.psite_id AND " +
+                    "(s.trancd='1' OR s.trancd ='3') AND " +
+                    "(s.biocd='3' OR s.biocd='1')  AND t.one_way_hours > 0;";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\ninsert into work table all travel time records where psite has road access and processes merch\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                /**************************************************************************
+			    **Find the cheapest plot to merch processing site road route.
+			    **The first query (a) returns all rows with biosum_plot_id, road_cost,
+			    **and materialcd . The first subquery (b) finds the minimum haul cost
+			    **for a plot. The second subquery (c) finds the minimum haul cost for each
+			     **plot,psite combination. The where clause returns the desired row.
+			     **************************************************************************/
+                p_dataMgr.m_strSQL = "INSERT INTO cheapest_road_merch_haul_costs_work_table " +
+                    "SELECT null, b.biosum_plot_id,null AS railhead_id,c.psite_id," +
+                    "0 AS transfer_cost_dpgt, a.road_cost_dpgt, 0 AS rail_cost_dpgt," +
+                    "b.min_cost AS complete_haul_cost_dpgt," +
+                    "'M' AS materialcd " +
+                    "FROM  all_road_merch_haul_costs_work_table AS a," +
+                    "(SELECT biosum_plot_id,MIN(complete_haul_cost_dpgt) AS min_cost " +
+                    "FROM all_road_merch_haul_costs_work_table " +
+                    "GROUP BY biosum_plot_id) AS b," +
+                    "(SELECT biosum_plot_id,  psite_id ," +
+                    "MIN(complete_haul_cost_dpgt) AS min_cost2 " +
+                    "FROM all_road_merch_haul_costs_work_table " +
+                    "GROUP BY biosum_plot_id, psite_id) AS c " +
+                    "WHERE  c.biosum_plot_id = b.biosum_plot_id AND " +
+                    "a.biosum_plot_id = b.biosum_plot_id AND " +
+                    "a.psite_id = c.psite_id AND " +
+                    "b.min_cost = c.min_cost2;";
+
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\ninsert into work table. Find the cheapest plot to merch processing site road route.\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.lblMsg, "Text", "Road Haul Costs For Chip Wood Processing Sites");
+                frmMain.g_oDelegate.ExecuteControlMethod((Control)ReferenceUserControlScenarioRun.lblMsg, "Refresh");
+
+                /***********************************************************************
+			     **Append to a table all travel time records where the psite 
+			     **has road only or road/rail access and processes 
+			     **chip only or merch/chip
+			     ***********************************************************************/
+                p_dataMgr.m_strSQL = "INSERT INTO all_road_chip_haul_costs_work_table " +
+                    "SELECT null, t.biosum_plot_id, 0 AS railhead_id," +
+                    "s.psite_id, 0 AS transfer_cost_dpgt," +
+                    "(" + strTruckHaulCost.Trim() + " * t.one_way_hours) AS road_cost_dpgt," +
+                    "0 AS rail_cost_dpgt, " +
+                    "(" + strTruckHaulCost.Trim() + " * t.one_way_hours) AS complete_haul_cost_dpgt," +
+                    "'C' AS materialcd " +
+                    "FROM " + this.m_strTravelTimeTable + " AS t," +
+                    this.m_strPSiteWorkTable + " AS s " +
+                    "WHERE t.psite_id=s.psite_id AND " +
+                    "(s.trancd='1' OR s.trancd='3') AND " +
+                    "(s.biocd='3' OR s.biocd='2')  AND t.one_way_hours > 0;";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\ninsert into work table all travel time records where psite has road access and processes chips.\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                /******************************************************************
+                 **For each plot get the cheapest road route to a psite. 
+                 ******************************************************************/
+                p_dataMgr.m_strSQL = "INSERT INTO cheapest_road_chip_haul_costs_work_table " +
+                    "SELECT null, b.biosum_plot_id, null AS railhead_id, c.psite_id, " +
+                    "0 AS transfer_cost_dpgt,a.road_cost_dpgt," +
+                    "0 AS rail_cost_dpgt, b.min_cost AS complete_haul_cost_dpgt," +
+                    "'C' AS materialcd " +
+                    "FROM all_road_chip_haul_costs_work_table AS a," +
+                    "(SELECT biosum_plot_id,MIN(complete_haul_cost_dpgt) AS min_cost " +
+                    "FROM all_road_chip_haul_costs_work_table " +
+                    "GROUP BY biosum_plot_id) AS b," +
+                    "(SELECT biosum_plot_id,  psite_id ," +
+                    "MIN(complete_haul_cost_dpgt) AS min_cost2 " +
+                    "FROM all_road_chip_haul_costs_work_table " +
+                    "GROUP BY biosum_plot_id, psite_id) AS c " +
+                    "WHERE c.biosum_plot_id=b.biosum_plot_id AND " +
+                    "a.biosum_plot_id=b.biosum_plot_id AND " +
+                    "a.psite_id=c.psite_id AND b.min_cost=c.min_cost2;";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\ninsert into work table. Find the cheapest plot to chip processing site road route.\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                //MERCH AND CHIP RAIL PROCESSING SITE HAUL COSTS
+                /*********************************************************
+                 **Append to a table all travel time collector_id (psite)
+                 **records where the psite has rail access
+                 *********************************************************/
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.lblMsg, "Text", "Rail Haul Costs For Merchantable Wood Processing Sites");
+                frmMain.g_oDelegate.ExecuteControlMethod((Control)ReferenceUserControlScenarioRun.lblMsg, "Refresh");
+
+                p_dataMgr.m_strSQL = "INSERT INTO merch_rh_to_collector_haul_costs_work_table " +
+                    "SELECT t.psite_id AS railhead_id," +
+                    "t.collector_id AS psite_id," +
+                    strTransferMerchCost.Trim() + " AS transfer_cost_dpgt," +
+                    "0 AS road_cost_dpgt," +
+                    "((t.one_way_hours * 45) * " + strRailHaulCost.Trim() + ") AS rail_cost_dpgt," +
+                    "0 AS complete_haul_cost_dpgt,  'M' AS materialcd " +
+                    "FROM " + this.m_strTravelTimeTable + " AS t  " +
+                    "INNER JOIN  " + this.m_strPSiteWorkTable + " AS s " +
+                    "ON t.collector_id = s.psite_id " +
+                    "WHERE  s.trancd='3' And (s.biocd='3' Or s.biocd='1')  AND t.one_way_hours > 0 AND " +
+                    "EXISTS (SELECT ss.psite_id " +
+                    "FROM " + this.m_strPSiteWorkTable + " AS ss " +
+                    "WHERE t.psite_id=ss.psite_id AND ss.trancd='2' AND (ss.biocd='3' Or ss.biocd='1'));";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\ninsert into work table all travel time collector_id (psite) records where the psite has rail access and processes merch.\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                /***************************************************************************
+                 **Combine records from the travel time table and the 
+                 **merch_rh_to_collector_haul_costs_work_table table by matching the 
+                 **r.railhead_id with the travel time psite_id. By doing this,
+                 **we can calculate the road_cost and get the total cost by summing 
+                 **together the plot to railhead road cost, the transfer of material cost,
+                 ** and the railhead to collector site rail cost.
+                 ***************************************************************************/
+                p_dataMgr.m_strSQL = "INSERT INTO merch_plot_to_rh_to_collector_haul_costs_work_table " +
+                    "SELECT null, t.biosum_plot_id, r.railhead_id, r.psite_id," +
+                    "r.transfer_cost_dpgt," +
+                    "(" + strTruckHaulCost.Trim() + " * t.one_way_hours) AS road_cost_dpgt," +
+                    "r.rail_cost_dpgt, (r.transfer_cost_dpgt + (" + strTruckHaulCost.Trim() + " * t.one_way_hours) + r.rail_cost_dpgt) AS complete_haul_cost_dpgt," +
+                    "'M' AS materialcd " +
+                    "FROM  " + this.m_strTravelTimeTable + " AS t," +
+                    "merch_rh_to_collector_haul_costs_work_table AS r " +
+                    "WHERE r.railhead_id = t.psite_id  AND t.one_way_hours > 0;";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\ninsert into work table travel time plot records and previous work rail/merch table results\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                p_dataMgr.m_strSQL = "UPDATE merch_plot_to_rh_to_collector_haul_costs_work_table " +
+                    "SET complete_haul_cost_dpgt = transfer_cost_dpgt + road_cost_dpgt + rail_cost_dpgt;";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nupdate merch by road and rail total haul cost\r\n ");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                /*******************************************************************
+                 **Find the cheapest plot to merch processing site rail route.
+                 **The first query (a) returns all rows with biosum_plot_id,
+                 **railhead_id, transfer_cost, road_cost. The first subquery (b)
+                 **finds the minimum haul cost for a plot. The second subquery (c)
+                 **finds the minimum haul cost for each plot,psite combination.
+                 **The where clause returns the desired row.
+                 *******************************************************************/
+                p_dataMgr.m_strSQL = "INSERT INTO cheapest_rail_merch_haul_costs_work_table " +
+                    "SELECT null, a.biosum_plot_id, a.railhead_id, c.psite_id, " +
+                    "a.transfer_cost_dpgt, a.road_cost_dpgt,a.rail_cost_dpgt," +
+                    "c.min_cost AS complete_haul_cost_dpgt,'M' as materialcd " +
+                    "FROM merch_plot_to_rh_to_collector_haul_costs_work_table AS a," +
+                    "(SELECT biosum_plot_id, MIN(complete_haul_cost_dpgt) AS min_cost2 " +
+                    "FROM merch_plot_to_rh_to_collector_haul_costs_work_table " +
+                    "GROUP BY biosum_plot_id) AS b," +
+                    "(SELECT biosum_plot_id, psite_id," +
+                    "MIN(complete_haul_cost_dpgt) AS min_cost " +
+                    "FROM merch_plot_to_rh_to_collector_haul_costs_work_table " +
+                    "GROUP BY biosum_plot_id,psite_id) AS c " +
+                    "WHERE  c.biosum_plot_id = b.biosum_plot_id AND " +
+                    "a.biosum_plot_id = c.biosum_plot_id AND " +
+                    "a.psite_id = c.psite_id AND " +
+                    "a.complete_haul_cost_dpgt = c.min_cost AND " +
+                    "min_cost2 = min_cost;";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nInsert into work table. Find the cheapest plot to merch processing site rail routes\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.lblMsg, "Text", "Rail Haul Costs For Chip Wood Processing Sites");
+                frmMain.g_oDelegate.ExecuteControlMethod((Control)ReferenceUserControlScenarioRun.lblMsg, "Refresh");
+
+                /***********************************************************************
+                 **Append to a table all travel time collector_id (psite) records
+                 **where the psite has rail access and processes chips only or 
+                 **both merch/chips
+                 ***********************************************************************/
+                p_dataMgr.m_strSQL = "INSERT INTO chip_rh_to_collector_haul_costs_work_table " +
+                    "SELECT  t.psite_id AS railhead_id," +
+                    "t.collector_id AS psite_id," +
+                    strTransferChipCost.Trim() + " AS transfer_cost_dpgt," +
+                    "0 AS road_cost_dpgt," +
+                    "((t.one_way_hours * 45) * " + strRailHaulCost.Trim() + ") AS rail_cost_dpgt," +
+                    "0 AS complete_haul_cost_dpgt,  'C' AS materialcd " +
+                    "FROM " + this.m_strTravelTimeTable + " AS t  " +
+                    "INNER JOIN  " + this.m_strPSiteWorkTable + " AS s " +
+                    "ON t.collector_id = s.psite_id " +
+                    "WHERE s.trancd='3' AND  " +
+                    "(s.biocd='3' OR s.biocd='2')  AND t.one_way_hours > 0 AND " +
+                    "EXISTS (SELECT ss.psite_id " +
+                    "FROM " + this.m_strPSiteWorkTable + " AS ss " +
+                    "WHERE t.psite_id=ss.psite_id AND ss.trancd='2' AND (ss.biocd='3' Or ss.biocd='2'));";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nInsert into work table all travel time collector_id (psite) records where the psite has rail access and processes chips.\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                /*************************************************************************
+                 **Combine records from the travel time table and the 
+                 **chip_rh_to_collector_haul_costs_work_table by matching the
+                 **r.railhead_id with the travel time psite_id. By doing this,
+                 **we can calculate the road_cost and get the total cost by summing 
+                 **together the plot to railhead road cost, the transfer of material cost,
+                 **and the railhead to collector site rail cost.
+                 *************************************************************************/
+                p_dataMgr.m_strSQL = "INSERT INTO chip_plot_to_rh_to_collector_haul_costs_work_table " +
+                    "SELECT null, t.biosum_plot_id, r.railhead_id, r.psite_id," +
+                    "r.transfer_cost_dpgt," +
+                    "(" + strTruckHaulCost.Trim() + " * t.one_way_hours) AS road_cost_dpgt," +
+                    "r.rail_cost_dpgt, " +
+                    "(r.transfer_cost_dpgt + road_cost_dpgt + r.rail_cost_dpgt) AS complete_haul_cost_dpgt," +
+                    "'C' AS materialcd " +
+                    "FROM  " + this.m_strTravelTimeTable + " AS t," +
+                    "chip_rh_to_collector_haul_costs_work_table AS r " +
+                    "WHERE r.railhead_id = t.psite_id  AND t.one_way_hours > 0;";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\ninsert into work table travel time plot records and previous rail/chips work table results\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                p_dataMgr.m_strSQL = "UPDATE chip_plot_to_rh_to_collector_haul_costs_work_table " +
+                    "SET complete_haul_cost_dpgt = transfer_cost_dpgt + road_cost_dpgt + rail_cost_dpgt;";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nupdate chips by road and rail total haul cost\r\n ");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                /************************************************************************
+                 **Find the cheapest plot to Chips processing site rail route.
+                 **The first query (a) returns all rows with biosum_plot_id, railhead_id,
+                 **transfer_cost, road_cost. The first subquery (b) finds the minimum
+                 **haul cost for a plot. The second subquery (c) finds the minimum haul
+                 **cost for each plot,psite combination. The where clause returns the
+                 **desired row.
+                 *************************************************************************/
+                p_dataMgr.m_strSQL = "INSERT INTO cheapest_rail_chip_haul_costs_work_table " +
+                    "SELECT null, a.biosum_plot_id, a.railhead_id, b.psite_id," +
+                    "a.transfer_cost_dpgt, a.road_cost_dpgt, a.rail_cost_dpgt," +
+                    "b.min_cost AS complete_haul_cost_dpgt,'C' AS materialcd " +
+                    "FROM chip_plot_to_rh_to_collector_haul_costs_work_table AS a," +
+                    "(SELECT biosum_plot_id, " +
+                    "MIN(complete_haul_cost_dpgt) AS min_cost2 " +
+                    "FROM chip_plot_to_rh_to_collector_haul_costs_work_table " +
+                    "GROUP BY biosum_plot_id) AS c, " +
+                    "(SELECT biosum_plot_id, psite_id," +
+                    "MIN(complete_haul_cost_dpgt) AS min_cost " +
+                    "FROM chip_plot_to_rh_to_collector_haul_costs_work_table " +
+                    "GROUP BY biosum_plot_id,psite_id) AS b " +
+                    "WHERE  b.biosum_plot_id = c.biosum_plot_id AND " +
+                    "a.biosum_plot_id = b.biosum_plot_id AND " +
+                    "a.psite_id = b.psite_id AND  " +
+                    "a.complete_haul_cost_dpgt = b.min_cost AND " +
+                    "min_cost2 = min_cost;";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nInsert into work table. Find the cheapest plot to chip processing site rail routes\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n"); ;
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.lblMsg, "Text", "Combine Road And Rail Haul Costs For Merchantable Wood Processing Sites");
+                frmMain.g_oDelegate.ExecuteControlMethod((Control)ReferenceUserControlScenarioRun.lblMsg, "Refresh");
+
+                /**************************************************************
+                 **combine the cheapest road and rail total cost for each plot
+                 **to a merch psite
+                 **After the insert there should be two records for each
+                 **plot - one with cheapest haul cost by road and another
+                 **with cheapest haul cost by rail
+                 ***************************************************************/
+                p_dataMgr.m_strSQL = "INSERT INTO combine_merch_rail_road_haul_costs_work_table " +
+                    "SELECT * FROM cheapest_road_merch_haul_costs_work_table;";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nInsert into work table. Cheapest road route to merch psite\r\n ");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n"); ;
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                // Need to specify all fields except the haul_cost_id because there may be duplicate haul_cost_id's  
+                // between the rail and road tables. This allows MS Access to auto-assign the haul_cost_id for the
+                // inserted records
+                p_dataMgr.m_strSQL = "INSERT INTO combine_merch_rail_road_haul_costs_work_table " +
+                    "SELECT null, biosum_plot_id, railhead_id, psite_id, transfer_cost_dpgt, road_cost_dpgt, " +
+                    "rail_cost_dpgt, complete_haul_cost_dpgt, materialcd FROM cheapest_rail_merch_haul_costs_work_table;";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nInsert into work table. Cheapest rail route to merch psite\r\n ");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n"); ;
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                /***************************************************
+                 **Get the overall cheapest merch route
+                 ***************************************************/
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.lblMsg, "Text", "Get Overall Least Expensive Merch Route");
+                frmMain.g_oDelegate.ExecuteControlMethod((Control)ReferenceUserControlScenarioRun.lblMsg, "Refresh");
+                p_dataMgr.m_strSQL = "INSERT INTO cheapest_merch_haul_costs_work_table " +
+                    "SELECT a.biosum_plot_id,a.railhead_id,b.psite_id," +
+                    "a.transfer_cost_dpgt, a.road_cost_dpgt,  a.rail_cost_dpgt," +
+                    "b.min_cost AS complete_haul_cost_dpgt,'M' AS materialcd " +
+                    "FROM combine_merch_rail_road_haul_costs_work_table AS a," +
+                    "(SELECT biosum_plot_id, MIN(complete_haul_cost_dpgt) AS min_cost2 " +
+                    "FROM combine_merch_rail_road_haul_costs_work_table " +
+                    "GROUP BY biosum_plot_id) AS c, " +
+                    "(SELECT biosum_plot_id, psite_id," +
+                    "MIN(complete_haul_cost_dpgt) AS min_cost " +
+                    "FROM combine_merch_rail_road_haul_costs_work_table " +
+                    "GROUP BY biosum_plot_id,psite_id) AS b " +
+                    "WHERE  b.biosum_plot_id = c.biosum_plot_id AND " +
+                    "a.biosum_plot_id = b.biosum_plot_id AND " +
+                    "a.psite_id = b.psite_id AND " +
+                    "a.complete_haul_cost_dpgt = b.min_cost AND " +
+                    "min_cost2 = min_cost;";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nInsert into work table. Get the overall cheapest merch route\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n"); ;
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.lblMsg, "Text", "Combine Road And Rail Haul Costs For Chip Wood Processing Sites");
+                frmMain.g_oDelegate.ExecuteControlMethod((Control)ReferenceUserControlScenarioRun.lblMsg, "Refresh");
+
+                /**************************************************************
+                 **combine the cheapest road and rail total cost for each plot
+                 **to a chips psite
+                 **After the insert there should be two records for each
+                 **plot - one with cheapest haul cost by road and another
+                 **with cheapest haul cost by rail
+                 ***************************************************************/
+                p_dataMgr.m_strSQL = "INSERT INTO combine_chip_rail_road_haul_costs_work_table " +
+                    "SELECT * FROM cheapest_road_chip_haul_costs_work_table;";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nInsert into work table. Cheapest road route to chip psite\r\n ");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n"); ;
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                // Need to specify all fields except the haul_cost_id because there may be duplicate haul_cost_id's  
+                // between the rail and road tables. This allows MS Access to auto-assign the haul_cost_id for the
+                // inserted records
+                p_dataMgr.m_strSQL = "INSERT INTO combine_chip_rail_road_haul_costs_work_table " +
+                    "SELECT null, biosum_plot_id, railhead_id, psite_id, transfer_cost_dpgt, road_cost_dpgt, " +
+                    "rail_cost_dpgt, complete_haul_cost_dpgt, materialcd FROM cheapest_rail_chip_haul_costs_work_table;";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nInsert into work table. Cheapest rail route to chip psite\r\n ");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n"); ;
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.lblMsg, "Text", "Get Overall Least Expensive Chip Route");
+                frmMain.g_oDelegate.ExecuteControlMethod((Control)ReferenceUserControlScenarioRun.lblMsg, "Refresh");
+
+                /******************************************
+                 **Get the overall cheapest chip route
+                 ******************************************/
+                p_dataMgr.m_strSQL = "INSERT INTO cheapest_chip_haul_costs_work_table " +
+                    "SELECT a.biosum_plot_id, a.railhead_id, b.psite_id, " +
+                    "a.transfer_cost_dpgt, a.road_cost_dpgt,  a.rail_cost_dpgt," +
+                    "b.min_cost AS complete_haul_cost_dpgt,'C' AS materialcd " +
+                    "FROM combine_chip_rail_road_haul_costs_work_table AS a, " +
+                    "(SELECT biosum_plot_id,MIN(complete_haul_cost_dpgt) AS min_cost2 " +
+                    "FROM combine_chip_rail_road_haul_costs_work_table " +
+                    "GROUP BY biosum_plot_id) AS c, " +
+                    "(SELECT biosum_plot_id, psite_id," +
+                    "MIN(complete_haul_cost_dpgt) AS min_cost " +
+                    "FROM combine_chip_rail_road_haul_costs_work_table " +
+                    "GROUP BY biosum_plot_id,psite_id) AS b " +
+                    "WHERE  b.biosum_plot_id = c.biosum_plot_id AND " +
+                    "a.biosum_plot_id = b.biosum_plot_id AND " +
+                    "a.psite_id = b.psite_id AND " +
+                    "a.complete_haul_cost_dpgt = b.min_cost AND " +
+                    "min_cost2 = min_cost;";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nInsert into work table. Get the overall cheapest chip route\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n"); ;
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                //INSERT INTO HAUL_COSTS TABLE
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.lblMsg, "Text", "Inserting Results Into Haul Costs Table");
+                frmMain.g_oDelegate.ExecuteControlMethod((Control)ReferenceUserControlScenarioRun.lblMsg, "Refresh");
+
+                p_dataMgr.m_strSQL = "INSERT INTO haul_costs (biosum_plot_id, railhead_id, psite_id, " +
+                    "transfer_cost_dpgt, road_cost_dpgt, rail_cost_dpgt, complete_haul_cost_dpgt, materialcd) " +
+                    "SELECT * FROM cheapest_merch_haul_costs_work_table;";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nInsert into haul_costs table cheapest merch route for each plot\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n"); ;
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                p_dataMgr.m_strSQL = "INSERT INTO haul_costs(biosum_plot_id, railhead_id, psite_id, " +
+                    "transfer_cost_dpgt, road_cost_dpgt, rail_cost_dpgt, complete_haul_cost_dpgt, materialcd) " +
+                    "SELECT * FROM cheapest_chip_haul_costs_work_table;";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nInsert into haul_costs table cheapest chip route for each plot\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n"); ;
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                //UPDATE PSITE_ACCESSIBLE_WORKTABLE TABLE
+
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.lblMsg, "Text", "Updating PSite Work Table");
+                frmMain.g_oDelegate.ExecuteControlMethod((Control)ReferenceUserControlScenarioRun.lblMsg, "Refresh");
+
+                /**************************************************
+                 **Update cheapest merch route fields
+                 **************************************************/
+
+                p_dataMgr.m_strSQL = "UPDATE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " AS w " +
+                    "SET merch_haul_cost_id = h.haul_cost_id, merch_haul_psite = h.psite_id, merch_haul_cost_dpgt = h.complete_haul_cost_dpgt " +
+                    "FROM haul_costs AS h WHERE w.biosum_plot_id = h.biosum_plot_id AND h.materialcd = 'M'";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nUpdate plot merch haul cost fields\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                p_dataMgr.m_strSQL = "UPDATE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " AS w " +
+                    "SET merch_haul_psite_name = (SELECT p.name FROM processing_site AS p " +
+                    "WHERE w.merch_haul_psite = p.psite_id)";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nUpdate merch psite name\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n"); ;
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                /*****************************************
+                 **Update  cheapest chip routes
+                 *****************************************/
+                p_dataMgr.m_strSQL = "UPDATE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " AS p " +
+                    "SET chip_haul_cost_id = (SELECT h.haul_cost_id FROM haul_costs AS h WHERE p.biosum_plot_id = h.biosum_plot_id AND h.materialcd = 'C'), " +
+                    "chip_haul_psite = (SELECT h.psite_id FROM haul_costs AS h WHERE p.biosum_plot_id = h.biosum_plot_id AND h.materialcd = 'C'), " +
+                    "chip_haul_cost_dpgt = (SELECT h.complete_haul_cost_dpgt FROM haul_costs AS h WHERE p.biosum_plot_id = h.biosum_plot_id AND h.materialcd = 'C')";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nUpdate plot chip haul cost fields\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                p_dataMgr.m_strSQL = "UPDATE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " AS w " +
+                    "SET chip_haul_psite_name = (SELECT p.name FROM processing_site AS p WHERE w.chip_haul_psite = p.psite_id)";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nUpdate chip psite name\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n"); ;
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                /******************************************
+                 **clean up work tables
+                 ******************************************/
+
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.lblMsg, "Text", "Cleaning Up Haul Cost Work Tables...Stand By");
+                frmMain.g_oDelegate.ExecuteControlMethod((Control)ReferenceUserControlScenarioRun.lblMsg, "Refresh");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nCleaning up haul cost work tables\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+                if (this.m_intError == 0)
+                {
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
+                }
+                frmMain.g_oDelegate.SetControlPropertyValue((Control)ReferenceUserControlScenarioRun.lblMsg, "Visible", false);
+
+                frmMain.g_oDelegate.ExecuteControlMethod((Control)ReferenceUserControlScenarioRun.lblMsg, "Refresh");
+
+                conn.Close();
+            }
+
+        }
+
+
+        /// <summary>
+        /// sum the tree_vol_val_by_species_diam_groups table values to tree_vol_val_sum_by_rx_cycle_work
+        /// </summary>
+        private void sumTreeVolVal()
 		{
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
