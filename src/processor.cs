@@ -404,7 +404,7 @@ namespace FIA_Biosum_Manager
         }
 
         public int UpdateTrees(string p_strVariant, string p_strRxPackage, string p_strTreeTableName, 
-            string p_strTravelTimesTableName, string p_strTreeSpeciesTableName, bool blnCreateReconcilationTable)
+            string p_strTreeSpeciesTableName, string p_strTravelTimesDbPath, string p_strTravelTimesTable, bool blnCreateReconcilationTable)
         {
             if (m_trees == null)
             {
@@ -434,7 +434,7 @@ namespace FIA_Biosum_Manager
             if (m_scenarioMoveInCost.MoveInTimeMultiplier > 0)
             {
                 //Load travel times
-                dictTravelTimes = LoadTravelTimes(p_strTravelTimesTableName);
+                dictTravelTimes = LoadTravelTimes(p_strTravelTimesDbPath, p_strTravelTimesTable);
 
                 //Abort if travel times have not been loaded
                 if (dictTravelTimes.Count == 0)
@@ -3363,23 +3363,25 @@ namespace FIA_Biosum_Manager
             return dictOpcostIdeal;
         }
 
-        private System.Collections.Generic.IDictionary<String, double> LoadTravelTimes(string p_strTravelTimesTableName)
+        private System.Collections.Generic.IDictionary<String, double> LoadTravelTimes(string p_strTravelTimesDbPath, string p_strTravelTimesTable)
         {
             System.Collections.Generic.IDictionary<String, double> dictTravelTimes =
                 new System.Collections.Generic.Dictionary<String, double>();
-            if (m_oAdo.m_intError == 0)
+            string strConn = SQLite.GetConnectionString(p_strTravelTimesDbPath);
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
+                conn.Open();
                 string strSQL = "SELECT MIN(ONE_WAY_HOURS) AS min_one_way_hours, BIOSUM_PLOT_ID " +
-                                "FROM " + p_strTravelTimesTableName +
+                                "FROM " + p_strTravelTimesTable +
                                 " WHERE ONE_WAY_HOURS > 0 " +
                                 "GROUP BY BIOSUM_PLOT_ID";
-                m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
-                if (m_oAdo.m_OleDbDataReader.HasRows)
+                SQLite.SqlQueryReader(conn, strSQL);
+                if (SQLite.m_DataReader.HasRows)
                 {
-                    while (m_oAdo.m_OleDbDataReader.Read())
+                    while (SQLite.m_DataReader.Read())
                     {
-                        string strPlotId = Convert.ToString(m_oAdo.m_OleDbDataReader["biosum_plot_id"]).Trim();
-                        double dblTravelTime = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_one_way_hours"]);
+                        string strPlotId = Convert.ToString(SQLite.m_DataReader["biosum_plot_id"]).Trim();
+                        double dblTravelTime = Convert.ToDouble(SQLite.m_DataReader["min_one_way_hours"]);
                         dictTravelTimes.Add(strPlotId, dblTravelTime);
                     }
                 }

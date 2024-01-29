@@ -93,7 +93,8 @@ namespace FIA_Biosum_Manager
 			if (this.m_oFIAPlot.LoadDatasource) this.m_oFIAPlot.LoadDatasources();
 			if (this.m_oReference.LoadDatasource) this.m_oReference.LoadDatasources();
             if (this.m_oProcessor.LoadDatasource) this.m_oProcessor.LoadDatasources();
-			m_strTempDbFile = this.m_oDataSource.CreateMDBAndTableDataSourceLinks();
+            if (this.m_oTravelTime.LoadDatasource) this.m_oTravelTime.LoadDatasources();
+            m_strTempDbFile = this.m_oDataSource.CreateMDBAndTableDataSourceLinks();
 		}
 
 		protected void LoadLimitedDatasources()
@@ -4673,6 +4674,7 @@ namespace FIA_Biosum_Manager
         public class TravelTime
 		{
             public string m_strTravelTimeTable;
+            public string m_strDbFile;
             private bool _bLoadDataSources = true;
             private Queries _oQueries=null;
 			public TravelTime()
@@ -4692,8 +4694,8 @@ namespace FIA_Biosum_Manager
 
             public void LoadDatasources()
             {
-                m_strTravelTimeTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("PLOT");
-
+                m_strTravelTimeTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName(Datasource.TableTypes.TravelTimes);
+                m_strDbFile = ReferenceQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.TravelTimes);
 
                 if (this.m_strTravelTimeTable.Trim().Length == 0)
                 {

@@ -359,6 +359,7 @@ namespace FIA_Biosum_Manager
             m_oQueries.m_oFvs.LoadDatasource = true;
             m_oQueries.m_oReference.LoadDatasource = true;
             m_oQueries.m_oProcessor.LoadDatasource = true;
+            m_oQueries.m_oTravelTime.LoadDatasource = true;
             // The following call creates the temp database that is used for running calculations
             m_oQueries.LoadDatasources(true, ReferenceProcessorScenarioForm.m_bUsingSqlite, "processor", ScenarioId);
             //
@@ -5991,7 +5992,8 @@ namespace FIA_Biosum_Manager
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 blnCreateReconcileTreesTable = true;
                             m_intError = mainProcessor.UpdateTrees(strVariant, strRxPackage, m_oQueries.m_oFIAPlot.m_strTreeTable, 
-                                m_oQueries.m_oTravelTime.m_strTravelTimeTable, this.m_oQueries.m_oFvs.m_strTreeSpcTable, blnCreateReconcileTreesTable);
+                                this.m_oQueries.m_oFvs.m_strTreeSpcTable, this.m_oQueries.m_oTravelTime.m_strDbFile,
+                                this.m_oQueries.m_oTravelTime.m_strTravelTimeTable, blnCreateReconcileTreesTable);
 
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             {

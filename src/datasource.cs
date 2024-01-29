@@ -477,7 +477,7 @@ namespace FIA_Biosum_Manager
                                 if (bSQLite)
                                 {
                                     string strExistsConn = dataMgr.GetConnectionString(strPathAndFile);
-                                    using (System.Data.SQLite.SQLiteConnection existsConn = new System.Data.SQLite.SQLiteConnection(strConn))
+                                    using (System.Data.SQLite.SQLiteConnection existsConn = new System.Data.SQLite.SQLiteConnection(strExistsConn))
                                     {
                                         existsConn.Open();
                                         if (dataMgr.TableExist(existsConn, dataMgr.m_DataReader["table_name"].ToString().Trim()) == true)
