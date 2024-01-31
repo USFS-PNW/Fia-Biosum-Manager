@@ -7620,7 +7620,390 @@ namespace FIA_Biosum_Manager
 
 		}
 
-		private void Optimization()
+        private void Effective_sqlite()
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//Effective\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+
+            DataMgr p_dataMgr = new DataMgr();
+            int x, y;
+            string strPreTable = "";
+            string strPreColumn = "";
+            string strPostTable = "";
+            string strPostColumn = "";
+            string[] strEffectiveColumnArray;
+            string[] strBetterIsNotNull = new string[uc_optimizer_scenario_fvs_prepost_variables_effective.NUMBER_OF_VARIABLES];
+            string[] strWorseIsNotNull = new string[uc_optimizer_scenario_fvs_prepost_variables_effective.NUMBER_OF_VARIABLES];
+            string[] strEffectiveIsNotNull = new string[uc_optimizer_scenario_fvs_prepost_variables_effective.NUMBER_OF_VARIABLES];
+            string strOverallEffectiveIsNotNull = "";
+            string strBetterSql = "";
+            string strWorseSql = "";
+            string strEffectiveSql = "";
+            int intListViewIndex = -1;
+
+            string strVariableNumber = "";
+            FIA_Biosum_Manager.uc_optimizer_scenario_fvs_prepost_variables_effective.Variables oFvsVar =
+                ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_fvs_prepost_variables_effective1.m_oSavVar;
+
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n\r\nEffective Treatments\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "---------------------------\r\n");
+            }
+
+            intListViewIndex = FIA_Biosum_Manager.uc_optimizer_scenario_run.GetListViewItemIndex(
+                     ReferenceUserControlScenarioRun.listViewEx1, "Identify Effective Treatments For Each Stand");
+
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem = intListViewIndex;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 8;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMinimumSteps = 1;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicCurrentStep = 1;
+            FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic = (ProgressBarBasic.ProgressBarBasic)ReferenceUserControlScenarioRun.listViewEx1.GetEmbeddedControl(1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem);
+            frmMain.g_oDelegate.EnsureListViewExItemVisible(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem);
+            frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "Selected", true);
+            frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "focused", true);
+
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strSystemResultsDbPathAndFile)))
+            {
+                conn.Open();
+
+                //attach optimizer results database
+                //p_dataMgr.m_strSQL = "ATTACH DATABASE '" + this.m_strSystemResultsDbPathAndFile + "' AS results";
+                //p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                //attach FVS prepost weighted database
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile + "' AS prepost_fvsout";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                //get all the column names in the effective table
+                string strEffectiveTableName = ReferenceOptimizerScenarioForm.OutputTablePrefix + Tables.OptimizerScenarioResults.DefaultScenarioResultsEffectiveTableSuffix;
+                strEffectiveColumnArray = p_dataMgr.getFieldNamesArray(conn, "SELECT * FROM " + strEffectiveTableName);
+
+                /********************************************
+			     **delete all records in the effective table
+			     ********************************************/
+                p_dataMgr.m_strSQL = "delete from " + strEffectiveTableName;
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                //insert the valid combos into the effective table
+                m_strSQL = "INSERT INTO " + strEffectiveTableName + " (biosum_cond_id,rxpackage,rx,rxcycle) SELECT biosum_cond_id,rxpackage,rx,rxcycle FROM validcombos WHERE rxcycle='1'";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                //insert net revenue per acre into the effective table
+                p_dataMgr.m_strSQL = "UPDATE " + strEffectiveTableName + " AS e " +
+                    "SET nr_dpa = CASE WHEN p.max_nr_dpa IS NOT NULL THEN p.max_nr_dpa ELSE 0 END " +
+                    "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName + " AS p " +
+                    "WHERE e.biosum_cond_id = p.biosum_cond_id AND " +
+                    "e.rxpackage = p.rxpackage AND " +
+                    "e.rx = p.rx AND e.rxcycle = p.rxcycle";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                //insert revenue filter field into the effective table
+                if (this.m_oOptimizationVariable.bUseFilter == true)
+                {
+                    uc_optimizer_scenario_calculated_variables.VariableItem oItem = null;
+                    foreach (uc_optimizer_scenario_calculated_variables.VariableItem oNextItem in this.ReferenceOptimizerScenarioForm.m_oWeightedVariableCollection)
+                    {
+                        if (oNextItem.strVariableName.Equals(this.m_oOptimizationVariable.strRevenueAttribute))
+                        {
+                            oItem = oNextItem;
+                            break;
+                        }
+                    }
+                    if (oItem != null)
+                    {
+                        if (oItem.strVariableSource.IndexOf(".") > -1)
+                        {
+                            string[] strDatabase = frmMain.g_oUtils.ConvertListToArray(oItem.strVariableSource, ".");
+                            p_dataMgr.m_strSQL = "UPDATE  " + strEffectiveTableName + " AS e " +
+                                "SET e." + this.m_oOptimizationVariable.strRevenueAttribute + " = CASE WHEN p." + strDatabase[1] + " IS NOT NULL THEN p." + strDatabase[1] + " ELSE 0 END " +
+                                "FROM " + strDatabase[0] + " AS p " +
+                                "WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                            p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                        }
+                    }
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                //populate the variable table.column name and its value to the effective table
+                for (x = 0; x <= uc_optimizer_scenario_fvs_prepost_variables_effective.NUMBER_OF_VARIABLES - 1; x++)
+                {
+
+                    p_dataMgr.m_strSQL = "";
+                    strPreTable = "";
+                    strPreColumn = "";
+                    strPostTable = "";
+                    strPostColumn = "";
+                    strVariableNumber = Convert.ToString(x + 1).Trim();
+                    if (oFvsVar.TableName(oFvsVar.m_strPreVarArray[x].Trim().ToUpper()) != "NOT DEFINED")
+                    {
+
+                        strPreTable = oFvsVar.TableName(oFvsVar.m_strPreVarArray[x].Trim());
+                        strPreColumn = oFvsVar.ColumnName(oFvsVar.m_strPreVarArray[x].Trim());
+                    }
+                    if (oFvsVar.m_strPostVarArray[x].Trim().ToUpper() != "NOT DEFINED")
+                    {
+
+                        strPostTable = oFvsVar.TableName(oFvsVar.m_strPostVarArray[x].Trim());
+                        strPostColumn = oFvsVar.ColumnName(oFvsVar.m_strPostVarArray[x].Trim());
+                    }
+                    if (strPreTable.Trim().Length > 0)
+                    {
+                        p_dataMgr.m_strSQL = "pre_variable" + strVariableNumber + "_name='" + strPreTable + "." + strPreColumn + "',";
+                        p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + "pre_variable" + strVariableNumber + "_value= (SELECT pre." + strPreColumn + " FROM " + strPreTable + 
+                            " AS pre WHERE pre.biosum_cond_id = e.biosum_cond_id AND pre.rxpackage = e.rxpackage AND pre.rx = e.rx AND pre.rxcycle = e.rxcycle)";
+                    }
+                    else
+                    {
+                        p_dataMgr.m_strSQL = "pre_variable" + strVariableNumber + "_name=null,";
+                        p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + "pre_variable" + strVariableNumber + "_value=null";
+                    }
+
+                    if (strPostTable.Trim().Length > 0)
+                    {
+                        p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + ",post_variable" + strVariableNumber + "_name='" + strPostTable + "." + strPostColumn + "',";
+                        p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + "post_variable" + strVariableNumber + "_value= (SELECT post." + strPostColumn + " FROM " + strPostTable +
+                            " AS post WHERE post.biosum_cond_id = e.biosum_cond_id AND post.rxpackage = e.rxpackage AND post.rx = e.rx AND post.rxcycle = e.rxcycle)";
+                    }
+                    else
+                    {
+                        p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + ",post_variable" + strVariableNumber + "_name=null,";
+                        p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + "post_variable" + strVariableNumber + "_value=null";
+                    }
+                    if (strPreTable.Trim().Length > 0 && strPostTable.Trim().Length > 0)
+                    {
+                        //p_dataMgr.m_strSQL = "UPDATE " + strEffectiveTableName + " AS e " +
+                        //    "SET " + p_dataMgr.m_strSQL +
+                        //    " FROM " + strPostTable + " AS post, " + strPreTable + " AS pre " +
+                        //    "WHERE post.biosum_cond_id = pre.biosum_cond_id AND post.rxpackage = pre.rxpackage AND " +
+                        //    "post.rx = pre.rx AND post.rxcycle = pre.rxcycle AND " +
+                        //    "e.biosum_cond_id = post.biosum_cond_id AND e.rxpackage = post.rxpackage AND " +
+                        //    "e.rx = post.rx AND e.rxcycle = post.rxcycle";
+                        p_dataMgr.m_strSQL = "UPDATE " + strEffectiveTableName + " AS e " +
+                            "SET " + p_dataMgr.m_strSQL;
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                        p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    }
+                }
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                //populate the change column by subtracting pre value from post value
+                p_dataMgr.m_strSQL = "";
+                for (x = 0; x <= uc_optimizer_scenario_fvs_prepost_variables_effective.NUMBER_OF_VARIABLES - 1; x++)
+                {
+                    strVariableNumber = Convert.ToString(x + 1).Trim();
+                    p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + "variable" + strVariableNumber + "_change = CASE WHEN pre_variable" + strVariableNumber + "_value IS NOT NULL AND post_variable" +
+                        strVariableNumber + "_value IS NOT NULL THEN post_variable" + strVariableNumber + "_value - pre_variable" + strVariableNumber + "_value ELSE NULL END,";
+                }
+                p_dataMgr.m_strSQL = p_dataMgr.m_strSQL.Substring(0, p_dataMgr.m_strSQL.Length - 1);
+
+                p_dataMgr.m_strSQL = "UPDATE " + strEffectiveTableName + " SET " + p_dataMgr.m_strSQL;
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                //see what variables are referenced in the sql expression and make sure they are not null
+                strOverallEffectiveIsNotNull = "";
+                for (x = 0; x <= uc_optimizer_scenario_fvs_prepost_variables_effective.NUMBER_OF_VARIABLES - 1; x++)
+                {
+                    strBetterIsNotNull[x] = "";
+                    strWorseIsNotNull[x] = "";
+                    strEffectiveIsNotNull[x] = "";
+
+                    for (y = 0; y <= strEffectiveColumnArray.Length - 1; y++)
+                    {
+                        if (oFvsVar.m_strBetterExpr[x].Trim().Length > 0)
+                        {
+                            if (oFvsVar.m_strBetterExpr[x].Trim().ToUpper().IndexOf(strEffectiveColumnArray[y].ToUpper(), 0) >= 0)
+                            {
+                                strBetterIsNotNull[x] = strBetterIsNotNull[x] + strEffectiveColumnArray[y] + " IS NOT NULL AND ";
+                            }
+                        }
+                        if (oFvsVar.m_strWorseExpr[x].Trim().Length > 0)
+                        {
+                            if (oFvsVar.m_strWorseExpr[x].Trim().ToUpper().IndexOf(strEffectiveColumnArray[y].ToUpper(), 0) >= 0)
+                            {
+                                strWorseIsNotNull[x] = strWorseIsNotNull[x] + strEffectiveColumnArray[y] + " IS NOT NULL AND ";
+                            }
+                        }
+                        if (oFvsVar.m_strEffectiveExpr[x].Trim().Length > 0)
+                        {
+                            if (oFvsVar.m_strEffectiveExpr[x].Trim().ToUpper().IndexOf(strEffectiveColumnArray[y].ToUpper(), 0) >= 0)
+                            {
+                                strEffectiveIsNotNull[x] = strEffectiveIsNotNull[x] + strEffectiveColumnArray[y] + " IS NOT NULL AND ";
+                            }
+                        }
+                    }
+
+                }
+
+                if (oFvsVar.m_strOverallEffectiveExpr.Trim().Length > 0)
+                {
+                    for (y = 0; y <= strEffectiveColumnArray.Length - 1; y++)
+                    {
+
+                        if (oFvsVar.m_strOverallEffectiveExpr.Trim().ToUpper().IndexOf(strEffectiveColumnArray[y].ToUpper(), 0) >= 0)
+                        {
+                            strOverallEffectiveIsNotNull = strOverallEffectiveIsNotNull + strEffectiveColumnArray[y] + " IS NOT NULL AND ";
+                        }
+
+                    }
+                }
+
+                //remove the last AND
+                for (x = 0; x <= uc_optimizer_scenario_fvs_prepost_variables_effective.NUMBER_OF_VARIABLES - 1; x++)
+                {
+                    if (strBetterIsNotNull[x].Trim().Length > 0)
+                    {
+                        strBetterIsNotNull[x] = strBetterIsNotNull[x].Substring(0, strBetterIsNotNull[x].Length - 5);
+                    }
+                    if (strWorseIsNotNull[x].Trim().Length > 0)
+                    {
+                        strWorseIsNotNull[x] = strWorseIsNotNull[x].Substring(0, strWorseIsNotNull[x].Length - 5);
+                    }
+                    if (strEffectiveIsNotNull[x].Trim().Length > 0)
+                    {
+                        strEffectiveIsNotNull[x] = strEffectiveIsNotNull[x].Substring(0, strEffectiveIsNotNull[x].Length - 5);
+                    }
+                }
+
+                if (strOverallEffectiveIsNotNull.Trim().Length > 0)
+                {
+                    strOverallEffectiveIsNotNull = strOverallEffectiveIsNotNull.Substring(0, strOverallEffectiveIsNotNull.Length - 5);
+                }
+
+                //populate the better,worse,effective, and overall effective columns
+                p_dataMgr.m_strSQL = "";
+                strBetterSql = "";
+                strWorseSql = "";
+                strEffectiveSql = "";
+                for (x = 0; x <= uc_optimizer_scenario_fvs_prepost_variables_effective.NUMBER_OF_VARIABLES - 1; x++)
+                {
+                    strVariableNumber = Convert.ToString(x + 1).Trim();
+                    if (oFvsVar.m_strBetterExpr[x].Trim().Length > 0)
+                    {
+                        strBetterSql = strBetterSql + "variable" + strVariableNumber + "_better_yn = CASE WHEN " + strBetterIsNotNull[x].Trim() + " THEN CASE WHEN " + oFvsVar.m_strBetterExpr[x].Trim() + " THEN 'Y' ELSE 'N' END ELSE NULL END,";
+                    }
+                    if (oFvsVar.m_strWorseExpr[x].Trim().Length > 0)
+                    {
+                        strWorseSql = strWorseSql + "variable" + strVariableNumber + "_worse_yn = CASE WHEN " + strWorseIsNotNull[x].Trim() + " THEN CASE WHEN " + oFvsVar.m_strWorseExpr[x].Trim() + " THEN 'Y' ELSE 'N' END ELSE NULL END,";
+                    }
+                    if (oFvsVar.m_strEffectiveExpr[x].Trim().Length > 0)
+                    {
+                        strEffectiveSql = strEffectiveSql + "variable" + strVariableNumber + "_effective_yn = CASE WHEN " + strEffectiveIsNotNull[x].Trim() + " THEN CASE WHEN " + oFvsVar.m_strEffectiveExpr[x].Trim() + " THEN 'Y' ELSE 'N' END ELSE NULL END,";
+                    }
+                }
+
+                // Mark effective treatments with a 'Y'
+                p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + "overall_effective_yn = CASE WHEN " + strOverallEffectiveIsNotNull.Trim() + " THEN CASE WHEN " + oFvsVar.m_strOverallEffectiveExpr.Trim() + " THEN 'Y' ELSE 'N' END ELSE NULL END,";
+
+                //better
+                if (strBetterSql.Trim().Length > 0)
+                {
+                    strBetterSql = strBetterSql.Substring(0, strBetterSql.Length - 1);
+                    strBetterSql = "UPDATE " + strEffectiveTableName + " SET " + strBetterSql;
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "--Improvement--\r\n");
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + strBetterSql + "\r\n");
+                    p_dataMgr.SqlNonQuery(conn, strBetterSql);
+
+                }
+
+                //worse
+                if (strWorseSql.Trim().Length > 0)
+                {
+                    strWorseSql = strWorseSql.Substring(0, strWorseSql.Length - 1);
+                    strWorseSql = "UPDATE " + strEffectiveTableName + " SET " + strWorseSql;
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "--Disimprovement--\r\n");
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + strWorseSql + "\r\n");
+                    p_dataMgr.SqlNonQuery(conn, strWorseSql);
+
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                //effective
+                strEffectiveSql = strEffectiveSql.Substring(0, strEffectiveSql.Length - 1);
+                strEffectiveSql = "UPDATE " + strEffectiveTableName + " SET " + strEffectiveSql;
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "--Variable Effective--\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + strEffectiveSql + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, strEffectiveSql);
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                //overall effective
+                p_dataMgr.m_strSQL = p_dataMgr.m_strSQL.Substring(0, p_dataMgr.m_strSQL.Length - 1);
+                p_dataMgr.m_strSQL = "UPDATE " + strEffectiveTableName + " SET " + p_dataMgr.m_strSQL;
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "--Overall Effective--\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug) frmMain.g_oUtils.WriteText(m_strDebugFile, "!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (Convert.ToInt32(p_dataMgr.getRecordCount(conn, "SELECT COUNT(*) FROM " + strEffectiveTableName + " WHERE overall_effective_yn='Y'", "temp")) == 0)
+                {
+
+                    MessageBox.Show("No overall effective treatments found. Processing is cancelled");
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Cancelled!!");
+                    ReferenceUserControlScenarioRun.m_bUserCancel = true;
+                    return;
+
+                }
+
+                conn.Close();
+            }
+
+           
+
+            if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+
+
+            if (this.m_intError == 0)
+            {
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
+            }
+        }
+
+
+        private void Optimization()
 		{
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -9376,7 +9759,355 @@ namespace FIA_Biosum_Manager
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
             }
         }
-        
+
+        private void calculate_weighted_econ_variables_sqlite()
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//calculate_weighted_econ_variables\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+
+            intListViewIndex = FIA_Biosum_Manager.uc_optimizer_scenario_run.GetListViewItemIndex(
+                   ReferenceUserControlScenarioRun.listViewEx1, "Calculate Weighted Economic Variables For Each Stand And Treatment Package");
+
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem = intListViewIndex;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 5;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMinimumSteps = 1;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicCurrentStep = 1;
+            FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic = (ProgressBarBasic.ProgressBarBasic)ReferenceUserControlScenarioRun.listViewEx1.GetEmbeddedControl(1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem);
+            frmMain.g_oDelegate.EnsureListViewExItemVisible(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem);
+            frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "Selected", true);
+            frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "focused", true);
+
+            DataMgr p_dataMgr = new DataMgr();
+
+            // Query optimization and tiebreaker settings to see if there are weighted variables to calculate
+            System.Collections.Generic.IList<string> lstFieldNames =
+                new System.Collections.Generic.List<string>();
+            // Optimization variable
+            if (this.m_oOptimizationVariable.strOptimizedVariable.Trim().ToUpper() == "ECONOMIC ATTRIBUTE")
+            {
+                string[] strCol = frmMain.g_oUtils.ConvertListToArray(this.m_oOptimizationVariable.strFVSVariableName, "_");
+                if (strCol.Length > 1)
+                {
+                    // This is not a default economic variable; They always end in _1
+                    if (strCol[strCol.Length - 1] != "1")
+                    {
+                        lstFieldNames.Add(this.m_oOptimizationVariable.strFVSVariableName.Trim());
+                    }
+                }
+            }
+
+            // Dollars per acre filter
+            if (this.m_oOptimizationVariable.bUseFilter == true)
+            {
+                string[] strCol = frmMain.g_oUtils.ConvertListToArray(this.m_oOptimizationVariable.strRevenueAttribute, "_");
+                if (strCol.Length > 1)
+                {
+                    // This is not a default economic variable; They always end in _1
+                    if (strCol[strCol.Length - 1] != "1")
+                    {
+                        if (!lstFieldNames.Contains(this.m_oOptimizationVariable.strRevenueAttribute.Trim()))
+                        {
+                            lstFieldNames.Add(this.m_oOptimizationVariable.strRevenueAttribute.Trim());
+                        }
+                    }
+                }
+            }
+
+            // Tiebreaker
+            if (this.ReferenceOptimizerScenarioForm.uc_scenario_fvs_prepost_variables_tiebreaker1.m_oSavTieBreakerCollection.Item(1).bSelected == true)
+            {
+                string strFieldName = this.ReferenceOptimizerScenarioForm.uc_scenario_fvs_prepost_variables_tiebreaker1.m_oSavTieBreakerCollection.Item(1).strFVSVariableName.Trim();
+                string[] strCol = frmMain.g_oUtils.ConvertListToArray(strFieldName, "_");
+                if (strCol.Length > 1)
+                {
+                    // This is not a default economic variable; They always end in _1
+                    if (strCol[strCol.Length - 1] != "1")
+                    {
+                        string strFieldType = uc_optimizer_scenario_calculated_variables.getEconVariableType(strFieldName);
+                        if (!String.IsNullOrEmpty(strFieldType))
+                        {
+                            // This is a valid economic variable type
+                            if (!lstFieldNames.Contains(strFieldName))
+                            {
+                                lstFieldNames.Add(strFieldName);
+                            }
+                        }
+                    }
+                }
+            }
+
+            System.Collections.Generic.IList<uc_optimizer_scenario_calculated_variables.VariableItem> lstVariableItems =
+               new System.Collections.Generic.List<uc_optimizer_scenario_calculated_variables.VariableItem>();  //Parallel list to lstFieldNames; Holds variable definitions
+
+            if (lstFieldNames.Count > 0)
+            {
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                {
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n\r\nCalculating these weighted economic variables\r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "---------------------------\r\n");
+                    foreach (string strFieldName in lstFieldNames)
+                    {
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, strFieldName + "\r\n");
+                    }
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "---------------------------\r\n");
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                // Populate economic variable information from configuration database
+                FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables.Variable_Collection oWeightedVariableCollection =
+                    new FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables.Variable_Collection();
+                FIA_Biosum_Manager.OptimizerScenarioTools oOptimizerScenarioTools = new OptimizerScenarioTools();
+                oOptimizerScenarioTools.LoadWeightedVariables_access(this.m_ado, oWeightedVariableCollection);
+                foreach (string strVariableName in lstFieldNames)
+                {
+                    foreach (uc_optimizer_scenario_calculated_variables.VariableItem oVariableItem in oWeightedVariableCollection)
+                    {
+                        if (oVariableItem.strVariableType.Equals("ECON") && oVariableItem.strVariableName.Equals(strVariableName))
+                        {
+                            oOptimizerScenarioTools.loadEconomicVariableWeights(oVariableItem);
+                            lstVariableItems.Add(oVariableItem);
+                            break;
+                        }
+                    }
+                }
+
+                string strEconConn = p_dataMgr.GetConnectionString(m_strSystemResultsDbPathAndFile);
+
+                try
+                {
+                    using (System.Data.SQLite.SQLiteConnection econConn = new System.Data.SQLite.SQLiteConnection(strEconConn))
+                    {
+                        econConn.Open();
+
+                        //Add columns to post_economic_weighted table to receive the data
+                        foreach (string strFieldName in lstFieldNames)
+                        {
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, "Adding columns for: " + strFieldName + "\r\n");
+                            p_dataMgr.AddColumn(econConn, Tables.OptimizerScenarioResults.DefaultScenarioResultsPostEconomicWeightedTableName,
+                                "c1_" + strFieldName, "DOUBLE", "");
+                            p_dataMgr.AddColumn(econConn, Tables.OptimizerScenarioResults.DefaultScenarioResultsPostEconomicWeightedTableName,
+                                "c2_" + strFieldName, "DOUBLE", "");
+                            p_dataMgr.AddColumn(econConn, Tables.OptimizerScenarioResults.DefaultScenarioResultsPostEconomicWeightedTableName,
+                                "c3_" + strFieldName, "DOUBLE", "");
+                            p_dataMgr.AddColumn(econConn, Tables.OptimizerScenarioResults.DefaultScenarioResultsPostEconomicWeightedTableName,
+                                "c4_" + strFieldName, "DOUBLE", "");
+                            p_dataMgr.AddColumn(econConn, Tables.OptimizerScenarioResults.DefaultScenarioResultsPostEconomicWeightedTableName,
+                                strFieldName, "DOUBLE", "");
+                        }
+
+                        FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                        System.Collections.Generic.IDictionary<string, ProductYields> dictProductYields =
+                        new System.Collections.Generic.Dictionary<string, ProductYields>();
+                        p_dataMgr.m_strSQL = "select * from " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName;
+
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                        p_dataMgr.SqlQueryReader(econConn, p_dataMgr.m_strSQL);
+                        ProductYields oProductYields = null;
+
+                        while (p_dataMgr.m_DataReader.Read())
+                        {
+                            string strCondId = p_dataMgr.m_DataReader["biosum_cond_id"].ToString().Trim();
+                            string strRxPackage = p_dataMgr.m_DataReader["rxpackage"].ToString().Trim();
+                            string strKey = strCondId + "_" + strRxPackage;
+                            if (dictProductYields.ContainsKey(strKey))
+                            {
+                                oProductYields = dictProductYields[strKey];
+                            }
+                            else
+                            {
+                                oProductYields = new ProductYields(strCondId, strRxPackage);
+                            }
+                            string strRxCycle = p_dataMgr.m_DataReader["rxcycle"].ToString().Trim();
+                            double dblChipYieldCf = Convert.ToDouble(p_dataMgr.m_DataReader["chip_vol_cf"]);
+                            double dblMerchYieldCf = Convert.ToDouble(p_dataMgr.m_DataReader["merch_vol_cf"]);
+                            double dblHarvestOnsiteCpa = Convert.ToDouble(p_dataMgr.m_DataReader["harvest_onsite_cost_dpa"]);
+                            double dblMaxNrDpa = Convert.ToDouble(p_dataMgr.m_DataReader["max_nr_dpa"]);
+                            double dblHaulMerchCpa = Convert.ToDouble(p_dataMgr.m_DataReader["merch_haul_cost_dpa"]);
+                            double dblMerchChipNrDpa = Convert.ToDouble(p_dataMgr.m_DataReader["merch_chip_nr_dpa"]);
+                            double dblHaulChipCpa = Convert.ToDouble(p_dataMgr.m_DataReader["chip_haul_cost_dpa"]);
+
+                            switch (strRxCycle)
+                            {
+                                case "1":
+                                    oProductYields.UpdateCycle1Yields(dblChipYieldCf, dblMerchYieldCf, dblHarvestOnsiteCpa,
+                                        dblMaxNrDpa, dblHaulMerchCpa, dblMerchChipNrDpa, dblHaulChipCpa);
+                                    break;
+                                case "2":
+                                    oProductYields.UpdateCycle2Yields(dblChipYieldCf, dblMerchYieldCf, dblHarvestOnsiteCpa,
+                                        dblMaxNrDpa, dblHaulMerchCpa, dblMerchChipNrDpa, dblHaulChipCpa);
+                                    break;
+                                case "3":
+                                    oProductYields.UpdateCycle3Yields(dblChipYieldCf, dblMerchYieldCf, dblHarvestOnsiteCpa,
+                                        dblMaxNrDpa, dblHaulMerchCpa, dblMerchChipNrDpa, dblHaulChipCpa);
+                                    break;
+                                case "4":
+                                    oProductYields.UpdateCycle4Yields(dblChipYieldCf, dblMerchYieldCf, dblHarvestOnsiteCpa,
+                                        dblMaxNrDpa, dblHaulMerchCpa, dblMerchChipNrDpa, dblHaulChipCpa);
+                                    break;
+                            }
+                            dictProductYields[strKey] = oProductYields;
+                        }
+
+                        if (dictProductYields.Keys.Count > 0)
+                        {
+                            FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+                            string strSqlPrefix = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPostEconomicWeightedTableName +
+                                        " (biosum_cond_id, rxpackage, ";
+                            foreach (string strFieldName in lstFieldNames)
+                            {
+                                strSqlPrefix = strSqlPrefix + "c1_" + strFieldName + " , c2_" +
+                                               strFieldName + ", c3_" + strFieldName + ", c4_" +
+                                               strFieldName + ", " + strFieldName + ",";
+                            }
+                            strSqlPrefix = strSqlPrefix.TrimEnd(strSqlPrefix[strSqlPrefix.Length - 1]); //trim trailing comma
+                            strSqlPrefix = strSqlPrefix + " ) VALUES ( '";
+
+                            foreach (string strKey in dictProductYields.Keys)
+                            {
+                                ProductYields oSavedProductYields = dictProductYields[strKey];
+                                string strSql = strSqlPrefix + oSavedProductYields.CondId() + "', '" +
+                                    oSavedProductYields.RxPackage() + "',";
+
+                                System.Collections.Generic.IList<double> lstFieldValues = new System.Collections.Generic.List<double>();
+                                int i = 0;
+                                foreach (string strFieldName in lstFieldNames)
+                                {
+                                    string strFieldType = uc_optimizer_scenario_calculated_variables.getEconVariableType(strFieldName);
+                                    uc_optimizer_scenario_calculated_variables.VariableItem oVariableItem = lstVariableItems[i];
+                                    System.Collections.Generic.IList<double> lstWeights = oVariableItem.lstWeights;
+                                    switch (strFieldType)
+                                    {
+                                        case uc_optimizer_scenario_calculated_variables.PREFIX_MERCH_VOLUME:
+                                            lstFieldValues.Add(oSavedProductYields.MerchYieldCfCycle1() * lstWeights[0]);
+                                            lstFieldValues.Add(oSavedProductYields.MerchYieldCfCycle2() * lstWeights[1]);
+                                            lstFieldValues.Add(oSavedProductYields.MerchYieldCfCycle3() * lstWeights[2]);
+                                            lstFieldValues.Add(oSavedProductYields.MerchYieldCfCycle4() * lstWeights[3]);
+                                            lstFieldValues.Add(oSavedProductYields.MerchYieldCfCycle1() * lstWeights[0] +
+                                                               oSavedProductYields.MerchYieldCfCycle2() * lstWeights[1] +
+                                                               oSavedProductYields.MerchYieldCfCycle3() * lstWeights[2] +
+                                                               oSavedProductYields.MerchYieldCfCycle4() * lstWeights[3]);
+                                            break;
+                                        case uc_optimizer_scenario_calculated_variables.PREFIX_CHIP_VOLUME:
+                                            lstFieldValues.Add(oSavedProductYields.ChipYieldCfCycle1() * lstWeights[0]);
+                                            lstFieldValues.Add(oSavedProductYields.ChipYieldCfCycle2() * lstWeights[1]);
+                                            lstFieldValues.Add(oSavedProductYields.ChipYieldCfCycle3() * lstWeights[2]);
+                                            lstFieldValues.Add(oSavedProductYields.ChipYieldCfCycle4() * lstWeights[3]);
+                                            lstFieldValues.Add(oSavedProductYields.ChipYieldCfCycle1() * lstWeights[0] +
+                                                               oSavedProductYields.ChipYieldCfCycle2() * lstWeights[1] +
+                                                               oSavedProductYields.ChipYieldCfCycle3() * lstWeights[2] +
+                                                               oSavedProductYields.ChipYieldCfCycle4() * lstWeights[3]);
+                                            break;
+                                        case uc_optimizer_scenario_calculated_variables.PREFIX_TOTAL_VOLUME:
+                                            lstFieldValues.Add(oSavedProductYields.TotalYieldCfCycle1() * lstWeights[0]);
+                                            lstFieldValues.Add(oSavedProductYields.TotalYieldCfCycle2() * lstWeights[1]);
+                                            lstFieldValues.Add(oSavedProductYields.TotalYieldCfCycle3() * lstWeights[2]);
+                                            lstFieldValues.Add(oSavedProductYields.TotalYieldCfCycle4() * lstWeights[3]);
+                                            lstFieldValues.Add(oSavedProductYields.TotalYieldCfCycle1() * lstWeights[0] +
+                                                               oSavedProductYields.TotalYieldCfCycle2() * lstWeights[1] +
+                                                               oSavedProductYields.TotalYieldCfCycle3() * lstWeights[2] +
+                                                               oSavedProductYields.TotalYieldCfCycle4() * lstWeights[3]);
+                                            break;
+                                        case uc_optimizer_scenario_calculated_variables.PREFIX_NET_REVENUE:
+                                            lstFieldValues.Add(oSavedProductYields.MaxNrDpaCycle1() * lstWeights[0]);
+                                            lstFieldValues.Add(oSavedProductYields.MaxNrDpaCycle2() * lstWeights[1]);
+                                            lstFieldValues.Add(oSavedProductYields.MaxNrDpaCycle3() * lstWeights[2]);
+                                            lstFieldValues.Add(oSavedProductYields.MaxNrDpaCycle4() * lstWeights[3]);
+                                            lstFieldValues.Add(oSavedProductYields.MaxNrDpaCycle1() * lstWeights[0] +
+                                                               oSavedProductYields.MaxNrDpaCycle2() * lstWeights[1] +
+                                                               oSavedProductYields.MaxNrDpaCycle3() * lstWeights[2] +
+                                                               oSavedProductYields.MaxNrDpaCycle4() * lstWeights[3]);
+                                            break;
+                                        case uc_optimizer_scenario_calculated_variables.PREFIX_ONSITE_TREATMENT_COSTS:
+                                            lstFieldValues.Add(oSavedProductYields.HarvestOnsiteCpaCycle1() * lstWeights[0]);
+                                            lstFieldValues.Add(oSavedProductYields.HarvestOnsiteCpaCycle2() * lstWeights[1]);
+                                            lstFieldValues.Add(oSavedProductYields.HarvestOnsiteCpaCycle3() * lstWeights[2]);
+                                            lstFieldValues.Add(oSavedProductYields.HarvestOnsiteCpaCycle4() * lstWeights[3]);
+                                            lstFieldValues.Add(oSavedProductYields.HarvestOnsiteCpaCycle1() * lstWeights[0] +
+                                                               oSavedProductYields.HarvestOnsiteCpaCycle2() * lstWeights[1] +
+                                                               oSavedProductYields.HarvestOnsiteCpaCycle3() * lstWeights[2] +
+                                                               oSavedProductYields.HarvestOnsiteCpaCycle4() * lstWeights[3]);
+                                            break;
+                                        case uc_optimizer_scenario_calculated_variables.PREFIX_TREATMENT_HAUL_COSTS:
+                                            lstFieldValues.Add(oSavedProductYields.TreatmentHaulCostsCycle1() * lstWeights[0]);
+                                            lstFieldValues.Add(oSavedProductYields.TreatmentHaulCostsCycle2() * lstWeights[1]);
+                                            lstFieldValues.Add(oSavedProductYields.TreatmentHaulCostsCycle3() * lstWeights[2]);
+                                            lstFieldValues.Add(oSavedProductYields.TreatmentHaulCostsCycle4() * lstWeights[3]);
+                                            lstFieldValues.Add(oSavedProductYields.TreatmentHaulCostsCycle1() * lstWeights[0] +
+                                                               oSavedProductYields.TreatmentHaulCostsCycle2() * lstWeights[1] +
+                                                               oSavedProductYields.TreatmentHaulCostsCycle3() * lstWeights[2] +
+                                                               oSavedProductYields.TreatmentHaulCostsCycle4() * lstWeights[3]);
+                                            break;
+                                        default:
+                                            lstFieldValues.Add(-1.0);
+                                            lstFieldValues.Add(-1.0);
+                                            lstFieldValues.Add(-1.0);
+                                            lstFieldValues.Add(-1.0);
+                                            lstFieldValues.Add(-1.0);
+                                            break;
+                                    }
+                                    i++;
+                                }
+
+                                foreach (double dblFieldValue in lstFieldValues)
+                                {
+                                    strSql = strSql + dblFieldValue + " ,";
+                                }
+                                strSql = strSql.TrimEnd(strSql[strSql.Length - 1]); //trim trailing comma
+                                strSql = strSql + " ) ";
+                                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + strSql + "\r\n");
+
+                                p_dataMgr.SqlQueryReader(econConn, strSql);
+                            }
+                        }
+                        econConn.Close();
+                    }
+
+                }
+                catch (Exception err)
+                {
+                    p_dataMgr.m_intError = -1;
+                    p_dataMgr.m_strError = "Error calculating weighted economic variables: " + err.Message;
+                    MessageBox.Show("!! " + p_dataMgr.m_strError + " !!", "FIA Biosum");
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug) frmMain.g_oUtils.WriteText(m_strDebugFile, "!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+            }
+            else
+            {
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                {
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n\r\nWeighted economic variables are not used in this scenario\r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "---------------------------\r\n");
+                }
+                FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 2;
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+            }
+            if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+            if (this.m_intError == 0)
+            {
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
+            }
+        }
+
         /// <summary>
         /// get the wood product yields,
         /// revenue, and costs of an applied
