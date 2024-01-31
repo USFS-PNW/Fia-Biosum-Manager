@@ -3081,7 +3081,7 @@ namespace FIA_Biosum_Manager
                 }
                 this.LoadPlotFilter_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
                 this.LoadCondFilter_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
-                this.LoadProcessingSites_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
+                this.LoadProcessingSites_SqliteToAccess(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
                 this.LoadLandOwnerGroupFilter_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
                 this.LoadTransportationCosts_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
                 p_oOptimizerScenarioItem_Collection.Add(oItem);
@@ -4819,11 +4819,13 @@ namespace FIA_Biosum_Manager
                             if (strList.Trim().Length == 0)
                             {
 
-                                strList = "'" + p_oDataMgr.m_DataReader[0].ToString().Trim() + "'";
+                                //strList = "'" + p_oDataMgr.m_DataReader[0].ToString().Trim() + "'";
+                                strList = p_oDataMgr.m_DataReader[0].ToString().Trim();
                             }
                             else
                             {
-                                strList += ",'" + p_oDataMgr.m_DataReader[0].ToString().Trim() + "'";
+                                //strList += ",'" + p_oDataMgr.m_DataReader[0].ToString().Trim() + "'";
+                                strList += "," + p_oDataMgr.m_DataReader[0].ToString().Trim();
                             }
                         }
                     }
@@ -4843,7 +4845,7 @@ namespace FIA_Biosum_Manager
             //
             if (!String.IsNullOrEmpty(strList))
             {
-                p_oAdo.m_strSQL = "DELETE FROM scenario_psites WHERE TRIM(UCASE(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "' AND CSTR(psite_id) AS psite_id NOT IN (" + strList + ")";
+                p_oAdo.m_strSQL = "DELETE FROM scenario_psites WHERE TRIM(UCASE(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "' AND psite_id NOT IN (" + strList + ")";
                 p_oAdo.SqlNonQuery(p_oConn, p_oAdo.m_strSQL);
                 //
                 //LOAD UP THE PSITES THAT EXIST

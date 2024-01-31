@@ -1805,7 +1805,7 @@ namespace FIA_Biosum_Manager
 						 ***************************************************************************/
 						if (this.m_intError==0 && ReferenceUserControlScenarioRun.m_bUserCancel==false)
 						{
-							this.Effective();
+							this.Effective_sqlite();
 
 						}
 						/**************************************************************************
@@ -7694,7 +7694,7 @@ namespace FIA_Biosum_Manager
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                 //insert the valid combos into the effective table
-                m_strSQL = "INSERT INTO " + strEffectiveTableName + " (biosum_cond_id,rxpackage,rx,rxcycle) SELECT biosum_cond_id,rxpackage,rx,rxcycle FROM validcombos WHERE rxcycle='1'";
+                p_dataMgr.m_strSQL = "INSERT INTO " + strEffectiveTableName + " (biosum_cond_id,rxpackage,rx,rxcycle) SELECT biosum_cond_id,rxpackage,rx,rxcycle FROM validcombos WHERE rxcycle='1'";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
