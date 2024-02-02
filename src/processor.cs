@@ -1866,6 +1866,7 @@ namespace FIA_Biosum_Manager
                             objHarvestMethodLowSlope, objHarvestMethodSteepSlope,
                             intSaplingMerchAsPercentOfTotalVol, intWoodlandMerchAsPercentOfTotalVol, intCullPctThreshold, objHarvestMethodSelection);
                     }
+                    SQLite.m_DataReader.Close();
                 }
             }
 
@@ -1973,12 +1974,11 @@ namespace FIA_Biosum_Manager
                         double dblOperatingCostsCycle2 = Convert.ToDouble(SQLite.m_DataReader["EscalatorOperatingCosts_Cycle2"]);
                         double dblOperatingCostsCycle3 = Convert.ToDouble(SQLite.m_DataReader["EscalatorOperatingCosts_Cycle3"]);
                         double dblOperatingCostsCycle4 = Convert.ToDouble(SQLite.m_DataReader["EscalatorOperatingCosts_Cycle4"]);
-
-
                         returnEscalators = new Escalators(dblEnergyWoodRevCycle2, dblEnergyWoodRevCycle3, dblEnergyWoodRevCycle4,
                                                           dblMerchWoodRevCycle2, dblMerchWoodRevCycle3, dblMerchWoodRevCycle4,
                                                           dblOperatingCostsCycle2, dblOperatingCostsCycle3, dblOperatingCostsCycle4);
                     }
+                    SQLite.m_DataReader.Close();
                 }
             }
 
@@ -3385,6 +3385,7 @@ namespace FIA_Biosum_Manager
                         dictTravelTimes.Add(strPlotId, dblTravelTime);
                     }
                 }
+                SQLite.m_DataReader.Close();
             }
             return dictTravelTimes;
         }
