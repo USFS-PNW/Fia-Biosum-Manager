@@ -1713,24 +1713,6 @@ namespace FIA_Biosum_Manager
 						this.lstRequiredTables.Items[x].SubItems[TABLE].Text.Trim());
 						this.m_intNumberOfValidTables++;
 					}
-                    else if (this.lstRequiredTables.Items[x].SubItems[MDBFILE].Text.Trim() == Tables.TravelTime.DefaultTravelTimeDbFile)
-                    {
-						ODBCMgr p_odbc = new ODBCMgr();
-
-						if (p_odbc.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.GisMasterDbDsnName))
-						{
-							p_odbc.RemoveUserDSN(ODBCMgr.DSN_KEYS.GisMasterDbDsnName);
-						}
-						p_odbc.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.GisMasterDbDsnName, this.lstRequiredTables.Items[x].SubItems[PATH].Text.Trim() + "\\" +
-							 this.lstRequiredTables.Items[x].SubItems[MDBFILE].Text.Trim());
-
-						p_dao.CreateSQLiteTableLink(strTempMDB, this.lstRequiredTables.Items[x].SubItems[TABLE].Text.Trim(), this.lstRequiredTables.Items[x].SubItems[TABLE].Text.Trim(),
-							ODBCMgr.DSN_KEYS.GisMasterDbDsnName, this.lstRequiredTables.Items[x].SubItems[PATH].Text.Trim() + "\\" + this.lstRequiredTables.Items[x].SubItems[MDBFILE].Text.Trim());
-
-						p_odbc = null;
-						this.m_intNumberOfValidTables++;
-					}
-
 
 				}
 			}

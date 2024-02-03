@@ -4869,7 +4869,7 @@ namespace FIA_Biosum_Manager
                 //
                 //GET THE PSITE LIST
                 //
-                using (System.Data.SQLite.SQLiteConnection pSitesConn = new System.Data.SQLite.SQLiteConnection(strPSitesDBFile))
+                using (System.Data.SQLite.SQLiteConnection pSitesConn = new System.Data.SQLite.SQLiteConnection(p_oDataMgr.GetConnectionString(strPSitesDBFile)))
                 {
                     pSitesConn.Open();
                     p_oDataMgr.m_strSQL = "SELECT DISTINCT p.psite_id,p.name,p.trancd,p.trancd_def,p.biocd,p.biocd_def,p.exists_yn " +

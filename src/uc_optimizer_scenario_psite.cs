@@ -511,6 +511,30 @@ namespace FIA_Biosum_Manager
 			FIA_Biosum_Manager.dao_data_access p_dao = new dao_data_access();
 			p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, "scenario_psites", "scenario_psites", ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, strOptimizerRulesDb);
 
+			//create the traveltimes table link
+
+			string strTravelTimesDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.TravelTime.DefaultTravelTimePathAndDbFile;
+			string[] travelTimeTables = null;
+
+			using (System.Data.SQLite.SQLiteConnection travelTimesConn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(strTravelTimesDb)))
+            {
+				travelTimesConn.Open();
+				travelTimeTables = p_dataMgr.getTableNames(travelTimesConn);
+				travelTimesConn.Close();
+            }
+
+			if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.GisTravelTimesDsnName))
+			{
+				odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.GisTravelTimesDsnName);
+			}
+			odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.GisTravelTimesDsnName, strTravelTimesDb);
+
+			foreach (string table in travelTimeTables)
+            {
+				p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, table, table, ODBCMgr.DSN_KEYS.GisTravelTimesDsnName, strTravelTimesDb);
+            }
+			
+
 			//p_dao.CreateTableLink(this.m_strTempMDBFile,
 			//					  "scenario_psites",
 			//					frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +

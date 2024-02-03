@@ -1813,7 +1813,7 @@ namespace FIA_Biosum_Manager
 						 **************************************************************************/
 						if (this.m_intError==0 && ReferenceUserControlScenarioRun.m_bUserCancel==false)
 						{
-							this.Optimization();
+							this.Optimization_sqlite();
 						}
 						/**************************************************************************
 						 **tie breakers
@@ -5094,6 +5094,9 @@ namespace FIA_Biosum_Manager
                  **has road only or road/rail access and processes 
                  **merch only or merch/chip
                  *****************************************************************/
+
+                // complete_haul_costs_dpgt is calculated using the same calculation as road_cost_dpgt
+                // since transfer_cost_dpgt and rail_cost_dpgt are set to 0
                 p_dataMgr.m_strSQL = "INSERT into all_road_merch_haul_costs_work_table " +
                     "(biosum_plot_id, railhead_id, psite_id, transfer_cost_dpgt, road_cost_dpgt, rail_cost_dpgt, complete_haul_cost_dpgt, materialcd)" +
                     "SELECT t.biosum_plot_id, 0 AS railhead_id," +
@@ -5176,6 +5179,9 @@ namespace FIA_Biosum_Manager
 			     **has road only or road/rail access and processes 
 			     **chip only or merch/chip
 			     ***********************************************************************/
+
+                // complete_haul_costs_dpgt is calculated using the same calculation as road_cost_dpgt
+                // since transfer_cost_dpgt and rail_cost_dpgt are set to 0
                 p_dataMgr.m_strSQL = "INSERT INTO all_road_chip_haul_costs_work_table " +
                     "SELECT null, t.biosum_plot_id, 0 AS railhead_id," +
                     "s.psite_id, 0 AS transfer_cost_dpgt," +
@@ -7671,10 +7677,6 @@ namespace FIA_Biosum_Manager
             {
                 conn.Open();
 
-                //attach optimizer results database
-                //p_dataMgr.m_strSQL = "ATTACH DATABASE '" + this.m_strSystemResultsDbPathAndFile + "' AS results";
-                //p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
-
                 //attach FVS prepost weighted database
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile + "' AS prepost_fvsout";
                 p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
@@ -8154,6 +8156,148 @@ namespace FIA_Biosum_Manager
 
 		}
 
+        private void Optimization_sqlite()
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//Optimization\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+
+            DataMgr p_dataMgr = new DataMgr();
+            string strPreTable = "";
+            string strPreColumn = "";
+            string strPostTable = "";
+            string strPostColumn = "";
+
+
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n\r\nOptimization\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "--------------------\r\n");
+            }
+
+            intListViewIndex = FIA_Biosum_Manager.uc_optimizer_scenario_run.GetListViewItemIndex(
+                    ReferenceUserControlScenarioRun.listViewEx1, "Optimize the Effective Treatments For Each Stand");
+
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem = intListViewIndex;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 3;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMinimumSteps = 1;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicCurrentStep = 1;
+            FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic = (ProgressBarBasic.ProgressBarBasic)ReferenceUserControlScenarioRun.listViewEx1.GetEmbeddedControl(1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem);
+            frmMain.g_oDelegate.EnsureListViewExItemVisible(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem);
+            frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "Selected", true);
+            frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "focused", true);
+
+
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strSystemResultsDbPathAndFile)))
+            {
+                conn.Open();
+
+                /********************************************
+                 **delete all records in the optimization table
+                 ********************************************/
+                string strOptimizationTableName = ReferenceOptimizerScenarioForm.OutputTablePrefix +
+                    Tables.OptimizerScenarioResults.DefaultScenarioResultsOptimizationTableSuffix;
+                p_dataMgr.m_strSQL = "delete from " + strOptimizationTableName;
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                //insert the valid combos into the optimization table
+                p_dataMgr.m_strSQL = "INSERT INTO " + strOptimizationTableName + " (biosum_cond_id,rxpackage,rx,rxcycle,affordable_YN";
+                if (this.m_oOptimizationVariable.bUseFilter == true)
+                    p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + "," + this.m_oOptimizationVariable.strRevenueAttribute;
+                p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + ") SELECT biosum_cond_id,rxpackage,rx,rxcycle,'Y' ";
+                if (this.m_oOptimizationVariable.bUseFilter == true)
+                    p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + "," + this.m_oOptimizationVariable.strRevenueAttribute;
+                p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + " FROM " + ReferenceOptimizerScenarioForm.OutputTablePrefix +
+                    Tables.OptimizerScenarioResults.DefaultScenarioResultsEffectiveTableSuffix +
+                    " WHERE overall_effective_yn='Y'";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nOptimization Type: " + this.m_oOptimizationVariable.strOptimizedVariable.ToUpper() + "\r\n");
+
+                //populate the variable table.column name and its value to the optimization table
+                if (this.m_oOptimizationVariable.strOptimizedVariable.Trim().ToUpper() == "REVENUE")
+                {
+                    p_dataMgr.m_strSQL = "UPDATE " + strOptimizationTableName +
+                        " SET pre_variable_name = 'p.max_nr_dpa', post_variable_name = 'p.max_nr_dpa', " +
+                        "pre_variable_value = CASE WHEN p.max_nr_dpa IS NOT NULL THEN p.max_nr_dpa ELSE 0 END, " +
+                        "post_variable_value = CASE WHEN p.max_nr_dpa IS NOT NULL THEN p.max_nr_dpa ELSE 0 END, " +
+                        "change_value = 0 " +
+                        "FROM " + strOptimizationTableName + " AS e LEFT JOIN " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName + " AS p " +
+                        "ON e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage AND e.rx = p.rx AND e.rxcycle AND p.rxcycle";
+
+                }
+                else if (this.m_oOptimizationVariable.strOptimizedVariable.Trim().ToUpper() == "MERCHANTABLE VOLUME")
+                {
+                    p_dataMgr.m_strSQL = "UPDATE " + strOptimizationTableName +
+                        " SET pre_variable_name = 'p.merch_vol_cf', post_variable_name = 'p.merch_vol_cf', " +
+                        "pre_variable_value = CASE WHEN p.merch_vol_cf IS NOT NULL THEN p.merch_vol_cf ELSE 0 END, " +
+                        "post_variable_value = CASE WHEN p.merch_vol_cf IS NOT NULL THEN p.merch_vol_cf ELSE 0 END, " +
+                        "change_value = 0 " +
+                        "FROM " + strOptimizationTableName + " AS e LEFT JOIN " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName + " AS p " +
+                        "ON e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage AND e.rx = p.rx AND e.rxcycle AND p.rxcycle";
+                }
+                else if (this.m_oOptimizationVariable.strOptimizedVariable.Trim().ToUpper() == "ECONOMIC ATTRIBUTE")
+                {
+                    p_dataMgr.m_strSQL = getSqliteEconomicOptimizationSql();
+
+                }
+                else
+                {
+
+                    string[] strCol = frmMain.g_oUtils.ConvertListToArray(this.m_oOptimizationVariable.strFVSVariableName, ".");
+                    strPreTable = "PRE_" + strCol[0].Trim();
+                    strPreColumn = strCol[1].Trim();
+                    strPostTable = "POST_" + strCol[0].Trim();
+                    strPostColumn = strCol[1].Trim();
+
+                    p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile + "' AS prepost_fvsout";
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    p_dataMgr.m_strSQL = "UPDATE " + strOptimizationTableName + " AS e " +
+                        "SET change_value = CASE WHEN a." + strPostColumn + " IS NOT NULL AND b." + strPreColumn + " IS NOT NULL " +
+                        "THEN a." + strPostColumn + " - b." + strPreColumn +
+                        " WHEN a." + strPostColumn + " IS NOT NULL THEN a." + strPostColumn +
+                        " WHEN b." + strPreColumn + " IS NOT NULL THEN 0 - b." + strPreColumn + " ELSE 0 END, " +
+                        "pre_variable_name = 'Pre_" + this.m_oOptimizationVariable.strFVSVariableName.Trim() + "'," +
+                        "post_variable_name = 'Post_" + this.m_oOptimizationVariable.strFVSVariableName.Trim() + "'," +
+                        "pre_variable_value = CASE WHEN b." + strPreColumn + " IS NOT NULL THEN b." + strPreColumn + " ELSE 0 END, " +
+                        "post_variable_value = CASE WHEN a." + strPostColumn + " IS NOT NULL THEN a." + strPostColumn + " ELSE 0 END " +
+                        "FROM " + strPostTable + " AS a JOIN " + strPreTable + " AS b " +
+                        "ON a.biosum_cond_id = b.biosum_cond_id AND a.rxpackage = b.rxpackage AND a.rx = b.rx AND a.rxcycle = b.rxcycle " +
+                        "WHERE e.biosum_cond_id = a.biosum_cond_id AND e.rxpackage = a.rxpackage AND e.rx = a.rx AND e.rxcycle = a.rxcycle";
+                }
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                // Update affordable flag for revenue filter
+                if (this.m_oOptimizationVariable.bUseFilter == true)
+                {
+                    p_dataMgr.m_strSQL = "UPDATE " + strOptimizationTableName +
+                        " SET affordable_YN = CASE WHEN " + this.m_oOptimizationVariable.strRevenueAttribute + " " + this.m_oOptimizationVariable.strFilterOperator + " " + this.m_oOptimizationVariable.dblFilterValue +
+                        " THEN 'Y' ELSE 'N' END";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                }
+
+                conn.Close();
+            }
+            FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+            FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
+        }
+
         private string getEconomicOptimizationSql()
         {
             string strSql = "";
@@ -8234,8 +8378,83 @@ namespace FIA_Biosum_Manager
             }
             return strSql;
         }
+        private string getSqliteEconomicOptimizationSql()
+        {
+            string strSql = "";
+            string strOptimizationTableName = ReferenceOptimizerScenarioForm.OutputTablePrefix +
+                Tables.OptimizerScenarioResults.DefaultScenarioResultsOptimizationTableSuffix;
+            string[] strCol = frmMain.g_oUtils.ConvertListToArray(this.m_oOptimizationVariable.strFVSVariableName, "_");
+            uc_optimizer_scenario_calculated_variables.VariableItem oItem = null;
 
-		private void tiebreaker()
+            foreach (uc_optimizer_scenario_calculated_variables.VariableItem oNextItem in this.ReferenceOptimizerScenarioForm.m_oWeightedVariableCollection)
+            {
+                if (oNextItem.strVariableName.Equals(this.m_oOptimizationVariable.strFVSVariableName))
+                {
+                    oItem = oNextItem;
+                    break;
+                }
+            }
+
+            if (strCol.Length > 1)
+            {
+                // This is a default economic variable; They always end in _1
+                if (strCol[strCol.Length - 1] == "1")
+                {
+                    // We are storing the table and field name in the database for most variables
+                    if (oItem.strVariableSource.IndexOf(".") > -1)
+                    {
+                        string[] strDatabase = frmMain.g_oUtils.ConvertListToArray(oItem.strVariableSource, ".");
+                        strSql = "UPDATE " + strOptimizationTableName + " AS e " +
+                            "SET pre_variable_name = '" + oItem.strVariableName + "', " +
+                            "post_variable_name = '" + oItem.strVariableName + "', " +
+                            "pre_variable_value = CASE WHEN p." + strDatabase[1] + " IS NOT NULL THEN p." + strDatabase[1] + " ELSE 0 END, " +
+                            "post_variable_value = CASE WHEN p." + strDatabase[1] + " IS NOT NULL THEN p." + strDatabase[1] + " ELSE 0 END, " +
+                            "change_value = 0 " +
+                            "FROM " + strDatabase[0] + " AS p WHERE e.biosum_cond_id = p.biosum_cond_id AND p.rxpackage = e.rxpackage";
+                    }
+                    // We specify a calculation for the total volume
+                    else if (oItem.strVariableName.Equals("total_volume_1"))
+                    {
+                        strSql = "UPDATE " + strOptimizationTableName + " AS e " +
+                            "SET pre_variable_name = '" + oItem.strVariableName + "', " +
+                            "post_variable_name = '" + oItem.strVariableName + "', " +
+                            "pre_variable_value = CASE WHEN p.chip_vol_cf_utilized + p.merch_vol_cf IS NOT NULL THEN p.chip_vol_cf_utilized + p.merch_vol_cf ELSE 0 END, " +
+                            "post_variable_value = CASE WHEN p.chip_vol_cf_utilized + p.merch_vol_cf IS NOT NULL THEN p.chip_vol_cf_utilized + p.merch_vol_cf ELSE 0 END, " +
+                            "change_value = 0 " +
+                            "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName + " AS p WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
+                    }
+                    else if (oItem.strVariableName.Equals("treatment_haul_costs_1"))
+                    {
+                        strSql = "UPDATE " + strOptimizationTableName + " AS e " +
+                           "SET pre_variable_name = '" + oItem.strVariableName + "', " +
+                           "post_variable_name = '" + oItem.strVariableName + "', " +
+                           "pre_variable_name = HARVEST_ONSITE_COST_DPA + MERCH_HAUL_COST_DPA + CASE WHEN MERCH_CHIP_NR_DPA < MAX_NR_DPA THEN 0 ELSE CHIP_HAUL_COST_DPA_utilized, " +
+                           "post_variable_name = HARVEST_ONSITE_COST_DPA + MERCH_HAUL_COST_DPA + CASE WHEN MERCH_CHIP_NR_DPA < MAX_NR_DPA THEN 0 ELSE CHIP_HAUL_COST_DPA_utilized, " +
+                           "change_value = 0 " +
+                           "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName + " AS p WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
+                    }
+                }
+                // This is a custom-weighted economic variable
+                else
+                {
+                    if (oItem.strVariableSource.IndexOf(".") > -1)
+                    {
+                        string[] strDatabase = frmMain.g_oUtils.ConvertListToArray(oItem.strVariableSource, ".");
+                        strSql = "UPDATE " + strOptimizationTableName + " AS e " +
+                            "SET pre_variable_name = '" + oItem.strVariableName + "', " +
+                            "post_variable_name = '" + oItem.strVariableName + "', " +
+                            "pre_variable_value = (SELECT CASE WHEN p." + strDatabase[1] + " IS NOT NULL THEN p." + strDatabase[1] + " ELSE 0 END, " +
+                            "post_variable_value = (SELECT CASE WHEN p." + strDatabase[1] + " IS NOT NULL THEN p." + strDatabase[1] + " ELSE 0 END, " +
+                            "change_value = 0 " +
+                            "FROM " + strDatabase[0] + " AS p WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
+                    }
+                }
+            }
+            return strSql;
+        }
+
+
+        private void tiebreaker()
 		{
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -8465,15 +8684,228 @@ namespace FIA_Biosum_Manager
 
 		}
 
+        private void tiebreaker_sqlite()
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//tiebreaker\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
 
-		
+            DataMgr p_dataMgr = new DataMgr();
+            string strPreTable = "";
+            string strPreColumn = "";
+            string strPostTable = "";
+            string strPostColumn = "";
+            string[] strArray = null;
+            string strVariableNumber = "";
 
-		/// <summary>
-		/// get the wood product yields,
-		/// revenue, and costs of an applied
-		/// treatment on a plot 
-		/// </summary>
-		private void econ_by_rx_cycle()
+            FIA_Biosum_Manager.uc_optimizer_scenario_fvs_prepost_variables_tiebreaker.TieBreaker_Collection oTieBreakerCollection =
+                ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_fvs_prepost_variables_tiebreaker1.m_oSavTieBreakerCollection;
+            FIA_Biosum_Manager.uc_optimizer_scenario_fvs_prepost_variables_tiebreaker.TieBreakerItem oItem;
+
+
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n\r\nTie Breaker\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "--------------------\r\n");
+            }
+
+
+            intListViewIndex = FIA_Biosum_Manager.uc_optimizer_scenario_run.GetListViewItemIndex(
+                   ReferenceUserControlScenarioRun.listViewEx1, "Load Tie Breaker Tables");
+
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem = intListViewIndex;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 4;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMinimumSteps = 1;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicCurrentStep = 1;
+            FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic = (ProgressBarBasic.ProgressBarBasic)ReferenceUserControlScenarioRun.listViewEx1.GetEmbeddedControl(1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem);
+            frmMain.g_oDelegate.EnsureListViewExItemVisible(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem);
+            frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "Selected", true);
+            frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "focused", true);
+
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strSQLiteWorkTablesDb)))
+            {
+                conn.Open();
+
+                /********************************************
+			     **delete all records in the tie breaker table
+			     ********************************************/
+                p_dataMgr.m_strSQL = "delete from tiebreaker";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                //insert the valid combos into the tiebreaker table
+                string strOptimizationTableName = ReferenceOptimizerScenarioForm.OutputTablePrefix +
+                    Tables.OptimizerScenarioResults.DefaultScenarioResultsOptimizationTableSuffix;
+                p_dataMgr.m_strSQL = "INSERT INTO tiebreaker (biosum_cond_id,rxpackage,rx,rxcycle) " +
+                              "SELECT biosum_cond_id,rxpackage,rx,rxcycle FROM " + strOptimizationTableName + " WHERE affordable_YN='Y'";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                //populate the variable table.column name and its value to the tiebreaker table
+                oItem = oTieBreakerCollection.Item(0);  // STAND ATTRIBUTE
+                if (oItem.bSelected)
+                {
+                    strArray = frmMain.g_oUtils.ConvertListToArray(oItem.strFVSVariableName, ".");
+
+                    strPreTable = "PRE_" + strArray[0].Trim();
+                    strPreColumn = strArray[1].Trim();
+                    strPostTable = "POST_" + strArray[0].Trim();
+                    strPostColumn = strArray[1].Trim();
+                    strVariableNumber = "1";
+                    if (strPreTable.Trim().Length > 0)
+                    {
+                        p_dataMgr.m_strSQL = "pre_variable" + strVariableNumber + "_name='" + strPreTable + "." + strPreColumn + "',";
+                        p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + "pre_variable" + strVariableNumber + "_value=pre." + strPreColumn;
+                    }
+                    else
+                    {
+                        p_dataMgr.m_strSQL = "pre_variable" + strVariableNumber + "_name=null,";
+                        p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + "pre_variable" + strVariableNumber + "_value=null";
+                    }
+
+                    if (strPostTable.Trim().Length > 0)
+                    {
+                        p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + ",post_variable" + strVariableNumber + "_name='" + strPostTable + "." + strPostColumn + "',";
+                        p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + "post_variable" + strVariableNumber + "_value=post." + strPostColumn;
+                    }
+                    else
+                    {
+                        p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + ",post_variable" + strVariableNumber + "_name=null,";
+                        p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + "post_variable" + strVariableNumber + "_value=null";
+                    }
+                    if (strPreTable.Trim().Length > 0 && strPostTable.Trim().Length > 0)
+                    {
+                        p_dataMgr.m_strSQL = "UPDATE tiebreaker AS e " +
+                            "SET " + p_dataMgr.m_strSQL +
+                            " FROM " + strPostTable + " AS post JOIN " + strPreTable + " AS pre " +
+                            "ON post.biosum_cond_id = pre.biosum_cond_id AND post.rxpackage = pre.rxpackage AND post.rx = pre.rx AND post.rxcycle = pre.rxcycle " +
+                            "WHERE e.biosum_cond_id = post.biosum_cond_id AND e.rxpackage = post.rxpackage AND e.rx = post.rx AND e.rxcycle = post.rxcycle";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                        p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                    }
+
+                    //populate the change column by subtracting pre value from post value
+                    m_strSQL = "";
+                    p_dataMgr.m_strSQL += "variable" + strVariableNumber + "_change = CASE WHEN pre_variable" + strVariableNumber + "_value IS NOT NULL AND post_variable" + strVariableNumber + "_value IS NOT NULL " +
+                        "THEN post_variable" + strVariableNumber + "_value - pre_variable" + strVariableNumber + "_value ELSE NULL END,";
+                    m_strSQL = m_strSQL.Substring(0, m_strSQL.Length - 1);
+
+                    m_strSQL = "UPDATE tiebreaker SET " + m_strSQL;
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                }
+
+                oItem = oTieBreakerCollection.Item(1);  // ECONOMIC ATTRIBUTE
+                if (oItem.bSelected)
+                {
+                    string[] strCol = frmMain.g_oUtils.ConvertListToArray(oItem.strFVSVariableName, "_");
+                    uc_optimizer_scenario_calculated_variables.VariableItem oWeightItem = null;
+                    foreach (uc_optimizer_scenario_calculated_variables.VariableItem oNextItem in this.ReferenceOptimizerScenarioForm.m_oWeightedVariableCollection)
+                    {
+                        if (oNextItem.strVariableName.Equals(oItem.strFVSVariableName))
+                        {
+                            oWeightItem = oNextItem;
+                            break;
+                        }
+                    }
+
+                    if (strCol.Length > 1)
+                    {
+                        // This is a default economic variable; They always end in _1
+                        if (strCol[strCol.Length - 1] == "1")
+                        {
+                            // We are storing the table and field name in the database for most variables
+                            if (oWeightItem.strVariableSource.IndexOf(".") > -1)
+                            {
+                                string[] strDatabase = frmMain.g_oUtils.ConvertListToArray(oWeightItem.strVariableSource, ".");
+                                p_dataMgr.m_strSQL = "UPDATE tiebreaker AS e " +
+                                    "SET pre_variable1_name = '" + oItem.strFVSVariableName + "', " +
+                                    "post_variable1_name = '" + oItem.strFVSVariableName + "', " +
+                                    "pre_variable1_value = CASE WHEN p." + strDatabase[1] + " IS NOT NULL THEN p." + strDatabase[1] + " ELSE 0 END, " +
+                                    "post_variable1_value = CASE WHEN p." + strDatabase[1] + " IS NOT NULL THEN p." + strDatabase[1] + " ELSE 0 END, " +
+                                    "variable1_change = 0 " +
+                                    "FROM " + strDatabase[0] + " AS p WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
+                            }
+                            // We specify a calculation for the total volume
+                            else if (oItem.strFVSVariableName.Equals("total_volume_1"))
+                            {
+                                p_dataMgr.m_strSQL = "UPDATE tiebreaker AS e " +
+                                    "SET pre_variable1_name = '" + oItem.strFVSVariableName + "', " +
+                                    "post_variable1_name = '" + oItem.strFVSVariableName + "', " +
+                                    "pre_variable1_value = CASE WHEN p.chip_vol_cf_utilized + p.merch_vol_cf IS NOT NULL THEN p.chip_vol_cf_utilized + p.merch_vol_cf ELSE 0 END, " +
+                                    "post_variable1_value = CASE WHEN p.chip_vol_cf_utilized + p.merch_vol_cf IS NOT NULL THEN p.chip_vol_cf_utilized + p.merch_vol_cf ELSE 0 END, " +
+                                    "variable1_change = 0 " +
+                                    "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName + " AS p " +
+                                    "WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
+                            }
+                            else if (oItem.strFVSVariableName.Equals("treatment_haul_costs_1"))
+                            {
+                                p_dataMgr.m_strSQL = "UPDATE tiebreaker AS e " +
+                                    "SET pre_variable1_name = '" + oItem.strFVSVariableName + "', " +
+                                    "post_variable1_name = '" + oItem.strFVSVariableName + "', " +
+                                    "pre_variable1_value = HARVEST_ONSITE_COST_DPA + MERCH_HAUL_COST_DPA + CASE WHEN MERCH_CHIP_NR_DPA < MAX_NR_DPA THEN 0 ELSE CHIP_HAUL_COST_DPA_utilized END, " +
+                                    "post_variable1_value = HARVEST_ONSITE_COST_DPA + MERCH_HAUL_COST_DPA + CASE WHEN MERCH_CHIP_NR_DPA < MAX_NR_DPA THEN 0 ELSE CHIP_HAUL_COST_DPA_utilized END, " +
+                                    "variable1_change = 0 " +
+                                    "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName + " AS p " +
+                                    "WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
+                            }
+                        }
+                        // This is a custom-weighted economic variable
+                        // This is the same SQL used for built-in economic variables where the table/field are stored in database (see above)
+                        else
+                        {
+                            string[] strDatabase = frmMain.g_oUtils.ConvertListToArray(oWeightItem.strVariableSource, ".");
+                            p_dataMgr.m_strSQL = "UPDATE tiebreaker AS e " +
+                                "SET pre_variable1_name = '" + oItem.strFVSVariableName + "', " +
+                                "post_variable1_name = '" + oItem.strFVSVariableName + "', " +
+                                "pre_variable1_value = CASE WHEN p." + strDatabase[1] + " IS NOT NULL THEN p." + strDatabase[1] + " ELSE 0 END, " +
+                                "post_variable1_value = CASE WHEN p." + strDatabase[1] + " IS NOT NULL THEN p." + strDatabase[1] + " ELSE 0 END, " +
+                                "variable1_change = 0 " +
+                                "FROM " + strDatabase[0] + " AS p WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
+                        }
+
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                        p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    }
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                oItem = oTieBreakerCollection.Item(2);  // LAST TIEBREAK RANK
+                if (oItem.bSelected)
+                {
+                    p_dataMgr.m_strSQL = "UPDATE tiebreaker AS a " +
+                        "SET last_tiebreak_rank = b.last_tiebreak_rank " +
+                        "FROM scenario_last_tiebreak_rank AS b WHERE a.rxpackage = b.rxpackage " +
+                        "AND TRIM(UPPER(b.scenario_id)) = '" + ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToUpper();
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// get the wood product yields,
+        /// revenue, and costs of an applied
+        /// treatment on a plot 
+        /// </summary>
+        private void econ_by_rx_cycle()
 		{
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
