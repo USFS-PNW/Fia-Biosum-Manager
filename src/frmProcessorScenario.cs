@@ -3949,6 +3949,18 @@ namespace FIA_Biosum_Manager
                         oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
                     }
                 }
+
+                // Add SQLite OpCost config file to db directory
+                if (System.IO.File.Exists(frmMain.g_oEnv.strAppDir + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile) &&
+                    !System.IO.File.Exists(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile))
+                {
+                    System.IO.File.Copy(frmMain.g_oEnv.strAppDir + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile,
+                        frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile);
+                }
+                else
+                {
+                    MessageBox.Show($@"The OpCost configuration file is missing from the AppData directory: {frmMain.g_oEnv.strAppDir + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile}");
+                }
             }
             catch (Exception)
             {
