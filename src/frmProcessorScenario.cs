@@ -1339,8 +1339,8 @@ namespace FIA_Biosum_Manager
 
         private void btnHelp_Click(object sender, EventArgs e)
         {
-            //ProcessorScenarioTools oTools = new ProcessorScenarioTools();
-            //oTools.migrate_access_data();
+            ProcessorScenarioTools oTools = new ProcessorScenarioTools();
+            oTools.migrate_access_data();
             if (!String.IsNullOrEmpty(m_helpChapter))
             {
                 if (m_oHelp == null)
@@ -3903,7 +3903,7 @@ namespace FIA_Biosum_Manager
                     {
                         if (!dataMgr.ColumnExists(conn, strTableName, strColumn))
                         {
-                            dataMgr.AddColumn(conn, strTableName, strColumn, "REAL", "");
+                            dataMgr.AddColumn(conn, strTableName, strColumn, "DOUBLE", "");
                         }
                     }
                 }
@@ -3942,14 +3942,24 @@ namespace FIA_Biosum_Manager
 
                     if (oAdo.m_intError == 0)
                     {
-                        // Primary key required to update
-                        oAdo.AddPrimaryKey(copyConn, "scenario_1", "scenario_id_pk", "scenario_id");
                         // Set file (database) field to new Sqlite DB
                         string newDbFile = System.IO.Path.GetFileName(Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile);
                         oAdo.m_strSQL = "UPDATE scenario_1 set file = '" +
                             newDbFile + "'";
                         oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
                     }
+                }
+
+                // Add SQLite OpCost config file to db directory
+                if (System.IO.File.Exists(frmMain.g_oEnv.strAppDir + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile) &&
+                    !System.IO.File.Exists(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile))
+                {
+                    System.IO.File.Copy(frmMain.g_oEnv.strAppDir + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile,
+                        frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile);
+                }
+                else
+                {
+                    MessageBox.Show($@"The OpCost configuration file is missing from the AppData directory: {frmMain.g_oEnv.strAppDir + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile}");
                 }
             }
             catch (Exception)

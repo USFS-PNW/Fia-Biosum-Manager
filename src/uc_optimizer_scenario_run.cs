@@ -1820,7 +1820,7 @@ namespace FIA_Biosum_Manager
 						 **************************************************************************/
 						if (this.m_intError==0 && ReferenceUserControlScenarioRun.m_bUserCancel==false)
 						{
-							this.tiebreaker();
+							this.tiebreaker_sqlite();
 						}
 						
 						/*********************************************************************
@@ -6035,17 +6035,17 @@ namespace FIA_Biosum_Manager
                     " (biosum_cond_id,rxpackage,rx,rxcycle,chip_vol_cf," +
                     "chip_wt_gt,chip_val_dpa,merch_vol_cf," +
                     "merch_wt_gt,merch_val_dpa,place_holder) ";
-                this.m_strSQL += "SELECT biosum_cond_id, " +
-                    "rxpackage,rx,rxcycle," +
-                    "Sum(chip_vol_cf) AS chip_vol_cf," +
-                    "Sum(chip_wt_gt) AS chip_wt_gt," +
-                    "Sum(chip_val_dpa) AS chip_val_dpa," +
-                    "Sum(merch_vol_cf) AS merch_vol_cf," +
-                    "Sum(merch_wt_gt) AS merch_wt_gt," +
-                    "Sum(merch_val_dpa) AS merch_val_dpa, " +
-                    "place_holder";
+                this.m_strSQL += "SELECT s.biosum_cond_id, " +
+                    "s.rxpackage,s.rx,s.rxcycle," +
+                    "Sum(s.chip_vol_cf) AS chip_vol_cf," +
+                    "Sum(s.chip_wt_gt) AS chip_wt_gt," +
+                    "Sum(s.chip_val_dpa) AS chip_val_dpa," +
+                    "Sum(s.merch_vol_cf) AS merch_vol_cf," +
+                    "Sum(s.merch_wt_gt) AS merch_wt_gt," +
+                    "Sum(s.merch_val_dpa) AS merch_val_dpa, " +
+                    "s.place_holder";
 
-                this.m_strSQL += " FROM " + this.m_strTreeVolValBySpcDiamGroupsTable.Trim();
+                this.m_strSQL += " FROM " + this.m_strTreeVolValBySpcDiamGroupsTable.Trim() + " AS s";
                 this.m_strSQL += " GROUP BY biosum_cond_id,rxpackage,rx,rxcycle, place_holder";
                 this.m_strSQL += " ORDER BY biosum_cond_id,rxpackage,rx,rxcycle, place_holder ;";
 
@@ -8725,7 +8725,7 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "Selected", true);
             frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "focused", true);
 
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strSQLiteWorkTablesDb)))
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strSystemResultsDbPathAndFile)))
             {
                 conn.Open();
 
@@ -8749,6 +8749,10 @@ namespace FIA_Biosum_Manager
                 p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                //attach FVS prepost weighted database
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile + "' AS prepost_fvsout";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
 
                 //populate the variable table.column name and its value to the tiebreaker table
                 oItem = oTieBreakerCollection.Item(0);  // STAND ATTRIBUTE

@@ -727,10 +727,26 @@ namespace FIA_Biosum_Manager
 
                         frmMain.g_oTables.m_oProcessorScenarioRun.CreateAdditionalKcpCpaTable(
                             oAdo, OleDbScenarioResultsConn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, false);
-
-
                         OleDbScenarioResultsConn.Close();
                         OleDbScenarioResultsConn.Dispose();
+                    }
+                    //@ToDo: Delete Access version above when we are ready
+                    strDestFile = this.txtScenarioPath.Text + "\\" + Tables.ProcessorScenarioRun.DefaultScenarioResultsTableDbFile;
+                    if (!System.IO.File.Exists(strDestFile))
+                    {
+                        SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+                        oDataMgr.CreateDbFile(strDestFile);
+                        string strScenarioResultsConn = oDataMgr.GetConnectionString(strDestFile);
+                        using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strScenarioResultsConn))
+                        {
+                            conn.Open();
+                            frmMain.g_oTables.m_oProcessor.CreateSqliteHarvestCostsTable(oDataMgr, conn,
+                                Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName);
+                            frmMain.g_oTables.m_oProcessor.CreateSqliteTreeVolValSpeciesDiamGroupsTable(oDataMgr, conn,
+                                Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName, true);
+                            frmMain.g_oTables.m_oProcessorScenarioRun.CreateSqliteAdditionalKcpCpaTable(
+                                oDataMgr, conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, false);
+                        }
                     }
                 }
             }
