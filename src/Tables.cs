@@ -5751,17 +5751,10 @@ namespace FIA_Biosum_Manager
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "scenario_id CHAR(20) NOT NULL PRIMARY KEY," +
-<<<<<<< HEAD
                     "description VARCHAR(4000)," +
                     "path CHAR(254)," +
                     "file CHAR(50)," +
                     "notes VARCHAR(4000))";
-=======
-                    "description VARCHAR (4000)," +
-                    "path CHAR(254)," +
-                    "file CHAR(50)," +
-                    "notes VARCHAR (4000))";
->>>>>>> f7757ef9dc28983e73a986eded13ba28b6a15788
             }
 
             public void CreateScenarioDatasourceTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
