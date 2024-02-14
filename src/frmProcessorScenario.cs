@@ -3883,7 +3883,6 @@ namespace FIA_Biosum_Manager
             ODBCMgr odbcmgr = new ODBCMgr();
             try
             {
-
                 string[] arrTargetTables = { };
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dataMgr.GetConnectionString(targetDbFile)))
                 {
@@ -3929,6 +3928,7 @@ namespace FIA_Biosum_Manager
                 }
                 oDao.CreateTableLinks(strTempAccdb, sourceDbFile);  // Link all the source tables to the database
 
+                List<string> lstScenarioPaths = new List<string>();
                 string strCopyConn = oAdo.getMDBConnString(strTempAccdb, "", "");
                 using (var copyConn = new System.Data.OleDb.OleDbConnection(strCopyConn))
                 {
@@ -3947,6 +3947,52 @@ namespace FIA_Biosum_Manager
                         oAdo.m_strSQL = "UPDATE scenario_1 set file = '" +
                             newDbFile + "'";
                         oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                    }
+
+                    //retrieve paths for all scenarios in the project and put them in list
+                    oAdo.m_strSQL = "SELECT path from scenario";
+                    oAdo.SqlQueryReader(copyConn, oAdo.m_strSQL);
+                    if (oAdo.m_OleDbDataReader.HasRows)
+                    {
+                        while (oAdo.m_OleDbDataReader.Read())
+                        {
+                            string strPath = "";
+                            if (oAdo.m_OleDbDataReader["path"] != System.DBNull.Value)
+                                strPath = oAdo.m_OleDbDataReader["path"].ToString().Trim();
+                            if (!String.IsNullOrEmpty(strPath))
+                            {
+                                //Check to see if the .mdb exists before adding it to the list
+                                string strPathToMdb = strPath + "\\db\\scenario_results.mdb";
+                                //sample path: C:\\workspace\\BioSum\\biosum_data\\bluemountains\\processor\\scenario1\\db\\scenario_results.mdb
+                                if (System.IO.File.Exists(strPathToMdb))
+                                    lstScenarioPaths.Add(strPath);
+                            }
+                        }
+                        oAdo.m_OleDbDataReader.Close();
+                    }
+                }
+
+                // Create tables in scenario_results.db if missing
+                foreach (var sPath in lstScenarioPaths)
+                {
+                    string strScenarioDbPath = $@"{sPath}\{Tables.ProcessorScenarioRun.DefaultScenarioResultsTableDbFile}";
+                    if (!System.IO.File.Exists(strScenarioDbPath))
+                    {
+                        dataMgr.CreateDbFile(strScenarioDbPath);
+                    }
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dataMgr.GetConnectionString(strScenarioDbPath)))
+                    {
+                        conn.Open();
+                        if (!dataMgr.TableExist(conn,Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName))
+                        {
+                            frmMain.g_oTables.m_oProcessor.CreateSqliteHarvestCostsTable(dataMgr,
+                                conn, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName);
+                        }
+                        if (!dataMgr.TableExist(conn, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName))
+                        {
+                            frmMain.g_oTables.m_oProcessor.CreateSqliteTreeVolValSpeciesDiamGroupsTable(dataMgr,
+                                conn, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName, true);
+                        }
                     }
                 }
 
