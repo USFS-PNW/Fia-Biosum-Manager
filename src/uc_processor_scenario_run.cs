@@ -4071,13 +4071,14 @@ namespace FIA_Biosum_Manager
                 }
             }
         }
-        private void RunScenario_UpdateHarvestCostsTableWithAdditionalCosts(string p_strHarvestCostsTableName, string p_strTempDb,
+
+        private void RunScenario_UpdateHarvestCostsTableWithAdditionalCostsAccess(string p_strHarvestCostsTableName, string p_strTempDb,
             processor.Escalators oEscalators, ProcessorScenarioItem.HarvestCostItem_Collection harvestCostItemCollection)
         {
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_UpdateHarvestCostsWithAdditionalCosts\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_UpdateHarvestCostsWithAdditionalCostsAccess\r\n");
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
             int x, y;
@@ -4308,6 +4309,227 @@ namespace FIA_Biosum_Manager
             //{
             //    RunScenario_UpdateHarvestCostsTableWithAdditionalCostsSqlite(p_strHarvestCostsTableName);
             //}
+        }
+
+        private void RunScenario_UpdateHarvestCostsTableWithAdditionalCosts(string p_strHarvestCostsTableName, string p_strTempDb,
+            processor.Escalators oEscalators, ProcessorScenarioItem.HarvestCostItem_Collection harvestCostItemCollection)
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_UpdateHarvestCostsWithAdditionalCosts\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+            int x, y;
+            string strSum = "";
+            dao_data_access oDao = new dao_data_access();
+            string[] strRXArray = null;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(p_strTempDb)))
+            {
+                conn.Open();
+                frmMain.g_oTables.m_oProcessorScenarioRun.CreateSqliteTotalAdditionalHarvestCostsTable(
+                    m_oDataMgr, conn, "HarvestCostsTotalAdditionalWorkTable");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Created HarvestCostsTotalAdditionalWorkTable \r\n");
+
+                string strScenarioParametersDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                m_oDataMgr.m_strSQL = "attach database '" + strScenarioParametersDb + "' as params";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+
+                if (m_oDataMgr.m_intError == 0)
+                {
+                    //insert plot+rx records for the current scenario
+                    m_oDataMgr.m_strSQL = "INSERT INTO HarvestCostsTotalAdditionalWorkTable " +
+                                      "(biosum_cond_id,rx) SELECT biosum_cond_id,rx " +
+                                                          "FROM scenario_additional_harvest_costs " +
+                                                          "WHERE TRIM(UPPER(scenario_id)) = " +
+                                                          "'" + ScenarioId.ToUpper().Trim() + "'";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                    m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+                }
+
+                if (m_oDataMgr.m_intError == 0)
+                {
+                    //
+                    //GET THE ADDITIONAL HARVEST COST COLUMNS AND THEIR ASSOCIATED TREATMENT
+                    //
+                    m_oDataMgr.m_strSQL = "SELECT columnname,rx " +
+                        "FROM scenario_harvest_cost_columns " +
+                        "WHERE trim(UPPER(scenario_id))='" + ScenarioId.Trim().ToUpper() + "'";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                    m_oDataMgr.SqlQueryReader(conn, m_oDataMgr.m_strSQL);
+
+                }
+
+                string[] strScenarioColumnNameArray = null;
+                string[] strScenarioRxArray = null;
+                if (m_oDataMgr.m_intError == 0)
+                {
+                    if (harvestCostItemCollection.Count > 0)
+                    {
+                        /*****************************************************************
+                         *the key is that the strScenarioColumnNameArray 
+                         *and the strScenarioRxArray match in length
+                         *and values as found in the scenario_harvest_cost_columns table
+                         *****************************************************************/
+
+                        strScenarioColumnNameArray = new string[harvestCostItemCollection.Count];
+                        strScenarioRxArray = new string[harvestCostItemCollection.Count];
+                        IList<string> lstUniqueRx = new List<string>();
+                        for (int i = 0; i < harvestCostItemCollection.Count; i++)
+                        {
+                            ProcessorScenarioItem.HarvestCostItem oItem = harvestCostItemCollection.Item(i);
+                            strScenarioColumnNameArray[i] = oItem.ColumnName;
+                            strScenarioRxArray[i] = oItem.Rx;
+                            if (!string.IsNullOrEmpty(oItem.Rx) && !lstUniqueRx.Contains(oItem.Rx))
+                            {
+                                lstUniqueRx.Add(oItem.Rx);
+                            }
+                        }
+                        //update by rx that have both unique and global costs
+                        strRXArray = lstUniqueRx.ToArray();
+                    }
+
+                    //
+                    //WITH TREATMENTS:
+                    //PROCESS SCENARIO_HARVEST_COST_COLUMNS THAT HAVE ASSOCIATED TREATMENT
+                    //
+                    if (strRXArray != null)
+                    {
+                        for (x = 0; x <= strRXArray.Length - 1; x++)
+                        {
+                            strSum = "";
+                            for (y = 0; y <= strScenarioRxArray.Length - 1; y++)
+                            {
+                                if (strScenarioRxArray[y].Trim().Length > 0 && strScenarioRxArray[y] != "*")
+                                {
+                                    if (strRXArray[x] == strScenarioRxArray[y])
+                                    {
+                                        //rx harvest cost
+                                        strSum = strSum + "COALESCE(b." + strScenarioColumnNameArray[y].Trim() + ", 0) + ";
+                                    }
+                                }
+                                else
+                                {
+                                    //scenario harvest cost
+                                    strSum = strSum + "COALESCE(b." + strScenarioColumnNameArray[y].Trim() + ", 0) + ";
+                                }
+                            }
+                            strSum = strSum.Substring(0, strSum.Length - 2);
+                            m_oDataMgr.m_strSQL = "UPDATE HarvestCostsTotalAdditionalWorkTable AS a " +
+                                              "SET complete_additional_cpa = (SELECT " + strSum + " " +
+                                              "FROM scenario_additional_harvest_costs as b " +
+                                              "WHERE a.biosum_cond_id = b.biosum_cond_id " +
+                                              "AND a.RX = b.RX " +
+                                              "AND TRIM(b.scenario_id) = '" + ScenarioId.Trim() + "' " +
+                                              "AND b.RX = '" + strRXArray[x] + "') " +
+                                              "WHERE EXISTS(" +
+                                              "SELECT * " +
+                                              "FROM scenario_additional_harvest_costs AS b " +
+                                              "WHERE a.biosum_cond_id = b.biosum_cond_id " +
+                                              "AND a.RX = b.RX AND " +
+                                              "TRIM(b.scenario_id)='" + ScenarioId.Trim() + "' AND " +
+                                              "b.RX = '" + strRXArray[x] + "')";
+
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                            m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+                        }
+                    }
+                }
+
+                if (m_oDataMgr.m_intError == 0)
+                {
+                    IList<string> lstRx = new List<string>();
+                    //
+                    //WITHOUT TREATMENTS:
+                    //PROCESS TREATMENTS THAT ARE IN THE SCENARIO_ADDITIONAL_HARVEST_COSTS table
+                    //BUT ARE NOT IN THE SCENARIO_ADDITIONAL_HARVEST_COST_COLUMNS table
+                    //
+                    m_oDataMgr.m_strSQL = "SELECT DISTINCT  a.rx " +
+                                          "FROM scenario_additional_harvest_costs a " +
+                                          "WHERE NOT EXISTS (SELECT b.rx " +
+                                                            "FROM scenario_harvest_cost_columns b " +
+                                                            "WHERE b.rx=a.rx AND TRIM(scenario_id)='" + ScenarioId.Trim() + "')";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+
+                    lstRx = m_oDataMgr.getStringList(conn, m_oDataMgr.m_strSQL);
+                    strRXArray = lstRx.ToArray();
+                    if (strRXArray != null && strScenarioRxArray != null)
+                    {
+
+                        for (x = 0; x <= strRXArray.Length - 1; x++)
+                        {
+                            strSum = "";
+
+                            for (y = 0; y <= strScenarioRxArray.Length - 1; y++)
+                            {
+                                //check 
+                                if (strScenarioRxArray[y].Trim().Length > 0 && strScenarioRxArray[y] != "*")
+                                {
+
+                                }
+                                else
+                                {
+                                    //scenario harvest cost
+                                    strSum = strSum + "COALESCE(b." + strScenarioColumnNameArray[y].Trim() + ", 0) + ";
+                                }
+                            }
+
+                            if (strSum.Trim().Length > 0)
+                            {
+                                strSum = strSum.Substring(0, strSum.Length - 2);
+                                m_oDataMgr.m_strSQL = "UPDATE HarvestCostsTotalAdditionalWorkTable AS a " +
+                                    "SET complete_additional_cpa = (SELECT " + strSum + " " +
+                                    "FROM scenario_additional_harvest_costs as b " +
+                                    "WHERE a.biosum_cond_id = b.biosum_cond_id " +
+                                    "AND a.RX = b.RX " +
+                                    "AND TRIM(b.scenario_id) = '" + ScenarioId.Trim() + "' " +
+                                    "AND b.RX = '" + strRXArray[x] + "') " +
+                                    "WHERE EXISTS( SELECT * FROM scenario_additional_harvest_costs AS b " +
+                                    "WHERE a.biosum_cond_id = b.biosum_cond_id AND a.RX = b.RX AND " +
+                                    "TRIM(b.scenario_id)='" + ScenarioId.Trim() + "' AND b.RX = '" + strRXArray[x] + "')";
+
+                                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                                m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+                                if (m_oDataMgr.m_intError != 0) break;
+                            }
+                        }
+                    }
+                }
+                if (m_oDataMgr.m_intError == 0)
+                {
+                    m_oDataMgr.m_strSQL = "UPDATE HarvestCostsTotalAdditionalWorkTable " +
+                                      "SET complete_additional_cpa = 0 " +
+                                      "WHERE complete_additional_cpa IS NULL";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                    m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+                }
+
+                if (m_oDataMgr.m_intError == 0)
+                {
+                    //update the harvest costs table complete costs per acre column
+                    //@ToDo: This query is bad
+                    m_oDataMgr.m_strSQL = Queries.ProcessorScenarioRun.UpdateSqliteHarvestCostsTableWithCompleteCostsPerAcre(
+                        "HarvestCostsTotalAdditionalWorkTable", p_strHarvestCostsTableName, oEscalators, false);
+
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                    m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+                }
+
+            }
+
+            m_intError = m_oDataMgr.m_intError;
+            m_strError = m_oDataMgr.m_strError;
         }
 
         private void RunScenario_UpdateHarvestCostsTableWithKcpAdditionalCosts(string p_strHarvestCostsTableName, string p_strAddCostsWorktable,
@@ -4933,245 +5155,6 @@ namespace FIA_Biosum_Manager
                 }
             }
             return bUsesKcpCpa;
-        }
-
-            private void RunScenario_UpdateHarvestCostsTableWithAdditionalCostsSqlite(string p_strHarvestCostsTableName)
-        {
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_UpdateHarvestCostsWithAdditionalCostsSqlite\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-            int x, y;
-            string strSum = "";
-
-            //create work table to hold total additional costs
-            if (m_oDataMgr.TableExist(m_oDataMgr.m_Connection, "HarvestCostsTotalAdditionalWorkTable"))
-                m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, "DROP TABLE HarvestCostsTotalAdditionalWorkTable");
-            frmMain.g_oTables.m_oProcessorScenarioRun.CreateSqliteTotalAdditionalHarvestCostsTable(
-                m_oDataMgr, m_oDataMgr.m_Connection, "HarvestCostsTotalAdditionalWorkTable");
-            if (m_oDataMgr.m_intError == 0)
-            {
-                //insert plot+rx records for the current scenario
-                m_oDataMgr.m_strSQL = "INSERT INTO HarvestCostsTotalAdditionalWorkTable " +
-                                      "(biosum_cond_id,rx) SELECT biosum_cond_id,rx " +
-                                                      "FROM definitions.scenario_additional_harvest_costs " +
-                                                      "WHERE TRIM(scenario_id) = " +
-                                                      "'" + ScenarioId.Trim() + "'";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
-            }
-
-            if (m_oDataMgr.m_intError == 0)
-            {
-                //
-                //GET THE ADDITIONAL HARVEST COST COLUMNS AND THEIR ASSOCIATED TREATMENT
-                //
-                m_oDataMgr.m_strSQL = "SELECT columnname,rx " +
-                    "FROM definitions.scenario_harvest_cost_columns " +
-                    "WHERE trim(scenario_id)='" + ScenarioId.Trim() + "'";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oDataMgr.SqlQueryReader(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
-
-                if (m_oDataMgr.m_intError == 0)
-                {
-                    string strScenarioColumnNameList = "";
-                    string strScenarioRxList = "";
-                    string[] strScenarioColumnNameArray = null;
-                    string[] strScenarioRxArray = null;
-                    string strCol = "";
-                    if (m_oDataMgr.m_DataReader.HasRows)
-                    {
-                        while (m_oDataMgr.m_DataReader.Read())
-                        {
-                            strCol = "";
-                            //make sure the row is not null values
-                            if (m_oDataMgr.m_DataReader["ColumnName"] != System.DBNull.Value &&
-                                m_oDataMgr.m_DataReader["ColumnName"].ToString().Trim().Length > 0)
-                            {
-
-                                strCol = m_oDataMgr.m_DataReader["ColumnName"].ToString().Trim();
-                                strScenarioColumnNameList = strScenarioColumnNameList + strCol + ",";
-
-                                if (m_oDataMgr.m_DataReader["rx"] != System.DBNull.Value &&
-                                    m_oDataMgr.m_DataReader["rx"].ToString().Trim().Length > 0)
-                                {
-                                    strCol = m_oDataMgr.m_DataReader["rx"].ToString();
-                                }
-                                else
-                                {
-                                    strCol = "*";
-                                }
-                                strScenarioRxList = strScenarioRxList + strCol + ",";
-
-                            }
-                        }
-                    }
-                    m_oDataMgr.m_DataReader.Close();
-                    IList<string> lstRx = null;
-                    if (strScenarioColumnNameList.Trim().Length > 0)
-                    {
-                        /*****************************************************************
-                         *the key is that the strScenarioColumnNameArray 
-                         *and the strScenarioRxArray match in length
-                         *and values as found in the scenario_harvest_cost_columns table
-                         *****************************************************************/
-
-                        strScenarioColumnNameList = strScenarioColumnNameList.Substring(0, strScenarioColumnNameList.Length - 1);
-                        strScenarioColumnNameArray = frmMain.g_oUtils.ConvertListToArray(strScenarioColumnNameList, ",");
-                        strScenarioRxList = strScenarioRxList.Substring(0, strScenarioRxList.Length - 1);
-                        strScenarioRxArray = frmMain.g_oUtils.ConvertListToArray(strScenarioRxList, ",");
-
-                        //update by rx that have both unique and global costs
-                        m_oDataMgr.m_strSQL = "SELECT DISTINCT rx " +
-                           "FROM definitions.scenario_harvest_cost_columns " +
-                           "WHERE trim(scenario_id)='" + ScenarioId.Trim() + "'";
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                        lstRx = m_oDataMgr.getStringList(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
-                    }
-                    //
-                    //WITH TREATMENTS:
-                    //PROCESS SCENARIO_HARVEST_COST_COLUMNS THAT HAVE ASSOCIATED TREATMENT
-                    //
-                    if (lstRx != null)
-                    {
-                        for (x = 0; x <= lstRx.Count - 1; x++)
-                        {
-                            strSum = "";
-                            for (y = 0; y <= strScenarioRxArray.Length - 1; y++)
-                            {
-                                if (strScenarioRxArray[y].Trim().Length > 0 && strScenarioRxArray[y] != "*")
-                                {
-                                    if (lstRx[x] == strScenarioRxArray[y])
-                                    {
-                                        //rx harvest cost
-                                        strSum = strSum + "COALESCE(b." + strScenarioColumnNameArray[y].Trim() + ", 0) + ";
-                                    }
-                                }
-                                else
-                                {
-                                    //scenario harvest cost
-                                    strSum = strSum + "COALESCE(b." + strScenarioColumnNameArray[y].Trim() + ", 0) + ";
-                                }
-                            }
-                            strSum = strSum.Substring(0, strSum.Length - 2);
-                            m_oDataMgr.m_strSQL = "UPDATE HarvestCostsTotalAdditionalWorkTable AS a " +
-                                              "SET complete_additional_cpa = (SELECT " + strSum + " " +
-                                              "FROM definitions.scenario_additional_harvest_costs as b " +
-                                              "WHERE a.biosum_cond_id = b.biosum_cond_id " +
-                                              "AND a.RX = b.RX " +
-                                              "AND TRIM(b.scenario_id) = '" + ScenarioId.Trim() + "' " + 
-                                              "AND b.RX = '" + lstRx[x] + "') " +
-                                              "WHERE EXISTS(" +
-                                              "SELECT * " +
-                                              "FROM definitions.scenario_additional_harvest_costs AS b " +
-                                              "WHERE a.biosum_cond_id = b.biosum_cond_id " +
-                                              "AND a.RX = b.RX AND " +
-                                              "TRIM(b.scenario_id)='" + ScenarioId.Trim() + "' AND " +
-                                              "b.RX = '" + lstRx[x] + "')";
-
-                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                            m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
-
-                        }
-                    }
-                    if (m_oDataMgr.m_intError == 0)
-                    {
-                        //
-                        //WITHOUT TREATMENTS:
-                        //PROCESS TREATMENTS THAT ARE IN THE SCENARIO_ADDITIONAL_HARVEST_COSTS table
-                        //BUT ARE NOT IN THE SCENARIO_ADDITIONAL_HARVEST_COST_COLUMNS table
-                        //
-                        m_oDataMgr.m_strSQL = "SELECT DISTINCT  a.rx " +
-                                          "FROM scenario_additional_harvest_costs a " +
-                                          "WHERE NOT EXISTS (SELECT b.rx " +
-                                                            "FROM scenario_harvest_cost_columns b " +
-                                                            "WHERE b.rx=a.rx AND TRIM(scenario_id)='" + ScenarioId.Trim() + "')";
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                        lstRx = m_oDataMgr.getStringList(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
-
-
-                        if (lstRx != null && strScenarioRxArray != null)
-                        {
-
-                            for (x = 0; x <= lstRx.Count - 1; x++)
-                            {
-                                strSum = "";
-
-                                for (y = 0; y <= strScenarioRxArray.Length - 1; y++)
-                                {
-                                    //check 
-                                    if (strScenarioRxArray[y].Trim().Length > 0 && strScenarioRxArray[y] != "*")
-                                    {
-
-                                    }
-                                    else
-                                    {
-                                        //scenario harvest cost
-                                        strSum = strSum + "COALESCE(b." + strScenarioColumnNameArray[y].Trim() + ", 0) + ";
-                                    }
-                                }
-
-
-                                if (strSum.Trim().Length > 0)
-                                {
-                                    strSum = strSum.Substring(0, strSum.Length - 2);
-                                    m_oDataMgr.m_strSQL = "UPDATE HarvestCostsTotalAdditionalWorkTable AS a " +
-                                                      "SET complete_additional_cpa = (SELECT " + strSum + " " +
-                                                      "FROM definitions.scenario_additional_harvest_costs as b " +
-                                                      "WHERE a.biosum_cond_id = b.biosum_cond_id " +
-                                                      "AND a.RX = b.RX " +
-                                                      "AND TRIM(b.scenario_id) = '" + ScenarioId.Trim() + "' " +
-                                                      "AND b.RX = '" + lstRx[x] + "') " +
-                                                      "WHERE EXISTS(" +
-                                                      "SELECT * " +
-                                                      "FROM definitions.scenario_additional_harvest_costs AS b " +
-                                                      "WHERE a.biosum_cond_id = b.biosum_cond_id " +
-                                                      "AND a.RX = b.RX AND " +
-                                                      "TRIM(b.scenario_id)='" + ScenarioId.Trim() + "' AND " +
-                                                      "b.RX = '" + lstRx[x] + "')";
-
-                                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                        frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                                    m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
-                                    if (m_oDataMgr.m_intError != 0) break;
-                                }
-
-                            }
-                        }
-                    }
-                    if (m_oDataMgr.m_intError == 0)
-                    {
-                        m_oDataMgr.m_strSQL = "UPDATE HarvestCostsTotalAdditionalWorkTable " +
-                                          "SET complete_additional_cpa = 0 " +
-                                          "WHERE complete_additional_cpa IS NULL";
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                        m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
-                    }
-                    if (m_oDataMgr.m_intError == 0)
-                    {
-                        //update the harvest costs table complete costs per acre column
-                        m_oDataMgr.m_strSQL = Queries.ProcessorScenarioRun.UpdateHarvestCostsTableWithCompleteCostsPerAcre(
-                                             "scenario_cost_revenue_escalators",
-                                             "HarvestCostsTotalAdditionalWorkTable",
-                                             p_strHarvestCostsTableName, ScenarioId, false, true);
-
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                        m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
-                    }
-                }
-            }
-
-            m_intError = m_oDataMgr.m_intError;
-            m_strError = m_oDataMgr.m_strError;
         }
 
         private void RunScenario_DeleteFromTreeVolValAndHarvestCostsTable(string p_strVariant, string p_strRxPackage,
@@ -6217,8 +6200,17 @@ namespace FIA_Biosum_Manager
                         }
                         else
                         {
-                            RunScenario_UpdateHarvestCostsTableWithAdditionalCosts("HarvestCostsWorkTable", m_strTempSqliteDbFile, oEscalators,
-                                oTempProcessorScenarioItem.m_oHarvestCostItem_Collection);
+                            if (ReferenceProcessorScenarioForm.m_bUsingSqlite)
+                            {
+                                RunScenario_UpdateHarvestCostsTableWithAdditionalCosts("HarvestCostsWorkTable", m_strTempSqliteDbFile, oEscalators,
+                                    oTempProcessorScenarioItem.m_oHarvestCostItem_Collection);
+                            }
+                            else
+                            {
+                                RunScenario_UpdateHarvestCostsTableWithAdditionalCostsAccess("HarvestCostsWorkTable", m_strTempSqliteDbFile, oEscalators,
+                                    oTempProcessorScenarioItem.m_oHarvestCostItem_Collection);
+                            }
+
                         }
                     }
                     if (m_intError == 0)

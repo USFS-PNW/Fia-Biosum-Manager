@@ -4817,8 +4817,23 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        public void migrate_access_data()
+        public int migrate_access_data()
         {
+            // Check if Processor parameters in SQLite
+            string strTest = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\processor\{Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile}";
+            if (!System.IO.File.Exists(strTest))
+            {
+                MessageBox.Show("Processor parameters have not been migrated to SQLite. SQLite GIS data cannot be loaded!", "FIA Biosum");
+                return -1;
+            }
+            // Check if Optimizer parameters in SQLite
+            strTest = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile}";
+            if (!System.IO.File.Exists(strTest))
+            {
+                MessageBox.Show("Optimizer parameters have not been migrated to SQLite. SQLite GIS data cannot be loaded!", "FIA Biosum");
+                return -1;
+            }
+
             string gisPathAndDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
                 "\\" + Tables.TravelTime.DefaultTravelTimePathAndDbFile;
             if (!System.IO.File.Exists(gisPathAndDbFile))
@@ -4946,6 +4961,7 @@ namespace FIA_Biosum_Manager
                     }
                 }
             }
+            return 0;
         }
     }
 }

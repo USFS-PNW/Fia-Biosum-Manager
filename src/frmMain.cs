@@ -1601,9 +1601,14 @@ namespace FIA_Biosum_Manager
                     string gisPathAndDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
                         "\\" + Tables.TravelTime.DefaultTravelTimePathAndDbFile;
                     //@ToDo: Starting work on SQLite conversion
+                    int intError = -1;
                     if (!System.IO.File.Exists(gisPathAndDbFile))
                     {
-                        oGisTools.migrate_access_data();
+                        intError = oGisTools.migrate_access_data();
+                    }
+                    if (intError < 0)
+                    {
+                        return;
                     }
                     bool bTablesHaveData = false;
                     bool bUpdatePlotYardingDist = false;
