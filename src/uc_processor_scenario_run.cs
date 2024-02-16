@@ -4278,7 +4278,7 @@ namespace FIA_Biosum_Manager
                             m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.UpdateHarvestCostsTableWithCompleteCostsPerAcre(
                                                  "scenario_cost_revenue_escalators",
                                                  "HarvestCostsTotalAdditionalWorkTable",
-                                                 p_strHarvestCostsTableName, ScenarioId, false, false);
+                                                 p_strHarvestCostsTableName, ScenarioId, false);
                             m_oDataMgr.m_strSQL = Queries.ProcessorScenarioRun.UpdateSqliteHarvestCostsTableWithCompleteCostsPerAcre(
                                 "HarvestCostsTotalAdditionalWorkTable", p_strHarvestCostsTableName, oEscalators, false);
 
@@ -5068,6 +5068,15 @@ namespace FIA_Biosum_Manager
                             m_oDataMgr.m_strSQL = Queries.ProcessorScenarioRun.UpdateSqliteHarvestCostsTableWithKcpCostsPerAcre(
                                          p_strAddCostsWorktable,
                                          p_strHarvestCostsTableName, p_oEscalators, true);
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                            m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+                        }
+
+                        if (m_oDataMgr.m_intError == 0)
+                        {
+                            //Set additional_cpa = 0 where additional_cpa = null so that complete_cpa can be updated
+                            m_oDataMgr.m_strSQL = $@"UPDATE {p_strHarvestCostsTableName} SET ADDITIONAL_CPA = 0 WHERE ADDITIONAL_CPA IS NULL";
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                             m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
