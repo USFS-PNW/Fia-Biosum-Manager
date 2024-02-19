@@ -6057,16 +6057,16 @@ namespace FIA_Biosum_Manager
                         if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, "HarvestCostsTotalAdditionalWorkTable") == true)
                             m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE HarvestCostsTotalAdditionalWorkTable");
 
+                        if (m_oDataMgr.TableExist(conn, "opcost_input") == true)
+                            m_oDataMgr.SqlNonQuery(conn, "DROP TABLE opcost_input");
+
+                        if (m_oDataMgr.TableExist(conn, "opcost_output") == true)
+                            m_oDataMgr.SqlNonQuery(conn, "DROP TABLE opcost_output");
+
+                        if (m_oDataMgr.TableExist(conn, "opcost_errors") == true)
+                            m_oDataMgr.SqlNonQuery(conn, "DROP TABLE opcost_errors");
+
                     }
-
-                    if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, "opcost_input") == true)
-                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE opcost_input");
-
-                    if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, "opcost_output") == true)
-                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE opcost_output");
-
-                    if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, "opcost_errors") == true)
-                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE opcost_errors");
 
                     //Here we set the maximum number of ticks on the progress bar
                     //y cannot exceed this max number

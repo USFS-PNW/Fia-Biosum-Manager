@@ -6327,9 +6327,9 @@ namespace FIA_Biosum_Manager
                     WHEN RXCYCLE = '3' THEN a.complete_additional_cpa * {p_oEscalators.OperatingCostsCycle3} 
                     WHEN RXCYCLE = '4' THEN a.complete_additional_cpa * {p_oEscalators.OperatingCostsCycle4} 
                     ELSE a.complete_additional_cpa END, 
-                    CASE WHEN RXCYCLE = '2' THEN harvest_cpa + a.complete_additional_cpa * {p_oEscalators.OperatingCostsCycle2} 
-                    WHEN RXCYCLE = '3' THEN harvest_cpa + a.complete_additional_cpa * {p_oEscalators.OperatingCostsCycle3} 
-                    WHEN RXCYCLE = '4' THEN harvest_cpa + a.complete_additional_cpa * {p_oEscalators.OperatingCostsCycle4} 
+                    CASE WHEN RXCYCLE = '2' THEN (harvest_cpa + a.complete_additional_cpa) * {p_oEscalators.OperatingCostsCycle2} 
+                    WHEN RXCYCLE = '3' THEN (harvest_cpa + a.complete_additional_cpa) * {p_oEscalators.OperatingCostsCycle3} 
+                    WHEN RXCYCLE = '4' THEN (harvest_cpa + a.complete_additional_cpa) * {p_oEscalators.OperatingCostsCycle4} 
                     ELSE harvest_cpa + a.complete_additional_cpa END 
                     from {p_strTotalAdditionalCostsTableName} as a
                     WHERE {p_strHarvestCostsTableName}.biosum_cond_id = a.biosum_cond_id AND {p_strHarvestCostsTableName}.rx=a.rx) ";
