@@ -4938,8 +4938,29 @@ namespace FIA_Biosum_Manager
                 }
 
                 /********************************************
-			    **get the haul cost per green ton per hour
-			    ********************************************/
+                 **create and link tree_vol_val_sum_by_rx_cycle_work (early)
+                 * to avoid dao error
+                 ********************************************/
+                // if the work table doesn't exist, create it
+                if (!p_dataMgr.TableExist(conn, m_strTreeVolValSumTable))
+                {
+                    frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteTreeVolValSumTable(p_dataMgr, conn, m_strTreeVolValSumTable);
+                    dao_data_access p_dao = new dao_data_access();
+                    p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, m_strTreeVolValSumTable, m_strTreeVolValSumTable, ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    {
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n\r\nCreated and linked tree_vol_val_sum_by_rx_cycle_work\r\n");
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "----------------------------------------\r\n");
+                    }
+                    if (p_dao != null)
+                    {
+                        p_dao.m_DaoWorkspace.Close();
+                        p_dao = null;
+                    }
+                }
+                /********************************************
+                **get the haul cost per green ton per hour
+                ********************************************/
                 strTruckHaulCost = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_costs1.RoadHaulCostDollarsPerGreenTonPerHour.Replace("$", "").ToString();
                 strTruckHaulCost = strTruckHaulCost.Replace(",", "");
 
@@ -5994,33 +6015,12 @@ namespace FIA_Biosum_Manager
             {
                 conn.Open();
 
-                // if the work table doesn't exist, create it
-                if (!p_dataMgr.TableExist(conn, m_strTreeVolValSumTable))
-                {
-                    frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteTreeVolValSumTable(p_dataMgr, conn, m_strTreeVolValSumTable);
-                }
-                else
+                // delete from work table
+                if (p_dataMgr.TableExist(conn, m_strTreeVolValSumTable))
                 {
                     p_dataMgr.m_strSQL = "delete from " + m_strTreeVolValSumTable;
                     p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
                 }
-
-                p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, m_strTreeVolValSumTable, m_strTreeVolValSumTable, ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
-
-                int i = 0;
-                do
-                {
-                    // break out of loop if it runs too long
-                    if (i > 20)
-                    {
-                        System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach " + m_strTreeVolValSumTable + " table! " +
-                        "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
-                        break;
-                    }
-                    System.Threading.Thread.Sleep(1000);
-                    i++;
-                }
-                while (!this.m_ado.TableExist(this.m_TempMDBFileConn, m_strTreeVolValSumTable));
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
@@ -8800,12 +8800,12 @@ namespace FIA_Biosum_Manager
                     }
 
                     //populate the change column by subtracting pre value from post value
-                    m_strSQL = "";
+                    p_dataMgr.m_strSQL = "";
                     p_dataMgr.m_strSQL += "variable" + strVariableNumber + "_change = CASE WHEN pre_variable" + strVariableNumber + "_value IS NOT NULL AND post_variable" + strVariableNumber + "_value IS NOT NULL " +
                         "THEN post_variable" + strVariableNumber + "_value - pre_variable" + strVariableNumber + "_value ELSE NULL END,";
-                    m_strSQL = m_strSQL.Substring(0, m_strSQL.Length - 1);
+                    p_dataMgr.m_strSQL = p_dataMgr.m_strSQL.Substring(0, p_dataMgr.m_strSQL.Length - 1);
 
-                    m_strSQL = "UPDATE tiebreaker SET " + m_strSQL;
+                    p_dataMgr.m_strSQL = "UPDATE tiebreaker SET " + p_dataMgr.m_strSQL;
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                     p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
@@ -8891,10 +8891,14 @@ namespace FIA_Biosum_Manager
                 oItem = oTieBreakerCollection.Item(2);  // LAST TIEBREAK RANK
                 if (oItem.bSelected)
                 {
+                    p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+                    Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile + "' AS rule_defs";
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
                     p_dataMgr.m_strSQL = "UPDATE tiebreaker AS a " +
                         "SET last_tiebreak_rank = b.last_tiebreak_rank " +
                         "FROM scenario_last_tiebreak_rank AS b WHERE a.rxpackage = b.rxpackage " +
-                        "AND TRIM(UPPER(b.scenario_id)) = '" + ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToUpper();
+                        "AND TRIM(UPPER(b.scenario_id)) = '" + ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToUpper() + "'";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                     p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
@@ -12852,12 +12856,206 @@ namespace FIA_Biosum_Manager
 			{
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
 			}
-
-
 		
 		}
+        private void Best_rx_summary_sqlite()
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//Best_rx_summary\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+            string strTable = "";
+            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.lblMsg, "Text", "Finding Best Treatments: Maximum Net Revenue");
+            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.lblMsg, "Visible", true);
+            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.lblMsg, "Refresh");
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n\r\nBest Rx Summary\r\n");
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "--------------------\r\n");
 
-		private void Best_rx_summary(
+            intListViewIndex = FIA_Biosum_Manager.uc_optimizer_scenario_run.GetListViewItemIndex(
+                   ReferenceUserControlScenarioRun.listViewEx1, "Identify The Best Effective Treatment For Each Stand");
+
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem = intListViewIndex;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 5;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMinimumSteps = 1;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicCurrentStep = 1;
+            FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic = (ProgressBarBasic.ProgressBarBasic)ReferenceUserControlScenarioRun.listViewEx1.GetEmbeddedControl(1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem);
+            frmMain.g_oDelegate.EnsureListViewExItemVisible(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem);
+            frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "Selected", true);
+            frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "focused", true);
+
+
+            FIA_Biosum_Manager.uc_optimizer_scenario_fvs_prepost_variables_tiebreaker.TieBreaker_Collection oTieBreakerCollection =
+                ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_fvs_prepost_variables_tiebreaker1.m_oSavTieBreakerCollection;
+
+
+            string strScenarioId = this.ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim();
+            string strTieBreakerAggregate = "MAX";
+            DataMgr p_dataMgr = new DataMgr();
+            dao_data_access oDao = new dao_data_access();
+
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strSQLiteWorkTablesDb)))
+            {
+                conn.Open();
+
+                //
+                //CREATE WORK TABLES
+                //
+                //best_rx_summary_work_table
+                strTable = "cycle1_best_rx_summary_work_table";
+                if (p_dataMgr.TableExist(conn, strTable))
+                {
+                    p_dataMgr.SqlNonQuery(conn, "DROP TABLE " + strTable);
+                }
+                p_dataMgr.SqlNonQuery(conn, Tables.OptimizerScenarioResults.CreateSqliteBestRxSummaryTableSQL(strTable));
+                oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, strTable, strTable, ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+                int i = 0;
+                do
+                {
+                    // break out of loop if it runs too long
+                    if (i > 20)
+                    {
+                        System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach " + strTable + " table! " +
+                        "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                        break;
+                    }
+                    System.Threading.Thread.Sleep(1000);
+                    i++;
+                }
+                while (!this.m_ado.TableExist(this.m_TempMDBFileConn, strTable));
+                //best_rx_summury_optimization_and_tiebreaker_work_table
+                if (p_dataMgr.TableExist(conn, "cycle1_best_rx_summary_optimization_and_tiebreaker_work_table"))
+                {
+                    p_dataMgr.SqlNonQuery(conn, "DROP TABLE cycle1_best_rx_summary_optimization_and_tiebreaker_work_table");
+                }
+                p_dataMgr.SqlNonQuery(conn, Tables.OptimizerScenarioResults.CreateSqliteBestRxSummaryCycle1TieBreakerTableSQL("cycle1_best_rx_summary_optimization_and_tiebreaker_work_table"));
+                oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, "cycle1_best_rx_summary_optimization_and_tiebreaker_work_table", "cycle1_best_rx_summary_optimization_and_tiebreaker_work_table", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+                i = 0;
+                do
+                {
+                    // break out of loop if it runs too long
+                    if (i > 20)
+                    {
+                        System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach cycle1_best_rx_summary_optimization_and_tiebreaker_work_table table! " +
+                        "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                        break;
+                    }
+                    System.Threading.Thread.Sleep(1000);
+                    i++;
+                }
+                while (!this.m_ado.TableExist(this.m_TempMDBFileConn, "cycle1_best_rx_summary_optimization_and_tiebreaker_work_table"));
+                //best_rx_summury_optimization_and_tiebreaker_work_table2
+                if (p_dataMgr.TableExist(conn, "cycle1_best_rx_summary_optimization_and_tiebreaker_work_table2"))
+                {
+                    p_dataMgr.SqlNonQuery(conn, "DROP TABLE cycle1_best_rx_summary_optimization_and_tiebreaker_work_table2");
+                }
+                p_dataMgr.SqlNonQuery(conn, Tables.OptimizerScenarioResults.CreateSqliteBestRxSummaryCycle1TieBreakerTableSQL("cycle1_best_rx_summary_optimization_and_tiebreaker_work_table2"));
+                oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, "cycle1_best_rx_summary_optimization_and_tiebreaker_work_table2", "cycle1_best_rx_summary_optimization_and_tiebreaker_work_table2", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+                i = 0;
+                do
+                {
+                    // break out of loop if it runs too long
+                    if (i > 20)
+                    {
+                        System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach cycle1_best_rx_summary_optimization_and_tiebreaker_work_table2 table! " +
+                        "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                        break;
+                    }
+                    System.Threading.Thread.Sleep(1000);
+                    i++;
+                }
+                while (!this.m_ado.TableExist(this.m_TempMDBFileConn, "cycle1_best_rx_summary_optimization_and_tiebreaker_work_table2"));
+                //best_rx_summury_optimization_and_tiebreaker_work_table3
+                if (p_dataMgr.TableExist(conn, "cycle1_best_rx_summary_optimization_and_tiebreaker_work_table3"))
+                {
+                    p_dataMgr.SqlNonQuery(conn, "DROP TABLE cycle1_best_rx_summary_optimization_and_tiebreaker_work_table3");
+                }
+                p_dataMgr.SqlNonQuery(conn, Tables.OptimizerScenarioResults.CreateSqliteBestRxSummaryCycle1TieBreakerTableSQL("cycle1_best_rx_summary_optimization_and_tiebreaker_work_table3"));
+                oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, "cycle1_best_rx_summary_optimization_and_tiebreaker_work_table3", "cycle1_best_rx_summary_optimization_and_tiebreaker_work_table3", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+                i = 0;
+                do
+                {
+                    // break out of loop if it runs too long
+                    if (i > 20)
+                    {
+                        System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach cycle1_best_rx_summary_optimization_and_tiebreaker_work_table3 table! " +
+                        "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                        break;
+                    }
+                    System.Threading.Thread.Sleep(1000);
+                    i++;
+                }
+                while (!this.m_ado.TableExist(this.m_TempMDBFileConn, "cycle1_best_rx_summary_optimization_and_tiebreaker_work_table3"));
+
+                /**********************************************
+			     **insert unique biosum_cond_id's into the
+			     **best_rx_summary table so we dont have
+			     **to worry about whether the biosum_cond_id 
+			     **record is in the table or not
+			     **********************************************/
+                this.m_ado.m_strSQL = "INSERT INTO " + strTable + " " +
+                    "SELECT DISTINCT c.biosum_cond_id,c.acres,c.owngrpcd " +
+                    "FROM " + this.m_strCondTable.Trim() + " c, " +
+                    Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " p, " +
+
+                    this.ReferenceOptimizerScenarioForm.OutputTablePrefix +
+                    Tables.OptimizerScenarioResults.DefaultScenarioResultsOptimizationTableSuffix + " e " +
+                    "WHERE c.biosum_cond_id = p.biosum_cond_id  AND " +
+                    "e.biosum_cond_id = c.biosum_cond_id AND " +
+                    "e.affordable_YN = 'Y' AND e.rxcycle='1' AND " +
+                    "(p.merch_haul_cost_id IS NOT NULL OR " +
+                    "p.chip_haul_cost_id IS NOT NULL);";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "--insert condition records that have MERCH or CHIP haul costs into best_rx_summary--\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + this.m_ado.m_strSQL + "\r\n\r\n");
+                this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_ado.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                if (this.m_ado.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "!!!Error Executing SQL!!!");
+                    this.m_intError = this.m_ado.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                string strWorkTable = "cycle1_effective_" + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName;
+                if (p_dataMgr.TableExist(conn, strWorkTable))
+                {
+                    p_dataMgr.SqlNonQuery(conn, "DROP TABLE " + strWorkTable);
+                }
+
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteProductYieldsTable(p_dataMgr, conn, strWorkTable);
+
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + this.m_strSystemResultsDbPathAndFile + "' AS results";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = "INSERT INTO " + strWorkTable +
+                    " SELECT p.* FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName + " AS p, " +
+                    ReferenceOptimizerScenarioForm.OutputTablePrefix + Tables.OptimizerScenarioResults.DefaultScenarioResultsEffectiveTableSuffix + " AS e " +
+                    "WHERE p.biosum_cond_id = e.biosum_cond_id AND " +
+                    "p.rxpackage=e.rxpackage AND p.rx=e.rx AND p.rxcycle=e.rxcycle AND e.overall_effective_yn='Y'";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "--write overall effective treatments to the " + strWorkTable + "--\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n\r\n");
+
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+            }
+        }
+
+        private void Best_rx_summary(
 			FIA_Biosum_Manager.uc_optimizer_scenario_fvs_prepost_variables_tiebreaker.TieBreaker_Collection oTieBreakerCollection, 
 			string strTieBreakerAggregate,
 			bool bFVSVariable)
