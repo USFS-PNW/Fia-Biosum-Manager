@@ -796,6 +796,19 @@ namespace FIA_Biosum_Manager
                     "tiebreaker_value DOUBLE," +
                     "last_tiebreak_rank INTEGER)";
             }
+            static public string CreateSqliteBestRxSummaryCycle1TieBreakerTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "rx CHAR(3)," +
+                    "acres DOUBLE," +
+                    "owngrpcd INTEGER," +
+                    "optimization_value DOUBLE," +
+                    "tiebreaker_value DOUBLE," +
+                    "last_tiebreak_rank INTEGER," +
+                    "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id_rx))";
+            }
 
 
             //
