@@ -11509,9 +11509,10 @@ namespace FIA_Biosum_Manager
                     p_bAudit, m_bDebug, m_strDebugFile, p_strRunTitle, strActualPotfireTableName, tmpTableName);
 
                 // Delete temp table
+                SQLite.m_strSQL = $@"DROP TABLE {tmpTableName}";
                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
-                SQLite.SqlNonQuery(conn, $@"DROP TABLE {tmpTableName}");
+                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
             }
