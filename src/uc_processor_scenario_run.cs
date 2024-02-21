@@ -4706,7 +4706,7 @@ namespace FIA_Biosum_Manager
                     }
                     // Any rows in PRE_FVS_COMPUTE FOR THIS CPA COLUMN FOR THIS VARIANT/PACKAGE ?
                     m_oAdo.m_strSQL = $@"SELECT TOP 1 {aColumn} FROM {Tables.FVS.DefaultPostFVSComputeTableName} WHERE FVS_VARIANT = '{p_strVariant}'
-                                    AND RXPACKAGE = '{p_strRxPackage}' WHERE {aColumn} = 1";
+                                    AND RXPACKAGE = '{p_strRxPackage}' AND {aColumn} = 1";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                     iCount = m_oAdo.getRecordCount(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL, Tables.FVS.DefaultPostFVSComputeTableName);
