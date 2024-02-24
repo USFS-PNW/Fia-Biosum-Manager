@@ -1243,8 +1243,8 @@ namespace FIA_Biosum_Manager
                 oCheckBox = (CheckBox) ReferenceUserControlScenarioRun.listViewEx1.GetEmbeddedControl(0, intListViewIndex);
                 if ((bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)oCheckBox, "Checked", false) == true)
                 {
-                    this.m_strContextDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
-                    this.CopyScenarioResultsTable(this.m_strContextDbPathAndFile, strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsContextDbFile);
+                    this.m_strContextDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
+                    this.CopyScenarioResultsTableSqlite(this.m_strContextDbPathAndFile, strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsContextSqliteDbFile);
                 }
 
                 this.m_strFvsContextDbPathAndFile = "";
@@ -1452,7 +1452,7 @@ namespace FIA_Biosum_Manager
                     CreateAuditTablesSqlite();
 					CreateOptimizerResultTablesSqlite();
                     if (!String.IsNullOrEmpty(m_strContextDbPathAndFile))
-                        CreateContextTables();
+                        CreateContextTablesSqlite();
                     CreateValidComboTablesSqlite();
 
                     // Create temporary SQLite database for work tables
@@ -1487,7 +1487,7 @@ namespace FIA_Biosum_Manager
 
                     if (! String.IsNullOrEmpty(m_strContextDbPathAndFile))
                     {
-                        this.CreateContextTableLinks();
+                        this.CreateContextTableLinksSqlite();
                         if (this.m_intError != 0)
                         {
                             FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
@@ -1829,7 +1829,7 @@ namespace FIA_Biosum_Manager
 						 *********************************************************************/ 
 						if (this.m_intError==0 && ReferenceUserControlScenarioRun.m_bUserCancel==false)
 						{
-							this.Best_rx_summary();
+							this.Best_rx_summary_sqlite();
 						}
 
  
@@ -1840,28 +1840,28 @@ namespace FIA_Biosum_Manager
                        
 						if (this.m_intError==0 && ReferenceUserControlScenarioRun.m_bUserCancel==false)
 						{
-                            CompactMDB(m_strSystemResultsDbPathAndFile, null);
+                            //CompactMDB(m_strSystemResultsDbPathAndFile, null);
 							System.DateTime oDate = System.DateTime.Now;
 							string strDateFormat = "yyyy-MM-dd_HH-mm";
 							string strFileDate = oDate.ToString(strDateFormat);
 							strFileDate = strFileDate.Replace("/","_"); strFileDate=strFileDate.Replace(":","_");
 							this.CreateHtml();
-                            this.CopyScenarioResultsTable(strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile, this.m_strSystemResultsDbPathAndFile);
+                            this.CopyScenarioResultsTableSqlite(strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsSqliteDbFile, this.m_strSystemResultsDbPathAndFile);
                             // issue #255: Optimizer results requires repair
-                            if (frmMain.g_intDebugLevel > 2)
-                            {
-                                frmMain.g_oUtils.WriteText(m_strDebugFile, "Compacting " + Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile + " \r\n");
-                            }
-                            CompactMDB(strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile, null);
+                            //if (frmMain.g_intDebugLevel > 2)
+                            //{
+                            //    frmMain.g_oUtils.WriteText(m_strDebugFile, "Compacting " + Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile + " \r\n");
+                            //}
+                            //CompactMDB(strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile, null);
                             if (! String.IsNullOrEmpty(this.m_strContextDbPathAndFile))
                                 this.CopyScenarioResultsTable(strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsContextDbFile, this.m_strContextDbPathAndFile);
-                            this.m_strSystemResultsDbPathAndFile = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile;
+                            this.m_strSystemResultsDbPathAndFile = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsSqliteDbFile;
                             //this.m_strFVSPreValidComboDbPathAndFile = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\validcombo_fvspre.mdb";
-                            this.m_strFVSPrePostValidComboDbPathAndFile = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\validcombo_fvspre.mdb";
+                            this.m_strFVSPrePostValidComboDbPathAndFile = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\validcombo_fvspre.db";
 
-                            this.CopyScenarioResultsTable(
-								ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\optimizer_results_" + this.m_strOptimizationTableName + "_" + strFileDate.Trim() + ".accdb",
-                                ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile);
+                            this.CopyScenarioResultsTableSqlite(
+								ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\optimizer_results_" + this.m_strOptimizationTableName + "_" + strFileDate.Trim() + ".db",
+                                ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsSqliteDbFile);
 
 
 						}
@@ -2521,12 +2521,90 @@ namespace FIA_Biosum_Manager
             oAdo.CloseConnection(oAdo.m_OleDbConnection);
         }
 
-		/// <summary>
-		/// Copy the scenario results db file from the scenario?\db directory to the temp directory
+        private void CreateContextTablesSqlite()
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//CreateContextTables\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+            string[] strTableNames;
+            strTableNames = new string[1];
+            DataMgr p_dataMgr = new DataMgr();
+            ado_data_access oAdo = new ado_data_access();
+
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strContextDbPathAndFile)))
+            {
+                conn.Open();
+
+                strTableNames = p_dataMgr.getTableNames(conn);
+                for (int x = 0; x <= strTableNames.Length - 1; x++)
+                {
+                    if (strTableNames[x] != null &&
+                        strTableNames[x].Trim().Length > 0)
+                    {
+                        p_dataMgr.SqlNonQuery(conn, "DROP TABLE " + strTableNames[x]);
+                    }
+                }
+
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteHarvestMethodRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsHarvestMethodRefTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteRxPackageRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsRxPackageRefTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteDiameterSpeciesGroupRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsDiameterSpeciesGroupRefTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteFvsWeightedVariableRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsWeightedVariablesRefTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteEconWeightedVariableRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteSpeciesGroupRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsSpeciesGroupRefTableName);
+                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioAdditionalHarvestCostsTable(p_dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName + "_C");
+
+                // Add the ad hoc additional harvest cost columns to table
+                string[] strSourceColumnsArray = null;
+                if (!ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite)
+                {
+                    string strProcessorPath = ((frmMain)this._frmScenario.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsDbFile;
+                    oAdo.OpenConnection(oAdo.getMDBConnString(strProcessorPath, "", ""));
+                    string strSourceColumnsList = oAdo.getFieldNames(oAdo.m_OleDbConnection, "SELECT * FROM scenario_additional_harvest_costs");
+                    strSourceColumnsArray = frmMain.g_oUtils.ConvertListToArray(strSourceColumnsList, ",");
+                }
+                else
+                {
+                    string strProcessorPath = ((frmMain)this._frmScenario.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                    string strConn = p_dataMgr.GetConnectionString(strProcessorPath);
+                    using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
+                    {
+                        oConn.Open();
+                        strSourceColumnsArray = p_dataMgr.getFieldNamesArray(oConn, "SELECT * FROM scenario_additional_harvest_costs");
+                        oConn.Close();
+                    }
+                    // Set up DSN for Processor config tables; We will need it later
+                    // Check to see if the input SQLite DSN exists and if so, delete so we can add
+                    if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName))
+                    {
+                        odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName);
+                    }
+                    odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName, strProcessorPath);
+                }
+
+                foreach (string strColumn in strSourceColumnsArray)
+                {
+                    if (!p_dataMgr.ColumnExist(conn,
+                        Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName + "_C", strColumn))
+                    {
+                        p_dataMgr.AddColumn(conn, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName + "_C",
+                            strColumn, "DOUBLE", "");
+                    }
+                }
+                frmMain.g_oTables.m_oFvs.CreateSqliteRxHarvestCostColumnTable(p_dataMgr, conn, Tables.FVS.DefaultRxHarvestCostColumnsTableName + "_C");
+
+                conn.Close();
+            }
+        }
+
+        /// <summary>
+        /// Copy the scenario results db file from the scenario?\db directory to the temp directory
         /// where the temp directory version is used during a single Optimizer run. Once
-		/// the run successfully completes it is copied back to the scenario?\db directory.
-		/// </summary>
-		private void CopyScenarioResultsTable(string p_strDestPathAndDbFileName,string p_strSourcePathAndDbFileName)
+        /// the run successfully completes it is copied back to the scenario?\db directory.
+        /// </summary>
+        private void CopyScenarioResultsTable(string p_strDestPathAndDbFileName,string p_strSourcePathAndDbFileName)
 		{
 
 			dao_data_access oDao = new dao_data_access();
@@ -2729,6 +2807,51 @@ namespace FIA_Biosum_Manager
                       this.m_oProcessorScenarioItem.DbPath + "\\" + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableDbFile,
                       Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName);
            
+            if (p_dao != null)
+            {
+                p_dao.m_DaoWorkspace.Close();
+                p_dao = null;
+
+            }
+        }
+
+        private void CreateContextTableLinksSqlite()
+        {
+            DataMgr p_dataMgr = new DataMgr();
+            dao_data_access p_dao = new dao_data_access();
+
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strSQLiteWorkTablesDb)))
+            {
+                conn.Open();
+
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + this.m_strContextDbPathAndFile + "' AS context";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                // Still in Access
+                string strRefMasterDir = ((frmMain)this._frmScenario.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\" + Tables.Reference.DefaultRxCategoryTableDbFile;
+                p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.Reference.DefaultRxCategoryTableName, strRefMasterDir, Tables.Reference.DefaultRxCategoryTableName);
+                p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.Reference.DefaultRxSubCategoryTableName, strRefMasterDir, Tables.Reference.DefaultRxSubCategoryTableName);
+
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + ((frmMain)this._frmScenario.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\" + Tables.OptimizerDefinitions.DefaultSqliteDbFile + "' AS optimizer_defs";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                if (!ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite)
+                {
+                    string strProcessorDir = ((frmMain)this._frmScenario.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsDbFile;
+                    p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName, strProcessorDir, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName);
+                    p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName, strProcessorDir, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName);
+                }
+                else
+                {
+                    p_dataMgr.m_strSQL = "ATTACH DATABASE '" + ((frmMain)this._frmScenario.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile + "' AS processor";
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                }
+
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + this.m_strSystemResultsDbPathAndFile + "' AS results";
+
+                conn.Close();
+            }
+
             if (p_dao != null)
             {
                 p_dao.m_DaoWorkspace.Close();
@@ -12996,7 +13119,7 @@ namespace FIA_Biosum_Manager
 			     **to worry about whether the biosum_cond_id 
 			     **record is in the table or not
 			     **********************************************/
-                this.m_ado.m_strSQL = "INSERT INTO " + strTable + " " +
+                this.m_ado.m_strSQL = "INSERT INTO " + strTable + " (biosum_cond_id, acres, owngrpcd) " +
                     "SELECT DISTINCT c.biosum_cond_id,c.acres,c.owngrpcd " +
                     "FROM " + this.m_strCondTable.Trim() + " c, " +
                     Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " p, " +
@@ -13036,6 +13159,22 @@ namespace FIA_Biosum_Manager
 
                 frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteProductYieldsTable(p_dataMgr, conn, strWorkTable);
 
+                oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, strWorkTable, strWorkTable, ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+                i = 0;
+                do
+                {
+                    // break out of loop if it runs too long
+                    if (i > 20)
+                    {
+                        System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach " + strWorkTable + " table! " +
+                        "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                        break;
+                    }
+                    System.Threading.Thread.Sleep(1000);
+                    i++;
+                }
+                while (!this.m_ado.TableExist(this.m_TempMDBFileConn, strWorkTable));
+
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + this.m_strSystemResultsDbPathAndFile + "' AS results";
                 p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
 
@@ -13052,6 +13191,113 @@ namespace FIA_Biosum_Manager
 
                 p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
                 if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "!!!Error Executing SQL!!!");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.TableExist(conn, "cycle1_effective_optimization_treatments"))
+                {
+                    p_dataMgr.SqlNonQuery(conn, "DROP TABLE cycle1_effective_optimization_treatments");
+                }
+
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteEffectiveTable(p_dataMgr, conn, "cycle1_effective_optimization_treatments");
+
+                oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, "cycle1_effective_optimization_treatments", "cycle1_effective_optimization_treatments", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+                i = 0;
+                do
+                {
+                    // break out of loop if it runs too long
+                    if (i > 20)
+                    {
+                        System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach cycle1_effective_optimization_treatments table! " +
+                        "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                        break;
+                    }
+                    System.Threading.Thread.Sleep(1000);
+                    i++;
+                }
+                while (!this.m_ado.TableExist(this.m_TempMDBFileConn, "cycle1_effective_optimization_treatments"));
+
+                p_dataMgr.m_strSQL = "INSERT INTO cycle1_effective_optimization_treatments " +
+                    "SELECT e.* FROM " + ReferenceOptimizerScenarioForm.OutputTablePrefix +
+                    Tables.OptimizerScenarioResults.DefaultScenarioResultsEffectiveTableSuffix + " AS e " +
+                    "WHERE e.overall_effective_yn = 'Y'";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "--write overall effective treatments to the cycle1_effective_optimization_treatments--\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "!!!Error Executing SQL!!!");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (this.m_oOptimizationVariable.strOptimizedVariable.Trim().ToUpper() == "REVENUE")
+                {
+                    Best_rx_summary_sqlite(oTieBreakerCollection, strTieBreakerAggregate, false);
+
+                }
+                else if (this.m_oOptimizationVariable.strOptimizedVariable.Trim().ToUpper() == "MERCHANTABLE VOLUME")
+                {
+                    Best_rx_summary_sqlite(oTieBreakerCollection, strTieBreakerAggregate, false);
+                }
+                else if (this.m_oOptimizationVariable.strOptimizedVariable.Trim().ToUpper() == "ECONOMIC ATTRIBUTE")
+                {
+                    Best_rx_summary_sqlite(oTieBreakerCollection, strTieBreakerAggregate, false);
+                }
+                else
+                {
+                    Best_rx_summary_sqlite(oTieBreakerCollection, strTieBreakerAggregate, true);
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                string strBestRxSummaryTableName = this.ReferenceOptimizerScenarioForm.OutputTablePrefix +
+                    Tables.OptimizerScenarioResults.DefaultScenarioResultsBestRxSummaryTableSuffix;
+
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "!!!Error Executing SQL!!!");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                /****************************************************************************
+                 **finished with minimum merchantable wood removal with positive net revenue
+                 ****************************************************************************/
+
+                conn.Close();
+            }
+
+            if (this.m_intError == 0)
+            {
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
             }
         }
 
@@ -13354,156 +13600,442 @@ namespace FIA_Biosum_Manager
 
 
 		}
-	
-		//private void DeleteScenarioResultRecords()
-		//{
 
-			
-		//	ado_data_access oAdo = new ado_data_access();
-		//	string strConn=oAdo.getMDBConnString(this.m_strSystemResultsDbPathAndFile,"admin","");
-		//	oAdo.OpenConnection(strConn);
+        private void Best_rx_summary_sqlite(FIA_Biosum_Manager.uc_optimizer_scenario_fvs_prepost_variables_tiebreaker.TieBreaker_Collection oTieBreakerCollection,
+            string strTieBreakerAggregate,
+            bool bFVSVariable)
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//" + ReferenceOptimizerScenarioForm.OutputTablePrefix +
+                    Tables.OptimizerScenarioResults.DefaultScenarioResultsOptimizationTableSuffix + "\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n\r\n");
 
-		//	/*************************************************
-		//	 **delete all records in the by plot tables
-		//	 *************************************************/
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_nr_plots"))
-		//	{
-		//		this.m_strSQL = "delete from max_nr_plots";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_pnr_plots"))
-		//	{
-		//		this.m_strSQL = "delete from max_pnr_plots";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_ti_imp_plots"))
-		//	{
-		//		this.m_strSQL = "delete from max_ti_imp_plots";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_ti_imp_pnr_plots"))
-		//	{
-		//		this.m_strSQL = "delete from max_ti_imp_pnr_plots";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_ci_imp_plots"))
-		//	{
-		//		this.m_strSQL = "delete from max_ci_imp_plots";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_ci_imp_pnr_plots"))
-		//	{
-		//		this.m_strSQL = "delete from max_ci_imp_pnr_plots";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"min_merch_plots"))
-		//	{
-		//		this.m_strSQL = "delete from min_merch_plots";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"min_merch_pnr_plots"))
-		//	{
-		//		this.m_strSQL = "delete from min_merch_pnr_plots";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "Parameters\r\n-------------\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "TieBreaker_Collection object\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "TieBreakerAggregate=" + strTieBreakerAggregate + "\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "FVS Variable as Tie Breaker = ");
+                if (bFVSVariable)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Yes\r\n");
+                else
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "No\r\n");
+            }
+
+            DataMgr p_dataMgr = new DataMgr();
+
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strSQLiteWorkTablesDb)))
+            {
+                conn.Open();
+
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + this.m_strSystemResultsDbPathAndFile + "' AS results";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                string strOptimizationTableName = ReferenceOptimizerScenarioForm.OutputTablePrefix +
+                Tables.OptimizerScenarioResults.DefaultScenarioResultsOptimizationTableSuffix;
+                p_dataMgr.m_strSQL = "";
+                if (bFVSVariable == false)
+                {
+                    //find the treatment for each plot that produces the MAX/MIN revenue value
+                    p_dataMgr.m_strSQL = "SELECT a.biosum_cond_id,a.rxpackage,a.rx,a." + this.m_strOptimizationColumnNameSql + " AS optimization_value " + //LPOTTS,a.rx_intensity " + 
+                        "FROM " + strOptimizationTableName + " AS a,";
 
 
-		//	/*************************************************
-		//	 **delete all records in the by ownership tables
-		//	 *************************************************/
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_nr_sum_own"))
-		//	{
-		//		this.m_strSQL = "delete from max_nr_sum_own";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_pnr_sum_own"))
-		//	{
-		//		this.m_strSQL = "delete from max_pnr_sum_own";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_ti_imp_sum_own"))
-		//	{
-		//		this.m_strSQL = "delete from max_ti_imp_sum_own";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_ti_imp_pnr_sum_own"))
-		//	{
-		//		this.m_strSQL = "delete from max_ti_imp_pnr_sum_own";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_ci_imp_sum_own"))
-		//	{
-		//		this.m_strSQL = "delete from max_ci_imp_sum_own";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_ci_imp_pnr_sum_own"))
-		//	{
-		//		this.m_strSQL = "delete from max_ci_imp_pnr_sum_own";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"min_merch_sum_own"))
-		//	{
-		//		this.m_strSQL = "delete from min_merch_sum_own";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"min_merch_pnr_sum_own"))
-		//	{
-		//		this.m_strSQL = "delete from min_merch_pnr_sum_own";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
+                    p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + "(SELECT " + this.m_strOptimizationAggregateSql + "(" + this.m_strOptimizationColumnNameSql + ") AS " + this.m_strOptimizationAggregateColumnName + ",biosum_cond_id " +
+                        "FROM " + strOptimizationTableName + " where affordable_YN = 'Y'";
 
-		//	/******************************************************
-		//	 **delete all records in the by processing site tables
-		//	 ******************************************************/
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_nr_sum_psite"))
-		//	{
-		//		this.m_strSQL = "delete from max_nr_sum_psite";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_pnr_sum_psite"))
-		//	{
-		//		this.m_strSQL = "delete from max_pnr_sum_psite";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_ti_imp_sum_psite"))
-		//	{
-		//		this.m_strSQL = "delete from max_ti_imp_sum_psite";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_ti_imp_pnr_sum_psite"))
-		//	{
-		//		this.m_strSQL = "delete from max_ti_imp_pnr_sum_psite";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_ci_imp_sum_psite"))
-		//	{
-		//		this.m_strSQL = "delete from max_ci_imp_sum_psite";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_imp_pnr_sum_psite"))
-		//	{
-		//		this.m_strSQL = "delete from max_ci_imp_pnr_sum_psite";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"min_merch_sum_psite"))
-		//	{
-		//		this.m_strSQL = "delete from min_merch_sum_psite";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
-		//	if (oAdo.TableExist(oAdo.m_OleDbConnection,"min_merch_pnr_sum_psite"))
-		//	{
-		//		this.m_strSQL = "delete from min_merch_pnr_sum_psite";
-		//		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
-		//	}
+                    p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + " GROUP BY biosum_cond_id) AS b ";
 
-		//	oAdo.CloseConnection(oAdo.m_OleDbConnection);
-		//	oAdo=null;
+                    p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + "WHERE a.biosum_cond_id=b.biosum_cond_id AND a." + this.m_strOptimizationColumnNameSql + " = b." + this.m_strOptimizationAggregateColumnName +
+                                      " AND a.affordable_YN = 'Y'";
+                }
+                else
+                {
+                    p_dataMgr.m_strSQL = "SELECT a.biosum_cond_id,a.rxpackage,a.rx,a." + this.m_strOptimizationColumnNameSql + " AS optimization_value " + //LPOTTS,a.rx_intensity " + 
+                        "FROM " + strOptimizationTableName + " AS a,";
 
 
+                    p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + "(SELECT " + this.m_strOptimizationAggregateSql + "(" + this.m_strOptimizationColumnNameSql + ") AS " + this.m_strOptimizationAggregateColumnName + ",biosum_cond_id " +
+                        "FROM " + strOptimizationTableName + " where affordable_YN = 'Y'";
 
-		//}
-		
-		private void BestRxAcreageExpansionTableInsertForAirCurtainDestructionOld(string strTable,string strTypeField, string strRxField, string strWhereExpression)
+                    p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + " GROUP BY biosum_cond_id) AS b ";
+
+                    p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + "WHERE a.biosum_cond_id=b.biosum_cond_id AND a." + this.m_strOptimizationColumnNameSql + " = b." + this.m_strOptimizationAggregateColumnName +
+                        " AND a.affordable_YN = 'Y'";
+                }
+
+                p_dataMgr.m_strSQL = "INSERT INTO cycle1_best_rx_summary_optimization_and_tiebreaker_work_table (biosum_cond_id, rxpackage, rx, optimization_value) " +
+                    p_dataMgr.m_strSQL;
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "--filter effective treatments to find " + this.m_strOptimizationAggregateSql + " " + this.m_oOptimizationVariable.strOptimizedVariable + "--\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                p_dataMgr.m_strSQL = "UPDATE cycle1_best_rx_summary_optimization_and_tiebreaker_work_table AS a " +
+                    "SET acres = b.acres, owngrpcd = b.owngrpcd " +
+                    "FROM cycle1_best_rx_summary_work_table AS b " +
+                    "WHERE a.biosum_cond_id = b.biosum_cond_id";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                //Stand OR Economic Attribute selected AND Last Tie-Break Rank
+
+                if ((oTieBreakerCollection.Item(0).bSelected || oTieBreakerCollection.Item(1).bSelected) &&
+                    oTieBreakerCollection.Item(2).bSelected)
+                {
+                    string strTiebreakerValueField = "post_variable1_value";    //Economic attributes will always write the post value
+                    if (oTieBreakerCollection.Item(0).bSelected)    //FVS attribute selected
+                    {
+                        if (oTieBreakerCollection.Item(0).strValueSource == "POST-PRE")
+                        {
+                            strTiebreakerValueField = "variable1_change";
+                        }
+                    }
+
+                    //update the tiebreaker and rx intensity fields for each plot
+                    p_dataMgr.m_strSQL = "UPDATE cycle1_best_rx_summary_optimization_and_tiebreaker_work_table AS a " +
+                        "SET tiebreaker_value = b." + strTiebreakerValueField + ", last_tiebreak_rank = b.last_tiebreak_rank " +
+                        "FROM tiebreaker AS b " +
+                        "WHERE a.biosum_cond_id = b.biosum_cond_id AND a.rxpackage = b.rxpackage AND a.rx = b.rx";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n");
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                    p_dataMgr.m_strSQL = "INSERT INTO " + ReferenceOptimizerScenarioForm.OutputTablePrefix +
+                        Tables.OptimizerScenarioResults.DefaultScenarioResultsBestRxSummaryBeforeTiebreaksTableSuffix +
+                        " SELECT DISTINCT * FROM cycle1_best_rx_summary_optimization_and_tiebreaker_work_table";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n");
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                    //find the treatment for each plot that produces the MAX/MIN tiebreaker value
+                    p_dataMgr.m_strSQL = "SELECT a.biosum_cond_id,a.rxpackage,a.rx,a.acres,a.owngrpcd,a.optimization_value,a.tiebreaker_value,a.last_tiebreak_rank " +
+                        "FROM cycle1_best_rx_summary_optimization_and_tiebreaker_work_table AS a," +
+                        "(SELECT biosum_cond_id," + strTieBreakerAggregate + "(tiebreaker_value) AS tiebreaker " +
+                        "FROM cycle1_best_rx_summary_optimization_and_tiebreaker_work_table " +
+                        "GROUP BY biosum_cond_id) AS c " +
+                        "WHERE a.biosum_cond_id=c.biosum_cond_id AND a.tiebreaker_value=c.tiebreaker";
+
+                    p_dataMgr.m_strSQL = "INSERT INTO cycle1_best_rx_summary_optimization_and_tiebreaker_work_table2 " + p_dataMgr.m_strSQL;
+
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "--break any ties by finding the " + strTieBreakerAggregate + " tie breaker value--\r\n");
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n\r\n");
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                    if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                    if (p_dataMgr.m_intError != 0)
+                    {
+                        if (frmMain.g_bDebug)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, "!!!Error Executing SQL!!!\r\n");
+                        this.m_intError = p_dataMgr.m_intError;
+                        FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                        FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                        return;
+                    }
+
+                    p_dataMgr.m_strSQL = "SELECT a.biosum_cond_id,a.rxpackage,a.rx,a.acres,a.owngrpcd,a.optimization_value," +
+                        "a.tiebreaker_value,a.last_tiebreak_rank " +
+                        "FROM cycle1_best_rx_summary_optimization_and_tiebreaker_work_table2 AS a," +
+                        "(SELECT biosum_cond_id,MIN(last_tiebreak_rank) AS min_intensity " +
+                        "FROM cycle1_best_rx_summary_optimization_and_tiebreaker_work_table2 " +
+                        "GROUP BY biosum_cond_id) AS c " +
+                        "WHERE a.biosum_cond_id=c.biosum_cond_id AND a.last_tiebreak_rank=c.min_intensity";
+
+                    p_dataMgr.m_strSQL = "INSERT INTO cycle1_best_rx_summary_optimization_and_tiebreaker_work_table3 " + p_dataMgr.m_strSQL;
+
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "--break any additional ties by finding the least intense treatment--\r\n");
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n\r\n");
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                    if (p_dataMgr.m_intError != 0)
+                    {
+                        if (frmMain.g_bDebug)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, "!!!Error Executing SQL!!!\r\n");
+                        this.m_intError = p_dataMgr.m_intError;
+                        FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                        FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                        return;
+                    }
+
+                    p_dataMgr.m_strSQL = "UPDATE cycle1_best_rx_summary_work_table AS a " +
+                        "SET optimization_value = b.optimization_value, tiebreaker_value = b.tiebreaker_value, " +
+                        "rxpackage = b.rxpackage, rx = b.rx, last_tiebreak_rank = b.last_tiebreak_rank " +
+                        "FROM cycle1_best_rx_summary_optimization_and_tiebreaker_work_table3 AS b " +
+                        "WHERE a.biosum_cond_id = b.biosum_cond_id";
+
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n");
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                    p_dataMgr.m_strSQL = "INSERT INTO " + ReferenceOptimizerScenarioForm.OutputTablePrefix +
+                        Tables.OptimizerScenarioResults.DefaultScenarioResultsBestRxSummaryTableSuffix +
+                        " SELECT * FROM cycle1_best_rx_summary_work_table";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "--insert the work table records into the best_rx_summary table--\r\n");
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n\r\n");
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                    if (p_dataMgr.m_intError != 0)
+                    {
+                        if (frmMain.g_bDebug)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, "!!!Error Executing SQL!!!\r\n");
+                        this.m_intError = p_dataMgr.m_intError;
+                        FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                        FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                        return;
+                    }
+                }
+                // Last tie-break rank ONLY
+                else if (oTieBreakerCollection.Item(2).bSelected)
+                {
+                    //update the rx intensity fields for each plot
+                    p_dataMgr.m_strSQL = "UPDATE cycle1_best_rx_summary_optimization_and_tiebreaker_work_table AS a " +
+                        "SET last_tiebreak_rank = b.last_tiebreak_rank " +
+                        "FROM tiebreaker AS b " +
+                        "WHERE a.biosum_cond_id = b.biosum_cond_id AND a.rx = b.rx AND a.rxpackage = b.rxpackage";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n");
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                    p_dataMgr.m_strSQL = "INSERT INTO " +
+                        ReferenceOptimizerScenarioForm.OutputTablePrefix +
+                        Tables.OptimizerScenarioResults.DefaultScenarioResultsBestRxSummaryBeforeTiebreaksTableSuffix +
+                        " SELECT DISTINCT * FROM cycle1_best_rx_summary_optimization_and_tiebreaker_work_table";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n");
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                    p_dataMgr.m_strSQL = "SELECT a.biosum_cond_id,a.rxpackage,a.rx,a.acres,a.owngrpcd,a.optimization_value," +
+                        "a.tiebreaker_value,a.last_tiebreak_rank " +
+                        "FROM cycle1_best_rx_summary_optimization_and_tiebreaker_work_table AS a," +
+                        "(SELECT biosum_cond_id,MIN(last_tiebreak_rank) AS min_intensity " +
+                        "FROM cycle1_best_rx_summary_optimization_and_tiebreaker_work_table " +
+                        "GROUP BY biosum_cond_id) AS c " +
+                        "WHERE a.biosum_cond_id=c.biosum_cond_id AND a.last_tiebreak_rank=c.min_intensity";
+
+                    p_dataMgr.m_strSQL = "INSERT INTO cycle1_best_rx_summary_optimization_and_tiebreaker_work_table2 " + p_dataMgr.m_strSQL;
+
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "--break any additional ties by finding the least intense treatment--\r\n");
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n\r\n");
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                    if (p_dataMgr.m_intError != 0)
+                    {
+                        if (frmMain.g_bDebug)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, "!!!Error Executing SQL!!!\r\n");
+                        this.m_intError = p_dataMgr.m_intError;
+                        FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                        FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                        return;
+                    }
+
+                    p_dataMgr.m_strSQL = "UPDATE cycle1_best_rx_summary_work_table AS a " +
+                        "SET optimization_value = b.optimization_value, tiebreaker_value = b.tiebreaker_value, " +
+                        "rxpackage = b.rxpackage, rx = b.rx, last_tiebreak_rank = b.last_tiebreak_rank " +
+                        "FROM cycle1_best_rx_summary_optimization_and_tiebreaker_work_table2 AS b " +
+                        "WHERE a.biosum_cond_id = b.biosum_cond_id";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n");
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                    p_dataMgr.m_strSQL = "INSERT INTO " + ReferenceOptimizerScenarioForm.OutputTablePrefix +
+                        Tables.OptimizerScenarioResults.DefaultScenarioResultsBestRxSummaryTableSuffix +
+                        " SELECT * FROM cycle1_best_rx_summary_work_table";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "--insert the work table records into the best_rx_summary table--\r\n");
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n\r\n");
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                    if (p_dataMgr.m_intError != 0)
+                    {
+                        if (frmMain.g_bDebug)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, "!!!Error Executing SQL!!!\r\n");
+                        this.m_intError = p_dataMgr.m_intError;
+                        FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                        FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                        return;
+                    }
+                }
+                conn.Close();
+            }
+        }
+
+        //private void DeleteScenarioResultRecords()
+        //{
+
+
+        //	ado_data_access oAdo = new ado_data_access();
+        //	string strConn=oAdo.getMDBConnString(this.m_strSystemResultsDbPathAndFile,"admin","");
+        //	oAdo.OpenConnection(strConn);
+
+        //	/*************************************************
+        //	 **delete all records in the by plot tables
+        //	 *************************************************/
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_nr_plots"))
+        //	{
+        //		this.m_strSQL = "delete from max_nr_plots";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_pnr_plots"))
+        //	{
+        //		this.m_strSQL = "delete from max_pnr_plots";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_ti_imp_plots"))
+        //	{
+        //		this.m_strSQL = "delete from max_ti_imp_plots";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_ti_imp_pnr_plots"))
+        //	{
+        //		this.m_strSQL = "delete from max_ti_imp_pnr_plots";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_ci_imp_plots"))
+        //	{
+        //		this.m_strSQL = "delete from max_ci_imp_plots";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_ci_imp_pnr_plots"))
+        //	{
+        //		this.m_strSQL = "delete from max_ci_imp_pnr_plots";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"min_merch_plots"))
+        //	{
+        //		this.m_strSQL = "delete from min_merch_plots";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"min_merch_pnr_plots"))
+        //	{
+        //		this.m_strSQL = "delete from min_merch_pnr_plots";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+
+
+        //	/*************************************************
+        //	 **delete all records in the by ownership tables
+        //	 *************************************************/
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_nr_sum_own"))
+        //	{
+        //		this.m_strSQL = "delete from max_nr_sum_own";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_pnr_sum_own"))
+        //	{
+        //		this.m_strSQL = "delete from max_pnr_sum_own";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_ti_imp_sum_own"))
+        //	{
+        //		this.m_strSQL = "delete from max_ti_imp_sum_own";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_ti_imp_pnr_sum_own"))
+        //	{
+        //		this.m_strSQL = "delete from max_ti_imp_pnr_sum_own";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_ci_imp_sum_own"))
+        //	{
+        //		this.m_strSQL = "delete from max_ci_imp_sum_own";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_ci_imp_pnr_sum_own"))
+        //	{
+        //		this.m_strSQL = "delete from max_ci_imp_pnr_sum_own";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"min_merch_sum_own"))
+        //	{
+        //		this.m_strSQL = "delete from min_merch_sum_own";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"min_merch_pnr_sum_own"))
+        //	{
+        //		this.m_strSQL = "delete from min_merch_pnr_sum_own";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+
+        //	/******************************************************
+        //	 **delete all records in the by processing site tables
+        //	 ******************************************************/
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_nr_sum_psite"))
+        //	{
+        //		this.m_strSQL = "delete from max_nr_sum_psite";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_pnr_sum_psite"))
+        //	{
+        //		this.m_strSQL = "delete from max_pnr_sum_psite";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_ti_imp_sum_psite"))
+        //	{
+        //		this.m_strSQL = "delete from max_ti_imp_sum_psite";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_ti_imp_pnr_sum_psite"))
+        //	{
+        //		this.m_strSQL = "delete from max_ti_imp_pnr_sum_psite";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_ci_imp_sum_psite"))
+        //	{
+        //		this.m_strSQL = "delete from max_ci_imp_sum_psite";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"max_imp_pnr_sum_psite"))
+        //	{
+        //		this.m_strSQL = "delete from max_ci_imp_pnr_sum_psite";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"min_merch_sum_psite"))
+        //	{
+        //		this.m_strSQL = "delete from min_merch_sum_psite";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+        //	if (oAdo.TableExist(oAdo.m_OleDbConnection,"min_merch_pnr_sum_psite"))
+        //	{
+        //		this.m_strSQL = "delete from min_merch_pnr_sum_psite";
+        //		oAdo.SqlNonQuery(oAdo.m_OleDbConnection,this.m_strSQL);
+        //	}
+
+        //	oAdo.CloseConnection(oAdo.m_OleDbConnection);
+        //	oAdo=null;
+
+
+
+        //}
+
+        private void BestRxAcreageExpansionTableInsertForAirCurtainDestructionOld(string strTable,string strTypeField, string strRxField, string strWhereExpression)
 		{
 			string p = this.m_strPlotTable.Trim();
 			string c = this.m_strCondTable.Trim();
@@ -14200,6 +14732,51 @@ namespace FIA_Biosum_Manager
             {
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
 
+            }
+        }
+
+        private void ContextReferenceTablesSqlite()
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//ContextReferenceTables\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 9;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMinimumSteps = 1;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicCurrentStep = 1;
+
+            intListViewIndex = FIA_Biosum_Manager.uc_optimizer_scenario_run.GetListViewItemIndex(
+                ReferenceUserControlScenarioRun.listViewEx1, "Populate Context Database");
+
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem = intListViewIndex;
+            FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic = (ProgressBarBasic.ProgressBarBasic)ReferenceUserControlScenarioRun.listViewEx1.GetEmbeddedControl(1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem);
+            frmMain.g_oDelegate.EnsureListViewExItemVisible(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem);
+            frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "Selected", true);
+            frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "focused", true);
+
+
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n\r\nPopulate HARVEST_METHOD_REF table\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "----------------------------------------\r\n");
+            }
+
+            DataMgr p_dataMgr = new DataMgr();
+
+            ProcessorScenarioItem.HarvestMethod oHarvestMethod = this.m_oProcessorScenarioItem.m_oHarvestMethod;
+            string strRxHarvestMethod = "Y";
+            if (!oHarvestMethod.SelectedHarvestMethod.Equals("RX"))
+            {
+                strRxHarvestMethod = "N";
+            }
+            int intSteepSlopePct = -1;
+            bool bSuccess = int.TryParse(oHarvestMethod.SteepSlopePercent, out intSteepSlopePct);
+
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strSQLiteWorkTablesDb)))
+            {
+                conn.Open();
             }
         }
 

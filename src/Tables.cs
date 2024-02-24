@@ -806,8 +806,7 @@ namespace FIA_Biosum_Manager
                     "owngrpcd INTEGER," +
                     "optimization_value DOUBLE," +
                     "tiebreaker_value DOUBLE," +
-                    "last_tiebreak_rank INTEGER," +
-                    "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id_rx))";
+                    "last_tiebreak_rank INTEGER)";
             }
 
 
