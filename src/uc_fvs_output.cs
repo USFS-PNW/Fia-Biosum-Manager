@@ -9397,10 +9397,20 @@ namespace FIA_Biosum_Manager
             if (System.IO.File.Exists(strOutDirAndFile))
             {
                 strConn = SQLite.GetConnectionString(strOutDirAndFile);
+                bool bAuditTablesForRxPkg = false;
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                 {
                     conn.Open();
-                    if (!SQLite.TableExist(conn, this.m_strFVSSummaryAuditYearCountsTable))
+                    if (SQLite.TableExist(conn, this.m_strFVSSummaryAuditYearCountsTable))
+                    {
+                        SQLite.m_strSQL = $@"SELECT YEAR FROM {this.m_strFVSSummaryAuditYearCountsTable} WHERE fvs_variant = '{strFVSVariant}' and rxpackage = '{strRxPackage}' limit 1";
+                        long lngCount = SQLite.getRecordCount(conn, SQLite.m_strSQL, this.m_strFVSSummaryAuditYearCountsTable);
+                        if (lngCount > 0)
+                        {
+                            bAuditTablesForRxPkg = true;
+                        }
+                    }
+                    if (!bAuditTablesForRxPkg)
                     {
                         string strWarnMessage = "No PRE-APPEND audit tables exist in the file " + strOutDirAndFile + ". The PRE-APPEND Audit tables cannot be displayed.";
                         MessageBox.Show(strWarnMessage, "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
