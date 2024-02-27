@@ -6640,10 +6640,292 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        // Method to compare two versions. 
-        // Returns 1 if v2 is smaller, -1 
-        // if v1 is smaller, 0 if equal 
-        public int VersionCompare(string v1, string v2)
+        public void UpdateDatasources_5_11_0(string strReferenceProjectDirectory)
+        {
+            DataMgr oDataMgr = new DataMgr();
+            ado_data_access oAdo = new ado_data_access();
+            dao_data_access oDao = new dao_data_access();
+            ODBCMgr odbcmgr = new ODBCMgr();
+            utils oUtils = new utils();
+            env oEnv = new env();
+            FIA_Biosum_Manager.Datasource oProjectDs = new Datasource();
+
+            //@ToDo: This is temporary; For deployment ReferenceProjectDirectory is set earlier in execution
+            this.ReferenceProjectDirectory = strReferenceProjectDirectory;
+
+            // MIGRATING SEQUENCE NUMBER SETTINGS TO fvs_master.db
+            string strPrePostSeqNumLink = $@"{Tables.FVS.DefaultFVSPrePostSeqNumTable}_1";
+            string strRxPackageAssignLink = $@"{Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable}_1";
+
+            oProjectDs.m_strDataSourceMDBFile = ReferenceProjectDirectory.Trim() + "\\db\\project.mdb";
+            oProjectDs.m_strDataSourceTableName = "datasource";
+            oProjectDs.m_strScenarioId = "";
+            oProjectDs.LoadTableColumnNamesAndDataTypes = false;
+            oProjectDs.LoadTableRecordCount = false;
+            oProjectDs.populate_datasource_array();
+            int intSeqNumDefs = oProjectDs.getValidTableNameRow(Datasource.TableTypes.SeqNumDefinitions);
+            int intSeqNumRxPkgAssign = oProjectDs.getValidTableNameRow(Datasource.TableTypes.SeqNumRxPackageAssign);
+            if (intSeqNumDefs > -1 && intSeqNumRxPkgAssign > -1)
+            {
+                if (!System.IO.File.Exists($@"{ReferenceProjectDirectory.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}"))
+                {
+                    oDataMgr.CreateDbFile($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
+                }
+                string dbConn = oDataMgr.GetConnectionString($@"{ReferenceProjectDirectory.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
+                {
+                    conn.Open();
+                    if (!oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSPrePostSeqNumTable))
+                    {
+                        frmMain.g_oTables.m_oFvs.CreateFVSOutputSQLitePrePostSeqNumTable(oDataMgr, conn, Tables.FVS.DefaultFVSPrePostSeqNumTable);
+                    }
+                    if (!oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable))
+                    {
+                        frmMain.g_oTables.m_oFvs.CreateFVSOutputPrePostSQLiteSeqNumRxPackageAssgnTable(oDataMgr, conn, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable);
+                    }
+                }
+                // Create ODBC entry for the new SQLite fvs_master.db file
+                if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsMasterDbDsnName))
+                {
+                    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsMasterDbDsnName);
+                }
+                odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsMasterDbDsnName, $@"{ReferenceProjectDirectory.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
+
+                string strSeqNumDefsTable = oProjectDs.m_strDataSource[intSeqNumDefs, Datasource.TABLE].Trim();
+                string strSeqNumRxPkgAssignTable = oProjectDs.m_strDataSource[intSeqNumRxPkgAssign, Datasource.TABLE].Trim();
+                oDao.CreateSQLiteTableLink(oProjectDs.getFullPathAndFile(Datasource.TableTypes.SeqNumDefinitions), Tables.FVS.DefaultFVSPrePostSeqNumTable,
+                    strPrePostSeqNumLink, ODBCMgr.DSN_KEYS.FvsMasterDbDsnName, ReferenceProjectDirectory.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile, true);
+                oDao.CreateSQLiteTableLink(oProjectDs.getFullPathAndFile(Datasource.TableTypes.SeqNumDefinitions), Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable,
+                    strRxPackageAssignLink, ODBCMgr.DSN_KEYS.FvsMasterDbDsnName, ReferenceProjectDirectory.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile, true);
+                string strCopyConn = oAdo.getMDBConnString(oAdo.getMDBConnString(oProjectDs.getFullPathAndFile(Datasource.TableTypes.SeqNumDefinitions), "", ""), "", "");
+                int i = 0;
+                int intError = 0;
+                using (var oCopyConn = new System.Data.OleDb.OleDbConnection(strCopyConn))
+                {
+                    oCopyConn.Open();
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to migrate sequence number settings! ", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!oAdo.TableExist(oCopyConn, strRxPackageAssignLink));
+
+                    oAdo.m_strSQL = $@"INSERT INTO {strPrePostSeqNumLink} SELECT * FROM {strSeqNumDefsTable}";
+                    oAdo.SqlNonQuery(oCopyConn, oAdo.m_strSQL);
+                    if (oAdo.m_intError == 0)
+                    {
+                        oAdo.m_strSQL = $@"INSERT INTO {strRxPackageAssignLink} SELECT * FROM {strSeqNumRxPkgAssignTable}";
+                        oAdo.SqlNonQuery(oCopyConn, oAdo.m_strSQL);
+                        intError = oAdo.m_intError;
+                    }
+                    else
+                    {
+                        intError = oAdo.m_intError;
+                    }
+
+                    if (oAdo.TableExist(oCopyConn, strPrePostSeqNumLink))
+                    {
+                        oAdo.SqlNonQuery(oCopyConn, "DROP TABLE " + strPrePostSeqNumLink);
+                    }
+                    if (oAdo.TableExist(oCopyConn, strRxPackageAssignLink))
+                    {
+                        oAdo.SqlNonQuery(oCopyConn, "DROP TABLE " + strRxPackageAssignLink);
+                    }
+                }
+                if (intError == 0)
+                {
+                    // Update entries in project data sources table
+                    string strMasterPath = $@"{ReferenceProjectDirectory.Trim()}\{System.IO.Path.GetDirectoryName(Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile)}";
+                    string strFvsMasterDb = System.IO.Path.GetFileName(Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile);
+                    oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.SeqNumDefinitions, strMasterPath, strFvsMasterDb, Tables.FVS.DefaultFVSPrePostSeqNumTable);
+                    oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.SeqNumRxPackageAssign, strMasterPath, strFvsMasterDb, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable);
+                }
+            }
+
+            // MIGRATING SETTINGS FROM scenario_processor_rule_definitions.mdb TO scenario_processor_rule_definitions.db
+            string targetDbFile = ReferenceProjectDirectory.Trim() +
+                @"\processor\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+            string sourceDbFile = ReferenceProjectDirectory.Trim() +
+                @"\processor\" + Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodDbFile;
+            if (System.IO.File.Exists(targetDbFile) == false)
+            {
+                frmMain.g_oFrmMain.frmProject.uc_project1.CreateProcessorScenarioRuleDefinitionSqliteDbAndTables(targetDbFile);
+            }
+
+            try
+            {
+                string[] arrTargetTables = { };
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(targetDbFile)))
+                {
+                    conn.Open();
+                    arrTargetTables = oDataMgr.getTableNames(conn);
+                    if (arrTargetTables.Length < 1)
+                    {
+                        System.Windows.Forms.MessageBox.Show("Target SQLite tables could not be created. Migration stopped!!", "FIA Biosum");
+                        return;
+                    }
+
+                    // custom processing for scenario_additional_harvest_costs
+                    string[] strSourceColumnsArray = new string[0];
+                    string strTableName = Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName;
+                    oDao.getFieldNames(sourceDbFile, strTableName, ref strSourceColumnsArray);
+                    foreach (string strColumn in strSourceColumnsArray)
+                    {
+                        if (!oDataMgr.ColumnExists(conn, strTableName, strColumn))
+                        {
+                            oDataMgr.AddColumn(conn, strTableName, strColumn, "DOUBLE", "");
+                        }
+                    }
+                }
+
+                // Check to see if the input SQLite DSN exists and if so, delete so we can add
+                if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName))
+                {
+                    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName);
+                }
+                odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName, targetDbFile);
+
+                // Create temporary database
+                string strTempAccdb = oUtils.getRandomFile(oEnv.strTempDir, "accdb");
+                oDao.CreateMDB(strTempAccdb);
+
+                // Link all the target tables to the database
+                for (int i = 0; i < arrTargetTables.Length; i++)
+                {
+                    oDao.CreateSQLiteTableLink(strTempAccdb, arrTargetTables[i], arrTargetTables[i] + "_1",
+                        ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName, targetDbFile);
+                }
+                oDao.CreateTableLinks(strTempAccdb, sourceDbFile);  // Link all the source tables to the database
+
+                List<string> lstScenarioPaths = new List<string>();
+                string strCopyConn = oAdo.getMDBConnString(strTempAccdb, "", "");
+                using (var copyConn = new System.Data.OleDb.OleDbConnection(strCopyConn))
+                {
+                    copyConn.Open();
+                    foreach (var strTable in arrTargetTables)
+                    {
+                        oAdo.m_strSQL = "INSERT INTO " + strTable + "_1" +
+                        " SELECT * FROM " + strTable;
+                        oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                    }
+
+                    if (oAdo.m_intError == 0)
+                    {
+                        // Set file (database) field to new Sqlite DB
+                        string newDbFile = System.IO.Path.GetFileName(Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile);
+                        oAdo.m_strSQL = "UPDATE scenario_1 set file = '" +
+                            newDbFile + "'";
+                        oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                    }
+
+                    //retrieve paths for all scenarios in the project and put them in list
+                    oAdo.m_strSQL = "SELECT path from scenario";
+                    oAdo.SqlQueryReader(copyConn, oAdo.m_strSQL);
+                    if (oAdo.m_OleDbDataReader.HasRows)
+                    {
+                        while (oAdo.m_OleDbDataReader.Read())
+                        {
+                            string strPath = "";
+                            if (oAdo.m_OleDbDataReader["path"] != System.DBNull.Value)
+                                strPath = oAdo.m_OleDbDataReader["path"].ToString().Trim();
+                            if (!String.IsNullOrEmpty(strPath))
+                            {
+                                //Check to see if the .mdb exists before adding it to the list
+                                string strPathToMdb = strPath + "\\db\\scenario_results.mdb";
+                                //sample path: C:\\workspace\\BioSum\\biosum_data\\bluemountains\\processor\\scenario1\\db\\scenario_results.mdb
+                                if (System.IO.File.Exists(strPathToMdb))
+                                    lstScenarioPaths.Add(strPath);
+                            }
+                        }
+                        oAdo.m_OleDbDataReader.Close();
+                    }
+                }
+
+                // Create tables in scenario_results.db if missing
+                foreach (var sPath in lstScenarioPaths)
+                {
+                    string strScenarioDbPath = $@"{sPath}\{Tables.ProcessorScenarioRun.DefaultScenarioResultsTableDbFile}";
+                    if (!System.IO.File.Exists(strScenarioDbPath))
+                    {
+                        oDataMgr.CreateDbFile(strScenarioDbPath);
+                    }
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDbPath)))
+                    {
+                        conn.Open();
+                        if (!oDataMgr.TableExist(conn, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName))
+                        {
+                            frmMain.g_oTables.m_oProcessor.CreateSqliteHarvestCostsTable(oDataMgr,
+                                conn, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName);
+                        }
+                        if (!oDataMgr.TableExist(conn, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName))
+                        {
+                            frmMain.g_oTables.m_oProcessor.CreateSqliteTreeVolValSpeciesDiamGroupsTable(oDataMgr,
+                                conn, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName, true);
+                        }
+                        if (!oDataMgr.TableExist(conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName))
+                        {
+                            frmMain.g_oTables.m_oProcessorScenarioRun.CreateSqliteAdditionalKcpCpaTable(oDataMgr,
+                                conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, false);
+                        }
+                    }
+                }
+
+                // Add SQLite OpCost config file to db directory
+                if (System.IO.File.Exists(frmMain.g_oEnv.strAppDir + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile))
+                {
+                    if (!System.IO.File.Exists(ReferenceProjectDirectory.Trim() + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile))
+                    {
+                        System.IO.File.Copy(frmMain.g_oEnv.strAppDir + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile,
+                            ReferenceProjectDirectory.Trim() + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile);
+                    }
+                }
+                else
+                {
+                    System.Windows.Forms.MessageBox.Show($@"The OpCost configuration file is missing from the AppData directory: {frmMain.g_oEnv.strAppDir + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile}");
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            finally
+            {
+                // Clean-up
+                if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName))
+                {
+                    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName);
+                }
+                if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsMasterDbDsnName))
+                {
+                    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsMasterDbDsnName);
+                }
+            }
+
+
+            if (oAdo != null && oAdo.m_OleDbConnection != null)
+            {
+                oAdo.CloseConnection(oAdo.m_OleDbConnection);
+                oAdo = null;
+            }
+
+            if (oDao != null)
+            {
+                oDao.m_DaoWorkspace.Close();
+                oDao = null;
+            }
+        }
+
+            // Method to compare two versions. 
+            // Returns 1 if v2 is smaller, -1 
+            // if v1 is smaller, 0 if equal 
+            public int VersionCompare(string v1, string v2)
         {
             // vnum stores each numeric 
             // part of version 

@@ -261,26 +261,10 @@ namespace FIA_Biosum_Manager
                 cmbPOST4.Items.Add(x.ToString().Trim());
             }
 
-            bool bMigrateAccessData = false;
-            if (!System.IO.File.Exists($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}"))
-            {
-                SQLite.CreateDbFile($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
-                ODBCMgr odbcMgr = new ODBCMgr();
-                // Create ODBC entry for the new SQLite fvs_master.db file
-                if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsMasterDbDsnName))
-                {
-                    odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsMasterDbDsnName);
-                }
-                odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsMasterDbDsnName, $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
-                bMigrateAccessData = true;
-            }
-
-            //m_oAdo.OpenConnection(m_oAdo.getMDBConnString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableMdbFile, "", ""));
-
             if (m_oAdo.m_intError == 0)
             {
                 //InitializePrePostSeqNumTablesAccess(m_oAdo, m_oAdo.m_OleDbConnection);
-                InitializePrePostSeqNumTables(SQLite, bMigrateAccessData);
+                InitializePrePostSeqNumTables(SQLite);
                 string strDbConn = SQLite.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
                 m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(strDbConn, m_oCurFVSPrepostSeqNumItem_Collection);
                 m_oCurFVSPrepostSeqNumItem_Collection.CopyProperties(m_oSavFVSPrepostSeqNumItem_Collection, m_oCurFVSPrepostSeqNumItem_Collection);
@@ -423,7 +407,7 @@ namespace FIA_Biosum_Manager
             {
                 oDataMgr.CreateDbFile($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
             }
-            InitializePrePostSeqNumTables(oDataMgr, false);
+            InitializePrePostSeqNumTables(oDataMgr);
         }
 
         // This is called by InitializePrePostSeqNumTablesAccess() and by LoadValues()
@@ -482,7 +466,7 @@ namespace FIA_Biosum_Manager
 
         //    }
         //}
-        public static void InitializePrePostSeqNumTables(DataMgr p_oDataMgr, bool bMigrateAccessData)
+        public static void InitializePrePostSeqNumTables(DataMgr p_oDataMgr)
         {
             int intRowCount = 0;
             string strValueList = "";
@@ -500,15 +484,7 @@ namespace FIA_Biosum_Manager
                 {
                     frmMain.g_oTables.m_oFvs.CreateFVSOutputPrePostSQLiteSeqNumRxPackageAssgnTable(p_oDataMgr, conn, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable);
                 }
-            }
-            if (bMigrateAccessData)
-            {
-                migrateAccessData();
-            }
-            //@ToDo: Get rid of this extra connection when migration code moves to version_control
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
-            {
-                conn.Open();
+
                 if ((int)p_oDataMgr.getRecordCount(conn, "SELECT * FROM " + Tables.FVS.DefaultFVSPrePostSeqNumTable, Tables.FVS.DefaultFVSPrePostSeqNumTable) == 0)
                 {
                     for (x = 0; x <= Tables.FVS.g_strFVSOutTablesArray.Length - 1; x++)
@@ -2323,7 +2299,7 @@ namespace FIA_Biosum_Manager
             m_oHelp.ShowHelp(new string[] { "FVS", "SEQUENCE_NUMBERS" });
         }
 
-        public static void migrateAccessData()
+        public static void migrateAccessData1()
         {
             dao_data_access oDao = new dao_data_access();
             ado_data_access oAdo = new ado_data_access();

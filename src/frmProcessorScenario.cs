@@ -1340,7 +1340,8 @@ namespace FIA_Biosum_Manager
         private void btnHelp_Click(object sender, EventArgs e)
         {
             ProcessorScenarioTools oTools = new ProcessorScenarioTools();
-            oTools.migrate_access_data();
+            version_control oVersCtl = new version_control();
+            oVersCtl.UpdateDatasources_5_11_0(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim());
             if (!String.IsNullOrEmpty(m_helpChapter))
             {
                 if (m_oHelp == null)
@@ -3861,7 +3862,7 @@ namespace FIA_Biosum_Manager
 
         }
 
-        public void migrate_access_data()
+        public void migrate_access_data1()
         {
             string targetDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
                 @"\processor\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
