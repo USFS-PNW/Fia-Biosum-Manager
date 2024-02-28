@@ -45,7 +45,7 @@ namespace FIA_Biosum_Manager
         private bool _bMinimizeMainForm = false;
         private string _strCallingClient = "";
         private uc_processor_scenario_additional_harvest_cost_columns _uc_processor_scenario_additional_harvest_cost_columns = null;
-        private bool _bUsingSQLite = true;
+        private bool _bUsingSQLite = false;
 
 
         public frmGridView()

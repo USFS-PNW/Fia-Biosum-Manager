@@ -128,7 +128,7 @@ namespace FIA_Biosum_Manager
             //
             //
             //
-            this.AddListViewRowItem("Populate FVS PRE-POST Context Database", true, false);
+            //this.AddListViewRowItem("Populate FVS PRE-POST Context Database", true, false);
             //
             //
             //
@@ -503,7 +503,7 @@ namespace FIA_Biosum_Manager
 
 		private void btnViewAuditTables_Click(object sender, System.EventArgs e)
 		{
-            viewAuditTables();	
+            viewAuditTablesSqlite();	
            
 
 		}
@@ -557,6 +557,49 @@ namespace FIA_Biosum_Manager
             
         }
 
+        private void viewAuditTablesSqlite()
+        {
+            string strConn = "";
+            int x;
+            DataMgr oDataMgr = new DataMgr();
+            this.m_frmGridView = new frmGridView();
+            this.m_frmGridView.Text = "Treatment Optimizer: Audit";
+            lblMsg.Text = "";
+            lblMsg.Show();
+            string strDbPathAndFile = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\" + Tables.Audit.DefaultCondAuditTableSqliteDbFile;
+
+            if (System.IO.File.Exists(strDbPathAndFile) == true)
+            {
+                strConn = oDataMgr.GetConnectionString(strDbPathAndFile);
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+                    conn.Open();
+                    if (oDataMgr.TableExist(conn, Tables.Audit.DefaultCondAuditTableName) == true)
+                    {
+                        this.lblMsg.Text = Tables.Audit.DefaultCondAuditTableName;
+                        this.lblMsg.Refresh();
+                        this.m_frmGridView.UsingSQLite = true;
+                        this.m_frmGridView.LoadDataSet(strConn, "select * from " + Tables.Audit.DefaultCondAuditTableName, Tables.Audit.DefaultCondAuditTableName);
+                    }
+                    if (oDataMgr.TableExist(conn, Tables.Audit.DefaultCondRxAuditTableName) == true)
+                    {
+                        this.lblMsg.Text = Tables.Audit.DefaultCondRxAuditTableName;
+                        this.lblMsg.Refresh();
+                        this.m_frmGridView.UsingSQLite = true;
+                        this.m_frmGridView.LoadDataSet(strConn, "select * from " + Tables.Audit.DefaultCondRxAuditTableName, Tables.Audit.DefaultCondRxAuditTableName);
+                    }
+                    conn.Close();
+                }
+            }
+            this.m_frmGridView.TileGridViews();
+            this.m_frmGridView.Show();
+            this.m_frmGridView.Focus();
+            lblMsg.Text = "";
+            lblMsg.Refresh();
+            lblMsg.Hide();
+            oDataMgr = null;
+        }
+        
         private void btnViewScenarioTables_Click(object sender, System.EventArgs e)
 		{
 			this.viewResultsTablesSqlite();
@@ -651,6 +694,7 @@ namespace FIA_Biosum_Manager
                             this.lblMsg.Text = strTable;
                             this.lblMsg.Refresh();
                             strSQL = "select * from " + strTable.Trim();
+                            this.m_frmGridView.UsingSQLite = true;
                             this.m_frmGridView.LoadDataSet(strConn, strSQL, strTable.Trim());
                         }
 
@@ -1299,15 +1343,16 @@ namespace FIA_Biosum_Manager
                     this.m_strContextDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
                     this.CopyScenarioResultsTable(this.m_strContextDbPathAndFile, strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsContextDbFile);
                 }
+                // GET RID OF
 
-                this.m_strFvsContextDbPathAndFile = "";
-                intListViewIndex = FIA_Biosum_Manager.uc_optimizer_scenario_run.GetListViewItemIndex(
-                    ReferenceUserControlScenarioRun.listViewEx1, "Populate FVS PRE-POST Context Database");
-                oCheckBox = (CheckBox)ReferenceUserControlScenarioRun.listViewEx1.GetEmbeddedControl(0, intListViewIndex);
-                if ((bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)oCheckBox, "Checked", false) == true)
-                {
-                    this.m_strFvsContextDbPathAndFile = strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsContextSqliteDbFile;
-                }
+                //this.m_strFvsContextDbPathAndFile = "";
+                //intListViewIndex = FIA_Biosum_Manager.uc_optimizer_scenario_run.GetListViewItemIndex(
+                //    ReferenceUserControlScenarioRun.listViewEx1, "Populate FVS PRE-POST Context Database");
+                //oCheckBox = (CheckBox)ReferenceUserControlScenarioRun.listViewEx1.GetEmbeddedControl(0, intListViewIndex);
+                //if ((bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)oCheckBox, "Checked", false) == true)
+                //{
+                //    this.m_strFvsContextDbPathAndFile = strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsContextSqliteDbFile;
+                //}
 
                 //this.m_strFVSPreValidComboDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
                 //this.CopyScenarioResultsTableSqlite(this.m_strFVSPreValidComboDbPathAndFile, ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\validcombo.db");
@@ -1809,16 +1854,17 @@ namespace FIA_Biosum_Manager
                             this.ContextTextFiles(strScenarioOutputFolder);
                         }
 
+                        // GET RID OF
                         /***************************************************************************
                          **FVS context reference database
                          ***************************************************************************/
 
-                        if (this.m_intError == 0 && ReferenceUserControlScenarioRun.m_bUserCancel == false &&
-                            !String.IsNullOrEmpty(this.m_strFvsContextDbPathAndFile))
-                        {
-                            this.FvsContextReferenceTables();
+                        //if (this.m_intError == 0 && ReferenceUserControlScenarioRun.m_bUserCancel == false &&
+                        //    !String.IsNullOrEmpty(this.m_strFvsContextDbPathAndFile))
+                        //{
+                        //    this.FvsContextReferenceTables();
 
-                        }
+                        //}
 
 						/**********************************************************************
 						 **wood product yields net revenue and costs summary by treatment table
