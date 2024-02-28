@@ -1040,10 +1040,6 @@ namespace FIA_Biosum_Manager
                     BtnRecalculateAll.Enabled = true;
                     conn.Close();
                 }
-                
-                //m_oDataMgr.OpenConnection(m_oDataMgr.GetConnectionString(strPrePostWeightedDb));
-                
-                //m_oDataMgr.CloseConnection(m_oDataMgr.m_Connection);
             }
         }
 
@@ -4526,14 +4522,7 @@ namespace FIA_Biosum_Manager
                 "\\" + strDbFolder + "\\" + strDbName + "_backup.db";
             System.IO.File.Copy(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile,
                 strBackupDb, true);
-            string strAccdbName = System.IO.Path.GetFileNameWithoutExtension(Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile);
-            string strAccdbFolder = System.IO.Path.GetDirectoryName(Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile);
-            string strBackupAccdb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
-                "\\" + strAccdbFolder + "\\" + strAccdbName + "_backup.accdb";
-            System.IO.File.Copy(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile,
-                strBackupAccdb, true);
             RecalculateCalculatedVariables_Start();
-            //RecalculateCalculatedVariables_Start_Access();
         }
 
         private void RecalculateWeightedVariables_Process_access()
@@ -5223,7 +5212,6 @@ namespace FIA_Biosum_Manager
 
                     MessageBox.Show("Variables Recalculated!!", "FIA Biosum");
 
-                    RecalculateWeightedVariables_Process_access();
                     RecalculateCalculatedVariables_Finish();
                 }
             }

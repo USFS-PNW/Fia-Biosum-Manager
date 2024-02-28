@@ -559,7 +559,7 @@ namespace FIA_Biosum_Manager
 
         private void btnViewScenarioTables_Click(object sender, System.EventArgs e)
 		{
-			this.viewResultsTables();
+			this.viewResultsTablesSqlite();
 		}
 
 		/// <summary>
@@ -618,7 +618,60 @@ namespace FIA_Biosum_Manager
 			p_dao = null;
 		}
 
-		private void btnViewLog_Click(object sender, System.EventArgs e)
+        private void viewResultsTablesSqlite()
+        {
+            string strDBPathAndFile = "";
+            string strConn = "";
+            string strSQL = "";
+            string[] strTableNames;
+            strTableNames = new string[1];
+            DataMgr p_dataMgr = new DataMgr();
+
+            strDBPathAndFile = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsSqliteDbFile;
+            strConn = p_dataMgr.GetConnectionString(strDBPathAndFile);
+
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+            {
+                conn.Open();
+
+                strTableNames = p_dataMgr.getTableNames(conn);
+
+                if (p_dataMgr.m_intError == 0)
+                {
+                    if (strTableNames.Length > 0)
+                    {
+                        this.lblMsg.Text = "";
+                        this.lblMsg.Visible = true;
+
+                        this.m_frmGridView = new frmGridView();
+                        this.m_frmGridView.Text = "Treatment Optimizer: Run Scenario Results (" + this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim() + ")";
+
+                        foreach (string strTable in strTableNames)
+                        {
+                            this.lblMsg.Text = strTable;
+                            this.lblMsg.Refresh();
+                            strSQL = "select * from " + strTable.Trim();
+                            this.m_frmGridView.LoadDataSet(strConn, strSQL, strTable.Trim());
+                        }
+
+                        this.lblMsg.Text = "";
+                        this.lblMsg.Visible = false;
+                        if (strTableNames.Length > 1) this.m_frmGridView.TileGridViews();
+                        this.m_frmGridView.Show();
+                        this.m_frmGridView.Focus();
+                    }
+
+                    else
+                    {
+                        MessageBox.Show("No Tables Found In " + strDBPathAndFile);
+                    }
+                }
+
+                conn.Close();
+            }
+        }
+
+        private void btnViewLog_Click(object sender, System.EventArgs e)
 		{
 			System.Diagnostics.Process proc = new System.Diagnostics.Process();
 			proc.StartInfo.UseShellExecute = true;
@@ -1243,8 +1296,8 @@ namespace FIA_Biosum_Manager
                 oCheckBox = (CheckBox) ReferenceUserControlScenarioRun.listViewEx1.GetEmbeddedControl(0, intListViewIndex);
                 if ((bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)oCheckBox, "Checked", false) == true)
                 {
-                    this.m_strContextDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
-                    this.CopyScenarioResultsTableSqlite(this.m_strContextDbPathAndFile, strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsContextSqliteDbFile);
+                    this.m_strContextDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
+                    this.CopyScenarioResultsTable(this.m_strContextDbPathAndFile, strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsContextDbFile);
                 }
 
                 this.m_strFvsContextDbPathAndFile = "";
@@ -1452,7 +1505,7 @@ namespace FIA_Biosum_Manager
                     CreateAuditTablesSqlite();
 					CreateOptimizerResultTablesSqlite();
                     if (!String.IsNullOrEmpty(m_strContextDbPathAndFile))
-                        CreateContextTablesSqlite();
+                        CreateContextTables();
                     CreateValidComboTablesSqlite();
 
                     // Create temporary SQLite database for work tables
@@ -1487,7 +1540,7 @@ namespace FIA_Biosum_Manager
 
                     if (! String.IsNullOrEmpty(m_strContextDbPathAndFile))
                     {
-                        this.CreateContextTableLinksSqlite();
+                        this.CreateContextTableLinks();
                         if (this.m_intError != 0)
                         {
                             FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
@@ -14777,6 +14830,9 @@ namespace FIA_Biosum_Manager
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strSQLiteWorkTablesDb)))
             {
                 conn.Open();
+
+
+                conn.Close();
             }
         }
 
