@@ -6889,6 +6889,9 @@ namespace FIA_Biosum_Manager
                 {
                     System.Windows.Forms.MessageBox.Show($@"The OpCost configuration file is missing from the AppData directory: {frmMain.g_oEnv.strAppDir + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile}");
                 }
+
+                // PUT OPTIMIZER AND GIS DATA MIGRATION CODE HERE. IF YOU NEED DATA THAT ISN'T IN THIS METHOD, WE CAN PASS IT
+                // VIA THE METHOD CALL FOR NOW
             }
             catch (Exception)
             {
