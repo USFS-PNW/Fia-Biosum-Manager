@@ -10288,7 +10288,7 @@ namespace FIA_Biosum_Manager
                             }
                             else
                             {
-                                SQLite.m_strSQL = $@"DELETE FROM {Tables.FVS.DefaultFVSInForestTreeTableName} WHERE RXPACKAGE ='{strRxPackage}'";
+                                SQLite.m_strSQL = $@"DELETE FROM {Tables.FVS.DefaultFVSInForestTreeTableName} WHERE FVS_VARIANT = '{strFvsVariant}' AND RXPACKAGE ='{strRxPackage}'";
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                                 SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
