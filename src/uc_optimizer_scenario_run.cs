@@ -1200,6 +1200,7 @@ namespace FIA_Biosum_Manager
         public DataMgr m_dataMgr;
 		public System.Data.OleDb.OleDbConnection m_TempMDBFileConn;
 		public string m_strSystemResultsDbPathAndFile="";
+        public string m_strContextAccdbPathAndFile = "";
         public string m_strContextDbPathAndFile = "";
         public string m_strFvsContextDbPathAndFile = "";
         public string m_strFVSPreValidComboDbPathAndFile = "";
@@ -1334,14 +1335,17 @@ namespace FIA_Biosum_Manager
                 this.m_strSystemResultsDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir,"db");
 				this.CopyScenarioResultsTableSqlite(this.m_strSystemResultsDbPathAndFile,strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsSqliteDbFile);
 
-                this.m_strContextDbPathAndFile = "";
+                this.m_strContextAccdbPathAndFile = "";
                 intListViewIndex = FIA_Biosum_Manager.uc_optimizer_scenario_run.GetListViewItemIndex(
                     ReferenceUserControlScenarioRun.listViewEx1, "Populate Context Database");
                 oCheckBox = (CheckBox) ReferenceUserControlScenarioRun.listViewEx1.GetEmbeddedControl(0, intListViewIndex);
                 if ((bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)oCheckBox, "Checked", false) == true)
                 {
-                    this.m_strContextDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
-                    this.CopyScenarioResultsTable(this.m_strContextDbPathAndFile, strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsContextDbFile);
+                    this.m_strContextAccdbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
+                    this.CopyScenarioResultsTable(this.m_strContextAccdbPathAndFile, strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsContextDbFile);
+
+                    this.m_strContextDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
+                    this.CopyScenarioResultsTableSqlite(this.m_strContextDbPathAndFile, strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsContextSqliteDbFile);
                 }
                 // GET RID OF
 
@@ -1549,8 +1553,10 @@ namespace FIA_Biosum_Manager
 
                     CreateAuditTablesSqlite();
 					CreateOptimizerResultTablesSqlite();
-                    if (!String.IsNullOrEmpty(m_strContextDbPathAndFile))
+                    if (!String.IsNullOrEmpty(m_strContextAccdbPathAndFile))
                         CreateContextTables();
+                    if (!String.IsNullOrEmpty(m_strContextDbPathAndFile))
+                        CreateContextTablesSqlite();
                     CreateValidComboTablesSqlite();
 
                     // Create temporary SQLite database for work tables
@@ -1583,7 +1589,7 @@ namespace FIA_Biosum_Manager
                         return;
                     }
 
-                    if (! String.IsNullOrEmpty(m_strContextDbPathAndFile))
+                    if (! String.IsNullOrEmpty(m_strContextAccdbPathAndFile))
                     {
                         this.CreateContextTableLinks();
                         if (this.m_intError != 0)
@@ -1592,6 +1598,11 @@ namespace FIA_Biosum_Manager
                             FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
                             return;
                         }
+                    }
+
+                    if (!String.IsNullOrEmpty(m_strContextDbPathAndFile))
+                    {
+
                     }
 
                     FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
@@ -1848,9 +1859,10 @@ namespace FIA_Biosum_Manager
                          ***************************************************************************/
 
                         if (this.m_intError == 0 && ReferenceUserControlScenarioRun.m_bUserCancel == false &&
-                            !String.IsNullOrEmpty(m_strContextDbPathAndFile))
+                            !String.IsNullOrEmpty(m_strContextAccdbPathAndFile))
                         {
                             this.ContextReferenceTables();
+                            this.ContextReferenceTablesSqlite();
                             this.ContextTextFiles(strScenarioOutputFolder);
                         }
 
@@ -1935,7 +1947,7 @@ namespace FIA_Biosum_Manager
                         if (m_TempMDBFileConn != null) m_ado.CloseConnection(m_TempMDBFileConn);
                         m_TempMDBFileConn = null;
 
-                        this.CreateReferenceResultsTableLinks();
+                        //this.CreateReferenceResultsTableLinks();
                        
 						if (this.m_intError==0 && ReferenceUserControlScenarioRun.m_bUserCancel==false)
 						{
@@ -1952,8 +1964,10 @@ namespace FIA_Biosum_Manager
                             //    frmMain.g_oUtils.WriteText(m_strDebugFile, "Compacting " + Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile + " \r\n");
                             //}
                             //CompactMDB(strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile, null);
-                            if (! String.IsNullOrEmpty(this.m_strContextDbPathAndFile))
-                                this.CopyScenarioResultsTable(strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsContextDbFile, this.m_strContextDbPathAndFile);
+                            if (! String.IsNullOrEmpty(this.m_strContextAccdbPathAndFile))
+                                this.CopyScenarioResultsTable(strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsContextDbFile, this.m_strContextAccdbPathAndFile);
+                            if (!String.IsNullOrEmpty(this.m_strContextDbPathAndFile))
+                                this.CopyScenarioResultsTableSqlite(strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsContextSqliteDbFile, this.m_strContextDbPathAndFile);
                             this.m_strSystemResultsDbPathAndFile = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsSqliteDbFile;
                             //this.m_strFVSPreValidComboDbPathAndFile = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\validcombo_fvspre.mdb";
                             this.m_strFVSPrePostValidComboDbPathAndFile = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\validcombo_fvspre.db";
@@ -2556,7 +2570,7 @@ namespace FIA_Biosum_Manager
             string[] strTableNames;
             strTableNames = new string[1];
             ado_data_access oAdo = new ado_data_access();
-            oAdo.OpenConnection(oAdo.getMDBConnString(m_strContextDbPathAndFile, "", ""));
+            oAdo.OpenConnection(oAdo.getMDBConnString(m_strContextAccdbPathAndFile, "", ""));
 
             strTableNames = oAdo.getTableNames(oAdo.m_OleDbConnection);
             for (int x = 0; x <= strTableNames.Length - 1; x++)
@@ -2571,9 +2585,9 @@ namespace FIA_Biosum_Manager
 
             frmMain.g_oTables.m_oOptimizerScenarioResults.CreateHarvestMethodRefTable(oAdo, oAdo.m_OleDbConnection, Tables.OptimizerScenarioResults.DefaultScenarioResultsHarvestMethodRefTableName);
             frmMain.g_oTables.m_oOptimizerScenarioResults.CreateRxPackageRefTable(oAdo, oAdo.m_OleDbConnection, Tables.OptimizerScenarioResults.DefaultScenarioResultsRxPackageRefTableName);
-            frmMain.g_oTables.m_oOptimizerScenarioResults.CreateDiameterSpeciesGroupRefTable(oAdo, oAdo.m_OleDbConnection, Tables.OptimizerScenarioResults.DefaultScenarioResultsDiameterSpeciesGroupRefTableName);
-            frmMain.g_oTables.m_oOptimizerScenarioResults.CreateFvsWeightedVariableRefTable(oAdo, oAdo.m_OleDbConnection, Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsWeightedVariablesRefTableName);
-            frmMain.g_oTables.m_oOptimizerScenarioResults.CreateEconWeightedVariableRefTable(oAdo, oAdo.m_OleDbConnection, Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName);
+            //frmMain.g_oTables.m_oOptimizerScenarioResults.CreateDiameterSpeciesGroupRefTable(oAdo, oAdo.m_OleDbConnection, Tables.OptimizerScenarioResults.DefaultScenarioResultsDiameterSpeciesGroupRefTableName);
+            //frmMain.g_oTables.m_oOptimizerScenarioResults.CreateFvsWeightedVariableRefTable(oAdo, oAdo.m_OleDbConnection, Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsWeightedVariablesRefTableName);
+            //frmMain.g_oTables.m_oOptimizerScenarioResults.CreateEconWeightedVariableRefTable(oAdo, oAdo.m_OleDbConnection, Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName);
             frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSpeciesGroupRefTable(oAdo, oAdo.m_OleDbConnection, Tables.OptimizerScenarioResults.DefaultScenarioResultsSpeciesGroupRefTableName);
             frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioAdditionalHarvestCostsTable(oAdo, oAdo.m_OleDbConnection, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName + "_C");
 
@@ -2605,7 +2619,7 @@ namespace FIA_Biosum_Manager
                 odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName, strProcessorPath);
             }
 
-            oAdo.OpenConnection(oAdo.getMDBConnString(m_strContextDbPathAndFile, "", ""));
+            oAdo.OpenConnection(oAdo.getMDBConnString(m_strContextAccdbPathAndFile, "", ""));
             foreach (string strColumn in strSourceColumnsArray)
             {
                 if (! oAdo.ColumnExist(oAdo.m_OleDbConnection,
@@ -2647,52 +2661,9 @@ namespace FIA_Biosum_Manager
                     }
                 }
 
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteHarvestMethodRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsHarvestMethodRefTableName);
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteRxPackageRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsRxPackageRefTableName);
                 frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteDiameterSpeciesGroupRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsDiameterSpeciesGroupRefTableName);
                 frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteFvsWeightedVariableRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsWeightedVariablesRefTableName);
                 frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteEconWeightedVariableRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName);
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteSpeciesGroupRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsSpeciesGroupRefTableName);
-                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioAdditionalHarvestCostsTable(p_dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName + "_C");
-
-                // Add the ad hoc additional harvest cost columns to table
-                string[] strSourceColumnsArray = null;
-                if (!ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite)
-                {
-                    string strProcessorPath = ((frmMain)this._frmScenario.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsDbFile;
-                    oAdo.OpenConnection(oAdo.getMDBConnString(strProcessorPath, "", ""));
-                    string strSourceColumnsList = oAdo.getFieldNames(oAdo.m_OleDbConnection, "SELECT * FROM scenario_additional_harvest_costs");
-                    strSourceColumnsArray = frmMain.g_oUtils.ConvertListToArray(strSourceColumnsList, ",");
-                }
-                else
-                {
-                    string strProcessorPath = ((frmMain)this._frmScenario.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
-                    string strConn = p_dataMgr.GetConnectionString(strProcessorPath);
-                    using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
-                    {
-                        oConn.Open();
-                        strSourceColumnsArray = p_dataMgr.getFieldNamesArray(oConn, "SELECT * FROM scenario_additional_harvest_costs");
-                        oConn.Close();
-                    }
-                    // Set up DSN for Processor config tables; We will need it later
-                    // Check to see if the input SQLite DSN exists and if so, delete so we can add
-                    if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName))
-                    {
-                        odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName);
-                    }
-                    odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName, strProcessorPath);
-                }
-
-                foreach (string strColumn in strSourceColumnsArray)
-                {
-                    if (!p_dataMgr.ColumnExist(conn,
-                        Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName + "_C", strColumn))
-                    {
-                        p_dataMgr.AddColumn(conn, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName + "_C",
-                            strColumn, "DOUBLE", "");
-                    }
-                }
-                frmMain.g_oTables.m_oFvs.CreateSqliteRxHarvestCostColumnTable(p_dataMgr, conn, Tables.FVS.DefaultRxHarvestCostColumnsTableName + "_C");
 
                 conn.Close();
             }
@@ -2840,11 +2811,11 @@ namespace FIA_Biosum_Manager
             string[] strTableNames;
             strTableNames = new string[1];
             dao_data_access p_dao = new dao_data_access();
-            p_dao.CreateTableLinks(this.m_strTempMDBFile, this.m_strContextDbPathAndFile);
+            p_dao.CreateTableLinks(this.m_strTempMDBFile, this.m_strContextAccdbPathAndFile);
             if (p_dao.m_intError == 0)
             {
 
-                int intCount = p_dao.getTableNames(m_strContextDbPathAndFile, ref strTableNames);
+                int intCount = p_dao.getTableNames(m_strContextAccdbPathAndFile, ref strTableNames);
                 if (p_dao.m_intError == 0)
                 {
 
@@ -2876,10 +2847,10 @@ namespace FIA_Biosum_Manager
             string strRefMasterDir = ((frmMain)this._frmScenario.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\" + Tables.Reference.DefaultRxCategoryTableDbFile;
             p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.Reference.DefaultRxCategoryTableName, strRefMasterDir, Tables.Reference.DefaultRxCategoryTableName);
             p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.Reference.DefaultRxSubCategoryTableName, strRefMasterDir, Tables.Reference.DefaultRxSubCategoryTableName);
-            string strOptimizerDir = ((frmMain)this._frmScenario.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\" + Tables.OptimizerDefinitions.DefaultDbFile;
-            p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName, strOptimizerDir, Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName);
-            p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName, strOptimizerDir, Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName);
-            p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName, strOptimizerDir, Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName);
+            //string strOptimizerDir = ((frmMain)this._frmScenario.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\" + Tables.OptimizerDefinitions.DefaultDbFile;
+            //p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName, strOptimizerDir, Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName);
+            //p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName, strOptimizerDir, Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName);
+            //p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName, strOptimizerDir, Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName);
             if (!ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite)
             {
                 string strProcessorDir = ((frmMain)this._frmScenario.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsDbFile;
@@ -2899,10 +2870,10 @@ namespace FIA_Biosum_Manager
 
             // We also need to create links to harvest_costs and tree vol val source tables in the context .accdb
             // so that we can create them directly with select into statement            
-            p_dao.CreateTableLink(this.m_strContextDbPathAndFile, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName,
+            p_dao.CreateTableLink(this.m_strContextAccdbPathAndFile, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName,
                                   this.m_oProcessorScenarioItem.DbPath + "\\" + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableDbFile, 
                                   Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName);
-            p_dao.CreateTableLink(this.m_strContextDbPathAndFile, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName,
+            p_dao.CreateTableLink(this.m_strContextAccdbPathAndFile, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName,
                       this.m_oProcessorScenarioItem.DbPath + "\\" + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableDbFile,
                       Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName);
            
@@ -2918,38 +2889,73 @@ namespace FIA_Biosum_Manager
         {
             DataMgr p_dataMgr = new DataMgr();
             dao_data_access p_dao = new dao_data_access();
+            ODBCMgr odbcMgr = new ODBCMgr();
 
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strSQLiteWorkTablesDb)))
+            /***********************************************************************
+			 ** Link SQLite context tables to temp Access database
+			 ***********************************************************************/
+
+            // Create DSN Key
+            if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ContextTablesDsnName))
             {
-                conn.Open();
-
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + this.m_strContextDbPathAndFile + "' AS context";
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
-
-                // Still in Access
-                string strRefMasterDir = ((frmMain)this._frmScenario.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\" + Tables.Reference.DefaultRxCategoryTableDbFile;
-                p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.Reference.DefaultRxCategoryTableName, strRefMasterDir, Tables.Reference.DefaultRxCategoryTableName);
-                p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.Reference.DefaultRxSubCategoryTableName, strRefMasterDir, Tables.Reference.DefaultRxSubCategoryTableName);
-
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + ((frmMain)this._frmScenario.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\" + Tables.OptimizerDefinitions.DefaultSqliteDbFile + "' AS optimizer_defs";
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
-
-                if (!ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite)
-                {
-                    string strProcessorDir = ((frmMain)this._frmScenario.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsDbFile;
-                    p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName, strProcessorDir, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName);
-                    p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName, strProcessorDir, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName);
-                }
-                else
-                {
-                    p_dataMgr.m_strSQL = "ATTACH DATABASE '" + ((frmMain)this._frmScenario.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile + "' AS processor";
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
-                }
-
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + this.m_strSystemResultsDbPathAndFile + "' AS results";
-
-                conn.Close();
+                odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ContextTablesDsnName);
             }
+            odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ContextTablesDsnName, this.m_strContextDbPathAndFile);
+
+            p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, Tables.OptimizerScenarioResults.DefaultScenarioResultsDiameterSpeciesGroupRefTableName, Tables.OptimizerScenarioResults.DefaultScenarioResultsDiameterSpeciesGroupRefTableName,
+                ODBCMgr.DSN_KEYS.ContextTablesDsnName, this.m_strContextDbPathAndFile);
+            int i = 0;
+            do
+            {
+                // break out of loop if it runs too long
+                if (i > 20)
+                {
+                    System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach " + Tables.OptimizerScenarioResults.DefaultScenarioResultsDiameterSpeciesGroupRefTableName + " table! " +
+                    "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                    break;
+                }
+                System.Threading.Thread.Sleep(1000);
+                i++;
+            }
+            while (!this.m_ado.TableExist(this.m_TempMDBFileConn, Tables.OptimizerScenarioResults.DefaultScenarioResultsDiameterSpeciesGroupRefTableName));
+
+            p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsWeightedVariablesRefTableName, Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsWeightedVariablesRefTableName,
+                ODBCMgr.DSN_KEYS.ContextTablesDsnName, this.m_strContextDbPathAndFile);
+            i = 0;
+            do
+            {
+                // break out of loop if it runs too long
+                if (i > 20)
+                {
+                    System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach " + Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsWeightedVariablesRefTableName + " table! " +
+                    "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                    break;
+                }
+                System.Threading.Thread.Sleep(1000);
+                i++;
+            }
+            while (!this.m_ado.TableExist(this.m_TempMDBFileConn, Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsWeightedVariablesRefTableName));
+
+            p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName, Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName,
+                ODBCMgr.DSN_KEYS.ContextTablesDsnName, this.m_strContextDbPathAndFile);
+            i = 0;
+            do
+            {
+                // break out of loop if it runs too long
+                if (i > 20)
+                {
+                    System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName + " table! " +
+                    "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                    break;
+                }
+                System.Threading.Thread.Sleep(1000);
+                i++;
+            }
+            while (!this.m_ado.TableExist(this.m_TempMDBFileConn, Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName));
+
+            /***********************************************************************
+			 ** Link optimizer definitions to temp Access database
+			 ***********************************************************************/
 
             if (p_dao != null)
             {
@@ -9127,6 +9133,8 @@ namespace FIA_Biosum_Manager
 
                 }
             }
+            FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+            FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
         }
 
 
@@ -14641,91 +14649,91 @@ namespace FIA_Biosum_Manager
             FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
             
-            foreach (ProcessorScenarioItem.TreeSpeciesAndDbhDollarValuesItem oItem in this.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection)
-            {
-                bool bEnergyWood = Convert.ToBoolean(oItem.UseAsEnergyWood);
-                double dblChippedValue = Convert.ToDouble(oItem.ChipsDollarPerCubicFootValue);
-                string strEnergyWood = "Y";
-                if (bEnergyWood == false)
-                {
-                    strEnergyWood = "N";
-                    dblChippedValue = 0.0F;
-                }
+            //foreach (ProcessorScenarioItem.TreeSpeciesAndDbhDollarValuesItem oItem in this.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection)
+            //{
+            //    bool bEnergyWood = Convert.ToBoolean(oItem.UseAsEnergyWood);
+            //    double dblChippedValue = Convert.ToDouble(oItem.ChipsDollarPerCubicFootValue);
+            //    string strEnergyWood = "Y";
+            //    if (bEnergyWood == false)
+            //    {
+            //        strEnergyWood = "N";
+            //        dblChippedValue = 0.0F;
+            //    }
 
-                this.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsDiameterSpeciesGroupRefTableName +
-                                " (DBH_CLASS_NUM, DBH_RANGE_INCHES, SPP_GRP_CODE, SPP_GRP, TO_CHIPS, MERCH_VAL_DpCF, VALUE_IF_CHIPPED_DpGT)" +
-                                " VALUES (" + oItem.DiameterGroupId + ", '" + oItem.DbhGroup + "'," + oItem.SpeciesGroupId + ",'" + oItem.SpeciesGroup + "','" +
-                                strEnergyWood + "', " + oItem.MerchDollarPerCubicFootValue + ", " +
-                                dblChippedValue + ")";
+            //    this.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsDiameterSpeciesGroupRefTableName +
+            //                    " (DBH_CLASS_NUM, DBH_RANGE_INCHES, SPP_GRP_CODE, SPP_GRP, TO_CHIPS, MERCH_VAL_DpCF, VALUE_IF_CHIPPED_DpGT)" +
+            //                    " VALUES (" + oItem.DiameterGroupId + ", '" + oItem.DbhGroup + "'," + oItem.SpeciesGroupId + ",'" + oItem.SpeciesGroup + "','" +
+            //                    strEnergyWood + "', " + oItem.MerchDollarPerCubicFootValue + ", " +
+            //                    dblChippedValue + ")";
 
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate DIAMETER_SPP_GRP_REF_C table \r\n");
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+            //    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            //        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate DIAMETER_SPP_GRP_REF_C table \r\n");
+            //    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
 
-                this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
-            }
+            //    this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
+            //}
 
-            FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+            //FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
-            this.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsWeightedVariablesRefTableName;
-            this.m_strSQL += " SELECT VARIABLE_NAME, VARIABLE_DESCRIPTION, BASELINE_RXPACKAGE, VARIABLE_SOURCE," +
-                             " weight_1_pre, weight_1_post, weight_2_pre, weight_2_post, weight_3_pre, weight_3_post, weight_4_pre, weight_4_post";
-            this.m_strSQL += " FROM " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName +
-                             " INNER JOIN " + Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName + " ON " +
-                             Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName + ".calculated_variables_id = " +
-                             Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + ".ID";
+            //this.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsWeightedVariablesRefTableName;
+            //this.m_strSQL += " SELECT VARIABLE_NAME, VARIABLE_DESCRIPTION, BASELINE_RXPACKAGE, VARIABLE_SOURCE," +
+            //                 " weight_1_pre, weight_1_post, weight_2_pre, weight_2_post, weight_3_pre, weight_3_post, weight_4_pre, weight_4_post";
+            //this.m_strSQL += " FROM " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName +
+            //                 " INNER JOIN " + Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName + " ON " +
+            //                 Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName + ".calculated_variables_id = " +
+            //                 Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + ".ID";
 
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate FVS_WEIGHTED_VARIABLES_REF table \r\n");
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+            //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            //    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate FVS_WEIGHTED_VARIABLES_REF table \r\n");
+            //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
 
-            this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
+            //this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
 
-            FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+            //FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
-            this.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName;
-            this.m_strSQL += " SELECT VARIABLE_NAME, VARIABLE_DESCRIPTION, VARIABLE_SOURCE," +
-                             " weight as CYCLE_1_WEIGHT";
-            this.m_strSQL += " FROM " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName +
-                             " INNER JOIN " + Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName + " ON " +
-                             Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName + ".calculated_variables_id = " +
-                             Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + ".ID" +
-                             " WHERE rxcycle = '1'";
+            //this.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName;
+            //this.m_strSQL += " SELECT VARIABLE_NAME, VARIABLE_DESCRIPTION, VARIABLE_SOURCE," +
+            //                 " weight as CYCLE_1_WEIGHT";
+            //this.m_strSQL += " FROM " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName +
+            //                 " INNER JOIN " + Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName + " ON " +
+            //                 Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName + ".calculated_variables_id = " +
+            //                 Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + ".ID" +
+            //                 " WHERE rxcycle = '1'";
 
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate ECON_WEIGHTED_VARIABLES_REF table \r\n");
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+            //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            //    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate ECON_WEIGHTED_VARIABLES_REF table \r\n");
+            //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
 
-            this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
+            //this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
 
-            arrRxCycle = new string[] { "2", "3", "4"};
+            //arrRxCycle = new string[] { "2", "3", "4"};
             
-            foreach (string strRxCycle in arrRxCycle)
-            {
-                string strFieldName = "CYCLE_" + strRxCycle + "_WEIGHT";
-                this.m_strSQL = "UPDATE (" + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName;
-                this.m_strSQL += " INNER JOIN " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + " ON " +
-                                  Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName + ".VARIABLE_NAME = " +
-                                  Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + ".VARIABLE_NAME)" +
-                                 " INNER JOIN " + Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName + " ON " +
-                                 Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + ".ID = " +
-                                 Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName + ".calculated_variables_id";
-                this.m_strSQL += " SET " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName + "." + strFieldName 
-                                 + " = calculated_econ_variables_definition.weight";
-                this.m_strSQL += " where " + Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName + ".rxcycle = '" + strRxCycle + "'";
+            //foreach (string strRxCycle in arrRxCycle)
+            //{
+            //    string strFieldName = "CYCLE_" + strRxCycle + "_WEIGHT";
+            //    this.m_strSQL = "UPDATE (" + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName;
+            //    this.m_strSQL += " INNER JOIN " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + " ON " +
+            //                      Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName + ".VARIABLE_NAME = " +
+            //                      Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + ".VARIABLE_NAME)" +
+            //                     " INNER JOIN " + Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName + " ON " +
+            //                     Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + ".ID = " +
+            //                     Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName + ".calculated_variables_id";
+            //    this.m_strSQL += " SET " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName + "." + strFieldName 
+            //                     + " = calculated_econ_variables_definition.weight";
+            //    this.m_strSQL += " where " + Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName + ".rxcycle = '" + strRxCycle + "'";
                 
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nUpdate " + strFieldName + " field \r\n");
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+            //    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            //        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nUpdate " + strFieldName + " field \r\n");
+            //    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
 
-                this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
-            }
+            //    this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
+            //}
 
-            FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+            //FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
             this.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName + "_C" +
                             " SELECT * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName  +
@@ -14766,7 +14774,7 @@ namespace FIA_Biosum_Manager
             FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
             // harvest_costs table
-            string strContextConn = this.m_ado.getMDBConnString(this.m_strContextDbPathAndFile, "", "");
+            string strContextConn = this.m_ado.getMDBConnString(this.m_strContextAccdbPathAndFile, "", "");
             using (var contextConn = new OleDbConnection(strContextConn))
             {
                 contextConn.Open();
@@ -14827,11 +14835,11 @@ namespace FIA_Biosum_Manager
             if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic)) return;
 
 
-            if (this.m_intError == 0)
-            {
-                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
+            //if (this.m_intError == 0)
+            //{
+            //    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
 
-            }
+            //}
         }
 
         private void ContextReferenceTablesSqlite()
@@ -14842,9 +14850,6 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//ContextReferenceTables\r\n");
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
-            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 9;
-            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMinimumSteps = 1;
-            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicCurrentStep = 1;
 
             intListViewIndex = FIA_Biosum_Manager.uc_optimizer_scenario_run.GetListViewItemIndex(
                 ReferenceUserControlScenarioRun.listViewEx1, "Populate Context Database");
@@ -14856,29 +14861,116 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "focused", true);
 
 
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n\r\nPopulate HARVEST_METHOD_REF table\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "----------------------------------------\r\n");
-            }
-
             DataMgr p_dataMgr = new DataMgr();
 
-            ProcessorScenarioItem.HarvestMethod oHarvestMethod = this.m_oProcessorScenarioItem.m_oHarvestMethod;
-            string strRxHarvestMethod = "Y";
-            if (!oHarvestMethod.SelectedHarvestMethod.Equals("RX"))
-            {
-                strRxHarvestMethod = "N";
-            }
-            int intSteepSlopePct = -1;
-            bool bSuccess = int.TryParse(oHarvestMethod.SteepSlopePercent, out intSteepSlopePct);
-
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strSQLiteWorkTablesDb)))
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strContextDbPathAndFile)))
             {
                 conn.Open();
 
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultSqliteDbFile + "' AS optimizer_defs";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                foreach (ProcessorScenarioItem.TreeSpeciesAndDbhDollarValuesItem oItem in this.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection)
+                {
+                    bool bEnergyWood = Convert.ToBoolean(oItem.UseAsEnergyWood);
+                    double dblChippedValue = Convert.ToDouble(oItem.ChipsDollarPerCubicFootValue);
+                    string strEnergyWood = "Y";
+                    if (bEnergyWood == false)
+                    {
+                        strEnergyWood = "N";
+                        dblChippedValue = 0.0F;
+                    }
+
+                    p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsDiameterSpeciesGroupRefTableName +
+                                    " (DBH_CLASS_NUM, DBH_RANGE_INCHES, SPP_GRP_CODE, SPP_GRP, TO_CHIPS, MERCH_VAL_DpCF, VALUE_IF_CHIPPED_DpGT)" +
+                                    " VALUES (" + oItem.DiameterGroupId + ", '" + oItem.DbhGroup + "'," + oItem.SpeciesGroupId + ",'" + oItem.SpeciesGroup + "','" +
+                                    strEnergyWood + "', " + oItem.MerchDollarPerCubicFootValue + ", " +
+                                    dblChippedValue + ")";
+
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate DIAMETER_SPP_GRP_REF_C table \r\n");
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsWeightedVariablesRefTableName;
+                p_dataMgr.m_strSQL += " SELECT VARIABLE_NAME, VARIABLE_DESCRIPTION, BASELINE_RXPACKAGE, VARIABLE_SOURCE," +
+                                 " weight_1_pre, weight_1_post, weight_2_pre, weight_2_post, weight_3_pre, weight_3_post, weight_4_pre, weight_4_post";
+                p_dataMgr.m_strSQL += " FROM " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName +
+                                 " JOIN " + Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName + " ON " +
+                                 Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName + ".calculated_variables_id = " +
+                                 Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + ".ID";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate FVS_WEIGHTED_VARIABLES_REF table \r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName +
+                    " (VARIABLE_NAME, VARIABLE_DESCRIPTION, VARIABLE_SOURCE, CYCLE_1_WEIGHT)";
+                p_dataMgr.m_strSQL += " SELECT VARIABLE_NAME, VARIABLE_DESCRIPTION, VARIABLE_SOURCE," +
+                                 " weight as CYCLE_1_WEIGHT";
+                p_dataMgr.m_strSQL += " FROM " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName +
+                                 " JOIN " + Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName + " ON " +
+                                 Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName + ".calculated_variables_id = " +
+                                 Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + ".ID" +
+                                 " WHERE rxcycle = '1'";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate ECON_WEIGHTED_VARIABLES_REF table \r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                string[] arrRxCycle = new string[] { "2", "3", "4" };
+
+                foreach (string strRxCycle in arrRxCycle)
+                {
+                    string strFieldName = "CYCLE_" + strRxCycle + "_WEIGHT";
+
+                    p_dataMgr.m_strSQL = "UPDATE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName + " AS r " +
+                        "SET " + strFieldName + " = e.weight " +
+                        "FROM " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + " AS o JOIN " + Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName + " AS e " +
+                        "ON o.ID = e.calculated_variables_id WHERE r.VARIABLE_NAME = o.VARIABLE_NAME AND e.rxcycle = '" + strRxCycle + "'";
+
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nUpdate " + strFieldName + " field \r\n");
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                 conn.Close();
+            }
+
+            if (p_dataMgr.m_intError != 0)
+            {
+                FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+
+                this.m_intError = p_dataMgr.m_intError;
+
+                return;
+            }
+
+            if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic)) return;
+
+
+            if (this.m_intError == 0)
+            {
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
             }
         }
 
