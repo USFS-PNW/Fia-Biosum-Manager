@@ -9397,10 +9397,20 @@ namespace FIA_Biosum_Manager
             if (System.IO.File.Exists(strOutDirAndFile))
             {
                 strConn = SQLite.GetConnectionString(strOutDirAndFile);
+                bool bAuditTablesForRxPkg = false;
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                 {
                     conn.Open();
-                    if (!SQLite.TableExist(conn, this.m_strFVSSummaryAuditYearCountsTable))
+                    if (SQLite.TableExist(conn, this.m_strFVSSummaryAuditYearCountsTable))
+                    {
+                        SQLite.m_strSQL = $@"SELECT YEAR FROM {this.m_strFVSSummaryAuditYearCountsTable} WHERE fvs_variant = '{strFVSVariant}' and rxpackage = '{strRxPackage}' limit 1";
+                        long lngCount = SQLite.getRecordCount(conn, SQLite.m_strSQL, this.m_strFVSSummaryAuditYearCountsTable);
+                        if (lngCount > 0)
+                        {
+                            bAuditTablesForRxPkg = true;
+                        }
+                    }
+                    if (!bAuditTablesForRxPkg)
                     {
                         string strWarnMessage = "No PRE-APPEND audit tables exist in the file " + strOutDirAndFile + ". The PRE-APPEND Audit tables cannot be displayed.";
                         MessageBox.Show(strWarnMessage, "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
@@ -10782,7 +10792,7 @@ namespace FIA_Biosum_Manager
                             }
                             else
                             {
-                                SQLite.m_strSQL = $@"DELETE FROM {Tables.FVS.DefaultFVSInForestTreeTableName} WHERE RXPACKAGE ='{strRxPackage}'";
+                                SQLite.m_strSQL = $@"DELETE FROM {Tables.FVS.DefaultFVSInForestTreeTableName} WHERE FVS_VARIANT = '{strFvsVariant}' AND RXPACKAGE ='{strRxPackage}'";
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                                 SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
@@ -11509,9 +11519,10 @@ namespace FIA_Biosum_Manager
                     p_bAudit, m_bDebug, m_strDebugFile, p_strRunTitle, strActualPotfireTableName, tmpTableName);
 
                 // Delete temp table
+                SQLite.m_strSQL = $@"DROP TABLE {tmpTableName}";
                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
-                SQLite.SqlNonQuery(conn, $@"DROP TABLE {tmpTableName}");
+                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
             }

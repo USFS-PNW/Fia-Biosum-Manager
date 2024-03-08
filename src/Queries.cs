@@ -1614,10 +1614,9 @@ namespace FIA_Biosum_Manager
                 }
                 else
                 {
-
-                    //@ToDo: Need to handle the -1 values (Not Used) in the audit
                     strSQL = strSQL + "(SELECT -1 AS pre_cycle1rows, STANDID " +
-                                       "FROM " + p_strSourceTable + " )" + strAlpha.Substring(intAlias, 1) + ",";
+                                       "FROM " + p_strSourceTable + " WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE = '" + strRxPackage + "' " +
+                                       "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle1rows,";
                     intAlias++;
                 }
@@ -1634,7 +1633,8 @@ namespace FIA_Biosum_Manager
                 else
                 {
                     strSQL = strSQL + "(SELECT -1 AS post_cycle1rows, STANDID " +
-                                       "FROM " + p_strSourceTable + " )" + strAlpha.Substring(intAlias, 1) + ",";
+                                      "FROM " + p_strSourceTable + " WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE = '" + strRxPackage + "' " +
+                                      "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle1rows,";
                     intAlias++;
                 }
@@ -1652,7 +1652,8 @@ namespace FIA_Biosum_Manager
                 else
                 {
                     strSQL = strSQL + "(SELECT -1 AS pre_cycle2rows, STANDID " +
-                                       "FROM " + p_strSourceTable + " )" + strAlpha.Substring(intAlias, 1) + ",";
+                                      "FROM " + p_strSourceTable + " WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE = '" + strRxPackage + "' " +
+                                      "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle2rows,";
                     intAlias++;
                 }
@@ -1669,7 +1670,8 @@ namespace FIA_Biosum_Manager
                 else
                 {
                     strSQL = strSQL + "(SELECT -1 AS post_cycle2rows, STANDID " +
-                                       "FROM " + p_strSourceTable + " )" + strAlpha.Substring(intAlias, 1) + ",";
+                                      "FROM " + p_strSourceTable + " WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE = '" + strRxPackage + "' " +
+                                      "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle2rows,";
                     intAlias++;
                 }
@@ -1687,7 +1689,8 @@ namespace FIA_Biosum_Manager
                 else
                 {
                     strSQL = strSQL + "(SELECT -1 AS pre_cycle3rows, STANDID " +
-                                       "FROM " + p_strSourceTable + " )" + strAlpha.Substring(intAlias, 1) + ",";
+                                      "FROM " + p_strSourceTable + " WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE = '" + strRxPackage + "' " +
+                                      "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle3rows,";
                     intAlias++;
                 }
@@ -1704,7 +1707,8 @@ namespace FIA_Biosum_Manager
                 else
                 {
                     strSQL = strSQL + "(SELECT -1 AS post_cycle3rows, STANDID " +
-                                       "FROM " + p_strSourceTable + " )" + strAlpha.Substring(intAlias, 1) + ",";
+                                      "FROM " + p_strSourceTable + " WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE = '" + strRxPackage + "' " +
+                                      "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle3rows,";
                     intAlias++;
                 }
@@ -1722,7 +1726,8 @@ namespace FIA_Biosum_Manager
                 else
                 {
                     strSQL = strSQL + "(SELECT -1 AS pre_cycle4rows, STANDID " +
-                                       "FROM " + p_strSourceTable + " )" + strAlpha.Substring(intAlias, 1) + ",";
+                                      "FROM " + p_strSourceTable + " WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE = '" + strRxPackage + "' " +
+                                      "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle4rows,";
                     intAlias++;
                 }
@@ -1739,7 +1744,8 @@ namespace FIA_Biosum_Manager
                 else
                 {
                     strSQL = strSQL + "(SELECT -1 AS post_cycle4rows, STANDID " +
-                                       "FROM " + p_strSourceTable + " )" + strAlpha.Substring(intAlias, 1) + ",";
+                                      "FROM " + p_strSourceTable + " WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE = '" + strRxPackage + "' " +
+                                      "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
                     strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle4rows,";
                     intAlias++;
                 }
@@ -6289,7 +6295,7 @@ namespace FIA_Biosum_Manager
                 return sql;
             }
  
-            public static string AppendToOPCOSTHarvestCostsTable(string p_strOPCOSTOutputTableName,
+            public static string AppendToOPCOSTHarvestCostsTableAccess(string p_strOPCOSTOutputTableName,
                                                           string p_strOPCOSTInputTableName,
                                                           string p_strHarvestCostsTableName,
                                                           string p_strDateTimeCreated)
@@ -6308,6 +6314,22 @@ namespace FIA_Biosum_Manager
                     "from (" + p_strOPCOSTOutputTableName + " o " +
                     "INNER JOIN " + p_strOPCOSTInputTableName + " n ON (o.biosum_cond_id = n.biosum_cond_id) AND " +
                     "(o.rxPackage = n.rxPackage) AND (o.RX = n.RX) AND (o.RXCycle = n.rxCycle)) ";
+            }
+            public static string AppendToOPCOSTHarvestCostsTable(string p_strOPCOSTOutputTableName,
+                                              string p_strOPCOSTInputTableName,
+                                              string p_strHarvestCostsTableName,
+                                              string p_strDateTimeCreated)
+            {
+                return $@"INSERT INTO {p_strHarvestCostsTableName} (biosum_cond_id, RXPackage, RX, RXCycle, harvest_cpa, chip_cpa, 
+                        assumed_movein_cpa, override_YN, DateTimeCreated)
+                        SELECT o.biosum_cond_id, o.RxPackage,o.RX,o.RXCycle, CASE WHEN trim(cast(o.harvest_cpa as text)) = '1.#INF' THEN 0 ELSE o.harvest_cpa END,
+                        o.chip_cpa, o.assumed_movein_cpa, 
+                        CASE WHEN n.[Unadjusted One-way Yarding distance] > 0 OR n.[Unadjusted Small log trees per acre] > 0 
+                        OR n.[Unadjusted Small log trees average volume (ft3)] > 0 OR n.[Unadjusted Large log trees per acre] > 0 
+                        OR n.[Unadjusted Large log trees average vol(ft3)] > 0 THEN 'Y' ELSE 'N' END,
+                        '{p_strDateTimeCreated}' AS DateTimeCreated from ({p_strOPCOSTOutputTableName} o 
+                        INNER JOIN {p_strOPCOSTInputTableName} n ON (o.biosum_cond_id = n.biosum_cond_id) 
+                        AND (o.rxPackage = n.rxPackage) AND (o.RX = n.RX) AND (o.RXCycle = n.rxCycle)) ";
             }
             public static string AppendToHarvestCostsTable(string p_strFRCSOutputTableName,
                                                            string p_strHarvestCostsTableName,
@@ -6333,84 +6355,32 @@ namespace FIA_Biosum_Manager
                 string p_strTotalAdditionalCostsTableName,
                 string p_strHarvestCostsTableName,
                 string p_strScenarioId,
-                bool p_bIncludeZeroHarvestCpa, bool p_bUsingSqlite)
+                bool p_bIncludeZeroHarvestCpa)
             {
-                string strSql = "";
-                if (!p_bUsingSqlite)
+                string strSql = "UPDATE " + p_strHarvestCostsTableName + " h " +
+                        "INNER JOIN " + p_strTotalAdditionalCostsTableName + " a " +
+                        "ON h.biosum_cond_id = a.biosum_cond_id AND h.rx=a.rx," +
+                        "scenario_cost_revenue_escalators e " +
+                        "SET h.additional_cpa = " +
+                        "IIF(h.RXCycle='1',(a.complete_additional_cpa)," +
+                        "IIF(h.RXCycle='2',(a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle2," +
+                        "IIF(h.RXCycle='3',(a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle3," +
+                        "IIF(h.RXCycle='4',(a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle4,0))))," +
+                        "h.complete_cpa = " +
+                        "IIF(h.RXCycle='1',(h.harvest_cpa+a.complete_additional_cpa)," +
+                        "IIF(h.RXCycle='2',(h.harvest_cpa+a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle2," +
+                        "IIF(h.RXCycle='3',(h.harvest_cpa+a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle3," +
+                        "IIF(h.RXCycle='4',(h.harvest_cpa+a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle4,0)))) ";
+                if (p_bIncludeZeroHarvestCpa == false)
                 {
-                    strSql = "UPDATE " + p_strHarvestCostsTableName + " h " +
-                            "INNER JOIN " + p_strTotalAdditionalCostsTableName + " a " +
-                            "ON h.biosum_cond_id = a.biosum_cond_id AND h.rx=a.rx," +
-                            "scenario_cost_revenue_escalators e " +
-                            "SET h.additional_cpa = " +
-                            "IIF(h.RXCycle='1',(a.complete_additional_cpa)," +
-                            "IIF(h.RXCycle='2',(a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle2," +
-                            "IIF(h.RXCycle='3',(a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle3," +
-                            "IIF(h.RXCycle='4',(a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle4,0))))," + 
-                            "h.complete_cpa = " +
-                            "IIF(h.RXCycle='1',(h.harvest_cpa+a.complete_additional_cpa)," +
-                            "IIF(h.RXCycle='2',(h.harvest_cpa+a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle2," +
-                            "IIF(h.RXCycle='3',(h.harvest_cpa+a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle3," +
-                            "IIF(h.RXCycle='4',(h.harvest_cpa+a.complete_additional_cpa) * e.EscalatorOperatingCosts_Cycle4,0)))) ";
-                    if (p_bIncludeZeroHarvestCpa == false)
-                    {
-                        strSql += "WHERE h.harvest_cpa IS NOT NULL AND h.harvest_cpa > 0  AND ";
-                    }
-                    else
-                    {
-                        strSql += "WHERE h.harvest_cpa IS NOT NULL AND ";
-                    }
-                    strSql += "TRIM(UCASE(e.scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'";
+                    strSql += "WHERE h.harvest_cpa IS NOT NULL AND h.harvest_cpa > 0  AND ";
                 }
                 else
                 {
-                    strSql = "UPDATE " + p_strHarvestCostsTableName + " AS h " +
-                                                "SET complete_cpa = " +
-                        "(SELECT CASE WHEN h.RXCycle = '1' THEN a.complete_additional_cpa " +
-                        "WHEN h.RXCycle = '2' THEN a.complete_additional_cpa * " +
-                        "(SELECT EscalatorOperatingCosts_Cycle2 from definitions.scenario_cost_revenue_escalators " +
-                        "WHERE TRIM(scenario_id) = '" + p_strScenarioId.Trim() + "') " +
-                        "WHEN h.RXCycle = '3' THEN a.complete_additional_cpa * " +
-                        "(SELECT EscalatorOperatingCosts_Cycle3 from definitions.scenario_cost_revenue_escalators " +
-                        "WHERE TRIM(scenario_id) = '" + p_strScenarioId.Trim() + "') " +
-                        "WHEN h.RXCycle = '4' THEN a.complete_additional_cpa * " +
-                        "(SELECT EscalatorOperatingCosts_Cycle4 from definitions.scenario_cost_revenue_escalators " +
-                        "WHERE TRIM(scenario_id) = '" + p_strScenarioId.Trim() + "') " +
-                        "ELSE 0 END, " +
-                        "complete_cpa = " +
-                        "(SELECT CASE WHEN h.RXCycle = '1' THEN h.harvest_cpa + a.complete_additional_cpa " +
-                        "WHEN h.RXCycle = '2' THEN h.harvest_cpa + a.complete_additional_cpa * " +
-                        "(SELECT EscalatorOperatingCosts_Cycle2 from definitions.scenario_cost_revenue_escalators " +
-                        "WHERE TRIM(scenario_id) = '" + p_strScenarioId.Trim() + "') " +
-                        "WHEN h.RXCycle = '3' THEN h.harvest_cpa + a.complete_additional_cpa * " +
-                        "(SELECT EscalatorOperatingCosts_Cycle3 from definitions.scenario_cost_revenue_escalators " +
-                        "WHERE TRIM(scenario_id) = '" + p_strScenarioId.Trim() + "') " +
-                        "WHEN h.RXCycle = '4' THEN h.harvest_cpa + a.complete_additional_cpa * " +
-                        "(SELECT EscalatorOperatingCosts_Cycle4 from definitions.scenario_cost_revenue_escalators " +
-                        "WHERE TRIM(scenario_id) = '" + p_strScenarioId.Trim() + "') " +
-                        "ELSE 0 END " +
-                        "FROM " + p_strTotalAdditionalCostsTableName + " AS a " +
-                        "WHERE h.biosum_cond_id = a.biosum_cond_id AND h.RX = a.RX ";
-                    if (p_bIncludeZeroHarvestCpa == false)
-                    {
-                        strSql += "AND h.harvest_cpa IS NOT NULL AND h.harvest_cpa > 0) ";
-                    }
-                    else
-                    {
-                        strSql += "AND h.harvest_cpa IS NOT NULL) ";
-                    }
-                    strSql += "WHERE EXISTS( SELECT* FROM " + p_strTotalAdditionalCostsTableName + " AS a " +
-                              "WHERE h.biosum_cond_id = a.biosum_cond_id AND h.RX = a.RX ";
-                    if (p_bIncludeZeroHarvestCpa == false)
-                    {
-                        strSql += "AND h.harvest_cpa IS NOT NULL AND h.harvest_cpa > 0) ";
-                    }
-                    else
-                    {
-                        strSql += "AND h.harvest_cpa IS NOT NULL) ";
-                    }
+                    strSql += "WHERE h.harvest_cpa IS NOT NULL AND ";
                 }
-                    return strSql;
+                strSql += "TRIM(UCASE(e.scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'";
+                return strSql;
             }
 
             public static string UpdateSqliteHarvestCostsTableWithCompleteCostsPerAcre(
@@ -6418,35 +6388,24 @@ namespace FIA_Biosum_Manager
                 string p_strHarvestCostsTableName, processor.Escalators p_oEscalators,
                 bool p_bIncludeZeroHarvestCpa)
             {
-                string strSql = $@"UPDATE {p_strHarvestCostsTableName} AS h SET additional_cpa = 
-                        (SELECT CASE WHEN h.RXCycle = '1' THEN a.complete_additional_cpa 
-                        WHEN h.RXCycle = '2' THEN a.complete_additional_cpa * {p_oEscalators.OperatingCostsCycle2}
-                        WHEN h.RXCycle = '3' THEN a.complete_additional_cpa * {p_oEscalators.OperatingCostsCycle3}                        
-                        WHEN h.RXCycle = '4' THEN a.complete_additional_cpa * {p_oEscalators.OperatingCostsCycle4}
-                        ELSE 0 END, complete_cpa = 
-                        (SELECT CASE WHEN h.RXCycle = '1' THEN h.harvest_cpa + a.complete_additional_cpa 
-                        WHEN h.RXCycle = '2' THEN h.harvest_cpa + a.complete_additional_cpa * {p_oEscalators.OperatingCostsCycle2}
-                        WHEN h.RXCycle = '3' THEN h.harvest_cpa + a.complete_additional_cpa * {p_oEscalators.OperatingCostsCycle3}   
-                        WHEN h.RXCycle = '4' THEN h.harvest_cpa + a.complete_additional_cpa * {p_oEscalators.OperatingCostsCycle4}
-                        ELSE 0 END
-                        FROM {p_strTotalAdditionalCostsTableName} AS a WHERE h.biosum_cond_id = a.biosum_cond_id AND h.RX = a.RX ";
+                string strSql = $@"UPDATE {p_strHarvestCostsTableName} SET (additional_cpa, complete_cpa) = 
+                    (SELECT CASE WHEN RXCYCLE = '2' THEN a.complete_additional_cpa * {p_oEscalators.OperatingCostsCycle2} 
+                    WHEN RXCYCLE = '3' THEN a.complete_additional_cpa * {p_oEscalators.OperatingCostsCycle3} 
+                    WHEN RXCYCLE = '4' THEN a.complete_additional_cpa * {p_oEscalators.OperatingCostsCycle4} 
+                    ELSE a.complete_additional_cpa END, 
+                    CASE WHEN RXCYCLE = '2' THEN (harvest_cpa + a.complete_additional_cpa) * {p_oEscalators.OperatingCostsCycle2} 
+                    WHEN RXCYCLE = '3' THEN (harvest_cpa + a.complete_additional_cpa) * {p_oEscalators.OperatingCostsCycle3} 
+                    WHEN RXCYCLE = '4' THEN (harvest_cpa + a.complete_additional_cpa) * {p_oEscalators.OperatingCostsCycle4} 
+                    ELSE harvest_cpa + a.complete_additional_cpa END 
+                    from {p_strTotalAdditionalCostsTableName} as a
+                    WHERE {p_strHarvestCostsTableName}.biosum_cond_id = a.biosum_cond_id AND {p_strHarvestCostsTableName}.rx=a.rx) ";
                     if (p_bIncludeZeroHarvestCpa == false)
                     {
-                        strSql += "AND h.harvest_cpa IS NOT NULL AND h.harvest_cpa > 0) ";
+                        strSql += "WHERE harvest_cpa IS NOT NULL AND harvest_cpa > 0 ";
                     }
                     else
                     {
-                        strSql += "AND h.harvest_cpa IS NOT NULL) ";
-                    }
-                    strSql += "WHERE EXISTS( SELECT* FROM " + p_strTotalAdditionalCostsTableName + " AS a " +
-                              "WHERE h.biosum_cond_id = a.biosum_cond_id AND h.RX = a.RX ";
-                    if (p_bIncludeZeroHarvestCpa == false)
-                    {
-                        strSql += "AND h.harvest_cpa IS NOT NULL AND h.harvest_cpa > 0) ";
-                    }
-                    else
-                    {
-                        strSql += "AND h.harvest_cpa IS NOT NULL) ";
+                        strSql += "WHERE harvest_cpa IS NOT NULL ";
                     }
                 return strSql;
             }

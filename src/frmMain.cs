@@ -1695,11 +1695,6 @@ namespace FIA_Biosum_Manager
                    GisTools oGisTools = new GisTools();
                     string gisPathAndDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
                         "\\" + Tables.TravelTime.DefaultTravelTimePathAndDbFile;
-                    //@ToDo: Starting work on SQLite conversion
-                    if (!System.IO.File.Exists(gisPathAndDbFile))
-                    {
-                        oGisTools.migrate_access_data();
-                    }
                     bool bTablesHaveData = false;
                     bool bUpdatePlotYardingDist = false;
                     string strMessage = "";
