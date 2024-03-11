@@ -124,7 +124,7 @@ namespace FIA_Biosum_Manager
             //
             //
             //
-            this.AddListViewRowItem("Populate Context Database", true, true);
+            this.AddListViewRowItem("Populate Context Database", true, false);
             //
             //
             //
@@ -2877,86 +2877,6 @@ namespace FIA_Biosum_Manager
                       this.m_oProcessorScenarioItem.DbPath + "\\" + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableDbFile,
                       Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName);
            
-            if (p_dao != null)
-            {
-                p_dao.m_DaoWorkspace.Close();
-                p_dao = null;
-
-            }
-        }
-
-        private void CreateContextTableLinksSqlite()
-        {
-            DataMgr p_dataMgr = new DataMgr();
-            dao_data_access p_dao = new dao_data_access();
-            ODBCMgr odbcMgr = new ODBCMgr();
-
-            /***********************************************************************
-			 ** Link SQLite context tables to temp Access database
-			 ***********************************************************************/
-
-            // Create DSN Key
-            if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ContextTablesDsnName))
-            {
-                odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ContextTablesDsnName);
-            }
-            odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ContextTablesDsnName, this.m_strContextDbPathAndFile);
-
-            p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, Tables.OptimizerScenarioResults.DefaultScenarioResultsDiameterSpeciesGroupRefTableName, Tables.OptimizerScenarioResults.DefaultScenarioResultsDiameterSpeciesGroupRefTableName,
-                ODBCMgr.DSN_KEYS.ContextTablesDsnName, this.m_strContextDbPathAndFile);
-            int i = 0;
-            do
-            {
-                // break out of loop if it runs too long
-                if (i > 20)
-                {
-                    System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach " + Tables.OptimizerScenarioResults.DefaultScenarioResultsDiameterSpeciesGroupRefTableName + " table! " +
-                    "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
-                    break;
-                }
-                System.Threading.Thread.Sleep(1000);
-                i++;
-            }
-            while (!this.m_ado.TableExist(this.m_TempMDBFileConn, Tables.OptimizerScenarioResults.DefaultScenarioResultsDiameterSpeciesGroupRefTableName));
-
-            p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsWeightedVariablesRefTableName, Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsWeightedVariablesRefTableName,
-                ODBCMgr.DSN_KEYS.ContextTablesDsnName, this.m_strContextDbPathAndFile);
-            i = 0;
-            do
-            {
-                // break out of loop if it runs too long
-                if (i > 20)
-                {
-                    System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach " + Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsWeightedVariablesRefTableName + " table! " +
-                    "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
-                    break;
-                }
-                System.Threading.Thread.Sleep(1000);
-                i++;
-            }
-            while (!this.m_ado.TableExist(this.m_TempMDBFileConn, Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsWeightedVariablesRefTableName));
-
-            p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName, Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName,
-                ODBCMgr.DSN_KEYS.ContextTablesDsnName, this.m_strContextDbPathAndFile);
-            i = 0;
-            do
-            {
-                // break out of loop if it runs too long
-                if (i > 20)
-                {
-                    System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName + " table! " +
-                    "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
-                    break;
-                }
-                System.Threading.Thread.Sleep(1000);
-                i++;
-            }
-            while (!this.m_ado.TableExist(this.m_TempMDBFileConn, Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName));
-
-            /***********************************************************************
-			 ** Link optimizer definitions to temp Access database
-			 ***********************************************************************/
-
             if (p_dao != null)
             {
                 p_dao.m_DaoWorkspace.Close();
