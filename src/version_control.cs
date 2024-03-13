@@ -6976,18 +6976,18 @@ namespace FIA_Biosum_Manager
                     string scenarioSqliteFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + "\\" +
                         Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
                     //@ToDo: Don't have code
-                    //frmMain.g_oFrmMain.frmProject.uc_project1.CreateOptimizerScenarioRuleDefinitionSqliteDbAndTables(scenarioSqliteFile);
+                    frmMain.g_oFrmMain.frmProject.uc_project1.CreateOptimizerScenarioRuleDefinitionSqliteDbAndTables(scenarioSqliteFile);
 
                     // Check to see if the input SQLite DSN exists and if so, delete so we can add
                     //@ToDo: Don't have code
-                    //if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName))
-                    //{
-                    //    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName);
-                    //}
-                    //odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, scenarioSqliteFile);
+                    if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName))
+                    {
+                        odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName);
+                    }
+                    odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, scenarioSqliteFile);
 
-                    // Set new temporary database
-                    strTempAccdb = oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
+                // Set new temporary database
+                strTempAccdb = oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
                     oDao.CreateMDB(strTempAccdb);
 
                     // Create table links for transferring data
@@ -7013,14 +7013,14 @@ namespace FIA_Biosum_Manager
                     }
                     // Link to all tables in source database
                     oDao.CreateTableLinks(strTempAccdb, scenarioAccessFile);
-                    //@ToDo: Don't have code
-                    //foreach (string targetTableName in targetTables)
-                    //{
-                    //    oDao.CreateSQLiteTableLink(strTempAccdb, sourceTables[Array.IndexOf(targetTables, targetTableName)], targetTableName,
-                    //        ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, scenarioSqliteFile);
-                    //}
+                    //  @ToDo: Don't have code
+                    foreach (string targetTableName in targetTables)
+                    {
+                        oDao.CreateSQLiteTableLink(strTempAccdb, sourceTables[Array.IndexOf(targetTables, targetTableName)], targetTableName,
+                            ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, scenarioSqliteFile);
+                    }
 
-                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(scenarioSqliteFile)))
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(scenarioSqliteFile)))
                     {
                         conn.Open();
                         // Delete any existing data from SQLite tables

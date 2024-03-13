@@ -261,12 +261,12 @@ namespace FIA_Biosum_Manager
                 this.m_oEnv = new env();
 
                 //migrate access data if not done already
-                string strFVSWeightedPathAndDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile;
-                string strCalculatedVariablesPathAndDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultSqliteDbFile;
-                if (!System.IO.File.Exists(strFVSWeightedPathAndDbFile) || !System.IO.File.Exists(strCalculatedVariablesPathAndDbFile))
-                {
-                    migrate_access_data(strCalculatedVariablesPathAndDbFile, strFVSWeightedPathAndDbFile);
-                }
+                //string strFVSWeightedPathAndDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile;
+                //string strCalculatedVariablesPathAndDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultSqliteDbFile;
+                //if (!System.IO.File.Exists(strFVSWeightedPathAndDbFile) || !System.IO.File.Exists(strCalculatedVariablesPathAndDbFile))
+                //{
+                //    migrate_access_data(strCalculatedVariablesPathAndDbFile, strFVSWeightedPathAndDbFile);
+                //}
 
                 //load weighted variable definitions
                 m_oOptimizerScenarioTools.LoadWeightedVariables(m_oWeightedVariableCollection);

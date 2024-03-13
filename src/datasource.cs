@@ -468,7 +468,7 @@ namespace FIA_Biosum_Manager
                             {
                                 this.m_strDataSource[x, FILESTATUS] = "F";
                                 this.m_strDataSource[x, TABLE] = dataMgr.m_DataReader["table_name"].ToString().Trim();
-								if (dataMgr.m_DataReader["file"].ToString().Trim().Substring(dataMgr.m_DataReader["file"].ToString().Trim().Length - 4) == "accdb"
+								if (dataMgr.m_DataReader["file"].ToString().Trim().Substring(dataMgr.m_DataReader["file"].ToString().Trim().Length - 5) == "accdb"
 									|| dataMgr.m_DataReader["file"].ToString().Trim().Substring(dataMgr.m_DataReader["file"].ToString().Trim().Length - 3) == "mdb")
                                 {
 									string strExistsConn = oExistsAdo.getMDBConnString(strPathAndFile, "", "");

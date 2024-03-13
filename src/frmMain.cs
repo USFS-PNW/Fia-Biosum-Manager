@@ -2313,29 +2313,32 @@ namespace FIA_Biosum_Manager
                     oDataMgr = null;
 
                 }
-                else if (strText.Trim().ToUpper() == "EXPORT TO SQLITE")
+                else if (strText.Trim().ToUpper() == "UPGRADE FOR V5.11.0")
                 {
-                    this.m_frmSqlite = new frmDialog(this);
-                    this.m_frmSqlite.MaximizeBox = false;
-                    this.m_frmSqlite.MinimizeBox = false;
-                    this.m_frmSqlite.BackColor = System.Drawing.SystemColors.Control;
-                    this.m_frmSqlite.Text = "Treatment Optimizer: Export to SQLITE";
-                    this.m_frmSqlite.MdiParent = this;
-                    this.m_frmSqlite.Initialize_Optimizer_Sqlite_User_Control();
+                    version_control oVersCtl = new version_control();
+                    oVersCtl.UpdateDatasources_5_11_0(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim());
+                    MessageBox.Show("Upgrade Complete!");
+                    //this.m_frmSqlite = new frmDialog(this);
+                    //this.m_frmSqlite.MaximizeBox = false;
+                    //this.m_frmSqlite.MinimizeBox = false;
+                    //this.m_frmSqlite.BackColor = System.Drawing.SystemColors.Control;
+                    //this.m_frmSqlite.Text = "Treatment Optimizer: Export to SQLITE";
+                    //this.m_frmSqlite.MdiParent = this;
+                    //this.m_frmSqlite.Initialize_Optimizer_Sqlite_User_Control();
 
-                    this.m_frmSqlite.DisposeOfFormWhenClosing = true;
+                    //this.m_frmSqlite.DisposeOfFormWhenClosing = true;
 
-                    this.m_frmSqlite.Width = this.m_frmSqlite.uc_optimizer_sqlite_export1.Width + 25;
-                    this.m_frmSqlite.Height = this.m_frmSqlite.uc_optimizer_sqlite_export1.Height + 40;
-                    this.m_frmSqlite.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-                    this.m_frmSqlite.uc_optimizer_sqlite_export1.Top = 0;
-                    this.m_frmSqlite.uc_optimizer_sqlite_export1.Left = 0;
+                    //this.m_frmSqlite.Width = this.m_frmSqlite.uc_optimizer_sqlite_export1.Width + 25;
+                    //this.m_frmSqlite.Height = this.m_frmSqlite.uc_optimizer_sqlite_export1.Height + 40;
+                    //this.m_frmSqlite.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+                    //this.m_frmSqlite.uc_optimizer_sqlite_export1.Top = 0;
+                    //this.m_frmSqlite.uc_optimizer_sqlite_export1.Left = 0;
 
-                    this.m_frmSqlite.uc_optimizer_sqlite_export1.ReferenceFormDialog = this.m_frmSqlite;
-                    this.m_frmSqlite.uc_optimizer_sqlite_export1.Visible = true;
-                    this.m_frmSqlite.MinimizeMainForm = true;
-                    this.m_frmSqlite.ParentControl = frmMain.g_oFrmMain;
-                    this.m_frmSqlite.Show();
+                    //this.m_frmSqlite.uc_optimizer_sqlite_export1.ReferenceFormDialog = this.m_frmSqlite;
+                    //this.m_frmSqlite.uc_optimizer_sqlite_export1.Visible = true;
+                    //this.m_frmSqlite.MinimizeMainForm = true;
+                    //this.m_frmSqlite.ParentControl = frmMain.g_oFrmMain;
+                    //this.m_frmSqlite.Show();
                 }
                 else if (strText.Trim().ToUpper() == "JOIN DATA FROM MULTIPLE SCENARIOS")
                 {
@@ -4236,7 +4239,7 @@ namespace FIA_Biosum_Manager
             this.m_btnOptimizerSqlite.Size = this.btnMain1.Size;
             this.m_btnOptimizerSqlite.Left = this.m_btnOptimizerUserVariables.Left;
             this.m_btnOptimizerSqlite.Top = this.m_btnOptimizerScenario.Top + this.m_btnOptimizerScenario.Height + 5;
-            this.m_btnOptimizerSqlite.Text = "Export to SQLITE";
+            this.m_btnOptimizerSqlite.Text = "Upgrade for v5.11.0";
 			//merge scenarios
 			this.m_btnCoreMerge = new btnMainForm(this);
 			this.m_pnlOptimizer.Controls.Add(this.m_btnCoreMerge);
