@@ -488,6 +488,8 @@ namespace FIA_Biosum_Manager
                                 conn, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName);
                             frmMain.g_oTables.m_oProcessor.CreateSqliteTreeVolValSpeciesDiamGroupsTable(dataMgr,
                                 conn, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName, true);
+                            frmMain.g_oTables.m_oProcessorScenarioRun.CreateSqliteAdditionalKcpCpaTable(dataMgr,
+                                conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, false);
                         }
                     }
                 }
