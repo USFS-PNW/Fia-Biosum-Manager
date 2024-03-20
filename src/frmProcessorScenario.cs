@@ -1339,9 +1339,6 @@ namespace FIA_Biosum_Manager
 
         private void btnHelp_Click(object sender, EventArgs e)
         {
-            ProcessorScenarioTools oTools = new ProcessorScenarioTools();
-            version_control oVersCtl = new version_control();
-            oVersCtl.UpdateDatasources_5_11_0(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim());
             if (!String.IsNullOrEmpty(m_helpChapter))
             {
                 if (m_oHelp == null)

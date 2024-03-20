@@ -1964,8 +1964,9 @@ namespace FIA_Biosum_Manager
                     // Create temp FVS Out table with subset for this variant package and primary key
                     const string TMPFVSOUT = "tmpFvsOut";
                     const string TMPBASEYROUT = "tmpBaseYrOut";
-                    string strTmpSubset = TMPFVSOUT;
-                    RunCreateTmpFvsOutTable(conn, oDataTableSchema, strFVSOutTable, strPreRunTitle, strTmpSubset);
+                    string strQueryPreTable = TMPFVSOUT;
+                    string strQueryPostTable = strQueryPreTable;
+                    RunCreateTmpFvsOutTable(conn, oDataTableSchema, strFVSOutTable, strPreRunTitle, strQueryPreTable);
                     // Create temp subset of POTFIRE BaseYr data in case we need it
                     if (strFVSOutTable.ToUpper().Equals(m_strPotFireTable))
                     {
@@ -2011,24 +2012,13 @@ namespace FIA_Biosum_Manager
                 }
                 strFormattedSelectColumnList = strFormattedSelectColumnList.Substring(0, strFormattedSelectColumnList.Length - 1);
                 strSourceColumnsFormattedList = strSourceColumnsFormattedList.Substring(0, strSourceColumnsFormattedList.Length - 1);
-                    //
-                    //GET THE SEQNUM MATRIX TABLE
-                    //
-                    //GetPrePostTableLinkItems(
-                    //    m_oPrePostDbFileItem_Collection,
-                    //    "PREPOST_" + strFVSOutTable + ".ACCDB",
-                    //    strFVSOutTable, ref strFVSOutSeqNumMatrixTableLink,
-                    //    ref strFVSSummarySeqNumMtxTableLink, ref strFVSOutTableLink);
 
                     //
                     //INSERT THE RECORDS BY CYCLE
                     //
-                    //for (z = 0; z <= this.m_strRxCycleArray.Length - 1; z++)
                     for (z = 1; z <= 4; z++)
                     {
-                        //strCycle = m_strRxCycleArray[z].Trim();
                         strCycle = z.ToString().Trim();
-                        //@ToDo: Need to recreate tmpFvsOut here if BaseYr is used
                         switch (strCycle)
                         {
                             case "1":
@@ -2036,7 +2026,7 @@ namespace FIA_Biosum_Manager
                                 if (strFVSOutTable.ToUpper().Equals(m_strPotFireTable) &&
                                     m_oFVSPrePostSeqNumItem.RxCycle1PreSeqNumBaseYearYN == "Y")
                                 {
-                                    strTmpSubset = TMPBASEYROUT;
+                                    strQueryPreTable = TMPBASEYROUT;
                                 }
                                 break;
                             case "2":
@@ -2044,11 +2034,11 @@ namespace FIA_Biosum_Manager
                                 if (strFVSOutTable.ToUpper().Equals(m_strPotFireTable) &&
                                     m_oFVSPrePostSeqNumItem.RxCycle2PreSeqNumBaseYearYN.Equals("Y"))
                                 {
-                                    strTmpSubset = TMPBASEYROUT;
+                                    strQueryPreTable = TMPBASEYROUT;
                                 }
                                 else
                                 {
-                                    strTmpSubset = TMPFVSOUT;
+                                    strQueryPreTable = TMPFVSOUT;
                                 }
                                 break;
                             case "3":
@@ -2056,11 +2046,11 @@ namespace FIA_Biosum_Manager
                                 if (strFVSOutTable.ToUpper().Equals(m_strPotFireTable) &&
                                     m_oFVSPrePostSeqNumItem.RxCycle3PreSeqNumBaseYearYN.Equals("Y"))
                                 {
-                                    strTmpSubset = TMPBASEYROUT;
+                                    strQueryPreTable = TMPBASEYROUT;
                                 }
                                 else
                                 {
-                                    strTmpSubset = TMPFVSOUT;
+                                    strQueryPreTable = TMPFVSOUT;
                                 }
                                 break;
                             case "4":
@@ -2068,11 +2058,11 @@ namespace FIA_Biosum_Manager
                                 if (strFVSOutTable.ToUpper().Equals(m_strPotFireTable) &&
                                     m_oFVSPrePostSeqNumItem.RxCycle4PreSeqNumBaseYearYN.Equals("Y"))
                                 {
-                                    strTmpSubset = TMPBASEYROUT;
+                                    strQueryPreTable = TMPBASEYROUT;
                                 }
                                 else
                                 {
-                                    strTmpSubset = TMPFVSOUT;
+                                    strQueryPreTable = TMPFVSOUT;
                                 }
                                 break;
                         }
@@ -2092,7 +2082,7 @@ namespace FIA_Biosum_Manager
                                            "'" + strCycle + "' AS rxcycle," +
                                            "'" + p_strVariant + "' AS fvs_variant," +
                                           strFormattedSelectColumnList + " " +
-                                   "FROM " + strTmpSubset + " a," +
+                                   "FROM " + strQueryPreTable + " a," +
                                       "(SELECT standid,year " +
                                        "FROM " + m_strFVSSummaryAuditPrePostSeqNumTable + " " +
                                        "WHERE CYCLE" + strCycle + "_PRE_YN='Y' AND FVS_VARIANT = '" + p_strVariant + "' AND RXPACKAGE = '" + p_strPackage + "')  AS b " +
@@ -2107,7 +2097,7 @@ namespace FIA_Biosum_Manager
                                           "'" + strCycle + "' AS rxcycle," +
                                           "'" + p_strVariant + "' AS fvs_variant," +
                                          strFormattedSelectColumnList + " " +
-                                  "FROM " + strTmpSubset + " a," +
+                                  "FROM " + strQueryPreTable + " a," +
                                      "(SELECT standid,year " +
                                       "FROM " + strFvsOutCustomSeqNumMatrixTable + " " +
                                       "WHERE CYCLE" + strCycle + "_PRE_YN='Y' AND FVS_VARIANT = '" + p_strVariant + "' AND RXPACKAGE = '" + p_strPackage + "')  AS b " +
@@ -2123,7 +2113,7 @@ namespace FIA_Biosum_Manager
                                       "'" + strCycle + "' AS rxcycle," +
                                       "'" + p_strVariant + "' AS fvs_variant," +
                                      strFormattedSelectColumnList + " " +
-                              "FROM " + strTmpSubset + " a," +
+                              "FROM " + strQueryPreTable + " a," +
                                  "(SELECT standid,year,removal_code " +
                                   "FROM " + strFvsOutCustomSeqNumMatrixTable + " " +
                                   "WHERE CYCLE" + strCycle + "_PRE_YN='Y' AND FVS_VARIANT = '" + p_strVariant + "' AND RXPACKAGE = '" + p_strPackage + "')  AS b " +
@@ -2148,7 +2138,7 @@ namespace FIA_Biosum_Manager
                                                 "'" + strCycle + "' AS rxcycle," +
                                                 "'" + p_strVariant + "' AS fvs_variant," +
                                                 strFormattedSelectColumnList + " " +
-                                               "FROM " + strTmpSubset + " a," +
+                                               "FROM " + strQueryPostTable + " a," +
                                                   "(SELECT standid,year " +
                                                    "FROM " + m_strFVSSummaryAuditPrePostSeqNumTable + " " +
                                                    "WHERE CYCLE" + strCycle + "_POST_YN='Y' AND FVS_VARIANT = '" + p_strVariant + "' AND RXPACKAGE = '" + p_strPackage + "')  AS b " +
@@ -2163,7 +2153,7 @@ namespace FIA_Biosum_Manager
                                               "'" + strCycle + "' AS rxcycle," +
                                               "'" + p_strVariant + "' AS fvs_variant," +
                                              strFormattedSelectColumnList + " " +
-                                      "FROM " + strTmpSubset + " a," +
+                                      "FROM " + strQueryPostTable + " a," +
                                          "(SELECT standid,year " +
                                           "FROM " + strFvsOutCustomSeqNumMatrixTable + " " +
                                           "WHERE CYCLE" + strCycle + "_POST_YN='Y' AND FVS_VARIANT = '" + p_strVariant + "' AND RXPACKAGE = '" + p_strPackage + "')  AS b " +
@@ -2178,7 +2168,7 @@ namespace FIA_Biosum_Manager
                                                      "'" + strCycle + "' AS rxcycle," +
                                                      "'" + p_strVariant + "' AS fvs_variant," +
                                                     strFormattedSelectColumnList + " " +
-                                             "FROM " + strTmpSubset + " a," +
+                                             "FROM " + strQueryPostTable + " a," +
                                                 "(SELECT standid,year,removal_code " +
                                                  "FROM " + strFvsOutCustomSeqNumMatrixTable + " " +
                                                  "WHERE CYCLE" + strCycle + "_POST_YN='Y' AND FVS_VARIANT = '" + p_strVariant + "' AND RXPACKAGE = '" + p_strPackage + "')  AS b " +
