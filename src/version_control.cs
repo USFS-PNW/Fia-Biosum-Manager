@@ -2693,7 +2693,7 @@ namespace FIA_Biosum_Manager
             oDsScenario.m_strDataSourceMDBFile = ReferenceProjectDirectory.Trim() + "\\Processor\\db\\scenario_processor_rule_definitions.mdb";
             if (System.IO.File.Exists(oDsScenario.m_strDataSourceMDBFile) == false)
             {
-                frmMain.g_oFrmMain.frmProject.uc_project1.CreateProcessorScenarioRuleDefinitionDbAndTables(oDsScenario.m_strDataSourceMDBFile);
+                frmMain.g_oFrmMain.frmProject.uc_project1.CreateProcessorScenarioRuleDefinitionAccessDbAndTables(oDsScenario.m_strDataSourceMDBFile);
 
             }
 
@@ -6762,7 +6762,7 @@ namespace FIA_Biosum_Manager
                 @"\processor\" + Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodDbFile;
             if (System.IO.File.Exists(targetDbFile) == false)
             {
-                frmMain.g_oFrmMain.frmProject.uc_project1.CreateProcessorScenarioRuleDefinitionSqliteDbAndTables(targetDbFile);
+                frmMain.g_oFrmMain.frmProject.uc_project1.CreateProcessorScenarioRuleDefinitionDbAndTables(targetDbFile);
             }
 
             try

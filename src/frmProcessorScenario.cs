@@ -3867,7 +3867,7 @@ namespace FIA_Biosum_Manager
                 @"\processor\" + Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodDbFile;
             if (System.IO.File.Exists(targetDbFile) == false)
             {
-                frmMain.g_oFrmMain.frmProject.uc_project1.CreateProcessorScenarioRuleDefinitionSqliteDbAndTables(targetDbFile);
+                frmMain.g_oFrmMain.frmProject.uc_project1.CreateProcessorScenarioRuleDefinitionDbAndTables(targetDbFile);
             }
             else
             {

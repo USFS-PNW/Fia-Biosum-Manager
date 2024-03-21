@@ -1842,12 +1842,15 @@ namespace FIA_Biosum_Manager
 
                     // Attach FVS_AUDITS.db
                     string strAuditDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile;
-                    SQLite.m_strSQL = "ATTACH DATABASE '" + strAuditDbFile + "' AS AUDITS";
-                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
-                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
-                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                        this.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
+                    if (!SQLite.DatabaseAttached(conn, strAuditDbFile))
+                    {
+                        SQLite.m_strSQL = "ATTACH DATABASE '" + strAuditDbFile + "' AS AUDITS";
+                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            this.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
+                    }
 
                     if (!SQLite.TableExist(conn, strPreTable))
                     {
@@ -4880,10 +4883,10 @@ namespace FIA_Biosum_Manager
                 oDataMgr.m_strSQL = "DELETE FROM " + strFvsTreeTable  +
                     " WHERE RXPACKAGE='" + p_strPackage.Trim() + "' AND FVS_VARIANT = '" + p_strVariant + "'";
                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + m_ado.m_strSQL + "\r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + m_ado.m_strSQL + "\r\n");
                 oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                    this.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
              }
 
              m_intProgressStepCurrentCount++;
@@ -4907,19 +4910,22 @@ namespace FIA_Biosum_Manager
                     // Always the case. If this method is run without appending the prepost tables, it should be updated to build the sequence
                     // number tables in the temp database.
                     string strSeqNumMatrix = "FVS_SUMMARY_PREPOST_SEQNUM_MATRIX";
-                    oDataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                        Tables.FVS.DefaultFVSAuditsDbFile + "' AS AUDITS";
-                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
-                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
-                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                        this.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
+                    string strAuditsFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile;
+                    if (!oDataMgr.DatabaseAttached(conn, strAuditsFile))
+                    {
+                        oDataMgr.m_strSQL = $@"ATTACH DATABASE '{strAuditsFile}' AS AUDITS";
+                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
+                    }
                     if (!oDataMgr.AttachedTableExist(conn, strSeqNumMatrix))
                     {
                         // Check for existence of seqnum_matrix
                         if (m_bDebug)
                         {
-                            this.WriteText(m_strDebugFile, $@"Append aborted due to missing {strSeqNumMatrix} table from {Tables.FVS.DefaultFVSAuditsDbFile}");
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, $@"Append aborted due to missing {strSeqNumMatrix} table from {Tables.FVS.DefaultFVSAuditsDbFile}");
                             return;
                         }
                     }
@@ -11374,12 +11380,15 @@ namespace FIA_Biosum_Manager
                 CreateFVSPrePostSeqNumWorkTables(conn, p_strDbFile, "FVS_SUMMARY", p_strRunTitle, p_strBaseYrRunTitle, p_bAudit);
                 CreateFVSPrePostSeqNumWorkTables(conn, p_strDbFile, "FVS_CUTLIST", p_strRunTitle, p_strBaseYrRunTitle, p_bAudit);
                 // Attach the audits.db so we have access to the POTFIRE_TEMP table; supports BaseYr
-                SQLite.m_strSQL = $@"ATTACH DATABASE '{p_strDbFile}' AS AUDITS";
-                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
-                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
-                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
+                if (!SQLite.DatabaseAttached(conn, p_strDbFile))
+                {
+                    SQLite.m_strSQL = $@"ATTACH DATABASE '{p_strDbFile}' AS AUDITS";
+                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
+                }
                 CreateFVSPrePostSeqNumWorkTables(conn, p_strDbFile, "FVS_POTFIRE_TEMP", p_strRunTitle, p_strBaseYrRunTitle, p_bAudit);
 
                 for (z = 0; z <= strSourceTableArray.Length - 1; z++)
