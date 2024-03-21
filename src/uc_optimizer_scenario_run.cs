@@ -2866,31 +2866,31 @@ namespace FIA_Biosum_Manager
             //p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName, strOptimizerDir, Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName);
             //p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName, strOptimizerDir, Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName);
             //p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName, strOptimizerDir, Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName);
-            if (!ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite)
-            {
-                string strProcessorDir = ((frmMain)this._frmScenario.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsDbFile;
-                p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName, strProcessorDir, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName);
-                p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName, strProcessorDir, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName);
-            }
-            else
-            {
-                string strProcessorDir = ((frmMain)this._frmScenario.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
-                p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName,
-                    Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName, 
-                    ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName, strProcessorDir);
-                p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName,
-                    Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName,
-                    ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName, strProcessorDir);
-            }
+            //if (!ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite)
+            //{
+            //    string strProcessorDir = ((frmMain)this._frmScenario.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsDbFile;
+            //    p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName, strProcessorDir, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName);
+            //    p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName, strProcessorDir, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName);
+            //}
+            //else
+            //{
+            //    string strProcessorDir = ((frmMain)this._frmScenario.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+            //    p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName,
+            //        Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName, 
+            //        ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName, strProcessorDir);
+            //    p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName,
+            //        Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName,
+            //        ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName, strProcessorDir);
+            //}
 
             // We also need to create links to harvest_costs and tree vol val source tables in the context .accdb
             // so that we can create them directly with select into statement            
-            p_dao.CreateTableLink(this.m_strContextAccdbPathAndFile, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName,
-                                  this.m_oProcessorScenarioItem.DbPath + "\\" + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableDbFile, 
-                                  Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName);
-            p_dao.CreateTableLink(this.m_strContextAccdbPathAndFile, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName,
-                      this.m_oProcessorScenarioItem.DbPath + "\\" + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableDbFile,
-                      Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName);
+            //p_dao.CreateTableLink(this.m_strContextAccdbPathAndFile, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName,
+            //                      this.m_oProcessorScenarioItem.DbPath + "\\" + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableDbFile, 
+            //                      Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName);
+            //p_dao.CreateTableLink(this.m_strContextAccdbPathAndFile, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName,
+            //          this.m_oProcessorScenarioItem.DbPath + "\\" + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableDbFile,
+            //          Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName);
            
             if (p_dao != null)
             {
