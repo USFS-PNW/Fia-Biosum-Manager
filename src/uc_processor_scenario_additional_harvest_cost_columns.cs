@@ -1719,7 +1719,6 @@ namespace FIA_Biosum_Manager
                             strRx = uc_collection.Item(x).Type.Trim();
                             dataMgr.m_strSQL = "SELECT COUNT(*) AS null_count FROM " + addHarvCostsWorkTable +
                                               " WHERE TRIM(rx)='" + strRx + "' AND " + strColumnName + " IS NULL";
-
                         }
                         else
                         {
@@ -2430,8 +2429,7 @@ namespace FIA_Biosum_Manager
                                     "FROM scenario a," +
                                       "(SELECT COUNT(*) AS Record_Count , scenario_id " +
                                        "FROM scenario_additional_harvest_costs WHERE rx='" + strRx + "' GROUP BY scenario_id )  b " +
-                                     "WHERE a.scenario_id=b.scenario_id AND a.scenario_id <> '" + ScenarioId + "'";
-  
+                                     "WHERE a.scenario_id=b.scenario_id AND a.scenario_id <> '" + ScenarioId + "'";  
             }
 
             frmPrevExp.uc_previous_expressions1.lblTitle.Text = "Previous Scenario Harvest Cost Component Values";

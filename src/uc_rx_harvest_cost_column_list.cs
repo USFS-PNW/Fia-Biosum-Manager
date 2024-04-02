@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Windows.Forms;
+using SQLite.ADO;
 
 namespace FIA_Biosum_Manager
 {
@@ -284,23 +285,22 @@ namespace FIA_Biosum_Manager
         {
             int x;
             string strCol = "";
-            string strFieldsList="";
-            string[] strProcessorColumnsArray = null;
+            System.Collections.Generic.List<string> lstFields = new System.Collections.Generic.List<string>();
 
-            System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
-            oConn.ConnectionString = m_oAdo.getMDBConnString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\processor\\db\\scenario_processor_rule_definitions.mdb","","");
-            m_oAdo.OpenConnection(oConn.ConnectionString,ref oConn);
-            string strProcessorColumnsList = m_oAdo.CreateCommaDelimitedList(oConn, "SELECT DISTINCT ColumnName FROM scenario_harvest_cost_columns", ",");
-            m_oAdo.CloseConnection(oConn);
-
-            if (strProcessorColumnsList.Trim().Length > 0)
+            DataMgr oDataMgr = new DataMgr();
+            System.Collections.Generic.List<string> lstProcessorColumns = null;
+            string strProcessorDefinitionsDb = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\processor\{Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile}";
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strProcessorDefinitionsDb)))
             {
-                 strFieldsList = strProcessorColumnsList;
-                 strProcessorColumnsArray = frmMain.g_oUtils.ConvertListToArray(strProcessorColumnsList,",");
+                conn.Open();
+                lstProcessorColumns = oDataMgr.getStringList(conn, "SELECT DISTINCT ColumnName FROM scenario_harvest_cost_columns");
             }
-            
-            
 
+            if (lstProcessorColumns.Count > 0)
+            {
+                 lstFields = lstProcessorColumns;
+            }
+                       
             string strTable = m_oQueries.m_oDataSource.getValidDataSourceTableName("TREATMENT PRESCRIPTIONS HARVEST COST COLUMNS").Trim();
             //string strTable = "scenario_harvest_cost_columns";
             m_oAdo.m_strSQL = "SELECT DISTINCT ColumnName FROM " + strTable;
@@ -313,42 +313,39 @@ namespace FIA_Biosum_Manager
                         Convert.ToString(m_oAdo.m_OleDbDataReader["ColumnName"]).Trim().Length > 0)
                     {
                         strCol = Convert.ToString(m_oAdo.m_OleDbDataReader["ColumnName"]).Trim().ToUpper();
-                        if (strProcessorColumnsArray != null)
+                        if (lstProcessorColumns != null)
                         {
-                            for (x = 0; x <= strProcessorColumnsArray.Length - 1; x++)
+                            for (x = 0; x <= lstProcessorColumns.Count - 1; x++)
                             {
-                                if (strProcessorColumnsArray[x] != null)
+                                if (lstProcessorColumns[x] != null)
                                 {
-                                    if (strProcessorColumnsArray[x].Trim().ToUpper() ==
+                                    if (lstProcessorColumns[x].Trim().ToUpper() ==
                                         strCol) break;
                                 }
                             }
-                            if (x > strProcessorColumnsArray.Length - 1)
+                            if (x > lstProcessorColumns.Count - 1)
                             {
-                                strFieldsList = strFieldsList + Convert.ToString(m_oAdo.m_OleDbDataReader["ColumnName"]).Trim() + ",";
-                            }
-                            
+                                lstFields.Add(Convert.ToString(m_oAdo.m_OleDbDataReader["ColumnName"]).Trim());
+                            }                            
                         }
                         else
-                           strFieldsList = strFieldsList + Convert.ToString(m_oAdo.m_OleDbDataReader["ColumnName"]).Trim() + ",";
+                            lstFields.Add(Convert.ToString(m_oAdo.m_OleDbDataReader["ColumnName"]).Trim());
                     }
                 }
             }
             m_oAdo.m_OleDbDataReader.Close();
 
-            if (strFieldsList.Trim().Length > 0)
+            m_strHarvestTableColumnNameList = "";
+            if (lstFields != null && lstFields.Count > 0)
             {
-                strFieldsList = strFieldsList.Substring(0, strFieldsList.Length - 1);
-                
-                string[] strFieldsArray = frmMain.g_oUtils.ConvertListToArray(strFieldsList, ",");
+                foreach (var item in lstFields)
+                {
+                    m_strHarvestTableColumnNameList = m_strHarvestTableColumnNameList + $@"{item},";
+                }
+                m_strHarvestTableColumnNameList = m_strHarvestTableColumnNameList.Substring(0, m_strHarvestTableColumnNameList.Length - 1); //Remove trailing comma
             }
-
-            m_strHarvestTableColumnNameList = strFieldsList;
-
-
-            
-
         }
+
 		private void Edit(string strType)
 		{
 			int y,intIndex,intCount;
