@@ -947,7 +947,7 @@ namespace FIA_Biosum_Manager
 				}
 
                 // Warning for older projects without FVSOut.db (and cutlist)
-                if (!FvsOutWithCutList(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()))
+                if (!FvsOutWithRequiredTable(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim(), Tables.FVS.DefaultFVSCasesTableName))
                 {
                     MessageBox.Show(m_missingFvsOutDb, "FIA Biosum", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 }
@@ -2599,7 +2599,7 @@ namespace FIA_Biosum_Manager
                                 }
 
                                 // Only try to load if there is a cut list in the FVSOut.db
-                                if (FvsOutWithCutList(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()))
+                                if (FvsOutWithRequiredTable(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim(), "FVS_CutList"))
                                 {
                                     string strTreeTempDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
                                     string strTreeListDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
@@ -9885,7 +9885,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private bool FvsOutWithCutList(string strProjectDir)
+        private bool FvsOutWithRequiredTable(string strProjectDir, string strRequiredTable)
         {
             if (System.IO.File.Exists(strProjectDir + Tables.FVS.DefaultFVSOutDbFile))
             {
@@ -9893,7 +9893,7 @@ namespace FIA_Biosum_Manager
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                 {
                     conn.Open();
-                    if (SQLite.TableExist(conn, "FVS_CUTLIST"))
+                    if (SQLite.TableExist(conn, strRequiredTable))
                     {
                         return true;
                     }
