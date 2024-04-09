@@ -739,18 +739,27 @@ namespace FIA_Biosum_Manager
 			               string strTableName,
 			               string[] strColumnsToEdit,
 			               int intColumnsToEditCount,
-			               string[] strRecordKeyColumns)
+			               string[] strRecordKeyColumns,
+                           bool bUsingSqlite)
 		{
 			int x,y;
 			InitializeComponent();
 			this.InitializePopup();
 			this.m_dg.MouseWheel+=new MouseEventHandler(m_dg_MouseWheel);
 			string strColumnName="";
-			this.m_conn = new System.Data.OleDb.OleDbConnection();
-			this.m_ds = new DataSet();
-			this.m_da = new System.Data.OleDb.OleDbDataAdapter();
+            this.m_ds = new DataSet();
+            if (!bUsingSqlite)
+            {
+                this.m_conn = new System.Data.OleDb.OleDbConnection();
+                this.m_da = new System.Data.OleDb.OleDbDataAdapter();
+            }
+            else
+            {
+                this.m_SQLite_conn = new System.Data.SQLite.SQLiteConnection();
+                this.m_SQLite_da = new System.Data.SQLite.SQLiteDataAdapter();
+            }
 
-			this.m_dg.Left = 5;
+            this.m_dg.Left = 5;
 			this.toolBar1.Left = 5;
 			this.btnClose.Top = this.groupBox1.Top + 10;
 
@@ -767,44 +776,47 @@ namespace FIA_Biosum_Manager
 			this.m_strRecordKeyColumns = strRecordKeyColumns;
             this.m_intRecordKeyColumns = new int[strRecordKeyColumns.Length];
 
-
-
-
-
-
-
 			ado_data_access p_ado = new ado_data_access();
-			p_ado.OpenConnection(strConn, ref this.m_conn);
-			if (p_ado.m_intError != 0)
-			{
-				this.m_intError = p_ado.m_intError;
-				p_ado = null;
-				return ;
+            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
+            if (!bUsingSqlite)
+            {
+                p_ado.OpenConnection(strConn, ref this.m_conn);
+                if (p_ado.m_intError != 0)
+                {
+                    this.m_intError = p_ado.m_intError;
+                    p_ado = null;
+                    return;
+                }
+                //get the table schema of the result of the sql
+                this.m_dtTableSchema = p_ado.getTableSchema(this.m_conn, strSQL);
+                this.m_da.SelectCommand = new System.Data.OleDb.OleDbCommand(strSQL, this.m_conn);
+            }
+            else
+            {
+                dataMgr.OpenConnection(strConn, ref this.m_SQLite_conn);
+                if (dataMgr.m_intError != 0)
+                {
+                    this.m_intError = dataMgr.m_intError;
+                    dataMgr = null;
+                    return;
+                }
+                //get the table schema of the result of the sql
+                this.m_dtTableSchema = dataMgr.getTableSchema(this.m_SQLite_conn, strSQL);
+                this.m_SQLite_da.SelectCommand = new System.Data.SQLite.SQLiteCommand(strSQL, this.m_SQLite_conn);
+            }
 
-			}
-	        
-			//get the table schema of the result of the sql
-			this.m_dtTableSchema = p_ado.getTableSchema(this.m_conn, strSQL);
-			//for (x=0;x<=this.m_dtTableSchema.Rows.Count-1;x++)
-			//{
-			//	if (this.m_dtTableSchema.Rows[x]["COLUMNNAME"].ToString().ToUpper() == "FVS_VARIANT")
-			//	{
-			//		MessageBox.Show(this.m_dtTableSchema.Rows[x]["COLUMNNAME"].ToString());
-			//		MessageBox.Show(this.m_dtTableSchema.Rows[x]["COLUMNSIZE"].ToString());
-			//		MessageBox.Show(this.m_dtTableSchema.Rows[x]["DATATYPE"].ToString());
-					//MessageBox.Show(this.m_dtTableSchema.Columns[x].ColumnName.ToString());
-			//	}
-			//}
-
-			
-
-			this.m_da.SelectCommand = new System.Data.OleDb.OleDbCommand(strSQL,this.m_conn);
 			try 
 			{
-
-				this.m_da.Fill(this.m_ds,strTableName);
-				//for (int x=0; x<=this.m_ds.Tables.Count-1;x++) MessageBox.Show(this.m_ds.Tables[x].TableName);
-				this.m_dv = new DataView(this.m_ds.Tables[strTableName]);
+                if (!bUsingSqlite)
+                {
+                    this.m_da.Fill(this.m_ds, strTableName);
+                }
+                else
+                {
+                    this.m_SQLite_da.Fill(this.m_ds, strTableName);
+                }
+                //for (int x=0; x<=this.m_ds.Tables.Count-1;x++) MessageBox.Show(this.m_ds.Tables[x].TableName);
+                this.m_dv = new DataView(this.m_ds.Tables[strTableName]);
 				
 				this.m_dv.AllowNew = false;       //cannot append new records
 				this.m_dv.AllowDelete = false;    //cannot delete records
@@ -946,6 +958,10 @@ namespace FIA_Biosum_Manager
 				this.m_da.Dispose();
 				this.m_da = null;
 				p_ado = null;
+                if (m_SQLite_conn != null)
+                {
+                    m_SQLite_conn.Close();
+                }
 				return;
 
 			}
@@ -974,9 +990,9 @@ namespace FIA_Biosum_Manager
 			this.sbDisplayedRecordCount.Alignment = System.Windows.Forms.HorizontalAlignment.Right;
 			this.sbQueryRecordCount.Alignment = System.Windows.Forms.HorizontalAlignment.Center;
 
-			//event handler to keep track of current row and cell movement
-			this.m_dg.CurrentCellChanged += new
-				System.EventHandler(this.m_dg_CurrentCellChanged);
+            //event handler to keep track of current row and cell movement
+            this.m_dg.CurrentCellChanged += new
+                System.EventHandler(this.m_dg_CurrentCellChanged);
 
 			this.m_strSQL = strSQL;
 			if (this.m_strSQL.Trim().Length > 0) this.btnSQL.Enabled=true;
@@ -1676,8 +1692,14 @@ namespace FIA_Biosum_Manager
 					while (this.m_bAdapterDisposed==false)
 						System.Threading.Thread.Sleep(1000);
 				}
+                if (m_SQLite_da != null)
+                {
+                    this.m_SQLite_da.Dispose();
+                    // For now, let's just dispose of it and hope it works properly
+                }
 				if (m_da != null) this.m_da = null;
-				if (m_ds.Tables[m_dg.CaptionText] != null)  m_ds.Tables[m_dg.CaptionText].Clear();
+                if (m_SQLite_da != null) this.m_SQLite_da = null;
+                if (m_ds.Tables[m_dg.CaptionText] != null)  m_ds.Tables[m_dg.CaptionText].Clear();
 				if (m_ds.Tables[m_dg.CaptionText] !=null) m_ds.Tables[m_dg.CaptionText].Dispose();
 				if (m_ds != null) this.m_ds.Clear();
 				if (m_conn != null)
@@ -1688,6 +1710,12 @@ namespace FIA_Biosum_Manager
 				}
 				if (m_conn != null) m_conn.Dispose();
 				if (m_conn != null) this.m_conn = null;
+                if (m_SQLite_conn != null)
+                {
+                    this.m_SQLite_conn.Close();
+                }
+                if (m_SQLite_conn != null) this.m_SQLite_conn.Dispose();
+
 			}
 			if (this.DataSetName.Trim().Length > 0) this.ReferenceGridViewForm.RemoveGridViewMenuItem(this.DataSetName);
 			if (this.DataSetName.Trim().Length > 0) this.ReferenceGridViewForm.RemoveGridViewCollectionItem(this.DataSetName);
