@@ -2435,7 +2435,7 @@ namespace FIA_Biosum_Manager
             }
 
             frmPrevExp.uc_previous_expressions1.lblTitle.Text = "Previous Scenario Harvest Cost Component Values";
-            frmPrevExp.uc_previous_expressions1.loadvalues(m_oAdo, m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL, "DESCRIPTION", "SCENARIO", "scenario");
+            frmPrevExp.uc_previous_expressions1.loadvalues_access(m_oAdo, m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL, "DESCRIPTION", "SCENARIO", "scenario");
 
             frmPrevExp.uc_previous_expressions1.ShowDeleteButton = false;
             frmPrevExp.uc_previous_expressions1.ShowRecallButton = false;
@@ -2541,7 +2541,7 @@ namespace FIA_Biosum_Manager
                                "WHERE a.scenario_id=b.scenario_id AND a.scenario_id <> '" + ScenarioId + "'";
 
             frmPrevExp.uc_previous_expressions1.lblTitle.Text = "Previous Scenario Harvest Cost Component Values";
-            frmPrevExp.uc_previous_expressions1.loadvalues(m_oAdo, m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL, "DESCRIPTION", "SCENARIO", "scenario");
+            frmPrevExp.uc_previous_expressions1.loadvalues_access(m_oAdo, m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL, "DESCRIPTION", "SCENARIO", "scenario");
             frmPrevExp.MinimizeBox = false;
             frmPrevExp.uc_previous_expressions1.ShowDeleteButton = false;
             frmPrevExp.uc_previous_expressions1.ShowRecallButton = false;

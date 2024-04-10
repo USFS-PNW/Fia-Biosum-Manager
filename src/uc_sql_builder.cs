@@ -2172,7 +2172,7 @@ namespace FIA_Biosum_Manager
 			else
 				strConn = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + strScenarioMDB + ";User Id=admin;Password=;";
 
-			frmPrevExp.uc_previous_expressions1.loadvalues(strConn,"SELECT * FROM scenario_plot_filter;","SQL_COMMAND","SQL_COMMAND", "scenario_plot_filter");
+			frmPrevExp.uc_previous_expressions1.loadvalues_access(strConn,"SELECT * FROM scenario_plot_filter;","SQL_COMMAND","SQL_COMMAND", "scenario_plot_filter");
             
 			result = frmPrevExp.ShowDialog(this);
 			if (result == DialogResult.OK)

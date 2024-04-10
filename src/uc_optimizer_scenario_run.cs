@@ -5039,6 +5039,7 @@ namespace FIA_Biosum_Manager
                         p_dao = null;
                     }
                 }
+                //System.Threading.Thread.Sleep(5000);
                 /********************************************
                 **get the haul cost per green ton per hour
                 ********************************************/
@@ -6090,7 +6091,6 @@ namespace FIA_Biosum_Manager
             }
 
             DataMgr p_dataMgr = new DataMgr();
-            dao_data_access p_dao = new dao_data_access();
 
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strSQLiteWorkTablesDb)))
             {
@@ -6112,11 +6112,15 @@ namespace FIA_Biosum_Manager
                     this.m_intError = p_dataMgr.m_intError;
                     return;
                 }
-                this.m_strSQL = "INSERT INTO " + m_strTreeVolValSumTable +
+
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + this.m_oProcessorScenarioItem.DbPath + "\\" + Tables.ProcessorScenarioRun.DefaultScenarioResultsTableDbFile + "' AS processor_results";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = "INSERT INTO " + m_strTreeVolValSumTable +
                     " (biosum_cond_id,rxpackage,rx,rxcycle,chip_vol_cf," +
                     "chip_wt_gt,chip_val_dpa,merch_vol_cf," +
                     "merch_wt_gt,merch_val_dpa,place_holder) ";
-                this.m_strSQL += "SELECT s.biosum_cond_id, " +
+                p_dataMgr.m_strSQL += "SELECT s.biosum_cond_id, " +
                     "s.rxpackage,s.rx,s.rxcycle," +
                     "Sum(s.chip_vol_cf) AS chip_vol_cf," +
                     "Sum(s.chip_wt_gt) AS chip_wt_gt," +
@@ -6126,25 +6130,25 @@ namespace FIA_Biosum_Manager
                     "Sum(s.merch_val_dpa) AS merch_val_dpa, " +
                     "s.place_holder";
 
-                this.m_strSQL += " FROM " + this.m_strTreeVolValBySpcDiamGroupsTable.Trim() + " AS s";
-                this.m_strSQL += " GROUP BY biosum_cond_id,rxpackage,rx,rxcycle, place_holder";
-                this.m_strSQL += " ORDER BY biosum_cond_id,rxpackage,rx,rxcycle, place_holder ;";
+                p_dataMgr.m_strSQL += " FROM " + this.m_strTreeVolValBySpcDiamGroupsTable.Trim() + " AS s";
+                p_dataMgr.m_strSQL += " GROUP BY biosum_cond_id,rxpackage,rx,rxcycle, place_holder";
+                p_dataMgr.m_strSQL += " ORDER BY biosum_cond_id,rxpackage,rx,rxcycle, place_holder ;";
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\ninsert into tree_vol_val_sum_by_rx_cycle_work table tree volume and value sums\r\n");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
 
-                this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
-                if (this.m_ado.m_intError != 0)
+                if (p_dataMgr.m_intError != 0)
                 {
                     FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
                     FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
 
-                    this.m_intError = this.m_ado.m_intError;
+                    this.m_intError = p_dataMgr.m_intError;
 
                     return;
                 }
