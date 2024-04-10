@@ -1041,7 +1041,7 @@ namespace FIA_Biosum_Manager
             if (this.FilterType == "PLOT") m_strScenarioTable = "scenario_plot_filter";
             else m_strScenarioTable = "scenario_cond_filter";
 
-			frmPrevExp.uc_previous_expressions1.loadvalues_access(strConn,"SELECT * FROM " + this.m_strScenarioTable + ";","SQL_COMMAND","SQL_COMMAND", this.m_strScenarioTable);
+			frmPrevExp.uc_previous_expressions1.loadvalues(strConn,"SELECT * FROM " + this.m_strScenarioTable + ";","SQL_COMMAND","SQL_COMMAND", this.m_strScenarioTable);
             
 			result = frmPrevExp.ShowDialog(this);
 			if (result == DialogResult.OK)

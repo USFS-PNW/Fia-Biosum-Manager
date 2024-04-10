@@ -4442,9 +4442,9 @@ namespace FIA_Biosum_Manager
 			DialogResult result;
             
 			string strScenarioId =  ((frmOptimizerScenario)this.ParentForm).uc_scenario1.txtScenarioId.Text.Trim().ToLower();
-			string strScenarioMDB = 
+			string strScenarioDB = 
 				((frmMain)this.ParentForm.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\" +
-                    Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
+                    Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
 
 			frmDialog frmPrevExp = new frmDialog();
 				
@@ -4454,25 +4454,26 @@ namespace FIA_Biosum_Manager
 					
 			frmPrevExp.uc_previous_expressions1.Visible=true;
 
-			strConn = "Provider=Microsoft.Ace.OLEDB.12.0;Data Source=" + strScenarioMDB + ";User Id=admin;Password=;";
+			DataMgr p_dataMgr = new DataMgr();
+			strConn = p_dataMgr.GetConnectionString(strScenarioDB);
 
 			switch (this.m_intCurVariableDefinitionStepCount)
 			{
 				case uc_optimizer_scenario_fvs_prepost_variables_effective.WIZARD_STEP_VARIABLE_BETTER:
 					strSQL = "SELECT scenario_id,pre_fvs_variable,better_expression,current_yn FROM scenario_fvs_variables";
-					frmPrevExp.uc_previous_expressions1.loadvalues_access(strConn,strSQL,"BETTER_EXPRESSION","BETTER_EXPRESSION", "scenario_fvs_variables");
+					frmPrevExp.uc_previous_expressions1.loadvalues(strConn,strSQL,"BETTER_EXPRESSION","BETTER_EXPRESSION", "scenario_fvs_variables");
 					break;
 				case uc_optimizer_scenario_fvs_prepost_variables_effective.WIZARD_STEP_VARIABLE_WORSE:
 					strSQL = "SELECT scenario_id,pre_fvs_variable,worse_expression,current_yn FROM scenario_fvs_variables";
-					frmPrevExp.uc_previous_expressions1.loadvalues_access(strConn,strSQL,"WORSE_EXPRESSION","WORSE_EXPRESSION", "scenario_fvs_variables");
+					frmPrevExp.uc_previous_expressions1.loadvalues(strConn,strSQL,"WORSE_EXPRESSION","WORSE_EXPRESSION", "scenario_fvs_variables");
 					break;
 				case uc_optimizer_scenario_fvs_prepost_variables_effective.WIZARD_STEP_VARIABLE_EFFECTIVE:
 					strSQL = "SELECT scenario_id,fvs_variables_list,pre_fvs_variable,effective_expression,current_yn FROM scenario_fvs_variables";
-					frmPrevExp.uc_previous_expressions1.loadvalues_access(strConn,strSQL,"EFFECTIVE_EXPRESSION","EFFECTIVE_EXPRESSION", "scenario_fvs_variables");
+					frmPrevExp.uc_previous_expressions1.loadvalues(strConn,strSQL,"EFFECTIVE_EXPRESSION","EFFECTIVE_EXPRESSION", "scenario_fvs_variables");
 					break;
 				case uc_optimizer_scenario_fvs_prepost_variables_effective.WIZARD_STEP_VARIABLES_OVERALL_EFFECTIVE:
 					strSQL = "SELECT scenario_id,fvs_variables_list,overall_effective_expression,current_yn FROM scenario_fvs_variables_overall_effective";
-					frmPrevExp.uc_previous_expressions1.loadvalues_access(strConn,strSQL,"OVERALL_EFFECTIVE_EXPRESSION","OVERALL_EFFECTIVE_EXPRESSION", "scenario_fvs_variables_overall_effective");
+					frmPrevExp.uc_previous_expressions1.loadvalues(strConn,strSQL,"OVERALL_EFFECTIVE_EXPRESSION","OVERALL_EFFECTIVE_EXPRESSION", "scenario_fvs_variables_overall_effective");
 					break;
 					
 			}
@@ -4491,51 +4492,6 @@ namespace FIA_Biosum_Manager
 			}
 			frmPrevExp.Close();
 			frmPrevExp = null;
-		}
-
-		private void btnFVSVariablesPrePostExpressionPrev_ClickSqlite(object sender, System.EventArgs e)
-        {
-			string strConn = "";
-			string strSQL = "";
-
-			DataMgr p_dataMgr = new DataMgr;
-
-			DialogResult result;
-
-			string strScenarioId = ((frmOptimizerScenario)this.ParentForm).uc_scenario1.txtScenarioId.Text.Trim().ToLower();
-			string strScenarioDB =
-				((frmMain)this.ParentForm.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\" +
-					Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
-
-			frmDialog frmPrevExp = new frmDialog();
-
-			frmPrevExp.Width = frmPrevExp.uc_previous_expressions1.m_intFullWd;
-			frmPrevExp.Height = frmPrevExp.uc_previous_expressions1.m_intFullHt;
-			frmPrevExp.Text = "Treatment Optimizer: Previous FVS Variables SQL Expressions";
-
-			frmPrevExp.uc_previous_expressions1.Visible = true;
-
-			strConn = p_dataMgr.GetConnectionString(strScenarioDB);
-
-			switch (this.m_intCurVariableDefinitionStepCount)
-			{
-				case uc_optimizer_scenario_fvs_prepost_variables_effective.WIZARD_STEP_VARIABLE_BETTER:
-					strSQL = "SELECT scenario_id,pre_fvs_variable,better_expression,current_yn FROM scenario_fvs_variables";
-					frmPrevExp.uc_previous_expressions1.loadvalues_access(strConn, strSQL, "BETTER_EXPRESSION", "BETTER_EXPRESSION", "scenario_fvs_variables");
-					break;
-				case uc_optimizer_scenario_fvs_prepost_variables_effective.WIZARD_STEP_VARIABLE_WORSE:
-					strSQL = "SELECT scenario_id,pre_fvs_variable,worse_expression,current_yn FROM scenario_fvs_variables";
-					frmPrevExp.uc_previous_expressions1.loadvalues_access(strConn, strSQL, "WORSE_EXPRESSION", "WORSE_EXPRESSION", "scenario_fvs_variables");
-					break;
-				case uc_optimizer_scenario_fvs_prepost_variables_effective.WIZARD_STEP_VARIABLE_EFFECTIVE:
-					strSQL = "SELECT scenario_id,fvs_variables_list,pre_fvs_variable,effective_expression,current_yn FROM scenario_fvs_variables";
-					frmPrevExp.uc_previous_expressions1.loadvalues_access(strConn, strSQL, "EFFECTIVE_EXPRESSION", "EFFECTIVE_EXPRESSION", "scenario_fvs_variables");
-					break;
-				case uc_optimizer_scenario_fvs_prepost_variables_effective.WIZARD_STEP_VARIABLES_OVERALL_EFFECTIVE:
-					strSQL = "SELECT scenario_id,fvs_variables_list,overall_effective_expression,current_yn FROM scenario_fvs_variables_overall_effective";
-					frmPrevExp.uc_previous_expressions1.loadvalues_access(strConn, strSQL, "OVERALL_EFFECTIVE_EXPRESSION", "OVERALL_EFFECTIVE_EXPRESSION", "scenario_fvs_variables_overall_effective");
-					break;
-			}
 		}
 
 		private void grpboxFVSVariablesPrePost_VisibleChanged(object sender, System.EventArgs e)

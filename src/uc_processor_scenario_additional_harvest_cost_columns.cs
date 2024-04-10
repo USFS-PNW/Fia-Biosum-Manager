@@ -2410,26 +2410,6 @@ namespace FIA_Biosum_Manager
             string strConn = dataMgr.GetConnectionString(strScenarioDB);
             using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
-<<<<<<< HEAD
-                m_oAdo.m_strSQL = "SELECT DISTINCT a.scenario_id, a.Description, b.Record_Count " +
-                                  "FROM scenario a," +
-                                    "(SELECT COUNT(*) AS Record_Count , scenario_id " +
-                                     "FROM scenario_additional_harvest_costs GROUP BY scenario_id)  b " +
-                                   "WHERE a.scenario_id=b.scenario_id AND a.scenario_id <> '" + ScenarioId + "'";
-            }
-            else
-            {
-                m_oAdo.m_strSQL = "SELECT DISTINCT a.scenario_id, a.Description, b.Record_Count " +
-                                    "FROM scenario a," +
-                                      "(SELECT COUNT(*) AS Record_Count , scenario_id " +
-                                       "FROM scenario_additional_harvest_costs WHERE rx='" + strRx + "' GROUP BY scenario_id )  b " +
-                                     "WHERE a.scenario_id=b.scenario_id AND a.scenario_id <> '" + ScenarioId + "'";
-  
-            }
-
-            frmPrevExp.uc_previous_expressions1.lblTitle.Text = "Previous Scenario Harvest Cost Component Values";
-            frmPrevExp.uc_previous_expressions1.loadvalues_access(m_oAdo, m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL, "DESCRIPTION", "SCENARIO", "scenario");
-=======
                 oConn.Open();
                 if (strRx.Trim().Length == 0)
                 {
@@ -2449,7 +2429,6 @@ namespace FIA_Biosum_Manager
                 }
                 frmPrevExp.uc_previous_expressions1.lblTitle.Text = "Previous Scenario Harvest Cost Component Values";
                 frmPrevExp.uc_previous_expressions1.loadvalues(dataMgr, oConn, dataMgr.m_strSQL, "DESCRIPTION", "SCENARIO", "scenario");
->>>>>>> 4d1e7bfd6cbdb26d4b6f1e5cf37c06fc25aa50df
 
             frmPrevExp.uc_previous_expressions1.ShowDeleteButton = false;
             frmPrevExp.uc_previous_expressions1.ShowRecallButton = false;
@@ -2567,11 +2546,6 @@ namespace FIA_Biosum_Manager
                 frmPrevExp.uc_previous_expressions1.loadvalues(dataMgr, oConn, dataMgr.m_strSQL, "DESCRIPTION", "SCENARIO", "scenario");
             }
 
-<<<<<<< HEAD
-            frmPrevExp.uc_previous_expressions1.lblTitle.Text = "Previous Scenario Harvest Cost Component Values";
-            frmPrevExp.uc_previous_expressions1.loadvalues_access(m_oAdo, m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL, "DESCRIPTION", "SCENARIO", "scenario");
-=======
->>>>>>> 4d1e7bfd6cbdb26d4b6f1e5cf37c06fc25aa50df
             frmPrevExp.MinimizeBox = false;
             frmPrevExp.uc_previous_expressions1.ShowDeleteButton = false;
             frmPrevExp.uc_previous_expressions1.ShowRecallButton = false;
