@@ -435,7 +435,7 @@ namespace FIA_Biosum_Manager
 		private void AddDataSetToEdit(string strConn,string strSQL,string strDataSetName,string[] strColumnsToEdit, int intColumnsToEditCount,string[] strRecordKeyColumns)
 		{
 			this.m_intArrayCount++;
-			this.uc_gridview1 = new uc_gridview(strConn,strSQL,strDataSetName,strColumnsToEdit,intColumnsToEditCount,strRecordKeyColumns);
+			this.uc_gridview1 = new uc_gridview(strConn,strSQL,strDataSetName,strColumnsToEdit,intColumnsToEditCount,strRecordKeyColumns, UsingSQLite);
 			this.uc_gridview1.ReferenceGridViewForm=this;
 			this.uc_gridview_collection1.Add(this.uc_gridview1);
 			if (this.uc_gridview1.m_intError==0)
@@ -467,6 +467,7 @@ namespace FIA_Biosum_Manager
 			}
 
 		}
+
 		private void ResizeGridViewItem()
 		{
 			int y=0;
