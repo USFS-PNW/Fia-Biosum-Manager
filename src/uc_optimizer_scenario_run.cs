@@ -1228,7 +1228,9 @@ namespace FIA_Biosum_Manager
 	    public string m_strUserDefinedCondSQL;
         public string m_strPSiteTable;
         public string m_strPSitePathAndFile;
+        public string m_strProcessorResultsPathAndFile;
         private string m_strEconByRxWorkTableName = Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName + "_work_table";
+        
 		
 		private string m_strLine;
         private OptimizerScenarioItem.OptimizationVariableItem m_oOptimizationVariable = new OptimizerScenarioItem.OptimizationVariableItem();
@@ -1320,6 +1322,8 @@ namespace FIA_Biosum_Manager
                 //get the selected processor scenario item
                 if (this.ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_processor_scenario_select1.m_oProcessorScenarioItem != null)
                     this.m_oProcessorScenarioItem = this.ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_processor_scenario_select1.m_oProcessorScenarioItem;
+
+                this.m_strProcessorResultsPathAndFile = this.m_oProcessorScenarioItem.DbPath + "\\" + Tables.ProcessorScenarioRun.DefaultScenarioResultsTableDbFile;
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
@@ -1531,7 +1535,7 @@ namespace FIA_Biosum_Manager
                     if (!String.IsNullOrEmpty(m_strContextAccdbPathAndFile))
                         CreateContextTablesAccess();
                     if (!String.IsNullOrEmpty(m_strContextDbPathAndFile))
-                        CreateContextTablesSqlite();
+                        CreateContextTables();
                     CreateValidComboTables();
 
                     // Create temporary SQLite database for work tables
@@ -1832,7 +1836,7 @@ namespace FIA_Biosum_Manager
                             !String.IsNullOrEmpty(m_strContextAccdbPathAndFile))
                         {
                             this.ContextReferenceTablesAccess();
-                            this.ContextReferenceTablesSqlite();
+                            this.ContextReferenceTables();
                             this.ContextTextFiles(strScenarioOutputFolder);
                         }
 
@@ -2534,7 +2538,7 @@ namespace FIA_Biosum_Manager
             oAdo.CloseConnection(oAdo.m_OleDbConnection);
         }
 
-        private void CreateContextTablesSqlite()
+        private void CreateContextTables()
         {
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -3046,16 +3050,15 @@ namespace FIA_Biosum_Manager
             dao_data_access oDao = new dao_data_access();
             ODBCMgr odbcMgr = new ODBCMgr();
 
-            string strProcessorResultsDb = this.m_oProcessorScenarioItem.DbPath + "\\" + Tables.ProcessorScenarioRun.DefaultScenarioResultsTableDbFile;
 
             if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProcessorResultsDsnName))
             {
                 odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProcessorResultsDsnName);
             }
-            odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ProcessorResultsDsnName, strProcessorResultsDb);
+            odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ProcessorResultsDsnName, this.m_strProcessorResultsPathAndFile);
 
             oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName,
-                ODBCMgr.DSN_KEYS.ProcessorResultsDsnName, strProcessorResultsDb);
+                ODBCMgr.DSN_KEYS.ProcessorResultsDsnName, this.m_strProcessorResultsPathAndFile);
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -3069,7 +3072,7 @@ namespace FIA_Biosum_Manager
             }
 
             oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName,
-                ODBCMgr.DSN_KEYS.ProcessorResultsDsnName, strProcessorResultsDb);
+                ODBCMgr.DSN_KEYS.ProcessorResultsDsnName, this.m_strProcessorResultsPathAndFile);
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -6113,7 +6116,7 @@ namespace FIA_Biosum_Manager
                     return;
                 }
 
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + this.m_oProcessorScenarioItem.DbPath + "\\" + Tables.ProcessorScenarioRun.DefaultScenarioResultsTableDbFile + "' AS processor_results";
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + this.m_strProcessorResultsPathAndFile + "' AS processor_results";
                 p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
 
                 p_dataMgr.m_strSQL = "INSERT INTO " + m_strTreeVolValSumTable +
@@ -7647,7 +7650,7 @@ namespace FIA_Biosum_Manager
                 }
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
-                this.m_strSQL = "ATTACH DATABASE '" + this.m_oProcessorScenarioItem.DbPath + "\\" + Tables.ProcessorScenarioRun.DefaultScenarioResultsTableDbFile + "' AS processor_results";
+                this.m_strSQL = "ATTACH DATABASE '" + this.m_strProcessorResultsPathAndFile + "' AS processor_results";
                 m_dataMgr.SqlNonQuery(conn, this.m_strSQL);
 
                 this.m_strSQL = "INSERT INTO validcombos (biosum_cond_id,rxpackage,rx,rxcycle) " +
@@ -7746,7 +7749,7 @@ namespace FIA_Biosum_Manager
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
                     m_dataMgr.SqlNonQuery(conn, this.m_strSQL);
-                    this.m_strSQL = "ATTACH DATABASE '" + this.m_oProcessorScenarioItem.DbPath + "\\" + Tables.ProcessorScenarioRun.DefaultScenarioResultsTableDbFile + "' AS processor_results";
+                    this.m_strSQL = "ATTACH DATABASE '" + this.m_strProcessorResultsPathAndFile + "' AS processor_results";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
                     m_dataMgr.SqlNonQuery(conn, this.m_strSQL);
@@ -8042,7 +8045,7 @@ namespace FIA_Biosum_Manager
                     /****************************************************************************
                      **check to see if the plot + rx record exists in the harvest costs table
                      ****************************************************************************/
-                    this.m_strSQL = "ATTACH DATABASE '" + this.m_oProcessorScenarioItem.DbPath + "\\" + Tables.ProcessorScenarioRun.DefaultScenarioResultsTableDbFile + "' AS processor_results";
+                    this.m_strSQL = "ATTACH DATABASE '" + this.m_strProcessorResultsPathAndFile + "' AS processor_results";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
                     m_dataMgr.SqlNonQuery(conn, this.m_strSQL);
@@ -12015,6 +12018,11 @@ namespace FIA_Biosum_Manager
             ado_data_access p_ado = new ado_data_access();
             DataMgr p_dataMgr = new DataMgr();
             dao_data_access p_dao = new dao_data_access();
+
+            System.Data.OleDb.OleDbConnection tempConn = new System.Data.OleDb.OleDbConnection();
+            p_ado.OpenConnection(p_ado.getMDBConnString(this.m_strTempMDBFile, "admin", ""), ref tempConn);
+
+
             if (p_ado.m_intError == 0)
             {
                 /*********************************************
@@ -12061,49 +12069,45 @@ namespace FIA_Biosum_Manager
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Copy table structure harest_costs to harvest_costs_sum\r\n");
 
-                    using (OleDbConnection tempConn = new OleDbConnection(p_ado.getMDBConnString(this.m_strTempMDBFile, "", "")))
+                    p_dataMgr.m_strSQL = "ATTACH DATABASE '" + this.m_strProcessorResultsPathAndFile + "' AS processor_results";
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                    string[] arrFields = p_dataMgr.getFieldNamesArray(conn, "SELECT biosum_cond_id,rxpackage,rx,rxcycle, complete_cpa FROM harvest_costs");
+
+                    string fieldsAndDataTypes = "";
+
+                    foreach (string column in arrFields)
                     {
-                        tempConn.Open();
-                        string[] arrFields = p_ado.getFieldNamesArray(tempConn, "SELECT biosum_cond_id,rxpackage,rx,rxcycle, complete_cpa FROM harvest_costs");
-
-                        string fieldsAndDataTypes = "";
-
-                        foreach (string column in arrFields)
-                        {
-                            string field = "";
-                            string dataType = "";
-                            p_ado.getFieldNamesAndDataTypes(tempConn, "SELECT " + column + " FROM harvest_costs", ref field, ref dataType);
-                            dataType = utils.DataTypeConvert(dataType.ToUpper(), true);
-                            fieldsAndDataTypes = fieldsAndDataTypes + field + " " + dataType + ", ";
-                        }
-                        p_dataMgr.m_strSQL = "CREATE TABLE harvest_costs_sum (" + fieldsAndDataTypes + "PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
-                        p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
-
-                        p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, "harvest_costs_sum", "harvest_costs_sum", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
-
-                        int i = 0;
-                        do
-                        {
-                            // break out of loop if it runs too long
-                            if (i > 20)
-                            {
-                                System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach harvest_costs_sum table! " +
-                                "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
-                                break;
-                            }
-                            System.Threading.Thread.Sleep(1000);
-                            i++;
-                        }
-                        while (!p_ado.TableExist(tempConn, "harvest_costs_sum"));
-
-                        tempConn.Close();
+                        string field = "";
+                        string dataType = "";
+                        p_dataMgr.getFieldNamesAndDataTypes(conn, "SELECT " + column + " FROM harvest_costs", ref field, ref dataType);
+                        dataType = utils.DataTypeConvert(dataType.ToUpper(), true);
+                        fieldsAndDataTypes = fieldsAndDataTypes + field + " " + dataType + ", ";
                     }
+                    p_dataMgr.m_strSQL = "CREATE TABLE harvest_costs_sum (" + fieldsAndDataTypes + "PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
 
-                    conn.Close();
+                    p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, "harvest_costs_sum", "harvest_costs_sum", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
+
+                    int i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach harvest_costs_sum table! " +
+                            "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!p_ado.TableExist(tempConn, "harvest_costs_sum"));
 
                 }
             }
 
+            p_ado.CloseConnection(tempConn);
             p_ado = null;
             p_dao = null;
             p_dataMgr = null;
@@ -12255,7 +12259,6 @@ namespace FIA_Biosum_Manager
                 }
                 while (!p_ado.TableExist(this.m_strConn, this.m_strPSiteWorkTable));
 
-                conn.Close();
             }
             p_ado.CloseConnection(p_ado.m_OleDbConnection);
 
@@ -15392,7 +15395,7 @@ namespace FIA_Biosum_Manager
 
         }
 
-        private void ContextReferenceTablesSqlite()
+        private void ContextReferenceTables()
         {
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -15420,7 +15423,7 @@ namespace FIA_Biosum_Manager
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultSqliteDbFile + "' AS optimizer_defs";
                 p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
 
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + this.m_oProcessorScenarioItem.DbPath + "\\" + Tables.ProcessorScenarioRun.DefaultScenarioResultsTableDbFile + "' AS processor_results";
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + this.m_strProcessorResultsPathAndFile + "' AS processor_results";
                 p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
 
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile + "' AS processor_rules";
