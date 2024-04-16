@@ -1057,9 +1057,9 @@ namespace FIA_Biosum_Manager
             this.ckImportSeedlings.Location = new System.Drawing.Point(76, 181);
             this.ckImportSeedlings.Margin = new System.Windows.Forms.Padding(4);
             this.ckImportSeedlings.Name = "ckImportSeedlings";
-            this.ckImportSeedlings.Size = new System.Drawing.Size(141, 21);
+            this.ckImportSeedlings.Size = new System.Drawing.Size(219, 21);
             this.ckImportSeedlings.TabIndex = 13;
-            this.ckImportSeedlings.Text = "Include Seedlings";
+            this.ckImportSeedlings.Text = "Load seedling data to BioSum";
             this.ckImportSeedlings.UseVisualStyleBackColor = true;
             // 
             // chkDwmImport
@@ -1070,9 +1070,9 @@ namespace FIA_Biosum_Manager
             this.chkDwmImport.Location = new System.Drawing.Point(76, 208);
             this.chkDwmImport.Margin = new System.Windows.Forms.Padding(4);
             this.chkDwmImport.Name = "chkDwmImport";
-            this.chkDwmImport.Size = new System.Drawing.Size(237, 21);
+            this.chkDwmImport.Size = new System.Drawing.Size(290, 21);
             this.chkDwmImport.TabIndex = 10;
-            this.chkDwmImport.Text = "Use Down Woody Materials Data";
+            this.chkDwmImport.Text = "Load down wood material data to BioSum";
             this.chkDwmImport.UseVisualStyleBackColor = true;
             // 
             // label2
