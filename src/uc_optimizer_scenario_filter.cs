@@ -774,6 +774,22 @@ namespace FIA_Biosum_Manager
 
 		}
 
+		private void btnCreateSQL_ClickSqlite(object sender, System.EventArgs e)
+        {
+			int x = 0;
+			int y = 0;
+			DialogResult result;
+
+			x = ((frmOptimizerScenario)this.ParentForm).uc_datasource1.getDataSourceTableNameRow("PLOT");
+			if (x < 0)
+			{
+				MessageBox.Show("!!Plot table cannot be found!!");
+				return;
+			}
+
+
+		}
+
 		/****************************************************************
 		 ** edit the sql in sql builder form
 		 ****************************************************************/
@@ -834,6 +850,27 @@ namespace FIA_Biosum_Manager
 					
 			this.m_ado_optimizer_tables = null;
 			p_dao = null;
+
+		}
+
+		private void btnEditSQL_ClickSqlite(object sender, System.EventArgs e)
+        {
+			string strSQL = "";
+
+			string strConn = "";
+			string str = "";
+			int x = 0;
+			int y = 0;
+			DialogResult result;
+
+
+			x = this.ReferenceOptimizerScenarioForm.uc_datasource1.getDataSourceTableNameRow("PLOT");
+			if (x < 0)
+			{
+				MessageBox.Show("!!Plot table cannot be found!!");
+				return;
+			}
+
 
 		}
 
@@ -1017,7 +1054,7 @@ namespace FIA_Biosum_Manager
 		}
 
 
-		private void btnPrevSQL_Click(object sender, System.EventArgs e)
+		private void btnPrevSQL_Click_access(object sender, System.EventArgs e)
 		{
 			string strConn="";
 
@@ -1057,6 +1094,44 @@ namespace FIA_Biosum_Manager
 			frmPrevExp = null;
 			
 		
+		}
+
+		private void btnPrevSQL_Click(object sender, System.EventArgs e)
+        {
+			DataMgr p_dataMgr = new DataMgr();
+
+			DialogResult result;
+
+			string strScenarioDB = ((frmMain)this.ParentForm.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\" +
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+
+			frmDialog frmPrevExp = new frmDialog();
+
+			frmPrevExp.Width = frmPrevExp.uc_previous_expressions1.m_intFullWd;
+			frmPrevExp.Height = frmPrevExp.uc_previous_expressions1.m_intFullHt;
+			frmPrevExp.Text = "Treatment Optimizer: Previous SQL Expressions";
+
+			frmPrevExp.uc_previous_expressions1.Visible = true;
+
+			string strConn = p_dataMgr.GetConnectionString(strScenarioDB);
+
+			if (this.FilterType == "PLOT") m_strScenarioTable = "scenario_plot_filter";
+			else m_strScenarioTable = "scenario_cond_filter";
+
+			frmPrevExp.uc_previous_expressions1.loadvalues(strConn, "SELECT * FROM " + this.m_strScenarioTable + ";", "SQL_COMMAND", "SQL_COMMAND", this.m_strScenarioTable);
+
+			result = frmPrevExp.ShowDialog(this);
+			if (result == DialogResult.OK)
+			{
+				result = MessageBox.Show("REPLACE \n" + "----------------\n\n" + "'" + this.txtCurrentSQL.Text + "' \n\n\n WITH  \n----------------\n\n'" + frmPrevExp.uc_previous_expressions1.lblSQL.Text + "'", "Previous SQL", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+				if (result == DialogResult.Yes)
+				{
+					this.txtCurrentSQL.Text = frmPrevExp.uc_previous_expressions1.listView1.SelectedItems[0].SubItems[frmPrevExp.uc_previous_expressions1.m_intSelectColumn + 1].Text;
+					((frmOptimizerScenario)this.ParentForm).m_bSave = true;
+				}
+			}
+			frmPrevExp.Close();
+			frmPrevExp = null;
 		}
 
 		private void btnExecuteSQL_Click(object sender, System.EventArgs e)

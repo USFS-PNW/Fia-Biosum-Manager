@@ -1548,7 +1548,6 @@ namespace FIA_Biosum_Manager
                         odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.WorkTablesDsnName);
                     }
                     odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.WorkTablesDsnName, m_strSQLiteWorkTablesDb);
-                    
 
                     if (this.m_intError != 0)
                     {
