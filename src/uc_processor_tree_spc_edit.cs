@@ -239,7 +239,7 @@ namespace FIA_Biosum_Manager
             this.cmbFvsSpCd.Location = new System.Drawing.Point(279, 300);
             this.cmbFvsSpCd.Name = "cmbFvsSpCd";
             this.cmbFvsSpCd.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.cmbFvsSpCd.Size = new System.Drawing.Size(296, 24);
+            this.cmbFvsSpCd.Size = new System.Drawing.Size(296, 28);
             this.cmbFvsSpCd.TabIndex = 33;
             this.cmbFvsSpCd.SelectedIndexChanged += new System.EventHandler(this.cmbFvsSpCd_SelectedIndexChanged);
             // 
@@ -259,7 +259,7 @@ namespace FIA_Biosum_Manager
             this.txtSpecies.MaxLength = 50;
             this.txtSpecies.Name = "txtSpecies";
             this.txtSpecies.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.txtSpecies.Size = new System.Drawing.Size(296, 23);
+            this.txtSpecies.Size = new System.Drawing.Size(296, 26);
             this.txtSpecies.TabIndex = 26;
             // 
             // txtGenus
@@ -269,7 +269,7 @@ namespace FIA_Biosum_Manager
             this.txtGenus.MaxLength = 50;
             this.txtGenus.Name = "txtGenus";
             this.txtGenus.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.txtGenus.Size = new System.Drawing.Size(296, 23);
+            this.txtGenus.Size = new System.Drawing.Size(296, 26);
             this.txtGenus.TabIndex = 25;
             // 
             // label10
@@ -296,21 +296,21 @@ namespace FIA_Biosum_Manager
             this.txtCommon.MaxLength = 50;
             this.txtCommon.Name = "txtCommon";
             this.txtCommon.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.txtCommon.Size = new System.Drawing.Size(296, 23);
+            this.txtCommon.Size = new System.Drawing.Size(296, 26);
             this.txtCommon.TabIndex = 2;
             // 
             // txtSpCd
             // 
             this.txtSpCd.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtSpCd.Location = new System.Drawing.Point(280, 120);
-            this.txtSpCd.MaxLength = 3;
+            this.txtSpCd.MaxLength = 4;
             this.txtSpCd.Name = "txtSpCd";
             this.txtSpCd.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.txtSpCd.Size = new System.Drawing.Size(56, 23);
+            this.txtSpCd.Size = new System.Drawing.Size(56, 26);
             this.txtSpCd.TabIndex = 1;
-            this.txtSpCd.Validating += new System.ComponentModel.CancelEventHandler(this.txtSpCd_Validating);
             this.txtSpCd.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtSpCd_KeyDown);
             this.txtSpCd.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtSpCd_KeyPress);
+            this.txtSpCd.Validating += new System.ComponentModel.CancelEventHandler(this.txtSpCd_Validating);
             // 
             // cmbVariant
             // 
@@ -341,7 +341,7 @@ namespace FIA_Biosum_Manager
             this.cmbVariant.Location = new System.Drawing.Point(280, 88);
             this.cmbVariant.Name = "cmbVariant";
             this.cmbVariant.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.cmbVariant.Size = new System.Drawing.Size(296, 24);
+            this.cmbVariant.Size = new System.Drawing.Size(296, 28);
             this.cmbVariant.TabIndex = 0;
             this.cmbVariant.SelectedIndexChanged += new System.EventHandler(this.cmbVariant_SelectedIndexChanged);
             this.cmbVariant.KeyDown += new System.Windows.Forms.KeyEventHandler(this.cmbVariant_KeyDown);
@@ -425,7 +425,7 @@ namespace FIA_Biosum_Manager
             this.lblTitle.Dock = System.Windows.Forms.DockStyle.Top;
             this.lblTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTitle.ForeColor = System.Drawing.Color.Green;
-            this.lblTitle.Location = new System.Drawing.Point(3, 19);
+            this.lblTitle.Location = new System.Drawing.Point(3, 22);
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.lblTitle.Size = new System.Drawing.Size(618, 24);

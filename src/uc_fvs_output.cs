@@ -767,6 +767,12 @@ namespace FIA_Biosum_Manager
                         }
                     }   // END IF FVS_OUT.DB EXISTS                   
 				}
+
+                // Warning for older projects without FVSOut.db (and cutlist)
+                if (!FvsOutWithRequiredTable(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim(), Tables.FVS.DefaultFVSCasesTableName))
+                {
+                    MessageBox.Show(m_missingFvsOutDb, "FIA Biosum", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                }
 				m_ado.m_OleDbDataReader.Close();
 
                 strVariant="";
@@ -2754,8 +2760,7 @@ namespace FIA_Biosum_Manager
                                 }
 
                                 // Only try to load if there is a cut list in the FVSOut.db
-                                string strRunTitle = $@"FVSOUT_{strVariant}{m_oRxPackageItem.RunTitleSuffix}";
-                                if (FvsOutWithCutList(strRunTitle))
+                                if (FvsOutWithRequiredTable(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim(), "FVS_CutList"))
                                 {
                                     string strTreeTempDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
                                     string strTreeListDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
@@ -10374,21 +10379,17 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private bool FvsOutWithCutList(string strRunTitle)
+        private bool FvsOutWithRequiredTable(string strProjectDir, string strRequiredTable)
         {
-            if (System.IO.File.Exists(m_strFvsOutDb))
+            if (System.IO.File.Exists(strProjectDir + Tables.FVS.DefaultFVSOutDbFile))
             {
-                string strConn = SQLite.GetConnectionString(m_strFvsOutDb);
+                string strConn = SQLite.GetConnectionString(strProjectDir + Tables.FVS.DefaultFVSOutDbFile);
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                 {
                     conn.Open();
-                    if (SQLite.TableExist(conn, "FVS_CUTLIST"))
+                    if (SQLite.TableExist(conn, strRequiredTable))
                     {
-                        long lngRecords = SQLite.getRecordCount(conn, $@"SELECT DBH FROM {Tables.FVS.DefaultFVSCutListTableName} s, {Tables.FVS.DefaultFVSCasesTableName} c where s.CaseID = c.CaseID and s.StandID = c.StandID and c.RunTitle = '{strRunTitle}' LIMIT 1", Tables.FVS.DefaultFVSCutListTableName);
-                        if (lngRecords > 0)
-                        {
-                            return true;
-                        }                        
+                        return true;
                     }
                 }
             }
@@ -11838,7 +11839,7 @@ namespace FIA_Biosum_Manager
                                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim() + " Update " + m_strFvsTreeTable + " table");
 
                                 // Only try to load if there is a cut list in the FVSOut.db
-                                if (FvsOutWithCutList(strRunTitle))
+                                if (FvsOutWithRequiredTable(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim(), "FVS_CutList"))
                                 {
                                     string strTreeTempDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
                                     string strTreeListDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
