@@ -294,11 +294,6 @@ namespace FIA_Biosum_Manager
                                     ODBCMgr.DSN_KEYS.GisTravelTimesDsnName, m_lvDataSource.Items[x].SubItems[frmSqlBuilder.PATH].Text.Trim() + "\\" +
                                     m_lvDataSource.Items[x].SubItems[frmSqlBuilder.MDBFILE].Text.Trim());
 
-                                if (p_odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.GisTravelTimesDsnName))
-                                {
-                                    p_odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.GisTravelTimesDsnName);
-                                }
-
                             }
                             else
                             {
@@ -321,7 +316,9 @@ namespace FIA_Biosum_Manager
 			    FIA_Biosum_Manager.Datasource.UpdateTableMacroVariable(m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLETYPE].Text.Trim(),
 					m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim());
 			}
+
 			
+
 			p_dao.m_DaoWorkspace.Close();
 			p_dao = null;
 
@@ -376,7 +373,11 @@ namespace FIA_Biosum_Manager
 						}
 					}
 				}
-			}		
+			}
+			if (p_odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.GisTravelTimesDsnName))
+			{
+				p_odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.GisTravelTimesDsnName);
+			}
 		}
 		public string SQL
 		{

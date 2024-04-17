@@ -289,7 +289,7 @@ namespace FIA_Biosum_Manager
             this.btnExecuteSQL.TabIndex = 7;
             this.btnExecuteSQL.Text = "Execute SQL";
             this.btnExecuteSQL.UseVisualStyleBackColor = false;
-            this.btnExecuteSQL.Click += new System.EventHandler(this.btnExecuteSQL_Click);
+            this.btnExecuteSQL.Click += new System.EventHandler(this.btnExecuteSQL_ClickSqlite);
             // 
             // uc_optimizer_scenario_filter
             // 
@@ -853,26 +853,6 @@ namespace FIA_Biosum_Manager
 
 		}
 
-		private void btnEditSQL_ClickSqlite(object sender, System.EventArgs e)
-        {
-			string strSQL = "";
-
-			string strConn = "";
-			string str = "";
-			int x = 0;
-			int y = 0;
-			DialogResult result;
-
-
-			x = this.ReferenceOptimizerScenarioForm.uc_datasource1.getDataSourceTableNameRow("PLOT");
-			if (x < 0)
-			{
-				MessageBox.Show("!!Plot table cannot be found!!");
-				return;
-			}
-
-
-		}
 
 		/****************************************************************
 		 ** edit the sql in sql builder form
@@ -1198,6 +1178,70 @@ namespace FIA_Biosum_Manager
 			//p_core_tables = null;
 		     
 		}
+		private void btnExecuteSQL_ClickSqlite(object sender, System.EventArgs e)
+		{
+			macrosubst oMacroSubst = new macrosubst();
+			oMacroSubst.ReferenceSQLMacroSubstitutionVariableCollection = frmMain.g_oSQLMacroSubstitutionVariable_Collection;
+			FIA_Biosum_Manager.Datasource oDs = new Datasource();
+			oDs.m_strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+			oDs.m_strDataSourceTableName = "scenario_datasource";
+			oDs.m_strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text; ;
+			oDs.LoadTableColumnNamesAndDataTypes = false;
+			oDs.LoadTableRecordCount = false;
+			oDs.populate_datasource_array_sqlite();
+			//instantiate the core tables class
+			//ado_core_tables p_core_tables = new ado_core_tables();
+
+			//create a temporary mdb file containing the links 
+			//to the core tables and their mdb files
+			//p_core_tables.CreateMDBAndCreateCoreTableDataSourceLinks(
+			//	((frmMain)this.ParentForm.ParentForm).frmProject.uc_project1.m_strProjectDirectory + 
+			//	"\\core\\db\\scenario_core_rule_definitions.mdb",
+			//	((frmScenario)this.ParentForm).uc_scenario1.txtScenarioId.Text,
+			//	this.m_oEnv.strTempDir);
+
+			if (oDs.m_intError == 0)
+			{
+				string strConn = "";
+				string strFile = oDs.CreateMDBAndTableDataSourceLinks();
+
+				strConn = "Provider=Microsoft.Ace.OLEDB.12.0;Data Source=" + strFile + ";User Id=admin;Password=;";
+				string strSQL = this.txtCurrentSQL.Text.Trim();
+				if (strSQL.IndexOf("@@", 0) >= 0) strSQL = oMacroSubst.SQLTranslateVariableSubstitution(strSQL);
+				((frmOptimizerScenario)this.ParentForm).frmGridView1.LoadDataSet(strConn, strSQL);
+				if (((frmOptimizerScenario)this.ParentForm).frmGridView1.Visible == false)
+				{
+
+					((frmOptimizerScenario)this.ParentForm).frmGridView1.MdiParent = this.ParentForm.ParentForm;
+					((frmOptimizerScenario)this.ParentForm).frmGridView1.Text = "Treatment Optimizer: Plot Filter Browser" + " (" + ((frmOptimizerScenario)this.ParentForm).uc_scenario1.txtScenarioId.Text + ")";
+
+					try
+					{
+						((frmOptimizerScenario)this.ParentForm).frmGridView1.Show();
+					}
+					catch
+					{
+						((frmOptimizerScenario)this.ParentForm).frmGridView1 = new frmGridView();
+						((frmOptimizerScenario)this.ParentForm).frmGridView1.MdiParent = this.ParentForm.ParentForm;
+						((frmOptimizerScenario)this.ParentForm).frmGridView1.Visible = false;
+						((frmOptimizerScenario)this.ParentForm).frmGridView1.LoadDataSet(strConn, strSQL);
+						((frmOptimizerScenario)this.ParentForm).frmGridView1.MdiParent = this.ParentForm.ParentForm;
+						((frmOptimizerScenario)this.ParentForm).frmGridView1.Text = "Treatment Optimizer: Plot Filter Browser" + " (" + ((frmOptimizerScenario)this.ParentForm).uc_scenario1.txtScenarioId.Text + ")";
+
+						((frmOptimizerScenario)this.ParentForm).frmGridView1.Show();
+					}
+				}
+				if (((frmOptimizerScenario)this.ParentForm).frmGridView1.WindowState ==
+						System.Windows.Forms.FormWindowState.Minimized)
+					((frmOptimizerScenario)this.ParentForm).frmGridView1.WindowState =
+						System.Windows.Forms.FormWindowState.Normal;
+				((frmOptimizerScenario)this.ParentForm).frmGridView1.Focus();
+			}
+
+			//p_core_tables = null;
+
+		}
 
 		private void txtCurrentSQL_KeyPress(object sender, System.Windows.Forms.KeyPressEventArgs e)
 		{
@@ -1522,7 +1566,7 @@ namespace FIA_Biosum_Manager
 			int intError=0;
 
 			if (this.FilterType=="PLOT") intError = Val_PlotFilterSqlite(this.txtCurrentSQL.Text);
-			else intError = Val_CondFilter(this.txtCurrentSQL.Text);
+			else intError = Val_CondFilterSqlite(this.txtCurrentSQL.Text);
 
 			if (intError!=0)
 			{
