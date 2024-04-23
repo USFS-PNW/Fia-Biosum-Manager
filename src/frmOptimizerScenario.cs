@@ -4512,7 +4512,7 @@ namespace FIA_Biosum_Manager
             return intRecordCount;
         }
 
-        public int LoadSqliteGisData(bool bUpdatePlotYardingDist)
+        public int LoadSqliteGisData(bool bUpdatePlotYardingDist, string strDebugFile)
         {
             m_oProjectDs.populate_datasource_array();
 
@@ -4546,11 +4546,15 @@ namespace FIA_Biosum_Manager
                         if (strTableType.Equals(Datasource.TableTypes.TravelTimes))
                         {
                             frmMain.g_oTables.m_oTravelTime.CreateSqliteTravelTimeTable(SQLite, oLoadConn, strTableName);
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(strDebugFile, "Created travel_time table \r\n END: " + System.DateTime.Now.ToString() + "\r\n");
                             strTravelTimesTableName = strTableName;
                         }
                         else
                         {
                             frmMain.g_oTables.m_oTravelTime.CreateSqliteProcessingSiteTable(SQLite, oLoadConn, strTableName);
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(strDebugFile, "Created processing_site table \r\n END: " + System.DateTime.Now.ToString() + "\r\n");
                             strPSitesTableName = strTableName;
                         }
                     }
@@ -4583,7 +4587,12 @@ namespace FIA_Biosum_Manager
                                     " FROM " + m_strPlotTableName + " PT" +
                                     " INNER JOIN " + m_strMasterTravelTime + " TT ON (PT.statecd = TT.STATECD) AND (PT.plot = TT.PLOT)";
                     frmMain.g_sbpInfo.Text = "Loading project travel_times table...Stand by";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSql + "\r\n");
                     oAdo.SqlNonQuery(oLoadConn, strSql);
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
+                    
                     strSql = "SELECT COUNT(*) FROM " + strTravelTimesTableName;
                     intRecordCount = oAdo.getRecordCount(oLoadConn, strSql, strTravelTimesTableName);
                     strSql = $@"SELECT COUNT(*) FROM(SELECT TOP 1 plot FROM {m_strPlotTableName})";
@@ -4601,12 +4610,22 @@ namespace FIA_Biosum_Manager
                     {
                         oLoadConn.Open();
                         strSql = $@"ATTACH '{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}' as p";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSql + "\r\n");
                         SQLite.SqlNonQuery(oLoadConn, strSql);
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
+
                         strSql = $@"INSERT into processing_site SELECT distinct source.psite_id, name, TRANCD, TRANCD_DEF, BIOCD, BIOCD_DEF, 
                                  EXISTS_YN, LAT, LON, STATE, CITY, COUNTY, MILL_TYPE, STATUS, '' AS NOTES 
                                  FROM p.processing_site source INNER JOIN travel_time tt ON source.PSITE_ID = tt.PSITE_ID 
                                  group by source.PSITE_ID, NAME, TRANCD, TRANCD_DEF, BIOCD, BIOCD_DEF, EXISTS_YN, LAT, LON, STATE, CITY, COUNTY, MILL_TYPE, STATUS";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSql + "\r\n");
                         SQLite.SqlNonQuery(oLoadConn, strSql);
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
+
                         strSql = "SELECT COUNT(*) FROM " + strPSitesTableName;
                         intRecordCount = (int) SQLite.getRecordCount(oLoadConn, strSql, strPSitesTableName);
                         if (SQLite.AttachedTableExist(oLoadConn, Tables.TravelTime.DefaultPlotGisTableName))
@@ -4615,13 +4634,12 @@ namespace FIA_Biosum_Manager
                         }
                     }
                 }
-                if(!bExistsPlotGisTable)
+                if(bUpdatePlotYardingDist && !bExistsPlotGisTable)
                 {
                     MessageBox.Show($@"The {Tables.TravelTime.DefaultPlotGisTableName} table is missing from the master travel times database. Plot yarding distances cannot be updated.", "FIA BioSum");
                 }
                 else if (oAdo.m_intError == 0 && bUpdatePlotYardingDist)
                 {
-                    //@ToDo: Code to update plot table
                     if (bExistsPlotGisTable && bPlotRecords)
                     {
                         frmMain.g_sbpInfo.Text = "Updating yarding distances on plot table...Stand by";
@@ -4634,12 +4652,20 @@ namespace FIA_Biosum_Manager
                             // Run audit before performing the update
                             strSql = $@"INSERT INTO {Tables.TravelTime.DefaultGisPlotDistanceAuditTable} SELECT biosum_plot_id, PT.statecd, PT.plot, gis_yard_dist_ft, NEARDIST_FT
                                 FROM {m_strPlotTableName} PT LEFT JOIN {Tables.TravelTime.DefaultPlotGisTableName} PG ON (PT.statecd = PG.statecd) AND (PT.plot = PG.PLOT)
-                                WHERE NEARDIST_FT IS NULL";
+                                WHERE NEARDIST_FT IS NULL";                            
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSql + "\r\n");
                             oAdo.SqlNonQuery(oLoadConn, strSql);
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
 
                             strSql = $@"UPDATE {m_strPlotTableName} PT INNER JOIN {Tables.TravelTime.DefaultPlotGisTableName} PG ON 
                                 PT.PLOT = PG.PLOT AND PT.STATECD = PG.STATECD SET GIS_YARD_DIST_FT = NEARDIST_FT";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSql + "\r\n");
                             oAdo.SqlNonQuery(oLoadConn, strSql);
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
                         }
                     }
 
@@ -4652,8 +4678,6 @@ namespace FIA_Biosum_Manager
                 oAdo.CloseConnection(oAdo.m_OleDbConnection);
                 oAdo = null;
             }
-
-
 
             return intRecordCount;
         }
