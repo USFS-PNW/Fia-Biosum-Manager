@@ -6045,6 +6045,7 @@ namespace FIA_Biosum_Manager
             bool bExistingTables = false;
             bTablesHaveData = false;
             ado_data_access oAdo = new ado_data_access();
+            DataMgr oDataMgr = new DataMgr();
 
             // Load project data sources table
             m_oProjectDs = new Datasource();
@@ -6077,6 +6078,7 @@ namespace FIA_Biosum_Manager
                         bTablesHaveData = true;
                     }
                 }
+                
             }
 
             // If no travel times, check for psites table and data

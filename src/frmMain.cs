@@ -2212,13 +2212,13 @@ namespace FIA_Biosum_Manager
                 {
                     GisTools oGisTools = new GisTools();
                     bool bTablesHaveData = false;
-                    bool bTablesExist = oGisTools.CheckForExistingData(this.frmProject.uc_project1.m_strProjectDirectory, out bTablesHaveData);
+                    bool bTablesExist = oGisTools.CheckForExistingDataSqlite(this.frmProject.uc_project1.m_strProjectDirectory, out bTablesHaveData);
                     bool bCreateBackups = false;
                     bool bSuccess = true;
 
-                    string strMasterAccdb = frmMain.g_oEnv.strApplicationDataDirectory.Trim() + frmMain.g_strBiosumDataDir +
-                        "\\" + Tables.TravelTime.DefaultMasterTravelTimeAccdbFile;
-                    if (!System.IO.File.Exists(strMasterAccdb))
+                    string strMasterDb = frmMain.g_oEnv.strApplicationDataDirectory.Trim() + frmMain.g_strBiosumDataDir +
+                        "\\" + Tables.TravelTime.DefaultMasterTravelTimeDbFile;
+                    if (!System.IO.File.Exists(strMasterDb))
                     {
                         MessageBox.Show("The source gis_travel_times_master.accdb is required but does not exist in the " +
                             frmMain.g_oEnv.strApplicationDataDirectory.Trim() + frmMain.g_strBiosumDataDir + " folder. \r\n\r\n" +
@@ -2261,7 +2261,7 @@ namespace FIA_Biosum_Manager
                     }
                     if (bSuccess == true)
                     {
-                        int intRowCount = oGisTools.LoadGisData();
+                        int intRowCount = oGisTools.LoadSqliteGisData(false);
                         if (intRowCount < 1)
                         {
                             MessageBox.Show("An error occurred while loading the GIS data!!", "FIA BioSum");

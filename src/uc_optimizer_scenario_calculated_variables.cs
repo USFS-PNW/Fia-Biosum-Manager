@@ -979,7 +979,7 @@ namespace FIA_Biosum_Manager
             if (!System.IO.File.Exists(this.m_strCalculatedVariablesDb) || !System.IO.File.Exists(this.m_strCalculatedPrePostDb))
             {
                 //this.migrate_access_data
-                string errorMsg = "!! optimizer_definitions.db or prepost_fvs_weighted.db not found. Open an Optimization Scenario to migrate data !!";
+                string errorMsg = "!! optimizer_definitions.db or prepost_fvs_weighted.db not found. Upgrade for v5.11.0 to migrate data !!";
                 MessageBox.Show(errorMsg, "FIA Biosum");
                 return;
             }
@@ -5036,8 +5036,12 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oUtils.WriteText(m_strDebugFile, "Stored FVS variable information in memory \r\n\r\n");
                         }
 
-                        // Reset counter1 interval based on number of variables
-                        counter1Interval = 40 / dictFvsWeightedVariables.Keys.Count;
+                        if (dictFvsWeightedVariables.Keys.Count > 0)
+                        {
+                            // Reset counter1 interval based on number of variables
+                            counter1Interval = 40 / dictFvsWeightedVariables.Keys.Count;
+                        }
+                        
 
                         string strCurrentTable = "";
                         string strWeightsByRxCyclePreTable = "WEIGHTS_BY_RX_CYCLE_PRE";
@@ -5236,7 +5240,7 @@ namespace FIA_Biosum_Manager
             catch (Exception err)
             {
                 MessageBox.Show("!!Error!! \n" +
-                                "Module - uc_optimizer_scenario_calculated_variables:RecalculateCalculatedVariables_ProcessSqlite  \n" +
+                                "Module - uc_optimizer_scenario_calculated_variables:RecalculateCalculatedVariables_Process  \n" +
                                 "Err Msg - " + err.Message.ToString().Trim(),
                     "FVS Biosum", System.Windows.Forms.MessageBoxButtons.OK,
                     System.Windows.Forms.MessageBoxIcon.Exclamation);
