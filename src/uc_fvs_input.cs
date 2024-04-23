@@ -117,6 +117,7 @@ namespace FIA_Biosum_Manager
         private Label lblSelectedGroup;
         private CheckBox chkIncludeSeedlings;
         private CheckBox chkUsePrevDia;
+        private Label lblSurfaceWarning;
 
         delegate string[] GetListBoxItemsDlg(CheckedListBox checkedListBox);
 
@@ -222,6 +223,7 @@ namespace FIA_Biosum_Manager
             this.btnHelp = new System.Windows.Forms.Button();
             this.btnClose = new System.Windows.Forms.Button();
             this.lblTitle = new System.Windows.Forms.Label();
+            this.lblSurfaceWarning = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -504,7 +506,7 @@ namespace FIA_Biosum_Manager
             this.grpCalibOptions.Size = new System.Drawing.Size(330, 85);
             this.grpCalibOptions.TabIndex = 102;
             this.grpCalibOptions.TabStop = false;
-            this.grpCalibOptions.Text = "Calibration Data";
+            this.grpCalibOptions.Text = "Tree Growth Calibration Data";
             // 
             // chkUsePrevDia
             // 
@@ -513,9 +515,9 @@ namespace FIA_Biosum_Manager
             this.chkUsePrevDia.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkUsePrevDia.Location = new System.Drawing.Point(6, 43);
             this.chkUsePrevDia.Name = "chkUsePrevDia";
-            this.chkUsePrevDia.Size = new System.Drawing.Size(172, 21);
+            this.chkUsePrevDia.Size = new System.Drawing.Size(318, 21);
             this.chkUsePrevDia.TabIndex = 3;
-            this.chkUsePrevDia.Text = "Use previous diameter";
+            this.chkUsePrevDia.Text = "Include previous diameter**, where available**";
             this.chkUsePrevDia.UseVisualStyleBackColor = true;
             // 
             // chkUsePrevHt
@@ -525,13 +527,14 @@ namespace FIA_Biosum_Manager
             this.chkUsePrevHt.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkUsePrevHt.Location = new System.Drawing.Point(6, 20);
             this.chkUsePrevHt.Name = "chkUsePrevHt";
-            this.chkUsePrevHt.Size = new System.Drawing.Size(156, 21);
+            this.chkUsePrevHt.Size = new System.Drawing.Size(302, 21);
             this.chkUsePrevHt.TabIndex = 2;
-            this.chkUsePrevHt.Text = "Use previous height";
+            this.chkUsePrevHt.Text = "Include previous height**, where available**";
             this.chkUsePrevHt.UseVisualStyleBackColor = true;
             // 
             // grpDWMOptions
             // 
+            this.grpDWMOptions.Controls.Add(this.lblSurfaceWarning);
             this.grpDWMOptions.Controls.Add(this.linkLabelFuelModel);
             this.grpDWMOptions.Controls.Add(this.groupBox2);
             this.grpDWMOptions.Controls.Add(this.chkDwmFuelModel);
@@ -568,9 +571,9 @@ namespace FIA_Biosum_Manager
             this.groupBox2.Controls.Add(this.label5);
             this.groupBox2.Controls.Add(this.chkLstBoxDuffYears);
             this.groupBox2.Controls.Add(this.chkLstBoxLitterYears);
-            this.groupBox2.Location = new System.Drawing.Point(7, 142);
+            this.groupBox2.Location = new System.Drawing.Point(7, 176);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(236, 229);
+            this.groupBox2.Size = new System.Drawing.Size(236, 190);
             this.groupBox2.TabIndex = 104;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Duff/Litter Years to Exclude";
@@ -598,7 +601,7 @@ namespace FIA_Biosum_Manager
             this.chkLstBoxDuffYears.FormattingEnabled = true;
             this.chkLstBoxDuffYears.Location = new System.Drawing.Point(9, 35);
             this.chkLstBoxDuffYears.Name = "chkLstBoxDuffYears";
-            this.chkLstBoxDuffYears.Size = new System.Drawing.Size(100, 174);
+            this.chkLstBoxDuffYears.Size = new System.Drawing.Size(100, 140);
             this.chkLstBoxDuffYears.TabIndex = 6;
             // 
             // chkLstBoxLitterYears
@@ -606,7 +609,8 @@ namespace FIA_Biosum_Manager
             this.chkLstBoxLitterYears.FormattingEnabled = true;
             this.chkLstBoxLitterYears.Location = new System.Drawing.Point(126, 35);
             this.chkLstBoxLitterYears.Name = "chkLstBoxLitterYears";
-            this.chkLstBoxLitterYears.Size = new System.Drawing.Size(100, 174);
+            this.chkLstBoxLitterYears.Size = new System.Drawing.Size(100, 140);
+            this.chkLstBoxLitterYears.Sorted = true;
             this.chkLstBoxLitterYears.TabIndex = 7;
             // 
             // chkDwmFuelModel
@@ -623,18 +627,18 @@ namespace FIA_Biosum_Manager
             this.chkDwmFuelBiomass.AutoSize = true;
             this.chkDwmFuelBiomass.Checked = true;
             this.chkDwmFuelBiomass.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkDwmFuelBiomass.Location = new System.Drawing.Point(7, 39);
+            this.chkDwmFuelBiomass.Location = new System.Drawing.Point(7, 73);
             this.chkDwmFuelBiomass.Name = "chkDwmFuelBiomass";
-            this.chkDwmFuelBiomass.Size = new System.Drawing.Size(417, 21);
+            this.chkDwmFuelBiomass.Size = new System.Drawing.Size(472, 21);
             this.chkDwmFuelBiomass.TabIndex = 2;
-            this.chkDwmFuelBiomass.Text = "Calculate fuel biomasses with available DWM data (tons/acre)";
+            this.chkDwmFuelBiomass.Text = "Include calculated fuel biomasses with available DWM data (tons/acre)";
             this.chkDwmFuelBiomass.UseVisualStyleBackColor = true;
             // 
             // label4
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-            this.label4.Location = new System.Drawing.Point(58, 119);
+            this.label4.Location = new System.Drawing.Point(58, 153);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(229, 17);
             this.label4.TabIndex = 99;
@@ -645,16 +649,16 @@ namespace FIA_Biosum_Manager
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-            this.label2.Location = new System.Drawing.Point(58, 68);
+            this.label2.Location = new System.Drawing.Point(58, 102);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(266, 17);
+            this.label2.Size = new System.Drawing.Size(347, 17);
             this.label2.TabIndex = 99;
             this.label2.Tag = "txtMinSmallFwdTL";
-            this.label2.Text = "Minimum Small FWD Transect Length (ft)";
+            this.label2.Text = "Minimum Small and Medium FWD Transect Length (ft)";
             // 
             // txtMinLargeFwdTL
             // 
-            this.txtMinLargeFwdTL.Location = new System.Drawing.Point(7, 90);
+            this.txtMinLargeFwdTL.Location = new System.Drawing.Point(7, 124);
             this.txtMinLargeFwdTL.Name = "txtMinLargeFwdTL";
             this.txtMinLargeFwdTL.Size = new System.Drawing.Size(45, 22);
             this.txtMinLargeFwdTL.TabIndex = 4;
@@ -663,7 +667,7 @@ namespace FIA_Biosum_Manager
             // 
             // txtMinCwdTL
             // 
-            this.txtMinCwdTL.Location = new System.Drawing.Point(7, 116);
+            this.txtMinCwdTL.Location = new System.Drawing.Point(7, 150);
             this.txtMinCwdTL.Name = "txtMinCwdTL";
             this.txtMinCwdTL.Size = new System.Drawing.Size(45, 22);
             this.txtMinCwdTL.TabIndex = 5;
@@ -674,7 +678,7 @@ namespace FIA_Biosum_Manager
             // 
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-            this.label3.Location = new System.Drawing.Point(58, 93);
+            this.label3.Location = new System.Drawing.Point(58, 127);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(269, 17);
             this.label3.TabIndex = 99;
@@ -683,7 +687,7 @@ namespace FIA_Biosum_Manager
             // 
             // txtMinSmallFwdTL
             // 
-            this.txtMinSmallFwdTL.Location = new System.Drawing.Point(7, 65);
+            this.txtMinSmallFwdTL.Location = new System.Drawing.Point(7, 99);
             this.txtMinSmallFwdTL.Name = "txtMinSmallFwdTL";
             this.txtMinSmallFwdTL.Size = new System.Drawing.Size(45, 22);
             this.txtMinSmallFwdTL.TabIndex = 3;
@@ -746,6 +750,15 @@ namespace FIA_Biosum_Manager
             this.lblTitle.Size = new System.Drawing.Size(794, 32);
             this.lblTitle.TabIndex = 99;
             this.lblTitle.Text = "Create FVS Input";
+            // 
+            // lblSurfaceWarning
+            // 
+            this.lblSurfaceWarning.AutoSize = true;
+            this.lblSurfaceWarning.Location = new System.Drawing.Point(5, 43);
+            this.lblSurfaceWarning.Name = "lblSurfaceWarning";
+            this.lblSurfaceWarning.Size = new System.Drawing.Size(434, 17);
+            this.lblSurfaceWarning.TabIndex = 106;
+            this.lblSurfaceWarning.Text = "If surface fuel models included. FVS will ignore all DWM data loaded";
             // 
             // uc_fvs_input
             // 
