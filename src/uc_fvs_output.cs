@@ -6050,8 +6050,11 @@ namespace FIA_Biosum_Manager
                                             GetPrePostSeqNumConfiguration("FVS_SUMMARY", strPackage);
 
                                             // attach audit.db
-                                            SQLite.m_strSQL = $@"ATTACH DATABASE '{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile}' AS AUDIT";
-                                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                            if (!SQLite.DatabaseAttached(conn, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile))
+                                            {
+                                                SQLite.m_strSQL = $@"ATTACH DATABASE '{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile}' AS AUDIT";
+                                                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                            }
 
                                             //check pre and post-treatment seqnum assignments
                                             this.Validate_FvsSummaryPrePostSeqNum(conn, ref intItemError, ref strItemError, ref intItemWarning, ref strItemWarning, true,
