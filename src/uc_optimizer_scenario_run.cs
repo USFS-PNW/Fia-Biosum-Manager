@@ -8575,7 +8575,11 @@ namespace FIA_Biosum_Manager
                 conn.Open();
 
                 //attach FVS prepost weighted database
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile + "' AS prepost_fvsout";
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile + "' AS fvs_weighted";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                //attach FVS prepost
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile + "' AS fvs_out";
                 p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
 
                 //get all the column names in the effective table
@@ -9152,6 +9156,8 @@ namespace FIA_Biosum_Manager
 
                     p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile + "' AS prepost_fvsout";
                     p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile + "' AS fvs_weighted";
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
                     p_dataMgr.m_strSQL = "UPDATE " + strOptimizationTableName + " AS e " +
                         "SET change_value = CASE WHEN a." + strPostColumn + " IS NOT NULL AND b." + strPreColumn + " IS NOT NULL " +
                         "THEN a." + strPostColumn + " - b." + strPreColumn +
@@ -9639,7 +9645,11 @@ namespace FIA_Biosum_Manager
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                 //attach FVS prepost weighted database
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile + "' AS prepost_fvsout";
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile + "' AS fvs_weighted";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                //attach FVS out database
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile + "' AS prepost_fvsout";
                 p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
 
                 //populate the variable table.column name and its value to the tiebreaker table

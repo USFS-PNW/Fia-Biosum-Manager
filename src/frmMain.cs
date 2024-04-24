@@ -2262,7 +2262,7 @@ namespace FIA_Biosum_Manager
                     }
                     if (bSuccess == true)
                     {
-                        int intRowCount = oGisTools.LoadSqliteGisData(false);
+                        int intRowCount = oGisTools.LoadSqliteGisData(false, frmProject.uc_project1.m_strDebugFile);
                         if (intRowCount < 1)
                         {
                             MessageBox.Show("An error occurred while loading the GIS data!!", "FIA BioSum");
