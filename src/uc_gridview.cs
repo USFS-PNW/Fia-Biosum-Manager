@@ -1846,19 +1846,8 @@ namespace FIA_Biosum_Manager
 			//int intMovedRow;
 			//string strValue="";
 			bool bFirstTime=false;
-			ado_data_access p_ado;
-			//Datasource p_datasource;
-		    //datasource array constants
-		    //const int TABLETYPE = 0;
-		    //const int PATH = 1;
-		    //const int MDBFILE = 2;
-		    //const int FILESTATUS = 3;
-		    //const int TABLE = 4;
-		    //const int TABLESTATUS = 5;
-		    //const int RECORDCOUNT = 6;
-
-		
-
+            ado_data_access p_ado;
+            SQLite.ADO.DataMgr p_dataMgr = null;
 
 			this.m_intError=0;
 
@@ -1894,144 +1883,286 @@ namespace FIA_Biosum_Manager
                     this.ParentForm.Top);
 
 				p_ado = new ado_data_access();
+                if (m_SQLite_da != null)    // Indicates that the grid is loaded with SQLite data
+                {
+                    p_dataMgr = new SQLite.ADO.DataMgr();
+                }
             
 				try
 				{
-					/******************************************************
+                    /******************************************************
 					 **save all the rows that changed
 					 ******************************************************/
-					for (x=0; x <= p_dtChanges.Rows.Count-1;x++)
-					{
-						/*****************************************************
-						 **build the sql string
-						 *****************************************************/
-						bFirstTime=true;
-						for (y=0; y<= this.m_strColumnsToEdit.Length-1;y++)
-						{
+                    if (p_dataMgr == null)
+                    {
+                        for (x = 0; x <= p_dtChanges.Rows.Count - 1; x++)
+                        {
+                            /*****************************************************
+                             **build the sql string
+                             *****************************************************/
+                            bFirstTime = true;
+                            for (y = 0; y <= this.m_strColumnsToEdit.Length - 1; y++)
+                            {
 
-							if (p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]] != System.DBNull.Value)
-							{
-								if (bFirstTime==true)
-								{
-								
-								    bFirstTime=false;
-									/***********************************************************
-									 **check to see if the column data type is numeric or not
-									 ***********************************************************/
-									if (p_ado.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strColumnsToEdit[y]].DataType.FullName.ToString())=="Y")
-									{
-										/**********************************************************
-										 **it is a string datatype so enclose the variable value
-										 **with single quotation marks
-										 **********************************************************/
-										strSQL = "update " + this.m_dg.CaptionText + " set " + 
-											this.m_strColumnsToEdit[y] + "='" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString() + "'";
-									}
-									else
-									{
-										/**********************************************
-										 **not a string datatype
-										 **********************************************/
-										strSQL = "update " + this.m_dg.CaptionText + " set " + 
-											this.m_strColumnsToEdit[y] + "=" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString();
+                                if (p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]] != System.DBNull.Value)
+                                {
+                                    if (bFirstTime == true)
+                                    {
 
-									}
-								}
-								else
-								{
-									/***********************************************************
-									 **check to see if the column data type is numeric or not
-									 ***********************************************************/
-									if (p_ado.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strColumnsToEdit[y]].DataType.FullName.ToString())=="Y")
-									{
-										/**********************************************************
-										 **it is a string datatype so enclose the variable value
-										 **with single quotation marks
-										 **********************************************************/
-										strSQL += "," + 
-											this.m_strColumnsToEdit[y] + "= '" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString() + "'";
-									}
-									else
-									{
-										/**********************************************
-										 **not a string datatype
-										 **********************************************/
-										strSQL += "," + 
-											this.m_strColumnsToEdit[y] + "=" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString();
+                                        bFirstTime = false;
+                                        /***********************************************************
+                                         **check to see if the column data type is numeric or not
+                                         ***********************************************************/
+                                        if (p_ado.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strColumnsToEdit[y]].DataType.FullName.ToString()) == "Y")
+                                        {
+                                            /**********************************************************
+                                             **it is a string datatype so enclose the variable value
+                                             **with single quotation marks
+                                             **********************************************************/
+                                            strSQL = "update " + this.m_dg.CaptionText + " set " +
+                                                this.m_strColumnsToEdit[y] + "='" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString() + "'";
+                                        }
+                                        else
+                                        {
+                                            /**********************************************
+                                             **not a string datatype
+                                             **********************************************/
+                                            strSQL = "update " + this.m_dg.CaptionText + " set " +
+                                                this.m_strColumnsToEdit[y] + "=" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString();
 
-									}
-								}
-							}
-						}
-						/****************************************
-						 **make sure that we have sql
-						 ****************************************/
-						if (strSQL.Trim().Length > 0)
-						{
-							/***********************************************************
-							 **build the where clause to update the correct record(s)
-							 ***********************************************************/
-							for (y=0; y<= this.m_strRecordKeyColumns.Length-1;y++)
-							{
-								if (y==0)
-								{
-									/***********************************************************
-									 **check to see if the column data type is numeric or not
-									 ***********************************************************/
-									if (p_ado.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strRecordKeyColumns[y]].DataType.FullName.ToString())=="Y")
-									{
-										/**********************************************************
-										 **it is a string datatype so enclose the variable value
-										 **with single quotation marks
-										 **********************************************************/
-										strSQLWhere = " where " + this.m_strRecordKeyColumns[y].Trim() + " = '" + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString() + "'";
-									}
-									else
-									{
-										/**********************************************
-										 **not a string datatype
-										 **********************************************/
-										strSQLWhere = " where " + this.m_strRecordKeyColumns[y].Trim() + " = " + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        /***********************************************************
+                                         **check to see if the column data type is numeric or not
+                                         ***********************************************************/
+                                        if (p_ado.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strColumnsToEdit[y]].DataType.FullName.ToString()) == "Y")
+                                        {
+                                            /**********************************************************
+                                             **it is a string datatype so enclose the variable value
+                                             **with single quotation marks
+                                             **********************************************************/
+                                            strSQL += "," +
+                                                this.m_strColumnsToEdit[y] + "= '" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString() + "'";
+                                        }
+                                        else
+                                        {
+                                            /**********************************************
+                                             **not a string datatype
+                                             **********************************************/
+                                            strSQL += "," +
+                                                this.m_strColumnsToEdit[y] + "=" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString();
 
-									}
-								}
-								else
-								{
-									/***********************************************************
-									 **check to see if the column data type is numeric or not
-									 ***********************************************************/
-									if (p_ado.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strRecordKeyColumns[y]].DataType.FullName.ToString())=="Y")
-									{
-										/**********************************************************
-										 **it is a string datatype so enclose the variable value
-										 **with single quotation marks
-										 **********************************************************/
-										strSQLWhere += " and " + this.m_strRecordKeyColumns[y].Trim() + " = '" + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString() + "'";
-									}
-									else
-									{
-										/**********************************************
-										 **not a string datatype
-										 **********************************************/
-										strSQLWhere += " and " + this.m_strRecordKeyColumns[y].Trim() + " = " + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString();
-									}
+                                        }
+                                    }
+                                }
+                            }
+                            /****************************************
+                             **make sure that we have sql
+                             ****************************************/
+                            if (strSQL.Trim().Length > 0)
+                            {
+                                /***********************************************************
+                                 **build the where clause to update the correct record(s)
+                                 ***********************************************************/
+                                for (y = 0; y <= this.m_strRecordKeyColumns.Length - 1; y++)
+                                {
+                                    if (y == 0)
+                                    {
+                                        /***********************************************************
+                                         **check to see if the column data type is numeric or not
+                                         ***********************************************************/
+                                        if (p_ado.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strRecordKeyColumns[y]].DataType.FullName.ToString()) == "Y")
+                                        {
+                                            /**********************************************************
+                                             **it is a string datatype so enclose the variable value
+                                             **with single quotation marks
+                                             **********************************************************/
+                                            strSQLWhere = " where " + this.m_strRecordKeyColumns[y].Trim() + " = '" + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString() + "'";
+                                        }
+                                        else
+                                        {
+                                            /**********************************************
+                                             **not a string datatype
+                                             **********************************************/
+                                            strSQLWhere = " where " + this.m_strRecordKeyColumns[y].Trim() + " = " + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString();
 
-								}
-							}
+                                        }
+                                    }
+                                    else
+                                    {
+                                        /***********************************************************
+                                         **check to see if the column data type is numeric or not
+                                         ***********************************************************/
+                                        if (p_ado.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strRecordKeyColumns[y]].DataType.FullName.ToString()) == "Y")
+                                        {
+                                            /**********************************************************
+                                             **it is a string datatype so enclose the variable value
+                                             **with single quotation marks
+                                             **********************************************************/
+                                            strSQLWhere += " and " + this.m_strRecordKeyColumns[y].Trim() + " = '" + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString() + "'";
+                                        }
+                                        else
+                                        {
+                                            /**********************************************
+                                             **not a string datatype
+                                             **********************************************/
+                                            strSQLWhere += " and " + this.m_strRecordKeyColumns[y].Trim() + " = " + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString();
+                                        }
 
-							strSQL += strSQLWhere + ";";
-			
-							p_ado.SqlNonQuery(this.m_conn,strSQL);
-							if (p_ado.m_intError==-1)
-							{
-								p_dtChanges.Clear();
-								p_dtChanges=null;
-								p_ado = null;
-								this.m_intError=-1;
-								return;
-							}
-						}
-					}
+                                    }
+                                }
+
+                                strSQL += strSQLWhere + ";";
+
+                                p_ado.SqlNonQuery(this.m_conn, strSQL);
+                                if (p_ado.m_intError == -1)
+                                {
+                                    p_dtChanges.Clear();
+                                    p_dtChanges = null;
+                                    p_ado = null;
+                                    this.m_intError = -1;
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (x = 0; x <= p_dtChanges.Rows.Count - 1; x++)
+                        {
+                            /*****************************************************
+                             **build the sql string
+                             *****************************************************/
+                            bFirstTime = true;
+                            for (y = 0; y <= this.m_strColumnsToEdit.Length - 1; y++)
+                            {
+
+                                if (p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]] != System.DBNull.Value)
+                                {
+                                    if (bFirstTime == true)
+                                    {
+
+                                        bFirstTime = false;
+                                        /***********************************************************
+                                         **check to see if the column data type is numeric or not
+                                         ***********************************************************/
+                                        if (p_dataMgr.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strColumnsToEdit[y]].DataType.FullName.ToString()) == "Y")
+                                        {
+                                            /**********************************************************
+                                             **it is a string datatype so enclose the variable value
+                                             **with single quotation marks
+                                             **********************************************************/
+                                            strSQL = "update " + this.m_dg.CaptionText + " set " +
+                                                this.m_strColumnsToEdit[y] + "='" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString() + "'";
+                                        }
+                                        else
+                                        {
+                                            /**********************************************
+                                             **not a string datatype
+                                             **********************************************/
+                                            strSQL = "update " + this.m_dg.CaptionText + " set " +
+                                                this.m_strColumnsToEdit[y] + "=" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString();
+
+                                        }
+                                    }
+                                    else
+                                    {
+                                        /***********************************************************
+                                         **check to see if the column data type is numeric or not
+                                         ***********************************************************/
+                                        if (p_dataMgr.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strColumnsToEdit[y]].DataType.FullName.ToString()) == "Y")
+                                        {
+                                            /**********************************************************
+                                             **it is a string datatype so enclose the variable value
+                                             **with single quotation marks
+                                             **********************************************************/
+                                            strSQL += "," +
+                                                this.m_strColumnsToEdit[y] + "= '" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString() + "'";
+                                        }
+                                        else
+                                        {
+                                            /**********************************************
+                                             **not a string datatype
+                                             **********************************************/
+                                            strSQL += "," +
+                                                this.m_strColumnsToEdit[y] + "=" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString();
+
+                                        }
+                                    }
+                                }
+                            }
+                            /****************************************
+                             **make sure that we have sql
+                             ****************************************/
+                            if (strSQL.Trim().Length > 0)
+                            {
+                                /***********************************************************
+                                 **build the where clause to update the correct record(s)
+                                 ***********************************************************/
+                                for (y = 0; y <= this.m_strRecordKeyColumns.Length - 1; y++)
+                                {
+                                    if (y == 0)
+                                    {
+                                        /***********************************************************
+                                         **check to see if the column data type is numeric or not
+                                         ***********************************************************/
+                                        if (p_dataMgr.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strRecordKeyColumns[y]].DataType.FullName.ToString()) == "Y")
+                                        {
+                                            /**********************************************************
+                                             **it is a string datatype so enclose the variable value
+                                             **with single quotation marks
+                                             **********************************************************/
+                                            strSQLWhere = " where " + this.m_strRecordKeyColumns[y].Trim() + " = '" + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString() + "'";
+                                        }
+                                        else
+                                        {
+                                            /**********************************************
+                                             **not a string datatype
+                                             **********************************************/
+                                            strSQLWhere = " where " + this.m_strRecordKeyColumns[y].Trim() + " = " + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString();
+
+                                        }
+                                    }
+                                    else
+                                    {
+                                        /***********************************************************
+                                         **check to see if the column data type is numeric or not
+                                         ***********************************************************/
+                                        if (p_dataMgr.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strRecordKeyColumns[y]].DataType.FullName.ToString()) == "Y")
+                                        {
+                                            /**********************************************************
+                                             **it is a string datatype so enclose the variable value
+                                             **with single quotation marks
+                                             **********************************************************/
+                                            strSQLWhere += " and " + this.m_strRecordKeyColumns[y].Trim() + " = '" + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString() + "'";
+                                        }
+                                        else
+                                        {
+                                            /**********************************************
+                                             **not a string datatype
+                                             **********************************************/
+                                            strSQLWhere += " and " + this.m_strRecordKeyColumns[y].Trim() + " = " + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString();
+                                        }
+
+                                    }
+                                }
+
+                                strSQL += strSQLWhere + ";";
+
+                                p_dataMgr.SqlNonQuery(this.m_SQLite_conn, strSQL);
+                                if (p_dataMgr.m_intError == -1)
+                                {
+                                    p_dtChanges.Clear();
+                                    p_dtChanges = null;
+                                    p_ado = null;
+                                    this.m_intError = -1;
+                                    return;
+                                }
+                            }
+                        }
+                    }
                     
 				}
 				catch (Exception caught)
@@ -2048,7 +2179,7 @@ namespace FIA_Biosum_Manager
 					p_dtChanges.AcceptChanges(); //this.m_ds.Tables[this.m_dg.CaptionText].AcceptChanges();
 				}
 				p_dtChanges.Clear();
-				p_ado=null;
+                p_dataMgr = null;
 
 			}
 			p_dtChanges=null;
