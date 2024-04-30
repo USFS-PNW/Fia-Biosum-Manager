@@ -6469,7 +6469,7 @@ namespace FIA_Biosum_Manager
             // Update fields based on USEBIOMASS_YN
             this.m_strSQL = "UPDATE " + this.m_strEconByRxWorkTableName +
                             " SET HAUL_COSTS_DPA = IIF(USEBIOMASS_YN = 'N', MERCH_HAUL_COST_DPA, MERCH_HAUL_COST_DPA + CHIP_HAUL_COST_DPA ), " +
-                            " MAX_NR_DPA = IIF(USEBIOMASS_YN = 'N' = 'Y', MERCH_NR_DPA, MERCH_CHIP_NR_DPA)";
+                            " MAX_NR_DPA = IIF(USEBIOMASS_YN = 'Y', MERCH_CHIP_NR_DPA, MERCH_NR_DPA)";
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
             this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
