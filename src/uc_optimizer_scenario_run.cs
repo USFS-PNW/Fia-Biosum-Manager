@@ -10091,7 +10091,7 @@ namespace FIA_Biosum_Manager
             // Update fields based on USEBIOMASS_YN
             this.m_strSQL = "UPDATE " + this.m_strEconByRxWorkTableName +
                             " SET HAUL_COSTS_DPA = IIF(USEBIOMASS_YN = 'N', MERCH_HAUL_COST_DPA, MERCH_HAUL_COST_DPA + CHIP_HAUL_COST_DPA ), " +
-                            " MAX_NR_DPA = IIF(USEBIOMASS_YN = 'N' = 'Y', MERCH_NR_DPA, MERCH_CHIP_NR_DPA)";
+                            " MAX_NR_DPA = IIF(USEBIOMASS_YN = 'Y', MERCH_CHIP_NR_DPA, MERCH_NR_DPA)";
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
             this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
@@ -10566,7 +10566,7 @@ namespace FIA_Biosum_Manager
                 // Update fields based on USEBIOMASS_YN
                 p_dataMgr.m_strSQL = "UPDATE " + this.m_strEconByRxWorkTableName +
                     " SET HAUL_COSTS_DPA = CASE WHEN usebiomass_yn = 'N' THEN MERCH_HAUL_COST_DPA ELSE MERCH_HAUL_COST_DPA + CHIP_HAUL_COST_DPA END," +
-                    " MAX_NR_DPA = CASE WHEN usebiomass_yn = 'N' THEN MERCH_NR_DPA ELSE MERCH_CHIP_NR_DPA END";
+                    " MAX_NR_DPA = CASE WHEN usebiomass_yn = 'Y' THEN MERCH_CHIP_NR_DPA ELSE MERCH_NR_DPA END";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
