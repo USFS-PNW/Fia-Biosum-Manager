@@ -5673,7 +5673,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        public void loadEconomicVariableWeights(FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables.VariableItem p_oWeightedVariable)
+        public void loadEconomicVariableWeightsAccess(FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables.VariableItem p_oWeightedVariable)
         {
             if (p_oWeightedVariable != null)
             {
@@ -5692,6 +5692,32 @@ namespace FIA_Biosum_Manager
                         while (oAdo.m_OleDbDataReader.Read())
                         {
                             lstEconWeights.Add(Convert.ToDouble(oAdo.m_OleDbDataReader["weight"]));
+                        }
+                        p_oWeightedVariable.lstWeights = lstEconWeights;
+                    }
+                }
+            }
+        }
+
+        public void loadEconomicVariableWeights(FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables.VariableItem p_oWeightedVariable)
+        {
+            if (p_oWeightedVariable != null)
+            {
+                DataMgr oDataMgr = new DataMgr();
+                string strEconConn = oDataMgr.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultSqliteDbFile);
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strEconConn))
+                {
+                    conn.Open();
+                    string strSql = "SELECT * FROM " + Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName +
+                                    " WHERE calculated_variables_id = " + p_oWeightedVariable.intId +
+                                    " ORDER BY rxcycle";
+                    oDataMgr.SqlQueryReader(conn, strSql);
+                    if (oDataMgr.m_intError == 0)
+                    {
+                        System.Collections.Generic.IList<double> lstEconWeights = new System.Collections.Generic.List<double>();
+                        while (oDataMgr.m_DataReader.Read())
+                        {
+                            lstEconWeights.Add(Convert.ToDouble(oDataMgr.m_DataReader["weight"]));
                         }
                         p_oWeightedVariable.lstWeights = lstEconWeights;
                     }

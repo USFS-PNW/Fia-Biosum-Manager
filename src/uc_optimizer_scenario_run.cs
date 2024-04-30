@@ -8994,7 +8994,7 @@ namespace FIA_Biosum_Manager
 			}
             else if (this.m_oOptimizationVariable.strOptimizedVariable.Trim().ToUpper() == "ECONOMIC ATTRIBUTE")
             {
-                m_strSQL = getEconomicOptimizationSql();
+                m_strSQL = getEconomicOptimizationSqlAccess();
 
             }
 			else
@@ -9142,7 +9142,7 @@ namespace FIA_Biosum_Manager
                 }
                 else if (this.m_oOptimizationVariable.strOptimizedVariable.Trim().ToUpper() == "ECONOMIC ATTRIBUTE")
                 {
-                    p_dataMgr.m_strSQL = getSqliteEconomicOptimizationSql();
+                    p_dataMgr.m_strSQL = getEconomicOptimizationSql();
 
                 }
                 else
@@ -9192,7 +9192,7 @@ namespace FIA_Biosum_Manager
             FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
         }
 
-        private string getEconomicOptimizationSql()
+        private string getEconomicOptimizationSqlAccess()
         {
             string strSql = "";
             string strOptimizationTableName = ReferenceOptimizerScenarioForm.OutputTablePrefix +
@@ -9272,7 +9272,7 @@ namespace FIA_Biosum_Manager
             }
             return strSql;
         }
-        private string getSqliteEconomicOptimizationSql()
+        private string getEconomicOptimizationSql()
         {
             string strSql = "";
             string strOptimizationTableName = ReferenceOptimizerScenarioForm.OutputTablePrefix +
@@ -9337,8 +9337,8 @@ namespace FIA_Biosum_Manager
                         strSql = "UPDATE " + strOptimizationTableName + " AS e " +
                             "SET pre_variable_name = '" + oItem.strVariableName + "', " +
                             "post_variable_name = '" + oItem.strVariableName + "', " +
-                            "pre_variable_value = (SELECT CASE WHEN p." + strDatabase[1] + " IS NOT NULL THEN p." + strDatabase[1] + " ELSE 0 END, " +
-                            "post_variable_value = (SELECT CASE WHEN p." + strDatabase[1] + " IS NOT NULL THEN p." + strDatabase[1] + " ELSE 0 END, " +
+                            "pre_variable_value = CASE WHEN p." + strDatabase[1] + " IS NOT NULL THEN p." + strDatabase[1] + " ELSE 0 END, " +
+                            "post_variable_value = CASE WHEN p." + strDatabase[1] + " IS NOT NULL THEN p." + strDatabase[1] + " ELSE 0 END, " +
                             "change_value = 0 " +
                             "FROM " + strDatabase[0] + " AS p WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
                     }
@@ -11190,7 +11190,7 @@ namespace FIA_Biosum_Manager
                 FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables.Variable_Collection oWeightedVariableCollection =
                     new FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables.Variable_Collection();
                 FIA_Biosum_Manager.OptimizerScenarioTools oOptimizerScenarioTools = new OptimizerScenarioTools();
-                oOptimizerScenarioTools.LoadWeightedVariables_access(this.m_ado, oWeightedVariableCollection);
+                oOptimizerScenarioTools.LoadWeightedVariables(oWeightedVariableCollection);
                 foreach (string strVariableName in lstFieldNames)
                 {
                     foreach (uc_optimizer_scenario_calculated_variables.VariableItem oVariableItem in oWeightedVariableCollection)
@@ -11393,7 +11393,7 @@ namespace FIA_Biosum_Manager
                                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + strSql + "\r\n");
 
-                                p_dataMgr.SqlQueryReader(econConn, strSql);
+                                p_dataMgr.SqlNonQuery(econConn, strSql);
                             }
                         }
                     }
