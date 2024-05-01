@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Windows.Forms;
+using SQLite.ADO;
 
 namespace FIA_Biosum_Manager
 {
@@ -342,7 +343,7 @@ namespace FIA_Biosum_Manager
 			
 		}
        
-		public int savevalues()
+		public int savevalues_access()
 		{
 			int x=0;
             
@@ -428,6 +429,89 @@ namespace FIA_Biosum_Manager
 			return 0;
 
 			
+		}
+		public int savevalues()
+		{
+			int x = 0;
+
+			//string str="";
+			string strSQL = "";
+			string strConn = "";
+			string strRevPerGreenTon = "";
+
+			string strHaulCost;
+			string strRailHaulCost;
+			string strRailBioTransferCost;
+			string strRailMerchTransferCost;
+
+
+			//ldp strRevPerGreenTon = this.txtRevPerGreenTon_subclass.Text.Replace("$","");
+			//ldp strRevPerGreenTon = strRevPerGreenTon.Replace(",","");
+			//ldp if (strRevPerGreenTon.Trim().Length == 1) strRevPerGreenTon = "0.00";
+
+
+
+
+			//strHaulCost = this.txtHaulCost_subclass.Text.Replace("$","");
+			strHaulCost = RoadHaulCostDollarsPerGreenTonPerHour.Replace("$", "");
+
+
+			strHaulCost = strHaulCost.Replace(",", "");
+			if (strHaulCost.Trim().Length == 1) strHaulCost = "0.00";
+
+			//ldp strRailHaulCost = this.txtRailHaulCost_subclass.Text.Replace("$","");
+			strRailHaulCost = RailHaulCostDollarsPerGreenTonPerMile.Replace("$", "");
+			strRailHaulCost = strRailHaulCost.Replace(",", "");
+			if (strRailHaulCost.Trim().Length == 1) strRailHaulCost = "0.00";
+
+			//ldp strRailBioTransferCost = this.txtRailChipTransfer_subclass.Text.Replace("$","");
+			strRailBioTransferCost = RailChipTransferCostDollarsPerGreenTonPerHour.Replace("$", "");
+			strRailBioTransferCost = strRailBioTransferCost.Replace(",", "");
+			if (strRailBioTransferCost.Trim().Length == 1) strRailBioTransferCost = "0.00";
+
+			//ldp strRailMerchTransferCost = this.txtRailMerchTransfer_subclass.Text.Replace("$","");
+			strRailMerchTransferCost = RailMerchTransferCostDollarsPerGreenTonPerHour.Replace("$", "");
+			strRailMerchTransferCost = strRailMerchTransferCost.Replace(",", "");
+			if (strRailMerchTransferCost.Trim().Length == 1) strRailMerchTransferCost = "0.00";
+
+
+			DataMgr oDataMgr = new DataMgr();
+			string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
+			string strScenarioDB =
+				frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+
+			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
+			{
+				conn.Open();
+				if (oDataMgr.m_intError != 0)
+				{
+					x = oDataMgr.m_intError;
+					oDataMgr = null;
+					return x;
+				}
+
+				//delete all records from the scenario wind speed class table
+				strSQL = "DELETE FROM scenario_costs WHERE " +
+					" TRIM(UPPER(scenario_id)) = '" + strScenarioId.Trim().ToUpper() + "';";
+
+				oDataMgr.SqlNonQuery(conn, strSQL);
+				if (oDataMgr.m_intError < 0)
+				{
+					conn.Close();
+					x = oDataMgr.m_intError;
+					oDataMgr = null;
+					return x;
+				}
+
+				oDataMgr.m_strSQL = "INSERT INTO scenario_costs (scenario_id,road_haul_cost_pgt_per_hour,rail_haul_cost_pgt_per_mile,rail_chip_transfer_pgt,rail_merch_transfer_pgt)" +
+						" VALUES ('" + strScenarioId + "'," +
+						  strHaulCost + "," + strRailHaulCost + "," + strRailBioTransferCost + "," + strRailMerchTransferCost + ");";
+				oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+				conn.Close();
+			}
+			return 0;
 		}
 
 		public int val_scenario_costs()

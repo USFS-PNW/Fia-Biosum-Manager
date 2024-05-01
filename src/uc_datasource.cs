@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Data;
 using System.Windows.Forms;
 using System.Text;
+using SQLite.ADO;
 
 namespace FIA_Biosum_Manager
 {
@@ -896,6 +897,173 @@ namespace FIA_Biosum_Manager
 
 			p_ado = null;
 		}
+		public void populate_listview_grid_sqlite()
+        {
+			macrosubst oMacroSub = new macrosubst();
+			oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
+
+			string strPathAndFile = "";
+			string strSQL = "";
+			string strConn = "";
+
+
+			//@ToDo: Consider using LoadLstRequiredTables() here
+			this.lstRequiredTables.Clear();
+			this.m_oLvRowColors.InitializeRowCollection();
+
+			DataMgr p_DataMgr = new DataMgr();
+
+			this.lstRequiredTables.Columns.Add(" ", 2, HorizontalAlignment.Left);
+			this.lstRequiredTables.Columns.Add("Table Type", 50, HorizontalAlignment.Left);
+			this.lstRequiredTables.Columns.Add("Path", 60, HorizontalAlignment.Left);
+			this.lstRequiredTables.Columns.Add("MDB File", 60, HorizontalAlignment.Left);
+			this.lstRequiredTables.Columns.Add("File Status", 80, HorizontalAlignment.Left);
+			this.lstRequiredTables.Columns.Add("Table Name", 50, HorizontalAlignment.Left);
+			this.lstRequiredTables.Columns.Add("Table Status", 80, HorizontalAlignment.Left);
+			this.lstRequiredTables.Columns.Add("Record Count", 80, HorizontalAlignment.Left);
+			this.lstRequiredTables.Columns.Add("Table Macro Variable Name", 150, HorizontalAlignment.Left);
+
+			// Create an instance of a ListView column sorter and assign it 
+			// to the ListView control.
+			lvwColumnSorter = new ListViewColumnSorter();
+			this.lstRequiredTables.ListViewItemSorter = lvwColumnSorter;
+
+			strConn = p_DataMgr.GetConnectionString(this.m_strDataSourceMDBFile);
+			intError = 0;
+			strError = "";
+			using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
+            {
+                try
+                {
+					oConn.Open();
+                }
+				catch (System.Data.SQLite.SQLiteException sqliteException)
+				{
+					strError = "Failed to make a connection with " + strConn;
+					MessageBox.Show(strError + " Exception=" + sqliteException.Message.Trim());
+					intError = -1;
+					return;
+				}
+				System.Data.SQLite.SQLiteCommand oCommand = oConn.CreateCommand();
+				if (this.m_strScenarioId.Trim().Length > 0)
+				{
+					oCommand.CommandText = "SELECT table_type,path,file,table_name FROM " + this.m_strDataSourceTable + " " +
+						" WHERE TRIM(UPPER(scenario_id)) = '" +
+						this.m_strScenarioId.Trim().ToUpper() + "';";
+				}
+				else
+				{
+					oCommand.CommandText = "SELECT table_type,path,file,table_name FROM " + this.m_strDataSourceTable + ";";
+				}
+                try
+                {
+					System.Data.SQLite.SQLiteDataReader oDataReader = oCommand.ExecuteReader();
+					int x = 0;
+					while (oDataReader.Read())
+                    {
+						if (oDataReader["table_type"] != System.DBNull.Value &&
+						oDataReader["table_type"].ToString().Trim().Length > 0)
+                        {
+							// Add a ListItem object to the ListView.
+							System.Windows.Forms.ListViewItem entryListItem =
+								lstRequiredTables.Items.Add(" ");
+							this.m_oLvRowColors.AddRow();
+							this.m_oLvRowColors.AddColumns(x, lstRequiredTables.Columns.Count);
+							entryListItem.UseItemStyleForSubItems = false;
+							this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, COLUMN_NULL, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
+							this.lstRequiredTables.Items[x].SubItems.Add(oDataReader["table_type"].ToString());
+							this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, TABLETYPE, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
+							this.lstRequiredTables.Items[x].SubItems.Add(oDataReader["path"].ToString());
+							this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, PATH, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
+							this.lstRequiredTables.Items[x].SubItems.Add(oDataReader["file"].ToString());
+							this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, MDBFILE, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
+							strPathAndFile = oMacroSub.GeneralTranslateVariableSubstitution(oDataReader["path"].ToString().Trim())
+								+ "\\" + oDataReader["file"].ToString().Trim();
+							if (System.IO.File.Exists(strPathAndFile))
+                            {
+								ListViewItem.ListViewSubItem FileStatusSubItem =
+								entryListItem.SubItems.Add("Found");
+								this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, FILESTATUS, FileStatusSubItem, false);
+								//FileStatusSubItem.ForeColor = System.Drawing.Color.Black;
+								//FileStatusSubItem.BackColor = System.Drawing.Color.White;
+								//FileStatusSubItem.Font = new System.Drawing.Font(
+								//	"Microsoft Sans Serif", 8, System.Drawing.FontStyle.Regular);
+								FileStatusSubItem.Font = frmMain.g_oGridViewFont;
+								this.lstRequiredTables.Items[x].SubItems.Add(oDataReader["table_name"].ToString());
+								this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, TABLE, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
+
+								strConn = p_DataMgr.GetConnectionString(strPathAndFile);
+								using (System.Data.SQLite.SQLiteConnection fileConn = new System.Data.SQLite.SQLiteConnection(p_DataMgr.GetConnectionString(strConn)))
+                                {
+									fileConn.Open();
+									if (p_DataMgr.TableExist(fileConn, oDataReader["table_name"].ToString().Trim()))
+									{
+										this.lstRequiredTables.Items[x].SubItems.Add("Found");
+										this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, TABLESTATUS, entryListItem.SubItems[entryListItem.SubItems.Count - 1], lstRequiredTables.Items[x].Selected);
+										strSQL = "SELECT COUNT(*) from " + oDataReader["table_name"].ToString();
+										this.lstRequiredTables.Items[x].SubItems.Add(Convert.ToString(p_DataMgr.getRecordCount(strConn, strSQL, oDataReader["table_name"].ToString())));
+										this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, RECORDCOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], lstRequiredTables.Items[x].Selected);
+									}
+									else
+									{
+										ListViewItem.ListViewSubItem TableStatusSubItem =
+											entryListItem.SubItems.Add("Not Found");
+										this.m_oLvRowColors.m_oRowCollection.Item(x).m_oColumnCollection.Item(TABLESTATUS).UpdateColumn = false;
+										TableStatusSubItem.ForeColor = System.Drawing.Color.White;
+										TableStatusSubItem.BackColor = System.Drawing.Color.Red;
+										//TableStatusSubItem.Font = new System.Drawing.Font(
+										//	"Microsoft Sans Serif", 8, System.Drawing.FontStyle.Regular);
+										TableStatusSubItem.Font = frmMain.g_oGridViewFont;
+										this.lstRequiredTables.Items[x].SubItems.Add("0");
+										this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, RECORDCOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], lstRequiredTables.Items[x].Selected);
+									}
+									fileConn.Close();
+                                }
+							}
+							else
+							{
+								ListViewItem.ListViewSubItem FileStatusSubItem =
+									entryListItem.SubItems.Add("Not Found");
+								this.m_oLvRowColors.m_oRowCollection.Item(lstRequiredTables.Items.Count - 1).m_oColumnCollection.Item(FILESTATUS).UpdateColumn = false;
+								FileStatusSubItem.ForeColor = System.Drawing.Color.White;
+								FileStatusSubItem.BackColor = System.Drawing.Color.Red;
+								//FileStatusSubItem.Font = new System.Drawing.Font(
+								//	"Microsoft Sans Serif", 8, System.Drawing.FontStyle.Regular);
+								FileStatusSubItem.Font = frmMain.g_oGridViewFont;
+								this.lstRequiredTables.Items[x].SubItems.Add(oDataReader["table_name"].ToString());
+								ListViewItem.ListViewSubItem TableStatusSubItem =
+									entryListItem.SubItems.Add("Not Found");
+								this.m_oLvRowColors.m_oRowCollection.Item(x).m_oColumnCollection.Item(TABLESTATUS).UpdateColumn = false;
+								TableStatusSubItem.ForeColor = System.Drawing.Color.White;
+								TableStatusSubItem.BackColor = System.Drawing.Color.Red;
+								//TableStatusSubItem.Font = new System.Drawing.Font(
+								//	"Microsoft Sans Serif", 8, System.Drawing.FontStyle.Regular);
+								TableStatusSubItem.Font = frmMain.g_oGridViewFont;
+								this.lstRequiredTables.Items[x].SubItems.Add("0");
+								this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, RECORDCOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
+							}
+							Datasource.UpdateTableMacroVariable(entryListItem.SubItems[TABLETYPE].Text, entryListItem.SubItems[TABLE].Text);
+							this.lstRequiredTables.Items[x].SubItems.Add(Datasource.g_oCurrentSQLMacroSubstitutionVariableItem.VariableName);
+							this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, MDBFILE, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
+							x++;
+						}
+					}
+					oDataReader.Close();
+                }
+				catch
+				{
+					intError = -1;
+					strError = "The Query Command " + oCommand.CommandText.ToString() + " Failed";
+					MessageBox.Show(strError);
+					oConn.Close();
+					p_DataMgr = null;
+					return;
+				}
+				oConn.Close();
+			}
+			this.lstRequiredTables.Columns[TABLETYPE].Width = -1;
+			p_DataMgr = null;
+		}
 
 		private void uc_datasource_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
 		{
@@ -1519,37 +1687,84 @@ namespace FIA_Biosum_Manager
 			utils p_utils = new utils();
 			//used to create a link to the table
 			dao_data_access p_dao = new dao_data_access();
-			for (x=0; x <= this.lstRequiredTables.Items.Count - 1; x++)
+			for (x = 0; x <= this.lstRequiredTables.Items.Count - 1; x++)
 			{
-					if (this.lstRequiredTables.Items[x].SubItems[TABLESTATUS].Text.Trim().ToUpper()=="FOUND" &&
-						this.lstRequiredTables.Items[x].SubItems[FILESTATUS].Text.Trim().ToUpper()=="FOUND")
+				if (this.lstRequiredTables.Items[x].SubItems[TABLESTATUS].Text.Trim().ToUpper() == "FOUND" &&
+					this.lstRequiredTables.Items[x].SubItems[FILESTATUS].Text.Trim().ToUpper() == "FOUND")
+				{
+					if (strTempMDB.Trim().Length == 0)
 					{
-						if (strTempMDB.Trim().Length == 0)
-						{
-							//get temporary mdb file
-							strTempMDB = 
-								p_utils.getRandomFile(strDestinationLinkDir,"accdb");
+						//get temporary mdb file
+						strTempMDB =
+							p_utils.getRandomFile(strDestinationLinkDir, "accdb");
 
-							//create a temporary mdb that will contain all 
-							//the links to the scenario datasource tables
-							p_dao.CreateMDB(strTempMDB);
-
-						}
-						p_dao.CreateTableLink(strTempMDB,
-							this.lstRequiredTables.Items[x].SubItems[TABLE].Text.Trim(),
-							this.lstRequiredTables.Items[x].SubItems[PATH].Text.Trim() + "\\" +
-							     this.lstRequiredTables.Items[x].SubItems[MDBFILE].Text.Trim(),
-							this.lstRequiredTables.Items[x].SubItems[TABLE].Text.Trim());
-						this.m_intNumberOfValidTables++;
-						
+						//create a temporary mdb that will contain all 
+						//the links to the scenario datasource tables
+						p_dao.CreateMDB(strTempMDB);
 
 					}
+					if (this.lstRequiredTables.Items[x].SubItems[MDBFILE].Text.Trim().Substring(this.lstRequiredTables.Items[x].SubItems[MDBFILE].Text.Trim().Length - 3) == "mdb" ||
+						this.lstRequiredTables.Items[x].SubItems[MDBFILE].Text.Trim().Substring(this.lstRequiredTables.Items[x].SubItems[MDBFILE].Text.Trim().Length- 5) == "accdb")
+                    {
+						p_dao.CreateTableLink(strTempMDB,
+						this.lstRequiredTables.Items[x].SubItems[TABLE].Text.Trim(),
+						this.lstRequiredTables.Items[x].SubItems[PATH].Text.Trim() + "\\" +
+							 this.lstRequiredTables.Items[x].SubItems[MDBFILE].Text.Trim(),
+						this.lstRequiredTables.Items[x].SubItems[TABLE].Text.Trim());
+						this.m_intNumberOfValidTables++;
+					}
+
+				}
 			}
 			p_utils = null;
 			p_dao = null;
             if (strTempMDB.Trim().Length == 0)
 				MessageBox.Show("!!None of the scenario data source tables are found!!");
 			return strTempMDB;
+		}
+		public string CreateDBAndScenarioTableDataSourceLinks(string strDestinationLinkDir)
+        {
+			string strTempDB = "";
+			int x;
+			this.m_intNumberOfValidTables = 0;
+			// used to get the temporary random file name
+			utils p_utils = new utils();
+			// used to create a link to the table
+			DataMgr p_dataMgr = new DataMgr();
+			for (x = 0; x <= this.lstRequiredTables.Items.Count - 1; x++)
+            {
+				if (this.lstRequiredTables.Items[x].SubItems[TABLESTATUS].Text.Trim().ToUpper() == "FOUND" &&
+					this.lstRequiredTables.Items[x].SubItems[FILESTATUS].Text.Trim().ToUpper() == "FOUND")
+                {
+					if (strTempDB.Trim().Length == 0)
+                    {
+						// get temporary db file
+						strTempDB = p_utils.getRandomFile(strDestinationLinkDir, "db");
+
+						// create a temporary db that will contain all
+						// the links to the scenario datasource tables
+						p_dataMgr.CreateDbFile(strTempDB);
+                    }
+					using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(strTempDB)))
+                    {
+						conn.Open();
+						p_dataMgr.m_strSQL = "ATTACH DATABASE '" + this.lstRequiredTables.Items[x].SubItems[PATH].Text.Trim() + "\\" +
+							 this.lstRequiredTables.Items[x].SubItems[MDBFILE].Text.Trim() + "'";
+						p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+						conn.Close();
+					}
+					this.m_intNumberOfValidTables++;
+                }
+
+			}
+			p_utils = null;
+			p_dataMgr = null;
+			if (strTempDB.Trim().Length == 0)
+            {
+				MessageBox.Show("!!None of the scenario data source tables are found!!");
+            }
+			return strTempDB;
+
 		}
 
 

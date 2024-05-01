@@ -197,6 +197,7 @@
     <Compile Include="btnMainForm.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="sqlite_optimizer_tables.cs" />
     <Compile Include="ODBCMgr.cs" />
     <Compile Include="uc_db_sqlite.cs">
       <SubType>UserControl</SubType>

@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Data;
 using System.Windows.Forms;
 using System.Data.OleDb;
+using SQLite.ADO;
 
 
 namespace FIA_Biosum_Manager
@@ -91,7 +92,7 @@ namespace FIA_Biosum_Manager
         public void loadvalues_FromProperties(ProcessorScenarioItem oProcItem)
         {
             // For now we don't store selected fvs_variant/rxPackages at the scenario level
-            this.loadvalues(oProcItem);
+            this.loadvaluessqlite(oProcItem);
         }
 		public void loadvalues(ProcessorScenarioItem oProcItem)
 		{
@@ -210,7 +211,142 @@ namespace FIA_Biosum_Manager
             }
 		}
 
-		// We do not currently save the list of selected packages. It is reloaded
+        public void loadvaluessqlite(ProcessorScenarioItem oProcItem)
+        {
+            this.lstRxPackages.Clear();
+            this.m_oLvRowColors.InitializeRowCollection();
+
+            this.lstRxPackages.Columns.Add("", 2, HorizontalAlignment.Left);
+            this.lstRxPackages.Columns.Add("Variant", 75, HorizontalAlignment.Left);
+            this.lstRxPackages.Columns.Add("Package", 300, HorizontalAlignment.Left);
+
+            this.lstRxPackages.Columns[COLUMN_CHECKBOX].Width = -2;
+
+            // Create an instance of a ListView column sorter and assign it 
+            // to the ListView control.
+            lvwColumnSorter = new ListViewColumnSorter();
+            this.lstRxPackages.ListViewItemSorter = lvwColumnSorter;
+
+            m_oEnv = new env();
+            ado_data_access oAdo = new ado_data_access();
+
+            if (String.IsNullOrEmpty(oProcItem.ScenarioId))
+            {
+                return;
+            }
+
+            string[] arr1 = new string[] { "PLOT" };
+            string strPlotTableName = "";
+            object oValue = frmMain.g_oDelegate.GetValueExecuteControlMethodWithParam(ReferenceOptimizerScenarioForm.uc_datasource1,
+                "getDataSourceTableName", arr1, true);
+            if (oValue != null)
+            {
+                string strValue = Convert.ToString(oValue);
+                if (strValue != "false")
+                {
+                    strPlotTableName = strValue;
+                }
+            }
+            string strHarvestCostsPathAndFile = oProcItem.DbPath + "\\" + Tables.ProcessorScenarioRun.DefaultScenarioResultsTableDbFile;
+
+            arr1 = new string[] { "CONDITION" };
+            string strCondTableName = "";
+            oValue = frmMain.g_oDelegate.GetValueExecuteControlMethodWithParam(ReferenceOptimizerScenarioForm.uc_datasource1,
+                "getDataSourceTableName", arr1, true);
+            if (oValue != null)
+            {
+                string strValue = Convert.ToString(oValue);
+                if (strValue != "false")
+                {
+                    strCondTableName = strValue;
+                }
+            }
+
+            /**************************************************************
+             **create a temporary MDB File that will contain table links
+             **to the cond, plot, and harvest_costs tables
+             **************************************************************/
+            dao_data_access p_dao = new dao_data_access();
+            ODBCMgr p_odbcMgr = new ODBCMgr();
+            DataMgr p_dataMgr = new DataMgr();
+            bool harvestCostTableExists = false;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(strHarvestCostsPathAndFile)))
+            {
+                conn.Open();
+                harvestCostTableExists = p_dataMgr.TableExist(conn, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName);
+            }
+            if (System.IO.File.Exists(strHarvestCostsPathAndFile) && harvestCostTableExists)
+            {
+                this.m_strTempMDBFile = this.ReferenceOptimizerScenarioForm.uc_datasource1.CreateMDBAndScenarioTableDataSourceLinks(m_oEnv.strTempDir);
+
+                if (p_odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProcessorResultsDsnName))
+                {
+                    p_odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProcessorResultsDsnName);
+                }
+                p_odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ProcessorResultsDsnName, strHarvestCostsPathAndFile);
+
+                p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName,
+                    ODBCMgr.DSN_KEYS.ProcessorResultsDsnName, strHarvestCostsPathAndFile);
+
+                p_dao = null;
+
+                string strTempConn = oAdo.getMDBConnString(this.m_strTempMDBFile, "", "");
+                using (var oConn = new OleDbConnection(strTempConn))
+                {
+                    oConn.Open();
+                    oAdo.m_strSQL = "SELECT DISTINCT plot.fvs_variant, harvest_costs.rxpackage, Count(*) AS [Count]" +
+                                    " FROM (" + strCondTableName + " INNER JOIN " + strPlotTableName +
+                                    " ON " + strCondTableName + ".biosum_plot_id = " + strPlotTableName + ".biosum_plot_id) " +
+                                    " INNER JOIN " + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName +
+                                    " ON " + strCondTableName + ".biosum_cond_id = " + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName + ".biosum_cond_id" +
+                                    " GROUP BY FVS_VARIANT, RXPACKAGE";
+
+                    oAdo.SqlQueryReader(oConn, oAdo.m_strSQL);
+                    if (oAdo.m_OleDbDataReader.HasRows == true)
+                    {
+                        while (oAdo.m_OleDbDataReader.Read())
+                        {
+                            if (oAdo.m_OleDbDataReader["fvs_variant"] != System.DBNull.Value)
+                            {
+                                //null column
+                                this.lstRxPackages.Items.Add(" ");
+                                this.lstRxPackages.Items[lstRxPackages.Items.Count - 1].UseItemStyleForSubItems = false;
+                                this.lstRxPackages.Items[lstRxPackages.Items.Count - 1].Checked = true;
+                                this.m_oLvRowColors.AddRow();
+                                this.m_oLvRowColors.AddColumns(lstRxPackages.Items.Count - 1, lstRxPackages.Columns.Count);
+
+                                //fvs_variant
+                                this.lstRxPackages.Items[lstRxPackages.Items.Count - 1].SubItems.Add(Convert.ToString(oAdo.m_OleDbDataReader["fvs_variant"]));
+                                this.m_oLvRowColors.ListViewSubItem(lstRxPackages.Items.Count - 1,
+                                    COLUMN_FVS_VARIANT,
+                                    lstRxPackages.Items[lstRxPackages.Items.Count - 1].SubItems[COLUMN_FVS_VARIANT], false);
+
+                                // rxPackage
+                                if (oAdo.m_OleDbDataReader["rxpackage"] != System.DBNull.Value)
+                                {
+                                    this.lstRxPackages.Items[this.lstRxPackages.Items.Count - 1].SubItems.Add(oAdo.m_OleDbDataReader["rxpackage"].ToString());
+                                }
+                                else
+                                {
+                                    this.lstRxPackages.Items[this.lstRxPackages.Items.Count - 1].SubItems.Add(" ");
+                                }
+                                this.m_oLvRowColors.ListViewSubItem(lstRxPackages.Items.Count - 1,
+                                    COLUMN_RXPACKAGE,
+                                    lstRxPackages.Items[lstRxPackages.Items.Count - 1].SubItems[COLUMN_RXPACKAGE], false);
+                            }
+                        }
+                    }
+                    oAdo.m_OleDbDataReader.Close();
+                }
+                if (p_odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProcessorResultsDsnName))
+                {
+                    p_odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProcessorResultsDsnName);
+                }
+                p_odbcMgr = null;
+            }
+        }
+
+        // We do not currently save the list of selected packages. It is reloaded
         // each time a scenario is loaded.
         public int savevalues()
 		{

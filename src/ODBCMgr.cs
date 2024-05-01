@@ -200,12 +200,23 @@ namespace FIA_Biosum_Manager
             static public string ProcessorTemporaryDsnName { get { return "PROCESSOR_TEMPORARY"; } }
             static public string FvsOutTemporaryDsnName { get { return "FVS_OUT_TEMPORARY"; } }
             static public string FvsOutTreeListDsnName { get { return "FVS_OUT_TREELIST"; } }
+            static public string PrePostFvsWeightedDsnName {  get { return "PREPOST_FVS_WEIGHTED"; } }
+            static public string OptimizerRuleDefinitionsDsnName { get { return "OPTIMIZER_RULE_DEFINITIONS";  } }
+            static public string FvsOutPreAuditDsnName { get { return "FVS_OUT_PREAUDIT"; } }
             static public string FvsOutAuditsDsnName { get { return "FVS_OUT_AUDITS"; } }
+            static public string OptimizerResultsDsnName { get { return "OPTIMIZER_RESULTS"; } }
+            static public string CondAuditDsnName { get { return "COND_AUDIT"; } }
+            static public string PreValidComboDsnName { get { return "PRE_VALID_COMBO"; } }
+            static public string PostValidComboDsnName { get { return "POST_VALID_COMBO"; } }
+            static public string PrePostValidComboDsnName { get { return "PRE_POST_VALID_COMBO"; } }
+            static public string FVSPrePostDsnName { get { return "FVSOUT_PREPOST"; } }
             static public string FvsMasterDbDsnName { get { return "FVS_MASTER_DB"; } }
             static public string FvsOutPrePostDsnName { get { return "FVS_OUT_PREPOST"; } }
             static public string GisProjectDbDsnName { get { return "GIS_PROJECT"; } }
             static public string GisMasterDbDsnName { get { return "GIS_MASTER"; } }
             static public string GisAuditDbDsnName { get { return "GIS_AUDIT"; } }
+            static public string GisTravelTimesDsnName { get { return "TRAVEL_TIMES"; } }
+            static public string WorkTablesDsnName { get { return "WORK_TABLES"; } }
         }
 
     }
