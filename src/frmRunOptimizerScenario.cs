@@ -769,7 +769,7 @@ namespace FIA_Biosum_Manager
 				this.m_intError = this.m_frmScenario.uc_datasource1.val_datasources();
 				if (this.m_intError ==0)
 				{
-					this.m_frmScenario.SaveRuleDefinitions();
+					this.m_frmScenario.SaveRuleDefinitions_access();
 				}
 			}
 				

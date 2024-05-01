@@ -6,6 +6,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using SQLite.ADO;
 
 namespace FIA_Biosum_Manager
 {
@@ -44,7 +45,7 @@ namespace FIA_Biosum_Manager
             get { return _frmOptimizerScenario; }
             set { _frmOptimizerScenario = value; }
         }
-        public void loadvalues()
+        public void loadvalues_access()
         {
             int x;
             
@@ -119,6 +120,82 @@ namespace FIA_Biosum_Manager
             oAdo.m_OleDbDataReader.Close();
             oAdo.CloseConnection(oAdo.m_OleDbConnection);
 
+        }
+        public void loadvalues()
+        {
+            int x;
+
+            lvOptimizerScenario.Items.Clear();
+            System.Windows.Forms.ListViewItem entryListItem = null;
+            this.m_oLvAlternateColors.InitializeRowCollection();
+            this.m_oLvAlternateColors.ReferenceAlternateBackgroundColor = frmMain.g_oGridViewAlternateRowBackgroundColor;
+            this.m_oLvAlternateColors.ReferenceAlternateForegroundColor = frmMain.g_oGridViewRowForegroundColor;
+            this.m_oLvAlternateColors.ReferenceBackgroundColor = frmMain.g_oGridViewRowBackgroundColor;
+            this.m_oLvAlternateColors.ReferenceForegroundColor = frmMain.g_oGridViewRowForegroundColor;
+            this.m_oLvAlternateColors.ReferenceSelectedRowBackgroundColor = frmMain.g_oGridViewSelectedRowBackgroundColor;
+            this.m_oLvAlternateColors.ReferenceListView = this.lvOptimizerScenario;
+            this.m_oLvAlternateColors.CustomFullRowSelect = true;
+            if (frmMain.g_oGridViewFont != null) this.lvOptimizerScenario.Font = frmMain.g_oGridViewFont;
+            //
+            //OPEN CONNECTION TO DB FILE CONTAINING Optimizer Analysis Scenario TABLE
+            //
+            //scenario mdb connection
+            string strOptimizerScenarioDB =
+              frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+              Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+            //
+            //get a list of all the scenarios
+            //
+            DataMgr oDataMgr = new DataMgr();
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strOptimizerScenarioDB)))
+            {
+                conn.Open();
+                oDataMgr.SqlQueryReader(conn, "SELECT scenario_id,description " +
+                       "FROM scenario " +
+                       "WHERE scenario_id IS NOT NULL AND " +
+                                         "LENGTH(TRIM(scenario_id)) > 0");
+
+                x = 0;
+                if (oDataMgr.m_DataReader.HasRows)
+                {
+                    while (oDataMgr.m_DataReader.Read())
+                    {
+                        if (oDataMgr.m_DataReader["scenario_id"] != DBNull.Value &&
+                        oDataMgr.m_DataReader["scenario_id"].ToString().Trim().Length > 0 &&
+                        ReferenceCurrentScenarioItem.ScenarioId.Trim().ToUpper() !=
+                        oDataMgr.m_DataReader["scenario_id"].ToString().Trim().ToUpper())
+                        {
+                            entryListItem = lvOptimizerScenario.Items.Add(" ");
+
+                            entryListItem.UseItemStyleForSubItems = false;
+                            this.m_oLvAlternateColors.AddRow();
+                            this.m_oLvAlternateColors.AddColumns(x, lvOptimizerScenario.Columns.Count);
+
+
+                            entryListItem.SubItems.Add(oDataMgr.m_DataReader["scenario_id"].ToString().Trim());
+
+                            if (oDataMgr.m_DataReader["description"] != DBNull.Value &&
+                                oDataMgr.m_DataReader["description"].ToString().Trim().Length > 0)
+                            {
+                                entryListItem.SubItems.Add(oDataMgr.m_DataReader["description"].ToString().Trim());
+                            }
+                            else
+                            {
+                                entryListItem.SubItems.Add(" ");
+                            }
+                            x = x + 1;
+                        }
+                    }
+                    this.m_oLvAlternateColors.ListView();
+                }
+                else
+                {
+                    MessageBox.Show("!!No Scenarios To Copy!!", "FIA Bisoum");
+                    btnCopy.Enabled = false;
+                }
+                oDataMgr.m_DataReader.Close();
+                conn.Close();
+            }
         }
         public void savevalues()
         {
@@ -226,7 +303,7 @@ namespace FIA_Biosum_Manager
 
             this.txtDetails.Text  = "";
 
-            CheckIfScenarioLoaded(lvOptimizerScenario.SelectedItems[0].SubItems[1].Text.Trim(),out x);
+            CheckIfScenarioLoadedSqlite(lvOptimizerScenario.SelectedItems[0].SubItems[1].Text.Trim(),out x);
             
             this.m_oOptimizerScenarioItem = m_oOptimizerScenarioItem_Collection.Item(x);
 
@@ -258,7 +335,7 @@ namespace FIA_Biosum_Manager
             DialogResult result = MessageBox.Show(strMsg, "FIA Biosum", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (result == DialogResult.Yes)
             {
-                CheckIfScenarioLoaded(lvOptimizerScenario.SelectedItems[0].SubItems[1].Text.Trim(), out x);
+                CheckIfScenarioLoadedSqlite(lvOptimizerScenario.SelectedItems[0].SubItems[1].Text.Trim(), out x);
 
                 this.m_oOptimizerScenarioItem = m_oOptimizerScenarioItem_Collection.Item(x);
 
@@ -283,6 +360,29 @@ namespace FIA_Biosum_Manager
         private void CheckIfScenarioLoaded(string p_strScenarioId,out int x)
         {
             
+            //search to see if this scenario was loaded into the collection
+            for (x = 0; x <= m_oOptimizerScenarioItem_Collection.Count - 1; x++)
+            {
+                if (m_oOptimizerScenarioItem_Collection.Item(x).ScenarioId.Trim().ToUpper() ==
+                    p_strScenarioId.Trim().ToUpper()) break;
+            }
+            if (x > m_oOptimizerScenarioItem_Collection.Count - 1)
+            {
+
+                lblMsg.Text = "Loading Treatment Optimizer Scenario " + p_strScenarioId.Trim() + "...Stand By";
+                lblMsg.Show();
+                lblMsg.Refresh();
+                //load the scenario into the collection
+                m_oOptimizerScenarioTools.LoadScenario_access(
+                    p_strScenarioId.Trim(),
+                    m_oQueries, ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite,
+                    m_oOptimizerScenarioItem_Collection);
+                lblMsg.Hide();
+            }
+        }
+        private void CheckIfScenarioLoadedSqlite(string p_strScenarioId, out int x)
+        {
+
             //search to see if this scenario was loaded into the collection
             for (x = 0; x <= m_oOptimizerScenarioItem_Collection.Count - 1; x++)
             {

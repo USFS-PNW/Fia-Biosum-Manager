@@ -6,6 +6,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using SQLite.ADO;
 
 namespace FIA_Biosum_Manager
 {
@@ -32,7 +33,7 @@ namespace FIA_Biosum_Manager
             get { return _frmScenario; }
             set { _frmScenario = value; }
         }
-        public void loadvalues(bool p_bScenarioCopy)
+        public void loadvalues_access(bool p_bScenarioCopy)
         {
             int x;
             ProcessorScenarioTools oTools = new ProcessorScenarioTools();
@@ -58,11 +59,11 @@ namespace FIA_Biosum_Manager
                 string[] strScenarioArray = null;
                 if (!ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite)
                 {
-                    strScenarioArray = loadScenarioArray(oAdo);
+                    strScenarioArray = loadScenarioArray_access(oAdo);
                 }
                 else
                 {
-                    strScenarioArray = loadScenarioArraySqlite();
+                    strScenarioArray = loadScenarioArray();
                 }
                 if (strScenarioArray == null) return;
 
@@ -189,7 +190,173 @@ namespace FIA_Biosum_Manager
                 else
                     chkFullDetails.Checked = false;
         }
-        private string[] loadScenarioArray(ado_data_access oAdo)
+        public void loadvalues(bool p_bScenarioCopy)
+        {
+            int x;
+            ProcessorScenarioTools oTools = new ProcessorScenarioTools();
+            //Reset m_oProcessorScenarioItem_Collection so we don't get duplicates when we loadAll down below
+            m_oProcessorScenarioItem_Collection = new ProcessorScenarioItem_Collection();
+            lvProcessorScenario.Items.Clear();
+            System.Windows.Forms.ListViewItem entryListItem = null;
+            this.m_oLvAlternateColors.InitializeRowCollection();
+            this.m_oLvAlternateColors.ReferenceAlternateBackgroundColor = frmMain.g_oGridViewAlternateRowBackgroundColor;
+            this.m_oLvAlternateColors.ReferenceAlternateForegroundColor = frmMain.g_oGridViewRowForegroundColor;
+            this.m_oLvAlternateColors.ReferenceBackgroundColor = frmMain.g_oGridViewRowBackgroundColor;
+            this.m_oLvAlternateColors.ReferenceForegroundColor = frmMain.g_oGridViewRowForegroundColor;
+            this.m_oLvAlternateColors.ReferenceSelectedRowBackgroundColor = frmMain.g_oGridViewSelectedRowBackgroundColor;
+            this.m_oLvAlternateColors.ReferenceListView = this.lvProcessorScenario;
+            this.m_oLvAlternateColors.CustomFullRowSelect = true;
+            if (frmMain.g_oGridViewFont != null) this.lvProcessorScenario.Font = frmMain.g_oGridViewFont;
+
+            DataMgr oDataMgr = new DataMgr();
+            ado_data_access oAdo = new ado_data_access();
+            string strProcessorScenario = "";
+            string strFullDetailsYN = "N";
+            if (p_bScenarioCopy == false)
+            {
+                string[] strScenarioArray = null;
+                // Delete the if/else statement when processor is moved to SQLite
+                if (!ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite)
+                {
+                    strScenarioArray = loadScenarioArray_access(oAdo);
+                }
+                else
+                {
+                    strScenarioArray = loadScenarioArray();
+                }
+
+                if (strScenarioArray == null) return;
+
+                for (x = 0; x <= strScenarioArray.Length - 1; x++)
+                {
+                    //
+                    //LOAD PROJECT DATATASOURCES INFO
+                    //
+                    m_oQueries.m_oFvs.LoadDatasource = true;
+                    m_oQueries.m_oFIAPlot.LoadDatasource = true;
+                    m_oQueries.m_oProcessor.LoadDatasource = true;
+                    m_oQueries.m_oReference.LoadDatasource = true;
+                    m_oQueries.LoadDatasources(true, ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite, "processor", strScenarioArray[x]);
+                    // Delete the if/else statement when processor is moved to SQLite
+                    if (!ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite)
+                    {
+                        m_oQueries.m_oDataSource.CreateScenarioRuleDefinitionTableLinks(
+                            m_oQueries.m_strTempDbFile,
+                            frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim(),
+                            "P");
+                        oTools.LoadAll(m_oQueries.m_strTempDbFile, m_oQueries, strScenarioArray[x], m_oProcessorScenarioItem_Collection);
+                    }
+                    else
+                    {
+                        oTools.LoadAllSqlite(m_oQueries, strScenarioArray[x], m_oProcessorScenarioItem_Collection);
+                    }
+                }
+            }
+            else
+            {
+                foreach (ProcessorScenarioItem psItem in ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection)
+                {
+                    m_oProcessorScenarioItem_Collection.Add(psItem);
+                    if (psItem.Selected == true)
+                    {
+                        strProcessorScenario = psItem.ScenarioId;
+                        strFullDetailsYN = psItem.DisplayFullDetailsYN;
+                    }
+                }
+            }
+            for (x = 0; x <= m_oProcessorScenarioItem_Collection.Count - 1; x++)
+            {
+                entryListItem = lvProcessorScenario.Items.Add(" ");
+
+                entryListItem.UseItemStyleForSubItems = false;
+                this.m_oLvAlternateColors.AddRow();
+                this.m_oLvAlternateColors.AddColumns(x, lvProcessorScenario.Columns.Count);
+
+
+                entryListItem.SubItems.Add(m_oProcessorScenarioItem_Collection.Item(x).ScenarioId);
+                entryListItem.SubItems.Add(m_oProcessorScenarioItem_Collection.Item(x).Description);
+            }
+            this.m_oLvAlternateColors.ListView();
+
+            if (p_bScenarioCopy == false)
+            {
+                string strScenarioDB =
+                    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+                    Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+
+
+                string strConn = oDataMgr.GetConnectionString(strScenarioDB);
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+                    conn.Open();
+
+                    if (oDataMgr.TableExist(conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName))
+                    {
+                        oDataMgr.m_strSQL = "SELECT * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName + " " +
+                                    "WHERE TRIM(UPPER(scenario_id)) = '" +
+                                        ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToUpper() + "';";
+                        oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
+
+                        if (oDataMgr.m_DataReader.HasRows)
+                        {
+                            while (oDataMgr.m_DataReader.Read())
+                            {
+                                if (oDataMgr.m_DataReader["processor_scenario_id"] != System.DBNull.Value &&
+                                    oDataMgr.m_DataReader["processor_scenario_id"].ToString().Trim().Length > 0)
+                                {
+                                    strProcessorScenario = oDataMgr.m_DataReader["processor_scenario_id"].ToString().Trim();
+                                }
+                                if (oDataMgr.m_DataReader["FullDetailsYN"] != System.DBNull.Value &&
+                                    oDataMgr.m_DataReader["FullDetailsYN"].ToString().Trim().Length > 0)
+                                {
+                                    strFullDetailsYN = oDataMgr.m_DataReader["FullDetailsYN"].ToString().Trim();
+                                }
+                            }
+                        }
+                        oDataMgr.m_DataReader.Close();
+                    }
+                    else
+                    {
+                        frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioProcessorScenarioSelectTable(oDataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName);
+                    }
+                    conn.Close();
+                }
+            }
+            if (lvProcessorScenario.Items.Count > 0)
+            {
+                for (x = 0; x <= lvProcessorScenario.Items.Count - 1; x++)
+                {
+                    if (lvProcessorScenario.Items[x].SubItems[COL_SCENARIOID].Text.Trim().ToUpper() ==
+                        strProcessorScenario.ToUpper())
+                    {
+                        lvProcessorScenario.Items[x].Checked = true;
+                        for (int y = 0; y <= ReferenceOptimizerScenarioForm.uc_scenario_processor_scenario_select1.m_oProcessorScenarioItem_Collection.Count - 1; y++)
+                        {
+                            if (lvProcessorScenario.Items[x].SubItems[COL_SCENARIOID].Text.Trim().ToUpper() ==
+                                ReferenceOptimizerScenarioForm.uc_scenario_processor_scenario_select1.m_oProcessorScenarioItem_Collection.Item(y).ScenarioId.Trim().ToUpper())
+                            {
+                                ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.strLowSlope =
+                                    ReferenceOptimizerScenarioForm.uc_scenario_processor_scenario_select1.m_oProcessorScenarioItem_Collection.Item(y).m_oHarvestMethod.SteepSlopePercent;
+
+                                ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.strSteepSlope =
+                                    ReferenceOptimizerScenarioForm.uc_scenario_processor_scenario_select1.m_oProcessorScenarioItem_Collection.Item(y).m_oHarvestMethod.SteepSlopePercent;
+                            }
+                        }
+                        break;
+                    }
+                }
+                if (x <= lvProcessorScenario.Items.Count - 1)
+                {
+                    lvProcessorScenario.Items[0].Selected = true;
+                }
+            }
+            if (strFullDetailsYN == "Y")
+                chkFullDetails.Checked = true;
+            else
+                chkFullDetails.Checked = false;
+        }
+
+        private string[] loadScenarioArray_access(ado_data_access oAdo)
         {
             //
             //OPEN CONNECTION TO DB FILE CONTAINING PROCESSOR SCENARIO TABLE
@@ -213,7 +380,7 @@ namespace FIA_Biosum_Manager
             oAdo.CloseConnection(oAdo.m_OleDbConnection);
             return strScenarioArray;
         }
-        private string[] loadScenarioArraySqlite()
+        private string[] loadScenarioArray()
         {
             //
             //OPEN CONNECTION TO DB FILE CONTAINING PROCESSOR SCENARIO TABLE
@@ -236,10 +403,11 @@ namespace FIA_Biosum_Manager
                         "FROM scenario " +
                         "WHERE scenario_id IS NOT NULL AND " +
                         "LENGTH(TRIM(scenario_id)) > 0");
+                oConn.Close();
             }
             return lstScenarioArray.ToArray();
         }
-        public void savevalues()
+        public void savevalues_access()
         {
             
             ado_data_access oAdo = new ado_data_access();
@@ -272,6 +440,44 @@ namespace FIA_Biosum_Manager
 
             }
             oAdo.CloseConnection(oAdo.m_OleDbConnection);
+        }
+        public void savevalues()
+        {
+
+            DataMgr oDataMgr = new DataMgr();
+            string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
+            string strScenarioDB =
+                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
+            {
+                conn.Open();
+                oDataMgr.m_strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName + " " +
+                                "WHERE TRIM(UPPER(scenario_id)) = '" +
+                                       ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToUpper() + "';";
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                if (lvProcessorScenario.CheckedItems.Count > 0)
+                {
+                    string strColumnsList = "scenario_id,processor_scenario_id,FullDetailsYN";
+                    string strValuesList = "";
+                    strValuesList = "'" + ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim() + "',";
+                    strValuesList = strValuesList + "'" + lvProcessorScenario.CheckedItems[0].SubItems[COL_SCENARIOID].Text.Trim() + "',";
+                    if (this.chkFullDetails.Checked)
+                        strValuesList = strValuesList + "'Y'";
+                    else
+                        strValuesList = strValuesList + "'N'";
+
+                    oDataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName + " " +
+                                    "(" + strColumnsList + ") " +
+                                    "VALUES " +
+                                    "(" + strValuesList + ")";
+
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+                }
+                conn.Close();
+            }
+            
         }
 
         private void lvProcessorScenario_SelectedIndexChanged(object sender, EventArgs e)
@@ -337,7 +543,7 @@ namespace FIA_Biosum_Manager
                         ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.strSteepSlope =
                             m_oProcessorScenarioItem_Collection.Item(lvProcessorScenario.SelectedItems[0].Index).m_oHarvestMethod.SteepSlopePercent;
                         // Reload the select rxPackage list when the scenario changes
-                        ReferenceOptimizerScenarioForm.uc_optimizer_scenario_select_packages1.loadvalues(m_oProcessorScenarioItem_Collection.Item(lvProcessorScenario.SelectedItems[0].Index));
+                        ReferenceOptimizerScenarioForm.uc_optimizer_scenario_select_packages1.loadvaluessqlite(m_oProcessorScenarioItem_Collection.Item(lvProcessorScenario.SelectedItems[0].Index));
                     }
                 }
 

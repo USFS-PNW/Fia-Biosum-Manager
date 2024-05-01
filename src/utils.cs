@@ -709,7 +709,7 @@ namespace FIA_Biosum_Manager
             switch (dataTypeFromDB)
             {
                 case "SYSTEM.INT32":
-                    convertedType = "LONG";
+                    convertedType = "INTEGER";
                     break;
                 case "SYSTEM.DOUBLE":
                     convertedType = "DOUBLE";
@@ -717,6 +717,15 @@ namespace FIA_Biosum_Manager
                 case "SYSTEM.STRING":
                     convertedType = "VARCHAR(255)";
                     break;
+				case "SYSTEM.BYTE":
+					convertedType = "CHAR(1)";
+					break;
+				case "SYSTEM.SINGLE":
+					convertedType = "INTEGER";
+					break;
+				case "SYSTEM.INT64":
+					convertedType = "INTEGER";
+					break;
                 default:
                     convertedType = "UNRECOGNIZED";
                     break;

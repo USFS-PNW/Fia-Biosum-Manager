@@ -32,7 +32,7 @@ namespace FIA_Biosum_Manager
 		private void Custom_Click(object sender, System.EventArgs e)
 		{
 			//MessageBox.Show(this.Text);
-			this.m_frmMain.button_click(this.Text);
+			this.m_frmMain.button_click_sqlite(this.Text);
 		}
 		private void Custom_MouseEnter(object sender, System.EventArgs e)
 		{

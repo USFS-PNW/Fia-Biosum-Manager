@@ -626,11 +626,11 @@ namespace FIA_Biosum_Manager
 					{
                         if (!m_bUsingSqlite)
                         {
-                            bDeleted = uc_scenario1.DeleteScenario(uc_scenario_open1.txtScenarioId.Text.Trim());
+                            bDeleted = uc_scenario1.DeleteScenario_access(uc_scenario_open1.txtScenarioId.Text.Trim());
                         }
                         else
                         {
-                            bDeleted = uc_scenario1.DeleteScenarioSqlite(uc_scenario_open1.txtScenarioId.Text.Trim());
+                            bDeleted = uc_scenario1.DeleteScenario(uc_scenario_open1.txtScenarioId.Text.Trim());
                         }
                         if (bDeleted)
 						    uc_scenario_open1.lstScenario.Items.Remove(uc_scenario_open1.lstScenario.SelectedItems[0]);
@@ -639,11 +639,11 @@ namespace FIA_Biosum_Manager
 					{
                         if (!m_bUsingSqlite)
                         {
-                            bDeleted = uc_scenario1.DeleteScenario(uc_scenario1.txtScenarioId.Text.Trim());
+                            bDeleted = uc_scenario1.DeleteScenario_access(uc_scenario1.txtScenarioId.Text.Trim());
                         }
                         else
                         {
-                            bDeleted = uc_scenario1.DeleteScenarioSqlite(uc_scenario1.txtScenarioId.Text.Trim());
+                            bDeleted = uc_scenario1.DeleteScenario(uc_scenario1.txtScenarioId.Text.Trim());
                         }
                         if (bDeleted)
                             this.Close();

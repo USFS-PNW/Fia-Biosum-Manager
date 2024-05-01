@@ -42,6 +42,7 @@ namespace FIA_Biosum_Manager
 		private FIA_Biosum_Manager.frmOptimizerScenario _frmScenario;
 		private FIA_Biosum_Manager.frmProcessorScenario _frmProcessorScenario;
 		private string _strScenarioType="optimizer";
+
 		
 		// public FIA_Biosum_Manager.frmScenario frmscenario1;
 		/// <summary> 
@@ -318,7 +319,7 @@ namespace FIA_Biosum_Manager
 
 		
 		
-		public void populate_scenario_listbox(string strDebugFile)
+		public void populate_scenario_listbox_access(string strDebugFile)
 		{
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -392,24 +393,27 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(strDebugFile, "=====================   populate_scenario_listbox finished! =====================  \r\n");
         }
 
-        public void populate_scenario_listbox_sqlite()
+        public void populate_scenario_listbox()
         {
             string strScenarioId = "";
             string strDescription = "";
             string strScenarioPath = "";
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
 
-            string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\" +
-                    Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+			string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\db";
+			string strFile = "scenario_" + ScenarioType + "_rule_definitions.db";
+			StringBuilder strFullPath = new StringBuilder(strScenarioDir);
+			strFullPath.Append("\\");
+			strFullPath.Append(strFile);
 
-            string strConn = dataMgr.GetConnectionString(strScenarioDir);
+			string strConn = dataMgr.GetConnectionString(strFullPath.ToString());
             try
             {
                 lstScenario.Items.Clear();
-                using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConn))
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                 {
-                    con.Open();
-                    dataMgr.SqlQueryReader(con, "select * from scenario");
+                    conn.Open();
+                    dataMgr.SqlQueryReader(conn, "select * from scenario");
                     if (dataMgr.m_DataReader.HasRows)
                     {
                         while (dataMgr.m_DataReader.Read())
@@ -843,14 +847,21 @@ namespace FIA_Biosum_Manager
             {
                 frmMain.g_oUtils.WriteText(strDebugFile, "=====================   OpenScenario   =====================\r\n");
             }
-            if (ReferenceProcessorScenarioForm != null && 
+			string strOptimizerScenarioDefinitions = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + "\\" +
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+			if (!System.IO.File.Exists(strOptimizerScenarioDefinitions) && this.ScenarioType == "optimizer")
+            {
+				frmMain.g_oFrmMain.frmProject.uc_scenario1.migrate_access_data_optimizer();
+            }
+            if (this.ScenarioType == "optimizer" ||
+				ReferenceProcessorScenarioForm != null && 
                 ReferenceProcessorScenarioForm.m_bUsingSqlite == true)
             {
-                this.populate_scenario_listbox_sqlite();
+                this.populate_scenario_listbox();
             }
             else
             {
-                this.populate_scenario_listbox(strDebugFile);
+                this.populate_scenario_listbox_access(strDebugFile);
             }
             	        
 			this.btnCancel.Enabled = true;
@@ -866,7 +877,7 @@ namespace FIA_Biosum_Manager
             }
 
         }
-        private void RefreshForm()
+        private void RefreshForm_access()
 		{
 			
 			string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\db";
@@ -908,26 +919,29 @@ namespace FIA_Biosum_Manager
 				p_ado.m_OleDbConnection = null;
 			}
 		}
-        private void RefreshFormSqlite()
+        private void RefreshForm()
         {
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
-            string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\" +
-                    Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
-            string strConn = dataMgr.GetConnectionString(strScenarioDir);
+			string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\db";
+			string strFile = "scenario_" + ScenarioType + "_rule_definitions.db";
+			StringBuilder strFullPath = new StringBuilder(strScenarioDir);
+			strFullPath.Append("\\");
+			strFullPath.Append(strFile);
+			string strConn = dataMgr.GetConnectionString(strFullPath.ToString());
             try
             {
                 using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConn))
                 {
                     con.Open();
-                    string strSQL = "select * from scenario where scenario_id = '" + this.lstScenario.SelectedItem.ToString() + "';";
+                    string strSQL = "select * from scenario where TRIM(scenario_id) = '" + this.lstScenario.SelectedItem.ToString().Trim() + "';";
                     dataMgr.SqlQueryReader(con, strSQL);
                     if (dataMgr.m_DataReader.HasRows)
                     {
                         while (dataMgr.m_DataReader.Read())
                         {
-                            txtScenarioId.Text = dataMgr.m_DataReader["scenario_id"].ToString();
-                            txtDescription.Text = dataMgr.m_DataReader["description"].ToString();
-                            txtScenarioPath.Text = dataMgr.m_DataReader["path"].ToString();
+                            txtScenarioId.Text = dataMgr.m_DataReader["scenario_id"].ToString().Trim();
+                            txtDescription.Text = dataMgr.m_DataReader["description"].ToString().Trim();
+                            txtScenarioPath.Text = dataMgr.m_DataReader["path"].ToString().Trim();
                             break;
 
                         }
@@ -951,17 +965,18 @@ namespace FIA_Biosum_Manager
 		{
 			if (this.lstScenario.SelectedIndex >= 0) 
 			{
-                if (ReferenceProcessorScenarioForm != null && 
-                    ReferenceProcessorScenarioForm.m_bUsingSqlite == true)
-                {
-                    this.RefreshFormSqlite();
-                }
-                else
-                {
+                //if (ReferenceProcessorScenarioForm != null &&
+                //    ReferenceProcessorScenarioForm.m_bUsingSqlite == true)
+                //{
                     this.RefreshForm();
-                }                
-			}
+                //}
+                //else
+                //{
+                //    this.RefreshForm();
+                //}
+            }
 		}
+	
 
 		private void uc_scenario_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
 		{
