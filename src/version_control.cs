@@ -561,15 +561,16 @@ namespace FIA_Biosum_Manager
                         UpdateProjectVersionFile(strProjVersionFile);
                         bPerformCheck = false;
                     }
-                    //@ToDo: Complete this when we're ready for v5.11.0
-                    //else if ((Convert.ToInt16(m_strAppVerArray[APP_VERSION_MAJOR]) == 5 &&
-                    //    Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR1]) == 11) &&
-                    //    (Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MAJOR]) == 5 &&
-                    //    Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR1]) >= 10))
-                    //{
-                    //    UpdateProjectVersionFile(strProjVersionFile);
-                    //    bPerformCheck = false;
-                    //}
+                    // Upgrade to 5.10.1 to 5.11.0 (Sequence numbers, Optimizer, and Processor to SQLite)
+                    else if ((Convert.ToInt16(m_strAppVerArray[APP_VERSION_MAJOR]) == 5 &&
+                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR1]) == 11) &&
+                        (Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MAJOR]) == 5 &&
+                        Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR1]) >= 10))
+                    {
+                        UpdateDatasources_5_11_0();
+                        UpdateProjectVersionFile(strProjVersionFile);
+                        bPerformCheck = false;
+                    }
                 }
             }
 
@@ -6647,7 +6648,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        public void UpdateDatasources_5_11_0(string strReferenceProjectDirectory)
+        public void UpdateDatasources_5_11_0()
         {
             DataMgr oDataMgr = new DataMgr();
             ado_data_access oAdo = new ado_data_access();
@@ -6655,10 +6656,7 @@ namespace FIA_Biosum_Manager
             ODBCMgr odbcmgr = new ODBCMgr();
             utils oUtils = new utils();
             env oEnv = new env();
-            FIA_Biosum_Manager.Datasource oProjectDs = new Datasource();
-
-            //@ToDo: This is temporary; For deployment ReferenceProjectDirectory is set earlier in execution
-            this.ReferenceProjectDirectory = strReferenceProjectDirectory;
+            Datasource oProjectDs = new Datasource();
 
             // MIGRATING SEQUENCE NUMBER SETTINGS TO fvs_master.db
             string strPrePostSeqNumLink = $@"{Tables.FVS.DefaultFVSPrePostSeqNumTable}_1";

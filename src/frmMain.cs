@@ -204,7 +204,7 @@ namespace FIA_Biosum_Manager
         public const int PROJDIR = 0;
         public const int OLDPROJDIR = 1;
 
-		public static string g_strAppVer = "5.10.1";
+		public static string g_strAppVer = "5.11.0";
         public static string g_strBiosumDataDir = "\\FIABiosum";
         public static int g_intRefDbVer = 2;
         public static bool g_bUseOracleXE = false;
@@ -2316,9 +2316,9 @@ namespace FIA_Biosum_Manager
                 }
                 else if (strText.Trim().ToUpper() == "UPGRADE FOR V5.11.0")
                 {
-                    version_control oVersCtl = new version_control();
-                    oVersCtl.UpdateDatasources_5_11_0(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim());
-                    MessageBox.Show("Upgrade Complete!");
+                    //version_control oVersCtl = new version_control();
+                    //oVersCtl.UpdateDatasources_5_11_0(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim());
+                    //MessageBox.Show("Upgrade Complete!");
                     //this.m_frmSqlite = new frmDialog(this);
                     //this.m_frmSqlite.MaximizeBox = false;
                     //this.m_frmSqlite.MinimizeBox = false;
@@ -4235,12 +4235,12 @@ namespace FIA_Biosum_Manager
             this.m_btnOptimizerScenario.Top = this.m_btnOptimizerLoadGisData.Top + this.m_btnOptimizerLoadGisData.Height + 5;
             this.m_btnOptimizerScenario.Text = "Optimization Scenario";
             //Generate SQLITE database
-            this.m_btnOptimizerSqlite = new btnMainForm(this);
-            this.m_pnlOptimizer.Controls.Add(this.m_btnOptimizerSqlite);
-            this.m_btnOptimizerSqlite.Size = this.btnMain1.Size;
-            this.m_btnOptimizerSqlite.Left = this.m_btnOptimizerUserVariables.Left;
-            this.m_btnOptimizerSqlite.Top = this.m_btnOptimizerScenario.Top + this.m_btnOptimizerScenario.Height + 5;
-            this.m_btnOptimizerSqlite.Text = "Upgrade for v5.11.0";
+            //this.m_btnOptimizerSqlite = new btnMainForm(this);
+            //this.m_pnlOptimizer.Controls.Add(this.m_btnOptimizerSqlite);
+            //this.m_btnOptimizerSqlite.Size = this.btnMain1.Size;
+            //this.m_btnOptimizerSqlite.Left = this.m_btnOptimizerUserVariables.Left;
+            //this.m_btnOptimizerSqlite.Top = this.m_btnOptimizerScenario.Top + this.m_btnOptimizerScenario.Height + 5;
+            //this.m_btnOptimizerSqlite.Text = "Upgrade for v5.11.0";
 			//merge scenarios
 			this.m_btnCoreMerge = new btnMainForm(this);
 			this.m_pnlOptimizer.Controls.Add(this.m_btnCoreMerge);
