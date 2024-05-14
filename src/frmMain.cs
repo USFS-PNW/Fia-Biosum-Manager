@@ -206,7 +206,7 @@ namespace FIA_Biosum_Manager
 
 		public static string g_strAppVer = "5.11.0";
         public static string g_strBiosumDataDir = "\\FIABiosum";
-        public static int g_intRefDbVer = 2;
+        public static int g_intRefDbVer = 4;
         public static bool g_bUseOracleXE = false;
 
 		private System.Windows.Forms.MenuItem mnuSettings;
