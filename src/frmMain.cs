@@ -2262,7 +2262,7 @@ namespace FIA_Biosum_Manager
                     }
                     if (bSuccess == true)
                     {
-                        int intRowCount = oGisTools.LoadSqliteGisData(false, frmProject.uc_project1.m_strDebugFile);
+                        int intRowCount = oGisTools.LoadSqliteGisData(true, frmProject.uc_project1.m_strDebugFile);
                         if (intRowCount < 1)
                         {
                             MessageBox.Show("An error occurred while loading the GIS data!!", "FIA BioSum");
@@ -2284,12 +2284,6 @@ namespace FIA_Biosum_Manager
                 }
                 else if (strText.Trim().ToUpper() == "OPTIMIZATION SCENARIO")
                 {
-                    string strOptimizerScenarioDefinitions = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + "\\" +
-                        Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
-                    if (!System.IO.File.Exists(strOptimizerScenarioDefinitions))
-                    {
-                        frmMain.g_oFrmMain.frmProject.uc_scenario1.migrate_access_data_optimizer();
-                    }
                     System.Text.StringBuilder strFullPath;
 
                     string strProjDir = getProjectDirectory();
