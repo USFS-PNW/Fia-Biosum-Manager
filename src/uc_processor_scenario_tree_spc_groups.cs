@@ -1800,7 +1800,8 @@ namespace FIA_Biosum_Manager
 
 		private void btnTreeAudit_Click(object sender, System.EventArgs e)
 		{
-			((frmMain)this.ParentForm.ParentForm).button_click("TREE SPECIES");
+            frmDialog oFrmDialog = (frmDialog) this.ParentForm;
+            oFrmDialog.m_frmMain.button_click("Tree Species");
 		}
 
 		private void chkFilterSpecies_CheckStateChanged(object sender, System.EventArgs e)

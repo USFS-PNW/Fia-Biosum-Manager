@@ -2221,7 +2221,7 @@ namespace FIA_Biosum_Manager
                         "\\" + Tables.TravelTime.DefaultMasterTravelTimeDbFile;
                     if (!System.IO.File.Exists(strMasterDb))
                     {
-                        MessageBox.Show("The source gis_travel_times_master.accdb is required but does not exist in the " +
+                        MessageBox.Show("The source gis_travel_times_master.db is required but does not exist in the " +
                             frmMain.g_oEnv.strApplicationDataDirectory.Trim() + frmMain.g_strBiosumDataDir + " folder. \r\n\r\n" +
                             "Please download a copy of this database into the FIABiosum folder!!", "FIA Biosum");
                         return;
