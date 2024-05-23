@@ -30,6 +30,7 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Button btnUnselectAll;
 		private System.Windows.Forms.ToolTip toolTip1;
 		private System.Windows.Forms.ComboBox m_Combo;
+		private System.Windows.Forms.ComboBox m_ComboBio;
 		private System.Windows.Forms.Button btnScenarioPSiteUpdate;
 		private System.Windows.Forms.GroupBox groupBox1;
 		public System.Windows.Forms.Label lblTitle;
@@ -139,8 +140,8 @@ namespace FIA_Biosum_Manager
                         strBioDef =  
                             ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).m_strBioCdDescArray[
                                 Convert.ToInt32( ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).BiomassCode) - 1, 1];
-                         m_Combo=(System.Windows.Forms.ComboBox)this.lstPSites.GetEmbeddedControl(COLUMN_PSITEBIOPROCESSTYPE,x);
-						m_Combo.Text = strBioDef;
+                         m_ComboBio=(System.Windows.Forms.ComboBox)this.lstPSites.GetEmbeddedControl(COLUMN_PSITEBIOPROCESSTYPE,x);
+						 m_ComboBio.Text = strBioDef;
 
                         break;
                        
@@ -611,27 +612,17 @@ namespace FIA_Biosum_Manager
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 
 								}
-								else
+								else if (Convert.ToByte(p_dataMgr.m_DataReader["trancd"]) == 2) 
 								{
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(" ");
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Railhead - Road To Rail Wood Transfer Point");
 									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
-
-
-									this.m_Combo = new ComboBox();
-									m_Combo.Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
-									this.m_Combo.Items.Add("Railhead - Road To Rail Wood Transfer Point");
-									this.m_Combo.Items.Add("Rail Collector - PSite With Both Road And Rail Access");
-									if (Convert.ToByte(p_dataMgr.m_DataReader["trancd"]) == 2)
-									{
-										this.m_Combo.Text = "Railhead - Road To Rail Wood Transfer Point";
-									}
-									else
-									{
-										this.m_Combo.Text = "Rail Collector - PSite With Both Road And Rail Access";
-									}
-									m_Combo.SelectedIndexChanged += new EventHandler(m_Combo_SelectedIndexChanged);
-									this.lstPSites.AddEmbeddedControl(m_Combo, COLUMN_PSITEROADRAIL, x);
+								}
+								else
+                                {
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Rail Collector - PSite With Both Road And Rail Access");
+									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 								}
 							}
 							else
@@ -650,46 +641,42 @@ namespace FIA_Biosum_Manager
 							/***********************************************
 							 **site bio processing type
 							 ***********************************************/
-							this.m_Combo = new ComboBox();
-							m_Combo.Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
-							this.m_Combo.Items.Add("Merchantable - Logs Only");
-							this.m_Combo.Items.Add("Chips - Chips Only");
-							this.m_Combo.Items.Add("Both - Logs And Chips");
+							intSubItemCount = 0;
 							if (p_dataMgr.m_DataReader["biocd"] != System.DBNull.Value)
 							{
-								if (p_dataMgr.m_DataReader["biocd"].ToString().Trim() == "1")
+
+								byteTranCd = Convert.ToByte(p_dataMgr.m_DataReader["biocd"]);
+								if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 1)
 								{
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Merchantable - Logs Only");
-									this.m_Combo.Text = "Merchantable - Logs Only";
+									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+
 								}
-								else if (p_dataMgr.m_DataReader["biocd"].ToString().Trim() == "2")
+								else if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 2)
 								{
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Chips - Chips Only");
-									this.m_Combo.Text = "Chips - Chips Only";
+									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 								}
-								else if (p_dataMgr.m_DataReader["biocd"].ToString().Trim() == "3")
+								else
 								{
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Both - Logs And Chips");
-									this.m_Combo.Text = "Both - Logs And Chips";
+									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 								}
 							}
 							else
 							{
-								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Both - Logs And Chips");
-								this.m_Combo.Text = "Both - Logs And Chips";
-							}
-							this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(" ");
-							intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
-							this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Merchantable - Logs Only");
+								intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 
+
+							}
 							this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
 								COLUMN_PSITEBIOPROCESSTYPE,
 								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITEBIOPROCESSTYPE], false);
-							//m_Combo.SelectedIndexChanged += new EventHandler(m_Combo_SelectedIndexChanged);
-							//this.lstPSites.AddEmbeddedControl(m_Combo, COLUMN_PSITEBIOPROCESSTYPE, x);
-							//this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
-							//	COLUMN_PSITEBIOPROCESSTYPE,
-							//	lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITEBIOPROCESSTYPE], false);
 							x++;
 						}
 					}
@@ -727,33 +714,6 @@ namespace FIA_Biosum_Manager
 										{
 											lstPSites.Items[x].Checked = false;
 										}
-									}
-									if (lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim() == "Regular - PSite With Road Only Access")
-									{
-									}
-									else
-									{
-										if (p_dataMgr.m_DataReader["trancd"] != System.DBNull.Value)
-										{
-											byteTranCd = Convert.ToByte(p_dataMgr.m_DataReader["trancd"]);
-											switch (byteTranCd)
-											{
-												case 2:
-													this.m_Combo = (System.Windows.Forms.ComboBox)this.lstPSites.GetEmbeddedControl(COLUMN_PSITEROADRAIL, x);
-													this.m_Combo.Text = "Railhead - Road To Rail Wood Transfer Point";
-													break;
-												case 3:
-													this.m_Combo = (System.Windows.Forms.ComboBox)this.lstPSites.GetEmbeddedControl(COLUMN_PSITEROADRAIL, x);
-													this.m_Combo.Text = "Rail Collector - PSite With Both Road And Rail Access";
-													break;
-											}
-
-										}
-									}
-									if (p_dataMgr.m_DataReader["biocd"] != System.DBNull.Value)
-									{
-										byteBioCd = Convert.ToByte(p_dataMgr.m_DataReader["biocd"]);
-										this.m_Combo = (System.Windows.Forms.ComboBox)this.lstPSites.GetEmbeddedControl(COLUMN_PSITEBIOPROCESSTYPE, x);
 									}
 								}
 							}
@@ -949,38 +909,34 @@ namespace FIA_Biosum_Manager
 					{
 						strTranCd = "1";
 					}
+					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim() == "Railhead - Road To Rail Wood Transfer Point")
+                    {
+						strTranCd = "2";
+                    }
+					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim() == "Rail Collector - PSite With Both Road And Rail Access")
+                    {
+						strTranCd = "3";
+                    }
 					else
-					{
-						this.m_Combo = (System.Windows.Forms.ComboBox)this.lstPSites.GetEmbeddedControl(COLUMN_PSITEROADRAIL, x);
-						switch (m_Combo.SelectedIndex)
-						{
-							case 0:
-								strTranCd = "2";
-								break;
-							case 1:
-								strTranCd = "3";
-								break;
-							default:
-								strTranCd = "9";
-								break;
-						}
-					}
-					this.m_Combo = (System.Windows.Forms.ComboBox)this.lstPSites.GetEmbeddedControl(COLUMN_PSITEBIOPROCESSTYPE, x);
-					switch (m_Combo.SelectedIndex)
-					{
-						case 0:
-							strBioCd = "1";
-							break;
-						case 1:
-							strBioCd = "2";
-							break;
-						case 2:
-							strBioCd = "3";
-							break;
-						default:
-							strBioCd = "9";
-							break;
-					}
+                    {
+						strTranCd = "9";
+                    }
+					if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Merchantable - Logs Only")
+                    {
+						strBioCd = "1";
+                    }
+					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Chips - Chips Only")
+                    {
+						strBioCd = "2";
+                    }
+					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Both - Logs And Chips")
+                    {
+						strBioCd = "3";
+                    }
+					else
+                    {
+						strBioCd = "9";
+                    }
 					oDataMgr.m_strSQL = oDataMgr.m_strSQL + "('" + strScenarioId + "'," +
 														   strPSiteId + ",'" +
 														   strName + "'," +

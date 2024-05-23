@@ -19,7 +19,7 @@ namespace FIA_Biosum_Manager
 		public System.Windows.Forms.Label lblTitle;
 		private FIA_Biosum_Manager.frmOptimizerScenario _frmScenario=null;
 		public System.Windows.Forms.Button btnViewLog;
-		public System.Windows.Forms.Button btnAccess;
+		public System.Windows.Forms.Button btnSqlite;
 		public System.Windows.Forms.Button btnViewResultsTables;
         public System.Windows.Forms.Button btnViewAuditTables;
 		public System.Windows.Forms.Label lblMsg;
@@ -257,7 +257,7 @@ namespace FIA_Biosum_Manager
             this.lblMsg = new System.Windows.Forms.Label();
             this.btnCancel = new System.Windows.Forms.Button();
             this.lblTitle = new System.Windows.Forms.Label();
-            this.btnAccess = new System.Windows.Forms.Button();
+            this.btnSqlite = new System.Windows.Forms.Button();
             this.btnViewResultsTables = new System.Windows.Forms.Button();
             this.btnViewAuditTables = new System.Windows.Forms.Button();
             this.btnViewLog = new System.Windows.Forms.Button();
@@ -285,7 +285,7 @@ namespace FIA_Biosum_Manager
             this.panel1.Controls.Add(this.lblMsg);
             this.panel1.Controls.Add(this.btnCancel);
             this.panel1.Controls.Add(this.lblTitle);
-            this.panel1.Controls.Add(this.btnAccess);
+            this.panel1.Controls.Add(this.btnSqlite);
             this.panel1.Controls.Add(this.btnViewResultsTables);
             this.panel1.Controls.Add(this.btnViewAuditTables);
             this.panel1.Controls.Add(this.btnViewLog);
@@ -417,16 +417,16 @@ namespace FIA_Biosum_Manager
             this.lblTitle.TabIndex = 26;
             this.lblTitle.Text = "Run";
             // 
-            // btnAccess
+            // btnSQ=qlite
             // 
-            this.btnAccess.Enabled = false;
-            this.btnAccess.ForeColor = System.Drawing.Color.Black;
-            this.btnAccess.Location = new System.Drawing.Point(349, 8);
-            this.btnAccess.Name = "btnAccess";
-            this.btnAccess.Size = new System.Drawing.Size(120, 30);
-            this.btnAccess.TabIndex = 33;
-            this.btnAccess.Text = "Microsoft Access";
-            this.btnAccess.Click += new System.EventHandler(this.btnAccess_Click);
+            this.btnSqlite.Enabled = false;
+            this.btnSqlite.ForeColor = System.Drawing.Color.Black;
+            this.btnSqlite.Location = new System.Drawing.Point(349, 8);
+            this.btnSqlite.Name = "btnSqlite";
+            this.btnSqlite.Size = new System.Drawing.Size(120, 30);
+            this.btnSqlite.TabIndex = 33;
+            this.btnSqlite.Text = "SQLite";
+            this.btnSqlite.Click += new System.EventHandler(this.btnSqlite_Click);
             // 
             // btnViewResultsTables
             // 
@@ -500,6 +500,33 @@ namespace FIA_Biosum_Manager
 				MessageBox.Show(caught.Message);
 			}
 		}
+
+        private void btnSqlite_Click(object sender, System.EventArgs e)
+        {
+            System.Diagnostics.Process proc = new System.Diagnostics.Process();
+            proc.StartInfo.UseShellExecute = true;
+            try
+            {
+                proc.StartInfo.FileName = ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsSqliteDbFile;
+            }
+            catch
+            {
+            }
+            try
+            {
+                proc.Start();
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("!!Error!! \n" +
+                    "Module - uc_db:btnOpen_Click() \n" +
+                    "Err Msg - " + err.Message,
+                    "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK,
+                    System.Windows.Forms.MessageBoxIcon.Exclamation);
+
+                this.m_intError = -1;
+            }
+        }
 
 		private void btnViewAuditTables_Click(object sender, System.EventArgs e)
 		{
@@ -843,7 +870,7 @@ namespace FIA_Biosum_Manager
             this.btnViewAuditTables.Enabled = false;
             this.btnViewLog.Enabled = false;
             this.btnViewResultsTables.Enabled = false;
-            this.btnAccess.Enabled = false;
+            this.btnSqlite.Enabled = false;
 
             for (x = 0; x <= listViewEx1.Items.Count - 1; x++)
             {
@@ -874,7 +901,7 @@ namespace FIA_Biosum_Manager
 				this.btnCancel.Refresh();
 				this.btnViewAuditTables.Enabled=false;
 				this.btnViewResultsTables.Enabled=false;
-				this.btnAccess.Enabled=false;
+				this.btnSqlite.Enabled=false;
 				this.btnViewLog.Enabled=false;
 				this.m_bUserCancel=false;
 
@@ -894,7 +921,7 @@ namespace FIA_Biosum_Manager
                 this.btnViewAuditTables.Enabled = true;
                 this.btnViewLog.Enabled = true;
                 this.btnViewResultsTables.Enabled = true;
-                this.btnAccess.Enabled = true;
+                this.btnSqlite.Enabled = true;
 				if (this.ReferenceOptimizerScenarioForm.WindowState == System.Windows.Forms.FormWindowState.Minimized)
 					this.ReferenceOptimizerScenarioForm.WindowState = System.Windows.Forms.FormWindowState.Normal;
 				ReferenceOptimizerScenarioForm.Focus();
@@ -1407,7 +1434,7 @@ namespace FIA_Biosum_Manager
 
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(m_strDebugFile,"Links MDB File: " + this.m_strTempMDBFile + "\r\n");
-					ReferenceUserControlScenarioRun.btnAccess.Enabled=false;
+					ReferenceUserControlScenarioRun.btnSqlite.Enabled=false;
 
 					getTableNames();
                     if (this.m_intError != 0)
@@ -1938,7 +1965,7 @@ namespace FIA_Biosum_Manager
 						frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.lblMsg,"Visible",false);
 						frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.btnCancel,"Text","Start");
 						frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.btnViewResultsTables,"Enabled",true);
-						if (this.m_intError == 0) frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.btnAccess,"Enabled",true);
+						if (this.m_intError == 0) frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.btnSqlite,"Enabled",true);
 
                         
 
