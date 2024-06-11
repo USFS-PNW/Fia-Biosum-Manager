@@ -9562,28 +9562,31 @@ namespace FIA_Biosum_Manager
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_dbConn))
             {
                 conn.Open();
-                for (int i = 0; i < this.lstFvsOutput.CheckedItems.Count; i++)
+                for (int i = 0; i < this.lstFvsOutput.Items.Count; i++)
                 {
-                    var lvItem = this.lstFvsOutput.CheckedItems[i];
-                    string strVariant = lvItem.SubItems[COL_VARIANT].Text.Trim();
-                    string strRxPackage = lvItem.SubItems[COL_PACKAGE].Text.Trim();
-                    long lngTreeRecords = -1;
-                    string strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSCutTreeTableName} 
-                                           WHERE FVS_VARIANT = '{strVariant}' and RXPACKAGE = '{strRxPackage}'";
-                    lngTreeRecords = SQLite.getRecordCount(conn, strSQL, Tables.FVS.DefaultFVSCutTreeTableName);
-
-                    if (lngTreeRecords < 1)
+                    var lvItem = this.lstFvsOutput.Items[i];
+                    if (lvItem.Checked)
                     {
-                        DialogResult result = MessageBox.Show("!!Warning!!\r\n-----------\r\nCut Tree Table for  " + strVariant + " " + strRxPackage + " " +
-                            " Does Not Exist. Continue Auditing ?(Y/N)",
-                            "FIA BioSum", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                        if (result == DialogResult.No)
-                            return;
-                        else
+                        string strVariant = lvItem.SubItems[COL_VARIANT].Text.Trim();
+                        string strRxPackage = lvItem.SubItems[COL_PACKAGE].Text.Trim();
+                        long lngTreeRecords = -1;
+                        string strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSCutTreeTableName} 
+                                           WHERE FVS_VARIANT = '{strVariant}' and RXPACKAGE = '{strRxPackage}'";
+                        lngTreeRecords = SQLite.getRecordCount(conn, strSQL, Tables.FVS.DefaultFVSCutTreeTableName);
+
+                        if (lngTreeRecords < 1)
                         {
-                            // Uncheck the box for this variant package; Nothing to audit
-                            lvItem.Checked = false;
-                            m_intError = 0;
+                            DialogResult result = MessageBox.Show("!!Warning!!\r\n-----------\r\nCut Tree Table for  " + strVariant + " " + strRxPackage + " " +
+                                " Does Not Exist. Continue Auditing ?(Y/N)",
+                                "FIA BioSum", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                            if (result == DialogResult.No)
+                                return;
+                            else
+                            {
+                                // Uncheck the box for this variant package; Nothing to audit
+                                lvItem.Checked = false;
+                                m_intError = 0;
+                            }
                         }
                     }
                 }
@@ -9591,7 +9594,7 @@ namespace FIA_Biosum_Manager
             // Check checked item count
             if (this.lstFvsOutput.CheckedItems.Count == 0)
             {
-                MessageBox.Show("No Boxes Are Checked", "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+                MessageBox.Show("No Boxes Are Checked. The FVS_CutTree table may be empty!", "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
                 return;
             }
 
