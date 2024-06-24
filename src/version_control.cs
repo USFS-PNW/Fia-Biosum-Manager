@@ -6830,18 +6830,19 @@ namespace FIA_Biosum_Manager
                     }
 
                     //retrieve paths for all scenarios in the project and put them in list
-                    oAdo.m_strSQL = "SELECT path from scenario";
+                    oAdo.m_strSQL = "SELECT scenario_id from scenario";
                     oAdo.SqlQueryReader(copyConn, oAdo.m_strSQL);
                     if (oAdo.m_OleDbDataReader.HasRows)
                     {
                         while (oAdo.m_OleDbDataReader.Read())
                         {
-                            string strPath = "";
-                            if (oAdo.m_OleDbDataReader["path"] != System.DBNull.Value)
-                                strPath = oAdo.m_OleDbDataReader["path"].ToString().Trim();
-                            if (!String.IsNullOrEmpty(strPath))
+                            string strScenarioId = "";
+                            if (oAdo.m_OleDbDataReader["scenario_id"] != System.DBNull.Value)
+                                strScenarioId = oAdo.m_OleDbDataReader["scenario_id"].ToString().Trim();
+                            if (!String.IsNullOrEmpty(strScenarioId))
                             {
                                 //Check to see if the .mdb exists before adding it to the list
+                                string strPath = $@"{ReferenceProjectDirectory.Trim()}\processor\{strScenarioId}";
                                 string strPathToMdb = strPath + "\\db\\scenario_results.mdb";
                                 //sample path: C:\\workspace\\BioSum\\biosum_data\\bluemountains\\processor\\scenario1\\db\\scenario_results.mdb
                                 if (System.IO.File.Exists(strPathToMdb))
@@ -6977,7 +6978,6 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oFrmMain.frmProject.uc_project1.CreateOptimizerScenarioRuleDefinitionSqliteDbAndTables(scenarioSqliteFile);
 
                     // Check to see if the input SQLite DSN exists and if so, delete so we can add
-                    //@ToDo: Don't have code
                     if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName))
                     {
                         odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName);
@@ -7011,7 +7011,6 @@ namespace FIA_Biosum_Manager
                     }
                     // Link to all tables in source database
                     oDao.CreateTableLinks(strTempAccdb, scenarioAccessFile);
-                    //  @ToDo: Don't have code
                     foreach (string targetTableName in targetTables)
                     {
                         oDao.CreateSQLiteTableLink(strTempAccdb, sourceTables[Array.IndexOf(targetTables, targetTableName)], targetTableName,

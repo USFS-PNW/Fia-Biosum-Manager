@@ -206,7 +206,7 @@ namespace FIA_Biosum_Manager
 
 		public static string g_strAppVer = "5.11.0";
         public static string g_strBiosumDataDir = "\\FIABiosum";
-        public static int g_intRefDbVer = 4;
+        public static int g_intRefDbVer = 5;
         public static bool g_bUseOracleXE = false;
 
 		private System.Windows.Forms.MenuItem mnuSettings;
@@ -3775,19 +3775,20 @@ namespace FIA_Biosum_Manager
 			this.m_btnDbPlotData.Text = "Plot Data";
 
 			//processing sites
-			this.m_btnDbPSite = new btnMainForm(this);
-			this.m_pnlDb.Controls.Add(this.m_btnDbPSite);
-			this.m_btnDbPSite.Size = this.btnMain1.Size;
-			this.m_btnDbPSite.Left = this.m_btnDbPlotData.Left;
-			this.m_btnDbPSite.Top = this.m_btnDbPlotData.Top + this.m_btnDbPlotData.Height + 5;
-			this.m_btnDbPSite.Text = "Wood Processing Sites";
+            // Hide button in v5.11.0. No longer needed
+			//this.m_btnDbPSite = new btnMainForm(this);
+			//this.m_pnlDb.Controls.Add(this.m_btnDbPSite);
+			//this.m_btnDbPSite.Size = this.btnMain1.Size;
+			//this.m_btnDbPSite.Left = this.m_btnDbPlotData.Left;
+			//this.m_btnDbPSite.Top = this.m_btnDbPlotData.Top + this.m_btnDbPlotData.Height + 5;
+			//this.m_btnDbPSite.Text = "Wood Processing Sites";
 
 			//project data sources
 			this.m_btnDbDataSource = new btnMainForm(this);
 			this.m_pnlDb.Controls.Add(this.m_btnDbDataSource);
 			this.m_btnDbDataSource.Size = this.btnMain1.Size;
 			this.m_btnDbDataSource.Left = this.m_btnDbPlotData.Left;
-			this.m_btnDbDataSource.Top = this.m_btnDbPSite.Top + this.m_btnDbPSite.Height + 5;
+			this.m_btnDbDataSource.Top = this.m_btnDbPlotData.Top + this.m_btnDbPlotData.Height + 5;
 			this.m_btnDbDataSource.Text = "Project Data Sources";
 			this.m_btnDbDataSource.Enabled=true;
 			//table management

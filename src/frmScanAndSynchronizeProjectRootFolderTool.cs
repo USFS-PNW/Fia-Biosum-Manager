@@ -20,6 +20,7 @@ namespace FIA_Biosum_Manager
         const int COLUMN_SYNCD = 6;
 
         private string m_strRandomPathAndFile = "";
+        private ODBCMgr m_odbcMgr  = new ODBCMgr();
 
         bool m_bSyncd = false;
 
@@ -152,32 +153,45 @@ namespace FIA_Biosum_Manager
             oDao.CreateTableLink(
                 m_strRandomPathAndFile, "project_datasource", strFullPath, "datasource");
             //
-            //CORE ANALSYS DATA SOURCE
+            //CORE ANALYSIS DATA SOURCE
             //
             strFullPath =
                 this.lblCurrentProjectRootFolder.Text.Trim() + "\\" +
-                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
+                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
 
              if (System.IO.File.Exists(strFullPath))
              {
-                 oDao.CreateTableLink(
-                     m_strRandomPathAndFile, "optimizer_scenario", strFullPath, "scenario");
-                 oDao.CreateTableLink(
-                    m_strRandomPathAndFile, "optimizer_scenario_datasource", strFullPath, "scenario_datasource");
+                // Create ODBC entry for the  file scenario_optimizer_rule_definitions.db
+                if (m_odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName))
+                {
+                    m_odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName);
+                }
+                m_odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, strFullPath);
+
+                oDao.CreateSQLiteTableLink(m_strRandomPathAndFile, "scenario", "optimizer_scenario",
+                    ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, strFullPath, true);
+                oDao.CreateSQLiteTableLink(m_strRandomPathAndFile, "scenario_datasource", "optimizer_scenario_datasource",
+                    ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, strFullPath, true);
              }
              //
             //PROCESSOR SCENARIO DATA SOURCE
             //
             strFullPath = this.lblCurrentProjectRootFolder.Text.Trim() + 
-                "\\processor\\db\\scenario_processor_rule_definitions.mdb";
+                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
             if (System.IO.File.Exists(strFullPath))
             {
-                oDao.CreateTableLink(
-                     m_strRandomPathAndFile, "processor_scenario", strFullPath, "scenario");
-                oDao.CreateTableLink(
-                   m_strRandomPathAndFile, "processor_scenario_datasource", strFullPath, "scenario_datasource");
-            }
+                // Create ODBC entry for the  file processor_optimizer_rule_definitions.db
+                if (m_odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName))
+                {
+                    m_odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName);
+                }
+                m_odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName, strFullPath);
 
+                oDao.CreateSQLiteTableLink(m_strRandomPathAndFile, "scenario", "processor_scenario",
+                    ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName, strFullPath, true);
+                oDao.CreateSQLiteTableLink(m_strRandomPathAndFile, "scenario_datasource", "processor_scenario_datasource",
+                    ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName, strFullPath, true);
+            }
 
             oDao.m_DaoWorkspace.Close();
             oDao = null;
@@ -233,6 +247,10 @@ namespace FIA_Biosum_Manager
             ado_data_access oAdo = new ado_data_access();
 
             oAdo.OpenConnection(oAdo.getMDBConnString(m_strRandomPathAndFile, "", ""));
+
+            // Create primary keys so update command will work on SQLite tables
+            oAdo.AddPrimaryKey(oAdo.m_OleDbConnection, "processor_scenario_datasource", "scenario_datasource_pk", "scenario_id, table_type");
+            oAdo.AddPrimaryKey(oAdo.m_OleDbConnection, "optimizer_scenario_datasource", "scenario_datasource_pk", "scenario_id, table_type");
 
             for (int x = 0; x <= lvDatasources.Items.Count - 1; x++)
             {
@@ -377,7 +395,7 @@ namespace FIA_Biosum_Manager
                     }
                 }
             }
-            if (oProjectRootFolders != null && oProjectRootFolders[0] != null)
+            if (oProjectRootFolders != null && oProjectRootFolders.Count > 0 && oProjectRootFolders[0] != null)
             {
                 FIA_Biosum_Manager.frmDialog oDlg = new frmDialog();
                 oDlg.Text = "FIA Biosum: Scan and Analyze";

@@ -874,16 +874,8 @@ namespace FIA_Biosum_Manager
 			this.uc_processor_scenario_merch_chip_value1.loadvalues();
             frmMain.g_sbpInfo.Text = "Loading Scenario Revenue And Cost Escalator Rule Definitions...Stand By";
 			this.uc_processor_scenario_escalators1.loadvalues();
-            frmMain.g_sbpInfo.Text = "Loading Scenario Supplemental Harvest Component Rule Definitions...Stand By";
-            if (!m_bUsingSqlite)
-            {
-                this.uc_processor_scenario_additional_harvest_cost_columns1.loadvalues();
-            }
-            else
-            {
-                this.uc_processor_scenario_additional_harvest_cost_columns1.loadvaluesSqlite();
-            }
-           
+            frmMain.g_sbpInfo.Text = "Loading Scenario Supplemental Harvest Component Rule Definitions...Stand By"; 
+            this.uc_processor_scenario_additional_harvest_cost_columns1.loadvaluesSqlite();           
             frmMain.g_sbpInfo.Text = "Loading Scenario Run Data...Stand By";
             this.uc_processor_scenario_run1.loadvalues();
             frmMain.g_sbpInfo.Text = "Ready";
