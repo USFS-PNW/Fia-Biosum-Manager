@@ -901,6 +901,17 @@ namespace FIA_Biosum_Manager
                                 }
                             }
                         }
+                        else
+                        {
+                            if (!frmMain.g_bSuppressFVSOutputTableRowCount)
+                            {
+                                entryListItem.SubItems[COL_CUTCOUNT].Text = "0";
+                            }
+                            else
+                            {
+                                entryListItem.SubItems[COL_CUTCOUNT].Text = "N";
+                            }
+                        }
                     }
                        				
 				}
@@ -1212,10 +1223,11 @@ namespace FIA_Biosum_Manager
                     {
                         this.m_intError = -1;
                     }
-                        if (m_intError != 0)
-                        {
-                            frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm, "Visible", false);
-                            result = MessageBox.Show("!!Warning!!\r\n-----------\r\nFVS_CUTLIST Table Does Not Exist. Continue Processing?(Y/N)",
+                    if (m_intError != 0)
+                    {
+                        frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm, "Visible", false);
+                        string strMessage = $@"No trees in FVS_CUTLIST for {strVariant}{strRxPackage}.";
+                            result = MessageBox.Show("!!Warning!!\r\n-----------\r\n" + strMessage + "  Continue Processing?(Y/N)",
                                  "FIA Biosum", System.Windows.Forms.MessageBoxButtons.YesNo,
                                  System.Windows.Forms.MessageBoxIcon.Question);
                             frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm, "Visible", true);
@@ -1225,7 +1237,7 @@ namespace FIA_Biosum_Manager
                             {
                                 m_intError = 0;
                             }
-                        }
+                    }
 
 
                     if (lngPotFireBaseYrCount == 0 && bPotFireBaseYear)

@@ -326,12 +326,15 @@ namespace FIA_Biosum_Manager
                                         {
                                             oDataMgr.CloseConnection(conn);
                                             string strDsConn = oDataMgr.GetConnectionString(strPathAndFile);
-                                            oDataMgr.OpenConnection(strDsConn);
-                                            if (oDataMgr.m_intError == 0)
+                                            using (System.Data.SQLite.SQLiteConnection deetsConn = new System.Data.SQLite.SQLiteConnection(strDsConn))
                                             {
-                                                strSQL = "select count(*) from " + oDataReader["table_name"].ToString();
-                                                if (this.LoadTableRecordCount) this.m_strDataSource[x, RECORDCOUNT] = Convert.ToString(oDataMgr.getRecordCount(conn, strSQL, oDataReader["table_name"].ToString()));
-                                                if (this.LoadTableColumnNamesAndDataTypes) oDataMgr.getFieldNamesAndDataTypes(conn, "select * from " + oDataReader["table_name"].ToString(), ref this.m_strDataSource[x, COLUMN_LIST], ref this.m_strDataSource[x, DATATYPE_LIST]);
+                                                deetsConn.Open();
+                                                if (oDataMgr.m_intError == 0)
+                                                {
+                                                    strSQL = "select count(*) from " + oDataReader["table_name"].ToString();
+                                                    if (this.LoadTableRecordCount) this.m_strDataSource[x, RECORDCOUNT] = Convert.ToString(oDataMgr.getRecordCount(deetsConn, strSQL, oDataReader["table_name"].ToString()));
+                                                    if (this.LoadTableColumnNamesAndDataTypes) oDataMgr.getFieldNamesAndDataTypes(deetsConn, "select * from " + oDataReader["table_name"].ToString(), ref this.m_strDataSource[x, COLUMN_LIST], ref this.m_strDataSource[x, DATATYPE_LIST]);
+                                                }
                                             }
                                         }
                                     }
