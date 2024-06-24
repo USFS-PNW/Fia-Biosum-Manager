@@ -4042,22 +4042,26 @@ namespace FIA_Biosum_Manager
                 p_oDataMgr.SqlNonQuery(p_oConn, "DROP TABLE rxtemp");
             }
             p_oDataMgr.SqlNonQuery(p_oConn, Tables.OptimizerScenarioRuleDefinitions.CreateScenarioLastTieBreakTableSQL("rxtemp"));
-            for (x = 0; x <= strRxArray.Length - 1; x++)
+            if (strRxArray != null)
             {
-                // SET THE DEFAULT TREATMENT INTENSITY TO BE THE SAME AS RXPACKAGE SO IT IS ALWAYS UNIQUE AND NEVER NULL
-                int intIntensity = -1;
-                char[] charsToTrim = { ' ', '\'' };
-                bool bResult = Int32.TryParse(strRxArray[x].Trim(charsToTrim), out intIntensity);
-                p_oDataMgr.SqlNonQuery(p_oConn, "INSERT INTO rxtemp (scenario_id,rxpackage,last_tiebreak_rank) VALUES ('" + p_strScenarioId + "'," + strRxArray[x].Trim() + ", " + intIntensity + " )");
+                for (x = 0; x <= strRxArray.Length - 1; x++)
+                {
+                    // SET THE DEFAULT TREATMENT INTENSITY TO BE THE SAME AS RXPACKAGE SO IT IS ALWAYS UNIQUE AND NEVER NULL
+                    int intIntensity = -1;
+                    char[] charsToTrim = { ' ', '\'' };
+                    bool bResult = Int32.TryParse(strRxArray[x].Trim(charsToTrim), out intIntensity);
+                    p_oDataMgr.SqlNonQuery(p_oConn, "INSERT INTO rxtemp (scenario_id,rxpackage,last_tiebreak_rank) VALUES ('" + p_strScenarioId + "'," + strRxArray[x].Trim() + ", " + intIntensity + " )");
+                }
+                p_oDataMgr.m_strSQL = "INSERT INTO scenario_last_tiebreak_rank " +
+                                 "(scenario_id,rxpackage,last_tiebreak_rank) " +
+                                 "SELECT a.scenario_id, a.RXPACKAGE, a.last_tiebreak_rank " +
+                                 "FROM rxtemp a " +
+                                 "WHERE NOT EXISTS (SELECT b.scenario_id,b.rxpackage " +
+                                                   "FROM scenario_last_tiebreak_rank b " +
+                                                   "WHERE a.rxpackage=b.rxpackage AND TRIM(UPPER(a.scenario_id))=TRIM(UPPER(b.scenario_id)))";
+                p_oDataMgr.SqlNonQuery(p_oConn, p_oDataMgr.m_strSQL);
             }
-            p_oDataMgr.m_strSQL = "INSERT INTO scenario_last_tiebreak_rank " +
-                             "(scenario_id,rxpackage,last_tiebreak_rank) " +
-                             "SELECT a.scenario_id, a.RXPACKAGE, a.last_tiebreak_rank " +
-                             "FROM rxtemp a " +
-                             "WHERE NOT EXISTS (SELECT b.scenario_id,b.rxpackage " +
-                                               "FROM scenario_last_tiebreak_rank b " +
-                                               "WHERE a.rxpackage=b.rxpackage AND TRIM(UPPER(a.scenario_id))=TRIM(UPPER(b.scenario_id)))";
-            p_oDataMgr.SqlNonQuery(p_oConn, p_oDataMgr.m_strSQL);
+            
             if (p_oDataMgr.TableExist(p_oConn, "rxtemp"))
             {
                 p_oDataMgr.SqlNonQuery(p_oConn, "DROP TABLE rxtemp");
