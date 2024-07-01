@@ -10553,13 +10553,16 @@ namespace FIA_Biosum_Manager
 
                                 if (tblName.ToUpper().Contains("FVS_") && !tblName.ToUpper().Equals("FVS_CASES"))
                                 {
-                                    string[] arrQueries = Queries.FVS.AppendRuntitleToFVSOut(tblName);
-                                    for (int i = 0; i < arrQueries.Length; i++)
+                                    if (! SQLite.ColumnExist(con, tblName, "RUNTITLE"))
                                     {
-                                        strSql = arrQueries[i];
-                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                            this.WriteText(m_strLogFile, strSql + "\r\n");
-                                        SQLite.SqlNonQuery(con, strSql);
+                                        string[] arrQueries = Queries.FVS.AppendRuntitleToFVSOut(tblName);
+                                        for (int i = 0; i < arrQueries.Length; i++)
+                                        {
+                                            strSql = arrQueries[i];
+                                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                                this.WriteText(m_strLogFile, strSql + "\r\n");
+                                            SQLite.SqlNonQuery(con, strSql);
+                                        }
                                     }
                                 }
                             }                            
