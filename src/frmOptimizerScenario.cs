@@ -6211,7 +6211,25 @@ namespace FIA_Biosum_Manager
             return bExistingTables;
         }
 
-        public bool BackupGisData()
+        public bool CheckPlotGisTable(string strMasterTravelTimesDb, string strSourceField)
+        {
+            bool bSourceFieldExists = false;
+            string strTestConn = SQLite.GetConnectionString(strMasterTravelTimesDb);
+            using (var oTestConn = new System.Data.SQLite.SQLiteConnection(strTestConn))
+            {
+                oTestConn.Open();
+                if (SQLite.TableExist(oTestConn, Tables.TravelTime.DefaultPlotGisTableName))
+                {
+                    if (SQLite.FieldExist(oTestConn, $@"select * from {Tables.TravelTime.DefaultPlotGisTableName} limit 1", strSourceField))
+                    {
+                        bSourceFieldExists = true;
+                    }
+                }
+            }
+            return bSourceFieldExists;
+        }
+
+            public bool BackupGisData()
         {
             string strFileSuffix = "_" + DateTime.Now.ToString("MMddyyyy");
             string strBackedUpMdb = "";
@@ -6373,7 +6391,7 @@ namespace FIA_Biosum_Manager
             return intRecordCount;
         }
 
-        public int LoadSqliteGisData(bool bUpdatePlotYardingDist, string strDebugFile)
+        public int LoadSqliteGisData(string strSourceYardingDistField, string strDebugFile)
         {
             m_oProjectDs.populate_datasource_array();
 
@@ -6463,7 +6481,6 @@ namespace FIA_Biosum_Manager
                     } 
                 }
 
-                bool bExistsPlotGisTable = false;
                 if (oAdo.m_intError == 0 && intRecordCount > 0)
                 {
                     frmMain.g_sbpInfo.Text = "Loading project processing_site table...Stand by";
@@ -6489,19 +6506,11 @@ namespace FIA_Biosum_Manager
 
                         strSql = "SELECT COUNT(*) FROM " + strPSitesTableName;
                         intRecordCount = (int) SQLite.getRecordCount(oLoadConn, strSql, strPSitesTableName);
-                        if (SQLite.AttachedTableExist(oLoadConn, Tables.TravelTime.DefaultPlotGisTableName))
-                        {
-                            bExistsPlotGisTable = true;
-                        }
                     }
                 }
-                if(bUpdatePlotYardingDist && !bExistsPlotGisTable)
+                if (oAdo.m_intError == 0 && !String.IsNullOrEmpty(strSourceYardingDistField))
                 {
-                    MessageBox.Show($@"The {Tables.TravelTime.DefaultPlotGisTableName} table is missing from the master travel times database. Plot yarding distances cannot be updated.", "FIA BioSum");
-                }
-                else if (oAdo.m_intError == 0 && bUpdatePlotYardingDist)
-                {
-                    if (bExistsPlotGisTable && bPlotRecords)
+                    if (bPlotRecords)
                     {
                         frmMain.g_sbpInfo.Text = "Updating yarding distances on plot table...Stand by";
                         using (var oLoadConn = new OleDbConnection(strLoadConn))
@@ -6511,9 +6520,9 @@ namespace FIA_Biosum_Manager
                             oAdo.AddPrimaryKey(oLoadConn, Tables.TravelTime.DefaultPlotGisTableName, $@"{Tables.TravelTime.DefaultPlotGisTableName}_pk", "PLOT,STATECD");
 
                             // Run audit before performing the update
-                            strSql = $@"INSERT INTO {Tables.TravelTime.DefaultGisPlotDistanceAuditTable} SELECT biosum_plot_id, PT.statecd, PT.plot, gis_yard_dist_ft, NEARDIST_FT
+                            strSql = $@"INSERT INTO {Tables.TravelTime.DefaultGisPlotDistanceAuditTable} SELECT biosum_plot_id, PT.statecd, PT.plot, gis_yard_dist_ft, {strSourceYardingDistField}
                                 FROM {m_strPlotTableName} PT LEFT JOIN {Tables.TravelTime.DefaultPlotGisTableName} PG ON (PT.statecd = PG.statecd) AND (PT.plot = PG.PLOT)
-                                WHERE NEARDIST_FT IS NULL";                            
+                                WHERE {strSourceYardingDistField} IS NULL";                            
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSql + "\r\n");
                             oAdo.SqlNonQuery(oLoadConn, strSql);
@@ -6521,7 +6530,7 @@ namespace FIA_Biosum_Manager
                                 frmMain.g_oUtils.WriteText(strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
 
                             strSql = $@"UPDATE {m_strPlotTableName} PT INNER JOIN {Tables.TravelTime.DefaultPlotGisTableName} PG ON 
-                                PT.PLOT = PG.PLOT AND PT.STATECD = PG.STATECD SET GIS_YARD_DIST_FT = NEARDIST_FT";
+                                PT.PLOT = PG.PLOT AND PT.STATECD = PG.STATECD SET GIS_YARD_DIST_FT = {strSourceYardingDistField}";
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSql + "\r\n");
                             oAdo.SqlNonQuery(oLoadConn, strSql);

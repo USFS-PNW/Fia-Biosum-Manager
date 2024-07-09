@@ -1695,7 +1695,6 @@ namespace FIA_Biosum_Manager
                     bool bTablesHaveData = false;
                     bool bTablesExist = oGisTools.CheckForExistingDataSqlite(this.frmProject.uc_project1.m_strProjectDirectory, out bTablesHaveData);
                     bool bCreateBackups = false;
-                    bool bUpdatePlotYardingDist = false;
                     string strMessage = "";
                     bool bSuccess = true;
 
@@ -1728,11 +1727,20 @@ namespace FIA_Biosum_Manager
                             }
                         }
                     }
-                    strMessage = "Do you want to update the plot yarding distance from the plot_gis table in the master travel times database ?";
-                    DialogResult res2 = MessageBox.Show(strMessage, "FIA BioSum", MessageBoxButtons.YesNo);
-                    if (res2 == DialogResult.Yes)
+                    // Check for existence of MoveDist_ft_REPLACEMENT field
+                    string strSourceField = "MoveDist_ft_REPLACEMENT";
+                    if (oGisTools.CheckPlotGisTable(strMasterDb, strSourceField))
                     {
-                        bUpdatePlotYardingDist = true;
+                        strMessage = "Do you want to update the plot yarding distance from the plot_gis table in the master travel times database ?";
+                        DialogResult res2 = MessageBox.Show(strMessage, "FIA BioSum", MessageBoxButtons.YesNo);
+                        if (res2 != DialogResult.Yes)
+                        {
+                            strSourceField = "";
+                        }
+                    }
+                    else
+                    {
+                        strSourceField = "";
                     }
 
                     this.ActivateStandByAnimation(
@@ -1750,7 +1758,7 @@ namespace FIA_Biosum_Manager
                     }
                     if (bSuccess == true)
                     {
-                        int intRowCount = oGisTools.LoadSqliteGisData(bUpdatePlotYardingDist, frmProject.uc_project1.m_strDebugFile);
+                        int intRowCount = oGisTools.LoadSqliteGisData(strSourceField, frmProject.uc_project1.m_strDebugFile);
                         if (intRowCount < 1)
                         {
                             MessageBox.Show("An error occurred while loading the GIS data!!", "FIA BioSum");

@@ -4481,7 +4481,7 @@ namespace FIA_Biosum_Manager
                     "PLOT INTEGER," +
                     "STATECD INTEGER," +
                     "GIS_YARD_DIST_FT DOUBLE," +
-                    "NEARDIST_FT DOUBLE)";
+                    "MoveDist_ft_REPLACEMENT DOUBLE)";
             }
         }
         public class Audit
