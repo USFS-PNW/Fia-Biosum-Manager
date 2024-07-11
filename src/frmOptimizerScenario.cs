@@ -2843,11 +2843,16 @@ namespace FIA_Biosum_Manager
                 get { return _strTranCd; }
                 set { _strTranCd = value; }
             }
-            public string[,] m_strBioCdDescArray = new string[4, 2] {{"1","Merchantable - Logs Only"},
-						  											 {"2","Chips - Chips Only"},
-							  										 {"3","Both - Logs And Chips"},
-                                                                     {"4","Other" }
-							  										};
+            // public string[,] m_strBioCdDescArray = new string[4, 2] {{"1","Merchantable - Logs Only"},
+            //			  											 {"2","Chips - Chips Only"},
+            //				  										 {"3","Both - Logs And Chips"},
+            //                                                       {"4","Other" }
+            //				  										};
+
+            public string[,] m_strBioCdDescArray = new string[3, 2] { { "1","Merchantable - Logs Only"},
+                                                                    { "2","Chips - Chips Only"},
+                                                                    {"3","Both - Logs And Chips" }
+                                                                    };
             string _strBioCd = "";
             public string BiomassCode
             {
