@@ -709,26 +709,26 @@ namespace FIA_Biosum_Manager
 						//the links to the scenario datasource tables
 						p_dao.CreateMDB(strTempMDB);
 					}
-					ODBCMgr p_odbc = new ODBCMgr();
-					if (this.m_strDataSource[x, MDBFILE].Trim().ToUpper() == "GIS_TRAVEL_TIMES.DB")
-                    {
-						string strDSN = ODBCMgr.DSN_KEYS.GisTravelTimesDsnName;
-						if (p_odbc.CurrentUserDSNKeyExist(strDSN))
-						{
-							p_odbc.RemoveUserDSN(strDSN);
-						}
-						p_odbc.CreateUserSQLiteDSN(strDSN, oMacroSub.GeneralTranslateVariableSubstitution(this.m_strDataSource[x, PATH].Trim()) + "\\" +
-							this.m_strDataSource[x, MDBFILE].Trim());
+					//ODBCMgr p_odbc = new ODBCMgr();
+					//if (this.m_strDataSource[x, MDBFILE].Trim().ToUpper() == "GIS_TRAVEL_TIMES.DB")
+                    //{
+						//string strDSN = ODBCMgr.DSN_KEYS.GisTravelTimesDsnName;
+						//if (p_odbc.CurrentUserDSNKeyExist(strDSN))
+						//{
+							//p_odbc.RemoveUserDSN(strDSN);
+						//}
+						//p_odbc.CreateUserSQLiteDSN(strDSN, oMacroSub.GeneralTranslateVariableSubstitution(this.m_strDataSource[x, PATH].Trim()) + "\\" +
+							//this.m_strDataSource[x, MDBFILE].Trim());
 
-						p_dao.CreateSQLiteTableLink(strTempMDB, this.m_strDataSource[x, TABLE].Trim(),
-							this.m_strDataSource[x, TABLE].Trim(), strDSN, oMacroSub.GeneralTranslateVariableSubstitution(this.m_strDataSource[x, PATH].Trim()) + "\\" +
-							this.m_strDataSource[x, MDBFILE].Trim());
+						//p_dao.CreateSQLiteTableLink(strTempMDB, this.m_strDataSource[x, TABLE].Trim(),
+							//this.m_strDataSource[x, TABLE].Trim(), strDSN, oMacroSub.GeneralTranslateVariableSubstitution(this.m_strDataSource[x, PATH].Trim()) + "\\" +
+							//this.m_strDataSource[x, MDBFILE].Trim());
 
-						if (p_odbc.CurrentUserDSNKeyExist(strDSN))
-						{
-							p_odbc.RemoveUserDSN(strDSN);
-						}
-					}
+						//if (p_odbc.CurrentUserDSNKeyExist(strDSN))
+						//{
+							//p_odbc.RemoveUserDSN(strDSN);
+						//}
+					//}
                     
 				}
 			}
