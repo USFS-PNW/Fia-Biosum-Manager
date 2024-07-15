@@ -811,20 +811,7 @@ namespace FIA_Biosum_Manager
             oDao.m_DaoDatabase = null;
            
         }
-		public void CreateScenarioRuleDefinitionTableLinksSqlite(string p_strDestDbFile, string p_strProjectPath)
-        {
-			// NEED TO ADD PROCESSOR TABLES WHEN PROCESSOR IS MIGRATED
-			// used to create a link to the table
-			DataMgr oDataMgr = new DataMgr();
-			string strSourceDB = p_strProjectPath + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
-			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(p_strDestDbFile)))
-            {
-				conn.Open();
-				oDataMgr.m_strSQL = "ATTACH DATABASE '" + strSourceDB + "' AS SOURCE";
-				oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
-				conn.Close();
-            }
-        }
+
         /// <summary>
         /// create links to each of the scenario tables
         /// </summary>

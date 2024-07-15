@@ -5491,7 +5491,7 @@ namespace FIA_Biosum_Manager
                                             //into 
                                             //table fvs_tree
                                             oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step9(
-                                                strFvsTreeTable, Tables.VolumeAndBiomass.BiosumVolumeCalcTable, p_strPackage.Trim());
+                                                strFvsTreeTable, Tables.VolumeAndBiomass.BiosumVolumeCalcTable, p_strVariant.Trim(), p_strPackage.Trim());
                                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                                 this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
                                             oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
@@ -5499,7 +5499,7 @@ namespace FIA_Biosum_Manager
                                                 this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
                                             oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step10(
-                                                strFvsTreeTable, Tables.VolumeAndBiomass.BiosumVolumeCalcTable, p_strPackage.Trim());
+                                                strFvsTreeTable, Tables.VolumeAndBiomass.BiosumVolumeCalcTable, p_strVariant.Trim(), p_strPackage.Trim());
                                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                                 this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
                                             oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
@@ -11228,7 +11228,7 @@ namespace FIA_Biosum_Manager
 
                                     SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step9(
                                         Tables.FVS.DefaultFVSInForestTreeTableName, Tables.VolumeAndBiomass.BiosumVolumeCalcTable,
-                                        strRxPackage);
+                                        strFvsVariant, strRxPackage);
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                                     SQLite.SqlNonQuery(SQLite.m_Connection, SQLite.m_strSQL);
@@ -11241,7 +11241,7 @@ namespace FIA_Biosum_Manager
                                                         = (select volcfnet_calc, volcfsnd_calc, volcsgrs_calc, voltsgrs_calc
                                                         FROM FCS.{Tables.VolumeAndBiomass.BiosumVolumeCalcTable}
                                                         WHERE {Tables.FVS.DefaultFVSInForestTreeTableName}.id = FCS.{Tables.VolumeAndBiomass.BiosumVolumeCalcTable}.tree)
-                                                        WHERE rxpackage = '{strRxPackage}'";
+                                                        WHERE fvs_variant = '{strFvsVariant}' and rxpackage = '{strRxPackage}'";
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                                     SQLite.SqlNonQuery(SQLite.m_Connection, SQLite.m_strSQL);

@@ -4643,7 +4643,7 @@ namespace FIA_Biosum_Manager
                 /// <param name="p_strFvsTreeTable"></param>
                 /// <param name="p_strBiosumCalcOutputTable"></param>
                 /// <returns></returns>
-                public static string BuildInputSQLiteTableForVolumeCalculation_Step9(string p_strFvsTreeTable, string p_strBiosumCalcOutputTable, string p_rxPackage)
+                public static string BuildInputSQLiteTableForVolumeCalculation_Step9(string p_strFvsTreeTable, string p_strBiosumCalcOutputTable, string p_fvsVariant, string p_rxPackage)
                 {
                     return $@"UPDATE {p_strFvsTreeTable} 
                            SET (drybio_bole, drybio_sapling, drybio_top, drybio_wdld_spp,
@@ -4651,7 +4651,7 @@ namespace FIA_Biosum_Manager
                                = (select drybio_bole_calc, drybio_sapling_calc, drybio_top_calc, drybio_wdld_spp_calc,
                                  drybiom_calc, drybiot_calc, volcfgrs_calc FROM FCS.{p_strBiosumCalcOutputTable}
                                  WHERE {p_strFvsTreeTable}.id = FCS.{p_strBiosumCalcOutputTable}.tree)
-                                 WHERE rxpackage = '{p_rxPackage}'";
+                                 WHERE fvs_variant = '{p_fvsVariant}' and rxpackage = '{p_rxPackage}'";
                 }
 
                 /// <summary>
@@ -4661,7 +4661,8 @@ namespace FIA_Biosum_Manager
                 /// <param name="p_strFvsTreeTable"></param>
                 /// <param name="p_strBiosumCalcOutputTable"></param>
                 /// <returns></returns>
-                public static string BuildInputSQLiteTableForVolumeCalculation_Step10(string p_strFvsTreeTable, string p_strBiosumCalcOutputTable, string p_rxPackage)
+                public static string BuildInputSQLiteTableForVolumeCalculation_Step10(string p_strFvsTreeTable, string p_strBiosumCalcOutputTable, 
+                    string p_fvsVariant, string p_rxPackage)
                 {
                     return $@"UPDATE {p_strFvsTreeTable} 
                            SET (volcfnet, volcfsnd, volcsgrs, voltsgrs,
@@ -4669,7 +4670,7 @@ namespace FIA_Biosum_Manager
                                = (select volcfnet_calc, volcfsnd_calc, volcsgrs_calc, voltsgrs_calc,
                                  standing_dead_cd, statuscd, decaycd FROM FCS.{p_strBiosumCalcOutputTable}
                                  WHERE {p_strFvsTreeTable}.id = FCS.{p_strBiosumCalcOutputTable}.tree)
-                                 WHERE rxpackage = '{p_rxPackage}'";
+                                 WHERE fvs_variant = '{p_fvsVariant}' AND rxpackage = '{p_rxPackage}'";
                     // Note: standing_dead_cd, statuscd, decaycd aren't calculated by FCS but this was an easy way to populate it from master.tree
                 }
 
