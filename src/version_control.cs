@@ -7045,7 +7045,7 @@ namespace FIA_Biosum_Manager
                     using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(scenarioSqliteFile)))
                     {
                         conn.Open();
-                        oDataMgr.m_strSQL = "UPDATE scenario SET file = 'optimizer_scenario_rule_definitions.db'";
+                        oDataMgr.m_strSQL = "UPDATE scenario SET file = 'scenario_optimizer_rule_definitions.db'";
                         oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                     }
 
