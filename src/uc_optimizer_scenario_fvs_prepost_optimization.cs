@@ -2676,7 +2676,7 @@ namespace FIA_Biosum_Manager
                                     string strColumn = strTableColumnArray[1].Trim();
                                     if (oDataMgr.TableExist(conn, "POST_" + strTable) || oDataMgr.AttachedTableExist(conn, "POST_" + strTable))
                                     {
-                                        if (!oDataMgr.ColumnExist(conn, "POST_" + strTable, strColumn))
+                                        if (!oDataMgr.ColumnExist(conn, "POST_" + strTable, strColumn) && !oDataMgr.AttachedColumnExist(conn, "POST_" + strTable, strColumn))
                                         {
                                             m_intError = -1;
                                             m_strError = m_strError + "Table column post_" + strTable + "." + strColumn + " does not exist in Db files PREPOST_FVSOUT.db or prepost_fvs_weighted.db\r\n";
@@ -2691,7 +2691,7 @@ namespace FIA_Biosum_Manager
                                     {
                                         if (oDataMgr.TableExist(conn, "PRE_" + strTable) || oDataMgr.AttachedTableExist(conn, "PRE_" + strTable))
                                         {
-                                            if (!oDataMgr.ColumnExist(conn, "PRE_" + strTable, strColumn))
+                                            if (!oDataMgr.ColumnExist(conn, "PRE_" + strTable, strColumn) && !oDataMgr.AttachedColumnExist(conn, "PRE_" + strTable, strColumn))
                                             {
                                                 m_intError = -1;
                                                 m_strError = m_strError + "Table column pre_" + strTable + "." + strColumn + " does not exist in Db files PREPOST_FVSOUT.db or prepost_fvs_weighted.db\r\n";
