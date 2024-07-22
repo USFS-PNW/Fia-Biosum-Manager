@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Windows.Forms;
+using SQLite.ADO;
 
 
 namespace FIA_Biosum_Manager
@@ -21,6 +22,7 @@ namespace FIA_Biosum_Manager
 		private string m_strTravelTimeTable;
 		private string m_strPSiteTable;
 		private string m_strTempMDBFile;
+		private string m_strTempDBFile;
 		private env m_oEnv;
 		public int m_intError=0;
 		public string m_strError="";
@@ -28,6 +30,7 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Button btnUnselectAll;
 		private System.Windows.Forms.ToolTip toolTip1;
 		private System.Windows.Forms.ComboBox m_Combo;
+		private System.Windows.Forms.ComboBox m_ComboBio;
 		private System.Windows.Forms.Button btnScenarioPSiteUpdate;
 		private System.Windows.Forms.GroupBox groupBox1;
 		public System.Windows.Forms.Label lblTitle;
@@ -122,24 +125,37 @@ namespace FIA_Biosum_Manager
                         strTranDef = 
                              ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).m_strTranCdDescArray[
                                 Convert.ToInt32(ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).TransportationCode) - 1, 1];
-                        if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).TransportationCode == "1")
+                        if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).TransportationCode == "2")
                         {
-                            lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text = "Processing Site - Road Access Only";
-                        }
+							lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text = "Railhead - Road To Rail Wood Transfer Point";
+						}
+						else if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).TransportationCode == "3")
+                        {
+							lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text = "Rail Collector - PSite With Both Road And Rail Access";
+						}
                         else
                         {
-                            m_Combo = (System.Windows.Forms.ComboBox)this.lstPSites.GetEmbeddedControl(COLUMN_PSITEROADRAIL, x);
-                            m_Combo.Text = strTranDef;
-                        }
+							lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text = "Processing Site - Road Access Only";
+						}
                         //
                         //BIOMASS TYPE CODE
                         //
                         strBioDef =  
                             ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).m_strBioCdDescArray[
                                 Convert.ToInt32( ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).BiomassCode) - 1, 1];
-                         m_Combo=(System.Windows.Forms.ComboBox)this.lstPSites.GetEmbeddedControl(COLUMN_PSITEBIOPROCESSTYPE,x);
-						m_Combo.Text = strBioDef;
+						if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).BiomassCode == "2")
+                        {
+							lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Chips - Chips Only";
 
+						}
+						else if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).BiomassCode == "3")
+                        {
+							lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Both - Logs And Chips";
+						}
+                        else
+                        {
+							lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Merchantable - Logs Only";
+						}
                         break;
                        
                       
@@ -147,7 +163,7 @@ namespace FIA_Biosum_Manager
                 }
             }
         }
-		public void loadvalues()
+		public void loadvalues_access()
 		{
 			int x;
 			byte byteTranCd=9;
@@ -178,13 +194,12 @@ namespace FIA_Biosum_Manager
 			 **************************************************************/
 			this.m_strTempMDBFile = this.ReferenceOptimizerScenarioForm.uc_datasource1.CreateMDBAndScenarioTableDataSourceLinks(m_oEnv.strTempDir);
 
-			//create the scenario_psite table link
 			FIA_Biosum_Manager.dao_data_access p_dao = new dao_data_access();
-			p_dao.CreateTableLink(this.m_strTempMDBFile,
-								  "scenario_psites",
-								frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+            p_dao.CreateTableLink(this.m_strTempMDBFile,
+                                  "scenario_psites",
+                                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
                                 Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile, "scenario_psites");
-			p_dao=null;
+            p_dao =null;
 
 			/**************************************************************
 			 **get the scenario travel time table name
@@ -463,7 +478,272 @@ namespace FIA_Biosum_Manager
 			p_ado.m_OleDbConnection.Close();
 			p_ado=null;
 		}
-		public int savevalues()
+		
+
+		public void loadvalues()
+        {
+			int x;
+			byte byteTranCd = 9;
+			byte byteBioCd = 9;
+			int intPSiteId;
+
+			this.lstPSites.Clear();
+			this.m_oLvRowColors.InitializeRowCollection();
+
+			this.lstPSites.Columns.Add("", 2, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("PSite_Id", 75, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("Name", 300, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("Site Exist", 65, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("Site Type", 300, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("Biomass Processing Type", 225, HorizontalAlignment.Left);
+
+			this.lstPSites.Columns[COLUMN_CHECKBOX].Width = -2;
+
+			// Create an instance of a ListView column sorter and assign it 
+			// to the ListView control.
+			lvwColumnSorter = new ListViewColumnSorter();
+			this.lstPSites.ListViewItemSorter = lvwColumnSorter;
+
+			m_oEnv = new env();
+
+			DataMgr p_dataMgr = new DataMgr();
+			string strOptimizerRulesDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+								Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+
+			string strTravelTimesDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.TravelTime.DefaultTravelTimePathAndDbFile;
+
+			using (System.Data.SQLite.SQLiteConnection travelTimesConn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(strTravelTimesDb)))
+			{
+				travelTimesConn.Open();
+
+				p_dataMgr.m_strSQL = "ATTACH DATABASE '" + strOptimizerRulesDb + "' AS rule_defs";
+				p_dataMgr.SqlNonQuery(travelTimesConn, p_dataMgr.m_strSQL);
+
+				/**************************************************************
+				 **get the scenario travel time table name
+				 **************************************************************/
+				this.m_strTravelTimeTable = this.ReferenceOptimizerScenarioForm.uc_datasource1.getDataSourceTableName("TRAVEL TIMES");
+
+				if (this.m_strTravelTimeTable.Trim().Length == 0)
+				{
+					MessageBox.Show("!!Could Not Locate Scenario Travel Time Table!!", "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+					this.m_intError = -1;
+					return;
+				}
+
+				/************************************************************
+				 **get the scenario processing site table name
+				 ************************************************************/
+				this.m_strPSiteTable = this.ReferenceOptimizerScenarioForm.uc_datasource1.getDataSourceTableName("PROCESSING SITES");
+				if (this.m_strPSiteTable.Trim().Length == 0)
+				{
+					MessageBox.Show("!!Could Not Locate Scenario Processing Site Table!!", "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+					this.m_intError = -1;
+					return;
+				}
+
+				p_dataMgr.m_strSQL = "SELECT DISTINCT p.psite_id,p.name,p.trancd,p.trancd_def,p.biocd,p.biocd_def,p.exists_yn " +
+							 "FROM " + m_strPSiteTable + " AS p WHERE EXISTS (SELECT DISTINCT(t.psite_id) " +
+																		  "FROM " + this.m_strTravelTimeTable + " AS t " +
+																		  "WHERE t.psite_id=p.psite_id)";
+
+				p_dataMgr.SqlQueryReader(travelTimesConn, p_dataMgr.m_strSQL);
+				if (p_dataMgr.m_DataReader.HasRows == true)
+				{
+					x = 0;
+					while (p_dataMgr.m_DataReader.Read())
+					{
+						if (p_dataMgr.m_DataReader["psite_id"] != System.DBNull.Value)
+						{
+							//null column
+							this.lstPSites.Items.Add(" ");
+							this.lstPSites.Items[lstPSites.Items.Count - 1].UseItemStyleForSubItems = false;
+							this.m_oLvRowColors.AddRow();
+							this.m_oLvRowColors.AddColumns(lstPSites.Items.Count - 1, lstPSites.Columns.Count);
+
+							//psite_id
+							this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Add(Convert.ToString(p_dataMgr.m_DataReader["psite_id"]));
+							this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
+								COLUMN_PSITEID,
+								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITEID], false);
+
+							if (p_dataMgr.m_DataReader["name"] != System.DBNull.Value)
+							{
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(p_dataMgr.m_DataReader["name"].ToString());
+							}
+							else
+							{
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(" ");
+							}
+							this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
+								COLUMN_PSITENAME,
+								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITENAME], false);
+
+
+
+							/**********************************************************
+							 **does the psite current exist
+							 **********************************************************/
+							if (p_dataMgr.m_DataReader["exists_yn"] != System.DBNull.Value)
+							{
+								if (p_dataMgr.m_DataReader["exists_yn"].ToString().Trim() == "Y")
+								{
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Yes");
+
+								}
+								else if (p_dataMgr.m_DataReader["exists_yn"].ToString().Trim() == "N")
+								{
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("No");
+								}
+								else
+								{
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Unknown");
+								}
+							}
+							else
+							{
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Unknown");
+							}
+							this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
+								COLUMN_PSITEEXIST,
+								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITEEXIST], false);
+
+
+
+							/***********************************************
+							 **processing site type
+							 ***********************************************/
+							int intSubItemCount = 0;
+							if (p_dataMgr.m_DataReader["trancd"] != System.DBNull.Value)
+							{
+
+								byteTranCd = Convert.ToByte(p_dataMgr.m_DataReader["trancd"]);
+								if (Convert.ToByte(p_dataMgr.m_DataReader["trancd"]) == 1)
+								{
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Processing Site - Road Access Only");
+									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+
+								}
+								else if (Convert.ToByte(p_dataMgr.m_DataReader["trancd"]) == 2) 
+								{
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Railhead - Road To Rail Wood Transfer Point");
+									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+								}
+								else
+                                {
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Rail Collector - PSite With Both Road And Rail Access");
+									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+								}
+							}
+							else
+							{
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Processing Site - Road Access Only");
+								intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+
+
+							}
+							this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
+								COLUMN_PSITEROADRAIL,
+								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITEROADRAIL], false);
+
+
+							/***********************************************
+							 **site bio processing type
+							 ***********************************************/
+							intSubItemCount = 0;
+							if (p_dataMgr.m_DataReader["biocd"] != System.DBNull.Value)
+							{
+
+								byteTranCd = Convert.ToByte(p_dataMgr.m_DataReader["biocd"]);
+								if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 1)
+								{
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Merchantable - Logs Only");
+									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+
+								}
+								else if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 2)
+								{
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Chips - Chips Only");
+									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+								}
+								else
+								{
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Both - Logs And Chips");
+									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+								}
+							}
+							else
+							{
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Merchantable - Logs Only");
+								intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+
+
+							}
+							this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
+								COLUMN_PSITEBIOPROCESSTYPE,
+								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITEBIOPROCESSTYPE], false);
+							x++;
+						}
+					}
+
+				}
+				p_dataMgr.m_DataReader.Close();
+
+				/***************************************************
+				 **update listview with the previous scenario settings
+				 ***************************************************/
+				p_dataMgr.m_strSQL = "SELECT * FROM scenario_psites " +
+								 "WHERE TRIM(scenario_id) = '" + this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim() + "';";
+
+				p_dataMgr.SqlQueryReader(travelTimesConn, p_dataMgr.m_strSQL);
+				if (p_dataMgr.m_DataReader.HasRows == true)
+				{
+					x = 0;
+					while (p_dataMgr.m_DataReader.Read())
+					{
+						if (p_dataMgr.m_DataReader["psite_id"] != System.DBNull.Value)
+						{
+							intPSiteId = Convert.ToInt32(p_dataMgr.m_DataReader["psite_id"]);
+							for (x = 0; x <= lstPSites.Items.Count - 1; x++)
+							{
+
+								if (intPSiteId == Convert.ToInt32(lstPSites.Items[x].SubItems[COLUMN_PSITEID].Text.Trim()))
+								{
+									if (p_dataMgr.m_DataReader["selected_yn"] != System.DBNull.Value)
+									{
+										if (p_dataMgr.m_DataReader["selected_yn"].ToString().Trim() == "Y")
+										{
+											lstPSites.Items[x].Checked = true;
+										}
+										else
+										{
+											lstPSites.Items[x].Checked = false;
+										}
+									}
+								}
+							}
+
+						}
+					}
+				}
+				else
+				{
+					//if (((frmScenario)this.ParentForm).btnSave.Enabled==false) 
+					//	((frmScenario)this.ParentForm).btnSave.Enabled=true;
+				}
+				p_dataMgr.m_DataReader.Close();
+			}
+		}
+
+		public int savevalues_access()
 		{
 			string strTranCd;
 			string strBioCd;
@@ -576,6 +856,114 @@ namespace FIA_Biosum_Manager
 			
 			return x;
 		}
+		public int savevalues()
+		{
+			string strTranCd;
+			string strBioCd;
+			string strSelected;
+			string strName;
+			string strScenarioId;
+			string strPSiteId;
+			int x;
+
+			DataMgr oDataMgr = new DataMgr();
+			strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
+			string strScenarioDB =
+				frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+
+			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
+			{
+				conn.Open();
+				if (oDataMgr.m_intError != 0)
+				{
+					x = oDataMgr.m_intError;
+					oDataMgr = null;
+					return x;
+				}
+
+				//delete all records from the scenario psites table
+				oDataMgr.m_strSQL = "DELETE FROM scenario_psites WHERE " +
+					" TRIM(UPPER(scenario_id)) = '" + strScenarioId.Trim().ToUpper() + "';";
+
+				oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+				if (oDataMgr.m_intError < 0)
+				{
+					conn.Close();
+					x = oDataMgr.m_intError;
+					oDataMgr = null;
+					return x;
+				}
+				for (x = 0; x <= this.lstPSites.Items.Count - 1; x++)
+				{
+					strTranCd = "";
+					strBioCd = "";
+					strSelected = "";
+					strName = "";
+					strScenarioId = "";
+					strPSiteId = "";
+
+					oDataMgr.m_strSQL = "INSERT INTO scenario_psites (scenario_id,psite_id,name,trancd,biocd,selected_yn)" +
+								   " VALUES ";
+
+					strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim();
+					strPSiteId = lstPSites.Items[x].SubItems[COLUMN_PSITEID].Text.Trim();
+					strName = lstPSites.Items[x].SubItems[COLUMN_PSITENAME].Text.Trim();
+					strName = oDataMgr.FixString(strName.Trim(), "'", "''");
+					if (lstPSites.Items[x].Checked == true)
+					{
+						strSelected = "Y";
+					}
+					else
+					{
+						strSelected = "N";
+					}
+					if (lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim() == "Processing Site - Road Access Only")
+					{
+						strTranCd = "1";
+					}
+					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim() == "Railhead - Road To Rail Wood Transfer Point")
+                    {
+						strTranCd = "2";
+                    }
+					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim() == "Rail Collector - PSite With Both Road And Rail Access")
+                    {
+						strTranCd = "3";
+                    }
+					else
+                    {
+						strTranCd = "9";
+                    }
+					if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Merchantable - Logs Only")
+                    {
+						strBioCd = "1";
+                    }
+					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Chips - Chips Only")
+                    {
+						strBioCd = "2";
+                    }
+					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Both - Logs And Chips")
+                    {
+						strBioCd = "3";
+                    }
+					else
+                    {
+						strBioCd = "9";
+                    }
+					oDataMgr.m_strSQL = oDataMgr.m_strSQL + "('" + strScenarioId + "'," +
+														   strPSiteId + ",'" +
+														   strName + "'," +
+														   strTranCd + "," +
+														   strBioCd + ",'" +
+														   strSelected + "')";
+					oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+					if (oDataMgr.m_intError != 0) break;
+				}
+				x = oDataMgr.m_intError;
+				conn.Close();
+			}
+			return x;
+		}
 		public int val_psites()
 		{
 			if (this.lstPSites.CheckedItems.Count == 0)
@@ -599,10 +987,10 @@ namespace FIA_Biosum_Manager
 			this.imgSize = new System.Windows.Forms.ImageList(this.components);
 			this.groupBox1 = new System.Windows.Forms.GroupBox();
 			this.lblTitle = new System.Windows.Forms.Label();
-			this.btnScenarioPSiteUpdate = new System.Windows.Forms.Button();
+			//this.btnScenarioPSiteUpdate = new System.Windows.Forms.Button();
 			this.btnUnselectAll = new System.Windows.Forms.Button();
 			this.btnSelectAll = new System.Windows.Forms.Button();
-			this.btnScenarioPSiteDefault = new System.Windows.Forms.Button();
+			//this.btnScenarioPSiteDefault = new System.Windows.Forms.Button();
 			this.listView1 = new System.Windows.Forms.ListView();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this.groupBox1.SuspendLayout();
@@ -622,10 +1010,10 @@ namespace FIA_Biosum_Manager
 			this.groupBox1.BackColor = System.Drawing.SystemColors.Control;
 			this.groupBox1.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("groupBox1.BackgroundImage")));
 			this.groupBox1.Controls.Add(this.lblTitle);
-			this.groupBox1.Controls.Add(this.btnScenarioPSiteUpdate);
+			//this.groupBox1.Controls.Add(this.btnScenarioPSiteUpdate);
 			this.groupBox1.Controls.Add(this.btnUnselectAll);
 			this.groupBox1.Controls.Add(this.btnSelectAll);
-			this.groupBox1.Controls.Add(this.btnScenarioPSiteDefault);
+			//this.groupBox1.Controls.Add(this.btnScenarioPSiteDefault);
 			this.groupBox1.Controls.Add(this.listView1);
 			this.groupBox1.Dock = ((System.Windows.Forms.DockStyle)(resources.GetObject("groupBox1.Dock")));
 			this.groupBox1.Enabled = ((bool)(resources.GetObject("groupBox1.Enabled")));
@@ -668,31 +1056,31 @@ namespace FIA_Biosum_Manager
 			// 
 			// btnScenarioPSiteUpdate
 			// 
-			this.btnScenarioPSiteUpdate.AccessibleDescription = resources.GetString("btnScenarioPSiteUpdate.AccessibleDescription");
-			this.btnScenarioPSiteUpdate.AccessibleName = resources.GetString("btnScenarioPSiteUpdate.AccessibleName");
-			this.btnScenarioPSiteUpdate.Anchor = ((System.Windows.Forms.AnchorStyles)(resources.GetObject("btnScenarioPSiteUpdate.Anchor")));
-			this.btnScenarioPSiteUpdate.BackColor = System.Drawing.SystemColors.Control;
-			this.btnScenarioPSiteUpdate.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnScenarioPSiteUpdate.BackgroundImage")));
-			this.btnScenarioPSiteUpdate.Dock = ((System.Windows.Forms.DockStyle)(resources.GetObject("btnScenarioPSiteUpdate.Dock")));
-			this.btnScenarioPSiteUpdate.Enabled = ((bool)(resources.GetObject("btnScenarioPSiteUpdate.Enabled")));
-			this.btnScenarioPSiteUpdate.FlatStyle = ((System.Windows.Forms.FlatStyle)(resources.GetObject("btnScenarioPSiteUpdate.FlatStyle")));
-			this.btnScenarioPSiteUpdate.Font = ((System.Drawing.Font)(resources.GetObject("btnScenarioPSiteUpdate.Font")));
-			this.btnScenarioPSiteUpdate.ForeColor = System.Drawing.Color.Black;
-			this.btnScenarioPSiteUpdate.Image = ((System.Drawing.Image)(resources.GetObject("btnScenarioPSiteUpdate.Image")));
-			this.btnScenarioPSiteUpdate.ImageAlign = ((System.Drawing.ContentAlignment)(resources.GetObject("btnScenarioPSiteUpdate.ImageAlign")));
-			this.btnScenarioPSiteUpdate.ImageIndex = ((int)(resources.GetObject("btnScenarioPSiteUpdate.ImageIndex")));
-			this.btnScenarioPSiteUpdate.ImeMode = ((System.Windows.Forms.ImeMode)(resources.GetObject("btnScenarioPSiteUpdate.ImeMode")));
-			this.btnScenarioPSiteUpdate.Location = ((System.Drawing.Point)(resources.GetObject("btnScenarioPSiteUpdate.Location")));
-			this.btnScenarioPSiteUpdate.Name = "btnScenarioPSiteUpdate";
-			this.btnScenarioPSiteUpdate.RightToLeft = ((System.Windows.Forms.RightToLeft)(resources.GetObject("btnScenarioPSiteUpdate.RightToLeft")));
-			this.btnScenarioPSiteUpdate.Size = ((System.Drawing.Size)(resources.GetObject("btnScenarioPSiteUpdate.Size")));
-			this.btnScenarioPSiteUpdate.TabIndex = ((int)(resources.GetObject("btnScenarioPSiteUpdate.TabIndex")));
-			this.btnScenarioPSiteUpdate.Tag = "";
-			this.btnScenarioPSiteUpdate.Text = resources.GetString("btnScenarioPSiteUpdate.Text");
-			this.btnScenarioPSiteUpdate.TextAlign = ((System.Drawing.ContentAlignment)(resources.GetObject("btnScenarioPSiteUpdate.TextAlign")));
-			this.toolTip1.SetToolTip(this.btnScenarioPSiteUpdate, resources.GetString("btnScenarioPSiteUpdate.ToolTip"));
-			this.btnScenarioPSiteUpdate.Visible = ((bool)(resources.GetObject("btnScenarioPSiteUpdate.Visible")));
-			this.btnScenarioPSiteUpdate.Click += new System.EventHandler(this.btnScenarioPSiteUpdate_Click);
+			//this.btnScenarioPSiteUpdate.AccessibleDescription = resources.GetString("btnScenarioPSiteUpdate.AccessibleDescription");
+			//this.btnScenarioPSiteUpdate.AccessibleName = resources.GetString("btnScenarioPSiteUpdate.AccessibleName");
+			//this.btnScenarioPSiteUpdate.Anchor = ((System.Windows.Forms.AnchorStyles)(resources.GetObject("btnScenarioPSiteUpdate.Anchor")));
+			//this.btnScenarioPSiteUpdate.BackColor = System.Drawing.SystemColors.Control;
+			//this.btnScenarioPSiteUpdate.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnScenarioPSiteUpdate.BackgroundImage")));
+			//this.btnScenarioPSiteUpdate.Dock = ((System.Windows.Forms.DockStyle)(resources.GetObject("btnScenarioPSiteUpdate.Dock")));
+			//this.btnScenarioPSiteUpdate.Enabled = ((bool)(resources.GetObject("btnScenarioPSiteUpdate.Enabled")));
+			//this.btnScenarioPSiteUpdate.FlatStyle = ((System.Windows.Forms.FlatStyle)(resources.GetObject("btnScenarioPSiteUpdate.FlatStyle")));
+			//this.btnScenarioPSiteUpdate.Font = ((System.Drawing.Font)(resources.GetObject("btnScenarioPSiteUpdate.Font")));
+			//this.btnScenarioPSiteUpdate.ForeColor = System.Drawing.Color.Black;
+			//this.btnScenarioPSiteUpdate.Image = ((System.Drawing.Image)(resources.GetObject("btnScenarioPSiteUpdate.Image")));
+			//this.btnScenarioPSiteUpdate.ImageAlign = ((System.Drawing.ContentAlignment)(resources.GetObject("btnScenarioPSiteUpdate.ImageAlign")));
+			//this.btnScenarioPSiteUpdate.ImageIndex = ((int)(resources.GetObject("btnScenarioPSiteUpdate.ImageIndex")));
+			//this.btnScenarioPSiteUpdate.ImeMode = ((System.Windows.Forms.ImeMode)(resources.GetObject("btnScenarioPSiteUpdate.ImeMode")));
+			//this.btnScenarioPSiteUpdate.Location = ((System.Drawing.Point)(resources.GetObject("btnScenarioPSiteUpdate.Location")));
+			//this.btnScenarioPSiteUpdate.Name = "btnScenarioPSiteUpdate";
+			//this.btnScenarioPSiteUpdate.RightToLeft = ((System.Windows.Forms.RightToLeft)(resources.GetObject("btnScenarioPSiteUpdate.RightToLeft")));
+			//this.btnScenarioPSiteUpdate.Size = ((System.Drawing.Size)(resources.GetObject("btnScenarioPSiteUpdate.Size")));
+			//this.btnScenarioPSiteUpdate.TabIndex = ((int)(resources.GetObject("btnScenarioPSiteUpdate.TabIndex")));
+			//this.btnScenarioPSiteUpdate.Tag = "";
+			//this.btnScenarioPSiteUpdate.Text = resources.GetString("btnScenarioPSiteUpdate.Text");
+			//this.btnScenarioPSiteUpdate.TextAlign = ((System.Drawing.ContentAlignment)(resources.GetObject("btnScenarioPSiteUpdate.TextAlign")));
+			//this.toolTip1.SetToolTip(this.btnScenarioPSiteUpdate, resources.GetString("btnScenarioPSiteUpdate.ToolTip"));
+			//this.btnScenarioPSiteUpdate.Visible = ((bool)(resources.GetObject("btnScenarioPSiteUpdate.Visible")));
+			//this.btnScenarioPSiteUpdate.Click += new System.EventHandler(this.btnScenarioPSiteUpdate_Click);
 			// 
 			// btnUnselectAll
 			// 
@@ -750,31 +1138,31 @@ namespace FIA_Biosum_Manager
 			// 
 			// btnScenarioPSiteDefault
 			// 
-			this.btnScenarioPSiteDefault.AccessibleDescription = resources.GetString("btnScenarioPSiteDefault.AccessibleDescription");
-			this.btnScenarioPSiteDefault.AccessibleName = resources.GetString("btnScenarioPSiteDefault.AccessibleName");
-			this.btnScenarioPSiteDefault.Anchor = ((System.Windows.Forms.AnchorStyles)(resources.GetObject("btnScenarioPSiteDefault.Anchor")));
-			this.btnScenarioPSiteDefault.BackColor = System.Drawing.SystemColors.Control;
-			this.btnScenarioPSiteDefault.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnScenarioPSiteDefault.BackgroundImage")));
-			this.btnScenarioPSiteDefault.Dock = ((System.Windows.Forms.DockStyle)(resources.GetObject("btnScenarioPSiteDefault.Dock")));
-			this.btnScenarioPSiteDefault.Enabled = ((bool)(resources.GetObject("btnScenarioPSiteDefault.Enabled")));
-			this.btnScenarioPSiteDefault.FlatStyle = ((System.Windows.Forms.FlatStyle)(resources.GetObject("btnScenarioPSiteDefault.FlatStyle")));
-			this.btnScenarioPSiteDefault.Font = ((System.Drawing.Font)(resources.GetObject("btnScenarioPSiteDefault.Font")));
-			this.btnScenarioPSiteDefault.ForeColor = System.Drawing.Color.Black;
-			this.btnScenarioPSiteDefault.Image = ((System.Drawing.Image)(resources.GetObject("btnScenarioPSiteDefault.Image")));
-			this.btnScenarioPSiteDefault.ImageAlign = ((System.Drawing.ContentAlignment)(resources.GetObject("btnScenarioPSiteDefault.ImageAlign")));
-			this.btnScenarioPSiteDefault.ImageIndex = ((int)(resources.GetObject("btnScenarioPSiteDefault.ImageIndex")));
-			this.btnScenarioPSiteDefault.ImeMode = ((System.Windows.Forms.ImeMode)(resources.GetObject("btnScenarioPSiteDefault.ImeMode")));
-			this.btnScenarioPSiteDefault.Location = ((System.Drawing.Point)(resources.GetObject("btnScenarioPSiteDefault.Location")));
-			this.btnScenarioPSiteDefault.Name = "btnScenarioPSiteDefault";
-			this.btnScenarioPSiteDefault.RightToLeft = ((System.Windows.Forms.RightToLeft)(resources.GetObject("btnScenarioPSiteDefault.RightToLeft")));
-			this.btnScenarioPSiteDefault.Size = ((System.Drawing.Size)(resources.GetObject("btnScenarioPSiteDefault.Size")));
-			this.btnScenarioPSiteDefault.TabIndex = ((int)(resources.GetObject("btnScenarioPSiteDefault.TabIndex")));
-			this.btnScenarioPSiteDefault.Tag = "";
-			this.btnScenarioPSiteDefault.Text = resources.GetString("btnScenarioPSiteDefault.Text");
-			this.btnScenarioPSiteDefault.TextAlign = ((System.Drawing.ContentAlignment)(resources.GetObject("btnScenarioPSiteDefault.TextAlign")));
-			this.toolTip1.SetToolTip(this.btnScenarioPSiteDefault, resources.GetString("btnScenarioPSiteDefault.ToolTip"));
-			this.btnScenarioPSiteDefault.Visible = ((bool)(resources.GetObject("btnScenarioPSiteDefault.Visible")));
-			this.btnScenarioPSiteDefault.Click += new System.EventHandler(this.btnScenarioPSiteDefault_Click);
+			////this.btnScenarioPSiteDefault.AccessibleDescription = resources.GetString("btnScenarioPSiteDefault.AccessibleDescription");
+			////this.btnScenarioPSiteDefault.AccessibleName = resources.GetString("btnScenarioPSiteDefault.AccessibleName");
+			////this.btnScenarioPSiteDefault.Anchor = ((System.Windows.Forms.AnchorStyles)(resources.GetObject("btnScenarioPSiteDefault.Anchor")));
+			////this.btnScenarioPSiteDefault.BackColor = System.Drawing.SystemColors.Control;
+			////this.btnScenarioPSiteDefault.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnScenarioPSiteDefault.BackgroundImage")));
+			////this.btnScenarioPSiteDefault.Dock = ((System.Windows.Forms.DockStyle)(resources.GetObject("btnScenarioPSiteDefault.Dock")));
+			////this.btnScenarioPSiteDefault.Enabled = ((bool)(resources.GetObject("btnScenarioPSiteDefault.Enabled")));
+			////this.btnScenarioPSiteDefault.FlatStyle = ((System.Windows.Forms.FlatStyle)(resources.GetObject("btnScenarioPSiteDefault.FlatStyle")));
+			////this.btnScenarioPSiteDefault.Font = ((System.Drawing.Font)(resources.GetObject("btnScenarioPSiteDefault.Font")));
+			////this.btnScenarioPSiteDefault.ForeColor = System.Drawing.Color.Black;
+			////this.btnScenarioPSiteDefault.Image = ((System.Drawing.Image)(resources.GetObject("btnScenarioPSiteDefault.Image")));
+			////this.btnScenarioPSiteDefault.ImageAlign = ((System.Drawing.ContentAlignment)(resources.GetObject("btnScenarioPSiteDefault.ImageAlign")));
+			////this.btnScenarioPSiteDefault.ImageIndex = ((int)(resources.GetObject("btnScenarioPSiteDefault.ImageIndex")));
+			////this.btnScenarioPSiteDefault.ImeMode = ((System.Windows.Forms.ImeMode)(resources.GetObject("btnScenarioPSiteDefault.ImeMode")));
+			////this.btnScenarioPSiteDefault.Location = ((System.Drawing.Point)(resources.GetObject("btnScenarioPSiteDefault.Location")));
+			////this.btnScenarioPSiteDefault.Name = "btnScenarioPSiteDefault";
+			////this.btnScenarioPSiteDefault.RightToLeft = ((System.Windows.Forms.RightToLeft)(resources.GetObject("btnScenarioPSiteDefault.RightToLeft")));
+			////this.btnScenarioPSiteDefault.Size = ((System.Drawing.Size)(resources.GetObject("btnScenarioPSiteDefault.Size")));
+			////this.btnScenarioPSiteDefault.TabIndex = ((int)(resources.GetObject("btnScenarioPSiteDefault.TabIndex")));
+			////this.btnScenarioPSiteDefault.Tag = "";
+			////this.btnScenarioPSiteDefault.Text = resources.GetString("btnScenarioPSiteDefault.Text");
+			////this.btnScenarioPSiteDefault.TextAlign = ((System.Drawing.ContentAlignment)(resources.GetObject("btnScenarioPSiteDefault.TextAlign")));
+			////this.toolTip1.SetToolTip(this.btnScenarioPSiteDefault, resources.GetString("btnScenarioPSiteDefault.ToolTip"));
+			////this.btnScenarioPSiteDefault.Visible = ((bool)(resources.GetObject("btnScenarioPSiteDefault.Visible")));
+			////this.btnScenarioPSiteDefault.Click += new System.EventHandler(this.btnScenarioPSiteDefault_Click);
 			// 
 			// listView1
 			// 
@@ -1152,11 +1540,11 @@ namespace FIA_Biosum_Manager
 		private void groupBox1_Resize(object sender, System.EventArgs e)
 		{
 			lstPSites.Width = this.ClientSize.Width - (lstPSites.Left * 2);
-			this.btnScenarioPSiteDefault.Top = this.ClientSize.Height - (int)(this.btnScenarioPSiteDefault.Height * 1.5);
-			this.btnScenarioPSiteUpdate.Top = this.btnScenarioPSiteDefault.Top;
-			this.btnSelectAll.Top = this.btnScenarioPSiteDefault.Top;
-			this.btnUnselectAll.Top = this.btnScenarioPSiteDefault.Top;
-			lstPSites.Height = this.ClientSize.Height - lstPSites.Top - (int)(this.btnScenarioPSiteDefault.Height * 1.5) - 3;
+			//this.btnScenarioPSiteDefault.Top = this.ClientSize.Height - (int)(this.btnScenarioPSiteDefault.Height * 1.5);
+			//this.btnScenarioPSiteUpdate.Top = this.btnScenarioPSiteDefault.Top;
+			//this.btnSelectAll.Top = this.btnScenarioPSiteDefault.Top;
+			//this.btnUnselectAll.Top = this.btnScenarioPSiteDefault.Top;
+			//lstPSites.Height = this.ClientSize.Height - lstPSites.Top - (int)(this.btnScenarioPSiteDefault.Height * 1.5) - 3;
 		}
 	
 		public FIA_Biosum_Manager.frmOptimizerScenario ReferenceOptimizerScenarioForm

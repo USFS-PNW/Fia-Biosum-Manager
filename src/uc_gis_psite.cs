@@ -28,6 +28,7 @@ namespace FIA_Biosum_Manager
 		private string m_strProjDir;
 		private string m_strFieldList="";
 		private FIA_Biosum_Manager.ado_data_access m_ado;
+        private SQLite.ADO.DataMgr m_dataMgr;
 		private string m_strConn;
 		private System.Data.DataView m_dv;
 		public int m_intIndex=0;
@@ -100,24 +101,30 @@ namespace FIA_Biosum_Manager
 			this.m_strPSiteTable = this.m_DataSource.getValidDataSourceTableName("PROCESSING SITES");
 			if (this.m_strPSiteTable.Trim().Length == 0) 
 			{
-				MessageBox.Show("!!Could Not Locate Plot Table!!","Tree Species Conversion",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
+				MessageBox.Show("!!Could Not Locate Processing Sites Table!!","FIA BioSum",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
 				this.m_intError=-1;
 				return;
 			}
-			this.m_ado = new ado_data_access();
-			this.m_strConn = this.m_ado.getMDBConnString(this.m_DataSource.getFullPathAndFile("PROCESSING SITES"),"","");
-			this.m_ado.OpenConnection(this.m_strConn);
-			if (this.m_ado.m_intError != 0)
-			{
-				this.m_intError = this.m_ado.m_intError;
-				this.m_ado = null;
-				return ;
 
-			}
+            this.m_dataMgr = new SQLite.ADO.DataMgr();
+            this.m_strConn = m_dataMgr.GetConnectionString(this.m_DataSource.getFullPathAndFile("PROCESSING SITES"));
+            this.m_dataMgr.OpenConnection(this.m_strConn);
+            if (m_dataMgr.m_intError != 0)
+            {
+                this.m_intError = m_dataMgr.m_intError;
+                m_dataMgr.CloseConnection(this.m_dataMgr.m_Connection);
+                m_dataMgr = null;
+            }
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(this.m_strConn))
+            {
+                conn.Open();
+                if (m_dataMgr.m_intError !=0)
+                {
+                    this.m_intError = m_dataMgr.m_intError;
+                    m_dataMgr = null;
+                }
+            }
 			
-
-
-
 			// TODO: Add any initialization after the InitializeComponent call
             this.m_oEnv = new env();
 		}
@@ -141,16 +148,18 @@ namespace FIA_Biosum_Manager
 			string strColumnName="";
 			this.InitializePopup();
 				                                         
-			this.m_ado.m_DataSet = new DataSet("processing_site");
-			this.m_ado.m_OleDbDataAdapter = new System.Data.OleDb.OleDbDataAdapter();
-			this.m_ado.m_strSQL = "select * from " + this.m_strPSiteTable + " order by psite_id;";
-			this.m_dtTableSchema = this.m_ado.getTableSchema(this.m_ado.m_OleDbConnection,
-				this.m_ado.m_OleDbTransaction,
-				this.m_ado.m_strSQL);
+			//this.m_ado.m_DataSet = new DataSet("processing_site");
+			//this.m_ado.m_OleDbDataAdapter = new System.Data.OleDb.OleDbDataAdapter();
+			//this.m_ado.m_strSQL = "select * from " + this.m_strPSiteTable + " order by psite_id;";
+			//this.m_dtTableSchema = this.m_ado.getTableSchema(this.m_ado.m_OleDbConnection,
+			//	this.m_ado.m_OleDbTransaction,
+			//	this.m_ado.m_strSQL);
+            m_dataMgr.m_DataSet = new DataSet("processing_site");
+            m_dataMgr.m_DataAdapter = new System.Data.SQLite.SQLiteDataAdapter();
+            m_dataMgr.m_strSQL = "select * from " + this.m_strPSiteTable + " order by psite_id;";
+            this.m_dtTableSchema = m_dataMgr.getTableSchema(m_dataMgr.m_Connection, m_dataMgr.m_Transaction, m_dataMgr.m_strSQL);
 
-			
-			
-			if (this.m_ado.m_intError == 0)
+            if (m_dataMgr.m_intError == 0)
 			{
 
 				for (int x=0; x<=m_dtTableSchema.Rows.Count-1;x++)
@@ -170,18 +179,18 @@ namespace FIA_Biosum_Manager
 						}
 					}
 				}
-				this.InitializeOleDbTransactionCommands();
+                this.InitializeTransactionCommands();
 
-				this.m_ado.m_strSQL = "select * from " + this.m_strPSiteTable + " order by psite_id;";
-				this.m_ado.m_OleDbCommand = this.m_ado.m_OleDbConnection.CreateCommand();
-				this.m_ado.m_OleDbCommand.CommandText = this.m_ado.m_strSQL;
-				this.m_ado.m_OleDbDataAdapter.SelectCommand = this.m_ado.m_OleDbCommand;
-				this.m_ado.m_OleDbDataAdapter.SelectCommand.Transaction = this.m_ado.m_OleDbTransaction;
+				m_dataMgr.m_strSQL = "select * from " + this.m_strPSiteTable + " order by psite_id;";
+				m_dataMgr.m_Command = m_dataMgr.m_Connection.CreateCommand();
+                m_dataMgr.m_Command.CommandText = m_dataMgr.m_strSQL;
+                m_dataMgr.m_DataAdapter.SelectCommand = m_dataMgr.m_Command;
+                m_dataMgr.m_DataAdapter.SelectCommand.Transaction = m_dataMgr.m_Transaction;
 				try 
 				{
 
-					this.m_ado.m_OleDbDataAdapter.Fill(this.m_ado.m_DataSet,"processing_site");
-					this.m_dv = new DataView(this.m_ado.m_DataSet.Tables["processing_site"]);
+                    m_dataMgr.m_DataAdapter.Fill(m_dataMgr.m_DataSet,"processing_site");
+					this.m_dv = new DataView(m_dataMgr.m_DataSet.Tables["processing_site"]);
 				
 					this.m_dv.AllowNew = false;       //cannot append new records
 					this.m_dv.AllowDelete = false;    //cannot delete records
@@ -213,7 +222,7 @@ namespace FIA_Biosum_Manager
 					 **we will use those to create new columnstyles for the columns in our grid
 					 ******************************************************************************/
 					//get the number of columns from the scenario_rx_intensity data set
-					int numCols = this.m_ado.m_DataSet.Tables["processing_site"].Columns.Count;
+					int numCols = m_dataMgr.m_DataSet.Tables["processing_site"].Columns.Count;
                 
                     
 					/************************************************
@@ -221,7 +230,7 @@ namespace FIA_Biosum_Manager
 					 ************************************************/
 					for(int i = 0; i < numCols; ++i)
 					{
-						strColumnName = this.m_ado.m_DataSet.Tables["processing_site"].Columns[i].ColumnName;
+						strColumnName = m_dataMgr.m_DataSet.Tables["processing_site"].Columns[i].ColumnName;
 					
 						if (strColumnName.Trim().ToUpper() == "CONVERT_TO_FIA_SPCD")
 						{
@@ -251,11 +260,8 @@ namespace FIA_Biosum_Manager
 							aColumnTextColumn.ReadOnly=true;
 
 						}
-
-						
-
+					
 						aColumnTextColumn.HeaderText = strColumnName;
-
 				 				    
 						/********************************************************************
 						 **assign the mappingname property the data sets column name
@@ -283,7 +289,7 @@ namespace FIA_Biosum_Manager
 
 					this.m_dg.DataSource = this.m_dv;  
 
-					if (this.m_ado.m_DataSet.Tables["processing_site"].Rows.Count > 0)
+					if (m_dataMgr.m_DataSet.Tables["processing_site"].Rows.Count > 0)
 					{
 						this.btnDelete.Enabled=true;
 						this.btnEdit.Enabled=true;
@@ -298,20 +304,17 @@ namespace FIA_Biosum_Manager
 					MessageBox.Show(e.Message,"Table",MessageBoxButtons.OK,MessageBoxIcon.Error);
 					this.m_intError=-1;
 					this.m_ado.m_OleDbConnection.Close();
-					this.m_ado.m_OleDbConnection = null;
-					this.m_ado.m_DataSet.Clear();
-					this.m_ado.m_DataSet= null;
-					this.m_ado.m_OleDbDataAdapter.Dispose();
-					this.m_ado.m_OleDbDataAdapter = null;
-					this.m_ado = null;
+                    m_dataMgr.m_Connection.Close();
+                    m_dataMgr.m_Connection = null;
+                    m_dataMgr.m_DataSet.Clear();
+                    m_dataMgr.m_DataSet= null;
+                    m_dataMgr.m_DataAdapter.Dispose();
+                    m_dataMgr.m_DataAdapter = null;
+					m_dataMgr = null;
 					return;
-
 				}
 
-			
-			
-
-				if (this.m_ado.m_DataSet.Tables["processing_site"].Rows.Count == 0)
+				if (m_dataMgr.m_DataSet.Tables["processing_site"].Rows.Count == 0)
 				{
 					this.m_intCurrRow = 1;
 				}
@@ -326,7 +329,7 @@ namespace FIA_Biosum_Manager
 					System.EventHandler(this.m_dg_CurrentCellChanged);
 
 			}
-			if (this.m_ado.m_intError < 0)
+			if (m_dataMgr.m_intError < 0)
 			{
 				this.ParentForm.Close();
 			}
@@ -1002,7 +1005,7 @@ namespace FIA_Biosum_Manager
 				{
 					this.m_dv.AllowDelete = true;
 
-					if (this.m_intError==0 && this.m_ado.m_intError==0)
+					if (this.m_intError==0 && m_dataMgr.m_intError==0)
 					{
 						//delete any plots that are in the delete list
 						for (x=0; x < p_dv.Count;x++)
@@ -1499,35 +1502,32 @@ namespace FIA_Biosum_Manager
 		/// <summary>
 		/// configure the data adapter to insert, update, and delete data using oledb sql
 		/// </summary>
-		private void InitializeOleDbTransactionCommands()
+		private void InitializeTransactionCommands()
 		{
-			this.m_ado.m_strSQL = "select * from " + this.m_strPSiteTable + " order by psite_id;";
-			//initialize the transaction object with the connection
-			this.m_ado.m_OleDbTransaction = this.m_ado.m_OleDbConnection.BeginTransaction();
+			m_dataMgr.m_strSQL = "select * from " + this.m_strPSiteTable + " order by psite_id;";
+            //initialize the transaction object with the connection
+            m_dataMgr.m_Transaction = m_dataMgr.m_Connection.BeginTransaction();
 
-			this.m_ado.ConfigureDataAdapterInsertCommand(this.m_ado.m_OleDbConnection,
-				this.m_ado.m_OleDbDataAdapter,
-				this.m_ado.m_OleDbTransaction,
-				this.m_ado.m_strSQL,
+            m_dataMgr.ConfigureDataAdapterInsertCommand(m_dataMgr.m_Connection,
+                m_dataMgr.m_DataAdapter,
+                m_dataMgr.m_Transaction,
+                m_dataMgr.m_strSQL,
 				this.m_strPSiteTable);
 
-			this.m_ado.m_strSQL = "select " + this.m_strFieldList  +  " from " + this.m_strPSiteTable + " order by name;";
-			this.m_ado.ConfigureDataAdapterUpdateCommand(this.m_ado.m_OleDbConnection,
-				this.m_ado.m_OleDbDataAdapter,
-				this.m_ado.m_OleDbTransaction,
-				this.m_ado.m_strSQL,"select psite_id from " + this.m_strPSiteTable,
+            m_dataMgr.m_strSQL = "select " + this.m_strFieldList  +  " from " + this.m_strPSiteTable + " order by name;";
+            m_dataMgr.ConfigureDataAdapterUpdateCommand(m_dataMgr.m_Connection,
+                m_dataMgr.m_DataAdapter,
+                m_dataMgr.m_Transaction,
+                m_dataMgr.m_strSQL,
+                "select psite_id from " + this.m_strPSiteTable,
 				this.m_strPSiteTable);
 
-			this.m_ado.m_strSQL = "select " + this.m_strFieldList  +  " from " + this.m_strPSiteTable + " order by name;";
-			this.m_ado.ConfigureDataAdapterDeleteCommand(this.m_ado.m_OleDbConnection,
-				this.m_ado.m_OleDbDataAdapter,
-				this.m_ado.m_OleDbTransaction,
-				"select psite_id from " + this.m_strPSiteTable,
+            m_dataMgr.m_strSQL = "select " + this.m_strFieldList  +  " from " + this.m_strPSiteTable + " order by name;";
+			m_dataMgr.ConfigureDataAdapterDeleteCommand(m_dataMgr.m_Connection,
+                m_dataMgr.m_DataAdapter,
+                m_dataMgr.m_Transaction,
+                "select psite_id from " + this.m_strPSiteTable,
 				this.m_strPSiteTable);
-
-			
-
-
 		}
 		
 		private void m_dg_TextBox_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
@@ -1616,8 +1616,8 @@ namespace FIA_Biosum_Manager
 			try
 			{
 
-				if (this.m_ado.m_OleDbDataAdapter != null)
-					this.m_ado.m_OleDbDataAdapter.Dispose();
+				if (m_dataMgr.m_DataAdapter != null)
+                    m_dataMgr.m_DataAdapter.Dispose();
 
 				if (this.m_dv != null)
 					this.m_dv.Dispose();
@@ -1625,16 +1625,30 @@ namespace FIA_Biosum_Manager
 				if (this.m_dg != null)
 					this.m_dg.Dispose();
 
-				this.m_ado.m_DataSet.Clear();
-				this.m_ado.m_DataSet.Dispose();
+                m_dataMgr.m_DataSet.Clear();
+                m_dataMgr.m_DataSet.Dispose();
 
-				if (this.m_ado.m_OleDbConnection != null)
+                if (m_dataMgr.m_DataAdapter != null)
+                {
+                    m_dataMgr.m_DataAdapter.Dispose();
+                }
+
+                if (m_dataMgr.m_Command != null)
+                {
+                    m_dataMgr.m_Command.Dispose();
+                }
+
+                if (m_dataMgr.m_Connection != null)
 				{
-					this.m_ado.m_OleDbConnection.Close();
-					this.m_ado.m_OleDbConnection.Dispose();
-					this.m_ado.m_OleDbConnection = null;
+                    m_dataMgr.m_Connection.Close();
+                    m_dataMgr.m_Connection.Dispose();
+                    m_dataMgr.m_Connection = null;
 				}
-				this.m_ado = null;
+
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+
+                this.m_dataMgr = null;
 				this.m_DataSource = null;
 
 			}
@@ -1746,17 +1760,15 @@ namespace FIA_Biosum_Manager
 			string strUniqueId="";
 			int intId=0;
 			int intId2=0;
-			strUniqueId = this.m_ado.getSingleStringValueFromSQLQuery(this.m_ado.m_OleDbConnection,
-				this.m_ado.m_OleDbTransaction,
-				"select max(psite_id) as maxid from " + this.m_strPSiteTable,
-				this.m_strPSiteTable);
+            strUniqueId = m_dataMgr.getSingleStringValueFromSQLQuery(m_dataMgr.m_Connection,
+                m_dataMgr.m_Transaction, "select max(psite_id) as maxid from " + this.m_strPSiteTable, this.m_strPSiteTable);
 
 			if (strUniqueId != null && strUniqueId.Trim().Length > 0)
 				intId = Convert.ToInt32(strUniqueId);
 
-			if (this.m_ado.m_DataSet.Tables["processing_site"].Compute("Max(psite_id)", null) != System.DBNull.Value)
+			if (m_dataMgr.m_DataSet.Tables["processing_site"].Compute("Max(psite_id)", null) != System.DBNull.Value)
 			{
-				intId2 = Convert.ToInt32(this.m_ado.m_DataSet.Tables["processing_site"].Compute("Max(psite_id)", null));
+				intId2 = Convert.ToInt32(m_dataMgr.m_DataSet.Tables["processing_site"].Compute("Max(psite_id)", null));
 			}
 			if (intId2 >= intId) 
 			{
@@ -1765,7 +1777,6 @@ namespace FIA_Biosum_Manager
 
 			if (intId==0) return 1;
 			return intId;
-
 		}
 
 		private void btnNew_Click(object sender, System.EventArgs e)
@@ -2269,7 +2280,7 @@ namespace FIA_Biosum_Manager
 							}
 						}
 
-						this.m_ado.m_DataSet.Tables["processing_site"].Rows.Add(p_row);
+						m_dataMgr.m_DataSet.Tables["processing_site"].Rows.Add(p_row);
 						p_row=null;
 						this.m_dv.AllowNew = false;
 						if (this.btnSave.Enabled==false) this.btnSave.Enabled=true;
@@ -3154,43 +3165,35 @@ namespace FIA_Biosum_Manager
 			try
 			{
 				
-				p_dtChanges = this.m_ado.m_DataSet.Tables["processing_site"].GetChanges();
+				p_dtChanges = m_dataMgr.m_DataSet.Tables["processing_site"].GetChanges();
 								
 				//check if any inserted rows
 				//p_Rows = p_dtChanges.Select(null,null, DataViewRowState.Added);
 				if (p_dtChanges.HasErrors)
 				{
-					this.m_ado.m_DataSet.Tables["processing_site"].RejectChanges();
+                    m_dataMgr.m_DataSet.Tables["processing_site"].RejectChanges();
 					this.m_intError=-1;
 				}
 				else
 				{
-					this.m_ado.m_OleDbDataAdapter.Update(this.m_ado.m_DataSet.Tables["processing_site"]);
-					this.m_ado.m_OleDbTransaction.Commit();
-					this.m_ado.m_DataSet.Tables["processing_site"].AcceptChanges();
-					this.InitializeOleDbTransactionCommands();
+                    m_dataMgr.m_DataAdapter.Update(m_dataMgr.m_DataSet.Tables["processing_site"]);
+                    m_dataMgr.m_Transaction.Commit();
+                    m_dataMgr.m_DataSet.Tables["processing_site"].AcceptChanges();
+                    this.InitializeTransactionCommands();
 				}
-					
-					
-				
-
 				
 			}
 			catch (Exception caught)
 			{
 				this.m_intError=-1;
 				MessageBox.Show(caught.Message);
-				this.m_ado.m_DataSet.Tables["processing_site"].RejectChanges();
-				//rollback the transaction to the original records 
-				this.m_ado.m_OleDbTransaction.Rollback();
-				
+                m_dataMgr.m_DataSet.Tables["processing_site"].RejectChanges();
+                //rollback the transaction to the original records 
+                m_dataMgr.m_Transaction.Rollback();				
 			}
-			
-
+		
 			p_dtChanges=null;
 			
-
-
 			this.m_dg.CurrentRowIndex = intCurrRow;		
 			this.btnSave.Enabled=false;	
             

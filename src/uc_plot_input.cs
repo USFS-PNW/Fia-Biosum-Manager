@@ -3466,11 +3466,7 @@ namespace FIA_Biosum_Manager
                         SetLabelValue(m_frmTherm.lblMsg, "Text", "Start Volume and Biomass Calculations...Stand By");
                         frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
 
-                        //step 5 - delete and create work tables
-                        if (p_ado.TableExist(this.m_connTempMDBFile, Tables.VolumeAndBiomass.BiosumVolumesInputTable))
-                            p_ado.SqlNonQuery(this.m_connTempMDBFile, "DROP TABLE " + Tables.VolumeAndBiomass.BiosumVolumesInputTable);
-                        frmMain.g_oTables.m_oFvs.CreateOracleInputBiosumVolumesTable(p_ado, this.m_connTempMDBFile, Tables.VolumeAndBiomass.BiosumVolumesInputTable);
-
+                        //step 5 - delete and create work table
                         if (p_ado.TableExist(this.m_connTempMDBFile, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable))
                             p_ado.SqlNonQuery(this.m_connTempMDBFile, "DROP TABLE " + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
                         frmMain.g_oTables.m_oFvs.CreateOracleInputFCSBiosumVolumesTable(p_ado, this.m_connTempMDBFile, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);

@@ -709,7 +709,7 @@ namespace FIA_Biosum_Manager
             switch (dataTypeFromDB)
             {
                 case "SYSTEM.INT32":
-                    convertedType = "LONG";
+                    convertedType = "INTEGER";
                     break;
                 case "SYSTEM.DOUBLE":
                     convertedType = "DOUBLE";
@@ -717,6 +717,15 @@ namespace FIA_Biosum_Manager
                 case "SYSTEM.STRING":
                     convertedType = "VARCHAR(255)";
                     break;
+				case "SYSTEM.BYTE":
+					convertedType = "CHAR(1)";
+					break;
+				case "SYSTEM.SINGLE":
+					convertedType = "INTEGER";
+					break;
+				case "SYSTEM.INT64":
+					convertedType = "INTEGER";
+					break;
                 default:
                     convertedType = "UNRECOGNIZED";
                     break;
@@ -728,6 +737,24 @@ namespace FIA_Biosum_Manager
                 convertedType = "INTEGER";
             }
             return convertedType;
+        }
+
+        /// <summary>Translates "FVSOut.db" column naming conventions into BioSum ones, e.g. SPECIESFIA -> SPECIES.</summary>
+        /// <param name="strToCheck">String to check. If it matches, map it. Otherwise return the same string.</param>
+        public static string TranslateColumn(string strToCheck)
+        {
+            // Mapping of FVSOut column names to biosum column names. Add new entries here.
+            Dictionary<string, string> sqliteToAccessColNames = new Dictionary<string, string>
+            {
+                { "SPECIESFIA", "SPECIES" }
+            };
+            var translatedStr = strToCheck.ToUpper();
+            // Map SPECIESFIA to SPECIES. In the future, add other column mappings (e.g. stuff that's different in FVSOUT.db from the target Access Mdbs) here.
+            if (sqliteToAccessColNames.Keys.Contains(translatedStr))
+            {
+                translatedStr = sqliteToAccessColNames[translatedStr];                
+            }
+            return translatedStr;
         }
     }
 

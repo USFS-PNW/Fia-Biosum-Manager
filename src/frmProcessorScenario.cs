@@ -626,11 +626,11 @@ namespace FIA_Biosum_Manager
 					{
                         if (!m_bUsingSqlite)
                         {
-                            bDeleted = uc_scenario1.DeleteScenario(uc_scenario_open1.txtScenarioId.Text.Trim());
+                            bDeleted = uc_scenario1.DeleteScenario_access(uc_scenario_open1.txtScenarioId.Text.Trim());
                         }
                         else
                         {
-                            bDeleted = uc_scenario1.DeleteScenarioSqlite(uc_scenario_open1.txtScenarioId.Text.Trim());
+                            bDeleted = uc_scenario1.DeleteScenario(uc_scenario_open1.txtScenarioId.Text.Trim());
                         }
                         if (bDeleted)
 						    uc_scenario_open1.lstScenario.Items.Remove(uc_scenario_open1.lstScenario.SelectedItems[0]);
@@ -639,11 +639,11 @@ namespace FIA_Biosum_Manager
 					{
                         if (!m_bUsingSqlite)
                         {
-                            bDeleted = uc_scenario1.DeleteScenario(uc_scenario1.txtScenarioId.Text.Trim());
+                            bDeleted = uc_scenario1.DeleteScenario_access(uc_scenario1.txtScenarioId.Text.Trim());
                         }
                         else
                         {
-                            bDeleted = uc_scenario1.DeleteScenarioSqlite(uc_scenario1.txtScenarioId.Text.Trim());
+                            bDeleted = uc_scenario1.DeleteScenario(uc_scenario1.txtScenarioId.Text.Trim());
                         }
                         if (bDeleted)
                             this.Close();
@@ -874,16 +874,8 @@ namespace FIA_Biosum_Manager
 			this.uc_processor_scenario_merch_chip_value1.loadvalues();
             frmMain.g_sbpInfo.Text = "Loading Scenario Revenue And Cost Escalator Rule Definitions...Stand By";
 			this.uc_processor_scenario_escalators1.loadvalues();
-            frmMain.g_sbpInfo.Text = "Loading Scenario Supplemental Harvest Component Rule Definitions...Stand By";
-            if (!m_bUsingSqlite)
-            {
-                this.uc_processor_scenario_additional_harvest_cost_columns1.loadvalues();
-            }
-            else
-            {
-                this.uc_processor_scenario_additional_harvest_cost_columns1.loadvaluesSqlite();
-            }
-           
+            frmMain.g_sbpInfo.Text = "Loading Scenario Supplemental Harvest Component Rule Definitions...Stand By"; 
+            this.uc_processor_scenario_additional_harvest_cost_columns1.loadvaluesSqlite();           
             frmMain.g_sbpInfo.Text = "Loading Scenario Run Data...Stand By";
             this.uc_processor_scenario_run1.loadvalues();
             frmMain.g_sbpInfo.Text = "Ready";
@@ -1339,8 +1331,6 @@ namespace FIA_Biosum_Manager
 
         private void btnHelp_Click(object sender, EventArgs e)
         {
-            //ProcessorScenarioTools oTools = new ProcessorScenarioTools();
-            //oTools.migrate_access_data();
             if (!String.IsNullOrEmpty(m_helpChapter))
             {
                 if (m_oHelp == null)
@@ -3861,7 +3851,7 @@ namespace FIA_Biosum_Manager
 
         }
 
-        public void migrate_access_data()
+        public void migrate_access_data1()
         {
             string targetDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
                 @"\processor\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
@@ -3869,7 +3859,7 @@ namespace FIA_Biosum_Manager
                 @"\processor\" + Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodDbFile;
             if (System.IO.File.Exists(targetDbFile) == false)
             {
-                frmMain.g_oFrmMain.frmProject.uc_project1.CreateProcessorScenarioRuleDefinitionSqliteDbAndTables(targetDbFile);
+                frmMain.g_oFrmMain.frmProject.uc_project1.CreateProcessorScenarioRuleDefinitionDbAndTables(targetDbFile);
             }
             else
             {
@@ -3883,7 +3873,6 @@ namespace FIA_Biosum_Manager
             ODBCMgr odbcmgr = new ODBCMgr();
             try
             {
-
                 string[] arrTargetTables = { };
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dataMgr.GetConnectionString(targetDbFile)))
                 {
@@ -3903,7 +3892,7 @@ namespace FIA_Biosum_Manager
                     {
                         if (!dataMgr.ColumnExists(conn, strTableName, strColumn))
                         {
-                            dataMgr.AddColumn(conn, strTableName, strColumn, "REAL", "");
+                            dataMgr.AddColumn(conn, strTableName, strColumn, "DOUBLE", "");
                         }
                     }
                 }
@@ -3929,6 +3918,7 @@ namespace FIA_Biosum_Manager
                 }
                 oDao.CreateTableLinks(strTempAccdb, sourceDbFile);  // Link all the source tables to the database
 
+                List<string> lstScenarioPaths = new List<string>();
                 string strCopyConn = oAdo.getMDBConnString(strTempAccdb, "", "");
                 using (var copyConn = new System.Data.OleDb.OleDbConnection(strCopyConn))
                 {
@@ -3942,14 +3932,75 @@ namespace FIA_Biosum_Manager
 
                     if (oAdo.m_intError == 0)
                     {
-                        // Primary key required to update
-                        oAdo.AddPrimaryKey(copyConn, "scenario_1", "scenario_id_pk", "scenario_id");
                         // Set file (database) field to new Sqlite DB
                         string newDbFile = System.IO.Path.GetFileName(Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile);
                         oAdo.m_strSQL = "UPDATE scenario_1 set file = '" +
                             newDbFile + "'";
                         oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
                     }
+
+                    //retrieve paths for all scenarios in the project and put them in list
+                    oAdo.m_strSQL = "SELECT path from scenario";
+                    oAdo.SqlQueryReader(copyConn, oAdo.m_strSQL);
+                    if (oAdo.m_OleDbDataReader.HasRows)
+                    {
+                        while (oAdo.m_OleDbDataReader.Read())
+                        {
+                            string strPath = "";
+                            if (oAdo.m_OleDbDataReader["path"] != System.DBNull.Value)
+                                strPath = oAdo.m_OleDbDataReader["path"].ToString().Trim();
+                            if (!String.IsNullOrEmpty(strPath))
+                            {
+                                //Check to see if the .mdb exists before adding it to the list
+                                string strPathToMdb = strPath + "\\db\\scenario_results.mdb";
+                                //sample path: C:\\workspace\\BioSum\\biosum_data\\bluemountains\\processor\\scenario1\\db\\scenario_results.mdb
+                                if (System.IO.File.Exists(strPathToMdb))
+                                    lstScenarioPaths.Add(strPath);
+                            }
+                        }
+                        oAdo.m_OleDbDataReader.Close();
+                    }
+                }
+
+                // Create tables in scenario_results.db if missing
+                foreach (var sPath in lstScenarioPaths)
+                {
+                    string strScenarioDbPath = $@"{sPath}\{Tables.ProcessorScenarioRun.DefaultScenarioResultsTableDbFile}";
+                    if (!System.IO.File.Exists(strScenarioDbPath))
+                    {
+                        dataMgr.CreateDbFile(strScenarioDbPath);
+                    }
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dataMgr.GetConnectionString(strScenarioDbPath)))
+                    {
+                        conn.Open();
+                        if (!dataMgr.TableExist(conn,Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName))
+                        {
+                            frmMain.g_oTables.m_oProcessor.CreateSqliteHarvestCostsTable(dataMgr,
+                                conn, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName);
+                        }
+                        if (!dataMgr.TableExist(conn, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName))
+                        {
+                            frmMain.g_oTables.m_oProcessor.CreateSqliteTreeVolValSpeciesDiamGroupsTable(dataMgr,
+                                conn, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName, true);
+                        }
+                        if (!dataMgr.TableExist(conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName))
+                        {
+                            frmMain.g_oTables.m_oProcessorScenarioRun.CreateSqliteAdditionalKcpCpaTable(dataMgr,
+                                conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, false);
+                        }
+                    }
+                }
+
+                // Add SQLite OpCost config file to db directory
+                if (System.IO.File.Exists(frmMain.g_oEnv.strAppDir + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile) &&
+                    !System.IO.File.Exists(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile))
+                {
+                    System.IO.File.Copy(frmMain.g_oEnv.strAppDir + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile,
+                        frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile);
+                }
+                else
+                {
+                    MessageBox.Show($@"The OpCost configuration file is missing from the AppData directory: {frmMain.g_oEnv.strAppDir + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile}");
                 }
             }
             catch (Exception)

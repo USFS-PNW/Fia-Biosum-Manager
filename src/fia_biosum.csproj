@@ -182,13 +182,6 @@
       <EmbedInteropTypes>False</EmbedInteropTypes>
       <Private>True</Private>
     </COMReference>
-    <COMReference Include="SHDocVw">
-      <Guid>{EAB22AC0-30C1-11CF-A7EB-0000C05BAE0B}</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>1</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-    </COMReference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -204,6 +197,7 @@
     <Compile Include="btnMainForm.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="sqlite_optimizer_tables.cs" />
     <Compile Include="ODBCMgr.cs" />
     <Compile Include="uc_db_sqlite.cs">
       <SubType>UserControl</SubType>

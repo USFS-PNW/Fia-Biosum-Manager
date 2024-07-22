@@ -800,6 +800,14 @@ namespace FIA_Biosum_Manager
             // Link to FVSOUT_TREE_LIST.db
             if (!m_ado.TableExist(m_ado.m_OleDbConnection, Tables.FVS.DefaultFVSCutTreeTableName))
             {
+                // Set up an ODBC DSN for the FVSOUT_TREE_LIST.db
+                if (m_odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName))
+                {
+                    m_odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName);
+                }
+                m_odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName,
+                    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                    Tables.FVS.DefaultFVSTreeListDbFile);
                 dao_data_access oDao = new dao_data_access();
                 oDao.CreateSQLiteTableLink(m_ado.m_OleDbConnection.DataSource, Tables.FVS.DefaultFVSCutTreeTableName, Tables.FVS.DefaultFVSCutTreeTableName,
                     ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
@@ -1792,7 +1800,8 @@ namespace FIA_Biosum_Manager
 
 		private void btnTreeAudit_Click(object sender, System.EventArgs e)
 		{
-			((frmMain)this.ParentForm.ParentForm).button_click("TREE SPECIES");
+            frmDialog oFrmDialog = (frmDialog) this.ParentForm;
+            oFrmDialog.m_frmMain.button_click("Tree Species");
 		}
 
 		private void chkFilterSpecies_CheckStateChanged(object sender, System.EventArgs e)

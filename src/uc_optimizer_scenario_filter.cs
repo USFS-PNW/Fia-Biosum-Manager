@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Data;
 using System.Windows.Forms;
 using System.Text;
+using SQLite.ADO;
 
 namespace FIA_Biosum_Manager
 {
@@ -288,7 +289,7 @@ namespace FIA_Biosum_Manager
             this.btnExecuteSQL.TabIndex = 7;
             this.btnExecuteSQL.Text = "Execute SQL";
             this.btnExecuteSQL.UseVisualStyleBackColor = false;
-            this.btnExecuteSQL.Click += new System.EventHandler(this.btnExecuteSQL_Click);
+            this.btnExecuteSQL.Click += new System.EventHandler(this.btnExecuteSQL_ClickSqlite);
             // 
             // uc_optimizer_scenario_filter
             // 
@@ -362,7 +363,7 @@ namespace FIA_Biosum_Manager
             if (p_bScenarioCopy==false)
                 ((frmOptimizerScenario)this.ParentForm).m_bSave = false;
 		}
-		public int savevalues()
+		public int savevalues_access()
 		{
 			int x=0;
             
@@ -506,6 +507,146 @@ namespace FIA_Biosum_Manager
 
 		
 		}
+		public int savevalues()
+		{
+			int x = 0;
+
+			string str = "";
+			string strSQL = "";
+			string strConn = "";
+			string strNewSQL = "";
+			System.Text.StringBuilder sb = new System.Text.StringBuilder();
+
+			if (this.FilterType == "PLOT")
+			{
+				if (this.m_strCurrentSQL.Trim().ToUpper() == this.txtCurrentSQL.Text.Trim().ToUpper())
+					return 0;
+
+				m_strScenarioTable = "scenario_plot_filter";
+			}
+			else
+			{
+				if (this.m_strCurrentSQL.Trim().ToUpper() == this.txtCurrentSQL.Text.Trim().ToUpper() &&
+					this.m_strCurrentYardDist.Trim() == this.txtYardDist.Text.Trim() &&
+					this.m_strCurrentYardDist2.Trim() == this.txtYardDist2.Text.Trim())
+					return 0;
+				m_strScenarioTable = "scenario_cond_filter";
+			}
+
+			DataMgr oDataMgr = new DataMgr();
+			string strScenarioId = this.ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.ScenarioId.Trim();
+			string strScenarioDB =
+				frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+
+			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
+            {
+				conn.Open();
+				if (oDataMgr.m_intError != 0)
+				{
+					x = oDataMgr.m_intError;
+					oDataMgr = null;
+					return x;
+				}
+
+
+				if (this.m_strCurrentSQL.Trim().ToUpper() != this.txtCurrentSQL.Text.Trim().ToUpper())
+				{
+					strNewSQL = oDataMgr.FixString(this.txtCurrentSQL.Text, "'", "''");
+
+
+
+					//delete any duplicates
+					oDataMgr.m_strSQL = "DELETE FROM " + this.m_strScenarioTable + " WHERE " +
+						" TRIM(UPPER(scenario_id))='" + strScenarioId.Trim().ToUpper() + "' AND " +
+						"TRIM(UPPER(sql_command)) = '" + strNewSQL.Trim().ToUpper() + "'";
+					oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+
+					oDataMgr.m_strSQL = "SELECT * FROM " + this.m_strScenarioTable + " WHERE " +
+						" TRIM(UPPER(scenario_id)) = '" + strScenarioId.Trim().ToUpper() + "' AND current_yn = 'Y';";
+					oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
+
+					if (oDataMgr.m_intError == 0)
+					{
+						//update the current sql as NOT being current
+						if (oDataMgr.m_DataReader.HasRows)
+						{
+							oDataMgr.m_DataReader.Close();
+							oDataMgr.m_strSQL = "UPDATE " + this.m_strScenarioTable + " SET current_yn = 'N'" +
+								" WHERE TRIM(UPPER(scenario_id)) = '" + strScenarioId.Trim().ToUpper() + "' AND current_yn = 'Y';";
+							oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+						}
+						else
+						{
+							oDataMgr.m_DataReader.Close();
+						}
+
+						for (x = 0; x <= this.m_intNumberOfOptimizerTablesLoadedIntoDatasets - 1; x++)
+						{
+							if (this.m_strOptimizerTables[x].Trim().Length > 0)
+								str = str + this.m_strOptimizerTables[x] + ",";
+						}
+						//remove the last comma
+						if (str.Trim().Length > 0) str = str.Substring(0, str.Length - 1);
+
+						//strNewSQL = p_ado.FixString(this.txtCurrentSQL.Text,"'","''");
+						sb.Append("INSERT INTO " + this.m_strScenarioTable + " (scenario_id,sql_command,current_yn,table_list) Values('");
+						sb.Append(strScenarioId);
+						sb.Append("','");
+						sb.Append(strNewSQL);
+						sb.Append("','Y','");
+						sb.Append(str);
+						sb.Append("');");
+						oDataMgr.SqlNonQuery(conn, sb.ToString());
+					}
+				}
+
+				if (this.FilterType == "COND")
+				{
+					if (this.m_strCurrentYardDist.Trim() != this.txtYardDist.Text.Trim() ||
+						this.m_strCurrentYardDist2.Trim() != this.txtYardDist2.Text.Trim())
+					{
+						//delete all records from the scenario wind speed class table
+						oDataMgr.m_strSQL = "DELETE FROM scenario_cond_filter_misc WHERE " +
+							" TRIM(UPPER(scenario_id)) = '" + strScenarioId.Trim().ToUpper() + "';";
+
+						oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+						if (oDataMgr.m_intError < 0)
+						{
+							conn.Close();
+							x = oDataMgr.m_intError;
+							oDataMgr = null;
+							return x;
+						}
+						if (this.txtYardDist.Text.Trim().Length == 0)
+						{
+							this.txtYardDist.Text = "1524";
+						}
+						if (this.txtYardDist2.Text.Trim().Length == 0)
+						{
+							this.txtYardDist2.Text = "610";
+						}
+
+						oDataMgr.m_strSQL = "INSERT INTO scenario_cond_filter_misc (scenario_id,yard_dist,yard_dist2)" +
+							" VALUES ('" + strScenarioId + "'," +
+							this.txtYardDist.Text.Trim() + "," + this.txtYardDist2.Text.Trim() + ");";
+						oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+						if (oDataMgr.m_intError < 0)
+						{
+							conn.Close();
+							x = oDataMgr.m_intError;
+							oDataMgr = null;
+							return x;
+						}
+					}
+
+				}
+				conn.Close();
+			}
+			return 0;
+		}
 		private void groupBox1_Resize(object sender, System.EventArgs e)
 		{
 			try
@@ -633,6 +774,22 @@ namespace FIA_Biosum_Manager
 
 		}
 
+		private void btnCreateSQL_ClickSqlite(object sender, System.EventArgs e)
+        {
+			int x = 0;
+			int y = 0;
+			DialogResult result;
+
+			x = ((frmOptimizerScenario)this.ParentForm).uc_datasource1.getDataSourceTableNameRow("PLOT");
+			if (x < 0)
+			{
+				MessageBox.Show("!!Plot table cannot be found!!");
+				return;
+			}
+
+
+		}
+
 		/****************************************************************
 		 ** edit the sql in sql builder form
 		 ****************************************************************/
@@ -695,6 +852,7 @@ namespace FIA_Biosum_Manager
 			p_dao = null;
 
 		}
+
 
 		/****************************************************************
 		 ** edit the sql in sql builder form
@@ -876,7 +1034,7 @@ namespace FIA_Biosum_Manager
 		}
 
 
-		private void btnPrevSQL_Click(object sender, System.EventArgs e)
+		private void btnPrevSQL_Click_access(object sender, System.EventArgs e)
 		{
 			string strConn="";
 
@@ -916,6 +1074,44 @@ namespace FIA_Biosum_Manager
 			frmPrevExp = null;
 			
 		
+		}
+
+		private void btnPrevSQL_Click(object sender, System.EventArgs e)
+        {
+			DataMgr p_dataMgr = new DataMgr();
+
+			DialogResult result;
+
+			string strScenarioDB = ((frmMain)this.ParentForm.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\" +
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+
+			frmDialog frmPrevExp = new frmDialog();
+
+			frmPrevExp.Width = frmPrevExp.uc_previous_expressions1.m_intFullWd;
+			frmPrevExp.Height = frmPrevExp.uc_previous_expressions1.m_intFullHt;
+			frmPrevExp.Text = "Treatment Optimizer: Previous SQL Expressions";
+
+			frmPrevExp.uc_previous_expressions1.Visible = true;
+
+			string strConn = p_dataMgr.GetConnectionString(strScenarioDB);
+
+			if (this.FilterType == "PLOT") m_strScenarioTable = "scenario_plot_filter";
+			else m_strScenarioTable = "scenario_cond_filter";
+
+			frmPrevExp.uc_previous_expressions1.loadvalues(strConn, "SELECT * FROM " + this.m_strScenarioTable + ";", "SQL_COMMAND", "SQL_COMMAND", this.m_strScenarioTable);
+
+			result = frmPrevExp.ShowDialog(this);
+			if (result == DialogResult.OK)
+			{
+				result = MessageBox.Show("REPLACE \n" + "----------------\n\n" + "'" + this.txtCurrentSQL.Text + "' \n\n\n WITH  \n----------------\n\n'" + frmPrevExp.uc_previous_expressions1.lblSQL.Text + "'", "Previous SQL", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+				if (result == DialogResult.Yes)
+				{
+					this.txtCurrentSQL.Text = frmPrevExp.uc_previous_expressions1.listView1.SelectedItems[0].SubItems[frmPrevExp.uc_previous_expressions1.m_intSelectColumn + 1].Text;
+					((frmOptimizerScenario)this.ParentForm).m_bSave = true;
+				}
+			}
+			frmPrevExp.Close();
+			frmPrevExp = null;
 		}
 
 		private void btnExecuteSQL_Click(object sender, System.EventArgs e)
@@ -981,6 +1177,70 @@ namespace FIA_Biosum_Manager
 	
 			//p_core_tables = null;
 		     
+		}
+		private void btnExecuteSQL_ClickSqlite(object sender, System.EventArgs e)
+		{
+			macrosubst oMacroSubst = new macrosubst();
+			oMacroSubst.ReferenceSQLMacroSubstitutionVariableCollection = frmMain.g_oSQLMacroSubstitutionVariable_Collection;
+			FIA_Biosum_Manager.Datasource oDs = new Datasource();
+			oDs.m_strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+			oDs.m_strDataSourceTableName = "scenario_datasource";
+			oDs.m_strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text; ;
+			oDs.LoadTableColumnNamesAndDataTypes = false;
+			oDs.LoadTableRecordCount = false;
+			oDs.populate_datasource_array_sqlite();
+			//instantiate the core tables class
+			//ado_core_tables p_core_tables = new ado_core_tables();
+
+			//create a temporary mdb file containing the links 
+			//to the core tables and their mdb files
+			//p_core_tables.CreateMDBAndCreateCoreTableDataSourceLinks(
+			//	((frmMain)this.ParentForm.ParentForm).frmProject.uc_project1.m_strProjectDirectory + 
+			//	"\\core\\db\\scenario_core_rule_definitions.mdb",
+			//	((frmScenario)this.ParentForm).uc_scenario1.txtScenarioId.Text,
+			//	this.m_oEnv.strTempDir);
+
+			if (oDs.m_intError == 0)
+			{
+				string strConn = "";
+				string strFile = oDs.CreateMDBAndTableDataSourceLinks();
+
+				strConn = "Provider=Microsoft.Ace.OLEDB.12.0;Data Source=" + strFile + ";User Id=admin;Password=;";
+				string strSQL = this.txtCurrentSQL.Text.Trim();
+				if (strSQL.IndexOf("@@", 0) >= 0) strSQL = oMacroSubst.SQLTranslateVariableSubstitution(strSQL);
+				((frmOptimizerScenario)this.ParentForm).frmGridView1.LoadDataSet(strConn, strSQL);
+				if (((frmOptimizerScenario)this.ParentForm).frmGridView1.Visible == false)
+				{
+
+					((frmOptimizerScenario)this.ParentForm).frmGridView1.MdiParent = this.ParentForm.ParentForm;
+					((frmOptimizerScenario)this.ParentForm).frmGridView1.Text = "Treatment Optimizer: Plot Filter Browser" + " (" + ((frmOptimizerScenario)this.ParentForm).uc_scenario1.txtScenarioId.Text + ")";
+
+					try
+					{
+						((frmOptimizerScenario)this.ParentForm).frmGridView1.Show();
+					}
+					catch
+					{
+						((frmOptimizerScenario)this.ParentForm).frmGridView1 = new frmGridView();
+						((frmOptimizerScenario)this.ParentForm).frmGridView1.MdiParent = this.ParentForm.ParentForm;
+						((frmOptimizerScenario)this.ParentForm).frmGridView1.Visible = false;
+						((frmOptimizerScenario)this.ParentForm).frmGridView1.LoadDataSet(strConn, strSQL);
+						((frmOptimizerScenario)this.ParentForm).frmGridView1.MdiParent = this.ParentForm.ParentForm;
+						((frmOptimizerScenario)this.ParentForm).frmGridView1.Text = "Treatment Optimizer: Plot Filter Browser" + " (" + ((frmOptimizerScenario)this.ParentForm).uc_scenario1.txtScenarioId.Text + ")";
+
+						((frmOptimizerScenario)this.ParentForm).frmGridView1.Show();
+					}
+				}
+				if (((frmOptimizerScenario)this.ParentForm).frmGridView1.WindowState ==
+						System.Windows.Forms.FormWindowState.Minimized)
+					((frmOptimizerScenario)this.ParentForm).frmGridView1.WindowState =
+						System.Windows.Forms.FormWindowState.Normal;
+				((frmOptimizerScenario)this.ParentForm).frmGridView1.Focus();
+			}
+
+			//p_core_tables = null;
+
 		}
 
 		private void txtCurrentSQL_KeyPress(object sender, System.Windows.Forms.KeyPressEventArgs e)
@@ -1123,6 +1383,54 @@ namespace FIA_Biosum_Manager
 
 		}
 
+		public int Val_PlotFilterSqlite(string p_strSql)
+        {
+			int intError = 0;
+			if (p_strSql.ToUpper().Contains("PLOT_ACCESSIBLE_YN"))
+			{
+				intError = -1;
+				m_strError = "The Plot filter contains the 'plot_accessible_YN' field. " +
+							 "This field no longer exists on the plot table and must be " +
+							 "removed from the filter !!";
+				return intError;
+			}
+			DataMgr oDataMgr = new DataMgr();
+			FIA_Biosum_Manager.Datasource oDs = new Datasource();
+			oDs.m_strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+			oDs.m_strDataSourceTableName = "scenario_datasource";
+			oDs.m_strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text;
+			oDs.LoadTableColumnNamesAndDataTypes = false;
+			oDs.LoadTableRecordCount = false;
+			oDs.populate_datasource_array_sqlite();
+			if (oDs.m_intError == 0)
+            {
+				string strFile = oDs.CreateMDBAndTableDataSourceLinks();
+				ado_data_access oAdo = new ado_data_access();
+				oAdo.OpenConnection(oAdo.getMDBConnString(strFile, "", ""));
+				if (oAdo.m_intError == 0)
+				{
+					intError = (int)Val_PlotFilter(oAdo.m_OleDbConnection, p_strSql.Trim());
+					if (intError != 0 && String.IsNullOrEmpty(m_strError))
+					{
+						m_strError = "An error occurred while validating the Plot filter!";
+					}
+					oAdo.CloseConnection(oAdo.m_OleDbConnection);
+				}
+				else
+				{
+					intError = oAdo.m_intError;
+					m_intError = intError;
+					m_strError = oAdo.m_strError;
+				}
+				oAdo = null;
+			}
+			oDataMgr = null;
+			oDs = null;
+
+			return intError;
+		}
+
 		public int Val_CondFilter(System.Data.OleDb.OleDbConnection p_oConn,string p_strSql)
 		{
 			m_intError=0;
@@ -1207,13 +1515,58 @@ namespace FIA_Biosum_Manager
 			return intError;
 
 		}
+		public int Val_CondFilterSqlite(string p_strSql)
+        {
+			DataMgr oDataMgr = new DataMgr();
+			FIA_Biosum_Manager.Datasource oDs = new Datasource();
+			oDs.m_strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+			oDs.m_strDataSourceTableName = "scenario_datasource";
+			oDs.m_strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text;
+			oDs.LoadTableColumnNamesAndDataTypes = false;
+			oDs.LoadTableRecordCount = false;
+			oDs.populate_datasource_array_sqlite();
+			int intError = 0;
+			if (oDs.m_intError == 0)
+            {
+				string strFile = oDs.CreateMDBAndTableDataSourceLinks();
+				ado_data_access oAdo = new ado_data_access();
+				oAdo.OpenConnection(oAdo.getMDBConnString(strFile, "", ""));
+				if (oAdo.m_intError == 0)
+				{
+					intError = (int)Val_CondFilter(oAdo.m_OleDbConnection, p_strSql.Trim());
+					if (intError != 0 && String.IsNullOrEmpty(m_strError))
+					{
+						m_strError = "An error occurred while validating the Condition filter!";
+					}
+					oAdo.CloseConnection(oAdo.m_OleDbConnection);
+				}
+				else
+				{
+					intError = oAdo.m_intError;
+					m_intError = intError;
+					m_strError = oAdo.m_strError;
+				}
+				oAdo = null;
+			}
+			else
+			{
+				intError = oDs.m_intError;
+				m_intError = intError;
+				m_strError = oDs.m_strError;
+			}
+			oDataMgr = null;
+			oDs = null;
+
+			return intError;
+		}
 
 		private void btnValidate_Click(object sender, System.EventArgs e)
 		{
 			int intError=0;
 
-			if (this.FilterType=="PLOT") intError = Val_PlotFilter(this.txtCurrentSQL.Text);
-			else intError = Val_CondFilter(this.txtCurrentSQL.Text);
+			if (this.FilterType=="PLOT") intError = Val_PlotFilterSqlite(this.txtCurrentSQL.Text);
+			else intError = Val_CondFilterSqlite(this.txtCurrentSQL.Text);
 
 			if (intError!=0)
 			{

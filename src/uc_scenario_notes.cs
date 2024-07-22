@@ -141,23 +141,14 @@ namespace FIA_Biosum_Manager
             string strProjDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
             string strScenarioDir = strProjDir + "\\" + ScenarioType + "\\db";
             if ((ReferenceProcessorScenarioForm != null && !ReferenceProcessorScenarioForm.m_bUsingSqlite) 
-                 || ScenarioType.Trim().ToUpper() == "OPTIMIZER")
+                 && ScenarioType.Trim().ToUpper() == "PROCESSOR")
             {
                 p_ado = new ado_data_access();
                 strNotes = p_ado.FixString(strNotes, "'", "''");
                 string strSQL = "";
-                if (ScenarioType.Trim().ToUpper() == "OPTIMIZER")
-                {
-                    strSQL = "UPDATE scenario SET notes = '" +
-                        strNotes +
-                        "' WHERE trim(lcase(scenario_id)) = '" + ((frmOptimizerScenario)this.ParentForm).uc_scenario1.txtScenarioId.Text.Trim().ToLower() + "';";
-                }
-                else
-                {
-                    strSQL = "UPDATE scenario SET notes = '" +
-                        strNotes +
-                        "' WHERE trim(lcase(scenario_id)) = '" + this.ReferenceProcessorScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower() + "';";
-                }
+                strSQL = "UPDATE scenario SET notes = '" +
+                    strNotes +
+                    "' WHERE trim(lcase(scenario_id)) = '" + this.ReferenceProcessorScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower() + "';";
                 System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
                 string strFile = "scenario_" + ScenarioType + "_rule_definitions.mdb";
                 StringBuilder strFullPath = new StringBuilder(strScenarioDir);
@@ -171,10 +162,18 @@ namespace FIA_Biosum_Manager
             {
                 oDataMgr = new SQLite.ADO.DataMgr();
                 strNotes = oDataMgr.FixString(strNotes, "'", "''");
-                //@ToDo: Only support Processor at this time
-                string strSQL = "UPDATE scenario SET notes = '" +
-                    strNotes +
-                    "' WHERE trim(lower(scenario_id)) = '" + this.ReferenceProcessorScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower() + "';";
+                if (ScenarioType.Trim().ToUpper() == "PROCESSOR")
+                {
+					oDataMgr.m_strSQL = "UPDATE scenario SET notes = '" +
+					strNotes +
+					"' WHERE trim(lower(scenario_id)) = '" + this.ReferenceProcessorScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower() + "';";
+				}
+                else
+                {
+					oDataMgr.m_strSQL = "UPDATE scenario SET notes = '" +
+					strNotes +
+					"' WHERE trim(lower(scenario_id)) = '" + ((frmOptimizerScenario)this.ParentForm).uc_scenario1.txtScenarioId.Text.Trim().ToLower() + "';";
+				}
                 string strFile = "scenario_" + ScenarioType + "_rule_definitions.db";
                 StringBuilder strFullPath = new StringBuilder(strScenarioDir);
                 strFullPath.Append("\\");
@@ -183,7 +182,7 @@ namespace FIA_Biosum_Manager
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                 {
                     conn.Open();
-                    oDataMgr.SqlNonQuery(conn, strSQL);
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
                 oDataMgr = null;
             }		

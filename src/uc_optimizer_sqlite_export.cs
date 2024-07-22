@@ -37,7 +37,7 @@ namespace FIA_Biosum_Manager
         public Label lblScenarioId;
         public Label lblScenarioDescription;
         public TextBox txtDescription;
-        private CheckBox chkFvsContext;
+        //private CheckBox chkFvsContext;
         private CheckBox chkContext;
         private CheckBox chkResults;
         private ComboBox cboResultsDb;
@@ -90,7 +90,7 @@ namespace FIA_Biosum_Manager
             this.BtnTestConnection = new System.Windows.Forms.Button();
             this.btnHelp = new System.Windows.Forms.Button();
             this.cboResultsDb = new System.Windows.Forms.ComboBox();
-            this.chkFvsContext = new System.Windows.Forms.CheckBox();
+            //this.chkFvsContext = new System.Windows.Forms.CheckBox();
             this.chkContext = new System.Windows.Forms.CheckBox();
             this.chkResults = new System.Windows.Forms.CheckBox();
             this.lblScenarioDescription = new System.Windows.Forms.Label();
@@ -107,7 +107,7 @@ namespace FIA_Biosum_Manager
             this.groupBox1.Controls.Add(this.BtnTestConnection);
             this.groupBox1.Controls.Add(this.btnHelp);
             this.groupBox1.Controls.Add(this.cboResultsDb);
-            this.groupBox1.Controls.Add(this.chkFvsContext);
+            //this.groupBox1.Controls.Add(this.chkFvsContext);
             this.groupBox1.Controls.Add(this.chkContext);
             this.groupBox1.Controls.Add(this.chkResults);
             this.groupBox1.Controls.Add(this.lblScenarioDescription);
@@ -158,15 +158,15 @@ namespace FIA_Biosum_Manager
             // 
             // chkFvsContext
             // 
-            this.chkFvsContext.AutoSize = true;
-            this.chkFvsContext.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkFvsContext.Location = new System.Drawing.Point(219, 307);
-            this.chkFvsContext.Name = "chkFvsContext";
-            this.chkFvsContext.Size = new System.Drawing.Size(149, 22);
-            this.chkFvsContext.TabIndex = 34;
-            this.chkFvsContext.Text = "fvs_context.accdb";
-            this.chkFvsContext.UseVisualStyleBackColor = true;
-            this.chkFvsContext.Visible = false;
+            //this.chkFvsContext.AutoSize = true;
+            //this.chkFvsContext.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            //this.chkFvsContext.Location = new System.Drawing.Point(219, 307);
+            //this.chkFvsContext.Name = "chkFvsContext";
+            //this.chkFvsContext.Size = new System.Drawing.Size(149, 22);
+            //this.chkFvsContext.TabIndex = 34;
+            //this.chkFvsContext.Text = "fvs_context.accdb";
+            //this.chkFvsContext.UseVisualStyleBackColor = true;
+            //this.chkFvsContext.Visible = false;
             // 
             // chkContext
             // 
@@ -326,14 +326,14 @@ namespace FIA_Biosum_Manager
                     bDbExists = true;
                 }
             }
-            if (chkFvsContext.Checked)
-            {
-                m_intDatabaseCount++;
-                if (System.IO.File.Exists(m_strResultsDbPath))
-                {
-                    bDbExists = true;
-                }
-            }
+            //if (chkFvsContext.Checked)
+            //{
+            //    m_intDatabaseCount++;
+            //    if (System.IO.File.Exists(m_strResultsDbPath))
+            //    {
+            //        bDbExists = true;
+            //    }
+            //}
 
             if (bDbExists == true)
             {
@@ -409,7 +409,7 @@ namespace FIA_Biosum_Manager
 
                 bool bCreateResults = (bool) frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.CheckBox) chkResults, "Checked", false);
                 bool bCreateContext = (bool) frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.CheckBox) chkContext, "Checked", false);
-                bool bCreateFvsContext = (bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.CheckBox)chkFvsContext, "Checked", false);
+                //bool bCreateFvsContext = (bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.CheckBox)chkFvsContext, "Checked", false);
 
                 SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
                 oDataMgr.CreateDbFile(m_strResultsDbPath);    // create new, blank database
@@ -431,10 +431,10 @@ namespace FIA_Biosum_Manager
                     m_intError = CreateContextSqliteDb();
                 }
 
-                if (m_intError == 0 && bCreateFvsContext)
-                {
-                    m_intError = CreateFvsContextSqliteDb();
-                }
+                //if (m_intError == 0 && bCreateFvsContext)
+                //{
+                //    m_intError = CreateFvsContextSqliteDb();
+                //}
 
                 if (m_intError == 0)
                 {
@@ -1015,25 +1015,25 @@ namespace FIA_Biosum_Manager
                 chkContext.Visible = false;
                 chkContext.Checked = false;
             }
-            chkFvsContext.Checked = false;  // Not checked by default; Export takes a long time
-            if (System.IO.File.Exists(m_strFvsContextAccdbPath))
-            {
-                chkFvsContext.Visible = true;                
-                chkFvsContext.Location = new Point(chkFvsContext.Location.X, posY);
-            }
-            else
-            {
-                chkFvsContext.Visible = false;
-            }
-            if (chkResults.Visible == false && chkContext.Visible == false 
-                && chkFvsContext.Visible == false)
-            {
-                BtnExport.Enabled = false;
-            }
-            else
-            {
-                BtnExport.Enabled = true;
-            }
+            //chkFvsContext.Checked = false;  // Not checked by default; Export takes a long time
+            //if (System.IO.File.Exists(m_strFvsContextAccdbPath))
+            //{
+            //    chkFvsContext.Visible = true;                
+            //    chkFvsContext.Location = new Point(chkFvsContext.Location.X, posY);
+            //}
+            //else
+            //{
+            //    chkFvsContext.Visible = false;
+            //}
+            //if (chkResults.Visible == false && chkContext.Visible == false 
+            //    && chkFvsContext.Visible == false)
+            //{
+            //    BtnExport.Enabled = false;
+            //}
+            //else
+            //{
+            //    BtnExport.Enabled = true;
+            //}
         }
 
         public int CreateResultsSqliteDb()

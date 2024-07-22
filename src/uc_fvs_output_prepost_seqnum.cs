@@ -25,7 +25,6 @@ namespace FIA_Biosum_Manager
         private FIA_Biosum_Manager.FVSPrePostSeqNumItem_Collection m_oSavFVSPrepostSeqNumItem_Collection = new FVSPrePostSeqNumItem_Collection();
         private FIA_Biosum_Manager.RxPackageItem_Collection m_oRxPackageItem_Collection = null;
         private ado_data_access m_oAdo = new ado_data_access();
-        private DataMgr oDataMgr = new DataMgr();
         private RxTools m_oRxTools = new RxTools();
 
         private ComboBox m_cmbFVSStrClassPre1;
@@ -103,6 +102,13 @@ namespace FIA_Biosum_Manager
 
         public string m_rxPackages = "";
         Queries m_oQueries = new Queries();
+
+        private SQLite.ADO.DataMgr _SQLite = new SQLite.ADO.DataMgr();
+        public SQLite.ADO.DataMgr SQLite
+        {
+            get { return _SQLite; }
+            set { _SQLite = value; }
+        }
 
 
         public uc_fvs_output_prepost_seqnum()
@@ -254,26 +260,30 @@ namespace FIA_Biosum_Manager
                 cmbPOST3.Items.Add(x.ToString().Trim());
                 cmbPOST4.Items.Add(x.ToString().Trim());
             }
-           
-            m_oAdo.OpenConnection(m_oAdo.getMDBConnString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile, "", ""));
 
             if (m_oAdo.m_intError == 0)
             {
-
-                InitializePrePostSeqNumTables(m_oAdo, m_oAdo.m_OleDbConnection);
-                m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(m_oAdo, m_oAdo.m_OleDbConnection, m_oCurFVSPrepostSeqNumItem_Collection);
+                //InitializePrePostSeqNumTablesAccess(m_oAdo, m_oAdo.m_OleDbConnection);
+                InitializePrePostSeqNumTables(SQLite);
+                string strDbConn = SQLite.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
+                m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(strDbConn, m_oCurFVSPrepostSeqNumItem_Collection);
                 m_oCurFVSPrepostSeqNumItem_Collection.CopyProperties(m_oSavFVSPrepostSeqNumItem_Collection, m_oCurFVSPrepostSeqNumItem_Collection);
                 m_oQueries.m_oFvs.LoadDatasource = true;
                 m_oQueries.LoadDatasources(true);
                 if (m_oRxPackageItem_Collection == null)
                 {
                     m_oRxPackageItem_Collection = new RxPackageItem_Collection();
-                    this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_oAdo,
-                                                                       m_oAdo.m_OleDbConnection,
-                                                                       m_oQueries,
-                                                                       m_oRxPackageItem_Collection);
+                    // get connection to fvs_master
+                    string strRxConnection = m_oAdo.getMDBConnString($@"{m_oQueries.m_oDataSource.getFullPathAndFile("TREATMENT PACKAGES")}","","");
+                    using (var conn = new System.Data.OleDb.OleDbConnection(strRxConnection))
+                    {
+                        conn.Open();
+                        this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_oAdo,
+                                                   conn,
+                                                   m_oQueries,
+                                                   m_oRxPackageItem_Collection);
+                    }
                 }
-                m_oAdo.CloseConnection(m_oAdo.m_OleDbConnection);
                 // sort the rxPackages
                 List<string> lstPackages = new List<string>();
                 m_rxPackages = "";
@@ -290,8 +300,8 @@ namespace FIA_Biosum_Manager
                 {
                     m_rxPackages = m_rxPackages.TrimEnd(',');
                 }
-                string strDbConnection = oDataMgr.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSOutDbFile);
-                IList<string> lstFvsOutTables = m_oRxTools.GetFvsOutTableNames(oDataMgr, strDbConnection);
+                string strDbConnection = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSOutDbFile);
+                IList<string> lstFvsOutTables = m_oRxTools.GetFvsOutTableNames(SQLite, strDbConnection);
                 IList<string> lstExcludedTables = new List<string> { "FVS_CASES", "FVS_CUTLIST", "FVS_TREELIST", "FVS_ATRTLIST" };
                 // Remove tables we don't wish to show on the list
                 foreach (var tName in lstExcludedTables)
@@ -380,67 +390,136 @@ namespace FIA_Biosum_Manager
             
            
         }
-        public static void InitializePrePostSeqNumTables(ado_data_access p_oAdo, string p_strDbFile)
+        // This is called by us_project.SaveProjectProperties when a new project is created
+        //public static void InitializePrePostSeqNumTablesAccess(ado_data_access p_oAdo, string p_strDbFile)
+        //{
+        //    p_oAdo.OpenConnection(p_oAdo.getMDBConnString(p_strDbFile, "", ""));
+        //    if (p_oAdo.m_intError == 0)
+        //        InitializePrePostSeqNumTablesAccess(p_oAdo, p_oAdo.m_OleDbConnection);
+        //    p_oAdo.CloseConnection(p_oAdo.m_OleDbConnection);
+        //}
+
+        // This is called by us_project.SaveProjectProperties when a new project is created
+        public static void InitializePrePostSeqNumTables()
         {
-            p_oAdo.OpenConnection(p_oAdo.getMDBConnString(p_strDbFile, "", ""));
-            if (p_oAdo.m_intError == 0)
-                InitializePrePostSeqNumTables(p_oAdo, p_oAdo.m_OleDbConnection);
-            p_oAdo.CloseConnection(p_oAdo.m_OleDbConnection);
+            DataMgr oDataMgr = new DataMgr();
+            if (! System.IO.File.Exists($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}"))
+            {
+                oDataMgr.CreateDbFile($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
+            }
+            InitializePrePostSeqNumTables(oDataMgr);
         }
 
-        public static void InitializePrePostSeqNumTables(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oOleDbConnection)
+        // This is called by InitializePrePostSeqNumTablesAccess() and by LoadValues()
+        //public static void InitializePrePostSeqNumTablesAccess(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oOleDbConnection)
+        //{
+        //    int intRowCount = 0;
+
+        //    string strValueList = "";
+        //    int x;
+
+
+        //    if (!p_oAdo.TableExist(p_oAdo.m_OleDbConnection, Tables.FVS.DefaultFVSPrePostSeqNumTable))
+        //    {
+        //        frmMain.g_oTables.m_oFvs.CreateFVSOutputPrePostSeqNumTable(p_oAdo, p_oAdo.m_OleDbConnection, Tables.FVS.DefaultFVSPrePostSeqNumTable);
+        //    }
+        //    if ((int)p_oAdo.getRecordCount(p_oAdo.m_OleDbConnection,"SELECT * FROM " + Tables.FVS.DefaultFVSPrePostSeqNumTable,Tables.FVS.DefaultFVSPrePostSeqNumTable) == 0)
+        //    {
+
+
+        //        for (x = 0; x <= Tables.FVS.g_strFVSOutTablesArray.Length - 1; x++)
+        //        {
+        //            if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_SUMMARY" ||
+        //                Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_POTFIRE" ||
+        //                Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_CUTLIST" ||
+        //                Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_STRCLASS")
+        //            {
+        //                strValueList = Convert.ToString(intRowCount + 1).Trim() + ",'" + Tables.FVS.g_strFVSOutTablesArray[x].Trim() + "','D',";
+
+        //                if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper()=="FVS_SUMMARY")
+        //                {
+        //                    strValueList = strValueList + "'N','N','N','N','Y','N','Y','N','Y','N','Y','N','Y'";
+        //                }
+        //                else if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper()=="FVS_POTFIRE")
+        //                {
+        //                    strValueList = strValueList + "'N','N','N','N','Y','N','Y','N','Y','N','Y','N','N'";    // Sets RXCYCLE1_PRE_BASEYR_YN to 'N'
+        //                }
+        //                else if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_CUTLIST")
+        //                {
+        //                    strValueList = strValueList + $@"'N','N','N','N','Y','N','Y','N','Y','N','Y','N','N'";  // Sets USE_SUMMARY_TABLE_SEQNUM_YN to 'N'
+        //                }
+        //                if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_STRCLASS")
+        //                {
+        //                    strValueList = strValueList + "'N','N','N','N','Y','Y','Y','Y','Y','Y','Y','Y','Y'";
+        //                }
+        //                p_oAdo.m_strSQL = "INSERT INTO " + Tables.FVS.DefaultFVSPrePostSeqNumTable + " " +
+        //                                  "(" + m_strColumnListInit + ") VALUES " +
+        //                                  "(" + strValueList + ")";
+        //                p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection, p_oAdo.m_strSQL);
+        //                intRowCount++;
+        //            }
+        //        }
+        //    }
+        //    if (!p_oAdo.TableExist(p_oAdo.m_OleDbConnection, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable))
+        //    {
+        //        frmMain.g_oTables.m_oFvs.CreateFVSOutputPrePostSeqNumRxPackageAssgnTable(p_oAdo, p_oAdo.m_OleDbConnection, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable);
+
+        //    }
+        //}
+        public static void InitializePrePostSeqNumTables(DataMgr p_oDataMgr)
         {
             int intRowCount = 0;
-
             string strValueList = "";
             int x;
 
-
-            if (!p_oAdo.TableExist(p_oAdo.m_OleDbConnection, Tables.FVS.DefaultFVSPrePostSeqNumTable))
+            string dbConn = p_oDataMgr.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
             {
-                frmMain.g_oTables.m_oFvs.CreateFVSOutputPrePostSeqNumTable(p_oAdo, p_oAdo.m_OleDbConnection, Tables.FVS.DefaultFVSPrePostSeqNumTable);
-            }
-            if ((int)p_oAdo.getRecordCount(p_oAdo.m_OleDbConnection,"SELECT * FROM " + Tables.FVS.DefaultFVSPrePostSeqNumTable,Tables.FVS.DefaultFVSPrePostSeqNumTable) == 0)
-            {
-
-
-                for (x = 0; x <= Tables.FVS.g_strFVSOutTablesArray.Length - 1; x++)
+                conn.Open();
+                if (!p_oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSPrePostSeqNumTable))
                 {
-                    if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_SUMMARY" ||
-                        Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_POTFIRE" ||
-                        Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_CUTLIST" ||
-                        Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_STRCLASS")
-                    {
-                        strValueList = Convert.ToString(intRowCount + 1).Trim() + ",'" + Tables.FVS.g_strFVSOutTablesArray[x].Trim() + "','D',";
+                    frmMain.g_oTables.m_oFvs.CreateFVSOutputSQLitePrePostSeqNumTable(p_oDataMgr, conn, Tables.FVS.DefaultFVSPrePostSeqNumTable);
+                }
+                if (!p_oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable))
+                {
+                    frmMain.g_oTables.m_oFvs.CreateFVSOutputPrePostSQLiteSeqNumRxPackageAssgnTable(p_oDataMgr, conn, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable);
+                }
 
-                        if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper()=="FVS_SUMMARY")
+                if ((int)p_oDataMgr.getRecordCount(conn, "SELECT * FROM " + Tables.FVS.DefaultFVSPrePostSeqNumTable, Tables.FVS.DefaultFVSPrePostSeqNumTable) == 0)
+                {
+                    for (x = 0; x <= Tables.FVS.g_strFVSOutTablesArray.Length - 1; x++)
+                    {
+                        if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_SUMMARY" ||
+                            Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_POTFIRE" ||
+                            Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_CUTLIST" ||
+                            Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_STRCLASS")
                         {
-                            strValueList = strValueList + "'N','N','N','N','Y','N','Y','N','Y','N','Y','N','Y'";
+                            strValueList = Convert.ToString(intRowCount + 1).Trim() + ",'" + Tables.FVS.g_strFVSOutTablesArray[x].Trim() + "','D',";
+
+                            if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_SUMMARY")
+                            {
+                                strValueList = strValueList + "'N','N','N','N','Y','N','Y','N','Y','N','Y','N','Y'";
+                            }
+                            else if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_POTFIRE")
+                            {
+                                strValueList = strValueList + "'N','N','N','N','Y','N','Y','N','Y','N','Y','N','N'";    // Sets RXCYCLE1_PRE_BASEYR_YN to 'N'
+                            }
+                            else if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_CUTLIST")
+                            {
+                                strValueList = strValueList + $@"'N','N','N','N','Y','N','Y','N','Y','N','Y','N','N'";  // Sets USE_SUMMARY_TABLE_SEQNUM_YN to 'N'
+                            }
+                            if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_STRCLASS")
+                            {
+                                strValueList = strValueList + "'N','N','N','N','Y','Y','Y','Y','Y','Y','Y','Y','Y'";
+                            }
+                            p_oDataMgr.m_strSQL = "INSERT INTO " + Tables.FVS.DefaultFVSPrePostSeqNumTable + " " +
+                                              "(" + m_strColumnListInit + ") VALUES " +
+                                              "(" + strValueList + ")";
+                            p_oDataMgr.SqlNonQuery(conn, p_oDataMgr.m_strSQL);
+                            intRowCount++;
                         }
-                        else if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper()=="FVS_POTFIRE")
-                        {
-                            strValueList = strValueList + "'N','N','N','N','Y','N','Y','N','Y','N','Y','N','N'";    // Sets RXCYCLE1_PRE_BASEYR_YN to 'N'
-                        }
-                        else if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_CUTLIST")
-                        {
-                            strValueList = strValueList + $@"'N','N','N','N','Y','N','Y','N','Y','N','Y','N','N'";  // Sets USE_SUMMARY_TABLE_SEQNUM_YN to 'N'
-                        }
-                        if (Tables.FVS.g_strFVSOutTablesArray[x].Trim().ToUpper() == "FVS_STRCLASS")
-                        {
-                            strValueList = strValueList + "'N','N','N','N','Y','Y','Y','Y','Y','Y','Y','Y','Y'";
-                        }
-                        p_oAdo.m_strSQL = "INSERT INTO " + Tables.FVS.DefaultFVSPrePostSeqNumTable + " " +
-                                          "(" + m_strColumnListInit + ") VALUES " +
-                                          "(" + strValueList + ")";
-                        p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection, p_oAdo.m_strSQL);
-                        intRowCount++;
                     }
                 }
-            }
-            if (!p_oAdo.TableExist(p_oAdo.m_OleDbConnection, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable))
-            {
-                frmMain.g_oTables.m_oFvs.CreateFVSOutputPrePostSeqNumRxPackageAssgnTable(p_oAdo, p_oAdo.m_OleDbConnection, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable);
-
             }
         }
         private void AddListViewItemFromProperties(int x)
@@ -1120,219 +1199,226 @@ namespace FIA_Biosum_Manager
             int x, y, z;
             string strValues = "";
             bool bDelete = false;
-            m_oAdo.OpenConnection(m_oAdo.getMDBConnString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile, "", ""));
-            if (m_oAdo.m_intError == 0)
+            string strDbConn = SQLite.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strDbConn))
             {
-                if (frmMain.g_intDebugLevel > 1)
+                conn.Open();
+                if (SQLite.m_intError == 0)
                 {
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//savevalues \r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-                }
-
-                for (x = 0; x <= lvFVSTables.Items.Count - 1; x++)
-                {
-                    FVSPrePostSeqNumItem oItem = new FVSPrePostSeqNumItem();
-                    for (y = 0; y <= m_oCurFVSPrepostSeqNumItem_Collection.Count - 1; y++)
+                    if (frmMain.g_intDebugLevel > 1)
                     {
-                        if (m_oCurFVSPrepostSeqNumItem_Collection.Item(y).PrePostSeqNumId.ToString().Trim() ==
-                           lvFVSTables.Items[x].SubItems[COL_ID].Text.Trim())
-                        {
-                            oItem = m_oCurFVSPrepostSeqNumItem_Collection.Item(y);
-                        }
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "//savevalues \r\n");
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
                     }
-                    //
-                    //DELETE
-                    //
-                    if (lvFVSTables.Items[x].SubItems[COL_STATUS].BackColor == Color.Red)
-                    {
-                        if (oItem.PrePostSeqNumId.ToString().Trim() == lvFVSTables.Items[x].SubItems[COL_ID].Text.Trim())
-                        {
-                            if (oItem.Add != true)
-                            {
-                                m_oAdo.m_strSQL = "DELETE FROM " + Tables.FVS.DefaultFVSPrePostSeqNumTable + " " +
-                                    "WHERE PREPOST_SEQNUM_ID=" + oItem.PrePostSeqNumId.ToString().Trim();
-                                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                                if (m_oAdo.m_intError == 0)
-                                {
-                                    bDelete = true;
 
-                                }
-                                m_oAdo.m_strSQL = "DELETE FROM " + Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable + " " +
-                                                  "WHERE PREPOST_SEQNUM_ID=" + oItem.PrePostSeqNumId.ToString().Trim();
-                                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                                if (m_oAdo.m_intError == 0)
-                                {
-                                    lvFVSTables.Items[x].SubItems[COL_COUNT].Text = "0";
-                                }
-                            }
-                            else
+                    for (x = 0; x <= lvFVSTables.Items.Count - 1; x++)
+                    {
+                        FVSPrePostSeqNumItem oItem = new FVSPrePostSeqNumItem();
+                        for (y = 0; y <= m_oCurFVSPrepostSeqNumItem_Collection.Count - 1; y++)
+                        {
+                            if (m_oCurFVSPrepostSeqNumItem_Collection.Item(y).PrePostSeqNumId.ToString().Trim() ==
+                               lvFVSTables.Items[x].SubItems[COL_ID].Text.Trim())
                             {
-                                // Nothing to delete, but remove delete indicator from the UI
-                                lvFVSTables.Items[x].SubItems[COL_STATUS].BackColor = Color.White;
-                                lvFVSTables.Items[x].SubItems[COL_STATUS].Text = "";
+                                oItem = m_oCurFVSPrepostSeqNumItem_Collection.Item(y);
                             }
                         }
-                    }
-                    //
-                    //INSERT
-                    //
-                    else if (lvFVSTables.Items[x].SubItems[COL_STATUS].BackColor == Color.Green && oItem.Add == true)
-                    {
+                        // FVS_StrClass always inherits FVS_Summary
+                        if (oItem.TableName.Trim().ToUpper().Equals("FVS_STRCLASS"))
+                        {
+                            oItem.UseSummaryTableSeqNumYN = "Y";
+                        }
+                        //
+                        //DELETE
+                        //
+                        if (lvFVSTables.Items[x].SubItems[COL_STATUS].BackColor == Color.Red)
+                        {
+                            if (oItem.PrePostSeqNumId.ToString().Trim() == lvFVSTables.Items[x].SubItems[COL_ID].Text.Trim())
+                            {
+                                if (oItem.Add != true)
+                                {
+                                    SQLite.m_strSQL = "DELETE FROM " + Tables.FVS.DefaultFVSPrePostSeqNumTable + " " +
+                                        "WHERE PREPOST_SEQNUM_ID=" + oItem.PrePostSeqNumId.ToString().Trim();
+                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                    if (SQLite.m_intError == 0)
+                                    {
+                                        bDelete = true;
+                                    }
+                                    SQLite.m_strSQL = "DELETE FROM " + Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable + " " +
+                                                      "WHERE PREPOST_SEQNUM_ID=" + oItem.PrePostSeqNumId.ToString().Trim();
+                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                    if (SQLite.m_intError == 0)
+                                    {
+                                        lvFVSTables.Items[x].SubItems[COL_COUNT].Text = "0";
+                                    }
+                                }
+                                else
+                                {
+                                    // Nothing to delete, but remove delete indicator from the UI
+                                    lvFVSTables.Items[x].SubItems[COL_STATUS].BackColor = Color.White;
+                                    lvFVSTables.Items[x].SubItems[COL_STATUS].Text = "";
+                                }
+                            }
+                        }
+                        //
+                        //INSERT
+                        //
+                        else if (lvFVSTables.Items[x].SubItems[COL_STATUS].BackColor == Color.Green && oItem.Add == true)
+                        {
                             if (oItem.PrePostSeqNumId.ToString().Trim() ==
                                lvFVSTables.Items[x].SubItems[COL_ID].Text.Trim())
                             {
                                 strValues = "";
-                            //INSERT
-                            int intAssignedCount = 0;
-                                    strValues = oItem.PrePostSeqNumId.ToString().Trim() + ",";
-                                    strValues = strValues + "'" + oItem.TableName + "',";
-                                    strValues = strValues + "'" + oItem.Type + "',";
-                                    if (oItem.RxCycle1PreSeqNum.Trim().Length > 0 &&
-                                        oItem.RxCycle1PreSeqNum.Trim().ToUpper() != "NOT USED")
-                                    {
-                                        strValues = strValues + oItem.RxCycle1PreSeqNum.Trim() + ",";
-                                intAssignedCount++;
-                            }
-                                    else
-                                    {
-                                        strValues = strValues + "null,";
-                                    }
-                                    if (oItem.RxCycle1PostSeqNum.Trim().Length > 0 &&
-                                        oItem.RxCycle1PostSeqNum.Trim().ToUpper() != "NOT USED")
-                                    {
-                                        strValues = strValues + oItem.RxCycle1PostSeqNum.Trim() + ",";
-                                intAssignedCount++;
-                            }
-                                    else
-                                    {
-                                        strValues = strValues + "null,";
-                                    }
-                                    if (oItem.RxCycle2PreSeqNum.Trim().Length > 0 &&
-                                       oItem.RxCycle2PreSeqNum.Trim().ToUpper() != "NOT USED")
-                                    {
-                                        strValues = strValues + oItem.RxCycle2PreSeqNum.Trim() + ",";
-                                intAssignedCount++;
-                            }
-                                    else
-                                    {
-                                        strValues = strValues + "null,";
-                                    }
-                                    if (oItem.RxCycle2PostSeqNum.Trim().Length > 0 &&
-                                        oItem.RxCycle2PostSeqNum.Trim().ToUpper() != "NOT USED")
-                                    {
-                                        strValues = strValues + oItem.RxCycle2PostSeqNum.Trim() + ",";
-                                intAssignedCount++;
-                            }
-                                    else
-                                    {
-                                        strValues = strValues + "null,";
-                                    }
-                                    if (oItem.RxCycle3PreSeqNum.Trim().Length > 0 &&
-                                       oItem.RxCycle3PreSeqNum.Trim().ToUpper() != "NOT USED")
-                                    {
-                                        strValues = strValues + oItem.RxCycle3PreSeqNum.Trim() + ",";
-                                intAssignedCount++;
-                            }
-                                    else
-                                    {
-                                        strValues = strValues + "null,";
-                                    }
-                                    if (oItem.RxCycle3PostSeqNum.Trim().Length > 0 &&
-                                        oItem.RxCycle3PostSeqNum.Trim().ToUpper() != "NOT USED")
-                                    {
-                                        strValues = strValues + oItem.RxCycle3PostSeqNum.Trim() + ",";
-                                intAssignedCount++;
-                            }
-                                    else
-                                    {
-                                        strValues = strValues + "null,";
-                                    }
-                                    if (oItem.RxCycle4PreSeqNum.Trim().Length > 0 &&
-                                       oItem.RxCycle4PreSeqNum.Trim().ToUpper() != "NOT USED")
-                                    {
-                                        strValues = strValues + oItem.RxCycle4PreSeqNum.Trim() + ",";
-                                intAssignedCount++;
-                            }
-                                    else
-                                    {
-                                        strValues = strValues + "null,";
-                                    }
-                                    if (oItem.RxCycle4PostSeqNum.Trim().Length > 0 &&
-                                        oItem.RxCycle4PostSeqNum.Trim().ToUpper() != "NOT USED")
-                                    {
-                                        strValues = strValues + oItem.RxCycle4PostSeqNum.Trim() + ",";
-                                intAssignedCount++;
-                            }
-                                    else
-                                    {
-                                        strValues = strValues + "null,";
-                                    }
-                                    strValues = strValues + "'" + oItem.RxCycle1PreSeqNumBaseYearYN + "',";
-                                    strValues = strValues + "'" + oItem.RxCycle2PreSeqNumBaseYearYN + "',";
-                                    strValues = strValues + "'" + oItem.RxCycle3PreSeqNumBaseYearYN + "',";
-                                    strValues = strValues + "'" + oItem.RxCycle4PreSeqNumBaseYearYN + "',";
-                                    strValues = strValues + "'" + oItem.RxCycle1PreStrClassBeforeTreeRemovalYN + "',";
-                                    strValues = strValues + "'" + oItem.RxCycle1PostStrClassBeforeTreeRemovalYN + "',";
-                                    strValues = strValues + "'" + oItem.RxCycle2PreStrClassBeforeTreeRemovalYN + "',";
-                                    strValues = strValues + "'" + oItem.RxCycle2PostStrClassBeforeTreeRemovalYN + "',";
-                                    strValues = strValues + "'" + oItem.RxCycle3PreStrClassBeforeTreeRemovalYN + "',";
-                                    strValues = strValues + "'" + oItem.RxCycle3PostStrClassBeforeTreeRemovalYN + "',";
-                                    strValues = strValues + "'" + oItem.RxCycle4PreStrClassBeforeTreeRemovalYN + "',";
-                                    strValues = strValues + "'" + oItem.RxCycle4PostStrClassBeforeTreeRemovalYN + "',";
+                                //INSERT
+                                int intAssignedCount = 0;
+                                strValues = oItem.PrePostSeqNumId.ToString().Trim() + ",";
+                                strValues = strValues + "'" + oItem.TableName + "',";
+                                strValues = strValues + "'" + oItem.Type + "',";
+                                if (oItem.RxCycle1PreSeqNum.Trim().Length > 0 &&
+                                    oItem.RxCycle1PreSeqNum.Trim().ToUpper() != "NOT USED")
+                                {
+                                    strValues = strValues + oItem.RxCycle1PreSeqNum.Trim() + ",";
+                                    intAssignedCount++;
+                                }
+                                else
+                                {
+                                    strValues = strValues + "null,";
+                                }
+                                if (oItem.RxCycle1PostSeqNum.Trim().Length > 0 &&
+                                    oItem.RxCycle1PostSeqNum.Trim().ToUpper() != "NOT USED")
+                                {
+                                    strValues = strValues + oItem.RxCycle1PostSeqNum.Trim() + ",";
+                                    intAssignedCount++;
+                                }
+                                else
+                                {
+                                    strValues = strValues + "null,";
+                                }
+                                if (oItem.RxCycle2PreSeqNum.Trim().Length > 0 &&
+                                   oItem.RxCycle2PreSeqNum.Trim().ToUpper() != "NOT USED")
+                                {
+                                    strValues = strValues + oItem.RxCycle2PreSeqNum.Trim() + ",";
+                                    intAssignedCount++;
+                                }
+                                else
+                                {
+                                    strValues = strValues + "null,";
+                                }
+                                if (oItem.RxCycle2PostSeqNum.Trim().Length > 0 &&
+                                    oItem.RxCycle2PostSeqNum.Trim().ToUpper() != "NOT USED")
+                                {
+                                    strValues = strValues + oItem.RxCycle2PostSeqNum.Trim() + ",";
+                                    intAssignedCount++;
+                                }
+                                else
+                                {
+                                    strValues = strValues + "null,";
+                                }
+                                if (oItem.RxCycle3PreSeqNum.Trim().Length > 0 &&
+                                   oItem.RxCycle3PreSeqNum.Trim().ToUpper() != "NOT USED")
+                                {
+                                    strValues = strValues + oItem.RxCycle3PreSeqNum.Trim() + ",";
+                                    intAssignedCount++;
+                                }
+                                else
+                                {
+                                    strValues = strValues + "null,";
+                                }
+                                if (oItem.RxCycle3PostSeqNum.Trim().Length > 0 &&
+                                    oItem.RxCycle3PostSeqNum.Trim().ToUpper() != "NOT USED")
+                                {
+                                    strValues = strValues + oItem.RxCycle3PostSeqNum.Trim() + ",";
+                                    intAssignedCount++;
+                                }
+                                else
+                                {
+                                    strValues = strValues + "null,";
+                                }
+                                if (oItem.RxCycle4PreSeqNum.Trim().Length > 0 &&
+                                   oItem.RxCycle4PreSeqNum.Trim().ToUpper() != "NOT USED")
+                                {
+                                    strValues = strValues + oItem.RxCycle4PreSeqNum.Trim() + ",";
+                                    intAssignedCount++;
+                                }
+                                else
+                                {
+                                    strValues = strValues + "null,";
+                                }
+                                if (oItem.RxCycle4PostSeqNum.Trim().Length > 0 &&
+                                    oItem.RxCycle4PostSeqNum.Trim().ToUpper() != "NOT USED")
+                                {
+                                    strValues = strValues + oItem.RxCycle4PostSeqNum.Trim() + ",";
+                                    intAssignedCount++;
+                                }
+                                else
+                                {
+                                    strValues = strValues + "null,";
+                                }
+                                strValues = strValues + "'" + oItem.RxCycle1PreSeqNumBaseYearYN + "',";
+                                strValues = strValues + "'" + oItem.RxCycle2PreSeqNumBaseYearYN + "',";
+                                strValues = strValues + "'" + oItem.RxCycle3PreSeqNumBaseYearYN + "',";
+                                strValues = strValues + "'" + oItem.RxCycle4PreSeqNumBaseYearYN + "',";
+                                strValues = strValues + "'" + oItem.RxCycle1PreStrClassBeforeTreeRemovalYN + "',";
+                                strValues = strValues + "'" + oItem.RxCycle1PostStrClassBeforeTreeRemovalYN + "',";
+                                strValues = strValues + "'" + oItem.RxCycle2PreStrClassBeforeTreeRemovalYN + "',";
+                                strValues = strValues + "'" + oItem.RxCycle2PostStrClassBeforeTreeRemovalYN + "',";
+                                strValues = strValues + "'" + oItem.RxCycle3PreStrClassBeforeTreeRemovalYN + "',";
+                                strValues = strValues + "'" + oItem.RxCycle3PostStrClassBeforeTreeRemovalYN + "',";
+                                strValues = strValues + "'" + oItem.RxCycle4PreStrClassBeforeTreeRemovalYN + "',";
+                                strValues = strValues + "'" + oItem.RxCycle4PostStrClassBeforeTreeRemovalYN + "',";
 
-                                    strValues = strValues + "'" + oItem.UseSummaryTableSeqNumYN + "'";
+                                strValues = strValues + "'" + oItem.UseSummaryTableSeqNumYN + "'";
 
-                                    m_oAdo.m_strSQL = "INSERT INTO " + Tables.FVS.DefaultFVSPrePostSeqNumTable + " " +
-                                                      "(" + m_strColumnList + ") VALUES " +
-                                                      "(" + strValues + ")";
-                                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                                    if (m_oAdo.m_intError == 0)
+                                SQLite.m_strSQL = "INSERT INTO " + Tables.FVS.DefaultFVSPrePostSeqNumTable + " " +
+                                                  "(" + m_strColumnList + ") VALUES " +
+                                                  "(" + strValues + ")";
+                                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                if (SQLite.m_intError == 0)
+                                {
+                                    //if custom and rxpackages assigned
+                                    if (oItem.Type == "C" && oItem.RxPackageList.Trim().Length > 0)
                                     {
-                                        //if custom and rxpackages assigned
-                                        if (oItem.Type == "C" && oItem.RxPackageList.Trim().Length > 0)
+                                        string[] strArray = frmMain.g_oUtils.ConvertListToArray(oItem.RxPackageList, ",");
+                                        for (z = 0; z <= strArray.Length - 1; z++)
                                         {
-                                            string[] strArray = frmMain.g_oUtils.ConvertListToArray(oItem.RxPackageList, ",");
-                                            for (z = 0; z <= strArray.Length - 1; z++)
+                                            SQLite.m_strSQL = "INSERT INTO " + Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable + " " +
+                                                  "(RXPACKAGE,PREPOST_SEQNUM_ID) VALUES " +
+                                                  "('" + strArray[z].Trim() + "'," + oItem.PrePostSeqNumId.ToString().Trim() + ")";
+                                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                            if (SQLite.m_intError != 0)
                                             {
-                                                m_oAdo.m_strSQL = "INSERT INTO " + Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable + " " +
-                                                      "(RXPACKAGE,PREPOST_SEQNUM_ID) VALUES " +
-                                                      "('" + strArray[z].Trim() + "'," + oItem.PrePostSeqNumId.ToString().Trim() + ")";
-                                                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                                                if (m_oAdo.m_intError != 0)
-                                                {
-                                                    break;
-                                                }
+                                                break;
                                             }
                                         }
                                     }
-                                    if (m_oAdo.m_intError == 0)
-                                    {
-                                        lvFVSTables.Items[x].SubItems[COL_STATUS].BackColor = Color.White;
-                                        lvFVSTables.Items[x].SubItems[COL_STATUS].Text = "";
-                                lvFVSTables.Items[x].SubItems[COL_COUNT].Text = Convert.ToString(intAssignedCount);
-                                oItem.Add = false;
-                                    }
+                                }
+                                if (SQLite.m_intError == 0)
+                                {
+                                    lvFVSTables.Items[x].SubItems[COL_STATUS].BackColor = Color.White;
+                                    lvFVSTables.Items[x].SubItems[COL_STATUS].Text = "";
+                                    lvFVSTables.Items[x].SubItems[COL_COUNT].Text = Convert.ToString(intAssignedCount);
+                                    oItem.Add = false;
+                                }
                             }
 
-                    }
-                    //
-                    //UPDATE
-                    //
-                    else if (lvFVSTables.Items[x].SubItems[COL_STATUS].BackColor == Color.Green)
-                    {
+                        }
+                        //
+                        //UPDATE
+                        //
+                        else if (lvFVSTables.Items[x].SubItems[COL_STATUS].BackColor == Color.Green)
+                        {
                             if (oItem.PrePostSeqNumId.ToString().Trim() ==
                                lvFVSTables.Items[x].SubItems[COL_ID].Text)
                             {
-                            int intAssignedCount = 0;
-                            strValues = "";
+                                int intAssignedCount = 0;
+                                strValues = "";
                                 //UPDATE
                                 if (oItem.RxCycle1PreSeqNum.Trim().Length > 0 &&
                                     oItem.RxCycle1PreSeqNum.Trim().ToUpper() != "NOT USED")
                                 {
                                     strValues = strValues + "RXCYCLE1_PRE_SEQNUM=" + oItem.RxCycle1PreSeqNum.Trim() + ",";
-                                intAssignedCount++;
-                            }
+                                    intAssignedCount++;
+                                }
                                 else
                                 {
                                     strValues = strValues + "RXCYCLE1_PRE_SEQNUM=null,";
@@ -1341,8 +1427,8 @@ namespace FIA_Biosum_Manager
                                    oItem.RxCycle2PreSeqNum.Trim().ToUpper() != "NOT USED")
                                 {
                                     strValues = strValues + "RXCYCLE2_PRE_SEQNUM=" + oItem.RxCycle2PreSeqNum.Trim() + ",";
-                                intAssignedCount++;
-                            }
+                                    intAssignedCount++;
+                                }
                                 else
                                 {
                                     strValues = strValues + "RXCYCLE2_PRE_SEQNUM=null,";
@@ -1351,8 +1437,8 @@ namespace FIA_Biosum_Manager
                                   oItem.RxCycle3PreSeqNum.Trim().ToUpper() != "NOT USED")
                                 {
                                     strValues = strValues + "RXCYCLE3_PRE_SEQNUM=" + oItem.RxCycle3PreSeqNum.Trim() + ",";
-                                intAssignedCount++;
-                            }
+                                    intAssignedCount++;
+                                }
                                 else
                                 {
                                     strValues = strValues + "RXCYCLE3_PRE_SEQNUM=null,";
@@ -1361,8 +1447,8 @@ namespace FIA_Biosum_Manager
                                   oItem.RxCycle4PreSeqNum.Trim().ToUpper() != "NOT USED")
                                 {
                                     strValues = strValues + "RXCYCLE4_PRE_SEQNUM=" + oItem.RxCycle4PreSeqNum.Trim() + ",";
-                                intAssignedCount++;
-                            }
+                                    intAssignedCount++;
+                                }
                                 else
                                 {
                                     strValues = strValues + "RXCYCLE4_PRE_SEQNUM=null,";
@@ -1371,8 +1457,8 @@ namespace FIA_Biosum_Manager
                                     oItem.RxCycle1PostSeqNum.Trim().ToUpper() != "NOT USED")
                                 {
                                     strValues = strValues + "RXCYCLE1_POST_SEQNUM=" + oItem.RxCycle1PostSeqNum.Trim() + ",";
-                                intAssignedCount++;
-                            }
+                                    intAssignedCount++;
+                                }
                                 else
                                 {
                                     strValues = strValues + "RXCYCLE1_POST_SEQNUM=null,";
@@ -1381,8 +1467,8 @@ namespace FIA_Biosum_Manager
                                    oItem.RxCycle2PostSeqNum.Trim().ToUpper() != "NOT USED")
                                 {
                                     strValues = strValues + "RXCYCLE2_POST_SEQNUM=" + oItem.RxCycle2PostSeqNum.Trim() + ",";
-                                intAssignedCount++;
-                            }
+                                    intAssignedCount++;
+                                }
                                 else
                                 {
                                     strValues = strValues + "RXCYCLE2_POST_SEQNUM=null,";
@@ -1391,8 +1477,8 @@ namespace FIA_Biosum_Manager
                                   oItem.RxCycle3PostSeqNum.Trim().ToUpper() != "NOT USED")
                                 {
                                     strValues = strValues + "RXCYCLE3_POST_SEQNUM=" + oItem.RxCycle3PostSeqNum.Trim() + ",";
-                                intAssignedCount++;
-                            }
+                                    intAssignedCount++;
+                                }
                                 else
                                 {
                                     strValues = strValues + "RXCYCLE3_POST_SEQNUM=null,";
@@ -1401,8 +1487,8 @@ namespace FIA_Biosum_Manager
                                     oItem.RxCycle4PostSeqNum.Trim().ToUpper() != "NOT USED")
                                 {
                                     strValues = strValues + "RXCYCLE4_POST_SEQNUM=" + oItem.RxCycle4PostSeqNum.Trim() + ",";
-                                intAssignedCount++;
-                            }
+                                    intAssignedCount++;
+                                }
                                 else
                                 {
                                     strValues = strValues + "RXCYCLE4_POST_SEQNUM=null,";
@@ -1421,32 +1507,32 @@ namespace FIA_Biosum_Manager
                                 strValues = strValues + "RXCYCLE4_POST_BEFORECUT_YN='" + oItem.RxCycle4PostStrClassBeforeTreeRemovalYN + "',";
                                 strValues = strValues + "USE_SUMMARY_TABLE_SEQNUM_YN='" + oItem.UseSummaryTableSeqNumYN + "'";
 
-                                m_oAdo.m_strSQL = "UPDATE " + Tables.FVS.DefaultFVSPrePostSeqNumTable + " " +
+                                SQLite.m_strSQL = "UPDATE " + Tables.FVS.DefaultFVSPrePostSeqNumTable + " " +
                                                   "SET " + strValues + " " +
                                                   "WHERE PREPOST_SEQNUM_ID=" + oItem.PrePostSeqNumId.ToString().Trim();
 
-                                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                                if (m_oAdo.m_intError == 0)
+                                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                if (SQLite.m_intError == 0)
                                 {
                                     //if custom 
                                     if (oItem.Type == "C")
                                     {
                                         //first delete all records for id
-                                        m_oAdo.m_strSQL = "DELETE FROM " + Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable + " " +
+                                        SQLite.m_strSQL = "DELETE FROM " + Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable + " " +
                                                           "WHERE PREPOST_SEQNUM_ID=" + oItem.PrePostSeqNumId.ToString().Trim();
-                                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                                        if (m_oAdo.m_intError == 0)
+                                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                        if (SQLite.m_intError == 0)
                                         {
-                                            if (! String.IsNullOrEmpty(oItem.RxPackageList))
+                                            if (!String.IsNullOrEmpty(oItem.RxPackageList))
                                             {
                                                 string[] strArray = frmMain.g_oUtils.ConvertListToArray(oItem.RxPackageList, ",");
                                                 for (z = 0; z <= strArray.Length - 1; z++)
                                                 {
-                                                    m_oAdo.m_strSQL = "INSERT INTO " + Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable + " " +
+                                                    SQLite.m_strSQL = "INSERT INTO " + Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable + " " +
                                                           "(RXPACKAGE,PREPOST_SEQNUM_ID) VALUES " +
                                                           "('" + strArray[z].Trim() + "'," + oItem.PrePostSeqNumId.ToString().Trim() + ")";
-                                                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                                                    if (m_oAdo.m_intError != 0)
+                                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                                    if (SQLite.m_intError != 0)
                                                     {
                                                         break;
                                                     }
@@ -1466,43 +1552,43 @@ namespace FIA_Biosum_Manager
                                     }
                                 }
 
-                            // Copy any FVS_SUMMARY changes to FVS_CUTLIST
-                            if (oItem.TableName.Equals("FVS_SUMMARY"))
-                            {
-                                // Retrieve the seqnumid for FVS_CUTLIST
-                                string strCutListId = m_oAdo.getSingleStringValueFromSQLQuery(m_oAdo.m_OleDbConnection, "SELECT PREPOST_SEQNUM_ID FROM " +
-                                    Tables.FVS.DefaultFVSPrePostSeqNumTable + " WHERE TABLENAME = 'FVS_CUTLIST'", 
-                                    Tables.FVS.DefaultFVSPrePostSeqNumTable);
-                                if (!String.IsNullOrEmpty(strCutListId))
+                                // Copy any FVS_SUMMARY changes to FVS_CUTLIST
+                                if (oItem.TableName.Equals("FVS_SUMMARY"))
                                 {
-                                    m_oAdo.m_strSQL = CreateSqlForCutlist(oItem, strCutListId);
-                                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                                    // Retrieve the seqnumid for FVS_CUTLIST
+                                    string strCutListId = SQLite.getSingleStringValueFromSQLQuery(conn, "SELECT PREPOST_SEQNUM_ID FROM " +
+                                        Tables.FVS.DefaultFVSPrePostSeqNumTable + " WHERE TRIM(TABLENAME) = 'FVS_CUTLIST'",
+                                        Tables.FVS.DefaultFVSPrePostSeqNumTable);
+                                    if (!String.IsNullOrEmpty(strCutListId))
+                                    {
+                                        SQLite.m_strSQL = CreateSqlForCutlist(oItem, strCutListId);
+                                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                    }
                                 }
-                            }
 
 
-                                if (m_oAdo.m_intError == 0)
+                                if (SQLite.m_intError == 0)
                                     lvFVSTables.Items[x].SubItems[COL_STATUS].BackColor = Color.White;
                                 lvFVSTables.Items[x].SubItems[COL_STATUS].Text = "";
                                 lvFVSTables.Items[x].SubItems[COL_ID].Text = oItem.PrePostSeqNumId.ToString().Trim();
                                 lvFVSTables.Items[x].SubItems[COL_COUNT].Text = Convert.ToString(intAssignedCount);
+                            }
                         }
                     }
                 }
-                m_oAdo.CloseConnection(m_oAdo.m_OleDbConnection);
-                if (m_oAdo.m_intError == 0)
-                {
-                    if (bDelete) loadvalues();
-                    MessageBox.Show("Saved", "FIA Biosum");
-                    m_bSave = false;
-                    btnSave.Enabled = false;
-                }
-                else
-                {
-                    MessageBox.Show("Done, but with errors", "FIA Biosum");
-                }
-            }
+            }   // end using
 
+            if (SQLite.m_intError == 0)
+            {
+                if (bDelete) loadvalues();
+                MessageBox.Show("Saved", "FIA Biosum");
+                m_bSave = false;
+                btnSave.Enabled = false;
+            }
+            else
+            {
+                MessageBox.Show("Done, but with errors", "FIA Biosum");
+            }
         }
         private void btnSave_Click(object sender, EventArgs e)
         {
@@ -2211,6 +2297,101 @@ namespace FIA_Biosum_Manager
                 m_oHelp = new Help(m_xpsFile, m_oEnv);
             }
             m_oHelp.ShowHelp(new string[] { "FVS", "SEQUENCE_NUMBERS" });
+        }
+
+        public static void migrateAccessData1()
+        {
+            dao_data_access oDao = new dao_data_access();
+            ado_data_access oAdo = new ado_data_access();
+            string strPrePostSeqNumLink = $@"{Tables.FVS.DefaultFVSPrePostSeqNumTable}_1";
+            string strRxPackageAssignLink = $@"{Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable}_1";
+
+            FIA_Biosum_Manager.Datasource oProjectDs = new Datasource();
+            oProjectDs.m_strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\project.mdb";
+            oProjectDs.m_strDataSourceTableName = "datasource";
+            oProjectDs.m_strScenarioId = "";
+            oProjectDs.LoadTableColumnNamesAndDataTypes = false;
+            oProjectDs.LoadTableRecordCount = false;
+            oProjectDs.populate_datasource_array();
+            int intSeqNumDefs = oProjectDs.getValidTableNameRow(Datasource.TableTypes.SeqNumDefinitions);
+            int intSeqNumRxPkgAssign = oProjectDs.getValidTableNameRow(Datasource.TableTypes.SeqNumRxPackageAssign);
+            if (intSeqNumDefs > -1 && intSeqNumRxPkgAssign > -1)
+            {
+                string strSeqNumDefsTable = oProjectDs.m_strDataSource[intSeqNumDefs, Datasource.TABLE].Trim();
+                string strSeqNumRxPkgAssignTable = oProjectDs.m_strDataSource[intSeqNumRxPkgAssign, Datasource.TABLE].Trim();
+                oDao.CreateSQLiteTableLink(oProjectDs.getFullPathAndFile(Datasource.TableTypes.SeqNumDefinitions), Tables.FVS.DefaultFVSPrePostSeqNumTable,
+                    strPrePostSeqNumLink, ODBCMgr.DSN_KEYS.FvsMasterDbDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile, true);
+                oDao.CreateSQLiteTableLink(oProjectDs.getFullPathAndFile(Datasource.TableTypes.SeqNumDefinitions), Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable,
+                    strRxPackageAssignLink, ODBCMgr.DSN_KEYS.FvsMasterDbDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile, true);
+                if (oDao != null)
+                {
+                    oDao.m_DaoWorkspace.Close();
+                    oDao = null;
+                }
+                string strCopyConn = oAdo.getMDBConnString(oAdo.getMDBConnString(oProjectDs.getFullPathAndFile(Datasource.TableTypes.SeqNumDefinitions), "", ""), "", "");
+                int i = 0;
+                int intError = 0;
+                using (var oCopyConn = new System.Data.OleDb.OleDbConnection(strCopyConn))
+                {
+                    oCopyConn.Open();
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to migrate sequence number settings! ", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!oAdo.TableExist(oCopyConn, strRxPackageAssignLink));
+
+                    oAdo.m_strSQL = $@"INSERT INTO {strPrePostSeqNumLink} SELECT * FROM {strSeqNumDefsTable}";
+                    oAdo.SqlNonQuery(oCopyConn, oAdo.m_strSQL);
+                    if (oAdo.m_intError == 0)
+                    {
+                        oAdo.m_strSQL = $@"INSERT INTO {strRxPackageAssignLink} SELECT * FROM {strSeqNumRxPkgAssignTable}";
+                        oAdo.SqlNonQuery(oCopyConn, oAdo.m_strSQL);
+                        intError = oAdo.m_intError;
+                    }
+                    else
+                    {
+                        intError = oAdo.m_intError;
+                    }
+
+                    if (oAdo.TableExist(oCopyConn, strPrePostSeqNumLink))
+                    {
+                        oAdo.SqlNonQuery(oCopyConn, "DROP TABLE " + strPrePostSeqNumLink);
+                    }
+                    if (oAdo.TableExist(oCopyConn, strRxPackageAssignLink))
+                    {
+                        oAdo.SqlNonQuery(oCopyConn, "DROP TABLE " + strRxPackageAssignLink);
+                    }
+                }
+                if (intError == 0)
+                {
+                    // Update entries in project data sources table
+                    string strMasterPath = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{System.IO.Path.GetDirectoryName(Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile)}";
+                    string strFvsMasterDb = System.IO.Path.GetFileName(Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile);
+                    oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.SeqNumDefinitions, strMasterPath, strFvsMasterDb, Tables.FVS.DefaultFVSPrePostSeqNumTable);
+                    oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.SeqNumRxPackageAssign, strMasterPath, strFvsMasterDb, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable);
+                }
+            }
+
+
+
+
+
+
+
+
+            ODBCMgr odbcMgr = new ODBCMgr();
+            // Remove ODBC entry for the new SQLite fvs_master.db file
+            if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsMasterDbDsnName))
+            {
+                odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsMasterDbDsnName);
+            }
         }
     }
     /*********************************************************************************************************

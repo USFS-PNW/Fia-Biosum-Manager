@@ -78,54 +78,60 @@ namespace FIA_Biosum_Manager
             	    
             this.m_strCurrentConnection = strConn;
 		    this.m_strTable = strTable;
-		
-			ado_data_access p_ado = new ado_data_access();
-			
 
-			p_ado.OpenConnection(strConn);	
-			if (p_ado.m_intError != 0)
-			{
+            //ado_data_access p_ado = new ado_data_access();		
+            //p_ado.OpenConnection(strConn);	
+            //if (p_ado.m_intError != 0)
+            //{
+            //	p_ado = null;
+            //	return;
+            //}
+            //         loadvalues(p_ado, p_ado.m_OleDbConnection, strSelectSQL, strDisplayColumn, strSelectColumn, strTable);			
+            //if (p_ado.m_intError==0) 	p_ado.m_OleDbDataReader.Close();
+            //p_ado.m_OleDbConnection.Close();
+            //p_ado = null;
 
-				p_ado = null;
-				return;
-			}
-
-            loadvalues(p_ado, p_ado.m_OleDbConnection, strSelectSQL, strDisplayColumn, strSelectColumn, strTable);
-
-			
-			if (p_ado.m_intError==0) 	p_ado.m_OleDbDataReader.Close();
-			p_ado.m_OleDbConnection.Close();
-			p_ado = null;
-		  
-		}
-        public void loadvalues(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strSelectSQL, string p_strDisplayColumn, string p_strSelectColumn, string p_strTable)
+            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
+            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
+            {
+                oConn.Open();
+                if (dataMgr.m_intError !=0)
+                {
+                    dataMgr = null;
+                    return;
+                }
+                loadvalues(dataMgr, oConn, strSelectSQL, strDisplayColumn, strSelectColumn, strTable);
+            }
+            dataMgr = null;
+        }
+        public void loadvalues(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strSelectSQL, string p_strDisplayColumn, string p_strSelectColumn, string p_strTable)
         {
-            ((frmDialog)this.ParentForm).DialogResult = System.Windows.Forms.DialogResult.OK; p_oAdo.SqlQueryReader(p_oAdo.m_OleDbConnection, p_strSelectSQL);
-
-            if (p_oAdo.m_intError != 0)
+            ((frmDialog)this.ParentForm).DialogResult = System.Windows.Forms.DialogResult.OK;
+            p_oDataMgr.SqlQueryReader(p_oConn, p_strSelectSQL);
+            if (p_oDataMgr.m_intError != 0)
             {
                return;
             }
-            if (p_oAdo.m_OleDbDataReader.HasRows)
+            if (p_oDataMgr.m_DataReader.HasRows)
             {
                 this.listView1.Clear();
                 this.listView1.Columns.Add(" ", 10, HorizontalAlignment.Center);
-                this.m_strFieldTypeAString_YN = new string[p_oAdo.m_OleDbDataReader.FieldCount];
-                for (int x = 0; x <= p_oAdo.m_OleDbDataReader.FieldCount - 1; x++)
+                this.m_strFieldTypeAString_YN = new string[p_oDataMgr.m_DataReader.FieldCount];
+                for (int x = 0; x <= p_oDataMgr.m_DataReader.FieldCount - 1; x++)
                 {
-                    this.m_strFieldTypeAString_YN[x] = p_oAdo.getIsTheFieldAStringDataType(p_oAdo.m_OleDbDataReader.GetFieldType(x).FullName.ToString());
-                    this.listView1.Columns.Add(p_oAdo.m_OleDbDataReader.GetName(x).ToString(), 100, HorizontalAlignment.Left);
-                    if (p_oAdo.m_OleDbDataReader.GetName(x).ToString().Trim().ToUpper() ==
+                    this.m_strFieldTypeAString_YN[x] = p_oDataMgr.getIsTheFieldAStringDataType(p_oDataMgr.m_DataReader.GetFieldType(x).FullName.ToString());
+                    this.listView1.Columns.Add(p_oDataMgr.m_DataReader.GetName(x).ToString(), 100, HorizontalAlignment.Left);
+                    if (p_oDataMgr.m_DataReader.GetName(x).ToString().Trim().ToUpper() ==
                          p_strDisplayColumn.Trim().ToUpper()) this.m_intDisplayColumn = x;
-                    if (p_oAdo.m_OleDbDataReader.GetName(x).ToString().Trim().ToUpper() ==
+                    if (p_oDataMgr.m_DataReader.GetName(x).ToString().Trim().ToUpper() ==
                         p_strSelectColumn.Trim().ToUpper()) this.m_intSelectColumn = x;
                 }
 
-                while (p_oAdo.m_OleDbDataReader.Read())
+                while (p_oDataMgr.m_DataReader.Read())
                 {
-                    if (p_oAdo.m_OleDbDataReader[0] != System.DBNull.Value)
+                    if (p_oDataMgr.m_DataReader[0] != System.DBNull.Value)
                     {
-                        if (p_oAdo.m_OleDbDataReader[0].ToString().Trim().Length > 0)
+                        if (p_oDataMgr.m_DataReader[0].ToString().Trim().Length > 0)
                         {
                             System.Windows.Forms.ListViewItem entryListItem =
                                 listView1.Items.Add("",0);
@@ -133,10 +139,10 @@ namespace FIA_Biosum_Manager
                             this.m_oLvAlternateColors.AddColumns(entryListItem.Index, listView1.Columns.Count);
                             entryListItem.UseItemStyleForSubItems = false;
                             this.m_oLvAlternateColors.ListViewSubItem(entryListItem.Index, 0, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
-                            for (int x = 0; x <= p_oAdo.m_OleDbDataReader.FieldCount - 1; x++)
+                            for (int x = 0; x <= p_oDataMgr.m_DataReader.FieldCount - 1; x++)
                             {
                                
-                                    this.listView1.Items[entryListItem.Index].SubItems.Add(p_oAdo.m_OleDbDataReader[x].ToString().Trim());
+                                    this.listView1.Items[entryListItem.Index].SubItems.Add(p_oDataMgr.m_DataReader[x].ToString().Trim());
                                     this.m_oLvAlternateColors.ListViewSubItem(entryListItem.Index, x+1, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
                                 
 
@@ -152,9 +158,8 @@ namespace FIA_Biosum_Manager
             {
                 MessageBox.Show("No previous data to choose from", "FIA Biosum",MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 ((frmDialog)this.ParentForm).DialogResult = System.Windows.Forms.DialogResult.Cancel;
-
-
             }
+            p_oDataMgr.m_DataReader.Close();
         }
        
 		/// <summary> 

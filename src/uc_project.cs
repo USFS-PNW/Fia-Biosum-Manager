@@ -913,29 +913,29 @@ namespace FIA_Biosum_Manager
 				//
 				//travel times file and tables
 				//
-				p_frmTherm.Increment(2);
 				p_frmTherm.lblMsg.Text = strDestFile;
-                strDestFile = this.txtRootDirectory.Text.Trim() + "\\" + Tables.TravelTime.DefaultTravelTimeTableDbFile;
-				p_frmTherm.Increment(2);
-				p_frmTherm.lblMsg.Text = strDestFile;
+                strDestFile = this.txtRootDirectory.Text.Trim() + "\\" + Tables.TravelTime.DefaultTravelTimePathAndDbFile;
+                p_frmTherm.Increment(2);
+                p_frmTherm.lblMsg.Text = strDestFile;
 				p_frmTherm.lblMsg.Refresh();
-				p_dao.CreateMDB(strDestFile);
-				strConn = p_ado.getMDBConnString(strDestFile,"admin","");
-				p_ado.OpenConnection(strConn);
-				//disconnected road table
-				frmMain.g_oTables.m_oTravelTime.CreateDisconnectedRoadTravelTimeOfZeroTable(p_ado,p_ado.m_OleDbConnection,frmMain.g_oTables.m_oTravelTime.DefaultDisconnectedRoadTravelTimeOfZeroTableName);
-				//processing site table
-				frmMain.g_oTables.m_oTravelTime.CreateProcessingSiteTable(p_ado,p_ado.m_OleDbConnection,Tables.TravelTime.DefaultProcessingSiteTableName);
-				//travel time table
-                frmMain.g_oTables.m_oTravelTime.CreateTravelTimeTable(p_ado, p_ado.m_OleDbConnection, Tables.TravelTime.DefaultTravelTimeTableName);
-				//travel time of zero table
-				frmMain.g_oTables.m_oTravelTime.CreateTravelTimeOfZeroTable(p_ado,p_ado.m_OleDbConnection,frmMain.g_oTables.m_oTravelTime.DefaultTravelTimeOfZeroTableName);
-				p_ado.CloseConnection(p_ado.m_OleDbConnection);
-				//
-				//master file
-				//
-				//copy default master database to the new project directory (not currently used)
-				strSourceFile = this.m_oEnv.strAppDir + "\\db\\master.mdb";
+                p_dataMgr.CreateDbFile(strDestFile);
+				strConn = p_dataMgr.GetConnectionString(strDestFile);
+                using (var oConn = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+                    oConn.Open();
+                    //processing site table
+                    frmMain.g_oTables.m_oTravelTime.CreateSqliteProcessingSiteTable(p_dataMgr, oConn, Tables.TravelTime.DefaultProcessingSiteTableName);
+                    //travel time table
+                    frmMain.g_oTables.m_oTravelTime.CreateSqliteTravelTimeTable(p_dataMgr, oConn, Tables.TravelTime.DefaultTravelTimeTableName);
+                }
+                strDestFile = this.txtRootDirectory.Text.Trim() + "\\" + Tables.TravelTime.DefaultGisAuditPathAndDbFile;
+                p_dataMgr.CreateDbFile(strDestFile);
+
+                //
+                //master file
+                //
+                //copy default master database to the new project directory (not currently used)
+                strSourceFile = this.m_oEnv.strAppDir + "\\db\\master.mdb";
 				strDestFile = this.txtRootDirectory.Text.Trim() + "\\db\\master.mdb";
 				p_frmTherm.Increment(3);
 				p_frmTherm.lblMsg.Text = strDestFile;
@@ -1030,12 +1030,14 @@ namespace FIA_Biosum_Manager
 				frmMain.g_oTables.m_oFvs.CreateRxPackageFvsCommandsOrderTable(p_ado,p_ado.m_OleDbConnection,Tables.FVS.DefaultRxPackageFvsCommandsOrderTableName);
 				p_ado.CloseConnection(p_ado.m_OleDbConnection);
                 //fvs output pre-post seqnum processing
-                uc_fvs_output_prepost_seqnum.InitializePrePostSeqNumTables(p_ado, this.txtRootDirectory.Text.Trim()  + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile);
-				//
-				//prepopulated ref master file
-				//
-				//copy default master database to the new project directory
-				strSourceFile = this.m_oEnv.strAppDir + "\\db\\ref_master.mdb";
+                //uc_fvs_output_prepost_seqnum.InitializePrePostSeqNumTablesAccess(p_ado, this.txtRootDirectory.Text.Trim()  + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableMdbFile);
+                uc_fvs_output_prepost_seqnum.InitializePrePostSeqNumTables();   // This is the SQLite version
+
+                //
+                //prepopulated ref master file
+                //
+                //copy default master database to the new project directory
+                strSourceFile = this.m_oEnv.strAppDir + "\\db\\ref_master.mdb";
 				strDestFile = this.txtRootDirectory.Text.Trim() + "\\db\\ref_master.mdb";
 				p_frmTherm.Increment(6);
 				p_frmTherm.lblMsg.Text = strDestFile;
@@ -1059,15 +1061,15 @@ namespace FIA_Biosum_Manager
                 p_frmTherm.lblMsg.Refresh();
                 System.IO.File.Copy(strSourceFile, strDestFile, true);
                 //
-                //prepopulated weighted variable optimizer_definitions.accdb file
+                //prepopulated weighted variable optimizer_definitions.db file
                 //
-                //copy default optimizer_definitions.accdb to the new project directory
-                strSourceFile = this.m_oEnv.strAppDir + "\\db\\optimizer_definitions.accdb";
-                strDestFile = this.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultDbFile;
-                p_frmTherm.Increment(8);
-                p_frmTherm.lblMsg.Text = strDestFile;
+				//copy default optimizer_definitions.db to new project directory
+				strSourceFile = this.m_oEnv.strAppDir + "\\db\\optimizer_definitions.db";
+				strDestFile = this.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultSqliteDbFile;
+				p_frmTherm.Increment(8);
+				p_frmTherm.lblMsg.Text = strDestFile;
 				p_frmTherm.lblMsg.Refresh();
-                System.IO.File.Copy(strSourceFile, strDestFile, true);
+				System.IO.File.Copy(strSourceFile, strDestFile, true);
 
                 //
                 //optimizer scenario rule definitions
@@ -1075,14 +1077,16 @@ namespace FIA_Biosum_Manager
 				p_frmTherm.Increment(9);
                 p_frmTherm.lblMsg.Text = this.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
 				p_frmTherm.lblMsg.Refresh();
-                CreateOptimizerScenarioRuleDefinitionDbAndTables(this.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile);
+                //CreateOptimizerScenarioRuleDefinitionDbAndTables(this.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile);
+				CreateOptimizerScenarioRuleDefinitionSqliteDbAndTables(this.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile);
 				//
 				//processor scenario rule definitions
 				//
 				p_frmTherm.lblMsg.Text = strDestFile;
 				p_frmTherm.lblMsg.Refresh();
-				CreateProcessorScenarioRuleDefinitionDbAndTables(this.txtRootDirectory.Text.Trim() + "\\processor\\db\\scenario_processor_rule_definitions.mdb");
-				p_frmTherm.Increment(10);
+                CreateProcessorScenarioRuleDefinitionDbAndTables($@"{this.txtRootDirectory.Text.Trim()}\processor\{Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile}");
+
+                p_frmTherm.Increment(10);
 				//p_frmTherm.lblMsg.Text = strDestFile;
 				p_frmTherm.lblMsg.Refresh();
 				//System.IO.File.Copy(strSourceFile, strDestFile,true);		
@@ -1284,14 +1288,14 @@ namespace FIA_Biosum_Manager
                     strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
                         "('FVS PRE-POST SeqNum Definitions'," +
                         "'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," +
-                        "'fvsmaster.mdb'," +
+                        "'fvsmaster.db'," +
                         "'" + Tables.FVS.DefaultFVSPrePostSeqNumTable + "');";
                     p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
 
                     strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
                         "('FVS PRE-POST SeqNum Treatment Package Assign'," +
                         "'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," +
-                        "'fvsmaster.mdb'," +
+                        "'fvsmaster.db'," +
                         "'" + Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable + "');";
                     p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
 
@@ -1326,14 +1330,14 @@ namespace FIA_Biosum_Manager
 					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
 						"('Travel Times'," + 
 						"'" + this.txtRootDirectory.Text.ToString().Trim() + "\\gis\\db'," + 
-						"'" + Tables.TravelTime.DefaultTravelTimeAccdbFile + "'," + 
+						"'" + Tables.TravelTime.DefaultTravelTimeDbFile + "'," + 
 						"'travel_time');";
 					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
 
 					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " + 
 						"('Processing Sites'," + 
 						"'" + this.txtRootDirectory.Text.ToString().Trim() + "\\gis\\db'," +
-                        "'" + Tables.TravelTime.DefaultTravelTimeAccdbFile + "'," + 
+                        "'" + Tables.TravelTime.DefaultTravelTimeDbFile + "'," + 
 						"'processing_site');";
 					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
 					
@@ -1546,7 +1550,41 @@ namespace FIA_Biosum_Manager
 			oDao = null;
 		}
 
-		public void CreateProcessorScenarioRuleDefinitionDbAndTables(string p_strPathAndFile)
+		public void CreateOptimizerScenarioRuleDefinitionSqliteDbAndTables(string p_strPathAndFile)
+        {
+			DataMgr dataMgr = new DataMgr();
+
+			dataMgr.CreateDbFile(p_strPathAndFile);
+			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dataMgr.GetConnectionString(p_strPathAndFile)))
+            {
+				conn.Open();
+				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioCostsTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCostsTableName);
+				frmMain.g_oTables.m_oScenario.CreateSqliteScenarioDatasourceTable(dataMgr, conn, Tables.Scenario.DefaultScenarioDatasourceTableName);
+				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioHarvestCostColumnsTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioHarvestCostColumnsTableName);
+				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioLandOwnerGroupsTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLandOwnerGroupsTableName);
+				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioPlotFilterTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPlotFilterTableName);
+				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioPSitesTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName);
+				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioLastTieBreakRankTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLastTieBreakRankTableName);
+				frmMain.g_oTables.m_oScenario.CreateSqliteScenarioTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableName);
+				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioFVSVariablesTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTableName);
+				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioFVSVariableOverallEffectiveTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOverallEffectiveTableName);
+				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioFVSVariablesOptimizationTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOptimizationTableName);
+				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioFVSVariablesTieBreakerTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName);
+				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioCondFilterMiscTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCondFilterMiscTableName);
+				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioCondFilterTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCondFilterTableName);
+				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioProcessorScenarioSelectTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName);
+				conn.Close();
+            }
+
+			//create empty prepost_fvs_weighted.db
+			string strDestFile = this.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile;
+			if (!System.IO.File.Exists(strDestFile))
+            {
+				dataMgr.CreateDbFile(strDestFile);
+			}
+		}
+
+		public void CreateProcessorScenarioRuleDefinitionAccessDbAndTables(string p_strPathAndFile)
 		{
 			dao_data_access oDao = new dao_data_access();
 			ado_data_access oAdo = new ado_data_access();
@@ -1572,7 +1610,7 @@ namespace FIA_Biosum_Manager
 			oDao = null;
 		}
 
-        public void CreateProcessorScenarioRuleDefinitionSqliteDbAndTables(string p_strPathAndFile)
+        public void CreateProcessorScenarioRuleDefinitionDbAndTables(string p_strPathAndFile)
         {
             DataMgr dataMgr = new DataMgr();
 
@@ -2427,6 +2465,7 @@ namespace FIA_Biosum_Manager
 			 **instantiate the ado_data_access class
 			 **********************************************/
 			ado_data_access oAdo = new ado_data_access();
+            DataMgr oDataMgr = new DataMgr();
             //
             //PROJECT DATA SOURCE
             //
@@ -2456,55 +2495,59 @@ namespace FIA_Biosum_Manager
             //
             //TREATMENT OPTIMIZER SCENARIO DATA SOURCE
             //
-            strFullPath = strProjDir + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
+            strFullPath = strProjDir + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
             if (System.IO.File.Exists(strFullPath))
             {
-                strConn = oAdo.getMDBConnString(strFullPath, "", "");
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Open Connection to Treatment Optimizer Scenario Dbfile " + strConn + ")\r\n");
+				strConn = oDataMgr.GetConnectionString(strFullPath);
+				if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+					frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Open Connection to Treatment Optimizer Scenario Dbfile " + strConn + ")\r\n");
 
-                oAdo.OpenConnection(strConn);
-                strSQL = "UPDATE scenario_datasource " +
-                     "SET path = REPLACE(TRIM(LCASE(path))," +
-                                "'" + strOldProjDir.Trim().ToLower() + "'," +
-                                "'" + strProjDir.Trim().ToLower() + "')";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Execute SQL \r\n" + strSQL + "\r\n");
-                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
-                strSQL = "UPDATE scenario " +
-                    "SET path = REPLACE(TRIM(LCASE(path))," +
-                               "'" + strOldProjDir.Trim().ToLower() + "'," +
-                               "'" + strProjDir.Trim().ToLower() + "')";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Execute SQL \r\n" + strSQL + "\r\n");
-                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
-                oAdo.CloseConnection(oAdo.m_OleDbConnection);
-            }
+				using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+					conn.Open();
+					strSQL = "UPDATE scenario_datasource " +
+					 "SET path = REPLACE(TRIM(LOWER(path))," +
+								"'" + strOldProjDir.Trim().ToLower() + "'," +
+								"'" + strProjDir.Trim().ToLower() + "')";
+					if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+						frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Execute SQL \r\n" + strSQL + "\r\n");
+					oDataMgr.SqlNonQuery(conn, strSQL);
+					strSQL = "UPDATE scenario " +
+					"SET path = REPLACE(TRIM(LOWER(path))," +
+							   "'" + strOldProjDir.Trim().ToLower() + "'," +
+							   "'" + strProjDir.Trim().ToLower() + "')";
+					if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+						frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Execute SQL \r\n" + strSQL + "\r\n");
+					oDataMgr.SqlNonQuery(conn, strSQL);
+				}
+			}
             //
             //PROCESSOR SCENARIO DATA SOURCE
             //
-            strFullPath = strProjDir + "\\processor\\db\\scenario_processor_rule_definitions.mdb";
+            strFullPath = $@"{strProjDir}\processor\{Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile}";
             if (System.IO.File.Exists(strFullPath))
             {
-                strConn = oAdo.getMDBConnString(strFullPath, "", "");
+                strConn = oDataMgr.GetConnectionString(strFullPath);
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Open Connection to Processor Scenario Dbfile " + strConn + ")\r\n");
-                oAdo.OpenConnection(strConn);
-                strSQL = "UPDATE scenario_datasource " +
-                     "SET path = REPLACE(TRIM(LCASE(path))," +
-                                "'" + strOldProjDir.Trim().ToLower() + "'," +
-                                "'" + strProjDir.Trim().ToLower() + "')";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Execute SQL \r\n" + strSQL + "\r\n");
-                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
-                strSQL = "UPDATE scenario " +
-                     "SET path = REPLACE(TRIM(LCASE(path))," +
-                                "'" + strOldProjDir.Trim().ToLower() + "'," +
-                                "'" + strProjDir.Trim().ToLower() + "')";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Execute SQL \r\n" + strSQL + "\r\n");
-                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
-                oAdo.CloseConnection(oAdo.m_OleDbConnection);
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+                    conn.Open();
+                    strSQL = "UPDATE scenario_datasource " +
+                         "SET path = REPLACE(TRIM(LOWER(path))," +
+                                    "'" + strOldProjDir.Trim().ToLower() + "'," +
+                                    "'" + strProjDir.Trim().ToLower() + "')";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Execute SQL \r\n" + strSQL + "\r\n");
+                    oDataMgr.SqlNonQuery(conn, strSQL);
+                    strSQL = "UPDATE scenario " +
+                         "SET path = REPLACE(TRIM(LOWER(path))," +
+                                    "'" + strOldProjDir.Trim().ToLower() + "'," +
+                                    "'" + strProjDir.Trim().ToLower() + "')";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Execute SQL \r\n" + strSQL + "\r\n");
+                    oDataMgr.SqlNonQuery(conn, strSQL);
+                }
             }
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)

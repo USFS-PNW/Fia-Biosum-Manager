@@ -13,6 +13,7 @@ namespace FIA_Biosum_Manager
         private uc_processor_scenario_additional_harvest_cost_columns _uc_processor_scenario_additional_harvest_cost_columns=null;
         private Queries _oQueries=null;
         private ado_data_access _oAdo = null;
+        private SQLite.ADO.DataMgr _DataMgr;
         private System.Data.OleDb.OleDbConnection _oConn;
         private FIA_Biosum_Manager.ValidateNumericValues m_oValidate = new ValidateNumericValues();
         private string m_strCubicFootDollarValueSave = "";
@@ -83,6 +84,11 @@ namespace FIA_Biosum_Manager
             set { _oAdo = value; }
             get { return _oAdo; }
         }
+        public SQLite.ADO.DataMgr ReferenceDataMgr
+        {
+            set { _DataMgr = value; }
+            get { return _DataMgr; }
+        }
         public System.Data.OleDb.OleDbConnection ReferenceOleDbConnection
         {
             set { _oConn = value; }
@@ -110,6 +116,7 @@ namespace FIA_Biosum_Manager
         public uc_processor_scenario_additional_harvest_cost_column_item()
         {
             InitializeComponent();
+            ReferenceDataMgr = new SQLite.ADO.DataMgr();
         }
 
         private void txtRxScenario_TextChanged(object sender, EventArgs e)
@@ -275,33 +282,30 @@ namespace FIA_Biosum_Manager
                     this.ParentForm.Width,
                     this.ParentForm.Top);
                 frmMain.g_sbpInfo.Text = "Updating Harvest Cost Component $/A/C Values...Stand By";
-
-                
-                
-
-               
-                this.ReferenceAdo.m_strSQL = "UPDATE  additional_harvest_costs_work_table " +
-                                             "SET " + ColumnName.Trim() + "=" + this.txtCubicFootDollarValue.Text.Replace("$", "");
-
-                if (Type.Trim().ToUpper() != "SCENARIO")
+                                             
+                string strScenarioDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(ReferenceDataMgr.GetConnectionString(strScenarioDb)))
                 {
-                    this.ReferenceAdo.m_strSQL = ReferenceAdo.m_strSQL + " WHERE rx='" + Type.Trim() + "'";
-
+                    conn.Open();
+                    ReferenceDataMgr.m_strSQL = "UPDATE additional_harvest_costs_work_table " +
+                                                "SET " + ColumnName.Trim() + "=" + this.txtCubicFootDollarValue.Text.Replace("$", "");
+                    if (Type.Trim().ToUpper() != "SCENARIO")
+                    {
+                        ReferenceDataMgr.m_strSQL = ReferenceDataMgr.m_strSQL + " WHERE rx='" + Type.Trim() + "'";
+                    }
+                    ReferenceDataMgr.SqlNonQuery(conn, ReferenceDataMgr.m_strSQL);
                 }
-                this.ReferenceAdo.SqlNonQuery(ReferenceOleDbConnection, ReferenceAdo.m_strSQL);
                 frmMain.g_sbpInfo.Text = "Ready";
-                if (this.ReferenceAdo.m_intError == 0)
-                {
-                    
+                if (ReferenceDataMgr.m_intError == 0)
+                {                    
                     this.ReferenceAdditionalHarvestCostColumnsUserControl.UpdateNullCounts();
                     this.ReferenceAdditionalHarvestCostColumnsUserControl.ReferenceProcessorScenarioForm.m_bSave = true;
                     frmMain.g_oFrmMain.DeactivateStandByAnimation();
                     MessageBox.Show("Done");
                 }
                 else
-                    frmMain.g_oFrmMain.DeactivateStandByAnimation();                
-            
-                                             
+                    frmMain.g_oFrmMain.DeactivateStandByAnimation();                                                                        
             }
             
         }
@@ -329,24 +333,27 @@ namespace FIA_Biosum_Manager
                    this.ParentForm.Height,
                    this.ParentForm.Width,
                    this.ParentForm.Top);
-                this.ReferenceAdo.m_strSQL = "UPDATE  additional_harvest_costs_work_table " +
-                                             "SET " + ColumnName.Trim() + "=" + this.txtCubicFootDollarValue.Text.Replace("$", "");
-
-                if (Type.Trim().ToUpper() != "SCENARIO")
-                {
-                    this.ReferenceAdo.m_strSQL = ReferenceAdo.m_strSQL + " WHERE rx='" + Type.Trim() + "' AND " + ColumnName.Trim() + " IS NULL";
-
-                }
-                else
-                {
-                    this.ReferenceAdo.m_strSQL = ReferenceAdo.m_strSQL + " WHERE " + ColumnName.Trim() + " IS NULL";
-                }
                 frmMain.g_sbpInfo.Text = "Updating Harvest Cost Component $/A/C Values...Stand By";
-                this.ReferenceAdo.SqlNonQuery(ReferenceOleDbConnection, ReferenceAdo.m_strSQL);
-                frmMain.g_sbpInfo.Text = "Ready";
-                if (this.ReferenceAdo.m_intError == 0)
+                string strScenarioDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(ReferenceDataMgr.GetConnectionString(strScenarioDb)))
                 {
-
+                    conn.Open();
+                    ReferenceDataMgr.m_strSQL = "UPDATE  additional_harvest_costs_work_table " +
+                                                "SET " + ColumnName.Trim() + "=" + this.txtCubicFootDollarValue.Text.Replace("$", "");
+                    if (Type.Trim().ToUpper() != "SCENARIO")
+                    {
+                        ReferenceDataMgr.m_strSQL = ReferenceDataMgr.m_strSQL + " WHERE rx='" + Type.Trim() + "' AND " + ColumnName.Trim() + " IS NULL";
+                    }
+                    else
+                    {
+                        ReferenceDataMgr.m_strSQL = ReferenceDataMgr.m_strSQL + " WHERE " + ColumnName.Trim() + " IS NULL";
+                    }
+                    ReferenceDataMgr.SqlNonQuery(conn, ReferenceDataMgr.m_strSQL);
+                }
+                frmMain.g_sbpInfo.Text = "Ready";
+                if (ReferenceDataMgr.m_intError == 0)
+                {
                     this.ReferenceAdditionalHarvestCostColumnsUserControl.UpdateNullCounts();
                     this.ReferenceAdditionalHarvestCostColumnsUserControl.ReferenceProcessorScenarioForm.m_bSave = true;
                     frmMain.g_oFrmMain.DeactivateStandByAnimation();

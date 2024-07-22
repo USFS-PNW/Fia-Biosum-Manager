@@ -101,7 +101,7 @@ namespace FIA_Biosum_Manager
 		public FIA_Biosum_Manager.btnMainForm m_btnFvsRx;
 		public FIA_Biosum_Manager.btnMainForm m_btnFvsRxPackage;
 		public FIA_Biosum_Manager.btnMainForm m_btnFvsInput;
-        public FIA_Biosum_Manager.btnMainForm m_btnCreateFvsOutputMdbs;
+        //public FIA_Biosum_Manager.btnMainForm m_btnCreateFvsOutputMdbs;
         public FIA_Biosum_Manager.btnMainForm m_btnFvsOutput;
 		public FIA_Biosum_Manager.btnMainForm m_btnFvsTreeSpcCvt;
 		public FIA_Biosum_Manager.btnMainForm m_btnFvsTreeSpc;
@@ -182,7 +182,7 @@ namespace FIA_Biosum_Manager
         public static System.Drawing.Color g_oGridViewSelectedRowBackgroundColor = Color.Magenta;
 
         //debugging values
-        public static bool g_bDebug=false;
+        public static bool g_bDebug=true;
         public static int g_intDebugLevel = 3;
         
 
@@ -204,9 +204,9 @@ namespace FIA_Biosum_Manager
         public const int PROJDIR = 0;
         public const int OLDPROJDIR = 1;
 
-		public static string g_strAppVer = "5.10.1";
+		public static string g_strAppVer = "5.11.0";
         public static string g_strBiosumDataDir = "\\FIABiosum";
-        public static int g_intRefDbVer = 2;
+        public static int g_intRefDbVer = 5;
         public static bool g_bUseOracleXE = false;
 
 		private System.Windows.Forms.MenuItem mnuSettings;
@@ -1447,7 +1447,102 @@ namespace FIA_Biosum_Manager
 
 		}
 
-		public void OpenProcessorScenario(string p_strType,frmProcessorScenario p_frmProcessorScenario)
+        public void OpenOptimizerScenarioSqlite(string p_strType, frmOptimizerScenario p_frmOptimizerScenario)
+        {
+            FIA_Biosum_Manager.frmOptimizerScenario oFrmOptimizerScenario = new frmOptimizerScenario(this);
+
+            DialogResult result;
+            if (p_strType == "Open")
+            {
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "=====================   OpenOptimizerScenario   =====================\r\n");
+
+
+                oFrmOptimizerScenario.InitializeOpenScenario(frmProject.uc_project1.m_strDebugFile);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: frmOptimizerScenario.InitializeOpenScenario() successful! \r\n");
+                oFrmOptimizerScenario.uc_scenario_open1.Height = oFrmOptimizerScenario.uc_scenario_open1.m_intFullHt;
+                oFrmOptimizerScenario.uc_scenario_open1.Width = oFrmOptimizerScenario.uc_scenario_open1.m_intFullWd;
+                oFrmOptimizerScenario.Height = oFrmOptimizerScenario.uc_scenario_open1.Height + oFrmOptimizerScenario.uc_scenario_open1.Top + 50;
+
+                result = oFrmOptimizerScenario.ShowDialog();
+                if (result == DialogResult.OK)
+                {
+                    frmOptimizerScenario oFrmScenario = new frmOptimizerScenario(this);
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    {
+                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Initialized new frmOptimizerScenario\r\n");
+                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Existing scenario name: " + oFrmOptimizerScenario.uc_scenario_open1.txtScenarioId.Text + "\r\n");
+                    }
+                    oFrmScenario.Text = "Treatment Optimizer: Optimization Scenario (" + oFrmOptimizerScenario.uc_scenario_open1.txtScenarioId.Text.Trim() + ")";
+                    oFrmScenario.m_bScenarioOpen = true;
+                    oFrmScenario.HelpChapter = "EDIT_SCENARIO";
+                    oFrmScenario.uc_datasource1.strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+                    oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
+                    oFrmScenario.uc_datasource1.strScenarioId = oFrmOptimizerScenario.uc_scenario_open1.txtScenarioId.Text.Trim();
+                    oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+                    oFrmScenario.uc_datasource1.LoadValuesSqlite();
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Loaded datasource values\r\n");
+
+                    oFrmScenario.uc_scenario1.strScenarioDescription = oFrmOptimizerScenario.uc_scenario_open1.strScenarioDescription;
+                    oFrmScenario.uc_scenario1.strScenarioId = oFrmOptimizerScenario.uc_scenario_open1.strScenarioId;
+                    oFrmScenario.uc_scenario1.strScenarioPath = oFrmOptimizerScenario.uc_scenario_open1.strScenarioPath;
+                    oFrmScenario.uc_scenario_notes1.ReferenceOptimizerScenarioForm = oFrmScenario;
+                    oFrmScenario.uc_scenario_notes1.LoadValuesSqlite();
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Loaded notes\r\n");
+                    oFrmScenario.tlbScenario.Buttons[5].Visible = true; //properties
+                    oFrmScenario.tlbScenario.Buttons[7].Visible = true; //copy
+                    oFrmScenario.MdiParent = this;
+                    oFrmScenario.Show();
+                }
+            }
+            else
+            {
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Creating new scenario\r\n");
+                oFrmOptimizerScenario.InitializeNewScenario();
+                oFrmOptimizerScenario.MinimizeBox = false;
+                result = oFrmOptimizerScenario.ShowDialog();
+                if (result == DialogResult.OK)
+                {
+                    frmOptimizerScenario oFrmScenario = new frmOptimizerScenario(this);
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    {
+                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Initialized new frmOptimizerScenario\r\n");
+                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: New scenario name: " + oFrmOptimizerScenario.uc_scenario1.txtScenarioId.Text + "\r\n");
+
+                    }
+                    oFrmScenario.Text = "Treatment Optimizer: Optimization Scenario (" + oFrmOptimizerScenario.uc_scenario1.txtScenarioId.Text.Trim() + ")";
+                    oFrmScenario.m_bScenarioOpen = true;
+                    oFrmScenario.HelpChapter = "EDIT_SCENARIO";
+                    oFrmScenario.uc_datasource1.strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+                    oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
+                    oFrmScenario.uc_datasource1.strScenarioId = oFrmOptimizerScenario.uc_scenario1.txtScenarioId.Text.Trim();
+                    oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+                    oFrmScenario.uc_datasource1.LoadValuesSqlite();
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Loaded datasource values\r\n");
+
+                    oFrmScenario.uc_scenario1.strScenarioDescription = oFrmOptimizerScenario.uc_scenario1.strScenarioDescription;
+                    oFrmScenario.uc_scenario1.strScenarioId = oFrmOptimizerScenario.uc_scenario1.strScenarioId;
+                    oFrmScenario.uc_scenario1.strScenarioPath = oFrmOptimizerScenario.uc_scenario1.strScenarioPath;
+                    oFrmScenario.tlbScenario.Buttons[5].Visible = true; //properties
+                    oFrmScenario.tlbScenario.Buttons[7].Visible = true; //copy
+                    oFrmScenario.MdiParent = this;
+                    oFrmScenario.Show();
+                    if (p_frmOptimizerScenario != null)
+                    {
+                        p_frmOptimizerScenario.DialogResult = DialogResult.Cancel;
+                    }
+                }
+            }
+
+
+        }
+
+        public void OpenProcessorScenario(string p_strType,frmProcessorScenario p_frmProcessorScenario)
 		{
 			FIA_Biosum_Manager.frmProcessorScenario oFrmProcessorScenario = new frmProcessorScenario(this);
 
@@ -1552,12 +1647,11 @@ namespace FIA_Biosum_Manager
 
 		}
 
-		
-		public void button_click(string strText)
-		{
+        public void button_click(string strText)
+        {
 
-			if (this.btnOptimizer.Enabled == false) 
-			{
+            if (this.btnOptimizer.Enabled == false)
+            {
                 if (strText.Trim().ToUpper() == "DEFINE CALCULATED VARIABLES")
                 {
                     //check to see if the form has already been loaded
@@ -1573,7 +1667,7 @@ namespace FIA_Biosum_Manager
                         this.m_frmCoreUserVariables.Initialize_Core_User_Variables_User_Control();
 
                         this.m_frmCoreUserVariables.DisposeOfFormWhenClosing = true;
-                                          
+
                         this.m_frmCoreUserVariables.Width = this.m_frmCoreUserVariables.uc_core_scenario_weighted_average1.m_DialogWd;
                         this.m_frmCoreUserVariables.Height = this.m_frmCoreUserVariables.uc_core_scenario_weighted_average1.m_DialogHt;
                         this.m_frmCoreUserVariables.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
@@ -1597,128 +1691,145 @@ namespace FIA_Biosum_Manager
                 }
                 else if (strText.Trim().ToUpper() == "LOAD GIS DATA")
                 {
-                   GisTools oGisTools = new GisTools();
-                   bool bTablesHaveData = false;
-                   bool bTablesExist = oGisTools.CheckForExistingData(this.frmProject.uc_project1.m_strProjectDirectory, out bTablesHaveData);
-                   bool bCreateBackups = false;
-                   bool bSuccess = true;
-                   
-                    string strMasterAccdb = frmMain.g_oEnv.strApplicationDataDirectory.Trim() + frmMain.g_strBiosumDataDir + 
-                        "\\" + Tables.TravelTime.DefaultMasterTravelTimeAccdbFile;
-                    if (!System.IO.File.Exists(strMasterAccdb))
+                    GisTools oGisTools = new GisTools();
+                    bool bTablesHaveData = false;
+                    bool bTablesExist = oGisTools.CheckForExistingDataSqlite(this.frmProject.uc_project1.m_strProjectDirectory, out bTablesHaveData);
+                    bool bCreateBackups = false;
+                    string strMessage = "";
+                    bool bSuccess = true;
+
+                    string strMasterDb = frmMain.g_oEnv.strApplicationDataDirectory.Trim() + frmMain.g_strBiosumDataDir +
+                        "\\" + Tables.TravelTime.DefaultMasterTravelTimeDbFile;
+                    if (!System.IO.File.Exists(strMasterDb))
                     {
-                        MessageBox.Show("The source gis_travel_times_master.accdb is required but does not exist in the " +
+                        MessageBox.Show("The source gis_travel_times_master.db is required but does not exist in the " +
                             frmMain.g_oEnv.strApplicationDataDirectory.Trim() + frmMain.g_strBiosumDataDir + " folder. \r\n\r\n" +
                             "Please download a copy of this database into the FIABiosum folder!!", "FIA Biosum");
                         return;
                     }
                     if (bTablesHaveData == true)
-                   {
-                       string strMessage = "BioSum has found existing data in your gis data tables. Do you wish to overwrite existing data? " +
-                           "This process cannot be reversed!!";
-                       DialogResult res = MessageBox.Show(strMessage, "FIA BioSum", MessageBoxButtons.YesNo);
-                       if (res != DialogResult.Yes)
-                       {
-                           MessageBox.Show("GIS data load terminated!!", "FIA BioSum");
-                           return;
-                       }
-                       else
-                       {
-                           strMessage = "Would you like BioSum to make a copy of your existing GIS database? The name of the database backup will include today's date.";
-                           res = MessageBox.Show(strMessage, "FIA BioSum", MessageBoxButtons.YesNo);
-                           if (res == DialogResult.Yes)
-                           {
-                               bCreateBackups = true;
-                           }
-                       }
+                    {
+                        strMessage = "BioSum has found existing data in your gis data tables. Do you wish to overwrite existing data? " +
+                            "This process cannot be reversed!!";
+                        DialogResult res = MessageBox.Show(strMessage, "FIA BioSum", MessageBoxButtons.YesNo);
+                        if (res != DialogResult.Yes)
+                        {
+                            MessageBox.Show("GIS data load terminated!!", "FIA BioSum");
+                            return;
+                        }
+                        else
+                        {
+                            strMessage = "Would you like BioSum to make a copy of your existing GIS database? The name of the database backup will include today's date.";
+                            res = MessageBox.Show(strMessage, "FIA BioSum", MessageBoxButtons.YesNo);
+                            if (res == DialogResult.Yes)
+                            {
+                                bCreateBackups = true;
+                            }
+                        }
+                    }
+                    // Check for existence of MoveDist_ft_REPLACEMENT field
+                    string strSourceField = "MoveDist_ft_REPLACEMENT";
+                    if (oGisTools.CheckPlotGisTable(strMasterDb, strSourceField))
+                    {
+                        strMessage = "Do you want to update the plot yarding distance from the plot_gis table in the master travel times database ?";
+                        DialogResult res2 = MessageBox.Show(strMessage, "FIA BioSum", MessageBoxButtons.YesNo);
+                        if (res2 != DialogResult.Yes)
+                        {
+                            strSourceField = "";
+                        }
+                    }
+                    else
+                    {
+                        strSourceField = "";
+                    }
 
-                   }
-                   this.ActivateStandByAnimation(
-                        this.WindowState,
-                        this.Left,
-                        this.Height,
-                        this.Width,
-                        this.Top);
-                   g_sbpInfo.Text = "Loading gis data...Stand by";
+                    this.ActivateStandByAnimation(
+                         this.WindowState,
+                         this.Left,
+                         this.Height,
+                         this.Width,
+                         this.Top);
+                    g_sbpInfo.Text = "Loading gis data...Stand by";
 
-                   if (bCreateBackups == true)
-                   {
-                       g_sbpInfo.Text = "Backing up old gis data...Stand by";
-                       bSuccess = oGisTools.BackupGisData();
-                   }
-                   if (bSuccess == true)
-                   {
-                       int intRowCount = oGisTools.LoadGisData();
-                       if (intRowCount < 1)
-                       {
-                           MessageBox.Show("An error occurred while loading the GIS data!!", "FIA BioSum");
-                           this.DeactivateStandByAnimation();
-                           return;
-                       }
-                   }
-                   else
-                   {
-                       MessageBox.Show("An error occurred while backing up the tables. GIS data load terminated!!", "FIA BioSum");
-                       g_sbpInfo.Text = "Ready";
-                       this.DeactivateStandByAnimation();
-                       return;
-                   }
-                   g_sbpInfo.Text = "Ready";
-                   this.DeactivateStandByAnimation();
-                   MessageBox.Show("If you updated existing GIS data, verify the selected sites in Treatment Optimizer. GIS data successfully loaded!");
+                    if (bCreateBackups == true)
+                    {
+                        g_sbpInfo.Text = "Backing up old gis data...Stand by";
+                        bSuccess = oGisTools.BackupGisData();
+                    }
+                    if (bSuccess == true)
+                    {
+                        int intRowCount = oGisTools.LoadSqliteGisData(strSourceField, frmProject.uc_project1.m_strDebugFile);
+                        if (intRowCount < 1)
+                        {
+                            MessageBox.Show("An error occurred while loading the GIS data!!", "FIA BioSum");
+                            this.DeactivateStandByAnimation();
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("An error occurred while backing up the tables. GIS data load terminated!!", "FIA BioSum");
+                        g_sbpInfo.Text = "Ready";
+                        this.DeactivateStandByAnimation();
+                        return;
+                    }
+                    g_sbpInfo.Text = "Ready";
+                    this.DeactivateStandByAnimation();
+                    MessageBox.Show("If you updated existing GIS data, verify the selected sites in Treatment Optimizer. GIS data successfully loaded!");
 
                 }
-                else if (strText.Trim().ToUpper() == "OPTIMIZATION SCENARIO") 
-				{
-					
-					System.Text.StringBuilder strFullPath;
-	          
-					System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
-					string strProjDir = getProjectDirectory();
-					strFullPath = new System.Text.StringBuilder(strProjDir);
-					strFullPath.Append("\\");
-                    strFullPath.Append(Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile);
-					ado_data_access oAdo = new ado_data_access();
-					string strConn=oAdo.getMDBConnString(strFullPath.ToString(),"","");
-					long lngCount = oAdo.getRecordCount(strConn,"select count(*) from scenario","scenario");
-                    if (oAdo.m_intError==0)
-					{
-						if (lngCount > 0)
-						{
-							OpenOptimizerScenario("Open", null);
-						}
-						else
-						{
-
-							OpenOptimizerScenario("New", null);
-						}
-					}
-                    oAdo = null;
-				
-				}
-                else if (strText.Trim().ToUpper() == "EXPORT TO SQLITE")
+                else if (strText.Trim().ToUpper() == "OPTIMIZATION SCENARIO")
                 {
-                    this.m_frmSqlite = new frmDialog(this);
-                    this.m_frmSqlite.MaximizeBox = false;
-                    this.m_frmSqlite.MinimizeBox = false;
-                    this.m_frmSqlite.BackColor = System.Drawing.SystemColors.Control;
-                    this.m_frmSqlite.Text = "Treatment Optimizer: Export to SQLITE";
-                    this.m_frmSqlite.MdiParent = this;
-                    this.m_frmSqlite.Initialize_Optimizer_Sqlite_User_Control();
+                    System.Text.StringBuilder strFullPath;
 
-                    this.m_frmSqlite.DisposeOfFormWhenClosing = true;
+                    string strProjDir = getProjectDirectory();
+                    strFullPath = new System.Text.StringBuilder(strProjDir);
+                    strFullPath.Append("\\");
+                    strFullPath.Append(Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile);
+                    SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+                    string strConn = oDataMgr.GetConnectionString(strFullPath.ToString());
+                    long lngCount = oDataMgr.getRecordCount(strConn, "select count(*) from scenario", "scenario");
+                    if (oDataMgr.m_intError == 0)
+                    {
+                        if (lngCount > 0)
+                        {
+                            OpenOptimizerScenarioSqlite("Open", null);
+                        }
+                        else
+                        {
 
-                    this.m_frmSqlite.Width = this.m_frmSqlite.uc_optimizer_sqlite_export1.Width + 25;
-                    this.m_frmSqlite.Height = this.m_frmSqlite.uc_optimizer_sqlite_export1.Height + 40;
-                    this.m_frmSqlite.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-                    this.m_frmSqlite.uc_optimizer_sqlite_export1.Top = 0;
-                    this.m_frmSqlite.uc_optimizer_sqlite_export1.Left = 0;
+                            OpenOptimizerScenarioSqlite("New", null);
+                        }
+                    }
+                    oDataMgr = null;
 
-                    this.m_frmSqlite.uc_optimizer_sqlite_export1.ReferenceFormDialog = this.m_frmSqlite;
-                    this.m_frmSqlite.uc_optimizer_sqlite_export1.Visible = true;
-                    this.m_frmSqlite.MinimizeMainForm = true;
-                    this.m_frmSqlite.ParentControl = frmMain.g_oFrmMain;
-                    this.m_frmSqlite.Show();
+                }
+                else if (strText.Trim().ToUpper() == "UPGRADE FOR V5.11.0")
+                {
+                    //version_control oVersCtl = new version_control();
+                    //oVersCtl.UpdateDatasources_5_11_0(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim());
+                    //MessageBox.Show("Upgrade Complete!");
+                    //this.m_frmSqlite = new frmDialog(this);
+                    //this.m_frmSqlite.MaximizeBox = false;
+                    //this.m_frmSqlite.MinimizeBox = false;
+                    //this.m_frmSqlite.BackColor = System.Drawing.SystemColors.Control;
+                    //this.m_frmSqlite.Text = "Treatment Optimizer: Export to SQLITE";
+                    //this.m_frmSqlite.MdiParent = this;
+                    //this.m_frmSqlite.Initialize_Optimizer_Sqlite_User_Control();
+
+                    //this.m_frmSqlite.DisposeOfFormWhenClosing = true;
+
+                    //this.m_frmSqlite.Width = this.m_frmSqlite.uc_optimizer_sqlite_export1.Width + 25;
+                    //this.m_frmSqlite.Height = this.m_frmSqlite.uc_optimizer_sqlite_export1.Height + 40;
+                    //this.m_frmSqlite.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+                    //this.m_frmSqlite.uc_optimizer_sqlite_export1.Top = 0;
+                    //this.m_frmSqlite.uc_optimizer_sqlite_export1.Left = 0;
+
+                    //this.m_frmSqlite.uc_optimizer_sqlite_export1.ReferenceFormDialog = this.m_frmSqlite;
+                    //this.m_frmSqlite.uc_optimizer_sqlite_export1.Visible = true;
+                    //this.m_frmSqlite.MinimizeMainForm = true;
+                    //this.m_frmSqlite.ParentControl = frmMain.g_oFrmMain;
+                    //this.m_frmSqlite.Show();
                 }
                 else if (strText.Trim().ToUpper() == "JOIN DATA FROM MULTIPLE SCENARIOS")
                 {
@@ -1769,283 +1880,283 @@ namespace FIA_Biosum_Manager
                     }
 
                 }
-			}
-			else if (this.btnDB.Enabled==false) 
-			{   
-				switch (strText.Trim().ToUpper())
-				{
-					case "MANAGE TABLES":
+            }
+            else if (this.btnDB.Enabled == false)
+            {
+                switch (strText.Trim().ToUpper())
+                {
+                    case "MANAGE TABLES":
                         StartManageTablesDialog();
-						break;
+                        break;
 
                     case "MANAGE SQLITE TABLES":
                         StartManageSQLiteTablesDialog();
                         break;
 
                     case "PLOT DATA":
-						
-						
-						//check to see if the form has already been loaded
-						if (this.IsChildWindowVisible("Database: Plot Data") == false) 
-						{
-							
-							this.m_frmPlotData = new frmDialog(this);
-							this.m_frmPlotData.BackColor = System.Drawing.SystemColors.Control;
-							this.m_frmPlotData.Text = "Database: Plot Data";
-							this.m_frmPlotData.MinimizeBox = true;
-							this.m_frmPlotData.MaximizeBox=false;
-							this.m_frmPlotData.MdiParent = this;
-							this.m_frmPlotData.Initialize_Plot_Data_Add_Edit_User_Control();
-							
-							this.m_frmPlotData.Height=0;
-							this.m_frmPlotData.Width=0;
-							if (this.m_frmPlotData.uc_plot_add_edit1.Top + this.m_frmPlotData.uc_plot_add_edit1.Height > this.m_frmPlotData.ClientSize.Height + 2)
-							{
-								for (int x=1;;x++)
-								{
-									this.m_frmPlotData.Height = x;
-									if (this.m_frmPlotData.uc_plot_add_edit1.Top + 
-										this.m_frmPlotData.uc_plot_add_edit1.Height < 
-										this.m_frmPlotData.ClientSize.Height)
-									{
-										break;
-									}
-								}
-
-							}
-							if (this.m_frmPlotData.uc_plot_add_edit1.Left + this.m_frmPlotData.uc_plot_add_edit1.Width > this.m_frmPlotData.ClientSize.Width + 2)
-							{
-								for (int x=1;;x++)
-								{
-									this.m_frmPlotData.Width = x;
-									if (this.m_frmPlotData.uc_plot_add_edit1.Left + 
-										this.m_frmPlotData.uc_plot_add_edit1.Width < 
-										this.m_frmPlotData.ClientSize.Width)
-									{
-										break;
-									}
-								}
-
-							}
-							this.m_frmPlotData.MaximumSize = this.m_frmPlotData.Size;
-							
-							this.m_frmPlotData.uc_plot_add_edit1.Dock = System.Windows.Forms.DockStyle.Fill;
-							this.m_frmPlotData.uc_plot_add_edit1.Top = 0;
-							this.m_frmPlotData.uc_plot_add_edit1.Left=0;
-							
-							this.m_frmPlotData.uc_plot_add_edit1.Visible = true;
-							this.m_frmPlotData.DisposeOfFormWhenClosing=true;
-							this.m_frmPlotData.Show();
-							this.m_frmPlotData.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-
-                        
-						}
-						else
-						{
-							if (this.m_frmPlotData.WindowState == System.Windows.Forms.FormWindowState.Minimized)
-								this.m_frmPlotData.WindowState = System.Windows.Forms.FormWindowState.Normal;
-
-							this.m_frmPlotData.Focus();
-					
-						}
 
 
+                        //check to see if the form has already been loaded
+                        if (this.IsChildWindowVisible("Database: Plot Data") == false)
+                        {
 
-						break;
-					case "WOOD PROCESSING SITES":
+                            this.m_frmPlotData = new frmDialog(this);
+                            this.m_frmPlotData.BackColor = System.Drawing.SystemColors.Control;
+                            this.m_frmPlotData.Text = "Database: Plot Data";
+                            this.m_frmPlotData.MinimizeBox = true;
+                            this.m_frmPlotData.MaximizeBox = false;
+                            this.m_frmPlotData.MdiParent = this;
+                            this.m_frmPlotData.Initialize_Plot_Data_Add_Edit_User_Control();
+
+                            this.m_frmPlotData.Height = 0;
+                            this.m_frmPlotData.Width = 0;
+                            if (this.m_frmPlotData.uc_plot_add_edit1.Top + this.m_frmPlotData.uc_plot_add_edit1.Height > this.m_frmPlotData.ClientSize.Height + 2)
+                            {
+                                for (int x = 1; ; x++)
+                                {
+                                    this.m_frmPlotData.Height = x;
+                                    if (this.m_frmPlotData.uc_plot_add_edit1.Top +
+                                        this.m_frmPlotData.uc_plot_add_edit1.Height <
+                                        this.m_frmPlotData.ClientSize.Height)
+                                    {
+                                        break;
+                                    }
+                                }
+
+                            }
+                            if (this.m_frmPlotData.uc_plot_add_edit1.Left + this.m_frmPlotData.uc_plot_add_edit1.Width > this.m_frmPlotData.ClientSize.Width + 2)
+                            {
+                                for (int x = 1; ; x++)
+                                {
+                                    this.m_frmPlotData.Width = x;
+                                    if (this.m_frmPlotData.uc_plot_add_edit1.Left +
+                                        this.m_frmPlotData.uc_plot_add_edit1.Width <
+                                        this.m_frmPlotData.ClientSize.Width)
+                                    {
+                                        break;
+                                    }
+                                }
+
+                            }
+                            this.m_frmPlotData.MaximumSize = this.m_frmPlotData.Size;
+
+                            this.m_frmPlotData.uc_plot_add_edit1.Dock = System.Windows.Forms.DockStyle.Fill;
+                            this.m_frmPlotData.uc_plot_add_edit1.Top = 0;
+                            this.m_frmPlotData.uc_plot_add_edit1.Left = 0;
+
+                            this.m_frmPlotData.uc_plot_add_edit1.Visible = true;
+                            this.m_frmPlotData.DisposeOfFormWhenClosing = true;
+                            this.m_frmPlotData.Show();
+                            this.m_frmPlotData.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+
+
+                        }
+                        else
+                        {
+                            if (this.m_frmPlotData.WindowState == System.Windows.Forms.FormWindowState.Minimized)
+                                this.m_frmPlotData.WindowState = System.Windows.Forms.FormWindowState.Normal;
+
+                            this.m_frmPlotData.Focus();
+
+                        }
+
+
+
+                        break;
+                    case "WOOD PROCESSING SITES":
                         StartPSiteDialog(this);
-						break;
+                        break;
 
-					case "PROJECT DATA SOURCES":
-						//check to see if the form has already been loaded
-						if (this.IsChildWindowVisible("Database: Project Data Sources") == false) 
-						{
-							frmMain.g_sbpInfo.Text = "Loading Project Data Sources...Stand By";
-							
-							this.m_frmDataSource = new frmDialog(this);
-							this.m_frmDataSource.MaximizeBox = true;
-							this.m_frmDataSource.BackColor = System.Drawing.SystemColors.Control;
-							this.m_frmDataSource.Text = "Database: Project Data Sources";
-							this.m_frmDataSource.MdiParent = this;
-							FIA_Biosum_Manager.uc_datasource p_uc = new uc_datasource(this.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\project.mdb");
-							this.m_frmDataSource.Controls.Add(p_uc);
-							p_uc.Dock = System.Windows.Forms.DockStyle.Fill;
-							
-							p_uc.strProjectDirectory  = this.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+                    case "PROJECT DATA SOURCES":
+                        //check to see if the form has already been loaded
+                        if (this.IsChildWindowVisible("Database: Project Data Sources") == false)
+                        {
+                            frmMain.g_sbpInfo.Text = "Loading Project Data Sources...Stand By";
 
+                            this.m_frmDataSource = new frmDialog(this);
+                            this.m_frmDataSource.MaximizeBox = true;
+                            this.m_frmDataSource.BackColor = System.Drawing.SystemColors.Control;
+                            this.m_frmDataSource.Text = "Database: Project Data Sources";
+                            this.m_frmDataSource.MdiParent = this;
+                            FIA_Biosum_Manager.uc_datasource p_uc = new uc_datasource(this.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\project.mdb");
+                            this.m_frmDataSource.Controls.Add(p_uc);
+                            p_uc.Dock = System.Windows.Forms.DockStyle.Fill;
 
+                            p_uc.strProjectDirectory = this.frmProject.uc_project1.txtRootDirectory.Text.Trim();
 
 
-							this.m_frmDataSource.Height=0;
-							this.m_frmDataSource.Width=0;
-							if (p_uc.Top + p_uc.Height > this.m_frmDataSource.ClientSize.Height + 2)
-							{
-								for (int x=1;;x++)
-								{
-									this.m_frmDataSource.Height = x;
-									if (p_uc.Top + 
-										p_uc.Height < 
-										this.m_frmDataSource.ClientSize.Height)
-									{
-										break;
-									}
-								}
 
-							}
-							if (p_uc.Left + p_uc.Width > this.m_frmDataSource.ClientSize.Width + 2)
-							{
-								for (int x=1;;x++)
-								{
-									this.m_frmDataSource.Width = x;
-									if (p_uc.Left + 
-										p_uc.Width < 
-										this.m_frmDataSource.ClientSize.Width)
-									{
-										break;
-									}
-								}
 
-							}
-							
+                            this.m_frmDataSource.Height = 0;
+                            this.m_frmDataSource.Width = 0;
+                            if (p_uc.Top + p_uc.Height > this.m_frmDataSource.ClientSize.Height + 2)
+                            {
+                                for (int x = 1; ; x++)
+                                {
+                                    this.m_frmDataSource.Height = x;
+                                    if (p_uc.Top +
+                                        p_uc.Height <
+                                        this.m_frmDataSource.ClientSize.Height)
+                                    {
+                                        break;
+                                    }
+                                }
 
-							p_uc.populate_listview_grid();
-							p_uc.Dock = System.Windows.Forms.DockStyle.Fill;
-							this.m_frmDataSource.Left = 0;
-							this.m_frmDataSource.Top = 0;
-							this.m_frmDataSource.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
-							this.m_frmDataSource.DisposeOfFormWhenClosing = true;
-							frmMain.g_sbpInfo.Text = "Ready";
-							this.m_frmDataSource.Show();
+                            }
+                            if (p_uc.Left + p_uc.Width > this.m_frmDataSource.ClientSize.Width + 2)
+                            {
+                                for (int x = 1; ; x++)
+                                {
+                                    this.m_frmDataSource.Width = x;
+                                    if (p_uc.Left +
+                                        p_uc.Width <
+                                        this.m_frmDataSource.ClientSize.Width)
+                                    {
+                                        break;
+                                    }
+                                }
 
-						}
-						else
-						{
-							if (this.m_frmDataSource.WindowState == System.Windows.Forms.FormWindowState.Minimized)
-								this.m_frmDataSource.WindowState = System.Windows.Forms.FormWindowState.Normal;
+                            }
 
-							this.m_frmDataSource.Focus();
-					
-						}
-						break;
 
-					case "GENERATE TRAVEL TIMES":
-						FIA_Biosum_Travel_Times_Generator.generate_travel_times p_trvltm = new FIA_Biosum_Travel_Times_Generator.generate_travel_times(this);
-						p_trvltm.create_travel_times();
-						break;
+                            p_uc.populate_listview_grid();
+                            p_uc.Dock = System.Windows.Forms.DockStyle.Fill;
+                            this.m_frmDataSource.Left = 0;
+                            this.m_frmDataSource.Top = 0;
+                            this.m_frmDataSource.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
+                            this.m_frmDataSource.DisposeOfFormWhenClosing = true;
+                            frmMain.g_sbpInfo.Text = "Ready";
+                            this.m_frmDataSource.Show();
 
-				}
-			}	
-			else if (this.btnProcessor.Enabled==false)
-			{
-				switch (strText.Trim().ToUpper())
-				{
-					case "TREE SPECIES":
-						this.LoadProcessorTreeSpcForm(this,"Processor");
-						break;
+                        }
+                        else
+                        {
+                            if (this.m_frmDataSource.WindowState == System.Windows.Forms.FormWindowState.Minimized)
+                                this.m_frmDataSource.WindowState = System.Windows.Forms.FormWindowState.Normal;
 
-					case "START BIOSUM PROCESSOR":
+                            this.m_frmDataSource.Focus();
+
+                        }
+                        break;
+
+                    case "GENERATE TRAVEL TIMES":
+                        FIA_Biosum_Travel_Times_Generator.generate_travel_times p_trvltm = new FIA_Biosum_Travel_Times_Generator.generate_travel_times(this);
+                        p_trvltm.create_travel_times();
+                        break;
+
+                }
+            }
+            else if (this.btnProcessor.Enabled == false)
+            {
+                switch (strText.Trim().ToUpper())
+                {
+                    case "TREE SPECIES":
+                        this.LoadProcessorTreeSpcForm(this, "Processor");
+                        break;
+
+                    case "START BIOSUM PROCESSOR":
                         StartBiosumProcessorDialog();
-						break; 
-					default:
-						break;
-												
-				}
-			}
-			else if (this.btnFVS.Enabled==false)
-			{
-				switch (strText.Trim().ToUpper())
-				{
-					case "PLOT FVS VARIANTS":
+                        break;
+                    default:
+                        break;
+
+                }
+            }
+            else if (this.btnFVS.Enabled == false)
+            {
+                switch (strText.Trim().ToUpper())
+                {
+                    case "PLOT FVS VARIANTS":
                         StartPlotFVSVariantsDialog(this);
-						
-						break;
 
-					case "RX":
+                        break;
+
+                    case "RX":
                         StartRxDialog(this);
-						break;
-					case "RX PACKAGE":
+                        break;
+                    case "RX PACKAGE":
                         StartRxPackageDialog(this);
-						
-						break;
-					case "FVS INPUT":
+
+                        break;
+                    case "FVS INPUT":
                         StartFVSInputDataDialog();
-                        
 
-						break;
-					case "TREE SPECIES CONVERSION":
-                        
-						//check to see if the form has already been loaded
-						if (this.IsChildWindowVisible("FVS: Tree Species Conversion") == false) 
-						{
-                            this.ActivateStandByAnimation(this.WindowState,this.Left,this.Height,this.Width,this.Top);
-							this.m_frmFvsTreeSpcCvt = new frmDialog(this);
-							this.m_frmFvsTreeSpcCvt.MaximizeBox = true;
-							this.m_frmFvsTreeSpcCvt.BackColor = System.Drawing.SystemColors.Control;
-							this.m_frmFvsTreeSpcCvt.Text = "FVS: Tree Species Conversion";
-							FIA_Biosum_Manager.uc_fvs_tree_spc_conversion p_uc = new uc_fvs_tree_spc_conversion(this.frmProject.uc_project1.txtRootDirectory.Text.Trim());
-							if (p_uc.m_intError < 0) 
-							{
-								this.m_frmFvsTreeSpcCvt.Dispose();
-								return;
-							}
-							this.m_frmFvsTreeSpcCvt.Controls.Add(p_uc);
-							this.m_frmFvsTreeSpcCvt.TreeSpeciesConversionUserControl = p_uc;
-							this.m_frmFvsTreeSpcCvt.Height=0;
-							this.m_frmFvsTreeSpcCvt.Width=0;
-							if (p_uc.Top + p_uc.Height > this.m_frmFvsTreeSpcCvt.ClientSize.Height + 2)
-							{
-								for (int x=1;;x++)
-								{
-									this.m_frmFvsTreeSpcCvt.Height = x;
-									if (p_uc.Top + 
-										p_uc.Height < 
-										this.m_frmFvsTreeSpcCvt.ClientSize.Height)
-									{
-										break;
-									}
-								}
 
-							}
-							if (p_uc.Left + p_uc.Width > this.m_frmFvsTreeSpcCvt.ClientSize.Width + 2)
-							{
-								for (int x=1;;x++)
-								{
-									this.m_frmFvsTreeSpcCvt.Width = x;
-									if (p_uc.Left + 
-										p_uc.Width < 
-										this.m_frmFvsTreeSpcCvt.ClientSize.Width)
-									{
-										break;
-									}
-								}
+                        break;
+                    case "TREE SPECIES CONVERSION":
 
-							}
-							p_uc.Dock = System.Windows.Forms.DockStyle.Fill;
-							p_uc.loadvalues();
-							
+                        //check to see if the form has already been loaded
+                        if (this.IsChildWindowVisible("FVS: Tree Species Conversion") == false)
+                        {
+                            this.ActivateStandByAnimation(this.WindowState, this.Left, this.Height, this.Width, this.Top);
+                            this.m_frmFvsTreeSpcCvt = new frmDialog(this);
+                            this.m_frmFvsTreeSpcCvt.MaximizeBox = true;
+                            this.m_frmFvsTreeSpcCvt.BackColor = System.Drawing.SystemColors.Control;
+                            this.m_frmFvsTreeSpcCvt.Text = "FVS: Tree Species Conversion";
+                            FIA_Biosum_Manager.uc_fvs_tree_spc_conversion p_uc = new uc_fvs_tree_spc_conversion(this.frmProject.uc_project1.txtRootDirectory.Text.Trim());
+                            if (p_uc.m_intError < 0)
+                            {
+                                this.m_frmFvsTreeSpcCvt.Dispose();
+                                return;
+                            }
+                            this.m_frmFvsTreeSpcCvt.Controls.Add(p_uc);
+                            this.m_frmFvsTreeSpcCvt.TreeSpeciesConversionUserControl = p_uc;
+                            this.m_frmFvsTreeSpcCvt.Height = 0;
+                            this.m_frmFvsTreeSpcCvt.Width = 0;
+                            if (p_uc.Top + p_uc.Height > this.m_frmFvsTreeSpcCvt.ClientSize.Height + 2)
+                            {
+                                for (int x = 1; ; x++)
+                                {
+                                    this.m_frmFvsTreeSpcCvt.Height = x;
+                                    if (p_uc.Top +
+                                        p_uc.Height <
+                                        this.m_frmFvsTreeSpcCvt.ClientSize.Height)
+                                    {
+                                        break;
+                                    }
+                                }
 
-							this.m_frmFvsTreeSpcCvt.Left = 0;
-							this.m_frmFvsTreeSpcCvt.Top = 0;
-							this.m_frmFvsTreeSpcCvt.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
-							this.m_frmFvsTreeSpcCvt.DisposeOfFormWhenClosing = true;
-							this.m_frmFvsTreeSpcCvt.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+                            }
+                            if (p_uc.Left + p_uc.Width > this.m_frmFvsTreeSpcCvt.ClientSize.Width + 2)
+                            {
+                                for (int x = 1; ; x++)
+                                {
+                                    this.m_frmFvsTreeSpcCvt.Width = x;
+                                    if (p_uc.Left +
+                                        p_uc.Width <
+                                        this.m_frmFvsTreeSpcCvt.ClientSize.Width)
+                                    {
+                                        break;
+                                    }
+                                }
+
+                            }
+                            p_uc.Dock = System.Windows.Forms.DockStyle.Fill;
+                            p_uc.loadvalues();
+
+
+                            this.m_frmFvsTreeSpcCvt.Left = 0;
+                            this.m_frmFvsTreeSpcCvt.Top = 0;
+                            this.m_frmFvsTreeSpcCvt.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
+                            this.m_frmFvsTreeSpcCvt.DisposeOfFormWhenClosing = true;
+                            this.m_frmFvsTreeSpcCvt.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
                             this.DeactivateStandByAnimation();
-							this.m_frmFvsTreeSpcCvt.ShowDialog();
+                            this.m_frmFvsTreeSpcCvt.ShowDialog();
 
-						}
-						else
-						{
-							if (this.m_frmFvsTreeSpcCvt.WindowState == System.Windows.Forms.FormWindowState.Minimized)
-								this.m_frmFvsTreeSpcCvt.WindowState = System.Windows.Forms.FormWindowState.Normal;
+                        }
+                        else
+                        {
+                            if (this.m_frmFvsTreeSpcCvt.WindowState == System.Windows.Forms.FormWindowState.Minimized)
+                                this.m_frmFvsTreeSpcCvt.WindowState = System.Windows.Forms.FormWindowState.Normal;
 
-							this.m_frmFvsTreeSpcCvt.Focus();
-					
-						}
+                            this.m_frmFvsTreeSpcCvt.Focus();
 
-						break;
-					case "TREE SPECIES":
-						this.LoadProcessorTreeSpcForm(this,"FVS");
-						break;
+                        }
+
+                        break;
+                    case "TREE SPECIES":
+                        this.LoadProcessorTreeSpcForm(this, "FVS");
+                        break;
                     case "CREATE FVSOUT MDBS":
                         // Call StartFVSCreateMdbsDialog() method here
                         StartFVSCreateMdbsDialog();
@@ -2053,14 +2164,14 @@ namespace FIA_Biosum_Manager
                     case "FVS OUTPUT DATA":
                         StartFVSOutputDataDialog();
 
-						break;
+                        break;
 
-					default:
-						break;
-				}
+                    default:
+                        break;
+                }
 
-			}
-		}
+            }
+        }
         public void StartPlotFVSVariantsDialog(System.Windows.Forms.Control p_oParentControl)
         {
             //check to see if the form has already been loaded
@@ -3614,12 +3725,12 @@ namespace FIA_Biosum_Manager
             this.m_btnOptimizerScenario.Top = this.m_btnOptimizerLoadGisData.Top + this.m_btnOptimizerLoadGisData.Height + 5;
             this.m_btnOptimizerScenario.Text = "Optimization Scenario";
             //Generate SQLITE database
-            this.m_btnOptimizerSqlite = new btnMainForm(this);
-            this.m_pnlOptimizer.Controls.Add(this.m_btnOptimizerSqlite);
-            this.m_btnOptimizerSqlite.Size = this.btnMain1.Size;
-            this.m_btnOptimizerSqlite.Left = this.m_btnOptimizerUserVariables.Left;
-            this.m_btnOptimizerSqlite.Top = this.m_btnOptimizerScenario.Top + this.m_btnOptimizerScenario.Height + 5;
-            this.m_btnOptimizerSqlite.Text = "Export to SQLITE";
+            //this.m_btnOptimizerSqlite = new btnMainForm(this);
+            //this.m_pnlOptimizer.Controls.Add(this.m_btnOptimizerSqlite);
+            //this.m_btnOptimizerSqlite.Size = this.btnMain1.Size;
+            //this.m_btnOptimizerSqlite.Left = this.m_btnOptimizerUserVariables.Left;
+            //this.m_btnOptimizerSqlite.Top = this.m_btnOptimizerScenario.Top + this.m_btnOptimizerScenario.Height + 5;
+            //this.m_btnOptimizerSqlite.Text = "Upgrade for v5.11.0";
 			//merge scenarios
 			this.m_btnCoreMerge = new btnMainForm(this);
 			this.m_pnlOptimizer.Controls.Add(this.m_btnCoreMerge);
@@ -3672,19 +3783,20 @@ namespace FIA_Biosum_Manager
 			this.m_btnDbPlotData.Text = "Plot Data";
 
 			//processing sites
-			this.m_btnDbPSite = new btnMainForm(this);
-			this.m_pnlDb.Controls.Add(this.m_btnDbPSite);
-			this.m_btnDbPSite.Size = this.btnMain1.Size;
-			this.m_btnDbPSite.Left = this.m_btnDbPlotData.Left;
-			this.m_btnDbPSite.Top = this.m_btnDbPlotData.Top + this.m_btnDbPlotData.Height + 5;
-			this.m_btnDbPSite.Text = "Wood Processing Sites";
+            // Hide button in v5.11.0. No longer needed
+			//this.m_btnDbPSite = new btnMainForm(this);
+			//this.m_pnlDb.Controls.Add(this.m_btnDbPSite);
+			//this.m_btnDbPSite.Size = this.btnMain1.Size;
+			//this.m_btnDbPSite.Left = this.m_btnDbPlotData.Left;
+			//this.m_btnDbPSite.Top = this.m_btnDbPlotData.Top + this.m_btnDbPlotData.Height + 5;
+			//this.m_btnDbPSite.Text = "Wood Processing Sites";
 
 			//project data sources
 			this.m_btnDbDataSource = new btnMainForm(this);
 			this.m_pnlDb.Controls.Add(this.m_btnDbDataSource);
 			this.m_btnDbDataSource.Size = this.btnMain1.Size;
 			this.m_btnDbDataSource.Left = this.m_btnDbPlotData.Left;
-			this.m_btnDbDataSource.Top = this.m_btnDbPSite.Top + this.m_btnDbPSite.Height + 5;
+			this.m_btnDbDataSource.Top = this.m_btnDbPlotData.Top + this.m_btnDbPlotData.Height + 5;
 			this.m_btnDbDataSource.Text = "Project Data Sources";
 			this.m_btnDbDataSource.Enabled=true;
 			//table management
@@ -3775,23 +3887,24 @@ namespace FIA_Biosum_Manager
 			this.m_btnFvsInput.Text = "FVS Input";
 			this.m_btnFvsInput.strToolTip = "Step 5 - Create FVS Input";
 
+            // No longer needed as of v5.11.0
             //Convert SQLite to MS Access FVSOUT databases
-            this.m_btnCreateFvsOutputMdbs = new btnMainForm(this);
-            this.m_pnlFvs.Controls.Add(this.m_btnCreateFvsOutputMdbs);
-            this.m_btnCreateFvsOutputMdbs.Size = this.btnMain1.Size;
-            this.m_btnCreateFvsOutputMdbs.Left = this.m_btnFvsVariant.Left;
-            this.m_btnCreateFvsOutputMdbs.Top = this.m_btnFvsInput.Top + this.m_btnFvsInput.Height + 5;
-            this.m_btnCreateFvsOutputMdbs.Text = "Create FVSOUT MDBs";
-            this.m_btnCreateFvsOutputMdbs.strToolTip = "Step 5.5 - Populate FVSOUT MDBs with SQLite FVSOUT.DB data";
+            //this.m_btnCreateFvsOutputMdbs = new btnMainForm(this);
+            //this.m_pnlFvs.Controls.Add(this.m_btnCreateFvsOutputMdbs);
+            //this.m_btnCreateFvsOutputMdbs.Size = this.btnMain1.Size;
+            //this.m_btnCreateFvsOutputMdbs.Left = this.m_btnFvsVariant.Left;
+            //this.m_btnCreateFvsOutputMdbs.Top = this.m_btnFvsInput.Top + this.m_btnFvsInput.Height + 5;
+            //this.m_btnCreateFvsOutputMdbs.Text = "Create FVSOUT MDBs";
+            //this.m_btnCreateFvsOutputMdbs.strToolTip = "Step 5.5 - Populate FVSOUT MDBs with SQLite FVSOUT.DB data";
 
             //fvs output button
             this.m_btnFvsOutput = new btnMainForm(this);
 			this.m_pnlFvs.Controls.Add(this.m_btnFvsOutput);
 			this.m_btnFvsOutput.Size = this.btnMain1.Size;
 			this.m_btnFvsOutput.Left = this.m_btnFvsVariant.Left;
-			this.m_btnFvsOutput.Top = this.m_btnCreateFvsOutputMdbs.Top + this.m_btnCreateFvsOutputMdbs.Height + 5;
-			this.m_btnFvsOutput.Text = "FVS Output Data";
-			this.m_btnFvsOutput.strToolTip = "Step 6 - Update FFE Table And Processor Tree Table With FVS Output data";
+			this.m_btnFvsOutput.Top = this.m_btnFvsInput.Top + this.m_btnFvsInput.Height + 5;
+            this.m_btnFvsOutput.Text = "FVS Output Data";
+			this.m_btnFvsOutput.strToolTip = "Step 6 - Update FVS PRE/POST And Processor Tree Tables With FVS Output data";
 
 
 			//CURRENT PANEL
