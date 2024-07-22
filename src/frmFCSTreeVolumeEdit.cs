@@ -159,10 +159,9 @@ namespace FIA_Biosum_Manager
         private ComboBox cboDiaHtCd;
         private Label label22;
         private string m_strError;
+        private SQLite.ADO.DataMgr m_oDataMgr = new SQLite.ADO.DataMgr();
 
-   
-
-    public frmFCSTreeVolumeEdit()
+        public frmFCSTreeVolumeEdit()
     {
         utils.FS_NETWORK = utils.FS_NETWORK_STATUS.Available;
         this.SetStyle(ControlStyles.OptimizedDoubleBuffer |
@@ -195,15 +194,25 @@ namespace FIA_Biosum_Manager
           {
             m_odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName);
           }
-          m_odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName,
-               frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-               Tables.FVS.DefaultFVSTreeListDbFile);
-          m_strTempDBFile = m_oQueries.m_strTempDbFile;
+                string strFvsTreeListDb = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}{Tables.FVS.DefaultFVSTreeListDbFile}";
+                m_strTempDBFile = m_oQueries.m_strTempDbFile;
+                if (File.Exists(strFvsTreeListDb))
+                {
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strFvsTreeListDb)))
+                    {
+                        conn.Open();
+                        if (m_oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSCutTreeTableName))
+                        {
+                            m_odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName,
+                                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                                Tables.FVS.DefaultFVSTreeListDbFile);
+                            oDao.CreateSQLiteTableLink(m_strTempDBFile, Tables.FVS.DefaultFVSCutTreeTableName, Tables.FVS.DefaultFVSCutTreeTableName,
+                                ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                                Tables.FVS.DefaultFVSTreeListDbFile);
+                        }
+                    }
+                }
           oDao.CreateTableLink(m_strTempDBFile, "treesample", frmMain.g_oEnv.strAppDir + "\\db\\treesample.accdb", "treesample");
-          oDao.CreateSQLiteTableLink(m_strTempDBFile, Tables.FVS.DefaultFVSCutTreeTableName, Tables.FVS.DefaultFVSCutTreeTableName,
-            ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-            Tables.FVS.DefaultFVSTreeListDbFile);
-
           oDao.m_DaoWorkspace.Close();
 
           //
@@ -1412,7 +1421,7 @@ namespace FIA_Biosum_Manager
                 {
                     Tuple.Create("STATECD", "CINT(MID(BIOSUM_COND_ID,6,2)) AS STATECD"),
                     Tuple.Create("COUNTYCD", "CINT(MID(BIOSUM_COND_ID,12,3)) AS COUNTYCD"),
-                    Tuple.Create("PLOT", "CINT(MID(BIOSUM_COND_ID,16,5)) AS PLOT"),
+                    Tuple.Create("PLOT", "CINT(MID(BIOSUM_COND_ID, 16, 5)) AS PLOT"),
                     Tuple.Create("INVYR", "INVYR"),
                     Tuple.Create("VOL_LOC_GRP", "VOL_LOC_GRP"),
                     Tuple.Create("TREE", "ID AS TREE"),
