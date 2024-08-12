@@ -953,6 +953,7 @@ namespace FIA_Biosum_Manager
             string strFvsTreeDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + 
                 Tables.FVS.DefaultFVSTreeListDbFile;
             string dbConn = dataMgr.GetConnectionString(strFvsTreeDb);
+            this.m_intError = 0;    // Reset error value
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
             {
                 conn.Open();
