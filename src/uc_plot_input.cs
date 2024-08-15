@@ -3498,7 +3498,7 @@ namespace FIA_Biosum_Manager
                             Tuple.Create("HT", "HT"),
                             Tuple.Create("HTDMP", "HTDMP"),
                             Tuple.Create("INVYR", "INVYR"),
-                            Tuple.Create("PLOT", "CINT(MID(BIOSUM_COND_ID, 16, 5)) AS PLOT"),
+                            Tuple.Create("PLOT", "CLNG(MID(BIOSUM_COND_ID, 16, 6)) AS PLOT"),
                             Tuple.Create("PLT_CN", "MID(BIOSUM_COND_ID, 1, LEN(BIOSUM_COND_ID)-1) AS PLT_CN"),
                             // ("PRECIPITATION", "PRECIPITATION"), //plot table
                             Tuple.Create("ROUGHCULL", "ROUGHCULL"),

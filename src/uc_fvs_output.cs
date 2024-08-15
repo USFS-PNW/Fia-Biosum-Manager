@@ -9588,8 +9588,8 @@ namespace FIA_Biosum_Manager
 
                         if (lngTreeRecords < 1)
                         {
-                            DialogResult result = MessageBox.Show("!!Warning!!\r\n-----------\r\nCut Tree Table for  " + strVariant + " " + strRxPackage + " " +
-                                " Does Not Exist. Continue Auditing ?(Y/N)",
+                            DialogResult result = MessageBox.Show("!!Warning!!\r\n-----------\r\nNo trees in FVS_CUTTREE table for " + strVariant + strRxPackage + ". " +
+                                "Continue Auditing? (Y/N)",
                                 "FIA BioSum", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                             if (result == DialogResult.No)
                                 return;

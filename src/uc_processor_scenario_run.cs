@@ -491,7 +491,6 @@ namespace FIA_Biosum_Manager
                 // additional_kcp_cpa is linked later after we update the schema
             //}
 
-            // @ToDo: Removed DAO link to PRE_FVS_SUMMARY table
             // Check PRE_FVS_COMPUTE table
             // Note: For the remainder of processing, the BioSum .accdb is used to access this table
             string strFvsOutDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile;
@@ -717,6 +716,12 @@ namespace FIA_Biosum_Manager
                             // Reset strVariant so it fails the test to be added to the list
                             strVariant = "";
                         }
+                    }
+                    else
+                    {
+                        // Reset strVariant so it fails the test to be added to the list
+                        // This variant package has no records in FVS_CutTree and isn't using FVS_Compute to indicate treatment activity
+                        strVariant = "";
                     }
                         if (!String.IsNullOrEmpty(strVariant))
                     {
