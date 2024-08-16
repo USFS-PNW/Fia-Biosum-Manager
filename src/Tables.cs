@@ -4399,6 +4399,7 @@ namespace FIA_Biosum_Manager
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "PSITE_ID INTEGER," +
+                    "PSITE_CN CHAR(12)," +
                     "NAME CHAR(100)," +
                     "TRANCD INTEGER," +
                     "TRANCD_DEF CHAR(20)," +

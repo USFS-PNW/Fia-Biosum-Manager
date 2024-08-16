@@ -1370,6 +1370,9 @@ namespace FIA_Biosum_Manager
 										case 3:
 											this.m_Combo.Text = "Both - Logs And Chips";
 											break;
+										case 4:
+											this.m_Combo.Text = "Other - Nongeneric Wood Facility with Potential";
+											break;
 									}
 
 								}
@@ -1505,6 +1508,10 @@ namespace FIA_Biosum_Manager
 							case "Both - Logs And Chips":
 								strBioCd = "3";
 								strBioCdDef = "Both";
+								break;
+							case "Other - Nongeneric Wood Facility with Potential":
+								strBioCd = "4";
+								strBioCdDef = "Other";
 								break;
 						}
 					}
