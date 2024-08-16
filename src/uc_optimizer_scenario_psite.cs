@@ -955,6 +955,10 @@ namespace FIA_Biosum_Manager
                     {
 						strBioCd = "3";
                     }
+					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Other - Nongeneric Wood Facility with Potential")
+                    {
+						strBioCd = "4";
+                    }
 					else
                     {
 						strBioCd = "9";
