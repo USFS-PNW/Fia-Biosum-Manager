@@ -144,16 +144,20 @@ namespace FIA_Biosum_Manager
                             ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).m_strBioCdDescArray[
                                 Convert.ToInt32( ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).BiomassCode) - 1, 1];
 						if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).BiomassCode == "2")
-                        {
+						{
 							lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Chips - Chips Only";
 
 						}
 						else if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).BiomassCode == "3")
-                        {
+						{
 							lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Both - Logs And Chips";
 						}
-                        else
+                        else if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).BiomassCode == "4")
                         {
+                            lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Other - Nongeneric Wood Facility with Potential";
+                        }
+                        else
+						{
 							lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Merchantable - Logs Only";
 						}
                         break;
@@ -659,22 +663,27 @@ namespace FIA_Biosum_Manager
 							{
 
 								byteTranCd = Convert.ToByte(p_dataMgr.m_DataReader["biocd"]);
-								if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 1)
-								{
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Merchantable - Logs Only");
-									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
-
-								}
-								else if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 2)
+								if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 2)
 								{
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Chips - Chips Only");
 									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 								}
-								else
+								else if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 3)
 								{
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Both - Logs And Chips");
+									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+								}
+								else if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 4)
+                                {
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Other - Nongeneric Wood Facility with Potential");
+									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+								}
+								else
+								{
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Merchantable - Logs Only");
 									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 								}
