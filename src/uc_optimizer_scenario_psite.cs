@@ -44,6 +44,8 @@ namespace FIA_Biosum_Manager
 		const int COLUMN_PSITEEXIST=3;
 		const int COLUMN_PSITEROADRAIL=4;
 		const int COLUMN_PSITEBIOPROCESSTYPE=5;
+		const int COLUMN_PSITESTATE=6;
+		const int COLUMN_PSITECOUNTY=7;
 
 
 		public uc_optimizer_scenario_psite()
@@ -152,10 +154,10 @@ namespace FIA_Biosum_Manager
 						{
 							lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Both - Logs And Chips";
 						}
-                        else if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).BiomassCode == "4")
-                        {
-                            lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Other - Nongeneric Wood Facility with Potential";
-                        }
+                        //else if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).BiomassCode == "4")
+                        //{
+                        //    lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Other - Nongeneric Wood Facility with Potential";
+                        //}
                         else
 						{
 							lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Merchantable - Logs Only";
@@ -500,6 +502,8 @@ namespace FIA_Biosum_Manager
 			this.lstPSites.Columns.Add("Site Exist", 65, HorizontalAlignment.Left);
 			this.lstPSites.Columns.Add("Site Type", 300, HorizontalAlignment.Left);
 			this.lstPSites.Columns.Add("Biomass Processing Type", 225, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("State", 60, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("County", 200, HorizontalAlignment.Left);
 
 			this.lstPSites.Columns[COLUMN_CHECKBOX].Width = -2;
 
@@ -546,7 +550,7 @@ namespace FIA_Biosum_Manager
 					return;
 				}
 
-				p_dataMgr.m_strSQL = "SELECT DISTINCT p.psite_id,p.name,p.trancd,p.trancd_def,p.biocd,p.biocd_def,p.exists_yn " +
+				p_dataMgr.m_strSQL = "SELECT DISTINCT p.psite_id,p.name,p.trancd,p.trancd_def,p.biocd,p.biocd_def,p.exists_yn,p.state,p.county " +
 							 "FROM " + m_strPSiteTable + " AS p WHERE EXISTS (SELECT DISTINCT(t.psite_id) " +
 																		  "FROM " + this.m_strTravelTimeTable + " AS t " +
 																		  "WHERE t.psite_id=p.psite_id)";
@@ -675,12 +679,12 @@ namespace FIA_Biosum_Manager
 									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 								}
-								else if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 4)
-                                {
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Other - Nongeneric Wood Facility with Potential");
-									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
-								}
+								//else if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 4)
+        //                        {
+								//	this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Other - Nongeneric Wood Facility with Potential");
+								//	intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+								//	this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+								//}
 								else
 								{
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Merchantable - Logs Only");
@@ -699,6 +703,33 @@ namespace FIA_Biosum_Manager
 							this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
 								COLUMN_PSITEBIOPROCESSTYPE,
 								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITEBIOPROCESSTYPE], false);
+
+							//state
+							if (p_dataMgr.m_DataReader["state"] != System.DBNull.Value)
+							{
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(p_dataMgr.m_DataReader["state"].ToString());
+							}
+							else
+							{
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(" ");
+							}
+							this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
+								COLUMN_PSITESTATE,
+								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITESTATE], false);
+
+							//county
+							if (p_dataMgr.m_DataReader["county"] != System.DBNull.Value)
+							{
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(p_dataMgr.m_DataReader["county"].ToString());
+							}
+							else
+							{
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(" ");
+							}
+							this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
+								COLUMN_PSITECOUNTY,
+								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITECOUNTY], false);
+
 							x++;
 						}
 					}
@@ -873,6 +904,8 @@ namespace FIA_Biosum_Manager
 			string strName;
 			string strScenarioId;
 			string strPSiteId;
+			string strState;
+			string strCounty;
 			int x;
 
 			DataMgr oDataMgr = new DataMgr();
@@ -911,14 +944,18 @@ namespace FIA_Biosum_Manager
 					strName = "";
 					strScenarioId = "";
 					strPSiteId = "";
+					strState = "";
+					strCounty = "";
 
-					oDataMgr.m_strSQL = "INSERT INTO scenario_psites (scenario_id,psite_id,name,trancd,biocd,selected_yn)" +
+					oDataMgr.m_strSQL = "INSERT INTO scenario_psites (scenario_id,psite_id,name,trancd,biocd,selected_yn,state,county)" +
 								   " VALUES ";
 
 					strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim();
 					strPSiteId = lstPSites.Items[x].SubItems[COLUMN_PSITEID].Text.Trim();
 					strName = lstPSites.Items[x].SubItems[COLUMN_PSITENAME].Text.Trim();
 					strName = oDataMgr.FixString(strName.Trim(), "'", "''");
+					strState = lstPSites.Items[x].SubItems[COLUMN_PSITESTATE].Text.Trim();
+					strCounty = lstPSites.Items[x].SubItems[COLUMN_PSITECOUNTY].Text.Trim();
 					if (lstPSites.Items[x].Checked == true)
 					{
 						strSelected = "Y";
@@ -955,10 +992,10 @@ namespace FIA_Biosum_Manager
                     {
 						strBioCd = "3";
                     }
-					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Other - Nongeneric Wood Facility with Potential")
-                    {
-						strBioCd = "4";
-                    }
+					//else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Other - Nongeneric Wood Facility with Potential")
+     //               {
+					//	strBioCd = "4";
+     //               }
 					else
                     {
 						strBioCd = "9";
@@ -968,7 +1005,9 @@ namespace FIA_Biosum_Manager
 														   strName + "'," +
 														   strTranCd + "," +
 														   strBioCd + ",'" +
-														   strSelected + "')";
+														   strSelected + "','" +
+														   strState + "','" +
+														   strCounty + "')";
 					oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 					if (oDataMgr.m_intError != 0) break;
 				}

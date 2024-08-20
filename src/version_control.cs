@@ -175,7 +175,7 @@ namespace FIA_Biosum_Manager
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "version_control.PerformVersionCheck: Check m_strProjectVersionArray\r\n");
-            
+
             try
             {
                 if (bProjectVersionArrayUsed)
@@ -7228,10 +7228,91 @@ namespace FIA_Biosum_Manager
             }
         }
 
+        public void UpdateDatasources_5_11_1()
+        {
+            DataMgr oDataMgr = new DataMgr();
+            Datasource oProjectDs = new Datasource();
+
+            // Find path to existing tables
+            oProjectDs.m_strDataSourceMDBFile = this.ReferenceProjectDirectory + "\\db\\project.mdb";
+            oProjectDs.m_strDataSourceTableName = "datasource";
+            oProjectDs.m_strScenarioId = "";
+            oProjectDs.LoadTableColumnNamesAndDataTypes = false;
+            oProjectDs.LoadTableRecordCount = false;
+            oProjectDs.populate_datasource_array();
+
+            // gis_travel_times.processing_site
+            int intPSitesTable = oProjectDs.getTableNameRow(Datasource.TableTypes.ProcessingSites);
+            string strDirectoryPath = oProjectDs.m_strDataSource[intPSitesTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
+            string strFileName = oProjectDs.m_strDataSource[intPSitesTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            string strTableName = oProjectDs.m_strDataSource[intPSitesTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
+            
+            if (oProjectDs.DataSourceTableExist(intPSitesTable))
+            {
+                string strGisConn = oDataMgr.GetConnectionString(strDirectoryPath + "\\" + strFileName);
+                using (System.Data.SQLite.SQLiteConnection gisConn = new System.Data.SQLite.SQLiteConnection(strGisConn))
+                {
+                    gisConn.Open();
+
+                    if (!oDataMgr.FieldExist(gisConn, "SELECT * FROM " + strTableName, "PSITE_CN"))
+                    {
+                        string strFieldNameList = "";
+                        string strDataTypeList = "";
+
+                        oDataMgr.getFieldNamesAndDataTypes(gisConn, "SELECT * FROM " + strTableName, ref strFieldNameList, ref strDataTypeList);
+                        string[] arrFields = strFieldNameList.Split(',');
+                        string[] arrDataTypes = strDataTypeList.Split(',');
+
+                        string strSQL = "CREATE TABLE psitetemp (";
+                        for (int i = 0; i < arrFields.Length; i++)
+                        {
+                            strSQL += arrFields[i] + " " + utils.DataTypeConvert(arrDataTypes[i].ToUpper(), true) + ",";
+                        }
+                        strSQL += "PSITE_CN CHAR(12))";
+
+                        oDataMgr.SqlNonQuery(gisConn, strSQL);
+
+                        strSQL = "INSERT INTO psitetemp (" + strFieldNameList + ") SELECT * FROM " + strTableName;
+                        oDataMgr.SqlNonQuery(gisConn, strSQL);
+
+                        oDataMgr.SqlNonQuery(gisConn, "DROP TABLE " + strTableName);
+                        oDataMgr.SqlNonQuery(gisConn, "ALTER TABLE psitetemp RENAME TO " + strTableName);
+                    }
+                }
+            }
+
+            // scenario_optimizer_rule_definitions.scenario_psites
+            string strOpConn = oDataMgr.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile);
+            using (System.Data.SQLite.SQLiteConnection opConn = new System.Data.SQLite.SQLiteConnection(strOpConn))
+            {
+                opConn.Open();
+
+                string strPsitesTable = Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName;
+
+                if (!oDataMgr.FieldExist(opConn, "SELECT * FROM " + strPsitesTable, "PSITE_CN"))
+                {
+                    frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioPSitesTable(oDataMgr, opConn, "psitetemp");
+
+                    string strFieldNameList = oDataMgr.getFieldNames(opConn, "SELECT * FROM " + strPsitesTable);
+
+                    string strSQL = "INSERT INTO psitetemp (" + strFieldNameList + ") SELECT * FROM " + strPsitesTable;
+                    oDataMgr.SqlNonQuery(opConn, strSQL);
+
+                    oDataMgr.SqlNonQuery(opConn, "DROP TABLE " + strPsitesTable);
+                    oDataMgr.SqlNonQuery(opConn, "ALTER TABLE psitetemp RENAME TO " + strPsitesTable);
+                }
+            }
+
+            oDataMgr = null;
+            oProjectDs = null;
+        }
+            
+   
+
             // Method to compare two versions. 
             // Returns 1 if v2 is smaller, -1 
             // if v1 is smaller, 0 if equal 
-            public int VersionCompare(string v1, string v2)
+        public int VersionCompare(string v1, string v2)
         {
             // vnum stores each numeric 
             // part of version 

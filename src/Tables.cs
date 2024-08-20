@@ -2463,10 +2463,13 @@ namespace FIA_Biosum_Manager
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "scenario_id CHAR(20), " +
                     "psite_id INTEGER, " +
+                    "psite_cn CHAR(12)," +
                     "name CHAR(100), " +
                     "trancd CHAR(1), " +
                     "biocd CHAR(1), " +
                     "selected_yn CHAR(1), " +
+                    "state CHAR(2)," +
+                    "county CHAR(40)," +
                     "PRIMARY KEY (scenario_id, psite_id))";
             }
             public void CreateScenarioLastTieBreakRankTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
