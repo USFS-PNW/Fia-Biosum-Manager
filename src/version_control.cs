@@ -7256,27 +7256,8 @@ namespace FIA_Biosum_Manager
 
                     if (!oDataMgr.FieldExist(gisConn, "SELECT * FROM " + strTableName, "PSITE_CN"))
                     {
-                        string strFieldNameList = "";
-                        string strDataTypeList = "";
-
-                        oDataMgr.getFieldNamesAndDataTypes(gisConn, "SELECT * FROM " + strTableName, ref strFieldNameList, ref strDataTypeList);
-                        string[] arrFields = strFieldNameList.Split(',');
-                        string[] arrDataTypes = strDataTypeList.Split(',');
-
-                        string strSQL = "CREATE TABLE psitetemp (";
-                        for (int i = 0; i < arrFields.Length; i++)
-                        {
-                            strSQL += arrFields[i] + " " + utils.DataTypeConvert(arrDataTypes[i].ToUpper(), true) + ",";
-                        }
-                        strSQL += "PSITE_CN CHAR(12))";
-
+                        string strSQL = "ALTER TABLE " + strTableName + " ADD COLUMN PSITE_CN CHAR(12)";
                         oDataMgr.SqlNonQuery(gisConn, strSQL);
-
-                        strSQL = "INSERT INTO psitetemp (" + strFieldNameList + ") SELECT * FROM " + strTableName;
-                        oDataMgr.SqlNonQuery(gisConn, strSQL);
-
-                        oDataMgr.SqlNonQuery(gisConn, "DROP TABLE " + strTableName);
-                        oDataMgr.SqlNonQuery(gisConn, "ALTER TABLE psitetemp RENAME TO " + strTableName);
                     }
                 }
             }
@@ -7291,15 +7272,18 @@ namespace FIA_Biosum_Manager
 
                 if (!oDataMgr.FieldExist(opConn, "SELECT * FROM " + strPsitesTable, "PSITE_CN"))
                 {
-                    frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioPSitesTable(oDataMgr, opConn, "psitetemp");
-
-                    string strFieldNameList = oDataMgr.getFieldNames(opConn, "SELECT * FROM " + strPsitesTable);
-
-                    string strSQL = "INSERT INTO psitetemp (" + strFieldNameList + ") SELECT * FROM " + strPsitesTable;
+                    string strSQL = "ALTER TABLE " + strPsitesTable + " ADD COLUMN PSITE_CN CHAR(12)";
                     oDataMgr.SqlNonQuery(opConn, strSQL);
-
-                    oDataMgr.SqlNonQuery(opConn, "DROP TABLE " + strPsitesTable);
-                    oDataMgr.SqlNonQuery(opConn, "ALTER TABLE psitetemp RENAME TO " + strPsitesTable);
+                }
+                if (!oDataMgr.FieldExist(opConn, "SELECT * FROM " + strPsitesTable, "STATE"))
+                {
+                    string strSQL = "ALTER TABLE " + strPsitesTable + " ADD COLUMN STATE CHAR(2)";
+                    oDataMgr.SqlNonQuery(opConn, strSQL);
+                }
+                if (!oDataMgr.FieldExist(opConn, "SELECT * FROM " + strPsitesTable, "COUNTY"))
+                {
+                    string strSQL = "ALTER TABLE " + strPsitesTable + " ADD COLUMN COUNTY CHAR(40)";
+                    oDataMgr.SqlNonQuery(opConn, strSQL);
                 }
             }
 
