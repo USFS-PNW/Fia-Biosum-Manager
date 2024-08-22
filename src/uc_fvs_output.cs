@@ -5241,7 +5241,8 @@ namespace FIA_Biosum_Manager
                     m_dao.CreateSQLiteTableLink(oConn.DataSource, strFvsTreeTable,
                         strFvsTreeTable, ODBCMgr.DSN_KEYS.FvsOutTemporaryDsnName, strTreeTempDbFile, true);
                     // Sleep to ensure table link is complete
-                    Thread.Sleep(5000);
+                    // 22-AUG-2024: Changed sleep duration from 5000 to 8000 to avoid ado error
+                    Thread.Sleep(8000);
 
                     //join plot, cond, and tree table to oracle input tree volumes table.
                     //NOTE: this query handles existing FIADB trees that have been grown forward.
