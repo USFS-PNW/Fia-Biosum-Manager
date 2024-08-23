@@ -6328,8 +6328,6 @@ namespace FIA_Biosum_Manager
 
             static public string DefaultTreeSpeciesDollarValuesDbFile { get { return @"db\scenario_processor_rule_definitions.mdb"; } }
             static public string DefaultTreeSpeciesDollarValuesTableName { get { return "scenario_tree_species_diam_dollar_values"; } }
-            static public string DefaultRxHarvestMethodDbFile { get { return @"db\scenario_processor_rule_definitions.mdb"; } }
-            static public string DefaultRxHarvestMethodTableName { get { return "scenario_rx_harvest_method"; } }
             static public string DefaultHarvestMethodDbFile { get { return @"db\scenario_processor_rule_definitions.mdb"; } }
             static public string DefaultHarvestMethodTableName { get { return "scenario_harvest_method"; } }
             static public string DefaultMoveInCostsDbFile { get { return @"db\scenario_processor_rule_definitions.mdb"; } }
@@ -6390,47 +6388,6 @@ namespace FIA_Biosum_Manager
                     "wood_bin CHAR(1) DEFAULT 'M'," +
                     "merch_value DOUBLE DEFAULT 0," +
                     "chip_value DOUBLE DEFAULT 0)";
-            }
-            public void CreateScenarioRxHarvestMethodTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, Tables.ProcessorScenarioRuleDefinitions.CreateScenarioRxHarvestMethodTableSQL(p_strTableName));
-                CreateScenarioRxHarvestMethodTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateScenarioRxHarvestMethodTableIndexes(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "biosum_cond_id,rxpackage,rx,rxcycle");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_ScenarioId", "scenario_id");
-            }
-            static public string CreateScenarioRxHarvestMethodTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "scenario_id CHAR(20)," +
-                    "biosum_cond_id CHAR(25)," +
-                    "rxpackage CHAR(3)," +
-                    "rx CHAR(3)," +
-                    "rxcycle CHAR(1)," +
-                    "HarvestMethodId BYTE)";
-
-            }
-            public void CreateSqliteScenarioRxHarvestMethodTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
-            {
-                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteScenarioRxHarvestMethodTableSQL(p_strTableName));
-                CreateSqliteScenarioRxHarvestMethodTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
-            }
-            public void CreateSqliteScenarioRxHarvestMethodTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
-            {
-                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_ScenarioId", "scenario_id");
-            }
-            static public string CreateSqliteScenarioRxHarvestMethodTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "scenario_id CHAR(20)," +
-                    "biosum_cond_id CHAR(25)," +
-                    "rxpackage CHAR(3)," +
-                    "rx CHAR(3)," +
-                    "rxcycle CHAR(1)," +
-                    "HarvestMethodId INTEGER, " +
-                    "PRIMARY KEY(biosum_cond_id,rxpackage,rx,rxcycle))";
             }
             public void CreateScenarioHarvestMethodTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
