@@ -13997,22 +13997,12 @@ namespace FIA_Biosum_Manager
                 {
                     p_dataMgr.SqlNonQuery(conn, "DROP TABLE cycle1_effective_optimization_treatments");
                 }
-
-                //frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteEffectiveTable(p_dataMgr, conn, "cycle1_effective_optimization_treatments");
-                string strFields = "";
-                string strDataTypes = "";
-                p_dataMgr.getFieldNamesAndDataTypes(conn, "SELECT * FROM " + ReferenceOptimizerScenarioForm.OutputTablePrefix +
-                    Tables.OptimizerScenarioResults.DefaultScenarioResultsEffectiveTableSuffix, ref strFields, ref strDataTypes);
-                string[] arrFields = strFields.Split(',');
-                string[] arrDataTypes = strDataTypes.Split(',');
-
-                string strSQL = "CREATE TABLE cycle1_effective_optimization_treatments (";
-                for (int x = 0; x < arrFields.Length; x++)
+                string strColumnFilterName = "";
+                if (this.m_oOptimizationVariable.bUseFilter)
                 {
-                    strSQL += arrFields[x] + " " + utils.DataTypeConvert(arrDataTypes[x].ToUpper(), true) + ",";
+                    strColumnFilterName = this.m_oOptimizationVariable.strRevenueAttribute;
                 }
-                strSQL += "CONSTRAINT cycle1_effective_optimization_treatments_pk PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
-                p_dataMgr.SqlNonQuery(conn, strSQL);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteEffectiveTable(p_dataMgr, conn, "cycle1_effective_optimization_treatments", strColumnFilterName);
 
                 oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, "cycle1_effective_optimization_treatments", "cycle1_effective_optimization_treatments", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
                 i = 0;
