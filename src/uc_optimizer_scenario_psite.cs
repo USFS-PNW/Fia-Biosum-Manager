@@ -154,10 +154,10 @@ namespace FIA_Biosum_Manager
 						{
 							lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Both - Logs And Chips";
 						}
-                        //else if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).BiomassCode == "4")
-                        //{
-                        //    lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Other - Nongeneric Wood Facility with Potential";
-                        //}
+                        else if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).BiomassCode == "4")
+                        {
+                            lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Other - Nongeneric Wood Facility with Potential";
+                        }
                         else
 						{
 							lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Merchantable - Logs Only";
@@ -679,13 +679,13 @@ namespace FIA_Biosum_Manager
 									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 								}
-								//else if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 4)
-        //                        {
-								//	this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Other - Nongeneric Wood Facility with Potential");
-								//	intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
-								//	this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
-								//}
-								else
+                                else if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 4)
+                                {
+                                    this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Other - Nongeneric Wood Facility with Potential");
+                                    intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+                                    this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+                                }
+                                else
 								{
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Merchantable - Logs Only");
 									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
@@ -992,11 +992,11 @@ namespace FIA_Biosum_Manager
                     {
 						strBioCd = "3";
                     }
-					//else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Other - Nongeneric Wood Facility with Potential")
-     //               {
-					//	strBioCd = "4";
-     //               }
-					else
+                    else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Other - Nongeneric Wood Facility with Potential")
+                    {
+                        strBioCd = "4";
+                    }
+                    else
                     {
 						strBioCd = "9";
                     }

@@ -319,19 +319,23 @@ namespace FIA_Biosum_Manager
                 return strSql;
             }
             public void CreateSqliteEffectiveTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn,
-                                                   string p_strTableName)
+                                                   string p_strTableName, string p_strFilterColumnName)
             {
-                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteEffectiveTableSQL(p_strTableName));
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteEffectiveTableSQL(p_strTableName, p_strFilterColumnName));
             }
-            static public string CreateSqliteEffectiveTableSQL(string p_strTableName)
+            static public string CreateSqliteEffectiveTableSQL(string p_strTableName, string p_strFilterColumnName)
             {
                 string strSql = "CREATE TABLE " + p_strTableName + " (" +
                          "biosum_cond_id CHAR(25)," +
                          "rxpackage CHAR(3)," +
                          "rx CHAR(3)," +
                          "rxcycle CHAR(1)," +
-                         "nr_dpa DOUBLE," +
-                         "pre_variable1_name CHAR(100)," +
+                         "nr_dpa DOUBLE,";
+                if (!String.IsNullOrEmpty(p_strFilterColumnName))
+                {
+                    strSql += p_strFilterColumnName + " DOUBLE,";
+                }
+                strSql += "pre_variable1_name CHAR(100)," +
                          "post_variable1_name CHAR(100)," +
                          "pre_variable1_value DOUBLE," +
                          "post_variable1_value DOUBLE," +
@@ -844,11 +848,11 @@ namespace FIA_Biosum_Manager
                 return strSQL;
             }
             public void CreateSqliteOptimizationTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn,
-                                    string p_strTableName)
+                                    string p_strTableName, string p_strFilterColumnName)
             {
-                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteOptimizationTableSQL(p_strTableName));
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteOptimizationTableSQL(p_strTableName, p_strFilterColumnName));
             }
-            static public string CreateSqliteOptimizationTableSQL(string p_strTableName)
+            static public string CreateSqliteOptimizationTableSQL(string p_strTableName, string p_strFilterColumnName)
             {
                 string strSQL = "CREATE TABLE " + p_strTableName + " (" +
                     "biosum_cond_id CHAR(25)," +
@@ -860,8 +864,12 @@ namespace FIA_Biosum_Manager
                     "pre_variable_value DOUBLE," +
                     "post_variable_value DOUBLE," +
                     "change_value DOUBLE," +
-                    "affordable_YN CHAR(1)," +
-                    "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
+                    "affordable_YN CHAR(1),";
+                if (!String.IsNullOrEmpty(p_strFilterColumnName))
+                {
+                    strSQL += p_strFilterColumnName + " DOUBLE,";
+                }
+                strSQL += "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
 
                 return strSQL;
             }
