@@ -7653,6 +7653,7 @@ namespace FIA_Biosum_Manager
             m_ado.SqlNonQuery(this.m_TempMDBFileConn, m_strSQL);
 
             // Delete records from the validcombos_fvsprepost if they are in variant/packages on the filter's exclusion list
+            
             strConn = m_dataMgr.GetConnectionString(this.m_strSystemResultsDbPathAndFile);
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
@@ -7662,7 +7663,7 @@ namespace FIA_Biosum_Manager
                 if (!string.IsNullOrEmpty(strUnselectedPackages))
                 {
                     string[] strUnselectedPackagesArray = frmMain.g_oUtils.ConvertListToArray(strUnselectedPackages, ",");
-                    string strTempWhere = " WHERE FVS_VARIANT & RXPACKAGE IN ( ";
+                    string strTempWhere = " WHERE FVS_VARIANT || RXPACKAGE IN (";
                     foreach (string strVariantPackage in strUnselectedPackagesArray)
                     {
                         strTempWhere = strTempWhere + "'" + strVariantPackage + "',";
