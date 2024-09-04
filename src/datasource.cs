@@ -863,12 +863,6 @@ namespace FIA_Biosum_Manager
 
                 p_oDao.CreateTableLink(
                     p_DaoDatabase,
-                    Tables.ProcessorScenarioRuleDefinitions.DefaultRxHarvestMethodTableName,
-                    strPath + Tables.ProcessorScenarioRuleDefinitions.DefaultRxHarvestMethodDbFile,
-                    Tables.ProcessorScenarioRuleDefinitions.DefaultRxHarvestMethodTableName);
-
-                p_oDao.CreateTableLink(
-                    p_DaoDatabase,
                     Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName,
                     strPath + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesDbFile,
                     Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName);

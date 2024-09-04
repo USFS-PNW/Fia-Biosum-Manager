@@ -1596,7 +1596,6 @@ namespace FIA_Biosum_Manager
 			frmMain.g_oTables.m_oScenario.CreateScenarioDatasourceTable(oAdo,oAdo.m_OleDbConnection,Tables.Scenario.DefaultScenarioDatasourceTableName);
 			frmMain.g_oTables.m_oScenario.CreateScenarioTable(oAdo,oAdo.m_OleDbConnection,Tables.Scenario.DefaultScenarioTableName);
 			frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioTreeSpeciesDollarValuesTable(oAdo,oAdo.m_OleDbConnection,Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName);
-			frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioRxHarvestMethodTable(oAdo,oAdo.m_OleDbConnection,Tables.ProcessorScenarioRuleDefinitions.DefaultRxHarvestMethodTableName);
 			frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioHarvestMethodTable(oAdo,oAdo.m_OleDbConnection,Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodTableName);
 			frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioCostRevenueEscalatorsTable(oAdo,oAdo.m_OleDbConnection,Tables.ProcessorScenarioRuleDefinitions.DefaultCostRevenueEscalatorsTableName);
             frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioHarvestCostColumnsTable(oAdo, oAdo.m_OleDbConnection, Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestCostColumnsTableName);
@@ -1621,7 +1620,6 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oTables.m_oScenario.CreateSqliteScenarioDatasourceTable(dataMgr, conn, Tables.Scenario.DefaultScenarioDatasourceTableName);
                 frmMain.g_oTables.m_oScenario.CreateSqliteScenarioTable(dataMgr, conn, Tables.Scenario.DefaultScenarioTableName);
                 frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioTreeSpeciesDollarValuesTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName);
-                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioRxHarvestMethodTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultRxHarvestMethodTableName);
                 frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioHarvestMethodTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodTableName);
                 frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioCostRevenueEscalatorsTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultCostRevenueEscalatorsTableName);
                 frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioHarvestCostColumnsTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestCostColumnsTableName);

@@ -1073,11 +1073,6 @@ namespace FIA_Biosum_Manager
                 }
                 if (p_ado.m_intError == 0)
                 {
-                    strSQL = "DELETE * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultRxHarvestMethodTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-                }
-                if (p_ado.m_intError == 0)
-                {
                     strSQL = "DELETE * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName + " WHERE scenario_id =  " + "'" + p_strScenarioId.Trim() + "'";
                     p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
                 }
@@ -1250,11 +1245,6 @@ namespace FIA_Biosum_Manager
                     if (oDataMgr.m_intError == 0)
                     {
                         strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultMoveInCostsTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
-                        oDataMgr.SqlNonQuery(conn, strSQL);
-                    }
-                    if (oDataMgr.m_intError == 0)
-                    {
-                        strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultRxHarvestMethodTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                     if (oDataMgr.m_intError == 0)
