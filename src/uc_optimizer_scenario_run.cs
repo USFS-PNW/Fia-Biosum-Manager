@@ -2516,8 +2516,8 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteValidComboTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsValidCombosTableName);
                 frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteValidComboFVSPrePostTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsValidCombosFVSPrePostTableName);
                 frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteTieBreakerTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsTieBreakerTableName);
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteOptimizationTable(oDataMgr, conn, this.ReferenceOptimizerScenarioForm.OutputTablePrefix + Tables.OptimizerScenarioResults.DefaultScenarioResultsOptimizationTableSuffix);
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteEffectiveTable(oDataMgr, conn, this.ReferenceOptimizerScenarioForm.OutputTablePrefix + Tables.OptimizerScenarioResults.DefaultScenarioResultsEffectiveTableSuffix);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteOptimizationTable(oDataMgr, conn, this.ReferenceOptimizerScenarioForm.OutputTablePrefix + Tables.OptimizerScenarioResults.DefaultScenarioResultsOptimizationTableSuffix, strColumnFilterName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteEffectiveTable(oDataMgr, conn, this.ReferenceOptimizerScenarioForm.OutputTablePrefix + Tables.OptimizerScenarioResults.DefaultScenarioResultsEffectiveTableSuffix, strColumnFilterName);
                 string strScenarioResultsBestRxSummaryTableName = this.ReferenceOptimizerScenarioForm.OutputTablePrefix + Tables.OptimizerScenarioResults.DefaultScenarioResultsBestRxSummaryTableSuffix;
                 frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteBestRxSummaryTable(oDataMgr, conn, strScenarioResultsBestRxSummaryTableName);
                 frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteBestRxSummaryTable(oDataMgr, conn, strScenarioResultsBestRxSummaryTableName + "_before_tiebreaks");
@@ -8660,7 +8660,7 @@ namespace FIA_Biosum_Manager
                         {
                             string[] strDatabase = frmMain.g_oUtils.ConvertListToArray(oItem.strVariableSource, ".");
                             p_dataMgr.m_strSQL = "UPDATE  " + strEffectiveTableName + " AS e " +
-                                "SET e." + this.m_oOptimizationVariable.strRevenueAttribute + " = CASE WHEN p." + strDatabase[1] + " IS NOT NULL THEN p." + strDatabase[1] + " ELSE 0 END " +
+                                "SET " + this.m_oOptimizationVariable.strRevenueAttribute + " = CASE WHEN p." + strDatabase[1] + " IS NOT NULL THEN p." + strDatabase[1] + " ELSE 0 END " +
                                 "FROM " + strDatabase[0] + " AS p " +
                                 "WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -13997,8 +13997,12 @@ namespace FIA_Biosum_Manager
                 {
                     p_dataMgr.SqlNonQuery(conn, "DROP TABLE cycle1_effective_optimization_treatments");
                 }
-
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteEffectiveTable(p_dataMgr, conn, "cycle1_effective_optimization_treatments");
+                string strColumnFilterName = "";
+                if (this.m_oOptimizationVariable.bUseFilter)
+                {
+                    strColumnFilterName = this.m_oOptimizationVariable.strRevenueAttribute;
+                }
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteEffectiveTable(p_dataMgr, conn, "cycle1_effective_optimization_treatments", strColumnFilterName);
 
                 oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, "cycle1_effective_optimization_treatments", "cycle1_effective_optimization_treatments", ODBCMgr.DSN_KEYS.WorkTablesDsnName, this.m_strSQLiteWorkTablesDb);
                 i = 0;
