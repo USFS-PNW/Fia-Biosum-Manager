@@ -1561,7 +1561,7 @@ namespace FIA_Biosum_Manager
                     con.Open();
                     if (strTableName.Contains("optimization"))
                     {
-                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteOptimizationTable(oDataMgr, con, strTableName);
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteOptimizationTable(oDataMgr, con, strTableName, null);
                     }
                     else if (strTableName.Contains("weighted"))
                     {
@@ -1569,7 +1569,7 @@ namespace FIA_Biosum_Manager
                     }
                     else
                     {
-                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteEffectiveTable(oDataMgr, con, strTableName);
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteEffectiveTable(oDataMgr, con, strTableName, null);
                     }
                 
                     // This code adds any filter fields that change depending on the scenario configuration
