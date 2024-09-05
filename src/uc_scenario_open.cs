@@ -413,7 +413,7 @@ namespace FIA_Biosum_Manager
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                 {
                     conn.Open();
-                    dataMgr.SqlQueryReader(conn, "select * from scenario");
+                    dataMgr.SqlQueryReader(conn, "select * from scenario ORDER BY UPPER(scenario_id)");
                     if (dataMgr.m_DataReader.HasRows)
                     {
                         while (dataMgr.m_DataReader.Read())
