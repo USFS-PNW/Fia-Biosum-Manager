@@ -10514,9 +10514,9 @@ namespace FIA_Biosum_Manager
                 }
 
                 p_dataMgr.m_strSQL = "UPDATE " + this.m_strEconByRxWorkTableName + 
-                    " SET usebiomass_yn = CASE WHEN " + strChipValue + " < " +
+                    " SET usebiomass_yn = CASE WHEN " + strChipValue + " * " + this.m_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle2 + " < " +
                     Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + ".CHIP_HAUL_COST_DPGT * " +
-                    this.m_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle2 + " THEN 'N' ELSE 'Y' END" +
+                    this.m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle2 + " THEN 'N' ELSE 'Y' END" +
                     " FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName +
                     " WHERE " + this.m_strEconByRxWorkTableName + ".biosum_cond_id = " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + ".biosum_cond_id" +
                     " AND usebiomass_yn = 'Y' AND rxcycle = '2'";
@@ -10534,9 +10534,9 @@ namespace FIA_Biosum_Manager
                 }
 
                 p_dataMgr.m_strSQL = "UPDATE " + this.m_strEconByRxWorkTableName +
-                    " SET usebiomass_yn = CASE WHEN " + strChipValue + " < " +
+                    " SET usebiomass_yn = CASE WHEN " + strChipValue + " * " + this.m_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle3 + " < " +
                     Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + ".CHIP_HAUL_COST_DPGT * " +
-                    this.m_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle3 + " THEN 'N' ELSE 'Y' END" +
+                    this.m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle3 + " THEN 'N' ELSE 'Y' END" +
                      " FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName +
                     " WHERE " + this.m_strEconByRxWorkTableName + ".biosum_cond_id = " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + ".biosum_cond_id" +
                     " AND usebiomass_yn = 'Y' AND rxcycle = '3'";
@@ -10554,9 +10554,9 @@ namespace FIA_Biosum_Manager
                 }
 
                 p_dataMgr.m_strSQL = "UPDATE " + this.m_strEconByRxWorkTableName +
-                    " SET usebiomass_yn = CASE WHEN " + strChipValue + " < " +
+                    " SET usebiomass_yn = CASE WHEN " + strChipValue + " * " + this.m_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle4 + " < " +
                     Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + ".CHIP_HAUL_COST_DPGT * " +
-                    this.m_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle4 + " THEN 'N' ELSE 'Y' END" +
+                    this.m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle4 + " THEN 'N' ELSE 'Y' END" +
                      " FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName +
                     " WHERE " + this.m_strEconByRxWorkTableName + ".biosum_cond_id = " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + ".biosum_cond_id" +
                     " AND usebiomass_yn = 'Y' AND rxcycle = '4'";
