@@ -4072,8 +4072,25 @@ namespace FIA_Biosum_Manager
                     if (m_oDataMgr.m_intError == 0 && frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                     if (m_oDataMgr.m_intError == 0) m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
-
                 }
+            }
+            // Adding link to so p_strHarvestCostTableName that it can be used later in RunScenario_DeleteInaccessibleCondFromWorktable()
+            // Needs to happen in Access because plot table is referenced later
+            ODBCMgr odbcmgr = new ODBCMgr();
+            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName))
+            {
+                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName);
+            }
+            odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName,
+                strSqliteDb);
+            dao_data_access oDao = new dao_data_access();
+            oDao.CreateSQLiteTableLink(m_oQueries.m_strTempDbFile, p_strHarvestCostTableName,
+                p_strHarvestCostTableName, ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName, strSqliteDb);
+            System.Threading.Thread.Sleep(5000);
+            if (oDao != null)
+            {
+                oDao.m_DaoWorkspace.Close();
+                oDao = null;
             }
         }
 
@@ -4327,7 +4344,6 @@ namespace FIA_Biosum_Manager
             }
             int x, y;
             string strSum = "";
-            dao_data_access oDao = new dao_data_access();
             string[] strRXArray = null;
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(p_strTempDb)))
             {
@@ -5105,17 +5121,6 @@ namespace FIA_Biosum_Manager
             m_strError = m_oAdo.m_strError;
         }
 
-        private void RunScenario_InsertInactiveStandsIntoHarvestCostsTable(string p_strHarvestCostsTableName, string p_strVariant, string p_strRxPackage)
-        {
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_InsertInactiveStandsIntoHarvestCostsTable\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-
-        }
-
         private bool DoesVariantPackageUseKcpCpa(string p_strVariant, string p_strRxPackage)
         {
             bool bUsesKcpCpa = false;
@@ -5134,40 +5139,44 @@ namespace FIA_Biosum_Manager
                 }
             }
 
-            foreach (var aColumn in lstAddCpaCols)
+            if (m_lstAdditionalCpaColumns != null)
             {
-                if (m_lstAdditionalCpaColumns.Contains(aColumn))
+                foreach (var aColumn in lstAddCpaCols)
                 {
-                    // Any rows in PRE_FVS_COMPUTE FOR THIS CPA COLUMN FOR THIS VARIANT/PACKAGE ?
-                    string strComputeDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
-                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strComputeDbPath)))
+                    if (m_lstAdditionalCpaColumns.Contains(aColumn))
                     {
-                        conn.Open();
-                        m_oDataMgr.m_strSQL = $@"SELECT {aColumn} FROM {Tables.FVS.DefaultPreFVSComputeTableName} WHERE FVS_VARIANT = '{p_strVariant}'
-                                    AND RXPACKAGE = '{p_strRxPackage}' AND {aColumn} = 1 LIMIT 1";
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                        long lngCount = m_oDataMgr.getRecordCount(conn, m_oDataMgr.m_strSQL, Tables.FVS.DefaultPreFVSComputeTableName);
-                        if (lngCount > 0)
-                        {
-                            bUsesKcpCpa = true;
-                            break;
-                        }
-
                         // Any rows in PRE_FVS_COMPUTE FOR THIS CPA COLUMN FOR THIS VARIANT/PACKAGE ?
-                        m_oDataMgr.m_strSQL = $@"SELECT {aColumn} FROM {Tables.FVS.DefaultPostFVSComputeTableName} WHERE FVS_VARIANT = '{p_strVariant}'
-                                    AND RXPACKAGE = '{p_strRxPackage}' AND {aColumn} = 1 LIMIT 1";
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                        lngCount = m_oDataMgr.getRecordCount(conn, m_oDataMgr.m_strSQL, Tables.FVS.DefaultPostFVSComputeTableName);
-                        if (lngCount > 0)
+                        string strComputeDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
+                        using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strComputeDbPath)))
                         {
-                            bUsesKcpCpa = true;
-                            break;
+                            conn.Open();
+                            m_oDataMgr.m_strSQL = $@"SELECT {aColumn} FROM {Tables.FVS.DefaultPreFVSComputeTableName} WHERE FVS_VARIANT = '{p_strVariant}'
+                                    AND RXPACKAGE = '{p_strRxPackage}' AND {aColumn} = 1 LIMIT 1";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                            long lngCount = m_oDataMgr.getRecordCount(conn, m_oDataMgr.m_strSQL, Tables.FVS.DefaultPreFVSComputeTableName);
+                            if (lngCount > 0)
+                            {
+                                bUsesKcpCpa = true;
+                                break;
+                            }
+
+                            // Any rows in PRE_FVS_COMPUTE FOR THIS CPA COLUMN FOR THIS VARIANT/PACKAGE ?
+                            m_oDataMgr.m_strSQL = $@"SELECT {aColumn} FROM {Tables.FVS.DefaultPostFVSComputeTableName} WHERE FVS_VARIANT = '{p_strVariant}'
+                                    AND RXPACKAGE = '{p_strRxPackage}' AND {aColumn} = 1 LIMIT 1";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                            lngCount = m_oDataMgr.getRecordCount(conn, m_oDataMgr.m_strSQL, Tables.FVS.DefaultPostFVSComputeTableName);
+                            if (lngCount > 0)
+                            {
+                                bUsesKcpCpa = true;
+                                break;
+                            }
                         }
                     }
                 }
             }
+
             return bUsesKcpCpa;
         }
 
@@ -6214,21 +6223,13 @@ namespace FIA_Biosum_Manager
                         }
                         else
                         {
-                            if (ReferenceProcessorScenarioForm.m_bUsingSqlite)
-                            {
-                                RunScenario_UpdateHarvestCostsTableWithAdditionalCosts("HarvestCostsWorkTable", m_strTempSqliteDbFile, oEscalators,
-                                    oTempProcessorScenarioItem.m_oHarvestCostItem_Collection);
-                            }
-                            else
-                            {
-                                RunScenario_UpdateHarvestCostsTableWithAdditionalCostsAccess("HarvestCostsWorkTable", m_strTempSqliteDbFile, oEscalators,
-                                    oTempProcessorScenarioItem.m_oHarvestCostItem_Collection);
-                            }
-
+                            RunScenario_UpdateHarvestCostsTableWithAdditionalCosts("HarvestCostsWorkTable", m_strTempSqliteDbFile, oEscalators,
+                                oTempProcessorScenarioItem.m_oHarvestCostItem_Collection);
                         }
                     }
                     if (m_intError == 0)
                     {
+                        RunScenario_DeleteInaccessibleCondFromWorktable("HarvestCostsWorkTable");
                         y++;
                         frmMain.g_oDelegate.SetControlPropertyValue(ReferenceProgressBarEx, "Value", y);
                     }
@@ -6622,6 +6623,18 @@ namespace FIA_Biosum_Manager
                 }
             }
             return lstRxItem;
+        }
+
+        private void RunScenario_DeleteInaccessibleCondFromWorktable(string p_strHarvestCostsTableName)
+        {
+            // This relies on an MS Access table link to HarvestCostsWorkTable created in RunScenario_AppendToHarvestCosts
+            m_oAdo.m_strSQL = $@"DELETE {p_strHarvestCostsTableName}.*
+                FROM ({p_strHarvestCostsTableName} INNER JOIN cond ON {p_strHarvestCostsTableName}.biosum_cond_id = cond.biosum_cond_id) 
+                INNER JOIN plot ON cond.biosum_plot_id = plot.biosum_plot_id
+                WHERE plot.gis_yard_dist_ft < 0;";
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
         }
     }
 }
