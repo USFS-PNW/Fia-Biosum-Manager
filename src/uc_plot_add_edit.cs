@@ -137,12 +137,16 @@ namespace FIA_Biosum_Manager
             this.tblbtnDeleteConds.ImageIndex = 1;
             this.tblbtnDeleteConds.Name = "tblbtnDeleteConds";
             this.tblbtnDeleteConds.Text = "Delete Conditions";
+            // Hide Condition zapper until we can convert it to sqlite
+            this.tblbtnDeleteConds.Visible = false;
             // 
             // tblbtnDeletePackages
             // 
             this.tblbtnDeletePackages.ImageIndex = 1;
             this.tblbtnDeletePackages.Name = "tblbtnDeletePackages";
             this.tblbtnDeletePackages.Text = "Delete Packages";
+            // Hide Package zapper until we can convert it to sqlite
+            this.tblbtnDeletePackages.Visible = false;
             // 
             // tlbbtnEdit
             // 
