@@ -329,8 +329,8 @@ namespace FIA_Biosum_Manager
                          "biosum_cond_id CHAR(25)," +
                          "rxpackage CHAR(3)," +
                          "rx CHAR(3)," +
-                         "rxcycle CHAR(1)," +
-                         "nr_dpa DOUBLE,";
+                         "rxcycle CHAR(1),";
+                         //"nr_dpa DOUBLE,";
                 if (!String.IsNullOrEmpty(p_strFilterColumnName))
                 {
                     strSql += p_strFilterColumnName + " DOUBLE,";

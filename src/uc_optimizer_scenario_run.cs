@@ -8633,15 +8633,15 @@ namespace FIA_Biosum_Manager
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                 //insert net revenue per acre into the effective table
-                p_dataMgr.m_strSQL = "UPDATE " + strEffectiveTableName + " AS e " +
-                    "SET nr_dpa = CASE WHEN p.max_nr_dpa IS NOT NULL THEN p.max_nr_dpa ELSE 0 END " +
-                    "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName + " AS p " +
-                    "WHERE e.biosum_cond_id = p.biosum_cond_id AND " +
-                    "e.rxpackage = p.rxpackage AND " +
-                    "e.rx = p.rx AND e.rxcycle = p.rxcycle";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                //p_dataMgr.m_strSQL = "UPDATE " + strEffectiveTableName + " AS e " +
+                //    "SET nr_dpa = CASE WHEN p.max_nr_dpa IS NOT NULL THEN p.max_nr_dpa ELSE 0 END " +
+                //    "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName + " AS p " +
+                //    "WHERE e.biosum_cond_id = p.biosum_cond_id AND " +
+                //    "e.rxpackage = p.rxpackage AND " +
+                //    "e.rx = p.rx AND e.rxcycle = p.rxcycle";
+                //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                //    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                //p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
 
                 //insert revenue filter field into the effective table
                 if (this.m_oOptimizationVariable.bUseFilter == true)
@@ -10442,6 +10442,8 @@ namespace FIA_Biosum_Manager
                 fieldsAndDataTypes += "haul_costs_dpa DOUBLE, ";
 
                 p_dataMgr.m_strSQL = "CREATE TABLE " + this.m_strEconByRxWorkTableName + " (" + fieldsAndDataTypes + "PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
 
 
@@ -10465,6 +10467,8 @@ namespace FIA_Biosum_Manager
 
                 // still through ado since selectSQL references cond table
                 this.m_strSQL = "INSERT INTO " + this.m_strEconByRxWorkTableName + " " + strSelectSQL;
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
 
                 if (this.m_ado.m_intError != 0)
