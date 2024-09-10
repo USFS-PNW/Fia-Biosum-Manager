@@ -1869,6 +1869,7 @@ namespace FIA_Biosum_Manager
                 string strDescription = "";
                 if (!String.IsNullOrEmpty(txtFVSVariableDescr.Text))
                     strDescription = txtFVSVariableDescr.Text.Trim();
+                strDescription = m_oDataMgr.FixString(strDescription, "'", "''");
                 strSql = strSql + lblFvsVariableName.Text.Trim() + "','" + strDescription + "','" +
                          strVariableType + "','" + strBaselinePackage + "','" + LblSelectedVariable.Text.Trim() + "')";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -1937,6 +1938,7 @@ namespace FIA_Biosum_Manager
                 string strDescription = "";
                 if (!String.IsNullOrEmpty(txtEconVariableDescr.Text))
                     strDescription = txtEconVariableDescr.Text.Trim();
+                strDescription = m_oDataMgr.FixString(strDescription, "'", "''");
                 string strVariableSource = Tables.OptimizerScenarioResults.DefaultScenarioResultsPostEconomicWeightedTableName +
                     "." + lblEconVariableName.Text.Trim();
                 strSql = strSql + lblEconVariableName.Text.Trim() + "','" + strDescription + "','" +
