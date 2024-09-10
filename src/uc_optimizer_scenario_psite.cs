@@ -129,15 +129,15 @@ namespace FIA_Biosum_Manager
                                 Convert.ToInt32(ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).TransportationCode) - 1, 1];
                         if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).TransportationCode == "2")
                         {
-							lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text = "Railhead - Road To Rail Wood Transfer Point";
+							lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text = "Intermodal Transfer";
 						}
 						else if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).TransportationCode == "3")
                         {
-							lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text = "Rail Collector - PSite With Both Road And Rail Access";
+							lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text = "Facility on Rail";
 						}
                         else
                         {
-							lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text = "Processing Site - Road Access Only";
+							lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text = "Facility on Road";
 						}
                         //
                         //BIOMASS TYPE CODE
@@ -147,20 +147,20 @@ namespace FIA_Biosum_Manager
                                 Convert.ToInt32( ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).BiomassCode) - 1, 1];
 						if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).BiomassCode == "2")
 						{
-							lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Chips - Chips Only";
+							lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Chips";
 
 						}
 						else if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).BiomassCode == "3")
 						{
-							lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Both - Logs And Chips";
+							lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Both";
 						}
                         else if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).BiomassCode == "4")
                         {
-                            lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Other - Nongeneric Wood Facility with Potential";
+                            lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Other";
                         }
                         else
 						{
-							lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Merchantable - Logs Only";
+							lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Merch";
 						}
                         break;
                        
@@ -497,13 +497,13 @@ namespace FIA_Biosum_Manager
 			this.m_oLvRowColors.InitializeRowCollection();
 
 			this.lstPSites.Columns.Add("", 2, HorizontalAlignment.Left);
-			this.lstPSites.Columns.Add("PSite_Id", 75, HorizontalAlignment.Left);
-			this.lstPSites.Columns.Add("Name", 300, HorizontalAlignment.Left);
-			this.lstPSites.Columns.Add("Site Exist", 65, HorizontalAlignment.Left);
-			this.lstPSites.Columns.Add("Site Type", 300, HorizontalAlignment.Left);
-			this.lstPSites.Columns.Add("Biomass Processing Type", 225, HorizontalAlignment.Left);
-			this.lstPSites.Columns.Add("State", 60, HorizontalAlignment.Left);
-			this.lstPSites.Columns.Add("County", 200, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("PSite_Id", 60, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("Name", 200, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("Site Exist", 60, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("Site Type", 110, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("Processing Type", 100, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("State", 50, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("County", 100, HorizontalAlignment.Left);
 
 			this.lstPSites.Columns[COLUMN_CHECKBOX].Width = -2;
 
@@ -628,27 +628,27 @@ namespace FIA_Biosum_Manager
 								byteTranCd = Convert.ToByte(p_dataMgr.m_DataReader["trancd"]);
 								if (Convert.ToByte(p_dataMgr.m_DataReader["trancd"]) == 1)
 								{
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Processing Site - Road Access Only");
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Facility on Road");
 									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 
 								}
 								else if (Convert.ToByte(p_dataMgr.m_DataReader["trancd"]) == 2) 
 								{
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Railhead - Road To Rail Wood Transfer Point");
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Intermodal Transfer");
 									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 								}
 								else
                                 {
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Rail Collector - PSite With Both Road And Rail Access");
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Facility on Rail");
 									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 								}
 							}
 							else
 							{
-								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Processing Site - Road Access Only");
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Facility on Road");
 								intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 
@@ -669,32 +669,32 @@ namespace FIA_Biosum_Manager
 								byteTranCd = Convert.ToByte(p_dataMgr.m_DataReader["biocd"]);
 								if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 2)
 								{
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Chips - Chips Only");
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Chips");
 									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 								}
 								else if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 3)
 								{
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Both - Logs And Chips");
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Both");
 									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 								}
                                 else if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 4)
                                 {
-                                    this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Other - Nongeneric Wood Facility with Potential");
+                                    this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Other");
                                     intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
                                     this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
                                 }
                                 else
 								{
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Merchantable - Logs Only");
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Merch");
 									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 								}
 							}
 							else
 							{
-								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Merchantable - Logs Only");
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Merch");
 								intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 
@@ -964,15 +964,15 @@ namespace FIA_Biosum_Manager
 					{
 						strSelected = "N";
 					}
-					if (lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim() == "Processing Site - Road Access Only")
+					if (lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim() == "Facility on Road")
 					{
 						strTranCd = "1";
 					}
-					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim() == "Railhead - Road To Rail Wood Transfer Point")
+					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim() == "Intermodal Transfer")
                     {
 						strTranCd = "2";
                     }
-					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim() == "Rail Collector - PSite With Both Road And Rail Access")
+					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim() == "Facility on Rail")
                     {
 						strTranCd = "3";
                     }
@@ -980,19 +980,19 @@ namespace FIA_Biosum_Manager
                     {
 						strTranCd = "9";
                     }
-					if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Merchantable - Logs Only")
+					if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Merch")
                     {
 						strBioCd = "1";
                     }
-					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Chips - Chips Only")
+					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Chips")
                     {
 						strBioCd = "2";
                     }
-					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Both - Logs And Chips")
+					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Both")
                     {
 						strBioCd = "3";
                     }
-                    else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Other - Nongeneric Wood Facility with Potential")
+                    else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Other")
                     {
                         strBioCd = "4";
                     }
