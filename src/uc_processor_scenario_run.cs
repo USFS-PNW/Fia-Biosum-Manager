@@ -493,20 +493,21 @@ namespace FIA_Biosum_Manager
 
             // Check PRE_FVS_COMPUTE table
             // Note: For the remainder of processing, the BioSum .accdb is used to access this table
-            string strFvsOutDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile;
+            string strFvsPrePostDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
             IList<string> lstComponents = new List<string>();
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strFvsOutDb)))
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strFvsPrePostDb)))
             {
                 conn.Open();
-                if (!m_oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSComputeTableName))
+                string[] arrFvsCompute = { Tables.FVS.DefaultPreFVSComputeTableName, Tables.FVS.DefaultPostFVSComputeTableName };
+                if (!m_oDataMgr.TableExist(conn, arrFvsCompute[0]))
                 {
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                        frmMain.g_oUtils.WriteText(strDebugFile, "loadvalues(): FVS_COMPUTE table was not found. KCP additional " +
+                        frmMain.g_oUtils.WriteText(strDebugFile, "loadvalues(): PRE_FVS_COMPUTE table was not found. KCP additional " +
                             "CPA functionality will not be used ! \r\n");
                 }
                 else
                 {
-                    //Check for KCP additional CPA columns so we know if we should include in4. RunScenario_UpdateHarvestCostsTableWithAdditionalCostactive stands
+                    //Check for KCP additional CPA columns so we know if we should include inRunScenario_UpdateHarvestCostsTableWithAdditionalCost active stands
                     for (int i = 0; i < m_oRxItem_Collection.Count; i++)
                     {
                         var rxItem = m_oRxItem_Collection.Item(i);
@@ -521,18 +522,21 @@ namespace FIA_Biosum_Manager
                         }
                     }
                     m_lstAdditionalCpaColumns = new List<string>();
-                    for (int i = 0; i < lstComponents.Count; i++)
+                    foreach (var outTable in arrFvsCompute)
                     {
-                        if (m_oDataMgr.ColumnExist(conn, Tables.FVS.DefaultFVSComputeTableName, lstComponents[i]))
+                        for (int i = 0; i < lstComponents.Count; i++)
                         {
-                            string strSql = $@"SELECT YEAR FROM {Tables.FVS.DefaultFVSComputeTableName} WHERE {lstComponents[i]} = 1 LIMIT 1";
-                            long lngCount = m_oDataMgr.getRecordCount(conn, strSql, Tables.FVS.DefaultFVSComputeTableName);
-                            if (lngCount > 0)
+                            if (m_oDataMgr.ColumnExist(conn, outTable, lstComponents[i]))
                             {
-                                m_bLinkFvsComputeTables = true;
-                                if (!m_lstAdditionalCpaColumns.Contains(lstComponents[i]))
+                                string strSql = $@"SELECT YEAR FROM {outTable} WHERE {lstComponents[i]} = 1 LIMIT 1";
+                                long lngCount = m_oDataMgr.getRecordCount(conn, strSql, outTable);
+                                if (lngCount > 0)
                                 {
-                                    m_lstAdditionalCpaColumns.Add(lstComponents[i]);
+                                    m_bLinkFvsComputeTables = true;
+                                    if (!m_lstAdditionalCpaColumns.Contains(lstComponents[i]))
+                                    {
+                                        m_lstAdditionalCpaColumns.Add(lstComponents[i]);
+                                    }
                                 }
                             }
                         }
@@ -544,7 +548,6 @@ namespace FIA_Biosum_Manager
                     }
                 }
             }
-            // Removed link to PRE_FVS_COMPUTE table
 
             oDao.m_DaoDbEngine.Idle(1);
             oDao.m_DaoDbEngine.Idle(8);
