@@ -4610,7 +4610,7 @@ namespace FIA_Biosum_Manager
             public string DefaultSeedlingTableName { get { return "fiadb_seedling_input"; } }
 
             public string DefaultDWMDbFile { get { return @"db\master_aux.accdb"; } }
-            public string DefaultDWMSqliteDbFile { get { return @"db\master_aux.db"} }
+            public string DefaultDWMSqliteDbFile { get { return @"db\master_aux.db"; } }
             public string DefaultDWMCoarseWoodyDebrisName { get { return "DWM_COARSE_WOODY_DEBRIS"; } }
             public string DefaultDWMDuffLitterFuelName { get { return "DWM_DUFF_LITTER_FUEL"; } }
             public string DefaultDWMFineWoodyDebrisName { get { return "DWM_FINE_WOODY_DEBRIS"; } }

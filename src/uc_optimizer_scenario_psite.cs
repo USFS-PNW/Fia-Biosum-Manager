@@ -40,12 +40,13 @@ namespace FIA_Biosum_Manager
 
 	    const int COLUMN_CHECKBOX=0;
 		const int COLUMN_PSITEID=1;
-		const int COLUMN_PSITENAME=2;
-		const int COLUMN_PSITEEXIST=3;
-		const int COLUMN_PSITEROADRAIL=4;
-		const int COLUMN_PSITEBIOPROCESSTYPE=5;
-		const int COLUMN_PSITESTATE=6;
-		const int COLUMN_PSITECOUNTY=7;
+		const int COLUMN_PSITECN=2;
+		const int COLUMN_PSITENAME=3;
+		const int COLUMN_PSITEEXIST=4;
+		const int COLUMN_PSITEROADRAIL=5;
+		const int COLUMN_PSITEBIOPROCESSTYPE=6;
+		const int COLUMN_PSITESTATE=7;
+		const int COLUMN_PSITECOUNTY=8;
 
 
 		public uc_optimizer_scenario_psite()
@@ -497,13 +498,14 @@ namespace FIA_Biosum_Manager
 			this.m_oLvRowColors.InitializeRowCollection();
 
 			this.lstPSites.Columns.Add("", 2, HorizontalAlignment.Left);
-			this.lstPSites.Columns.Add("PSite_Id", 60, HorizontalAlignment.Left);
-			this.lstPSites.Columns.Add("Name", 200, HorizontalAlignment.Left);
-			this.lstPSites.Columns.Add("Site Exist", 60, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("PSite ID", 55, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("PSite CN", 90, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("Name", 180, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("Exists", 40, HorizontalAlignment.Left);
 			this.lstPSites.Columns.Add("Site Type", 110, HorizontalAlignment.Left);
-			this.lstPSites.Columns.Add("Processing Type", 100, HorizontalAlignment.Left);
-			this.lstPSites.Columns.Add("State", 50, HorizontalAlignment.Left);
-			this.lstPSites.Columns.Add("County", 100, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("Processing Type", 95, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("State", 40, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("County", 75, HorizontalAlignment.Left);
 
 			this.lstPSites.Columns[COLUMN_CHECKBOX].Width = -2;
 
@@ -550,7 +552,7 @@ namespace FIA_Biosum_Manager
 					return;
 				}
 
-				p_dataMgr.m_strSQL = "SELECT DISTINCT p.psite_id,p.name,p.trancd,p.trancd_def,p.biocd,p.biocd_def,p.exists_yn,p.state,p.county " +
+				p_dataMgr.m_strSQL = "SELECT DISTINCT p.psite_id,p.psite_cn,p.name,p.trancd,p.trancd_def,p.biocd,p.biocd_def,p.exists_yn,p.state,p.county " +
 							 "FROM " + m_strPSiteTable + " AS p WHERE EXISTS (SELECT DISTINCT(t.psite_id) " +
 																		  "FROM " + this.m_strTravelTimeTable + " AS t " +
 																		  "WHERE t.psite_id=p.psite_id)";
@@ -575,6 +577,18 @@ namespace FIA_Biosum_Manager
 								COLUMN_PSITEID,
 								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITEID], false);
 
+							if (p_dataMgr.m_DataReader["psite_cn"] != System.DBNull.Value)
+							{
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(p_dataMgr.m_DataReader["psite_cn"].ToString());
+							}
+							else
+							{
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(" ");
+							}
+							this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
+								COLUMN_PSITECN,
+								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITECN], false);
+
 							if (p_dataMgr.m_DataReader["name"] != System.DBNull.Value)
 							{
 								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(p_dataMgr.m_DataReader["name"].ToString());
@@ -596,12 +610,12 @@ namespace FIA_Biosum_Manager
 							{
 								if (p_dataMgr.m_DataReader["exists_yn"].ToString().Trim() == "Y")
 								{
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Yes");
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Y");
 
 								}
 								else if (p_dataMgr.m_DataReader["exists_yn"].ToString().Trim() == "N")
 								{
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("No");
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("N");
 								}
 								else
 								{
@@ -904,6 +918,7 @@ namespace FIA_Biosum_Manager
 			string strName;
 			string strScenarioId;
 			string strPSiteId;
+			string strPSiteCn;
 			string strState;
 			string strCounty;
 			int x;
@@ -944,14 +959,16 @@ namespace FIA_Biosum_Manager
 					strName = "";
 					strScenarioId = "";
 					strPSiteId = "";
+					strPSiteCn = "";
 					strState = "";
 					strCounty = "";
 
-					oDataMgr.m_strSQL = "INSERT INTO scenario_psites (scenario_id,psite_id,name,trancd,biocd,selected_yn,state,county)" +
+					oDataMgr.m_strSQL = "INSERT INTO scenario_psites (scenario_id,psite_id,psite_cn,name,trancd,biocd,selected_yn,state,county)" +
 								   " VALUES ";
 
 					strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim();
 					strPSiteId = lstPSites.Items[x].SubItems[COLUMN_PSITEID].Text.Trim();
+					strPSiteCn = lstPSites.Items[x].SubItems[COLUMN_PSITECN].Text.Trim();
 					strName = lstPSites.Items[x].SubItems[COLUMN_PSITENAME].Text.Trim();
 					strName = oDataMgr.FixString(strName.Trim(), "'", "''");
 					strState = lstPSites.Items[x].SubItems[COLUMN_PSITESTATE].Text.Trim();
@@ -1002,6 +1019,7 @@ namespace FIA_Biosum_Manager
                     }
 					oDataMgr.m_strSQL = oDataMgr.m_strSQL + "('" + strScenarioId + "'," +
 														   strPSiteId + ",'" +
+														   strPSiteCn + "','" +
 														   strName + "'," +
 														   strTranCd + "," +
 														   strBioCd + ",'" +
