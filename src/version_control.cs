@@ -5230,6 +5230,7 @@ namespace FIA_Biosum_Manager
         {
             ado_data_access oAdo = new ado_data_access();
             dao_data_access oDao = new dao_data_access();
+            DataMgr oDataMgr = new DataMgr();
 
             frmMain.g_sbpInfo.Text = "Version Update: Updating tree species tables ...Stand by";
             // Load project data sources table
@@ -5332,6 +5333,21 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oTables.m_oFIAPlot.DefaultDWMFineWoodyDebrisName);
                 frmMain.g_oTables.m_oFIAPlot.CreateDWMTransectSegmentTable(oAdo, oAdo.m_OleDbConnection,
                     frmMain.g_oTables.m_oFIAPlot.DefaultDWMTransectSegmentName);
+            }
+            strDestFile = ReferenceProjectDirectory.Trim() + "\\" + frmMain.g_oTables.m_oFIAPlot.DefaultDWMSqliteDbFile;
+            if (!System.IO.File.Exists(strDestFile))
+            {
+                oDataMgr.CreateDbFile(strDestFile);
+            }
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
+            {
+                conn.Open();
+
+                if (!oDataMgr.TableExist(conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMCoarseWoodyDebrisName))
+                {
+                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteDWMCoarseWoodyDebrisTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMCoarseWoodyDebrisName);
+                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteDWMDuffLitterFuelTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMDuffLitterFuelName);
+                }
             }
 
             //rename fvs_tree_species table and re-map to %appData%

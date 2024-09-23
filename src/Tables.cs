@@ -4610,6 +4610,7 @@ namespace FIA_Biosum_Manager
             public string DefaultSeedlingTableName { get { return "fiadb_seedling_input"; } }
 
             public string DefaultDWMDbFile { get { return @"db\master_aux.accdb"; } }
+            public string DefaultDWMSqliteDbFile { get { return @"db\master_aux.db"} }
             public string DefaultDWMCoarseWoodyDebrisName { get { return "DWM_COARSE_WOODY_DEBRIS"; } }
             public string DefaultDWMDuffLitterFuelName { get { return "DWM_DUFF_LITTER_FUEL"; } }
             public string DefaultDWMFineWoodyDebrisName { get { return "DWM_FINE_WOODY_DEBRIS"; } }
@@ -5271,6 +5272,44 @@ namespace FIA_Biosum_Manager
                        ",INCLINATION LONG" +
                        ")";
             }
+            public void CreateSqliteDWMCoarseWoodyDebrisTable(SQLite.ADO.DataMgr p_oDataMgr,
+                System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteDWMCoarseWoodyDebrisTableSQL(p_strTableName));
+                CreateSqliteDWMCoarseWoodyDebrisTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
+            }
+
+            public void CreateSqliteDWMCoarseWoodyDebrisTableIndexes(SQLite.ADO.DataMgr p_oDataMgr,
+                System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "biosum_cond_id");
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "plt_cn");
+            }
+
+            public string CreateSqliteDWMCoarseWoodyDebrisTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                       "biosum_cond_id CHAR(25)" +
+                       ",biosum_status_cd CHAR(1)" +
+                       ",CN CHAR(34)" +
+                       ",PLT_CN CHAR(34)" +
+                       ",INVYR INTEGER" +
+                       ",STATECD INTEGER" +
+                       ",COUNTYCD INTEGER" +
+                       ",PLOT INTEGER" +
+                       ",SUBP INTEGER" +
+                       ",TRANSECT INTEGER" +
+                       ",CWDID DOUBLE" +
+                       ",MEASYEAR INTEGER" +
+                       ",CONDID INTEGER" +
+                       ",SPCD INTEGER" +
+                       ",DECAYCD INTEGER" +
+                       ",TRANSDIA INTEGER" +
+                       ",LENGTH INTEGER" +
+                       ",CWD_SAMPLE_METHOD CHAR(6)" +
+                       ",INCLINATION INTEGER" +
+                       ")";
+            }
 
             public void CreateDWMFineWoodyDebrisTable(FIA_Biosum_Manager.ado_data_access p_oAdo,
                 System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
@@ -5349,6 +5388,45 @@ namespace FIA_Biosum_Manager
                        ",DUFF_NONSAMPLE_REASN_CD LONG" +
                        ",LITTER_METHOD LONG" +
                        ",LITTER_NONSAMPLE_REASN_CD LONG" +
+                       ")";
+            }
+
+            public void CreateSqliteDWMDuffLitterFuelTable(SQLite.ADO.DataMgr p_oDataMgr,
+                System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteDWMDuffLitterFuelTableSQL(p_strTableName));
+                CreateSqliteDWMDuffLitterFuelTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
+            }
+
+            public void CreateSqliteDWMDuffLitterFuelTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn,
+                string p_strTableName)
+            {
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "biosum_cond_id");
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "plt_cn");
+            }
+
+            public string CreateSqliteDWMDuffLitterFuelTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                       "biosum_cond_id CHAR(25)" +
+                       ",biosum_status_cd CHAR(1)" +
+                       ",CN CHAR(34)" +
+                       ",PLT_CN CHAR(34)" +
+                       ",INVYR INTEGER" +
+                       ",STATECD INTEGER" +
+                       ",COUNTYCD INTEGER" +
+                       ",PLOT INTEGER" +
+                       ",TRANSECT INTEGER" +
+                       ",SUBP INTEGER" +
+                       ",MEASYEAR INTEGER" +
+                       ",CONDID INTEGER" +
+                       ",DUFFDEP DOUBLE" +
+                       ",LITTDEP DOUBLE" +
+                       ",FUELDEP DOUBLE" +
+                       ",DUFF_METHOD INTEGER" +
+                       ",DUFF_NONSAMPLE_REASN_CD INTEGER" +
+                       ",LITTER_METHOD INTEGER" +
+                       ",LITTER_NONSAMPLE_REASN_CD INTEGER" +
                        ")";
             }
 
