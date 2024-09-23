@@ -5352,6 +5352,46 @@ namespace FIA_Biosum_Manager
                        ")";
             }
 
+            public void CreateSqliteDWMFineWoodyDebrisTable(SQLite.ADO.DataMgr p_oDataMgr,
+                System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteDWMFineWoodyDebrisTableSQL(p_strTableName));
+                CreateSqliteDWMFineWoodyDebrisTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
+            }
+            public void CreateSqliteDWMFineWoodyDebrisTableIndexes(SQLite.ADO.DataMgr p_oDataMgr,
+                System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "biosum_cond_id");
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "plt_cn");
+            }
+
+            public string CreateSqliteDWMFineWoodyDebrisTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                       "biosum_cond_id CHAR(25)" +
+                       ",biosum_status_cd CHAR(1)" +
+                       ",CN CHAR(34)" +
+                       ",PLT_CN CHAR(34)" +
+                       ",INVYR INTEGER" +
+                       ",STATECD INTEGER" +
+                       ",COUNTYCD INTEGER" +
+                       ",PLOT INTEGER" +
+                       ",TRANSECT INTEGER" +
+                       ",SUBP INTEGER" +
+                       ",CONDID INTEGER" +
+                       ",MEASYEAR INTEGER" +
+                       ",SMALLCT INTEGER" +
+                       ",MEDIUMCT INTEGER" +
+                       ",LARGECT INTEGER" +
+                       ",RSNCTCD INTEGER" +
+                       ",SMALL_TL_COND DOUBLE" +
+                       ",MEDIUM_TL_COND DOUBLE" +
+                       ",LARGE_TL_COND DOUBLE" +
+                       ",FWD_NONSAMPLE_REASN_CD INTEGER" +
+                       ",FWD_SAMPLE_METHOD CHAR(6)" +
+                       ")";
+            }
+
             public void CreateDWMDuffLitterFuelTable(FIA_Biosum_Manager.ado_data_access p_oAdo,
                 System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
@@ -5463,6 +5503,45 @@ namespace FIA_Biosum_Manager
                        ",SLOPE_BEGNDIST DOUBLE" +
                        ",SLOPE_ENDDIST DOUBLE" +
                        ",SLOPE LONG" +
+                       ",HORIZ_LENGTH DOUBLE" +
+                       ",HORIZ_BEGNDIST DOUBLE" +
+                       ",HORIZ_ENDDIST DOUBLE" +
+                       ")";
+            }
+
+            public void CreateSqliteDWMTransectSegmentTable(SQLite.ADO.DataMgr p_oDataMgr,
+                System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteDWMTransectSegmentTableSQL(p_strTableName));
+                CreateSqliteDWMTransectSegmentTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
+            }
+
+            public void CreateSqliteDWMTransectSegmentTableIndexes(SQLite.ADO.DataMgr p_oDataMgr,
+                System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "biosum_cond_id");
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "plt_cn");
+            }
+
+            public string CreateSqliteDWMTransectSegmentTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                       "biosum_cond_id CHAR(25)" +
+                       ",biosum_status_cd CAHR(1)" +
+                       ",CN CHAR(34)" +
+                       ",PLT_CN CHAR(34)" +
+                       ",INVYR INTEGER" +
+                       ",STATECD INTEGER" +
+                       ",COUNTYCD INTEGER" +
+                       ",PLOT INTEGER" +
+                       ",SUBP INTEGER" +
+                       ",TRANSECT INTEGER" +
+                       ",SEGMNT INTEGER" +
+                       ",MEASYEAR INTEGER" +
+                       ",CONDID INTEGER" +
+                       ",SLOPE_BEGNDIST DOUBLE" +
+                       ",SLOPE_ENDDIST DOUBLE" +
+                       ",SLOPE INTEGER" +
                        ",HORIZ_LENGTH DOUBLE" +
                        ",HORIZ_BEGNDIST DOUBLE" +
                        ",HORIZ_ENDDIST DOUBLE" +

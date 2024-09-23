@@ -5334,21 +5334,6 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oTables.m_oFIAPlot.CreateDWMTransectSegmentTable(oAdo, oAdo.m_OleDbConnection,
                     frmMain.g_oTables.m_oFIAPlot.DefaultDWMTransectSegmentName);
             }
-            strDestFile = ReferenceProjectDirectory.Trim() + "\\" + frmMain.g_oTables.m_oFIAPlot.DefaultDWMSqliteDbFile;
-            if (!System.IO.File.Exists(strDestFile))
-            {
-                oDataMgr.CreateDbFile(strDestFile);
-            }
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
-            {
-                conn.Open();
-
-                if (!oDataMgr.TableExist(conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMCoarseWoodyDebrisName))
-                {
-                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteDWMCoarseWoodyDebrisTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMCoarseWoodyDebrisName);
-                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteDWMDuffLitterFuelTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMDuffLitterFuelName);
-                }
-            }
 
             //rename fvs_tree_species table and re-map to %appData%
             frmMain.g_sbpInfo.Text = "Version Update: Move  table ...Stand by";
@@ -7248,6 +7233,10 @@ namespace FIA_Biosum_Manager
         {
             DataMgr oDataMgr = new DataMgr();
             Datasource oProjectDs = new Datasource();
+            ODBCMgr odbcmgr = new ODBCMgr();
+            dao_data_access oDao = new dao_data_access();
+            ado_data_access oAdo = new ado_data_access();
+            utils oUtils = new utils();
 
             // Find path to existing tables
             oProjectDs.m_strDataSourceMDBFile = this.ReferenceProjectDirectory + "\\db\\project.mdb";
@@ -7301,6 +7290,107 @@ namespace FIA_Biosum_Manager
                     string strSQL = "ALTER TABLE " + strPsitesTable + " ADD COLUMN COUNTY CHAR(40)";
                     oDataMgr.SqlNonQuery(opConn, strSQL);
                 }
+            }
+
+            //
+            // Create master_aux.db and migrate values from master_aux.accdb
+            //
+            frmMain.g_sbpInfo.Text = "Version Update: Migrating DWM tables ...Stand by";
+
+            string strSourceFile = ReferenceProjectDirectory.Trim() + "\\" + frmMain.g_oTables.m_oFIAPlot.DefaultDWMDbFile;
+            string strDestFile = ReferenceProjectDirectory.Trim() + "\\" + frmMain.g_oTables.m_oFIAPlot.DefaultDWMSqliteDbFile;
+            if (!System.IO.File.Exists(strDestFile))
+            {
+                oDataMgr.CreateDbFile(strDestFile);
+            }
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
+            {
+                conn.Open();
+
+                if (!oDataMgr.TableExist(conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMCoarseWoodyDebrisName))
+                {
+                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteDWMCoarseWoodyDebrisTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMCoarseWoodyDebrisName);
+                }
+                else
+                {
+                    oDataMgr.SqlNonQuery(conn, "DELETE FROM " + frmMain.g_oTables.m_oFIAPlot.DefaultDWMCoarseWoodyDebrisName);
+                }
+                if (!oDataMgr.TableExist(conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMDuffLitterFuelName))
+                {
+                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteDWMDuffLitterFuelTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMDuffLitterFuelName);
+                }
+                else
+                {
+                    oDataMgr.SqlNonQuery(conn, "DELETE FROM " + frmMain.g_oTables.m_oFIAPlot.DefaultDWMDuffLitterFuelName);
+                }
+                if (!oDataMgr.TableExist(conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMFineWoodyDebrisName))
+                {
+                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteDWMFineWoodyDebrisTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMFineWoodyDebrisName);
+                }
+                else
+                {
+                    oDataMgr.SqlNonQuery(conn, "DELETE FROM " + frmMain.g_oTables.m_oFIAPlot.DefaultDWMFineWoodyDebrisName);
+                }
+                if (!oDataMgr.TableExist(conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMTransectSegmentName))
+                {
+                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteDWMTransectSegmentTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMTransectSegmentName);
+                }
+                else
+                {
+                    oDataMgr.SqlNonQuery(conn, "DELETE FROM " + frmMain.g_oTables.m_oFIAPlot.DefaultDWMTransectSegmentName);
+                }
+            }
+
+            // create DSN if needed
+            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.MasterAuxDsnName))
+            {
+                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.MasterAuxDsnName);
+            }
+            odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.MasterAuxDsnName, strSourceFile);
+
+            // Set new temporary database
+            string strTempAccdb = oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
+            oDao.CreateMDB(strTempAccdb);
+
+            //link access tables to temporary database
+            oDao.CreateTableLinks(strTempAccdb, strSourceFile);
+
+            //link sqlite tables to temporary database
+            oDao.CreateSQLiteTableLink(strTempAccdb, frmMain.g_oTables.m_oFIAPlot.DefaultDWMCoarseWoodyDebrisName,
+                frmMain.g_oTables.m_oFIAPlot.DefaultDWMCoarseWoodyDebrisName + "_1", ODBCMgr.DSN_KEYS.MasterAuxDsnName, strDestFile);
+            oDao.CreateSQLiteTableLink(strTempAccdb, frmMain.g_oTables.m_oFIAPlot.DefaultDWMDuffLitterFuelName,
+                frmMain.g_oTables.m_oFIAPlot.DefaultDWMDuffLitterFuelName + "_1", ODBCMgr.DSN_KEYS.MasterAuxDsnName, strDestFile);
+            oDao.CreateSQLiteTableLink(strTempAccdb, frmMain.g_oTables.m_oFIAPlot.DefaultDWMFineWoodyDebrisName,
+                frmMain.g_oTables.m_oFIAPlot.DefaultDWMFineWoodyDebrisName + "_1", ODBCMgr.DSN_KEYS.MasterAuxDsnName, strDestFile);
+            oDao.CreateSQLiteTableLink(strTempAccdb, frmMain.g_oTables.m_oFIAPlot.DefaultDWMTransectSegmentName,
+                frmMain.g_oTables.m_oFIAPlot.DefaultDWMTransectSegmentName + "_1", ODBCMgr.DSN_KEYS.MasterAuxDsnName, strDestFile);
+
+            //insert data into sqlite tables
+            string strCopyConn = oAdo.getMDBConnString(strTempAccdb, "", "");
+            using (System.Data.OleDb.OleDbConnection copyConn = new System.Data.OleDb.OleDbConnection(strCopyConn))
+            {
+                copyConn.Open();
+
+                oAdo.m_strSQL = "INSERT INTO " + frmMain.g_oTables.m_oFIAPlot.DefaultDWMCoarseWoodyDebrisName + 
+                    "_1 SELECT * FROM " + frmMain.g_oTables.m_oFIAPlot.DefaultDWMCoarseWoodyDebrisName;
+                oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+
+                oAdo.m_strSQL = "INSERT INTO " + frmMain.g_oTables.m_oFIAPlot.DefaultDWMDuffLitterFuelName +
+                    "_1 SELECT * FROM " + frmMain.g_oTables.m_oFIAPlot.DefaultDWMDuffLitterFuelName;
+                oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+
+                oAdo.m_strSQL = "INSERT INTO " + frmMain.g_oTables.m_oFIAPlot.DefaultDWMFineWoodyDebrisName +
+                    "_1 SELECT * FROM " + frmMain.g_oTables.m_oFIAPlot.DefaultDWMFineWoodyDebrisName;
+                oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+
+                oAdo.m_strSQL = "INSERT INTO " + frmMain.g_oTables.m_oFIAPlot.DefaultDWMTransectSegmentName +
+                    "_1 SELECT * FROM " + frmMain.g_oTables.m_oFIAPlot.DefaultDWMTransectSegmentName;
+                oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+            }
+
+            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.MasterAuxDsnName))
+            {
+                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.MasterAuxDsnName);
             }
 
             oDataMgr = null;
