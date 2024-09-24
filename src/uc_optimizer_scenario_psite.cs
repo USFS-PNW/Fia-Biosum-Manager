@@ -918,9 +918,6 @@ namespace FIA_Biosum_Manager
 			string strName;
 			string strScenarioId;
 			string strPSiteId;
-			string strPSiteCn;
-			string strState;
-			string strCounty;
 			int x;
 
 			DataMgr oDataMgr = new DataMgr();
@@ -959,20 +956,14 @@ namespace FIA_Biosum_Manager
 					strName = "";
 					strScenarioId = "";
 					strPSiteId = "";
-					strPSiteCn = "";
-					strState = "";
-					strCounty = "";
 
-					oDataMgr.m_strSQL = "INSERT INTO scenario_psites (scenario_id,psite_id,psite_cn,name,trancd,biocd,selected_yn,state,county)" +
+					oDataMgr.m_strSQL = "INSERT INTO scenario_psites (scenario_id,psite_id,name,trancd,biocd,selected_yn)" +
 								   " VALUES ";
 
 					strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim();
 					strPSiteId = lstPSites.Items[x].SubItems[COLUMN_PSITEID].Text.Trim();
-					strPSiteCn = lstPSites.Items[x].SubItems[COLUMN_PSITECN].Text.Trim();
 					strName = lstPSites.Items[x].SubItems[COLUMN_PSITENAME].Text.Trim();
 					strName = oDataMgr.FixString(strName.Trim(), "'", "''");
-					strState = lstPSites.Items[x].SubItems[COLUMN_PSITESTATE].Text.Trim();
-					strCounty = lstPSites.Items[x].SubItems[COLUMN_PSITECOUNTY].Text.Trim();
 					if (lstPSites.Items[x].Checked == true)
 					{
 						strSelected = "Y";
@@ -1019,13 +1010,10 @@ namespace FIA_Biosum_Manager
                     }
 					oDataMgr.m_strSQL = oDataMgr.m_strSQL + "('" + strScenarioId + "'," +
 														   strPSiteId + ",'" +
-														   strPSiteCn + "','" +
 														   strName + "'," +
 														   strTranCd + "," +
 														   strBioCd + ",'" +
-														   strSelected + "','" +
-														   strState + "','" +
-														   strCounty + "')";
+														   strSelected + "')";
 					oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 					if (oDataMgr.m_intError != 0) break;
 				}

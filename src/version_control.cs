@@ -7267,31 +7267,6 @@ namespace FIA_Biosum_Manager
                 }
             }
 
-            // scenario_optimizer_rule_definitions.scenario_psites
-            string strOpConn = oDataMgr.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile);
-            using (System.Data.SQLite.SQLiteConnection opConn = new System.Data.SQLite.SQLiteConnection(strOpConn))
-            {
-                opConn.Open();
-
-                string strPsitesTable = Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName;
-
-                if (!oDataMgr.FieldExist(opConn, "SELECT * FROM " + strPsitesTable, "PSITE_CN"))
-                {
-                    string strSQL = "ALTER TABLE " + strPsitesTable + " ADD COLUMN PSITE_CN CHAR(12)";
-                    oDataMgr.SqlNonQuery(opConn, strSQL);
-                }
-                if (!oDataMgr.FieldExist(opConn, "SELECT * FROM " + strPsitesTable, "STATE"))
-                {
-                    string strSQL = "ALTER TABLE " + strPsitesTable + " ADD COLUMN STATE CHAR(2)";
-                    oDataMgr.SqlNonQuery(opConn, strSQL);
-                }
-                if (!oDataMgr.FieldExist(opConn, "SELECT * FROM " + strPsitesTable, "COUNTY"))
-                {
-                    string strSQL = "ALTER TABLE " + strPsitesTable + " ADD COLUMN COUNTY CHAR(40)";
-                    oDataMgr.SqlNonQuery(opConn, strSQL);
-                }
-            }
-
             //
             // Create master_aux.db and migrate values from master_aux.accdb
             //
