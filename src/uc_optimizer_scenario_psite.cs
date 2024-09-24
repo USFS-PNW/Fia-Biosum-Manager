@@ -40,10 +40,13 @@ namespace FIA_Biosum_Manager
 
 	    const int COLUMN_CHECKBOX=0;
 		const int COLUMN_PSITEID=1;
-		const int COLUMN_PSITENAME=2;
-		const int COLUMN_PSITEEXIST=3;
-		const int COLUMN_PSITEROADRAIL=4;
-		const int COLUMN_PSITEBIOPROCESSTYPE=5;
+		const int COLUMN_PSITECN=2;
+		const int COLUMN_PSITENAME=3;
+		const int COLUMN_PSITEEXIST=4;
+		const int COLUMN_PSITEROADRAIL=5;
+		const int COLUMN_PSITEBIOPROCESSTYPE=6;
+		const int COLUMN_PSITESTATE=7;
+		const int COLUMN_PSITECOUNTY=8;
 
 
 		public uc_optimizer_scenario_psite()
@@ -127,15 +130,15 @@ namespace FIA_Biosum_Manager
                                 Convert.ToInt32(ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).TransportationCode) - 1, 1];
                         if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).TransportationCode == "2")
                         {
-							lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text = "Railhead - Road To Rail Wood Transfer Point";
+							lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text = "Intermodal Transfer";
 						}
 						else if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).TransportationCode == "3")
                         {
-							lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text = "Rail Collector - PSite With Both Road And Rail Access";
+							lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text = "Facility on Rail";
 						}
                         else
                         {
-							lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text = "Processing Site - Road Access Only";
+							lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text = "Facility on Road";
 						}
                         //
                         //BIOMASS TYPE CODE
@@ -144,17 +147,21 @@ namespace FIA_Biosum_Manager
                             ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).m_strBioCdDescArray[
                                 Convert.ToInt32( ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).BiomassCode) - 1, 1];
 						if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).BiomassCode == "2")
-                        {
-							lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Chips - Chips Only";
+						{
+							lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Chips";
 
 						}
 						else if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).BiomassCode == "3")
-                        {
-							lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Both - Logs And Chips";
+						{
+							lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Both";
 						}
-                        else
+                        else if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(y).BiomassCode == "4")
                         {
-							lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Merchantable - Logs Only";
+                            lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Other";
+                        }
+                        else
+						{
+							lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text = "Merch";
 						}
                         break;
                        
@@ -491,11 +498,14 @@ namespace FIA_Biosum_Manager
 			this.m_oLvRowColors.InitializeRowCollection();
 
 			this.lstPSites.Columns.Add("", 2, HorizontalAlignment.Left);
-			this.lstPSites.Columns.Add("PSite_Id", 75, HorizontalAlignment.Left);
-			this.lstPSites.Columns.Add("Name", 300, HorizontalAlignment.Left);
-			this.lstPSites.Columns.Add("Site Exist", 65, HorizontalAlignment.Left);
-			this.lstPSites.Columns.Add("Site Type", 300, HorizontalAlignment.Left);
-			this.lstPSites.Columns.Add("Biomass Processing Type", 225, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("PSite ID", 55, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("PSite CN", 90, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("Name", 180, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("Exists", 40, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("Site Type", 110, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("Processing Type", 95, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("State", 40, HorizontalAlignment.Left);
+			this.lstPSites.Columns.Add("County", 75, HorizontalAlignment.Left);
 
 			this.lstPSites.Columns[COLUMN_CHECKBOX].Width = -2;
 
@@ -542,7 +552,7 @@ namespace FIA_Biosum_Manager
 					return;
 				}
 
-				p_dataMgr.m_strSQL = "SELECT DISTINCT p.psite_id,p.name,p.trancd,p.trancd_def,p.biocd,p.biocd_def,p.exists_yn " +
+				p_dataMgr.m_strSQL = "SELECT DISTINCT p.psite_id,p.psite_cn,p.name,p.trancd,p.trancd_def,p.biocd,p.biocd_def,p.exists_yn,p.state,p.county " +
 							 "FROM " + m_strPSiteTable + " AS p WHERE EXISTS (SELECT DISTINCT(t.psite_id) " +
 																		  "FROM " + this.m_strTravelTimeTable + " AS t " +
 																		  "WHERE t.psite_id=p.psite_id)";
@@ -567,6 +577,18 @@ namespace FIA_Biosum_Manager
 								COLUMN_PSITEID,
 								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITEID], false);
 
+							if (p_dataMgr.m_DataReader["psite_cn"] != System.DBNull.Value)
+							{
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(p_dataMgr.m_DataReader["psite_cn"].ToString());
+							}
+							else
+							{
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(" ");
+							}
+							this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
+								COLUMN_PSITECN,
+								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITECN], false);
+
 							if (p_dataMgr.m_DataReader["name"] != System.DBNull.Value)
 							{
 								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(p_dataMgr.m_DataReader["name"].ToString());
@@ -588,12 +610,12 @@ namespace FIA_Biosum_Manager
 							{
 								if (p_dataMgr.m_DataReader["exists_yn"].ToString().Trim() == "Y")
 								{
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Yes");
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Y");
 
 								}
 								else if (p_dataMgr.m_DataReader["exists_yn"].ToString().Trim() == "N")
 								{
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("No");
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("N");
 								}
 								else
 								{
@@ -620,27 +642,27 @@ namespace FIA_Biosum_Manager
 								byteTranCd = Convert.ToByte(p_dataMgr.m_DataReader["trancd"]);
 								if (Convert.ToByte(p_dataMgr.m_DataReader["trancd"]) == 1)
 								{
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Processing Site - Road Access Only");
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Facility on Road");
 									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 
 								}
 								else if (Convert.ToByte(p_dataMgr.m_DataReader["trancd"]) == 2) 
 								{
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Railhead - Road To Rail Wood Transfer Point");
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Intermodal Transfer");
 									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 								}
 								else
                                 {
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Rail Collector - PSite With Both Road And Rail Access");
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Facility on Rail");
 									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 								}
 							}
 							else
 							{
-								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Processing Site - Road Access Only");
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Facility on Road");
 								intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 
@@ -659,29 +681,34 @@ namespace FIA_Biosum_Manager
 							{
 
 								byteTranCd = Convert.ToByte(p_dataMgr.m_DataReader["biocd"]);
-								if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 1)
+								if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 2)
 								{
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Merchantable - Logs Only");
-									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
-
-								}
-								else if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 2)
-								{
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Chips - Chips Only");
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Chips");
 									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 								}
-								else
+								else if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 3)
 								{
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Both - Logs And Chips");
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Both");
+									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+								}
+                                else if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 4)
+                                {
+                                    this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Other");
+                                    intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+                                    this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+                                }
+                                else
+								{
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Merch");
 									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 								}
 							}
 							else
 							{
-								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Merchantable - Logs Only");
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Merch");
 								intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 
@@ -690,6 +717,33 @@ namespace FIA_Biosum_Manager
 							this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
 								COLUMN_PSITEBIOPROCESSTYPE,
 								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITEBIOPROCESSTYPE], false);
+
+							//state
+							if (p_dataMgr.m_DataReader["state"] != System.DBNull.Value)
+							{
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(p_dataMgr.m_DataReader["state"].ToString());
+							}
+							else
+							{
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(" ");
+							}
+							this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
+								COLUMN_PSITESTATE,
+								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITESTATE], false);
+
+							//county
+							if (p_dataMgr.m_DataReader["county"] != System.DBNull.Value)
+							{
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(p_dataMgr.m_DataReader["county"].ToString());
+							}
+							else
+							{
+								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(" ");
+							}
+							this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
+								COLUMN_PSITECOUNTY,
+								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITECOUNTY], false);
+
 							x++;
 						}
 					}
@@ -864,6 +918,9 @@ namespace FIA_Biosum_Manager
 			string strName;
 			string strScenarioId;
 			string strPSiteId;
+			string strPSiteCn;
+			string strState;
+			string strCounty;
 			int x;
 
 			DataMgr oDataMgr = new DataMgr();
@@ -902,14 +959,20 @@ namespace FIA_Biosum_Manager
 					strName = "";
 					strScenarioId = "";
 					strPSiteId = "";
+					strPSiteCn = "";
+					strState = "";
+					strCounty = "";
 
-					oDataMgr.m_strSQL = "INSERT INTO scenario_psites (scenario_id,psite_id,name,trancd,biocd,selected_yn)" +
+					oDataMgr.m_strSQL = "INSERT INTO scenario_psites (scenario_id,psite_id,psite_cn,name,trancd,biocd,selected_yn,state,county)" +
 								   " VALUES ";
 
 					strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim();
 					strPSiteId = lstPSites.Items[x].SubItems[COLUMN_PSITEID].Text.Trim();
+					strPSiteCn = lstPSites.Items[x].SubItems[COLUMN_PSITECN].Text.Trim();
 					strName = lstPSites.Items[x].SubItems[COLUMN_PSITENAME].Text.Trim();
 					strName = oDataMgr.FixString(strName.Trim(), "'", "''");
+					strState = lstPSites.Items[x].SubItems[COLUMN_PSITESTATE].Text.Trim();
+					strCounty = lstPSites.Items[x].SubItems[COLUMN_PSITECOUNTY].Text.Trim();
 					if (lstPSites.Items[x].Checked == true)
 					{
 						strSelected = "Y";
@@ -918,15 +981,15 @@ namespace FIA_Biosum_Manager
 					{
 						strSelected = "N";
 					}
-					if (lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim() == "Processing Site - Road Access Only")
+					if (lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim() == "Facility on Road")
 					{
 						strTranCd = "1";
 					}
-					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim() == "Railhead - Road To Rail Wood Transfer Point")
+					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim() == "Intermodal Transfer")
                     {
 						strTranCd = "2";
                     }
-					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim() == "Rail Collector - PSite With Both Road And Rail Access")
+					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim() == "Facility on Rail")
                     {
 						strTranCd = "3";
                     }
@@ -934,28 +997,35 @@ namespace FIA_Biosum_Manager
                     {
 						strTranCd = "9";
                     }
-					if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Merchantable - Logs Only")
+					if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Merch")
                     {
 						strBioCd = "1";
                     }
-					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Chips - Chips Only")
+					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Chips")
                     {
 						strBioCd = "2";
                     }
-					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Both - Logs And Chips")
+					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Both")
                     {
 						strBioCd = "3";
                     }
-					else
+                    else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Other")
+                    {
+                        strBioCd = "4";
+                    }
+                    else
                     {
 						strBioCd = "9";
                     }
 					oDataMgr.m_strSQL = oDataMgr.m_strSQL + "('" + strScenarioId + "'," +
 														   strPSiteId + ",'" +
+														   strPSiteCn + "','" +
 														   strName + "'," +
 														   strTranCd + "," +
 														   strBioCd + ",'" +
-														   strSelected + "')";
+														   strSelected + "','" +
+														   strState + "','" +
+														   strCounty + "')";
 					oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 					if (oDataMgr.m_intError != 0) break;
 				}
@@ -1357,6 +1427,9 @@ namespace FIA_Biosum_Manager
 										case 3:
 											this.m_Combo.Text = "Both - Logs And Chips";
 											break;
+										case 4:
+											this.m_Combo.Text = "Other - Nongeneric Wood Facility with Potential";
+											break;
 									}
 
 								}
@@ -1492,6 +1565,10 @@ namespace FIA_Biosum_Manager
 							case "Both - Logs And Chips":
 								strBioCd = "3";
 								strBioCdDef = "Both";
+								break;
+							case "Other - Nongeneric Wood Facility with Potential":
+								strBioCd = "4";
+								strBioCdDef = "Other";
 								break;
 						}
 					}

@@ -217,6 +217,7 @@ namespace FIA_Biosum_Manager
             static public string GisAuditDbDsnName { get { return "GIS_AUDIT"; } }
             static public string GisTravelTimesDsnName { get { return "TRAVEL_TIMES"; } }
             static public string WorkTablesDsnName { get { return "WORK_TABLES"; } }
+            static public string MasterAuxDsnName { get { return "MASTER_AUX"; } }
         }
 
     }

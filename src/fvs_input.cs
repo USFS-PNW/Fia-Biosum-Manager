@@ -211,7 +211,7 @@ namespace FIA_Biosum_Manager
                 this.m_intError = 0;
                 this.m_strInDir = m_strDataDirectory + "\\" + p_strVariant.Trim();
                 this.m_strVariant = p_strVariant.Trim();
-                this.strFVSInMDBFile = "FVSIn.accdb";
+                this.strFVSInDBFile = "FVSIn.accdb";
 
                 CheckDir();
                 DeleteFiles();
@@ -272,6 +272,29 @@ namespace FIA_Biosum_Manager
             }
         }
 
+        public void StartSqlite(string p_strVariant, string p_strDebugFile)
+        {
+            try
+            {
+                this.m_strDebugFile = p_strDebugFile;
+                DebugLogMessage("*****START*****" + System.DateTime.Now.ToString() + "\r\n");
+                DebugLogMessage("//Start(" + m_strDataDirectory + "," + p_strVariant + ")\r\n", 1);
+
+                this.m_intError = 0;
+                this.m_strInDir = m_strDataDirectory + "\\" + p_strVariant.Trim();
+                this.m_strVariant = p_strVariant.Trim();
+                this.strFVSInDBFile = "FVSIn.db";
+
+                CheckDir();
+                DeleteFiles();
+
+            }
+            finally
+            {
+
+            }
+        }
+
         private void CreateFVSWorkTables()
         {
             /* Sometimes when processing multiple variants during FVSIn workflow, 
@@ -307,17 +330,17 @@ namespace FIA_Biosum_Manager
         public void CopyFVSBlankDatabaseToFVSInDir(string strFVSInDir)
         {
             env p_env = new env();
-            string strFVSInSourcePath = p_env.strAppDir + "\\db\\" + this.strFVSInMDBFile;
-            string strFVSInDestPath = strFVSInDir + "\\" + this.strFVSInMDBFile;
+            string strFVSInSourcePath = p_env.strAppDir + "\\db\\" + this.strFVSInDBFile;
+            string strFVSInDestPath = strFVSInDir + "\\" + this.strFVSInDBFile;
             File.Copy(strFVSInSourcePath, strFVSInDestPath, true);
             string strFVSInConn = m_ado.getMDBConnString(strFVSInDestPath, "", "");
 
             using (var conn = new OleDbConnection(strFVSInConn))
             {
                 conn.Open();
-                string strSQL = Queries.FVS.FVSInput.GroupAddFilesAndKeywords.UpdateAllPlots(this.strFVSInMDBFile);
+                string strSQL = Queries.FVS.FVSInput.GroupAddFilesAndKeywords.UpdateAllPlots(this.strFVSInDBFile);
                 m_ado.SqlNonQuery(conn, strSQL);
-                strSQL = Queries.FVS.FVSInput.GroupAddFilesAndKeywords.UpdateAllStands(this.strFVSInMDBFile);
+                strSQL = Queries.FVS.FVSInput.GroupAddFilesAndKeywords.UpdateAllStands(this.strFVSInDBFile);
                 m_ado.SqlNonQuery(conn, strSQL);
             }
 
@@ -353,9 +376,9 @@ namespace FIA_Biosum_Manager
             }
 
             //Destination FVSIn.accdb tables
-            m_dao.CreateTableLink(this.m_strTempMDBFile, "FVS_StandInit", this.m_strInDir + "\\" + this.strFVSInMDBFile,
+            m_dao.CreateTableLink(this.m_strTempMDBFile, "FVS_StandInit", this.m_strInDir + "\\" + this.strFVSInDBFile,
                 "FVS_StandInit", true);
-            m_dao.CreateTableLink(this.m_strTempMDBFile, "FVS_TreeInit", this.m_strInDir + "\\" + this.strFVSInMDBFile,
+            m_dao.CreateTableLink(this.m_strTempMDBFile, "FVS_TreeInit", this.m_strInDir + "\\" + this.strFVSInDBFile,
                 "FVS_TreeInit", true);
 
 
@@ -418,9 +441,9 @@ namespace FIA_Biosum_Manager
                 m_dao = new dao_data_access();
             }
 
-            m_dao.CreateTableLink(this.m_strTempMDBFile, "FVS_StandInit", this.m_strInDir + "\\" + this.strFVSInMDBFile,
+            m_dao.CreateTableLink(this.m_strTempMDBFile, "FVS_StandInit", this.m_strInDir + "\\" + this.strFVSInDBFile,
                 "FVS_StandInit", true);
-            m_dao.CreateTableLink(this.m_strTempMDBFile, "FVS_TreeInit", this.m_strInDir + "\\" + this.strFVSInMDBFile,
+            m_dao.CreateTableLink(this.m_strTempMDBFile, "FVS_TreeInit", this.m_strInDir + "\\" + this.strFVSInDBFile,
                 "FVS_TreeInit", true);
             if (m_dao.m_DaoDatabase != null)
             {
@@ -449,7 +472,7 @@ namespace FIA_Biosum_Manager
                 System.IO.StreamWriter p_sw = new System.IO.StreamWriter(p_fs);
                 p_sw.WriteLine("{0} {1} {2}", "C",
                     '"' + "FVS Input Database for " + this.m_strVariant + " variant" + '"',
-                    this.strFVSInMDBFile);
+                    this.strFVSInDBFile);
                 p_sw.Close();
                 p_fs.Close();
                 p_sw = null;
@@ -616,7 +639,7 @@ namespace FIA_Biosum_Manager
         /// </summary>
         private void UpdateFvsInConfigurationTable()
         {
-            string strFvsInPathFile = m_strProjDir + "/fvs/data/" + m_strVariant + "/" + strFVSInMDBFile;
+            string strFvsInPathFile = m_strProjDir + "/fvs/data/" + m_strVariant + "/" + strFVSInDBFile;
             using (var conn = new OleDbConnection(m_ado.getMDBConnString(strFvsInPathFile, "", "")))
             {
                 conn.Open();
@@ -1253,7 +1276,7 @@ namespace FIA_Biosum_Manager
         /// full directory path and file name to the fvsin mdb file
         /// </summary>
         /// <returns>string name of the Input MDB File</returns>
-        public string strFVSInMDBFile
+        public string strFVSInDBFile
         {
             set
             {
@@ -1264,6 +1287,7 @@ namespace FIA_Biosum_Manager
                 return this.m_strFVSInMDBFile;
             }
         }
+
 
         public void DebugLogMessage(string strMessage)
         {
@@ -4039,18 +4063,18 @@ namespace FIA_Biosum_Manager
             }
             // Link legacy FVS_StandInit to temp database
             this.m_strInDir = m_strDataDirectory + "\\" + strVariant.Trim();
-            this.strFVSInMDBFile = "FVSIn.accdb";
+            this.strFVSInDBFile = "FVSIn.accdb";
             bool bExistsLegacyFvsIn = false;
-            if (File.Exists(this.m_strInDir + "\\" + this.strFVSInMDBFile))
+            if (File.Exists(this.m_strInDir + "\\" + this.strFVSInDBFile))
             {
-                string strConn = oAdo.getMDBConnString(this.m_strInDir + "\\" + this.strFVSInMDBFile, "", "");
+                string strConn = oAdo.getMDBConnString(this.m_strInDir + "\\" + this.strFVSInDBFile, "", "");
                 using (OleDbConnection oCheckConn = new OleDbConnection(strConn))
                 {
                     oCheckConn.Open();
                     if (oAdo.TableExist(oCheckConn, "FVS_StandInit"))
                     {
                         //source FVSIn.accdb tables
-                        oDao.CreateTableLink(strTempMDB, "FVS_StandInit", this.m_strInDir + "\\" + this.strFVSInMDBFile,
+                        oDao.CreateTableLink(strTempMDB, "FVS_StandInit", this.m_strInDir + "\\" + this.strFVSInDBFile,
                             "FVS_StandInit", true);
                         DebugLogMessage("Created table link to BioSum FVS_StandInit table \r\n", 2);
                         bExistsLegacyFvsIn = true;
@@ -4250,8 +4274,8 @@ namespace FIA_Biosum_Manager
         {
             ado_data_access oAdo = new ado_data_access();
             this.m_strInDir = m_strDataDirectory + "\\" + strVariant.Trim();
-            this.strFVSInMDBFile = "FVSIn.accdb";
-            if (File.Exists(this.m_strInDir + "\\" + this.strFVSInMDBFile))
+            this.strFVSInDBFile = "FVSIn.accdb";
+            if (File.Exists(this.m_strInDir + "\\" + this.strFVSInDBFile))
             {
                 string strConn = oAdo.getMDBConnString(strTempMDBFile, "", "");
                 using (OleDbConnection oAccessConn = new OleDbConnection(strConn))

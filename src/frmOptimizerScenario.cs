@@ -6500,10 +6500,10 @@ namespace FIA_Biosum_Manager
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
 
-                        strSql = $@"INSERT into processing_site SELECT distinct source.psite_id, name, TRANCD, TRANCD_DEF, BIOCD, BIOCD_DEF, 
+                        strSql = $@"INSERT into processing_site SELECT distinct source.psite_id, PSITE_CN, name, TRANCD, TRANCD_DEF, BIOCD, BIOCD_DEF, 
                                  EXISTS_YN, LAT, LON, STATE, CITY, MILL_TYPE, COUNTY,  STATUS, '' AS NOTES 
                                  FROM p.processing_site source INNER JOIN travel_time tt ON source.PSITE_ID = tt.PSITE_ID 
-                                 group by source.PSITE_ID, NAME, TRANCD, TRANCD_DEF, BIOCD, BIOCD_DEF, EXISTS_YN, LAT, LON, STATE, CITY, MILL_TYPE, COUNTY,  STATUS";
+                                 group by source.PSITE_ID, PSITE_CN, NAME, TRANCD, TRANCD_DEF, BIOCD, BIOCD_DEF, EXISTS_YN, LAT, LON, STATE, CITY, MILL_TYPE, COUNTY,  STATUS";
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSql + "\r\n");
                         SQLite.SqlNonQuery(oLoadConn, strSql);

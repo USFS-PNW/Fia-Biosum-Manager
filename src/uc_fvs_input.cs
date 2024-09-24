@@ -81,6 +81,7 @@ namespace FIA_Biosum_Manager
         private TabPage tabPage2;
         private TextBox txtDataDir;
         private Button btnCreateFvsInput;
+        //private Button btnCreateFvsInputNew;
         public ListView lstFvsInput;
         private ComboBox cmbAction;
         private Label lblRxCnt;
@@ -186,6 +187,7 @@ namespace FIA_Biosum_Manager
             this.lblFiaDatamartFile = new System.Windows.Forms.Label();
             this.txtDataDir = new System.Windows.Forms.TextBox();
             this.btnCreateFvsInput = new System.Windows.Forms.Button();
+            //this.btnCreateFvsInputNew = new System.Windows.Forms.Button();
             this.lstFvsInput = new System.Windows.Forms.ListView();
             this.cmbAction = new System.Windows.Forms.ComboBox();
             this.lblRxCnt = new System.Windows.Forms.Label();
@@ -272,6 +274,7 @@ namespace FIA_Biosum_Manager
             this.tabPage2.Controls.Add(this.lblFiaDatamartFile);
             this.tabPage2.Controls.Add(this.txtDataDir);
             this.tabPage2.Controls.Add(this.btnCreateFvsInput);
+            //this.tabPage2.Controls.Add(this.btnCreateFvsInputNew);
             this.tabPage2.Controls.Add(this.lstFvsInput);
             this.tabPage2.Controls.Add(this.cmbAction);
             this.tabPage2.Controls.Add(this.lblRxCnt);
@@ -354,6 +357,15 @@ namespace FIA_Biosum_Manager
             this.btnCreateFvsInput.TabIndex = 5;
             this.btnCreateFvsInput.Text = "Create FVS Input Database File";
             this.btnCreateFvsInput.Click += new System.EventHandler(this.btnCreateFvsInput_Click);
+            //
+            // btnCreateFvsInputNew
+            //
+            //this.btnCreateFvsInputNew.Location = new System.Drawing.Point(200, 424);
+            //this.btnCreateFvsInputNew.Name = "btnCreateFvsInputNew";
+            //this.btnCreateFvsInputNew.Size = new System.Drawing.Size(125, 32);
+            //this.btnCreateFvsInputNew.TabIndex = 5;
+            //this.btnCreateFvsInputNew.Text = "Run New Process";
+            //this.btnCreateFvsInputNew.Click += new System.EventHandler(this.btnCreateFvsInputNew_Click);
             // 
             // lstFvsInput
             // 
@@ -1123,6 +1135,7 @@ namespace FIA_Biosum_Manager
             this.cmbAction.Enabled = true;
             this.btnRefresh.Enabled = true;
             this.btnCreateFvsInput.Enabled = true;
+            //this.btnCreateFvsInputNew.Enabled = true;
             this.btnChkAll.Enabled = true;
             this.btnClearAll.Enabled = true;
             this.btnClose.Enabled = true;
@@ -1296,6 +1309,168 @@ namespace FIA_Biosum_Manager
             this.m_thread.IsBackground = true;
             this.m_thread.Start();
 
+        }
+
+        public void CreateFia2FvsInputFilesSqlite()
+        {
+            if (this.lstFvsInput.CheckedItems.Count == 0)
+            {
+                MessageBox.Show("No Boxes Are Checked", "Append", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+                return;
+            }
+
+            // Make sure the database is chosen and that such a file exists
+            bool bValidFile = true;
+            if (!String.IsNullOrEmpty(txtFIADatamart.Text))
+            {
+                if (System.IO.File.Exists(txtFIADatamart.Text))
+                {
+                    // Do nothing; All is well
+                }
+                else
+                {
+                    bValidFile = false;
+                }
+            }
+            else
+            {
+                bValidFile = false;
+            }
+            if (bValidFile == false)
+            {
+                MessageBox.Show("You must specify a source input database on the FVSIn FIA2FVS tab before proceeding!", "FIA Biosum");
+                return;
+            }
+
+            // Make sure a group is selected
+            if (cmbSelectedGroup.SelectedIndex < 0)
+            {
+                MessageBox.Show("You must specify a group on the FVSIn FIA2FVS tab before proceeding!", "FIA Biosum");
+                return;
+            }
+
+            // Check for existing files
+            List<string> lstVariants = new List<string>();
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+            for (int x = 0; x <= this.lstFvsInput.Items.Count - 1; x++)
+            {
+                if (this.lstFvsInput.Items[x].Checked)
+                {
+                    var item = this.lstFvsInput.Items[x];
+                    string strVariant = item.SubItems[1].Text.Trim();
+                    string strInDirAndFile = this.txtDataDir.Text + "\\" + strVariant + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
+                    if (!lstVariants.Contains(strInDirAndFile))
+                    {
+                        if (File.Exists(strInDirAndFile))
+                        {
+                            // Make sure we have both the required tables
+                            string connFiadbDb = oDataMgr.GetConnectionString(strInDirAndFile);
+                            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(connFiadbDb))
+                            {
+                                con.Open();
+                                if (oDataMgr.TableExist(con, Tables.FIA2FVS.DefaultFvsInputStandTableName) &&
+                                    oDataMgr.TableExist(con, Tables.FIA2FVS.DefaultFvsInputTreeTableName))
+                                {
+                                    // Only add to warnings if both tables exist
+                                    lstVariants.Add(strInDirAndFile);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (lstVariants.Count > 0)
+            {
+                System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                sb.Append("The FVS input databases listed below exist for the selected variants. ");
+                sb.Append("Click 'Yes' to append data to the existing databases or 'No' to overwrite them with new data. \r\n\r\n");
+                foreach (var item in lstVariants)
+                {
+                    sb.Append(item + "\r");
+                }
+                DialogResult res = MessageBox.Show(sb.ToString(), "FIA BioSum", MessageBoxButtons.YesNoCancel);
+                switch (res)
+                {
+                    case DialogResult.Cancel:
+                        return;
+                    case DialogResult.Yes:
+                        m_bOverwrite = false;
+                        break;
+                    case DialogResult.No:
+                        break;
+                }
+
+                if (!m_bOverwrite)
+                {
+                    m_dictVariantStates = new Dictionary<string, List<string>>();    // Re-initialize dictionary
+                    string connFiadbDb = oDataMgr.GetConnectionString(this.txtFIADatamart.Text);
+                    using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(connFiadbDb))
+                    {
+                        con.Open();
+                        foreach (var strVariant in lstVariants)
+                        {
+                            oDataMgr.SqlNonQuery(con, "ATTACH '" + strVariant + "' as target");
+                            string strQuery = "SELECT distinct STATE FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                                              " INTERSECT SELECT distinct STATE" +
+                                              " FROM target." + Tables.FIA2FVS.DefaultFvsInputStandTableName;
+                            List<string> lstStates = oDataMgr.getStringList(con, strQuery);
+                            if (lstStates.Count > 0)
+                            {
+                                m_dictVariantStates.Add(strVariant, lstStates);
+                            }
+                            oDataMgr.SqlNonQuery(con, "DETACH DATABASE 'target'");
+                        }
+                    }
+                }
+                if (m_dictVariantStates != null &&
+                    m_dictVariantStates.Keys.Count > 0)
+                {
+                    sb = new System.Text.StringBuilder();
+                    sb.Append("The FVS input databases listed below already contain records for state codes ");
+                    sb.Append("in the FIA Datamart input SQLite database. ");
+                    sb.Append("Click 'Yes' to replace the existing stands ");
+                    sb.Append("and trees for those states or 'No' to stop this process.\r\n\r\n");
+                    foreach (var strVariant in m_dictVariantStates.Keys)
+                    {
+                        sb.Append(strVariant + "\r");
+                    }
+                    res = MessageBox.Show(sb.ToString(), "FIA BioSum", MessageBoxButtons.YesNoCancel);
+                    switch (res)
+                    {
+                        case DialogResult.Cancel:
+                            return;
+                        case DialogResult.Yes:
+                            break;
+                        case DialogResult.No:
+                            return;
+                    }
+                }
+
+            }
+
+            this.m_frmTherm = new frmTherm(((frmDialog)ParentForm), "EXTRACT FIA2FVS FVS INPUT FILE",
+                             "FIA2FVS FVS Input", "2");
+
+            this.m_frmTherm.Visible = false;
+            this.m_frmTherm.lblMsg.Text = "";
+            this.Enabled = false;
+
+            //progress bar 1: represents a single process
+            this.m_frmTherm.progressBar1.Minimum = 0;
+            this.m_frmTherm.progressBar1.Maximum = 100;
+            this.m_frmTherm.progressBar1.Value = 0;
+            this.m_frmTherm.lblMsg.Text = "";
+            this.m_frmTherm.Show(this);
+
+            //progress bar 2: represents overall progress 
+            this.m_frmTherm.progressBar2.Minimum = 0;
+            this.m_frmTherm.progressBar2.Maximum = 100;
+            this.m_frmTherm.progressBar2.Value = 0;
+            this.m_frmTherm.lblMsg2.Text = "Overall Progress";
+            this.m_thread = new Thread(new ThreadStart(ExtractFIA2FVSRecordsSqlite));
+            this.m_thread.IsBackground = true;
+            this.m_thread.Start();
         }
 
         private string[] GetCheckedListBoxItems(CheckedListBox chkListBox)
@@ -1693,6 +1868,223 @@ namespace FIA_Biosum_Manager
             }
         }
 
+        private void ExtractFIA2FVSRecordsSqlite()
+        {
+            m_intError = 0;
+            string strCurVariant = "";
+            string strVariant = "";
+            m_strDebugFile = this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\biosum_fvs_input_debug.txt";
+            if (File.Exists(m_strDebugFile)) System.IO.File.Delete(m_strDebugFile);
+
+
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//ExtractFIA2FVSRecords\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+
+            dao_data_access oDao = new dao_data_access();
+            ado_data_access oAdo = new ado_data_access();
+
+            try
+            {
+                fvs_input p_fvsinput = new fvs_input(this.m_strProjDir, this.m_frmTherm);
+                ConfigureFvsInput(p_fvsinput);
+
+                // Get a temporary database name for processing
+                string strTempMDB = frmMain.g_oUtils.getRandomFile(this.m_oEnv.strTempDir, "accdb");
+                // Create a temporary mdb that will contain all our required table links
+                oDao.CreateMDB(strTempMDB);
+                // Check to see if the input DSN exists and if so, delete so we can add
+                ODBCMgr odbcmgr = new ODBCMgr();
+                if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName))
+                {
+                    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName);
+                }
+                // Also delete FIABIOSUM_PLOT_INPUT DSN as it may be pointing to the same database
+                if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.PlotInputDsnName))
+                {
+                    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.PlotInputDsnName);
+                }
+                odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName, p_fvsinput.strSourceFiaDb);
+                if (!string.IsNullOrEmpty(odbcmgr.m_strError))
+                {
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "ODBCMgr error: " + odbcmgr.m_strError + "\r\n");
+                    return;
+                }
+                else
+                {
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Created DSN for " + ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName + "\r\n");
+                }
+
+                // Link to cond table
+                m_strCondTable = m_oQueries.m_oFIAPlot.m_strCondTable;
+                string strCondMdb = m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Condition);
+                oDao.CreateTableLink(strTempMDB, m_strCondTable, strCondMdb, m_strCondTable);
+                // Link to tree table
+                m_strTreeTable = m_oQueries.m_oFIAPlot.m_strTreeTable;
+                string strTreeMdb = m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree);
+                oDao.CreateTableLink(strTempMDB, m_strTreeTable, strTreeMdb, m_strTreeTable);
+
+                // Link to the input SQLite table; Takes the whole path to the DB
+                string strSourceStandTableAlias = Tables.FIA2FVS.DefaultFvsInputStandTableName + "_1";
+                string strSourceTreeTableAlias = Tables.FIA2FVS.DefaultFvsInputTreeTableName + "_1";
+                oDao.CreateSQLiteTableLink(strTempMDB, Tables.FIA2FVS.DefaultFvsInputStandTableName, strSourceStandTableAlias,
+                    ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName, p_fvsinput.strSourceFiaDb);
+                if (oDao.m_intError != 0)
+                {
+                    return;
+                }
+
+                // Set the index, required to by ODBC to update
+                //oDao.CreatePrimaryKeyIndex(strTempMDB, strSourceStandTableAlias, "STAND_CN");
+                oDao.CreateSQLiteTableLink(strTempMDB, Tables.FIA2FVS.DefaultFvsInputTreeTableName, strSourceTreeTableAlias,
+                    ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName, p_fvsinput.strSourceFiaDb);
+                // Set the index, required to by ODBC to update
+                //oDao.CreatePrimaryKeyIndex(strTempMDB, strSourceTreeTableAlias, "TREE_CN");
+                if (oDao.m_intError != 0)
+                {
+                    return;
+                }
+
+                int steps = m_VariantCountsDict.Keys.Count * 2;
+                int interval = (int)Math.Floor((double)90 / steps);
+                int intValue = interval;
+                for (int x = 0; x <= this.lstFvsInput.Items.Count - 1; x++)
+                {
+                    frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar2, "Value", intValue);
+                    if ((bool)frmMain.g_oDelegate.GetListViewItemPropertyValue(lstFvsInput, x, "Checked", false) == true)
+                    {
+                        //get the variant
+                        strVariant = frmMain.g_oDelegate.GetListViewSubItemPropertyValue(lstFvsInput, x, COL_VARIANT, "Text", false).ToString().Trim();
+                        string strInDirAndFile = p_fvsinput.strDataDirectory + "\\" + strVariant + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
+                        //see if this is a new variant
+                        if (strVariant.Trim().ToUpper() != strCurVariant.Trim().ToUpper())
+                        {
+                            frmMain.g_oDelegate.SetControlPropertyValue(
+                                m_frmTherm.progressBar1,
+                                "Value", 1);
+                            strCurVariant = strVariant;
+
+                            // Running old BioSum FVSIn process
+                            p_fvsinput.Start(strCurVariant, m_strDebugFile);
+                            intValue = intValue + interval;
+                            frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar2, "Value", intValue);
+                            // Done
+
+                            List<string> lstStates = new List<string>();
+                            if (m_dictVariantStates != null &&
+                                m_dictVariantStates.ContainsKey(strInDirAndFile))
+                            {
+                                lstStates = m_dictVariantStates[strInDirAndFile];
+                            }
+                            p_fvsinput.StartFIA2FVS(odbcmgr, oDao, oAdo, strTempMDB, m_bOverwrite, m_strDebugFile,
+                                strCurVariant, lstStates, strSourceStandTableAlias,
+                                strSourceTreeTableAlias);
+                        }
+                        frmMain.g_oDelegate.SetControlPropertyValue(
+                            m_frmTherm.progressBar1,
+                            "Value", 7);
+
+                        // This happens at the end
+                        if (File.Exists(strInDirAndFile) == true) //redundant check here, but leaves " " instead of new "0"
+                        {
+                            int[] fvsInputRecordCounts = getFVSSQLiteInputRecordCounts(strInDirAndFile);
+                            frmMain.g_oDelegate.SetListViewSubItemPropertyValue(this.lstFvsInput, x, COL_STANDCOUNT, "Text",
+                                Convert.ToString(fvsInputRecordCounts[0]));
+                            frmMain.g_oDelegate.SetListViewSubItemPropertyValue(this.lstFvsInput, x, COL_TREECOUNT, "Text",
+                                Convert.ToString(fvsInputRecordCounts[1]));
+                        }
+
+                    }
+
+                    frmMain.g_oDelegate.SetControlPropertyValue(
+                            m_frmTherm.progressBar1,
+                            "Value",
+                            frmMain.g_oDelegate.GetControlPropertyValue(
+                                    m_frmTherm.progressBar1, "Maximum", false));
+                    Application.DoEvents();
+                    if (bAbort == true) break;
+
+                }
+
+                // Copy KCP files to output directory
+                string[] arrKcpFiles = { Tables.FIA2FVS.KcpFileBiosumKeywords };
+                foreach (var kcp in arrKcpFiles)
+                {
+                    string sourcePath = frmMain.g_oEnv.strAppDir + @"\scripts\" + kcp;
+                    string targetPath = this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\" + kcp + Tables.FIA2FVS.KcpFileExtension;
+                    File.Copy(sourcePath, targetPath, true);
+                }
+
+                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName);    // Clean up DSN
+                if (!string.IsNullOrEmpty(odbcmgr.m_strError))
+                {
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "ODBCMgr error: " + odbcmgr.m_strError + "\r\n");
+                }
+                else
+                {
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Removed DSN for " + ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName + "\r\n");
+                }
+
+                frmMain.g_oDelegate.SetControlPropertyValue(
+                            m_frmTherm.progressBar2,
+                            "Value",
+                            frmMain.g_oDelegate.GetControlPropertyValue(
+                                    m_frmTherm.progressBar2, "Maximum", false));
+
+            }
+            catch (ThreadInterruptedException err)
+            {
+                m_intError = -1;
+                MessageBox.Show("Threading Interruption Error " + err.Message.ToString());
+            }
+            catch (ThreadAbortException)
+            {
+                if (oAdo != null)
+                {
+                    if (oAdo.m_DataSet != null)
+                    {
+                        oAdo.m_DataSet.Clear();
+                        oAdo.m_DataSet.Dispose();
+                    }
+                    oAdo = null;
+                }
+                m_intError = -1;
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("!!Error!! \n" +
+                    "Module - uc_fvs_input:ExtractFIA2FVSRecords  \n" +
+                    "Err Msg - " + err.Message.ToString().Trim(),
+                    "ExtractFIA2FVSRecords", System.Windows.Forms.MessageBoxButtons.OK,
+                    System.Windows.Forms.MessageBoxIcon.Exclamation);
+                this.m_intError = -1;
+            }
+            finally
+            {
+                if (oAdo != null)
+                {
+                    if (oAdo.m_DataSet != null)
+                    {
+                        oAdo.m_DataSet.Clear();
+                        oAdo.m_DataSet.Dispose();
+                    }
+                    oAdo = null;
+                }
+                //destroy the object and release it from memory
+                oDao.m_DaoWorkspace.Close();
+                oDao.m_DaoWorkspace = null;
+                oDao = null;
+                if (m_intError == 0)
+                {
+                    ThreadCleanUp();
+                }
+            }
+        }
         private void btnAppend_Click(object sender, System.EventArgs e)
         {
             if (this.lstFvsInput.CheckedItems.Count == 0)
@@ -1801,6 +2193,7 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oDelegate.SetControlPropertyValue(cmbAction, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnRefresh, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnCreateFvsInput, "Enabled", true);
+                //frmMain.g_oDelegate.SetControlPropertyValue(btnCreateFvsInputNew, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnChkAll, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnClearAll, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnClose, "Enabled", true);
@@ -2154,6 +2547,17 @@ namespace FIA_Biosum_Manager
             //}
         }
 
+        private void btnCreateFvsInputNew_Click(object sender, EventArgs e)
+        {
+            if (this.lstFvsInput.CheckedItems.Count == 0)
+            {
+                MessageBox.Show("No Boxes Are Checked", "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+                return;
+            }
+
+            CreateFia2FvsInputFilesSqlite();
+        }
+
         private void cmbAction_SelectedIndexChanged(object sender, EventArgs e)
         {
 
@@ -2226,6 +2630,8 @@ namespace FIA_Biosum_Manager
             //btns under lstFvsInput position based on tabControl perimeter
             btnCreateFvsInput.Top = lstFvsInput.Bottom + 80;
             btnCreateFvsInput.Left = lstFvsInput.Right - btnCreateFvsInput.Width;
+            //btnCreateFvsInputNew.Top = lstFvsInput.Bottom + 80;
+            //btnCreateFvsInputNew.Left = lstFvsInput.Right - btnCreateFvsInput.Width - 5 - btnCreateFvsInputNew.Width;
 
             cmbAction.Top = btnCreateFvsInput.Top + (int)(btnCreateFvsInput.Height * .5) - (int)(cmbAction.Height * .5);
             cmbAction.Left = btnCreateFvsInput.Left - cmbAction.Width - 5;

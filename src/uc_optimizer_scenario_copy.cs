@@ -153,7 +153,7 @@ namespace FIA_Biosum_Manager
                 oDataMgr.SqlQueryReader(conn, "SELECT scenario_id,description " +
                        "FROM scenario " +
                        "WHERE scenario_id IS NOT NULL AND " +
-                                         "LENGTH(TRIM(scenario_id)) > 0");
+                                         "LENGTH(TRIM(scenario_id)) > 0 ORDER BY scenario_id");
 
                 x = 0;
                 if (oDataMgr.m_DataReader.HasRows)

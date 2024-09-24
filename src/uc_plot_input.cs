@@ -4891,149 +4891,216 @@ namespace FIA_Biosum_Manager
 	        return p_ado.m_intError;
 	    }
 
-	  //  private int ImportGrowthRemovalMortality(ado_data_access p_ado)
-	  //  {
-		 //   string strFIADBDbFile = "";
-		 //   strFIADBDbFile = (string) frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox) txtFiadbInputFile, "Text", false);
-		 //   strFIADBDbFile = strFIADBDbFile.Trim();
-	  //      string strMasterAuxDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.accdb";
-   //         m_strGRMComponentTable = (string) frmMain.g_oDelegate.GetControlPropertyValue(cmbGrmComponentTable, "Text", false);
+        private int ImportDownWoodyMaterialsSqlite(DataMgr p_dataMgr)
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.ImportDownWoodyMaterials\r\n");
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//\r\n");
+            }
 
-   //         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-   //         {
-   //             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "\r\n//\r\n");
-   //             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.ImportGrowthRemovalMortality\r\n");
-   //             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//\r\n");
-   //         }
 
-   //         DataMgr oDataMgr = new DataMgr();
-   //         using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strFIADBDbFile)))
-   //         {
-   //             conn.Open();
-   //             if (!oDataMgr.TableExist(conn, m_strGRMComponentTable))
-	  //          {
-	  //              DialogResult dlgResult = MessageBox.Show(
-	  //                  "!!Error!!\nModule - uc_plot_input:ImportGrowthRemovalMortality\n" + "Err Msg - " +
-	  //                  m_strGRMComponentTable +
-	  //                  " was not found in FIADB Source!\r\nDo you wish to continue plot data input without GRM Calibration Data?",
-	  //                  "FIA Biosum", MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation);
+            SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM data...Stand By");
+            SetThermValue(m_frmTherm.progressBar1, "Maximum", 14);
+            SetThermValue(m_frmTherm.progressBar1, "Minimum", 0);
+            SetThermValue(m_frmTherm.progressBar1, "Value", 0);
 
-	  //              //Disable functionality related to GRM option down the pipeline
-   //                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.CheckBox) chkGrmImport, "Checked", false); //unchecked value?
-	  //              if (dlgResult == DialogResult.No)
-	  //              {
-	  //                  return -1; //terminates plot input processing.
-	  //              }
-	  //              else if (dlgResult == DialogResult.Yes)
-	  //              {
-	  //                  //m_intError == 0 keeps performing plot input.
-	  //                  return 0;
-	  //              }
-	  //          }
-	  //      }
+            string strFIADBDbFile = "";
+            strFIADBDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtFiadbInputFile, "Text", false);
+            strFIADBDbFile = strFIADBDbFile.Trim();
+            String strFiaCWD = "fiadb_dwm_cwd_input";
+            String strFiaFWD = "fiadb_dwm_fwd_input";
+            String strFiaDL = "fiadb_dwm_dufflitter_input";
+            String strFiaTS = "fiadb_dwm_transect_segment_input";
 
-	  //      using (var conn = new OleDbConnection(p_ado.getMDBConnString(strMasterAuxDb, "","")))
-	  //      {
-	  //          conn.Open();
-	  //          string message = "";
-	  //          bool bGrmStandTableNotFound = !p_ado.TableExist(conn, m_strGrmStandTable);
-	  //          bool bGrmTreeTableNotFound = !p_ado.TableExist(conn, m_strGrmTreeTable);
-	  //          if (bGrmStandTableNotFound)
-	  //          {
-	  //              message += m_strGrmStandTable + " could not be found in Master_Aux!\r\n";
-	  //          }
-	  //          if (bGrmTreeTableNotFound)
-	  //          {
-	  //              message += m_strGrmTreeTable + " could not be found in Master_Aux!\r\n";
-	  //          }
-	  //          if (bGrmStandTableNotFound || bGrmTreeTableNotFound)
-	  //          {
-	  //              DialogResult dlgResult = MessageBox.Show(
-	  //                  "!!Error!!\nModule - uc_plot_input:ImportGrowthRemovalMortality\n" + "Err Msg - " +
-	  //                  message + "\r\nDo you wish to continue plot data input without GRM Calibration Data?",
-	  //                  "FIA Biosum", MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation);
+            //If any of the FIADB source DWM tables do not exist,
+            //show message, uncheck the DWM checkbox, return early
+            DataMgr oDataMgr = new DataMgr();
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strFIADBDbFile)))
+            {
+                conn.Open();
+                if (!oDataMgr.TableExist(conn, m_strDwmCwdTable) ||
+                    !oDataMgr.TableExist(conn, m_strDwmFwdTable) ||
+                    !oDataMgr.TableExist(conn, m_strDwmDuffLitterTable) ||
+                    !oDataMgr.TableExist(conn, m_strDwmTransectSegmentTable))
+                {
+                    Func<bool, string, string> result = (boolTableExists, tableName) =>
+                    {
+                        if (!boolTableExists) return "\r\n - " + tableName;
+                        else return "";
+                    };
+                    DialogResult dlgResult = MessageBox.Show(String.Format(
+                            "!!Error!!\nModule - uc_plot_input:ImportDownWoodyMaterials\n" + "Err Msg - " +
+                            "At least one FIADB Source DWM table was not found:{0}{1}{2}{3}\r\nDo you wish to continue plot data input without DWM?",
+                            result(oDataMgr.TableExist(conn, m_strDwmCwdTable), m_strDwmCwdTable),
+                            result(oDataMgr.TableExist(conn, m_strDwmFwdTable), m_strDwmFwdTable),
+                            result(oDataMgr.TableExist(conn, m_strDwmDuffLitterTable), m_strDwmDuffLitterTable),
+                            result(oDataMgr.TableExist(conn, m_strDwmTransectSegmentTable), m_strDwmTransectSegmentTable)),
+                        "FIA Biosum",
+                        MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation);
+                    //Disable functionality related to DWM option down the pipeline
+                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.CheckBox)chkDwmImport,
+                        "Checked", false);
 
-	  //              //Disable functionality related to GRM option down the pipeline
-	  //              frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.CheckBox)chkGrmImport, "Checked", false);
-	  //              if (dlgResult == DialogResult.No)
-	  //              {
-	  //                  return -1; //terminates plot input processing.
-	  //              }
-	  //              else if (dlgResult == DialogResult.Yes)
-	  //              {
-	  //                  //m_intError == 0 keeps performing plot input.
-	  //                  return 0;
-	  //              }
-	  //          }
-	  //      }
+                    if (dlgResult == DialogResult.No)
+                    {
+                        return -1; //terminates plot input processing.
+                    }
+                    else if (dlgResult == DialogResult.Yes)
+                    {
+                        //m_intError == 0 keeps performing plot input.
+                        return 0;
+                    }
+                }
+            }
 
-	  //      dao_data_access p_dao = new dao_data_access();
-   //         //Link to FIADB source tables in temporary database
-   //         p_dao.CreateSQLiteTableLink(m_strTempMDBFile, m_strGRMComponentTable, m_strGRMComponentTable, ODBCMgr.DSN_KEYS.PlotInputDsnName,
-   //             strFIADBDbFile);
-   //         p_dao.CreateSQLiteTableLink(m_strTempMDBFile, (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbPlotTable,
-   //                 "Text", false), "FIADB_PLOT_TABLE", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-   //         p_dao.CreateSQLiteTableLink(m_strTempMDBFile, (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbCondTable,
-   //                 "Text", false), "FIADB_COND_TABLE", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-   //         p_dao.CreateSQLiteTableLink(m_strTempMDBFile, (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbTreeTable,
-   //                 "Text", false), "FIADB_TREE_TABLE", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-	  //      //Link to Master_AUX.accdb GRM dest tables in temporary database
-	  //      p_dao.CreateTableLink(m_strTempMDBFile, m_strGrmStandTable, strMasterAuxDb, m_strGrmStandTable);
-	  //      p_dao.CreateTableLink(m_strTempMDBFile, m_strGrmTreeTable, strMasterAuxDb, m_strGrmTreeTable);
+            return p_dataMgr.m_intError;
+        }
 
-	  //      m_intError = p_dao.m_intError;
-			//if (p_dao.m_intError != 0) {
-			//	return p_dao.m_intError;
-			//}
-	  //      p_dao.m_DaoWorkspace.Close();
-	  //      p_dao.m_DaoWorkspace = null;
-	  //      p_dao.m_DaoDbEngine = null;
-	  //      p_dao = null;
+      //  private int ImportGrowthRemovalMortality(ado_data_access p_ado)
+      //  {
+      //   string strFIADBDbFile = "";
+      //   strFIADBDbFile = (string) frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox) txtFiadbInputFile, "Text", false);
+      //   strFIADBDbFile = strFIADBDbFile.Trim();
+      //      string strMasterAuxDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.accdb";
+      //         m_strGRMComponentTable = (string) frmMain.g_oDelegate.GetControlPropertyValue(cmbGrmComponentTable, "Text", false);
 
-	  //      using (var conn = new OleDbConnection(p_ado.getMDBConnString(m_strTempMDBFile, "", "")))
-	  //      {
-	  //          conn.Open();
+        //         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+        //         {
+        //             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "\r\n//\r\n");
+        //             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.ImportGrowthRemovalMortality\r\n");
+        //             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//\r\n");
+        //         }
 
-   //             //Check if any records with biosum_status_cd=9 exist in the GRM stand and tree tables and remove them
-	  //          p_ado.m_strSQL = "DELETE FROM " + m_strGrmStandTable + " WHERE biosum_status_cd=9;";
-	  //          p_ado.SqlNonQuery(conn, p_ado.m_strSQL);
-	  //          p_ado.m_strSQL = "DELETE FROM " + m_strGrmTreeTable + " WHERE biosum_status_cd=9;";
-	  //          p_ado.SqlNonQuery(conn, p_ado.m_strSQL);
+        //         DataMgr oDataMgr = new DataMgr();
+        //         using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strFIADBDbFile)))
+        //         {
+        //             conn.Open();
+        //             if (!oDataMgr.TableExist(conn, m_strGRMComponentTable))
+        //          {
+        //              DialogResult dlgResult = MessageBox.Show(
+        //                  "!!Error!!\nModule - uc_plot_input:ImportGrowthRemovalMortality\n" + "Err Msg - " +
+        //                  m_strGRMComponentTable +
+        //                  " was not found in FIADB Source!\r\nDo you wish to continue plot data input without GRM Calibration Data?",
+        //                  "FIA Biosum", MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation);
 
-   //             //Insert into GRM_Stand
-   //             p_ado.m_strSQL = "INSERT INTO " + m_strGrmStandTable +
-   //                              " (biosum_cond_id, biosum_plot_id, biosum_status_cd, plt_cn, prev_plt_cn, measurement_period) " +
-   //                              "SELECT c.biosum_cond_id, tp.biosum_plot_id, 9 as biosum_status_cd, tp.cn, fp.cn, " +
-   //                                  "IIF(tp.remper IS NOT NULL, CInt(tp.remper), CInt(DateDiff('m', " +
-   //                                  "DateSerial(fp.measyear,fp.measmon,fp.measday), " +
-   //                                  "DateSerial(tp.measyear,tp.measmon,tp.measday))/12.0)) " +
-   //                              "FROM (tempplot tp INNER JOIN fiadb_plot_table fp ON trim(tp.prev_plt_cn) = fp.cn) " +
-   //                                  "INNER JOIN tempcond c ON trim(c.PLT_CN) = trim(tp.CN);";
-   //             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-   //                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-   //             p_ado.SqlNonQuery(conn, p_ado.m_strSQL);
+        //              //Disable functionality related to GRM option down the pipeline
+        //                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.CheckBox) chkGrmImport, "Checked", false); //unchecked value?
+        //              if (dlgResult == DialogResult.No)
+        //              {
+        //                  return -1; //terminates plot input processing.
+        //              }
+        //              else if (dlgResult == DialogResult.Yes)
+        //              {
+        //                  //m_intError == 0 keeps performing plot input.
+        //                  return 0;
+        //              }
+        //          }
+        //      }
 
-	  //          //Insert into GRM_Tree
-	  //          p_ado.m_strSQL = "INSERT INTO " + m_strGrmTreeTable +
-   //                              " (biosum_cond_id, biosum_status_cd, fvs_tree_id, tre_cn, prev_tre_cn, " +
-   //                                  "dia_begin, dia_end, " +
-   //                                  "micr_component_al_forest, tre_statuscd, prev_tre_statuscd) " +
-	  //                           "SELECT tt.biosum_cond_id, 9 as biosum_status_cd, " +
-   //                                  "tt.SUBP*1000+tt.TREE, tt.CN, grm.PREV_TRE_CN, " +
-   //                                  "grm.DIA_BEGIN, grm.DIA_END, " +
-   //                                  "grm.MICR_COMPONENT_AL_FOREST, tt.STATUSCD, ft.STATUSCD " +
-	  //                           "FROM (" + m_strGRMComponentTable + " grm " +
-   //                                  "INNER JOIN temptree tt ON grm.TRE_CN = tt.CN) " +
-   //                                  "LEFT JOIN FIADB_TREE_TABLE ft ON grm.PREV_TRE_CN = ft.CN; ";
-   //             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-   //                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-   //             p_ado.SqlNonQuery(conn, p_ado.m_strSQL);
-	  //      }
+        //      using (var conn = new OleDbConnection(p_ado.getMDBConnString(strMasterAuxDb, "","")))
+        //      {
+        //          conn.Open();
+        //          string message = "";
+        //          bool bGrmStandTableNotFound = !p_ado.TableExist(conn, m_strGrmStandTable);
+        //          bool bGrmTreeTableNotFound = !p_ado.TableExist(conn, m_strGrmTreeTable);
+        //          if (bGrmStandTableNotFound)
+        //          {
+        //              message += m_strGrmStandTable + " could not be found in Master_Aux!\r\n";
+        //          }
+        //          if (bGrmTreeTableNotFound)
+        //          {
+        //              message += m_strGrmTreeTable + " could not be found in Master_Aux!\r\n";
+        //          }
+        //          if (bGrmStandTableNotFound || bGrmTreeTableNotFound)
+        //          {
+        //              DialogResult dlgResult = MessageBox.Show(
+        //                  "!!Error!!\nModule - uc_plot_input:ImportGrowthRemovalMortality\n" + "Err Msg - " +
+        //                  message + "\r\nDo you wish to continue plot data input without GRM Calibration Data?",
+        //                  "FIA Biosum", MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation);
 
-	  //      return p_ado.m_intError;
-	  //  }
-	
-		private void ThermCancel(object sender, System.EventArgs e)
+        //              //Disable functionality related to GRM option down the pipeline
+        //              frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.CheckBox)chkGrmImport, "Checked", false);
+        //              if (dlgResult == DialogResult.No)
+        //              {
+        //                  return -1; //terminates plot input processing.
+        //              }
+        //              else if (dlgResult == DialogResult.Yes)
+        //              {
+        //                  //m_intError == 0 keeps performing plot input.
+        //                  return 0;
+        //              }
+        //          }
+        //      }
+
+        //      dao_data_access p_dao = new dao_data_access();
+        //         //Link to FIADB source tables in temporary database
+        //         p_dao.CreateSQLiteTableLink(m_strTempMDBFile, m_strGRMComponentTable, m_strGRMComponentTable, ODBCMgr.DSN_KEYS.PlotInputDsnName,
+        //             strFIADBDbFile);
+        //         p_dao.CreateSQLiteTableLink(m_strTempMDBFile, (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbPlotTable,
+        //                 "Text", false), "FIADB_PLOT_TABLE", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
+        //         p_dao.CreateSQLiteTableLink(m_strTempMDBFile, (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbCondTable,
+        //                 "Text", false), "FIADB_COND_TABLE", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
+        //         p_dao.CreateSQLiteTableLink(m_strTempMDBFile, (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbTreeTable,
+        //                 "Text", false), "FIADB_TREE_TABLE", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
+        //      //Link to Master_AUX.accdb GRM dest tables in temporary database
+        //      p_dao.CreateTableLink(m_strTempMDBFile, m_strGrmStandTable, strMasterAuxDb, m_strGrmStandTable);
+        //      p_dao.CreateTableLink(m_strTempMDBFile, m_strGrmTreeTable, strMasterAuxDb, m_strGrmTreeTable);
+
+        //      m_intError = p_dao.m_intError;
+        //if (p_dao.m_intError != 0) {
+        //	return p_dao.m_intError;
+        //}
+        //      p_dao.m_DaoWorkspace.Close();
+        //      p_dao.m_DaoWorkspace = null;
+        //      p_dao.m_DaoDbEngine = null;
+        //      p_dao = null;
+
+        //      using (var conn = new OleDbConnection(p_ado.getMDBConnString(m_strTempMDBFile, "", "")))
+        //      {
+        //          conn.Open();
+
+        //             //Check if any records with biosum_status_cd=9 exist in the GRM stand and tree tables and remove them
+        //          p_ado.m_strSQL = "DELETE FROM " + m_strGrmStandTable + " WHERE biosum_status_cd=9;";
+        //          p_ado.SqlNonQuery(conn, p_ado.m_strSQL);
+        //          p_ado.m_strSQL = "DELETE FROM " + m_strGrmTreeTable + " WHERE biosum_status_cd=9;";
+        //          p_ado.SqlNonQuery(conn, p_ado.m_strSQL);
+
+        //             //Insert into GRM_Stand
+        //             p_ado.m_strSQL = "INSERT INTO " + m_strGrmStandTable +
+        //                              " (biosum_cond_id, biosum_plot_id, biosum_status_cd, plt_cn, prev_plt_cn, measurement_period) " +
+        //                              "SELECT c.biosum_cond_id, tp.biosum_plot_id, 9 as biosum_status_cd, tp.cn, fp.cn, " +
+        //                                  "IIF(tp.remper IS NOT NULL, CInt(tp.remper), CInt(DateDiff('m', " +
+        //                                  "DateSerial(fp.measyear,fp.measmon,fp.measday), " +
+        //                                  "DateSerial(tp.measyear,tp.measmon,tp.measday))/12.0)) " +
+        //                              "FROM (tempplot tp INNER JOIN fiadb_plot_table fp ON trim(tp.prev_plt_cn) = fp.cn) " +
+        //                                  "INNER JOIN tempcond c ON trim(c.PLT_CN) = trim(tp.CN);";
+        //             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+        //                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
+        //             p_ado.SqlNonQuery(conn, p_ado.m_strSQL);
+
+        //          //Insert into GRM_Tree
+        //          p_ado.m_strSQL = "INSERT INTO " + m_strGrmTreeTable +
+        //                              " (biosum_cond_id, biosum_status_cd, fvs_tree_id, tre_cn, prev_tre_cn, " +
+        //                                  "dia_begin, dia_end, " +
+        //                                  "micr_component_al_forest, tre_statuscd, prev_tre_statuscd) " +
+        //                           "SELECT tt.biosum_cond_id, 9 as biosum_status_cd, " +
+        //                                  "tt.SUBP*1000+tt.TREE, tt.CN, grm.PREV_TRE_CN, " +
+        //                                  "grm.DIA_BEGIN, grm.DIA_END, " +
+        //                                  "grm.MICR_COMPONENT_AL_FOREST, tt.STATUSCD, ft.STATUSCD " +
+        //                           "FROM (" + m_strGRMComponentTable + " grm " +
+        //                                  "INNER JOIN temptree tt ON grm.TRE_CN = tt.CN) " +
+        //                                  "LEFT JOIN FIADB_TREE_TABLE ft ON grm.PREV_TRE_CN = ft.CN; ";
+        //             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+        //                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
+        //             p_ado.SqlNonQuery(conn, p_ado.m_strSQL);
+        //      }
+
+        //      return p_ado.m_intError;
+        //  }
+
+        private void ThermCancel(object sender, System.EventArgs e)
 		{
 			string strMsg = "Do you wish to cancel appending plot data (Y/N)?";
 			DialogResult result = MessageBox.Show(strMsg,"Cancel Process", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
