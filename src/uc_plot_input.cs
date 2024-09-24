@@ -4914,7 +4914,46 @@ namespace FIA_Biosum_Manager
             String strFiaDL = "fiadb_dwm_dufflitter_input";
             String strFiaTS = "fiadb_dwm_transect_segment_input";
 
+            //If any of the FIADB source DWM tables do not exist,
+            //show message, uncheck the DWM checkbox, return early
+            DataMgr oDataMgr = new DataMgr();
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strFIADBDbFile)))
+            {
+                conn.Open();
+                if (!oDataMgr.TableExist(conn, m_strDwmCwdTable) ||
+                    !oDataMgr.TableExist(conn, m_strDwmFwdTable) ||
+                    !oDataMgr.TableExist(conn, m_strDwmDuffLitterTable) ||
+                    !oDataMgr.TableExist(conn, m_strDwmTransectSegmentTable))
+                {
+                    Func<bool, string, string> result = (boolTableExists, tableName) =>
+                    {
+                        if (!boolTableExists) return "\r\n - " + tableName;
+                        else return "";
+                    };
+                    DialogResult dlgResult = MessageBox.Show(String.Format(
+                            "!!Error!!\nModule - uc_plot_input:ImportDownWoodyMaterials\n" + "Err Msg - " +
+                            "At least one FIADB Source DWM table was not found:{0}{1}{2}{3}\r\nDo you wish to continue plot data input without DWM?",
+                            result(oDataMgr.TableExist(conn, m_strDwmCwdTable), m_strDwmCwdTable),
+                            result(oDataMgr.TableExist(conn, m_strDwmFwdTable), m_strDwmFwdTable),
+                            result(oDataMgr.TableExist(conn, m_strDwmDuffLitterTable), m_strDwmDuffLitterTable),
+                            result(oDataMgr.TableExist(conn, m_strDwmTransectSegmentTable), m_strDwmTransectSegmentTable)),
+                        "FIA Biosum",
+                        MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation);
+                    //Disable functionality related to DWM option down the pipeline
+                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.CheckBox)chkDwmImport,
+                        "Checked", false);
 
+                    if (dlgResult == DialogResult.No)
+                    {
+                        return -1; //terminates plot input processing.
+                    }
+                    else if (dlgResult == DialogResult.Yes)
+                    {
+                        //m_intError == 0 keeps performing plot input.
+                        return 0;
+                    }
+                }
+            }
 
             return p_dataMgr.m_intError;
         }

@@ -81,7 +81,7 @@ namespace FIA_Biosum_Manager
         private TabPage tabPage2;
         private TextBox txtDataDir;
         private Button btnCreateFvsInput;
-        private Button btnCreateFvsInputNew;
+        //private Button btnCreateFvsInputNew;
         public ListView lstFvsInput;
         private ComboBox cmbAction;
         private Label lblRxCnt;
@@ -187,7 +187,7 @@ namespace FIA_Biosum_Manager
             this.lblFiaDatamartFile = new System.Windows.Forms.Label();
             this.txtDataDir = new System.Windows.Forms.TextBox();
             this.btnCreateFvsInput = new System.Windows.Forms.Button();
-            this.btnCreateFvsInputNew = new System.Windows.Forms.Button();
+            //this.btnCreateFvsInputNew = new System.Windows.Forms.Button();
             this.lstFvsInput = new System.Windows.Forms.ListView();
             this.cmbAction = new System.Windows.Forms.ComboBox();
             this.lblRxCnt = new System.Windows.Forms.Label();
@@ -274,7 +274,7 @@ namespace FIA_Biosum_Manager
             this.tabPage2.Controls.Add(this.lblFiaDatamartFile);
             this.tabPage2.Controls.Add(this.txtDataDir);
             this.tabPage2.Controls.Add(this.btnCreateFvsInput);
-            this.tabPage2.Controls.Add(this.btnCreateFvsInputNew);
+            //this.tabPage2.Controls.Add(this.btnCreateFvsInputNew);
             this.tabPage2.Controls.Add(this.lstFvsInput);
             this.tabPage2.Controls.Add(this.cmbAction);
             this.tabPage2.Controls.Add(this.lblRxCnt);
@@ -360,12 +360,12 @@ namespace FIA_Biosum_Manager
             //
             // btnCreateFvsInputNew
             //
-            this.btnCreateFvsInputNew.Location = new System.Drawing.Point(200, 424);
-            this.btnCreateFvsInputNew.Name = "btnCreateFvsInputNew";
-            this.btnCreateFvsInputNew.Size = new System.Drawing.Size(125, 32);
-            this.btnCreateFvsInputNew.TabIndex = 5;
-            this.btnCreateFvsInputNew.Text = "Run New Process";
-            this.btnCreateFvsInputNew.Click += new System.EventHandler(this.btnCreateFvsInputNew_Click);
+            //this.btnCreateFvsInputNew.Location = new System.Drawing.Point(200, 424);
+            //this.btnCreateFvsInputNew.Name = "btnCreateFvsInputNew";
+            //this.btnCreateFvsInputNew.Size = new System.Drawing.Size(125, 32);
+            //this.btnCreateFvsInputNew.TabIndex = 5;
+            //this.btnCreateFvsInputNew.Text = "Run New Process";
+            //this.btnCreateFvsInputNew.Click += new System.EventHandler(this.btnCreateFvsInputNew_Click);
             // 
             // lstFvsInput
             // 
@@ -1135,7 +1135,7 @@ namespace FIA_Biosum_Manager
             this.cmbAction.Enabled = true;
             this.btnRefresh.Enabled = true;
             this.btnCreateFvsInput.Enabled = true;
-            this.btnCreateFvsInputNew.Enabled = true;
+            //this.btnCreateFvsInputNew.Enabled = true;
             this.btnChkAll.Enabled = true;
             this.btnClearAll.Enabled = true;
             this.btnClose.Enabled = true;
@@ -2193,7 +2193,7 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oDelegate.SetControlPropertyValue(cmbAction, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnRefresh, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnCreateFvsInput, "Enabled", true);
-                frmMain.g_oDelegate.SetControlPropertyValue(btnCreateFvsInputNew, "Enabled", true);
+                //frmMain.g_oDelegate.SetControlPropertyValue(btnCreateFvsInputNew, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnChkAll, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnClearAll, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnClose, "Enabled", true);
@@ -2630,8 +2630,8 @@ namespace FIA_Biosum_Manager
             //btns under lstFvsInput position based on tabControl perimeter
             btnCreateFvsInput.Top = lstFvsInput.Bottom + 80;
             btnCreateFvsInput.Left = lstFvsInput.Right - btnCreateFvsInput.Width;
-            btnCreateFvsInputNew.Top = lstFvsInput.Bottom + 80;
-            btnCreateFvsInputNew.Left = lstFvsInput.Right - btnCreateFvsInput.Width - 5 - btnCreateFvsInputNew.Width;
+            //btnCreateFvsInputNew.Top = lstFvsInput.Bottom + 80;
+            //btnCreateFvsInputNew.Left = lstFvsInput.Right - btnCreateFvsInput.Width - 5 - btnCreateFvsInputNew.Width;
 
             cmbAction.Top = btnCreateFvsInput.Top + (int)(btnCreateFvsInput.Height * .5) - (int)(cmbAction.Height * .5);
             cmbAction.Left = btnCreateFvsInput.Left - cmbAction.Width - 5;
