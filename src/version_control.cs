@@ -552,7 +552,7 @@ namespace FIA_Biosum_Manager
                     }
                     //Upgrade to 5.10.1 from 5.9.0 or 5.10.0
                     else if ((Convert.ToInt16(m_strAppVerArray[APP_VERSION_MAJOR]) == 5 &&
-                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR1]) >= 10 &&
+                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR1]) == 10 &&
                         Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR2]) == 1) &&
                         (Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MAJOR]) == 5 &&
                         Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR1]) >= 9))
@@ -561,13 +561,27 @@ namespace FIA_Biosum_Manager
                         UpdateProjectVersionFile(strProjVersionFile);
                         bPerformCheck = false;
                     }
-                    // Upgrade to 5.10.1 to 5.11.0 (Sequence numbers, Optimizer, and Processor to SQLite)
+                    // Upgrade to 5.10.1 to 5.11.1 (Sequence numbers, Optimizer, Processor to SQLite, new field on Psites table)
                     else if ((Convert.ToInt16(m_strAppVerArray[APP_VERSION_MAJOR]) == 5 &&
-                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR1]) == 11) &&
+                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR1]) == 11 &&
+                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR2]) == 1) &&
                         (Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MAJOR]) == 5 &&
-                        Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR1]) >= 10))
+                        Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR1]) == 10 &&
+                        Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR2]) == 1))
                     {
                         UpdateDatasources_5_11_0();
+                        UpdateDatasources_5_11_1();
+                        UpdateProjectVersionFile(strProjVersionFile);
+                        bPerformCheck = false;
+                    }
+                    // Upgrade from 5.11.0 to 5.11.1 (new field on Psites table)
+                    else if ((Convert.ToInt16(m_strAppVerArray[APP_VERSION_MAJOR]) == 5 &&
+                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR1]) == 11 &&
+                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR2]) == 1) &&
+                        (Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MAJOR]) == 5 &&
+                        Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR1]) > 10 ))
+                    {
+                        UpdateDatasources_5_11_1();
                         UpdateProjectVersionFile(strProjVersionFile);
                         bPerformCheck = false;
                     }
@@ -7233,10 +7247,6 @@ namespace FIA_Biosum_Manager
         {
             DataMgr oDataMgr = new DataMgr();
             Datasource oProjectDs = new Datasource();
-            ODBCMgr odbcmgr = new ODBCMgr();
-            dao_data_access oDao = new dao_data_access();
-            ado_data_access oAdo = new ado_data_access();
-            utils oUtils = new utils();
 
             // Find path to existing tables
             oProjectDs.m_strDataSourceMDBFile = this.ReferenceProjectDirectory + "\\db\\project.mdb";
@@ -7291,6 +7301,18 @@ namespace FIA_Biosum_Manager
                     oDataMgr.SqlNonQuery(opConn, strSQL);
                 }
             }
+
+            oDataMgr = null;
+            oProjectDs = null;
+        }
+
+        public void UpdateDatasources_5_11_2()
+        {
+            DataMgr oDataMgr = new DataMgr();
+            ODBCMgr odbcmgr = new ODBCMgr();
+            dao_data_access oDao = new dao_data_access();
+            ado_data_access oAdo = new ado_data_access();
+            utils oUtils = new utils();
 
             //
             // Create master_aux.db and migrate values from master_aux.accdb
@@ -7371,7 +7393,7 @@ namespace FIA_Biosum_Manager
             {
                 copyConn.Open();
 
-                oAdo.m_strSQL = "INSERT INTO " + frmMain.g_oTables.m_oFIAPlot.DefaultDWMCoarseWoodyDebrisName + 
+                oAdo.m_strSQL = "INSERT INTO " + frmMain.g_oTables.m_oFIAPlot.DefaultDWMCoarseWoodyDebrisName +
                     "_1 SELECT * FROM " + frmMain.g_oTables.m_oFIAPlot.DefaultDWMCoarseWoodyDebrisName;
                 oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
 
@@ -7392,17 +7414,14 @@ namespace FIA_Biosum_Manager
             {
                 odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.MasterAuxDsnName);
             }
-
-            oDataMgr = null;
-            oProjectDs = null;
         }
-            
-   
+
+
 
             // Method to compare two versions. 
             // Returns 1 if v2 is smaller, -1 
             // if v1 is smaller, 0 if equal 
-        public int VersionCompare(string v1, string v2)
+            public int VersionCompare(string v1, string v2)
         {
             // vnum stores each numeric 
             // part of version 
