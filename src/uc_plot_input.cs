@@ -4914,16 +4914,22 @@ namespace FIA_Biosum_Manager
             String strFiaDL = "fiadb_dwm_dufflitter_input";
             String strFiaTS = "fiadb_dwm_transect_segment_input";
 
+            string strMasterAuxDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.db";
+
             //If any of the FIADB source DWM tables do not exist,
             //show message, uncheck the DWM checkbox, return early
             DataMgr oDataMgr = new DataMgr();
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strFIADBDbFile)))
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strMasterAuxDb)))
             {
                 conn.Open();
-                if (!oDataMgr.TableExist(conn, m_strDwmCwdTable) ||
-                    !oDataMgr.TableExist(conn, m_strDwmFwdTable) ||
-                    !oDataMgr.TableExist(conn, m_strDwmDuffLitterTable) ||
-                    !oDataMgr.TableExist(conn, m_strDwmTransectSegmentTable))
+
+                oDataMgr.m_strSQL = "ATTACH DATABASE " + strFIADBDbFile + " AS fiadb";
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+                if (!oDataMgr.TableExist(conn, "fiadb." + m_strDwmCwdTable) ||
+                    !oDataMgr.TableExist(conn, "fiadb." + m_strDwmFwdTable) ||
+                    !oDataMgr.TableExist(conn, "fiadb." + m_strDwmDuffLitterTable) ||
+                    !oDataMgr.TableExist(conn, "fiadb." + m_strDwmTransectSegmentTable))
                 {
                     Func<bool, string, string> result = (boolTableExists, tableName) =>
                     {
@@ -4933,10 +4939,10 @@ namespace FIA_Biosum_Manager
                     DialogResult dlgResult = MessageBox.Show(String.Format(
                             "!!Error!!\nModule - uc_plot_input:ImportDownWoodyMaterials\n" + "Err Msg - " +
                             "At least one FIADB Source DWM table was not found:{0}{1}{2}{3}\r\nDo you wish to continue plot data input without DWM?",
-                            result(oDataMgr.TableExist(conn, m_strDwmCwdTable), m_strDwmCwdTable),
-                            result(oDataMgr.TableExist(conn, m_strDwmFwdTable), m_strDwmFwdTable),
-                            result(oDataMgr.TableExist(conn, m_strDwmDuffLitterTable), m_strDwmDuffLitterTable),
-                            result(oDataMgr.TableExist(conn, m_strDwmTransectSegmentTable), m_strDwmTransectSegmentTable)),
+                            result(oDataMgr.TableExist(conn, "fiadb." + m_strDwmCwdTable), "fiadb." + m_strDwmCwdTable),
+                            result(oDataMgr.TableExist(conn, "fiadb." + m_strDwmFwdTable), "fiadb." + m_strDwmFwdTable),
+                            result(oDataMgr.TableExist(conn, "fiadb." + m_strDwmDuffLitterTable), "fiadb." + m_strDwmDuffLitterTable),
+                            result(oDataMgr.TableExist(conn, "fiadb." + m_strDwmTransectSegmentTable), "fiadb." + m_strDwmTransectSegmentTable)),
                         "FIA Biosum",
                         MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation);
                     //Disable functionality related to DWM option down the pipeline
