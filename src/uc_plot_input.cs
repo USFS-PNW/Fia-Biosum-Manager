@@ -2927,6 +2927,7 @@ namespace FIA_Biosum_Manager
                         GetThermValue(m_frmTherm.progressBar1, "Maximum"));
                     SetThermValue(m_frmTherm.progressBar2, "Value", 80);
                     m_intError = ImportDownWoodyMaterials(m_ado);
+                   // m_intError = ImportDownWoodyMaterialsSqlite(oDataMgr);
                 }
 
 				//Growth Removal Mortality Section
@@ -3187,6 +3188,21 @@ namespace FIA_Biosum_Manager
 	        }
 	    }
 
+        private void DeleteFromTablesWhereFilterSqlite (DataMgr p_dataMgr, System.Data.SQLite.SQLiteConnection conn, string[] strTableNames, string strDeleteFilter)
+        {
+            foreach (string table in strTableNames)
+            {
+                if (p_dataMgr.TableExist(conn, table))
+                {
+                    p_dataMgr.m_strSQL = "DELETE FROM " + table + strDeleteFilter;
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
+                            p_dataMgr.m_strSQL + "\r\n");
+                }
+            }
+        }
+
 	    /// <summary>
 	    /// After importing DWM table data from FIADB to Master.mdb, join the DWM table with the plot/cond tables to get the BSCID
 	    /// </summary>
@@ -3204,6 +3220,36 @@ namespace FIA_Biosum_Manager
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
 	    }
+
+        private void UpdateDwmBiosumCondIdsSqlite(ado_data_access p_ado, string strDestTable = null)
+        {
+            ODBCMgr p_odbc = new ODBCMgr();
+            dao_data_access p_dao = new dao_data_access();
+
+            string strMasterAuxDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.db";
+
+            if (p_odbc.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.MasterAuxDsnName))
+            {
+                p_odbc.RemoveUserDSN(ODBCMgr.DSN_KEYS.MasterAuxDsnName);
+            }
+            p_odbc.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.MasterAuxDsnName, strMasterAuxDb);
+            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, strDestTable, strDestTable + "_1", ODBCMgr.DSN_KEYS.MasterAuxDsnName, strMasterAuxDb);
+
+            p_ado.m_strSQL = String.Format(
+                "UPDATE {0} t INNER JOIN ({1} p INNER JOIN {2} c ON c.biosum_plot_id = p.biosum_plot_id) ON (p.cn = t.plt_cn) AND (t.CONDID = c.condid) " +
+                "SET t.biosum_cond_id=c.biosum_cond_id WHERE t.biosum_cond_id='9999999999999999999999999' AND p.biosum_status_cd=9;",
+                strDestTable + "_1", m_strPlotTable, m_strCondTable);
+            p_ado.SqlNonQuery(m_connTempMDBFile, p_ado.m_strSQL);
+            m_intError = p_ado.m_intError;
+
+            if (p_odbc.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.MasterAuxDsnName))
+            {
+                p_odbc.RemoveUserDSN(ODBCMgr.DSN_KEYS.MasterAuxDsnName);
+            }
+
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
+        }
         
 	    /// <summary>
 	    /// Creates temporary DWM table from FIADB that associates dwm data with a biosum_cond_id. 
@@ -3252,6 +3298,51 @@ namespace FIA_Biosum_Manager
             m_intError = p_ado.m_intError;
         }
 
+        private void InsertIntoDestTableFromSourceTableSqlite (ado_data_access p_ado,
+            string strSourceTable = null, string strDestTable = null,
+            string strSourceFields = null, string strDestFields = null,
+            bool InsertBiosumCondIdAndStatusCode = false)
+        {
+
+
+            ODBCMgr p_odbc = new ODBCMgr();
+            dao_data_access p_dao = new dao_data_access();
+            string strFIADBDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtFiadbInputFile, "Text", false);
+            strFIADBDbFile = strFIADBDbFile.Trim();
+
+            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, strSourceTable, strSourceTable + "_1", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile);
+
+            string strMasterAuxDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.db";
+
+            if (p_odbc.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.MasterAuxDsnName))
+            {
+                p_odbc.RemoveUserDSN(ODBCMgr.DSN_KEYS.MasterAuxDsnName);
+            }
+            p_odbc.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.MasterAuxDsnName, strMasterAuxDb);
+            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, strDestTable, strDestTable + "_1", ODBCMgr.DSN_KEYS.MasterAuxDsnName, strMasterAuxDb);
+
+            string strInsertIntoValues = "INSERT INTO {0} ({1}) ";
+            string strSelectColumns = "SELECT {2} FROM {3} dwm INNER JOIN {4} p ON dwm.plt_cn=p.cn;";
+            if (InsertBiosumCondIdAndStatusCode)
+            {
+                strInsertIntoValues = "INSERT INTO {0} (biosum_cond_id, biosum_status_cd, {1}) ";
+                strSelectColumns =
+                    "SELECT '9999999999999999999999999' AS biosum_cond_id, 9 AS biosum_status_cd, {2} FROM {3} dwm INNER JOIN {4} p ON dwm.plt_cn=trim(p.cn);";
+            }
+            p_ado.m_strSQL = String.Format(strInsertIntoValues + strSelectColumns,
+                strDestTable + "_1", strDestFields, strSourceFields, strSourceTable + "_1", "tempplot");
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
+            p_ado.SqlNonQuery(m_connTempMDBFile, p_ado.m_strSQL);
+
+            if (p_odbc.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.MasterAuxDsnName))
+            {
+                p_odbc.RemoveUserDSN(ODBCMgr.DSN_KEYS.MasterAuxDsnName);
+            }
+
+            m_intError = p_ado.m_intError;
+        }
+
 	    private string CreateStrFieldsFromDataTables(DataTable dtSourceSchema=null, DataTable dtDestSchema=null, string strTablePrefix="")
 	    {
 	        string strFields;
@@ -3286,7 +3377,7 @@ namespace FIA_Biosum_Manager
 	        return strFields;
 	    }
 
-
+   
 	    private int UpdateColumns(FIA_Biosum_Manager.ado_data_access p_ado)
 		{
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
@@ -4906,13 +4997,12 @@ namespace FIA_Biosum_Manager
             SetThermValue(m_frmTherm.progressBar1, "Minimum", 0);
             SetThermValue(m_frmTherm.progressBar1, "Value", 0);
 
-            string strFIADBDbFile = "";
-            strFIADBDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtFiadbInputFile, "Text", false);
+            string strFIADBDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtFiadbInputFile, "Text", false);
             strFIADBDbFile = strFIADBDbFile.Trim();
-            String strFiaCWD = "fiadb_dwm_cwd_input";
-            String strFiaFWD = "fiadb_dwm_fwd_input";
-            String strFiaDL = "fiadb_dwm_dufflitter_input";
-            String strFiaTS = "fiadb_dwm_transect_segment_input";
+            String strFiaCWD = "fiadb." + m_strDwmCwdTable;
+            String strFiaFWD = "fiadb." + m_strDwmFwdTable;
+            String strFiaDL = "fiadb." + m_strDwmDuffLitterTable;
+            String strFiaTS = "fiadb." + m_strDwmTransectSegmentTable;
 
             string strMasterAuxDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.db";
 
@@ -4923,13 +5013,13 @@ namespace FIA_Biosum_Manager
             {
                 conn.Open();
 
-                oDataMgr.m_strSQL = "ATTACH DATABASE " + strFIADBDbFile + " AS fiadb";
+                oDataMgr.m_strSQL = "ATTACH DATABASE '" + strFIADBDbFile + "' AS fiadb";
                 oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 
-                if (!oDataMgr.TableExist(conn, "fiadb." + m_strDwmCwdTable) ||
-                    !oDataMgr.TableExist(conn, "fiadb." + m_strDwmFwdTable) ||
-                    !oDataMgr.TableExist(conn, "fiadb." + m_strDwmDuffLitterTable) ||
-                    !oDataMgr.TableExist(conn, "fiadb." + m_strDwmTransectSegmentTable))
+                if (!oDataMgr.AttachedTableExist(conn, m_strDwmCwdTable) ||
+                    !oDataMgr.AttachedTableExist(conn, m_strDwmFwdTable) ||
+                    !oDataMgr.AttachedTableExist(conn, m_strDwmDuffLitterTable) ||
+                    !oDataMgr.AttachedTableExist(conn, m_strDwmTransectSegmentTable))
                 {
                     Func<bool, string, string> result = (boolTableExists, tableName) =>
                     {
@@ -4939,10 +5029,10 @@ namespace FIA_Biosum_Manager
                     DialogResult dlgResult = MessageBox.Show(String.Format(
                             "!!Error!!\nModule - uc_plot_input:ImportDownWoodyMaterials\n" + "Err Msg - " +
                             "At least one FIADB Source DWM table was not found:{0}{1}{2}{3}\r\nDo you wish to continue plot data input without DWM?",
-                            result(oDataMgr.TableExist(conn, "fiadb." + m_strDwmCwdTable), "fiadb." + m_strDwmCwdTable),
-                            result(oDataMgr.TableExist(conn, "fiadb." + m_strDwmFwdTable), "fiadb." + m_strDwmFwdTable),
-                            result(oDataMgr.TableExist(conn, "fiadb." + m_strDwmDuffLitterTable), "fiadb." + m_strDwmDuffLitterTable),
-                            result(oDataMgr.TableExist(conn, "fiadb." + m_strDwmTransectSegmentTable), "fiadb." + m_strDwmTransectSegmentTable)),
+                            result(oDataMgr.AttachedTableExist(conn, m_strDwmCwdTable), m_strDwmCwdTable),
+                            result(oDataMgr.AttachedTableExist(conn, m_strDwmFwdTable), m_strDwmFwdTable),
+                            result(oDataMgr.AttachedTableExist(conn, m_strDwmDuffLitterTable), m_strDwmDuffLitterTable),
+                            result(oDataMgr.AttachedTableExist(conn, m_strDwmTransectSegmentTable), m_strDwmTransectSegmentTable)),
                         "FIA Biosum",
                         MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation);
                     //Disable functionality related to DWM option down the pipeline
@@ -4959,8 +5049,93 @@ namespace FIA_Biosum_Manager
                         return 0;
                     }
                 }
+
+                String strSourceFields = "";
+                String strDestFields = "";
+                System.Data.DataTable dtDwmCwd = oDataMgr.getTableSchema(conn, "select * from " + m_strDwmCwdTable);
+                System.Data.DataTable dtDwmFwd = oDataMgr.getTableSchema(conn, "select * from " + m_strDwmFwdTable);
+                System.Data.DataTable dtDwmDuffLitter = oDataMgr.getTableSchema(conn, "select * from " + m_strDwmDuffLitterTable);
+                System.Data.DataTable dtDwmTransectSegment = oDataMgr.getTableSchema(conn, "select * from " + m_strDwmTransectSegmentTable);
+                System.Data.DataTable dtFIADBDwmCwd = oDataMgr.getTableSchema(conn, "select * from " + strFiaCWD);
+                System.Data.DataTable dtFIADBDwmFwd = oDataMgr.getTableSchema(conn, "select * from " + strFiaFWD);
+                System.Data.DataTable dtFIADBDwmDuffLitter = oDataMgr.getTableSchema(conn, "select * from " + strFiaDL);
+                System.Data.DataTable dtFIADBDwmTransectSegment = oDataMgr.getTableSchema(conn, "select * from " + strFiaTS);
+
+                //Preemptively remove any records that were not imported successfully 
+                DeleteFromTablesWhereFilterSqlite(oDataMgr, conn,
+                    new string[]
+                        {m_strDwmCwdTable, m_strDwmFwdTable, m_strDwmDuffLitterTable, m_strDwmTransectSegmentTable},
+                    " WHERE biosum_status_cd=9");
+                ado_data_access oAdo = new ado_data_access();
+
+                //DWM Coarse Woody Debris FIADB into master_aux.db Table
+                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                {
+                    SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM CWD...Stand By");
+                    SetThermValue(m_frmTherm.progressBar1, "Value", 2);
+                    strDestFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmCwd, dtDestSchema: dtDwmCwd);
+                    strSourceFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmCwd, dtDestSchema: dtDwmCwd,
+                        strTablePrefix: "dwm.");
+                    InsertIntoDestTableFromSourceTableSqlite(oAdo, strSourceTable: strFiaCWD, strDestTable: m_strDwmCwdTable,
+                        strDestFields: strDestFields, strSourceFields: strSourceFields, InsertBiosumCondIdAndStatusCode: true);
+                    UpdateDwmBiosumCondIdsSqlite(oAdo, m_strDwmCwdTable);
+                    m_intError = oDataMgr.m_intError;
+                }
+
+                //DWM Fine Woody Debris FIADB into master_aux.db Table
+                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                {
+                    SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM FWD...Stand By");
+                    SetThermValue(m_frmTherm.progressBar1, "Value", 4);
+                    strDestFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmFwd, dtDestSchema: dtDwmFwd);
+                    strSourceFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmFwd, dtDestSchema: dtDwmFwd,
+                        strTablePrefix: "dwm.");
+                    InsertIntoDestTableFromSourceTableSqlite(oAdo, strSourceTable: strFiaFWD, strDestTable: m_strDwmFwdTable,
+                        strDestFields: strDestFields, strSourceFields: strSourceFields, InsertBiosumCondIdAndStatusCode: true);
+                    UpdateDwmBiosumCondIdsSqlite(oAdo, m_strDwmFwdTable);
+                    m_intError = oDataMgr.m_intError;
+                }
+
+                //DWM Duff Litter Fuel FIADB into Master.MDB Table
+                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                {
+                    SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM DuffLitter...Stand By");
+                    SetThermValue(m_frmTherm.progressBar1, "Value", 6);
+                    strDestFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmDuffLitter,
+                        dtDestSchema: dtDwmDuffLitter);
+                    strSourceFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmDuffLitter,
+                        dtDestSchema: dtDwmDuffLitter, strTablePrefix: "dwm.");
+                    InsertIntoDestTableFromSourceTableSqlite(oAdo, strSourceTable: strFiaDL,
+                        strDestTable: m_strDwmDuffLitterTable,
+                        strDestFields: strDestFields, strSourceFields: strSourceFields,
+                        InsertBiosumCondIdAndStatusCode: true);
+                    oDataMgr.m_strSQL = "UPDATE " + m_strDwmDuffLitterTable + " SET duffdep=0 WHERE duffdep IS NULL AND duff_nonsample_reasn_cd IS NULL";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    oDataMgr.m_strSQL = "UPDATE " + m_strDwmDuffLitterTable + " SET littdep=0 WHERE littdep IS NULL AND litter_nonsample_reasn_cd IS NULL";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    UpdateDwmBiosumCondIdsSqlite(oAdo, m_strDwmDuffLitterTable);
+                    m_intError = oDataMgr.m_intError;
+                }
+
+                //DWM Transect Segment FIADB into Master.MDB Table
+                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                {
+                    SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM Transect Segment...Stand By");
+                    SetThermValue(m_frmTherm.progressBar1, "Value", 8);
+                    strDestFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmTransectSegment,
+                        dtDestSchema: dtDwmTransectSegment);
+                    strSourceFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmTransectSegment,
+                        dtDestSchema: dtDwmTransectSegment, strTablePrefix: "dwm.");
+                    InsertIntoDestTableFromSourceTableSqlite(oAdo, strSourceTable: strFiaTS,
+                        strDestTable: m_strDwmTransectSegmentTable,
+                        strDestFields: strDestFields, strSourceFields: strSourceFields, InsertBiosumCondIdAndStatusCode: true);
+                    UpdateDwmBiosumCondIdsSqlite(oAdo, m_strDwmTransectSegmentTable);
+                    m_intError = oDataMgr.m_intError;
+                }
             }
 
+            SetLabelValue(m_frmTherm.lblMsg, "Text", "");
+            SetThermValue(m_frmTherm.progressBar1, "Value", GetThermValue(m_frmTherm.progressBar1, "Maximum"));
             return p_dataMgr.m_intError;
         }
 
