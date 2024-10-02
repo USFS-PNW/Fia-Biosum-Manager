@@ -9136,7 +9136,7 @@ namespace FIA_Biosum_Manager
                                                           "ON t.biosum_cond_id=c.biosum_cond_id) " +
                                                           "INNER JOIN " + m_oQueries.m_oFIAPlot.m_strPlotTable + " p " +
                                                           "ON p.biosum_plot_id=c.biosum_plot_id) " +
-                                          "ON i.fvs_tree_id=t.fvs_tree_id AND i.biosum_cond_id=t.biosum_cond_id " +
+                                          "ON i.fvs_tree_id=trim(t.fvs_tree_id) AND i.biosum_cond_id=t.biosum_cond_id " +
                                           "SET i.FOUND_FvsTreeId_YN='Y'";
 
                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
