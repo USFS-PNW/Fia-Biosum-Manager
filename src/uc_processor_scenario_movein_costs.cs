@@ -327,20 +327,10 @@ namespace FIA_Biosum_Manager
 		public void loadvalues()
 		{
             ScenarioId = this.ReferenceProcessorScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
-            if (!ReferenceProcessorScenarioForm.m_bUsingSqlite)
-            {
-                ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadMoveInCosts
-                    (frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                    "\\processor\\db\\scenario_processor_rule_definitions.mdb",
-                    ReferenceProcessorScenarioForm.m_oProcessorScenarioItem);
-            }
-            else
-            {
-                ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadMoveInCostsSqlite
-                    (frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile,
-                    ReferenceProcessorScenarioForm.m_oProcessorScenarioItem);
-            }
+            ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadMoveInCostsSqlite
+                (frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile,
+                ReferenceProcessorScenarioForm.m_oProcessorScenarioItem);
 
             FIA_Biosum_Manager.ProcessorScenarioItem oItem = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem;
             if (ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.m_intError == 0)

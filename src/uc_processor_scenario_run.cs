@@ -6216,7 +6216,6 @@ namespace FIA_Biosum_Manager
                         processor.Escalators oEscalators = mainProcessor.LoadEscalators();
                         ProcessorScenarioItem oTempProcessorScenarioItem = new ProcessorScenarioItem();
                         oTempProcessorScenarioItem.ScenarioId = ScenarioId;
-                        //oProcessorScenarioTools.LoadHarvestCostComponents(m_oAdo, m_oAdo.m_OleDbConnection, oTempProcessorScenarioItem);
                         oProcessorScenarioTools.LoadHarvestCostComponentsSqlite(m_strScenarioDb, oTempProcessorScenarioItem);
                         if (bRxPackageUsesKcpAdditionalCpa)
                         {
