@@ -458,7 +458,7 @@ namespace FIA_Biosum_Manager
             {
             string strSQL = "SELECT DISTINCT t.fvs_tree_id, t.biosum_cond_id, t.spcd " +
                     "FROM " + p_strTreeTableName + " t, " + Tables.FVS.DefaultFVSCutTreeTableName + " z " +
-                    "WHERE t.fvs_tree_id = z.fvs_tree_id " +
+                    "WHERE trim(t.fvs_tree_id) = z.fvs_tree_id " +
                     "AND t.biosum_cond_id = z.biosum_cond_id " +
                     "AND z.rxpackage='" + p_strRxPackage + "' " +
                     "GROUP BY t.fvs_tree_id, t.biosum_cond_id, t.spcd";
