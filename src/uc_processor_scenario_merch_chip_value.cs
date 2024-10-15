@@ -81,52 +81,14 @@ namespace FIA_Biosum_Manager
             //SCENARIO ID
             //
             ScenarioId = this.ReferenceProcessorScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
-
-            if (!ReferenceProcessorScenarioForm.m_bUsingSqlite)
-            {
-                if (m_oAdo != null && m_oAdo.m_OleDbConnection != null)
-                    if (m_oAdo.m_OleDbConnection.State == System.Data.ConnectionState.Open) m_oAdo.CloseConnection(m_oAdo.m_OleDbConnection);
-
-                //
-                //SCENARIO MDB
-                //
-                string strScenarioMDB =
-                    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                    "\\processor\\db\\scenario_processor_rule_definitions.mdb";
-
-                //
-                //CREATE LINK IN TEMP MDB TO SCENARIO TREE SPECIES DIAM DOLLAR VALUES TABLE
-                //
-                dao_data_access oDao = new dao_data_access();
-                //link to tree species groups table
-                oDao.CreateTableLink(this.ReferenceProcessorScenarioForm.LoadedQueries.m_strTempDbFile,
-                                     "scenario_tree_species_diam_dollar_values",
-                                     strScenarioMDB, "scenario_tree_species_diam_dollar_values", true);
-                oDao.m_DaoWorkspace.Close();
-                oDao = null;
-                //
-                //OPEN CONNECTION TO TEMP DB FILE
-                //
-                m_oAdo = new ado_data_access();
-                m_oAdo.OpenConnection(m_oAdo.getMDBConnString(this.ReferenceProcessorScenarioForm.LoadedQueries.m_strTempDbFile, "", ""));
-                if (m_oAdo.m_intError == 0)
-                {
-                    ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadSpeciesAndDiameterGroupDollarValues
-                        (m_oAdo, m_oAdo.m_OleDbConnection, ReferenceProcessorScenarioForm.m_oProcessorScenarioItem);
-                }
-            }
-            else
-            {
-                //
-                //SCENARIO MDB
-                //
-                string strScenarioMDB =
-                    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
-                ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadSpeciesAndDiameterGroupDollarValuesSqlite(strScenarioMDB,
-                    ReferenceProcessorScenarioForm.m_oProcessorScenarioItem);
-            }
-
+            //
+            //SCENARIO MDB
+            //
+            string strScenarioMDB =
+                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+            ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadSpeciesAndDiameterGroupDollarValuesSqlite(strScenarioMDB,
+                ReferenceProcessorScenarioForm.m_oProcessorScenarioItem);
 
                 //REMOVE OLD CONTROLS FROM FORM IF THEY EXIST
                 string strName = "uc_processor_scenario_spc_dbh_group_value2";

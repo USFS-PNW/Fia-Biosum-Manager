@@ -458,7 +458,7 @@ namespace FIA_Biosum_Manager
             {
             string strSQL = "SELECT DISTINCT t.fvs_tree_id, t.biosum_cond_id, t.spcd " +
                     "FROM " + p_strTreeTableName + " t, " + Tables.FVS.DefaultFVSCutTreeTableName + " z " +
-                    "WHERE t.fvs_tree_id = z.fvs_tree_id " +
+                    "WHERE trim(t.fvs_tree_id) = z.fvs_tree_id " +
                     "AND t.biosum_cond_id = z.biosum_cond_id " +
                     "AND z.rxpackage='" + p_strRxPackage + "' " +
                     "GROUP BY t.fvs_tree_id, t.biosum_cond_id, t.spcd";
@@ -1561,46 +1561,23 @@ namespace FIA_Biosum_Manager
         private System.Collections.Generic.List<treeDiamGroup> LoadTreeDiamGroups()
         {
             System.Collections.Generic.List<treeDiamGroup> listDiamGroups = new System.Collections.Generic.List<treeDiamGroup>();
-            if (!m_bUsingSqlite)
+            if (SQLite.m_intError == 0)
             {
-                if (m_oAdo.m_intError == 0)
+                string strSQL = "SELECT * FROM definitions." + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName +
+                    " WHERE UPPER(TRIM(scenario_id))='" + m_strScenarioId.Trim().ToUpper() + "'";
+                SQLite.SqlQueryReader(SQLite.m_Connection, strSQL);
+                if (SQLite.m_DataReader.HasRows)
                 {
-                    string strSQL = "SELECT * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName +
-                        " WHERE TRIM(scenario_id)='" + m_strScenarioId.Trim() + "'";
-                    m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
-                    if (m_oAdo.m_OleDbDataReader.HasRows)
+                    while (SQLite.m_DataReader.Read())
                     {
-                        while (m_oAdo.m_OleDbDataReader.Read())
-                        {
-                            int intDiamGroup = Convert.ToInt32(m_oAdo.m_OleDbDataReader["diam_group"]);
-                            double dblMinDiam = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_diam"]);
-                            double dblMaxDiam = Convert.ToDouble(m_oAdo.m_OleDbDataReader["max_diam"]);
-                            listDiamGroups.Add(new treeDiamGroup(intDiamGroup, dblMinDiam, dblMaxDiam));
-                        }
+                        int intDiamGroup = Convert.ToInt32(SQLite.m_DataReader["diam_group"]);
+                        double dblMinDiam = Convert.ToDouble(SQLite.m_DataReader["min_diam"]);
+                        double dblMaxDiam = Convert.ToDouble(SQLite.m_DataReader["max_diam"]);
+                        listDiamGroups.Add(new treeDiamGroup(intDiamGroup, dblMinDiam, dblMaxDiam));
                     }
+                    SQLite.m_DataReader.Close();
                 }
             }
-            else
-            {
-                if (SQLite.m_intError == 0)
-                {
-                    string strSQL = "SELECT * FROM definitions." + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName +
-                        " WHERE TRIM(scenario_id)='" + m_strScenarioId.Trim() + "'";
-                    SQLite.SqlQueryReader(SQLite.m_Connection, strSQL);
-                    if (SQLite.m_DataReader.HasRows)
-                    {
-                        while (SQLite.m_DataReader.Read())
-                        {
-                            int intDiamGroup = Convert.ToInt32(SQLite.m_DataReader["diam_group"]);
-                            double dblMinDiam = Convert.ToDouble(SQLite.m_DataReader["min_diam"]);
-                            double dblMaxDiam = Convert.ToDouble(SQLite.m_DataReader["max_diam"]);
-                            listDiamGroups.Add(new treeDiamGroup(intDiamGroup, dblMinDiam, dblMaxDiam));
-                        }
-                        SQLite.m_DataReader.Close();
-                    }
-                }
-            }
-
             return listDiamGroups;
         }
 
@@ -1660,53 +1637,27 @@ namespace FIA_Biosum_Manager
         {
             System.Collections.Generic.IDictionary<String, speciesDiamValue> dictSpeciesDiamValues = 
                 new System.Collections.Generic.Dictionary<String, speciesDiamValue>();
-            if (! m_bUsingSqlite)
+
+            if (SQLite.m_intError == 0)
             {
-                if (m_oAdo.m_intError == 0)
+                string strSQL = "SELECT * FROM definitions." +
+                                Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName +
+                                " WHERE UPPER(TRIM(scenario_id)) = '" + p_scenario.Trim().ToUpper() + "'";
+                SQLite.SqlQueryReader(SQLite.m_Connection, strSQL);
+                if (SQLite.m_DataReader.HasRows)
                 {
-                    string strSQL = "SELECT * FROM " +
-                                    Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName +
-                                    " WHERE scenario_id = '" + p_scenario + "'";
-                    m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
-                    if (m_oAdo.m_OleDbDataReader.HasRows)
+                    while (SQLite.m_DataReader.Read())
                     {
-                        while (m_oAdo.m_OleDbDataReader.Read())
-                        {
-                            int intSpcGroup = Convert.ToInt32(m_oAdo.m_OleDbDataReader["species_group"]);
-                            int intDiamGroup = Convert.ToInt32(m_oAdo.m_OleDbDataReader["diam_group"]);
-                            string strWoodBin = Convert.ToString(m_oAdo.m_OleDbDataReader["wood_bin"]).Trim();
-                            double dblMerchValue = Convert.ToDouble(m_oAdo.m_OleDbDataReader["merch_value"]);
-                            double dblChipValue = Convert.ToDouble(m_oAdo.m_OleDbDataReader["chip_value"]);
-                            string strKey = intDiamGroup + "|" + intSpcGroup;
-                            dictSpeciesDiamValues.Add(strKey, new speciesDiamValue(intDiamGroup, intSpcGroup,
-                                strWoodBin, dblMerchValue, dblChipValue));
-                        }
+                        int intSpcGroup = Convert.ToInt32(SQLite.m_DataReader["species_group"]);
+                        int intDiamGroup = Convert.ToInt32(SQLite.m_DataReader["diam_group"]);
+                        string strWoodBin = Convert.ToString(SQLite.m_DataReader["wood_bin"]).Trim();
+                        double dblMerchValue = Convert.ToDouble(SQLite.m_DataReader["merch_value"]);
+                        double dblChipValue = Convert.ToDouble(SQLite.m_DataReader["chip_value"]);
+                        string strKey = intDiamGroup + "|" + intSpcGroup;
+                        dictSpeciesDiamValues.Add(strKey, new speciesDiamValue(intDiamGroup, intSpcGroup,
+                            strWoodBin, dblMerchValue, dblChipValue));
                     }
-                }
-            }
-            else
-            {
-                if (SQLite.m_intError == 0)
-                {
-                    string strSQL = "SELECT * FROM definitions." +
-                                    Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName +
-                                    " WHERE scenario_id = '" + p_scenario + "'";
-                    SQLite.SqlQueryReader(SQLite.m_Connection, strSQL);
-                    if (SQLite.m_DataReader.HasRows)
-                    {
-                        while (SQLite.m_DataReader.Read())
-                        {
-                            int intSpcGroup = Convert.ToInt32(SQLite.m_DataReader["species_group"]);
-                            int intDiamGroup = Convert.ToInt32(SQLite.m_DataReader["diam_group"]);
-                            string strWoodBin = Convert.ToString(SQLite.m_DataReader["wood_bin"]).Trim();
-                            double dblMerchValue = Convert.ToDouble(SQLite.m_DataReader["merch_value"]);
-                            double dblChipValue = Convert.ToDouble(SQLite.m_DataReader["chip_value"]);
-                            string strKey = intDiamGroup + "|" + intSpcGroup;
-                            dictSpeciesDiamValues.Add(strKey, new speciesDiamValue(intDiamGroup, intSpcGroup,
-                                strWoodBin, dblMerchValue, dblChipValue));
-                        }
-                        SQLite.m_DataReader.Close();
-                    }
+                    SQLite.m_DataReader.Close();
                 }
             }
 
@@ -1764,158 +1715,77 @@ namespace FIA_Biosum_Manager
             }
             
             scenarioHarvestMethod returnVariables = null;
-            if (!m_bUsingSqlite)
+            if (SQLite.m_intError == 0)
             {
-                if (m_oAdo.m_intError == 0)
+                string strSQL = "SELECT * FROM definitions." + Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodTableName +
+                                " WHERE UPPER(TRIM(scenario_id)) = '" + p_scenario.Trim().ToUpper() + "'";
+                SQLite.SqlQueryReader(SQLite.m_Connection, strSQL);
+                if (SQLite.m_DataReader.HasRows)
                 {
-                    string strSQL = "SELECT * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodTableName +
-                                    " WHERE scenario_id = '" + p_scenario + "'";
-                    m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
-                    if (m_oAdo.m_OleDbDataReader.HasRows)
+                    // We should only have one record
+                    SQLite.m_DataReader.Read();
+                    string strHarvestMethodLowSlope = Convert.ToString(SQLite.m_DataReader["HarvestMethodLowSlope"]).Trim();
+                    double dblMinChipDbh = Convert.ToDouble(SQLite.m_DataReader["min_chip_dbh"]);
+                    double dblMinSmallLogDbh = Convert.ToDouble(SQLite.m_DataReader["min_sm_log_dbh"]);
+                    double dblMinLgLogDbh = Convert.ToDouble(SQLite.m_DataReader["min_lg_log_dbh"]);
+                    int intMinSlopePct = Convert.ToInt32(SQLite.m_DataReader["SteepSlope"]);
+                    double dblMinDbhSteepSlope = Convert.ToDouble(SQLite.m_DataReader["min_dbh_steep_slope"]);
+                    string strHarvestMethodSelection = Convert.ToString(SQLite.m_DataReader["HarvestMethodSelection"]).Trim();
+                    HarvestMethodSelection objHarvestMethodSelection = HarvestMethodSelection.RX;
+                    if (strHarvestMethodSelection.Equals(HarvestMethodSelection.LOWEST_COST.Value))
                     {
-                        // We should only have one record
-                        m_oAdo.m_OleDbDataReader.Read();
-                        string strHarvestMethodLowSlope = Convert.ToString(m_oAdo.m_OleDbDataReader["HarvestMethodLowSlope"]).Trim();
-                        double dblMinChipDbh = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_chip_dbh"]);
-                        double dblMinSmallLogDbh = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_sm_log_dbh"]);
-                        double dblMinLgLogDbh = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_lg_log_dbh"]);
-                        int intMinSlopePct = Convert.ToInt32(m_oAdo.m_OleDbDataReader["SteepSlope"]);
-                        double dblMinDbhSteepSlope = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_dbh_steep_slope"]);
-                        string strHarvestMethodSelection = Convert.ToString(m_oAdo.m_OleDbDataReader["HarvestMethodSelection"]).Trim();
-                        HarvestMethodSelection objHarvestMethodSelection = HarvestMethodSelection.RX;
-                        if (strHarvestMethodSelection.Equals(HarvestMethodSelection.LOWEST_COST.Value))
-                        {
-                            objHarvestMethodSelection = HarvestMethodSelection.LOWEST_COST;
-                        }
-                        else if (strHarvestMethodSelection.Equals(HarvestMethodSelection.SELECTED.Value))
-                        {
-                            objHarvestMethodSelection = HarvestMethodSelection.SELECTED;
-                        }
-                        string strHarvestMethodSteepSlope = Convert.ToString(m_oAdo.m_OleDbDataReader["HarvestMethodSteepSlope"]).Trim();
-                        int intSaplingMerchAsPercentOfTotalVol = Convert.ToInt16(m_oAdo.m_OleDbDataReader["SaplingMerchAsPercentOfTotalVol"]);
-                        int intWoodlandMerchAsPercentOfTotalVol = Convert.ToInt16(m_oAdo.m_OleDbDataReader["WoodlandMerchAsPercentOfTotalVol"]);
-                        int intCullPctThreshold = Convert.ToInt16(m_oAdo.m_OleDbDataReader["CullPctThreshold"]);
-                        harvestMethod objHarvestMethodLowSlope = null;
-                        harvestMethod objHarvestMethodSteepSlope = null;
-                        foreach (harvestMethod nextMethod in m_harvestMethodList)
-                        {
-                            if (nextMethod.Method.Equals(strHarvestMethodLowSlope) && !nextMethod.SteepSlope)
-                            {
-                                objHarvestMethodLowSlope = nextMethod;
-                            }
-                            else if (nextMethod.Method.Equals(strHarvestMethodSteepSlope) && nextMethod.SteepSlope)
-                            {
-                                objHarvestMethodSteepSlope = nextMethod;
-                            }
-                        }
-
-                        returnVariables = new scenarioHarvestMethod(dblMinChipDbh, dblMinSmallLogDbh, dblMinLgLogDbh,
-                            intMinSlopePct, dblMinDbhSteepSlope,
-                            objHarvestMethodLowSlope, objHarvestMethodSteepSlope,
-                            intSaplingMerchAsPercentOfTotalVol, intWoodlandMerchAsPercentOfTotalVol, intCullPctThreshold, objHarvestMethodSelection);
+                        objHarvestMethodSelection = HarvestMethodSelection.LOWEST_COST;
                     }
-                }
-            }
-            else
-            {
-                if (SQLite.m_intError == 0)
-                {
-                    string strSQL = "SELECT * FROM definitions." + Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodTableName +
-                                    " WHERE scenario_id = '" + p_scenario + "'";
-                    SQLite.SqlQueryReader(SQLite.m_Connection, strSQL);
-                    if (SQLite.m_DataReader.HasRows)
+                    else if (strHarvestMethodSelection.Equals(HarvestMethodSelection.SELECTED.Value))
                     {
-                        // We should only have one record
-                        SQLite.m_DataReader.Read();
-                        string strHarvestMethodLowSlope = Convert.ToString(SQLite.m_DataReader["HarvestMethodLowSlope"]).Trim();
-                        double dblMinChipDbh = Convert.ToDouble(SQLite.m_DataReader["min_chip_dbh"]);
-                        double dblMinSmallLogDbh = Convert.ToDouble(SQLite.m_DataReader["min_sm_log_dbh"]);
-                        double dblMinLgLogDbh = Convert.ToDouble(SQLite.m_DataReader["min_lg_log_dbh"]);
-                        int intMinSlopePct = Convert.ToInt32(SQLite.m_DataReader["SteepSlope"]);
-                        double dblMinDbhSteepSlope = Convert.ToDouble(SQLite.m_DataReader["min_dbh_steep_slope"]);
-                        string strHarvestMethodSelection = Convert.ToString(SQLite.m_DataReader["HarvestMethodSelection"]).Trim();
-                        HarvestMethodSelection objHarvestMethodSelection = HarvestMethodSelection.RX;
-                        if (strHarvestMethodSelection.Equals(HarvestMethodSelection.LOWEST_COST.Value))
-                        {
-                            objHarvestMethodSelection = HarvestMethodSelection.LOWEST_COST;
-                        }
-                        else if (strHarvestMethodSelection.Equals(HarvestMethodSelection.SELECTED.Value))
-                        {
-                            objHarvestMethodSelection = HarvestMethodSelection.SELECTED;
-                        }
-                        string strHarvestMethodSteepSlope = Convert.ToString(SQLite.m_DataReader["HarvestMethodSteepSlope"]).Trim();
-                        int intSaplingMerchAsPercentOfTotalVol = Convert.ToInt16(SQLite.m_DataReader["SaplingMerchAsPercentOfTotalVol"]);
-                        int intWoodlandMerchAsPercentOfTotalVol = Convert.ToInt16(SQLite.m_DataReader["WoodlandMerchAsPercentOfTotalVol"]);
-                        int intCullPctThreshold = Convert.ToInt16(SQLite.m_DataReader["CullPctThreshold"]);
-                        harvestMethod objHarvestMethodLowSlope = null;
-                        harvestMethod objHarvestMethodSteepSlope = null;
-                        foreach (harvestMethod nextMethod in m_harvestMethodList)
-                        {
-                            if (nextMethod.Method.Equals(strHarvestMethodLowSlope) && !nextMethod.SteepSlope)
-                            {
-                                objHarvestMethodLowSlope = nextMethod;
-                            }
-                            else if (nextMethod.Method.Equals(strHarvestMethodSteepSlope) && nextMethod.SteepSlope)
-                            {
-                                objHarvestMethodSteepSlope = nextMethod;
-                            }
-                        }
-
-                        returnVariables = new scenarioHarvestMethod(dblMinChipDbh, dblMinSmallLogDbh, dblMinLgLogDbh,
-                            intMinSlopePct, dblMinDbhSteepSlope,
-                            objHarvestMethodLowSlope, objHarvestMethodSteepSlope,
-                            intSaplingMerchAsPercentOfTotalVol, intWoodlandMerchAsPercentOfTotalVol, intCullPctThreshold, objHarvestMethodSelection);
+                      objHarvestMethodSelection = HarvestMethodSelection.SELECTED;
                     }
-                    SQLite.m_DataReader.Close();
+                    string strHarvestMethodSteepSlope = Convert.ToString(SQLite.m_DataReader["HarvestMethodSteepSlope"]).Trim();
+                    int intSaplingMerchAsPercentOfTotalVol = Convert.ToInt16(SQLite.m_DataReader["SaplingMerchAsPercentOfTotalVol"]);
+                    int intWoodlandMerchAsPercentOfTotalVol = Convert.ToInt16(SQLite.m_DataReader["WoodlandMerchAsPercentOfTotalVol"]);
+                    int intCullPctThreshold = Convert.ToInt16(SQLite.m_DataReader["CullPctThreshold"]);
+                    harvestMethod objHarvestMethodLowSlope = null;
+                    harvestMethod objHarvestMethodSteepSlope = null;
+                    foreach (harvestMethod nextMethod in m_harvestMethodList)
+                    {
+                        if (nextMethod.Method.Equals(strHarvestMethodLowSlope) && !nextMethod.SteepSlope)
+                        {
+                            objHarvestMethodLowSlope = nextMethod;
+                        }
+                        else if (nextMethod.Method.Equals(strHarvestMethodSteepSlope) && nextMethod.SteepSlope)
+                        {
+                            objHarvestMethodSteepSlope = nextMethod;
+                        }
+                    }
+                    returnVariables = new scenarioHarvestMethod(dblMinChipDbh, dblMinSmallLogDbh, dblMinLgLogDbh,
+                        intMinSlopePct, dblMinDbhSteepSlope,
+                        objHarvestMethodLowSlope, objHarvestMethodSteepSlope,
+                        intSaplingMerchAsPercentOfTotalVol, intWoodlandMerchAsPercentOfTotalVol, intCullPctThreshold, objHarvestMethodSelection);
                 }
+                SQLite.m_DataReader.Close();
             }
-
             return returnVariables;
         }
 
         private scenarioMoveInCost LoadScenarioMoveInCost(string p_scenario)
         {
             scenarioMoveInCost returnVariables = null;
-            if (!m_bUsingSqlite)
+            if (SQLite.m_intError == 0)
             {
-                if (m_oAdo.m_intError == 0)
+                string strSQL = "SELECT * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultMoveInCostsTableName +
+                                " WHERE UPPER(TRIM(scenario_id)) = '" + p_scenario.Trim().ToUpper() + "'";
+                SQLite.SqlQueryReader(SQLite.m_Connection, strSQL);
+                if (SQLite.m_DataReader.HasRows)
                 {
-                    string strSQL = "SELECT * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultMoveInCostsTableName +
-                                    " WHERE scenario_id = '" + p_scenario + "'";
-                    m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
-                    if (m_oAdo.m_OleDbDataReader.HasRows)
-                    {
-                        // We should only have one record
-                        m_oAdo.m_OleDbDataReader.Read();
-                        double dblYardDistThreshold = Convert.ToDouble(m_oAdo.m_OleDbDataReader["yard_dist_threshold"]);
-                        double dblAssumedHarvestAreaAc = Convert.ToDouble(m_oAdo.m_OleDbDataReader["assumed_harvest_area_ac"]);
-                        double dblMoveInTimeMultiplier = Convert.ToDouble(m_oAdo.m_OleDbDataReader["move_in_time_multiplier"]);
-                        double dblMoveInHoursAddend = Convert.ToDouble(m_oAdo.m_OleDbDataReader["move_in_hours_addend"]);
-
-                        returnVariables = new scenarioMoveInCost(dblYardDistThreshold, dblAssumedHarvestAreaAc,
-                                                                 dblMoveInTimeMultiplier, dblMoveInHoursAddend);
-                    }
-                }
-            }
-            else
-            {
-                if (SQLite.m_intError == 0)
-                {
-                    string strSQL = "SELECT * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultMoveInCostsTableName +
-                                    " WHERE scenario_id = '" + p_scenario + "'";
-                    SQLite.SqlQueryReader(SQLite.m_Connection, strSQL);
-                    if (SQLite.m_DataReader.HasRows)
-                    {
-                        // We should only have one record
-                        SQLite.m_DataReader.Read();
-                        double dblYardDistThreshold = Convert.ToDouble(SQLite.m_DataReader["yard_dist_threshold"]);
-                        double dblAssumedHarvestAreaAc = Convert.ToDouble(SQLite.m_DataReader["assumed_harvest_area_ac"]);
-                        double dblMoveInTimeMultiplier = Convert.ToDouble(SQLite.m_DataReader["move_in_time_multiplier"]);
-                        double dblMoveInHoursAddend = Convert.ToDouble(SQLite.m_DataReader["move_in_hours_addend"]);
-                        returnVariables = new scenarioMoveInCost(dblYardDistThreshold, dblAssumedHarvestAreaAc,
-                                                                 dblMoveInTimeMultiplier, dblMoveInHoursAddend);
-                        SQLite.m_DataReader.Close();
-                    }
+                    // We should only have one record
+                    SQLite.m_DataReader.Read();
+                    double dblYardDistThreshold = Convert.ToDouble(SQLite.m_DataReader["yard_dist_threshold"]);
+                    double dblAssumedHarvestAreaAc = Convert.ToDouble(SQLite.m_DataReader["assumed_harvest_area_ac"]);
+                    double dblMoveInTimeMultiplier = Convert.ToDouble(SQLite.m_DataReader["move_in_time_multiplier"]);
+                    double dblMoveInHoursAddend = Convert.ToDouble(SQLite.m_DataReader["move_in_hours_addend"]);
+                    returnVariables = new scenarioMoveInCost(dblYardDistThreshold, dblAssumedHarvestAreaAc,
+                                                             dblMoveInTimeMultiplier, dblMoveInHoursAddend);
+                    SQLite.m_DataReader.Close();
                 }
             }
 
@@ -1925,63 +1795,31 @@ namespace FIA_Biosum_Manager
         public Escalators LoadEscalators()
         {
             Escalators returnEscalators = null;
-            if (!m_bUsingSqlite)
+            if (SQLite.m_intError == 0)
             {
-                if (m_oAdo.m_intError == 0)
+                string strSQL = "SELECT * FROM definitions." +
+                                Tables.ProcessorScenarioRuleDefinitions.DefaultCostRevenueEscalatorsTableName +
+                                " WHERE UPPER(TRIM(scenario_id)) = '" + m_strScenarioId.Trim().ToUpper() + "'";
+                SQLite.SqlQueryReader(SQLite.m_Connection, strSQL);
+                if (SQLite.m_DataReader.HasRows)
                 {
-                    string strSQL = "SELECT * FROM " +
-                                    Tables.ProcessorScenarioRuleDefinitions.DefaultCostRevenueEscalatorsTableName +
-                                    " WHERE scenario_id = '" + m_strScenarioId + "'";
-                    m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
-                    if (m_oAdo.m_OleDbDataReader.HasRows)
-                    {
-                        // We should only have one record
-                        m_oAdo.m_OleDbDataReader.Read();
-                        double dblEnergyWoodRevCycle2 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorEnergyWoodRevenue_Cycle2"]);
-                        double dblEnergyWoodRevCycle3 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorEnergyWoodRevenue_Cycle3"]);
-                        double dblEnergyWoodRevCycle4 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorEnergyWoodRevenue_Cycle4"]);
-                        double dblMerchWoodRevCycle2 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorMerchWoodRevenue_Cycle2"]);
-                        double dblMerchWoodRevCycle3 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorMerchWoodRevenue_Cycle3"]);
-                        double dblMerchWoodRevCycle4 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorMerchWoodRevenue_Cycle4"]);
-                        double dblOperatingCostsCycle2 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorOperatingCosts_Cycle2"]);
-                        double dblOperatingCostsCycle3 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorOperatingCosts_Cycle3"]);
-                        double dblOperatingCostsCycle4 = Convert.ToDouble(m_oAdo.m_OleDbDataReader["EscalatorOperatingCosts_Cycle4"]);
-
-                        returnEscalators = new Escalators(dblEnergyWoodRevCycle2, dblEnergyWoodRevCycle3, dblEnergyWoodRevCycle4,
-                                                          dblMerchWoodRevCycle2, dblMerchWoodRevCycle3, dblMerchWoodRevCycle4,
-                                                          dblOperatingCostsCycle2, dblOperatingCostsCycle3, dblOperatingCostsCycle4);
-                    }
+                    // We should only have one record
+                    SQLite.m_DataReader.Read();
+                    double dblEnergyWoodRevCycle2 = Convert.ToDouble(SQLite.m_DataReader["EscalatorEnergyWoodRevenue_Cycle2"]);
+                    double dblEnergyWoodRevCycle3 = Convert.ToDouble(SQLite.m_DataReader["EscalatorEnergyWoodRevenue_Cycle3"]);
+                    double dblEnergyWoodRevCycle4 = Convert.ToDouble(SQLite.m_DataReader["EscalatorEnergyWoodRevenue_Cycle4"]);
+                    double dblMerchWoodRevCycle2 = Convert.ToDouble(SQLite.m_DataReader["EscalatorMerchWoodRevenue_Cycle2"]);
+                    double dblMerchWoodRevCycle3 = Convert.ToDouble(SQLite.m_DataReader["EscalatorMerchWoodRevenue_Cycle3"]);
+                    double dblMerchWoodRevCycle4 = Convert.ToDouble(SQLite.m_DataReader["EscalatorMerchWoodRevenue_Cycle4"]);
+                    double dblOperatingCostsCycle2 = Convert.ToDouble(SQLite.m_DataReader["EscalatorOperatingCosts_Cycle2"]);
+                    double dblOperatingCostsCycle3 = Convert.ToDouble(SQLite.m_DataReader["EscalatorOperatingCosts_Cycle3"]);
+                    double dblOperatingCostsCycle4 = Convert.ToDouble(SQLite.m_DataReader["EscalatorOperatingCosts_Cycle4"]);
+                    returnEscalators = new Escalators(dblEnergyWoodRevCycle2, dblEnergyWoodRevCycle3, dblEnergyWoodRevCycle4,
+                                                      dblMerchWoodRevCycle2, dblMerchWoodRevCycle3, dblMerchWoodRevCycle4,
+                                                      dblOperatingCostsCycle2, dblOperatingCostsCycle3, dblOperatingCostsCycle4);
                 }
+                SQLite.m_DataReader.Close();
             }
-            else
-            {
-                if (SQLite.m_intError == 0)
-                {
-                    string strSQL = "SELECT * FROM definitions." +
-                                    Tables.ProcessorScenarioRuleDefinitions.DefaultCostRevenueEscalatorsTableName +
-                                    " WHERE scenario_id = '" + m_strScenarioId + "'";
-                    SQLite.SqlQueryReader(SQLite.m_Connection, strSQL);
-                    if (SQLite.m_DataReader.HasRows)
-                    {
-                        // We should only have one record
-                        SQLite.m_DataReader.Read();
-                        double dblEnergyWoodRevCycle2 = Convert.ToDouble(SQLite.m_DataReader["EscalatorEnergyWoodRevenue_Cycle2"]);
-                        double dblEnergyWoodRevCycle3 = Convert.ToDouble(SQLite.m_DataReader["EscalatorEnergyWoodRevenue_Cycle3"]);
-                        double dblEnergyWoodRevCycle4 = Convert.ToDouble(SQLite.m_DataReader["EscalatorEnergyWoodRevenue_Cycle4"]);
-                        double dblMerchWoodRevCycle2 = Convert.ToDouble(SQLite.m_DataReader["EscalatorMerchWoodRevenue_Cycle2"]);
-                        double dblMerchWoodRevCycle3 = Convert.ToDouble(SQLite.m_DataReader["EscalatorMerchWoodRevenue_Cycle3"]);
-                        double dblMerchWoodRevCycle4 = Convert.ToDouble(SQLite.m_DataReader["EscalatorMerchWoodRevenue_Cycle4"]);
-                        double dblOperatingCostsCycle2 = Convert.ToDouble(SQLite.m_DataReader["EscalatorOperatingCosts_Cycle2"]);
-                        double dblOperatingCostsCycle3 = Convert.ToDouble(SQLite.m_DataReader["EscalatorOperatingCosts_Cycle3"]);
-                        double dblOperatingCostsCycle4 = Convert.ToDouble(SQLite.m_DataReader["EscalatorOperatingCosts_Cycle4"]);
-                        returnEscalators = new Escalators(dblEnergyWoodRevCycle2, dblEnergyWoodRevCycle3, dblEnergyWoodRevCycle4,
-                                                          dblMerchWoodRevCycle2, dblMerchWoodRevCycle3, dblMerchWoodRevCycle4,
-                                                          dblOperatingCostsCycle2, dblOperatingCostsCycle3, dblOperatingCostsCycle4);
-                    }
-                    SQLite.m_DataReader.Close();
-                }
-            }
-
             return returnEscalators;
         }
 

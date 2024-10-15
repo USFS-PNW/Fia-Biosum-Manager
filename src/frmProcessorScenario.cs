@@ -975,24 +975,12 @@ namespace FIA_Biosum_Manager
         {
             string strScenario = uc_scenario1.txtScenarioId.Text.Trim();
             this.m_oProcessorScenarioItem.ScenarioId = strScenario;
-            if (!m_bUsingSqlite)
-            {
-                string strScenarioMDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                    "\\processor" + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsDbFile;
-                this.m_oProcessorScenarioTools.LoadTreeDiameterGroupValues(strScenarioMDB,
-                    strScenario, this.m_oProcessorScenarioItem);
-                this.m_oProcessorScenarioTools.LoadTreeSpeciesGroupValues(strScenarioMDB, strScenario,
-                    this.m_oProcessorScenarioItem);
-            }
-            else
-            {
-                string strScenarioMDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
-                this.m_oProcessorScenarioTools.LoadTreeDiameterGroupValuesSqlite(strScenarioMDB,
-                    strScenario, this.m_oProcessorScenarioItem);
-                this.m_oProcessorScenarioTools.LoadTreeSpeciesGroupValuesSqlite(strScenarioMDB, strScenario,
-                    this.m_oProcessorScenarioItem);
-            }
+            string strScenarioMDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+            this.m_oProcessorScenarioTools.LoadTreeDiameterGroupValuesSqlite(strScenarioMDB,
+                strScenario, this.m_oProcessorScenarioItem);
+            this.m_oProcessorScenarioTools.LoadTreeSpeciesGroupValuesSqlite(strScenarioMDB, strScenario,
+                this.m_oProcessorScenarioItem);
             this.m_bTreeGroupsFirstTime = false;
         }
 		public void EnableTabPage(System.Windows.Forms.TabPage p_oTabPage,bool p_bEnable)
@@ -2275,7 +2263,6 @@ namespace FIA_Biosum_Manager
             this.LoadMoveInCostsSqlite(strScenarioDB, oItem);
             this.LoadSpeciesAndDiameterGroupDollarValuesSqlite(strScenarioDB, oItem);
             this.LoadHarvestCostComponentsSqlite(strScenarioDB, oItem);
-
             this.LoadEscalatorsSqlite(p_oQueries, strScenarioDB, oItem);
             p_oProcessorScenarioItem_Collection.Add(oItem);
 
@@ -2978,7 +2965,7 @@ namespace FIA_Biosum_Manager
                 oConn.Open();
                 dataMgr.SqlQueryReader(oConn, "SELECT wood_bin,merch_value,chip_value,species_group,diam_group " +
                     "FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName +
-                    " WHERE TRIM(scenario_id)='" + p_oProcessorScenarioItem.ScenarioId.Trim() + "'");
+                    " WHERE UPPER(TRIM(scenario_id))='" + p_oProcessorScenarioItem.ScenarioId.Trim().ToUpper() + "'");
 
                 if (dataMgr.m_intError == 0)
                 {
@@ -3204,7 +3191,7 @@ namespace FIA_Biosum_Manager
                                          "EscalatorEnergyWoodRevenue_Cycle3," +
                                          "EscalatorEnergyWoodRevenue_Cycle4 " +
                                   "FROM scenario_cost_revenue_escalators " +
-                                  "WHERE TRIM(scenario_id) = '" + p_oProcessorScenarioItem.ScenarioId.Trim() + "'");
+                                  "WHERE UPPER(TRIM(scenario_id)) = '" + p_oProcessorScenarioItem.ScenarioId.Trim().ToUpper() + "'");
                 if (dataMgr.m_intError == 0)
                 {
                     if (dataMgr.m_DataReader.HasRows)
@@ -3372,8 +3359,8 @@ namespace FIA_Biosum_Manager
                 //
                 //load up any scenario columns and the default values
                 //
-                dataMgr.SqlQueryReader(oConn, "SELECT rx,[ColumnName],[Description],Default_CPA FROM scenario_harvest_cost_columns WHERE TRIM(scenario_id)='"
-                    + p_oProcessorScenarioItem.ScenarioId.Trim() + "'");
+                dataMgr.SqlQueryReader(oConn, "SELECT rx,[ColumnName],[Description],Default_CPA FROM scenario_harvest_cost_columns WHERE UPPER(TRIM(scenario_id))='"
+                    + p_oProcessorScenarioItem.ScenarioId.Trim().ToUpper() + "'");
                 if (dataMgr.m_intError == 0)
                 {
                     if (dataMgr.m_DataReader.HasRows)

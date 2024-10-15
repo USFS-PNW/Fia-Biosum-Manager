@@ -742,21 +742,10 @@ namespace FIA_Biosum_Manager
 			}
 			this.cmbSteepSlopePercent.Text = "40";
 
-            if (!ReferenceProcessorScenarioForm.m_bUsingSqlite)
-            {
-                ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadHarvestMethod
-                    (frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                    "\\processor\\db\\scenario_processor_rule_definitions.mdb",
-                    ReferenceProcessorScenarioForm.m_oProcessorScenarioItem);
-            }
-            else
-            {
-                ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadHarvestMethodSqlite
-                    (frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile,
-                    ReferenceProcessorScenarioForm.m_oProcessorScenarioItem);
-            }
-
+            ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadHarvestMethodSqlite
+                (frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile,
+                ReferenceProcessorScenarioForm.m_oProcessorScenarioItem);
 
             FIA_Biosum_Manager.ProcessorScenarioItem oItem = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem;
             if (ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.m_intError == 0)

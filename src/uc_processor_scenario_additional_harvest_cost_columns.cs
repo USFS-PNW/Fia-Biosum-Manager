@@ -419,7 +419,7 @@ namespace FIA_Biosum_Manager
                 //
                 strDestColumnsList = dataMgr.getFieldNames(oConn, "SELECT * FROM " + m_strAddHarvCostsWorkTable);
                 dataMgr.m_strSQL = "INSERT INTO " + m_strAddHarvCostsWorkTable + " (" + strDestColumnsList + ") " +
-                                    "SELECT " + strDestColumnsList + " FROM scenario_additional_harvest_costs WHERE TRIM(scenario_id)='" + this.ScenarioId + "'";
+                                    "SELECT " + strDestColumnsList + " FROM scenario_additional_harvest_costs WHERE UPPER(TRIM(scenario_id))='" + this.ScenarioId.Trim().ToUpper() + "'";
                 dataMgr.SqlNonQuery(oConn, dataMgr.m_strSQL);
             }
 
@@ -1119,7 +1119,7 @@ namespace FIA_Biosum_Manager
                 //
                 strDestColumnsList = dataMgr.getFieldNames(dataMgr.m_Connection, "SELECT * FROM " + m_strAddHarvCostsWorkTable);
                 dataMgr.m_strSQL = "INSERT INTO " + m_strAddHarvCostsWorkTable + " (" + strDestColumnsList + ") " +
-                                    "SELECT " + strDestColumnsList + " FROM scenario_additional_harvest_costs WHERE TRIM(scenario_id)='" + this.ScenarioId + "'";
+                                    "SELECT " + strDestColumnsList + " FROM scenario_additional_harvest_costs WHERE UPPER(TRIM(scenario_id))='" + this.ScenarioId.Trim().ToUpper() + "'";
                 dataMgr.SqlNonQuery(dataMgr.m_Connection, dataMgr.m_strSQL);
 
                 //CREATE LINK IN TEMP MDB TO TEMPORARY SCENARIO ADDITIONAL HARVEST COSTS TABLE
@@ -1314,7 +1314,7 @@ namespace FIA_Biosum_Manager
                                        " WHERE EXISTS( " +
                                        "SELECT* FROM scenario_additional_harvest_costs AS b " +
                                        "WHERE b.biosum_cond_id = a.biosum_cond_id AND b.RX = a.RX " +
-                                       "AND trim(b.scenario_id) = '" + sourceScenarioId.Trim() + "')";
+                                       "AND upper(trim(b.scenario_id)) = '" + sourceScenarioId.Trim().ToUpper() + "')";
                     frmMain.g_sbpInfo.Text = "Updating Harvest Cost Component $/A/C Values...Stand By";
 
                     dataMgr.SqlNonQuery(dataMgr.m_Connection, dataMgr.m_strSQL);
@@ -1601,7 +1601,7 @@ namespace FIA_Biosum_Manager
                 //
                 //delete all records of the current scenario
                 //
-                oDataMgr.m_strSQL = "DELETE FROM scenario_additional_harvest_costs WHERE TRIM(scenario_id)='" + ScenarioId + "'";
+                oDataMgr.m_strSQL = "DELETE FROM scenario_additional_harvest_costs WHERE UPPER(TRIM(scenario_id))='" + ScenarioId.Trim().ToUpper() + "'";
                 oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
                 //
                 //append all the current scenario rows into the work table
