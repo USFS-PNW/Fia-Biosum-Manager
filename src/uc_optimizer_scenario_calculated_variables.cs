@@ -5560,10 +5560,23 @@ namespace FIA_Biosum_Manager
 
                         m_oDataMgr.m_strSQL = "UPDATE " + strTargetTableName + " AS w " +
                         "SET " + strVariableName + " = " +
+                        "CASE WHEN " +
                         "(SELECT " + strFieldName + " FROM " + strSourceTableName + " AS p " +
                         "WHERE w.biosum_cond_id = p.biosum_cond_id AND w.rxpackage = p.rxpackage " +
                         "AND w.rx = p.rx AND w.rxcycle = p.rxcycle AND w.fvs_variant = p.fvs_variant) " +
-                        "* " + dblWeight + " WHERE w.rxcycle = '" + strRxCycle + "'";
+                        " >= 0 THEN " +
+                        "(SELECT " + strFieldName + " FROM " + strSourceTableName + " AS p " +
+                        "WHERE w.biosum_cond_id = p.biosum_cond_id AND w.rxpackage = p.rxpackage " +
+                        "AND w.rx = p.rx AND w.rxcycle = p.rxcycle AND w.fvs_variant = p.fvs_variant)" +
+                        "* " + dblWeight +
+                        " ELSE NULL END" +
+                        " WHERE w.rxcycle = '" + strRxCycle + "'";
+                        //m_oDataMgr.m_strSQL = "UPDATE " + strTargetTableName + " AS w " +
+                        //"SET " + strVariableName + " = " +
+                        //"(SELECT " + strFieldName + " FROM " + strSourceTableName + " AS p " +
+                        //"WHERE w.biosum_cond_id = p.biosum_cond_id AND w.rxpackage = p.rxpackage " +
+                        //"AND w.rx = p.rx AND w.rxcycle = p.rxcycle AND w.fvs_variant = p.fvs_variant)" +
+                        //" * " + dblWeight + " WHERE w.rxcycle = '" + strRxCycle + "'";
                         _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
                         m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
                         _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
