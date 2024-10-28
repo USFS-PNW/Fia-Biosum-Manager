@@ -3233,12 +3233,12 @@ namespace FIA_Biosum_Manager
                 p_odbc.RemoveUserDSN(ODBCMgr.DSN_KEYS.MasterAuxDsnName);
             }
             p_odbc.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.MasterAuxDsnName, strMasterAuxDb);
-            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, strDestTable, strDestTable + "_1", ODBCMgr.DSN_KEYS.MasterAuxDsnName, strMasterAuxDb);
+            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, strDestTable, strDestTable + "_master", ODBCMgr.DSN_KEYS.MasterAuxDsnName, strMasterAuxDb);
 
             p_ado.m_strSQL = String.Format(
                 "UPDATE {0} t INNER JOIN ({1} p INNER JOIN {2} c ON c.biosum_plot_id = p.biosum_plot_id) ON (p.cn = t.plt_cn) AND (t.CONDID = c.condid) " +
                 "SET t.biosum_cond_id=c.biosum_cond_id WHERE t.biosum_cond_id='9999999999999999999999999' AND p.biosum_status_cd=9;",
-                strDestTable + "_1", m_strPlotTable, m_strCondTable);
+                strDestTable + "_master", m_strPlotTable, m_strCondTable);
             p_ado.SqlNonQuery(m_connTempMDBFile, p_ado.m_strSQL);
             m_intError = p_ado.m_intError;
 
@@ -3310,7 +3310,7 @@ namespace FIA_Biosum_Manager
             string strFIADBDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtFiadbInputFile, "Text", false);
             strFIADBDbFile = strFIADBDbFile.Trim();
 
-            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, strSourceTable, strSourceTable + "_1", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile);
+            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, strSourceTable, strSourceTable + "_fiadb", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile);
 
             string strMasterAuxDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.db";
 
@@ -3319,7 +3319,7 @@ namespace FIA_Biosum_Manager
                 p_odbc.RemoveUserDSN(ODBCMgr.DSN_KEYS.MasterAuxDsnName);
             }
             p_odbc.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.MasterAuxDsnName, strMasterAuxDb);
-            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, strDestTable, strDestTable + "_1", ODBCMgr.DSN_KEYS.MasterAuxDsnName, strMasterAuxDb);
+            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, strDestTable, strDestTable + "_master", ODBCMgr.DSN_KEYS.MasterAuxDsnName, strMasterAuxDb);
 
             string strInsertIntoValues = "INSERT INTO {0} ({1}) ";
             string strSelectColumns = "SELECT {2} FROM {3} dwm INNER JOIN {4} p ON dwm.plt_cn=p.cn;";
@@ -3330,7 +3330,7 @@ namespace FIA_Biosum_Manager
                     "SELECT '9999999999999999999999999' AS biosum_cond_id, 9 AS biosum_status_cd, {2} FROM {3} dwm INNER JOIN {4} p ON dwm.plt_cn=trim(p.cn);";
             }
             p_ado.m_strSQL = String.Format(strInsertIntoValues + strSelectColumns,
-                strDestTable + "_1", strDestFields, strSourceFields, strSourceTable + "_1", "tempplot");
+                strDestTable + "_master", strDestFields, strSourceFields, strSourceTable + "_fiadb", "tempplot");
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
             p_ado.SqlNonQuery(m_connTempMDBFile, p_ado.m_strSQL);
@@ -5076,7 +5076,7 @@ namespace FIA_Biosum_Manager
                     strDestFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmCwd, dtDestSchema: dtDwmCwd);
                     strSourceFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmCwd, dtDestSchema: dtDwmCwd,
                         strTablePrefix: "dwm.");
-                    InsertIntoDestTableFromSourceTableSqlite(oAdo, strSourceTable: strFiaCWD, strDestTable: m_strDwmCwdTable,
+                    InsertIntoDestTableFromSourceTableSqlite(oAdo, strSourceTable: m_strDwmCwdTable, strDestTable: m_strDwmCwdTable,
                         strDestFields: strDestFields, strSourceFields: strSourceFields, InsertBiosumCondIdAndStatusCode: true);
                     UpdateDwmBiosumCondIdsSqlite(oAdo, m_strDwmCwdTable);
                     m_intError = oDataMgr.m_intError;
@@ -5090,7 +5090,7 @@ namespace FIA_Biosum_Manager
                     strDestFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmFwd, dtDestSchema: dtDwmFwd);
                     strSourceFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmFwd, dtDestSchema: dtDwmFwd,
                         strTablePrefix: "dwm.");
-                    InsertIntoDestTableFromSourceTableSqlite(oAdo, strSourceTable: strFiaFWD, strDestTable: m_strDwmFwdTable,
+                    InsertIntoDestTableFromSourceTableSqlite(oAdo, strSourceTable: m_strDwmCwdTable, strDestTable: m_strDwmFwdTable,
                         strDestFields: strDestFields, strSourceFields: strSourceFields, InsertBiosumCondIdAndStatusCode: true);
                     UpdateDwmBiosumCondIdsSqlite(oAdo, m_strDwmFwdTable);
                     m_intError = oDataMgr.m_intError;
@@ -5105,7 +5105,7 @@ namespace FIA_Biosum_Manager
                         dtDestSchema: dtDwmDuffLitter);
                     strSourceFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmDuffLitter,
                         dtDestSchema: dtDwmDuffLitter, strTablePrefix: "dwm.");
-                    InsertIntoDestTableFromSourceTableSqlite(oAdo, strSourceTable: strFiaDL,
+                    InsertIntoDestTableFromSourceTableSqlite(oAdo, strSourceTable: m_strDwmDuffLitterTable,
                         strDestTable: m_strDwmDuffLitterTable,
                         strDestFields: strDestFields, strSourceFields: strSourceFields,
                         InsertBiosumCondIdAndStatusCode: true);
@@ -5126,7 +5126,7 @@ namespace FIA_Biosum_Manager
                         dtDestSchema: dtDwmTransectSegment);
                     strSourceFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmTransectSegment,
                         dtDestSchema: dtDwmTransectSegment, strTablePrefix: "dwm.");
-                    InsertIntoDestTableFromSourceTableSqlite(oAdo, strSourceTable: strFiaTS,
+                    InsertIntoDestTableFromSourceTableSqlite(oAdo, strSourceTable: m_strDwmTransectSegmentTable,
                         strDestTable: m_strDwmTransectSegmentTable,
                         strDestFields: strDestFields, strSourceFields: strSourceFields, InsertBiosumCondIdAndStatusCode: true);
                     UpdateDwmBiosumCondIdsSqlite(oAdo, m_strDwmTransectSegmentTable);

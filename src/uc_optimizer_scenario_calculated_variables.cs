@@ -2169,10 +2169,43 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Checking for negative FVS values \r\n");
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + "\r\n\r\n");
                 }
-                long intCount = m_oDataMgr.getRecordCount(calculateConn, m_oDataMgr.m_strSQL, strPreTable);
-                if (intCount > 0)
+                long negCount = m_oDataMgr.getRecordCount(calculateConn, m_oDataMgr.m_strSQL, strPreTable);
+                m_oDataMgr.m_strSQL = "SELECT COUNT(*)" +
+                                  " FROM " + strPreTable +
+                                  " WHERE " + this.lstFVSFieldsList.SelectedItems[0].ToString() + " IS NULL";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 {
-                    string strMessage = "!! BioSum found " + intCount + " negative values in the " + strPreTable + " table!!" +
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Checking for null FVS values \r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + "\r\n\r\n");
+                }
+                long nullCount = m_oDataMgr.getRecordCount(calculateConn, m_oDataMgr.m_strSQL, strPreTable);
+                if (negCount > 0 && nullCount > 0)
+                {
+                    string strMessage = "!! BioSum found " + negCount + " negative values and " + nullCount + " nulls in the " + strPreTable + " table!!" +
+                                        " Do you wish to continue with the weighted variable calculation ?";
+                    DialogResult res = MessageBox.Show(strMessage, "FIA Biosum", System.Windows.Forms.MessageBoxButtons.YesNo,
+                                                       System.Windows.Forms.MessageBoxIcon.Question);
+                    if (res != DialogResult.Yes)
+                    {
+                        this.m_intError = -1;
+                        return;
+                    }
+                }
+                else if (negCount > 0)
+                {
+                    string strMessage = "!! BioSum found " + negCount + " negative values in the " + strPreTable + " table!!" +
+                                        " Do you wish to continue with the weighted variable calculation ?";
+                    DialogResult res = MessageBox.Show(strMessage, "FIA Biosum", System.Windows.Forms.MessageBoxButtons.YesNo,
+                                                       System.Windows.Forms.MessageBoxIcon.Question);
+                    if (res != DialogResult.Yes)
+                    {
+                        this.m_intError = -1;
+                        return;
+                    }
+                }
+                else if (nullCount > 0)
+                {
+                    string strMessage = "!! BioSum found " + nullCount + " nulls in the " + strPreTable + " table!!" +
                                         " Do you wish to continue with the weighted variable calculation ?";
                     DialogResult res = MessageBox.Show(strMessage, "FIA Biosum", System.Windows.Forms.MessageBoxButtons.YesNo,
                                                        System.Windows.Forms.MessageBoxIcon.Question);
@@ -2190,10 +2223,42 @@ namespace FIA_Biosum_Manager
                 {
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + "\r\n\r\n");
                 }
-                intCount = m_oDataMgr.getRecordCount(calculateConn, m_oDataMgr.m_strSQL, strPreTable);
-                if (intCount > 0)
+                negCount = m_oDataMgr.getRecordCount(calculateConn, m_oDataMgr.m_strSQL, strPostTable);
+                m_oDataMgr.m_strSQL = "SELECT COUNT(*)" +
+                  " FROM " + strPostTable +
+                  " WHERE " + this.lstFVSFieldsList.SelectedItems[0].ToString() + " IS NULL";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 {
-                    string strMessage = "!! BioSum found " + intCount + " negative values in the " + strPostTable + " table!!" +
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + "\r\n\r\n");
+                }
+                nullCount = m_oDataMgr.getRecordCount(calculateConn, m_oDataMgr.m_strSQL, strPostTable);
+                if (negCount > 0 && nullCount > 0)
+                {
+                    string strMessage = "!! BioSum found " + negCount + " negative values and " + nullCount + " nulls in the " + strPostTable + " table!!" +
+                                        " Do you wish to continue with the weighted variable calculation ?";
+                    DialogResult res = MessageBox.Show(strMessage, "FIA Biosum", System.Windows.Forms.MessageBoxButtons.YesNo,
+                                                       System.Windows.Forms.MessageBoxIcon.Question);
+                    if (res != DialogResult.Yes)
+                    {
+                        this.m_intError = -1;
+                        return;
+                    }
+                }
+                else if (negCount > 0)
+                {
+                    string strMessage = "!! BioSum found " + negCount + " negative values in the " + strPostTable + " table!!" +
+                                        " Do you wish to continue with the weighted variable calculation ?";
+                    DialogResult res = MessageBox.Show(strMessage, "FIA Biosum", System.Windows.Forms.MessageBoxButtons.YesNo,
+                                                       System.Windows.Forms.MessageBoxIcon.Question);
+                    if (res != DialogResult.Yes)
+                    {
+                        this.m_intError = -1;
+                        return;
+                    }
+                }
+                else if (nullCount > 0)
+                {
+                    string strMessage = "!! BioSum found " + nullCount + " nulls in the " + strPostTable + " table!!" +
                                         " Do you wish to continue with the weighted variable calculation ?";
                     DialogResult res = MessageBox.Show(strMessage, "FIA Biosum", System.Windows.Forms.MessageBoxButtons.YesNo,
                                                        System.Windows.Forms.MessageBoxIcon.Question);
@@ -5560,10 +5625,23 @@ namespace FIA_Biosum_Manager
 
                         m_oDataMgr.m_strSQL = "UPDATE " + strTargetTableName + " AS w " +
                         "SET " + strVariableName + " = " +
+                        "CASE WHEN " +
                         "(SELECT " + strFieldName + " FROM " + strSourceTableName + " AS p " +
                         "WHERE w.biosum_cond_id = p.biosum_cond_id AND w.rxpackage = p.rxpackage " +
                         "AND w.rx = p.rx AND w.rxcycle = p.rxcycle AND w.fvs_variant = p.fvs_variant) " +
-                        "* " + dblWeight + " WHERE w.rxcycle = '" + strRxCycle + "'";
+                        " >= 0 THEN " +
+                        "(SELECT " + strFieldName + " FROM " + strSourceTableName + " AS p " +
+                        "WHERE w.biosum_cond_id = p.biosum_cond_id AND w.rxpackage = p.rxpackage " +
+                        "AND w.rx = p.rx AND w.rxcycle = p.rxcycle AND w.fvs_variant = p.fvs_variant)" +
+                        "* " + dblWeight +
+                        " ELSE NULL END" +
+                        " WHERE w.rxcycle = '" + strRxCycle + "'";
+                        //m_oDataMgr.m_strSQL = "UPDATE " + strTargetTableName + " AS w " +
+                        //"SET " + strVariableName + " = " +
+                        //"(SELECT " + strFieldName + " FROM " + strSourceTableName + " AS p " +
+                        //"WHERE w.biosum_cond_id = p.biosum_cond_id AND w.rxpackage = p.rxpackage " +
+                        //"AND w.rx = p.rx AND w.rxcycle = p.rxcycle AND w.fvs_variant = p.fvs_variant)" +
+                        //" * " + dblWeight + " WHERE w.rxcycle = '" + strRxCycle + "'";
                         _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
                         m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
                         _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
