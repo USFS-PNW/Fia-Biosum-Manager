@@ -294,6 +294,22 @@ namespace FIA_Biosum_Manager
                 using (var oConn = new OleDbConnection(strTempConn))
                 {
                     oConn.Open();
+
+                    int i = 0;
+                    do
+                    {
+                        // break out of loop if it runs too long
+                        if (i > 20)
+                        {
+                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach " + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName + " table! " +
+                            "Validate the contents of this database before trying to open a Treatment Optimizer scenario.", "FIA Biosum");
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(1000);
+                        i++;
+                    }
+                    while (!oAdo.TableExist(strTempConn, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName));
+
                     oAdo.m_strSQL = "SELECT DISTINCT plot.fvs_variant, harvest_costs.rxpackage, Count(*) AS [Count]" +
                                     " FROM (" + strCondTableName + " INNER JOIN " + strPlotTableName +
                                     " ON " + strCondTableName + ".biosum_plot_id = " + strPlotTableName + ".biosum_plot_id) " +
