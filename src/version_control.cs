@@ -7388,6 +7388,96 @@ namespace FIA_Biosum_Manager
             {
                 odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.MasterAuxDsnName);
             }
+
+            // Move sequence number tables from fvs_master.db to master.db
+            // @ToDo: All of these tables are in data source definition, so need to edit that too. Check Processor and Optimizer too
+            frmMain.g_sbpInfo.Text = "Version Update: Move sequence number tables ...Stand by";
+            strDestFile = ReferenceProjectDirectory.Trim() + "\\" + Tables.FVS.DefaultRxPackageDbFile;
+            if (! System.IO.File.Exists(strDestFile))
+            {
+                oDataMgr.CreateDbFile(strDestFile);
+            }
+            // Create sequence number tables if they don't exist
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
+            {
+                conn.Open();
+                if (!oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSPrePostSeqNumTable))
+                {
+                    frmMain.g_oTables.m_oFvs.CreateFVSOutputSQLitePrePostSeqNumTable(oDataMgr, conn, Tables.FVS.DefaultFVSPrePostSeqNumTable);
+                }
+                else
+                {
+                    oDataMgr.m_strSQL = $@"DELETE FROM {Tables.FVS.DefaultFVSPrePostSeqNumTable}";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+                if (!oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable))
+                {
+                    frmMain.g_oTables.m_oFvs.CreateFVSOutputPrePostSQLiteSeqNumRxPackageAssgnTable(oDataMgr, conn, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable);
+                }
+                else
+                {
+                    oDataMgr.m_strSQL = $@"DELETE FROM {Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable}";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+                if (!oDataMgr.TableExist(conn, Tables.FVS.DefaultRxPackageTableName))
+                {
+                    frmMain.g_oTables.m_oFvs.CreateSQLiteRxPackageTable(oDataMgr, conn, Tables.FVS.DefaultRxPackageTableName);
+                }
+                else
+                {
+                    oDataMgr.m_strSQL = $@"DELETE FROM {Tables.FVS.DefaultRxPackageTableName}";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+                if (!oDataMgr.TableExist(conn, Tables.FVS.DefaultRxTableName))
+                {
+                    frmMain.g_oTables.m_oFvs.CreateSQLiteRxTable(oDataMgr, conn, Tables.FVS.DefaultRxTableName);
+                }
+                else
+                {
+                    oDataMgr.m_strSQL = $@"DELETE FROM {Tables.FVS.DefaultRxTableName}";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+                if (!oDataMgr.TableExist(conn, Tables.FVS.DefaultRxHarvestCostColumnsTableName))
+                {
+                    frmMain.g_oTables.m_oFvs.CreateSqliteRxHarvestCostColumnTable(oDataMgr, conn, Tables.FVS.DefaultRxHarvestCostColumnsTableName);
+                }
+                else
+                {
+                    oDataMgr.m_strSQL = $@"DELETE FROM {Tables.FVS.DefaultRxHarvestCostColumnsTableName}";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+            }
+
+            Datasource oProjectDs = new Datasource();
+            // Find path to existing tables
+            oProjectDs.m_strDataSourceMDBFile = this.ReferenceProjectDirectory + "\\db\\project.mdb";
+            oProjectDs.m_strDataSourceTableName = "datasource";
+            oProjectDs.m_strScenarioId = "";
+            oProjectDs.LoadTableColumnNamesAndDataTypes = false;
+            oProjectDs.LoadTableRecordCount = false;
+            oProjectDs.populate_datasource_array();
+            // FVS PRE-POST SeqNum Definitions. Assuming that all the sequence number tables will be in the same db
+            int intSeqNumTable = oProjectDs.getTableNameRow(Datasource.TableTypes.SeqNumDefinitions);
+            string strDirectoryPath = oProjectDs.m_strDataSource[intSeqNumTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
+            string strFileName = oProjectDs.m_strDataSource[intSeqNumTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            string strTableName = oProjectDs.m_strDataSource[intSeqNumTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
+            if (oProjectDs.DataSourceTableExist(intSeqNumTable))
+            {
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
+                {
+                    conn.Open();
+                    oDataMgr.m_strSQL = $@"ATTACH DATABASE '{strDirectoryPath}\{strFileName}' AS source";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    oDataMgr.m_strSQL = $@"INSERT INTO {Tables.FVS.DefaultFVSPrePostSeqNumTable} SELECT * FROM source.{strTableName}";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    intSeqNumTable = oProjectDs.getTableNameRow(Datasource.TableTypes.SeqNumRxPackageAssign);
+                    strTableName = oProjectDs.m_strDataSource[intSeqNumTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
+                    oDataMgr.m_strSQL = $@"INSERT INTO {Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable} SELECT * FROM source.{strTableName}";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+            }
+
+
         }
 
 

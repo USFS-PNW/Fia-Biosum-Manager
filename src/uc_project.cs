@@ -1023,7 +1023,7 @@ namespace FIA_Biosum_Manager
                 //fvsmaster file
                 //
                 //copy default fvsmaster database to the new project directory
-                strSourceFile = this.m_oEnv.strAppDir + "\\db\\fvsmaster.mdb";
+                //strSourceFile = this.m_oEnv.strAppDir + "\\db\\fvsmaster.mdb";
 				strDestFile = this.txtRootDirectory.Text.Trim() + "\\db\\fvsmaster.mdb";
 				p_frmTherm.Increment(5);
 				p_frmTherm.lblMsg.Text = strDestFile;
@@ -1048,8 +1048,23 @@ namespace FIA_Biosum_Manager
 				frmMain.g_oTables.m_oFvs.CreateRxPackageFvsCommandsOrderTable(p_ado,p_ado.m_OleDbConnection,Tables.FVS.DefaultRxPackageFvsCommandsOrderTableName);
 				p_ado.CloseConnection(p_ado.m_OleDbConnection);
                 //fvs output pre-post seqnum processing
-                //uc_fvs_output_prepost_seqnum.InitializePrePostSeqNumTablesAccess(p_ado, this.txtRootDirectory.Text.Trim()  + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableMdbFile);
                 uc_fvs_output_prepost_seqnum.InitializePrePostSeqNumTables();   // This is the SQLite version
+
+                // Moving these tables to master.db during SQLite conversion
+                strDestFile = this.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultRxPackageDbFile;
+                strConn = p_dataMgr.GetConnectionString(strDestFile);
+                //using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                //{
+                //    conn.Open();
+                //    //rx table
+                //    frmMain.g_oTables.m_oFvs.CreateSQLiteRxTable(p_dataMgr, conn, Tables.FVS.DefaultRxTableName);
+                //    //rx packages table
+                //    frmMain.g_oTables.m_oFvs.CreateSQLiteRxPackageTable(p_dataMgr, conn, Tables.FVS.DefaultRxPackageTableName);
+                //    //rx harvest cost column table
+                //    frmMain.g_oTables.m_oFvs.CreateSqliteRxHarvestCostColumnTable(p_dataMgr, conn, Tables.FVS.DefaultRxHarvestCostColumnsTableName);
+                //}
+                //@ToDo: Change destination for uc_fvs_output_prepost_seqnum.InitializePrePostSeqNumTables()
+
 
                 //
                 //prepopulated ref master file
