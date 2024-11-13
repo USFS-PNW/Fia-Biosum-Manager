@@ -2809,23 +2809,12 @@ namespace FIA_Biosum_Manager
             static public string DefaultRxTableDbFile { get { return @"db\fvsmaster.mdb"; } }
             static public string DefaultRxTableName { get { return "rx"; } }
 
-            static public string DefaultRxFvsCommandTableDbFile { get { return @"db\fvsmaster.mdb"; } }
-            static public string DefaultRxFvsCommandTableName { get { return "rx_fvs_commands"; } }
-
             static public string DefaultRxHarvestCostColumnsTableDbFile { get { return @"db\fvsmaster.mdb"; } }
             static public string DefaultRxHarvestCostColumnsTableName { get { return "rx_harvest_cost_columns"; } }
 
-            static public string DefaultRxPackageFvsCommandTableDbFile { get { return @"db\fvsmaster.mdb"; } }
-            static public string DefaultRxPackageFvsCommandTableName { get { return "rxpackage_fvs_commands"; } }
-
             static public string DefaultRxPackageTableDbFile { get { return @"db\fvsmaster.mdb"; } }
             static public string DefaultRxPackageTableName { get { return "rxpackage"; } }
-
-            static public string DefaultRxPackageMembersTableDbFile { get { return @"db\fvsmaster.mdb"; } }
-            static public string DefaultRxPackageMembersTableName { get { return "rxpackage_members"; } }
-
-            static public string DefaultRxPackageFvsCommandsOrderTableDbFile { get { return @"db\fvsmaster.mdb"; } }
-            static public string DefaultRxPackageFvsCommandsOrderTableName { get { return "rxpackage_fvs_commands_order"; } }
+            static public string DefaultRxPackageDbFile { get { return @"db\master.db"; } }
 
             static public string DefaultFVSTreeTableName { get { return "FVS_Tree"; } }
             static public string DefaultFVSResidTreeTableName { get { return "FVS_ResidTree"; } }
@@ -3499,6 +3488,32 @@ namespace FIA_Biosum_Manager
                     "HarvestMethodLowSlope CHAR(50)," +
                     "HarvestMethodSteepSlope CHAR(50))";
             }
+
+            //
+            //RX table
+            //
+            /// <summary>
+            /// Create the treatment table
+            /// </summary>
+            /// <param name="p_oAdo"></param>
+            /// <param name="p_oConn"></param>
+            /// <param name="p_strTableName"></param>
+            public void CreateSQLiteRxTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSQLiteRxTableSQL(p_strTableName));
+            }
+            public string CreateSQLiteRxTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "rx CHAR(3)," +
+                    "catid INTEGER," +
+                    "subcatid INTEGER," +
+                    "description CHAR(2000)," +
+                    "HarvestMethodLowSlope CHAR(50)," +
+                    "HarvestMethodSteepSlope CHAR(50)," +
+                    "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY(rx))";
+            }
+
             //
             //RX FVS Commands table
             //
@@ -3606,6 +3621,28 @@ namespace FIA_Biosum_Manager
                     "simyear4_rx CHAR(3)," +
                     "simyear4_fvscycle CHAR(2)," +
                     "kcpfile CHAR(254))";
+            }
+
+            public void CreateSQLiteRxPackageTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSQLiteRxPackageTableSQL(p_strTableName));
+            }
+            public string CreateSQLiteRxPackageTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "rxpackage CHAR(3)," +
+                    "description CHAR(2000)," +
+                    "rxcycle_length CHAR(2)," +
+                    "simyear1_rx CHAR(3)," +
+                    "simyear1_fvscycle CHAR(2)," +
+                    "simyear2_rx CHAR(3)," +
+                    "simyear2_fvscycle CHAR(2)," +
+                    "simyear3_rx CHAR(3)," +
+                    "simyear3_fvscycle CHAR(2)," +
+                    "simyear4_rx CHAR(3)," +
+                    "simyear4_fvscycle CHAR(2)," +
+                    "kcpfile CHAR(254)," +
+                    "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY(rxpackage))";
             }
             //
             //RX PACKAGE FVS Commands table

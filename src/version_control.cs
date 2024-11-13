@@ -1232,13 +1232,13 @@ namespace FIA_Biosum_Manager
                         
                         //version 5 additions
                         case "TREATMENT PRESCRIPTIONS ASSIGNED FVS COMMANDS":
-                            strDbFile = frmMain.g_oUtils.getFileNameUsingLastIndexOf(Tables.FVS.DefaultRxFvsCommandTableDbFile);
-							oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-                                "('Treatment Prescriptions Assigned FVS Commands'," + 
-								"'" + ReferenceProjectDirectory.Trim() + "\\db'," + 
-								"'fvsmaster.mdb'," + 
-								"'rx_fvs_commands');";
-							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
+       //                     strDbFile = frmMain.g_oUtils.getFileNameUsingLastIndexOf(Tables.FVS.DefaultRxFvsCommandTableDbFile);
+							//oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
+       //                         "('Treatment Prescriptions Assigned FVS Commands'," + 
+							//	"'" + ReferenceProjectDirectory.Trim() + "\\db'," + 
+							//	"'fvsmaster.mdb'," + 
+							//	"'rx_fvs_commands');";
+							//oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
                             break;
                         case "TREATMENT PRESCRIPTIONS HARVEST COST COLUMNS":
                             strDbFile = frmMain.g_oUtils.getFileNameUsingLastIndexOf(Tables.FVS.DefaultRxHarvestCostColumnsTableDbFile);
@@ -1274,33 +1274,6 @@ namespace FIA_Biosum_Manager
 								"'fvsmaster.mdb'," +
                                 "'rxpackage');";
 							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-                            break;
-                        case "TREATMENT PACKAGE ASSIGNED FVS COMMANDS":
-                            strDbFile = frmMain.g_oUtils.getFileNameUsingLastIndexOf(Tables.FVS.DefaultRxPackageFvsCommandTableDbFile);
-							oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-                                "('Treatment Package Assigned FVS Commands'," + 
-								"'" + ReferenceProjectDirectory.Trim() + "\\db'," + 
-								"'fvsmaster.mdb'," +
-                                "'rxpackage_fvs_commands');";
-							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-                            break;
-                        case "TREATMENT PACKAGE MEMBERS":
-                            strDbFile = frmMain.g_oUtils.getFileNameUsingLastIndexOf(Tables.FVS.DefaultRxPackageMembersTableDbFile);
-							oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-                                "('Treatment Package Members'," + 
-								"'" + ReferenceProjectDirectory.Trim() + "\\db'," + 
-								"'fvsmaster.mdb'," +
-                                "'rxpackage_members');";
-							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-                            break;
-                        case "TREATMENT PACKAGE FVS COMMANDS ORDER":
-                            strDbFile = frmMain.g_oUtils.getFileNameUsingLastIndexOf(Tables.FVS.DefaultRxPackageFvsCommandsOrderTableDbFile);
-							oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-                                "('Treatment Package FVS Commands Order'," + 
-								"'" + ReferenceProjectDirectory.Trim() + "\\db'," + 
-								"'fvsmaster.mdb'," +
-                                "'rxpackage_fvs_commands_order');";
-                            oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
                             break;
                         case "HARVEST METHODS":
                             oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
@@ -1479,9 +1452,6 @@ namespace FIA_Biosum_Manager
 									frmMain.g_oTables.m_oFIAPlot.CreateSiteTreeTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultSiteTreeTableName);
 									break;
                                 //version 5 additions
-                                case "TREATMENT PRESCRIPTIONS ASSIGNED FVS COMMANDS":
-                                    frmMain.g_oTables.m_oFvs.CreateRxFvsCommandsTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection,Tables.FVS.DefaultRxFvsCommandTableName);
-                                    break;
                                 case "TREATMENT PRESCRIPTIONS HARVEST COST COLUMNS":
                                     frmMain.g_oTables.m_oFvs.CreateRxHarvestCostColumnTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection,Tables.FVS.DefaultRxHarvestCostColumnsTableName);
                                     break;
@@ -1494,16 +1464,6 @@ namespace FIA_Biosum_Manager
                                 case "TREATMENT PACKAGES":
                                     frmMain.g_oTables.m_oFvs.CreateRxPackageTable(oAdoCurrent, oAdoCurrent.m_OleDbConnection, Tables.FVS.DefaultRxPackageTableName);
                                     break;
-                                case "TREATMENT PACKAGE ASSIGNED FVS COMMANDS":
-                                    frmMain.g_oTables.m_oFvs.CreateRxPackageFvsCommandsTable(oAdoCurrent, oAdoCurrent.m_OleDbConnection, Tables.FVS.DefaultRxPackageFvsCommandTableName);
-                                    break;
-                                case "TREATMENT PACKAGE MEMBERS":
-                                    frmMain.g_oTables.m_oFvs.CreateRxPackageMembersTable(oAdoCurrent, oAdoCurrent.m_OleDbConnection, Tables.FVS.DefaultRxPackageMembersTableName);
-                                    break;
-                                case "TREATMENT PACKAGE FVS COMMANDS ORDER":
-                                    frmMain.g_oTables.m_oFvs.CreateRxPackageFvsCommandsOrderTable(oAdoCurrent, oAdoCurrent.m_OleDbConnection, Tables.FVS.DefaultRxPackageFvsCommandsOrderTableName);
-                                    break;
-                               
                                 case "HARVEST METHODS":
                                     frmMain.g_oTables.m_oReference.CreateHarvestMethodsTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection, Tables.Reference.DefaultHarvestMethodsTableName);
                                     break;
@@ -1614,11 +1574,7 @@ namespace FIA_Biosum_Manager
 									frmMain.g_oTables.m_oFIAPlot.CreateSiteTreeTable(oAdoCurrent,oConn,strTempTableName);
 									break;
                                 //version 5 additions
-                                case "TREATMENT PRESCRIPTIONS ASSIGNED FVS COMMANDS":
-                                    strTempTableName = Tables.FVS.DefaultRxFvsCommandTableName;
-                                    frmMain.g_oTables.m_oFvs.CreateRxFvsCommandsTable(oAdoCurrent, oConn, strTempTableName);
-                                    break;
-                                case "TREATMENT PRESCRIPTIONS HARVEST COST COLUMNS":
+                                 case "TREATMENT PRESCRIPTIONS HARVEST COST COLUMNS":
                                     strTempTableName = Tables.FVS.DefaultRxHarvestCostColumnsTableName;
                                     frmMain.g_oTables.m_oFvs.CreateRxHarvestCostColumnTable(oAdoCurrent, oConn, strTempTableName);
                                     break;
@@ -1633,20 +1589,7 @@ namespace FIA_Biosum_Manager
                                 case "TREATMENT PACKAGES":
                                     strTempTableName = Tables.FVS.DefaultRxPackageTableName;
                                     frmMain.g_oTables.m_oFvs.CreateRxPackageTable(oAdoCurrent, oConn, strTempTableName);
-                                    break;
-                                case "TREATMENT PACKAGE ASSIGNED FVS COMMANDS":
-                                    strTempTableName = Tables.FVS.DefaultRxPackageFvsCommandTableName;
-                                    frmMain.g_oTables.m_oFvs.CreateRxPackageFvsCommandsTable(oAdoCurrent, oConn, strTempTableName);
-                                    break;
-                                case "TREATMENT PACKAGE MEMBERS":
-                                    strTempTableName = Tables.FVS.DefaultRxPackageMembersTableName;
-                                    frmMain.g_oTables.m_oFvs.CreateRxPackageMembersTable(oAdoCurrent, oConn, strTempTableName);
-                                    break;
-                                case "TREATMENT PACKAGE FVS COMMANDS ORDER":
-                                    strTempTableName = Tables.FVS.DefaultRxPackageFvsCommandsOrderTableName;
-                                    frmMain.g_oTables.m_oFvs.CreateRxPackageFvsCommandsOrderTable(oAdoCurrent, oConn, strTempTableName);
-                                    break;
-                                
+                                    break;                                
                                 case "HARVEST METHODS":
                                     strTempTableName = Tables.Reference.DefaultHarvestMethodsTableName;
                                     frmMain.g_oTables.m_oReference.CreateHarvestMethodsTable(oAdoCurrent, oConn, strTempTableName);
@@ -7390,14 +7333,166 @@ namespace FIA_Biosum_Manager
             {
                 odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.MasterAuxDsnName);
             }
+
+            // Move sequence number tables from fvs_master.db to master.db
+            // @ToDo: All of these tables are in data source definition, so need to edit that too. Check Processor and Optimizer too
+            frmMain.g_sbpInfo.Text = "Version Update: Move sequence number tables ...Stand by";
+            strDestFile = ReferenceProjectDirectory.Trim() + "\\" + Tables.FVS.DefaultRxPackageDbFile;
+            if (! System.IO.File.Exists(strDestFile))
+            {
+                oDataMgr.CreateDbFile(strDestFile);
+            }
+            // Create sequence number tables if they don't exist
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
+            {
+                conn.Open();
+                if (!oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSPrePostSeqNumTable))
+                {
+                    frmMain.g_oTables.m_oFvs.CreateFVSOutputSQLitePrePostSeqNumTable(oDataMgr, conn, Tables.FVS.DefaultFVSPrePostSeqNumTable);
+                }
+                else
+                {
+                    oDataMgr.m_strSQL = $@"DELETE FROM {Tables.FVS.DefaultFVSPrePostSeqNumTable}";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+                if (!oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable))
+                {
+                    frmMain.g_oTables.m_oFvs.CreateFVSOutputPrePostSQLiteSeqNumRxPackageAssgnTable(oDataMgr, conn, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable);
+                }
+                else
+                {
+                    oDataMgr.m_strSQL = $@"DELETE FROM {Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable}";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+                if (!oDataMgr.TableExist(conn, Tables.FVS.DefaultRxPackageTableName))
+                {
+                    frmMain.g_oTables.m_oFvs.CreateSQLiteRxPackageTable(oDataMgr, conn, Tables.FVS.DefaultRxPackageTableName);
+                }
+                else
+                {
+                    oDataMgr.m_strSQL = $@"DELETE FROM {Tables.FVS.DefaultRxPackageTableName}";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+                if (!oDataMgr.TableExist(conn, Tables.FVS.DefaultRxTableName))
+                {
+                    frmMain.g_oTables.m_oFvs.CreateSQLiteRxTable(oDataMgr, conn, Tables.FVS.DefaultRxTableName);
+                }
+                else
+                {
+                    oDataMgr.m_strSQL = $@"DELETE FROM {Tables.FVS.DefaultRxTableName}";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+                if (!oDataMgr.TableExist(conn, Tables.FVS.DefaultRxHarvestCostColumnsTableName))
+                {
+                    frmMain.g_oTables.m_oFvs.CreateSqliteRxHarvestCostColumnTable(oDataMgr, conn, Tables.FVS.DefaultRxHarvestCostColumnsTableName);
+                }
+                else
+                {
+                    oDataMgr.m_strSQL = $@"DELETE FROM {Tables.FVS.DefaultRxHarvestCostColumnsTableName}";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+            }
+
+            Datasource oProjectDs = new Datasource();
+            // Find path to existing tables
+            oProjectDs.m_strDataSourceMDBFile = this.ReferenceProjectDirectory + "\\db\\project.mdb";
+            oProjectDs.m_strDataSourceTableName = "datasource";
+            oProjectDs.m_strScenarioId = "";
+            oProjectDs.LoadTableColumnNamesAndDataTypes = false;
+            oProjectDs.LoadTableRecordCount = false;
+            oProjectDs.populate_datasource_array();
+            // FVS PRE-POST SeqNum Definitions. Assuming that all the sequence number tables will be in the same db
+            int intSeqNumTable = oProjectDs.getTableNameRow(Datasource.TableTypes.SeqNumDefinitions);
+            // Again, assuming that the rx tables are all in the same database
+            int intRxPackageTable = oProjectDs.getTableNameRow(Datasource.TableTypes.RxPackage);
+
+            // create DSN if needed
+            frmMain.g_sbpInfo.Text = "Version Update: Migrate tables from fvs_master.mdb ...Stand by";
+            string fvsMasterDs = "MIGRATE_FVS_MASTER";
+            if (odbcmgr.CurrentUserDSNKeyExist(fvsMasterDs))
+            {
+                odbcmgr.RemoveUserDSN(fvsMasterDs);
+            }
+            odbcmgr.CreateUserSQLiteDSN(fvsMasterDs, strDestFile);
+            string[] arrTargetTables = { Tables.FVS.DefaultRxPackageTableName, Tables.FVS.DefaultRxTableName, Tables.FVS.DefaultRxHarvestCostColumnsTableName };
+            strSourceFile = $@"{oProjectDs.m_strDataSource[intRxPackageTable, FIA_Biosum_Manager.Datasource.PATH].Trim()}\{oProjectDs.m_strDataSource[intRxPackageTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim()}";
+            for (int i = 0; i < arrTargetTables.Length; i++)
+            {
+                oDao.CreateSQLiteTableLink(strSourceFile, arrTargetTables[i],
+                    arrTargetTables[i] + "_1", fvsMasterDs, strDestFile);
+            }
+            System.Threading.Thread.Sleep(4000);
+
+            string strDirectoryPath = oProjectDs.m_strDataSource[intSeqNumTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
+            string strFileName = oProjectDs.m_strDataSource[intSeqNumTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            string strTableName = oProjectDs.m_strDataSource[intSeqNumTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();            
+            if (oProjectDs.DataSourceTableExist(intSeqNumTable))
+            {
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
+                {
+                    conn.Open();
+                    oDataMgr.m_strSQL = $@"ATTACH DATABASE '{strDirectoryPath}\{strFileName}' AS source";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    oDataMgr.m_strSQL = $@"INSERT INTO {Tables.FVS.DefaultFVSPrePostSeqNumTable} SELECT * FROM source.{strTableName}";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    intSeqNumTable = oProjectDs.getTableNameRow(Datasource.TableTypes.SeqNumRxPackageAssign);
+                    strTableName = oProjectDs.m_strDataSource[intSeqNumTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
+                    oDataMgr.m_strSQL = $@"INSERT INTO {Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable} SELECT * FROM source.{strTableName}";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+
+                // Update entries in project data sources table
+                // @ToOo: Also need to update SaveProjectProperties to set these to the correct path for new projects 
+                string strMasterDb = System.IO.Path.GetFileName(Tables.FVS.DefaultRxPackageDbFile);
+                oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.SeqNumDefinitions, $@"{ReferenceProjectDirectory.Trim()}\db", strMasterDb, Tables.FVS.DefaultFVSPrePostSeqNumTable);
+                oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.SeqNumRxPackageAssign, $@"{ReferenceProjectDirectory.Trim()}\db", strMasterDb, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable);
+            }
+
+            strDirectoryPath = oProjectDs.m_strDataSource[intRxPackageTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
+            strFileName = oProjectDs.m_strDataSource[intRxPackageTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            strTableName = oProjectDs.m_strDataSource[intRxPackageTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
+
+            if (oProjectDs.DataSourceTableExist(intRxPackageTable))
+            {
+                strCopyConn = oAdo.getMDBConnString(strSourceFile, "", "");
+                using (OleDbConnection copyConn = new System.Data.OleDb.OleDbConnection(strCopyConn))
+                {
+                    copyConn.Open();
+                    oAdo.m_strSQL = "INSERT INTO " + arrTargetTables[0] + "_1" +
+                        " SELECT * FROM " + strTableName;
+                    oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                    oAdo.m_strSQL = $@"DROP TABLE {arrTargetTables[0]}_1";
+                    oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                    oAdo.m_strSQL = "INSERT INTO " + arrTargetTables[1] + "_1" +
+                        " SELECT * FROM " + arrTargetTables[1];
+                    oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                    oAdo.m_strSQL = $@"DROP TABLE {arrTargetTables[1]}_1";
+                    oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                    oAdo.m_strSQL = "INSERT INTO " + arrTargetTables[2] + "_1" +
+                        " SELECT * FROM " + arrTargetTables[2];
+                    oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                    oAdo.m_strSQL = $@"DROP TABLE {arrTargetTables[2]}_1";
+                    oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                }
+            }
+
+            if (odbcmgr.CurrentUserDSNKeyExist(fvsMasterDs))
+            {
+                odbcmgr.RemoveUserDSN(fvsMasterDs);
+            }
+            if (oDao != null)
+            {
+                oDao.m_DaoWorkspace.Close();
+                oDao = null;
+            }
         }
 
 
 
-            // Method to compare two versions. 
-            // Returns 1 if v2 is smaller, -1 
-            // if v1 is smaller, 0 if equal 
-            public int VersionCompare(string v1, string v2)
+        // Method to compare two versions. 
+        // Returns 1 if v2 is smaller, -1 
+        // if v1 is smaller, 0 if equal 
+        public int VersionCompare(string v1, string v2)
         {
             // vnum stores each numeric 
             // part of version 

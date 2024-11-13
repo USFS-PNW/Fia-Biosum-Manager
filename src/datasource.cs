@@ -1689,6 +1689,7 @@ namespace FIA_Biosum_Manager
             static public string Tree = "Tree";
             static public string SeqNumDefinitions = "FVS PRE-POST SeqNum Definitions";
             static public string SeqNumRxPackageAssign = "FVS PRE-POST SeqNum Treatment Package Assign";
+            static public string RxPackage = "Treatment Packages";
         }
 		
 	}
