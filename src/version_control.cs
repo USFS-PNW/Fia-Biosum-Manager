@@ -7333,7 +7333,6 @@ namespace FIA_Biosum_Manager
             }
 
             // Move sequence number tables from fvs_master.db to master.db
-            // @ToDo: All of these tables are in data source definition, so need to edit that too. Check Processor and Optimizer too
             frmMain.g_sbpInfo.Text = "Version Update: Move sequence number tables ...Stand by";
             strDestFile = ReferenceProjectDirectory.Trim() + "\\" + Tables.FVS.DefaultRxPackageDbFile;
             if (! System.IO.File.Exists(strDestFile))
@@ -7440,7 +7439,6 @@ namespace FIA_Biosum_Manager
                 }
 
                 // Update entries in project data sources table
-                // @ToOo: Also need to update SaveProjectProperties to set these to the correct path for new projects 
                 string strMasterDb = System.IO.Path.GetFileName(Tables.FVS.DefaultRxPackageDbFile);
                 oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.SeqNumDefinitions, $@"{ReferenceProjectDirectory.Trim()}\db", strMasterDb, Tables.FVS.DefaultFVSPrePostSeqNumTable);
                 oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.SeqNumRxPackageAssign, $@"{ReferenceProjectDirectory.Trim()}\db", strMasterDb, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable);
@@ -7472,8 +7470,30 @@ namespace FIA_Biosum_Manager
                     oAdo.m_strSQL = $@"DROP TABLE {arrTargetTables[2]}_1";
                     oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
                 }
-            }
 
+                string strMasterDb = System.IO.Path.GetFileName(Tables.FVS.DefaultRxPackageDbFile);
+                // Update project data sources
+                oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.RxPackage, $@"{ReferenceProjectDirectory.Trim()}\db", strMasterDb, Tables.FVS.DefaultRxPackageTableName);
+                oProjectDs.UpdateDataSourcePath("Treatment Prescriptions", $@"{ ReferenceProjectDirectory.Trim()}\db", strMasterDb, Tables.FVS.DefaultRxTableName);
+                oProjectDs.UpdateDataSourcePath("Treatment Prescriptions Harvest Cost Columns", $@"{ ReferenceProjectDirectory.Trim()}\db", strMasterDb, Tables.FVS.DefaultRxHarvestCostColumnsTableName);
+                // Update Optimizer data sources
+                strDestFile = $@"{ReferenceProjectDirectory.Trim()}\{Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile}";
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
+                {
+                    conn.Open();
+                    oDataMgr.m_strSQL = $@"UPDATE {Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioDatasourceTableName} SET file = '{strMasterDb}' 
+                        where table_type in ('Treatment Prescriptions','Treatment Prescriptions Harvest Cost Columns','{Datasource.TableTypes.RxPackage}')";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+                strDestFile = $@"{ReferenceProjectDirectory.Trim()}\processor\{Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile}";
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
+                {
+                    conn.Open();
+                    oDataMgr.m_strSQL = $@"UPDATE {Tables.Scenario.DefaultScenarioDatasourceTableName} SET file = '{strMasterDb}' 
+                        where table_type in ('Treatment Prescriptions','Treatment Prescriptions Harvest Cost Columns','{Datasource.TableTypes.RxPackage}')";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+            }
             if (odbcmgr.CurrentUserDSNKeyExist(fvsMasterDs))
             {
                 odbcmgr.RemoveUserDSN(fvsMasterDs);
