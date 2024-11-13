@@ -2832,7 +2832,7 @@ namespace FIA_Biosum_Manager
 
             static public string DefaultFVSPrePostSeqNumTable { get { return "fvs_output_prepost_seqnum"; } }
             static public string DefaultFVSPrePostSeqNumTableMdbFile { get { return @"db\fvsmaster.mdb"; } }
-            static public string DefaultFVSPrePostSeqNumTableDbFile { get { return @"db\fvsmaster.db"; } }
+            static public string DefaultFVSPrePostSeqNumTableDbFile { get { return @"db\master.db"; } }
 
             static public string DefaultFVSPrePostSeqNumRxPackageAssgnTable { get { return "fvs_output_prepost_seqnum_rxpackage_assignment"; } }
             static public string DefaultFVSPrePostSeqNumRxPackageAssgnTableDbFile { get { return @"db\fvsmaster.mdb"; } }
