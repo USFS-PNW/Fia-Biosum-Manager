@@ -5286,8 +5286,8 @@ namespace FIA_Biosum_Manager
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                        "biosum_cond_id CHAR(25)" +
-                       ",biosum_status_cd CHAR(1)" +
-                       ",CN CHAR(34)" +
+                       ",biosum_status_cd INTEGER" +
+                       ",CN CHAR(34) PRIMARY KEY" +
                        ",PLT_CN CHAR(34)" +
                        ",INVYR INTEGER" +
                        ",STATECD INTEGER" +
@@ -5365,8 +5365,8 @@ namespace FIA_Biosum_Manager
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                        "biosum_cond_id CHAR(25)" +
-                       ",biosum_status_cd CHAR(1)" +
-                       ",CN CHAR(34)" +
+                       ",biosum_status_cd INTEGER" +
+                       ",CN CHAR(34) PRIMARY KEY" +
                        ",PLT_CN CHAR(34)" +
                        ",INVYR INTEGER" +
                        ",STATECD INTEGER" +
@@ -5445,8 +5445,8 @@ namespace FIA_Biosum_Manager
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                        "biosum_cond_id CHAR(25)" +
-                       ",biosum_status_cd CHAR(1)" +
-                       ",CN CHAR(34)" +
+                       ",biosum_status_cd INTEGER" +
+                       ",CN CHAR(34) PRIMARY KEY" +
                        ",PLT_CN CHAR(34)" +
                        ",INVYR INTEGER" +
                        ",STATECD INTEGER" +
@@ -5523,8 +5523,8 @@ namespace FIA_Biosum_Manager
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                        "biosum_cond_id CHAR(25)" +
-                       ",biosum_status_cd CAHR(1)" +
-                       ",CN CHAR(34)" +
+                       ",biosum_status_cd INTEGER" +
+                       ",CN CHAR(34) PRIMARY KEY" +
                        ",PLT_CN CHAR(34)" +
                        ",INVYR INTEGER" +
                        ",STATECD INTEGER" +

@@ -81,7 +81,7 @@ namespace FIA_Biosum_Manager
         private TabPage tabPage2;
         private TextBox txtDataDir;
         private Button btnCreateFvsInput;
-        //private Button btnCreateFvsInputNew;
+        private Button btnCreateFvsInputNew;
         public ListView lstFvsInput;
         private ComboBox cmbAction;
         private Label lblRxCnt;
@@ -187,7 +187,7 @@ namespace FIA_Biosum_Manager
             this.lblFiaDatamartFile = new System.Windows.Forms.Label();
             this.txtDataDir = new System.Windows.Forms.TextBox();
             this.btnCreateFvsInput = new System.Windows.Forms.Button();
-            //this.btnCreateFvsInputNew = new System.Windows.Forms.Button();
+            this.btnCreateFvsInputNew = new System.Windows.Forms.Button();
             this.lstFvsInput = new System.Windows.Forms.ListView();
             this.cmbAction = new System.Windows.Forms.ComboBox();
             this.lblRxCnt = new System.Windows.Forms.Label();
@@ -274,7 +274,7 @@ namespace FIA_Biosum_Manager
             this.tabPage2.Controls.Add(this.lblFiaDatamartFile);
             this.tabPage2.Controls.Add(this.txtDataDir);
             this.tabPage2.Controls.Add(this.btnCreateFvsInput);
-            //this.tabPage2.Controls.Add(this.btnCreateFvsInputNew);
+            this.tabPage2.Controls.Add(this.btnCreateFvsInputNew);
             this.tabPage2.Controls.Add(this.lstFvsInput);
             this.tabPage2.Controls.Add(this.cmbAction);
             this.tabPage2.Controls.Add(this.lblRxCnt);
@@ -360,12 +360,12 @@ namespace FIA_Biosum_Manager
             //
             // btnCreateFvsInputNew
             //
-            //this.btnCreateFvsInputNew.Location = new System.Drawing.Point(200, 424);
-            //this.btnCreateFvsInputNew.Name = "btnCreateFvsInputNew";
-            //this.btnCreateFvsInputNew.Size = new System.Drawing.Size(125, 32);
-            //this.btnCreateFvsInputNew.TabIndex = 5;
-            //this.btnCreateFvsInputNew.Text = "Run New Process";
-            //this.btnCreateFvsInputNew.Click += new System.EventHandler(this.btnCreateFvsInputNew_Click);
+            this.btnCreateFvsInputNew.Location = new System.Drawing.Point(200, 424);
+            this.btnCreateFvsInputNew.Name = "btnCreateFvsInputNew";
+            this.btnCreateFvsInputNew.Size = new System.Drawing.Size(125, 32);
+            this.btnCreateFvsInputNew.TabIndex = 5;
+            this.btnCreateFvsInputNew.Text = "Run New Process";
+            this.btnCreateFvsInputNew.Click += new System.EventHandler(this.btnCreateFvsInputNew_Click);
             // 
             // lstFvsInput
             // 
@@ -1135,7 +1135,7 @@ namespace FIA_Biosum_Manager
             this.cmbAction.Enabled = true;
             this.btnRefresh.Enabled = true;
             this.btnCreateFvsInput.Enabled = true;
-            //this.btnCreateFvsInputNew.Enabled = true;
+            this.btnCreateFvsInputNew.Enabled = true;
             this.btnChkAll.Enabled = true;
             this.btnClearAll.Enabled = true;
             this.btnClose.Enabled = true;
@@ -1319,6 +1319,7 @@ namespace FIA_Biosum_Manager
                 return;
             }
 
+            m_bOverwrite = false;
             // Make sure the database is chosen and that such a file exists
             bool bValidFile = true;
             if (!String.IsNullOrEmpty(txtFIADatamart.Text))
@@ -1348,6 +1349,7 @@ namespace FIA_Biosum_Manager
                 MessageBox.Show("You must specify a group on the FVSIn FIA2FVS tab before proceeding!", "FIA Biosum");
                 return;
             }
+            string strInDirAndFile = this.txtDataDir.Text + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
 
             // Check for existing files
             List<string> lstVariants = new List<string>();
@@ -1358,7 +1360,6 @@ namespace FIA_Biosum_Manager
                 {
                     var item = this.lstFvsInput.Items[x];
                     string strVariant = item.SubItems[1].Text.Trim();
-                    string strInDirAndFile = this.txtDataDir.Text + "\\" + strVariant + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
                     if (!lstVariants.Contains(strInDirAndFile))
                     {
                         if (File.Exists(strInDirAndFile))
@@ -1371,8 +1372,15 @@ namespace FIA_Biosum_Manager
                                 if (oDataMgr.TableExist(con, Tables.FIA2FVS.DefaultFvsInputStandTableName) &&
                                     oDataMgr.TableExist(con, Tables.FIA2FVS.DefaultFvsInputTreeTableName))
                                 {
-                                    // Only add to warnings if both tables exist
-                                    lstVariants.Add(strInDirAndFile);
+                                    oDataMgr.SqlQueryReader(con, "SELECT * FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName + " WHERE TRIM(VARIANT) = '" + strVariant + "'");
+                                    if (oDataMgr.m_DataReader.HasRows)
+                                    {
+                                        // Only add to warnings if both tables exist and selected variant is in stand table
+                                        if (!lstVariants.Contains(strVariant))
+                                        {
+                                            lstVariants.Add(strVariant);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1383,8 +1391,8 @@ namespace FIA_Biosum_Manager
             if (lstVariants.Count > 0)
             {
                 System.Text.StringBuilder sb = new System.Text.StringBuilder();
-                sb.Append("The FVS input databases listed below exist for the selected variants. ");
-                sb.Append("Click 'Yes' to append data to the existing databases or 'No' to overwrite them with new data. \r\n\r\n");
+                sb.Append("FVS input data from the selected variant(s) already exist. ");
+                sb.Append("Click 'Yes' to append data to the existing database or 'No' to overwrite data for the selected variant(s) with new data. \r\n\r\n");
                 foreach (var item in lstVariants)
                 {
                     sb.Append(item + "\r");
@@ -1395,9 +1403,9 @@ namespace FIA_Biosum_Manager
                     case DialogResult.Cancel:
                         return;
                     case DialogResult.Yes:
-                        m_bOverwrite = false;
                         break;
                     case DialogResult.No:
+                        m_bOverwrite = true;
                         break;
                 }
 
@@ -1408,29 +1416,32 @@ namespace FIA_Biosum_Manager
                     using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(connFiadbDb))
                     {
                         con.Open();
+
+                        oDataMgr.SqlNonQuery(con, "ATTACH '" + strInDirAndFile + "' as target");
                         foreach (var strVariant in lstVariants)
                         {
-                            oDataMgr.SqlNonQuery(con, "ATTACH '" + strVariant + "' as target");
                             string strQuery = "SELECT distinct STATE FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
                                               " INTERSECT SELECT distinct STATE" +
-                                              " FROM target." + Tables.FIA2FVS.DefaultFvsInputStandTableName;
+                                              " FROM target." + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                                              " WHERE TRIM(VARIANT) = '" + strVariant + "'";
                             List<string> lstStates = oDataMgr.getStringList(con, strQuery);
                             if (lstStates.Count > 0)
                             {
                                 m_dictVariantStates.Add(strVariant, lstStates);
                             }
-                            oDataMgr.SqlNonQuery(con, "DETACH DATABASE 'target'");
                         }
+                        oDataMgr.SqlNonQuery(con, "DETACH DATABASE 'target'");
                     }
                 }
                 if (m_dictVariantStates != null &&
                     m_dictVariantStates.Keys.Count > 0)
                 {
                     sb = new System.Text.StringBuilder();
-                    sb.Append("The FVS input databases listed below already contain records for state codes ");
+                    sb.Append("FVS input data for the variant(s) listed below already contain records for state codes ");
                     sb.Append("in the FIA Datamart input SQLite database. ");
                     sb.Append("Click 'Yes' to replace the existing stands ");
                     sb.Append("and trees for those states or 'No' to stop this process.\r\n\r\n");
+                    
                     foreach (var strVariant in m_dictVariantStates.Keys)
                     {
                         sb.Append(strVariant + "\r");
@@ -1959,7 +1970,7 @@ namespace FIA_Biosum_Manager
                     {
                         //get the variant
                         strVariant = frmMain.g_oDelegate.GetListViewSubItemPropertyValue(lstFvsInput, x, COL_VARIANT, "Text", false).ToString().Trim();
-                        string strInDirAndFile = p_fvsinput.strDataDirectory + "\\" + strVariant + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
+                        string strInDirAndFile = p_fvsinput.strDataDirectory + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
                         //see if this is a new variant
                         if (strVariant.Trim().ToUpper() != strCurVariant.Trim().ToUpper())
                         {
@@ -1969,9 +1980,9 @@ namespace FIA_Biosum_Manager
                             strCurVariant = strVariant;
 
                             // Running old BioSum FVSIn process
-                            p_fvsinput.Start(strCurVariant, m_strDebugFile);
-                            intValue = intValue + interval;
-                            frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar2, "Value", intValue);
+                            //p_fvsinput.Start(strCurVariant, m_strDebugFile);
+                            //intValue = intValue + interval;
+                            //frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar2, "Value", intValue);
                             // Done
 
                             List<string> lstStates = new List<string>();
@@ -1980,7 +1991,7 @@ namespace FIA_Biosum_Manager
                             {
                                 lstStates = m_dictVariantStates[strInDirAndFile];
                             }
-                            p_fvsinput.StartFIA2FVS(odbcmgr, oDao, oAdo, strTempMDB, m_bOverwrite, m_strDebugFile,
+                            p_fvsinput.StartFIA2FVSNew(odbcmgr, oDao, oAdo, strTempMDB, m_bOverwrite, m_strDebugFile,
                                 strCurVariant, lstStates, strSourceStandTableAlias,
                                 strSourceTreeTableAlias);
                         }
@@ -2193,7 +2204,7 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oDelegate.SetControlPropertyValue(cmbAction, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnRefresh, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnCreateFvsInput, "Enabled", true);
-                //frmMain.g_oDelegate.SetControlPropertyValue(btnCreateFvsInputNew, "Enabled", true);
+                frmMain.g_oDelegate.SetControlPropertyValue(btnCreateFvsInputNew, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnChkAll, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnClearAll, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnClose, "Enabled", true);
@@ -2630,8 +2641,8 @@ namespace FIA_Biosum_Manager
             //btns under lstFvsInput position based on tabControl perimeter
             btnCreateFvsInput.Top = lstFvsInput.Bottom + 80;
             btnCreateFvsInput.Left = lstFvsInput.Right - btnCreateFvsInput.Width;
-            //btnCreateFvsInputNew.Top = lstFvsInput.Bottom + 80;
-            //btnCreateFvsInputNew.Left = lstFvsInput.Right - btnCreateFvsInput.Width - 5 - btnCreateFvsInputNew.Width;
+            btnCreateFvsInputNew.Top = lstFvsInput.Bottom + 80;
+            btnCreateFvsInputNew.Left = lstFvsInput.Right - btnCreateFvsInput.Width - 5 - btnCreateFvsInputNew.Width;
 
             cmbAction.Top = btnCreateFvsInput.Top + (int)(btnCreateFvsInput.Height * .5) - (int)(cmbAction.Height * .5);
             cmbAction.Left = btnCreateFvsInput.Left - cmbAction.Width - 5;

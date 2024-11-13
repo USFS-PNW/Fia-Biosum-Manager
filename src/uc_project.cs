@@ -1004,20 +1004,20 @@ namespace FIA_Biosum_Manager
                 //
                 //master_aux.db
                 //
-                //strDestFile = this.txtRootDirectory.Text.Trim() + "\\db\\master_aux.db";
-                //p_frmTherm.Increment(4);
-                //p_frmTherm.lblMsg.Text = strDestFile;
-                //p_frmTherm.lblMsg.Refresh();
-                //p_dataMgr.CreateDbFile(strDestFile);
-                //strConn = p_dataMgr.GetConnectionString(strDestFile);
-                //using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
-                //{
-                //    conn.Open();
-                //    frmMain.g_oTables.m_oFIAPlot.CreateSqliteDWMCoarseWoodyDebrisTable(p_dataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMCoarseWoodyDebrisName);
-                //    frmMain.g_oTables.m_oFIAPlot.CreateSqliteDWMFineWoodyDebrisTable(p_dataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMFineWoodyDebrisName);
-                //    frmMain.g_oTables.m_oFIAPlot.CreateSqliteDWMDuffLitterFuelTable(p_dataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMDuffLitterFuelName);
-                //    frmMain.g_oTables.m_oFIAPlot.CreateSqliteDWMTransectSegmentTable(p_dataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMTransectSegmentName);
-                //}
+                strDestFile = this.txtRootDirectory.Text.Trim() + "\\db\\master_aux.db";
+                p_frmTherm.Increment(4);
+                p_frmTherm.lblMsg.Text = strDestFile;
+                p_frmTherm.lblMsg.Refresh();
+                p_dataMgr.CreateDbFile(strDestFile);
+                strConn = p_dataMgr.GetConnectionString(strDestFile);
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+                    conn.Open();
+                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteDWMCoarseWoodyDebrisTable(p_dataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMCoarseWoodyDebrisName);
+                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteDWMFineWoodyDebrisTable(p_dataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMFineWoodyDebrisName);
+                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteDWMDuffLitterFuelTable(p_dataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMDuffLitterFuelName);
+                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteDWMTransectSegmentTable(p_dataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMTransectSegmentName);
+                }
 
                 //
                 //fvsmaster file
