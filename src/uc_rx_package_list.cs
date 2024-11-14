@@ -52,8 +52,6 @@ namespace FIA_Biosum_Manager
         private string m_xpsFile = Help.DefaultFvsXPSFile;
 
 		private FIA_Biosum_Manager.RxPackageItem_Collection m_oRxPackageItem_Collection = new RxPackageItem_Collection();
-		private FIA_Biosum_Manager.RxPackageItemFvsCommandItem_Collection m_oRxPackageItemFvsCommandItem_Collection = new RxPackageItemFvsCommandItem_Collection();
-		private FIA_Biosum_Manager.RxPackageCombinedFVSCommandsItem_Collection m_oRxPackageCombinedFVSCommandsItem_Collection = new RxPackageCombinedFVSCommandsItem_Collection();
 		private System.Windows.Forms.Button btnProperties;
 
 		//private RxPackageItemFvsCommandItem_Collection  _FvsCommandItem_Collection1;
@@ -159,22 +157,11 @@ namespace FIA_Biosum_Manager
 																				  oAdo.m_OleDbConnection,
 																				  m_oQueries,
 																				  m_oRxPackageItem_Collection);
+            oAdo.CloseConnection(oAdo.m_OleDbConnection);
 
-													 
 
-
-			this.m_oRxTools.LoadAllRxItemsFromTableIntoRxCollection(oAdo,
-																	oAdo.m_OleDbConnection,
-																	m_oQueries,
-																	m_oRxItem_Collection);
-
-			
-
-			oAdo.CloseConnection(oAdo.m_OleDbConnection);
-
-			
-			
-
+            this.m_oRxTools.LoadAllRxItemsFromTableIntoRxCollection(m_oQueries, m_oRxItem_Collection);
+            
 			this.lstRx.BeginUpdate();    	
 			for (x=0;x<= m_oRxPackageItem_Collection.Count-1;x++)
 			{
@@ -610,16 +597,6 @@ namespace FIA_Biosum_Manager
 			{
 				oAdo.m_strSQL = "DELETE FROM " + this.m_oQueries.m_oFvs.m_strRxPackageTable;
 				oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-				if  (oAdo.m_intError==0)
-				{
-					oAdo.m_strSQL = "DELETE FROM " + this.m_oQueries.m_oFvs.m_strRxPackageFvsCmdOrderTable;
-					oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-				}
-				if (oAdo.m_intError==0)
-				{
-					oAdo.m_strSQL="DELETE FROM " + this.m_oQueries.m_oFvs.m_strRxPackageFvsCmdTable;
-					oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-				}
 				if (oAdo.m_intError==0)
 				{
 					for (x=0;x<=m_oRxPackageItem_Collection.Count-1;x++)
@@ -651,77 +628,8 @@ namespace FIA_Biosum_Manager
 							strValues = strValues + "'" + m_oRxPackageItem_Collection.Item(x).SimulationYear4Fvs.Trim() + "',";
 							strValues = strValues + "'" + m_oRxPackageItem_Collection.Item(x).KcpFile.Trim() + "'";
 							oAdo.m_strSQL = Queries.GetInsertSQL(strFields,strValues,m_oQueries.m_oFvs.m_strRxPackageTable);
-							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-							//
-							//SAVE FVS COMMANDS FOR THIS PACKAGE
-							//
-							intIndex=0;
-							if (m_oRxPackageItem_Collection.Item(x).ReferenceFvsCommandsCollection != null)
-							{
-									
-								for (y=0;y<=m_oRxPackageItem_Collection.Item(x).ReferenceFvsCommandsCollection.Count-1;y++)
-								{
-									if (m_oRxPackageItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Delete==false)
-									{
-										if (m_oRxPackageItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).RxPackageId==
-											m_oRxPackageItem_Collection.Item(x).RxPackageId)
-										{
-									
-											strFields="rxpackage_fvscmd_index,rxpackage,fvscmd,fvscmd_id,list_index,p1,p2,p3,p4,p5,p6,p7,other";
-											strValues=Convert.ToString(intIndex) + ","; 
-											strValues=strValues + "'" + m_oRxPackageItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).RxPackageId.Trim() + "',";
-											strValues=strValues + "'" + m_oRxPackageItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).FVSCommand.Trim() + "',";
-											strValues=strValues +  Convert.ToString(m_oRxPackageItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).FVSCommandId).Trim() + ",";
-											strValues=strValues +  Convert.ToString(m_oRxPackageItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).ListViewIndex).Trim() + ",";
-											strValues=strValues + "'" + m_oRxPackageItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Parameter1.Trim() + "',";
-											strValues=strValues + "'" + m_oRxPackageItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Parameter2.Trim() + "',";
-											strValues=strValues + "'" + m_oRxPackageItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Parameter3.Trim() + "',";
-											strValues=strValues + "'" + m_oRxPackageItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Parameter4.Trim() + "',";
-											strValues=strValues + "'" + m_oRxPackageItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Parameter5.Trim() + "',";
-											strValues=strValues + "'" + m_oRxPackageItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Parameter6.Trim() + "',";
-											strValues=strValues + "'" + m_oRxPackageItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Parameter7.Trim() + "',";
-											strValues=strValues + "'" + m_oRxPackageItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Other.Trim() + "'";
-											oAdo.m_strSQL = Queries.GetInsertSQL(strFields,strValues,m_oQueries.m_oFvs.m_strRxPackageFvsCmdTable);
-											oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-											intIndex++;
-										}
-									}
-								}
-							}
-							//
-							//SAVE THE ORDER OF THE PACKAGE COMMANDS
-							//
-							intIndex=0;
-							if (m_oRxPackageItem_Collection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection!= null)
-							{
-									
-								for (y=0;y<=m_oRxPackageItem_Collection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Count-1;y++)
-								{
-									if (m_oRxPackageItem_Collection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(y).Delete==false)
-									{
-										if (m_oRxPackageItem_Collection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(y).RxPackageId==
-											m_oRxPackageItem_Collection.Item(x).RxPackageId)
-										{
-											strFields="rxpackage,rx,fvscycle,fvscmd,fvscmd_id";
-											strValues="'" + m_oRxPackageItem_Collection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(y).RxPackageId.Trim() + "',";
-											strValues=strValues + "'" + m_oRxPackageItem_Collection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(y).RxId.Trim() + "',";
-											strValues=strValues + "'" + m_oRxPackageItem_Collection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(y).FVSCycle.Trim() + "',";
-											strValues=strValues + "'" + m_oRxPackageItem_Collection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(y).FVSCommand.Trim() + "',";
-											strValues=strValues +  Convert.ToString(m_oRxPackageItem_Collection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(y).FVSCommandId).Trim();
-											oAdo.m_strSQL = Queries.GetInsertSQL(strFields,strValues,m_oQueries.m_oFvs.m_strRxPackageFvsCmdOrderTable);
-											oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-											intIndex++;
-										}
-									}
-								}
-							}
-							
-						}
-						else
-						{
-						}
-							
-						
+							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);							
+						}											
 					}
 				}
 				
@@ -934,13 +842,7 @@ namespace FIA_Biosum_Manager
 	 **RX Package Item                          
 	 *********************************************************************************************************/
 	public class RxPackageItem
-	{
-		
-		public RxPackageItemFvsCommandItem_Collection m_oFvsCommandItem_Collection1=null;
-		public RxPackageItemFvsCommandItem_Collection _FvsCommandItem_Collection1=null;
-		public RxPackageCombinedFVSCommandsItem_Collection _RxPackageCombinedFVSCommandsItem_Collection1=null;
-		public RxPackageCombinedFVSCommandsItem_Collection m_oRxPackageCombinedFVSCommandsItem_Collection1=null;
-		
+	{				
 		private int _intIndex=-1;
 		[CategoryAttribute("General"),ReadOnly(true),DescriptionAttribute("RX Package Item Index")]
 		public int Index
@@ -1071,16 +973,6 @@ namespace FIA_Biosum_Manager
 			get {return _bDelete;}
 			set {_bDelete=value;}
 		}
-		public RxPackageItemFvsCommandItem_Collection ReferenceFvsCommandsCollection
-		{
-			get {return _FvsCommandItem_Collection1;}
-			set {_FvsCommandItem_Collection1=value;}
-		}
-		public FIA_Biosum_Manager.RxPackageCombinedFVSCommandsItem_Collection ReferenceRxPackageCombinedFVSCommandsItemCollection
-		{
-			get {return _RxPackageCombinedFVSCommandsItem_Collection1;}
-			set {_RxPackageCombinedFVSCommandsItem_Collection1=value;}
-		}
 			
 		//private string _strFvsCmd="";
 		//[CategoryAttribute("Estimation Engine And Excel"), BrowsableAttribute(false), DescriptionAttribute("FVS Command")]
@@ -1123,90 +1015,7 @@ namespace FIA_Biosum_Manager
             p_RxPackageItemDestination.SimulationYear4Rx=p_RxPackageItemSource.SimulationYear4Rx;
 			p_RxPackageItemDestination.SimulationYear4Fvs=p_RxPackageItemSource.SimulationYear4Fvs;
 			p_RxPackageItemDestination.KcpFile=p_RxPackageItemSource.KcpFile;
-			p_RxPackageItemDestination.Delete=p_RxPackageItemSource.Delete;
-
-
-			//remove any existing destination fvs command collection items 
-			//since we are copying all the source to the destination
-			if (p_RxPackageItemDestination.ReferenceFvsCommandsCollection!=null)
-			{
-				for (x=p_RxPackageItemDestination.ReferenceFvsCommandsCollection.Count-1;x>=0;x--)
-				{
-					if (p_RxPackageItemDestination.ReferenceFvsCommandsCollection.Item(x).RxPackageId==
-						p_RxPackageItemSource.RxPackageId)
-						p_RxPackageItemDestination.ReferenceFvsCommandsCollection.Remove(x);
-				}
-			}
-			//load up the fvs commands specific to the package that are not members of a treatment
-			if (p_RxPackageItemSource.ReferenceFvsCommandsCollection != null)
-			{
-				
-				p_RxPackageItemDestination.m_oFvsCommandItem_Collection1=new RxPackageItemFvsCommandItem_Collection();
-				for (x=0;x<=p_RxPackageItemSource.ReferenceFvsCommandsCollection.Count-1;x++)
-				{
-					if (p_RxPackageItemSource.RxPackageId == p_RxPackageItemSource.ReferenceFvsCommandsCollection.Item(x).RxPackageId)
-					{
-						FIA_Biosum_Manager.RxPackageItemFvsCommandItem oItem = new RxPackageItemFvsCommandItem();
-						oItem.Index = p_RxPackageItemSource.ReferenceFvsCommandsCollection.Item(x).Index;
-						oItem.RxPackageId = p_RxPackageItemSource.ReferenceFvsCommandsCollection.Item(x).RxPackageId;
-						oItem.FVSCommand = p_RxPackageItemSource.ReferenceFvsCommandsCollection.Item(x).FVSCommand;
-						oItem.FVSCommandId = p_RxPackageItemSource.ReferenceFvsCommandsCollection.Item(x).FVSCommandId;
-						oItem.Other = p_RxPackageItemSource.ReferenceFvsCommandsCollection.Item(x).Other;
-						oItem.OtherDescription = p_RxPackageItemSource.ReferenceFvsCommandsCollection.Item(x).OtherDescription;
-						oItem.Parameter1=p_RxPackageItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter1;
-						oItem.Parameter1Description = p_RxPackageItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter1Description;
-						oItem.Parameter2 = p_RxPackageItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter2;
-						oItem.Parameter2Description = p_RxPackageItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter2Description;
-						oItem.Parameter3 = p_RxPackageItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter3;
-						oItem.Parameter3Description = p_RxPackageItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter3Description;
-						oItem.Parameter4 = p_RxPackageItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter4;
-						oItem.Parameter4Description = p_RxPackageItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter4Description;
-						oItem.Parameter5 = p_RxPackageItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter5;
-						oItem.Parameter5Description = p_RxPackageItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter5Description;
-						oItem.Parameter6 = p_RxPackageItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter6;
-						oItem.Parameter6Description = p_RxPackageItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter6Description;
-						oItem.Parameter7 = p_RxPackageItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter7;
-						oItem.Parameter7Description = p_RxPackageItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter7Description;
-						oItem.ListViewIndex = p_RxPackageItemSource.ReferenceFvsCommandsCollection.Item(x).ListViewIndex;
-						oItem.Delete = p_RxPackageItemSource.ReferenceFvsCommandsCollection.Item(x).Delete;
-						p_RxPackageItemDestination.m_oFvsCommandItem_Collection1.Add(oItem);
-
-					}
-					p_RxPackageItemDestination.ReferenceFvsCommandsCollection = p_RxPackageItemDestination.m_oFvsCommandItem_Collection1;
-				
-				}
-			}
-
-			//remove all the items from the package + rx fvs commands destination variable
-			if (p_RxPackageItemDestination.ReferenceRxPackageCombinedFVSCommandsItemCollection!=null)
-			{
-				for (x=p_RxPackageItemDestination.ReferenceRxPackageCombinedFVSCommandsItemCollection.Count-1;x>=0;x--)
-				{
-					if (p_RxPackageItemDestination.ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(x).RxPackageId==
-						p_RxPackageItemSource.RxPackageId)
-						p_RxPackageItemDestination.ReferenceRxPackageCombinedFVSCommandsItemCollection.Remove(x);
-				}
-			}
-			//load up the package + rx fvs commands 
-			if (p_RxPackageItemSource.ReferenceRxPackageCombinedFVSCommandsItemCollection!= null)
-			{
-				
-				p_RxPackageItemDestination.m_oRxPackageCombinedFVSCommandsItem_Collection1=new RxPackageCombinedFVSCommandsItem_Collection();
-				for (x=0;x<=p_RxPackageItemSource.ReferenceRxPackageCombinedFVSCommandsItemCollection.Count-1;x++)
-				{
-					if (p_RxPackageItemSource.RxPackageId == p_RxPackageItemSource.ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(x).RxPackageId)
-					{
-						FIA_Biosum_Manager.RxPackageCombinedFVSCommandsItem oItem = new RxPackageCombinedFVSCommandsItem();
-						oItem.CopyProperties(p_RxPackageItemSource.ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(x),oItem);
-						p_RxPackageItemDestination.m_oRxPackageCombinedFVSCommandsItem_Collection1.Add(oItem);
-
-					}
-					p_RxPackageItemDestination.ReferenceRxPackageCombinedFVSCommandsItemCollection = p_RxPackageItemDestination.m_oRxPackageCombinedFVSCommandsItem_Collection1;
-				
-				}
-			}
-
-			
+			p_RxPackageItemDestination.Delete=p_RxPackageItemSource.Delete;			
 		}
 	}
 	public class RxPackageItem_Collection : System.Collections.CollectionBase
@@ -1451,167 +1260,6 @@ namespace FIA_Biosum_Manager
 		}
 
 	}
-	public class RxPackageItemFvsCommandItem_Collection : System.Collections.CollectionBase
-	{
-		public RxPackageItemFvsCommandItem_Collection()
-		{
-			//
-			// TODO: Add constructor logic here
-			//
-		}
-
-		public void Add(FIA_Biosum_Manager.RxPackageItemFvsCommandItem m_RxPackageItemFvsCommandItem)
-		{
-			// vérify if object is not already in
-			if (this.List.Contains(m_RxPackageItemFvsCommandItem))
-				throw new InvalidOperationException();
- 
-			// adding it
-			this.List.Add(m_RxPackageItemFvsCommandItem);
- 
-			// return collection
-			//return this;
-		}
-		public void Remove(int index)
-		{
-			// Check to see if there is a widget at the supplied index.
-			if (index > Count - 1 || index < 0)
-				// If no widget exists, a messagebox is shown and the operation 
-				// is canColumned.
-			{
-				System.Windows.Forms.MessageBox.Show("Index not valid!");
-			}
-			else
-			{
-				List.RemoveAt(index); 
-			}
-		}
-		public FIA_Biosum_Manager.RxPackageItemFvsCommandItem Item(int Index)
-		{
-			// The appropriate item is retrieved from the List object and
-			// explicitly cast to the Widget type, then returned to the 
-			// caller.
-			return (FIA_Biosum_Manager.RxPackageItemFvsCommandItem) List[Index];
-		}
-
-	}
-	public class RxPackageCombinedFVSCommandsItem
-	{
-		private int _intIndex=-1;
-		[CategoryAttribute("General"),ReadOnly(true),DescriptionAttribute("RX Package Item Index")]
-		public int Index
-		{
-			get {return _intIndex;}
-			set {_intIndex = value;}
-		}
-		private int _intSaveIndex=-1;
-		[CategoryAttribute("General"),ReadOnly(true),DescriptionAttribute("RX Package Item Index")]
-		public int SaveIndex
-		{
-			get {return _intSaveIndex;}
-			set {_intSaveIndex = value;}
-		}
-		private string _strRxPackageId="";
-		[CategoryAttribute("General"),DescriptionAttribute("RX Package Indentifier")]
-		public string RxPackageId
-		{
-			get {return _strRxPackageId;}
-			set {_strRxPackageId=value;}
-		}
-		private string _strRxId="";
-		[CategoryAttribute("General"),DescriptionAttribute("RX Package Indentifier")]
-		public string RxId
-		{
-			get {return _strRxId;}
-			set {_strRxId=value;}
-		}
-		private string _strFvsCycle;
-		public string FVSCycle
-		{
-			get {return _strFvsCycle;}
-			set {_strFvsCycle=value;}
-			
-		}
-
-		private string _strFVSCmd="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string FVSCommand
-		{
-			get {return _strFVSCmd;}
-			set {_strFVSCmd=value;}
-		}
-		private byte _byteFVSCmdId=0;
-		public byte FVSCommandId
-		{
-			get {return _byteFVSCmdId;}
-			set {_byteFVSCmdId=value;}
-		}
-		bool _bDelete=false;
-		public bool Delete
-		{
-			get {return _bDelete;}
-			set {_bDelete=value;}
-		}
-		public void CopyProperties(RxPackageCombinedFVSCommandsItem p_oFvsCmdItemSource, RxPackageCombinedFVSCommandsItem p_oFvsCmdItemDestination)
-		{
-			
-			
-			p_oFvsCmdItemDestination.Index = p_oFvsCmdItemSource.Index;
-			p_oFvsCmdItemDestination.SaveIndex = p_oFvsCmdItemSource.SaveIndex;
-			p_oFvsCmdItemDestination.RxPackageId = p_oFvsCmdItemSource.RxPackageId;
-			p_oFvsCmdItemDestination.RxId = p_oFvsCmdItemSource.RxId;
-			p_oFvsCmdItemDestination.FVSCommand = p_oFvsCmdItemSource.FVSCommand;
-			p_oFvsCmdItemDestination.FVSCommandId = p_oFvsCmdItemSource.FVSCommandId;
-			p_oFvsCmdItemDestination.FVSCycle = p_oFvsCmdItemSource.FVSCycle;
-			p_oFvsCmdItemDestination.Delete = p_oFvsCmdItemSource.Delete;
-		}
 		
-	}
-	public class RxPackageCombinedFVSCommandsItem_Collection : System.Collections.CollectionBase
-	{
-		public RxPackageCombinedFVSCommandsItem_Collection()
-		{
-			//
-			// TODO: Add constructor logic here
-			//
-		}
-
-		public void Add(FIA_Biosum_Manager.RxPackageCombinedFVSCommandsItem m_RxPackageCombinedFVSCommandsItem)
-		{
-			// vérify if object is not already in
-			if (this.List.Contains(m_RxPackageCombinedFVSCommandsItem))
-				throw new InvalidOperationException();
- 
-			// adding it
-			this.List.Add(m_RxPackageCombinedFVSCommandsItem);
- 
-			// return collection
-			//return this;
-		}
-		public void Remove(int index)
-		{
-			// Check to see if there is a widget at the supplied index.
-			if (index > Count - 1 || index < 0)
-				// If no widget exists, a messagebox is shown and the operation 
-				// is canColumned.
-			{
-				System.Windows.Forms.MessageBox.Show("Index not valid!");
-			}
-			else
-			{
-				List.RemoveAt(index); 
-			}
-		}
-		public FIA_Biosum_Manager.RxPackageCombinedFVSCommandsItem Item(int Index)
-		{
-			// The appropriate item is retrieved from the List object and
-			// explicitly cast to the Widget type, then returned to the 
-			// caller.
-			return (FIA_Biosum_Manager.RxPackageCombinedFVSCommandsItem) List[Index];
-		}
-
-	}
-	
-	
 }
 

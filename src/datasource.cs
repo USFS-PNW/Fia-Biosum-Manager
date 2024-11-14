@@ -51,14 +51,10 @@ namespace FIA_Biosum_Manager
 			"Tree",
 			"Owner Groups",
 			"Treatment Prescriptions",
-			"Treatment Prescriptions Assigned FVS Commands",
 			"Treatment Prescriptions Harvest Cost Columns",
 			"Treatment Prescription Categories",
 			"Treatment Prescription Subcategories",
 			"Treatment Packages",
-			"Treatment Package Assigned FVS Commands",
-			"Treatment Package Members",
-			"Treatment Package FVS Commands Order",
 			Datasource.TableTypes.SeqNumDefinitions,
             Datasource.TableTypes.SeqNumRxPackageAssign, 
 			"Tree Species",
@@ -83,14 +79,10 @@ namespace FIA_Biosum_Manager
 	        "Tree",
 	        "Owner Groups",
 	        "Treatment Prescriptions",
-	        "Treatment Prescriptions Assigned FVS Commands",
 	        "Treatment Prescriptions Harvest Cost Columns",
 	        "Treatment Prescription Categories",
 	        "Treatment Prescription Subcategories",
 	        "Treatment Packages",
-	        "Treatment Package Assigned FVS Commands",
-	        "Treatment Package Members",
-	        "Treatment Package FVS Commands Order",
 	        "Tree Species",
 	        "FVS Tree Species",
 	        "Travel Times",
@@ -110,14 +102,10 @@ namespace FIA_Biosum_Manager
 	        "Tree",
 	        "Owner Groups",
 	        "Treatment Prescriptions",
-	        "Treatment Prescriptions Assigned FVS Commands",
 	        "Treatment Prescriptions Harvest Cost Columns",
 	        "Treatment Prescription Categories",
 	        "Treatment Prescription Subcategories",
 	        "Treatment Packages",
-	        "Treatment Package Assigned FVS Commands",
-	        "Treatment Package Members",
-	        "Treatment Package FVS Commands Order",
 	        "Tree Species",
 	        "FVS Tree Species",
 	        "Travel Times",
@@ -1690,6 +1678,8 @@ namespace FIA_Biosum_Manager
             static public string SeqNumDefinitions = "FVS PRE-POST SeqNum Definitions";
             static public string SeqNumRxPackageAssign = "FVS PRE-POST SeqNum Treatment Package Assign";
             static public string RxPackage = "Treatment Packages";
+            static public string Rx = "Treatment Prescriptions";
+            static public string RxHarvestCostColumns = "Treatment Prescriptions Harvest Cost Columns";
         }
 		
 	}

@@ -236,12 +236,8 @@ namespace FIA_Biosum_Manager
 			public string m_strFvsCmdTable;
 			public string m_strFvsCatTable;
 			public string m_strFvsSubCatTable;
-			public string m_strRxFvsCmdTable;
 			public string m_strRxHarvestCostColumnsTable;
 			public string m_strRxPackageTable;
-			public string m_strRxPackageMembersTable;
-			public string m_strRxPackageFvsCmdTable;
-			public string m_strRxPackageFvsCmdOrderTable;
 			public string m_strTreeSpcTable;
 			public string m_strFvsTreeTable;
 			public string m_strFvsTreeSpcRefTable;
@@ -271,7 +267,6 @@ namespace FIA_Biosum_Manager
 			public void LoadDatasources()
 			{
 				m_strRxTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREATMENT PRESCRIPTIONS");
-				m_strRxFvsCmdTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREATMENT PRESCRIPTIONS ASSIGNED FVS COMMANDS");
 				m_strRxHarvestCostColumnsTable=ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREATMENT PRESCRIPTIONS HARVEST COST COLUMNS");
 				m_strFvsCmdTable  = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("FVS COMMANDS");
                 m_strFVSWesternTreeSpeciesTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("FVS WESTERN TREE SPECIES TRANSLATOR");
@@ -279,9 +274,6 @@ namespace FIA_Biosum_Manager
 				m_strFvsCatTable =  ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREATMENT PRESCRIPTION CATEGORIES");
 				m_strFvsSubCatTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREATMENT PRESCRIPTION SUBCATEGORIES");
 				m_strRxPackageTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREATMENT PACKAGES");
-				m_strRxPackageMembersTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREATMENT PACKAGE MEMBERS");
-				m_strRxPackageFvsCmdTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREATMENT PACKAGE ASSIGNED FVS COMMANDS");
-				m_strRxPackageFvsCmdOrderTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREATMENT PACKAGE FVS COMMANDS ORDER");
 				m_strTreeSpcTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREE SPECIES");
 				m_strFvsTreeTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("FVS TREE LIST FOR PROCESSOR");
 				m_strFvsTreeSpcRefTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName(Datasource.TableTypes.FvsTreeSpecies.ToUpper());
@@ -305,12 +297,6 @@ namespace FIA_Biosum_Manager
 				if (this.m_strFvsSubCatTable.Trim().Length == 0 && !ReferenceQueries.Scenario)
 				{
 					MessageBox.Show("!!Could Not Locate FVS Subcategory Table!!","FIA Biosum",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
-					ReferenceQueries.m_intError=-1;
-					return;
-				}
-				if (this.m_strRxFvsCmdTable.Trim().Length == 0 && !ReferenceQueries.Scenario)
-				{
-					MessageBox.Show("!!Could Not Locate Rx FVS Command Assignments Table!!","FIA Biosum",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
 					ReferenceQueries.m_intError=-1;
 					return;
 				}

@@ -25,7 +25,6 @@ namespace FIA_Biosum_Manager
 		private string _strPackageHeader="";
 		private RxItem_Collection _RxItem_Collection;
 		private RxPackageItem_Collection _RxPackage_Collection;
-		private RxPackageCombinedFVSCommandsItem_Collection _RxPackageCombinedFVSCommandsItem_Collection;
         private bool _bTreatments=true;
 		private bool _bPackages=true;
 
@@ -1845,284 +1844,17 @@ namespace FIA_Biosum_Manager
 				//end row
 				frmMain.g_oUtils.WriteText(m_strFile,"</TR> \r\n");
 				frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("</TR>"));
-				if (this.RxPackageCollection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection==null ||
-					this.RxPackageCollection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Count==0)
-				{
-					frmMain.g_oUtils.WriteText(m_strFile,"<TR> \r\n");
-					frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("<TR>"));
-					frmMain.g_oUtils.WriteText(m_strFile,"<TD align='center' colspan=5  bgcolor='#cccccc' width='100%' height='30%' valign='center'> \r\n");
-					frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("<TD align=center colspan=5  bgcolor=#cccccc width=100% height=30% valign=center>"));
-					frmMain.g_oUtils.WriteText(m_strFile,"<B>None Defined</B> \r\n");
-					frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("<B>None Defined</B>"));
-					frmMain.g_oUtils.WriteText(m_strFile,"</TD> \r\n");
-					frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("</TD>"));
-					frmMain.g_oUtils.WriteText(m_strFile,"</TR> \r\n");
-					frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("</TR>"));
-				}
-				else
-				{
-					for (y=0;y<=this.RxPackageCollection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Count-1;y++)
-					{
-						this.AddToLineCount(1);
-						frmMain.g_oUtils.WriteText(m_strFile,"<TR> \r\n");
-						frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("<TR>"));
-						//rx
-						frmMain.g_oUtils.WriteText(m_strFile,"<TD align='center' colspan=1  bgcolor='#ffffff' width='10%' height='30%' valign='center'> \r\n");
-						frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("<TD align=center colspan=1  bgcolor=#ffffff width=10% height=30% valign=center>"));
-						if (RxPackageCollection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(y).RxId.Trim().Length == 0)
-						{
-							frmMain.g_oUtils.WriteText(m_strFile, "NA \r\n");
-							frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("NA"));
-						}
-						else
-						{
-							frmMain.g_oUtils.WriteText(m_strFile, RxPackageCollection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(y).RxId + " \r\n");
-							frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat(RxPackageCollection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(y).RxId));
-						}
-						frmMain.g_oUtils.WriteText(m_strFile,"</TD> \r\n");
-						frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("</TD>"));
-						//SimYear
-						frmMain.g_oUtils.WriteText(m_strFile,"<TD align='center' colspan=1  bgcolor='#ffffff' width='10%' height='30%' valign='center'> \r\n");
-						frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("<TD align=center colspan=1  bgcolor=#ffffff width=10% height=30% valign=center>"));
-						if (RxPackageCollection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(y).FVSCycle.Trim().Length == 0)
-						{
-							frmMain.g_oUtils.WriteText(m_strFile, "&nbsp \r\n");
-							frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("&nbsp"));
-						}
-						else
-						{
-							frmMain.g_oUtils.WriteText(m_strFile, RxPackageCollection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(y).FVSCycle + " \r\n");
-							frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat(RxPackageCollection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(y).FVSCycle));
-						}
-						frmMain.g_oUtils.WriteText(m_strFile,"</TD> \r\n");
-						frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("</TD>"));
-						//FVS Command
-						frmMain.g_oUtils.WriteText(m_strFile,"<TD align='center' colspan=1  bgcolor='#ffffff' width='10%' height='30%' valign='center'> \r\n");
-						frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("<TD align=center colspan=1  bgcolor=#ffffff width=10% height=30% valign=center>"));
-						if (RxPackageCollection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(y).FVSCommand.Trim().Length == 0)
-						{
-							frmMain.g_oUtils.WriteText(m_strFile, "&nbsp \r\n");
-							frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("&nbsp"));
-						}
-						else
-						{
-							frmMain.g_oUtils.WriteText(m_strFile, RxPackageCollection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(y).FVSCommand + " \r\n");
-							frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat(RxPackageCollection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(y).FVSCommand));
-						}
-						frmMain.g_oUtils.WriteText(m_strFile,"</TD> \r\n");
-						frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("</TD>"));
-						this.m_strLine="";
-						//FVS Parameters
-						if (RxPackageCollection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(y).RxId.Trim().Length > 0)
-						{
-							for (z=0;z<=this.RxCollection.Count-1;z++)
-							{
-								if (this.RxCollection.Item(z).RxId.Trim()==
-									RxPackageCollection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(y).RxId.Trim())
-								{
-                                    if (RxCollection.Item(z).ReferenceFvsCommandsCollection != null)
-                                    {
-                                        for (zz = 0; zz <= this.RxCollection.Item(z).ReferenceFvsCommandsCollection.Count - 1; zz++)
-                                        {
-                                            if (RxPackageCollection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(y).FVSCommand.Trim() ==
-                                                RxCollection.Item(z).ReferenceFvsCommandsCollection.Item(zz).FVSCommand.Trim() &&
-                                                RxPackageCollection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(y).FVSCommandId ==
-                                                RxCollection.Item(z).ReferenceFvsCommandsCollection.Item(zz).FVSCommandId)
-                                            {
-                                                //P1
-                                                if (RxCollection.Item(z).ReferenceFvsCommandsCollection.Item(zz).Parameter1.Trim().Length > 0)
-                                                {
-                                                    m_strLine = "P1=" + this.RxCollection.Item(z).ReferenceFvsCommandsCollection.Item(zz).Parameter1.Trim() + " ";
-                                                }
-                                                else
-                                                {
-                                                }
+			    frmMain.g_oUtils.WriteText(m_strFile,"<TR> \r\n");
+				frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("<TR>"));
+				frmMain.g_oUtils.WriteText(m_strFile,"<TD align='center' colspan=5  bgcolor='#cccccc' width='100%' height='30%' valign='center'> \r\n");
+				frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("<TD align=center colspan=5  bgcolor=#cccccc width=100% height=30% valign=center>"));
+				frmMain.g_oUtils.WriteText(m_strFile,"<B>None Defined</B> \r\n");
+				frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("<B>None Defined</B>"));
+				frmMain.g_oUtils.WriteText(m_strFile,"</TD> \r\n");
+				frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("</TD>"));
+				frmMain.g_oUtils.WriteText(m_strFile,"</TR> \r\n");
+				frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("</TR>"));
 
-                                                //P2
-                                                if (this.RxCollection.Item(z).ReferenceFvsCommandsCollection.Item(zz).Parameter2.Trim().Length > 0)
-                                                {
-                                                    m_strLine = m_strLine + "P2=" + this.RxCollection.Item(z).ReferenceFvsCommandsCollection.Item(zz).Parameter2.Trim() + " ";
-                                                }
-                                                else
-                                                {
-
-                                                }
-                                                //P3
-                                                if (this.RxCollection.Item(z).ReferenceFvsCommandsCollection.Item(zz).Parameter3.Trim().Length > 0)
-                                                {
-                                                    m_strLine = m_strLine + "P3=" + this.RxCollection.Item(z).ReferenceFvsCommandsCollection.Item(zz).Parameter3.Trim() + " ";
-                                                }
-                                                else
-                                                {
-
-                                                }
-                                                //P4
-                                                if (this.RxCollection.Item(z).ReferenceFvsCommandsCollection.Item(zz).Parameter4.Trim().Length > 0)
-                                                {
-                                                    m_strLine = m_strLine + "P4=" + this.RxCollection.Item(z).ReferenceFvsCommandsCollection.Item(zz).Parameter4.Trim() + " ";
-                                                }
-                                                else
-                                                {
-
-                                                }
-                                                //P2
-                                                if (this.RxCollection.Item(z).ReferenceFvsCommandsCollection.Item(zz).Parameter5.Trim().Length > 0)
-                                                {
-                                                    m_strLine = m_strLine + "P5=" + this.RxCollection.Item(z).ReferenceFvsCommandsCollection.Item(zz).Parameter5.Trim() + " ";
-                                                }
-                                                else
-                                                {
-
-                                                }
-                                                //P2
-                                                if (this.RxCollection.Item(z).ReferenceFvsCommandsCollection.Item(zz).Parameter6.Trim().Length > 0)
-                                                {
-                                                    m_strLine = m_strLine + "P6=" + this.RxCollection.Item(z).ReferenceFvsCommandsCollection.Item(zz).Parameter6.Trim() + " ";
-                                                }
-                                                else
-                                                {
-
-                                                }
-                                                //P2
-                                                if (this.RxCollection.Item(z).ReferenceFvsCommandsCollection.Item(zz).Parameter7.Trim().Length > 0)
-                                                {
-                                                    m_strLine = m_strLine + "P7=" + this.RxCollection.Item(z).ReferenceFvsCommandsCollection.Item(zz).Parameter7.Trim() + " ";
-                                                }
-                                                else
-                                                {
-
-                                                }
-                                                //P2
-                                                if (this.RxCollection.Item(z).ReferenceFvsCommandsCollection.Item(zz).Other.Trim().Length > 0)
-                                                {
-                                                    if (m_strLine.Trim().Length > 0) m_strLine = m_strLine + "<BR>";
-                                                    m_strLine = m_strLine + "OTHER=" + this.RxCollection.Item(z).ReferenceFvsCommandsCollection.Item(zz).Other.Trim() + " ";
-                                                }
-                                                else
-                                                {
-
-                                                }
-                                                break;
-                                            }
-
-
-                                        }
-                                    }
-                                    else
-                                    {
-                                    }
-									break;
-								}
-
-							}
-						}
-						else
-						{
-							for (z=0;z<=this.RxPackageCollection.Item(x).ReferenceFvsCommandsCollection.Count-1;z++)
-							{
-								if (RxPackageCollection.Item(x).ReferenceFvsCommandsCollection.Item(z).FVSCommand.Trim() == 
-									RxPackageCollection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(y).FVSCommand.Trim() &&
-									RxPackageCollection.Item(x).ReferenceFvsCommandsCollection.Item(z).FVSCommandId == 
-									RxPackageCollection.Item(x).ReferenceRxPackageCombinedFVSCommandsItemCollection.Item(y).FVSCommandId)
-								{
-									
-									//P1
-									if (RxPackageCollection.Item(x).ReferenceFvsCommandsCollection.Item(z).Parameter1.Trim().Length > 0)
-									{
-										m_strLine="P1=" + this.RxPackageCollection.Item(x).ReferenceFvsCommandsCollection.Item(z).Parameter1.Trim() + " ";
-									}
-									else
-									{
-										//m_strLine=m_strLine + "NA ";
-									}
-									//P2
-									if (this.RxPackageCollection.Item(x).ReferenceFvsCommandsCollection.Item(z).Parameter2.Trim().Length > 0)
-									{
-										m_strLine=m_strLine + "P2=" + this.RxPackageCollection.Item(x).ReferenceFvsCommandsCollection.Item(z).Parameter2.Trim() + " ";
-									}
-									else
-									{
-										//m_strLine=m_strLine + "NA ";
-									}
-									//P3
-									if (this.RxPackageCollection.Item(x).ReferenceFvsCommandsCollection.Item(z).Parameter3.Trim().Length > 0)
-									{
-										m_strLine=m_strLine + "P3=" + this.RxPackageCollection.Item(x).ReferenceFvsCommandsCollection.Item(z).Parameter3.Trim() + " ";
-									}
-									else
-									{
-										//m_strLine=m_strLine + "NA ";
-									}
-									//P4
-									if (this.RxPackageCollection.Item(x).ReferenceFvsCommandsCollection.Item(z).Parameter4.Trim().Length > 0)
-									{
-										m_strLine=m_strLine + "P4=" + this.RxPackageCollection.Item(x).ReferenceFvsCommandsCollection.Item(z).Parameter4.Trim() + " ";
-									}
-									else
-									{
-										//m_strLine=m_strLine + "NA ";
-									}
-									//P2
-									if (this.RxPackageCollection.Item(x).ReferenceFvsCommandsCollection.Item(z).Parameter5.Trim().Length > 0)
-									{
-										m_strLine=m_strLine + "P5=" + this.RxPackageCollection.Item(x).ReferenceFvsCommandsCollection.Item(z).Parameter5.Trim() + " ";
-									}
-									else
-									{
-										//m_strLine=m_strLine + "NA ";
-									}
-									//P2
-									if (this.RxPackageCollection.Item(x).ReferenceFvsCommandsCollection.Item(z).Parameter6.Trim().Length > 0)
-									{
-										m_strLine=m_strLine + "P6=" + this.RxPackageCollection.Item(x).ReferenceFvsCommandsCollection.Item(z).Parameter6.Trim()+ " ";
-									}
-									else
-									{
-										//m_strLine=m_strLine + "NA ";
-									}
-									//P2
-									if (this.RxPackageCollection.Item(x).ReferenceFvsCommandsCollection.Item(z).Parameter7.Trim().Length > 0)
-									{
-										m_strLine=m_strLine + "P7=" + this.RxPackageCollection.Item(x).ReferenceFvsCommandsCollection.Item(z).Parameter7.Trim() + " ";
-									}
-									else
-									{
-										//m_strLine=m_strLine + "NA ";
-									}
-									//P2
-									if (this.RxPackageCollection.Item(x).ReferenceFvsCommandsCollection.Item(z).Other.Trim().Length > 0)
-									{
-										if (m_strLine.Trim().Length > 0) m_strLine=m_strLine + "<BR>";
-										m_strLine=m_strLine + "OTHER=" + this.RxPackageCollection.Item(x).ReferenceFvsCommandsCollection.Item(z).Other.Trim() + " ";
-									}
-									else
-									{
-										//m_strLine=m_strLine + "NA ";
-									}
-									break;
-								}
-							}
-						}
-						frmMain.g_oUtils.WriteText(m_strFile,"<TD align=left' colspan=2  bgcolor='#ffffff' width='70%' height='30%' valign='center'> \r\n");
-						frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("<TD align=left colspan=2  bgcolor=#ffffff width=70% height=30% valign=center>"));
-						if (m_strLine.Trim().Length == 0)
-						{
-							frmMain.g_oUtils.WriteText(m_strFile, "&nbsp \r\n");
-							frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("&nbsp"));
-						}
-						else
-						{
-							frmMain.g_oUtils.WriteText(m_strFile, m_strLine + " \r\n");
-							frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat(m_strLine));
-						}
-						frmMain.g_oUtils.WriteText(m_strFile,"</TD> \r\n");
-						frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("</TD>"));
-						frmMain.g_oUtils.WriteText(m_strFile,"</TR> \r\n");
-						frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("</TR>"));
-
-					}
-					this.m_strHtmlPageHeader="";
-				}
 					
 				frmMain.g_oUtils.WriteText(m_strFile,"</TABLE> \r\n");
 				frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("</TABLE>"));
@@ -2237,11 +1969,6 @@ namespace FIA_Biosum_Manager
 		{
 			get {return this._RxPackage_Collection;}
 			set {_RxPackage_Collection=value;}
-		}
-		public RxPackageCombinedFVSCommandsItem_Collection PackageCombinedFVSCommandsCollection
-		{
-			get {return _RxPackageCombinedFVSCommandsItem_Collection;}
-			set {_RxPackageCombinedFVSCommandsItem_Collection=value;}
 		}
 		public bool ProcessTreatments
 		{

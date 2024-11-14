@@ -109,15 +109,10 @@ namespace FIA_Biosum_Manager
 			int x;
 			int y;
 			int intIndex=0;
-			string strRx="";
-			string strDesc="";
 
 			this.m_oQueries = new Queries();
 			m_oQueries.m_oFvs.LoadDatasource=true;
 			m_oQueries.LoadDatasources(true);
-
-			
-    
 
 			this.m_oLvAlternateColors.InitializeRowCollection();      
 			this.lstRx.Clear();
@@ -132,7 +127,7 @@ namespace FIA_Biosum_Manager
 			this.m_oRxItem_Collection.Clear();
 			this.m_oRxItemFvsCommandItem_Collection.Clear();
 
-			this.m_oRxTools.LoadAllRxItemsFromTableIntoRxCollection(m_oQueries.m_strTempDbFile,this.m_oQueries,this.m_oRxItem_Collection);
+            this.m_oRxTools.LoadAllRxItemsFromTableIntoRxCollection(m_oQueries, this.m_oRxItem_Collection);
 			this.lstRx.BeginUpdate();
 			for (x=0;x<=this.m_oRxItem_Collection.Count-1;x++)
 			{
@@ -822,9 +817,6 @@ namespace FIA_Biosum_Manager
 				oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
 				if (oAdo.m_intError==0)
 				{
-					//delete all records from the rx fvs commands table
-					oAdo.m_strSQL="DELETE FROM " + this.m_oQueries.m_oFvs.m_strRxFvsCmdTable;
-					oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
 					if (oAdo.m_intError==0)
 					{
 						//delete all records from the rx harvest cost columns table
@@ -883,23 +875,12 @@ namespace FIA_Biosum_Manager
 													strValues=strValues + "'" + m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Parameter6.Trim() + "',";
 													strValues=strValues + "'" + m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Parameter7.Trim() + "',";
 													strValues=strValues + "'" + m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Other.Trim() + "'";
-													oAdo.m_strSQL = Queries.GetInsertSQL(strFields,strValues,m_oQueries.m_oFvs.m_strRxFvsCmdTable);
-													oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
+													//oAdo.m_strSQL = Queries.GetInsertSQL(strFields,strValues,m_oQueries.m_oFvs.m_strRxFvsCmdTable);
+													//oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
 													intIndex++;
 													y=-1;
 									
 												}
-											}
-											else
-											{
-												//delete rx fvs command from the package table
-												oAdo.m_strSQL = "DELETE FROM " + this.m_oQueries.m_oFvs.m_strRxPackageFvsCmdOrderTable + " " + 
-													"WHERE TRIM(RX)='" + m_oRxItem_Collection.Item(x).RxId.Trim() + "' AND " + 
-													"TRIM(FVSCMD)='" + m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).FVSCommand.Trim() + "' AND " + 
-													"FVSCMD_ID = " + Convert.ToString(m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).FVSCommandId);
-											
-												oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-
 											}
 										}
 									}
@@ -939,13 +920,6 @@ namespace FIA_Biosum_Manager
 								}
 								else
 								{
-	
-
-									//delete the rx from the package
-									oAdo.m_strSQL = "DELETE FROM " + this.m_oQueries.m_oFvs.m_strRxPackageFvsCmdOrderTable + " " + 
-										"WHERE TRIM(RX)='" + m_oRxItem_Collection.Item(x).RxId.Trim() + "'";
-									oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-
 									//delete all rx items from the harvest cost column table
 									oAdo.m_strSQL = "DELETE FROM " + this.m_oQueries.m_oFvs.m_strRxHarvestCostColumnsTable + " " + 
 										"WHERE TRIM(RX)='" + m_oRxItem_Collection.Item(x).RxId.Trim() + "'";
@@ -1018,169 +992,8 @@ namespace FIA_Biosum_Manager
 					}
 				}
 			}
-			if (strRxList.Trim().Length > 0)
-			{
-				//get the list of packages affected by the rx fvs commands added
-				strRxList=strRxList.Substring(0,strRxList.Length -1);
-				p_oAdo.m_strSQL = "SELECT DISTINCT rxpackage FROM " + this.m_oQueries.m_oFvs.m_strRxPackageFvsCmdOrderTable + " " + 
-					              "WHERE rx IN (" + strRxList + ")";
-				strPackageList = p_oAdo.CreateCommaDelimitedList(p_oAdo.m_OleDbConnection,p_oAdo.m_strSQL,"'");
-				if (strPackageList.Trim().Length > 0)
-				{
-					
-
-					//get a count of effected packages
-					p_oAdo.m_strSQL = "SELECT COUNT(*) FROM " + this.m_oQueries.m_oFvs.m_strRxPackageFvsCmdOrderTable + " " + 
-						"WHERE rxpackage IN (" + strPackageList + ")";
-					int intRecTtl = Convert.ToInt32(p_oAdo.getRecordCount(p_oAdo.m_OleDbConnection,"SELECT COUNT(*) FROM " + m_oQueries.m_oFvs.m_strRxPackageFvsCmdOrderTable,"TEMP"));
-				    
-
-					if (intRecTtl > 0)
-					{
-						//create an array object that will hold the insert commands
-						string[] strSqlArray = new string[intRecTtl + 500];
-						int intSqlCount=0;
-						strSqlArray.Initialize();
-
-						//query the record set into a data reader
-						p_oAdo.m_strSQL = "SELECT * FROM " + this.m_oQueries.m_oFvs.m_strRxPackageFvsCmdOrderTable + " " + 
-							"WHERE rxpackage IN (" + strPackageList + ")";
-
-						p_oAdo.SqlQueryReader(p_oAdo.m_OleDbConnection,p_oAdo.m_strSQL);
-						if (p_oAdo.m_OleDbDataReader.HasRows)
-						{
-
-							strFields="rxpackage,rx,fvscycle,fvscmd,fvscmd_id";
-							while (p_oAdo.m_OleDbDataReader.Read())
-							{
-								strValues="";
-								strRx="";
-								strFvsCycle="";
-								strFvsCmd="";
-								strFvsCmdId="";
-								strRxPackage="";
-								strSavRx="";
-								strSavFvsCycle="";
-								strSavFvsCmd="";
-								strSavFvsCmdId="";
-								strSavRxPackage="";
-
-								strRxPackage = p_oAdo.m_OleDbDataReader["rxpackage"].ToString().Trim();
-								strFvsCmd= p_oAdo.m_OleDbDataReader["fvscmd"].ToString().Trim();
-								strFvsCmdId = Convert.ToString(p_oAdo.m_OleDbDataReader["fvscmd_id"]).Trim();
-
-								if (p_oAdo.m_OleDbDataReader["rx"] != System.DBNull.Value)
-								{
-									strRx = p_oAdo.m_OleDbDataReader["rx"].ToString().Trim();
-								}
-								if (p_oAdo.m_OleDbDataReader["fvscycle"] != System.DBNull.Value)
-								{
-									strFvsCycle = p_oAdo.m_OleDbDataReader["fvscycle"].ToString().Trim();
-								}
-								strSavRxPackage = strRxPackage;
-								strSavRx = strRx;
-								strSavFvsCycle=strFvsCycle;
-								strSavFvsCmdId=strFvsCmdId;
-								strSavFvsCmd=strFvsCmd;
-								//bypass loading the rx records from the datareader since the 
-								//rx records to load will be from the fvs commands collection
-								if (strRx.Trim().Length  > 0 && 
-									strFvsCycle.Trim().Length > 0 && 
-									(strRx != strCurrRx || strFvsCycle != strCurrFvsCycle))
-							
-								{	
-
-									strCurrRx=strRx;
-									strCurrRxPackage = strRxPackage;
-									strCurrFvsCycle=strFvsCycle;
-									//update all the fvs commands for the rx by using the fvs commands collection									
-									for (x=0;x<=m_oRxItem_Collection.Count-1;x++)
-									{
-										//find the current rx
-										if (this.m_oRxItem_Collection.Item(x).RxId.Trim() == strCurrRx.Trim())
-										{
-											//find the fvs commands to add
-											for (z=0;z<=m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Count-1;z++)
-											{
-												for (y=0;y<=this.m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Count-1;y++)
-												{
-													
-													if (m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Delete==false)
-													{
-														//load them up in index order
-														if (m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Index == z)
-														{
-															//insert added record
-															strRxPackage =strCurrRxPackage;
-															strRx=strCurrRx;
-															strFvsCycle=strCurrFvsCycle;
-															strFvsCmd=m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).FVSCommand.Trim();
-															strFvsCmdId = Convert.ToString(m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).FVSCommandId);
-															strValues="'" + strCurrRxPackage + "',";
-															strValues=strValues + "'" + strCurrRx + "',";
-															strValues=strValues + "'" + strCurrFvsCycle + "',";
-															strValues=strValues + "'" + strFvsCmd + "',";
-															strValues=strValues +  strFvsCmdId;
-															p_oAdo.m_strSQL = Queries.GetInsertSQL(strFields,strValues,m_oQueries.m_oFvs.m_strRxPackageFvsCmdOrderTable);
-															strSqlArray[intSqlCount] = p_oAdo.m_strSQL;
-															intSqlCount++;
-														}
-													}
-												}
-											}
-										}
-									}
-										
-								}
-								
-								if (strRx.Trim().Length == 0)
-								{
-									//insert current package fvs command
-									strValues="'" + strSavRxPackage + "',";
-									strValues=strValues + "'" + strSavRx + "',";
-									strValues=strValues + "'" + strSavFvsCycle + "',";
-									strValues=strValues + "'" + strSavFvsCmd + "',";
-									strValues=strValues +  strSavFvsCmdId;
-									p_oAdo.m_strSQL = Queries.GetInsertSQL(strFields,strValues,m_oQueries.m_oFvs.m_strRxPackageFvsCmdOrderTable);
-									strSqlArray[intSqlCount] = p_oAdo.m_strSQL;
-									intSqlCount++;
-								}
-								
-							}
-							p_oAdo.m_OleDbDataReader.Close();
-							//delete all the packages listed in the strPackageList variable from the table
-							p_oAdo.m_strSQL = "DELETE FROM " + this.m_oQueries.m_oFvs.m_strRxPackageFvsCmdOrderTable + " " + 
-								"WHERE rxpackage IN (" + strPackageList + ")";
-							p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection,p_oAdo.m_strSQL);
-
-							//insert the packages back into the table that now list the additional rx fvs commands
-							for (x=0;x<=strSqlArray.Length - 1;x++)
-							{
-								if (strSqlArray[x] != null)
-								{
-									if (strSqlArray[x].Trim().Length > 0)
-									{
-										p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection,strSqlArray[x]);
-									}
-									else break;
-								}
-								else break;
-							}
-						}
-						
-
-					}
-					
-				}
-				
-			}
-			
-
-			
 		}
 		
-
-
 		private void btnDelete_Click(object sender, System.EventArgs e)
 		{
 			if (this.lstRx.SelectedItems.Count==0) return;
@@ -1421,18 +1234,19 @@ namespace FIA_Biosum_Manager
 		{
 		}
 
-		public void LoadAllRxItemsFromTableIntoRxCollection(string p_strDbFile,Queries p_oQueries,RxItem_Collection p_oRxItemCollection)
-		{
-			ado_data_access oAdo = new ado_data_access();
-			oAdo.OpenConnection(oAdo.getMDBConnString(p_strDbFile,"",""));
-			if (oAdo.m_intError==0)
-			{ 
-				this.LoadAllRxItemsFromTableIntoRxCollection(oAdo,oAdo.m_OleDbConnection,p_oQueries,p_oRxItemCollection);
-			}
-			m_intError=oAdo.m_intError;
-			oAdo.CloseConnection(oAdo.m_OleDbConnection);
-			oAdo=null;
-		}
+		//public void LoadAllRxItemsFromTableIntoRxCollection(string p_strDbFile,Queries p_oQueries,RxItem_Collection p_oRxItemCollection)
+		//{
+		//	ado_data_access oAdo = new ado_data_access();
+		//	oAdo.OpenConnection(oAdo.getMDBConnString(p_strDbFile,"",""));
+		//	if (oAdo.m_intError==0)
+		//	{ 
+  //              this.LoadAllRxItemsFromTableIntoRxCollection(p_oQueries, p_oRxItemCollection);
+		//	}
+		//	m_intError=oAdo.m_intError;
+		//	oAdo.CloseConnection(oAdo.m_OleDbConnection);
+		//	oAdo=null;
+		//}
+
         /// <summary>
         /// Load the user defined Treatment into the Rx Collection.
         /// Variables Loaded:
@@ -1450,7 +1264,7 @@ namespace FIA_Biosum_Manager
         /// <param name="p_oConn"></param>
         /// <param name="p_oQueries"></param>
         /// <param name="p_oRxItemCollection"></param>
-		public void LoadAllRxItemsFromTableIntoRxCollection(ado_data_access p_oAdo,System.Data.OleDb.OleDbConnection p_oConn,Queries p_oQueries,RxItem_Collection p_oRxItemCollection)
+		public void LoadAllRxItemsFromTableIntoRxCollectionAccess(ado_data_access p_oAdo,System.Data.OleDb.OleDbConnection p_oConn,Queries p_oQueries,RxItem_Collection p_oRxItemCollection)
 		{
 			
 			int x;   	
@@ -1506,80 +1320,11 @@ namespace FIA_Biosum_Manager
 
 
 					}
-				}
-					
+				}					
 			}
-				
-			intIndex=0;
-			p_oAdo.m_OleDbDataReader.Close();
-			//
-			//FVS COMMANDS
-			//
-            if (p_oQueries.m_oFvs.m_strRxFvsCmdTable.Trim().Length > 0)
-            {
-                p_oAdo.m_strSQL = "SELECT * FROM " + p_oQueries.m_oFvs.m_strRxFvsCmdTable;
-                p_oAdo.SqlQueryReader(p_oConn, p_oAdo.m_strSQL);
-                if (p_oAdo.m_OleDbDataReader.HasRows)
-                {
-                    while (p_oAdo.m_OleDbDataReader.Read())
-                    {
-                        if (p_oAdo.m_OleDbDataReader["rx"] != System.DBNull.Value &&
-                            p_oAdo.m_OleDbDataReader["fvscmd"] != System.DBNull.Value)
-                        {
-                            for (x = 0; x <= p_oRxItemCollection.Count - 1; x++)
-                            {
-                                if (p_oRxItemCollection.Item(x).RxId ==
-                                    p_oAdo.m_OleDbDataReader["rx"].ToString().Trim())
-                                {
-                                    FIA_Biosum_Manager.RxItemFvsCommandItem oItem = new RxItemFvsCommandItem();
-                                    oItem.Index = p_oRxItemCollection.Item(x).m_oFvsCommandItem_Collection1.Count;
-                                    oItem.SaveIndex = p_oRxItemCollection.Item(x).m_oFvsCommandItem_Collection1.Count;
-                                    oItem.RxId = p_oRxItemCollection.Item(x).RxId;
-                                    oItem.FVSCommand = p_oAdo.m_OleDbDataReader["fvscmd"].ToString().Trim();
-                                    oItem.FVSCommandId = Convert.ToByte(p_oAdo.m_OleDbDataReader["fvscmd_id"]);
-                                    if (p_oAdo.m_OleDbDataReader["p1"] != System.DBNull.Value)
-                                    {
-                                        oItem.Parameter1 = p_oAdo.m_OleDbDataReader["p1"].ToString();
-                                    }
-                                    if (p_oAdo.m_OleDbDataReader["p2"] != System.DBNull.Value)
-                                    {
-                                        oItem.Parameter2 = p_oAdo.m_OleDbDataReader["p2"].ToString();
-                                    }
-                                    if (p_oAdo.m_OleDbDataReader["p3"] != System.DBNull.Value)
-                                    {
-                                        oItem.Parameter3 = p_oAdo.m_OleDbDataReader["p3"].ToString();
-                                    }
-                                    if (p_oAdo.m_OleDbDataReader["p4"] != System.DBNull.Value)
-                                    {
-                                        oItem.Parameter4 = p_oAdo.m_OleDbDataReader["p4"].ToString();
-                                    }
-                                    if (p_oAdo.m_OleDbDataReader["p5"] != System.DBNull.Value)
-                                    {
-                                        oItem.Parameter5 = p_oAdo.m_OleDbDataReader["p5"].ToString();
-                                    }
-                                    if (p_oAdo.m_OleDbDataReader["p6"] != System.DBNull.Value)
-                                    {
-                                        oItem.Parameter6 = p_oAdo.m_OleDbDataReader["p6"].ToString();
-                                    }
-                                    if (p_oAdo.m_OleDbDataReader["p7"] != System.DBNull.Value)
-                                    {
-                                        oItem.Parameter7 = p_oAdo.m_OleDbDataReader["p7"].ToString();
-                                    }
-                                    if (p_oAdo.m_OleDbDataReader["other"] != System.DBNull.Value)
-                                    {
-                                        oItem.Other = p_oAdo.m_OleDbDataReader["other"].ToString();
-                                    }
-                                    p_oRxItemCollection.Item(x).m_oFvsCommandItem_Collection1.Add(oItem);
-                                    intIndex++;
-                                }
-                            }
-
-                        }
-                    }
-                }
-                p_oAdo.m_OleDbDataReader.Close();
-            }
-			intIndex=0;
+            p_oAdo.m_OleDbDataReader.Close();
+            intIndex =0;
+			
 			//
 			//HARVEST COST COLUMNS
 			//
@@ -1721,6 +1466,235 @@ namespace FIA_Biosum_Manager
 			}
 		}
 
+        public void LoadAllRxItemsFromTableIntoRxCollection(Queries p_oQueries, RxItem_Collection p_oRxItemCollection)
+        {
+
+            int x;
+            int intIndex = 0;
+            DataMgr oDataMgr = new DataMgr();
+            string strSource = p_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Rx);
+            if (!string.IsNullOrEmpty(strSource))
+            {
+                string strConn = oDataMgr.GetConnectionString(strSource);
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+                    conn.Open();
+                    oDataMgr.m_strSQL = "SELECT * FROM " + p_oQueries.m_oFvs.m_strRxTable;
+                    oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
+                    if (oDataMgr.m_DataReader.HasRows)
+                    {
+                        while (oDataMgr.m_DataReader.Read())
+                        {
+
+                            if (oDataMgr.m_DataReader["rx"] != System.DBNull.Value)
+                            {
+
+                                RxItem oRxItem = new RxItem();
+                                oRxItem.m_oFvsCommandItem_Collection1 = new RxItemFvsCommandItem_Collection();
+                                oRxItem.ReferenceFvsCommandsCollection = oRxItem.m_oFvsCommandItem_Collection1;
+                                oRxItem.m_oHarvestCostColumnItem_Collection1 = new RxItemHarvestCostColumnItem_Collection();
+                                oRxItem.ReferenceHarvestCostColumnCollection = oRxItem.m_oHarvestCostColumnItem_Collection1;
+                                oRxItem.Index = intIndex;
+                                oRxItem.RxId = Convert.ToString(oDataMgr.m_DataReader["rx"]);
+
+                                if (oDataMgr.m_DataReader["description"] != System.DBNull.Value)
+                                {
+                                    oRxItem.Description = Convert.ToString(oDataMgr.m_DataReader["description"]);
+                                }
+                                if (oDataMgr.m_DataReader["catid"] != System.DBNull.Value &&
+                                    p_oQueries.m_oFvs.m_strFvsCatTable.Trim().Length > 0)
+                                {
+                                    //@ToDo: Delete this when eliminating subcategory
+                                    oRxItem.Category = "DeleteMe";
+                                    //oRxItem.Category = p_oQueries.m_oFvs.GetCategoryDescriptionFromCategoryIdSQL(Convert.ToString(p_oAdo.m_OleDbDataReader["catid"]).Trim());
+                                }
+                                if (oDataMgr.m_DataReader["subcatid"] != System.DBNull.Value &&
+                                    p_oQueries.m_oFvs.m_strFvsSubCatTable.Trim().Length > 0)
+                                {
+                                    //@ToDo: Delete this when eliminating subcategory
+                                    oRxItem.SubCategory = "DeleteMe";
+                                    //oRxItem.SubCategory = p_oQueries.m_oFvs.GetSubCategoryDescriptionFromCategoryIdAndSubCategoryIdSQL(
+                                    //    Convert.ToString(p_oAdo.m_OleDbDataReader["catid"]).Trim(),
+                                    //    Convert.ToString(p_oAdo.m_OleDbDataReader["subcatid"]).Trim());
+                                }
+                                if (oDataMgr.m_DataReader["HarvestMethodLowSlope"] != System.DBNull.Value)
+                                {
+                                    oRxItem.HarvestMethodLowSlope = Convert.ToString(oDataMgr.m_DataReader["HarvestMethodLowSlope"]).Trim();
+                                }
+                                if (oDataMgr.m_DataReader["HarvestMethodSteepSlope"] != System.DBNull.Value)
+                                {
+                                    oRxItem.HarvestMethodSteepSlope = Convert.ToString(oDataMgr.m_DataReader["HarvestMethodSteepSlope"]).Trim();
+                                }
+
+                                p_oRxItemCollection.Add(oRxItem);
+                                intIndex++;
+                            }
+                        }
+
+                    }
+                    oDataMgr.m_DataReader.Close();
+                }
+            }
+            intIndex = 0;
+            //
+            //HARVEST COST COLUMNS
+            //
+            strSource = p_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.RxHarvestCostColumns);
+            if (!string.IsNullOrEmpty(strSource))
+            {
+                string strConn = oDataMgr.GetConnectionString(strSource);
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+                    conn.Open();
+                    oDataMgr.m_strSQL = "SELECT * FROM " + p_oQueries.m_oFvs.m_strRxHarvestCostColumnsTable;
+                    oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
+                    if (oDataMgr.m_DataReader.HasRows)
+                    {
+                        while (oDataMgr.m_DataReader.Read())
+                        {
+                            if (oDataMgr.m_DataReader["rx"] != System.DBNull.Value &&
+                                oDataMgr.m_DataReader["ColumnName"] != System.DBNull.Value)
+                            {
+                                for (x = 0; x <= p_oRxItemCollection.Count - 1; x++)
+                                {
+                                    if (p_oRxItemCollection.Item(x).RxId ==
+                                        oDataMgr.m_DataReader["rx"].ToString().Trim())
+                                    {
+                                        FIA_Biosum_Manager.RxItemHarvestCostColumnItem oItem = new RxItemHarvestCostColumnItem();
+                                        oItem.Index = p_oRxItemCollection.Item(x).m_oHarvestCostColumnItem_Collection1.Count;
+                                        oItem.SaveIndex = p_oRxItemCollection.Item(x).m_oHarvestCostColumnItem_Collection1.Count;
+                                        oItem.RxId = p_oRxItemCollection.Item(x).RxId;
+                                        oItem.HarvestCostColumn = oDataMgr.m_DataReader["ColumnName"].ToString().Trim();
+
+                                        if (oDataMgr.m_DataReader["description"] != System.DBNull.Value)
+                                        {
+                                            oItem.Description = oDataMgr.m_DataReader["description"].ToString().Trim();
+                                        }
+                                        p_oRxItemCollection.Item(x).m_oHarvestCostColumnItem_Collection1.Add(oItem);
+                                        intIndex++;
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                    oDataMgr.m_DataReader.Close();
+                }
+            }
+
+            //
+            //PACKAGE MEMBERSHIP
+            //
+            strSource = p_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.RxPackage);
+            if (!string.IsNullOrEmpty(strSource))
+            {
+                for (x = 0; x <= p_oRxItemCollection.Count - 1; x++)
+                {
+                    p_oRxItemCollection.Item(x).RxPackageMemberList = "";
+                }
+                string strConn = oDataMgr.GetConnectionString(strSource);
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+                    conn.Open();
+                    oDataMgr.m_strSQL = "SELECT * FROM " + p_oQueries.m_oFvs.m_strRxPackageTable;
+                    oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
+                    if (oDataMgr.m_DataReader.HasRows)
+                    {
+
+                        while (oDataMgr.m_DataReader.Read())
+                        {
+                            string strPackage = "";
+                            string strCycle1Rx = "";
+                            string strCycle2Rx = "";
+                            string strCycle3Rx = "";
+                            string strCycle4Rx = "";
+
+                            if (oDataMgr.m_DataReader["rxpackage"] != System.DBNull.Value)
+                            {
+                                strPackage = oDataMgr.m_DataReader["rxpackage"].ToString().Trim();
+                                if (strPackage.Trim().Length > 0)
+                                {
+
+                                    //sim year 1
+                                    if (oDataMgr.m_DataReader["simyear1_rx"] != System.DBNull.Value)
+                                    {
+                                        strCycle1Rx = Convert.ToString(oDataMgr.m_DataReader["simyear1_rx"]).Trim();
+                                    }
+                                    //sim year 2
+                                    if (oDataMgr.m_DataReader["simyear2_rx"] != System.DBNull.Value)
+                                    {
+                                        strCycle2Rx = Convert.ToString(oDataMgr.m_DataReader["simyear2_rx"]).Trim();
+                                    }
+                                    //sim year 3
+                                    if (oDataMgr.m_DataReader["simyear3_rx"] != System.DBNull.Value)
+                                    {
+                                        strCycle3Rx = Convert.ToString(oDataMgr.m_DataReader["simyear3_rx"]).Trim();
+                                    }
+                                    //sim year 4
+                                    if (oDataMgr.m_DataReader["simyear4_rx"] != System.DBNull.Value)
+                                    {
+                                        strCycle4Rx = Convert.ToString(oDataMgr.m_DataReader["simyear4_rx"]).Trim();
+                                    }
+
+                                    for (x = 0; x <= p_oRxItemCollection.Count - 1; x++)
+                                    {
+                                        string strLine = "";
+
+                                        if (strCycle1Rx == p_oRxItemCollection.Item(x).RxId)
+                                        {
+                                            strLine = "1-";
+                                        }
+                                        if (strCycle2Rx == p_oRxItemCollection.Item(x).RxId)
+                                        {
+                                            strLine = strLine + "2-";
+                                        }
+                                        if (strCycle3Rx == p_oRxItemCollection.Item(x).RxId)
+                                        {
+                                            strLine = strLine + "3-";
+                                        }
+                                        if (strCycle4Rx == p_oRxItemCollection.Item(x).RxId)
+                                        {
+                                            strLine = strLine + "4-";
+                                        }
+                                        if (strLine.Trim().Length > 0)
+                                        {
+                                            strLine = strLine.Substring(0, strLine.Length - 1);
+                                            strLine = "Package:" + strPackage + " Simulation Cycle(s):" + strLine + ",";
+
+                                            p_oRxItemCollection.Item(x).RxPackageMemberList =
+                                                p_oRxItemCollection.Item(x).RxPackageMemberList + strLine;
+
+                                        }
+                                    }
+
+                                }
+                            }
+                        }
+
+                    }
+                    oDataMgr.m_DataReader.Close();
+                }
+            }
+
+            //@ToDo: This all needs to go with category, subcategory elimination
+            for (x = 0; x <= p_oRxItemCollection.Count - 1; x++)
+            {
+                if (p_oRxItemCollection.Item(x).Category.Trim().Length > 0)
+                {
+                    //p_oRxItemCollection.Item(x).Category = p_oAdo.getSingleStringValueFromSQLQuery(
+                    //    p_oConn, p_oRxItemCollection.Item(x).Category, "temp");
+                }
+                if (p_oRxItemCollection.Item(x).SubCategory.Trim().Length > 0)
+                {
+                    //p_oRxItemCollection.Item(x).SubCategory = p_oAdo.getSingleStringValueFromSQLQuery(
+                    //    p_oConn, p_oRxItemCollection.Item(x).SubCategory, "temp");
+                }
+                //remove the last comma from the end of the string
+                //if (p_oRxItemCollection.Item(x).RxPackageMemberList.Trim().Length > 0)
+                //    p_oRxItemCollection.Item(x).RxPackageMemberList = p_oRxItemCollection.Item(x).RxPackageMemberList.Substring(0, p_oRxItemCollection.Item(x).RxPackageMemberList.Length - 1);
+            }
+        }
+
         public void LoadAllRxPackageItems(RxPackageItem_Collection p_oRxPackageItemCollection)
         {
             Queries oQueries = new Queries();
@@ -1771,17 +1745,8 @@ namespace FIA_Biosum_Manager
 					if (p_oAdo.m_OleDbDataReader["rxpackage"] != System.DBNull.Value)
 					{
 							
-						RxPackageItem oRxPackageItem = new RxPackageItem();
-						
-						oRxPackageItem.m_oFvsCommandItem_Collection1 = new RxPackageItemFvsCommandItem_Collection();
-						oRxPackageItem.ReferenceFvsCommandsCollection = oRxPackageItem.m_oFvsCommandItem_Collection1;
-						oRxPackageItem.m_oRxPackageCombinedFVSCommandsItem_Collection1 = new RxPackageCombinedFVSCommandsItem_Collection();
-						oRxPackageItem.ReferenceRxPackageCombinedFVSCommandsItemCollection = oRxPackageItem.m_oRxPackageCombinedFVSCommandsItem_Collection1;
-
-										
-						
+						RxPackageItem oRxPackageItem = new RxPackageItem();						
 						oRxPackageItem.Index = intIndex;
-
 						oRxPackageItem.RxPackageId = Convert.ToString(p_oAdo.m_OleDbDataReader["rxpackage"]);
 							
 						if (p_oAdo.m_OleDbDataReader["description"] != System.DBNull.Value)
@@ -1845,194 +1810,8 @@ namespace FIA_Biosum_Manager
 				
 			}
             p_oAdo.m_OleDbDataReader.Close();
-
-            if (p_oQueries.m_oFvs.m_strRxPackageFvsCmdTable.Trim().Length > 0)
-            {
-                p_oAdo.m_strSQL = "SELECT * FROM " + p_oQueries.m_oFvs.m_strRxPackageFvsCmdTable;
-                p_oAdo.SqlQueryReader(p_oConn, p_oAdo.m_strSQL);
-                if (p_oAdo.m_OleDbDataReader.HasRows)
-                {
-                    while (p_oAdo.m_OleDbDataReader.Read())
-                    {
-                        if (p_oAdo.m_OleDbDataReader["rxpackage"] != System.DBNull.Value &&
-                            p_oAdo.m_OleDbDataReader["fvscmd"] != System.DBNull.Value)
-                        {
-                            for (x = 0; x <= p_oRxPackageItemCollection.Count - 1; x++)
-                            {
-                                if (p_oRxPackageItemCollection.Item(x).RxPackageId ==
-                                    p_oAdo.m_OleDbDataReader["rxpackage"].ToString().Trim())
-                                {
-                                    FIA_Biosum_Manager.RxPackageItemFvsCommandItem oItem = new RxPackageItemFvsCommandItem();
-                                    oItem.Index = p_oRxPackageItemCollection.Item(x).m_oFvsCommandItem_Collection1.Count;
-                                    oItem.SaveIndex = p_oRxPackageItemCollection.Item(x).m_oFvsCommandItem_Collection1.Count;
-                                    oItem.RxPackageId = p_oRxPackageItemCollection.Item(x).RxPackageId;
-                                    oItem.FVSCommand = p_oAdo.m_OleDbDataReader["fvscmd"].ToString().Trim();
-                                    oItem.FVSCommandId = Convert.ToByte(p_oAdo.m_OleDbDataReader["fvscmd_id"]);
-                                    oItem.ListViewIndex = Convert.ToInt32(p_oAdo.m_OleDbDataReader["list_index"]);
-
-
-                                    if (p_oAdo.m_OleDbDataReader["p1"] != System.DBNull.Value)
-                                    {
-                                        oItem.Parameter1 = p_oAdo.m_OleDbDataReader["p1"].ToString();
-                                    }
-                                    if (p_oAdo.m_OleDbDataReader["p2"] != System.DBNull.Value)
-                                    {
-                                        oItem.Parameter2 = p_oAdo.m_OleDbDataReader["p2"].ToString();
-                                    }
-                                    if (p_oAdo.m_OleDbDataReader["p3"] != System.DBNull.Value)
-                                    {
-                                        oItem.Parameter3 = p_oAdo.m_OleDbDataReader["p3"].ToString();
-                                    }
-                                    if (p_oAdo.m_OleDbDataReader["p4"] != System.DBNull.Value)
-                                    {
-                                        oItem.Parameter4 = p_oAdo.m_OleDbDataReader["p4"].ToString();
-                                    }
-                                    if (p_oAdo.m_OleDbDataReader["p5"] != System.DBNull.Value)
-                                    {
-                                        oItem.Parameter5 = p_oAdo.m_OleDbDataReader["p5"].ToString();
-                                    }
-                                    if (p_oAdo.m_OleDbDataReader["p6"] != System.DBNull.Value)
-                                    {
-                                        oItem.Parameter6 = p_oAdo.m_OleDbDataReader["p6"].ToString();
-                                    }
-                                    if (p_oAdo.m_OleDbDataReader["p7"] != System.DBNull.Value)
-                                    {
-                                        oItem.Parameter7 = p_oAdo.m_OleDbDataReader["p7"].ToString();
-                                    }
-                                    if (p_oAdo.m_OleDbDataReader["other"] != System.DBNull.Value)
-                                    {
-                                        oItem.Other = p_oAdo.m_OleDbDataReader["other"].ToString();
-                                    }
-                                    p_oRxPackageItemCollection.Item(x).m_oFvsCommandItem_Collection1.Add(oItem);
-                                    intIndex++;
-                                }
-                            }
-
-                        }
-                    }
-                }
-                p_oAdo.m_OleDbDataReader.Close();
-            }
-            if (p_oQueries.m_oFvs.m_strRxPackageFvsCmdOrderTable.Trim().Length > 0)
-            {
-                p_oAdo.m_strSQL = "SELECT * FROM " + p_oQueries.m_oFvs.m_strRxPackageFvsCmdOrderTable;
-                p_oAdo.SqlQueryReader(p_oConn, p_oAdo.m_strSQL);
-                if (p_oAdo.m_OleDbDataReader.HasRows)
-                {
-                    while (p_oAdo.m_OleDbDataReader.Read())
-                    {
-                        if (p_oAdo.m_OleDbDataReader["rxpackage"] != System.DBNull.Value &&
-                            p_oAdo.m_OleDbDataReader["fvscmd"] != System.DBNull.Value)
-                        {
-                            for (x = 0; x <= p_oRxPackageItemCollection.Count - 1; x++)
-                            {
-                                if (p_oRxPackageItemCollection.Item(x).RxPackageId ==
-                                    p_oAdo.m_OleDbDataReader["rxpackage"].ToString().Trim())
-                                {
-                                    FIA_Biosum_Manager.RxPackageCombinedFVSCommandsItem oItem = new RxPackageCombinedFVSCommandsItem();
-                                    oItem.Index = p_oRxPackageItemCollection.Item(x).m_oRxPackageCombinedFVSCommandsItem_Collection1.Count;
-                                    oItem.SaveIndex = p_oRxPackageItemCollection.Item(x).m_oRxPackageCombinedFVSCommandsItem_Collection1.Count;
-                                    oItem.RxPackageId = p_oRxPackageItemCollection.Item(x).RxPackageId;
-                                    oItem.FVSCommand = p_oAdo.m_OleDbDataReader["fvscmd"].ToString().Trim();
-                                    oItem.FVSCommandId = Convert.ToByte(p_oAdo.m_OleDbDataReader["fvscmd_id"]);
-                                    if (p_oAdo.m_OleDbDataReader["rx"] != System.DBNull.Value)
-                                    {
-                                        oItem.RxId = Convert.ToString(p_oAdo.m_OleDbDataReader["rx"]);
-                                    }
-                                    if (p_oAdo.m_OleDbDataReader["fvscycle"] != System.DBNull.Value)
-                                    {
-                                        oItem.FVSCycle = Convert.ToString(p_oAdo.m_OleDbDataReader["fvscycle"]);
-                                    }
-
-
-                                    p_oRxPackageItemCollection.Item(x).m_oRxPackageCombinedFVSCommandsItem_Collection1.Add(oItem);
-                                    intIndex++;
-                                }
-                            }
-
-                        }
-                    }
-                }
-                p_oAdo.m_OleDbDataReader.Close();
-            }
-
-			
-	
-			
 		}
-        public void LoadAllRxPackageCombinedFvsCommandsIntoCollection(string p_strDbFile,
-			Queries p_oQueries,
-			FIA_Biosum_Manager.RxPackageCombinedFVSCommandsItem_Collection p_oCombinedFvsCommandsCollection)
-		{
-			ado_data_access oAdo = new ado_data_access();
-			oAdo.OpenConnection(oAdo.getMDBConnString(p_strDbFile,"",""));
-			if (oAdo.m_intError==0)
-			{ 
-				this.LoadAllRxPackageCombinedFvsCommandsIntoCollection(oAdo,
-					oAdo.m_OleDbConnection,p_oQueries,
-					p_oCombinedFvsCommandsCollection);
-			}
-			m_intError=oAdo.m_intError;
-			oAdo.CloseConnection(oAdo.m_OleDbConnection);
-			oAdo=null;
-		}
-		public void LoadAllRxPackageCombinedFvsCommandsIntoCollection(ado_data_access p_oAdo,
-			System.Data.OleDb.OleDbConnection p_oConn,
-			Queries p_oQueries,
-			RxPackageCombinedFVSCommandsItem_Collection p_oCombinedFvsCommandsCollection)
-		{
-			
-			int x;   	
-			
-			p_oAdo.m_strSQL = "SELECT * FROM " + p_oQueries.m_oFvs.m_strRxPackageFvsCmdOrderTable;
-				             
-			p_oAdo.SqlQueryReader(p_oConn,p_oAdo.m_strSQL);
-			if (p_oAdo.m_OleDbDataReader.HasRows)
-			{
-				x=0;
-				while (p_oAdo.m_OleDbDataReader.Read())
-				{
-						
-					if (p_oAdo.m_OleDbDataReader["rxpackage"] != System.DBNull.Value)
-					{
-						FIA_Biosum_Manager.RxPackageCombinedFVSCommandsItem oItem = new RxPackageCombinedFVSCommandsItem();	
-						oItem.Index = x;
-						oItem.SaveIndex = oItem.Index;
-						oItem.RxPackageId = Convert.ToString(p_oAdo.m_OleDbDataReader["rxpackage"]);
-						x++;
-							
-						
-						if (p_oAdo.m_OleDbDataReader["rx"] != System.DBNull.Value)
-						{
-							oItem.RxId = Convert.ToString(p_oAdo.m_OleDbDataReader["rx"]);
-						}
-						if (p_oAdo.m_OleDbDataReader["fvscmd"] != System.DBNull.Value)
-						{
-							oItem.FVSCommand = Convert.ToString(p_oAdo.m_OleDbDataReader["fvscmd"]);
-						}
-						if (p_oAdo.m_OleDbDataReader["fvscmd_id"] != System.DBNull.Value)
-						{
-							oItem.FVSCommandId = Convert.ToByte(p_oAdo.m_OleDbDataReader["fvscmd_id"]);
-						}
-						if (p_oAdo.m_OleDbDataReader["fvscycle"] != System.DBNull.Value)
-						{
-							oItem.FVSCycle = Convert.ToString(p_oAdo.m_OleDbDataReader["fvscycle"]);
-						}
 
-
-												
-						p_oCombinedFvsCommandsCollection.Add(oItem);
-										
-
-
-					}
-				}
-					
-			}
-				
-		    p_oAdo.m_OleDbDataReader.Close();
-		
-		}
 		/// <summary>
 		/// 
 		/// </summary>
@@ -2231,26 +2010,6 @@ namespace FIA_Biosum_Manager
 			return id;
 
 		}
-		public byte AssignFvsCommandId(FIA_Biosum_Manager.RxPackageItemFvsCommandItem_Collection p_FvsCollection, string p_strFvsCmd)
-		{
-			byte id=1;
-			for (int x=0;x<=p_FvsCollection.Count-1;x++)
-			{
-				if (p_FvsCollection.Item(x).FVSCommand.Trim().ToUpper() == p_strFvsCmd.Trim().ToUpper())
-				{
-					if (p_FvsCollection.Item(x).FVSCommandId==id)
-					{
-						id=Convert.ToByte(id+1);
-						x=-1;
-					}
-					else 
-					{
-					}
-				}
-			}
-			return id;
-		}
-
 
 		public string GetUsedRxPackageList(FIA_Biosum_Manager.RxPackageItem_Collection p_oRxPackageItemCollection)
 		{
