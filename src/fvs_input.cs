@@ -838,6 +838,11 @@ namespace FIA_Biosum_Manager
             }
         }
 
+        private void GenerateSiteIndexAndSiteSpeciesSQLite()
+        {
+
+        }
+
         private void PopulateFuelColumns()
         {
             //COARSE WOODY DEBRIS
@@ -3985,6 +3990,57 @@ namespace FIA_Biosum_Manager
             return _dictSiteIdxEq;
         }
 
+        private IDictionary<String, String> LoadSiteIndexEquationsSqlite(string strVariant)
+        {
+            //instantiate the dictionary so we can add equation records
+            IDictionary<String, String> _dictSiteIdxEq = new Dictionary<String, String>();
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+            //create env object so we can get the appDir
+            env pEnv = new env();
+            //open the project db file; db name is hard-coded
+            string strCon = oDataMgr.GetConnectionString(m_strProjDir + "\\db\\ref_master.db");
+            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strCon))
+            {
+                con.Open();
+
+                oDataMgr.m_strSQL = "SELECT * FROM site_index_equations WHERE FVS_VARIANT = '" + strVariant + "'";
+                oDataMgr.SqlQueryReader(con, oDataMgr.m_strSQL);
+
+                if (oDataMgr.m_DataReader.HasRows)
+                {
+                    while (oDataMgr.m_DataReader.Read())
+                    {
+                        if (oDataMgr.m_DataReader["FVS_VARIANT"] == System.DBNull.Value ||
+                            oDataMgr.m_DataReader["FIA_SPCD"] == System.DBNull.Value ||
+                            oDataMgr.m_DataReader["EQUATION"] == System.DBNull.Value)
+                        {
+                            //If either variant, spcd, or equation is null, we don't add because we can't use
+                        }
+                        else
+                        {
+                            string strFvsVariant = Convert.ToString(oDataMgr.m_DataReader["FVS_VARIANT"]);
+                            string strFiaSpCd = Convert.ToString(oDataMgr.m_DataReader["FIA_SPCD"]);
+                            string strRegion = SI_EMPTY;
+                            if (oDataMgr.m_DataReader["REGION"] != System.DBNull.Value)
+                            {
+                                strRegion = Convert.ToString(oDataMgr.m_DataReader["REGION"]);
+                            }
+                            string strSlfSpcd = SI_EMPTY;
+                            if (oDataMgr.m_DataReader["SLF_SPCD"] != System.DBNull.Value)
+                            {
+                                strSlfSpcd = Convert.ToString(oDataMgr.m_DataReader["SLF_SPCD"]);
+                            }
+                            string strEquation = Convert.ToString(oDataMgr.m_DataReader["EQUATION"]);
+                            string strValue = strEquation + SI_DELIM + strSlfSpcd + SI_DELIM + strRegion;
+                            _dictSiteIdxEq.Add(strFvsVariant + SI_DELIM + strFiaSpCd, strValue);
+                        }
+                    }
+                }
+            }
+            oDataMgr = null;
+            return _dictSiteIdxEq;
+        }
+
         public void StartFIA2FVS(ODBCMgr odbcmgr, dao_data_access oDao,
             ado_data_access oAdo, string strTempMDB, bool bOverwrite,
             string strDebugFile, string strVariant, List<string> lstStates, string strSourceStandTableAlias, string strSourceTreeTableAlias)
@@ -4649,6 +4705,7 @@ namespace FIA_Biosum_Manager
                 LinkSiteIndexAndFuelColumnsTables(strTempMDB);
 
                 // SITE_INDEX and SITE_SPECIES to be converted
+
 
                 // Copy DWM fields from FVSIn.accdb
                 if (new int[]
