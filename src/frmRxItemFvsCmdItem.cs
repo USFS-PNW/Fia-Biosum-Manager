@@ -62,12 +62,6 @@ namespace FIA_Biosum_Manager
 			this.uc_rx_fvscmd_edit1.loadvalues(p_oFvsCmdItem);
 
 		}
-		public void loadvalues(FIA_Biosum_Manager.RxItemFvsCommandItem p_oFvsCmdItem)
-		{
-			this.uc_rx_fvscmd_edit1.ReferenceFormFvsCmdItem=this;
-			this.uc_rx_fvscmd_edit1.loadvalues(p_oFvsCmdItem);
-
-		}
 		public void savevalues()
 		{
 			this.uc_rx_fvscmd_edit1.savevalues();

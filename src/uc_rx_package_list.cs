@@ -57,7 +57,6 @@ namespace FIA_Biosum_Manager
 		//private RxPackageItemFvsCommandItem_Collection  _FvsCommandItem_Collection1;
 
 		private FIA_Biosum_Manager.RxItem_Collection m_oRxItem_Collection = new RxItem_Collection();
-		private FIA_Biosum_Manager.RxItemFvsCommandItem_Collection m_oRxItemFvsCommandItem_Collection = new RxItemFvsCommandItem_Collection();
 		
 		private RxTools m_oRxTools = new RxTools();
 		private frmMain _frmMain=null;
@@ -784,16 +783,6 @@ namespace FIA_Biosum_Manager
 				{
 					RxItem oItem = new RxItem();
 					oItem.CopyProperties(m_oRxItem_Collection.Item(x),oItem);
-					if (oItem.m_oFvsCommandItem_Collection1 != null)
-					{
-						for (int y=0;y<=oItem.m_oFvsCommandItem_Collection1.Count-1;y++)
-						{
-							if (oItem.m_oFvsCommandItem_Collection1.Item(y).Delete==true)
-							{
-								oItem.m_oFvsCommandItem_Collection1.Remove(y);
-							}
-						}
-					}
 					oRxColl.Add(oItem);
 
 				}

@@ -497,42 +497,7 @@ namespace FIA_Biosum_Manager
 					if (ReferenceFormRxPackageItem.ReferenceRxPackageItem.SimulationYear1Rx.Trim()==
 						ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).RxId.Trim())
 					{
-						if (ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection != null &&
-							ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection.Count > 0)
-						{
-							for (y=0;y<=ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection.Count-1;y++)
-							{
-								//
-								//make sure the rx,fvscmd and fvscmdid are not added already
-								//
-								for (z=0;z<=this.lvRxPackageFVSCmd.Items.Count-1;z++)
-								{
-									if (this.lvRxPackageFVSCmd.Items[z].SubItems[COLUMN_RX].Text.Trim().Length > 0)
-									{
-										if (this.lvRxPackageFVSCmd.Items[z].SubItems[COLUMN_RX].Text.Trim() ==
-											ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).RxId.Trim() &&
-											this.lvRxPackageFVSCmd.Items[z].SubItems[COLUMN_FVSCMD].Text.Trim().ToUpper() ==
-											ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection.Item(y).FVSCommand.Trim().ToUpper() &&
-											this.lvRxPackageFVSCmd.Items[z].SubItems[COLUMN_FVSCMDID].Text.Trim() == 
-											Convert.ToString(ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection.Item(y).FVSCommandId).Trim() &&
-											this.lvRxPackageFVSCmd.Items[z].SubItems[COLUMN_CYCLE].Text.Trim() == 
-											ReferenceFormRxPackageItem.ReferenceRxPackageItem.SimulationYear1Fvs.Trim())
-											   break;
 
-
-
-
-									}
-								}
-								if (z>this.lvRxPackageFVSCmd.Items.Count-1)
-								{
-									this.AddItemToList(
-										ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection.Item(y),
-										ReferenceFormRxPackageItem.ReferenceRxPackageItem.SimulationYear1Fvs);
-								}
-							}
-						}
-						break;
 					}
 				}
 				//
@@ -545,43 +510,7 @@ namespace FIA_Biosum_Manager
 					if (ReferenceFormRxPackageItem.ReferenceRxPackageItem.SimulationYear2Rx.Trim()==
 						ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).RxId.Trim())
 					{
-						if (ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection != null &&
-							ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection.Count > 0)
-						{
-							for (y=0;y<=ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection.Count-1;y++)
-							{
-								//
-								//make sure the rx,fvscmd and fvscmdid are not added already
-								//
-								for (z=0;z<=this.lvRxPackageFVSCmd.Items.Count-1;z++)
-								{
-									if (this.lvRxPackageFVSCmd.Items[z].SubItems[COLUMN_RX].Text.Trim().Length > 0)
-									{
-										if (this.lvRxPackageFVSCmd.Items[z].SubItems[COLUMN_RX].Text.Trim() ==
-											ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).RxId.Trim() &&
-											this.lvRxPackageFVSCmd.Items[z].SubItems[COLUMN_FVSCMD].Text.Trim().ToUpper() ==
-											ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection.Item(y).FVSCommand.Trim().ToUpper() &&
-											this.lvRxPackageFVSCmd.Items[z].SubItems[COLUMN_FVSCMDID].Text.Trim() == 
-											Convert.ToString(ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection.Item(y).FVSCommandId).Trim() &&
-											this.lvRxPackageFVSCmd.Items[z].SubItems[COLUMN_CYCLE].Text.Trim() == 
-											ReferenceFormRxPackageItem.ReferenceRxPackageItem.SimulationYear2Fvs.Trim())
-											break;
 
-
-
-
-									}
-								}
-								if (z>this.lvRxPackageFVSCmd.Items.Count-1)
-								{
-									this.AddItemToList(
-										ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection.Item(y),
-										ReferenceFormRxPackageItem.ReferenceRxPackageItem.SimulationYear2Fvs);
-								}
-								
-							}
-						}
-						break;
 					}
 				}
 				//
@@ -594,42 +523,7 @@ namespace FIA_Biosum_Manager
 					if (ReferenceFormRxPackageItem.ReferenceRxPackageItem.SimulationYear3Rx.Trim()==
 						ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).RxId.Trim())
 					{
-						if (ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection != null &&
-							ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection.Count > 0)
-						{
-							for (y=0;y<=ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection.Count-1;y++)
-							{
-								//
-								//make sure the rx,fvscmd and fvscmdid are not added already
-								//
-								for (z=0;z<=this.lvRxPackageFVSCmd.Items.Count-1;z++)
-								{
-									if (this.lvRxPackageFVSCmd.Items[z].SubItems[COLUMN_RX].Text.Trim().Length > 0)
-									{
-										if (this.lvRxPackageFVSCmd.Items[z].SubItems[COLUMN_RX].Text.Trim() ==
-											ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).RxId.Trim() &&
-											this.lvRxPackageFVSCmd.Items[z].SubItems[COLUMN_FVSCMD].Text.Trim().ToUpper() ==
-											ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection.Item(y).FVSCommand.Trim().ToUpper() &&
-											this.lvRxPackageFVSCmd.Items[z].SubItems[COLUMN_FVSCMDID].Text.Trim() == 
-											Convert.ToString(ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection.Item(y).FVSCommandId).Trim() &&
-											this.lvRxPackageFVSCmd.Items[z].SubItems[COLUMN_CYCLE].Text.Trim() == 
-											ReferenceFormRxPackageItem.ReferenceRxPackageItem.SimulationYear3Fvs.Trim())
-											break;
 
-
-
-
-									}
-								}
-								if (z>this.lvRxPackageFVSCmd.Items.Count-1)
-								{
-									this.AddItemToList(
-										ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection.Item(y),
-										ReferenceFormRxPackageItem.ReferenceRxPackageItem.SimulationYear3Fvs);
-								}
-							}
-						}
-						break;
 					}
 				}
 				//
@@ -642,42 +536,7 @@ namespace FIA_Biosum_Manager
 					if (ReferenceFormRxPackageItem.ReferenceRxPackageItem.SimulationYear4Rx.Trim()==
 						ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).RxId.Trim())
 					{
-						if (ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection != null &&
-							ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection.Count > 0)
-						{
-							for (y=0;y<=ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection.Count-1;y++)
-							{
-								//
-								//make sure the rx,fvscmd and fvscmdid are not added already
-								//
-								for (z=0;z<=this.lvRxPackageFVSCmd.Items.Count-1;z++)
-								{
-									if (this.lvRxPackageFVSCmd.Items[z].SubItems[COLUMN_RX].Text.Trim().Length > 0)
-									{
-										if (this.lvRxPackageFVSCmd.Items[z].SubItems[COLUMN_RX].Text.Trim() ==
-											ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).RxId.Trim() &&
-											this.lvRxPackageFVSCmd.Items[z].SubItems[COLUMN_FVSCMD].Text.Trim().ToUpper() ==
-											ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection.Item(y).FVSCommand.Trim().ToUpper() &&
-											this.lvRxPackageFVSCmd.Items[z].SubItems[COLUMN_FVSCMDID].Text.Trim() == 
-											Convert.ToString(ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection.Item(y).FVSCommandId).Trim() &&
-											this.lvRxPackageFVSCmd.Items[z].SubItems[COLUMN_CYCLE].Text.Trim() == 
-											ReferenceFormRxPackageItem.ReferenceRxPackageItem.SimulationYear4Fvs.Trim())
-											break;
 
-
-
-
-									}
-								}
-								if (z>this.lvRxPackageFVSCmd.Items.Count-1)
-								{
-									this.AddItemToList(
-										ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).ReferenceFvsCommandsCollection.Item(y),
-										ReferenceFormRxPackageItem.ReferenceRxPackageItem.SimulationYear4Fvs);
-								}
-							}
-						}
-						break;
 					}
 				}
 			
@@ -812,41 +671,6 @@ namespace FIA_Biosum_Manager
 			this.lvRxPackageFVSCmd.Items[x].SubItems[COLUMN_P7].Text=p_oRxPackageItemFvsCommandItem.Parameter7;
 			this.lvRxPackageFVSCmd.Items[x].SubItems[COLUMN_OTHER].Text=p_oRxPackageItemFvsCommandItem.Other;
 			this.lvRxPackageFVSCmd.Items[x].SubItems[COLUMN_FVSCMDID].Text = Convert.ToString(p_oRxPackageItemFvsCommandItem.FVSCommandId);
-		}
-		private void UpdateListViewRxItem(FIA_Biosum_Manager.RxItemFvsCommandItem p_oRxItemFvsCommandItem)
-		{
-			if (lvRxPackageFVSCmd.SelectedItems.Count==0) return;
-			int x=lvRxPackageFVSCmd.SelectedItems[0].Index;
-			this.lvRxPackageFVSCmd.Items[x].SubItems[COLUMN_RX].Text=p_oRxItemFvsCommandItem.RxId;
-			this.lvRxPackageFVSCmd.Items[x].SubItems[COLUMN_FVSCMD].Text=p_oRxItemFvsCommandItem.FVSCommand;
-			this.lvRxPackageFVSCmd.Items[x].SubItems[COLUMN_P1].Text=p_oRxItemFvsCommandItem.Parameter1;
-			this.lvRxPackageFVSCmd.Items[x].SubItems[COLUMN_P2].Text=p_oRxItemFvsCommandItem.Parameter2;
-			this.lvRxPackageFVSCmd.Items[x].SubItems[COLUMN_P3].Text=p_oRxItemFvsCommandItem.Parameter3;
-			this.lvRxPackageFVSCmd.Items[x].SubItems[COLUMN_P4].Text=p_oRxItemFvsCommandItem.Parameter4;
-			this.lvRxPackageFVSCmd.Items[x].SubItems[COLUMN_P5].Text=p_oRxItemFvsCommandItem.Parameter5;
-			this.lvRxPackageFVSCmd.Items[x].SubItems[COLUMN_P6].Text=p_oRxItemFvsCommandItem.Parameter6;
-			this.lvRxPackageFVSCmd.Items[x].SubItems[COLUMN_P7].Text=p_oRxItemFvsCommandItem.Parameter7;
-			this.lvRxPackageFVSCmd.Items[x].SubItems[COLUMN_OTHER].Text=p_oRxItemFvsCommandItem.Other;
-			this.lvRxPackageFVSCmd.Items[x].SubItems[COLUMN_FVSCMDID].Text = Convert.ToString(p_oRxItemFvsCommandItem.FVSCommandId);
-		}
-		private void UpdateListViewRxItem(FIA_Biosum_Manager.RxItemFvsCommandItem p_oRxItemFvsCommandItem,int p_intRow)
-		{
-			this.lvRxPackageFVSCmd.BeginUpdate();
-			
-				this.lvRxPackageFVSCmd.Items[p_intRow].SubItems[COLUMN_RX].Text=p_oRxItemFvsCommandItem.RxId;
-				this.lvRxPackageFVSCmd.Items[p_intRow].SubItems[COLUMN_FVSCMD].Text=p_oRxItemFvsCommandItem.FVSCommand;
-				this.lvRxPackageFVSCmd.Items[p_intRow].SubItems[COLUMN_P1].Text=p_oRxItemFvsCommandItem.Parameter1;
-				this.lvRxPackageFVSCmd.Items[p_intRow].SubItems[COLUMN_P2].Text=p_oRxItemFvsCommandItem.Parameter2;
-				this.lvRxPackageFVSCmd.Items[p_intRow].SubItems[COLUMN_P3].Text=p_oRxItemFvsCommandItem.Parameter3;
-				this.lvRxPackageFVSCmd.Items[p_intRow].SubItems[COLUMN_P4].Text=p_oRxItemFvsCommandItem.Parameter4;
-				this.lvRxPackageFVSCmd.Items[p_intRow].SubItems[COLUMN_P5].Text=p_oRxItemFvsCommandItem.Parameter5;
-				this.lvRxPackageFVSCmd.Items[p_intRow].SubItems[COLUMN_P6].Text=p_oRxItemFvsCommandItem.Parameter6;
-				this.lvRxPackageFVSCmd.Items[p_intRow].SubItems[COLUMN_P7].Text=p_oRxItemFvsCommandItem.Parameter7;
-				this.lvRxPackageFVSCmd.Items[p_intRow].SubItems[COLUMN_OTHER].Text=p_oRxItemFvsCommandItem.Other;
-			    this.lvRxPackageFVSCmd.Items[p_intRow].SubItems[COLUMN_FVSCMDID].Text = Convert.ToString(p_oRxItemFvsCommandItem.FVSCommandId);
-			
-			this.lvRxPackageFVSCmd.EndUpdate();
-
 		}
 		
 		public void RemoveItem()
@@ -997,75 +821,7 @@ namespace FIA_Biosum_Manager
 		{
 			EditItem();
 		}
-		private void AddItemToList(FIA_Biosum_Manager.RxItemFvsCommandItem oItem,string p_strCycle)
-		{
-			lvRxPackageFVSCmd.ListViewItemSorter = null;
-			this.lvRxPackageFVSCmd.Items.Add("");
-			this.lvRxPackageFVSCmd.Items[lvRxPackageFVSCmd.Items.Count-1].UseItemStyleForSubItems=false;
-			for (int z=1;z<=this.lvRxPackageFVSCmd.Columns.Count-1;z++)
-			{
-				this.lvRxPackageFVSCmd.Items[lvRxPackageFVSCmd.Items.Count-1].SubItems.Add(" ");
-			}
-			
-				this.lvRxPackageFVSCmd.Items[lvRxPackageFVSCmd.Items.Count-1].SubItems[COLUMN_RX].Text=oItem.RxId;
-				this.lvRxPackageFVSCmd.Items[lvRxPackageFVSCmd.Items.Count-1].SubItems[COLUMN_CYCLE].Text=p_strCycle;
-				this.lvRxPackageFVSCmd.Items[lvRxPackageFVSCmd.Items.Count-1].SubItems[COLUMN_FVSCMD].Text=oItem.FVSCommand;
-				this.lvRxPackageFVSCmd.Items[lvRxPackageFVSCmd.Items.Count-1].SubItems[COLUMN_P1].Text=oItem.Parameter1;
-				this.lvRxPackageFVSCmd.Items[lvRxPackageFVSCmd.Items.Count-1].SubItems[COLUMN_P2].Text=oItem.Parameter2;
-				this.lvRxPackageFVSCmd.Items[lvRxPackageFVSCmd.Items.Count-1].SubItems[COLUMN_P3].Text=oItem.Parameter3;
-				this.lvRxPackageFVSCmd.Items[lvRxPackageFVSCmd.Items.Count-1].SubItems[COLUMN_P4].Text=oItem.Parameter4;
-				this.lvRxPackageFVSCmd.Items[lvRxPackageFVSCmd.Items.Count-1].SubItems[COLUMN_P5].Text=oItem.Parameter5;
-				this.lvRxPackageFVSCmd.Items[lvRxPackageFVSCmd.Items.Count-1].SubItems[COLUMN_P6].Text=oItem.Parameter6;
-				this.lvRxPackageFVSCmd.Items[lvRxPackageFVSCmd.Items.Count-1].SubItems[COLUMN_P7].Text=oItem.Parameter7;
-				this.lvRxPackageFVSCmd.Items[lvRxPackageFVSCmd.Items.Count-1].SubItems[COLUMN_OTHER].Text=oItem.Other;
-			    this.lvRxPackageFVSCmd.Items[lvRxPackageFVSCmd.Items.Count-1].SubItems[COLUMN_FVSCMDID].Text = Convert.ToString(oItem.FVSCommandId);
-		
 
-									
-			this.m_oLvAlternateColors.AddRow();
-			this.m_oLvAlternateColors.AddColumns(lvRxPackageFVSCmd.Items.Count-1,this.lvRxPackageFVSCmd.Columns.Count);
-
-			this.lvRxPackageFVSCmd.Items[lvRxPackageFVSCmd.Items.Count-1].Selected=true;
-
-            lvwColumnSorter = new ListViewColumnSorter();
-            this.lvRxPackageFVSCmd.ListViewItemSorter = lvwColumnSorter;
-
-			//move it in front of the other later cycle's
-			//int intMoveUpCount=0;
-			//for (x=this.lvRxPackageFVSCmd.Items.Count-1;x>=0;x--)
-			//{
-			//	if (this.lvRxPackageFVSCmd.Items[x].SubItems[COLUMN_CYCLE].Text.Trim().Length > 0)
-			//	{
-			//		if (Convert.ToInt32(this.lvRxPackageFVSCmd.Items[x].SubItems[COLUMN_CYCLE].Text) > 
-			//			Convert.ToInt32(p_strCycle))
-			//		{
-			//			intMoveUpCount = lvRxPackageFVSCmd.Items.Count - x - 1;
-			//		}
-			//	}
-			//}
-			//if (intMoveUpCount > 0)
-			//{
-			//	for (x=1; x<= intMoveUpCount;x++)
-			//	{
-			//		MoveUp();
-			//	}
-			//}
-
-            if (this.ReferenceFormRxPackageItem.TabPageHasFocus(1) == true)
-            {
-                ReferenceFormRxPackageItem.m_bToolBarButtonEnabled[frmRxPackageItem.UC_FVSCMD, frmRxPackageItem.BUTTON_NEW] = true;
-                ReferenceFormRxPackageItem.m_bToolBarButtonEnabled[frmRxPackageItem.UC_FVSCMD, frmRxPackageItem.BUTTON_DELETE] = true;
-                ReferenceFormRxPackageItem.m_bToolBarButtonEnabled[frmRxPackageItem.UC_FVSCMD, frmRxPackageItem.BUTTON_CLEARALL] = true;
-                ReferenceFormRxPackageItem.m_bToolBarButtonEnabled[frmRxPackageItem.UC_FVSCMD, frmRxPackageItem.BUTTON_EDIT] = true;
-                ReferenceFormRxPackageItem.m_bToolBarButtonEnabled[frmRxPackageItem.UC_FVSCMD, frmRxPackageItem.BUTTON_OPEN] = true;
-                ReferenceFormRxPackageItem.SetToolBarButtonsEnabled(frmRxPackageItem.UC_FVSCMD);
-
-            }
-
-           
-
-			
-		}
 		public void UpdateRxFvsCycleItem(string p_strRx,string p_strCurFvsCycle,string p_strNewFvsCycle)
 		{
 			int x,y;
@@ -1109,11 +865,7 @@ namespace FIA_Biosum_Manager
 					if (this.ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).RxId.Trim()==
 						p_strRx.Trim())
 					{
-						for (y=0;y<=ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).m_oFvsCommandItem_Collection1.Count-1;y++)
-						{
-							this.AddItemToList(ReferenceFormRxPackageItem.ReferenceRxItemCollection.Item(x).m_oFvsCommandItem_Collection1.Item(y),p_strFvsCycle);
-						}						
-					
+									
 					}
 				}
 			}

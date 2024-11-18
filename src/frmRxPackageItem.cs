@@ -571,16 +571,6 @@ namespace FIA_Biosum_Manager
 					
 						RxItem oItem = new RxItem();
 						oItem.CopyProperties(ReferenceRxItemCollection.Item(x),oItem);
-						if (oItem.m_oFvsCommandItem_Collection1 != null)
-						{
-							for (int y=0;y<=oItem.m_oFvsCommandItem_Collection1.Count-1;y++)
-							{
-								if (oItem.m_oFvsCommandItem_Collection1.Item(y).Delete==true)
-								{
-									oItem.m_oFvsCommandItem_Collection1.Remove(y);
-								}
-							}
-						}
 						oRxColl.Add(oItem);
 					}
 

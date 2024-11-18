@@ -46,7 +46,6 @@ namespace FIA_Biosum_Manager
 		private RxTools m_oRxTools = new RxTools();
 		private FIA_Biosum_Manager.RxItem_Collection m_oRxItem_Collection = new RxItem_Collection();
         private FIA_Biosum_Manager.RxPackageItem_Collection m_oRxPackageItem_Collection = new RxPackageItem_Collection();
-		private FIA_Biosum_Manager.RxItemFvsCommandItem_Collection m_oRxItemFvsCommandItem_Collection = new RxItemFvsCommandItem_Collection();
 		private System.Windows.Forms.Button btnProperties;
 		private frmMain _frmMain=null;
         private frmDialog _frmDialog = null;
@@ -125,7 +124,6 @@ namespace FIA_Biosum_Manager
 			this.m_intError=0;
 
 			this.m_oRxItem_Collection.Clear();
-			this.m_oRxItemFvsCommandItem_Collection.Clear();
 
             this.m_oRxTools.LoadAllRxItemsFromTableIntoRxCollection(m_oQueries, this.m_oRxItem_Collection);
 			this.lstRx.BeginUpdate();
@@ -448,71 +446,8 @@ namespace FIA_Biosum_Manager
 				                             "inches DBH will not be harvested. Leave 20% of the material " + 
 											 "harvested in the woods. Leave all hardwoods standing.";
 			oItem.Index = 0;
-			//oItem.ReferenceFvsCommandsCollection = this.m_oRxItemFvsCommandItem_Collection;
-			oItem.Category = getFvsCategoryDescription(oAdo,oItem.RxId);
-			oItem.SubCategory = getFvsSubCategoryDescription(oAdo,oItem.RxId);
 			oItem.Add=true;
 			this.m_oRxItem_Collection.Add(oItem);
-
-			m_oRxItem_Collection.Item(m_oRxItem_Collection.Count-1).m_oFvsCommandItem_Collection1 = new RxItemFvsCommandItem_Collection();
-			m_oRxItem_Collection.Item(m_oRxItem_Collection.Count-1).ReferenceFvsCommandsCollection = this.m_oRxItem_Collection.Item(m_oRxItem_Collection.Count-1).m_oFvsCommandItem_Collection1;
-			FIA_Biosum_Manager.RxItemFvsCommandItem oFvsCmdItem = new RxItemFvsCommandItem();
-			oFvsCmdItem.Index = 0;
-			oFvsCmdItem.RxId = "050";
-			oFvsCmdItem.FVSCommand = "SpGroup";
-			oFvsCmdItem.FVSCommandId=1;
-			oFvsCmdItem.Parameter1 = "LeaveTrees";
-			oFvsCmdItem.Other = "OH BM BU RA FL TO CY BL WO BO VO IO WI CL WJ BR CP CN MA GC DG WA AS CW CH OT";
-			oFvsCmdItem.Add=true;
-
-			this.m_oRxItem_Collection.Item(m_oRxItem_Collection.Count-1).m_oFvsCommandItem_Collection1.Add(oFvsCmdItem);
-
-
-			oFvsCmdItem = new RxItemFvsCommandItem();
-			oFvsCmdItem.Index = 1;
-			oFvsCmdItem.RxId = "050";
-			oFvsCmdItem.FVSCommand = "SpecPref";
-			oFvsCmdItem.FVSCommandId=1;
-			oFvsCmdItem.Parameter1 = "NA";
-			oFvsCmdItem.Parameter1Description = "Cycle: Defined in Rx Package";
-			oFvsCmdItem.Parameter2 = "LeaveTrees";
-			oFvsCmdItem.Parameter3 = "-200";
-			oFvsCmdItem.Add=true;
-
-
-			this.m_oRxItem_Collection.Item(m_oRxItem_Collection.Count-1).m_oFvsCommandItem_Collection1.Add(oFvsCmdItem);
-
-			oFvsCmdItem = new RxItemFvsCommandItem();
-			oFvsCmdItem.Index = 2;
-			oFvsCmdItem.RxId = "050";
-		    oFvsCmdItem.FVSCommand = "ThinBBA";
-			oFvsCmdItem.FVSCommandId=1;
-			oFvsCmdItem.Parameter1 = "NA";
-			oFvsCmdItem.Parameter1Description = "Cycle: Defined in Rx Package";
-			oFvsCmdItem.Parameter2 = "90.";
-			oFvsCmdItem.Parameter3 = "1.";
-			oFvsCmdItem.Parameter4 = "1.";
-			oFvsCmdItem.Parameter5 = "21.";
-			oFvsCmdItem.Parameter6 = "0.";
-			oFvsCmdItem.Parameter7 = "999.";
-			oFvsCmdItem.Add=true;
-
-			this.m_oRxItem_Collection.Item(m_oRxItem_Collection.Count-1).m_oFvsCommandItem_Collection1.Add(oFvsCmdItem);
-
-			oFvsCmdItem = new RxItemFvsCommandItem();
-			oFvsCmdItem.Index = 3;
-			oFvsCmdItem.RxId = "050";
-			oFvsCmdItem.FVSCommand = "Yardloss";
-			oFvsCmdItem.FVSCommandId=1;
-			oFvsCmdItem.Parameter1 = "NA";
-			oFvsCmdItem.Parameter1Description = "Cycle: Defined in Rx Package";
-			oFvsCmdItem.Parameter2 = "0.";
-			oFvsCmdItem.Parameter3 = ".2";
-			oFvsCmdItem.Parameter4 = "1";
-			oFvsCmdItem.Parameter5 = "1";
-			oFvsCmdItem.Add=true;
-
-			this.m_oRxItem_Collection.Item(m_oRxItem_Collection.Count-1).m_oFvsCommandItem_Collection1.Add(oFvsCmdItem);
 			//
 			//2nd Default Treatment
 			//
@@ -534,70 +469,8 @@ namespace FIA_Biosum_Manager
 				"inches DBH will not be harvested. Leave 20% of the material " + 
 				"harvested in the woods. Leave all hardwoods standing.";
 			oItem.Index = 1;
-			//oItem.ReferenceFvsCommandsCollection = this.m_oRxItemFvsCommandItem_Collection;
-			oItem.Category = getFvsCategoryDescription(oAdo,oItem.RxId);
-			oItem.SubCategory = getFvsSubCategoryDescription(oAdo,oItem.RxId);
 			oItem.Add=true;
 			this.m_oRxItem_Collection.Add(oItem);
-
-			m_oRxItem_Collection.Item(m_oRxItem_Collection.Count-1).m_oFvsCommandItem_Collection1 = new RxItemFvsCommandItem_Collection();
-			m_oRxItem_Collection.Item(m_oRxItem_Collection.Count-1).ReferenceFvsCommandsCollection = this.m_oRxItem_Collection.Item(m_oRxItem_Collection.Count-1).m_oFvsCommandItem_Collection1;
-
-			oFvsCmdItem = new RxItemFvsCommandItem();
-			oFvsCmdItem.Index = 0;
-			oFvsCmdItem.RxId = "051";
-			oFvsCmdItem.FVSCommand = "SpGroup";
-			oFvsCmdItem.FVSCommandId=1;
-			oFvsCmdItem.Parameter1 = "LeaveTrees";
-			oFvsCmdItem.Other = "OH BM BU RA FL TO CY BL WO BO VO IO WI CL WJ BR CP CN MA GC DG WA AS CW CH OT";
-			oFvsCmdItem.Add=true;
-
-			this.m_oRxItem_Collection.Item(m_oRxItem_Collection.Count-1).m_oFvsCommandItem_Collection1.Add(oFvsCmdItem);
-
-			oFvsCmdItem = new RxItemFvsCommandItem();
-			oFvsCmdItem.Index = 1;
-			oFvsCmdItem.RxId = "051";
-			oFvsCmdItem.FVSCommand = "SpecPref";
-			oFvsCmdItem.FVSCommandId=1;
-			oFvsCmdItem.Parameter1 = "NA";
-			oFvsCmdItem.Parameter1Description = "Cycle: Defined in Rx Package";
-			oFvsCmdItem.Parameter2 = "LeaveTrees";
-			oFvsCmdItem.Parameter3 = "-200";
-			oFvsCmdItem.Add=true;
-
-			this.m_oRxItem_Collection.Item(m_oRxItem_Collection.Count-1).m_oFvsCommandItem_Collection1.Add(oFvsCmdItem);
-
-			oFvsCmdItem = new RxItemFvsCommandItem();
-			oFvsCmdItem.Index = 2;
-			oFvsCmdItem.RxId = "051";
-			oFvsCmdItem.FVSCommand = "ThinBBA";
-			oFvsCmdItem.FVSCommandId=1;
-			oFvsCmdItem.Parameter1 = "NA";
-			oFvsCmdItem.Parameter1Description = "Cycle: Defined in Rx Package";
-			oFvsCmdItem.Parameter2 = "60.";
-			oFvsCmdItem.Parameter3 = "1.";
-			oFvsCmdItem.Parameter4 = "1.";
-			oFvsCmdItem.Parameter5 = "15.";
-			oFvsCmdItem.Parameter6 = "0.";
-			oFvsCmdItem.Parameter7 = "999.";
-			oFvsCmdItem.Add=true;
-
-			this.m_oRxItem_Collection.Item(m_oRxItem_Collection.Count-1).m_oFvsCommandItem_Collection1.Add(oFvsCmdItem);
-
-			oFvsCmdItem = new RxItemFvsCommandItem();
-			oFvsCmdItem.Index = 3;
-			oFvsCmdItem.RxId = "051";
-			oFvsCmdItem.FVSCommand = "Yardloss";
-			oFvsCmdItem.FVSCommandId=1;
-			oFvsCmdItem.Parameter1 = "NA";
-			oFvsCmdItem.Parameter1Description = "Cycle: Defined in Rx Package";
-			oFvsCmdItem.Parameter2 = "0.";
-			oFvsCmdItem.Parameter3 = ".2";
-			oFvsCmdItem.Parameter4 = "1";
-			oFvsCmdItem.Parameter5 = "1";
-			oFvsCmdItem.Add=true;
-
-			this.m_oRxItem_Collection.Item(m_oRxItem_Collection.Count-1).m_oFvsCommandItem_Collection1.Add(oFvsCmdItem);
 			
 			//
 			//3rd Default Treatment
@@ -620,80 +493,10 @@ namespace FIA_Biosum_Manager
 				"Leave 20% of the material " + 
 				"harvested in the woods. Leave all hardwoods standing.";
 			oItem.Index = 2;
-			oItem.Category = getFvsCategoryDescription(oAdo,oItem.RxId);
-			oItem.SubCategory = getFvsSubCategoryDescription(oAdo,oItem.RxId);
 			oItem.Add=true;
 			//oItem.ReferenceFvsCommandsCollection = this.m_oRxItemFvsCommandItem_Collection;
 			this.m_oRxItem_Collection.Add(oItem);
-
-			m_oRxItem_Collection.Item(m_oRxItem_Collection.Count-1).m_oFvsCommandItem_Collection1 = new RxItemFvsCommandItem_Collection();
-			m_oRxItem_Collection.Item(m_oRxItem_Collection.Count-1).ReferenceFvsCommandsCollection = this.m_oRxItem_Collection.Item(m_oRxItem_Collection.Count-1).m_oFvsCommandItem_Collection1;
-			oFvsCmdItem = new RxItemFvsCommandItem();
-			oFvsCmdItem.Index = 0;
-			oFvsCmdItem.RxId = "052";
-			oFvsCmdItem.FVSCommand = "SpGroup";
-			oFvsCmdItem.FVSCommandId=1;
-			oFvsCmdItem.Parameter1 = "LeaveTrees";
-			oFvsCmdItem.Other = "OH BM BU RA FL TO CY BL WO BO VO IO WI CL WJ BR CP CN MA GC DG WA AS CW CH OT";
-			oFvsCmdItem.Add=true;
-
-			this.m_oRxItem_Collection.Item(m_oRxItem_Collection.Count-1).m_oFvsCommandItem_Collection1.Add(oFvsCmdItem);
-
-			oFvsCmdItem = new RxItemFvsCommandItem();
-			oFvsCmdItem.Index = 1;
-			oFvsCmdItem.RxId = "052";
-			oFvsCmdItem.FVSCommand = "SpecPref";
-			oFvsCmdItem.FVSCommandId=1;
-			oFvsCmdItem.Parameter1 = "NA";
-			oFvsCmdItem.Parameter1Description = "Cycle: Defined in Rx Package";
-			oFvsCmdItem.Parameter2 = "LeaveTrees";
-			oFvsCmdItem.Parameter3 = "-200";
-			oFvsCmdItem.Add=true;
-
-			this.m_oRxItem_Collection.Item(m_oRxItem_Collection.Count-1).m_oFvsCommandItem_Collection1.Add(oFvsCmdItem);
-
-			oFvsCmdItem = new RxItemFvsCommandItem();
-			oFvsCmdItem.Index = 2;
-			oFvsCmdItem.RxId = "052";
-			oFvsCmdItem.FVSCommand = "ThinBBA";
-			oFvsCmdItem.FVSCommandId=1;
-			oFvsCmdItem.Parameter1 = "NA";
-			oFvsCmdItem.Parameter1Description = "Cycle: Defined in Rx Package";
-			oFvsCmdItem.Parameter2 = "60.";
-			oFvsCmdItem.Parameter3 = "1.";
-			oFvsCmdItem.Parameter4 = "1.";
-			oFvsCmdItem.Parameter5 = "999.";
-			oFvsCmdItem.Parameter6 = "0.";
-			oFvsCmdItem.Parameter7 = "999.";
-			oFvsCmdItem.Add=true;
-
-			this.m_oRxItem_Collection.Item(m_oRxItem_Collection.Count-1).m_oFvsCommandItem_Collection1.Add(oFvsCmdItem);
-
-			oFvsCmdItem = new RxItemFvsCommandItem();
-			oFvsCmdItem.Index = 3;
-			oFvsCmdItem.RxId = "052";
-			oFvsCmdItem.FVSCommand = "Yardloss";
-			oFvsCmdItem.FVSCommandId=1;
-			oFvsCmdItem.Parameter1 = "NA";
-			oFvsCmdItem.Parameter1Description = "Cycle: Defined in Rx Package";
-			oFvsCmdItem.Parameter2 = "0.";
-			oFvsCmdItem.Parameter3 = ".2";
-			oFvsCmdItem.Parameter4 = "1";
-			oFvsCmdItem.Parameter5 = "1";
-			oFvsCmdItem.Add=true;
-
-			this.m_oRxItem_Collection.Item(m_oRxItem_Collection.Count-1).m_oFvsCommandItem_Collection1.Add(oFvsCmdItem);
-
-			
-
-
-
 			this.lstRx.Items[0].Selected = true;
-
-
-
-
-
 			this.lstRx.EndUpdate();
 			if (this.btnSave.Enabled==false) this.btnSave.Enabled=true;
 			this.m_oLvAlternateColors.ListView();
@@ -801,197 +604,90 @@ namespace FIA_Biosum_Manager
 			int x;
 			int y;
 			
-			int intIndex=0;
 			string strFields;
 			string strValues;
-			string strCatId;
-			string strSubCatId;
-			
 
-			ado_data_access oAdo = new ado_data_access();
-			oAdo.OpenConnection(oAdo.getMDBConnString(m_oQueries.m_strTempDbFile,"",""));
-			if (oAdo.m_intError==0)
-			{
-				//delete all records from rx table
-				oAdo.m_strSQL = "DELETE FROM " + this.m_oQueries.m_oFvs.m_strRxTable;
-				oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-				if (oAdo.m_intError==0)
-				{
-					if (oAdo.m_intError==0)
-					{
-						//delete all records from the rx harvest cost columns table
-						oAdo.m_strSQL="DELETE FROM " + this.m_oQueries.m_oFvs.m_strRxHarvestCostColumnsTable;
-						oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-						if (oAdo.m_intError==0)
-						{
-							//insert all the records
-							for (x=0;x<=this.m_oRxItem_Collection.Count-1;x++)
-							{
-								if (m_oRxItem_Collection.Item(x).Delete==false)
-								{
-									//insert the rx record
-									strFields="";
-									strValues="";
+            DataMgr oDataMgr = new DataMgr();
+            string strSource = m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Rx);
+            if (!string.IsNullOrEmpty(strSource))
+            {
+                string strConn = oDataMgr.GetConnectionString(strSource);
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+                    conn.Open();
+                    //delete all records from rx table
+                    oDataMgr.m_strSQL = "DELETE FROM " + this.m_oQueries.m_oFvs.m_strRxTable;
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    if (oDataMgr.m_intError == 0)
+                    {
+                        //delete all records from the rx harvest cost columns table
+                        oDataMgr.m_strSQL = "DELETE FROM " + this.m_oQueries.m_oFvs.m_strRxHarvestCostColumnsTable;
+                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                        if (oDataMgr.m_intError == 0)
+                        {
+                            //insert all the records
+                            for (x = 0; x <= this.m_oRxItem_Collection.Count - 1; x++)
+                            {
+                                if (m_oRxItem_Collection.Item(x).Delete == false)
+                                {
+                                    //insert the rx record
+                                    strFields = "";
+                                    strValues = "";
 
-                                    strFields = "rx,description,catid,subcatid,harvestmethodLowSlope,harvestmethodsteepslope";
-									strValues = "'" +  m_oRxItem_Collection.Item(x).RxId.Trim() + "',";
-									strValues = strValues + "'" + oAdo.FixString(m_oRxItem_Collection.Item(x).Description.Trim(),"'","''") + "',";
-									oAdo.m_strSQL =this.m_oQueries.m_oFvs.GetCategoryIdFromDescriptionSQL(m_oRxItem_Collection.Item(x).Category);
-									strCatId = oAdo.getSingleStringValueFromSQLQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL,"temp");
-									if (strCatId.Trim().Length == 0) strCatId = "null";
-									strValues = strValues + strCatId + ",";
-									oAdo.m_strSQL = this.m_oQueries.m_oFvs.GetSubCategoryIdFromDescriptionSQL(m_oRxItem_Collection.Item(x).SubCategory);
-									strSubCatId = oAdo.getSingleStringValueFromSQLQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL,"temp");
-									if (strSubCatId.Trim().Length ==0) strSubCatId = "null";
-									strValues = strValues + strSubCatId + ",";
-                                    strValues = strValues + "'" + oAdo.FixString(m_oRxItem_Collection.Item(x).HarvestMethodLowSlope.Trim(), "'", "''") + "',";
-									strValues = strValues + "'" + oAdo.FixString(m_oRxItem_Collection.Item(x).HarvestMethodSteepSlope.Trim(),"'","''") + "'";
-									oAdo.m_strSQL = Queries.GetInsertSQL(strFields,strValues,m_oQueries.m_oFvs.m_strRxTable);
-									oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
+                                    strFields = "rx,description,harvestmethodLowSlope,harvestmethodsteepslope";
+                                    strValues = "'" + m_oRxItem_Collection.Item(x).RxId.Trim() + "',";
+                                    strValues = strValues + "'" + oDataMgr.FixString(m_oRxItem_Collection.Item(x).Description.Trim(), "'", "''") + "',";
+                                    strValues = strValues + "'" + oDataMgr.FixString(m_oRxItem_Collection.Item(x).HarvestMethodLowSlope.Trim(), "'", "''") + "',";
+                                    strValues = strValues + "'" + oDataMgr.FixString(m_oRxItem_Collection.Item(x).HarvestMethodSteepSlope.Trim(), "'", "''") + "'";
+                                    oDataMgr.m_strSQL = Queries.GetInsertSQL(strFields, strValues, m_oQueries.m_oFvs.m_strRxTable);
+                                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 
-									intIndex=0;
-									//insert all the fvs commands associated with the rx
-									if (this.m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection != null)
-									{
-										for (y=0;y<=this.m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Count-1;y++)
-										{
-											if (m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Delete==false)
-											{
-												if (this.m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).RxId==
-													this.m_oRxItem_Collection.Item(x).RxId && 
-													this.m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Index==intIndex)
-												{
-									
-													strFields="rx_fvscmd_index,rx,fvscmd,fvscmd_id,p1,p2,p3,p4,p5,p6,p7,other";
-													strValues=Convert.ToString(intIndex) + ","; 
-													strValues=strValues + "'" + m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).RxId.Trim() + "',";
-													strValues=strValues + "'" + m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).FVSCommand.Trim() + "',";
-													strValues=strValues + Convert.ToString(m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).FVSCommandId).Trim() + ",";
-													strValues=strValues + "'" + m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Parameter1.Trim() + "',";
-													strValues=strValues + "'" + m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Parameter2.Trim() + "',";
-													strValues=strValues + "'" + m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Parameter3.Trim() + "',";
-													strValues=strValues + "'" + m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Parameter4.Trim() + "',";
-													strValues=strValues + "'" + m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Parameter5.Trim() + "',";
-													strValues=strValues + "'" + m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Parameter6.Trim() + "',";
-													strValues=strValues + "'" + m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Parameter7.Trim() + "',";
-													strValues=strValues + "'" + m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Other.Trim() + "'";
-													//oAdo.m_strSQL = Queries.GetInsertSQL(strFields,strValues,m_oQueries.m_oFvs.m_strRxFvsCmdTable);
-													//oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-													intIndex++;
-													y=-1;
-									
-												}
-											}
-										}
-									}
-									
-									//insert all the harvest cost columns for the rx
-									if (this.m_oRxItem_Collection.Item(x).ReferenceHarvestCostColumnCollection != null)
-									{
-										for (y=0;y<=this.m_oRxItem_Collection.Item(x).ReferenceHarvestCostColumnCollection.Count-1;y++)
-										{
-											if (m_oRxItem_Collection.Item(x).ReferenceHarvestCostColumnCollection.Item(y).Delete==false)
-											{
-												if (this.m_oRxItem_Collection.Item(x).ReferenceHarvestCostColumnCollection.Item(y).RxId==
-													this.m_oRxItem_Collection.Item(x).RxId)
-												{
-													strValues="";
-													strFields="rx,ColumnName,description";
-													strValues=strValues + "'" + m_oRxItem_Collection.Item(x).ReferenceHarvestCostColumnCollection.Item(y).RxId.Trim() + "',";
-													strValues=strValues + "'" + m_oRxItem_Collection.Item(x).ReferenceHarvestCostColumnCollection.Item(y).HarvestCostColumn.Trim() + "',";
-													strValues=strValues + "'" + m_oRxItem_Collection.Item(x).ReferenceHarvestCostColumnCollection.Item(y).Description.Trim() + "'";
-													oAdo.m_strSQL = Queries.GetInsertSQL(strFields,strValues,m_oQueries.m_oFvs.m_strRxHarvestCostColumnsTable);
-													oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-													
-									
-												}
-											}
-											else
-											{
-												//delete rx + column_name from the harvest cost column table
-												oAdo.m_strSQL = "DELETE FROM " + this.m_oQueries.m_oFvs.m_strRxHarvestCostColumnsTable + " " + 
-													"WHERE TRIM(RX)='" + m_oRxItem_Collection.Item(x).RxId.Trim() + "' AND " + 
-													"TRIM(ColumnName)='" + m_oRxItem_Collection.Item(x).ReferenceHarvestCostColumnCollection.Item(y).HarvestCostColumn.Trim() + "'";
-												oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-
-											}
-										}
-									}
-								}
-								else
-								{
-									//delete all rx items from the harvest cost column table
-									oAdo.m_strSQL = "DELETE FROM " + this.m_oQueries.m_oFvs.m_strRxHarvestCostColumnsTable + " " + 
-										"WHERE TRIM(RX)='" + m_oRxItem_Collection.Item(x).RxId.Trim() + "'";
-									oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-								}
-								
-
-						
-
-							}
-							//update the package table with fvs commands that were added to the rx 
-							this.UpdatePackageItems(oAdo);
-						}
-					}
-				}
-				
-				oAdo.CloseConnection(oAdo.m_OleDbConnection);
-				if (this.m_intError==0 && oAdo.m_intError==0)
-				{
-					this.btnSave.Enabled=false;
-				}
-				
-			}
-
-		
-		}
-		/// <summary>
-		/// If an fvs command was added to the rx then the packages that contain the rx must be updated with the additional
-		/// fvs command.
-		/// </summary>
-		/// <param name="p_oAdo"></param>
-		private void UpdatePackageItems(ado_data_access p_oAdo)
-		{
-			//get a list packages where an rx fvs command was added
-			string strRxList="";
-			string strPackageList="";
-			string strValues="";
-			string strFields="";
-			string strRx="";
-			string strCurrRx="";
-			string strFvsCycle="";
-			string strCurrFvsCycle="";
-			string strFvsCmd="";
-			string strFvsCmdId="";
-			string strRxPackage="";
-			string strCurrRxPackage="";
-
-			string strSavRx="";
-			string strSavFvsCycle="";
-			string strSavFvsCmd="";
-			string strSavFvsCmdId="";
-			string strSavRxPackage="";
-			
-			
-
-			
-			int y,x,z;
-			//get the list of rx fvs commands that were added
-			for (x=0;x<=m_oRxItem_Collection.Count-1;x++)
-			{
-				if (this.m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection != null)
-				{
-					for (y=0;y<=this.m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Count-1;y++)
-					{
-						if (m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).Add==true)
-						{
-							if (strRxList.IndexOf(m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).RxId.Trim(),0)<0)
-									strRxList = strRxList + "'" + m_oRxItem_Collection.Item(x).ReferenceFvsCommandsCollection.Item(y).RxId.Trim() + "',";
-						}
-					}
-				}
-			}
+                                    //insert all the harvest cost columns for the rx
+                                    if (this.m_oRxItem_Collection.Item(x).ReferenceHarvestCostColumnCollection != null)
+                                    {
+                                        for (y = 0; y <= this.m_oRxItem_Collection.Item(x).ReferenceHarvestCostColumnCollection.Count - 1; y++)
+                                        {
+                                            if (m_oRxItem_Collection.Item(x).ReferenceHarvestCostColumnCollection.Item(y).Delete == false)
+                                            {
+                                                if (this.m_oRxItem_Collection.Item(x).ReferenceHarvestCostColumnCollection.Item(y).RxId ==
+                                                    this.m_oRxItem_Collection.Item(x).RxId)
+                                                {
+                                                    strValues = "";
+                                                    strFields = "rx,ColumnName,description";
+                                                    strValues = strValues + "'" + m_oRxItem_Collection.Item(x).ReferenceHarvestCostColumnCollection.Item(y).RxId.Trim() + "',";
+                                                    strValues = strValues + "'" + m_oRxItem_Collection.Item(x).ReferenceHarvestCostColumnCollection.Item(y).HarvestCostColumn.Trim() + "',";
+                                                    strValues = strValues + "'" + m_oRxItem_Collection.Item(x).ReferenceHarvestCostColumnCollection.Item(y).Description.Trim() + "'";
+                                                    oDataMgr.m_strSQL = Queries.GetInsertSQL(strFields, strValues, m_oQueries.m_oFvs.m_strRxHarvestCostColumnsTable);
+                                                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                //delete rx + column_name from the harvest cost column table
+                                                oDataMgr.m_strSQL = "DELETE FROM " + this.m_oQueries.m_oFvs.m_strRxHarvestCostColumnsTable + " " +
+                                                        "WHERE TRIM(RX)='" + m_oRxItem_Collection.Item(x).RxId.Trim() + "' AND " +
+                                                        "TRIM(ColumnName)='" + m_oRxItem_Collection.Item(x).ReferenceHarvestCostColumnCollection.Item(y).HarvestCostColumn.Trim() + "'";
+                                                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    //delete all rx items from the harvest cost column table
+                                    oDataMgr.m_strSQL = "DELETE FROM " + this.m_oQueries.m_oFvs.m_strRxHarvestCostColumnsTable + " " +
+                                        "WHERE TRIM(RX)='" + m_oRxItem_Collection.Item(x).RxId.Trim() + "'";
+                                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+		    if (this.m_intError==0 && oDataMgr.m_intError==0)
+		    {
+				this.btnSave.Enabled=false;
+			}				
 		}
 		
 		private void btnDelete_Click(object sender, System.EventArgs e)
@@ -1116,21 +812,6 @@ namespace FIA_Biosum_Manager
 			{
 			}
 		}
-		private string getFvsCategoryDescription(ado_data_access p_oAdo,string p_strRxId)
-		{
-			
-			string strDesc = p_oAdo.getSingleStringValueFromSQLQuery(p_oAdo.m_OleDbConnection,this.m_oQueries.m_oFvs.GetRxItemCategoryDescriptionSQL(p_strRxId),"temp");
-			
-			return strDesc;
-		}
-		private string getFvsSubCategoryDescription(ado_data_access p_oAdo, string p_strRxId)
-		{
-			
-			
-			string strDesc = p_oAdo.getSingleStringValueFromSQLQuery(p_oAdo.m_OleDbConnection,this.m_oQueries.m_oFvs.GetRxItemSubCategoryDescriptionSQL(p_strRxId),"temp");
-			
-			return strDesc;
-		}
 
 		//Note: The HTML properties page takes too long to load; This has been replaced by
         //RxTools.TreatmentProperties()
@@ -1146,18 +827,7 @@ namespace FIA_Biosum_Manager
 				{
 					RxItem oItem = new RxItem();
 					oItem.CopyProperties(m_oRxItem_Collection.Item(x),oItem);
-					if (oItem.m_oFvsCommandItem_Collection1 != null)
-					{
-						for (int y=0;y<=oItem.m_oFvsCommandItem_Collection1.Count-1;y++)
-						{
-							if (oItem.m_oFvsCommandItem_Collection1.Item(y).Delete==true)
-							{
-								oItem.m_oFvsCommandItem_Collection1.Remove(y);
-							}
-						}
-					}
 					oColl.Add(oItem);
-
 				}
 			}
 			
@@ -1195,16 +865,6 @@ namespace FIA_Biosum_Manager
                 {
                     RxItem oItem = new RxItem();
                     oItem.CopyProperties(m_oRxItem_Collection.Item(x), oItem);
-                    if (oItem.m_oFvsCommandItem_Collection1 != null)
-                    {
-                        for (int y = 0; y <= oItem.m_oFvsCommandItem_Collection1.Count - 1; y++)
-                        {
-                            if (oItem.m_oFvsCommandItem_Collection1.Item(y).Delete == true)
-                            {
-                                oItem.m_oFvsCommandItem_Collection1.Remove(y);
-                            }
-                        }
-                    }
                     oColl.Add(oItem);
 
                 }
@@ -1280,8 +940,8 @@ namespace FIA_Biosum_Manager
 					{
 							
 						RxItem oRxItem = new RxItem();
-						oRxItem.m_oFvsCommandItem_Collection1 = new RxItemFvsCommandItem_Collection();
-						oRxItem.ReferenceFvsCommandsCollection = oRxItem.m_oFvsCommandItem_Collection1;
+						//oRxItem.m_oFvsCommandItem_Collection1 = new RxItemFvsCommandItem_Collection();
+						//oRxItem.ReferenceFvsCommandsCollection = oRxItem.m_oFvsCommandItem_Collection1;
 						oRxItem.m_oHarvestCostColumnItem_Collection1 = new RxItemHarvestCostColumnItem_Collection();
 						oRxItem.ReferenceHarvestCostColumnCollection=oRxItem.m_oHarvestCostColumnItem_Collection1;
 						oRxItem.Index = intIndex;
@@ -1290,18 +950,6 @@ namespace FIA_Biosum_Manager
 						if (p_oAdo.m_OleDbDataReader["description"] != System.DBNull.Value)
 						{
 							oRxItem.Description = Convert.ToString(p_oAdo.m_OleDbDataReader["description"]);
-						}
-						if (p_oAdo.m_OleDbDataReader["catid"] != System.DBNull.Value &&
-                            p_oQueries.m_oFvs.m_strFvsCatTable.Trim().Length > 0)
-						{
-							oRxItem.Category = p_oQueries.m_oFvs.GetCategoryDescriptionFromCategoryIdSQL(Convert.ToString(p_oAdo.m_OleDbDataReader["catid"]).Trim());
-						}
-						if (p_oAdo.m_OleDbDataReader["subcatid"] != System.DBNull.Value &&
-                            p_oQueries.m_oFvs.m_strFvsSubCatTable.Trim().Length > 0)
-						{
-							oRxItem.SubCategory = p_oQueries.m_oFvs.GetSubCategoryDescriptionFromCategoryIdAndSubCategoryIdSQL(
-								Convert.ToString(p_oAdo.m_OleDbDataReader["catid"]).Trim(),
-								Convert.ToString(p_oAdo.m_OleDbDataReader["subcatid"]).Trim());
 						}
                         if (p_oAdo.m_OleDbDataReader["HarvestMethodLowSlope"] != System.DBNull.Value)
 						{
@@ -1312,13 +960,8 @@ namespace FIA_Biosum_Manager
 							oRxItem.HarvestMethodSteepSlope = Convert.ToString(p_oAdo.m_OleDbDataReader["HarvestMethodSteepSlope"]).Trim();
 						}
 						
-						p_oRxItemCollection.Add(oRxItem);
-							
-							
-						intIndex++;
-							
-
-
+						p_oRxItemCollection.Add(oRxItem);													
+						intIndex++;							
 					}
 				}					
 			}
@@ -1450,16 +1093,6 @@ namespace FIA_Biosum_Manager
 
 			for (x=0;x<=p_oRxItemCollection.Count-1;x++)
 			{
-				if (p_oRxItemCollection.Item(x).Category.Trim().Length > 0)
-				{
-					p_oRxItemCollection.Item(x).Category = p_oAdo.getSingleStringValueFromSQLQuery(
-						p_oConn,p_oRxItemCollection.Item(x).Category,"temp");
-				}
-				if (p_oRxItemCollection.Item(x).SubCategory.Trim().Length > 0)
-				{
-					p_oRxItemCollection.Item(x).SubCategory = p_oAdo.getSingleStringValueFromSQLQuery(
-						p_oConn,p_oRxItemCollection.Item(x).SubCategory,"temp");
-				}
                 //remove the last comma from the end of the string
                 if (p_oRxItemCollection.Item(x).RxPackageMemberList.Trim().Length > 0)
                     p_oRxItemCollection.Item(x).RxPackageMemberList = p_oRxItemCollection.Item(x).RxPackageMemberList.Substring(0, p_oRxItemCollection.Item(x).RxPackageMemberList.Length - 1);
@@ -1479,7 +1112,7 @@ namespace FIA_Biosum_Manager
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                 {
                     conn.Open();
-                    oDataMgr.m_strSQL = "SELECT * FROM " + p_oQueries.m_oFvs.m_strRxTable;
+                    oDataMgr.m_strSQL = "SELECT * FROM " + p_oQueries.m_oFvs.m_strRxTable + " ORDER BY RX";
                     oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
                     if (oDataMgr.m_DataReader.HasRows)
                     {
@@ -1490,8 +1123,6 @@ namespace FIA_Biosum_Manager
                             {
 
                                 RxItem oRxItem = new RxItem();
-                                oRxItem.m_oFvsCommandItem_Collection1 = new RxItemFvsCommandItem_Collection();
-                                oRxItem.ReferenceFvsCommandsCollection = oRxItem.m_oFvsCommandItem_Collection1;
                                 oRxItem.m_oHarvestCostColumnItem_Collection1 = new RxItemHarvestCostColumnItem_Collection();
                                 oRxItem.ReferenceHarvestCostColumnCollection = oRxItem.m_oHarvestCostColumnItem_Collection1;
                                 oRxItem.Index = intIndex;
@@ -1500,22 +1131,6 @@ namespace FIA_Biosum_Manager
                                 if (oDataMgr.m_DataReader["description"] != System.DBNull.Value)
                                 {
                                     oRxItem.Description = Convert.ToString(oDataMgr.m_DataReader["description"]);
-                                }
-                                if (oDataMgr.m_DataReader["catid"] != System.DBNull.Value &&
-                                    p_oQueries.m_oFvs.m_strFvsCatTable.Trim().Length > 0)
-                                {
-                                    //@ToDo: Delete this when eliminating subcategory
-                                    oRxItem.Category = "DeleteMe";
-                                    //oRxItem.Category = p_oQueries.m_oFvs.GetCategoryDescriptionFromCategoryIdSQL(Convert.ToString(p_oAdo.m_OleDbDataReader["catid"]).Trim());
-                                }
-                                if (oDataMgr.m_DataReader["subcatid"] != System.DBNull.Value &&
-                                    p_oQueries.m_oFvs.m_strFvsSubCatTable.Trim().Length > 0)
-                                {
-                                    //@ToDo: Delete this when eliminating subcategory
-                                    oRxItem.SubCategory = "DeleteMe";
-                                    //oRxItem.SubCategory = p_oQueries.m_oFvs.GetSubCategoryDescriptionFromCategoryIdAndSubCategoryIdSQL(
-                                    //    Convert.ToString(p_oAdo.m_OleDbDataReader["catid"]).Trim(),
-                                    //    Convert.ToString(p_oAdo.m_OleDbDataReader["subcatid"]).Trim());
                                 }
                                 if (oDataMgr.m_DataReader["HarvestMethodLowSlope"] != System.DBNull.Value)
                                 {
@@ -1676,22 +1291,11 @@ namespace FIA_Biosum_Manager
                 }
             }
 
-            //@ToDo: This all needs to go with category, subcategory elimination
             for (x = 0; x <= p_oRxItemCollection.Count - 1; x++)
             {
-                if (p_oRxItemCollection.Item(x).Category.Trim().Length > 0)
-                {
-                    //p_oRxItemCollection.Item(x).Category = p_oAdo.getSingleStringValueFromSQLQuery(
-                    //    p_oConn, p_oRxItemCollection.Item(x).Category, "temp");
-                }
-                if (p_oRxItemCollection.Item(x).SubCategory.Trim().Length > 0)
-                {
-                    //p_oRxItemCollection.Item(x).SubCategory = p_oAdo.getSingleStringValueFromSQLQuery(
-                    //    p_oConn, p_oRxItemCollection.Item(x).SubCategory, "temp");
-                }
                 //remove the last comma from the end of the string
-                //if (p_oRxItemCollection.Item(x).RxPackageMemberList.Trim().Length > 0)
-                //    p_oRxItemCollection.Item(x).RxPackageMemberList = p_oRxItemCollection.Item(x).RxPackageMemberList.Substring(0, p_oRxItemCollection.Item(x).RxPackageMemberList.Length - 1);
+                if (p_oRxItemCollection.Item(x).RxPackageMemberList.Trim().Length > 0)
+                    p_oRxItemCollection.Item(x).RxPackageMemberList = p_oRxItemCollection.Item(x).RxPackageMemberList.Substring(0, p_oRxItemCollection.Item(x).RxPackageMemberList.Length - 1);
             }
         }
 
@@ -1990,26 +1594,6 @@ namespace FIA_Biosum_Manager
             }
             return strTitle;
         }
-        public byte AssignFvsCommandId(FIA_Biosum_Manager.RxItemFvsCommandItem_Collection p_FvsCollection, string p_strFvsCmd)
-		{
-			byte id=1;
-			for (int x=0;x<=p_FvsCollection.Count-1;x++)
-			{
-				if (p_FvsCollection.Item(x).FVSCommand.Trim().ToUpper() == p_strFvsCmd.Trim().ToUpper())
-				{
-					if (p_FvsCollection.Item(x).FVSCommandId==id)
-					{
-						id=Convert.ToByte(id+1);
-						x=-1;
-					}
-					else 
-					{
-					}
-			    }
-			}
-			return id;
-
-		}
 
 		public string GetUsedRxPackageList(FIA_Biosum_Manager.RxPackageItem_Collection p_oRxPackageItemCollection)
 		{
@@ -3292,8 +2876,6 @@ namespace FIA_Biosum_Manager
             {
                 strLine = strLine + "Treatment " + p_oColl.Item(x).RxId + "\r\n";
                 strLine = strLine + "---------------------------------------------\r\n";
-                strLine = strLine + "Category: " + p_oColl.Item(x).Category + "\r\n";
-                strLine = strLine + "Subcategory: " + p_oColl.Item(x).SubCategory + "\r\n";
                 strLine = strLine + "Description: " + p_oColl.Item(x).Description + "\r\n";
                 strLine = strLine + "Harvest Method Low Slope: " + p_oColl.Item(x).HarvestMethodLowSlope + "\r\n";
                 strLine = strLine + "Steep Slope Harvest Method: " + p_oColl.Item(x).HarvestMethodSteepSlope + "\r\n";
@@ -4149,8 +3731,6 @@ namespace FIA_Biosum_Manager
 	public class RxItem
 	{
 		private int _intIndex;
-		public RxItemFvsCommandItem_Collection m_oFvsCommandItem_Collection1=null;
-		public RxItemFvsCommandItem_Collection _FvsCommandItem_Collection1=null;
 		public RxItemHarvestCostColumnItem_Collection _HarvestCostColumnItem_Collection1=null;
 		public RxItemHarvestCostColumnItem_Collection m_oHarvestCostColumnItem_Collection1=null;
 
@@ -4173,22 +3753,6 @@ namespace FIA_Biosum_Manager
 		{
 			get {return _strDesc;}
 			set {_strDesc=value;}
-
-		}
-		private string _strCat="";
-		[CategoryAttribute("General"),DescriptionAttribute("FVS Rx Category")]
-		public string Category
-		{
-			get {return _strCat;}
-			set {_strCat=value;}
-
-		}
-		private string _strSubCat="";
-		[CategoryAttribute("General"),DescriptionAttribute("FVS Rx SubCategory")]
-		public string SubCategory
-		{
-			get {return _strSubCat;}
-			set {_strSubCat=value;}
 
 		}
 
@@ -4239,11 +3803,6 @@ namespace FIA_Biosum_Manager
 			get {return _HarvestCostColumnItem_Collection1;}
 			set {_HarvestCostColumnItem_Collection1=value;}
 		}
-		public RxItemFvsCommandItem_Collection ReferenceFvsCommandsCollection
-		{
-			get {return _FvsCommandItem_Collection1;}
-			set {_FvsCommandItem_Collection1=value;}
-		}
 		bool _bAdd = false;
 		public bool Add
 		{
@@ -4269,33 +3828,12 @@ namespace FIA_Biosum_Manager
 		public void CopyProperties(FIA_Biosum_Manager.RxItem p_oRxItemSource,FIA_Biosum_Manager.RxItem  p_oRxItemDestination)
 		{
 			int x;
-
-			
-			p_oRxItemDestination.Category="";
 			p_oRxItemDestination.Description="";
 			p_oRxItemDestination.Index=-1;
 			p_oRxItemDestination.RxId="";
 			p_oRxItemDestination.RxPackageMemberList="";
-			p_oRxItemDestination.SubCategory="";
 			p_oRxItemDestination.HarvestMethodLowSlope="";
-			p_oRxItemDestination.HarvestMethodSteepSlope="";
-			
-			if (p_oRxItemDestination.m_oFvsCommandItem_Collection1 != null)
-			{
-				for (x=p_oRxItemDestination.m_oFvsCommandItem_Collection1.Count-1;x>=0;x--)
-				{
-					p_oRxItemDestination.m_oFvsCommandItem_Collection1.Remove(x);
-				}
-
-			}
-			if (p_oRxItemDestination.ReferenceFvsCommandsCollection != null)
-			{
-				for (x=p_oRxItemDestination.ReferenceFvsCommandsCollection.Count-1;x>=0;x--)
-				{
-					p_oRxItemDestination.ReferenceFvsCommandsCollection.Remove(x);
-				}
-
-			}
+			p_oRxItemDestination.HarvestMethodSteepSlope="";			
 			if (p_oRxItemDestination.m_oHarvestCostColumnItem_Collection1 != null)
 			{
 				for (x=p_oRxItemDestination.m_oHarvestCostColumnItem_Collection1.Count-1;x>=0;x--)
@@ -4317,67 +3855,12 @@ namespace FIA_Biosum_Manager
 			p_oRxItemDestination.Description = p_oRxItemSource.Description;
 			p_oRxItemDestination.RxId = p_oRxItemSource.RxId;
 			p_oRxItemDestination.RxPackageMemberList = p_oRxItemSource.RxPackageMemberList;
-			p_oRxItemDestination.Category = p_oRxItemSource.Category;
-			p_oRxItemDestination.SubCategory=p_oRxItemSource.SubCategory;
 			p_oRxItemDestination.FvsCycleList=p_oRxItemSource.FvsCycleList;
             p_oRxItemDestination.HarvestMethodLowSlope = p_oRxItemSource.HarvestMethodLowSlope;
 			p_oRxItemDestination.HarvestMethodSteepSlope=p_oRxItemSource.HarvestMethodSteepSlope;
 			p_oRxItemDestination.Delete = p_oRxItemSource.Delete;
 			p_oRxItemDestination.Add = p_oRxItemSource.Add;
 
-			//remove any existing destimation fvs command collection items 
-			//since we are copying all the source to the destination
-			if (p_oRxItemDestination.ReferenceFvsCommandsCollection!=null)
-			{
-				for (x=0;x<=p_oRxItemDestination.ReferenceFvsCommandsCollection.Count-1;x++)
-				{
-					if (p_oRxItemDestination.ReferenceFvsCommandsCollection.Item(x).RxId==
-						p_oRxItemSource.RxId)
-						p_oRxItemDestination.ReferenceFvsCommandsCollection.Remove(x);
-				}
-			}
-			//
-			//FVS COMMANDS
-			//
-			if (p_oRxItemSource.ReferenceFvsCommandsCollection != null)
-			{
-				
-			    p_oRxItemDestination.m_oFvsCommandItem_Collection1=new RxItemFvsCommandItem_Collection();
-				for (x=0;x<=p_oRxItemSource.ReferenceFvsCommandsCollection.Count-1;x++)
-				{
-					if (p_oRxItemSource.RxId == p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).RxId)
-					{
-						FIA_Biosum_Manager.RxItemFvsCommandItem oItem = new RxItemFvsCommandItem();
-						oItem.Index = p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).Index;
-						oItem.SaveIndex =  p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).SaveIndex;
-						oItem.RxId = p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).RxId;
-						oItem.FVSCommand = p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).FVSCommand;
-						oItem.FVSCommandId = p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).FVSCommandId;
-						oItem.Other = p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).Other;
-						oItem.OtherDescription = p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).OtherDescription;
-						oItem.Parameter1=p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter1;
-						oItem.Parameter1Description = p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter1Description;
-						oItem.Parameter2 = p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter2;
-						oItem.Parameter2Description = p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter2Description;
-						oItem.Parameter3 = p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter3;
-						oItem.Parameter3Description = p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter3Description;
-						oItem.Parameter4 = p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter4;
-						oItem.Parameter4Description = p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter4Description;
-						oItem.Parameter5 = p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter5;
-						oItem.Parameter5Description = p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter5Description;
-						oItem.Parameter6 = p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter6;
-						oItem.Parameter6Description = p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter6Description;
-						oItem.Parameter7 = p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter7;
-						oItem.Parameter7Description = p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).Parameter7Description;
-						oItem.Delete =  p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).Delete;
-						oItem.Add = p_oRxItemSource.ReferenceFvsCommandsCollection.Item(x).Add;
-						p_oRxItemDestination.m_oFvsCommandItem_Collection1.Add(oItem);
-
-					}
-					p_oRxItemDestination.ReferenceFvsCommandsCollection = p_oRxItemDestination.m_oFvsCommandItem_Collection1;
-				
-				}
-			}
 			//
 			//HARVEST COST COLUMNS
 			//
@@ -4451,265 +3934,7 @@ namespace FIA_Biosum_Manager
 		}
 
 	}
-	/*********************************************************************************************************
-	 **RX FVS Command Item                      
-	 *********************************************************************************************************/
-	public class RxItemFvsCommandItem
-	{
-		private int _intIndex;
-		
-		[CategoryAttribute("General"),ReadOnly(true),DescriptionAttribute("RX Item Index")]
-		public int Index
-		{
-			get {return _intIndex;}
-			set {_intIndex = value;}
-		}
-		private int _intSaveIndex;
-		[CategoryAttribute("General"),ReadOnly(true),DescriptionAttribute("RX Item Save Index")]
-		public int SaveIndex
-		{
-			get {return _intSaveIndex;}
-			set {_intSaveIndex = value;}
-		}
 
-		private string _strRxId="";
-		[CategoryAttribute("General"),DescriptionAttribute("RX Indentifier")]
-		public string RxId
-		{
-			get {return _strRxId;}
-			set {_strRxId=value;}
-		}
-		private string _strFVSCmd="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string FVSCommand
-		{
-			get {return _strFVSCmd;}
-			set {_strFVSCmd=value;}
-		}
-		private byte _byteFVSCmdId=0;
-		public byte FVSCommandId
-		{
-			get {return _byteFVSCmdId;}
-			set {_byteFVSCmdId=value;}
-		}
-		private string _strP1="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter1
-		{
-			get {return _strP1;}
-			set {_strP1=value;}
-		}
-		private string _strP1Desc="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter1Description
-		{
-			get {return _strP1Desc;}
-			set {_strP1Desc=value;}
-		}
-		private string _strP2="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter2
-		{
-			get {return _strP2;}
-			set {_strP2=value;}
-		}
-		private string _strP2Desc="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter2Description
-		{
-			get {return _strP2Desc;}
-			set {_strP2Desc=value;}
-		}
-		private string _strP3="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter3
-		{
-			get {return _strP3;}
-			set {_strP3=value;}
-		}
-		private string _strP3Desc="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter3Description
-		{
-			get {return _strP3Desc;}
-			set {_strP3Desc=value;}
-		}
-		private string _strP4="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter4
-		{
-			get {return _strP4;}
-			set {_strP4=value;}
-		}
-		private string _strP4Desc="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter4Description
-		{
-			get {return _strP4Desc;}
-			set {_strP4Desc=value;}
-		}
-		private string _strP5="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter5
-		{
-			get {return _strP5;}
-			set {_strP5=value;}
-		}
-		private string _strP5Desc="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter5Description
-		{
-			get {return _strP5Desc;}
-			set {_strP5Desc=value;}
-		}
-		private string _strP6="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter6
-		{
-			get {return _strP6;}
-			set {_strP6=value;}
-		}
-		private string _strP6Desc="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter6Description
-		{
-			get {return _strP6Desc;}
-			set {_strP6Desc=value;}
-		}
-		private string _strP7="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter7
-		{
-			get {return _strP7;}
-			set {_strP7=value;}
-		}
-		private string _strP7Desc="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter7Description
-		{
-			get {return _strP7Desc;}
-			set {_strP7Desc=value;}
-		}			
-		private string _strOther="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Other
-		{
-			get {return _strOther;}
-			set {_strOther=value;}
-		}
-		private string _strOtherDesc="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string OtherDescription
-		{
-			get {return _strOtherDesc;}
-			set {_strOtherDesc=value;}
-		}
-		bool _bDelete=false;
-		public bool Delete
-		{
-			get {return _bDelete;}
-			set {_bDelete=value;}
-		}
-		bool _bAdd=false;
-		public bool Add
-		{
-			get {return _bAdd;}
-			set {_bAdd=value;}
-		}
-		
-		public void CopyProperties(RxItemFvsCommandItem p_oFvsCmdItemSource, RxItemFvsCommandItem p_oFvsCmdItemDestination)
-		{
-			
-			
-			p_oFvsCmdItemDestination.Index = p_oFvsCmdItemSource.Index;
-			p_oFvsCmdItemDestination.SaveIndex = p_oFvsCmdItemSource.SaveIndex;
-			p_oFvsCmdItemDestination.RxId = p_oFvsCmdItemSource.RxId;
-			p_oFvsCmdItemDestination.FVSCommand = p_oFvsCmdItemSource.FVSCommand;
-			p_oFvsCmdItemDestination.FVSCommandId = p_oFvsCmdItemSource.FVSCommandId;
-			p_oFvsCmdItemDestination.Other = p_oFvsCmdItemSource.Other;
-			p_oFvsCmdItemDestination.OtherDescription = p_oFvsCmdItemSource.OtherDescription;
-			p_oFvsCmdItemDestination.Parameter1=p_oFvsCmdItemSource.Parameter1;
-			p_oFvsCmdItemDestination.Parameter1Description = p_oFvsCmdItemSource.Parameter1Description;
-			p_oFvsCmdItemDestination.Parameter2 = p_oFvsCmdItemSource.Parameter2;
-			p_oFvsCmdItemDestination.Parameter2Description = p_oFvsCmdItemSource.Parameter2Description;
-			p_oFvsCmdItemDestination.Parameter3 = p_oFvsCmdItemSource.Parameter3;
-			p_oFvsCmdItemDestination.Parameter3Description = p_oFvsCmdItemSource.Parameter3Description;
-			p_oFvsCmdItemDestination.Parameter4 = p_oFvsCmdItemSource.Parameter4;
-			p_oFvsCmdItemDestination.Parameter4Description = p_oFvsCmdItemSource.Parameter4Description;
-			p_oFvsCmdItemDestination.Parameter5 = p_oFvsCmdItemSource.Parameter5;
-			p_oFvsCmdItemDestination.Parameter5Description = p_oFvsCmdItemSource.Parameter5Description;
-			p_oFvsCmdItemDestination.Parameter6 = p_oFvsCmdItemSource.Parameter6;
-			p_oFvsCmdItemDestination.Parameter6Description = p_oFvsCmdItemSource.Parameter6Description;
-			p_oFvsCmdItemDestination.Parameter7 = p_oFvsCmdItemSource.Parameter7;
-			p_oFvsCmdItemDestination.Parameter7Description = p_oFvsCmdItemSource.Parameter7Description;
-			p_oFvsCmdItemDestination.Delete = p_oFvsCmdItemSource.Delete;
-			p_oFvsCmdItemDestination.Add = p_oFvsCmdItemSource.Add;
-					
-				
-				
-			
-		}
-		//private string _strFvsCmd="";
-		//[CategoryAttribute("Estimation Engine And Excel"), BrowsableAttribute(false), DescriptionAttribute("FVS Command")]
-		//public string FVSCommand
-		//{
-		//	get {return _strFVSCmd;}
-		//	set {_strFVSCmd=value;}
-		//}
-		//public void CopyProperties(FIA_Biosum_Manager.SQLMacroSubstitutionVariableItem p_oVarSubItemSource,ref FIA_Biosum_Manager.SQLMacroSubstitutionVariableItem  p_oVarSubItemDestination)
-		//{
-		//	p_oVarSubItemDestination.Index = p_oVarSubItemSource.Index;
-		//	p_oVarSubItemDestination.Description = p_oVarSubItemSource.Description;
-		//	p_oVarSubItemDestination.PropertyGridName=p_oVarSubItemSource.PropertyGridName;
-		//	p_oVarSubItemDestination.SQLVariableSubstitutionString=p_oVarSubItemSource.SQLVariableSubstitutionString;
-		//	p_oVarSubItemDestination.VariableName = p_oVarSubItemSource.VariableName;
-		//}
-
-	}
-	public class RxItemFvsCommandItem_Collection : System.Collections.CollectionBase
-	{
-		public RxItemFvsCommandItem_Collection()
-		{
-			//
-			// TODO: Add constructor logic here
-			//
-		}
-
-		public void Add(FIA_Biosum_Manager.RxItemFvsCommandItem m_RxItemFvsCommandItem)
-		{
-			// vérify if object is not already in
-			if (this.List.Contains(m_RxItemFvsCommandItem))
-				throw new InvalidOperationException();
- 
-			// adding it
-			this.List.Add(m_RxItemFvsCommandItem);
- 
-			// return collection
-			//return this;
-		}
-		public void Remove(int index)
-		{
-			// Check to see if there is a widget at the supplied index.
-			if (index > Count - 1 || index < 0)
-				// If no widget exists, a messagebox is shown and the operation 
-				// is canColumned.
-			{
-				System.Windows.Forms.MessageBox.Show("Index not valid!");
-			}
-			else
-			{
-				List.RemoveAt(index); 
-			}
-		}
-		public FIA_Biosum_Manager.RxItemFvsCommandItem Item(int Index)
-		{
-			// The appropriate item is retrieved from the List object and
-			// explicitly cast to the Widget type, then returned to the 
-			// caller.
-			return (FIA_Biosum_Manager.RxItemFvsCommandItem) List[Index];
-		}
-
-	}
 	/*********************************************************************************************************
 	 **RX Harvest Cost Column Item               
 	 *********************************************************************************************************/

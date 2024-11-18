@@ -233,9 +233,6 @@ namespace FIA_Biosum_Manager
 		public class FVS
 		{
 			public string m_strRxTable;
-			public string m_strFvsCmdTable;
-			public string m_strFvsCatTable;
-			public string m_strFvsSubCatTable;
 			public string m_strRxHarvestCostColumnsTable;
 			public string m_strRxPackageTable;
 			public string m_strTreeSpcTable;
@@ -268,11 +265,8 @@ namespace FIA_Biosum_Manager
 			{
 				m_strRxTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREATMENT PRESCRIPTIONS");
 				m_strRxHarvestCostColumnsTable=ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREATMENT PRESCRIPTIONS HARVEST COST COLUMNS");
-				m_strFvsCmdTable  = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("FVS COMMANDS");
                 m_strFVSWesternTreeSpeciesTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("FVS WESTERN TREE SPECIES TRANSLATOR");
                 m_strFVSEasternTreeSpeciesTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("FVS EASTERN TREE SPECIES TRANSLATOR");
-				m_strFvsCatTable =  ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREATMENT PRESCRIPTION CATEGORIES");
-				m_strFvsSubCatTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREATMENT PRESCRIPTION SUBCATEGORIES");
 				m_strRxPackageTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREATMENT PACKAGES");
 				m_strTreeSpcTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREE SPECIES");
 				m_strFvsTreeTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("FVS TREE LIST FOR PROCESSOR");
@@ -285,18 +279,6 @@ namespace FIA_Biosum_Manager
 				{
 					
 					MessageBox.Show("!!Could Not Locate Rx Table!!","FIA Biosum",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
-					ReferenceQueries.m_intError=-1;
-					return;
-				}
-				if (this.m_strFvsCatTable.Trim().Length == 0 && !ReferenceQueries.Scenario)
-				{
-					MessageBox.Show("!!Could Not Locate FVS Category Table!!","FIA Biosum",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
-					ReferenceQueries.m_intError=-1;
-					return;
-				}
-				if (this.m_strFvsSubCatTable.Trim().Length == 0 && !ReferenceQueries.Scenario)
-				{
-					MessageBox.Show("!!Could Not Locate FVS Subcategory Table!!","FIA Biosum",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
 					ReferenceQueries.m_intError=-1;
 					return;
 				}
@@ -321,53 +303,7 @@ namespace FIA_Biosum_Manager
 					return;
 				}
 			}
-			
-			public string GetRxItemCategoryDescriptionSQL(string p_strRxId)
-			{
-				return "SELECT desc " + 
-					   "FROM " + m_strFvsCatTable + " " + 
-                       "WHERE MAX >= " + p_strRxId + " AND " + 
-					   "MIN <= " + p_strRxId;
-			}
-			public string GetRxItemSubCategoryDescriptionSQL(string p_strRxId)
-			{
-				return "SELECT desc " + 
-					   "FROM " + m_strFvsSubCatTable + " " + 
-					   "WHERE MAX >= " + p_strRxId + " AND " + 
-					   "MIN <= " + p_strRxId;
-			}
-			public string GetCategoryIdFromDescriptionSQL(string p_strDesc)
-			{
-				return "SELECT DISTINCT CSTR(catid) " + 
-					   "FROM " + m_strFvsCatTable + " c " + 
-					   "WHERE TRIM(UCASE(c.DESC)) = '" + p_strDesc.Trim().ToUpper() + "'";
-			}
-			public string GetSubCategoryIdFromDescriptionSQL(string p_strDesc)
-			{
-				return "SELECT DISTINCT CSTR(subcatid) " + 
-					"FROM " + m_strFvsSubCatTable + " c " + 
-					"WHERE TRIM(UCASE(c.DESC)) = '" + p_strDesc.Trim().ToUpper() + "'";
-			}
-			public string GetCategoryDescriptionFromCategoryIdSQL(string p_strCatId)
-			{
-				return "SELECT DISTINCT desc " + 
-					"FROM " + m_strFvsCatTable + " c " + 
-					"WHERE c.catid = " + p_strCatId;
-			}
-			public string GetSubCategoryDescriptionFromCategoryIdAndSubCategoryIdSQL(string p_strCatId,string p_strSubCatId)
-			{
-				return "SELECT DISTINCT desc " + 
-					"FROM " + this.m_strFvsSubCatTable + " c " + 
-					"WHERE c.catid = " + p_strCatId + " AND " + 
-						  "c.subcatid = " + p_strSubCatId;
-			}
-			
-			public string GetFVSCommandPropertiesSQL(string p_strCmd)
-			{
-				return "SELECT * " + 
-					   "FROM " + m_strFvsCmdTable + " " + 
-					   "WHERE TRIM(UCASE(fvscmd))='" + p_strCmd.Trim().ToUpper() + "'";
-			}
+
 			public string GetInsertRxSQL(string p_strFields, string p_strValues)
 			{
 				return "INSERT INTO " + this.m_strRxTable + " (" + p_strFields + ") VALUES (" + p_strValues + ")";
@@ -377,19 +313,6 @@ namespace FIA_Biosum_Manager
 				return "INSERT INTO " + this.m_strRxTable + " (" + p_strFields + ") VALUES (" + p_strValues + ")";
 			}
 
-			/// <summary>
-			/// get the subcategories that are child members of the parent category.
-			/// </summary>
-			/// <param name="p_strCat"></param>
-			/// <returns></returns>
-			public string GetFVSSubCategoriesSQL(string p_strCat)
-			{
-				return "SELECT s.desc, s.min, s.max " + 
-					   "FROM " + this.m_strFvsSubCatTable + " s," +
-					             this.m_strFvsCatTable + " c " + 
-					   "WHERE TRIM(UCASE(c.desc))='" + p_strCat.Trim().ToUpper() + "' AND " + 
-					         "s.catid=c.catid";
-			}
 			/// <summary>
 			/// return the query that will assign a variant to each rx package
 			/// </summary>

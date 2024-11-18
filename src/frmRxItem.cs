@@ -382,9 +382,6 @@ namespace FIA_Biosum_Manager
 		{
 			this.uc_rx_edit1.savevalues();
 
-			if (this.m_intError ==0)
-				this.uc_rx_fvscmd_list1.savevalues();
-
 			if (this.m_intError==0)
 			{
                 this.m_oRxItem.HarvestMethodLowSlope = this.uc_rx_harvest_method1.MethodLowSlope.Trim();
@@ -495,35 +492,19 @@ namespace FIA_Biosum_Manager
                 case "Properties":
 					Properties();
 					break;
-				case "Edit":
-                    if (tabControl1.SelectedTab.Text.Trim().ToUpper() == "ASSOCIATED FVS COMMAND(S)")
-                        this.uc_rx_fvscmd_list1.EditItem();
-                    else
-                        this.uc_rx_harvest_cost_column_list1.EditItem();
-					
-					break;
+				case "Edit":										
+                    this.uc_rx_harvest_cost_column_list1.EditItem();
+                    break;
                 case "Delete":
-                    if (tabControl1.SelectedTab.Text.Trim().ToUpper() == "ASSOCIATED FVS COMMAND(S)")
-                        this.uc_rx_fvscmd_list1.RemoveItem();
-                    else
-                        this.uc_rx_harvest_cost_column_list1.RemoveItem();
+                    this.uc_rx_harvest_cost_column_list1.RemoveItem();
 					break;
 				case "Clear All":
-                    if (tabControl1.SelectedTab.Text.Trim().ToUpper() == "ASSOCIATED FVS COMMAND(S)")
-                        this.uc_rx_fvscmd_list1.RemoveAllItems();
-                    else
-                        this.uc_rx_harvest_cost_column_list1.RemoveAllItems();
+                    this.uc_rx_harvest_cost_column_list1.RemoveAllItems();
 					break;
 				case "New":
-					if (tabControl1.SelectedTab.Text.Trim().ToUpper()=="ASSOCIATED FVS COMMAND(S)")
-						this.uc_rx_fvscmd_list1.AddItem();
-					else
-					{
-                        this.uc_rx_harvest_cost_column_list1.AddItem();
-					}
+                    this.uc_rx_harvest_cost_column_list1.AddItem();
 					break;
-				case "Contacts":
-					
+				case "Contacts":					
 					break;
 			}
 		}
@@ -601,20 +582,6 @@ namespace FIA_Biosum_Manager
 			FIA_Biosum_Manager.RxItem oRxItem = new RxItem();
 
 			oRxItem.CopyProperties(m_oRxItem,oRxItem);
-			
-				
-					
-			if (oRxItem.m_oFvsCommandItem_Collection1 != null)
-			{
-				for (int y=0;y<=oRxItem.m_oFvsCommandItem_Collection1.Count-1;y++)
-				{
-					if (oRxItem.m_oFvsCommandItem_Collection1.Item(y).Delete==true)
-					{
-						oRxItem.m_oFvsCommandItem_Collection1.Remove(y);
-					}
-				}
-			}
-			
 			oRxCollection.Add(oRxItem);
             FIA_Biosum_Manager.frmDialog frmTemp = new frmDialog();
             frmTemp.Text = "FIA Biosum";
