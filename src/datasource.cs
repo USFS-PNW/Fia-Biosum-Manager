@@ -52,8 +52,6 @@ namespace FIA_Biosum_Manager
 			"Owner Groups",
 			"Treatment Prescriptions",
 			"Treatment Prescriptions Harvest Cost Columns",
-			"Treatment Prescription Categories",
-			"Treatment Prescription Subcategories",
 			"Treatment Packages",
 			Datasource.TableTypes.SeqNumDefinitions,
             Datasource.TableTypes.SeqNumRxPackageAssign, 
@@ -80,8 +78,6 @@ namespace FIA_Biosum_Manager
 	        "Owner Groups",
 	        "Treatment Prescriptions",
 	        "Treatment Prescriptions Harvest Cost Columns",
-	        "Treatment Prescription Categories",
-	        "Treatment Prescription Subcategories",
 	        "Treatment Packages",
 	        "Tree Species",
 	        "FVS Tree Species",
@@ -103,8 +99,6 @@ namespace FIA_Biosum_Manager
 	        "Owner Groups",
 	        "Treatment Prescriptions",
 	        "Treatment Prescriptions Harvest Cost Columns",
-	        "Treatment Prescription Categories",
-	        "Treatment Prescription Subcategories",
 	        "Treatment Packages",
 	        "Tree Species",
 	        "FVS Tree Species",
@@ -1344,12 +1338,6 @@ namespace FIA_Biosum_Manager
 					break;
                 case "HARVEST METHODS":
                     frmMain.g_oTables.m_oReference.CreateHarvestMethodsTableIndexes(p_oAdo, p_oConn, p_strTableName);
-                    break;
-                case "TREATMENT PRESCRIPTION SUBCATEGORIES":
-                    frmMain.g_oTables.m_oReference.CreateRxSubCategoryTableIndexes(p_oAdo, p_oConn, p_strTableName);
-                    break;
-                case "TREATMENT PRESCRIPTION CATEGORIES":
-                    frmMain.g_oTables.m_oReference.CreateRxCategoryTableIndexes(p_oAdo, p_oConn, p_strTableName);
                     break;
 			}
 

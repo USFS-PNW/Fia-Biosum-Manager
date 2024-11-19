@@ -7454,13 +7454,14 @@ namespace FIA_Biosum_Manager
                 using (OleDbConnection copyConn = new System.Data.OleDb.OleDbConnection(strCopyConn))
                 {
                     copyConn.Open();
-                    oAdo.m_strSQL = "INSERT INTO " + arrTargetTables[0] + "_1" +
-                        " SELECT * FROM " + strTableName;
+                    oAdo.m_strSQL = $@"INSERT INTO {arrTargetTables[0]}_1 SELECT RXPACKAGE, DESCRIPTION, rxcycle_length,
+                        simyear1_rx, simyear1_fvscycle, simyear2_rx, simyear2_fvscycle, simyear3_rx, simyear3_fvscycle,
+                        simyear4_rx, simyear4_fvscycle FROM {strTableName}";
                     oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
                     oAdo.m_strSQL = $@"DROP TABLE {arrTargetTables[0]}_1";
                     oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
-                    oAdo.m_strSQL = "INSERT INTO " + arrTargetTables[1] + "_1" +
-                        " SELECT * FROM " + arrTargetTables[1];
+                    oAdo.m_strSQL = $@"INSERT INTO {arrTargetTables[1]}_1 SELECT RX, DESCRIPTION, HarvestMethodLowSlope, HarvestMethodSteepSlope
+                        FROM {arrTargetTables[1]}";
                     oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
                     oAdo.m_strSQL = $@"DROP TABLE {arrTargetTables[1]}_1";
                     oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
@@ -7474,8 +7475,8 @@ namespace FIA_Biosum_Manager
                 string strMasterDb = System.IO.Path.GetFileName(Tables.FVS.DefaultRxPackageDbFile);
                 // Update project data sources
                 oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.RxPackage, $@"{ReferenceProjectDirectory.Trim()}\db", strMasterDb, Tables.FVS.DefaultRxPackageTableName);
-                oProjectDs.UpdateDataSourcePath("Treatment Prescriptions", $@"{ ReferenceProjectDirectory.Trim()}\db", strMasterDb, Tables.FVS.DefaultRxTableName);
-                oProjectDs.UpdateDataSourcePath("Treatment Prescriptions Harvest Cost Columns", $@"{ ReferenceProjectDirectory.Trim()}\db", strMasterDb, Tables.FVS.DefaultRxHarvestCostColumnsTableName);
+                oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.Rx, $@"{ ReferenceProjectDirectory.Trim()}\db", strMasterDb, Tables.FVS.DefaultRxTableName);
+                oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.RxHarvestCostColumns, $@"{ ReferenceProjectDirectory.Trim()}\db", strMasterDb, Tables.FVS.DefaultRxHarvestCostColumnsTableName);
                 // Update Optimizer data sources
                 strDestFile = $@"{ReferenceProjectDirectory.Trim()}\{Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile}";
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
@@ -7485,6 +7486,7 @@ namespace FIA_Biosum_Manager
                         where table_type in ('Treatment Prescriptions','Treatment Prescriptions Harvest Cost Columns','{Datasource.TableTypes.RxPackage}')";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
+                // Update Processor data sources
                 strDestFile = $@"{ReferenceProjectDirectory.Trim()}\processor\{Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile}";
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
                 {
@@ -7492,6 +7494,15 @@ namespace FIA_Biosum_Manager
                     oDataMgr.m_strSQL = $@"UPDATE {Tables.Scenario.DefaultScenarioDatasourceTableName} SET file = '{strMasterDb}' 
                         where table_type in ('Treatment Prescriptions','Treatment Prescriptions Harvest Cost Columns','{Datasource.TableTypes.RxPackage}')";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+                // Remove obsolete data source definitions
+                using (OleDbConnection deleteConn = new System.Data.OleDb.OleDbConnection(oAdo.getMDBConnString(oProjectDs.m_strDataSourceMDBFile, "", "")))
+                {
+                    deleteConn.Open();
+                    oAdo.m_strSQL = $@"DELETE FROM {oProjectDs.m_strDataSourceTableName} WHERE TABLE_TYPE IN 
+                        ('Treatment Prescriptions Assigned FVS Commands', 'Treatment Prescription Categories', 'Treatment Prescription Subcategories',
+                         'Treatment Package Assigned FVS Commands', 'Treatment Package FVS Commands Order')";
+                    oAdo.SqlNonQuery(deleteConn, oAdo.m_strSQL);
                 }
             }
             if (odbcmgr.CurrentUserDSNKeyExist(fvsMasterDs))

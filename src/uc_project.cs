@@ -1240,20 +1240,6 @@ namespace FIA_Biosum_Manager
 						"'master.db'," + 
 						"'" + Tables.FVS.DefaultRxHarvestCostColumnsTableName + "');";
 					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
-					
-					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-						"('Treatment Prescription Categories'," + 
-						"'" + this.txtRootDirectory.Text.ToString().Trim()  + "\\db'," + 
-						"'ref_master.mdb'," + 
-						"'fvs_rx_category');";
-					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
-
-					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-						"('Treatment Prescription Subcategories'," + 
-						"'" + this.txtRootDirectory.Text.ToString().Trim()  + "\\db'," + 
-						"'ref_master.mdb'," + 
-						"'fvs_rx_subcategory');";
-					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
 
 					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
 						"('Treatment Packages'," + 

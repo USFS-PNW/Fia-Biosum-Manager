@@ -3506,8 +3506,6 @@ namespace FIA_Biosum_Manager
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "rx CHAR(3)," +
-                    "catid INTEGER," +
-                    "subcatid INTEGER," +
                     "description CHAR(2000)," +
                     "HarvestMethodLowSlope CHAR(50)," +
                     "HarvestMethodSteepSlope CHAR(50)," +
@@ -3641,7 +3639,6 @@ namespace FIA_Biosum_Manager
                     "simyear3_fvscycle CHAR(2)," +
                     "simyear4_rx CHAR(3)," +
                     "simyear4_fvscycle CHAR(2)," +
-                    "kcpfile CHAR(254)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY(rxpackage))";
             }
             //

@@ -215,7 +215,9 @@ namespace FIA_Biosum_Manager
 				this.lstPackageMember.Height = this.txtDesc.Height;
 				this.txtDesc.Text = this.ReferenceFormRxItem.m_oRxItem.Description;
                 this.cmbRxId.Enabled = false;
-                this.cmbRxId.Text = this.ReferenceFormRxItem.m_oRxItem.RxId;
+                this.cmbRxId.Items.Clear();
+                this.cmbRxId.Items.Add(this.ReferenceFormRxItem.m_oRxItem.RxId);
+                this.cmbRxId.SelectedItem = this.ReferenceFormRxItem.m_oRxItem.RxId;
 
                 if (this.ReferenceFormRxItem.m_oRxItem.RxPackageMemberList.Trim().Length > 0)
                 {
