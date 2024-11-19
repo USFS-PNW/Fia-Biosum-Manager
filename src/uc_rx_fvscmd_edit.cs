@@ -78,7 +78,6 @@ namespace FIA_Biosum_Manager
 		private Queries m_oQueries = new Queries();
 		private ado_data_access m_oAdo = new ado_data_access();
 
-		public FIA_Biosum_Manager.RxItemFvsCommandItem m_oRxItemFvsCmdItem=null;
 		public FIA_Biosum_Manager.RxPackageItemFvsCommandItem m_oRxPackageItemFvsCommandItem=null;
 		private System.Windows.Forms.TextBox txtP6;
 		private System.Windows.Forms.ComboBox cmbFilter;
@@ -147,53 +146,11 @@ namespace FIA_Biosum_Manager
 
 
 		}
-		public void loadvalues(FIA_Biosum_Manager.RxItemFvsCommandItem p_oRxItemFvsCmdItem)
-		{
-			m_oRxItemFvsCmdItem = new RxItemFvsCommandItem();
-			
-			if (this.ReferenceFormFvsCmdItem.m_strAction=="edit")
-			{
-				m_oRxItemFvsCmdItem.CopyProperties(p_oRxItemFvsCmdItem,m_oRxItemFvsCmdItem);
-			}
-
-			this.LoadFvsCommandsComboBox();
-			
-			if (p_oRxItemFvsCmdItem != null)
-			{
-				this.LoadFvsCommandProperties(this.m_oRxItemFvsCmdItem.FVSCommand);
-			}
-
-			if (this.ReferenceFormFvsCmdItem.m_strAction=="edit")
-			{
-				this.cmbFilter.Enabled=false;
-				this.cmbFVSCmd.Enabled=false;
-				this.txtFVSCmdVariantList.Enabled=false;
-			}
-			else
-			{
-				this.cmbFilter.Enabled=true;
-				this.cmbFVSCmd.Enabled=true;
-				this.txtFVSCmdVariantList.Enabled=true;
-			}
-
-
-
-
-		}
 		
 		public void savevalues()
 		{
 			if (RxPackageEdit==false)
 			{
-				this.m_oRxItemFvsCmdItem.FVSCommand = this.cmbFVSCmd.Text;
-				this.m_oRxItemFvsCmdItem.Parameter1 = this.txtP1.Text;
-				this.m_oRxItemFvsCmdItem.Parameter2 = this.txtP2.Text;
-				this.m_oRxItemFvsCmdItem.Parameter3 = this.txtP3.Text;
-				this.m_oRxItemFvsCmdItem.Parameter4 = this.txtP4.Text;
-				this.m_oRxItemFvsCmdItem.Parameter5 = this.txtP5.Text;
-				this.m_oRxItemFvsCmdItem.Parameter6 = this.txtP6.Text;
-				this.m_oRxItemFvsCmdItem.Parameter7 = this.txtP7.Text;
-				this.m_oRxItemFvsCmdItem.Other = this.txtOther.Text;
 			}
 			else
 			{
@@ -221,58 +178,17 @@ namespace FIA_Biosum_Manager
 			
 			m_oAdo.OpenConnection(m_oAdo.getMDBConnString(m_oQueries.m_strTempDbFile,"",""));
            
-			if (this.RxPackageEdit)
-			{
-				m_oAdo.m_strSQL = "SELECT FVSCMD FROM " + this.m_oQueries.m_oFvs.m_strFvsCmdTable + " " + 
-					              "WHERE UCASE(TRIM(p1_label)) <> 'SIMULATION CYCLE'";
-			}
-			else
-			{
-				m_oAdo.m_strSQL = "SELECT FVSCMD FROM " + this.m_oQueries.m_oFvs.m_strFvsCmdTable;
-			}
 
-			m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection,m_oAdo.m_strSQL);
-
-			if (m_oAdo.m_OleDbDataReader.HasRows)
-			{
-				while (m_oAdo.m_OleDbDataReader.Read())
-				{
-					if (m_oAdo.m_OleDbDataReader["fvscmd"] != System.DBNull.Value)
-					{
-						cmbFVSCmd.Items.Add(Convert.ToString(m_oAdo.m_OleDbDataReader["fvscmd"]));
-					}
-				}
-			}
 			m_oAdo.m_OleDbDataReader.Close();
 
 		}
 		protected void LoadFvsCommandProperties(string p_strFvsCmd)
 		{
-			m_oAdo.m_strSQL = m_oQueries.m_oFvs.GetFVSCommandPropertiesSQL(p_strFvsCmd);
-
-			string strCurrFvsCmd="";
-			if (this.m_oRxItemFvsCmdItem!=null)
-			{
-				strCurrFvsCmd=this.m_oRxItemFvsCmdItem.FVSCommand;
-			}
-			else
-			{
-				strCurrFvsCmd=this.m_oRxPackageItemFvsCommandItem.FVSCommand;
-			}
-
-			
+			string strCurrFvsCmd="";			
 			if (p_strFvsCmd.Trim().ToUpper()==strCurrFvsCmd.Trim().ToUpper())
 			{
 				if (this.RxPackageEdit==false)
 				{
-					this.txtP1.Text = this.m_oRxItemFvsCmdItem.Parameter1;
-					this.txtP2.Text = this.m_oRxItemFvsCmdItem.Parameter2;
-					this.txtP3.Text = this.m_oRxItemFvsCmdItem.Parameter3;
-					this.txtP4.Text = this.m_oRxItemFvsCmdItem.Parameter4;
-					this.txtP5.Text = this.m_oRxItemFvsCmdItem.Parameter5;
-					this.txtP6.Text = this.m_oRxItemFvsCmdItem.Parameter6;
-					this.txtP7.Text = this.m_oRxItemFvsCmdItem.Parameter7;
-					this.txtOther.Text = this.m_oRxItemFvsCmdItem.Other;
 				}
 				else
 				{
@@ -1410,29 +1326,7 @@ namespace FIA_Biosum_Manager
 			this.LoadFvsCommandProperties(cmbFVSCmd.Text);
 		}
 		protected void ReloadFVSCommandList()
-		{
-			if (cmbFilter.Text.Trim().ToUpper()=="ALL")
-			{
-				  m_oAdo.m_strSQL = "SELECT FVSCMD FROM " + this.m_oQueries.m_oFvs.m_strFvsCmdTable;
-			}
-			else
-			{
-				if (this.RxPackageEdit)
-				{
-					m_oAdo.m_strSQL = "SELECT FVSCMD " + 
-						"FROM " + this.m_oQueries.m_oFvs.m_strFvsCmdTable + " " + 
-						"WHERE TRIM(UCASE(filter)) = '" + cmbFilter.Text.Trim().ToUpper() + "' AND " + 
-					          "UCASE(TRIM(p1_label)) <> 'SIMULATION CYCLE'";
-				}
-				else
-				{
-
-					m_oAdo.m_strSQL = "SELECT FVSCMD " + 
-						"FROM " + this.m_oQueries.m_oFvs.m_strFvsCmdTable + " " + 
-						"WHERE TRIM(UCASE(filter)) = '" + cmbFilter.Text.Trim().ToUpper() + "'";
-				}
-			}
-	
+		{	
 			this.cmbFVSCmd.Items.Clear();
 			this.cmbFVSCmd.Text="";
 			m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection,m_oAdo.m_strSQL);

@@ -1022,47 +1022,24 @@ namespace FIA_Biosum_Manager
                 //
                 //fvsmaster file
                 //
-                //copy default fvsmaster database to the new project directory
-                //strSourceFile = this.m_oEnv.strAppDir + "\\db\\fvsmaster.mdb";
-				strDestFile = this.txtRootDirectory.Text.Trim() + "\\db\\fvsmaster.mdb";
 				p_frmTherm.Increment(5);
 				p_frmTherm.lblMsg.Text = strDestFile;
 				p_frmTherm.lblMsg.Refresh();
-				//System.IO.File.Copy(strSourceFile, strDestFile,true);	
-				p_dao.CreateMDB(strDestFile);
-				strConn = p_ado.getMDBConnString(strDestFile,"admin","");
-				p_ado.OpenConnection(strConn);
-				//rx table
-				frmMain.g_oTables.m_oFvs.CreateRxTable(p_ado,p_ado.m_OleDbConnection,Tables.FVS.DefaultRxTableName);
-				//rx harvest cost column table
-				frmMain.g_oTables.m_oFvs.CreateRxHarvestCostColumnTable(p_ado,p_ado.m_OleDbConnection, Tables.FVS.DefaultRxHarvestCostColumnsTableName);
-				//rx packages table
-				frmMain.g_oTables.m_oFvs.CreateRxPackageTable(p_ado,p_ado.m_OleDbConnection,Tables.FVS.DefaultRxPackageTableName);
-				//rx package members table
-				//frmMain.g_oTables.m_oFvs.CreateRxPackageMembersTable(p_ado,p_ado.m_OleDbConnection,Tables.FVS.DefaultRxPackageMembersTableName);
-				//rx package fvs commands table
-				//frmMain.g_oTables.m_oFvs.CreateRxPackageFvsCommandsTable(p_ado,p_ado.m_OleDbConnection,Tables.FVS.DefaultRxPackageFvsCommandTableName);
-				//rx package fvs commands order
-				//frmMain.g_oTables.m_oFvs.CreateRxPackageFvsCommandsOrderTable(p_ado,p_ado.m_OleDbConnection,Tables.FVS.DefaultRxPackageFvsCommandsOrderTableName);
-				p_ado.CloseConnection(p_ado.m_OleDbConnection);
-                //fvs output pre-post seqnum processing
-                uc_fvs_output_prepost_seqnum.InitializePrePostSeqNumTables();   // This is the SQLite version
-
-                // Moving these tables to master.db during SQLite conversion
                 strDestFile = this.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultRxPackageDbFile;
                 strConn = p_dataMgr.GetConnectionString(strDestFile);
-                //using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
-                //{
-                //    conn.Open();
-                //    //rx table
-                //    frmMain.g_oTables.m_oFvs.CreateSQLiteRxTable(p_dataMgr, conn, Tables.FVS.DefaultRxTableName);
-                //    //rx packages table
-                //    frmMain.g_oTables.m_oFvs.CreateSQLiteRxPackageTable(p_dataMgr, conn, Tables.FVS.DefaultRxPackageTableName);
-                //    //rx harvest cost column table
-                //    frmMain.g_oTables.m_oFvs.CreateSqliteRxHarvestCostColumnTable(p_dataMgr, conn, Tables.FVS.DefaultRxHarvestCostColumnsTableName);
-                //}
-                //@ToDo: Change destination for uc_fvs_output_prepost_seqnum.InitializePrePostSeqNumTables()
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+                    conn.Open();
+                    //rx table
+                    frmMain.g_oTables.m_oFvs.CreateSQLiteRxTable(p_dataMgr, conn, Tables.FVS.DefaultRxTableName);
+                    //rx harvest cost column table
+                    frmMain.g_oTables.m_oFvs.CreateSqliteRxHarvestCostColumnTable(p_dataMgr, conn, Tables.FVS.DefaultRxHarvestCostColumnsTableName);
+                    //rx packages table
+                    frmMain.g_oTables.m_oFvs.CreateSQLiteRxPackageTable(p_dataMgr, conn, Tables.FVS.DefaultRxPackageTableName);
 
+                }
+                //fvs output pre-post seqnum processing
+                uc_fvs_output_prepost_seqnum.InitializePrePostSeqNumTables();
 
                 //
                 //prepopulated ref master file
@@ -1253,49 +1230,35 @@ namespace FIA_Biosum_Manager
 					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
 						"('Treatment Prescriptions'," + 
 						"'" + this.txtRootDirectory.Text.ToString().Trim()  + "\\db'," + 
-						"'fvsmaster.mdb'," + 
+						"'master.db'," + 
 						"'rx');";
 					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
 
                     strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
 						"('Treatment Prescriptions Harvest Cost Columns'," + 
 						"'" + this.txtRootDirectory.Text.ToString().Trim()  + "\\db'," + 
-						"'fvsmaster.mdb'," + 
+						"'master.db'," + 
 						"'" + Tables.FVS.DefaultRxHarvestCostColumnsTableName + "');";
-					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
-					
-					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-						"('Treatment Prescription Categories'," + 
-						"'" + this.txtRootDirectory.Text.ToString().Trim()  + "\\db'," + 
-						"'ref_master.mdb'," + 
-						"'fvs_rx_category');";
-					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
-
-					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-						"('Treatment Prescription Subcategories'," + 
-						"'" + this.txtRootDirectory.Text.ToString().Trim()  + "\\db'," + 
-						"'ref_master.mdb'," + 
-						"'fvs_rx_subcategory');";
 					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
 
 					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
 						"('Treatment Packages'," + 
 						"'" + this.txtRootDirectory.Text.ToString().Trim()  + "\\db'," + 
-						"'fvsmaster.mdb'," + 
+						"'master.db'," + 
 						"'rxpackage');";
 					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
 
                     strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
                         "('FVS PRE-POST SeqNum Definitions'," +
                         "'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," +
-                        "'fvsmaster.db'," +
+                        "'master.db'," +
                         "'" + Tables.FVS.DefaultFVSPrePostSeqNumTable + "');";
                     p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
 
                     strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
                         "('FVS PRE-POST SeqNum Treatment Package Assign'," +
                         "'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," +
-                        "'fvsmaster.db'," +
+                        "'master.db'," +
                         "'" + Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable + "');";
                     p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
 

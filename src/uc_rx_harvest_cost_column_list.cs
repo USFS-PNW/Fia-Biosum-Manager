@@ -301,39 +301,43 @@ namespace FIA_Biosum_Manager
                  lstFields = lstProcessorColumns;
             }
                        
+            string strSource = m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.RxHarvestCostColumns);
             string strTable = m_oQueries.m_oDataSource.getValidDataSourceTableName("TREATMENT PRESCRIPTIONS HARVEST COST COLUMNS").Trim();
-            //string strTable = "scenario_harvest_cost_columns";
-            m_oAdo.m_strSQL = "SELECT DISTINCT ColumnName FROM " + strTable;
-            m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection,m_oAdo.m_strSQL);
-            if (m_oAdo.m_OleDbDataReader.HasRows)
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strSource)))
             {
-                while (m_oAdo.m_OleDbDataReader.Read())
+                conn.Open();
+                oDataMgr.m_strSQL = "SELECT DISTINCT ColumnName FROM " + strTable;
+                oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
+                if (oDataMgr.m_DataReader.HasRows)
                 {
-                    if (m_oAdo.m_OleDbDataReader["ColumnName"]!=System.DBNull.Value &&
-                        Convert.ToString(m_oAdo.m_OleDbDataReader["ColumnName"]).Trim().Length > 0)
+                    while (oDataMgr.m_DataReader.Read())
                     {
-                        strCol = Convert.ToString(m_oAdo.m_OleDbDataReader["ColumnName"]).Trim().ToUpper();
-                        if (lstProcessorColumns != null)
+                        if (oDataMgr.m_DataReader["ColumnName"] != System.DBNull.Value &&
+                            Convert.ToString(oDataMgr.m_DataReader["ColumnName"]).Trim().Length > 0)
                         {
-                            for (x = 0; x <= lstProcessorColumns.Count - 1; x++)
+                            strCol = Convert.ToString(oDataMgr.m_DataReader["ColumnName"]).Trim().ToUpper();
+                            if (lstProcessorColumns != null)
                             {
-                                if (lstProcessorColumns[x] != null)
+                                for (x = 0; x <= lstProcessorColumns.Count - 1; x++)
                                 {
-                                    if (lstProcessorColumns[x].Trim().ToUpper() ==
-                                        strCol) break;
+                                    if (lstProcessorColumns[x] != null)
+                                    {
+                                        if (lstProcessorColumns[x].Trim().ToUpper() ==
+                                            strCol) break;
+                                    }
+                                }
+                                if (x > lstProcessorColumns.Count - 1)
+                                {
+                                    lstFields.Add(Convert.ToString(oDataMgr.m_DataReader["ColumnName"]).Trim());
                                 }
                             }
-                            if (x > lstProcessorColumns.Count - 1)
-                            {
-                                lstFields.Add(Convert.ToString(m_oAdo.m_OleDbDataReader["ColumnName"]).Trim());
-                            }                            
+                            else
+                                lstFields.Add(Convert.ToString(oDataMgr.m_DataReader["ColumnName"]).Trim());
                         }
-                        else
-                            lstFields.Add(Convert.ToString(m_oAdo.m_OleDbDataReader["ColumnName"]).Trim());
                     }
                 }
+                oDataMgr.m_DataReader.Close();
             }
-            m_oAdo.m_OleDbDataReader.Close();
 
             m_strHarvestTableColumnNameList = "";
             if (lstFields != null && lstFields.Count > 0)

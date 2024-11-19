@@ -23,8 +23,6 @@ namespace FIA_Biosum_Manager
 		private FIA_Biosum_Manager.RxItem_Collection _oRxItemCollection=null;
 		private FIA_Biosum_Manager.uc_rx_package_list _uc_rx_package_list;
 		public FIA_Biosum_Manager.RxPackageItem m_oRxPackageItem=null;
-		public FIA_Biosum_Manager.RxPackageCombinedFVSCommandsItem_Collection m_oRxPackageCombinedFVSCommandsItemCollection=null;
-		private FIA_Biosum_Manager.RxPackageCombinedFVSCommandsItem_Collection _RxPackageCombinedFVSCommandsItemCollection=null;
 
 		private System.Windows.Forms.ImageList imageList1;
 		private System.Windows.Forms.ToolBarButton btnOk;
@@ -484,9 +482,6 @@ namespace FIA_Biosum_Manager
                 case "Delete":
 					this.uc_rx_package_fvscmd_list1.RemoveItem();
 					break;
-				case "Clear All":
-					this.uc_rx_package_fvscmd_list1.RemoveAllItems();
-					break;
 				case "New":
 					this.uc_rx_package_fvscmd_list1.AddItem();
 					break;
@@ -576,16 +571,6 @@ namespace FIA_Biosum_Manager
 					
 						RxItem oItem = new RxItem();
 						oItem.CopyProperties(ReferenceRxItemCollection.Item(x),oItem);
-						if (oItem.m_oFvsCommandItem_Collection1 != null)
-						{
-							for (int y=0;y<=oItem.m_oFvsCommandItem_Collection1.Count-1;y++)
-							{
-								if (oItem.m_oFvsCommandItem_Collection1.Item(y).Delete==true)
-								{
-									oItem.m_oFvsCommandItem_Collection1.Remove(y);
-								}
-							}
-						}
 						oRxColl.Add(oItem);
 					}
 
@@ -628,11 +613,6 @@ namespace FIA_Biosum_Manager
 		{
 			get {return _oRxItemCollection;}
 			set {_oRxItemCollection=value;}
-		}
-		public FIA_Biosum_Manager.RxPackageCombinedFVSCommandsItem_Collection ReferenceRxPackageCombinedFVSCommandsItemCollection
-		{
-			get {return _RxPackageCombinedFVSCommandsItemCollection;}
-			set {_RxPackageCombinedFVSCommandsItemCollection=value;}
 		}
 		public string UsedRxPackageList
 		{
