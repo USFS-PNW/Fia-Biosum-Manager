@@ -1978,6 +1978,198 @@ namespace FIA_Biosum_Manager
 
                 }
             }
+
+            private void getSiteIndexNew()
+            {
+                int x, y;
+                int intCount;
+
+                //MAX variables hold the values of the selected site index
+                int intSICountMax;
+                double dblSIAvgMax;
+                int intSISpeciesMax;
+                int intCurSIFVSSpecies;
+                int intCurFIASpecies;
+                int intCurHtFt;
+                int intCurAgeDia;
+                int intCondId;
+                bool bFound;
+                int intSiTree;
+
+                //These arrays contain the values of all the site index trees on the plot
+                int[] intSIFVSSpecies;
+                int[] intSICount;
+                double[] dblSISum;
+                double[] dblSIAvg;
+
+                this.SiteIndex = "@";
+                this.SiteIndexSpecies = "@";
+                this.SiteIndexSpeciesAlphaCode = "@";
+
+                double dblSiteIndex = 0;
+
+
+                //calculate site index for OR, WA, CA, ID, and MT
+                if (StateCd == "41" || StateCd == "6" ||
+                    StateCd == "53" || StateCd == "16" ||
+                    StateCd == "30")
+                {
+                }
+                else return;
+
+                //get all the site index trees that are applied to the current plot+condition
+                _oAdo.m_strSQL = "SELECT s.biosum_plot_id," +
+                    "s.condid," +
+                    "s.tree," +
+                    "s.spcd," +
+                    "s.dia," +
+                    "s.ht," +
+                    "s.agedia," +
+                    "s.subp," +
+                    "s.method," +
+                    "s.validcd, " +
+                    "s.sitree " +
+                    "FROM " + this.SiteTreeTable + " s " +
+                    "WHERE s.biosum_plot_id = '" + this.BiosumPlotId + "' " +
+                    "AND s.condid = " + this.CondId +
+                    "AND s.validcd <> 0";
+                x = Convert.ToInt32(_oAdo.getRecordCount(_oAdo.m_OleDbConnection, "SELECT COUNT(*) FROM (" + _oAdo.m_strSQL + ")", "cond"));
+                if (x > 0)
+                {
+                    _oAdo.AddSQLQueryToDataSet(_oAdo.m_OleDbConnection, ref _oAdo.m_OleDbDataAdapter, ref _oAdo.m_DataSet, _oAdo.m_strSQL, "GetSiteIndex");
+                    if (_oAdo.m_DataSet.Tables["GetSiteIndex"].Rows.Count > 0)
+                    {
+                        intSIFVSSpecies = new int[x];
+                        intSICount = new int[x];
+                        dblSISum = new double[x];
+                        intCount = 0;
+                        intSICountMax = 0;
+                        for (y = 0; y <= _oAdo.m_DataSet.Tables["GetSiteIndex"].Rows.Count - 1; y++)
+                        {
+                            intCurFIASpecies = Convert.ToInt32(_oAdo.m_DataSet.Tables["GetSiteIndex"].Rows[y]["spcd"]);
+                            intCurSIFVSSpecies = 0;
+                            intCurAgeDia = Convert.ToInt32(_oAdo.m_DataSet.Tables["GetSiteIndex"].Rows[y]["agedia"]);
+                            intCurHtFt = Convert.ToInt32(_oAdo.m_DataSet.Tables["GetSiteIndex"].Rows[y]["ht"]);
+                            intCondId = Convert.ToInt32(_oAdo.m_DataSet.Tables["GetSiteIndex"].Rows[y]["condid"]);
+                            intSiTree = Convert.ToInt32(_oAdo.m_DataSet.Tables["GetSiteIndex"].Rows[y]["sitree"]);
+
+                            //***************************************************
+                            //**if no age then bypass site index tree
+                            //**************************************************
+                            if (intCurAgeDia > 0)
+                            {
+                                LoadSiteIndexValuesNew(intCondId, intCurFIASpecies,
+                                    intCurAgeDia,
+                                    intCurHtFt,
+                                    ref intCurSIFVSSpecies,
+                                    ref dblSiteIndex,
+                                    intSiTree);
+                                //*************************************************
+                                //**if the site index = 0, write it to the log, we want to know
+                                //**how often this occurs
+                                //*************************************************
+                                if (dblSiteIndex == 0)
+                                {
+                                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                    {
+                                        string logEntry = "//variant: " + this.FVSVariant +
+                                                          " plot id: " + this.BiosumPlotId +
+                                                          " cond id: " + this.CondId +
+                                                          " spec cd: " + intCurSIFVSSpecies + "\r\n";
+                                        frmMain.g_oUtils.WriteText(_strDebugFile, "\r\n//\r\n");
+                                        frmMain.g_oUtils.WriteText(_strDebugFile, "//Site_Index_getSiteIndex\r\n");
+                                        frmMain.g_oUtils.WriteText(_strDebugFile, "//Site index equation returned 0    \r\n");
+                                        frmMain.g_oUtils.WriteText(_strDebugFile, logEntry);
+                                        frmMain.g_oUtils.WriteText(_strDebugFile, "//\r\n");
+                                    }
+                                }
+                                //*************************************************
+                                //**lets find the current SI species in the array
+                                //*************************************************
+                                if (intCount == 0)
+                                {
+                                    intCount = intCount + 1;
+                                    intSIFVSSpecies[intCount - 1] = intCurSIFVSSpecies;
+                                    intSICount[intCount - 1] = intSICount[intCount - 1] + 1;
+                                    dblSISum[intCount - 1] = dblSISum[intCount - 1] + dblSiteIndex;
+
+
+                                }
+                                else if (intSIFVSSpecies[intCount - 1] == intCurSIFVSSpecies)
+                                {
+                                    intSICount[intCount - 1] = intSICount[intCount - 1] + 1;
+                                    dblSISum[intCount - 1] = dblSISum[intCount - 1] + dblSiteIndex;
+                                }
+                                else
+                                {
+                                    bFound = false;
+                                    for (x = 0; x <= intCount - 1; x++)
+                                    {
+                                        if (intSIFVSSpecies[x] == intCurSIFVSSpecies)
+                                        {
+                                            bFound = true;
+                                            break;
+                                        }
+                                    }
+                                    if (bFound)
+                                    {
+                                        intSICount[x] = intSICount[x] + 1;
+                                        dblSISum[x] = dblSISum[x] + dblSiteIndex;
+                                    }
+                                    else
+                                    {
+                                        intCount = intCount + 1;
+                                        intSIFVSSpecies[intCount - 1] = intCurSIFVSSpecies;
+                                        intSICount[intCount - 1] = intSICount[intCount - 1] + 1;
+                                        dblSISum[intCount - 1] = dblSISum[intCount - 1] + dblSiteIndex;
+                                    }
+                                }
+                            }
+                        }
+                        //***************************************************************
+                        //**get the most frequently occuring site index species
+                        //***************************************************************
+                        intSICountMax = 0;
+                        dblSIAvgMax = 0;
+                        intSISpeciesMax = 0;
+                        dblSIAvg = new double[intCount];
+                        for (x = 0; x <= intCount - 1; x++)
+                        {
+                            dblSIAvg[x] = dblSISum[x] / intSICount[x];
+                            if (intSICount[x] > intSICountMax)
+                            {
+                                intSICountMax = intSICount[x];
+                                dblSIAvgMax = dblSIAvg[x];
+                                intSISpeciesMax = intSIFVSSpecies[x];
+                            }
+                            else if (intSICount[x] == intSICountMax)
+                            {
+                                if (dblSIAvg[x] > dblSIAvgMax)
+                                {
+                                    dblSIAvgMax = dblSIAvg[x];
+                                    intSISpeciesMax = intSIFVSSpecies[x];
+                                }
+                            }
+                        }
+                        if (dblSIAvgMax <= 0 && intSISpeciesMax > 0 && intSISpeciesMax != 999)
+                        {
+                            MessageBox.Show("Warning: Site index tree species " + Convert.ToString(intSISpeciesMax) + " has an invalid  site index value of " + Convert.ToString(Math.Round(dblSIAvgMax, 6)).Trim() + ". Both the SI species and SI height will be given a value of @");
+                            this.SiteIndexSpecies = "@";
+                            this.SiteIndex = "@";
+
+                        }
+                        else
+                        {
+                            this.SiteIndexSpecies = intSISpeciesMax.ToString().Trim();
+                            this.SiteIndex = Convert.ToString(Math.Round(dblSIAvgMax, 0)).Trim();
+                        }
+                        if (this.SiteIndexSpecies != "@" && this.SiteIndexSpecies.Trim().Length > 0)
+                            GetSiteIndexSpeciesAlphaCode();
+                    }
+                    _oAdo.m_DataSet.Tables.Remove("GetSiteIndex");
+
+                }
+            }
             private void GetSiteIndexSpeciesAlphaCode()
             {
                 _oAdo.m_strSQL = "SELECT fvs_species FROM " + this.FVSTreeSpeciesTable + " f " +
@@ -2755,9 +2947,164 @@ namespace FIA_Biosum_Manager
                     bool boolSlfSpecies = Int32.TryParse(strSlfSpCd, out intSpCd);
                     if (boolSlfSpecies) p_intSIFVSSpecies = intSpCd;
                 }
+            }
 
-
-
+            private void LoadSiteIndexValuesNew(int p_intSICondId,
+                int p_intSISpCd,
+                int p_intSIAgeDia,
+                int p_intSIHtFt,
+                ref int p_intSIFVSSpecies,
+                ref double p_dblSiteIndex,
+                int p_intSiTree)
+            {
+                // The compound key for the dictionary is the variant + species code
+                string strKey = this.FVSVariant + SI_DELIM + p_intSISpCd;
+                // Initialize values to blank in case the key is not found
+                string strEquation = "";
+                string strSlfSpCd = "";
+                string strRegion = "";
+                if (_dictSiteIdxEq.ContainsKey(strKey))
+                {
+                    // If the key is found extract the values from the delimited string
+                    string[] arrValues = _dictSiteIdxEq[strKey].Split(Convert.ToChar(SI_DELIM));
+                    strEquation = arrValues[0];
+                    strSlfSpCd = arrValues[1];
+                    strRegion = arrValues[2];
+                }
+                // Reset site index and species code, in case they aren't found in database
+                p_dblSiteIndex = 0;
+                // Return the numeric FVS-FIA species code; 
+                p_intSIFVSSpecies = p_intSISpCd;
+                // Calculate the site index for the equation from the database
+                switch (strEquation)
+                {
+                    case "ABAM2":
+                        p_dblSiteIndex = ABAM2(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "ABGR1":
+                        p_dblSiteIndex = ABGR1(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "ABPR1":
+                        p_dblSiteIndex = ABPR1(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "ALRU2":
+                        p_dblSiteIndex = ALRU2(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "LAOC1_OR":
+                        p_dblSiteIndex = LAOC1_OR(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "PIEN3":
+                        p_dblSiteIndex = PIEN3(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "PIMO2":
+                        p_dblSiteIndex = PIMO2(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "PIMO3":
+                        p_dblSiteIndex = PIMO3(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "PIPO3":
+                        p_dblSiteIndex = PIPO3(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "PISI1":
+                        p_dblSiteIndex = PISI1(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "PSME11":
+                        p_dblSiteIndex = PSME11(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "SI_AS1":
+                        p_dblSiteIndex = SI_AS1(p_intSIAgeDia, p_intSIHtFt);
+                        // substitute FIA site index if 0 returned; Uses same site index equation
+                        if (p_dblSiteIndex == 0)
+                        {
+                            p_dblSiteIndex = Convert.ToDouble(p_intSiTree);
+                        }
+                        break;
+                    case "SI_DF2":
+                        p_dblSiteIndex = SI_DF2(p_intSIAgeDia, p_intSIHtFt, this.ConditionClassHabitatTypeCd);
+                        break;
+                    case "SI_LP5":
+                        getAvgDbhAndBasalArea(p_intSICondId);
+                        p_dblSiteIndex = SI_LP5(p_intSIAgeDia, p_intSIHtFt, this.ConditionClassBasalAreaPerAcre,
+                            this.ConditionClassAverageDia);
+                        break;
+                    case "SI_PP6":
+                        p_dblSiteIndex = SI_PP6(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "TSHE1":
+                        p_dblSiteIndex = TSHE1(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "qPSME1":
+                        p_dblSiteIndex = qPSME1(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "qPSME12":
+                        p_dblSiteIndex = qPSME12(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "qPSME13":
+                        p_dblSiteIndex = qPSME13(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "zABCO2":
+                        p_dblSiteIndex = zABCO2(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "zABMA2":
+                        p_dblSiteIndex = zABMA2(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "zABPR2":
+                        p_dblSiteIndex = zABPR2(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "zALRU3":
+                        p_dblSiteIndex = zALRU3(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "zARME1":
+                        p_dblSiteIndex = zARME1(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "zDunning":
+                        p_dblSiteIndex = zDunning(p_intSIAgeDia, p_intSIHtFt);
+                        if (p_intSISpCd == 119 || p_intSISpCd == 117 ||
+                            p_intSISpCd == 64 || p_intSISpCd == 101 ||
+                            p_intSISpCd == 108 || p_intSISpCd == 109 ||
+                            p_intSISpCd == 113 || p_intSISpCd == 120 ||
+                            p_intSISpCd == 127 || p_intSISpCd == 264)
+                        {
+                            p_dblSiteIndex = p_dblSiteIndex * 0.9;
+                        }
+                        else if (p_intSISpCd == 81)
+                        {
+                            p_dblSiteIndex = p_dblSiteIndex * 0.76;
+                        }
+                        break;
+                    case "zLIDE1":
+                        p_dblSiteIndex = zLIDE1(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "zPICO3":
+                        getAvgDbhAndBasalArea(p_intSICondId);
+                        p_dblSiteIndex = zPICO3(p_intSIAgeDia,
+                            p_intSIHtFt,
+                            this.ConditionClassBasalAreaPerAcre,
+                            this.ConditionClassAverageDia);
+                        break;
+                    case "zPIPO8":
+                        p_dblSiteIndex = zPIPO8(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "zPIPO9":
+                        p_dblSiteIndex = zPIPO9(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "zPSME14":
+                        p_dblSiteIndex = zPSME14(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "zQUKE":
+                        p_dblSiteIndex = zQUKE(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "zTSME":
+                        p_dblSiteIndex = zTSME(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    default:
+                        p_intSIFVSSpecies = 999;
+                        break;
+                }
+                // If there is a cross-reference slf species code use it, otherwise use input species code
+                int intSpCd = -1;
+                bool boolSlfSpecies = Int32.TryParse(strSlfSpCd, out intSpCd);
+                if (boolSlfSpecies) p_intSIFVSSpecies = intSpCd;
             }
 
             /// <summary>
