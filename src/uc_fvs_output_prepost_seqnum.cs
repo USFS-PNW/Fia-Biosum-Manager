@@ -273,16 +273,7 @@ namespace FIA_Biosum_Manager
                 if (m_oRxPackageItem_Collection == null)
                 {
                     m_oRxPackageItem_Collection = new RxPackageItem_Collection();
-                    // get connection to fvs_master
-                    string strRxConnection = m_oAdo.getMDBConnString($@"{m_oQueries.m_oDataSource.getFullPathAndFile("TREATMENT PACKAGES")}","","");
-                    using (var conn = new System.Data.OleDb.OleDbConnection(strRxConnection))
-                    {
-                        conn.Open();
-                        this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_oAdo,
-                                                   conn,
-                                                   m_oQueries,
-                                                   m_oRxPackageItem_Collection);
-                    }
+                    this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_oQueries, m_oRxPackageItem_Collection);
                 }
                 // sort the rxPackages
                 List<string> lstPackages = new List<string>();

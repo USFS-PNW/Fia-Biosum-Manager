@@ -208,7 +208,6 @@ namespace FIA_Biosum_Manager
             this.uc_rx_package_fvscmd_list1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.uc_rx_package_fvscmd_list1.Location = new System.Drawing.Point(0, 0);
             this.uc_rx_package_fvscmd_list1.Name = "uc_rx_package_fvscmd_list1";
-            this.uc_rx_package_fvscmd_list1.ReferenceFormRxPackageItem = null;
             this.uc_rx_package_fvscmd_list1.Size = new System.Drawing.Size(800, 385);
             this.uc_rx_package_fvscmd_list1.TabIndex = 0;
             // 
@@ -331,7 +330,6 @@ namespace FIA_Biosum_Manager
 		{
 			
 			this.uc_rx_package_edit1.ReferenceFormRxPackageItem=this;
-			this.uc_rx_package_fvscmd_list1.ReferenceFormRxPackageItem=this;
             this.uc_rx_package_harvest_cost_column_list1.ReferenceFormRxPackageItem = this;
             
 			
@@ -361,21 +359,10 @@ namespace FIA_Biosum_Manager
 		{
 			this.uc_rx_package_edit1.savevalues();
 
-			if (this.m_intError ==0)
-				this.uc_rx_package_fvscmd_list1.savevalues();
-
-
 			if (this.m_intError==0)
 				this.ReferenceRxPackageItem.CopyProperties(this.m_oRxPackageItem,ReferenceRxPackageItem);
-
-			
-			
-
 		}
-		
-				
-
-
+					
 		private void tlbRxItem_Click(object sender, System.EventArgs e)
 		{
 			 

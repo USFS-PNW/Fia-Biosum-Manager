@@ -56,16 +56,7 @@ namespace FIA_Biosum_Manager
 			}
 			base.Dispose( disposing );
 		}
-		public void loadvalues(FIA_Biosum_Manager.RxPackageItemFvsCommandItem p_oFvsCmdItem)
-		{
-			this.uc_rx_fvscmd_edit1.ReferenceFormFvsCmdItem=this;
-			this.uc_rx_fvscmd_edit1.loadvalues(p_oFvsCmdItem);
 
-		}
-		public void savevalues()
-		{
-			this.uc_rx_fvscmd_edit1.savevalues();
-		}
 		public FIA_Biosum_Manager.uc_rx_fvscmd_list ReferenceUserControlFvsCmdList
 		{
 			get {return this._uc_rx_fvscmd_list;}
@@ -187,7 +178,7 @@ namespace FIA_Biosum_Manager
 					OpenKCPFile();
 					break;
 				case "OK":
-					this.uc_rx_fvscmd_edit1.savevalues();
+					//this.uc_rx_fvscmd_edit1.savevalues();
 					this.DialogResult=DialogResult.OK;
 					this.Close();
 					break;

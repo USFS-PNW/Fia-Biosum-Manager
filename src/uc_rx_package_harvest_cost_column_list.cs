@@ -218,9 +218,9 @@ namespace FIA_Biosum_Manager
             this.panel1.Controls.Add(this.lblDesc);
             this.panel1.Controls.Add(this.lvRxHarvestCostColumns);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(3, 16);
+            this.panel1.Location = new System.Drawing.Point(3, 18);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(642, 373);
+            this.panel1.Size = new System.Drawing.Size(642, 371);
             this.panel1.TabIndex = 0;
             this.panel1.Resize += new System.EventHandler(this.panel1_Resize);
             // 
@@ -237,6 +237,7 @@ namespace FIA_Biosum_Manager
             // lvRxHarvestCostColumns
             // 
             this.lvRxHarvestCostColumns.GridLines = true;
+            this.lvRxHarvestCostColumns.HideSelection = false;
             this.lvRxHarvestCostColumns.Location = new System.Drawing.Point(8, 54);
             this.lvRxHarvestCostColumns.MultiSelect = false;
             this.lvRxHarvestCostColumns.Name = "lvRxHarvestCostColumns";

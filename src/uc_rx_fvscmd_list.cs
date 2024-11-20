@@ -326,9 +326,7 @@ namespace FIA_Biosum_Manager
 		{
 			int x;
 			if (this.lvRxFVSCmd.SelectedItems.Count == 0) return;
-			string strFvsCmd="";
 			FIA_Biosum_Manager.frmRxItemFvsCmdItem frmFvsCmdItem1 = new frmRxItemFvsCmdItem();
-			FIA_Biosum_Manager.RxPackageItemFvsCommandItem oRxPackageItemFvsCmdItem=null;
 			frmFvsCmdItem1.MaximizeBox = true;
 			frmFvsCmdItem1.BackColor = System.Drawing.SystemColors.Control;
 			frmFvsCmdItem1.Text = "FVS: FVS Command Item (Edit)";

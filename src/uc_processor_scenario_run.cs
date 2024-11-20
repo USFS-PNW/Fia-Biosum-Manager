@@ -373,7 +373,7 @@ namespace FIA_Biosum_Manager
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(strDebugFile, "START: LoadAllRxPackageItemsFromTableIntoRxPackageCollection - " + System.DateTime.Now.ToString() + "\r\n");
             m_oRxPackageItem_Collection = new RxPackageItem_Collection();
-            m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_oQueries.m_strTempDbFile, m_oQueries, this.m_oRxPackageItem_Collection);
+            m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_oQueries, this.m_oRxPackageItem_Collection);
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(strDebugFile, "END: LoadAllRxPackageItemsFromTableIntoRxPackageCollection - " + System.DateTime.Now.ToString() + "\r\n");
 

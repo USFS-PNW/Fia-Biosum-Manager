@@ -698,7 +698,7 @@ namespace FIA_Biosum_Manager
 
                 //load rxpackage properties
                 m_oRxPackageItem_Collection = new RxPackageItem_Collection();
-				this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_ado,m_ado.m_OleDbConnection,m_oQueries,this.m_oRxPackageItem_Collection);
+				this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_oQueries,this.m_oRxPackageItem_Collection);
 
                 // Get variants/rxPackages in project
                 m_ado.m_strSQL = Queries.FVS.GetFVSVariantRxPackageSQL(this.m_oQueries.m_oFIAPlot.m_strPlotTable,this.m_oQueries.m_oFvs.m_strRxPackageTable);				

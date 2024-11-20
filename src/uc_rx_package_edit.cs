@@ -16,10 +16,6 @@ namespace FIA_Biosum_Manager
 		public string m_strError="";
 		private System.Windows.Forms.GroupBox groupBox1;
 		public System.Windows.Forms.Panel panel1;
-		private System.Windows.Forms.GroupBox groupBox5;
-		private System.Windows.Forms.Button btnEditKCPFile;
-		public System.Windows.Forms.TextBox txtKcpFile;
-		private System.Windows.Forms.Button btnLoadKCPFile;
 		private System.Windows.Forms.Label label4;
 		private System.Windows.Forms.Label label3;
 		public System.Windows.Forms.TextBox txtPackageDesc;
@@ -139,10 +135,6 @@ namespace FIA_Biosum_Manager
             this.rdo5YearCycle = new System.Windows.Forms.RadioButton();
             this.rdo10YearCycle = new System.Windows.Forms.RadioButton();
             this.cmbRxPackageId = new System.Windows.Forms.ComboBox();
-            this.groupBox5 = new System.Windows.Forms.GroupBox();
-            this.btnEditKCPFile = new System.Windows.Forms.Button();
-            this.txtKcpFile = new System.Windows.Forms.TextBox();
-            this.btnLoadKCPFile = new System.Windows.Forms.Button();
             this.txtPackageDesc = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
@@ -151,7 +143,6 @@ namespace FIA_Biosum_Manager
             this.groupBox2.SuspendLayout();
             this.grpboxFVSCycle.SuspendLayout();
             this.grpboxFVSCycleLength.SuspendLayout();
-            this.groupBox5.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -169,7 +160,6 @@ namespace FIA_Biosum_Manager
             this.panel1.AutoScroll = true;
             this.panel1.Controls.Add(this.groupBox2);
             this.panel1.Controls.Add(this.cmbRxPackageId);
-            this.panel1.Controls.Add(this.groupBox5);
             this.panel1.Controls.Add(this.txtPackageDesc);
             this.panel1.Controls.Add(this.label2);
             this.panel1.Controls.Add(this.label1);
@@ -391,44 +381,6 @@ namespace FIA_Biosum_Manager
             this.cmbRxPackageId.TabIndex = 27;
             this.cmbRxPackageId.SelectedIndexChanged += new System.EventHandler(this.cmbRxPackageId_SelectedIndexChanged);
             // 
-            // groupBox5
-            // 
-            this.groupBox5.Controls.Add(this.btnEditKCPFile);
-            this.groupBox5.Controls.Add(this.txtKcpFile);
-            this.groupBox5.Controls.Add(this.btnLoadKCPFile);
-            this.groupBox5.Location = new System.Drawing.Point(8, 384);
-            this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(736, 128);
-            this.groupBox5.TabIndex = 26;
-            this.groupBox5.TabStop = false;
-            this.groupBox5.Text = "KCP File";
-            this.groupBox5.Visible = false;
-            // 
-            // btnEditKCPFile
-            // 
-            this.btnEditKCPFile.Location = new System.Drawing.Point(8, 88);
-            this.btnEditKCPFile.Name = "btnEditKCPFile";
-            this.btnEditKCPFile.Size = new System.Drawing.Size(720, 32);
-            this.btnEditKCPFile.TabIndex = 4;
-            this.btnEditKCPFile.Text = "Open KCP File to View/Edit Contents";
-            this.btnEditKCPFile.Click += new System.EventHandler(this.btnEditKCPFile_Click);
-            // 
-            // txtKcpFile
-            // 
-            this.txtKcpFile.Location = new System.Drawing.Point(8, 16);
-            this.txtKcpFile.Name = "txtKcpFile";
-            this.txtKcpFile.Size = new System.Drawing.Size(720, 22);
-            this.txtKcpFile.TabIndex = 2;
-            // 
-            // btnLoadKCPFile
-            // 
-            this.btnLoadKCPFile.Location = new System.Drawing.Point(8, 48);
-            this.btnLoadKCPFile.Name = "btnLoadKCPFile";
-            this.btnLoadKCPFile.Size = new System.Drawing.Size(720, 32);
-            this.btnLoadKCPFile.TabIndex = 1;
-            this.btnLoadKCPFile.Text = "Assign KCP File";
-            this.btnLoadKCPFile.Click += new System.EventHandler(this.btnLoadKCPFile_Click);
-            // 
             // txtPackageDesc
             // 
             this.txtPackageDesc.Location = new System.Drawing.Point(284, 16);
@@ -466,8 +418,6 @@ namespace FIA_Biosum_Manager
             this.grpboxFVSCycle.ResumeLayout(false);
             this.grpboxFVSCycle.PerformLayout();
             this.grpboxFVSCycleLength.ResumeLayout(false);
-            this.groupBox5.ResumeLayout(false);
-            this.groupBox5.PerformLayout();
             this.ResumeLayout(false);
 
 		}
@@ -495,53 +445,10 @@ namespace FIA_Biosum_Manager
 			
 		}
 
-		private void btnLoadKCPFile_Click(object sender, System.EventArgs e)
-		{
-			GetKCPFile();
-
-
-		}
-		private void GetKCPFile()
-		{
-			
-				OpenFileDialog OpenFileDialog1 = new OpenFileDialog();
-				OpenFileDialog1.Title = "Open FVS KCP/KEY File";
-			
-				OpenFileDialog1.Filter = "FVS KCP/KEY File (*.KCP,*.KEY) |*.kcp;*.key";
-				DialogResult result =  OpenFileDialog1.ShowDialog();
-				if (result == DialogResult.OK)
-				{
-					this.txtKcpFile.Text = OpenFileDialog1.FileName;
-				}
-			
-		}
-		private void OpenKCPFile()
-		{
-			if (this.txtKcpFile.Text.Trim().Length > 0 && 
-				System.IO.File.Exists(this.txtKcpFile.Text.Trim()))
-			{
-				string strArg = txtKcpFile.Text.Trim();
-				System.Diagnostics.Process proc = new System.Diagnostics.Process();
-				proc.StartInfo.FileName = "wordpad.exe";
-				
-				proc.StartInfo.Arguments = (char)34 + strArg + (char)34;
-				proc.Start();
-			}
-			
-		}
-
-		private void btnEditKCPFile_Click(object sender, System.EventArgs e)
-		{
-			OpenKCPFile();		
-
-		}
-
 		private void checkBox1_CheckedChanged(object sender, System.EventArgs e)
 		{
 		
 		}
-
-		
 
 		private void btnClear_Click(object sender, System.EventArgs e)
 		{
@@ -571,7 +478,6 @@ namespace FIA_Biosum_Manager
 			{
 				this.cmbRxPackageId.Text = this.ReferenceFormRxPackageItem.m_oRxPackageItem.RxPackageId;
 				this.txtPackageDesc.Text = this.ReferenceFormRxPackageItem.m_oRxPackageItem.Description;
-				this.txtKcpFile.Text = this.ReferenceFormRxPackageItem.m_oRxPackageItem.KcpFile;
 				if (ReferenceFormRxPackageItem.m_oRxPackageItem.RxCycleLength==10)
 				{
 					this.rdo10YearCycle.Checked=true;
@@ -599,7 +505,6 @@ namespace FIA_Biosum_Manager
 				MessageBox.Show(m_strError,"FIA Biosum");
 			}
 			this.ReferenceFormRxPackageItem.m_oRxPackageItem.Description = this.txtPackageDesc.Text;
-			this.ReferenceFormRxPackageItem.m_oRxPackageItem.KcpFile=this.txtKcpFile.Text;
 			this.ReferenceFormRxPackageItem.m_oRxPackageItem.RxPackageId = this.cmbRxPackageId.Text;
 			for (int x=0;x<=this.lstRx.Items.Count-1;x++)
 			{

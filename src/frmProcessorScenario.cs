@@ -3279,8 +3279,7 @@ namespace FIA_Biosum_Manager
             // Retrieve cycle length from any rx package item
             RxTools oRxTools = new RxTools();
             RxPackageItem_Collection p_oRxPackageItemCollection = new RxPackageItem_Collection();
-            string rxPackageDb = p_oQueries.m_oDataSource.getFullPathAndFile("TREATMENT PACKAGES");
-            oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(rxPackageDb, p_oQueries, p_oRxPackageItemCollection);
+            oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(p_oQueries, p_oRxPackageItemCollection);
             if (p_oRxPackageItemCollection != null && p_oRxPackageItemCollection.Count > 0)
             {
                 RxPackageItem rxPackageItem = p_oRxPackageItemCollection.Item(0);

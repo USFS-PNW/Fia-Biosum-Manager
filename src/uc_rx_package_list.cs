@@ -45,7 +45,6 @@ namespace FIA_Biosum_Manager
 		const int COLUMN_SIMYR4_RX=5;
 		//const int COLUMN_SIMYR4_FVS=10;
 		const int COLUMN_DESC=6;
-		const int COLUMN_KCP=7;
 
         private env m_oEnv;
         private Help m_oHelp;
@@ -116,18 +115,10 @@ namespace FIA_Biosum_Manager
 		public void loadvalues()
 		{
 			int x;
-			int y;
-			int intIndex=0;
-			string strRx="";
-			string strDesc="";
 
 			this.m_oQueries = new Queries();
 			m_oQueries.m_oFvs.LoadDatasource=true;
 			m_oQueries.LoadDatasources(true);
-
-			
-    
-
 			this.m_oLvAlternateColors.InitializeRowCollection(); 
      
 			this.lstRx.Clear();
@@ -143,22 +134,12 @@ namespace FIA_Biosum_Manager
 			this.lstRx.Columns.Add("SimCycle4_rx", 110, HorizontalAlignment.Left);
 
 			this.lstRx.Columns.Add("Description", 200, HorizontalAlignment.Left);
-			this.lstRx.Columns.Add("kcpfile", 200, HorizontalAlignment.Left);
 			
 			this.m_intError=0;
 
 			m_oRxItem_Collection.Clear();
-			this.m_oRxPackageItem_Collection.Clear();
-			
-			ado_data_access oAdo = new ado_data_access();
-			oAdo.OpenConnection(oAdo.getMDBConnString(m_oQueries.m_strTempDbFile,"",""));
-			this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(oAdo,
-																				  oAdo.m_OleDbConnection,
-																				  m_oQueries,
-																				  m_oRxPackageItem_Collection);
-            oAdo.CloseConnection(oAdo.m_OleDbConnection);
-
-
+			this.m_oRxPackageItem_Collection.Clear();			
+            this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_oQueries, m_oRxPackageItem_Collection);
             this.m_oRxTools.LoadAllRxItemsFromTableIntoRxCollection(m_oQueries, m_oRxItem_Collection);
             
 			this.lstRx.BeginUpdate();    	
@@ -178,7 +159,6 @@ namespace FIA_Biosum_Manager
 				lstRx.Items[x].SubItems.Add(m_oRxPackageItem_Collection.Item(x).SimulationYear4Rx);
 				//lstRx.Items[x].SubItems.Add(m_oRxPackageItem_Collection.Item(x).SimulationYear4Fvs);
 				lstRx.Items[x].SubItems.Add(m_oRxPackageItem_Collection.Item(x).Description);
-				lstRx.Items[x].SubItems.Add(m_oRxPackageItem_Collection.Item(x).KcpFile);
 				m_oLvAlternateColors.AddRow();
 				m_oLvAlternateColors.AddColumns(x,lstRx.Columns.Count);
 
@@ -449,10 +429,7 @@ namespace FIA_Biosum_Manager
 			lstRx.Items[lstRx.Items.Count-1].SubItems.Add(p_oRxPackageItem.SimulationYear4Rx);
 			//lstRx.Items[lstRx.Items.Count-1].SubItems.Add(p_oRxPackageItem.SimulationYear4Fvs);
 			lstRx.Items[lstRx.Items.Count-1].SubItems.Add(p_oRxPackageItem.Description);
-			lstRx.Items[lstRx.Items.Count-1].SubItems.Add(p_oRxPackageItem.KcpFile);
-			
-			
-			
+						
 			this.m_oLvAlternateColors.AddRow();
 			this.m_oLvAlternateColors.AddColumns(lstRx.Items.Count-1,lstRx.Columns.Count);
 
@@ -485,13 +462,10 @@ namespace FIA_Biosum_Manager
                 this.lstRx.Items[x].SubItems[COLUMN_SIMYR4_RX].Text = "000";
 			
 			this.lstRx.Items[x].SubItems[COLUMN_DESC].Text = p_oRxPackageItem.Description;
-			this.lstRx.Items[x].SubItems[COLUMN_KCP].Text = p_oRxPackageItem.KcpFile;
 			this.lstRx.EndUpdate();
 
             if (bEnableSave == true) this.btnSave.Enabled = true;
 		}
-
-
 
 		private void btnClear_Click(object sender, System.EventArgs e)
 		{
@@ -582,65 +556,59 @@ namespace FIA_Biosum_Manager
 		public void savevalues()
 		{
 			int x;
-			int y;
-			int intIndex=0;
 			string strFields;
-			string strValues;
-			string strCatId;
-			string strSubCatId;
-			
+			string strValues;			
 
-			ado_data_access oAdo = new ado_data_access();
-			oAdo.OpenConnection(oAdo.getMDBConnString(m_oQueries.m_strTempDbFile,"",""));
-			if (oAdo.m_intError==0)
-			{
-				oAdo.m_strSQL = "DELETE FROM " + this.m_oQueries.m_oFvs.m_strRxPackageTable;
-				oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-				if (oAdo.m_intError==0)
-				{
-					for (x=0;x<=m_oRxPackageItem_Collection.Count-1;x++)
-					{
-						if (m_oRxPackageItem_Collection.Item(x).Delete==false)
-						{
-							//
-							//SAVE PACKAGES
-							//
-							strFields="";
-							strValues="";
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+            string strSource = m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.RxPackage);
+            if (!string.IsNullOrEmpty(strSource))
+            {
+                string strConn = oDataMgr.GetConnectionString(strSource);
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+                    conn.Open();
+                    oDataMgr.m_strSQL = "DELETE FROM " + this.m_oQueries.m_oFvs.m_strRxPackageTable;
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    if (oDataMgr.m_intError == 0)
+                    {
+                        for (x = 0; x <= m_oRxPackageItem_Collection.Count - 1; x++)
+                        {
+                            if (m_oRxPackageItem_Collection.Item(x).Delete == false)
+                            {
+                                //
+                                //SAVE PACKAGES
+                                //
+                                strFields = "";
+                                strValues = "";
 
-							strFields="rxpackage,description,rxcycle_length," + 
-								"simyear1_rx,simyear1_fvscycle," + 
-								"simyear2_rx,simyear2_fvscycle," + 
-								"simyear3_rx,simyear3_fvscycle," +  
-								"simyear4_rx,simyear4_fvscycle," + 
-								"kcpfile";
-							strValues = "'" +  this.m_oRxPackageItem_Collection.Item(x).RxPackageId.Trim() + "',";
-							strValues = strValues + "'" + oAdo.FixString(m_oRxPackageItem_Collection.Item(x).Description.Trim(),"'","''") + "',";
-							strValues = strValues + "'" + Convert.ToString(m_oRxPackageItem_Collection.Item(x).RxCycleLength).Trim() + "',";
-							strValues = strValues + "'" + m_oRxPackageItem_Collection.Item(x).SimulationYear1Rx.Trim() + "',";
-							strValues = strValues + "'" + m_oRxPackageItem_Collection.Item(x).SimulationYear1Fvs.Trim() + "',";
-							strValues = strValues + "'" + m_oRxPackageItem_Collection.Item(x).SimulationYear2Rx.Trim() + "',";
-							strValues = strValues + "'" + m_oRxPackageItem_Collection.Item(x).SimulationYear2Fvs.Trim() + "',";
-							strValues = strValues + "'" + m_oRxPackageItem_Collection.Item(x).SimulationYear3Rx.Trim() + "',";
-							strValues = strValues + "'" + m_oRxPackageItem_Collection.Item(x).SimulationYear3Fvs.Trim() + "',";
-							strValues = strValues + "'" + m_oRxPackageItem_Collection.Item(x).SimulationYear4Rx.Trim() + "',";
-							strValues = strValues + "'" + m_oRxPackageItem_Collection.Item(x).SimulationYear4Fvs.Trim() + "',";
-							strValues = strValues + "'" + m_oRxPackageItem_Collection.Item(x).KcpFile.Trim() + "'";
-							oAdo.m_strSQL = Queries.GetInsertSQL(strFields,strValues,m_oQueries.m_oFvs.m_strRxPackageTable);
-							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);							
-						}											
-					}
-				}
-				
-				oAdo.CloseConnection(oAdo.m_OleDbConnection);
-				if (this.m_intError==0 && oAdo.m_intError==0)
-				{
-					this.btnSave.Enabled=false;
-				}
-				
-			}
-			
+                                strFields = "rxpackage,description,rxcycle_length," +
+                                    "simyear1_rx,simyear1_fvscycle," +
+                                    "simyear2_rx,simyear2_fvscycle," +
+                                    "simyear3_rx,simyear3_fvscycle," +
+                                    "simyear4_rx,simyear4_fvscycle";
+                                strValues = "'" + this.m_oRxPackageItem_Collection.Item(x).RxPackageId.Trim() + "',";
+                                strValues = strValues + "'" + oDataMgr.FixString(m_oRxPackageItem_Collection.Item(x).Description.Trim(), "'", "''") + "',";
+                                strValues = strValues + "'" + Convert.ToString(m_oRxPackageItem_Collection.Item(x).RxCycleLength).Trim() + "',";
+                                strValues = strValues + "'" + m_oRxPackageItem_Collection.Item(x).SimulationYear1Rx.Trim() + "',";
+                                strValues = strValues + "'" + m_oRxPackageItem_Collection.Item(x).SimulationYear1Fvs.Trim() + "',";
+                                strValues = strValues + "'" + m_oRxPackageItem_Collection.Item(x).SimulationYear2Rx.Trim() + "',";
+                                strValues = strValues + "'" + m_oRxPackageItem_Collection.Item(x).SimulationYear2Fvs.Trim() + "',";
+                                strValues = strValues + "'" + m_oRxPackageItem_Collection.Item(x).SimulationYear3Rx.Trim() + "',";
+                                strValues = strValues + "'" + m_oRxPackageItem_Collection.Item(x).SimulationYear3Fvs.Trim() + "',";
+                                strValues = strValues + "'" + m_oRxPackageItem_Collection.Item(x).SimulationYear4Rx.Trim() + "',";
+                                strValues = strValues + "'" + m_oRxPackageItem_Collection.Item(x).SimulationYear4Fvs.Trim() + "'";
+                                oDataMgr.m_strSQL = Queries.GetInsertSQL(strFields, strValues, m_oQueries.m_oFvs.m_strRxPackageTable);
+                                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                            }
+                        }
+                    }
 
+                    if (this.m_intError == 0 && oDataMgr.m_intError == 0)
+                    {
+                        this.btnSave.Enabled = false;
+                    }
+                }
+            }
 		}
 
 
@@ -947,15 +915,6 @@ namespace FIA_Biosum_Manager
             get { return $@"_P{RxPackageId}-{SimulationYear1Rx.Trim()}-{SimulationYear2Rx.Trim()}-{SimulationYear3Rx.Trim()}-{SimulationYear4Rx.Trim()}"; }
         }
 		
-		
-		private string _strKcpFile="";
-		[CategoryAttribute("General"),DescriptionAttribute("FVS Kcp/Key File")]
-		public string KcpFile
-		{
-			get {return _strKcpFile;}
-			set {_strKcpFile=value;}
-
-		}
 		bool _bDelete=false;
 		public bool Delete
 		{
@@ -972,10 +931,6 @@ namespace FIA_Biosum_Manager
 		//}
 		public void CopyProperties(FIA_Biosum_Manager.RxPackageItem p_RxPackageItemSource,FIA_Biosum_Manager.RxPackageItem  p_RxPackageItemDestination)
 		{
-			int x,y;
-			string strFvsCycles="";
-			int index;
-
 			p_RxPackageItemDestination.Description="";
 			p_RxPackageItemDestination.Index=-1;
 			p_RxPackageItemDestination.RxPackageId="";
@@ -987,7 +942,6 @@ namespace FIA_Biosum_Manager
 			p_RxPackageItemDestination.SimulationYear3Fvs="";
             p_RxPackageItemDestination.SimulationYear4Rx="";
 			p_RxPackageItemDestination.SimulationYear4Fvs="";
-			p_RxPackageItemDestination.KcpFile="";
 			p_RxPackageItemDestination.RxCycleLength=-1;
 			
 		
@@ -1003,7 +957,6 @@ namespace FIA_Biosum_Manager
 			p_RxPackageItemDestination.SimulationYear3Fvs=p_RxPackageItemSource.SimulationYear3Fvs;
             p_RxPackageItemDestination.SimulationYear4Rx=p_RxPackageItemSource.SimulationYear4Rx;
 			p_RxPackageItemDestination.SimulationYear4Fvs=p_RxPackageItemSource.SimulationYear4Fvs;
-			p_RxPackageItemDestination.KcpFile=p_RxPackageItemSource.KcpFile;
 			p_RxPackageItemDestination.Delete=p_RxPackageItemSource.Delete;			
 		}
 	}
@@ -1049,205 +1002,6 @@ namespace FIA_Biosum_Manager
 			// caller.
 			return (FIA_Biosum_Manager.RxPackageItem) List[Index];
 		}
-
-	}
-	/*********************************************************************************************************
-	 **Package Item                          
-	 *********************************************************************************************************/
-	public class RxPackageItemFvsCommandItem
-	{
-		private int _intIndex=-1;
-		
-		[CategoryAttribute("General"),ReadOnly(true),DescriptionAttribute("RX Package Item Index")]
-		public int Index
-		{
-			get {return _intIndex;}
-			set {_intIndex = value;}
-		}
-		private int _intSaveIndex=-1;
-		[CategoryAttribute("General"),ReadOnly(true),DescriptionAttribute("RX Package Item Index")]
-		public int SaveIndex
-		{
-			get {return _intSaveIndex;}
-			set {_intSaveIndex = value;}
-		}
-		private string _strRxPackageId="";
-		[CategoryAttribute("General"),DescriptionAttribute("RX Package Indentifier")]
-		public string RxPackageId
-		{
-			get {return _strRxPackageId;}
-			set {_strRxPackageId=value;}
-		}
-		private string _strFVSCmd="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string FVSCommand
-		{
-			get {return _strFVSCmd;}
-			set {_strFVSCmd=value;}
-		}
-		private byte _byteFVSCmdId=0;
-		public byte FVSCommandId
-		{
-			get {return _byteFVSCmdId;}
-			set {_byteFVSCmdId=value;}
-		}
-		private string _strP1="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter1
-		{
-			get {return _strP1;}
-			set {_strP1=value;}
-		}
-		private string _strP1Desc="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter1Description
-		{
-			get {return _strP1Desc;}
-			set {_strP1Desc=value;}
-		}
-		private string _strP2="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter2
-		{
-			get {return _strP2;}
-			set {_strP2=value;}
-		}
-		private string _strP2Desc="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter2Description
-		{
-			get {return _strP2Desc;}
-			set {_strP2Desc=value;}
-		}
-		private string _strP3="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter3
-		{
-			get {return _strP3;}
-			set {_strP3=value;}
-		}
-		private string _strP3Desc="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter3Description
-		{
-			get {return _strP3Desc;}
-			set {_strP3Desc=value;}
-		}
-		private string _strP4="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter4
-		{
-			get {return _strP4;}
-			set {_strP4=value;}
-		}
-		private string _strP4Desc="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter4Description
-		{
-			get {return _strP4Desc;}
-			set {_strP4Desc=value;}
-		}
-		private string _strP5="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter5
-		{
-			get {return _strP5;}
-			set {_strP5=value;}
-		}
-		private string _strP5Desc="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter5Description
-		{
-			get {return _strP5Desc;}
-			set {_strP5Desc=value;}
-		}
-		private string _strP6="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter6
-		{
-			get {return _strP6;}
-			set {_strP6=value;}
-		}
-		private string _strP6Desc="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter6Description
-		{
-			get {return _strP6Desc;}
-			set {_strP6Desc=value;}
-		}
-		private string _strP7="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter7
-		{
-			get {return _strP7;}
-			set {_strP7=value;}
-		}
-		private string _strP7Desc="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Parameter7Description
-		{
-			get {return _strP7Desc;}
-			set {_strP7Desc=value;}
-		}			
-		private string _strOther="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string Other
-		{
-			get {return _strOther;}
-			set {_strOther=value;}
-		}
-		private string _strOtherDesc="";
-		[CategoryAttribute("General"),DescriptionAttribute("Description")]
-		public string OtherDescription
-		{
-			get {return _strOtherDesc;}
-			set {_strOtherDesc=value;}
-		}
-		private int _intListViewIndex=-1;
-		public int ListViewIndex
-		{
-			get {return _intListViewIndex;}
-			set {_intListViewIndex=value;}
-		}
-
-		bool _bDelete=false;
-		public bool Delete
-		{
-			get {return _bDelete;}
-			set {_bDelete=value;}
-		}
-		public void CopyProperties(RxPackageItemFvsCommandItem p_oFvsCmdItemSource, RxPackageItemFvsCommandItem p_oFvsCmdItemDestination)
-		{
-			
-			
-			p_oFvsCmdItemDestination.Index = p_oFvsCmdItemSource.Index;
-			p_oFvsCmdItemDestination.RxPackageId = p_oFvsCmdItemSource.RxPackageId;
-			p_oFvsCmdItemDestination.FVSCommand = p_oFvsCmdItemSource.FVSCommand;
-			p_oFvsCmdItemDestination.FVSCommandId = p_oFvsCmdItemSource.FVSCommandId;
-			p_oFvsCmdItemDestination.Other = p_oFvsCmdItemSource.Other;
-			p_oFvsCmdItemDestination.OtherDescription = p_oFvsCmdItemSource.OtherDescription;
-			p_oFvsCmdItemDestination.Parameter1=p_oFvsCmdItemSource.Parameter1;
-			p_oFvsCmdItemDestination.Parameter1Description = p_oFvsCmdItemSource.Parameter1Description;
-			p_oFvsCmdItemDestination.Parameter2 = p_oFvsCmdItemSource.Parameter2;
-			p_oFvsCmdItemDestination.Parameter2Description = p_oFvsCmdItemSource.Parameter2Description;
-			p_oFvsCmdItemDestination.Parameter3 = p_oFvsCmdItemSource.Parameter3;
-			p_oFvsCmdItemDestination.Parameter3Description = p_oFvsCmdItemSource.Parameter3Description;
-			p_oFvsCmdItemDestination.Parameter4 = p_oFvsCmdItemSource.Parameter4;
-			p_oFvsCmdItemDestination.Parameter4Description = p_oFvsCmdItemSource.Parameter4Description;
-			p_oFvsCmdItemDestination.Parameter5 = p_oFvsCmdItemSource.Parameter5;
-			p_oFvsCmdItemDestination.Parameter5Description = p_oFvsCmdItemSource.Parameter5Description;
-			p_oFvsCmdItemDestination.Parameter6 = p_oFvsCmdItemSource.Parameter6;
-			p_oFvsCmdItemDestination.Parameter6Description = p_oFvsCmdItemSource.Parameter6Description;
-			p_oFvsCmdItemDestination.Parameter7 = p_oFvsCmdItemSource.Parameter7;
-			p_oFvsCmdItemDestination.Parameter7Description = p_oFvsCmdItemSource.Parameter7Description;
-			p_oFvsCmdItemDestination.ListViewIndex = p_oFvsCmdItemSource.ListViewIndex;
-			p_oFvsCmdItemDestination.Delete = p_oFvsCmdItemSource.Delete;
-					
-				
-				
-			
-		}
-
 	}
 		
 }

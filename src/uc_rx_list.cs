@@ -1305,33 +1305,11 @@ namespace FIA_Biosum_Manager
             oQueries.m_oFvs.LoadDatasource = true;
 			// pulls from master databases - keep as Access version for now
             oQueries.LoadDatasources(true);
-            ado_data_access oAdo = new ado_data_access();
-            oAdo.OpenConnection(oAdo.getMDBConnString(oQueries.m_strTempDbFile, "", ""));
-            if (oAdo.m_intError == 0)
-            {
-                this.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(oAdo, oAdo.m_OleDbConnection, oQueries, p_oRxPackageItemCollection);
-            }
-            oAdo.CloseConnection(oAdo.m_OleDbConnection);
-            m_intError = oAdo.m_intError;
+            this.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(oQueries, p_oRxPackageItemCollection);
             oQueries = null;
-            oAdo = null;
-
-
         }
-        // This method is used by Processor so the connection isn't passed around
-        public void LoadAllRxPackageItemsFromTableIntoRxPackageCollection(string p_strDbFile,Queries p_oQueries,RxPackageItem_Collection p_oRxPackageItemCollection)
-		{
-			ado_data_access oAdo = new ado_data_access();
-			oAdo.OpenConnection(oAdo.getMDBConnString(p_strDbFile,"",""));
-			if (oAdo.m_intError==0)
-			{ 
-				this.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(oAdo,oAdo.m_OleDbConnection,p_oQueries,p_oRxPackageItemCollection);
-			}
-			oAdo.CloseConnection(oAdo.m_OleDbConnection);
-			m_intError=oAdo.m_intError;
-			oAdo=null;
-		}
-	    public void LoadAllRxPackageItemsFromTableIntoRxPackageCollection(ado_data_access p_oAdo,
+
+	    public void LoadAllRxPackageItemsFromTableIntoRxPackageCollectionAccess(ado_data_access p_oAdo,
 			                                                              System.Data.OleDb.OleDbConnection p_oConn,
 			                                                              Queries p_oQueries,
 			                                                              RxPackageItem_Collection p_oRxPackageItemCollection)
@@ -1398,10 +1376,6 @@ namespace FIA_Biosum_Manager
 						{
 							oRxPackageItem.SimulationYear4Fvs = Convert.ToString(p_oAdo.m_OleDbDataReader["simyear4_fvscycle"]);
 						}
-						if (p_oAdo.m_OleDbDataReader["kcpfile"] != System.DBNull.Value)
-						{
-							oRxPackageItem.KcpFile = Convert.ToString(p_oAdo.m_OleDbDataReader["kcpfile"]);
-						}
                         if (oRxPackageItem.SimulationYear1Rx.Trim().Length == 0) oRxPackageItem.SimulationYear1Rx = "000";
                         if (oRxPackageItem.SimulationYear2Rx.Trim().Length == 0) oRxPackageItem.SimulationYear2Rx = "000";
                         if (oRxPackageItem.SimulationYear3Rx.Trim().Length == 0) oRxPackageItem.SimulationYear3Rx = "000";
@@ -1416,15 +1390,99 @@ namespace FIA_Biosum_Manager
             p_oAdo.m_OleDbDataReader.Close();
 		}
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="p_strDbFile"></param>
-		/// <param name="p_strRxPackageTable"></param>
-		/// <param name="p_strPlotTable"></param>
-		/// <param name="p_strFilter"></param>
-		/// <returns></returns>
-		public string GetRxPackageFvsOutDbFileName(string p_strDbFile,
+        public void LoadAllRxPackageItemsFromTableIntoRxPackageCollection(Queries p_oQueries,
+                                                                          RxPackageItem_Collection p_oRxPackageItemCollection)
+        {
+            int x;
+            int intIndex = 0;
+            DataMgr oDataMgr = new DataMgr();
+            string strSource = p_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.RxPackage);
+            if (!string.IsNullOrEmpty(strSource))
+            {
+                string strConn = oDataMgr.GetConnectionString(strSource);
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+                    conn.Open();
+                    oDataMgr.m_strSQL = "SELECT * FROM " + p_oQueries.m_oFvs.m_strRxPackageTable;
+                    oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
+                    if (oDataMgr.m_DataReader.HasRows)
+                    {
+                        while (oDataMgr.m_DataReader.Read())
+                        {
+                            if (oDataMgr.m_DataReader["rxpackage"] != System.DBNull.Value)
+                            {
+                                RxPackageItem oRxPackageItem = new RxPackageItem();
+                                oRxPackageItem.Index = intIndex;
+                                oRxPackageItem.RxPackageId = Convert.ToString(oDataMgr.m_DataReader["rxpackage"]);
+                                if (oDataMgr.m_DataReader["description"] != System.DBNull.Value)
+                                {
+                                    oRxPackageItem.Description = Convert.ToString(oDataMgr.m_DataReader["description"]);
+                                }
+                                //treatment cycle length
+                                if (oDataMgr.m_DataReader["rxcycle_length"] != System.DBNull.Value)
+                                {
+                                    oRxPackageItem.RxCycleLength = Convert.ToInt32(oDataMgr.m_DataReader["rxcycle_length"]);
+                                }
+                                //sim year 1
+                                if (oDataMgr.m_DataReader["simyear1_rx"] != System.DBNull.Value)
+                                {
+                                    oRxPackageItem.SimulationYear1Rx = Convert.ToString(oDataMgr.m_DataReader["simyear1_rx"]);
+                                }
+                                if (oDataMgr.m_DataReader["simyear1_fvscycle"] != System.DBNull.Value)
+                                {
+                                    oRxPackageItem.SimulationYear1Fvs = Convert.ToString(oDataMgr.m_DataReader["simyear1_fvscycle"]);
+                                }
+                                //sim year 2
+                                if (oDataMgr.m_DataReader["simyear2_rx"] != System.DBNull.Value)
+                                {
+                                    oRxPackageItem.SimulationYear2Rx = Convert.ToString(oDataMgr.m_DataReader["simyear2_rx"]);
+                                }
+                                if (oDataMgr.m_DataReader["simyear2_fvscycle"] != System.DBNull.Value)
+                                {
+                                    oRxPackageItem.SimulationYear2Fvs = Convert.ToString(oDataMgr.m_DataReader["simyear2_fvscycle"]);
+                                }
+                                //sim year 3
+                                if (oDataMgr.m_DataReader["simyear3_rx"] != System.DBNull.Value)
+                                {
+                                    oRxPackageItem.SimulationYear3Rx = Convert.ToString(oDataMgr.m_DataReader["simyear3_rx"]);
+                                }
+                                if (oDataMgr.m_DataReader["simyear3_fvscycle"] != System.DBNull.Value)
+                                {
+                                    oRxPackageItem.SimulationYear3Fvs = Convert.ToString(oDataMgr.m_DataReader["simyear3_fvscycle"]);
+                                }
+                                //sim year 4
+                                if (oDataMgr.m_DataReader["simyear4_rx"] != System.DBNull.Value)
+                                {
+                                    oRxPackageItem.SimulationYear4Rx = Convert.ToString(oDataMgr.m_DataReader["simyear4_rx"]);
+                                }
+                                if (oDataMgr.m_DataReader["simyear4_fvscycle"] != System.DBNull.Value)
+                                {
+                                    oRxPackageItem.SimulationYear4Fvs = Convert.ToString(oDataMgr.m_DataReader["simyear4_fvscycle"]);
+                                }
+                                if (oRxPackageItem.SimulationYear1Rx.Trim().Length == 0) oRxPackageItem.SimulationYear1Rx = "000";
+                                if (oRxPackageItem.SimulationYear2Rx.Trim().Length == 0) oRxPackageItem.SimulationYear2Rx = "000";
+                                if (oRxPackageItem.SimulationYear3Rx.Trim().Length == 0) oRxPackageItem.SimulationYear3Rx = "000";
+                                if (oRxPackageItem.SimulationYear4Rx.Trim().Length == 0) oRxPackageItem.SimulationYear4Rx = "000";
+
+                                p_oRxPackageItemCollection.Add(oRxPackageItem);
+                                intIndex++;
+                            }
+                        }
+                    }
+                    oDataMgr.m_DataReader.Close();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="p_strDbFile"></param>
+        /// <param name="p_strRxPackageTable"></param>
+        /// <param name="p_strPlotTable"></param>
+        /// <param name="p_strFilter"></param>
+        /// <returns></returns>
+        public string GetRxPackageFvsOutDbFileName(string p_strDbFile,
 												   string p_strRxPackageTable,
 			                                       string p_strPlotTable,
 			                                       string p_strFilter)
@@ -1653,8 +1711,8 @@ namespace FIA_Biosum_Manager
             RxPackageItem_Collection oRxPackageItemCollection = new RxPackageItem_Collection();
 			
 			string strVariantsList = GetListOfFVSVariantsInPlotTable(p_oAdo,p_oAdo.m_OleDbConnection,p_oQueries.m_oFIAPlot.m_strPlotTable);
-            this.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(p_oAdo, p_oConn, p_oQueries, oRxPackageItemCollection);
-			string[] strVariantsArray=frmMain.g_oUtils.ConvertListToArray(strVariantsList,",");
+            this.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(p_oQueries, oRxPackageItemCollection);
+            string[] strVariantsArray=frmMain.g_oUtils.ConvertListToArray(strVariantsList,",");
 			dao_data_access oDao = new dao_data_access();
 			//string strTreeListDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()  + "\\fvs\\data\\TreeLists";
 			string strTreeListLinkTableName="";
@@ -2936,7 +2994,6 @@ namespace FIA_Biosum_Manager
                 strLine = strLine + "---------------------------------------------\r\n";
                 strLine = strLine + "Description: " + p_oRxPkgColl.Item(x).Description + "\r\n";
                 strLine = strLine + "Treatment Cycle Length: " + p_oRxPkgColl.Item(x).RxCycleLength + "\r\n";
-                strLine = strLine + "KCP/KEY File: " + p_oRxPkgColl.Item(x).KcpFile.Trim() + "\r\n";
                 strLine = strLine + "Treatment Schedule: \r\n";
                 strLine = strLine + "Year   Rx        Harvest Method     Steep Slope      Description \r\n";
                 strLine = strLine + "                                    Harvest Method\r\n";
