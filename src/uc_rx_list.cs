@@ -1403,7 +1403,7 @@ namespace FIA_Biosum_Manager
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                 {
                     conn.Open();
-                    oDataMgr.m_strSQL = "SELECT * FROM " + p_oQueries.m_oFvs.m_strRxPackageTable;
+                    oDataMgr.m_strSQL = "SELECT * FROM " + p_oQueries.m_oFvs.m_strRxPackageTable + " ORDER BY RXPACKAGE";
                     oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
                     if (oDataMgr.m_DataReader.HasRows)
                     {
