@@ -1653,7 +1653,53 @@ namespace FIA_Biosum_Manager
             return strTitle;
         }
 
-		public string GetUsedRxPackageList(FIA_Biosum_Manager.RxPackageItem_Collection p_oRxPackageItemCollection)
+        public string GetRxPackageRunTitle(string strVariant, RxPackageItem p_rxPackageItem)
+        {
+
+            //string strFile = "FVSOUT_" + p_OleDbReader["fvs_variant"].ToString().Trim() + "_P" + p_OleDbReader["rxpackage"].ToString().Trim();
+            string strTitle = $@"FVSOUT_{strVariant}_P{p_rxPackageItem.RxPackageId}";
+            if (p_rxPackageItem.SimulationYear1Rx.Trim().Length == 0 ||
+                p_rxPackageItem.SimulationYear1Rx.Trim() == "GP")
+            {
+                strTitle = strTitle + "-000";
+            }
+            else
+            {
+                strTitle = strTitle + "-" + p_rxPackageItem.SimulationYear1Rx;
+            }
+            if (p_rxPackageItem.SimulationYear2Rx.Trim().Length == 0 ||
+                p_rxPackageItem.SimulationYear2Rx.Trim() == "GP")
+            {
+                strTitle = strTitle + "-000";
+            }
+            else
+            {
+                strTitle = strTitle + "-" + p_rxPackageItem.SimulationYear2Rx.Trim();
+            }
+            if (p_rxPackageItem.SimulationYear3Rx.Trim().Length == 0 ||
+                p_rxPackageItem.SimulationYear3Rx.Trim() == "GP")
+            {
+                strTitle = strTitle + "-000";
+            }
+            else
+            {
+                strTitle = strTitle + "-" + p_rxPackageItem.SimulationYear3Rx.Trim();
+
+            }
+            if (p_rxPackageItem.SimulationYear4Rx.Trim().Length == 0 ||
+                p_rxPackageItem.SimulationYear4Rx.Trim() == "GP")
+            {
+                strTitle = strTitle + "-000";
+            }
+            else
+            {
+
+                strTitle = strTitle + "-" + p_rxPackageItem.SimulationYear4Rx.Trim();
+            }
+            return strTitle;
+        }
+
+        public string GetUsedRxPackageList(FIA_Biosum_Manager.RxPackageItem_Collection p_oRxPackageItemCollection)
 		{
 			int x;
 			string strRxPackageList="";
@@ -3781,6 +3827,28 @@ namespace FIA_Biosum_Manager
             }
         }
 
+        public System.Collections.Generic.IDictionary<string, RxPackageItem_Collection> GetFvsVariantPackageDictionary(ado_data_access p_oAdo,
+            System.Data.OleDb.OleDbConnection p_oConnQueries, Queries oQueries)
+        {
+            //load rxpackage properties
+            RxPackageItem_Collection oRxPackageItem_Collection = new RxPackageItem_Collection();
+            LoadAllRxPackageItemsFromTableIntoRxPackageCollection(oQueries, oRxPackageItem_Collection);
+
+            string strVariant = "";
+            System.Collections.Generic.IDictionary<string, RxPackageItem_Collection> dictReturn =
+                new System.Collections.Generic.Dictionary<string, RxPackageItem_Collection>();
+            if (oRxPackageItem_Collection.Count > 0)
+            {
+                p_oAdo.m_strSQL = Queries.FVS.GetFVSVariantSQL(oQueries.m_oFIAPlot.m_strPlotTable);
+                p_oAdo.SqlQueryReader(p_oConnQueries, p_oAdo.m_strSQL);
+                while (p_oAdo.m_OleDbDataReader.Read())
+                {
+                    strVariant = p_oAdo.m_OleDbDataReader["fvs_variant"].ToString().Trim();
+                    dictReturn.Add(strVariant, oRxPackageItem_Collection);
+                }
+            }
+            return dictReturn;
+        }
     }
 	/*********************************************************************************************************
 	 **RX Item                          
@@ -4104,6 +4172,5 @@ namespace FIA_Biosum_Manager
 			// caller.
 			return (FIA_Biosum_Manager.RxItemHarvestCostColumnItem) List[Index];
 		}
-
-	}
+    }
 }
