@@ -9,7 +9,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Win32;
 using System.Threading;
-using System.Data.OleDb;
+using SQLite.ADO;
 
 namespace FIA_Biosum_Manager
 {
@@ -40,6 +40,7 @@ namespace FIA_Biosum_Manager
         private string m_strOutPotFireBaseYearMDBFile = "";
         private ado_data_access m_ado;
         private dao_data_access m_dao;
+        private DataMgr m_dataMgr = new DataMgr();
         private string m_strConn = "";
         private bool m_bOverwrite = true;
         private IDictionary<string, List<string>> m_dictVariantStates = null;
@@ -57,9 +58,6 @@ namespace FIA_Biosum_Manager
         private const int COL_SUMMARYCOUNT = 6;
         private const int COL_CUTCOUNT = 7;
         private const int COL_LEFTCOUNT = 8;
-        private const int COL_POTFIRECOUNT = 9;
-        private const int COL_POTFIREMDBOUT = 10;
-        private const int COL_POTFIREBASEYEARCOUNT = 11;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.Label lblProgress;
         private System.Windows.Forms.Button btnCancel;
@@ -877,19 +875,19 @@ namespace FIA_Biosum_Manager
             string strConn;
             string[] strValues;
             string strVariant = "";
-            string strCurrentVariant = "";
-            string strRecordCount = "";
             //bool bFoundDsnIn;
             try
             {
-
-                m_ado.OpenConnection(m_strConn);
-
-                this.lblRxCnt.Text = Convert.ToString((int)this.m_ado.getRecordCount(m_ado.m_OleDbConnection, "select count(*) from " + m_oQueries.m_oFvs.m_strRxTable + " where rx IS NOT NULL AND LEN(TRIM(rx)) > 0;", m_oQueries.m_oFvs.m_strRxTable));
-                this.lblRxPackageCnt.Text = Convert.ToString((int)this.m_ado.getRecordCount(m_ado.m_OleDbConnection, "select count(*) from " + m_oQueries.m_oFvs.m_strRxPackageTable + " WHERE rxpackage IS NOT NULL AND LEN(TRIM(rxpackage)) > 0;", m_oQueries.m_oFvs.m_strRxTable));
+                //load rx properties
+                RxItem_Collection oRxItem_Collection = new RxItem_Collection();
+                this.m_oRxTools.LoadAllRxItemsFromTableIntoRxCollection(m_oQueries, oRxItem_Collection);
+                this.lblRxCnt.Text = Convert.ToString(oRxItem_Collection.Count);
+                //load rxpackage properties
+                RxPackageItem_Collection oRxPackageItem_Collection = new RxPackageItem_Collection();
+                this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_oQueries, oRxPackageItem_Collection);
+                this.lblRxPackageCnt.Text = Convert.ToString(oRxPackageItem_Collection.Count);
                 this.lstFvsInput.Clear();
                 this.m_oLvRowColors.InitializeRowCollection();
-
 
                 this.lstFvsInput.Columns.Add("", 2, HorizontalAlignment.Left);
                 this.lstFvsInput.Columns.Add("Variant", 55, HorizontalAlignment.Left);
@@ -900,162 +898,120 @@ namespace FIA_Biosum_Manager
                 this.lstFvsInput.Columns.Add("SUMMARY RECS", 100, HorizontalAlignment.Left);
                 this.lstFvsInput.Columns.Add("CUTLIST RECS", 100, HorizontalAlignment.Left);
                 this.lstFvsInput.Columns.Add("TREELIST RECS", 100, HorizontalAlignment.Left);
-                this.lstFvsInput.Columns.Add("POTFIRE RECS", 100, HorizontalAlignment.Left);
-                this.lstFvsInput.Columns.Add("POTFIRE BaseYr DB", 120, HorizontalAlignment.Left);
-                this.lstFvsInput.Columns.Add("POTFIRE BaseYr RECS", 120, HorizontalAlignment.Left);
 
                 this.lstFvsInput.Columns[COL_CHECKBOX].Width = -2;
 
-                this.m_ado.m_strSQL = Queries.FVS.GetFVSVariantRxPackageSQL(m_oQueries.m_oFIAPlot.m_strPlotTable, m_oQueries.m_oFvs.m_strRxPackageTable);
-                this.m_ado.SqlQueryReader(m_ado.m_OleDbConnection, this.m_ado.m_strSQL);
-
-
+                m_ado.OpenConnection(m_strConn);
+                IDictionary<string, RxPackageItem_Collection> dictFvsVariantPackage = this.m_oRxTools.GetFvsVariantPackageDictionary(this.m_ado,
+                    this.m_ado.m_OleDbConnection, m_oQueries);
+                m_ado.CloseConnection(this.m_ado.m_OleDbConnection);
                 //Keep a count of records in FVS_StandInit and FVS_TreeInit tables in each variant
                 m_VariantCountsDict = new Dictionary<string, int[]>();
-
-                while (this.m_ado.m_OleDbDataReader.Read())
+                foreach (string key in dictFvsVariantPackage.Keys)
                 {
-                    // Add a ListItem object to the ListView.
-                    //add new row
-                    System.Windows.Forms.ListViewItem entryListItem =
+                    RxPackageItem_Collection oRxPackageItemCollection = dictFvsVariantPackage[key];
+                    for (int i = 0; i < oRxPackageItemCollection.Count; i++)
+                    {
+                        RxPackageItem rxPackageItem = oRxPackageItemCollection.Item(i);
+                        string strRxPackage = rxPackageItem.RxPackageId;
+                        // Add a ListItem object to the ListView.
+                        System.Windows.Forms.ListViewItem entryListItem =
                         this.lstFvsInput.Items.Add("");
-                    entryListItem.UseItemStyleForSubItems = false;
-                    this.m_oLvRowColors.AddRow();
-                    this.m_oLvRowColors.AddColumns(lstFvsInput.Items.Count - 1, lstFvsInput.Columns.Count);
-                    this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_CHECKBOX, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
+                        entryListItem.UseItemStyleForSubItems = false;
+                        this.m_oLvRowColors.AddRow();
+                        this.m_oLvRowColors.AddColumns(lstFvsInput.Items.Count - 1, lstFvsInput.Columns.Count);
+                        this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_CHECKBOX, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
 
-                    //fvs_variant		
-                    strVariant = this.m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim();
-                    if (m_VariantCountsDict.ContainsKey(strVariant) == false)
-                    {
-                        m_VariantCountsDict.Add(strVariant, null); //fvs_standinit, fvs_treeinit counts
-                    }
-
-                    entryListItem.SubItems.Add(this.m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim());
-                    this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_VARIANT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
-                    if (!System.IO.Directory.Exists(txtDataDir.Text.Trim() + "\\" + m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim()))
-                        System.IO.Directory.CreateDirectory(txtDataDir.Text.Trim() + "\\" + m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim());
-                    //rx
-                    entryListItem.SubItems.Add(this.m_ado.m_OleDbDataReader["rxpackage"].ToString().Trim());
-                    this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, COL_RX, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
-                    //simulation year cycle
-                    if (this.m_ado.m_OleDbDataReader["rxcycle_length"] != System.DBNull.Value)
-                    {
-                        this.m_strFVSCycleLength = Convert.ToString(this.m_ado.m_OleDbDataReader["rxcycle_length"]).Trim();
-                    }
-                    //FVS_StandInit Stand_ID count
-                    entryListItem.SubItems.Add(" ");
-                    this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_STANDCOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
-                    //FVS_TreeInit row count
-                    entryListItem.SubItems.Add(" ");
-                    this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_TREECOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
-                    //out mdb file name
-                    entryListItem.SubItems.Add(" ");  //out mdb file
-                    this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_MDBOUT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
-                    //summary record count
-                    entryListItem.SubItems.Add(" ");  //summary record count
-                    this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_SUMMARYCOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
-                    //treecut list record count
-                    entryListItem.SubItems.Add(" ");  //tree cut list record count
-                    this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_CUTCOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
-                    //tree standing (uncut) record count
-                    entryListItem.SubItems.Add(" ");  //tree standing record count
-                    this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_LEFTCOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
-                    //potential fire record count
-                    entryListItem.SubItems.Add(" ");  //potential fire record count
-                    this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_POTFIRECOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
-                    //potential fire base year MDB file
-                    entryListItem.SubItems.Add(" ");  //potential fire record count
-                    this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_POTFIREMDBOUT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
-                    //potential fire base year table count
-                    entryListItem.SubItems.Add(" ");  //potential fire record count
-                    this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_POTFIREBASEYEARCOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
-
-                    //check to see if there is an input and output dsn name
-                    this.m_strLocFile = this.m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim() + ".loc";
-                    this.m_strSlfFile = this.m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim() + ".slf";
-                    this.m_strOutMDBFile = this.m_oRxTools.GetRxPackageFvsOutDbFileName(m_ado.m_OleDbDataReader);
-
-                    strOutDirAndFile = this.txtDataDir.Text.Trim() + "\\" + m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim() + "\\" + this.m_strOutMDBFile.Trim();
-
-                    frmMain.g_sbpInfo.Text = "Processing FVS Input Variant/RxPackage " +
-                        this.m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim() + "/" +
-                        this.m_ado.m_OleDbDataReader["rxpackage"].ToString().Trim() + "...Stand By";
-
-                    //check fvs in values
-                    strInDirAndFile = this.txtDataDir.Text.Trim() + "\\" + this.m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim() + "\\" + "FVSIn.accdb";
-                    if (frmMain.g_bSuppressFVSInputTableRowCount == false && System.IO.File.Exists(strInDirAndFile) == true)
-                    {
-                        if (m_VariantCountsDict[strVariant] == null)
+                        //fvs_variant		
+                        strVariant = key;
+                        if (m_VariantCountsDict.ContainsKey(strVariant) == false)
                         {
-                            m_VariantCountsDict[strVariant] = getFVSInputRecordCounts(strInDirAndFile);
+                            m_VariantCountsDict.Add(strVariant, null); //fvs_standinit, fvs_treeinit counts
                         }
-                        entryListItem.SubItems[COL_STANDCOUNT].Text = Convert.ToString(m_VariantCountsDict[strVariant][0]);
-                        entryListItem.SubItems[COL_TREECOUNT].Text = Convert.ToString(m_VariantCountsDict[strVariant][1]);
-                    }
 
-                    if (System.IO.File.Exists(strOutDirAndFile) == true)
-                    {
-                        strConn = this.m_ado.getMDBConnString(strOutDirAndFile, "", "");
-                        entryListItem.SubItems[COL_MDBOUT].Text = this.m_strOutMDBFile;
-                        if (frmMain.g_bSuppressFVSInputTableRowCount == false)
+                        entryListItem.SubItems.Add(strVariant);
+                        this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_VARIANT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
+                        if (!System.IO.Directory.Exists(txtDataDir.Text.Trim() + "\\" + strVariant))
+                            System.IO.Directory.CreateDirectory(txtDataDir.Text.Trim() + "\\" + strVariant);
+                        //rx
+                        entryListItem.SubItems.Add(rxPackageItem.RxPackageId);
+                        this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, COL_RX, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
+                        //simulation year cycle
+                        if (rxPackageItem.RxCycleLength > 0)
                         {
-                            if (this.m_dao.TableExists(strOutDirAndFile, "fvs_summary") == true)
-                            {
-                                entryListItem.SubItems[COL_SUMMARYCOUNT].Text = Convert.ToString(Convert.ToInt32(this.m_ado.getRecordCount(strConn, "select count(*) from fvs_summary", "fvs_summary")));
-                            }
-                            if (this.m_dao.TableExists(strOutDirAndFile, "fvs_cutlist") == true)
-                            {
-                                entryListItem.SubItems[COL_CUTCOUNT].Text = Convert.ToString(Convert.ToInt32(this.m_ado.getRecordCount(strConn, "select count(*) from fvs_cutlist", "fvs_cutlist")));
-                            }
-                            if (this.m_dao.TableExists(strOutDirAndFile, "fvs_treelist") == true)
-                            {
-                                entryListItem.SubItems[COL_LEFTCOUNT].Text = Convert.ToString(Convert.ToInt32(this.m_ado.getRecordCount(strConn, "select count(*) from fvs_treelist", "fvs_treelist")));
-                            }
-                            if (this.m_dao.TableExists(strOutDirAndFile, "fvs_potfire") == true)
-                            {
-                                entryListItem.SubItems[COL_POTFIRECOUNT].Text = Convert.ToString(Convert.ToInt32(this.m_ado.getRecordCount(strConn, "select count(*) from fvs_potfire", "fvs_potfire")));
-                            }
+                            this.m_strFVSCycleLength = Convert.ToString(rxPackageItem.RxCycleLength);
                         }
-                    }
-                    else
-                    {
-                    }
-                    //
-                    //POTFIRE BASE YEAR
-                    //
-                    m_strOutPotFireBaseYearMDBFile = "FVSOUT_" + strVariant + "_POTFIRE_BaseYr.MDB";
-                    strOutDirAndFile = this.txtDataDir.Text.Trim() + "\\" + strVariant + "\\" + m_strOutPotFireBaseYearMDBFile.Trim();
-                    if (strVariant != strCurrentVariant)
-                    {
-                        strCurrentVariant = strVariant;
-                        strRecordCount = "";
+                        //FVS_StandInit Stand_ID count
+                        entryListItem.SubItems.Add(" ");
+                        this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_STANDCOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
+                        //FVS_TreeInit row count
+                        entryListItem.SubItems.Add(" ");
+                        this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_TREECOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
+                        //out mdb file name
+                        entryListItem.SubItems.Add(" ");  //out mdb file
+                        this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_MDBOUT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
+                        //summary record count
+                        entryListItem.SubItems.Add(" ");  //summary record count
+                        this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_SUMMARYCOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
+                        //treecut list record count
+                        entryListItem.SubItems.Add(" ");  //tree cut list record count
+                        this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_CUTCOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
+                        //tree standing (uncut) record count
+                        entryListItem.SubItems.Add(" ");  //tree standing record count
+                        this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_LEFTCOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
 
-                        if (System.IO.File.Exists(strOutDirAndFile) == true)
+                        //check to see if there is an input and output dsn name
+                        this.m_strLocFile = strVariant + ".loc";
+                        this.m_strSlfFile = strVariant + ".slf";
+                        //this.m_strOutMDBFile = this.m_oRxTools.GetRxPackageFvsOutDbFileName(m_ado.m_OleDbDataReader);
+                        //strOutDirAndFile = this.txtDataDir.Text.Trim() + "\\" + m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim() + "\\" + this.m_strOutMDBFile.Trim();
+
+                        frmMain.g_sbpInfo.Text = "Processing FVS Input Variant/RxPackage " +
+                            strVariant + "/" +
+                            strRxPackage + "...Stand By";
+
+                        //check fvs in values
+                        strInDirAndFile = $@"{this.txtDataDir.Text.Trim()}\{strVariant}\{Tables.FIA2FVS.DefaultFvsInputFile}";
+                        if (frmMain.g_bSuppressFVSInputTableRowCount == false && System.IO.File.Exists(strInDirAndFile) == true)
                         {
-                            strConn = this.m_ado.getMDBConnString(strOutDirAndFile, "", "");
-                            entryListItem.SubItems[uc_fvs_input.COL_POTFIREMDBOUT].Text = this.m_strOutPotFireBaseYearMDBFile;
-                            if (frmMain.g_bSuppressFVSInputTableRowCount == false &&
-                                this.m_dao.TableExists(strOutDirAndFile, "fvs_potfire") == true)
+                            if (m_VariantCountsDict[strVariant] == null)
                             {
-                                entryListItem.SubItems[uc_fvs_input.COL_POTFIREBASEYEARCOUNT].Text = Convert.ToString(Convert.ToInt32(this.m_ado.getRecordCount(strConn, "select count(*) from fvs_potfire", "fvs_potfire")));
-                                strRecordCount = entryListItem.SubItems[uc_fvs_input.COL_POTFIREBASEYEARCOUNT].Text;
+                                m_VariantCountsDict[strVariant] = getFVSInputRecordCounts(strInDirAndFile);
                             }
+                            entryListItem.SubItems[COL_STANDCOUNT].Text = Convert.ToString(m_VariantCountsDict[strVariant][0]);
+                            entryListItem.SubItems[COL_TREECOUNT].Text = Convert.ToString(m_VariantCountsDict[strVariant][1]);
                         }
-                    }
-                    else
-                    {
-                        if (System.IO.File.Exists(strOutDirAndFile) == true)
+
+                        strOutDirAndFile = $@"{this.txtDataDir.Text.Trim()}\{Path.GetFileName(Tables.FVS.DefaultFVSOutDbFile)}";
+                        if (File.Exists(strOutDirAndFile) == true)
                         {
-                            entryListItem.SubItems[uc_fvs_input.COL_POTFIREMDBOUT].Text = this.m_strOutPotFireBaseYearMDBFile;
-                            entryListItem.SubItems[uc_fvs_input.COL_POTFIREBASEYEARCOUNT].Text = strRecordCount;
+                            strConn = this.m_dataMgr.GetConnectionString(strOutDirAndFile);
+                            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
+                            {
+                                oConn.Open();
+                                entryListItem.SubItems[COL_MDBOUT].Text = this.m_strOutMDBFile;
+                                if (frmMain.g_bSuppressFVSInputTableRowCount == false)
+                                {
+                                    if (m_dataMgr.TableExist(oConn, Tables.FVS.DefaultFVSSummaryTableName) == true)
+                                    {
+                                        entryListItem.SubItems[COL_SUMMARYCOUNT].Text = Convert.ToString(Convert.ToInt32(this.m_dataMgr.getRecordCount(oConn, $@"select count(*) from {Tables.FVS.DefaultFVSSummaryTableName}", Tables.FVS.DefaultFVSSummaryTableName)));
+                                    }
+                                    if (m_dataMgr.TableExist(oConn, Tables.FVS.DefaultFVSCutListTableName) == true)
+                                    {
+                                        entryListItem.SubItems[COL_CUTCOUNT].Text = Convert.ToString(Convert.ToInt32(this.m_dataMgr.getRecordCount(oConn, $@"select count(*) from {Tables.FVS.DefaultFVSCutListTableName}", Tables.FVS.DefaultFVSCutListTableName)));
+                                    }
+                                    if (m_dataMgr.TableExist(oConn, Tables.FVS.DefaultFVSTreeListTableName) == true)
+                                    {
+                                        entryListItem.SubItems[COL_LEFTCOUNT].Text = Convert.ToString(Convert.ToInt32(this.m_dataMgr.getRecordCount(oConn, $@"select count(*) from {Tables.FVS.DefaultFVSTreeListTableName}", Tables.FVS.DefaultFVSTreeListTableName)));
+                                    }
+                                }
+                            }
+
                         }
+
                     }
 
                 }
-                this.m_ado.m_OleDbDataReader.Close();
-                this.m_ado.CloseConnection(m_ado.m_OleDbConnection);
-                Registry.CurrentUser.Close();
             }
             catch (Exception e)
             {
@@ -1593,8 +1549,8 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oDelegate.GetControlPropertyValue(
                                     m_frmTherm.progressBar1, "Maximum", false));
 
-                       string strInDirAndFile = p_fvsinput.strDataDirectory + "\\" + strVariant + "\\" + "FVSIn.accdb";
-                        if (System.IO.File.Exists(strInDirAndFile) == true) //redundant check here, but leaves " " instead of new "0"
+                        string strInDirAndFile = $@"{p_fvsinput.strDataDirectory}\{strVariant}\{Tables.FIA2FVS.DefaultFvsInputFile}";
+                        if (File.Exists(strInDirAndFile) == true) //redundant check here, but leaves " " instead of new "0"
                         {
                             int[] fvsInputRecordCounts = getFVSInputRecordCounts(strInDirAndFile);
                             frmMain.g_oDelegate.SetListViewSubItemPropertyValue(this.lstFvsInput, x, COL_STANDCOUNT, "Text",
@@ -2217,29 +2173,27 @@ namespace FIA_Biosum_Manager
             int trees = 0;
             try
             {
-                if (System.IO.File.Exists(strDirAndFile))
+                if (File.Exists(strDirAndFile))
                 {
-                    ado_data_access p_ado = new ado_data_access();
-                    string strConn = p_ado.getMDBConnString(strDirAndFile, "", "");
-
-                    using (var pConn = new System.Data.OleDb.OleDbConnection(strConn))
+                    DataMgr dataMgr = new DataMgr();
+                    string strConn = dataMgr.GetConnectionString(strDirAndFile);
+                    using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
                     {
-                        pConn.Open();
-                        if (p_ado.TableExist(pConn, "FVS_StandInit"))
+                        oConn.Open();
+                        if (dataMgr.TableExist(oConn, Tables.FIA2FVS.DefaultFvsInputStandTableName))
                         {
-                            stands = (int)p_ado.getSingleDoubleValueFromSQLQuery(pConn,
-                            "SELECT COUNT(*) as StandInitCount FROM (SELECT DISTINCT Stand_ID FROM FVS_StandInit);",
-                            "FVS_StandInit");
+                            stands = (int)dataMgr.getSingleDoubleValueFromSQLQuery(oConn,
+                            $@"SELECT COUNT(*) as StandInitCount FROM (SELECT DISTINCT Stand_ID FROM {Tables.FIA2FVS.DefaultFvsInputStandTableName});",
+                            Tables.FIA2FVS.DefaultFvsInputStandTableName);
                         }
-                        if (p_ado.TableExist(pConn, "FVS_TreeInit"))
+                        if (dataMgr.TableExist(oConn, Tables.FIA2FVS.DefaultFvsInputTreeTableName))
                         {
-                            trees = (int)p_ado.getSingleDoubleValueFromSQLQuery(pConn,
-                            "SELECT COUNT(*) as TreeInitCount FROM FVS_TreeInit;",
-                            "FVS_TreeInit");
+                            trees = (int)dataMgr.getSingleDoubleValueFromSQLQuery(oConn,
+                            $@"SELECT COUNT(*) as TreeInitCount FROM {Tables.FIA2FVS.DefaultFvsInputTreeTableName};",
+                            Tables.FIA2FVS.DefaultFvsInputTreeTableName);
                         }
 
                     }
-                    p_ado = null;
                 }
             }
             catch (Exception e)
@@ -2364,114 +2318,6 @@ namespace FIA_Biosum_Manager
                 this.m_oLvRowColors.DelegateListViewItem(lstFvsInput.SelectedItems[0]);
         }
 
-        private void btnCreateFvsOutFiles_Click(object sender, System.EventArgs e)
-        {
-            if (this.lstFvsInput.CheckedItems.Count == 0)
-            {
-                MessageBox.Show("No Boxes Are Checked", "Create FVSOut DB File", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                return;
-            }
-            CreateFvsOutFiles();
-
-
-        }
-
-        private void CreateFvsOutFiles()
-        {
-            if (this.lstFvsInput.CheckedItems.Count == 0)
-            {
-                MessageBox.Show("No Boxes Are Checked", "Create FVSOut DB File", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                return;
-            }
-
-            string strVariant = "";
-            string strCurrentVariant = "";
-
-            string strMsg = "";
-            string strFile = "";
-            string strFullPath = "";
-            dao_data_access oDao = new dao_data_access();
-            m_ado.OpenConnection(m_strConn);
-            for (int x = 0; x <= this.lstFvsInput.Items.Count - 1; x++)
-            {
-                if (this.lstFvsInput.Items[x].Checked == true)
-                {
-                    //out mdb file
-                    if (this.lstFvsInput.Items[x].SubItems[COL_MDBOUT].Text.Trim().Length == 0)
-                    {
-                        strFile = this.m_oRxTools.GetRxPackageFvsOutDbFileName(m_ado.m_OleDbConnection,
-                            this.m_oQueries.m_oFvs.m_strRxPackageTable,
-                            this.m_oQueries.m_oFIAPlot.m_strPlotTable,
-                            "(TRIM(a.fvs_variant)='" + this.lstFvsInput.Items[x].SubItems[COL_VARIANT].Text.Trim() + "' AND " +
-                            "b.rxpackage='" + this.lstFvsInput.Items[x].SubItems[COL_RX].Text.Trim() + "')");
-
-                        if (strFile.Trim().Length > 0)
-                        {
-                            strFullPath = this.txtDataDir.Text + "\\" + lstFvsInput.Items[x].SubItems[COL_VARIANT].Text.Trim() + "\\" + strFile;
-                            if (System.IO.File.Exists(strFullPath) == false)
-                            {
-                                oDao.CreateMDB(strFullPath);
-                                if (oDao.m_intError == 0)
-                                {
-                                    strMsg = strMsg + "\r\n" + strFile;
-                                    this.lstFvsInput.Items[x].SubItems[COL_MDBOUT].Text = strFile;
-                                }
-                            }
-                        }
-
-
-                    }
-                    strVariant = this.lstFvsInput.Items[x].SubItems[COL_VARIANT].Text.Trim();
-                    if (strVariant != strCurrentVariant)
-                    {
-                        strCurrentVariant = strVariant;
-                        if (this.lstFvsInput.Items[x].SubItems[uc_fvs_input.COL_POTFIREMDBOUT].Text.Trim().Length == 0)
-                        {
-                            strFile = "FVSOUT_" + strVariant + "_POTFIRE_BaseYr.MDB";
-                            strFullPath = this.txtDataDir.Text + "\\" + strVariant + "\\" + strFile;
-                            if (System.IO.File.Exists(strFullPath) == false)
-                            {
-                                oDao.CreateMDB(strFullPath);
-                                if (oDao.m_intError == 0)
-                                {
-                                    strMsg = strMsg + "\r\n" + strFile;
-                                    this.lstFvsInput.Items[x].SubItems[COL_POTFIREMDBOUT].Text = strFile;
-                                }
-                            }
-                        }
-
-                    }
-                    else
-                    {
-                        if (this.lstFvsInput.Items[x].SubItems[uc_fvs_input.COL_POTFIREMDBOUT].Text.Trim().Length == 0)
-                        {
-                            strFile = "FVSOUT_" + strVariant + "_POTFIRE_BaseYr.MDB";
-                            strFullPath = this.txtDataDir.Text + "\\" + strVariant + "\\" + strFile;
-                            if (System.IO.File.Exists(strFullPath))
-                            {
-                                this.lstFvsInput.Items[x].SubItems[COL_POTFIREMDBOUT].Text = strFile;
-                            }
-                        }
-                    }
-                }
-            }
-            m_ado.CloseConnection(m_ado.m_OleDbConnection);
-            oDao = null;
-            if (strMsg.Length == 0) strMsg = "No DB Files Created";
-            else
-            {
-                strMsg = "DB Files Created\r\n-------------------\r\n" + strMsg;
-            }
-            FIA_Biosum_Manager.frmDialog frmTemp = new frmDialog();
-            frmTemp.Text = "FIA Biosum";
-            frmTemp.AutoScroll = false;
-            uc_textbox uc_textbox1 = new uc_textbox();
-            frmTemp.Controls.Add(uc_textbox1);
-            uc_textbox1.Dock = DockStyle.Fill;
-            uc_textbox1.lblTitle.Text = "Create Files";
-            uc_textbox1.TextValue = strMsg;
-            frmTemp.ShowDialog();
-        }
         private void btnRxPackage_Click(object sender, System.EventArgs e)
         {
             frmMain.g_oFrmMain.StartRxPackageDialog((frmDialog)ParentForm);
