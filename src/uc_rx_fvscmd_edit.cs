@@ -78,7 +78,6 @@ namespace FIA_Biosum_Manager
 		private Queries m_oQueries = new Queries();
 		private ado_data_access m_oAdo = new ado_data_access();
 
-		public FIA_Biosum_Manager.RxPackageItemFvsCommandItem m_oRxPackageItemFvsCommandItem=null;
 		private System.Windows.Forms.TextBox txtP6;
 		private System.Windows.Forms.ComboBox cmbFilter;
 		private System.Windows.Forms.Label label9;
@@ -111,61 +110,7 @@ namespace FIA_Biosum_Manager
 			m_oAdo.CloseConnection(m_oAdo.m_OleDbConnection);
 
 		}
-		public void loadvalues(FIA_Biosum_Manager.RxPackageItemFvsCommandItem p_oRxPackageItemFvsCmdItem)
-		{
-			this.m_oRxPackageItemFvsCommandItem = new RxPackageItemFvsCommandItem();
-			
-			if (this.ReferenceFormFvsCmdItem.m_strAction=="edit")
-			{
-				m_oRxPackageItemFvsCommandItem.CopyProperties(p_oRxPackageItemFvsCmdItem,m_oRxPackageItemFvsCommandItem);
-			}
-
-			LoadFvsCommandsComboBox();
-
-			
-			
-			if (p_oRxPackageItemFvsCmdItem != null)
-			{
-				this.LoadFvsCommandProperties(this.m_oRxPackageItemFvsCommandItem.FVSCommand);
-			}
-
-			if (this.ReferenceFormFvsCmdItem.m_strAction=="edit")
-			{
-				this.cmbFilter.Enabled=false;
-				this.cmbFVSCmd.Enabled=false;
-				this.txtFVSCmdVariantList.Enabled=false;
-			}
-			else
-			{
-				this.cmbFilter.Enabled=true;
-				this.cmbFVSCmd.Enabled=true;
-				this.txtFVSCmdVariantList.Enabled=true;
-			}
-
-
-
-
-		}
 		
-		public void savevalues()
-		{
-			if (RxPackageEdit==false)
-			{
-			}
-			else
-			{
-				this.m_oRxPackageItemFvsCommandItem.FVSCommand=this.cmbFVSCmd.Text;
-				this.m_oRxPackageItemFvsCommandItem.Parameter1=this.txtP1.Text;
-				this.m_oRxPackageItemFvsCommandItem.Parameter2=this.txtP2.Text;
-				this.m_oRxPackageItemFvsCommandItem.Parameter3=this.txtP3.Text;
-				this.m_oRxPackageItemFvsCommandItem.Parameter4=this.txtP4.Text;
-				this.m_oRxPackageItemFvsCommandItem.Parameter5=this.txtP5.Text;
-				this.m_oRxPackageItemFvsCommandItem.Parameter6=this.txtP6.Text;
-				this.m_oRxPackageItemFvsCommandItem.Parameter7=this.txtP7.Text;
-				this.m_oRxPackageItemFvsCommandItem.Other = this.txtOther.Text;
-
-			}
-		}
 		private void LoadFvsCommandsComboBox()
 		{
 			m_oQueries.m_oFvs.LoadDatasource=true;
@@ -187,20 +132,7 @@ namespace FIA_Biosum_Manager
 			string strCurrFvsCmd="";			
 			if (p_strFvsCmd.Trim().ToUpper()==strCurrFvsCmd.Trim().ToUpper())
 			{
-				if (this.RxPackageEdit==false)
-				{
-				}
-				else
-				{
-					this.txtP1.Text = this.m_oRxPackageItemFvsCommandItem.Parameter1;
-					this.txtP2.Text = m_oRxPackageItemFvsCommandItem.Parameter2;
-					this.txtP3.Text = m_oRxPackageItemFvsCommandItem.Parameter3;
-					this.txtP4.Text = m_oRxPackageItemFvsCommandItem.Parameter4;
-					this.txtP5.Text = m_oRxPackageItemFvsCommandItem.Parameter5;
-					this.txtP6.Text = m_oRxPackageItemFvsCommandItem.Parameter6;
-					this.txtP7.Text = m_oRxPackageItemFvsCommandItem.Parameter7;
-					this.txtOther.Text = m_oRxPackageItemFvsCommandItem.Other;
-				}
+
 			}
 			else
 			{

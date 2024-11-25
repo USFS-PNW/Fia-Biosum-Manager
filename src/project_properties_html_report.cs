@@ -643,35 +643,6 @@ namespace FIA_Biosum_Manager
 				frmMain.g_oUtils.WriteText(m_strFile,"</TR> \r\n");
 				frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("</TR>"));
 				//
-				//KCP/KEY FILE
-				//
-				AddToLineCount(1);
-				frmMain.g_oUtils.WriteText(m_strFile,"<TR> \r\n");
-				frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("<TR>"));
-				frmMain.g_oUtils.WriteText(m_strFile,"<TD align='center' colspan=1  bgcolor='#ffffff' width='10%' height='30%' valign='center'> \r\n");
-				frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("<TD align=center colspan=1  bgcolor=#ffffff width=10% height=30% valign=center>"));
-				frmMain.g_oUtils.WriteText(m_strFile,"KCP/KEY File \r\n");
-				frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("KCP/KEY File"));
-				frmMain.g_oUtils.WriteText(m_strFile,"</TD> \r\n");
-				frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("</TD>"));
-				frmMain.g_oUtils.WriteText(m_strFile,"<TD align='left' colspan=4  bgcolor='#ffffff' width='90%' height='30%' valign='center'> \r\n");
-				frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("<TD align=left colspan=4  bgcolor=#ffffff width=90% height=30% valign=center>"));
-				if (this.RxPackageCollection.Item(x).KcpFile.Trim().Length == 0)
-				{
-					frmMain.g_oUtils.WriteText(m_strFile, "&nbsp \r\n");
-					frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("&nbsp"));
-				}
-				else
-				{
-					frmMain.g_oUtils.WriteText(m_strFile, this.RxPackageCollection.Item(x).KcpFile + " \r\n");
-					frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat(this.RxPackageCollection.Item(x).KcpFile));
-				}
-				frmMain.g_oUtils.WriteText(m_strFile,"</TD> \r\n");
-				frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("</TD>"));
-				frmMain.g_oUtils.WriteText(m_strFile,"</TR> \r\n");
-				frmMain.g_oUtils.WriteText(m_strJavaScriptFile,this.JavaScriptHtmlFormat("</TR>"));
-				AddToLineCount(5);
-				//
 				//TREATMENT SCHEDULE
 				//
 				AddToLineCount(1);

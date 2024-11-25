@@ -639,10 +639,6 @@ namespace FIA_Biosum_Manager
 
 		public void loadvalues()
 		{
-			
-			
-			
-			string strOutDirAndFile;
 			int x,y;
 			string strPackage="";
 			string strVariant="";
@@ -698,202 +694,219 @@ namespace FIA_Biosum_Manager
 
                 //load rxpackage properties
                 m_oRxPackageItem_Collection = new RxPackageItem_Collection();
-				this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_ado,m_ado.m_OleDbConnection,m_oQueries,this.m_oRxPackageItem_Collection);
+				this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_oQueries,this.m_oRxPackageItem_Collection);
 
                 // Get variants/rxPackages in project
-                m_ado.m_strSQL = Queries.FVS.GetFVSVariantRxPackageSQL(this.m_oQueries.m_oFIAPlot.m_strPlotTable,this.m_oQueries.m_oFvs.m_strRxPackageTable);				
-				this.m_ado.SqlQueryReader(this.m_ado.m_OleDbConnection,this.m_ado.m_strSQL);
+                //            m_ado.m_strSQL = Queries.FVS.GetFVSVariantRxPackageSQL(this.m_oQueries.m_oFIAPlot.m_strPlotTable,this.m_oQueries.m_oFvs.m_strRxPackageTable);				
+                //this.m_ado.SqlQueryReader(this.m_ado.m_OleDbConnection,this.m_ado.m_strSQL);
+                IDictionary<string, RxPackageItem_Collection> dictFvsVariantPackage = this.m_oRxTools.GetFvsVariantPackageDictionary(this.m_ado,
+                    this.m_ado.m_OleDbConnection, m_oQueries);
                 IList<string> lstRunTitles = new List<string>();
-				while (this.m_ado.m_OleDbDataReader.Read())
-				{
-                    strVariant = this.m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim();
-                    strPackage = this.m_ado.m_OleDbDataReader["RxPackage"].ToString().Trim();                  
-                    this.m_strOutMDBFile = this.m_oRxTools.GetRxPackageFvsOutDbFileName(m_ado.m_OleDbDataReader);
-                    // This is the Access DB for this variant/package ie: FVSOUT_CA_P001-001-001-001-001.MDB
-                    strOutDirAndFile = this.txtOutDir.Text.Trim() + "\\" +
-                           this.m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim() + "\\" +
-                            this.m_strOutMDBFile.Trim();
-                    // Example RunTitle: FVSOUT_WC_P999-999-999-999-999
-                    strCurRunTitle = this.m_oRxTools.GetRxPackageRunTitle(m_ado.m_OleDbDataReader);
-                    lstRunTitles.Add(strCurRunTitle);
-
-                    long lngPreSummaryRecords = 0;
-                    string strSummaryConnect = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}{Tables.FVS.DefaultFVSOutPrePostDbFile}";
-                    if (System.IO.File.Exists(strSummaryConnect))
+                foreach (string key in dictFvsVariantPackage.Keys)
+                {
+                    strVariant = key;
+                    RxPackageItem_Collection oRxPackageItemCollection = dictFvsVariantPackage[key];
+                    for (int i = 0; i < oRxPackageItemCollection.Count; i++)
                     {
-                        using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(strSummaryConnect)))
+                        RxPackageItem rxPackageItem = oRxPackageItemCollection.Item(i);
+                        strPackage = rxPackageItem.RxPackageId;
+
+                        //this.m_strOutMDBFile = this.m_oRxTools.GetRxPackageFvsOutDbFileName(m_ado.m_OleDbDataReader);
+                        // This is the Access DB for this variant/package ie: FVSOUT_CA_P001-001-001-001-001.MDB
+                        //strOutDirAndFile = this.txtOutDir.Text.Trim() + "\\" +
+                        //       this.m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim() + "\\" +
+                        //        this.m_strOutMDBFile.Trim();
+
+                        // Example RunTitle: FVSOUT_WC_P999-999-999-999-999
+                        strCurRunTitle = this.m_oRxTools.GetRxPackageRunTitle(strVariant, rxPackageItem);
+                        lstRunTitles.Add(strCurRunTitle);
+
+                        long lngPreSummaryRecords = 0;
+                        string strSummaryConnect = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}{Tables.FVS.DefaultFVSOutPrePostDbFile}";
+                        if (System.IO.File.Exists(strSummaryConnect))
                         {
-                            conn.Open();
-                            if (SQLite.TableExist(conn, Tables.FVS.DefaultPreFVSSummaryTableName))
+                            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(strSummaryConnect)))
                             {
-                                string strSQL = $@"SELECT COUNT(*) FROM(SELECT biosum_cond_id FROM {Tables.FVS.DefaultPreFVSSummaryTableName} WHERE 
+                                conn.Open();
+                                if (SQLite.TableExist(conn, Tables.FVS.DefaultPreFVSSummaryTableName))
+                                {
+                                    string strSQL = $@"SELECT COUNT(*) FROM(SELECT biosum_cond_id FROM {Tables.FVS.DefaultPreFVSSummaryTableName} WHERE 
                                     FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strPackage}' LIMIT 1)";
-                                lngPreSummaryRecords = SQLite.getRecordCount(conn, strSQL, Tables.FVS.DefaultPreFVSSummaryTableName);
+                                    lngPreSummaryRecords = SQLite.getRecordCount(conn, strSQL, Tables.FVS.DefaultPreFVSSummaryTableName);
+                                }
                             }
                         }
-                    }
-                    /************************************************************************
-                    /**Check and Assign in the FVS_CASES whether the FVS output has been 
-                     **appended to the fvs_cutTree table
-                     ************************************************************************/
-                    if (System.IO.File.Exists(m_strFvsOutDb) == true)
-					{
-                        using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
+
+                        /************************************************************************
+                        /**Check and Assign in the FVS_CASES whether the FVS output has been 
+                         **appended to the fvs_cutTree table
+                         ************************************************************************/
+                        if (System.IO.File.Exists(m_strFvsOutDb) == true)
                         {
-                            conn.Open();
-                            if (SQLite.TableExist(conn, Tables.FVS.DefaultFVSCasesTableName))
+                            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
                             {
-                                if (! SQLite.ColumnExist(conn, Tables.FVS.DefaultFVSCasesTableName, m_colBioSumAppend))
+                                conn.Open();
+                                if (SQLite.TableExist(conn, Tables.FVS.DefaultFVSCasesTableName))
                                 {
-                                    SQLite.AddColumn(conn, Tables.FVS.DefaultFVSCasesTableName, m_colBioSumAppend, "TEXT", "1");
-                                    SQLite.m_strSQL = $@"UPDATE {Tables.FVS.DefaultFVSCasesTableName} SET {m_colBioSumAppend} = 'N'";
-                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
-                                }
-                                else
-                                {
-                                    //check if records exist in the summary table for this variant/package
-                                    if (lngPreSummaryRecords == 0)
+                                    if (!SQLite.ColumnExist(conn, Tables.FVS.DefaultFVSCasesTableName, m_colBioSumAppend))
                                     {
-                                        SQLite.m_strSQL = $@"UPDATE {Tables.FVS.DefaultFVSCasesTableName} SET {m_colBioSumAppend}='N' WHERE RunTitle = '{strCurRunTitle}'";
+                                        SQLite.AddColumn(conn, Tables.FVS.DefaultFVSCasesTableName, m_colBioSumAppend, "TEXT", "1");
+                                        SQLite.m_strSQL = $@"UPDATE {Tables.FVS.DefaultFVSCasesTableName} SET {m_colBioSumAppend} = 'N'";
                                         SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                    }
+                                    else
+                                    {
+                                        //check if records exist in the summary table for this variant/package
+                                        if (lngPreSummaryRecords == 0)
+                                        {
+                                            SQLite.m_strSQL = $@"UPDATE {Tables.FVS.DefaultFVSCasesTableName} SET {m_colBioSumAppend}='N' WHERE RunTitle = '{strCurRunTitle}'";
+                                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                        }
                                     }
                                 }
                             }
-                        }
-                        if (strVariant != strCurVariant)
-                        {
-                            cmbFilter.Items.Add(strVariant);
-                            strCurVariant = strVariant;
-                        }
-                    }   // END IF FVS_OUT.DB EXISTS                   
-				}
-
-                // Warning for older projects without FVSOut.db (and cutlist)
-                if (!FvsOutWithRequiredTable(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim(), Tables.FVS.DefaultFVSCasesTableName))
-                {
-                    MessageBox.Show(m_missingFvsOutDb, "FIA Biosum", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                }
-				m_ado.m_OleDbDataReader.Close();
-
-                strVariant="";
-                strCurVariant="";
-
-               
-				for (x=0;x<=lstRunTitles.Count -1;x++)
-				{
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel  >2)
-                    {
-                        long memused = GC.GetTotalMemory(true);
-                        this.WriteText(m_strDebugFile, "uc_fvs_output.loadvalues Memory Used: " + String.Format("{0:n0}" + " MB",memused));
-                    }
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-
-                    strCurRunTitle = lstRunTitles.ElementAt(x);
-                    string[] arrVariant = strCurRunTitle.Split('_');
-                    if (arrVariant.Length == 3)
-                    {
-                        strVariant = arrVariant[1];
-                        string[] arrRx = arrVariant[2].Split('-');
-                        if (arrRx.Length == 5)
-                        {
-                            strPackage = arrRx[0].Substring(1, 3);
-                        }
-                    }
-
-                    frmMain.g_sbpInfo.Text = $@"Loading FVS Variant RxPackage {strVariant} {strPackage} ...Stand By";
-				    frmMain.g_sbpInfo.Parent.Refresh();
-
-					// Add a ListItem object to the ListView.
-					entryListItem = this.lstFvsOutput.Items.Add("");					
-					entryListItem.UseItemStyleForSubItems=false;
-					this.m_oLvAlternateColors.AddRow();
-					this.m_oLvAlternateColors.AddColumns(lstFvsOutput.Items.Count-1,lstFvsOutput.Columns.Count);
-					entryListItem.SubItems.Add(strVariant);
-					entryListItem.SubItems.Add(strPackage);
-					entryListItem.SubItems.Add(" ");  //file found
-					entryListItem.SubItems.Add(" ");  //summary record count
-					entryListItem.SubItems.Add(" ");  //tree cut list record count
-                    entryListItem.SubItems.Add(" ");  //potential fire base year out file
-                    this.m_oLvAlternateColors.ListViewItem(lstFvsOutput.Items[lstFvsOutput.Items.Count - 1]);
-
-
-                    //FVS_SUMMARY
-                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
-                    {
-                        conn.Open();
-                        // VARIANT/PACKAGE FOUND IN FVS_CASES TABLE?
-                        SQLite.m_strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSCasesTableName} WHERE RunTitle = '{strCurRunTitle}'";
-                        long lngCasesCount = SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSCasesTableName);
-                        if (lngCasesCount > 0)
-                        {
-                            entryListItem.SubItems[COL_FOUND].Text = "Yes";
-                        }
-                        else
-                        {
-                            entryListItem.SubItems[COL_FOUND].ForeColor = System.Drawing.Color.White;
-                            entryListItem.SubItems[COL_FOUND].BackColor = System.Drawing.Color.Red;
-                            this.m_oLvAlternateColors.m_oRowCollection.Item(this.lstFvsOutput.Items.Count - 1).m_oColumnCollection.Item(COL_FOUND).UpdateColumn = false;
-                            entryListItem.SubItems[COL_FOUND].Text = "No";
-                        }
-                        if (SQLite.TableExist(conn, Tables.FVS.DefaultFVSSummaryTableName))
-                        {
-                            if (!frmMain.g_bSuppressFVSOutputTableRowCount)
+                            if (strVariant != strCurVariant)
                             {
-                                SQLite.m_strSQL = $@"select count(*) from {Tables.FVS.DefaultFVSCasesTableName} c, {Tables.FVS.DefaultFVSSummaryTableName} s 
-                                    WHERE c.CaseID = S.CaseID AND c.RunTitle = '{strCurRunTitle}'";
-                                entryListItem.SubItems[COL_SUMMARYCOUNT].Text = Convert.ToString(Convert.ToUInt32(SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSSummaryTableName)));
+                                cmbFilter.Items.Add(strVariant);
+                                strCurVariant = strVariant;
+                            }
+                        }   // END IF FVS_OUT.DB EXISTS                   
+                    }
+                    // Warning for older projects without FVSOut.db (and cutlist)
+                    if (!FvsOutWithRequiredTable(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim(), Tables.FVS.DefaultFVSCasesTableName))
+                    {
+                        MessageBox.Show(m_missingFvsOutDb, "FIA Biosum", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    }
+                    //m_ado.m_OleDbDataReader.Close();
+                    strVariant = "";
+                    strCurVariant = "";
+                    for (x = 0; x <= lstRunTitles.Count - 1; x++)
+                    {
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        {
+                            long memused = GC.GetTotalMemory(true);
+                            this.WriteText(m_strDebugFile, "uc_fvs_output.loadvalues Memory Used: " + String.Format("{0:n0}" + " MB", memused));
+                        }
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
+
+                        strCurRunTitle = lstRunTitles.ElementAt(x);
+                        string[] arrVariant = strCurRunTitle.Split('_');
+                        if (arrVariant.Length == 3)
+                        {
+                            strVariant = arrVariant[1];
+                            string[] arrRx = arrVariant[2].Split('-');
+                            if (arrRx.Length == 5)
+                            {
+                                strPackage = arrRx[0].Substring(1, 3);
+                            }
+                        }
+
+                        frmMain.g_sbpInfo.Text = $@"Loading FVS Variant RxPackage {strVariant} {strPackage} ...Stand By";
+                        frmMain.g_sbpInfo.Parent.Refresh();
+
+                        // Add a ListItem object to the ListView.
+                        entryListItem = this.lstFvsOutput.Items.Add("");
+                        entryListItem.UseItemStyleForSubItems = false;
+                        this.m_oLvAlternateColors.AddRow();
+                        this.m_oLvAlternateColors.AddColumns(lstFvsOutput.Items.Count - 1, lstFvsOutput.Columns.Count);
+                        entryListItem.SubItems.Add(strVariant);
+                        entryListItem.SubItems.Add(strPackage);
+                        entryListItem.SubItems.Add(" ");  //file found
+                        entryListItem.SubItems.Add(" ");  //summary record count
+                        entryListItem.SubItems.Add(" ");  //tree cut list record count
+                        entryListItem.SubItems.Add(" ");  //potential fire base year out file
+                        this.m_oLvAlternateColors.ListViewItem(lstFvsOutput.Items[lstFvsOutput.Items.Count - 1]);
+
+
+                        //FVS_SUMMARY
+                        using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
+                        {
+                            conn.Open();
+                            // VARIANT/PACKAGE FOUND IN FVS_CASES TABLE?
+                            SQLite.m_strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSCasesTableName} WHERE RunTitle = '{strCurRunTitle}'";
+                            long lngCasesCount = SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSCasesTableName);
+                            if (lngCasesCount > 0)
+                            {
+                                entryListItem.SubItems[COL_FOUND].Text = "Yes";
                             }
                             else
                             {
-                                SQLite.m_strSQL = $@"SELECT s.tpa FROM {Tables.FVS.DefaultFVSCasesTableName} c, {Tables.FVS.DefaultFVSSummaryTableName} s 
-                                    WHERE c.CaseID = S.CaseID AND c.RunTitle = '{strCurRunTitle}' AND TPA > 0 LIMIT 1";
-                                long lngResult = SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSSummaryTableName);
-                                if (lngResult > 0)
+                                entryListItem.SubItems[COL_FOUND].ForeColor = System.Drawing.Color.White;
+                                entryListItem.SubItems[COL_FOUND].BackColor = System.Drawing.Color.Red;
+                                this.m_oLvAlternateColors.m_oRowCollection.Item(this.lstFvsOutput.Items.Count - 1).m_oColumnCollection.Item(COL_FOUND).UpdateColumn = false;
+                                entryListItem.SubItems[COL_FOUND].Text = "No";
+                            }
+                            if (SQLite.TableExist(conn, Tables.FVS.DefaultFVSSummaryTableName))
+                            {
+                                if (!frmMain.g_bSuppressFVSOutputTableRowCount)
                                 {
-                                    entryListItem.SubItems[COL_SUMMARYCOUNT].Text = "Y";
+                                    SQLite.m_strSQL = $@"select count(*) from {Tables.FVS.DefaultFVSCasesTableName} c, {Tables.FVS.DefaultFVSSummaryTableName} s 
+                                    WHERE c.CaseID = S.CaseID AND c.RunTitle = '{strCurRunTitle}'";
+                                    entryListItem.SubItems[COL_SUMMARYCOUNT].Text = Convert.ToString(Convert.ToUInt32(SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSSummaryTableName)));
                                 }
                                 else
                                 {
-                                    entryListItem.SubItems[COL_SUMMARYCOUNT].Text = "N";
+                                    SQLite.m_strSQL = $@"SELECT s.tpa FROM {Tables.FVS.DefaultFVSCasesTableName} c, {Tables.FVS.DefaultFVSSummaryTableName} s 
+                                    WHERE c.CaseID = S.CaseID AND c.RunTitle = '{strCurRunTitle}' AND TPA > 0 LIMIT 1";
+                                    long lngResult = SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSSummaryTableName);
+                                    if (lngResult > 0)
+                                    {
+                                        entryListItem.SubItems[COL_SUMMARYCOUNT].Text = "Y";
+                                    }
+                                    else
+                                    {
+                                        entryListItem.SubItems[COL_SUMMARYCOUNT].Text = "N";
+                                    }
                                 }
-                            }
-                        }
-                        else
-                        {
-                            entryListItem.SubItems[COL_SUMMARYCOUNT].Text = "0";
-                        }
-
-                        // SET APPEND FLAG
-                        string strUpdateStatus = "";
-                        SQLite.m_strSQL = $@"select count(*) from {Tables.FVS.DefaultFVSCasesTableName} WHERE {m_colBioSumAppend} ='N' 
-                            AND RUNTITLE = '{strCurRunTitle}'";
-                        if (Convert.ToUInt32(SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSCasesTableName)) > 0)
-                        {
-                            strUpdateStatus = strUpdateStatus + "a";
-                        }
-                        if (strUpdateStatus.Trim().Length > 0)
-                            entryListItem.Text = strUpdateStatus;
-
-                        // FVS_CUTLIST
-                        if (SQLite.TableExist(conn, Tables.FVS.DefaultFVSCutListTableName))
-                        {
-                            if (!frmMain.g_bSuppressFVSOutputTableRowCount)
-                            {
-                                SQLite.m_strSQL = $@"select count(*) from {Tables.FVS.DefaultFVSCasesTableName} c, {Tables.FVS.DefaultFVSCutListTableName} s 
-                                    WHERE c.CaseID = S.CaseID AND c.RunTitle = '{strCurRunTitle}'";
-                                entryListItem.SubItems[COL_CUTCOUNT].Text = Convert.ToString(Convert.ToUInt32(SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSCutListTableName)));
                             }
                             else
                             {
-                                SQLite.m_strSQL = $@"SELECT t.HT from {Tables.FVS.DefaultFVSCasesTableName} c, {Tables.FVS.DefaultFVSCutListTableName} t WHERE 
-                                    c.CaseID = t.CaseID AND c.RunTitle = '{strCurRunTitle}' AND HT > 0 LIMIT 1";
-                                long lngResult = SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSCutListTableName);
-                                if (lngResult > 0)
+                                entryListItem.SubItems[COL_SUMMARYCOUNT].Text = "0";
+                            }
+
+                            // SET APPEND FLAG
+                            string strUpdateStatus = "";
+                            SQLite.m_strSQL = $@"select count(*) from {Tables.FVS.DefaultFVSCasesTableName} WHERE {m_colBioSumAppend} ='N' 
+                            AND RUNTITLE = '{strCurRunTitle}'";
+                            if (Convert.ToUInt32(SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSCasesTableName)) > 0)
+                            {
+                                strUpdateStatus = strUpdateStatus + "a";
+                            }
+                            if (strUpdateStatus.Trim().Length > 0)
+                                entryListItem.Text = strUpdateStatus;
+
+                            // FVS_CUTLIST
+                            if (SQLite.TableExist(conn, Tables.FVS.DefaultFVSCutListTableName))
+                            {
+                                if (!frmMain.g_bSuppressFVSOutputTableRowCount)
                                 {
-                                    entryListItem.SubItems[COL_CUTCOUNT].Text = "Y";
+                                    SQLite.m_strSQL = $@"select count(*) from {Tables.FVS.DefaultFVSCasesTableName} c, {Tables.FVS.DefaultFVSCutListTableName} s 
+                                    WHERE c.CaseID = S.CaseID AND c.RunTitle = '{strCurRunTitle}'";
+                                    entryListItem.SubItems[COL_CUTCOUNT].Text = Convert.ToString(Convert.ToUInt32(SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSCutListTableName)));
+                                }
+                                else
+                                {
+                                    SQLite.m_strSQL = $@"SELECT t.HT from {Tables.FVS.DefaultFVSCasesTableName} c, {Tables.FVS.DefaultFVSCutListTableName} t WHERE 
+                                    c.CaseID = t.CaseID AND c.RunTitle = '{strCurRunTitle}' AND HT > 0 LIMIT 1";
+                                    long lngResult = SQLite.getRecordCount(conn, SQLite.m_strSQL, Tables.FVS.DefaultFVSCutListTableName);
+                                    if (lngResult > 0)
+                                    {
+                                        entryListItem.SubItems[COL_CUTCOUNT].Text = "Y";
+                                    }
+                                    else
+                                    {
+                                        entryListItem.SubItems[COL_CUTCOUNT].Text = "N";
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (!frmMain.g_bSuppressFVSOutputTableRowCount)
+                                {
+                                    entryListItem.SubItems[COL_CUTCOUNT].Text = "0";
                                 }
                                 else
                                 {
@@ -901,21 +914,8 @@ namespace FIA_Biosum_Manager
                                 }
                             }
                         }
-                        else
-                        {
-                            if (!frmMain.g_bSuppressFVSOutputTableRowCount)
-                            {
-                                entryListItem.SubItems[COL_CUTCOUNT].Text = "0";
-                            }
-                            else
-                            {
-                                entryListItem.SubItems[COL_CUTCOUNT].Text = "N";
-                            }
-                        }
                     }
-                       				
-				}
-
+                }
 			}
 			catch (Exception e)
 			{
@@ -928,8 +928,6 @@ namespace FIA_Biosum_Manager
 				this.m_intError=-1;
 			}
 			this.Refresh();
-
-
 
 		}
 

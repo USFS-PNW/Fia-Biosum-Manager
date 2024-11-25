@@ -3231,13 +3231,13 @@ namespace FIA_Biosum_Manager
 			    string strVariantsList = oRxTools.GetListOfFVSVariantsInPlotTable(oAdo,oAdo.m_OleDbConnection,oQueries.m_oFIAPlot.m_strPlotTable);
                 string[] strVariantsArray=frmMain.g_oUtils.ConvertListToArray(strVariantsList,",");
                 //
-                //get all the packages
-                //
-                oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(oAdo, oAdo.m_OleDbConnection, oQueries, oRxPackageItemCollection);
-                //
                 //close the work file containing the links
                 //
-			    oAdo.CloseConnection(oAdo.m_OleDbConnection);
+                oAdo.CloseConnection(oAdo.m_OleDbConnection);
+                //
+                //get all the packages
+                //
+                oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(oQueries, oRxPackageItemCollection);
                 //
                 //create DAO instance
                 //
@@ -4274,13 +4274,13 @@ namespace FIA_Biosum_Manager
             string strVariantsList = oRxTools.GetListOfFVSVariantsInPlotTable(oAdo, oAdo.m_OleDbConnection, oQueries.m_oFIAPlot.m_strPlotTable);
             string[] strVariantsArray = frmMain.g_oUtils.ConvertListToArray(strVariantsList, ",");
             //
-            //get all the packages
-            //
-            oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(oAdo, oAdo.m_OleDbConnection, oQueries, oRxPackageItemCollection);
-            //
             //close the work file containing the links
             //
             oAdo.CloseConnection(oAdo.m_OleDbConnection);
+            //
+            //get all the packages
+            //
+            oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(oQueries, oRxPackageItemCollection);
 
             for (int x = 0; x <= strVariantsArray.Length - 1; x++)
             {
