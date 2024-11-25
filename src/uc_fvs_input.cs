@@ -1479,7 +1479,7 @@ namespace FIA_Biosum_Manager
             this.m_frmTherm.progressBar2.Maximum = 100;
             this.m_frmTherm.progressBar2.Value = 0;
             this.m_frmTherm.lblMsg2.Text = "Overall Progress";
-            this.m_thread = new Thread(new ThreadStart(ExtractFIA2FVSRecordsSqlite));
+            this.m_thread = new Thread(new ThreadStart(ExtractFIA2FVSRecordsNew));
             this.m_thread.IsBackground = true;
             this.m_thread.Start();
         }
@@ -1879,7 +1879,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void ExtractFIA2FVSRecordsSqlite()
+        private void ExtractFIA2FVSRecordsNew()
         {
             m_intError = 0;
             string strCurVariant = "";
@@ -1938,6 +1938,13 @@ namespace FIA_Biosum_Manager
                 m_strTreeTable = m_oQueries.m_oFIAPlot.m_strTreeTable;
                 string strTreeMdb = m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree);
                 oDao.CreateTableLink(strTempMDB, m_strTreeTable, strTreeMdb, m_strTreeTable);
+                // Link to plot table
+                m_strPlotTable = m_oQueries.m_oFIAPlot.m_strPlotTable;
+                string strPlotMdb = m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Plot);
+                oDao.CreateTableLink(strTempMDB, m_strPlotTable, strPlotMdb, m_strPlotTable);
+                // Link to sitetree table
+                string strSiteTreeMdb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + "\\db\\master.mdb";
+                oDao.CreateTableLink(strTempMDB, "sitetree", strSiteTreeMdb, "sitetree");
 
                 // Link to the input SQLite table; Takes the whole path to the DB
                 string strSourceStandTableAlias = Tables.FIA2FVS.DefaultFvsInputStandTableName + "_1";

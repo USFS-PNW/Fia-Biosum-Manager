@@ -3789,6 +3789,14 @@ namespace FIA_Biosum_Manager
 		                    strStandID, strSiteSpecies, strSiteIndex);
 		            }
 
+                    public static string InsertSiteIndexSpeciesRowNew(string strStandID, string strSiteSpecies,
+                        string strSiteIndex)
+                    {
+                        return String.Format(
+                            "UPDATE FVS_STANDINIT_COND SET Site_Species={1}, Site_Index={2} WHERE STAND_ID={0}",
+                            strStandID, strSiteSpecies, strSiteIndex);
+                    }
+
 		            public static string DeleteFvsStandInitWorkTable()
 		            {
 		                return "DROP TABLE FVS_StandInit_WorkTable;";
@@ -3813,7 +3821,7 @@ namespace FIA_Biosum_Manager
                         string strSQL = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
                              " SELECT " + strSourceStandTableAlias + ".*" +
                              " FROM " + strSourceStandTableAlias +
-                             " INNER JOIN " + strCondTable + " ON TRIM(" + strCondTable + ".cn) = " + strSourceStandTableAlias + ".STAND_CN" +
+                             " INNER JOIN " + strCondTable + " ON TRIM(" + strCondTable + ".cn) = TRIM(" + strSourceStandTableAlias + ".STAND_CN)" +
                              " WHERE " + strSourceStandTableAlias + ".VARIANT = '" + strVariant + "'" +
                              " AND " + strCondTable + ".cond_status_cd = 1";
                         return strSQL;
@@ -3822,7 +3830,7 @@ namespace FIA_Biosum_Manager
                     public static string UpdateFromCond(string strCondTable, string strVariant)
                     {
                         string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
-                         " INNER JOIN " + strCondTable + " ON TRIM(" + strCondTable + ".cn) = " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".STAND_CN" +
+                         " INNER JOIN " + strCondTable + " ON TRIM(" + strCondTable + ".cn) = TRIM(" + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".STAND_CN)" +
                          " SET STAND_ID = trim(biosum_cond_id)," +
                          " SAM_WT = ACRES" +
                          " WHERE " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".VARIANT = '" + strVariant + "'";

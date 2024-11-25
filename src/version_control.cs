@@ -1738,10 +1738,6 @@ namespace FIA_Biosum_Manager
 			if (System.IO.File.Exists(ReferenceProjectDirectory.Trim() + "\\db\\ref_master.mdb")==false)
 				 System.IO.File.Copy(frmMain.g_oEnv.strAppDir + "\\db\\ref_master.mdb",this.ReferenceProjectDirectory + "\\db\\ref_master.mdb",true);
 
-
-			
-			
-
 			//open the project db file
 			oAdo.OpenConnection(oAdo.getMDBConnString(ReferenceProjectDirectory.Trim() + "\\" + 
 				frmMain.g_oTables.m_oProject.DefaultProjectTableDbFile,"",""));

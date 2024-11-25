@@ -1688,6 +1688,7 @@ namespace FIA_Biosum_Manager
 			return strValue;
 		}
 
+
 	    
 	    /// <summary>
         /// return a single string value resulting from SQL command 
