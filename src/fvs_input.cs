@@ -2102,7 +2102,9 @@ namespace FIA_Biosum_Manager
                 bool variantFound = false;
 
                 // Calculate site index for variants in site_index_equations
-                using (System.Data.SQLite.SQLiteConnection eqnConn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(_strProjDir + "\\db\\ref_master.db")))
+                string strEqnConn = oDataMgr.GetConnectionString(frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
+                frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceSqliteFile);
+                using (System.Data.SQLite.SQLiteConnection eqnConn = new System.Data.SQLite.SQLiteConnection(strEqnConn))
                 {
                     eqnConn.Open();
 
@@ -4517,8 +4519,9 @@ namespace FIA_Biosum_Manager
             SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
             //create env object so we can get the appDir
             env pEnv = new env();
-            //open the project db file; db name is hard-coded
-            string strCon = oDataMgr.GetConnectionString(m_strProjDir + "\\db\\ref_master.db");
+            //open the reference db file
+            string strCon = oDataMgr.GetConnectionString(frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
+                frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceSqliteFile);
             using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strCon))
             {
                 con.Open();

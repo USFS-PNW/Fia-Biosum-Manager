@@ -43,6 +43,7 @@ namespace FIA_Biosum_Manager
         private DataMgr m_dataMgr = new DataMgr();
         private string m_strConn = "";
         private bool m_bOverwrite = true;
+        private bool m_bKpcOverwrite = true;
         private IDictionary<string, List<string>> m_dictVariantStates = null;
         private System.Windows.Forms.Button btnHelp;
         private int m_intError = 0;
@@ -1416,6 +1417,45 @@ namespace FIA_Biosum_Manager
 
             }
 
+            // Check for existing kpc template file in fvs\data folder
+            string strKpcTargetPath = this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\" + 
+                Tables.FIA2FVS.KcpFileBiosumKeywords + Tables.FIA2FVS.KcpFileExtension;
+
+            if (System.IO.File.Exists(strKpcTargetPath))
+            {
+                string strMessage = "BioSum has found an existing " + Tables.FIA2FVS.KcpFileBiosumKeywords + Tables.FIA2FVS.KcpFileExtension +
+                    "file. Do you wish to overwrite it?";
+                DialogResult res = MessageBox.Show(strMessage, "FIA BioSum", MessageBoxButtons.YesNo);
+                if (res != DialogResult.Yes)
+                {
+                    m_bKpcOverwrite = false;
+                }
+                else
+                {
+                    strMessage = "Would you like to make a copy of your existing " + Tables.FIA2FVS.KcpFileBiosumKeywords +
+                        Tables.FIA2FVS.KcpFileExtension + " file? The name of the file backup will include today's date.";
+                    res = MessageBox.Show(strMessage, "FIA BioSum", MessageBoxButtons.YesNo);
+                    if (res == DialogResult.Yes)
+                    {
+                        string strFileSuffix = "_" + DateTime.Now.ToString("MMddyyyy");
+                        string strExtension = System.IO.Path.GetExtension(strKpcTargetPath);
+                        string strNewFileName = System.IO.Path.GetFileNameWithoutExtension(strKpcTargetPath) + strFileSuffix + strExtension;
+                        // Check to see if the backup database already exists; If it does, abort the process so user can delete
+                        if (System.IO.File.Exists(this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\" + strNewFileName))
+                        {
+                            MessageBox.Show("A backup database from today already exists: " + Tables.FIA2FVS.KcpFileBiosumKeywords + Tables.FIA2FVS.KcpFileExtension
+                                + strFileSuffix + ". Delete this database manually if you want to " +
+                                "back up today's data again!! The current file will not be overwritten.", "FIA BioSum");
+                            m_bKpcOverwrite = false;
+                        }
+                        else
+                        {
+                            System.IO.File.Copy(strKpcTargetPath, this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\" + strNewFileName);
+                        }
+                    }
+                }
+            }
+
             this.m_frmTherm = new frmTherm(((frmDialog)ParentForm), "EXTRACT FIA2FVS FVS INPUT FILE",
                              "FIA2FVS FVS Input", "2");
 
@@ -1985,12 +2025,15 @@ namespace FIA_Biosum_Manager
                 }
 
                 // Copy KCP files to output directory
-                string[] arrKcpFiles = { Tables.FIA2FVS.KcpFileBiosumKeywords };
-                foreach (var kcp in arrKcpFiles)
+                if (m_bKpcOverwrite = true)
                 {
-                    string sourcePath = frmMain.g_oEnv.strAppDir + @"\scripts\" + kcp;
-                    string targetPath = this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\" + kcp + Tables.FIA2FVS.KcpFileExtension;
-                    File.Copy(sourcePath, targetPath, true);
+                    string[] arrKcpFiles = { Tables.FIA2FVS.KcpFileBiosumKeywords };
+                    foreach (var kcp in arrKcpFiles)
+                    {
+                        string sourcePath = frmMain.g_oEnv.strAppDir + @"\scripts\" + kcp;
+                        string targetPath = this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\" + kcp + Tables.FIA2FVS.KcpFileExtension;
+                        File.Copy(sourcePath, targetPath, true);
+                    }
                 }
 
                 odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName);    // Clean up DSN
