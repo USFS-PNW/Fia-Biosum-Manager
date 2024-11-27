@@ -3134,7 +3134,6 @@ namespace FIA_Biosum_Manager
                     this.LoadTransportationCosts(oDataMgr, conn, p_strScenarioId, oItem);
                     p_oOptimizerScenarioItem_Collection.Add(oItem);
                 }
-                conn.Close();
             }
         }
 
@@ -3988,7 +3987,7 @@ namespace FIA_Biosum_Manager
                 {
                     strRxPackageTableName = p_oDataMgr.m_DataReader["table_name"].ToString().Trim();
                     strRxDBFile = p_oDataMgr.m_DataReader["path"].ToString().Trim() + "\\" + p_oDataMgr.m_DataReader["file"].ToString().Trim();
-                    strRxConn = "Provider=Microsoft.Ace.OLEDB.12.0;" + p_oDataMgr.GetConnectionString(strRxDBFile) + ";User Id=admin;Password=;";
+                    //strRxConn = p_oDataMgr.GetConnectionString(strRxDBFile);
                     break;
                 }
                 p_oDataMgr.m_DataReader.Close();
@@ -3997,12 +3996,34 @@ namespace FIA_Biosum_Manager
             //
             //GET A LIST OF ALL THE CURRENT TREATMENTS
             //
-            // USE ONCE FVSMASTER IS CONVERTED TO SQLITE
-            //string strRxList = "";
-            //using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strRxConn))
+            string strRxList = "";
+            p_oDataMgr.m_strSQL = "ATTACH DATABASE '" + strRxDBFile + "' AS rxdb";
+            p_oDataMgr.SqlNonQuery(p_oConn, p_oDataMgr.m_strSQL);
+
+            p_oDataMgr.SqlQueryReader(p_oConn, "SELECT RXPACKAGE FROM rxdb." + strRxPackageTableName);
+            if (p_oDataMgr.m_intError == 0)
+            {
+                if (p_oDataMgr.m_DataReader.HasRows)
+                {
+                    while (p_oDataMgr.m_DataReader.Read())
+                    {
+                        if (strRxList.Trim().Length == 0)
+                        {
+
+                            strRxList = "'" + p_oDataMgr.m_DataReader[0].ToString().Trim() + "'";
+                        }
+                        else
+                        {
+                            strRxList += ",'" + p_oDataMgr.m_DataReader[0].ToString().Trim() + "'";
+                        }
+                    }
+                }
+                p_oDataMgr.m_DataReader.Close();
+            }
+            //using (System.Data.SQLite.SQLiteConnection rxConn = new System.Data.SQLite.SQLiteConnection(strRxConn))
             //{
-            //    oConn.Open();
-            //    p_oDataMgr.SqlQueryReader(oConn, "SELECT RXPACKAGE FROM " + strRxPackageTableName);
+            //    rxConn.Open();
+            //    p_oDataMgr.SqlQueryReader(rxConn, "SELECT RXPACKAGE FROM " + strRxPackageTableName);
             //    if (p_oDataMgr.m_intError == 0)
             //    {
             //        if (p_oDataMgr.m_DataReader.HasRows)
@@ -4022,15 +4043,14 @@ namespace FIA_Biosum_Manager
             //        }
             //        p_oDataMgr.m_DataReader.Close();
             //    }
-            //    oConn.Close();
             //}
-            //string[] strRxArray = frmMain.g_oUtils.ConvertListToArray(strRxList, ",");
-            ado_data_access p_oAdo = new ado_data_access();
-            System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
-            p_oAdo.OpenConnection(strRxConn, ref oConn);
-            string strRxList = p_oAdo.CreateCommaDelimitedList(oConn, "SELECT RXPACKAGE FROM " + strRxPackageTableName, "'");
             string[] strRxArray = frmMain.g_oUtils.ConvertListToArray(strRxList, ",");
-            p_oAdo.CloseConnection(oConn);
+            //ado_data_access p_oAdo = new ado_data_access();
+            //System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
+            //p_oAdo.OpenConnection(strRxConn, ref oConn);
+            //string strRxList = p_oAdo.CreateCommaDelimitedList(oConn, "SELECT RXPACKAGE FROM " + strRxPackageTableName, "'");
+            //string[] strRxArray = frmMain.g_oUtils.ConvertListToArray(strRxList, ",");
+            //p_oAdo.CloseConnection(oConn);
             //
             //INITIALIZE RXINTENSITY COLLECTION
             //

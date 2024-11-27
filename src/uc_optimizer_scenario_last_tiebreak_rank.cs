@@ -578,48 +578,60 @@ namespace FIA_Biosum_Manager
 						  "and TRIM(UPPER(scenario_id)) = '" + strScenarioId.Trim().ToUpper() + "';";
 
 				oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
+
+				string strRxDBFile = "";
 				if (oDataMgr.m_intError == 0)
                 {
 					while (oDataMgr.m_DataReader.Read())
                     {
 						this.strRxPackageTableName = oDataMgr.m_DataReader["table_name"].ToString();
-						string strRxDBFile = oDataMgr.m_DataReader["path"].ToString().Trim() + "\\" + oDataMgr.m_DataReader["file"].ToString().Trim();
-						this.strRxConn = "Provider=Microsoft.Ace.OLEDB.12.0;" + oDataMgr.GetConnectionString(strRxDBFile) + ";User Id=admin;Password=;";
+						strRxDBFile = oDataMgr.m_DataReader["path"].ToString().Trim() + "\\" + oDataMgr.m_DataReader["file"].ToString().Trim();
+						//this.strRxConn = oDataMgr.GetConnectionString(strRxDBFile);
 						break;
 					}
 					oDataMgr.m_DataReader.Close();
                 }
 				if (oDataMgr.m_intError != 0)
 				{
-					conn.Close();
 					return;
 				}
 
-				ado_data_access p_ado = new ado_data_access();
-				this.m_OleDbRxConn = new System.Data.OleDb.OleDbConnection();
-				p_ado.OpenConnection(this.strRxConn, ref this.m_OleDbRxConn);
-				if (p_ado.m_intError != 0)
-				{
-					this.m_OleDbConnectionScenario.Close();
-					this.m_OleDbConnectionScenario = null;
-					this.m_OleDbRxConn = null;
+				//ado_data_access p_ado = new ado_data_access();
+				//this.m_OleDbRxConn = new System.Data.OleDb.OleDbConnection();
+				//p_ado.OpenConnection(this.strRxConn, ref this.m_OleDbRxConn);
+				//if (p_ado.m_intError != 0)
+				//{
+				//	this.m_OleDbConnectionScenario.Close();
+				//	this.m_OleDbConnectionScenario = null;
+				//	this.m_OleDbRxConn = null;
+				//	return;
+				//}
+				//p_ado.m_strSQL = "select * from " + this.strRxPackageTableName;
+				//p_ado.SqlQueryReader(this.m_OleDbRxConn, p_ado.m_strSQL);
+
+				oDataMgr.m_strSQL = "ATTACH DATABASE '" + strRxDBFile + "' AS rxdb";
+				oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+				if (oDataMgr.m_intError != 0)
+                {
 					return;
-				}
-				p_ado.m_strSQL = "select * from " + this.strRxPackageTableName;
-				p_ado.SqlQueryReader(this.m_OleDbRxConn, p_ado.m_strSQL);
+                }
+
+				oDataMgr.m_strSQL = "SELECT * FROM rxdb." + this.strRxPackageTableName;
+				oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
 
 				/********************************************************************************
 				**insert records into the scenario_last_tiebreak_rank table from the master rxpackage table
 					********************************************************************************/
-				if (p_ado.m_intError == 0)
+				if (oDataMgr.m_intError == 0)
 				{
 					this.m_DataSet = new System.Data.DataSet();
 					this.m_SQLiteDataAdapter = new System.Data.SQLite.SQLiteDataAdapter();
-					while (p_ado.m_OleDbDataReader.Read())
+					while (oDataMgr.m_DataReader.Read())
 					{
 						oDataMgr.m_strSQL = "SELECT * FROM scenario_last_tiebreak_rank " +
 						" where TRIM(UPPER(scenario_id)) = '" + this.strScenarioId.Trim().ToUpper() + "' and " +
-						"rxpackage = '" + p_ado.m_OleDbDataReader["rxpackage"].ToString() + "';";
+						"rxpackage = '" + oDataMgr.m_DataReader["rxpackage"].ToString() + "';";
 
 						this.m_SQLiteCommand = conn.CreateCommand();
 						this.m_SQLiteCommand.CommandText = oDataMgr.m_strSQL;
@@ -634,16 +646,15 @@ namespace FIA_Biosum_Manager
 							oDataMgr.m_strSQL = "INSERT INTO scenario_last_tiebreak_rank (scenario_id," +
 								"rxpackage, last_tiebreak_rank) VALUES " +
 								"('" + this.strScenarioId + "'," +
-								"'" + p_ado.m_OleDbDataReader["rxpackage"].ToString() + "'," +
+								"'" + oDataMgr.m_DataReader["rxpackage"].ToString() + "'," +
 								"0);";
 
 							oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 						}
 						this.m_DataSet.Tables.Clear();
 					}
-					p_ado.m_OleDbDataReader.Close();
+					oDataMgr.m_DataReader.Close();
 					this.m_DataSet.Dispose();
-					this.m_SQLiteDataAdapter.Dispose();
 
 					intArrayCount = 0;
 					/****************************************************************************************************
@@ -662,13 +673,17 @@ namespace FIA_Biosum_Manager
 								**query the scenario treatment in the master db. If it is not found
 								**in the master db then delete the scenario treatment record
 								************************************************************************/
-							p_ado.m_strSQL = "SELECT * FROM " + this.strRxPackageTableName +
+							oDataMgr.m_strSQL = "SELECT * FROM rxdb." + this.strRxPackageTableName +
 								" where rxpackage = '" + oDataMgr.m_DataReader["rxpackage"].ToString() + "';";
-							this.m_OleDbCommand = this.m_OleDbRxConn.CreateCommand();
-							this.m_OleDbCommand.CommandText = p_ado.m_strSQL;
-							this.m_OleDbDataAdapter.SelectCommand = this.m_OleDbCommand;
-							this.m_OleDbDataAdapter.Fill(this.m_DataSet, this.strRxPackageTableName);
-							if (this.m_DataSet.Tables[this.strRxPackageTableName].Rows.Count == 0)
+							//this.m_OleDbCommand = this.m_OleDbRxConn.CreateCommand();
+							this.m_SQLiteCommand = conn.CreateCommand();
+							//this.m_OleDbCommand.CommandText = oDataMgr.m_strSQL;
+							this.m_SQLiteCommand.CommandText = oDataMgr.m_strSQL;
+							//this.m_OleDbDataAdapter.SelectCommand = this.m_OleDbCommand;
+							this.m_SQLiteDataAdapter.SelectCommand = this.m_SQLiteCommand;
+							//this.m_OleDbDataAdapter.Fill(this.m_DataSet, this.strRxPackageTableName);
+							this.m_SQLiteDataAdapter.Fill(this.m_DataSet, "rxdb." + this.strRxPackageTableName);
+							if (this.m_DataSet.Tables["rxdb." + this.strRxPackageTableName].Rows.Count == 0)
 							{
 								strDeleteSQL[intArrayCount] = "DELETE FROM scenario_last_tiebreak_rank" +
 									" WHERE TRIM(UPPER(scenario_id)) = '" + this.strScenarioId.Trim().ToUpper() + "'" +
@@ -679,7 +694,6 @@ namespace FIA_Biosum_Manager
 						}
 						oDataMgr.m_DataReader.Close();
 						this.m_DataSet.Dispose();
-						this.m_OleDbDataAdapter.Dispose();
 						/**********************************************************************************
 							**if there were any treatments that were loaded into sql delete 
 							**arrays then perform the sql to delete the treatments out of the table
@@ -697,16 +711,20 @@ namespace FIA_Biosum_Manager
 					**display the treatments to the user
 					***************************************************************************************/
 					this.m_DataSet = new System.Data.DataSet();
-					this.m_OleDbDataAdapter = new System.Data.OleDb.OleDbDataAdapter();
-					this.m_OleDbCommand = this.m_OleDbRxConn.CreateCommand();
-					this.m_OleDbCommand.CommandText = "SELECT * FROM " + this.strRxPackageTableName;
-					this.m_OleDbDataAdapter.SelectCommand = this.m_OleDbCommand;
-					this.m_OleDbDataAdapter.Fill(this.m_DataSet, this.strRxPackageTableName);
-
+					//this.m_OleDbDataAdapter = new System.Data.OleDb.OleDbDataAdapter();
+					//this.m_OleDbCommand = this.m_OleDbRxConn.CreateCommand();
+					//this.m_OleDbCommand.CommandText = "SELECT * FROM " + this.strRxPackageTableName;
+					//this.m_OleDbDataAdapter.SelectCommand = this.m_OleDbCommand;
+					//this.m_OleDbDataAdapter.Fill(this.m_DataSet, this.strRxPackageTableName);
+					this.m_SQLiteDataAdapter = new System.Data.SQLite.SQLiteDataAdapter();
 					this.m_SQLiteCommand = conn.CreateCommand();
-					for (x = 0; x <= this.m_DataSet.Tables[this.strRxPackageTableName].Rows.Count - 1; x++)
+					this.m_SQLiteCommand.CommandText = "SELECT * FROM rxdb." + this.strRxPackageTableName;
+					this.m_SQLiteDataAdapter.SelectCommand = this.m_SQLiteCommand;
+					this.m_SQLiteDataAdapter.Fill(this.m_DataSet, "rxdb." + this.strRxPackageTableName);
+
+					for (x = 0; x <= this.m_DataSet.Tables["rxdb." + this.strRxPackageTableName].Rows.Count - 1; x++)
 					{
-						if (this.m_DataSet.Tables[this.strRxPackageTableName].Rows[x]["rxpackage"].ToString().Length > 0)
+						if (this.m_DataSet.Tables["rxdb." + this.strRxPackageTableName].Rows[x]["rxpackage"].ToString().Length > 0)
 						{
 							oDataMgr.m_strSQL = "SELECT scenario_id, rxpackage, last_tiebreak_rank from scenario_last_tiebreak_rank where TRIM(UPPER(scenario_id)) = '" + this.strScenarioId.Trim().ToUpper() + "';";
 							break;
@@ -719,10 +737,8 @@ namespace FIA_Biosum_Manager
 					{
 						this.m_DataSet.Clear();
 						this.m_DataSet.Dispose();
-						this.m_OleDbDataAdapter.Dispose();
-						this.m_OleDbCommand.Dispose();
-						conn.Close();
-						this.m_OleDbRxConn.Close();
+						this.m_SQLiteDataAdapter.Dispose();
+						this.m_SQLiteCommand.Dispose();
 						return;
 					}
 
@@ -750,14 +766,14 @@ namespace FIA_Biosum_Manager
 						**for loop through the master db rx dataset adding the description field to the
 						**scenenario db scenario_last_tiebreak_rank dataset
 						***********************************************************************************/
-					for (x = 0; x <= this.m_DataSet.Tables[this.strRxPackageTableName].Rows.Count - 1; x++)
+					for (x = 0; x <= this.m_DataSet.Tables["rxdb." + this.strRxPackageTableName].Rows.Count - 1; x++)
 					{
-						if (this.m_DataSet.Tables[this.strRxPackageTableName].Rows[x]["rxpackage"].ToString().Length > 0)
+						if (this.m_DataSet.Tables["rxdb." + this.strRxPackageTableName].Rows[x]["rxpackage"].ToString().Length > 0)
 						{
 							/***************************************************************************************
 								**build the expression to filter only the scenario row that meets the expression
 								***************************************************************************************/
-							oDataMgr.m_strSQL = "rxpackage = '" + this.m_DataSet.Tables[this.strRxPackageTableName].Rows[x]["rxpackage"] + "'";
+							oDataMgr.m_strSQL = "rxpackage = '" + this.m_DataSet.Tables["rxdb." + this.strRxPackageTableName].Rows[x]["rxpackage"] + "'";
 
 							/***************************************************************************************
 								**create a datarow that will hold the results from the query expression
@@ -783,7 +799,7 @@ namespace FIA_Biosum_Manager
 											**update the description row/column with the master db rx table description value
 											**********************************************************************************/
 										this.m_DataSet.Tables["scenario_last_tiebreak_rank"].Rows[y]["description"] =
-											this.m_DataSet.Tables[this.strRxPackageTableName].Rows[x]["description"];
+											this.m_DataSet.Tables["rxdb." + this.strRxPackageTableName].Rows[x]["description"];
 										break;
 									}
 								}
@@ -876,8 +892,6 @@ namespace FIA_Biosum_Manager
 					this.dataGrid1.DataSource = firstView;
 					this.dataGrid1.Expand(-1);
 				}
-				this.m_OleDbRxConn.Close();
-				conn.Close();
 			}
 		}
 
