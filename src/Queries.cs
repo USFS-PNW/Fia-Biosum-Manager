@@ -2255,55 +2255,68 @@ namespace FIA_Biosum_Manager
                                       "SUBSTR(t.treeid, 1, 2) <> 'ES' AND SUBSTR(t.treeid, 1, 2)<> 'CM' AND c.Runtitle = '" + p_strRunTitle + "'";
   
             }
+            static public string[] FVSOutputTable_RxPackageWorktable(string p_strWorktable, string p_strRxPackageTable)
+            {
+                string[] sqlArray = new string[2];
+                sqlArray[0] = $@"CREATE TABLE {p_strWorktable}(rxpackage CHAR (3), rxcycle CHAR (1), rx CHAR (3))";
+                sqlArray[1] = $@"INSERT INTO {p_strWorktable} SELECT rxpackage, simyear1_fvscycle AS rxcycle, simyear1_rx as RX FROM {p_strRxPackageTable}
+                    UNION select rxpackage,simyear2_fvscycle AS rxcycle, simyear2_rx as RX FROM {p_strRxPackageTable} 
+                    UNION SELECT rxpackage,simyear3_fvscycle AS rxcycle, simyear3_rx as RX FROM {p_strRxPackageTable} 
+                    UNION SELECT rxpackage,simyear4_fvscycle AS rxcycle, simyear4_rx as RX FROM {p_strRxPackageTable}";
+                return sqlArray;
+            }
+
             static public string[] FVSOutputTable_AuditPostSummaryFVS(string p_strRxTable,string p_strRxPackageTable,string p_strTreeTable,
                 string p_strPlotTable,string p_strCondTable, string p_strPostAuditSummaryTable,string p_strFvsTreeTableName,
-                string p_strRxPackage, string p_strFvsVariant)
+                string p_strRxPackage, string p_strFvsVariant, string p_strRxPackageWorktable)
             {
-                string[] sqlArray = new string[14];
+                string[] sqlArray = new string[15];
 
-                sqlArray[0] = "SELECT * INTO rxpackage_work_table FROM (" +
-                            "SELECT	 rxpackage, simyear1_fvscycle AS rxcycle, simyear1_rx as RX FROM " + p_strRxPackageTable + " " +
-                            "UNION " +
-                            "SELECT	 rxpackage,simyear2_fvscycle AS rxcycle, simyear2_rx as RX FROM " + p_strRxPackageTable + " " +
-                            "UNION " +
-                            "SELECT	 rxpackage,simyear3_fvscycle AS rxcycle, simyear3_rx as RX FROM " + p_strRxPackageTable + " " +
-                            "UNION " +
-                            "SELECT	 rxpackage,simyear4_fvscycle AS rxcycle, simyear4_rx as RX FROM " + p_strRxPackageTable + ")";
+                //sqlArray[0] = "SELECT * INTO rxpackage_work_table FROM (" +
+                //            "SELECT	 rxpackage, simyear1_fvscycle AS rxcycle, simyear1_rx as RX FROM " + p_strRxPackageTable + " " +
+                //            "UNION " +
+                //            "SELECT	 rxpackage,simyear2_fvscycle AS rxcycle, simyear2_rx as RX FROM " + p_strRxPackageTable + " " +
+                //            "UNION " +
+                //            "SELECT	 rxpackage,simyear3_fvscycle AS rxcycle, simyear3_rx as RX FROM " + p_strRxPackageTable + " " +
+                //            "UNION " +
+                //            "SELECT	 rxpackage,simyear4_fvscycle AS rxcycle, simyear4_rx as RX FROM " + p_strRxPackageTable + ")";
+                sqlArray[0] = $@"SELECT * INTO {p_strRxPackageTable} FROM (SELECT DISTINCT RXPACKAGE AS RXPACKAGE FROM {p_strRxPackageWorktable})";
+                sqlArray[1] = $@"SELECT * INTO {p_strRxTable} FROM (SELECT DISTINCT RX AS RX FROM {p_strRxPackageWorktable})";
 
-                sqlArray[1] = "SELECT BIOSUM_COND_ID INTO cond_biosum_cond_id_work_table FROM " + p_strCondTable;
-                sqlArray[2] = "ALTER TABLE cond_biosum_cond_id_work_table ALTER COLUMN biosum_cond_id CHAR(25) PRIMARY KEY";
+                sqlArray[2] = "SELECT BIOSUM_COND_ID INTO cond_biosum_cond_id_work_table FROM " + p_strCondTable;
+                sqlArray[3] = "ALTER TABLE cond_biosum_cond_id_work_table ALTER COLUMN biosum_cond_id CHAR(25) PRIMARY KEY";
 
-                sqlArray[3] = "SELECT BIOSUM_PLOT_ID INTO plot_biosum_plot_id_work_table FROM " + p_strPlotTable;
-                sqlArray[4] = "ALTER TABLE plot_biosum_plot_id_work_table ALTER COLUMN biosum_plot_id CHAR(24) PRIMARY KEY";
+                sqlArray[4] = "SELECT BIOSUM_PLOT_ID INTO plot_biosum_plot_id_work_table FROM " + p_strPlotTable;
+                sqlArray[5] = "ALTER TABLE plot_biosum_plot_id_work_table ALTER COLUMN biosum_plot_id CHAR(24) PRIMARY KEY";
 
-                sqlArray[5] = "SELECT biosum_cond_id, SPCD, FVS_TREE_ID, DIA INTO tree_fvs_tree_id_work_table FROM " + p_strTreeTable + " WHERE FVS_TREE_ID IS NOT NULL AND LEN(TRIM(FVS_TREE_ID)) > 0";
-                sqlArray[6] = "ALTER TABLE tree_fvs_tree_id_work_table ADD PRIMARY KEY (biosum_cond_id,fvs_tree_id);";
+                sqlArray[6] = "SELECT biosum_cond_id, SPCD, FVS_TREE_ID, DIA INTO tree_fvs_tree_id_work_table FROM " + p_strTreeTable + " WHERE FVS_TREE_ID IS NOT NULL AND LEN(TRIM(FVS_TREE_ID)) > 0";
+                sqlArray[7] = "ALTER TABLE tree_fvs_tree_id_work_table ADD PRIMARY KEY (biosum_cond_id,fvs_tree_id);";
 
-                sqlArray[7] = "SELECT DISTINCT " +
+                sqlArray[8] = "SELECT DISTINCT " +
                                 "IIF(BIOSUM_COND_ID IS NULL OR LEN(TRIM(BIOSUM_COND_ID)) = 0,''," +
                                 "IIF(LEN(TRIM(BIOSUM_COND_ID)) >= 24,MID(BIOSUM_COND_ID,1,24),BIOSUM_COND_ID)) AS BIOSUM_PLOT_ID," +
                                 "BIOSUM_COND_ID " +
                               "INTO fvs_tree_unique_biosum_plot_id_work_table " +
                               "FROM " + p_strFvsTreeTableName;
 
-                sqlArray[8] = "ALTER TABLE fvs_tree_unique_biosum_plot_id_work_table ALTER COLUMN biosum_plot_id CHAR(24)";
+                sqlArray[9] = "ALTER TABLE fvs_tree_unique_biosum_plot_id_work_table ALTER COLUMN biosum_plot_id CHAR(24)";
 
-                sqlArray[9] = "ALTER TABLE fvs_tree_unique_biosum_plot_id_work_table ALTER COLUMN biosum_cond_id CHAR(25)";
+                sqlArray[10] = "ALTER TABLE fvs_tree_unique_biosum_plot_id_work_table ALTER COLUMN biosum_cond_id CHAR(25)";
 
-                sqlArray[10] = "CREATE TABLE fvs_tree_biosum_plot_id_work_table (" +
+                sqlArray[11] = "CREATE TABLE fvs_tree_biosum_plot_id_work_table (" +
                                 "ID INTEGER, " +
                                 "RXPACKAGE CHAR(3), " +
                                 "biosum_plot_id CHAR(24), " +
                                 "biosum_cond_id CHAR(25)) ";
 
-                sqlArray[11] = "INSERT INTO fvs_tree_biosum_plot_id_work_table " +
+                sqlArray[12] = "INSERT INTO fvs_tree_biosum_plot_id_work_table " +
                                 "SELECT ID," +
                                 "'" + p_strRxPackage + "' AS RXPACKAGE," +
                                 "IIF(BIOSUM_COND_ID IS NULL OR LEN(TRIM(BIOSUM_COND_ID)) = 0,''," +
                                 "IIF(LEN(TRIM(BIOSUM_COND_ID)) >= 24,MID(BIOSUM_COND_ID,1,24),BIOSUM_COND_ID)) AS BIOSUM_PLOT_ID," +
                                 "BIOSUM_COND_ID FROM " + p_strFvsTreeTableName;                
 
-                sqlArray[12] =
+                sqlArray[13] =
                     "INSERT INTO  " + p_strPostAuditSummaryTable + " " +
                     "SELECT * FROM " +
                     "(SELECT DISTINCT " +
@@ -2597,9 +2610,8 @@ namespace FIA_Biosum_Manager
                           "LEN(TRIM(a.FVS_TREE_ID)) >  0 AND " +
                           "VAL(a.FVS_SPECIES) <> b.SPCD) fvs_species_change_count)";
                 string strDateTimeCreated = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                sqlArray[13] = $@"UPDATE {p_strPostAuditSummaryTable} SET DateTimeCreated ='{strDateTimeCreated}' 
+                sqlArray[14] = $@"UPDATE {p_strPostAuditSummaryTable} SET DateTimeCreated ='{strDateTimeCreated}' 
                                 WHERE RXPACKAGE = '{p_strRxPackage}' AND FVS_VARIANT = '{p_strFvsVariant}'";
-
                 return sqlArray;
             }
 
