@@ -770,6 +770,7 @@ namespace FIA_Biosum_Manager
                         }
                     }
                 }
+                oDataMgr.m_DataReader.Close();
             }
         }
         private void PopulateDefaultFIADatamart()
@@ -801,6 +802,7 @@ namespace FIA_Biosum_Manager
                             }
                         }
                     }
+                    oDataMgr.m_DataReader.Close();
                 }
             }
         }
@@ -1374,6 +1376,7 @@ namespace FIA_Biosum_Manager
                                         }
                                     }
                                 }
+                                oDataMgr.m_DataReader.Close();
                             }
                         }
                     }

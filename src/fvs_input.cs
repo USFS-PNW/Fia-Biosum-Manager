@@ -4555,7 +4555,11 @@ namespace FIA_Biosum_Manager
                             }
                             string strEquation = Convert.ToString(oDataMgr.m_DataReader["EQUATION"]);
                             string strValue = strEquation + SI_DELIM + strSlfSpcd + SI_DELIM + strRegion;
-                            _dictSiteIdxEq.Add(strFvsVariant + SI_DELIM + strFiaSpCd, strValue);
+                            if (!_dictSiteIdxEq.ContainsKey(strFvsVariant + SI_DELIM + strFiaSpCd))
+                            {
+                                _dictSiteIdxEq.Add(strFvsVariant + SI_DELIM + strFiaSpCd, strValue);
+                            }
+                            
                         }
                     }
                 }
@@ -5012,7 +5016,7 @@ namespace FIA_Biosum_Manager
                 else if (bCreateTables == false && lstStates.Count > 0 && bOverwrite == false)
                 {
                     frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
-                        "Deleting existing records from FVS_STANDINIT_COND and FVS_TREEINIT_COND tables For Variant " + this.m_strVariant);
+                        "Deleting existing records from FVS_STANDINIT_COND and FVS_TREEINIT_COND tables For Variant " + strVariant);
 
                     // Delete existing state records if there is conflict with source
                     string csv = String.Join(",", lstStates.Select(x => x.ToString()).ToArray());
@@ -5074,7 +5078,7 @@ namespace FIA_Biosum_Manager
                 con.Open();
 
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
-                        "Creating FVS_INIT_COND tables For Variant " + this.m_strVariant);
+                        "Creating FVS_INIT_COND tables For Variant " + strVariant);
                 string strSql = "ATTACH DATABASE '" + m_strSourceFiaDb + "' AS source";
                 DebugLogSQL(strSql);
                 oDataMgr.SqlNonQuery(con, strSql);
@@ -5193,7 +5197,7 @@ namespace FIA_Biosum_Manager
             }
 
             frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
-                "Populating FVS_STANDINIT_COND and FVS_TREEINIT_COND tables For Variant " + this.m_strVariant);
+                "Populating FVS_STANDINIT_COND and FVS_TREEINIT_COND tables For Variant " + strVariant);
             string strAccdbConnection = oAdo.getMDBConnString(m_strTempMDBFileNewProcess, "", "");
             using (OleDbConnection oAccessConn = new OleDbConnection(strAccdbConnection))
             {
@@ -5211,7 +5215,7 @@ namespace FIA_Biosum_Manager
 
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
-                    "Customizing FVS_STANDINIT_COND table For Variant " + this.m_strVariant);
+                    "Customizing FVS_STANDINIT_COND table For Variant " + strVariant);
                 // Populate the STAND_ID and SAM_WT from the BioSum Cond table
                 DebugLogSQL(Queries.FVS.FVSInput.StandInit.UpdateFromCond(this.m_strCondTable, strVariant));
                 oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.UpdateFromCond(this.m_strCondTable, strVariant));
@@ -5258,7 +5262,7 @@ namespace FIA_Biosum_Manager
 
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
-                    "Customizing FVS_TREEINIT_COND table For Variant " + this.m_strVariant);
+                    "Customizing FVS_TREEINIT_COND table For Variant " + strVariant);
                 // Create temp table in MS Access
                 string strTempTreeTable = "temp_tree";
                 if (oAdo.TableExist(oAccessConn, strTempTreeTable))
@@ -5368,12 +5372,18 @@ namespace FIA_Biosum_Manager
                     " SET VARIANT = '" + strVariant + "' WHERE VARIANT IS NULL";
                 oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
 
-                oDataMgr.m_strSQL = "INSERT INTO target." + Tables.FIA2FVS.DefaultFvsInputStandTableName + " SELECT * " +
-                    "FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName;
+                //string strStandFields = oDataMgr.getFieldNames(con, "SELECT * FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName);
+                //oDataMgr.m_strSQL = "INSERT INTO target." + Tables.FIA2FVS.DefaultFvsInputStandTableName + " (" + strStandFields +
+                //    ") SELECT " + strStandFields + " FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName;
+                oDataMgr.m_strSQL = "INSERT INTO target." + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                    " SELECT * FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName;
                 oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
 
-                oDataMgr.m_strSQL = "INSERT INTO target." + Tables.FIA2FVS.DefaultFvsInputTreeTableName + " SELECT * " +
-                    "FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName;
+                //string strTreeFields = oDataMgr.getFieldNames(con, "SELECT * FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName);
+                //oDataMgr.m_strSQL = "INSERT INTO target." + Tables.FIA2FVS.DefaultFvsInputTreeTableName + " (" + strTreeFields +
+                //    ") SELECT " + strTreeFields + "FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName;
+                oDataMgr.m_strSQL = "INSERT INTO target." + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                    " SELECT * FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName;
                 oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
             }
 
