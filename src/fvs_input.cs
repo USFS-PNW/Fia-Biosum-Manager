@@ -147,10 +147,10 @@ namespace FIA_Biosum_Manager
                 return;
             }
 
-            this.m_strTempMDBFile = this.m_DataSource.CreateMDBAndTableDataSourceLinks();
+            //this.m_strTempMDBFile = this.m_DataSource.CreateMDBAndTableDataSourceLinks();
             this.m_dao = new dao_data_access();
             m_ado = new ado_data_access();
-            this.m_strConn = m_ado.getMDBConnString(this.m_strTempMDBFile, "", "");
+            //this.m_strConn = m_ado.getMDBConnString(this.m_strTempMDBFile, "", "");
             this.m_frmTherm = p_frmTherm;
         }
 
@@ -644,6 +644,31 @@ namespace FIA_Biosum_Manager
         {
             SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
             string strFvsInPathFile = m_strProjDir + "/fvs/data/" + m_strVariant + "/" + Tables.FIA2FVS.DefaultFvsInputFile;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strFvsInPathFile)))
+            {
+                conn.Open();
+                if (!oDataMgr.TableExist(conn, "biosum_fvsin_configuration"))
+                {
+                    oDataMgr.m_strSQL = "CREATE TABLE biosum_fvsin_configuration (Setting TEXT(255), `Value` TEXT(255));";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    DebugLogSQL(oDataMgr.m_strSQL);
+
+                }
+
+                List<string[]> configs = CreateFVSInConfigurationList();
+                foreach (string[] pair in configs)
+                {
+                    oDataMgr.m_strSQL = String.Format("INSERT INTO biosum_fvsin_configuration (Setting, `Value`) " +
+                                                   "VALUES ('{0}','{1}');", pair[0], pair[1]);
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    DebugLogSQL(oDataMgr.m_strSQL);
+                }
+            }
+        }
+        private void UpdateFvsInSqliteConfigurationTableNew()
+        {
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+            string strFvsInPathFile = m_strProjDir + "/fvs/data/" + Tables.FIA2FVS.DefaultFvsInputFile;
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strFvsInPathFile)))
             {
                 conn.Open();
@@ -5013,7 +5038,7 @@ namespace FIA_Biosum_Manager
                     DebugLogSQL(strSql);
                     oDataMgr.SqlNonQuery(con, strSql);
                 }
-                else if (bCreateTables == false && lstStates.Count > 0 && bOverwrite == false)
+                else if (bCreateTables == false && lstStates.Count > 0)
                 {
                     frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
                         "Deleting existing records from FVS_STANDINIT_COND and FVS_TREEINIT_COND tables For Variant " + strVariant);
@@ -5024,13 +5049,14 @@ namespace FIA_Biosum_Manager
                     // Delete existing records from tree table
                     string strSql = "DELETE FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
                             " WHERE stand_cn IN(select stand_cn from " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
-                            " where state in (" + csv + "))";
+                            " where state in (" + csv + ") AND VARIANT = '" + strVariant + "')";
                     DebugLogSQL(strSql);
                     oDataMgr.SqlNonQuery(con, strSql);
 
                     // Delete existing records from stand table
                     strSql = "DELETE FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
-                            " WHERE STATE IN (" + csv + ")";
+                            " WHERE STATE IN (" + csv + ")" +
+                            " AND VARIANT = '" + strVariant + "'";
                     DebugLogSQL(strSql);
                     oDataMgr.SqlNonQuery(con, strSql);
                 }
@@ -5382,7 +5408,7 @@ namespace FIA_Biosum_Manager
             }
 
 
-            UpdateFvsInSqliteConfigurationTable();
+            UpdateFvsInSqliteConfigurationTableNew();
 
             // Remove DSNs if they exist
             if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName))

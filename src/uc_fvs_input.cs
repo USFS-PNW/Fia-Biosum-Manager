@@ -130,7 +130,6 @@ namespace FIA_Biosum_Manager
         public uc_fvs_input()
         {
             // This call is required by the Windows.Forms Form Designer.
-            //InitializeComponent();
             InitializeComponent();
             this.m_ado = new ado_data_access();
             this.m_dao = new dao_data_access();
@@ -976,11 +975,11 @@ namespace FIA_Biosum_Manager
             try
             {
                 //load rx properties
-                RxItem_Collection oRxItem_Collection = new RxItem_Collection();
-                this.m_oRxTools.LoadAllRxItemsFromTableIntoRxCollection(m_oQueries, oRxItem_Collection);
-                //load rxpackage properties
-                RxPackageItem_Collection oRxPackageItem_Collection = new RxPackageItem_Collection();
-                this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_oQueries, oRxPackageItem_Collection);
+                //RxItem_Collection oRxItem_Collection = new RxItem_Collection();
+                //this.m_oRxTools.LoadAllRxItemsFromTableIntoRxCollection(m_oQueries, oRxItem_Collection);
+                ////load rxpackage properties
+                //RxPackageItem_Collection oRxPackageItem_Collection = new RxPackageItem_Collection();
+                //this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_oQueries, oRxPackageItem_Collection);
                 this.lstFvsInput.Clear();
                 this.m_oLvRowColors.InitializeRowCollection();
 
