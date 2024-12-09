@@ -6397,7 +6397,7 @@ namespace FIA_Biosum_Manager
             return intRecordCount;
         }
 
-        public int LoadSqliteGisData(string strSourceYardingDistField, string strDebugFile)
+        public int LoadSqliteGisData(string strSourceYardingDistField, double dblMaxOneWayHours, string strDebugFile)
         {
             m_oProjectDs.populate_datasource_array();
 
@@ -6470,7 +6470,8 @@ namespace FIA_Biosum_Manager
                                     " COLLECTOR_ID, RAILHEAD_ID, TRAVEL_MODE, ONE_WAY_HOURS," +
                                     " PT.PLOT AS PLOT, PT.STATECD AS STATECD" +
                                     " FROM " + m_strPlotTableName + " PT" +
-                                    " INNER JOIN " + m_strMasterTravelTime + " TT ON (PT.statecd = TT.STATECD) AND (PT.plot = TT.PLOT)";
+                                    " INNER JOIN " + m_strMasterTravelTime + " TT ON (PT.statecd = TT.STATECD) AND (PT.plot = TT.PLOT)" +
+                                    " WHERE ONE_WAY_HOURS <= " + dblMaxOneWayHours;
                     frmMain.g_sbpInfo.Text = "Loading project travel_times table...Stand by";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSql + "\r\n");

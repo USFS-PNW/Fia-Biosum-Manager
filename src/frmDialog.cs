@@ -28,7 +28,8 @@ namespace FIA_Biosum_Manager
 		public FIA_Biosum_Manager.uc_scenario_merge_tables uc_merge_tables1;
         public FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables uc_core_scenario_weighted_average1;
         public FIA_Biosum_Manager.uc_optimizer_sqlite_export uc_optimizer_sqlite_export1;
-		public FIA_Biosum_Manager.txtDollarsAndCents m_txtMoney;
+        public FIA_Biosum_Manager.uc_optimizer_load_gis_data uc_optimizer_load_gis_data1;
+        public FIA_Biosum_Manager.txtDollarsAndCents m_txtMoney;
 		public FIA_Biosum_Manager.txtNumeric m_txtNumeric;
 		private System.Windows.Forms.TextBox _txtBox;
 		private FIA_Biosum_Manager.txtNumeric _txtNumeric;
@@ -451,7 +452,14 @@ namespace FIA_Biosum_Manager
             this.uc_optimizer_sqlite_export1.Visible = true;
 
         }
-		public void Initialize_Plot_Data_Add_Edit_User_Control()
+        public void Initialize_Load_Gis_Data_User_Control()
+        {
+
+            this.uc_optimizer_load_gis_data1 = new uc_optimizer_load_gis_data(this.m_frmMain);
+            this.Controls.Add(this.uc_optimizer_load_gis_data1);
+            this.uc_optimizer_load_gis_data1.Visible = true;
+        }
+        public void Initialize_Plot_Data_Add_Edit_User_Control()
 		{
 
 			this.uc_plot_add_edit1 = new uc_plot_add_edit();
