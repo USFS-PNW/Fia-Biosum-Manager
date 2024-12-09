@@ -5001,6 +5001,9 @@ namespace FIA_Biosum_Manager
                         oDataMgr.SqlNonQuery(con, strSql);
                     }
 
+                    // Add VARIANT field to empty tree table
+                    oDataMgr.AddColumn(con, Tables.FIA2FVS.DefaultFvsInputTreeTableName, "VARIANT", "CHAR", "2");
+
                     // Disconnect from source database
                     strSql = "DETACH DATABASE 'source'";
                     DebugLogSQL(strSql);
@@ -5031,8 +5034,7 @@ namespace FIA_Biosum_Manager
                 {
                     // Delete existing records from tree table that correspond to selected variant
                     string strSql = "DELETE FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
-                        " WHERE STAND_CN IN (SELECT STAND_CN FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
-                        " WHERE TRIM(VARIANT) = '" + strVariant + "')";
+                        " WHERE TRIM(VARIANT) = '" + strVariant + "'";
                     DebugLogSQL(strSql);
                     oDataMgr.SqlNonQuery(con, strSql);
 
@@ -5109,6 +5111,9 @@ namespace FIA_Biosum_Manager
                     oDataMgr.SqlNonQuery(con, strSql);
                 }
 
+                // Add VARIANT field to empty tree table
+                oDataMgr.AddColumn(con, Tables.FIA2FVS.DefaultFvsInputTreeTableName, "VARIANT", "CHAR", "2");
+
                 // Disconnect from source database
                 strSql = "DETACH DATABASE 'source'";
                 DebugLogSQL(strSql);
@@ -5170,7 +5175,7 @@ namespace FIA_Biosum_Manager
                 oDao.CreatePrimaryKeyIndex(m_strTempMDBFileNewProcess, Tables.FIA2FVS.DefaultFvsInputTreeTableName, "TREE_CN");
             }
 
-            // Link DWM tables (could move to table links for fuel columns?)
+            // Link DWM tables
             string strMasterAuxDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.db";
             if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.DWMDsnName))
             {
@@ -5358,8 +5363,10 @@ namespace FIA_Biosum_Manager
                 oDataMgr.m_strSQL = "ATTACH DATABASE '" + strInDirAndFile + "' AS target";
                 oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
 
-
-
+                // Populate variant field in tree table
+                oDataMgr.m_strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                    " SET VARIANT = '" + strVariant + "' WHERE VARIANT IS NULL";
+                oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
 
                 oDataMgr.m_strSQL = "INSERT INTO target." + Tables.FIA2FVS.DefaultFvsInputStandTableName + " SELECT * " +
                     "FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName;
@@ -5370,31 +5377,6 @@ namespace FIA_Biosum_Manager
                 oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
             }
 
-
-            // Update FVSIn.db from temporary database. Overwrite variant if selected
-            //using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strInDirAndFile)))
-            //{
-            //    con.Open();
-
-            //    string[] strFVSInTables = oDataMgr.getTableNames(con);
-            //    //if (bOverwrite)
-            //    //{
-            //    //    foreach (string table in strFVSInTables)
-            //    //    {
-            //    //        oDataMgr.m_strSQL = "DELETE FROM " + table + " WHERE TRIM(VARIANT) = '" + strVariant + "'";
-            //    //        oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
-            //    //    }
-            //    //}
-
-            //    oDataMgr.m_strSQL = "ATTACH DATABASE '" + strVariantWorkDb + "' AS temp";
-            //    oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
-
-            //    foreach (string table in strFVSInTables)
-            //    {
-            //        oDataMgr.m_strSQL = "INSERT INTO " + table + " SELECT * FROM temp." + table;
-            //        oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
-            //    }
-            //}
 
             UpdateFvsInSqliteConfigurationTable();
 

@@ -588,7 +588,7 @@ namespace FIA_Biosum_Manager
                 }
             }
 
-            //UpdateDatasources_5_11_2();
+            UpdateDatasources_5_11_2();
 
             if (bPerformCheck)
             {
@@ -7511,6 +7511,94 @@ namespace FIA_Biosum_Manager
             {
                 oDao.m_DaoWorkspace.Close();
                 oDao = null;
+            }
+
+            // Migrate any existing variant specific FVSIn.db files to one combined FVSIn.db
+            frmMain.g_sbpInfo.Text = "Version Update: Migrate FVSIn.db files from [variant]/FVSIn.db to combined FVSIn.db ...Stand by";
+            string strFVSInFile = ReferenceProjectDirectory.Trim() + "\\fvs\\data\\" + Tables.FIA2FVS.DefaultFvsInputFile;
+
+            // Get list of FVS Variants from Plot table
+            List<String> lstVar = new List<String>();
+            int intPlotTable = oProjectDs.getTableNameRow(Datasource.TableTypes.Plot);
+            strDirectoryPath = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
+            strFileName = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            strTableName = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
+            string strVariantCon = oAdo.getMDBConnString(strDirectoryPath + "\\" + strFileName, "", "");
+            using (OleDbConnection variantCon = new OleDbConnection(strVariantCon))
+            {
+                variantCon.Open();
+
+                oAdo.m_strSQL = "SELECT DISTINCT fvs_variant" + " FROM " + strTableName + 
+                    " WHERE fvs_variant IS NOT NULL AND LEN(TRIM(fvs_variant)) > 0";
+                oAdo.SqlQueryReader(variantCon, oAdo.m_strSQL);
+
+                if (oAdo.m_OleDbDataReader.HasRows)
+                {
+                    while (oAdo.m_OleDbDataReader.Read())
+                    {
+                        string strVariant = oAdo.m_OleDbDataReader["fvs_variant"].ToString().Trim();
+                        lstVar.Add(strVariant);
+                    }
+                }
+            }
+
+            // Cycle through list. If variant FVSIn exists, add it to the combined FVSIn.db. Create the combined FVSIn.db if needed
+            string strFVSConn = oDataMgr.GetConnectionString(strFVSInFile);
+            foreach (string variant in lstVar)
+            {
+                string strVarFvsIn = ReferenceProjectDirectory.Trim() + "\\fvs\\data\\" + variant + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
+                if (System.IO.File.Exists(strVarFvsIn))
+                {
+                    if (!System.IO.File.Exists(strFVSInFile))
+                    {
+                        System.IO.File.Copy(strVarFvsIn, strFVSInFile, true);
+
+                        using (System.Data.SQLite.SQLiteConnection fvsConn = new System.Data.SQLite.SQLiteConnection(strFVSConn))
+                        {
+                            fvsConn.Open();
+
+                            if (!oDataMgr.ColumnExist(fvsConn, Tables.FIA2FVS.DefaultFvsInputTreeTableName, "VARIANT"))
+                            {
+                                oDataMgr.AddColumn(fvsConn, Tables.FIA2FVS.DefaultFvsInputTreeTableName, "VARIANT", "CHAR", "2");
+                            }
+
+                            oDataMgr.m_strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                                " SET VARIANT = '" + variant + "' WHERE VARIANT IS NULL";
+                            oDataMgr.SqlNonQuery(fvsConn, oDataMgr.m_strSQL);
+                        }
+                    }
+                    else
+                    {
+                        using (System.Data.SQLite.SQLiteConnection fvsConn = new System.Data.SQLite.SQLiteConnection(strFVSConn))
+                        {
+                            fvsConn.Open();
+
+                            oDataMgr.m_strSQL = "ATTACH DATABASE '" + strVarFvsIn + "' AS variant";
+                            oDataMgr.SqlNonQuery(fvsConn, oDataMgr.m_strSQL);
+
+                            string strStandFields = oDataMgr.getFieldNames(fvsConn, "SELECT * FROM variant." + Tables.FIA2FVS.DefaultFvsInputStandTableName);
+                            oDataMgr.m_strSQL = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                                " (" + strStandFields + ") SELECT " + strStandFields +
+                                " FROM variant." + Tables.FIA2FVS.DefaultFvsInputStandTableName;
+                            oDataMgr.SqlNonQuery(fvsConn, oDataMgr.m_strSQL);
+
+                            string strTreeFields = oDataMgr.getFieldNames(fvsConn, "SELECT * FROM variant." + Tables.FIA2FVS.DefaultFvsInputTreeTableName);
+                            oDataMgr.m_strSQL = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                                " (" + strTreeFields + ") SELECT " + strTreeFields +
+                                " FROM variant." + Tables.FIA2FVS.DefaultFvsInputTreeTableName;
+                            oDataMgr.SqlNonQuery(fvsConn, oDataMgr.m_strSQL);
+
+                            if (!oDataMgr.ColumnExist(fvsConn, Tables.FIA2FVS.DefaultFvsInputTreeTableName, "VARIANT"))
+                            {
+                                oDataMgr.AddColumn(fvsConn, Tables.FIA2FVS.DefaultFvsInputTreeTableName, "VARIANT", "CHAR", "2");
+                            }
+
+                            oDataMgr.m_strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                                " SET VARIANT = '" + variant + "' WHERE VARIANT IS NULL";
+                            oDataMgr.SqlNonQuery(fvsConn, oDataMgr.m_strSQL);
+                        }
+                    }
+                }
             }
         }
 
