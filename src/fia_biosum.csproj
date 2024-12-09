@@ -197,6 +197,12 @@
     <Compile Include="btnMainForm.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="uc_optimizer_load_gis_data.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="uc_optimizer_load_gis_data.Designer.cs">
+      <DependentUpon>uc_optimizer_load_gis_data.cs</DependentUpon>
+    </Compile>
     <Compile Include="sqlite_optimizer_tables.cs" />
     <Compile Include="ODBCMgr.cs" />
     <Compile Include="uc_db_sqlite.cs">
@@ -652,6 +658,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="uc_fvs_create_mdbs.resx">
       <DependentUpon>uc_fvs_create_mdbs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="uc_optimizer_load_gis_data.resx">
+      <DependentUpon>uc_optimizer_load_gis_data.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="uc_optimizer_scenario_calculated_variables.resx">
       <DependentUpon>uc_optimizer_scenario_calculated_variables.cs</DependentUpon>

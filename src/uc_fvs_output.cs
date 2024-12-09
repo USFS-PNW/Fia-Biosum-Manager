@@ -6930,7 +6930,10 @@ namespace FIA_Biosum_Manager
             System.Windows.Forms.ListViewItem oLvItem = null;
 			Tables oTables = new Tables();	
             string strAuditDbFile;
-			ado_data_access oAdo = new ado_data_access();
+            string strRxPackageWorktable = "rxpackage_work_table";
+            string strRxPackageWorktable2 = "rxpackage_work_table2";
+            string strRxWorktable = "rx_work_table";
+            ado_data_access oAdo = new ado_data_access();
 			
             bool bDisplay = false;
 
@@ -7070,8 +7073,6 @@ namespace FIA_Biosum_Manager
                                 int intTreeTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("TREE");
                                 int intCondTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("CONDITION");
                                 int intPlotTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("PLOT");
-                                int intRxTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("TREATMENT PRESCRIPTIONS");
-                                int intRxPackageTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("TREATMENT PACKAGES");
 
                                 if (System.IO.File.Exists(strTempAccdb))
                                 {
@@ -7088,21 +7089,21 @@ namespace FIA_Biosum_Manager
                                     {
                                         oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE]);
                                     }
-                                    if (oAdo.TableExist(oAdo.m_OleDbConnection, m_oQueries.m_oDataSource.m_strDataSource[intRxTable, Datasource.TABLE]))
-                                    {
-                                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + m_oQueries.m_oDataSource.m_strDataSource[intRxTable, Datasource.TABLE]);
-                                    }
-                                    if (oAdo.TableExist(oAdo.m_OleDbConnection, m_oQueries.m_oDataSource.m_strDataSource[intRxPackageTable, Datasource.TABLE]))
-                                    {
-                                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + m_oQueries.m_oDataSource.m_strDataSource[intRxPackageTable, Datasource.TABLE]);
-                                    }
                                 if (oAdo.TableExist(oAdo.m_OleDbConnection, strTempCutListTable))
                                 {
                                     oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + strTempCutListTable);
                                 }
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "rxpackage_work_table"))
+                                if (oAdo.TableExist(oAdo.m_OleDbConnection, strRxPackageWorktable))
                                 {
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE rxpackage_work_table");
+                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, $@"DROP TABLE {strRxPackageWorktable}");
+                                }
+                                if (oAdo.TableExist(oAdo.m_OleDbConnection, strRxPackageWorktable2))
+                                {
+                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, $@"DROP TABLE {strRxPackageWorktable2}");
+                                }
+                                if (oAdo.TableExist(oAdo.m_OleDbConnection, strRxWorktable))
+                                {
+                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, $@"DROP TABLE {strRxWorktable}");
                                 }
                                 if (oAdo.TableExist(oAdo.m_OleDbConnection, "fvs_tree_unique_biosum_plot_id_work_table"))
                                 {
@@ -7234,6 +7235,29 @@ namespace FIA_Biosum_Manager
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                                 }
+                                // Add for rxpackage_work_table; Converting rxpackage and rx to SQLite
+                                string rxPackageDb = m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.RxPackage);
+                                SQLite.SqlNonQuery(conn, $@"ATTACH DATABASE '{rxPackageDb}' AS MASTER");
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "Attached database " + rxPackageDb + "\r\n");
+                                ;
+                                if (SQLite.TableExist(conn, strRxPackageWorktable) == true)
+                                {
+                                    SQLite.m_strSQL = $@"DROP TABLE {strRxPackageWorktable}";
+                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                }
+                                int intRxPackageTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("TREATMENT PACKAGES");
+                                string[] SQLiteArray = Queries.FVS.FVSOutputTable_RxPackageWorktable(strRxPackageWorktable, 
+                                    m_oQueries.m_oDataSource.m_strDataSource[intRxPackageTable, Datasource.TABLE]);
+                                for (y = 0; y <= SQLiteArray.Length - 1; y++)
+                                {
+                                    strSQL = SQLiteArray[y];
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
+                                    SQLite.SqlNonQuery(conn, strSQL);
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                }
                             }
 
                             // Create audit table links to SQLite tables; The queries to update these tables have dependencies on Access tables
@@ -7245,8 +7269,8 @@ namespace FIA_Biosum_Manager
                                 ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
                             oDao.CreateSQLiteTableLink(strTempAccdb, "audit_Post_SPCDCHANGE_WARNING", "audit_Post_SPCDCHANGE_WARNING",
                                 ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
-
-
+                            oDao.CreateSQLiteTableLink(strTempAccdb, strRxPackageWorktable, strRxPackageWorktable,
+                                ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
 
                             //tree table link
                             oDao.CreateTableLink(strTempAccdb, m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE],
@@ -7263,18 +7287,6 @@ namespace FIA_Biosum_Manager
                                                       m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.PATH].Trim() + "\\" +
                                                        m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.MDBFILE].Trim(),
                                                       m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE], true);
-
-                            //rx table link
-                            oDao.CreateTableLink(strTempAccdb, m_oQueries.m_oDataSource.m_strDataSource[intRxTable, Datasource.TABLE],
-                                                     m_oQueries.m_oDataSource.m_strDataSource[intRxTable, Datasource.PATH].Trim() + "\\" +
-                                                      m_oQueries.m_oDataSource.m_strDataSource[intRxTable, Datasource.MDBFILE].Trim(),
-                                                     m_oQueries.m_oDataSource.m_strDataSource[intRxTable, Datasource.TABLE], true);
-
-                            //rx package table link
-                            oDao.CreateTableLink(strTempAccdb, m_oQueries.m_oDataSource.m_strDataSource[intRxPackageTable, Datasource.TABLE],
-                                                    m_oQueries.m_oDataSource.m_strDataSource[intRxPackageTable, Datasource.PATH].Trim() + "\\" +
-                                                     m_oQueries.m_oDataSource.m_strDataSource[intRxPackageTable, Datasource.MDBFILE].Trim(),
-                                                    m_oQueries.m_oDataSource.m_strDataSource[intRxPackageTable, Datasource.TABLE], true);
 
                             oDao.m_DaoWorkspace.Close();
                             oDao = null;
@@ -7293,13 +7305,13 @@ namespace FIA_Biosum_Manager
 
                             // audit_Post_SUMMARY
                             string[] sqlArray = Queries.FVS.FVSOutputTable_AuditPostSummaryFVS(
-                                    m_oQueries.m_oDataSource.m_strDataSource[intRxTable,Datasource.TABLE],
-                                    m_oQueries.m_oDataSource.m_strDataSource[intRxPackageTable, Datasource.TABLE],
+                                    strRxWorktable,
+                                    strRxPackageWorktable2,
                                     m_oQueries.m_oDataSource.m_strDataSource[intTreeTable,Datasource.TABLE],
                                     m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE],
                                     m_oQueries.m_oDataSource.m_strDataSource[intCondTable,Datasource.TABLE],
                                     "audit_Post_SUMMARY", strTempCutListTable,
-                                    strPackage, strVariant);
+                                    strPackage, strVariant, strRxPackageWorktable);
 
                                 for (y = 0; y <= sqlArray.Length - 1; y++)
                                 {
@@ -7400,8 +7412,7 @@ namespace FIA_Biosum_Manager
                                      m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE].Trim(),
                                      m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE].Trim(),
                                      m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE].Trim(),
-                                     m_oQueries.m_oDataSource.m_strDataSource[intRxTable, Datasource.TABLE].Trim(),
-                                     m_oQueries.m_oDataSource.m_strDataSource[intRxPackageTable, Datasource.TABLE].Trim(),
+                                     strRxWorktable, strRxPackageWorktable2,
                                      "rxpackage_work_table");
 
                                 m_intProgressStepCurrentCount++;
