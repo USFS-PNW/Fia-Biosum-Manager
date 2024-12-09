@@ -972,10 +972,6 @@ namespace FIA_Biosum_Manager
         {
             //bool bResult;
             string strInDirAndFile;
-            string strOutDirAndFile;
-            string strConn;
-            string[] strValues;
-            string strVariant = "";
             //bool bFoundDsnIn;
             try
             {
@@ -995,13 +991,25 @@ namespace FIA_Biosum_Manager
 
                 this.lstFvsInput.Columns[COL_CHECKBOX].Width = -2;
 
-                m_ado.OpenConnection(m_strConn);
-                IDictionary<string, RxPackageItem_Collection> dictFvsVariantPackage = this.m_oRxTools.GetFvsVariantPackageDictionary(this.m_ado,
-                    this.m_ado.m_OleDbConnection, m_oQueries);
-                m_ado.CloseConnection(this.m_ado.m_OleDbConnection);
+                List<string> lstVariants = new List<string>();
+                using (System.Data.OleDb.OleDbConnection conn = new System.Data.OleDb.OleDbConnection(m_strConn))
+                {
+                    conn.Open();
+
+                    m_ado.SqlQueryReader(conn, Queries.FVS.GetFVSVariantSQL(m_oQueries.m_oFIAPlot.m_strPlotTable));
+                    if (m_ado.m_OleDbDataReader.HasRows)
+                    {
+                        while (m_ado.m_OleDbDataReader.Read())
+                        {
+                            string strCurrentVariant = m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim();
+                            lstVariants.Add(strCurrentVariant);
+                        }
+                    }
+                    m_ado.m_OleDbDataReader.Close();
+                }
                 //Keep a count of records in FVS_StandInit and FVS_TreeInit tables in each variant
                 m_VariantCountsDict = new Dictionary<string, int[]>();
-                foreach (string key in dictFvsVariantPackage.Keys)
+                foreach (string strVariant in lstVariants)
                 {
                     System.Windows.Forms.ListViewItem entryListItem =
                     this.lstFvsInput.Items.Add("");
@@ -1010,8 +1018,7 @@ namespace FIA_Biosum_Manager
                     this.m_oLvRowColors.AddColumns(lstFvsInput.Items.Count - 1, lstFvsInput.Columns.Count);
                     this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_CHECKBOX, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
 
-                    //fvs_variant		
-                    strVariant = key;
+                    //fvs_variant
                     if (m_VariantCountsDict.ContainsKey(strVariant) == false)
                     {
                         m_VariantCountsDict.Add(strVariant, null); //fvs_standinit, fvs_treeinit counts
@@ -1028,11 +1035,6 @@ namespace FIA_Biosum_Manager
                     entryListItem.SubItems.Add(" ");
                     this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_TREECOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
 
-                    //check to see if there is an input and output dsn name
-                    this.m_strLocFile = strVariant + ".loc";
-                    this.m_strSlfFile = strVariant + ".slf";
-                    //this.m_strOutMDBFile = this.m_oRxTools.GetRxPackageFvsOutDbFileName(m_ado.m_OleDbDataReader);
-                    //strOutDirAndFile = this.txtDataDir.Text.Trim() + "\\" + m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim() + "\\" + this.m_strOutMDBFile.Trim();
 
                     frmMain.g_sbpInfo.Text = "Processing FVS Input Variant " +
                         strVariant + "...Stand By";

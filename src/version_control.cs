@@ -7528,8 +7528,7 @@ namespace FIA_Biosum_Manager
             {
                 variantCon.Open();
 
-                oAdo.m_strSQL = "SELECT DISTINCT fvs_variant" + " FROM " + strTableName + 
-                    " WHERE fvs_variant IS NOT NULL AND LEN(TRIM(fvs_variant)) > 0";
+                oAdo.m_strSQL = Queries.FVS.GetFVSVariantSQL(strTableName);
                 oAdo.SqlQueryReader(variantCon, oAdo.m_strSQL);
 
                 if (oAdo.m_OleDbDataReader.HasRows)

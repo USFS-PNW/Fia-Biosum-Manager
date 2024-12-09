@@ -873,7 +873,7 @@ namespace FIA_Biosum_Manager
                 }
 
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
-                    "Writing BioSum FVS_StandInit For Variant " + this.m_strVariant);
+                    "Writing BioSum FVS_StandInit For Variant " + strVariant);
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Minimum", 0);
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Maximum",
                     m_ado.m_DataSet.Tables["standlist"].Rows.Count);
@@ -4968,7 +4968,7 @@ namespace FIA_Biosum_Manager
                 if (bCreateTables == true)
                 {
                     frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
-                        "Creating FVS_INIT_COND tables For Variant " + this.m_strVariant);
+                        "Creating FVS_INIT_COND tables For Variant " + strVariant);
                     string strSql = "ATTACH DATABASE '" + m_strSourceFiaDb + "' AS source";
                     DebugLogSQL(strSql);
                     oDataMgr.SqlNonQuery(con, strSql);
@@ -5372,16 +5372,10 @@ namespace FIA_Biosum_Manager
                     " SET VARIANT = '" + strVariant + "' WHERE VARIANT IS NULL";
                 oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
 
-                //string strStandFields = oDataMgr.getFieldNames(con, "SELECT * FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName);
-                //oDataMgr.m_strSQL = "INSERT INTO target." + Tables.FIA2FVS.DefaultFvsInputStandTableName + " (" + strStandFields +
-                //    ") SELECT " + strStandFields + " FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName;
                 oDataMgr.m_strSQL = "INSERT INTO target." + Tables.FIA2FVS.DefaultFvsInputStandTableName +
                     " SELECT * FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName;
                 oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
 
-                //string strTreeFields = oDataMgr.getFieldNames(con, "SELECT * FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName);
-                //oDataMgr.m_strSQL = "INSERT INTO target." + Tables.FIA2FVS.DefaultFvsInputTreeTableName + " (" + strTreeFields +
-                //    ") SELECT " + strTreeFields + "FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName;
                 oDataMgr.m_strSQL = "INSERT INTO target." + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
                     " SELECT * FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName;
                 oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
