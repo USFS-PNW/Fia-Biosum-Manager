@@ -3818,7 +3818,8 @@ namespace FIA_Biosum_Manager
                         string strSiteIndex)
                     {
                         return String.Format(
-                            "UPDATE FVS_STANDINIT_COND SET Site_Species={1}, Site_Index={2} WHERE STAND_ID={0}",
+                            "UPDATE FVS_STANDINIT_COND SET Site_Species={1}, Site_Index={2} " +
+                            "WHERE STAND_ID={0} AND Site_Index IS NULL",
                             strStandID, strSiteSpecies, strSiteIndex);
                     }
 

@@ -5264,7 +5264,7 @@ namespace FIA_Biosum_Manager
                 // Attach tables needed for Site Index and Fuel columns
                 LinkSiteIndexAndFuelColumnsTables();
 
-                // SITE_INDEX and SITE_SPECIES to be converted
+                // SITE_INDEX and SITE_SPECIES 
                 if (m_intError == 0)
                 {
                     GenerateSiteIndexAndSiteSpeciesSQLNew(strVariant);
