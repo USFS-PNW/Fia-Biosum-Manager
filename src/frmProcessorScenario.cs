@@ -903,14 +903,7 @@ namespace FIA_Biosum_Manager
                 if (m_intError == 0) m_intError = uc_processor_scenario_merch_chip_value1.m_intError;
                 this.uc_processor_scenario_escalators1.savevalues();
                 if (m_intError == 0) m_intError = uc_processor_scenario_escalators1.m_intError;
-                if (!m_bUsingSqlite)
-                {
-                    this.uc_processor_scenario_additional_harvest_cost_columns1.savevalues();
-                }
-                else
-                {
-                    this.uc_processor_scenario_additional_harvest_cost_columns1.savevaluesSqlite();
-                }
+                this.uc_processor_scenario_additional_harvest_cost_columns1.savevaluesSqlite();
                 if (m_intError == 0) m_intError = uc_processor_scenario_additional_harvest_cost_columns1.m_intError;
                 this.uc_scenario_notes1.SaveScenarioNotes();
                 this.uc_scenario1.UpdateDescription();

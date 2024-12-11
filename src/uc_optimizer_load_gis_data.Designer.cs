@@ -120,13 +120,13 @@
             // 
             // btnHelp
             // 
-            this.btnHelp.Enabled = false;
             this.btnHelp.ForeColor = System.Drawing.SystemColors.HotTrack;
             this.btnHelp.Location = new System.Drawing.Point(11, 400);
             this.btnHelp.Name = "btnHelp";
             this.btnHelp.Size = new System.Drawing.Size(115, 37);
             this.btnHelp.TabIndex = 67;
             this.btnHelp.Text = "Help";
+            this.btnHelp.Click += new System.EventHandler(this.btnHelp_Click);
             // 
             // label2
             // 

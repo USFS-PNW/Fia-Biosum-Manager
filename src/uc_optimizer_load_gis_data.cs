@@ -131,6 +131,15 @@ namespace FIA_Biosum_Manager
             frmMain.g_oFrmMain.DeactivateStandByAnimation();
             MessageBox.Show("If you updated existing GIS data, verify the selected sites in Treatment Optimizer. GIS data successfully loaded!");
         }
+
+        private void btnHelp_Click(object sender, EventArgs e)
+        {
+            if (m_oHelp == null)
+            {
+                m_oHelp = new Help(m_xpsFile, m_oEnv);
+            }
+            m_oHelp.ShowHelp(new string[] { "TREATMENT_OPTIMIZER", "GIS_DATA" });
+        }
     }
 
 
