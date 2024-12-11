@@ -175,7 +175,7 @@ namespace FIA_Biosum_Manager
         }
         
         public int LoadTrees(string p_strVariant, string p_strRxPackage, string p_strCondTableName, string p_strPlotTableName,
-                             string p_strRefHarvestMethodTableName, string p_strRxTableName)
+                             string p_strRefHarvestMethodTableName, string p_strRxDatabase, string p_strRxTableName)
         {
 
             //Load harvest methods; Prescription load depends on harvest methods
@@ -208,7 +208,7 @@ namespace FIA_Biosum_Manager
             }
 
             //Load prescriptions into reference dictionary
-            m_prescriptions = LoadPrescriptions(p_strRxTableName);
+            m_prescriptions = LoadPrescriptions(p_strRxDatabase, p_strRxTableName);
             //Load diameter variables into reference object
             m_scenarioHarvestMethod = LoadScenarioHarvestMethod(m_strScenarioId);
             //Load escalators into reference object
@@ -1664,7 +1664,7 @@ namespace FIA_Biosum_Manager
             return dictSpeciesDiamValues;
         }
 
-        private System.Collections.Generic.IDictionary<String, prescription> LoadPrescriptions(string p_strRxTable)
+        private System.Collections.Generic.IDictionary<String, prescription> LoadPrescriptions(string p_strRxDatabase, string p_strRxTable)
         {
             if (m_harvestMethodList == null || m_harvestMethodList.Count == 0)
             {
@@ -1674,17 +1674,20 @@ namespace FIA_Biosum_Manager
             
             System.Collections.Generic.IDictionary<String, prescription> dictPrescriptions = 
                 new System.Collections.Generic.Dictionary<String, prescription>();
-                if (m_oAdo.m_intError == 0)
+                if (SQLite.m_intError == 0)
                 {
                     string strSQL = "SELECT * FROM " + p_strRxTable;
-                    m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
-                    if (m_oAdo.m_OleDbDataReader.HasRows)
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(p_strRxDatabase)))
+                {
+                    conn.Open();
+                    SQLite.SqlQueryReader(conn, strSQL);
+                    if (SQLite.m_DataReader.HasRows)
                     {
-                        while (m_oAdo.m_OleDbDataReader.Read())
+                        while (SQLite.m_DataReader.Read())
                         {
-                            string strRx = Convert.ToString(m_oAdo.m_OleDbDataReader["rx"]).Trim();
-                            string strHarvestMethodLowSlope = Convert.ToString(m_oAdo.m_OleDbDataReader["HarvestMethodLowSlope"]).Trim();
-                            string strHarvestMethodSteepSlope = Convert.ToString(m_oAdo.m_OleDbDataReader["HarvestMethodSteepSlope"]).Trim();
+                            string strRx = Convert.ToString(SQLite.m_DataReader["rx"]).Trim();
+                            string strHarvestMethodLowSlope = Convert.ToString(SQLite.m_DataReader["HarvestMethodLowSlope"]).Trim();
+                            string strHarvestMethodSteepSlope = Convert.ToString(SQLite.m_DataReader["HarvestMethodSteepSlope"]).Trim();
                             harvestMethod objHarvestMethodLowSlope = null;
                             harvestMethod objHarvestMethodSteepSlope = null;
                             foreach (harvestMethod nextMethod in m_harvestMethodList)
@@ -1702,7 +1705,8 @@ namespace FIA_Biosum_Manager
                             dictPrescriptions.Add(strRx, new prescription(strRx, objHarvestMethodLowSlope, objHarvestMethodSteepSlope));
                         }
                     }
-                }
+                } 
+            }
             return dictPrescriptions;
         }
 
