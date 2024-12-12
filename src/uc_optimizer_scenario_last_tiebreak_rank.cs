@@ -908,7 +908,7 @@ namespace FIA_Biosum_Manager
 		{
 			int x;
 			int y;
-			if (this.m_DataSet.Tables[this.strRxPackageTableName].Rows.Count==0)
+			if (this.m_DataSet.Tables["rxdb." + this.strRxPackageTableName].Rows.Count==0)
 			{
 				if (p_bDisplayMessage) MessageBox.Show("Run Scenario Failed: No treatments defined");
 				return -1;
