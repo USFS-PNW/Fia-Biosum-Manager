@@ -5212,6 +5212,17 @@ namespace FIA_Biosum_Manager
                 odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.DWMDsnName);
             }
             odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.DWMDsnName, strMasterAuxDb);
+            string strBiosumRefDb = frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
+                        frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceSqliteFile;
+            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.BiosumRefDsnName))
+            {
+                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.BiosumRefDsnName);
+            }
+            odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.BiosumRefDsnName, strBiosumRefDb);
+
+            // Attach tables needed for Site Index and Fuel columns
+            LinkSiteIndexAndFuelColumnsTables();
+
             if (!string.IsNullOrEmpty(odbcmgr.m_strError))
             {
                 DebugLogSQL("ODBCMgr error: " + odbcmgr.m_strError);
@@ -5261,8 +5272,6 @@ namespace FIA_Biosum_Manager
                     oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.SetFuelModelToNull());
                 }
 
-                // Attach tables needed for Site Index and Fuel columns
-                LinkSiteIndexAndFuelColumnsTables();
 
                 // SITE_INDEX and SITE_SPECIES 
                 if (m_intError == 0)
@@ -5480,28 +5489,26 @@ namespace FIA_Biosum_Manager
                         frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceDbFile, m_strFiaTreeSpeciesRefTable);
                 }
 
-                // REF_FOREST_TYPE
-                if (!oAdo.TableExist(con, m_strRefForestTypeTable))
-                {
-                    oDao.CreateTableLink(m_strTempMDBFileNewProcess, m_strRefForestTypeTable,
-                        frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
-                        frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceDbFile, m_strRefForestTypeTable);
-                }
-
-                // REF_FOREST_TYPE_GROUP
-                if (!oAdo.TableExist(con, m_strRefForestTypeGroupTable))
-                {
-                    oDao.CreateTableLink(m_strTempMDBFileNewProcess, m_strRefForestTypeGroupTable,
-                        frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
-                        frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceDbFile, m_strRefForestTypeGroupTable);
-                }
-
                 // FVS_TREE_SPECIES
                 if (!oAdo.TableExist(con, Tables.Reference.DefaultFVSTreeSpeciesTableName))
                 {
                     oDao.CreateTableLink(m_strTempMDBFileNewProcess, Tables.Reference.DefaultFVSTreeSpeciesTableName,
                         frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
                         frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceDbFile, Tables.Reference.DefaultFVSTreeSpeciesTableName);
+                }
+
+                // REF_FOREST_TYPE and REF_FOREST_TYPE_GROUP
+                string strBioSumRefDb = frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
+                        frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceDbFile;
+                if (!oAdo.TableExist(con, m_strRefForestTypeTable))
+                {
+                    oDao.CreateSQLiteTableLink(m_strTempMDBFileNewProcess, m_strRefForestTypeTable,
+                        m_strRefForestTypeTable, ODBCMgr.DSN_KEYS.BiosumRefDsnName, strBioSumRefDb);
+                }
+                if (!oAdo.TableExist(con, m_strRefForestTypeGroupTable))
+                {
+                    oDao.CreateSQLiteTableLink(m_strTempMDBFileNewProcess, m_strRefForestTypeGroupTable,
+                        m_strRefForestTypeGroupTable, ODBCMgr.DSN_KEYS.BiosumRefDsnName, strBioSumRefDb);
                 }
 
                 // DWM tables
