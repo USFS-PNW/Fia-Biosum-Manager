@@ -505,7 +505,7 @@ namespace FIA_Biosum_Manager
                 //Site index and site species sequential insertion into FVS_StandInit_WorkTable
                 if (m_intError == 0)
                 {
-                    GenerateSiteIndexAndSiteSpeciesSQL();
+                    GenerateSiteIndexAndSiteSpeciesSQL_old();
                 }
 
                 //Create lookup table for DWM Fuelbed Type Code to convert to FVS format
@@ -533,7 +533,7 @@ namespace FIA_Biosum_Manager
                     (int) m_enumDWMOption.USE_DWM_DATA_ONLY
                 }.Contains(m_intDWMOption))
                 {
-                    PopulateFuelColumns();
+                    PopulateFuelColumns_old();
                 }
 
 
@@ -640,7 +640,7 @@ namespace FIA_Biosum_Manager
         /// <summary>
         /// Connect to FVSIn for the current variant, add a table with two columns to record configurations
         /// </summary>
-        private void UpdateFvsInSqliteConfigurationTable()
+        private void UpdateFvsInSqliteConfigurationTable_old()
         {
             SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
             string strFvsInPathFile = m_strProjDir + "/fvs/data/" + m_strVariant + "/" + Tables.FIA2FVS.DefaultFvsInputFile;
@@ -665,7 +665,7 @@ namespace FIA_Biosum_Manager
                 }
             }
         }
-        private void UpdateFvsInSqliteConfigurationTableNew()
+        private void UpdateFvsInSqliteConfigurationTable()
         {
             SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
             string strFvsInPathFile = m_strProjDir + "/fvs/data/" + Tables.FIA2FVS.DefaultFvsInputFile;
@@ -786,7 +786,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void GenerateSiteIndexAndSiteSpeciesSQL()
+        private void GenerateSiteIndexAndSiteSpeciesSQL_old()
         {
             using (var conn = new OleDbConnection(m_strConn))
             {
@@ -800,7 +800,7 @@ namespace FIA_Biosum_Manager
                 oSiteIndex.SiteTreeTable = this.m_strSiteTreeTable;
                 oSiteIndex.TreeSpeciesTable = this.m_strTreeSpcTable;
                 oSiteIndex.FVSTreeSpeciesTable = this.m_strFVSTreeSpcTable;
-                oSiteIndex.SiteIndexEquations = LoadSiteIndexEquations(this.m_strVariant.Trim().ToUpper());
+                oSiteIndex.SiteIndexEquations = LoadSiteIndexEquations_old(this.m_strVariant.Trim().ToUpper());
                 oSiteIndex.DebugFile = this.m_strDebugFile;
 
                 m_ado.m_strSQL =
@@ -834,7 +834,7 @@ namespace FIA_Biosum_Manager
 
                     frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", x);
                     strStand_ID = "\'" + this.m_dt.Rows[x]["biosum_cond_id"].ToString().Trim() + "\'";
-                    oSiteIndex.getSiteIndex(m_dt.Rows[x], false);
+                    oSiteIndex.getSiteIndex_old(m_dt.Rows[x], false);
                     strSite_Species = "\'" + oSiteIndex.SiteIndexSpeciesAlphaCode + "\'";
                     strSite_Index = oSiteIndex.SiteIndex;
 
@@ -864,7 +864,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void GenerateSiteIndexAndSiteSpeciesSQLNew(string strVariant)
+        private void GenerateSiteIndexAndSiteSpeciesSQL(string strVariant)
         {
             using (OleDbConnection conn = new OleDbConnection(m_ado.getMDBConnString(m_strTempMDBFileNewProcess, "", "")))
             {
@@ -878,7 +878,7 @@ namespace FIA_Biosum_Manager
                 oSiteIndex.SiteTreeTable = this.m_strSiteTreeTable;
                 oSiteIndex.TreeSpeciesTable = this.m_strTreeSpcTable;
                 oSiteIndex.FVSTreeSpeciesTable = this.m_strFVSTreeSpcTable;
-                oSiteIndex.SiteIndexEquations = LoadSiteIndexEquationsNew(strVariant.Trim().ToUpper());
+                oSiteIndex.SiteIndexEquations = LoadSiteIndexEquations(strVariant.Trim().ToUpper());
                 oSiteIndex.DebugFile = this.m_strDebugFile;
                 oSiteIndex.TempMDBFileNewProcess = this.m_strTempMDBFileNewProcess;
                 oSiteIndex.ProjectDirectory = this.m_strProjDir;
@@ -914,7 +914,7 @@ namespace FIA_Biosum_Manager
 
                     frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", x);
                     strStand_ID = "\'" + this.m_dt.Rows[x]["biosum_cond_id"].ToString().Trim() + "\'";
-                    oSiteIndex.getSiteIndex(m_dt.Rows[x], true);
+                    oSiteIndex.getSiteIndex(m_dt.Rows[x]);
                     strSite_Species = "\'" + oSiteIndex.SiteIndexSpeciesAlphaCode + "\'";
                     strSite_Index = oSiteIndex.SiteIndex;
 
@@ -940,7 +940,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void PopulateFuelColumns()
+        private void PopulateFuelColumns_old()
         {
             //COARSE WOODY DEBRIS
             DebugLogMessage("Executing Coarse Woody Debris SQL (multiple steps)\r\n", 1);
@@ -1039,7 +1039,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void PopulateFuelColumnsSqlite(string strConn, string strStandTable)
+        private void PopulateFuelColumns(string strConn, string strStandTable)
         {
             //COARSE WOODY DEBRIS
             DebugLogMessage("Executing Coarse Woody Debris SQL (multiple steps)\r\n", 1);
@@ -1857,7 +1857,7 @@ namespace FIA_Biosum_Manager
                 set { _strProjDir = value; }
             }
 
-            public void getSiteIndex(System.Data.DataRow p_oRow, bool usingSqlite)
+            public void getSiteIndex_old(System.Data.DataRow p_oRow, bool usingSqlite)
             {
                 //biosum plot id
                 if (p_oRow["biosum_plot_id"] == System.DBNull.Value)
@@ -1895,14 +1895,48 @@ namespace FIA_Biosum_Manager
 
                 if (usingSqlite)
                 {
-                    getSiteIndexNew();
+                    getSiteIndex();
                 }
                 else
                 {
-                    getSiteIndex();
+                    getSiteIndex_old();
                 }
             }
-            private void getSiteIndex()
+            public void getSiteIndex(System.Data.DataRow p_oRow)
+            {
+                //biosum plot id
+                if (p_oRow["biosum_plot_id"] == System.DBNull.Value)
+                    this.BiosumPlotId = "";
+                else this.BiosumPlotId = p_oRow["biosum_plot_id"].ToString().Trim();
+                //statecd
+                if (p_oRow["statecd"] == System.DBNull.Value)
+                    this.StateCd = "";
+                else this.StateCd = Convert.ToString(p_oRow["statecd"]).Trim();
+                //countycd
+                if (p_oRow["countycd"] == System.DBNull.Value)
+                    this.CountyCd = "";
+                else this.CountyCd = Convert.ToString(p_oRow["countycd"]).Trim();
+                //plot
+                if (p_oRow["plot"] == System.DBNull.Value)
+                    this.Plot = "";
+                else this.Plot = Convert.ToString(p_oRow["plot"]).Trim();
+                //fvs variant
+                if (p_oRow["fvs_variant"] == System.DBNull.Value)
+                    this.FVSVariant = "";
+                else this.FVSVariant = Convert.ToString(p_oRow["fvs_variant"]).Trim();
+                //cond id
+                if (p_oRow["condid"] == System.DBNull.Value)
+                    this.CondId = "";
+                else this.CondId = Convert.ToString(p_oRow["condid"]).Trim();
+                //habitat type code
+                if (p_oRow["habtypcd1"] == System.DBNull.Value)
+                    this.ConditionClassHabitatTypeCd = "";
+                else this.ConditionClassHabitatTypeCd = Convert.ToString(p_oRow["habtypcd1"]).Trim();
+
+                getSiteIndex();
+            }
+
+            private void getSiteIndex_old()
             {
                 int x, y;
                 int intCount;
@@ -1981,7 +2015,7 @@ namespace FIA_Biosum_Manager
                             //**************************************************
                             if (intCurAgeDia > 0)
                             {
-                                LoadSiteIndexValues(intCondId, intCurFIASpecies,
+                                LoadSiteIndexValues_old(intCondId, intCurFIASpecies,
                                     intCurAgeDia,
                                     intCurHtFt,
                                     ref intCurSIFVSSpecies,
@@ -2087,14 +2121,14 @@ namespace FIA_Biosum_Manager
                             this.SiteIndex = Convert.ToString(Math.Round(dblSIAvgMax, 0)).Trim();
                         }
                         if (this.SiteIndexSpecies != "@" && this.SiteIndexSpecies.Trim().Length > 0)
-                            GetSiteIndexSpeciesAlphaCode();
+                            GetSiteIndexSpeciesAlphaCode_old();
                     }
                     _oAdo.m_DataSet.Tables.Remove("GetSiteIndex");
 
                 }
             }
 
-            private void getSiteIndexNew()
+            private void getSiteIndex()
             {
                 int x, y;
                 int intCount;
@@ -2196,7 +2230,7 @@ namespace FIA_Biosum_Manager
                                 //**************************************************
                                 if (intCurAgeDia > 0)
                                 {
-                                    LoadSiteIndexValuesNew(intCondId, intCurFIASpecies,
+                                    LoadSiteIndexValues(intCondId, intCurFIASpecies,
                                         intCurAgeDia,
                                         intCurHtFt,
                                         ref intCurSIFVSSpecies,
@@ -2302,7 +2336,7 @@ namespace FIA_Biosum_Manager
                                 this.SiteIndex = Convert.ToString(Math.Round(dblSIAvgMax, 0)).Trim();
                             }
                             if (this.SiteIndexSpecies != "@" && this.SiteIndexSpecies.Trim().Length > 0)
-                                GetSiteIndexSpeciesAlphaCodeNew();
+                                GetSiteIndexSpeciesAlphaCode();
                         }
                         _oAdo.m_DataSet.Tables.Remove("GetSiteIndex");
 
@@ -2311,7 +2345,7 @@ namespace FIA_Biosum_Manager
 
                 
             }
-            private void GetSiteIndexSpeciesAlphaCode()
+            private void GetSiteIndexSpeciesAlphaCode_old()
             {
                 _oAdo.m_strSQL = "SELECT fvs_species FROM " + this.FVSTreeSpeciesTable + " f " +
                                  "WHERE fvs_variant = '" + this.FVSVariant + "' AND " +
@@ -2324,7 +2358,7 @@ namespace FIA_Biosum_Manager
 
 
             }
-            private void GetSiteIndexSpeciesAlphaCodeNew()
+            private void GetSiteIndexSpeciesAlphaCode()
             {
                 _oAdo.m_strSQL = "SELECT fvs_species FROM " + this.FVSTreeSpeciesTable + " f " +
                                  "WHERE fvs_variant = '" + this.FVSVariant + "' AND " +
@@ -2342,7 +2376,7 @@ namespace FIA_Biosum_Manager
             }
 
 
-            private void LoadSiteIndexValues(int p_intSICondId,
+            private void LoadSiteIndexValues_old(int p_intSICondId,
                 int p_intSISpCd,
                 int p_intSIAgeDia,
                 int p_intSIHtFt,
@@ -2393,7 +2427,7 @@ namespace FIA_Biosum_Manager
                     }
                     else if (p_intSISpCd == 108) //lodgepole
                     {
-                        getAvgDbhAndBasalArea(p_intSICondId);
+                        getAvgDbhAndBasalArea_old(p_intSICondId);
                         p_dblSiteIndex = zPICO3(p_intSIAgeDia,
                             p_intSIHtFt,
                             this.ConditionClassBasalAreaPerAcre,
@@ -2492,7 +2526,7 @@ namespace FIA_Biosum_Manager
                     }
                     else if (p_intSISpCd == 108) //lodgepole
                     {
-                        getAvgDbhAndBasalArea(p_intSICondId);
+                        getAvgDbhAndBasalArea_old(p_intSICondId);
                         p_dblSiteIndex = zPICO3(p_intSIAgeDia,
                             p_intSIHtFt,
                             this.ConditionClassBasalAreaPerAcre,
@@ -2565,7 +2599,7 @@ namespace FIA_Biosum_Manager
                     }
                     else if (p_intSISpCd == 108) //lodgepole
                     {
-                        getAvgDbhAndBasalArea(p_intSICondId);
+                        getAvgDbhAndBasalArea_old(p_intSICondId);
                         p_dblSiteIndex = zPICO3(p_intSIAgeDia,
                             p_intSIHtFt,
                             this.ConditionClassBasalAreaPerAcre,
@@ -2665,7 +2699,7 @@ namespace FIA_Biosum_Manager
                     }
                     else if (p_intSISpCd == 108) //lodgepole
                     {
-                        getAvgDbhAndBasalArea(p_intSICondId);
+                        getAvgDbhAndBasalArea_old(p_intSICondId);
                         p_dblSiteIndex = zPICO3(p_intSIAgeDia,
                             p_intSIHtFt,
                             this.ConditionClassBasalAreaPerAcre,
@@ -2796,7 +2830,7 @@ namespace FIA_Biosum_Manager
                     }
                     else if (p_intSISpCd == 108) //lodgepole
                     {
-                        getAvgDbhAndBasalArea(p_intSICondId);
+                        getAvgDbhAndBasalArea_old(p_intSICondId);
                         p_dblSiteIndex = zPICO3(p_intSIAgeDia,
                             p_intSIHtFt,
                             this.ConditionClassBasalAreaPerAcre,
@@ -2820,7 +2854,7 @@ namespace FIA_Biosum_Manager
                     }
                     else if (p_intSISpCd == 64)  //western juniper
                     {
-                        getAvgDbhAndBasalArea(p_intSICondId);
+                        getAvgDbhAndBasalArea_old(p_intSICondId);
                         p_dblSiteIndex = SI_LP5(p_intSIAgeDia, p_intSIHtFt,
                             this.ConditionClassBasalAreaPerAcre,
                             this.ConditionClassAverageDia);
@@ -2982,7 +3016,7 @@ namespace FIA_Biosum_Manager
                     {
                         //Whitebark pine, knobcone pine, lodgepole pine,
                         //Coulter pine, Limber pine, Western juniper
-                        getAvgDbhAndBasalArea(p_intSICondId);
+                        getAvgDbhAndBasalArea_old(p_intSICondId);
                         p_dblSiteIndex = zPICO3(p_intSIAgeDia,
                             p_intSIHtFt,
                             this.ConditionClassBasalAreaPerAcre,
@@ -3088,7 +3122,7 @@ namespace FIA_Biosum_Manager
                             p_dblSiteIndex = SI_DF2(p_intSIAgeDia, p_intSIHtFt, this.ConditionClassHabitatTypeCd);
                             break;
                         case "SI_LP5":
-                            getAvgDbhAndBasalArea(p_intSICondId);
+                            getAvgDbhAndBasalArea_old(p_intSICondId);
                             p_dblSiteIndex = SI_LP5(p_intSIAgeDia, p_intSIHtFt, this.ConditionClassBasalAreaPerAcre,
                                 this.ConditionClassAverageDia);
                             break;
@@ -3106,7 +3140,7 @@ namespace FIA_Biosum_Manager
                 }
             }
 
-            private void LoadSiteIndexValuesNew(int p_intSICondId,
+            private void LoadSiteIndexValues(int p_intSICondId,
                 int p_intSISpCd,
                 int p_intSIAgeDia,
                 int p_intSIHtFt,
@@ -3180,7 +3214,7 @@ namespace FIA_Biosum_Manager
                         p_dblSiteIndex = SI_DF2(p_intSIAgeDia, p_intSIHtFt, this.ConditionClassHabitatTypeCd);
                         break;
                     case "SI_LP5":
-                        getAvgDbhAndBasalAreaNew(p_intSICondId);
+                        getAvgDbhAndBasalArea(p_intSICondId);
                         p_dblSiteIndex = SI_LP5(p_intSIAgeDia, p_intSIHtFt, this.ConditionClassBasalAreaPerAcre,
                             this.ConditionClassAverageDia);
                         break;
@@ -3233,7 +3267,7 @@ namespace FIA_Biosum_Manager
                         p_dblSiteIndex = zLIDE1(p_intSIAgeDia, p_intSIHtFt);
                         break;
                     case "zPICO3":
-                        getAvgDbhAndBasalAreaNew(p_intSICondId);
+                        getAvgDbhAndBasalArea(p_intSICondId);
                         p_dblSiteIndex = zPICO3(p_intSIAgeDia,
                             p_intSIHtFt,
                             this.ConditionClassBasalAreaPerAcre,
@@ -3476,7 +3510,7 @@ namespace FIA_Biosum_Manager
             ///This function needs to be called prior to running an equation that uses CCF
             ///</summary>
             ///<param name="p_intCondId">The id of the condition</param>  
-            private void getAvgDbhAndBasalArea(int p_intCondId)
+            private void getAvgDbhAndBasalArea_old(int p_intCondId)
             {
 
                 this.ConditionClassAverageDia = 0;
@@ -3514,7 +3548,7 @@ namespace FIA_Biosum_Manager
                 this.ConditionClassBasalAreaPerAcre = dblBasalArea;
             }
 
-            private void getAvgDbhAndBasalAreaNew(int p_intCondId)
+            private void getAvgDbhAndBasalArea(int p_intCondId)
             {
                 this.ConditionClassAverageDia = 0;
                 this.ConditionClassBasalAreaPerAcre = 0;
@@ -4490,7 +4524,7 @@ namespace FIA_Biosum_Manager
 
         }
 
-        private IDictionary<String, String> LoadSiteIndexEquations(string strVariant)
+        private IDictionary<String, String> LoadSiteIndexEquations_old(string strVariant)
         {
             //instantiate the dictionary so we can add equation records
             IDictionary<String, String> _dictSiteIdxEq = new Dictionary<String, String>();
@@ -4537,7 +4571,7 @@ namespace FIA_Biosum_Manager
             return _dictSiteIdxEq;
         }
 
-        private IDictionary<String, String> LoadSiteIndexEquationsNew(string strVariant)
+        private IDictionary<String, String> LoadSiteIndexEquations(string strVariant)
         {
             //instantiate the dictionary so we can add equation records
             IDictionary<String, String> _dictSiteIdxEq = new Dictionary<String, String>();
@@ -4593,7 +4627,7 @@ namespace FIA_Biosum_Manager
             return _dictSiteIdxEq;
         }
 
-        public void StartFIA2FVS(ODBCMgr odbcmgr, dao_data_access oDao,
+        public void StartFIA2FVS_old(ODBCMgr odbcmgr, dao_data_access oDao,
             ado_data_access oAdo, string strTempMDB, bool bOverwrite,
             string strDebugFile, string strVariant, List<string> lstStates, string strSourceStandTableAlias, string strSourceTreeTableAlias)
         {
@@ -4936,7 +4970,7 @@ namespace FIA_Biosum_Manager
                 oDataMgr.SqlNonQuery(con, strSQL);
             }
 
-            UpdateFvsInSqliteConfigurationTable();
+            UpdateFvsInSqliteConfigurationTable_old();
 
             // Remove target DSN if it exists
             if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName))
@@ -4953,7 +4987,7 @@ namespace FIA_Biosum_Manager
             }
             DebugLogMessage("*****END*****" + System.DateTime.Now.ToString() + "\r\n", 2);
         }
-        public void StartFIA2FVSNew(ODBCMgr odbcmgr, dao_data_access oDao,
+        public void StartFIA2FVS(ODBCMgr odbcmgr, dao_data_access oDao,
             ado_data_access oAdo, string strTempMDB, bool bOverwrite,
             string strDebugFile, string strVariant, List<string> lstStates, string strSourceStandTableAlias, string strSourceTreeTableAlias)
         {
@@ -5276,7 +5310,7 @@ namespace FIA_Biosum_Manager
                 // SITE_INDEX and SITE_SPECIES 
                 if (m_intError == 0)
                 {
-                    GenerateSiteIndexAndSiteSpeciesSQLNew(strVariant);
+                    GenerateSiteIndexAndSiteSpeciesSQL(strVariant);
                 }
 
 
@@ -5287,7 +5321,7 @@ namespace FIA_Biosum_Manager
                     (int) m_enumDWMOption.USE_DWM_DATA_ONLY
                 }.Contains(m_intDWMOption))
                 {
-                    PopulateFuelColumnsSqlite(strAccdbConnection, Tables.FIA2FVS.DefaultFvsInputStandTableName);
+                    PopulateFuelColumns(strAccdbConnection, Tables.FIA2FVS.DefaultFvsInputStandTableName);
                 }
                 else
                 {
@@ -5417,7 +5451,7 @@ namespace FIA_Biosum_Manager
             }
 
 
-            UpdateFvsInSqliteConfigurationTableNew();
+            UpdateFvsInSqliteConfigurationTable();
 
             // Remove DSNs if they exist
             if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName))
@@ -5499,7 +5533,7 @@ namespace FIA_Biosum_Manager
 
                 // REF_FOREST_TYPE and REF_FOREST_TYPE_GROUP
                 string strBioSumRefDb = frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
-                        frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceDbFile;
+                        frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceSqliteFile;
                 if (!oAdo.TableExist(con, m_strRefForestTypeTable))
                 {
                     oDao.CreateSQLiteTableLink(m_strTempMDBFileNewProcess, m_strRefForestTypeTable,

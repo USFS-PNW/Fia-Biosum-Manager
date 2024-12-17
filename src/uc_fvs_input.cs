@@ -377,7 +377,7 @@ namespace FIA_Biosum_Manager
             this.btnCreateFvsInput.Size = new System.Drawing.Size(229, 32);
             this.btnCreateFvsInput.TabIndex = 5;
             this.btnCreateFvsInput.Text = "Create FVS Input Database File";
-            this.btnCreateFvsInput.Click += new System.EventHandler(this.btnCreateFvsInputNew_Click);
+            this.btnCreateFvsInput.Click += new System.EventHandler(this.btnCreateFvsInput_Click);
             // 
             // cmbAction
             // 
@@ -1044,7 +1044,7 @@ namespace FIA_Biosum_Manager
                     {
                         if (m_VariantCountsDict[strVariant] == null)
                         {
-                            m_VariantCountsDict[strVariant] = getFVSSQLiteInputRecordCountsNew(strInDirAndFile, strVariant);
+                            m_VariantCountsDict[strVariant] = getFVSSQLiteInputRecordCounts(strInDirAndFile, strVariant);
                         }
                         entryListItem.SubItems[COL_STANDCOUNT].Text = Convert.ToString(m_VariantCountsDict[strVariant][0]);
                         entryListItem.SubItems[COL_TREECOUNT].Text = Convert.ToString(m_VariantCountsDict[strVariant][1]);
@@ -1143,7 +1143,7 @@ namespace FIA_Biosum_Manager
             this.m_thread = null;
         }
 
-        public void CreateFia2FvsInputFiles()
+        public void CreateFia2FvsInputFiles_old()
         {
             if (this.lstFvsInput.CheckedItems.Count == 0)
             {
@@ -1300,13 +1300,13 @@ namespace FIA_Biosum_Manager
             this.m_frmTherm.progressBar2.Maximum = 100;
             this.m_frmTherm.progressBar2.Value = 0;
             this.m_frmTherm.lblMsg2.Text = "Overall Progress";
-            this.m_thread = new Thread(new ThreadStart(ExtractFIA2FVSRecords));
+            this.m_thread = new Thread(new ThreadStart(ExtractFIA2FVSRecords_old));
             this.m_thread.IsBackground = true;
             this.m_thread.Start();
 
         }
 
-        public void CreateFia2FvsInputFilesSqlite()
+        public void CreateFia2FvsInputFiles()
         {
             if (this.lstFvsInput.CheckedItems.Count == 0)
             {
@@ -1514,7 +1514,7 @@ namespace FIA_Biosum_Manager
             this.m_frmTherm.progressBar2.Maximum = 100;
             this.m_frmTherm.progressBar2.Value = 0;
             this.m_frmTherm.lblMsg2.Text = "Overall Progress";
-            this.m_thread = new Thread(new ThreadStart(ExtractFIA2FVSRecordsNew));
+            this.m_thread = new Thread(new ThreadStart(ExtractFIA2FVSRecords));
             this.m_thread.IsBackground = true;
             this.m_thread.Start();
         }
@@ -1697,7 +1697,7 @@ namespace FIA_Biosum_Manager
 
         }
 
-        private void ExtractFIA2FVSRecords()
+        private void ExtractFIA2FVSRecords_old()
         {
             m_intError = 0;
             string strCurVariant = "";
@@ -1808,7 +1808,7 @@ namespace FIA_Biosum_Manager
                             {
                                 lstStates = m_dictVariantStates[strInDirAndFile];
                             }
-                            p_fvsinput.StartFIA2FVS(odbcmgr, oDao, oAdo, strTempMDB, m_bOverwrite, m_strDebugFile, 
+                            p_fvsinput.StartFIA2FVS_old(odbcmgr, oDao, oAdo, strTempMDB, m_bOverwrite, m_strDebugFile, 
                                 strCurVariant, lstStates, strSourceStandTableAlias, 
                                 strSourceTreeTableAlias);
                         }
@@ -1819,7 +1819,7 @@ namespace FIA_Biosum_Manager
                         // This happens at the end
                         if (File.Exists(strInDirAndFile) == true) //redundant check here, but leaves " " instead of new "0"
                         {
-                            int[] fvsInputRecordCounts = getFVSSQLiteInputRecordCounts(strInDirAndFile);
+                            int[] fvsInputRecordCounts = getFVSSQLiteInputRecordCounts_old(strInDirAndFile);
                             frmMain.g_oDelegate.SetListViewSubItemPropertyValue(this.lstFvsInput, x, COL_STANDCOUNT, "Text",
                                 Convert.ToString(fvsInputRecordCounts[0]));
                             frmMain.g_oDelegate.SetListViewSubItemPropertyValue(this.lstFvsInput, x, COL_TREECOUNT, "Text",
@@ -1914,7 +1914,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void ExtractFIA2FVSRecordsNew()
+        private void ExtractFIA2FVSRecords()
         {
             m_intError = 0;
             string strCurVariant = "";
@@ -2021,19 +2021,13 @@ namespace FIA_Biosum_Manager
                                 "Value", 1);
                             strCurVariant = strVariant;
 
-                            // Running old BioSum FVSIn process
-                            //p_fvsinput.Start(strCurVariant, m_strDebugFile);
-                            //intValue = intValue + interval;
-                            //frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar2, "Value", intValue);
-                            // Done
-
                             List<string> lstStates = new List<string>();
                             if (m_dictVariantStates != null &&
                                 m_dictVariantStates.ContainsKey(strInDirAndFile))
                             {
                                 lstStates = m_dictVariantStates[strInDirAndFile];
                             }
-                            p_fvsinput.StartFIA2FVSNew(odbcmgr, oDao, oAdo, strTempMDB, m_bOverwrite, m_strDebugFile,
+                            p_fvsinput.StartFIA2FVS(odbcmgr, oDao, oAdo, strTempMDB, m_bOverwrite, m_strDebugFile,
                                 strCurVariant, lstStates, strSourceStandTableAlias,
                                 strSourceTreeTableAlias);
                         }
@@ -2044,7 +2038,7 @@ namespace FIA_Biosum_Manager
                         // This happens at the end
                         if (File.Exists(strInDirAndFile) == true) //redundant check here, but leaves " " instead of new "0"
                         {
-                            int[] fvsInputRecordCounts = getFVSSQLiteInputRecordCountsNew(strInDirAndFile, strVariant);
+                            int[] fvsInputRecordCounts = getFVSSQLiteInputRecordCounts(strInDirAndFile, strVariant);
                             frmMain.g_oDelegate.SetListViewSubItemPropertyValue(this.lstFvsInput, x, COL_STANDCOUNT, "Text",
                                 Convert.ToString(fvsInputRecordCounts[0]));
                             frmMain.g_oDelegate.SetListViewSubItemPropertyValue(this.lstFvsInput, x, COL_TREECOUNT, "Text",
@@ -2308,7 +2302,7 @@ namespace FIA_Biosum_Manager
             return new int[] { stands, trees };
         }
 
-        private int[] getFVSSQLiteInputRecordCounts(string strDirAndFile)
+        private int[] getFVSSQLiteInputRecordCounts_old(string strDirAndFile)
         {
             int stands = 0;
             int trees = 0;
@@ -2354,7 +2348,7 @@ namespace FIA_Biosum_Manager
             }
             return new int[] { stands, trees };
         }
-        private int[] getFVSSQLiteInputRecordCountsNew(string strDirAndFile, string strFVSVariant)
+        private int[] getFVSSQLiteInputRecordCounts(string strDirAndFile, string strFVSVariant)
         {
             int stands = 0;
             int trees = 0;
@@ -2505,7 +2499,7 @@ namespace FIA_Biosum_Manager
             get { return _frmDialog; }
         }
 
-        private void btnCreateFvsInput_Click(object sender, EventArgs e)
+        private void btnCreateFvsInput_Click_old(object sender, EventArgs e)
         {
             if (this.lstFvsInput.CheckedItems.Count == 0)
             {
@@ -2513,7 +2507,7 @@ namespace FIA_Biosum_Manager
                 return;
             }
 
-            CreateFia2FvsInputFiles();
+            CreateFia2FvsInputFiles_old();
             //@ToDo: 22-MAR-2022 Delete all references to cmbAction when we are sure we don't need it anymore
             //string strAction = cmbAction.Text.Trim().ToUpper();
             //switch (strAction)
@@ -2541,7 +2535,7 @@ namespace FIA_Biosum_Manager
             //}
         }
 
-        private void btnCreateFvsInputNew_Click(object sender, EventArgs e)
+        private void btnCreateFvsInput_Click(object sender, EventArgs e)
         {
             if (this.lstFvsInput.CheckedItems.Count == 0)
             {
@@ -2549,7 +2543,7 @@ namespace FIA_Biosum_Manager
                 return;
             }
 
-            CreateFia2FvsInputFilesSqlite();
+            CreateFia2FvsInputFiles();
         }
 
         private void cmbAction_SelectedIndexChanged(object sender, EventArgs e)
