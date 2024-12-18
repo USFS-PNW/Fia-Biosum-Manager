@@ -43,7 +43,7 @@ namespace FIA_Biosum_Manager
         private DataMgr m_dataMgr = new DataMgr();
         private string m_strConn = "";
         private bool m_bOverwrite = true;
-        private bool m_bKpcOverwrite = true;
+        private bool m_bKcpOverwrite = true;
         private IDictionary<string, List<string>> m_dictVariantStates = null;
         private System.Windows.Forms.Button btnHelp;
         private int m_intError = 0;
@@ -1456,18 +1456,18 @@ namespace FIA_Biosum_Manager
 
             }
 
-            // Check for existing kpc template file in fvs\data folder
-            string strKpcTargetPath = this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\" + 
+            // Check for existing kcp template file in fvs\data folder
+            string strKcpTargetPath = this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\" + 
                 Tables.FIA2FVS.KcpFileBiosumKeywords + Tables.FIA2FVS.KcpFileExtension;
 
-            if (System.IO.File.Exists(strKpcTargetPath))
+            if (System.IO.File.Exists(strKcpTargetPath))
             {
                 string strMessage = "BioSum has found an existing " + Tables.FIA2FVS.KcpFileBiosumKeywords + Tables.FIA2FVS.KcpFileExtension +
                     "file. Do you wish to overwrite it?";
                 DialogResult res = MessageBox.Show(strMessage, "FIA BioSum", MessageBoxButtons.YesNo);
                 if (res != DialogResult.Yes)
                 {
-                    m_bKpcOverwrite = false;
+                    m_bKcpOverwrite = false;
                 }
                 else
                 {
@@ -1477,19 +1477,19 @@ namespace FIA_Biosum_Manager
                     if (res == DialogResult.Yes)
                     {
                         string strFileSuffix = "_" + DateTime.Now.ToString("MMddyyyy");
-                        string strExtension = System.IO.Path.GetExtension(strKpcTargetPath);
-                        string strNewFileName = System.IO.Path.GetFileNameWithoutExtension(strKpcTargetPath) + strFileSuffix + strExtension;
+                        string strExtension = System.IO.Path.GetExtension(strKcpTargetPath);
+                        string strNewFileName = System.IO.Path.GetFileNameWithoutExtension(strKcpTargetPath) + strFileSuffix + strExtension;
                         // Check to see if the backup database already exists; If it does, abort the process so user can delete
                         if (System.IO.File.Exists(this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\" + strNewFileName))
                         {
                             MessageBox.Show("A backup database from today already exists: " + Tables.FIA2FVS.KcpFileBiosumKeywords + Tables.FIA2FVS.KcpFileExtension
                                 + strFileSuffix + ". Delete this database manually if you want to " +
                                 "back up today's data again!! The current file will not be overwritten.", "FIA BioSum");
-                            m_bKpcOverwrite = false;
+                            m_bKcpOverwrite = false;
                         }
                         else
                         {
-                            System.IO.File.Copy(strKpcTargetPath, this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\" + strNewFileName);
+                            System.IO.File.Copy(strKcpTargetPath, this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\" + strNewFileName);
                         }
                     }
                 }
@@ -2058,7 +2058,7 @@ namespace FIA_Biosum_Manager
                 }
 
                 // Copy KCP files to output directory
-                if (m_bKpcOverwrite = true)
+                if (m_bKcpOverwrite == true)
                 {
                     string[] arrKcpFiles = { Tables.FIA2FVS.KcpFileBiosumKeywords };
                     foreach (var kcp in arrKcpFiles)
