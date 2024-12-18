@@ -2167,7 +2167,7 @@ namespace FIA_Biosum_Manager
                 {
                     eqnConn.Open();
 
-                    oDataMgr.m_strSQL = "SELECT DISTINCT FVS_VARIANT FROM site_index_equations";
+                    oDataMgr.m_strSQL = "SELECT DISTINCT FVS_VARIANT FROM " + Tables.Reference.DefaultSiteIndexEquationsTable;
                     oDataMgr.SqlQueryReader(eqnConn, oDataMgr.m_strSQL);
                     if (oDataMgr.m_DataReader.HasRows)
                     {
@@ -4585,7 +4585,8 @@ namespace FIA_Biosum_Manager
             {
                 con.Open();
 
-                oDataMgr.m_strSQL = "SELECT * FROM site_index_equations WHERE FVS_VARIANT = '" + strVariant + "'";
+                oDataMgr.m_strSQL = "SELECT * FROM " + Tables.Reference.DefaultSiteIndexEquationsTable + 
+                    " WHERE FVS_VARIANT = '" + strVariant + "'";
                 oDataMgr.SqlQueryReader(con, oDataMgr.m_strSQL);
 
                 if (oDataMgr.m_DataReader.HasRows)
