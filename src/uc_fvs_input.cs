@@ -1387,47 +1387,26 @@ namespace FIA_Biosum_Manager
             if (lstVariants.Count > 0)
             {
                 System.Text.StringBuilder sb = new System.Text.StringBuilder();
-                sb.Append("FVS input data from the selected variant(s) already exist. ");
-                sb.Append("Click 'Yes' to append data to the existing database or 'No' to overwrite data for the selected variant(s) with new data. \r\n\r\n");
-                foreach (var item in lstVariants)
+                m_dictVariantStates = new Dictionary<string, List<string>>();    // Re-initialize dictionary
+                string connFiadbDb = oDataMgr.GetConnectionString(this.txtFIADatamart.Text);
+                using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(connFiadbDb))
                 {
-                    sb.Append(item + "\r");
-                }
-                DialogResult res = MessageBox.Show(sb.ToString(), "FIA BioSum", MessageBoxButtons.YesNoCancel);
-                switch (res)
-                {
-                    case DialogResult.Cancel:
-                        return;
-                    case DialogResult.Yes:
-                        break;
-                    case DialogResult.No:
-                        m_bOverwrite = true;
-                        break;
-                }
+                    con.Open();
 
-                if (!m_bOverwrite)
-                {
-                    m_dictVariantStates = new Dictionary<string, List<string>>();    // Re-initialize dictionary
-                    string connFiadbDb = oDataMgr.GetConnectionString(this.txtFIADatamart.Text);
-                    using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(connFiadbDb))
+                    oDataMgr.SqlNonQuery(con, "ATTACH '" + strInDirAndFile + "' as target");
+                    foreach (var strVariant in lstVariants)
                     {
-                        con.Open();
-
-                        oDataMgr.SqlNonQuery(con, "ATTACH '" + strInDirAndFile + "' as target");
-                        foreach (var strVariant in lstVariants)
+                        string strQuery = "SELECT distinct STATE FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                                            " INTERSECT SELECT distinct STATE" +
+                                            " FROM target." + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                                            " WHERE TRIM(VARIANT) = '" + strVariant + "'";
+                        List<string> lstStates = oDataMgr.getStringList(con, strQuery);
+                        if (lstStates.Count > 0)
                         {
-                            string strQuery = "SELECT distinct STATE FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
-                                              " INTERSECT SELECT distinct STATE" +
-                                              " FROM target." + Tables.FIA2FVS.DefaultFvsInputStandTableName +
-                                              " WHERE TRIM(VARIANT) = '" + strVariant + "'";
-                            List<string> lstStates = oDataMgr.getStringList(con, strQuery);
-                            if (lstStates.Count > 0)
-                            {
-                                m_dictVariantStates.Add(strVariant, lstStates);
-                            }
+                            m_dictVariantStates.Add(strVariant, lstStates);
                         }
-                        oDataMgr.SqlNonQuery(con, "DETACH DATABASE 'target'");
                     }
+                    oDataMgr.SqlNonQuery(con, "DETACH DATABASE 'target'");
                 }
                 if (m_dictVariantStates != null &&
                     m_dictVariantStates.Keys.Count > 0)
@@ -1442,7 +1421,7 @@ namespace FIA_Biosum_Manager
                     {
                         sb.Append(strVariant + "\r");
                     }
-                    res = MessageBox.Show(sb.ToString(), "FIA BioSum", MessageBoxButtons.YesNoCancel);
+                    DialogResult res = MessageBox.Show(sb.ToString(), "FIA BioSum", MessageBoxButtons.YesNoCancel);
                     switch (res)
                     {
                         case DialogResult.Cancel:
