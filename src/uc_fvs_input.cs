@@ -2002,9 +2002,9 @@ namespace FIA_Biosum_Manager
 
                             List<string> lstStates = new List<string>();
                             if (m_dictVariantStates != null &&
-                                m_dictVariantStates.ContainsKey(strInDirAndFile))
+                                m_dictVariantStates.ContainsKey(strCurVariant))
                             {
-                                lstStates = m_dictVariantStates[strInDirAndFile];
+                                lstStates = m_dictVariantStates[strCurVariant];
                             }
                             p_fvsinput.StartFIA2FVS(odbcmgr, oDao, oAdo, strTempMDB, m_bOverwrite, m_strDebugFile,
                                 strCurVariant, lstStates, strSourceStandTableAlias,

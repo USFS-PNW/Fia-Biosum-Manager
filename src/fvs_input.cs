@@ -1039,12 +1039,12 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void PopulateFuelColumns(string strConn, string strStandTable)
+        private void PopulateFuelColumnsSqlite_old (string strConn, string strStandTable)
         {
             //COARSE WOODY DEBRIS
             DebugLogMessage("Executing Coarse Woody Debris SQL (multiple steps)\r\n", 1);
-            foreach (string strSQL in Queries.FVS.FVSInput.StandInit.CalculateCoarseWoodyDebrisBiomassTonsPerAcreSqlite(
-                m_strDwmCoarseWoodyDebrisTable, m_strCondTable, m_strFiaTreeSpeciesRefTable,
+            foreach (string strSQL in Queries.FVS.FVSInput.StandInit.CalculateCoarseWoodyDebrisBiomassTonsPerAcreSqlite_old(
+                m_strDwmCoarseWoodyDebrisTable, m_strFiaTreeSpeciesRefTable, 
                 m_strDwmTransectSegmentTable, m_strMinCwdTransectLengthTotal, strStandTable))
             {
                 if (!String.IsNullOrEmpty(strSQL) && m_intError == 0)
@@ -1063,7 +1063,7 @@ namespace FIA_Biosum_Manager
             DebugLogMessage("Executing Fine Woody Debris SQL (multiple steps)\r\n", 1);
             if (m_intError == 0)
             {
-                foreach (string strSQL in Queries.FVS.FVSInput.StandInit.CalculateFineWoodyDebrisBiomassTonsPerAcreSqlite(
+                foreach (string strSQL in Queries.FVS.FVSInput.StandInit.CalculateFineWoodyDebrisBiomassTonsPerAcreSqlite_old(
                     m_strDwmFineWoodyDebrisTable, m_strCondTable, m_strMinSmallFwdTransectLengthTotal,
                     m_strMinLargeFwdTransectLengthTotal, strStandTable))
                 {
@@ -1091,27 +1091,27 @@ namespace FIA_Biosum_Manager
                 {
                     conn.Open();
                     string strSQL =
-                        Queries.FVS.FVSInput.StandInit.CalculateDuffLitterBiomassTonsPerAcreSqlite(m_strDwmDuffLitterTable,
+                        Queries.FVS.FVSInput.StandInit.CalculateDuffLitterBiomassTonsPerAcreSqlite_old(m_strDwmDuffLitterTable,
                             m_strCondTable, strStandTable);
                     DebugLogSQL(m_ado.m_strSQL);
                     m_ado.SqlNonQuery(conn, strSQL);
                     m_intError = m_ado.m_intError;
 
-                    strSQL = Queries.FVS.FVSInput.StandInit.UpdateFvsStandInitDuffLitterColumnsSqlite(strStandTable);
+                    strSQL = Queries.FVS.FVSInput.StandInit.UpdateFvsStandInitDuffLitterColumnsSqlite_old(strStandTable);
                     DebugLogSQL(strSQL);
                     m_ado.SqlNonQuery(conn, strSQL);
                     m_intError = m_ado.m_intError;
 
                     if (!string.IsNullOrEmpty(m_strDuffExcludedYears))
                     {
-                        strSQL = Queries.FVS.FVSInput.StandInit.RemoveDuffYearsSqlite(m_strDuffExcludedYears, strStandTable);
+                        strSQL = Queries.FVS.FVSInput.StandInit.RemoveDuffYearsSqlite_old(m_strDuffExcludedYears, strStandTable);
                         DebugLogSQL(strSQL);
                         m_ado.SqlNonQuery(conn, strSQL);
                         m_intError = m_ado.m_intError;
                     }
                     if (!string.IsNullOrEmpty(m_strLitterExcludedYears))
                     {
-                        strSQL = Queries.FVS.FVSInput.StandInit.RemoveLitterYearsSqlite(m_strLitterExcludedYears, strStandTable);
+                        strSQL = Queries.FVS.FVSInput.StandInit.RemoveLitterYearsSqlite_old(m_strLitterExcludedYears, strStandTable);
                         DebugLogSQL(strSQL);
                         m_ado.SqlNonQuery(conn, strSQL);
                         m_intError = m_ado.m_intError;
@@ -1131,6 +1131,205 @@ namespace FIA_Biosum_Manager
                         DebugLogSQL(strSQL);
                         m_ado.SqlNonQuery(conn, strSQL);
                         m_intError = m_ado.m_intError;
+                        if (m_intError != 0)
+                            break;
+                    }
+                }
+            }
+        }
+        private void PopulateFuelColumns(string strMDBConn, string strWorkDb, string strStandTable)
+        {
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+            string strDWMTablesDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.db";
+            string strBioSumRefDb = frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
+                        frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceSqliteFile;
+            string strWorkDbConn = oDataMgr.GetConnectionString(strWorkDb);
+            //COARSE WOODY DEBRIS
+            DebugLogMessage("Executing Coarse Woody Debris SQL (multiple steps)\r\n", 1);
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strWorkDbConn))
+            {
+                conn.Open();
+
+                oDataMgr.m_strSQL = "ATTACH DATABASE '" + strDWMTablesDb + "' AS dwmdb";
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+                string[] strCwdSqlStmts = Queries.FVS.FVSInput.StandInit.CalculateCoarseWoodyDebrisBiomassTonsPerAcreSqlite(
+                m_strDwmCoarseWoodyDebrisTable, m_strFiaTreeSpeciesRefTable,
+                m_strDwmTransectSegmentTable, m_strMinCwdTransectLengthTotal, strStandTable);
+                foreach (string strSQL in strCwdSqlStmts)
+                {
+                    if (!String.IsNullOrEmpty(strSQL) && m_intError == 0)
+                    {
+                        if (Array.IndexOf(strCwdSqlStmts, strSQL) == 3 || Array.IndexOf(strCwdSqlStmts, strSQL) == 4)
+                        {
+                            using (OleDbConnection accessConn = new OleDbConnection(strMDBConn))
+                            {
+                                accessConn.Open();
+                                if (!m_ado.TableExist(accessConn, "CwdPieceWorkTable"))
+                                {
+                                    m_dao.CreateSQLiteTableLink(m_strTempMDBFileNewProcess, "CwdPieceWorkTable", "CwdPieceWorkTable",
+                                        ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName, strWorkDb);
+                                    int i = 0;
+                                    do
+                                    {
+                                        // break out of loop if it runs too long
+                                        if (i > 20)
+                                        {
+                                            break;
+                                        }
+                                        System.Threading.Thread.Sleep(1000);
+                                        i++;
+                                    }
+                                    while (!m_ado.TableExist(accessConn, "CwdPieceWorkTable"));
+                                }
+                                DebugLogSQL(strSQL);
+                                m_ado.SqlNonQuery(accessConn, strSQL);
+                                m_intError = m_ado.m_intError;
+                            }
+                        }
+                        else
+                        {
+                            DebugLogSQL(strSQL);
+                            oDataMgr.SqlNonQuery(conn, strSQL);
+                            m_intError = oDataMgr.m_intError;
+                        }
+                    }
+                }
+
+                //FINE WOODY DEBRIS
+                DebugLogMessage("Executing Fine Woody Debris SQL (multiple steps)\r\n", 1);
+                oDataMgr.m_strSQL = "ATTACH DATABASE '" + strBioSumRefDb + "' AS biosumref";
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                if (m_intError == 0)
+                {
+                    string[] strFwdSqlStmts = Queries.FVS.FVSInput.StandInit.CalculateFineWoodyDebrisBiomassTonsPerAcreSqlite(
+                        m_strDwmFineWoodyDebrisTable, m_strCondTable, m_strMinSmallFwdTransectLengthTotal,
+                        m_strMinLargeFwdTransectLengthTotal, strStandTable);
+                    foreach (string strSQL in strFwdSqlStmts)
+                    {
+                        if (Array.IndexOf(strFwdSqlStmts, strSQL) == 1)
+                        {
+                            using (OleDbConnection accessConn = new OleDbConnection(strMDBConn))
+                            {
+                                accessConn.Open();
+
+                                if (!m_ado.TableExist(accessConn, "DWM_FWD_Aggregates_WorkTable"))
+                                {
+                                    m_dao.CreateSQLiteTableLink(m_strTempMDBFileNewProcess, "DWM_FWD_Aggregates_WorkTable", "DWM_FWD_Aggregates_WorkTable",
+                                ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName, strWorkDb);
+                                    int i = 0;
+                                    do
+                                    {
+                                        // break out of loop if it runs too long
+                                        if (i > 20)
+                                        {
+                                            break;
+                                        }
+                                        System.Threading.Thread.Sleep(1000);
+                                        i++;
+                                    }
+                                    while (!m_ado.TableExist(accessConn, "DWM_FWD_Aggregates_WorkTable"));
+                                }
+
+                                DebugLogSQL(strSQL);
+                                m_ado.SqlNonQuery(accessConn, strSQL);
+                                m_intError = m_ado.m_intError;
+                                if (m_intError != 0)
+                                    break;
+                            }
+                            
+                        }
+                        else
+                        {
+                            DebugLogSQL(strSQL);
+                            oDataMgr.SqlNonQuery(conn, strSQL);
+                            m_intError = oDataMgr.m_intError;
+                        }
+                    }
+                }
+
+                //DUFF LITTER
+                DebugLogMessage("Executing Duff Litter SQL (multiple steps)\r\n", 1);
+                if (m_intError == 0)
+                {
+                    oDataMgr.m_strSQL = Queries.FVS.FVSInput.StandInit.CreateDuffLitterBiomassTonsPerAcreSqlite();
+                    DebugLogSQL(oDataMgr.m_strSQL);
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    m_intError = oDataMgr.m_intError;
+                    using (OleDbConnection accessConn = new OleDbConnection(strMDBConn))
+                    {
+                        accessConn.Open();
+
+                        if (!m_ado.TableExist(accessConn, "DWM_DuffLitter_Aggregates_WorkTable"))
+                        {
+                            m_dao.CreateSQLiteTableLink(m_strTempMDBFileNewProcess, "DWM_DuffLitter_Aggregates_WorkTable", "DWM_DuffLitter_Aggregates_WorkTable",
+                                ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName, strWorkDb);
+                            int i = 0;
+                            do
+                            {
+                                // break out of loop if it runs too long
+                                if (i > 20)
+                                {
+                                    break;
+                                }
+                                System.Threading.Thread.Sleep(1000);
+                                i++;
+                            }
+                            while (!m_ado.TableExist(accessConn, "DWM_DuffLitter_Aggregates_WorkTable"));
+                        }
+
+                        string strSQL =
+                            Queries.FVS.FVSInput.StandInit.CalculateDuffLitterBiomassTonsPerAcreSqlite(m_strDwmDuffLitterTable,
+                                m_strCondTable, strStandTable);
+                        DebugLogSQL(m_ado.m_strSQL);
+                        m_ado.SqlNonQuery(accessConn, strSQL);
+                        m_intError = m_ado.m_intError;
+                    }
+                    oDataMgr.m_strSQL = Queries.FVS.FVSInput.StandInit.UpdateFvsStandInitDuffLitterColumnsSqlite(strStandTable);
+                    DebugLogSQL(oDataMgr.m_strSQL);
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    m_intError = oDataMgr.m_intError;
+
+                    if (!string.IsNullOrEmpty(m_strDuffExcludedYears))
+                    {
+                        oDataMgr.m_strSQL = Queries.FVS.FVSInput.StandInit.RemoveDuffYearsSqlite(m_strDuffExcludedYears, strStandTable);
+                        DebugLogSQL(oDataMgr.m_strSQL);
+                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                        m_intError = oDataMgr.m_intError;
+                    }
+                    if (!string.IsNullOrEmpty(m_strLitterExcludedYears))
+                    {
+                        oDataMgr.m_strSQL = Queries.FVS.FVSInput.StandInit.RemoveLitterYearsSqlite(m_strLitterExcludedYears, strStandTable);
+                        DebugLogSQL(oDataMgr.m_strSQL);
+                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                        m_intError = oDataMgr.m_intError;
+                    }
+                }
+
+                //Clean up worktables
+                DebugLogMessage("Deleting work tables\r\n", 1);
+                if (m_intError == 0)
+                {
+                    string[] strDeleteStmts = Queries.FVS.FVSInput.StandInit.DeleteDwmWorkTables();
+                    foreach (string strSQL in strDeleteStmts)
+                    {
+                        if (Array.IndexOf(strDeleteStmts, strSQL) == 1 ||
+                            Array.IndexOf(strDeleteStmts, strSQL) == 3 ||
+                            Array.IndexOf(strDeleteStmts, strSQL) == 4)
+                        {
+                            using (OleDbConnection accessConn = new OleDbConnection(strMDBConn))
+                            {
+                                accessConn.Open();
+                                DebugLogSQL(strSQL);
+                                m_ado.SqlNonQuery(accessConn, strSQL);
+                                m_intError = m_ado.m_intError;
+                                if (m_intError != 0)
+                                    break;
+                            }
+                        }
+                        DebugLogSQL(strSQL);
+                        oDataMgr.SqlNonQuery(conn, strSQL);
+                        m_intError = oDataMgr.m_intError;
                         if (m_intError != 0)
                             break;
                     }
@@ -5011,11 +5210,11 @@ namespace FIA_Biosum_Manager
             int intProgressBarCounter = 0;
 
             SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
-            string connWorkDb = oDataMgr.GetConnectionString(strVariantWorkDb);
-            string connTargetDb = oDataMgr.GetConnectionString(strInDirAndFile);
+            string strWorkDbConn = oDataMgr.GetConnectionString(strVariantWorkDb);
+            string strTargetDbConn = oDataMgr.GetConnectionString(strInDirAndFile);
             this.m_strDebugFile = strDebugFile;
             DebugLogMessage("*****START*****" + System.DateTime.Now.ToString() + "\r\n");
-            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(connTargetDb))
+            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strTargetDbConn))
             {
                 // Connect to target database (FVSIn.db)
                 con.Open();
@@ -5134,7 +5333,7 @@ namespace FIA_Biosum_Manager
                 }
             }
 
-            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(connWorkDb))
+            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strWorkDbConn))
             {
                 con.Open();
 
@@ -5322,7 +5521,8 @@ namespace FIA_Biosum_Manager
                     (int) m_enumDWMOption.USE_DWM_DATA_ONLY
                 }.Contains(m_intDWMOption))
                 {
-                    PopulateFuelColumns(strAccdbConnection, Tables.FIA2FVS.DefaultFvsInputStandTableName);
+                    PopulateFuelColumns(strAccdbConnection, strVariantWorkDb, Tables.FIA2FVS.DefaultFvsInputStandTableName);
+                    //PopulateFuelColumnsSqlite_old(strAccdbConnection, Tables.FIA2FVS.DefaultFvsInputStandTableName);
                 }
                 else
                 {
@@ -5426,7 +5626,7 @@ namespace FIA_Biosum_Manager
             }
 
             // Make changes to the FIA2FVS records as needed
-            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(connWorkDb))
+            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strWorkDbConn))
             {
                 con.Open();
                 string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +

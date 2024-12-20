@@ -3322,8 +3322,8 @@ namespace FIA_Biosum_Manager
 
 		                return strCwdSqlStmts;
 		            }
-                    public static string[] CalculateCoarseWoodyDebrisBiomassTonsPerAcreSqlite(string strCoarseWoodyDebrisTable,
-                        string strCondTable, string strRefSpecies, string strTransectSegmentTable, string strMinCwdTransectLengthTotal,
+                    public static string[] CalculateCoarseWoodyDebrisBiomassTonsPerAcreSqlite_old(string strCoarseWoodyDebrisTable,
+                        string strRefSpecies, string strTransectSegmentTable, string strMinCwdTransectLengthTotal,
                         string strStandTable)
                     {
                         string[] strCwdSqlStmts = new string[11];
@@ -3377,7 +3377,6 @@ namespace FIA_Biosum_Manager
                             "IIF(cwd.decaycd=5, spc.CWD_Decay_Ratio5, 0))))) " +
                             "WHERE cwd.spcd IS NULL;",
                             strRefSpecies);
-
 
                         //Calculate the CWD piece's biomass contribution to the condition
                         //The last step is to group these by biosum_cond_id and sum them
@@ -3461,7 +3460,7 @@ namespace FIA_Biosum_Manager
 
                         //Set cwd fuels to 0 if TS.horiz_length is non-null and positive
                         //FVS interprets 0s as 0 tons/acre, but null lets it insert default values for the variant.
-                        strCwdSqlStmts[idx++] = String.Format("UPDATE " + strStandTable  +
+                        strCwdSqlStmts[idx++] = String.Format("UPDATE " + strStandTable +
                                                               " SET Fuel_3_6_H=IIF(Fuel_3_6_H is null, 0, Fuel_3_6_H), " +
                                                               "Fuel_6_12_H=IIF(Fuel_6_12_H is null, 0, Fuel_6_12_H), " +
                                                               "Fuel_12_20_H=IIF(Fuel_12_20_H is null, 0, Fuel_12_20_H), " +
@@ -3475,6 +3474,156 @@ namespace FIA_Biosum_Manager
                                                               "Fuel_35_50_S=IIF(Fuel_35_50_S is null, 0, Fuel_35_50_S), " +
                                                               "Fuel_gt_50_S=IIF(Fuel_gt_50_S is null, 0, Fuel_gt_50_S) " +
                                                               "WHERE CWDTotalLength > 0;");
+
+                        return strCwdSqlStmts;
+                    }
+                    public static string[] CalculateCoarseWoodyDebrisBiomassTonsPerAcreSqlite(string strCoarseWoodyDebrisTable,
+                        string strRefSpecies, string strTransectSegmentTable, string strMinCwdTransectLengthTotal,
+                        string strStandTable)
+                    {
+                        string[] strCwdSqlStmts = new string[12];
+                        int idx = 0;
+
+                        //Sum horizontal lengths for transects
+                        strCwdSqlStmts[idx++] = "CREATE TABLE CWDTotalLengthWorkTable AS " +
+                            "SELECT biosum_cond_id, SUM(horiz_length) as CWDTotalLength " +
+                            "FROM " + strTransectSegmentTable + " GROUP BY biosum_cond_id";
+
+                        //Create worktable for calculation of cwd piece biomass
+                        strCwdSqlStmts[idx++] = "CREATE TABLE CwdPieceWorkTable (" +
+                            "temp_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                            "biosum_cond_id CHAR(25)," +
+                            "spcd INTEGER," +
+                            "transdia INTEGER," +
+                            "inclination INTEGER," +
+                            "decaycd INTEGER," +
+                            "BulkDensity DOUBLE DEFAULT 0.0," +
+                            "DecayRatio DOUBLE DEFAULT 0.0," +
+                            "CWDTotalLength DOUBLE," +
+                            "Biomass DOUBLE DEFAULT 0.0," +
+                            "ScalingConstants DOUBLE DEFAULT 0.186597208)";
+                        strCwdSqlStmts[idx++] = "INSERT INTO CwdPieceWorkTable " +
+                            "(biosum_cond_id, spcd, transdia, inclination, " +
+                            "decaycd, CWDTotalLength) " +
+                            "SELECT cwd.biosum_cond_id ," +
+                            "cwd.spcd, " +
+                            "cwd.transdia, " +
+                            "cwd.inclination, " +
+                            "cwd.decaycd, " +
+                            "tl.CWDTotalLength " +
+                            "FROM " + strCoarseWoodyDebrisTable + " AS cwd " +
+                            "INNER JOIN CWDTotalLengthWorkTable AS tl " +
+                            "ON cwd.biosum_cond_id = tl.biosum_cond_id";
+
+
+                        //Set BulkDensity And DecayRatios for each piece for easy multiplication across row
+                        strCwdSqlStmts[idx++] = String.Format("UPDATE CwdPieceWorkTable cwd " +
+                                                              "INNER JOIN {0} spc ON cwd.spcd=spc.spcd " +
+                                                              "SET cwd.BulkDensity=spc.CWD_Bulk_Density," +
+                                                              "cwd.DecayRatio=IIF(cwd.decaycd=1, spc.CWD_Decay_Ratio1, " +
+                                                              "IIF(cwd.decaycd=2, spc.CWD_Decay_Ratio2, " +
+                                                              "IIF(cwd.decaycd=3, spc.CWD_Decay_Ratio3, " +
+                                                              "IIF(cwd.decaycd=4, spc.CWD_Decay_Ratio4, " +
+                                                              "IIF(cwd.decaycd=5, spc.CWD_Decay_Ratio5, 0)))));",
+                            strRefSpecies);
+
+
+                        //TODO: null spcd needs bulkdensity and decayratio
+                        strCwdSqlStmts[idx++] = String.Format(
+                            "UPDATE CwdPieceWorkTable cwd, (SELECT * FROM {0} WHERE spcd=998) spc " +
+                            "SET cwd.BulkDensity=spc.CWD_Bulk_Density," +
+                            "cwd.DecayRatio=IIF(cwd.decaycd=1, spc.CWD_Decay_Ratio1, " +
+                            "IIF(cwd.decaycd=2, spc.CWD_Decay_Ratio2, " +
+                            "IIF(cwd.decaycd=3, spc.CWD_Decay_Ratio3, " +
+                            "IIF(cwd.decaycd=4, spc.CWD_Decay_Ratio4, " +
+                            "IIF(cwd.decaycd=5, spc.CWD_Decay_Ratio5, 0))))) " +
+                            "WHERE cwd.spcd IS NULL;",
+                            strRefSpecies);
+
+
+                        //Calculate the CWD piece's biomass contribution to the condition
+                        //The last step is to group these by biosum_cond_id and sum them
+                        strCwdSqlStmts[idx++] = "UPDATE CwdPieceWorkTable " +
+                                                "SET Biomass = ScalingConstants * BulkDensity * DecayRatio * POWER(transdia, 2) / CWDTotalLength";
+
+
+                        //Update CWD piece's biomass: scale by cosine_inclination or 1 if inclination is null 
+                        //Piece inclination is measured in degrees from 0 to 90. Convert to radians for Access cosine function
+                        strCwdSqlStmts[idx++] = "UPDATE CwdPieceWorkTable " +
+                                                "SET Biomass = Biomass / COS(inclination * 3.141592654 / 180) " +
+                                                "WHERE inclination IS NOT NULL;";
+
+                        //Sum by size and decay bins to match FVS_StandInit columns
+                        strCwdSqlStmts[idx++] = "CREATE TABLE DWM_CWD_Aggregates_WorkTable AS " +
+                            "SELECT biosum_cond_id, " +
+                            "SUM(CASE WHEN (transdia >= 3 AND transdia < 6) AND (decaycd IN (1, 2, 3)) THEN Biomass ELSE 0 END) AS fuel_3_6_H, " +
+                            "SUM(CASE WHEN (transdia >= 6 AND transdia < 12) AND (decaycd IN (1, 2, 3)) THEN Biomass ELSE 0 END) AS fuel_6_12_H, " +
+                            "SUM(CASE WHEN (transdia >= 12 AND transdia < 20) AND (decaycd IN (1, 2, 3)) THEN Biomass ELSE 0 END) AS fuel_12_20_H, " +
+                            "SUM(CASE WHEN (transdia >= 20 AND transdia < 35) AND (decaycd IN (1, 2, 3)) THEN Biomass ELSE 0 END) AS fuel_20_35_H, " +
+                            "SUM(CASE WHEN (transdia >= 35 AND transdia < 50) AND (decaycd IN (1, 2, 3)) THEN Biomass ELSE 0 END) AS fuel_35_50_H, " +
+                            "SUM(CASE WHEN (transdia >= 50 AND transdia < 999) AND (decaycd IN (1, 2, 3)) THEN Biomass ELSE 0 END) AS fuel_gt_50_H, " +
+                            "SUM(CASE WHEN (transdia >= 3 AND transdia < 6) AND (decaycd IN (4, 5)) THEN Biomass ELSE 0 END) AS fuel_3_6_S, " +
+                            "SUM(CASE WHEN (transdia >= 6 AND transdia < 12) AND (decaycd IN (4, 5)) THEN Biomass ELSE 0 END) AS fuel_6_12_S, " +
+                            "SUM(CASE WHEN (transdia >= 12 AND transdia < 20) AND (decaycd IN (4, 5)) THEN Biomass ELSE 0 END) AS fuel_12_20_S, " +
+                            "SUM(CASE WHEN (transdia >= 20 AND transdia < 35) AND (decaycd IN (4, 5)) THEN Biomass ELSE 0 END) AS fuel_20_35_S, " +
+                            "SUM(CASE WHEN (transdia >= 35 AND transdia < 50) AND (decaycd IN (4, 5)) THEN Biomass ELSE 0 END) AS fuel_35_50_S, " +
+                            "SUM(CASE WHEN (transdia >= 50 AND transdia < 999) AND (decaycd IN (4, 5)) THEN Biomass ELSE 0 END) AS fuel_gt_50_S " +
+                            "FROM CwdPieceWorkTable GROUP BY biosum_cond_id";
+
+                        //Update CWD columns in FVS_StandInit
+                        strCwdSqlStmts[idx++] = "UPDATE " + strStandTable + " AS fvs " +
+                            "SET fuel_3_6_H = cwd.fuel_3_6_H, " +
+                            "fuel_6_12_H = cwd.fuel_6_12_H, " +
+                            "fuel_12_20_H = cwd.fuel_12_20_H, " +
+                            "fuel_20_35_H = cwd.fuel_20_35_H, " +
+                            "fuel_35_50_H = cwd.fuel_35_50_H, " +
+                            "fuel_gt_50_H = cwd.fuel_gt_50_H, " +
+                            "fuel_3_6_S = cwd.fuel_3_6_S, " +
+                            "fuel_6_12_S = cwd.fuel_6_12_S, " +
+                            "fuel_12_20_S = cwd.fuel_12_20_S, " +
+                            "fuel_20_35_S = cwd.fuel_20_35_S, " +
+                            "fuel_35_50_S = cwd.fuel_35_50_S, " +
+                            "fuel_gt_50_S = cwd.fuel_gt_50_S " +
+                            "FROM DWM_CWD_Aggregates_WorkTable AS cwd WHERE TRIM(fvs.Stand_ID) = TRIM(cwd.biosum_cond_id)";
+
+                        //Write them to fvs_standinit column
+                        strCwdSqlStmts[idx++] = "UPDATE " + strStandTable + " AS fvs " +
+                            "SET cwdtotallength  =t.CWDTotalLength " +
+                            "FROM CWDTotalLengthWorkTable AS t WHERE fvs.stand_id = t.biosum_cond_id";
+
+                        //Nullify CWD where total horizontal length is less than the minimum
+                        strCwdSqlStmts[idx++] = "UPDATE " + strStandTable + " AS fvs " +
+                            "SET fuel_3_6_H = NULL, " +
+                            "fuel_6_12_H = NULL, " +
+                            "fuel_12_20_H = NULL, " +
+                            "fuel_20_35_H = NULL, " +
+                            "fuel_35_50_H = NULL, " +
+                            "fuel_gt_50_H = NULL, " +
+                            "fuel_3_6_S = NULL, " +
+                            "fuel_6_12_S = NULL, " +
+                            "fuel_12_20_S = NULL, " +
+                            "fuel_20_35_S = NULL, " +
+                            "fuel_35_50_S = NULL, " +
+                            "fuel_gt_50_S = NULL " +
+                            "FROM CWDTotalLengthWorkTable AS t WHERE TRIM(fvs.stand_id) = TRIM(t.biosum_cond_id) " +
+                            "AND fvs.CwdTotalLength < " + strMinCwdTransectLengthTotal;
+
+                        //Set cwd fuels to 0 if TS.horiz_length is non-null and positive
+                        //FVS interprets 0s as 0 tons/acre, but null lets it insert default values for the variant.
+                        strCwdSqlStmts[idx++] = "UPDATE " + strStandTable +
+                            " SET Fuel_3_6_H = CASE WHEN Fuel_3_6_H IS NULL THEN 0 ELSE Fuel_3_6_H END, " +
+                            "Fuel_6_12_H = CASE WHEN Fuel_6_12_H IS NULL THEN 0 ELSE Fuel_6_12_H END, " +
+                            "Fuel_12_20_H = CASE WHEN Fuel_12_20_H IS NULL THEN 0 ELSE Fuel_12_20_H END, " +
+                            "Fuel_20_35_H = CASE WHEN Fuel_20_35_H IS NULL THEN 0 ELSE Fuel_20_35_H END, " +
+                            "Fuel_35_50_H = CASE WHEN Fuel_35_50_H IS NULL THEN 0 ELSE Fuel_35_50_H END, " +
+                            "Fuel_gt_50_H = CASE WHEN Fuel_gt_50_H IS NULL THEN 0 ELSE Fuel_gt_50_H END, " +
+                            "Fuel_3_6_S = CASE WHEN Fuel_3_6_S IS NULL THEN 0 ELSE Fuel_3_6_S END, " +
+                            "Fuel_6_12_S = CASE WHEN Fuel_6_12_S IS NULL THEN 0 ELSE Fuel_6_12_S END, " +
+                            "Fuel_12_20_S = CASE WHEN Fuel_12_20_S IS NULL THEN 0 ELSE Fuel_12_20_S END, " +
+                            "Fuel_20_35_S = CASE WHEN Fuel_20_35_S IS NULL THEN 0 ELSE Fuel_20_35_S END, " +
+                            "Fuel_35_50_S = CASE WHEN Fuel_35_50_S IS NULL THEN 0 ELSE Fuel_35_50_S END, " +
+                            "Fuel_gt_50_S = CASE WHEN Fuel_gt_50_S IS NULL THEN 0 ELSE Fuel_gt_50_S END " +
+                            "WHERE CWDTotalLength > 0";
 
                         return strCwdSqlStmts;
                     }
@@ -3583,8 +3732,7 @@ namespace FIA_Biosum_Manager
 		                    strMinLargeFwdTransectLengthTotal);
 		                return strFwdSqlStmts;
 		            }
-
-                    public static string[] CalculateFineWoodyDebrisBiomassTonsPerAcreSqlite(string strDwmFineWoodyDebrisTable,
+                    public static string[] CalculateFineWoodyDebrisBiomassTonsPerAcreSqlite_old(string strDwmFineWoodyDebrisTable,
                         string strCondTable, string strMinSmallFwdTransectLengthTotal, string strMinLargeFwdTransectLengthTotal,
                         string strStandTable)
                     {
@@ -3680,6 +3828,124 @@ namespace FIA_Biosum_Manager
                         return strFwdSqlStmts;
                     }
 
+                    public static string[] CalculateFineWoodyDebrisBiomassTonsPerAcreSqlite(string strDwmFineWoodyDebrisTable,
+                        string strCondTable, string strMinSmallFwdTransectLengthTotal, string strMinLargeFwdTransectLengthTotal,
+                        string strStandTable)
+                    {
+                        string[] strFwdSqlStmts = new string[8];
+                        int idx = 0;
+
+                        //Create empty DWM_FWD_Aggregates_WorkTable table in SQLite
+                        strFwdSqlStmts[idx++] = "CREATE TABLE DWM_FWD_Aggregates_WorkTable " +
+                            "(temp_id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                            "biosum_cond_id CHAR(25)," +
+                            "rsncntcd INTEGER," +
+                            "smallTotal INTEGER," +
+                            "smallTL DOUBLE," +
+                            "mediumTotal INTEGER," +
+                            "mediumTL DOUBLE," +
+                            "largeTotal INTEGER," +
+                            "largeTL DOUBLE," +
+                            "decayRatio DOUBLE," +
+                            "bulkDensity DOUBLE," +
+                            "smallQMD DOUBLE," +
+                            "mediumQMD DOUBLE," +
+                            "largeQMD DOUBLE," +
+                            "SmallMediumTotalLength DOUBLE," +
+                            "LargeTotalLength DOUBLE," +
+                            "ScalingConstants DOUBLE DEFAULT 0.186597208)";
+
+                        //Gather variables for NRS-22 FWD equation into temporary table
+                        strFwdSqlStmts[idx++] = "INSERT INTO DWM_FWD_Aggregates_WorkTable " +
+                            "(biosum_cond_id, rsncntcd, smallTotal, smallTL," +
+                            "mediumTotal, mediumTL, largeTotal, largeTL," +
+                            "decayRatio, bulkDensity, smallQMD, mediumQMD, largeQMD," +
+                            "SmallMediumTotalLength, LargeTotalLength) " +
+                            "SELECT fwd.biosum_cond_id, first(fwd.rsnctcd) as rsncntcd, " +
+                            "sum(fwd.smallct) as smallTotal, first(fwd.small_tl_cond) as smallTL, " +
+                            "sum(fwd.mediumct) as mediumTotal, first(fwd.medium_tl_cond) as mediumTL, " +
+                            "sum(fwd.largect) as largeTotal, first(fwd.large_tl_cond) as largeTL, " +
+                            "first(rftg.fwd_decay_ratio) as decayRatio, first(rftg.fwd_density) as bulkDensity, " +
+                            "first(rftg.fwd_small_qmd) as smallQMD,  " +
+                            "first(rftg.fwd_medium_qmd) as mediumQMD,  " +
+                            "first(rftg.fwd_large_qmd) as largeQMD, " +
+                            "first(small_tl_cond) as SmallMediumTotalLength, " +
+                            "first(large_tl_cond) as LargeTotalLength " +
+                            "FROM ((" + strDwmFineWoodyDebrisTable + " fwd INNER JOIN " + strCondTable +
+                            " c ON fwd.biosum_cond_id = c.biosum_cond_id) " +
+                            "INNER JOIN REF_FOREST_TYPE rft ON c.fortypcd = rft.[VALUE]) " +
+                            "INNER JOIN REF_FOREST_TYPE_GROUP rftg ON rft.TYPGRPCD = rftg.[VALUE] " +
+                            "WHERE fwd.rsnctcd < 2 OR fwd.rsnctcd IS NULL " +
+                            "GROUP BY fwd.biosum_cond_id";
+
+
+                        //Creates a table for scaling FWD TLs because the counts (small, medium, large) are filtered by RsnCtCd
+                        strFwdSqlStmts[idx++] = "CREATE TABLE Dwm_Fwd_RsnCtCd_WorkTable AS " +
+                            "SELECT biosum_cond_id, " +
+                            "COUNT(CASE WHEN rsnctcd < 2 OR rsnctcd IS NULL THEN 1 ELSE NULL END) AS totalAcceptableRsnCtCd, " +
+                            "COUNT(*) AS totalFWDRecords, " +
+                            "CAST(COUNT(CASE WHEN rsnctcd < 2 OR rsnctcd IS NULL THEN 1 ELSE NULL END) AS DOUBLE) " +
+                            "/ (COUNT(*)) AS RsnCtCdScalingFactor " +
+                            "FROM " + strDwmFineWoodyDebrisTable + " AS fwd INNER JOIN " + strStandTable + " AS fvs " +
+                            "ON TRIM(fwd.biosum_cond_id) = TRIM(fvs.stand_id) " +
+                            "GROUP BY fwd.biosum_cond_id";
+
+                        //Multiply the FWD transect lengths for biomass calculations by the proportion of TLs with accepted RsnCtCds.
+                        //These RsnCtCd values are currently filtered out (2,3,4). Nulls are kept in.
+                        strFwdSqlStmts[idx++] = "UPDATE DWM_FWD_Aggregates_WorkTable AS fwd " +
+                            "SET smallTL = smallTL * rsn.RsnCtCdScalingFactor, " +
+                            "mediumTL = mediumTL * rsn.RsnCtCdScalingFactor, " +
+                            "largeTL = largeTL * rsn.RsnCtCdScalingFactor, " +
+                            "SmallMediumTotalLength = SmallMediumTotalLength * rsn.RsnCtCdScalingFactor, " +
+                            "LargeTotalLength = LargeTotalLength * rsn.RsnCtCdScalingFactor " +
+                            "FROM Dwm_Fwd_RsnCtCd_WorkTable AS rsn " +
+                            "WHERE fwd.biosum_cond_id = rsn.biosum_cond_id";
+
+                        strFwdSqlStmts[idx++] = "UPDATE " + strStandTable + " AS fvs " +
+                            "SET fuel_0_25_H = CASE WHEN smallTL = 0 OR smallTL IS NULL THEN NULL " +
+                            "ELSE (fwd.ScalingConstants * (fwd.smallTotal * POWER(fwd.smallQMD, 2)) / fwd.smallTL) * fwd.bulkDensity * fwd.decayRatio END, " +
+                            "fuel_25_1_H = CASE WHEN mediumTL = 0 OR mediumTL IS NULL THEN NULL " +
+                            "ELSE (fwd.ScalingConstants * (fwd.mediumTotal * POWER(fwd.mediumQMD, 2)) / fwd.mediumTL) * fwd.bulkDensity * fwd.decayRatio END, " +
+                            "fuel_1_3_H = CASE WHEN largeTL = 0 OR largeTL IS NULL THEN NULL " +
+                            "ELSE (fwd.ScalingConstants * (fwd.largeTotal * POWER(fwd.largeQMD, 2)) / fwd.largeTL) * fwd.bulkDensity * fwd.decayRatio END, " +
+                            "fuel_0_25_S = CASE WHEN smallTL = 0 OR smallTL IS NULL THEN NULL ELSE 0 END, " +
+                            "fuel_25_1_S = CASE WHEN mediumTL = 0 OR mediumTL IS NULL THEN NULL ELSE 0 END, " +
+                            "fuel_1_3_S = CASE WHEN largeTL = 0 OR largeTL IS NULL THEN NULL ELSE 0 END, " +
+                            "SmallMediumTotalLength = fwd.SmallMediumTotalLength, " +
+                            "LargeTotalLength = fwd.LargeTotalLength " +
+                            "FROM DWM_FWD_Aggregates_WorkTable AS fwd " +
+                            "WHERE TRIM(fvs.stand_id = fwd.biosum_cond_id)";
+
+                        // Set FWD columns to null if the scaling factor determined by all the DWM_Fine_Woody_Debris.RsnCtCd is 0.
+                        strFwdSqlStmts[idx++] = "UPDATE " + strStandTable + " AS fvs " +
+                            "SET fuel_0_25_H = NULL, " +
+                            "fuel_25_1_H = NULL," +
+                            "fuel_1_3_H = NULL, " +
+                            "fuel_0_25_S  = NULL, " +
+                            "fuel_25_1_S = NULL, " +
+                            "fuel_1_3_S = NULL, " +
+                            "SmallMediumTotalLength = NULL, " +
+                            "LargeTotalLength = NULL " +
+                            "FROM Dwm_Fwd_RsnCtCd_WorkTable AS rsn " +
+                            "WHERE TRIM(fvs.stand_id) = TRIM(rsn.biosum_cond_id) " +
+                            "AND rsn.RsnCtCdScalingFactor  =0";
+
+                        //Filter out FWD Small and Medium fuels where the minimum Small TL is larger
+                        strFwdSqlStmts[idx++] = "UPDATE " + strStandTable +
+                            " SET fuel_0_25_H = NULL, " +
+                            "fuel_25_1_H = NULL, " +
+                            "fuel_0_25_S = NULL, " +
+                            "fuel_25_1_S = NULL " +
+                            "WHERE SmallMediumTotalLength < " + strMinSmallFwdTransectLengthTotal;
+
+                        //Filter out FWD Large fuels where the minimum Large TL is larger
+                        strFwdSqlStmts[idx++] = "UPDATE " + strStandTable +
+                            " SET fuel_1_3_H = NULL, " +
+                            "fuel_1_3_S = NULL " +
+                            "WHERE LargeTotalLength < " + strMinLargeFwdTransectLengthTotal;
+                        return strFwdSqlStmts;
+                    }
+
                     public static string CalculateDuffLitterBiomassTonsPerAcre(string strDwmDuffLitterTable, string strCondTable)
 		            {
 		                return String.Format(
@@ -3696,7 +3962,7 @@ namespace FIA_Biosum_Manager
 		                    "INNER JOIN FVS_StandInit_WorkTable fvs on dl.biosum_cond_id=fvs.stand_ID " +
 		                    "GROUP BY dl.biosum_cond_id;", strDwmDuffLitterTable, strCondTable);
 		            }
-                    public static string CalculateDuffLitterBiomassTonsPerAcreSqlite(string strDwmDuffLitterTable, string strCondTable, string strStandTable)
+                    public static string CalculateDuffLitterBiomassTonsPerAcreSqlite_old(string strDwmDuffLitterTable, string strCondTable, string strStandTable)
                     {
                         return String.Format(
                             "SELECT dl.biosum_cond_id, " +
@@ -3712,6 +3978,33 @@ namespace FIA_Biosum_Manager
                             "INNER JOIN {2} fvs on dl.biosum_cond_id=fvs.stand_ID " +
                             "GROUP BY dl.biosum_cond_id;", strDwmDuffLitterTable, strCondTable, strStandTable);
                     }
+                    public static string CalculateDuffLitterBiomassTonsPerAcreSqlite(string strDwmDuffLitterTable, string strCondTable, string strStandTable)
+                    {
+                        return "INSERT INTO DWM_DuffLitter_Aggregates_WorkTable " +
+                            "(biosum_cond_id, DuffPitCount, LitterPitCount," +
+                            "fvs_fuel_duff_tonsPerAcre, fvs_fuel_litter_tonsPerAcre) " +
+                            "SELECT dl.biosum_cond_id, " +
+                            "SUM(IIF(duffdep IS NOT NULL, 1, 0)), " +
+                            "SUM(IIF(littdep IS NOT NULL, 1, 0)), " +
+                            "(AVG(dl.duffdep)*first(rftg.duff_density)*1.815), " +
+                            "(AVG(dl.littdep)*first(rftg.litter_density)*1.815) " +
+                            "FROM (((" + strDwmDuffLitterTable + " dl " +
+                            "INNER JOIN " + strCondTable + " c ON dl.biosum_cond_id = c.biosum_cond_id) " +
+                            "INNER JOIN REF_FOREST_TYPE rft ON c.fortypcd = rft.[VALUE]) " +
+                            "INNER JOIN REF_FOREST_TYPE_GROUP rftg ON rft.TYPGRPCD = rftg.[VALUE]) " +
+                            "INNER JOIN " + strStandTable + " fvs on dl.biosum_cond_id=fvs.stand_ID " +
+                            "GROUP BY dl.biosum_cond_id";
+                    }
+                    public static string CreateDuffLitterBiomassTonsPerAcreSqlite()
+                    {
+                        return "CREATE TABLE DWM_DuffLitter_Aggregates_WorkTable " +
+                            "(temp_id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                            "biosum_cond_id CHAR(25)," +
+                            "DuffPitCount INTEGER," +
+                            "LitterPitCount INTEGER," +
+                            "fvs_fuel_duff_tonsPerAcre DOUBLE," +
+                            "fvs_fuel_litter_tonsPerAcre DOUBLE)";
+                    }
 
                     public static string UpdateFvsStandInitDuffLitterColumns()
 		            {
@@ -3722,8 +4015,7 @@ namespace FIA_Biosum_Manager
 		                       "fvs.DuffPitCount = dl.DuffPitCount," +
 		                       "fvs.LitterPitCount = dl.LitterPitCount;";
 		            }
-
-                    public static string UpdateFvsStandInitDuffLitterColumnsSqlite(string strStandTable)
+                    public static string UpdateFvsStandInitDuffLitterColumnsSqlite_old(string strStandTable)
                     {
                         return "UPDATE " + strStandTable + " fvs " +
                                "INNER JOIN DWM_DuffLitter_Aggregates_WorkTable dl ON fvs.stand_id=dl.biosum_cond_id  " +
@@ -3731,6 +4023,16 @@ namespace FIA_Biosum_Manager
                                "fvs.fuel_litter = dl.fvs_fuel_litter_tonsPerAcre," +
                                "fvs.DuffPitCount = dl.DuffPitCount," +
                                "fvs.LitterPitCount = dl.LitterPitCount;";
+                    }
+                    public static string UpdateFvsStandInitDuffLitterColumnsSqlite(string strStandTable)
+                    {
+                        return "UPDATE " + strStandTable + " AS fvs " +
+                            "SET fuel_duff = dl.fvs_fuel_duff_tonsPerAcre, " +
+                            "fuel_litter = dl.fvs_fuel_litter_tonsPerAcre, " +
+                            "DuffPitCount = dl.DuffPitCount, " +
+                            "LitterPitCount = dl.LitterPitCount " +
+                            "FROM DWM_DuffLitter_Aggregates_WorkTable AS dl " +
+                            "WHERE TRIM(fvs.stand_id) = TRIM(dl.biosum_cond_id)";
                     }
 
 
@@ -3741,12 +4043,19 @@ namespace FIA_Biosum_Manager
 		                       "fvs.DuffPitCount=null " +
 		                       "WHERE fvs.inv_year IN (" + yearsFilter + ")";
 		            }
-                    public static string RemoveDuffYearsSqlite(string yearsFilter, string strStandTable)
+                    public static string RemoveDuffYearsSqlite_old(string yearsFilter, string strStandTable)
                     {
                         return "UPDATE " + strStandTable + " fvs " +
                                "SET fvs.fuel_duff = null," +
                                "fvs.DuffPitCount=null " +
                                "WHERE fvs.inv_year IN (" + yearsFilter + ")";
+                    }
+                    public static string RemoveDuffYearsSqlite(string yearsFilter, string strStandTable)
+                    {
+                        return "UPDATE " + strStandTable +
+                            " SET fuel_duff = NULL, " +
+                            "DuffPitCount = NULL " +
+                            "WHERE inv_year IN (" + yearsFilter + ")";
                     }
 
 
@@ -3757,12 +4066,19 @@ namespace FIA_Biosum_Manager
 		                       "fvs.LitterPitCount=null " +
 		                       "WHERE fvs.inv_year IN (" + yearsFilter + ")";
 		            }
-                    public static string RemoveLitterYearsSqlite(string yearsFilter, string strStandTable)
+                    public static string RemoveLitterYearsSqlite_old(string yearsFilter, string strStandTable)
                     {
                         return "UPDATE " + strStandTable + " fvs " +
                                "SET fvs.fuel_litter=null," +
                                "fvs.LitterPitCount=null " +
                                "WHERE fvs.inv_year IN (" + yearsFilter + ")";
+                    }
+                    public static string RemoveLitterYearsSqlite(string yearsFilter, string strStandTable)
+                    {
+                        return "UPDATE " + strStandTable +
+                            "SET fuel_litter = NULL, " +
+                            "LitterPitCount = NULL " +
+                            "WHERE inv_year IN (" + yearsFilter + ")";
                     }
 
 
