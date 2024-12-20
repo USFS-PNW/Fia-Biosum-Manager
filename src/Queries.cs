@@ -3589,7 +3589,7 @@ namespace FIA_Biosum_Manager
                         //Write them to fvs_standinit column
                         strCwdSqlStmts[idx++] = "UPDATE " + strStandTable + " AS fvs " +
                             "SET cwdtotallength  =t.CWDTotalLength " +
-                            "FROM CWDTotalLengthWorkTable AS t WHERE fvs.stand_id = t.biosum_cond_id";
+                            "FROM CWDTotalLengthWorkTable AS t WHERE TRIM(fvs.stand_id) = TRIM(t.biosum_cond_id)";
 
                         //Nullify CWD where total horizontal length is less than the minimum
                         strCwdSqlStmts[idx++] = "UPDATE " + strStandTable + " AS fvs " +
@@ -4249,6 +4249,30 @@ namespace FIA_Biosum_Manager
                          "FUEL_DUFF = NULL " +
                          " WHERE " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".VARIANT = '" + strVariant + "'";
                         return strSQL;
+                    }
+                    public static string SetDwmColumnsToNullSqlite()
+                    {
+                        return "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                            " SET FUEL_0_25_H = NULL," +
+                            "FUEL_25_1_H = NULL, " +
+                            "FUEL_1_3_H = NULL, " +
+                            "FUEL_3_6_H = NULL, " +
+                            "FUEL_6_12_H = NULL, " +
+                            "FUEL_12_20_H = NULL, " +
+                            "FUEL_20_35_H = NULL, " +
+                            "FUEL_35_50_H = NULL, " +
+                            "FUEL_GT_50_H = NULL, " +
+                            "FUEL_0_25_S = NULL, " +
+                            "FUEL_25_1_S = NULL, " +
+                            "FUEL_1_3_S = NULL, " +
+                            "FUEL_3_6_S = NULL, " +
+                            "FUEL_6_12_S = NULL, " +
+                            "FUEL_12_20_S = NULL, " +
+                            "FUEL_20_35_S = NULL, " +
+                            "FUEL_35_50_S = NULL, " +
+                            "FUEL_GT_50_S = NULL, " +
+                            "FUEL_LITTER = NULL, " +
+                            "FUEL_DUFF = NULL ";
                     }
 
                     public static string CopySiteIndexValues(string strVariant)

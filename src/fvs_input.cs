@@ -1144,6 +1144,7 @@ namespace FIA_Biosum_Manager
             string strBioSumRefDb = frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
                         frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceSqliteFile;
             string strWorkDbConn = oDataMgr.GetConnectionString(strWorkDb);
+
             //COARSE WOODY DEBRIS
             DebugLogMessage("Executing Coarse Woody Debris SQL (multiple steps)\r\n", 1);
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strWorkDbConn))
@@ -5513,9 +5514,30 @@ namespace FIA_Biosum_Manager
                     GenerateSiteIndexAndSiteSpeciesSQL(strVariant);
                 }
 
-
+                //Create lookup table for DWM Fuelbed Type Code to convert to FVS format
+                if (m_intError == 0 && new int[]
+                {
+                    (int) m_enumDWMOption.USE_FUEL_MODEL_OR_DWM_DATA,
+                    (int) m_enumDWMOption.USE_FUEL_MODEL_ONLY
+                }.Contains(m_intDWMOption))
+                {
+                    
+                    CreateDwmFuelbedTypeCodeFvsConversionTable(oAccessConn);
+                    m_ado.m_strSQL =
+                        Queries.FVS.FVSInput.StandInit.UpdateFuelModel(Tables.FIA2FVS.DefaultFvsInputStandTableName, m_strCondTable);
+                    m_ado.SqlNonQuery(oAccessConn, m_ado.m_strSQL);
+                    m_ado.SqlNonQuery(oAccessConn, "DROP TABLE Ref_DWM_Fuelbed_Type_Codes;");
+                }
+                // set fuel columns to null
+                
+                using (System.Data.SQLite.SQLiteConnection workConn = new System.Data.SQLite.SQLiteConnection(strWorkDbConn))
+                {
+                    workConn.Open();
+                    DebugLogSQL(Queries.FVS.FVSInput.StandInit.SetDwmColumnsToNullSqlite());
+                    oDataMgr.SqlNonQuery(workConn, Queries.FVS.FVSInput.StandInit.SetDwmColumnsToNullSqlite());
+                }
                 // Copy DWM fields from FVSIn.accdb
-                if (new int[]
+                if (m_intError == 0 && new int[]
                 {
                     (int) m_enumDWMOption.USE_FUEL_MODEL_OR_DWM_DATA,
                     (int) m_enumDWMOption.USE_DWM_DATA_ONLY
@@ -5524,11 +5546,11 @@ namespace FIA_Biosum_Manager
                     PopulateFuelColumns(strAccdbConnection, strVariantWorkDb, Tables.FIA2FVS.DefaultFvsInputStandTableName);
                     //PopulateFuelColumnsSqlite_old(strAccdbConnection, Tables.FIA2FVS.DefaultFvsInputStandTableName);
                 }
-                else
-                {
-                    DebugLogSQL(Queries.FVS.FVSInput.StandInit.SetDwmColumnsToNull(strVariant));
-                    oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.SetDwmColumnsToNull(strVariant));
-                }
+                //else
+                //{
+                //    DebugLogSQL(Queries.FVS.FVSInput.StandInit.SetDwmColumnsToNull(strVariant));
+                //    oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.SetDwmColumnsToNull(strVariant));
+                //}
 
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
