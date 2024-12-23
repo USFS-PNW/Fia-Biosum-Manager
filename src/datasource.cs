@@ -1651,6 +1651,57 @@ namespace FIA_Biosum_Manager
 			set {this._bLoadTableRecordCount=value;}
 
 		}
+		public string CreateTemporarySQLiteSpeciesRefTable()
+        {
+			// creates a copy of the FIA_TREE_SPECIES_REF in a temporary SQLite db
+			// and returns the path and file string for that db
+			DataMgr oDataMgr = new DataMgr();
+			env oEnv = new env();
+
+			string strTempDb = frmMain.g_oUtils.getRandomFile(oEnv.strTempDir, "db");
+			string strTempDbConn = oDataMgr.GetConnectionString(strTempDb);
+
+			using (System.Data.SQLite.SQLiteConnection tempConn = new System.Data.SQLite.SQLiteConnection(strTempDbConn))
+            {
+				tempConn.Open();
+				oDataMgr.m_strSQL = Tables.Reference.CreateFIATreeSpeciesRefTable(Tables.Reference.DefaultFIATreeSpeciesTableName);
+				oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
+            }
+
+			ODBCMgr oODBCMgr = new ODBCMgr();
+			if (oODBCMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.TemporaryDsnName))
+			{
+				oODBCMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.TemporaryDsnName);
+			}
+			oODBCMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.TemporaryDsnName, strTempDb);
+
+			dao_data_access oDao = new dao_data_access();
+			string strBioSumRefDb = frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
+				frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceDbFile;
+			oDao.CreateSQLiteTableLink(strBioSumRefDb, Tables.Reference.DefaultFIATreeSpeciesTableName,
+				Tables.Reference.DefaultFIATreeSpeciesTableName + "_1", ODBCMgr.DSN_KEYS.TemporaryDsnName, strTempDb);
+
+			ado_data_access oAdo = new ado_data_access();
+			string strBioSumRefDbConn = oAdo.getMDBConnString(strBioSumRefDb, "", "");
+			using (System.Data.OleDb.OleDbConnection conn = new System.Data.OleDb.OleDbConnection(strBioSumRefDbConn))
+            {
+				conn.Open();
+
+				oAdo.m_strSQL = "INSERT INTO " + Tables.Reference.DefaultFIATreeSpeciesTableName + "_1 " +
+					"SELECT * FROM " + Tables.Reference.DefaultFIATreeSpeciesTableName;
+				oAdo.SqlNonQuery(conn, oAdo.m_strSQL);
+
+				oAdo.m_strSQL = "DROP TABLE " + Tables.Reference.DefaultFIATreeSpeciesTableName + "_1";
+				oAdo.SqlNonQuery(conn, oAdo.m_strSQL);
+			}
+
+			if (oODBCMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.TemporaryDsnName))
+			{
+				oODBCMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.TemporaryDsnName);
+			}
+
+			return strTempDb;
+		}
 
         public class TableTypes
         {

@@ -3481,7 +3481,7 @@ namespace FIA_Biosum_Manager
                         string strRefSpecies, string strTransectSegmentTable, string strMinCwdTransectLengthTotal,
                         string strStandTable)
                     {
-                        string[] strCwdSqlStmts = new string[12];
+                        string[] strCwdSqlStmts = new string[11];
                         int idx = 0;
 
                         //Sum horizontal lengths for transects
@@ -3490,56 +3490,47 @@ namespace FIA_Biosum_Manager
                             "FROM " + strTransectSegmentTable + " GROUP BY biosum_cond_id";
 
                         //Create worktable for calculation of cwd piece biomass
-                        strCwdSqlStmts[idx++] = "CREATE TABLE CwdPieceWorkTable (" +
-                            "temp_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                            "biosum_cond_id CHAR(25)," +
-                            "spcd INTEGER," +
-                            "transdia INTEGER," +
-                            "inclination INTEGER," +
-                            "decaycd INTEGER," +
-                            "BulkDensity DOUBLE DEFAULT 0.0," +
-                            "DecayRatio DOUBLE DEFAULT 0.0," +
-                            "CWDTotalLength DOUBLE," +
-                            "Biomass DOUBLE DEFAULT 0.0," +
-                            "ScalingConstants DOUBLE DEFAULT 0.186597208)";
-                        strCwdSqlStmts[idx++] = "INSERT INTO CwdPieceWorkTable " +
-                            "(biosum_cond_id, spcd, transdia, inclination, " +
-                            "decaycd, CWDTotalLength) " +
-                            "SELECT cwd.biosum_cond_id ," +
-                            "cwd.spcd, " +
-                            "cwd.transdia, " +
-                            "cwd.inclination, " +
-                            "cwd.decaycd, " +
-                            "tl.CWDTotalLength " +
+                        strCwdSqlStmts[idx++] = "CREATE TABLE CwdPieceWorkTable AS " +
+                            "SELECT cwd.biosum_cond_id," +
+                            "cwd.spcd," +
+                            "cwd.transdia," +
+                            "cwd.inclination," +
+                            "cwd.decaycd," +
+                            "0.0 AS BulkDensity," +
+                            "0.0 AS DecayRatio," +
+                            "tl.CWDTotalLength," +
+                            "0.0 AS Biomass," +
+                            "0.186597208 AS ScalingConstants " +
                             "FROM " + strCoarseWoodyDebrisTable + " AS cwd " +
                             "INNER JOIN CWDTotalLengthWorkTable AS tl " +
                             "ON cwd.biosum_cond_id = tl.biosum_cond_id";
 
 
                         //Set BulkDensity And DecayRatios for each piece for easy multiplication across row
-                        strCwdSqlStmts[idx++] = String.Format("UPDATE CwdPieceWorkTable cwd " +
-                                                              "INNER JOIN {0} spc ON cwd.spcd=spc.spcd " +
-                                                              "SET cwd.BulkDensity=spc.CWD_Bulk_Density," +
-                                                              "cwd.DecayRatio=IIF(cwd.decaycd=1, spc.CWD_Decay_Ratio1, " +
-                                                              "IIF(cwd.decaycd=2, spc.CWD_Decay_Ratio2, " +
-                                                              "IIF(cwd.decaycd=3, spc.CWD_Decay_Ratio3, " +
-                                                              "IIF(cwd.decaycd=4, spc.CWD_Decay_Ratio4, " +
-                                                              "IIF(cwd.decaycd=5, spc.CWD_Decay_Ratio5, 0)))));",
-                            strRefSpecies);
 
+                        strCwdSqlStmts[idx++] = "UPDATE CwdPieceWorkTable AS cwd " +
+                            "SET BulkDensity = spc.CWD_Bulk_Density, " +
+                            "DecayRatio = CASE WHEN decaycd = 1 THEN spc.CWD_Decay_Ratio1 " +
+                            "WHEN decaycd = 2 THEN spc.CWD_Decay_Ratio2 " +
+                            "WHEN decaycd = 3 THEN spc.CWD_Decay_Ratio3 " +
+                            "WHEN decaycd = 4 THEN spc.CWD_Decay_Ratio4 " +
+                            "WHEN decaycd = 5 THEN spc.CWD_Decay_Ratio5 " +
+                            "ELSE 0 END " +
+                            "FROM " + strRefSpecies + " AS spc " +
+                            "WHERE cwd.spcd = spc.spcd";
 
                         //TODO: null spcd needs bulkdensity and decayratio
-                        strCwdSqlStmts[idx++] = String.Format(
-                            "UPDATE CwdPieceWorkTable cwd, (SELECT * FROM {0} WHERE spcd=998) spc " +
-                            "SET cwd.BulkDensity=spc.CWD_Bulk_Density," +
-                            "cwd.DecayRatio=IIF(cwd.decaycd=1, spc.CWD_Decay_Ratio1, " +
-                            "IIF(cwd.decaycd=2, spc.CWD_Decay_Ratio2, " +
-                            "IIF(cwd.decaycd=3, spc.CWD_Decay_Ratio3, " +
-                            "IIF(cwd.decaycd=4, spc.CWD_Decay_Ratio4, " +
-                            "IIF(cwd.decaycd=5, spc.CWD_Decay_Ratio5, 0))))) " +
-                            "WHERE cwd.spcd IS NULL;",
-                            strRefSpecies);
 
+                        strCwdSqlStmts[idx++] = "UPDATE CwdPieceWorkTable AS cwd " +
+                            "SET BulkDensity = spc.CWD_Bulk_Density, " +
+                            "DecayRatio = CASE WHEN decaycd = 1 THEN spc.CWD_Decay_Ratio1 " +
+                            "WHEN decaycd = 2 THEN spc.CWD_Decay_Ratio2 " +
+                            "WHEN decaycd = 3 THEN spc.CWD_Decay_Ratio3 " +
+                            "WHEN decaycd = 4 THEN spc.CWD_Decay_Ratio4 " +
+                            "WHEN decaycd = 5 THEN spc.CWD_Decay_Ratio5 " +
+                            "ELSE 0 END " +
+                            "FROM (SELECT * FROM " + strRefSpecies + " WHERE spcd = 998) AS spc " +
+                            "WHERE cwd.spcd IS NULL";
 
                         //Calculate the CWD piece's biomass contribution to the condition
                         //The last step is to group these by biosum_cond_id and sum them

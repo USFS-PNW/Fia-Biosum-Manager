@@ -1145,6 +1145,9 @@ namespace FIA_Biosum_Manager
                         frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceSqliteFile;
             string strWorkDbConn = oDataMgr.GetConnectionString(strWorkDb);
 
+            FIA_Biosum_Manager.Datasource oProjectDs = new Datasource();
+            string strTreeSpeciesDb = oProjectDs.CreateTemporarySQLiteSpeciesRefTable();
+
             //COARSE WOODY DEBRIS
             DebugLogMessage("Executing Coarse Woody Debris SQL (multiple steps)\r\n", 1);
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strWorkDbConn))
@@ -1154,6 +1157,9 @@ namespace FIA_Biosum_Manager
                 oDataMgr.m_strSQL = "ATTACH DATABASE '" + strDWMTablesDb + "' AS dwmdb";
                 oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 
+                oDataMgr.m_strSQL = "ATTACH DATABASE '" + strTreeSpeciesDb + "' AS tree_species";
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
                 string[] strCwdSqlStmts = Queries.FVS.FVSInput.StandInit.CalculateCoarseWoodyDebrisBiomassTonsPerAcreSqlite(
                 m_strDwmCoarseWoodyDebrisTable, m_strFiaTreeSpeciesRefTable,
                 m_strDwmTransectSegmentTable, m_strMinCwdTransectLengthTotal, strStandTable);
@@ -1161,39 +1167,9 @@ namespace FIA_Biosum_Manager
                 {
                     if (!String.IsNullOrEmpty(strSQL) && m_intError == 0)
                     {
-                        if (Array.IndexOf(strCwdSqlStmts, strSQL) == 3 || Array.IndexOf(strCwdSqlStmts, strSQL) == 4)
-                        {
-                            using (OleDbConnection accessConn = new OleDbConnection(strMDBConn))
-                            {
-                                accessConn.Open();
-                                if (!m_ado.TableExist(accessConn, "CwdPieceWorkTable"))
-                                {
-                                    m_dao.CreateSQLiteTableLink(m_strTempMDBFileNewProcess, "CwdPieceWorkTable", "CwdPieceWorkTable",
-                                        ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName, strWorkDb);
-                                    int i = 0;
-                                    do
-                                    {
-                                        // break out of loop if it runs too long
-                                        if (i > 20)
-                                        {
-                                            break;
-                                        }
-                                        System.Threading.Thread.Sleep(1000);
-                                        i++;
-                                    }
-                                    while (!m_ado.TableExist(accessConn, "CwdPieceWorkTable"));
-                                }
-                                DebugLogSQL(strSQL);
-                                m_ado.SqlNonQuery(accessConn, strSQL);
-                                m_intError = m_ado.m_intError;
-                            }
-                        }
-                        else
-                        {
                             DebugLogSQL(strSQL);
                             oDataMgr.SqlNonQuery(conn, strSQL);
                             m_intError = oDataMgr.m_intError;
-                        }
                     }
                 }
 
@@ -1314,8 +1290,7 @@ namespace FIA_Biosum_Manager
                     string[] strDeleteStmts = Queries.FVS.FVSInput.StandInit.DeleteDwmWorkTables();
                     foreach (string strSQL in strDeleteStmts)
                     {
-                        if (Array.IndexOf(strDeleteStmts, strSQL) == 1 ||
-                            Array.IndexOf(strDeleteStmts, strSQL) == 3 ||
+                        if (Array.IndexOf(strDeleteStmts, strSQL) == 3 ||
                             Array.IndexOf(strDeleteStmts, strSQL) == 4)
                         {
                             using (OleDbConnection accessConn = new OleDbConnection(strMDBConn))
@@ -5544,13 +5519,7 @@ namespace FIA_Biosum_Manager
                 }.Contains(m_intDWMOption))
                 {
                     PopulateFuelColumns(strAccdbConnection, strVariantWorkDb, Tables.FIA2FVS.DefaultFvsInputStandTableName);
-                    //PopulateFuelColumnsSqlite_old(strAccdbConnection, Tables.FIA2FVS.DefaultFvsInputStandTableName);
                 }
-                //else
-                //{
-                //    DebugLogSQL(Queries.FVS.FVSInput.StandInit.SetDwmColumnsToNull(strVariant));
-                //    oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.SetDwmColumnsToNull(strVariant));
-                //}
 
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
