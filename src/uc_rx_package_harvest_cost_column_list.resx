@@ -118,7 +118,6 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="lblDesc.Text" xml:space="preserve">
-    <value>Define column name(s) that contain supplemental harvest costs $/ac for this treatment.   These columns are designed to represent costs of applying a treatment that that are not calculated by OpCost.  The content of these columns ($/ac values) are specified by the analyst at a later stage in the analysis.
-</value>
+    <value>Define column name(s) that contain additional cost components ($/ac) for this treatment.   These columns are designed to represent costs of applying a treatment that are not calculated by OpCost.  The content of these columns ($/ac values) are specified by the analyst in the Processor workflow.</value>
   </data>
 </root>

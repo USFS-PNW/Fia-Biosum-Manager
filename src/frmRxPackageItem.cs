@@ -18,7 +18,6 @@ namespace FIA_Biosum_Manager
 		
 		private System.Windows.Forms.Panel panel1;
 		private System.Windows.Forms.TabControl tabControl1;
-		private System.Windows.Forms.TabPage tbPgRxItemFvsCmd;
 		private FIA_Biosum_Manager.RxPackageItem  _oRxPackageItem=null;
 		private FIA_Biosum_Manager.RxItem_Collection _oRxItemCollection=null;
 		private FIA_Biosum_Manager.uc_rx_package_list _uc_rx_package_list;
@@ -69,10 +68,6 @@ namespace FIA_Biosum_Manager
 			this.btnFvsCmdAdd.Enabled=false;
 			this.btnFvsCmdClearAll.Enabled=false;
 			this.btnFvsCmdDelete.Enabled=false;
-
-            // GitHub issue #70: Can't hide a tab page, but you can remove it
-            // Remove the line below to reinstate
-            tabControl1.TabPages.Remove(this.tbPgRxItemFvsCmd);
 			
 			//
 			// TODO: Add any constructor code after InitializeComponent call
@@ -110,7 +105,6 @@ namespace FIA_Biosum_Manager
             this.uc_rx_package_edit1 = new FIA_Biosum_Manager.uc_rx_package_edit();
             this.tbPgRxItemHarvestCostColumn = new System.Windows.Forms.TabPage();
             this.uc_rx_package_harvest_cost_column_list1 = new FIA_Biosum_Manager.uc_rx_package_harvest_cost_column_list();
-            this.tbPgRxItemFvsCmd = new System.Windows.Forms.TabPage();
             this.uc_rx_package_fvscmd_list1 = new FIA_Biosum_Manager.uc_rx_package_fvscmd_list();
             this.tlbRxPackageItem = new System.Windows.Forms.ToolBar();
             this.btnOk = new System.Windows.Forms.ToolBarButton();
@@ -127,7 +121,6 @@ namespace FIA_Biosum_Manager
             this.tabControl1.SuspendLayout();
             this.tbPgRxPackageItem.SuspendLayout();
             this.tbPgRxItemHarvestCostColumn.SuspendLayout();
-            this.tbPgRxItemFvsCmd.SuspendLayout();
             this.SuspendLayout();
             // 
             // panel1
@@ -144,7 +137,6 @@ namespace FIA_Biosum_Manager
             // 
             this.tabControl1.Controls.Add(this.tbPgRxPackageItem);
             this.tabControl1.Controls.Add(this.tbPgRxItemHarvestCostColumn);
-            this.tabControl1.Controls.Add(this.tbPgRxItemFvsCmd);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(0, 44);
             this.tabControl1.Name = "tabControl1";
@@ -180,7 +172,7 @@ namespace FIA_Biosum_Manager
             this.tbPgRxItemHarvestCostColumn.Name = "tbPgRxItemHarvestCostColumn";
             this.tbPgRxItemHarvestCostColumn.Size = new System.Drawing.Size(800, 385);
             this.tbPgRxItemHarvestCostColumn.TabIndex = 2;
-            this.tbPgRxItemHarvestCostColumn.Text = "Harvest Costs";
+            this.tbPgRxItemHarvestCostColumn.Text = "Additional CPA";
             this.tbPgRxItemHarvestCostColumn.UseVisualStyleBackColor = true;
             // 
             // uc_rx_package_harvest_cost_column_list1
@@ -190,18 +182,7 @@ namespace FIA_Biosum_Manager
             this.uc_rx_package_harvest_cost_column_list1.Name = "uc_rx_package_harvest_cost_column_list1";
             this.uc_rx_package_harvest_cost_column_list1.ReferenceFormRxPackageItem = null;
             this.uc_rx_package_harvest_cost_column_list1.Size = new System.Drawing.Size(800, 385);
-            this.uc_rx_package_harvest_cost_column_list1.TabIndex = 0;
-            // 
-            // tbPgRxItemFvsCmd
-            // 
-            this.tbPgRxItemFvsCmd.Controls.Add(this.uc_rx_package_fvscmd_list1);
-            this.tbPgRxItemFvsCmd.Location = new System.Drawing.Point(4, 22);
-            this.tbPgRxItemFvsCmd.Name = "tbPgRxItemFvsCmd";
-            this.tbPgRxItemFvsCmd.Size = new System.Drawing.Size(800, 385);
-            this.tbPgRxItemFvsCmd.TabIndex = 1;
-            this.tbPgRxItemFvsCmd.Text = "Associated FVS Command(s)";
-            this.tbPgRxItemFvsCmd.UseVisualStyleBackColor = true;
-            this.tbPgRxItemFvsCmd.Visible = false;
+
             // 
             // uc_rx_package_fvscmd_list1
             // 
@@ -321,7 +302,6 @@ namespace FIA_Biosum_Manager
             this.tabControl1.ResumeLayout(false);
             this.tbPgRxPackageItem.ResumeLayout(false);
             this.tbPgRxItemHarvestCostColumn.ResumeLayout(false);
-            this.tbPgRxItemFvsCmd.ResumeLayout(false);
             this.ResumeLayout(false);
 
 		}
