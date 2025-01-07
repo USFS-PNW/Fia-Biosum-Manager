@@ -61,13 +61,16 @@ namespace FIA_Biosum_Manager
         private RadioButton rdoHideLowestCost;
         private RadioButton rdoTreatment;
         private Label label18;
-        
-		
+        private System.Collections.Generic.IDictionary<string, string> m_descrDictionary =
+            new System.Collections.Generic.Dictionary<string, string>();
+        private System.Collections.Generic.IDictionary<string, string> m_steepDescrDictionary =
+            new System.Collections.Generic.Dictionary<string, string>();
 
-		/// <summary> 
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.Container components = null;
+
+        /// <summary> 
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.Container components = null;
 
 		public uc_processor_scenario_harvest_method()
 		{
@@ -727,13 +730,11 @@ namespace FIA_Biosum_Manager
 
             this.txtDesc.Text="";
 			this.txtSteepSlopeDesc.Text="";
-        
-            m_oAdo.OpenConnection(m_oAdo.getMDBConnString(this.ReferenceProcessorScenarioForm.LoadedQueries.m_strTempDbFile, "", ""));
-            if (m_oAdo.m_intError == 0)
-            {
-                //@ToDo: harvest_methods still in ref_master.mdb
-                this.m_oRxTools.LoadRxHarvestMethods(m_oAdo, m_oAdo.m_OleDbConnection, this.ReferenceProcessorScenarioForm.LoadedQueries, cmbMethod, cmbSteepSlopeMethod);
-            }
+            string strDbFile = this.ReferenceProcessorScenarioForm.LoadedQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.HarvestMethods);
+            m_descrDictionary.Clear();
+            m_steepDescrDictionary.Clear();
+            this.m_oRxTools.LoadRxHarvestMethodsSqlite(strDbFile, this.ReferenceProcessorScenarioForm.LoadedQueries, 
+                cmbMethod, cmbSteepSlopeMethod, m_descrDictionary, m_steepDescrDictionary);
 
 			this.cmbSteepSlopePercent.Items.Clear();
 			for (int x=90;x>=10;x=x-5)
@@ -1053,11 +1054,11 @@ namespace FIA_Biosum_Manager
 		}
 		private void getDesc()
 		{
-			if (m_oAdo.m_OleDbDataReader.IsClosed==false) return;
-
-            m_oAdo.m_strSQL = Queries.GenericSelectSQL(this.ReferenceProcessorScenarioForm.LoadedQueries.m_oReference.m_strRefHarvestMethodTable, "description", "TRIM(method)='" + cmbMethod.Text.Trim() + "' AND steep_yn = 'N'");
-			this.txtDesc.Text = m_oAdo.getSingleStringValueFromSQLQuery(m_oAdo.m_OleDbConnection,m_oAdo.m_strSQL,"temp");
-		}
+            if (m_descrDictionary.Keys.Contains(cmbMethod.Text.Trim()))
+            {
+                this.txtDesc.Text = m_descrDictionary[cmbMethod.Text.Trim()];
+            }
+        }
 
 		private void cmbSteepSlopeMethod_SelectedValueChanged(object sender, System.EventArgs e)
 		{
@@ -1066,11 +1067,11 @@ namespace FIA_Biosum_Manager
 		}
 		private void getDescSteepSlope()
 		{
-			if (m_oAdo.m_OleDbDataReader.IsClosed==false) return;
-
-            m_oAdo.m_strSQL = Queries.GenericSelectSQL(this.ReferenceProcessorScenarioForm.LoadedQueries.m_oReference.m_strRefHarvestMethodTable, "description", "TRIM(method)='" + this.cmbSteepSlopeMethod.Text.Trim() + "' AND steep_yn = 'Y'");
-			this.txtSteepSlopeDesc.Text = m_oAdo.getSingleStringValueFromSQLQuery(m_oAdo.m_OleDbConnection,m_oAdo.m_strSQL,"temp");
-		}
+            if (m_steepDescrDictionary.Keys.Contains(cmbSteepSlopeMethod.Text.Trim()))
+            {
+                this.txtSteepSlopeDesc.Text = m_steepDescrDictionary[cmbSteepSlopeMethod.Text.Trim()];
+            }
+        }
 
 		private void txtRxDesc_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
 		{

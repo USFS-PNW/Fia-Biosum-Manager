@@ -175,12 +175,12 @@ namespace FIA_Biosum_Manager
         }
         
         public int LoadTrees(string p_strVariant, string p_strRxPackage, string p_strCondTableName, string p_strPlotTableName,
-                             string p_strRefHarvestMethodTableName, string p_strRxDatabase, string p_strRxTableName)
+                             string p_strRefHarvestDatabase, string p_strRefHarvestMethodTableName, string p_strRxDatabase, string p_strRxTableName)
         {
 
             //Load harvest methods; Prescription load depends on harvest methods
             //@ToDo: Table names that are passed in here are still in MS Access
-            m_harvestMethodList = LoadHarvestMethods(p_strRefHarvestMethodTableName);
+            m_harvestMethodList = LoadHarvestMethods(p_strRefHarvestDatabase, p_strRefHarvestMethodTableName);
             //If harvest methods didn't load, stop processing
             if (m_harvestMethodList == null)
             {
@@ -1827,46 +1827,35 @@ namespace FIA_Biosum_Manager
             return returnEscalators;
         }
 
-        private System.Collections.Generic.IList<harvestMethod> LoadHarvestMethods(string p_strRefHarvestMethodTableName)
+        private System.Collections.Generic.IList<harvestMethod> LoadHarvestMethods(string p_strDatabase, string p_strRefHarvestMethodTableName)
         {
             System.Collections.Generic.IList<harvestMethod> harvestMethodList = null;
 
-                if (m_oAdo.m_intError == 0)
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(p_strDatabase)))
+            {
+                conn.Open();
+                string strSQL = "SELECT * FROM " + p_strRefHarvestMethodTableName;
+                SQLite.SqlQueryReader(conn, strSQL);
+                if (SQLite.m_DataReader.HasRows)
                 {
-                    // Check to see if the biosum_category column exists in the harvest method table; If not
-                    // throw an error and exit the function; Processor won't work without this value
-                    if (!m_oAdo.ColumnExist(m_oAdo.m_OleDbConnection, p_strRefHarvestMethodTableName, "min_tpa"))
+                    harvestMethodList = new System.Collections.Generic.List<harvestMethod>();
+                    while (SQLite.m_DataReader.Read())
                     {
-                        string strErrMsg = "Your project contains an obsolete version of the " + p_strRefHarvestMethodTableName +
-                                           " table that does not contain the 'min_tpa' field. Copy a new version of this table into your project from the" +
-                                           " BioSum installation directory before trying to run Processor.";
-                        System.Windows.Forms.MessageBox.Show(strErrMsg, "FIA Biosum",
-                            System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-                        return harvestMethodList;
-                    }
-
-                    string strSQL = "SELECT * FROM " + p_strRefHarvestMethodTableName;
-                    m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
-                    if (m_oAdo.m_OleDbDataReader.HasRows)
-                    {
-                        harvestMethodList = new System.Collections.Generic.List<harvestMethod>();
-                        while (m_oAdo.m_OleDbDataReader.Read())
-                        {
-                            string strSteepYN = Convert.ToString(m_oAdo.m_OleDbDataReader["STEEP_YN"]).Trim();
-                            bool blnSteep = false;
-                            if (strSteepYN.Equals("Y"))
-                            { blnSteep = true; }
-                            string strMethod = Convert.ToString(m_oAdo.m_OleDbDataReader["Method"]).Trim();
-                            int intBiosumCategory = Convert.ToInt16(m_oAdo.m_OleDbDataReader["biosum_category"]);
-                            double dblMinTpa = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_tpa"]);
-                            double dblMinYardDistanceFt = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_yard_distance_ft"]);
-                            double dblMinAvgTreeVolCf = Convert.ToDouble(m_oAdo.m_OleDbDataReader["min_avg_tree_vol_cf"]);
-                            harvestMethod newMethod = new harvestMethod(blnSteep, strMethod, intBiosumCategory, dblMinTpa,
-                                dblMinYardDistanceFt, dblMinAvgTreeVolCf);
-                            harvestMethodList.Add(newMethod);
-                        }
+                        string strSteepYN = Convert.ToString(SQLite.m_DataReader["STEEP_YN"]).Trim();
+                        bool blnSteep = false;
+                        if (strSteepYN.Equals("Y"))
+                        { blnSteep = true; }
+                        string strMethod = Convert.ToString(SQLite.m_DataReader["Method"]).Trim();
+                        int intBiosumCategory = Convert.ToInt16(SQLite.m_DataReader["biosum_category"]);
+                        double dblMinTpa = Convert.ToDouble(SQLite.m_DataReader["min_tpa"]);
+                        double dblMinYardDistanceFt = Convert.ToDouble(SQLite.m_DataReader["min_yard_distance_ft"]);
+                        double dblMinAvgTreeVolCf = Convert.ToDouble(SQLite.m_DataReader["min_avg_tree_vol_cf"]);
+                        harvestMethod newMethod = new harvestMethod(blnSteep, strMethod, intBiosumCategory, dblMinTpa,
+                            dblMinYardDistanceFt, dblMinAvgTreeVolCf);
+                        harvestMethodList.Add(newMethod);
                     }
                 }
+            }
             return harvestMethodList;
         }
         

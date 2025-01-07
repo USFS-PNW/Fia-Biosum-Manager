@@ -100,6 +100,7 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oFrmMain.Top);
             bool bPerformCheck = true;
             string strProjVersionFile = this.ReferenceProjectDirectory.Trim() + "\\application.version";
+            //UpdateDatasources_5_11_2();
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "version_control.PerformVersionCheck: strProjVersionFile=" + strProjVersionFile + "\r\n");
@@ -7477,6 +7478,8 @@ namespace FIA_Biosum_Manager
                 oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.RxPackage, $@"{ReferenceProjectDirectory.Trim()}\db", strMasterDb, Tables.FVS.DefaultRxPackageTableName);
                 oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.Rx, $@"{ ReferenceProjectDirectory.Trim()}\db", strMasterDb, Tables.FVS.DefaultRxTableName);
                 oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.RxHarvestCostColumns, $@"{ ReferenceProjectDirectory.Trim()}\db", strMasterDb, Tables.FVS.DefaultRxHarvestCostColumnsTableName);
+                oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.HarvestMethods, "@@appdata@@\\fiabiosum", Tables.Reference.DefaultBiosumReferenceSqliteFile, Tables.Reference.DefaultHarvestMethodsTableName);
+
                 // Update Optimizer data sources
                 strDestFile = $@"{ReferenceProjectDirectory.Trim()}\{Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile}";
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
@@ -7484,6 +7487,9 @@ namespace FIA_Biosum_Manager
                     conn.Open();
                     oDataMgr.m_strSQL = $@"UPDATE {Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioDatasourceTableName} SET file = '{strMasterDb}' 
                         where table_type in ('Treatment Prescriptions','Treatment Prescriptions Harvest Cost Columns','{Datasource.TableTypes.RxPackage}')";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    oDataMgr.m_strSQL = $@"UPDATE {Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioDatasourceTableName} SET path = '@@appdata@@\fiabiosum', file = '{Tables.Reference.DefaultBiosumReferenceSqliteFile}' 
+                        where table_type = '{Datasource.TableTypes.HarvestMethods}' ";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
                 // Update Processor data sources
@@ -7493,6 +7499,9 @@ namespace FIA_Biosum_Manager
                     conn.Open();
                     oDataMgr.m_strSQL = $@"UPDATE {Tables.Scenario.DefaultScenarioDatasourceTableName} SET file = '{strMasterDb}' 
                         where table_type in ('Treatment Prescriptions','Treatment Prescriptions Harvest Cost Columns','{Datasource.TableTypes.RxPackage}')";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    oDataMgr.m_strSQL = $@"UPDATE {Tables.Scenario.DefaultScenarioDatasourceTableName} SET path = '@@appdata@@\fiabiosum', file = '{Tables.Reference.DefaultBiosumReferenceSqliteFile}' 
+                        where table_type = '{Datasource.TableTypes.HarvestMethods}' ";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
                 // Remove obsolete data source definitions

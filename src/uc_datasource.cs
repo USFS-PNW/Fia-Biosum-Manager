@@ -799,6 +799,7 @@ namespace FIA_Biosum_Manager
 							this.m_oLvRowColors.ListViewSubItem(entryListItem.Index,TABLE,entryListItem.SubItems[entryListItem.SubItems.Count-1],false);
 
                             bool bSQLite = false;
+                            bool bTableExists = false;
                             if (System.IO.Path.GetExtension(oDataReader["file"].ToString().Trim()).ToUpper().Equals(".DB"))
                             {
                                 // This is an SQLite data source
@@ -814,7 +815,8 @@ namespace FIA_Biosum_Manager
 								strSQL = "select count(*) from " + oDataReader["table_name"].ToString();
 								this.lstRequiredTables.Items[x].SubItems.Add(Convert.ToString(p_ado.getRecordCount(strConn,strSQL,oDataReader["table_name"].ToString())));
 								this.m_oLvRowColors.ListViewSubItem(entryListItem.Index,RECORDCOUNT,entryListItem.SubItems[entryListItem.SubItems.Count-1],lstRequiredTables.Items[x].Selected);
-							}
+                                bTableExists = true;
+                            }
                             else if (bSQLite)
                             {
                                 string strDbConn = oDataMgr.GetConnectionString(strPathAndFile);
@@ -829,10 +831,11 @@ namespace FIA_Biosum_Manager
                                         long lngRecordCount = oDataMgr.getRecordCount(conn, strSQL, oDataReader["table_name"].ToString());
                                         this.lstRequiredTables.Items[x].SubItems.Add(Convert.ToString(lngRecordCount));
                                         this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, RECORDCOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], lstRequiredTables.Items[x].Selected);
+                                        bTableExists = true;
                                     }
                                 }
                             }
-							else 
+                            if (!bTableExists)
 							{
 								ListViewItem.ListViewSubItem TableStatusSubItem = 
 									entryListItem.SubItems.Add("Not Found");

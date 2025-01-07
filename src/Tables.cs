@@ -6947,7 +6947,9 @@ namespace FIA_Biosum_Manager
             static public string DefaultBiosumReferenceDbFile { get { return "biosum_ref.accdb"; } }
             static public string DefaultBiosumReferenceVersionTableName { get { return "REF_VERSION"; } }
             static public string DefaultOpCostReferenceDbFile { get { return @"db\opcost_ref.db"; } }
-
+            static public string DefaultBiosumReferenceSqliteFile { get { return "biosum_ref.db"; } }
+            static public string DefaultSiteIndexEquationsTable { get { return "site_index_equations"; } }
+            static public string DefaultFIATreeSpeciesTableName { get { return "FIA_TREE_SPECIES_REF"; } }
 
             public void CreateTreeSpeciesTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {

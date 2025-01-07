@@ -1319,11 +1319,11 @@ namespace FIA_Biosum_Manager
                         "'TreeMacroPlotBreakPointDia');";
                     p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
 
-					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " + 
-						"('Harvest Methods'," + 
-						"'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," + 
-						"'ref_master.mdb'," +
-                        "'harvest_methods');";
+                    strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
+                        "('" + Datasource.TableTypes.HarvestMethods + "'," +
+                        "'@@appdata@@\\fiabiosum'," +
+                        "'" + Tables.Reference.DefaultBiosumReferenceSqliteFile + "'," +
+                        "'" + Tables.Reference.DefaultHarvestMethodsTableName + "');";
 					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
 
                     strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
