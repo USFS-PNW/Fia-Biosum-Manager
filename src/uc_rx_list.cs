@@ -1938,8 +1938,8 @@ namespace FIA_Biosum_Manager
         /// <param name="p_oQueries"></param>
         /// <param name="p_cmbHarvestMethod"></param>
         /// <param name="p_cmbHarvestMethodSteepSlope"></param>
-        /// @ToDo: This needs to be tested; Harvest methods still in MS Access when written
-        public void LoadRxHarvestMethodsSqlite(string p_strDbFile, Queries p_oQueries, ComboBox p_cmbHarvestMethod, ComboBox p_cmbHarvestMethodSteepSlope)
+        public void LoadRxHarvestMethodsSqlite(string p_strDbFile, Queries p_oQueries, ComboBox p_cmbHarvestMethod, ComboBox p_cmbHarvestMethodSteepSlope,
+            System.Collections.Generic.IDictionary<string, string> dictDescr, System.Collections.Generic.IDictionary<string, string> dictSteepDescr)
         {
             p_cmbHarvestMethod.Items.Clear();
             p_cmbHarvestMethodSteepSlope.Items.Clear();
@@ -1961,12 +1961,20 @@ namespace FIA_Biosum_Manager
                                 if (dataMgr.m_DataReader["steep_yn"].ToString().Trim() == "Y")
                                 {
                                     p_cmbHarvestMethodSteepSlope.Items.Add(dataMgr.m_DataReader["method"].ToString().Trim());
-
+                                    if (!dictSteepDescr.ContainsKey(dataMgr.m_DataReader["method"].ToString().Trim()))
+                                    {
+                                        dictSteepDescr.Add(dataMgr.m_DataReader["method"].ToString().Trim(),
+                                            dataMgr.m_DataReader["description"].ToString().Trim());
+                                    }
                                 }
                                 else
                                 {
                                     p_cmbHarvestMethod.Items.Add(dataMgr.m_DataReader["method"].ToString().Trim());
-
+                                    if (!dictDescr.ContainsKey(dataMgr.m_DataReader["method"].ToString().Trim()))
+                                    {
+                                        dictDescr.Add(dataMgr.m_DataReader["method"].ToString().Trim(),
+                                            dataMgr.m_DataReader["description"].ToString().Trim());
+                                    }
                                 }
                             }
                         }

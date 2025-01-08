@@ -1165,12 +1165,16 @@ namespace FIA_Biosum_Manager
 		public string getFullPathAndFile(string p_strTableType)
 		{
 			int x;
-			for (x=0; x<= this.m_intNumberOfTables-1;x++)
+            macrosubst oMacroSub = new macrosubst();
+            oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
+            for (x=0; x<= this.m_intNumberOfTables-1;x++)
 			{
-				if (p_strTableType.Trim().ToUpper() == 
+                if (p_strTableType.Trim().ToUpper() == 
 					this.m_strDataSource[x,TABLETYPE].Trim().ToUpper())
 				{
-					return this.m_strDataSource[x,PATH].ToString().Trim() + "\\" + this.m_strDataSource[x,MDBFILE].ToString().Trim();
+                    string strPathAndFile = oMacroSub.GeneralTranslateVariableSubstitution(this.m_strDataSource[x, PATH].ToString().Trim())
+                        + "\\" + this.m_strDataSource[x, MDBFILE].ToString().Trim();
+                    return strPathAndFile;
 				}
 			}
 			return "";

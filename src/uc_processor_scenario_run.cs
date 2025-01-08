@@ -6101,9 +6101,9 @@ namespace FIA_Biosum_Manager
                     if (!_bInactiveVarRxPackage)
                     {
                         m_intError = mainProcessor.LoadTrees(strVariant, strRxPackage, m_oQueries.m_oFIAPlot.m_strCondTable,
-                            m_oQueries.m_oFIAPlot.m_strPlotTable, m_oQueries.m_oReference.m_strRefHarvestMethodTable,
-                            m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Rx), m_oQueries.m_oFvs.m_strRxTable);
-
+                            m_oQueries.m_oFIAPlot.m_strPlotTable, m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.HarvestMethods),
+                            m_oQueries.m_oReference.m_strRefHarvestMethodTable, m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Rx), 
+                            m_oQueries.m_oFvs.m_strRxTable);
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         {
                             frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");

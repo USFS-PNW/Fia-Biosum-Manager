@@ -7078,7 +7078,7 @@ namespace FIA_Biosum_Manager
 
 			public void LoadDatasources()
 			{
-				m_strRefHarvestMethodTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("HARVEST METHODS");
+				m_strRefHarvestMethodTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName(Datasource.TableTypes.HarvestMethods);
 				
 			
 				if (m_strRefHarvestMethodTable.Trim().Length == 0 && this._oQueries._strScenarioType!="optimizer") 
