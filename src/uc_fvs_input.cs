@@ -76,7 +76,7 @@ namespace FIA_Biosum_Manager
         private Help m_oHelp;
         private string m_xpsFile = Help.DefaultFvsXPSFile;
         private string m_strDebugFile;
-        private TabControl tabControl1;
+        //private TabControl tabControl1;
         private TabPage tabPage2;
         private TextBox txtDataDir;
         private Button btnCreateFvsInput;
@@ -1308,12 +1308,6 @@ namespace FIA_Biosum_Manager
 
         public void CreateFia2FvsInputFiles()
         {
-            if (this.lstFvsInput.CheckedItems.Count == 0)
-            {
-                MessageBox.Show("No Boxes Are Checked", "Append", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                return;
-            }
-
             m_bOverwrite = false;
             // Make sure the database is chosen and that such a file exists
             bool bValidFile = true;
@@ -1334,14 +1328,14 @@ namespace FIA_Biosum_Manager
             }
             if (bValidFile == false)
             {
-                MessageBox.Show("You must specify a source input database on the FVSIn FIA2FVS tab before proceeding!", "FIA Biosum");
+                MessageBox.Show("You must specify a source input database before proceeding!", "FIA Biosum");
                 return;
             }
 
             // Make sure a group is selected
             if (cmbSelectedGroup.SelectedIndex < 0)
             {
-                MessageBox.Show("You must specify a group on the FVSIn FIA2FVS tab before proceeding!", "FIA Biosum");
+                MessageBox.Show("You must specify a group before proceeding!", "FIA Biosum");
                 return;
             }
             string strInDirAndFile = this.txtDataDir.Text + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
@@ -1461,8 +1455,8 @@ namespace FIA_Biosum_Manager
                         // Check to see if the backup database already exists; If it does, abort the process so user can delete
                         if (System.IO.File.Exists(this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\" + strNewFileName))
                         {
-                            MessageBox.Show("A backup database from today already exists: " + Tables.FIA2FVS.KcpFileBiosumKeywords + Tables.FIA2FVS.KcpFileExtension
-                                + strFileSuffix + ". Delete this database manually if you want to " +
+                            MessageBox.Show("A backup file from today already exists: " + Tables.FIA2FVS.KcpFileBiosumKeywords + Tables.FIA2FVS.KcpFileExtension
+                                + strFileSuffix + ". Delete this file manually if you want to " +
                                 "back up today's data again!! The current file will not be overwritten.", "FIA BioSum");
                             m_bKcpOverwrite = false;
                         }
@@ -2389,15 +2383,15 @@ namespace FIA_Biosum_Manager
                 m_oHelp = new Help(m_xpsFile, m_oEnv);
             }
             string helpPage = "INPUT_DATA";
-            switch (tabControl1.SelectedIndex)
-            {
-                case 0:
-                    helpPage = "INPUT_DATA";
-                    break;
-                case 1:
-                    helpPage = "INPUT_OPTIONS";
-                    break;
-            }
+            //switch (tabControl1.SelectedIndex)
+            //{
+            //    case 0:
+            //        helpPage = "INPUT_DATA";
+            //        break;
+            //    case 1:
+            //        helpPage = "INPUT_OPTIONS";
+            //        break;
+            //}
             m_oHelp.ShowHelp(new string[] { "FVS", helpPage });
         }
         private void txtDataDir_KeyPress(object sender, System.Windows.Forms.KeyPressEventArgs e)
@@ -2569,14 +2563,14 @@ namespace FIA_Biosum_Manager
 
         private void tabControl1_Resize(object sender, EventArgs e)
         {
-            tabControl1.Top = this.lblTitle.Bottom + 5;
-            tabControl1.Left = 5;
-            tabControl1.Width = this.Width - 10;
-            tabControl1.Height = this.Height - 100;
+            //tabControl1.Top = this.lblTitle.Bottom + 5;
+            //tabControl1.Left = 5;
+            //tabControl1.Width = this.Width - 10;
+            //tabControl1.Height = this.Height - 100;
 
             btnClose.Top = groupBox1.Bottom - btnClose.Height - 5;
-            btnClose.Left = tabControl1.Right - btnClose.Width;
-            btnHelp.Left = tabControl1.Left;
+            //btnClose.Left = tabControl1.Right - btnClose.Width;
+            //btnHelp.Left = tabControl1.Left;
             btnHelp.Top = btnClose.Top;
 
 
