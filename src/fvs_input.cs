@@ -5430,9 +5430,6 @@ namespace FIA_Biosum_Manager
             }
             odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.BiosumRefDsnName, strBiosumRefDb);
 
-            // Attach tables needed for Site Index and Fuel columns
-            LinkSiteIndexAndFuelColumnsTables();
-
             if (!string.IsNullOrEmpty(odbcmgr.m_strError))
             {
                 DebugLogSQL("ODBCMgr error: " + odbcmgr.m_strError);
@@ -5442,6 +5439,9 @@ namespace FIA_Biosum_Manager
             {
                 DebugLogSQL("Created DSN for " + ODBCMgr.DSN_KEYS.DWMDsnName);
             }
+
+            // Attach tables needed for Site Index and Fuel columns
+            LinkSiteIndexAndFuelColumnsTables();
 
             frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
                 "Populating FVS_STANDINIT_COND and FVS_TREEINIT_COND tables For Variant " + strVariant);
@@ -5508,8 +5508,8 @@ namespace FIA_Biosum_Manager
                 using (System.Data.SQLite.SQLiteConnection workConn = new System.Data.SQLite.SQLiteConnection(strWorkDbConn))
                 {
                     workConn.Open();
-                    DebugLogSQL(Queries.FVS.FVSInput.StandInit.SetDwmColumnsToNullSqlite());
-                    oDataMgr.SqlNonQuery(workConn, Queries.FVS.FVSInput.StandInit.SetDwmColumnsToNullSqlite());
+                    DebugLogSQL(Queries.FVS.FVSInput.StandInit.SetFuelColumnsToNull());
+                    oDataMgr.SqlNonQuery(workConn, Queries.FVS.FVSInput.StandInit.SetFuelColumnsToNull());
                 }
                 // Copy DWM fields from FVSIn.accdb
                 if (m_intError == 0 && new int[]

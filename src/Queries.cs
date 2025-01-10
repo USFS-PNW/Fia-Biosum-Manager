@@ -4241,7 +4241,7 @@ namespace FIA_Biosum_Manager
                          " WHERE " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".VARIANT = '" + strVariant + "'";
                         return strSQL;
                     }
-                    public static string SetDwmColumnsToNullSqlite()
+                    public static string SetFuelColumnsToNull()
                     {
                         return "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
                             " SET FUEL_0_25_H = NULL," +

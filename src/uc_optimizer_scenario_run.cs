@@ -1024,8 +1024,8 @@ namespace FIA_Biosum_Manager
 			if (this.m_intError==0)  
 			{
                 UpdateThermPercent();
-				this.m_intError= ReferenceOptimizerScenarioForm.uc_scenario_filter1.Val_PlotFilterSqlite(ReferenceOptimizerScenarioForm.uc_scenario_filter1.txtCurrentSQL.Text.Trim());
-				if (this.m_intError!=0)
+                this.m_intError = ReferenceOptimizerScenarioForm.uc_scenario_filter1.Val_PlotFilterSqlite(ReferenceOptimizerScenarioForm.uc_scenario_filter1.txtCurrentSQL.Text.Trim());
+                if (this.m_intError!=0)
 					MessageBox.Show(ReferenceOptimizerScenarioForm.uc_scenario_filter1.m_strError,"FIA Biosum");
 
 			}
@@ -1033,8 +1033,8 @@ namespace FIA_Biosum_Manager
 			if (this.m_intError==0)  
 			{
                 UpdateThermPercent();
-				this.m_intError = ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.Val_CondFilterSqlite(ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.txtCurrentSQL.Text.Trim());
-				if (this.m_intError!=0)
+                this.m_intError = ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.Val_CondFilterSqlite(ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.txtCurrentSQL.Text.Trim());
+                if (this.m_intError!=0)
 					MessageBox.Show(ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.m_strError,"FIA Biosum");
 
 			}
