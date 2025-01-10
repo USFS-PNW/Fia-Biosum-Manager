@@ -5204,49 +5204,7 @@ namespace FIA_Biosum_Manager
                 {
                     frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
                         "Creating FVS_INIT_COND tables For Variant " + strVariant);
-                    string strSql = "ATTACH DATABASE '" + m_strSourceFiaDb + "' AS source";
-                    DebugLogSQL(strSql);
-                    oDataMgr.SqlNonQuery(con, strSql);
-
-                    // Query schema and create empty stand table
-                    strSql = "SELECT sql FROM source.sqlite_master WHERE type = 'table' " +
-                        "AND name = '" + Tables.FIA2FVS.DefaultFvsInputStandTableName + "'";
-                    DebugLogSQL(strSql);
-                    strSql = oDataMgr.getSingleStringValueFromSQLQuery(con, strSql, "sqlite_master");
-                    if (!String.IsNullOrEmpty(strSql))
-                    {
-                        DebugLogSQL(strSql);
-                        oDataMgr.SqlNonQuery(con, strSql);
-                    }
-
-                    // Add BioSum DWM fields to empty stand table
-                    string[] arrDwmFields = new string[] {"SmallMediumTotalLength", "LargeTotalLength", "CWDTotalLength",
-                                                          "DuffPitCount", "LitterPitCount"};
-                    string[] arrDwmTypes = new string[] { "DOUBLE", "DOUBLE", "DOUBLE", "LONG", "LONG" };
-                    for (int i = 0; i < arrDwmFields.Length; i++)
-                    {
-                        oDataMgr.AddColumn(con, Tables.FIA2FVS.DefaultFvsInputStandTableName, arrDwmFields[i], arrDwmTypes[i], null);
-                        DebugLogSQL("Added column " + arrDwmFields[i] + " to table " + Tables.FIA2FVS.DefaultFvsInputStandTableName);
-                    }
-
-                    // Create empty tree table
-                    strSql = "SELECT sql FROM source.sqlite_master WHERE type = 'table' " +
-                        "AND name = '" + Tables.FIA2FVS.DefaultFvsInputTreeTableName + "'";
-                    DebugLogSQL(strSql);
-                    strSql = oDataMgr.getSingleStringValueFromSQLQuery(con, strSql, "sqlite_master");
-                    if (!String.IsNullOrEmpty(strSql))
-                    {
-                        DebugLogSQL(strSql);
-                        oDataMgr.SqlNonQuery(con, strSql);
-                    }
-
-                    // Add VARIANT field to empty tree table
-                    oDataMgr.AddColumn(con, Tables.FIA2FVS.DefaultFvsInputTreeTableName, "VARIANT", "CHAR", "2");
-
-                    // Disconnect from source database
-                    strSql = "DETACH DATABASE 'source'";
-                    DebugLogSQL(strSql);
-                    oDataMgr.SqlNonQuery(con, strSql);
+                    CreateFVSInputTables(con);
                 }
                 else if (bCreateTables == false && lstStates.Count > 0)
                 {
@@ -5286,27 +5244,8 @@ namespace FIA_Biosum_Manager
                 }
 
 
-                // Ensure FIADB indexes are in place
-                string[] arrStandIndexNames = new string[] { "FVS_STANDINIT_COND_STAND_CN_IDX", "FVS_STANDINIT_COND_STAND_ID_IDX" };
-                string[] arrStandIndexColumns = new string[] { "STAND_CN", "STAND_ID" };
-                for (int i = 0; i < arrStandIndexColumns.Length; i++)
-                {
-                    if (!oDataMgr.IndexExist(con, arrStandIndexNames[i]) &&
-                         oDataMgr.FieldExist(con, $@"SELECT * FROM {Tables.FIA2FVS.DefaultFvsInputStandTableName}", arrStandIndexColumns[i]))
-                    {
-                        oDataMgr.AddIndex(con, Tables.FIA2FVS.DefaultFvsInputStandTableName, arrStandIndexNames[i], arrStandIndexColumns[i]);
-                    }
-                }
-                string[] arrTreeIndexNames = new string[] { "FVS_TREEINIT_COND_STAND_CN_IDX", "FVS_TREEINIT_COND_STAND_ID_IDX", "FVS_TREEINIT_COND_STANDPLOT_CN_IDX", "FVS_TREEINIT_COND_STANDPLOT_ID_IDX", "FVS_TREEINIT_COND_TREE_CN_IDX", "FVS_TREEINIT_TREE_ID_IDX" };
-                string[] arrTreeIndexColumns = new string[] { "STAND_CN", "STAND_ID", "STANDPLOT_CN", "STANDPLOT_ID", "TREE_CN", "TREE_ID" };
-                for (int i = 0; i < arrTreeIndexColumns.Length; i++)
-                {
-                    if (!oDataMgr.IndexExist(con, arrTreeIndexNames[i]) &&
-                         oDataMgr.FieldExist(con, $@"SELECT * FROM {Tables.FIA2FVS.DefaultFvsInputTreeTableName}", arrTreeIndexColumns[i]))
-                    {
-                        oDataMgr.AddIndex(con, Tables.FIA2FVS.DefaultFvsInputTreeTableName, arrTreeIndexNames[i], arrTreeIndexColumns[i]);
-                    }
-                }
+                // Ensure FIADB indexes are in plac
+                AddFIADBIndexes(con);
             }
 
             using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strWorkDbConn))
@@ -5314,72 +5253,11 @@ namespace FIA_Biosum_Manager
                 con.Open();
 
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
-                        "Creating FVS_INIT_COND tables For Variant " + strVariant);
-                string strSql = "ATTACH DATABASE '" + m_strSourceFiaDb + "' AS source";
-                DebugLogSQL(strSql);
-                oDataMgr.SqlNonQuery(con, strSql);
-
-                // Query schema and create empty stand table
-                strSql = "SELECT sql FROM source.sqlite_master WHERE type = 'table' " +
-                    "AND name = '" + Tables.FIA2FVS.DefaultFvsInputStandTableName + "'";
-                DebugLogSQL(strSql);
-                strSql = oDataMgr.getSingleStringValueFromSQLQuery(con, strSql, "sqlite_master");
-                if (!String.IsNullOrEmpty(strSql))
-                {
-                    DebugLogSQL(strSql);
-                    oDataMgr.SqlNonQuery(con, strSql);
-                }
-
-                // Add BioSum DWM fields to empty stand table
-                string[] arrDwmFields = new string[] {"SmallMediumTotalLength", "LargeTotalLength", "CWDTotalLength",
-                                                          "DuffPitCount", "LitterPitCount"};
-                string[] arrDwmTypes = new string[] { "DOUBLE", "DOUBLE", "DOUBLE", "LONG", "LONG" };
-                for (int i = 0; i < arrDwmFields.Length; i++)
-                {
-                    oDataMgr.AddColumn(con, Tables.FIA2FVS.DefaultFvsInputStandTableName, arrDwmFields[i], arrDwmTypes[i], null);
-                    DebugLogSQL("Added column " + arrDwmFields[i] + " to table " + Tables.FIA2FVS.DefaultFvsInputStandTableName);
-                }
-
-                // Create empty tree table
-                strSql = "SELECT sql FROM source.sqlite_master WHERE type = 'table' " +
-                    "AND name = '" + Tables.FIA2FVS.DefaultFvsInputTreeTableName + "'";
-                DebugLogSQL(strSql);
-                strSql = oDataMgr.getSingleStringValueFromSQLQuery(con, strSql, "sqlite_master");
-                if (!String.IsNullOrEmpty(strSql))
-                {
-                    DebugLogSQL(strSql);
-                    oDataMgr.SqlNonQuery(con, strSql);
-                }
-
-                // Add VARIANT field to empty tree table
-                oDataMgr.AddColumn(con, Tables.FIA2FVS.DefaultFvsInputTreeTableName, "VARIANT", "CHAR", "2");
-
-                // Disconnect from source database
-                strSql = "DETACH DATABASE 'source'";
-                DebugLogSQL(strSql);
-                oDataMgr.SqlNonQuery(con, strSql);
+                        "Creating work FVS_INIT_COND tables For Variant " + strVariant);
+                CreateFVSInputTables(con);
 
                 // Ensure FIADB indexes are in place
-                string[] arrStandIndexNames = new string[] { "FVS_STANDINIT_COND_STAND_CN_IDX", "FVS_STANDINIT_COND_STAND_ID_IDX" };
-                string[] arrStandIndexColumns = new string[] { "STAND_CN", "STAND_ID" };
-                for (int i = 0; i < arrStandIndexColumns.Length; i++)
-                {
-                    if (!oDataMgr.IndexExist(con, arrStandIndexNames[i]) &&
-                         oDataMgr.FieldExist(con, $@"SELECT * FROM {Tables.FIA2FVS.DefaultFvsInputStandTableName}", arrStandIndexColumns[i]))
-                    {
-                        oDataMgr.AddIndex(con, Tables.FIA2FVS.DefaultFvsInputStandTableName, arrStandIndexNames[i], arrStandIndexColumns[i]);
-                    }
-                }
-                string[] arrTreeIndexNames = new string[] { "FVS_TREEINIT_COND_STAND_CN_IDX", "FVS_TREEINIT_COND_STAND_ID_IDX", "FVS_TREEINIT_COND_STANDPLOT_CN_IDX", "FVS_TREEINIT_COND_STANDPLOT_ID_IDX", "FVS_TREEINIT_COND_TREE_CN_IDX", "FVS_TREEINIT_TREE_ID_IDX" };
-                string[] arrTreeIndexColumns = new string[] { "STAND_CN", "STAND_ID", "STANDPLOT_CN", "STANDPLOT_ID", "TREE_CN", "TREE_ID" };
-                for (int i = 0; i < arrTreeIndexColumns.Length; i++)
-                {
-                    if (!oDataMgr.IndexExist(con, arrTreeIndexNames[i]) &&
-                         oDataMgr.FieldExist(con, $@"SELECT * FROM {Tables.FIA2FVS.DefaultFvsInputTreeTableName}", arrTreeIndexColumns[i]))
-                    {
-                        oDataMgr.AddIndex(con, Tables.FIA2FVS.DefaultFvsInputTreeTableName, arrTreeIndexNames[i], arrTreeIndexColumns[i]);
-                    }
-                }
+                AddFIADBIndexes(con);
             }
 
             frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
@@ -5761,6 +5639,81 @@ namespace FIA_Biosum_Manager
                 }
 
 
+            }
+        }
+
+        public void CreateFVSInputTables(System.Data.SQLite.SQLiteConnection p_Conn)
+        {
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+
+            string strSql = "ATTACH DATABASE '" + m_strSourceFiaDb + "' AS source";
+            DebugLogSQL(strSql);
+            oDataMgr.SqlNonQuery(p_Conn, strSql);
+
+            // Query schema and create empty stand table
+            strSql = "SELECT sql FROM source.sqlite_master WHERE type = 'table' " +
+                "AND name = '" + Tables.FIA2FVS.DefaultFvsInputStandTableName + "'";
+            DebugLogSQL(strSql);
+            strSql = oDataMgr.getSingleStringValueFromSQLQuery(p_Conn, strSql, "sqlite_master");
+            if (!String.IsNullOrEmpty(strSql))
+            {
+                DebugLogSQL(strSql);
+                oDataMgr.SqlNonQuery(p_Conn, strSql);
+            }
+
+            // Add BioSum DWM fields to empty stand table
+            string[] arrDwmFields = new string[] {"SmallMediumTotalLength", "LargeTotalLength", "CWDTotalLength",
+                                                        "DuffPitCount", "LitterPitCount"};
+            string[] arrDwmTypes = new string[] { "DOUBLE", "DOUBLE", "DOUBLE", "LONG", "LONG" };
+            for (int i = 0; i < arrDwmFields.Length; i++)
+            {
+                oDataMgr.AddColumn(p_Conn, Tables.FIA2FVS.DefaultFvsInputStandTableName, arrDwmFields[i], arrDwmTypes[i], null);
+                DebugLogSQL("Added column " + arrDwmFields[i] + " to table " + Tables.FIA2FVS.DefaultFvsInputStandTableName);
+            }
+
+            // Create empty tree table
+            strSql = "SELECT sql FROM source.sqlite_master WHERE type = 'table' " +
+                "AND name = '" + Tables.FIA2FVS.DefaultFvsInputTreeTableName + "'";
+            DebugLogSQL(strSql);
+            strSql = oDataMgr.getSingleStringValueFromSQLQuery(p_Conn, strSql, "sqlite_master");
+            if (!String.IsNullOrEmpty(strSql))
+            {
+                DebugLogSQL(strSql);
+                oDataMgr.SqlNonQuery(p_Conn, strSql);
+            }
+
+            // Add VARIANT field to empty tree table
+            oDataMgr.AddColumn(p_Conn, Tables.FIA2FVS.DefaultFvsInputTreeTableName, "VARIANT", "CHAR", "2");
+
+            // Disconnect from source database
+            strSql = "DETACH DATABASE 'source'";
+            DebugLogSQL(strSql);
+            oDataMgr.SqlNonQuery(p_Conn, strSql);
+        }
+
+        public void AddFIADBIndexes(System.Data.SQLite.SQLiteConnection p_Conn)
+        {
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+
+            string[] arrStandIndexNames = new string[] { "FVS_STANDINIT_COND_STAND_CN_IDX", "FVS_STANDINIT_COND_STAND_ID_IDX" };
+            string[] arrStandIndexColumns = new string[] { "STAND_CN", "STAND_ID" };
+            for (int i = 0; i < arrStandIndexColumns.Length; i++)
+            {
+                if (!oDataMgr.IndexExist(p_Conn, arrStandIndexNames[i]) &&
+                     oDataMgr.FieldExist(p_Conn, $@"SELECT * FROM {Tables.FIA2FVS.DefaultFvsInputStandTableName}", arrStandIndexColumns[i]))
+                {
+                    oDataMgr.AddIndex(p_Conn, Tables.FIA2FVS.DefaultFvsInputStandTableName, arrStandIndexNames[i], arrStandIndexColumns[i]);
+                }
+            }
+            string[] arrTreeIndexNames = new string[] { "FVS_TREEINIT_COND_STAND_CN_IDX", "FVS_TREEINIT_COND_STAND_ID_IDX", "FVS_TREEINIT_COND_STANDPLOT_CN_IDX", "FVS_TREEINIT_COND_STANDPLOT_ID_IDX", "FVS_TREEINIT_COND_TREE_CN_IDX", "FVS_TREEINIT_TREE_ID_IDX" };
+            string[] arrTreeIndexColumns = new string[] { "STAND_CN", "STAND_ID", "STANDPLOT_CN", "STANDPLOT_ID", "TREE_CN", "TREE_ID" };
+            for (int i = 0; i < arrTreeIndexColumns.Length; i++)
+            {
+                if (!oDataMgr.IndexExist(p_Conn, arrTreeIndexNames[i]) &&
+                     oDataMgr.FieldExist(p_Conn, $@"SELECT * FROM {Tables.FIA2FVS.DefaultFvsInputTreeTableName}", arrTreeIndexColumns[i]))
+                {
+                    oDataMgr.AddIndex(p_Conn, Tables.FIA2FVS.DefaultFvsInputTreeTableName, arrTreeIndexNames[i], arrTreeIndexColumns[i]);
+                }
             }
         }
 

@@ -2009,7 +2009,9 @@ namespace FIA_Biosum_Manager
                             "Value", 7);
 
                         // This happens at the end
-                        if (File.Exists(strInDirAndFile) == true) //redundant check here, but leaves " " instead of new "0"
+                        // Populates stand and tree count on screen. Uses " " instead of 0
+                        // for variants that haven't been run yet
+                        if (File.Exists(strInDirAndFile) == true) 
                         {
                             int[] fvsInputRecordCounts = getFVSSQLiteInputRecordCounts(strInDirAndFile, strVariant);
                             frmMain.g_oDelegate.SetListViewSubItemPropertyValue(this.lstFvsInput, x, COL_STANDCOUNT, "Text",
