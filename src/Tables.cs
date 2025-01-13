@@ -6932,16 +6932,6 @@ namespace FIA_Biosum_Manager
             static public string DefaultFiadbFVSVariantTableName { get { return "fiadb_fvs_variant"; } }
             static public string DefaultHarvestMethodsTableDbFile { get { return @"db\ref_master.mdb"; } }
             static public string DefaultHarvestMethodsTableName { get { return "harvest_methods"; } }
-            static public string DefaultRxCategoryTableDbFile { get { return @"db\ref_master.mdb"; } }
-            static public string DefaultRxCategoryTableName { get { return "fvs_rx_category"; } }
-            static public string DefaultRxSubCategoryTableDbFile { get { return @"db\ref_master.mdb"; } }
-            static public string DefaultRxSubCategoryTableName { get { return "fvs_rx_subcategory"; } }
-            static public string DefaultFVSCommandsTableDbFile { get { return @"db\ref_master.mdb"; } }
-            static public string DefaultFVSCommandsTableName { get { return "fvs_commands"; } }
-            static public string DefaultFVSWesternTreeSpeciesTableDbFile { get { return @"db\ref_master.mdb"; } }
-            static public string DefaultFVSWesternTreeSpeciesTableName { get { return "FVS_WesternTreeSpeciesTranslator"; } }
-            static public string DefaultFVSEasternTreeSpeciesTableDbFile { get { return @"db\ref_master.mdb"; } }
-            static public string DefaultFVSEasternTreeSpeciesTableName { get { return "FVS_EasternTreeSpeciesTranslator"; } }
             static public string DefaultTreeMacroPlotBreakPointDiaTableDbFile { get { return @"db\ref_master.mdb"; } }
             static public string DefaultTreeMacroPlotBreakPointDiaTableName { get { return "TreeMacroPlotBreakPointDia"; } }
             static public string DefaultBiosumReferenceDbFile { get { return "biosum_ref.accdb"; } }
