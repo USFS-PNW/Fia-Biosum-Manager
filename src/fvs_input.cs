@@ -5360,13 +5360,6 @@ namespace FIA_Biosum_Manager
                     oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.SetFuelModelToNull());
                 }
 
-
-                // SITE_INDEX and SITE_SPECIES 
-                if (m_intError == 0)
-                {
-                    GenerateSiteIndexAndSiteSpeciesSQL(strVariant);
-                }
-
                 //Create lookup table for DWM Fuelbed Type Code to convert to FVS format
                 if (m_intError == 0 && new int[]
                 {
@@ -5374,13 +5367,20 @@ namespace FIA_Biosum_Manager
                     (int) m_enumDWMOption.USE_FUEL_MODEL_ONLY
                 }.Contains(m_intDWMOption))
                 {
-                    
+
                     CreateDwmFuelbedTypeCodeFvsConversionTable(oAccessConn);
                     m_ado.m_strSQL =
                         Queries.FVS.FVSInput.StandInit.UpdateFuelModel(Tables.FIA2FVS.DefaultFvsInputStandTableName, m_strCondTable);
                     m_ado.SqlNonQuery(oAccessConn, m_ado.m_strSQL);
                     m_ado.SqlNonQuery(oAccessConn, "DROP TABLE Ref_DWM_Fuelbed_Type_Codes;");
                 }
+
+                // SITE_INDEX and SITE_SPECIES 
+                if (m_intError == 0)
+                {
+                    GenerateSiteIndexAndSiteSpeciesSQL(strVariant);
+                }
+                
                 // set fuel columns to null
                 
                 using (System.Data.SQLite.SQLiteConnection workConn = new System.Data.SQLite.SQLiteConnection(strWorkDbConn))

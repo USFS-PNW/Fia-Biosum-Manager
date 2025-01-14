@@ -76,7 +76,6 @@ namespace FIA_Biosum_Manager
         private Help m_oHelp;
         private string m_xpsFile = Help.DefaultFvsXPSFile;
         private string m_strDebugFile;
-        //private TabControl tabControl1;
         private TabPage tabPage2;
         private TextBox txtDataDir;
         private Button btnCreateFvsInput;
@@ -701,7 +700,6 @@ namespace FIA_Biosum_Manager
         private void uc_fvs_input_Resize(object sender, System.EventArgs e)
         {
             this.Resize_Fvs_Input();
-            //this.tabControl1_Resize(sender, e);
         }
 
         public void Resize_Fvs_Input()
@@ -1571,104 +1569,6 @@ namespace FIA_Biosum_Manager
             p_fvs.strGroup = p_fvs.strGroup.Trim();
         }
 
-        private void AppendRecords()
-        {
-            m_intError = 0;
-            string strCurVariant = "";
-            string strVariant = "";
-            string strSavedir = this.m_strProjDir + "\\fvs\\data\\save";
-
-            bAbort = false;
-            try
-            {
-                fvs_input p_fvsinput = new fvs_input(this.m_strProjDir, this.m_frmTherm);
-
-                if (p_fvsinput.m_intError != 0)
-                {
-                    return;
-                }
-
-                ConfigureFvsInput(p_fvsinput);
-
-                for (int x = 0; x <= this.lstFvsInput.Items.Count - 1; x++)
-                {
-                    int intValue = Convert.ToInt32((double)(((double)(x + 1) / (double)this.lstFvsInput.Items.Count) * 100));
-                    frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar2, "Value", intValue);
-                    if ((bool)frmMain.g_oDelegate.GetListViewItemPropertyValue(lstFvsInput, x, "Checked", false) == true)
-                    {
-                        //get the variant
-                        strVariant = frmMain.g_oDelegate.GetListViewSubItemPropertyValue(lstFvsInput, x, COL_VARIANT, "Text", false).ToString().Trim();
-                        //see if this is a new variant
-                        if (strVariant.Trim().ToUpper() != strCurVariant.Trim().ToUpper())
-                        {
-                            strCurVariant = strVariant;
-                            m_strDebugFile = this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\biosum_fvs_input_debug.txt";
-                            if (File.Exists(m_strDebugFile)) System.IO.File.Delete(m_strDebugFile);
-                            p_fvsinput.Start(strCurVariant, m_strDebugFile);
-                        }
-                        frmMain.g_oDelegate.SetControlPropertyValue(
-                            m_frmTherm.progressBar1,
-                            "Value",
-                            frmMain.g_oDelegate.GetControlPropertyValue(
-                                    m_frmTherm.progressBar1, "Maximum", false));
-
-                        string strInDirAndFile = $@"{p_fvsinput.strDataDirectory}\{strVariant}\{Tables.FIA2FVS.DefaultFvsInputFile}";
-                        if (File.Exists(strInDirAndFile) == true) //redundant check here, but leaves " " instead of new "0"
-                        {
-                            int[] fvsInputRecordCounts = getFVSInputRecordCounts(strInDirAndFile);
-                            frmMain.g_oDelegate.SetListViewSubItemPropertyValue(this.lstFvsInput, x, COL_STANDCOUNT, "Text",
-                                Convert.ToString(fvsInputRecordCounts[0]));
-                            frmMain.g_oDelegate.SetListViewSubItemPropertyValue(this.lstFvsInput, x, COL_TREECOUNT, "Text",
-                                Convert.ToString(fvsInputRecordCounts[1]));
-                        }
-
-                    }
-
-                    frmMain.g_oDelegate.SetControlPropertyValue(
-                            m_frmTherm.progressBar1,
-                            "Value",
-                            frmMain.g_oDelegate.GetControlPropertyValue(
-                                    m_frmTherm.progressBar1, "Maximum", false));
-                    System.Windows.Forms.Application.DoEvents();
-                    if (bAbort == true) break;
-
-                }
-
-
-                frmMain.g_oDelegate.SetControlPropertyValue(
-                            m_frmTherm.progressBar2,
-                            "Value",
-                            frmMain.g_oDelegate.GetControlPropertyValue(
-                                    m_frmTherm.progressBar2, "Maximum", false));
-
-            }
-            catch (System.Threading.ThreadInterruptedException err)
-            {
-                m_intError = -1;
-                MessageBox.Show("Threading Interruption Error " + err.Message.ToString());
-            }
-            catch (System.Threading.ThreadAbortException err)
-            {
-                m_intError = -1;
-            }
-            catch (Exception err)
-            {
-                MessageBox.Show("!!Error!! \n" +
-                    "Module - uc_fvs_input:AppendRecords  \n" +
-                    "Err Msg - " + err.Message.ToString().Trim(),
-                    "Append Records", System.Windows.Forms.MessageBoxButtons.OK,
-                    System.Windows.Forms.MessageBoxIcon.Exclamation);
-                this.m_intError = -1;
-            }
-            finally
-            {
-                if (m_intError == 0)
-                {
-                    ThreadCleanUp();
-                }
-            }
-
-        }
 
         private void ExtractFIA2FVSRecords_old()
         {
@@ -2110,43 +2010,6 @@ namespace FIA_Biosum_Manager
                 }
             }
         }
-        private void btnAppend_Click(object sender, System.EventArgs e)
-        {
-            if (this.lstFvsInput.CheckedItems.Count == 0)
-            {
-                MessageBox.Show("No Boxes Are Checked", "Append", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                return;
-            }
-            if (this.m_intError == 0)
-            {
-                this.m_frmTherm = new frmTherm(((frmDialog)ParentForm), "APPEND FVS INPUT DATA",
-                                                 "FVS Input", "2");
-
-
-                this.m_frmTherm.Visible = false;
-                this.m_frmTherm.lblMsg.Text = "";
-                this.Enabled = false;
-
-                //progress bar 1: represents a single process
-                this.m_frmTherm.progressBar1.Minimum = 0;
-                this.m_frmTherm.progressBar1.Maximum = 100;
-                this.m_frmTherm.progressBar1.Value = 0;
-                this.m_frmTherm.lblMsg.Text = "";
-                this.m_frmTherm.Show(this);
-
-
-                //progress bar 2: represents overall progress 
-                this.m_frmTherm.progressBar2.Minimum = 0;
-                this.m_frmTherm.progressBar2.Maximum = 100;
-                this.m_frmTherm.progressBar2.Value = 0;
-                this.m_frmTherm.lblMsg2.Text = "Overall Progress";
-                this.m_thread = new Thread(new ThreadStart(this.AppendRecords));
-                this.m_thread.IsBackground = true;
-                this.m_thread.Start();
-            }
-
-
-        }
 
         public void StopThread()
         {
@@ -2385,15 +2248,6 @@ namespace FIA_Biosum_Manager
                 m_oHelp = new Help(m_xpsFile, m_oEnv);
             }
             string helpPage = "INPUT_DATA";
-            //switch (tabControl1.SelectedIndex)
-            //{
-            //    case 0:
-            //        helpPage = "INPUT_DATA";
-            //        break;
-            //    case 1:
-            //        helpPage = "INPUT_OPTIONS";
-            //        break;
-            //}
             m_oHelp.ShowHelp(new string[] { "FVS", helpPage });
         }
         private void txtDataDir_KeyPress(object sender, System.Windows.Forms.KeyPressEventArgs e)
@@ -2563,67 +2417,6 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void tabControl1_Resize(object sender, EventArgs e)
-        {
-            //tabControl1.Top = this.lblTitle.Bottom + 5;
-            //tabControl1.Left = 5;
-            //tabControl1.Width = this.Width - 10;
-            //tabControl1.Height = this.Height - 100;
-
-            btnClose.Top = groupBox1.Bottom - btnClose.Height - 5;
-            //btnClose.Left = tabControl1.Right - btnClose.Width;
-            //btnHelp.Left = tabControl1.Left;
-            btnHelp.Top = btnClose.Top;
-
-
-            label1.Left = tabPage2.Left + 5;
-            txtDataDir.Left = label1.Right + 5;
-            txtDataDir.Width = tabPage2.Width - txtDataDir.Left;
-            //btnRx.Left = txtDataDir.Left;
-            //lblRxCnt.Left = btnRx.Left + btnRx.Width + 10;
-            //btnRxPackage.Left = lblRxCnt.Left + lblRxCnt.Width + 10;
-            //lblRxPackageCnt.Left = btnRxPackage.Left + btnRxPackage.Width + 10;
-
-            //resize all of the controls on the inside
-            lstFvsInput.Left = tabPage2.Left + 5;
-            lstFvsInput.Width = tabPage2.Width - 10;
-            lstFvsInput.Top = txtDataDir.Bottom + 5;
-            lstFvsInput.Height = tabPage2.Height - txtDataDir.Bottom - 120;
-
-            //btns under lstFvsInput position based on tabControl perimeter
-            btnCreateFvsInput.Top = lstFvsInput.Bottom + 80;
-            btnCreateFvsInput.Left = lstFvsInput.Right - btnCreateFvsInput.Width;
-            btnCreateFvsInputNew.Top = lstFvsInput.Bottom + 80;
-            btnCreateFvsInputNew.Left = lstFvsInput.Right - btnCreateFvsInput.Width - 5 - btnCreateFvsInputNew.Width;
-
-            cmbAction.Top = btnCreateFvsInput.Top + (int)(btnCreateFvsInput.Height * .5) - (int)(cmbAction.Height * .5);
-            cmbAction.Left = btnCreateFvsInput.Left - cmbAction.Width - 5;
-
-            btnChkAll.Top = btnCreateFvsInput.Top;
-            btnChkAll.Left = lstFvsInput.Left;
-            btnClearAll.Top = btnCreateFvsInput.Top;
-            btnClearAll.Left = btnChkAll.Right + 5;
-            btnRefresh.Top = btnCreateFvsInput.Top;
-            btnRefresh.Left = btnClearAll.Right + 5;
-
-            lblFiaDatamartFile.Left = btnCreateFvsInput.Left - 250;
-            lblFiaDatamartFile.Top = lstFvsInput.Bottom + 5;
-            txtFIADatamart.Left = lblFiaDatamartFile.Left;
-            txtFIADatamart.Top = lblFiaDatamartFile.Bottom + 1;
-            btnDatamart.Top = txtFIADatamart.Top - 5;
-            btnDatamart.Left = txtFIADatamart.Right + 5;
-
-            lblSelectedGroup.Left = btnCreateFvsInput.Left - 197;
-            lblSelectedGroup.Top = btnCreateFvsInput.Top - 27;
-            cmbSelectedGroup.Left = lblSelectedGroup.Right + 10;
-            cmbSelectedGroup.Top = lblSelectedGroup.Top - 2;
-        }
-
-        private void tabControl1_TabIndexChanged(object sender, EventArgs e)
-        {
-            tabPage1.Refresh();
-            tabPage2.Refresh();
-        }
 
         private void linkLabelFuelModel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
