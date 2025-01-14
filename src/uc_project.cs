@@ -1276,20 +1276,6 @@ namespace FIA_Biosum_Manager
 						"'fvs_tree_species');";
 					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
 
-                    strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-                        "('FVS Western Tree Species Translator'," +
-                        "'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," +
-                        "'ref_master.mdb'," +
-                        "'FVS_WesternTreeSpeciesTranslator');";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-
-                    strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-                        "('FVS Eastern Tree Species Translator'," +
-                        "'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," +
-                        "'ref_master.mdb'," +
-                        "'FVS_EasternTreeSpeciesTranslator');";
-                    p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
-
 					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
 						"('Travel Times'," + 
 						"'" + this.txtRootDirectory.Text.ToString().Trim() + "\\gis\\db'," + 

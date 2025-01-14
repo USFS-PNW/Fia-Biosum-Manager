@@ -1284,23 +1284,6 @@ namespace FIA_Biosum_Manager
                                 "'harvest_methods');";
                             oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
                             break;
-                        //version 5.2.1 additions
-                        case "FVS WESTERN TREE SPECIES TRANSLATOR":
-                            oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-                                "('FVS Western Tree Species Translator'," +
-                                "'" + ReferenceProjectDirectory.Trim() + "\\db'," +
-                                "'ref_master.mdb'," +
-                                "'FVS_WesternTreeSpeciesTranslator');";
-                             oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                            break;
-                        case "FVS EASTERN TREE SPECIES TRANSLATOR":
-                            oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-                                "('FVS Eastern Tree Species Translator'," +
-                                "'" + ReferenceProjectDirectory.Trim() + "\\db'," +
-                                "'ref_master.mdb'," +
-                                "'FVS_EasternTreeSpeciesTranslator');";
-                            oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                            break;
 
 
                         //case "ADDITIONAL HARVEST COSTS":
@@ -1456,28 +1439,12 @@ namespace FIA_Biosum_Manager
                                 case "TREATMENT PRESCRIPTIONS HARVEST COST COLUMNS":
                                     frmMain.g_oTables.m_oFvs.CreateRxHarvestCostColumnTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection,Tables.FVS.DefaultRxHarvestCostColumnsTableName);
                                     break;
-                                case "TREATMENT PRESCRIPTION CATEGORIES":
-                                    frmMain.g_oTables.m_oReference.CreateRxCategoryTable(oAdoCurrent, oAdoCurrent.m_OleDbConnection, Tables.Reference.DefaultRxCategoryTableName);
-                                    break;
-                                case "TREATMENT PRESCRIPTION SUBCATEGORIES":
-                                    frmMain.g_oTables.m_oReference.CreateRxSubCategoryTable(oAdoCurrent, oAdoCurrent.m_OleDbConnection, Tables.Reference.DefaultRxSubCategoryTableName);
-                                    break;
                                 case "TREATMENT PACKAGES":
                                     frmMain.g_oTables.m_oFvs.CreateRxPackageTable(oAdoCurrent, oAdoCurrent.m_OleDbConnection, Tables.FVS.DefaultRxPackageTableName);
                                     break;
                                 case "HARVEST METHODS":
                                     frmMain.g_oTables.m_oReference.CreateHarvestMethodsTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection, Tables.Reference.DefaultHarvestMethodsTableName);
-                                    break;
-                                //5.2.1 additions
-                                case "FVS WESTERN TREE SPECIES TRANSLATOR":
-                                    frmMain.g_oTables.m_oReference.CreateFVSWesternSpeciesTranslatorTable(oAdoCurrent, oAdoCurrent.m_OleDbConnection, Tables.Reference.DefaultFVSWesternTreeSpeciesTableName);
-                                    break;
-                                case "FVS EASTERN TREE SPECIES TRANSLATOR":
-                                    frmMain.g_oTables.m_oReference.CreateFVSEasternSpeciesTranslatorTable(oAdoCurrent, oAdoCurrent.m_OleDbConnection, Tables.Reference.DefaultFVSEasternTreeSpeciesTableName);
-                                    break;
-                                
-
-                               
+                                    break;                                                             
 							}
 						}
 						else
@@ -1579,14 +1546,6 @@ namespace FIA_Biosum_Manager
                                     strTempTableName = Tables.FVS.DefaultRxHarvestCostColumnsTableName;
                                     frmMain.g_oTables.m_oFvs.CreateRxHarvestCostColumnTable(oAdoCurrent, oConn, strTempTableName);
                                     break;
-                                case "TREATMENT PRESCRIPTION CATEGORIES":
-                                    strTempTableName = Tables.Reference.DefaultRxCategoryTableName;
-                                    frmMain.g_oTables.m_oReference.CreateRxCategoryTable(oAdoCurrent, oConn, strTempTableName);
-                                    break;
-                                case "TREATMENT PRESCRIPTION SUBCATEGORIES":
-                                    strTempTableName = Tables.Reference.DefaultRxSubCategoryTableName;
-                                    frmMain.g_oTables.m_oReference.CreateRxSubCategoryTable(oAdoCurrent, oConn, strTempTableName);
-                                    break;
                                 case "TREATMENT PACKAGES":
                                     strTempTableName = Tables.FVS.DefaultRxPackageTableName;
                                     frmMain.g_oTables.m_oFvs.CreateRxPackageTable(oAdoCurrent, oConn, strTempTableName);
@@ -1595,17 +1554,6 @@ namespace FIA_Biosum_Manager
                                     strTempTableName = Tables.Reference.DefaultHarvestMethodsTableName;
                                     frmMain.g_oTables.m_oReference.CreateHarvestMethodsTable(oAdoCurrent, oConn, strTempTableName);
                                     break;
-                                //5.2.1 additions
-                                case "FVS WESTERN TREE SPECIES TRANSLATOR":
-                                    strTempTableName = Tables.Reference.DefaultFVSWesternTreeSpeciesTableName;
-                                    frmMain.g_oTables.m_oReference.CreateFVSWesternSpeciesTranslatorTable(oAdoCurrent, oConn, strTempTableName);
-                                    break;
-                                case "FVS EASTERN TREE SPECIES TRANSLATOR":
-                                    strTempTableName = Tables.Reference.DefaultFVSEasternTreeSpeciesTableName;
-                                    frmMain.g_oTables.m_oReference.CreateFVSEasternSpeciesTranslatorTable(oAdoCurrent, oConn, strTempTableName);
-
-                                    break;
-
 							}
 							if (strTempTableName.Trim().Length > 0)
 							{
@@ -1789,15 +1737,6 @@ namespace FIA_Biosum_Manager
 									oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"DROP TABLE inventories_temp");
                                 if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection, "harvest_methods_temp"))
                                     oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, "DROP TABLE harvest_methods_temp");
-                                if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection, "fvs_rx_category_temp"))
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, "DROP TABLE fvs_rx_category_temp");
-                                if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection, "fvs_rx_subcategory_temp"))
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, "DROP TABLE fvs_rx_subcategory_temp");
-                                if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection, "FVS_WesternTreeSpeciesTranslator_temp"))
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, "DROP TABLE FVS_WesternTreeSpeciesTranslator_temp");
-                                if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection, "FVS_EasternTreeSpeciesTranslator_temp"))
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, "DROP TABLE FVS_EasternTreeSpeciesTranslator_temp");
-
 								oAdoCurrent.CloseConnection(oAdoCurrent.m_OleDbConnection);
 							}
 							else 
@@ -1822,10 +1761,6 @@ namespace FIA_Biosum_Manager
 							oDao.CreateTableLink(strDbFile,"fiadb_fvs_variant_temp",strTempDbFile,"fiadb_fvs_variant",true);
 							oDao.CreateTableLink(strDbFile,"inventories_temp",strTempDbFile,"inventories",true);
                             oDao.CreateTableLink(strDbFile, "harvest_methods_temp", strTempDbFile, "harvest_methods", true);
-                            oDao.CreateTableLink(strDbFile, "fvs_rx_category_temp", strTempDbFile, "fvs_rx_category",true);
-                            oDao.CreateTableLink(strDbFile, "fvs_rx_subcategory_temp", strTempDbFile, "fvs_rx_subcategory",true);
-                            oDao.CreateTableLink(strDbFile, "FVS_WesternTreeSpeciesTranslator_temp", strTempDbFile, "FVS_WesternTreeSpeciesTranslator", true);
-                            oDao.CreateTableLink(strDbFile, "FVS_EasternTreeSpeciesTranslator_temp", strTempDbFile, "FVS_EasternTreeSpeciesTranslator", true);
 							oAdoCurrent.OpenConnection(oAdo.getMDBConnString(strDbFile,"",""));
 							strCurrDbFile=strDbFile;
 
@@ -1893,21 +1828,6 @@ namespace FIA_Biosum_Manager
                                         oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),
                                         oDs.m_strDataSource[x, Datasource.TABLE].Trim());
                                     break;
-                                case "FVS WESTERN TREE SPECIES TRANSLATOR":
-                                    oAdoCurrent.m_strSQL = "SELECT * INTO " + oDs.m_strDataSource[x, Datasource.TABLE].Trim() + " FROM FVS_WesternTreeSpeciesTranslator_temp";
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
-                                    oDs.SetPrimaryIndexesAndAutoNumbers(oAdoCurrent, oAdoCurrent.m_OleDbConnection,
-                                        oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),
-                                        oDs.m_strDataSource[x, Datasource.TABLE].Trim());
-                                    break;
-                                case "FVS EASTERN TREE SPECIES TRANSLATOR":
-                                    oAdoCurrent.m_strSQL = "SELECT * INTO " + oDs.m_strDataSource[x, Datasource.TABLE].Trim() + " FROM FVS_EasternTreeSpeciesTranslator_temp";
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
-                                    oDs.SetPrimaryIndexesAndAutoNumbers(oAdoCurrent, oAdoCurrent.m_OleDbConnection,
-                                        oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),
-                                        oDs.m_strDataSource[x, Datasource.TABLE].Trim());
-                                    break;
-
                             }
                         }
                         else
@@ -2138,46 +2058,6 @@ namespace FIA_Biosum_Manager
                                            
                                         oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, strInsertSql);
                                     break;
-                                case "FVS WESTERN TREE SPECIES TRANSLATOR":
-                                    oAdoCurrent.m_strSQL = "DROP TABLE " + oDs.m_strDataSource[x, Datasource.TABLE];
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
-                                    frmMain.g_oTables.m_oReference.CreateFVSWesternSpeciesTranslatorTable(oAdoCurrent, oAdoCurrent.m_OleDbConnection, oDs.m_strDataSource[x, Datasource.TABLE]);
-                                    strTempTableName = "FVS_WesternTreeSpeciesTranslator_temp";
-                                    strColumnsList = "";
-                                    //insert any new tree species records
-                                    strColumnsArray = oAdoCurrent.getFieldNamesArray(oAdoCurrent.m_OleDbConnection, "SELECT * FROM " + strTempTableName);
-                                    for (y = 0; y <= strColumnsArray.Length - 1; y++)
-                                    {
-                                        strColumnsList = strColumnsList + "a." + strColumnsArray[y].Trim() + ",";
-                                    }
-                                    strColumnsList = strColumnsList.Substring(0, strColumnsList.Length - 1);
-                                    strInsertSql = "INSERT INTO " +
-                                        oDs.m_strDataSource[x, Datasource.TABLE] + " " +
-                                        "SELECT " + strColumnsList + " " +
-                                        "FROM " + strTempTableName + " a ";
-
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, strInsertSql);
-                                    break;
-                                case "FVS EASTERN TREE SPECIES TRANSLATOR":
-                                    oAdoCurrent.m_strSQL = "DROP TABLE " + oDs.m_strDataSource[x, Datasource.TABLE];
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
-                                    frmMain.g_oTables.m_oReference.CreateFVSEasternSpeciesTranslatorTable(oAdoCurrent, oAdoCurrent.m_OleDbConnection, oDs.m_strDataSource[x, Datasource.TABLE]);
-                                    strTempTableName = "FVS_EasternTreeSpeciesTranslator_temp";
-                                    strColumnsList = "";
-                                    //insert any new tree species records
-                                    strColumnsArray = oAdoCurrent.getFieldNamesArray(oAdoCurrent.m_OleDbConnection, "SELECT * FROM " + strTempTableName);
-                                    for (y = 0; y <= strColumnsArray.Length - 1; y++)
-                                    {
-                                        strColumnsList = strColumnsList + "a." + strColumnsArray[y].Trim() + ",";
-                                    }
-                                    strColumnsList = strColumnsList.Substring(0, strColumnsList.Length - 1);
-                                    strInsertSql = "INSERT INTO " +
-                                        oDs.m_strDataSource[x, Datasource.TABLE] + " " +
-                                        "SELECT " + strColumnsList + " " +
-                                        "FROM " + strTempTableName + " a ";
-
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, strInsertSql);
-                                    break;
                             }
                         }
 					}
@@ -2199,12 +2079,6 @@ namespace FIA_Biosum_Manager
                     oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, "DROP TABLE harvest_methods_temp");
                 if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection, "fvs_rx_category_temp"))
                     oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, "DROP TABLE fvs_rx_category_temp");
-                if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection, "fvs_rx_subcategory_temp"))
-                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, "DROP TABLE fvs_rx_subcategory_temp");
-                if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection, "FVS_WesternTreeSpeciesTranslator_temp"))
-                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, "DROP TABLE FVS_WesternTreeSpeciesTranslator_temp");
-                if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection, "FVS_EasternTreeSpeciesTranslator_temp"))
-                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, "DROP TABLE FVS_EasternTreeSpeciesTranslator_temp");
 				oAdoCurrent.CloseConnection(oAdoCurrent.m_OleDbConnection);
 			}
 			oAdo.CloseConnection(oAdo.m_OleDbConnection);
@@ -7508,7 +7382,8 @@ namespace FIA_Biosum_Manager
                     deleteConn.Open();
                     oAdo.m_strSQL = $@"DELETE FROM {oProjectDs.m_strDataSourceTableName} WHERE TABLE_TYPE IN 
                         ('Treatment Prescriptions Assigned FVS Commands', 'Treatment Prescription Categories', 'Treatment Prescription Subcategories',
-                         'Treatment Package Assigned FVS Commands', 'Treatment Package FVS Commands Order')";
+                         'Treatment Package Assigned FVS Commands', 'Treatment Package FVS Commands Order', 'FVS Western Tree Species Translator', 
+                         'FVS Eastern Tree Species Translator')";
                     oAdo.SqlNonQuery(deleteConn, oAdo.m_strSQL);
                 }
             }

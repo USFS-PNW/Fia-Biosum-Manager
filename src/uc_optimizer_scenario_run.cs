@@ -2815,10 +2815,6 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug) frmMain.g_oUtils.WriteText(m_strDebugFile, p_dao.m_strError + "\r\n");
                 this.m_intError = p_dao.m_intError;
             }
-
-            string strRefMasterDir = ((frmMain)this._frmScenario.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\" + Tables.Reference.DefaultRxCategoryTableDbFile;
-            p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.Reference.DefaultRxCategoryTableName, strRefMasterDir, Tables.Reference.DefaultRxCategoryTableName);
-            p_dao.CreateTableLink(this.m_strTempMDBFile, Tables.Reference.DefaultRxSubCategoryTableName, strRefMasterDir, Tables.Reference.DefaultRxSubCategoryTableName);
            
             if (p_dao != null)
             {
