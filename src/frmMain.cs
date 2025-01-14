@@ -435,6 +435,7 @@ namespace FIA_Biosum_Manager
             g_oGeneralMacroSubstitutionVariable_Collection.Add(oItem);
 
             CheckForBiosumRefData();
+            CheckForBiosumRefSqliteData();
             CheckForFcsFiles();
             
         }
@@ -4434,6 +4435,46 @@ namespace FIA_Biosum_Manager
             catch (Exception)
             {
                 MessageBox.Show("!! An error occurred while accessing biosum_ref.accdb at " + 
+                    System.IO.Path.GetDirectoryName(strDestFile) + " !!", "FIA Biosum");
+            }
+        }
+
+        private void CheckForBiosumRefSqliteData()
+        {
+            string strDestFile = frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
+                frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceSqliteFile;
+            try
+            {
+                bool bCopyDatabase = true;
+                string strSourceFile = frmMain.g_oEnv.strAppDir + "\\db\\" + Tables.Reference.DefaultBiosumReferenceSqliteFile;
+                if (System.IO.File.Exists(strDestFile) == true)
+                {
+                    // Check to see if the version is correct
+                    SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+                    string strConn = oDataMgr.GetConnectionString(strDestFile);
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                    {
+                        conn.Open();
+                        if (!oDataMgr.TableExist(conn, Tables.Reference.DefaultBiosumReferenceVersionTableName))
+                        {
+                            oDataMgr.m_strSQL = "SELECT version_num FROM " + Tables.Reference.DefaultBiosumReferenceVersionTableName;
+                            double dblVersion = oDataMgr.getSingleDoubleValueFromSQLQuery(conn, oDataMgr.m_strSQL, 
+                                Tables.Reference.DefaultBiosumReferenceVersionTableName);
+                            if (dblVersion >= g_intRefDbVer)
+                            {
+                                bCopyDatabase = false;
+                            }
+                        }
+                    }
+                    oDataMgr = null;
+                }
+                if (bCopyDatabase == true)
+                    // Copy it the database from the app install directory
+                    System.IO.File.Copy(strSourceFile, strDestFile, true);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("!! An error occurred while accessing biosum_ref.db at " +
                     System.IO.Path.GetDirectoryName(strDestFile) + " !!", "FIA Biosum");
             }
         }

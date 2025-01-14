@@ -40,6 +40,7 @@ namespace FIA_Biosum_Manager
         private System.Data.DataTable m_dt;
         private string m_strFVSTreeIdIDBWorkTable;
         private string m_strFVSTreeIdFIAWorkTable;
+        private string m_strTempMDBFileNewProcess;
 
         // Constants for site index equation table
         const String SI_DELIM = "|";
@@ -146,10 +147,10 @@ namespace FIA_Biosum_Manager
                 return;
             }
 
-            this.m_strTempMDBFile = this.m_DataSource.CreateMDBAndTableDataSourceLinks();
+            //this.m_strTempMDBFile = this.m_DataSource.CreateMDBAndTableDataSourceLinks();
             this.m_dao = new dao_data_access();
             m_ado = new ado_data_access();
-            this.m_strConn = m_ado.getMDBConnString(this.m_strTempMDBFile, "", "");
+            //this.m_strConn = m_ado.getMDBConnString(this.m_strTempMDBFile, "", "");
             this.m_frmTherm = p_frmTherm;
         }
 
@@ -272,28 +273,6 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        public void StartSqlite(string p_strVariant, string p_strDebugFile)
-        {
-            try
-            {
-                this.m_strDebugFile = p_strDebugFile;
-                DebugLogMessage("*****START*****" + System.DateTime.Now.ToString() + "\r\n");
-                DebugLogMessage("//Start(" + m_strDataDirectory + "," + p_strVariant + ")\r\n", 1);
-
-                this.m_intError = 0;
-                this.m_strInDir = m_strDataDirectory + "\\" + p_strVariant.Trim();
-                this.m_strVariant = p_strVariant.Trim();
-                this.strFVSInDBFile = "FVSIn.db";
-
-                CheckDir();
-                DeleteFiles();
-
-            }
-            finally
-            {
-
-            }
-        }
 
         private void CreateFVSWorkTables()
         {
@@ -526,7 +505,7 @@ namespace FIA_Biosum_Manager
                 //Site index and site species sequential insertion into FVS_StandInit_WorkTable
                 if (m_intError == 0)
                 {
-                    GenerateSiteIndexAndSiteSpeciesSQL();
+                    GenerateSiteIndexAndSiteSpeciesSQL_old();
                 }
 
                 //Create lookup table for DWM Fuelbed Type Code to convert to FVS format
@@ -554,7 +533,7 @@ namespace FIA_Biosum_Manager
                     (int) m_enumDWMOption.USE_DWM_DATA_ONLY
                 }.Contains(m_intDWMOption))
                 {
-                    PopulateFuelColumns();
+                    PopulateFuelColumns_old();
                 }
 
 
@@ -661,10 +640,35 @@ namespace FIA_Biosum_Manager
         /// <summary>
         /// Connect to FVSIn for the current variant, add a table with two columns to record configurations
         /// </summary>
-        private void UpdateFvsInSqliteConfigurationTable()
+        private void UpdateFvsInSqliteConfigurationTable_old()
         {
             SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
             string strFvsInPathFile = m_strProjDir + "/fvs/data/" + m_strVariant + "/" + Tables.FIA2FVS.DefaultFvsInputFile;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strFvsInPathFile)))
+            {
+                conn.Open();
+                if (!oDataMgr.TableExist(conn, "biosum_fvsin_configuration"))
+                {
+                    oDataMgr.m_strSQL = "CREATE TABLE biosum_fvsin_configuration (Setting TEXT(255), `Value` TEXT(255));";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    DebugLogSQL(oDataMgr.m_strSQL);
+
+                }
+
+                List<string[]> configs = CreateFVSInConfigurationList();
+                foreach (string[] pair in configs)
+                {
+                    oDataMgr.m_strSQL = String.Format("INSERT INTO biosum_fvsin_configuration (Setting, `Value`) " +
+                                                   "VALUES ('{0}','{1}');", pair[0], pair[1]);
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    DebugLogSQL(oDataMgr.m_strSQL);
+                }
+            }
+        }
+        private void UpdateFvsInSqliteConfigurationTable()
+        {
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+            string strFvsInPathFile = m_strProjDir + "/fvs/data/" + Tables.FIA2FVS.DefaultFvsInputFile;
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strFvsInPathFile)))
             {
                 conn.Open();
@@ -782,7 +786,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void GenerateSiteIndexAndSiteSpeciesSQL()
+        private void GenerateSiteIndexAndSiteSpeciesSQL_old()
         {
             using (var conn = new OleDbConnection(m_strConn))
             {
@@ -796,7 +800,7 @@ namespace FIA_Biosum_Manager
                 oSiteIndex.SiteTreeTable = this.m_strSiteTreeTable;
                 oSiteIndex.TreeSpeciesTable = this.m_strTreeSpcTable;
                 oSiteIndex.FVSTreeSpeciesTable = this.m_strFVSTreeSpcTable;
-                oSiteIndex.SiteIndexEquations = LoadSiteIndexEquations(this.m_strVariant.Trim().ToUpper());
+                oSiteIndex.SiteIndexEquations = LoadSiteIndexEquations_old(this.m_strVariant.Trim().ToUpper());
                 oSiteIndex.DebugFile = this.m_strDebugFile;
 
                 m_ado.m_strSQL =
@@ -830,7 +834,7 @@ namespace FIA_Biosum_Manager
 
                     frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", x);
                     strStand_ID = "\'" + this.m_dt.Rows[x]["biosum_cond_id"].ToString().Trim() + "\'";
-                    oSiteIndex.getSiteIndex(m_dt.Rows[x]);
+                    oSiteIndex.getSiteIndex_old(m_dt.Rows[x], false);
                     strSite_Species = "\'" + oSiteIndex.SiteIndexSpeciesAlphaCode + "\'";
                     strSite_Index = oSiteIndex.SiteIndex;
 
@@ -860,7 +864,83 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void PopulateFuelColumns()
+        private void GenerateSiteIndexAndSiteSpeciesSQL(string strVariant)
+        {
+            using (OleDbConnection conn = new OleDbConnection(m_ado.getMDBConnString(m_strTempMDBFileNewProcess, "", "")))
+            {
+                conn.Open();
+
+                fvs_input.site_index oSiteIndex = new site_index();
+                oSiteIndex.ado_data_access = m_ado;
+                oSiteIndex.CondTable = this.m_strCondTable;
+                oSiteIndex.PlotTable = this.m_strPlotTable;
+                oSiteIndex.TreeTable = this.m_strTreeTable;
+                oSiteIndex.SiteTreeTable = this.m_strSiteTreeTable;
+                oSiteIndex.TreeSpeciesTable = this.m_strTreeSpcTable;
+                oSiteIndex.FVSTreeSpeciesTable = this.m_strFVSTreeSpcTable;
+                oSiteIndex.SiteIndexEquations = LoadSiteIndexEquations(strVariant.Trim().ToUpper());
+                oSiteIndex.DebugFile = this.m_strDebugFile;
+                oSiteIndex.TempMDBFileNewProcess = this.m_strTempMDBFileNewProcess;
+                oSiteIndex.ProjectDirectory = this.m_strProjDir;
+
+                m_ado.m_strSQL =
+                    Queries.FVS.FVSInput.StandInit.CreateSiteIndexDataset(strVariant, m_strCondTable, m_strPlotTable);
+                m_ado.CreateDataSet(conn, m_ado.m_strSQL, "standlist");
+                if (m_ado.m_DataSet.Tables["standlist"].Rows.Count == 0)
+                {
+                    this.m_intError = -1;
+                    MessageBox.Show("!!No standlist Records To Process!!", "FVS Input",
+                        System.Windows.Forms.MessageBoxButtons.OK,
+                        System.Windows.Forms.MessageBoxIcon.Exclamation);
+                    m_ado.m_DataSet.Clear();
+                    m_ado.m_DataSet.Dispose();
+                    return;
+                }
+
+                frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
+                    "Writing BioSum FVS_StandInit For Variant " + strVariant);
+                frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Minimum", 0);
+                frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Maximum",
+                    m_ado.m_DataSet.Tables["standlist"].Rows.Count);
+                this.m_dt = m_ado.m_DataSet.Tables["standlist"];
+
+                DebugLogMessage("Inserting Site Index/Site Species\r\n", 1);
+
+                for (int x = 0; x <= this.m_dt.Rows.Count - 1; x++)
+                {
+                    string strStand_ID = "null";
+                    string strSite_Species = "null";
+                    string strSite_Index = "null";
+
+                    frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", x);
+                    strStand_ID = "\'" + this.m_dt.Rows[x]["biosum_cond_id"].ToString().Trim() + "\'";
+                    oSiteIndex.getSiteIndex(m_dt.Rows[x]);
+                    strSite_Species = "\'" + oSiteIndex.SiteIndexSpeciesAlphaCode + "\'";
+                    strSite_Index = oSiteIndex.SiteIndex;
+
+                    if (strSite_Species.Contains("@"))
+                    {
+                        strSite_Species = "null";
+                    }
+
+                    if (strSite_Index.Contains("@"))
+                    {
+                        strSite_Index = "null";
+                    }
+
+                    if (strSite_Species != "null" && strSite_Index != "null")
+                    {
+                        m_ado.m_strSQL =
+                            Queries.FVS.FVSInput.StandInit.InsertSiteIndexSpeciesRowNew(strStand_ID, strSite_Species,
+                                strSite_Index);
+                        DebugLogSQL(m_ado.m_strSQL);
+                        m_ado.SqlNonQuery(conn, m_ado.m_strSQL);
+                    }
+                }
+            }
+        }
+
+        private void PopulateFuelColumns_old()
         {
             //COARSE WOODY DEBRIS
             DebugLogMessage("Executing Coarse Woody Debris SQL (multiple steps)\r\n", 1);
@@ -959,6 +1039,279 @@ namespace FIA_Biosum_Manager
             }
         }
 
+        private void PopulateFuelColumnsSqlite_old (string strConn, string strStandTable)
+        {
+            //COARSE WOODY DEBRIS
+            DebugLogMessage("Executing Coarse Woody Debris SQL (multiple steps)\r\n", 1);
+            foreach (string strSQL in Queries.FVS.FVSInput.StandInit.CalculateCoarseWoodyDebrisBiomassTonsPerAcreSqlite_old(
+                m_strDwmCoarseWoodyDebrisTable, m_strFiaTreeSpeciesRefTable, 
+                m_strDwmTransectSegmentTable, m_strMinCwdTransectLengthTotal, strStandTable))
+            {
+                if (!String.IsNullOrEmpty(strSQL) && m_intError == 0)
+                {
+                    using (OleDbConnection conn = new OleDbConnection(strConn))
+                    {
+                        conn.Open();
+                        DebugLogSQL(strSQL);
+                        m_ado.SqlNonQuery(conn, strSQL);
+                        m_intError = m_ado.m_intError;
+                    }
+                }
+            }
+
+            //FINE WOODY DEBRIS
+            DebugLogMessage("Executing Fine Woody Debris SQL (multiple steps)\r\n", 1);
+            if (m_intError == 0)
+            {
+                foreach (string strSQL in Queries.FVS.FVSInput.StandInit.CalculateFineWoodyDebrisBiomassTonsPerAcreSqlite_old(
+                    m_strDwmFineWoodyDebrisTable, m_strCondTable, m_strMinSmallFwdTransectLengthTotal,
+                    m_strMinLargeFwdTransectLengthTotal, strStandTable))
+                {
+                    using (OleDbConnection conn = new OleDbConnection(strConn))
+                    {
+                        conn.Open();
+
+                        if (!String.IsNullOrEmpty(strSQL) && m_intError == 0)
+                        {
+                            DebugLogSQL(strSQL);
+                            m_ado.SqlNonQuery(conn, strSQL);
+                            m_intError = m_ado.m_intError;
+                            if (m_intError != 0)
+                                break;
+                        }
+                    }
+                }
+            }
+
+            //DUFF LITTER
+            DebugLogMessage("Executing Duff Litter SQL (multiple steps)\r\n", 1);
+            if (m_intError == 0)
+            {
+                using (OleDbConnection conn = new OleDbConnection(strConn))
+                {
+                    conn.Open();
+                    string strSQL =
+                        Queries.FVS.FVSInput.StandInit.CalculateDuffLitterBiomassTonsPerAcreSqlite_old(m_strDwmDuffLitterTable,
+                            m_strCondTable, strStandTable);
+                    DebugLogSQL(m_ado.m_strSQL);
+                    m_ado.SqlNonQuery(conn, strSQL);
+                    m_intError = m_ado.m_intError;
+
+                    strSQL = Queries.FVS.FVSInput.StandInit.UpdateFvsStandInitDuffLitterColumnsSqlite_old(strStandTable);
+                    DebugLogSQL(strSQL);
+                    m_ado.SqlNonQuery(conn, strSQL);
+                    m_intError = m_ado.m_intError;
+
+                    if (!string.IsNullOrEmpty(m_strDuffExcludedYears))
+                    {
+                        strSQL = Queries.FVS.FVSInput.StandInit.RemoveDuffYearsSqlite_old(m_strDuffExcludedYears, strStandTable);
+                        DebugLogSQL(strSQL);
+                        m_ado.SqlNonQuery(conn, strSQL);
+                        m_intError = m_ado.m_intError;
+                    }
+                    if (!string.IsNullOrEmpty(m_strLitterExcludedYears))
+                    {
+                        strSQL = Queries.FVS.FVSInput.StandInit.RemoveLitterYearsSqlite_old(m_strLitterExcludedYears, strStandTable);
+                        DebugLogSQL(strSQL);
+                        m_ado.SqlNonQuery(conn, strSQL);
+                        m_intError = m_ado.m_intError;
+                    }
+                }
+            }
+
+            //Clean up worktables
+            DebugLogMessage("Deleting work tables\r\n", 1);
+            if (m_intError == 0)
+            {
+                foreach (string strSQL in Queries.FVS.FVSInput.StandInit.DeleteDwmWorkTables())
+                {
+                    using (OleDbConnection conn = new OleDbConnection(strConn))
+                    {
+                        conn.Open();
+                        DebugLogSQL(strSQL);
+                        m_ado.SqlNonQuery(conn, strSQL);
+                        m_intError = m_ado.m_intError;
+                        if (m_intError != 0)
+                            break;
+                    }
+                }
+            }
+        }
+        private void PopulateFuelColumns(string strMDBConn, string strWorkDb, string strStandTable)
+        {
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+            string strDWMTablesDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.db";
+            string strBioSumRefDb = frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
+                        frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceSqliteFile;
+            string strWorkDbConn = oDataMgr.GetConnectionString(strWorkDb);
+
+            FIA_Biosum_Manager.Datasource oProjectDs = new Datasource();
+            string strTreeSpeciesDb = oProjectDs.CreateTemporarySQLiteSpeciesRefTable();
+
+            //COARSE WOODY DEBRIS
+            DebugLogMessage("Executing Coarse Woody Debris SQL (multiple steps)\r\n", 1);
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strWorkDbConn))
+            {
+                conn.Open();
+
+                oDataMgr.m_strSQL = "ATTACH DATABASE '" + strDWMTablesDb + "' AS dwmdb";
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+                oDataMgr.m_strSQL = "ATTACH DATABASE '" + strTreeSpeciesDb + "' AS tree_species";
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+                string[] strCwdSqlStmts = Queries.FVS.FVSInput.StandInit.CalculateCoarseWoodyDebrisBiomassTonsPerAcreSqlite(
+                m_strDwmCoarseWoodyDebrisTable, m_strFiaTreeSpeciesRefTable,
+                m_strDwmTransectSegmentTable, m_strMinCwdTransectLengthTotal, strStandTable);
+                foreach (string strSQL in strCwdSqlStmts)
+                {
+                    if (!String.IsNullOrEmpty(strSQL) && m_intError == 0)
+                    {
+                            DebugLogSQL(strSQL);
+                            oDataMgr.SqlNonQuery(conn, strSQL);
+                            m_intError = oDataMgr.m_intError;
+                    }
+                }
+
+                //FINE WOODY DEBRIS
+                DebugLogMessage("Executing Fine Woody Debris SQL (multiple steps)\r\n", 1);
+                oDataMgr.m_strSQL = "ATTACH DATABASE '" + strBioSumRefDb + "' AS biosumref";
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                if (m_intError == 0)
+                {
+                    string[] strFwdSqlStmts = Queries.FVS.FVSInput.StandInit.CalculateFineWoodyDebrisBiomassTonsPerAcreSqlite(
+                        m_strDwmFineWoodyDebrisTable, m_strCondTable, m_strMinSmallFwdTransectLengthTotal,
+                        m_strMinLargeFwdTransectLengthTotal, strStandTable);
+                    foreach (string strSQL in strFwdSqlStmts)
+                    {
+                        if (Array.IndexOf(strFwdSqlStmts, strSQL) == 1)
+                        {
+                            using (OleDbConnection accessConn = new OleDbConnection(strMDBConn))
+                            {
+                                accessConn.Open();
+
+                                if (!m_ado.TableExist(accessConn, "DWM_FWD_Aggregates_WorkTable"))
+                                {
+                                    m_dao.CreateSQLiteTableLink(m_strTempMDBFileNewProcess, "DWM_FWD_Aggregates_WorkTable", "DWM_FWD_Aggregates_WorkTable",
+                                ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName, strWorkDb);
+                                    int i = 0;
+                                    do
+                                    {
+                                        // break out of loop if it runs too long
+                                        if (i > 20)
+                                        {
+                                            break;
+                                        }
+                                        System.Threading.Thread.Sleep(1000);
+                                        i++;
+                                    }
+                                    while (!m_ado.TableExist(accessConn, "DWM_FWD_Aggregates_WorkTable"));
+                                }
+
+                                DebugLogSQL(strSQL);
+                                m_ado.SqlNonQuery(accessConn, strSQL);
+                                m_intError = m_ado.m_intError;
+                                if (m_intError != 0)
+                                    break;
+                            }
+                            
+                        }
+                        else
+                        {
+                            DebugLogSQL(strSQL);
+                            oDataMgr.SqlNonQuery(conn, strSQL);
+                            m_intError = oDataMgr.m_intError;
+                        }
+                    }
+                }
+
+                //DUFF LITTER
+                DebugLogMessage("Executing Duff Litter SQL (multiple steps)\r\n", 1);
+                if (m_intError == 0)
+                {
+                    oDataMgr.m_strSQL = Queries.FVS.FVSInput.StandInit.CreateDuffLitterBiomassTonsPerAcreSqlite();
+                    DebugLogSQL(oDataMgr.m_strSQL);
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    m_intError = oDataMgr.m_intError;
+                    using (OleDbConnection accessConn = new OleDbConnection(strMDBConn))
+                    {
+                        accessConn.Open();
+
+                        if (!m_ado.TableExist(accessConn, "DWM_DuffLitter_Aggregates_WorkTable"))
+                        {
+                            m_dao.CreateSQLiteTableLink(m_strTempMDBFileNewProcess, "DWM_DuffLitter_Aggregates_WorkTable", "DWM_DuffLitter_Aggregates_WorkTable",
+                                ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName, strWorkDb);
+                            int i = 0;
+                            do
+                            {
+                                // break out of loop if it runs too long
+                                if (i > 20)
+                                {
+                                    break;
+                                }
+                                System.Threading.Thread.Sleep(1000);
+                                i++;
+                            }
+                            while (!m_ado.TableExist(accessConn, "DWM_DuffLitter_Aggregates_WorkTable"));
+                        }
+
+                        string strSQL =
+                            Queries.FVS.FVSInput.StandInit.CalculateDuffLitterBiomassTonsPerAcreSqlite(m_strDwmDuffLitterTable,
+                                m_strCondTable, strStandTable);
+                        DebugLogSQL(m_ado.m_strSQL);
+                        m_ado.SqlNonQuery(accessConn, strSQL);
+                        m_intError = m_ado.m_intError;
+                    }
+                    oDataMgr.m_strSQL = Queries.FVS.FVSInput.StandInit.UpdateFvsStandInitDuffLitterColumnsSqlite(strStandTable);
+                    DebugLogSQL(oDataMgr.m_strSQL);
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    m_intError = oDataMgr.m_intError;
+
+                    if (!string.IsNullOrEmpty(m_strDuffExcludedYears))
+                    {
+                        oDataMgr.m_strSQL = Queries.FVS.FVSInput.StandInit.RemoveDuffYearsSqlite(m_strDuffExcludedYears, strStandTable);
+                        DebugLogSQL(oDataMgr.m_strSQL);
+                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                        m_intError = oDataMgr.m_intError;
+                    }
+                    if (!string.IsNullOrEmpty(m_strLitterExcludedYears))
+                    {
+                        oDataMgr.m_strSQL = Queries.FVS.FVSInput.StandInit.RemoveLitterYearsSqlite(m_strLitterExcludedYears, strStandTable);
+                        DebugLogSQL(oDataMgr.m_strSQL);
+                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                        m_intError = oDataMgr.m_intError;
+                    }
+                }
+
+                //Clean up worktables
+                DebugLogMessage("Deleting work tables\r\n", 1);
+                if (m_intError == 0)
+                {
+                    string[] strDeleteStmts = Queries.FVS.FVSInput.StandInit.DeleteDwmWorkTables();
+                    foreach (string strSQL in strDeleteStmts)
+                    {
+                        if (Array.IndexOf(strDeleteStmts, strSQL) == 3 ||
+                            Array.IndexOf(strDeleteStmts, strSQL) == 4)
+                        {
+                            using (OleDbConnection accessConn = new OleDbConnection(strMDBConn))
+                            {
+                                accessConn.Open();
+                                DebugLogSQL(strSQL);
+                                m_ado.SqlNonQuery(accessConn, strSQL);
+                                m_intError = m_ado.m_intError;
+                                if (m_intError != 0)
+                                    break;
+                            }
+                        }
+                        DebugLogSQL(strSQL);
+                        oDataMgr.SqlNonQuery(conn, strSQL);
+                        m_intError = oDataMgr.m_intError;
+                        if (m_intError != 0)
+                            break;
+                    }
+                }
+            }
+        }
 
         private void CreateFVSTreeInit()
         {
@@ -1552,6 +1905,8 @@ namespace FIA_Biosum_Manager
             string _strCCHabitatTypeCd;
             IDictionary<String, String> _dictSiteIdxEq;
             string _strDebugFile;
+            string _strTempMDBFileNewProcess;
+            string _strProjDir = "";
 
             bool _bProcess = true;
 
@@ -1667,8 +2022,17 @@ namespace FIA_Biosum_Manager
             {
                 set { _strDebugFile = value; }
             }
+            public string TempMDBFileNewProcess
+            {
+                set { _strTempMDBFileNewProcess = value; }
+            }
+            public string ProjectDirectory
+            {
+                get { return _strProjDir; }
+                set { _strProjDir = value; }
+            }
 
-            public void getSiteIndex(System.Data.DataRow p_oRow)
+            public void getSiteIndex_old(System.Data.DataRow p_oRow, bool usingSqlite)
             {
                 //biosum plot id
                 if (p_oRow["biosum_plot_id"] == System.DBNull.Value)
@@ -1704,9 +2068,50 @@ namespace FIA_Biosum_Manager
                 //if (p_oRow["ba_ft2_ac"] != System.DBNull.Value)
                 //    this.ConditionClassBasalAreaPerAcre=Convert.ToDouble(p_oRow["ba_ft2_ac"]);
 
+                if (usingSqlite)
+                {
+                    getSiteIndex();
+                }
+                else
+                {
+                    getSiteIndex_old();
+                }
+            }
+            public void getSiteIndex(System.Data.DataRow p_oRow)
+            {
+                //biosum plot id
+                if (p_oRow["biosum_plot_id"] == System.DBNull.Value)
+                    this.BiosumPlotId = "";
+                else this.BiosumPlotId = p_oRow["biosum_plot_id"].ToString().Trim();
+                //statecd
+                if (p_oRow["statecd"] == System.DBNull.Value)
+                    this.StateCd = "";
+                else this.StateCd = Convert.ToString(p_oRow["statecd"]).Trim();
+                //countycd
+                if (p_oRow["countycd"] == System.DBNull.Value)
+                    this.CountyCd = "";
+                else this.CountyCd = Convert.ToString(p_oRow["countycd"]).Trim();
+                //plot
+                if (p_oRow["plot"] == System.DBNull.Value)
+                    this.Plot = "";
+                else this.Plot = Convert.ToString(p_oRow["plot"]).Trim();
+                //fvs variant
+                if (p_oRow["fvs_variant"] == System.DBNull.Value)
+                    this.FVSVariant = "";
+                else this.FVSVariant = Convert.ToString(p_oRow["fvs_variant"]).Trim();
+                //cond id
+                if (p_oRow["condid"] == System.DBNull.Value)
+                    this.CondId = "";
+                else this.CondId = Convert.ToString(p_oRow["condid"]).Trim();
+                //habitat type code
+                if (p_oRow["habtypcd1"] == System.DBNull.Value)
+                    this.ConditionClassHabitatTypeCd = "";
+                else this.ConditionClassHabitatTypeCd = Convert.ToString(p_oRow["habtypcd1"]).Trim();
+
                 getSiteIndex();
             }
-            private void getSiteIndex()
+
+            private void getSiteIndex_old()
             {
                 int x, y;
                 int intCount;
@@ -1785,7 +2190,7 @@ namespace FIA_Biosum_Manager
                             //**************************************************
                             if (intCurAgeDia > 0)
                             {
-                                LoadSiteIndexValues(intCondId, intCurFIASpecies,
+                                LoadSiteIndexValues_old(intCondId, intCurFIASpecies,
                                     intCurAgeDia,
                                     intCurHtFt,
                                     ref intCurSIFVSSpecies,
@@ -1891,13 +2296,231 @@ namespace FIA_Biosum_Manager
                             this.SiteIndex = Convert.ToString(Math.Round(dblSIAvgMax, 0)).Trim();
                         }
                         if (this.SiteIndexSpecies != "@" && this.SiteIndexSpecies.Trim().Length > 0)
-                            GetSiteIndexSpeciesAlphaCode();
+                            GetSiteIndexSpeciesAlphaCode_old();
                     }
                     _oAdo.m_DataSet.Tables.Remove("GetSiteIndex");
 
                 }
             }
-            private void GetSiteIndexSpeciesAlphaCode()
+
+            private void getSiteIndex()
+            {
+                int x, y;
+                int intCount;
+
+                //MAX variables hold the values of the selected site index
+                int intSICountMax;
+                double dblSIAvgMax;
+                int intSISpeciesMax;
+                int intCurSIFVSSpecies;
+                int intCurFIASpecies;
+                int intCurHtFt;
+                int intCurAgeDia;
+                int intCondId;
+                bool bFound;
+                int intSiTree;
+
+                //These arrays contain the values of all the site index trees on the plot
+                int[] intSIFVSSpecies;
+                int[] intSICount;
+                double[] dblSISum;
+                double[] dblSIAvg;
+
+                this.SiteIndex = "@";
+                this.SiteIndexSpecies = "@";
+                this.SiteIndexSpeciesAlphaCode = "@";
+
+                double dblSiteIndex = 0;
+
+                SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+                bool variantFound = false;
+
+                // Calculate site index for variants in site_index_equations
+                string strEqnConn = oDataMgr.GetConnectionString(frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
+                frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceSqliteFile);
+                using (System.Data.SQLite.SQLiteConnection eqnConn = new System.Data.SQLite.SQLiteConnection(strEqnConn))
+                {
+                    eqnConn.Open();
+
+                    oDataMgr.m_strSQL = "SELECT DISTINCT FVS_VARIANT FROM " + Tables.Reference.DefaultSiteIndexEquationsTable;
+                    oDataMgr.SqlQueryReader(eqnConn, oDataMgr.m_strSQL);
+                    if (oDataMgr.m_DataReader.HasRows)
+                    {
+                        while (oDataMgr.m_DataReader.Read())
+                        {
+                            if (Convert.ToString(oDataMgr.m_DataReader["FVS_VARIANT"]) == FVSVariant)
+                            {
+                                variantFound = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (!variantFound)
+                {
+                    return;
+                }
+
+                using (OleDbConnection conn = new OleDbConnection(_oAdo.getMDBConnString(_strTempMDBFileNewProcess, "", "")))
+                {
+                    conn.Open();
+                    //get all the site index trees that are applied to the current plot+condition
+                    _oAdo.m_strSQL = "SELECT s.biosum_plot_id," +
+                        "s.condid," +
+                        "s.tree," +
+                        "s.spcd," +
+                        "s.dia," +
+                        "s.ht," +
+                        "s.agedia," +
+                        "s.subp," +
+                        "s.method," +
+                        "s.validcd, " +
+                        "s.sitree " +
+                        "FROM " + this.SiteTreeTable + " s " +
+                        "WHERE s.biosum_plot_id = '" + this.BiosumPlotId + "' " +
+                        "AND s.condid = " + this.CondId +
+                        " AND s.validcd <> 0";
+                    x = Convert.ToInt32(_oAdo.getRecordCount(conn, "SELECT COUNT(*) FROM (" + _oAdo.m_strSQL + ")", "cond"));
+                    if (x > 0)
+                    {
+                        _oAdo.AddSQLQueryToDataSet(conn, ref _oAdo.m_OleDbDataAdapter, ref _oAdo.m_DataSet, _oAdo.m_strSQL, "GetSiteIndex");
+                        if (_oAdo.m_DataSet.Tables["GetSiteIndex"].Rows.Count > 0)
+                        {
+                            intSIFVSSpecies = new int[x];
+                            intSICount = new int[x];
+                            dblSISum = new double[x];
+                            intCount = 0;
+                            intSICountMax = 0;
+                            for (y = 0; y <= _oAdo.m_DataSet.Tables["GetSiteIndex"].Rows.Count - 1; y++)
+                            {
+                                intCurFIASpecies = Convert.ToInt32(_oAdo.m_DataSet.Tables["GetSiteIndex"].Rows[y]["spcd"]);
+                                intCurSIFVSSpecies = 0;
+                                intCurAgeDia = Convert.ToInt32(_oAdo.m_DataSet.Tables["GetSiteIndex"].Rows[y]["agedia"]);
+                                intCurHtFt = Convert.ToInt32(_oAdo.m_DataSet.Tables["GetSiteIndex"].Rows[y]["ht"]);
+                                intCondId = Convert.ToInt32(_oAdo.m_DataSet.Tables["GetSiteIndex"].Rows[y]["condid"]);
+                                intSiTree = Convert.ToInt32(_oAdo.m_DataSet.Tables["GetSiteIndex"].Rows[y]["sitree"]);
+
+                                //***************************************************
+                                //**if no age then bypass site index tree
+                                //**************************************************
+                                if (intCurAgeDia > 0)
+                                {
+                                    LoadSiteIndexValues(intCondId, intCurFIASpecies,
+                                        intCurAgeDia,
+                                        intCurHtFt,
+                                        ref intCurSIFVSSpecies,
+                                        ref dblSiteIndex,
+                                        intSiTree);
+                                    //*************************************************
+                                    //**if the site index = 0, write it to the log, we want to know
+                                    //**how often this occurs
+                                    //*************************************************
+                                    if (dblSiteIndex == 0)
+                                    {
+                                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                        {
+                                            string logEntry = "//variant: " + this.FVSVariant +
+                                                              " plot id: " + this.BiosumPlotId +
+                                                              " cond id: " + this.CondId +
+                                                              " spec cd: " + intCurSIFVSSpecies + "\r\n";
+                                            frmMain.g_oUtils.WriteText(_strDebugFile, "\r\n//\r\n");
+                                            frmMain.g_oUtils.WriteText(_strDebugFile, "//Site_Index_getSiteIndex\r\n");
+                                            frmMain.g_oUtils.WriteText(_strDebugFile, "//Site index equation returned 0    \r\n");
+                                            frmMain.g_oUtils.WriteText(_strDebugFile, logEntry);
+                                            frmMain.g_oUtils.WriteText(_strDebugFile, "//\r\n");
+                                        }
+                                    }
+                                    //*************************************************
+                                    //**lets find the current SI species in the array
+                                    //*************************************************
+                                    if (intCount == 0)
+                                    {
+                                        intCount = intCount + 1;
+                                        intSIFVSSpecies[intCount - 1] = intCurSIFVSSpecies;
+                                        intSICount[intCount - 1] = intSICount[intCount - 1] + 1;
+                                        dblSISum[intCount - 1] = dblSISum[intCount - 1] + dblSiteIndex;
+
+
+                                    }
+                                    else if (intSIFVSSpecies[intCount - 1] == intCurSIFVSSpecies)
+                                    {
+                                        intSICount[intCount - 1] = intSICount[intCount - 1] + 1;
+                                        dblSISum[intCount - 1] = dblSISum[intCount - 1] + dblSiteIndex;
+                                    }
+                                    else
+                                    {
+                                        bFound = false;
+                                        for (x = 0; x <= intCount - 1; x++)
+                                        {
+                                            if (intSIFVSSpecies[x] == intCurSIFVSSpecies)
+                                            {
+                                                bFound = true;
+                                                break;
+                                            }
+                                        }
+                                        if (bFound)
+                                        {
+                                            intSICount[x] = intSICount[x] + 1;
+                                            dblSISum[x] = dblSISum[x] + dblSiteIndex;
+                                        }
+                                        else
+                                        {
+                                            intCount = intCount + 1;
+                                            intSIFVSSpecies[intCount - 1] = intCurSIFVSSpecies;
+                                            intSICount[intCount - 1] = intSICount[intCount - 1] + 1;
+                                            dblSISum[intCount - 1] = dblSISum[intCount - 1] + dblSiteIndex;
+                                        }
+                                    }
+                                }
+                            }
+                            //***************************************************************
+                            //**get the most frequently occuring site index species
+                            //***************************************************************
+                            intSICountMax = 0;
+                            dblSIAvgMax = 0;
+                            intSISpeciesMax = 0;
+                            dblSIAvg = new double[intCount];
+                            for (x = 0; x <= intCount - 1; x++)
+                            {
+                                dblSIAvg[x] = dblSISum[x] / intSICount[x];
+                                if (intSICount[x] > intSICountMax)
+                                {
+                                    intSICountMax = intSICount[x];
+                                    dblSIAvgMax = dblSIAvg[x];
+                                    intSISpeciesMax = intSIFVSSpecies[x];
+                                }
+                                else if (intSICount[x] == intSICountMax)
+                                {
+                                    if (dblSIAvg[x] > dblSIAvgMax)
+                                    {
+                                        dblSIAvgMax = dblSIAvg[x];
+                                        intSISpeciesMax = intSIFVSSpecies[x];
+                                    }
+                                }
+                            }
+                            if (dblSIAvgMax <= 0 && intSISpeciesMax > 0 && intSISpeciesMax != 999)
+                            {
+                                MessageBox.Show("Warning: Site index tree species " + Convert.ToString(intSISpeciesMax) + " has an invalid  site index value of " + Convert.ToString(Math.Round(dblSIAvgMax, 6)).Trim() + ". Both the SI species and SI height will be given a value of @");
+                                this.SiteIndexSpecies = "@";
+                                this.SiteIndex = "@";
+
+                            }
+                            else
+                            {
+                                this.SiteIndexSpecies = intSISpeciesMax.ToString().Trim();
+                                this.SiteIndex = Convert.ToString(Math.Round(dblSIAvgMax, 0)).Trim();
+                            }
+                            if (this.SiteIndexSpecies != "@" && this.SiteIndexSpecies.Trim().Length > 0)
+                                GetSiteIndexSpeciesAlphaCode();
+                        }
+                        _oAdo.m_DataSet.Tables.Remove("GetSiteIndex");
+
+                    }
+                }
+
+                
+            }
+            private void GetSiteIndexSpeciesAlphaCode_old()
             {
                 _oAdo.m_strSQL = "SELECT fvs_species FROM " + this.FVSTreeSpeciesTable + " f " +
                                  "WHERE fvs_variant = '" + this.FVSVariant + "' AND " +
@@ -1910,9 +2533,25 @@ namespace FIA_Biosum_Manager
 
 
             }
+            private void GetSiteIndexSpeciesAlphaCode()
+            {
+                _oAdo.m_strSQL = "SELECT fvs_species FROM " + this.FVSTreeSpeciesTable + " f " +
+                                 "WHERE fvs_variant = '" + this.FVSVariant + "' AND " +
+                                       "spcd = " + this.SiteIndexSpecies;
+
+                using (OleDbConnection conn = new OleDbConnection(_oAdo.getMDBConnString(_strTempMDBFileNewProcess, "", "")))
+                {
+                    conn.Open();
+
+                    this.SiteIndexSpeciesAlphaCode = _oAdo.getSingleStringValueFromSQLQuery(conn, _oAdo.m_strSQL, this.FVSTreeSpeciesTable);
+                    
+                }
+                if (this.SiteIndexSpeciesAlphaCode.Trim().Length == 0)
+                    this.SiteIndexSpeciesAlphaCode = "@";
+            }
 
 
-            private void LoadSiteIndexValues(int p_intSICondId,
+            private void LoadSiteIndexValues_old(int p_intSICondId,
                 int p_intSISpCd,
                 int p_intSIAgeDia,
                 int p_intSIHtFt,
@@ -1963,7 +2602,7 @@ namespace FIA_Biosum_Manager
                     }
                     else if (p_intSISpCd == 108) //lodgepole
                     {
-                        getAvgDbhAndBasalArea(p_intSICondId);
+                        getAvgDbhAndBasalArea_old(p_intSICondId);
                         p_dblSiteIndex = zPICO3(p_intSIAgeDia,
                             p_intSIHtFt,
                             this.ConditionClassBasalAreaPerAcre,
@@ -2062,7 +2701,7 @@ namespace FIA_Biosum_Manager
                     }
                     else if (p_intSISpCd == 108) //lodgepole
                     {
-                        getAvgDbhAndBasalArea(p_intSICondId);
+                        getAvgDbhAndBasalArea_old(p_intSICondId);
                         p_dblSiteIndex = zPICO3(p_intSIAgeDia,
                             p_intSIHtFt,
                             this.ConditionClassBasalAreaPerAcre,
@@ -2135,7 +2774,7 @@ namespace FIA_Biosum_Manager
                     }
                     else if (p_intSISpCd == 108) //lodgepole
                     {
-                        getAvgDbhAndBasalArea(p_intSICondId);
+                        getAvgDbhAndBasalArea_old(p_intSICondId);
                         p_dblSiteIndex = zPICO3(p_intSIAgeDia,
                             p_intSIHtFt,
                             this.ConditionClassBasalAreaPerAcre,
@@ -2235,7 +2874,7 @@ namespace FIA_Biosum_Manager
                     }
                     else if (p_intSISpCd == 108) //lodgepole
                     {
-                        getAvgDbhAndBasalArea(p_intSICondId);
+                        getAvgDbhAndBasalArea_old(p_intSICondId);
                         p_dblSiteIndex = zPICO3(p_intSIAgeDia,
                             p_intSIHtFt,
                             this.ConditionClassBasalAreaPerAcre,
@@ -2366,7 +3005,7 @@ namespace FIA_Biosum_Manager
                     }
                     else if (p_intSISpCd == 108) //lodgepole
                     {
-                        getAvgDbhAndBasalArea(p_intSICondId);
+                        getAvgDbhAndBasalArea_old(p_intSICondId);
                         p_dblSiteIndex = zPICO3(p_intSIAgeDia,
                             p_intSIHtFt,
                             this.ConditionClassBasalAreaPerAcre,
@@ -2390,7 +3029,7 @@ namespace FIA_Biosum_Manager
                     }
                     else if (p_intSISpCd == 64)  //western juniper
                     {
-                        getAvgDbhAndBasalArea(p_intSICondId);
+                        getAvgDbhAndBasalArea_old(p_intSICondId);
                         p_dblSiteIndex = SI_LP5(p_intSIAgeDia, p_intSIHtFt,
                             this.ConditionClassBasalAreaPerAcre,
                             this.ConditionClassAverageDia);
@@ -2552,7 +3191,7 @@ namespace FIA_Biosum_Manager
                     {
                         //Whitebark pine, knobcone pine, lodgepole pine,
                         //Coulter pine, Limber pine, Western juniper
-                        getAvgDbhAndBasalArea(p_intSICondId);
+                        getAvgDbhAndBasalArea_old(p_intSICondId);
                         p_dblSiteIndex = zPICO3(p_intSIAgeDia,
                             p_intSIHtFt,
                             this.ConditionClassBasalAreaPerAcre,
@@ -2658,7 +3297,7 @@ namespace FIA_Biosum_Manager
                             p_dblSiteIndex = SI_DF2(p_intSIAgeDia, p_intSIHtFt, this.ConditionClassHabitatTypeCd);
                             break;
                         case "SI_LP5":
-                            getAvgDbhAndBasalArea(p_intSICondId);
+                            getAvgDbhAndBasalArea_old(p_intSICondId);
                             p_dblSiteIndex = SI_LP5(p_intSIAgeDia, p_intSIHtFt, this.ConditionClassBasalAreaPerAcre,
                                 this.ConditionClassAverageDia);
                             break;
@@ -2674,9 +3313,164 @@ namespace FIA_Biosum_Manager
                     bool boolSlfSpecies = Int32.TryParse(strSlfSpCd, out intSpCd);
                     if (boolSlfSpecies) p_intSIFVSSpecies = intSpCd;
                 }
+            }
 
-
-
+            private void LoadSiteIndexValues(int p_intSICondId,
+                int p_intSISpCd,
+                int p_intSIAgeDia,
+                int p_intSIHtFt,
+                ref int p_intSIFVSSpecies,
+                ref double p_dblSiteIndex,
+                int p_intSiTree)
+            {
+                // The compound key for the dictionary is the variant + species code
+                string strKey = this.FVSVariant + SI_DELIM + p_intSISpCd;
+                // Initialize values to blank in case the key is not found
+                string strEquation = "";
+                string strSlfSpCd = "";
+                string strRegion = "";
+                if (_dictSiteIdxEq.ContainsKey(strKey))
+                {
+                    // If the key is found extract the values from the delimited string
+                    string[] arrValues = _dictSiteIdxEq[strKey].Split(Convert.ToChar(SI_DELIM));
+                    strEquation = arrValues[0];
+                    strSlfSpCd = arrValues[1];
+                    strRegion = arrValues[2];
+                }
+                // Reset site index and species code, in case they aren't found in database
+                p_dblSiteIndex = 0;
+                // Return the numeric FVS-FIA species code; 
+                p_intSIFVSSpecies = p_intSISpCd;
+                // Calculate the site index for the equation from the database
+                switch (strEquation)
+                {
+                    case "ABAM2":
+                        p_dblSiteIndex = ABAM2(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "ABGR1":
+                        p_dblSiteIndex = ABGR1(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "ABPR1":
+                        p_dblSiteIndex = ABPR1(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "ALRU2":
+                        p_dblSiteIndex = ALRU2(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "LAOC1_OR":
+                        p_dblSiteIndex = LAOC1_OR(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "PIEN3":
+                        p_dblSiteIndex = PIEN3(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "PIMO2":
+                        p_dblSiteIndex = PIMO2(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "PIMO3":
+                        p_dblSiteIndex = PIMO3(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "PIPO3":
+                        p_dblSiteIndex = PIPO3(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "PISI1":
+                        p_dblSiteIndex = PISI1(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "PSME11":
+                        p_dblSiteIndex = PSME11(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "SI_AS1":
+                        p_dblSiteIndex = SI_AS1(p_intSIAgeDia, p_intSIHtFt);
+                        // substitute FIA site index if 0 returned; Uses same site index equation
+                        if (p_dblSiteIndex == 0)
+                        {
+                            p_dblSiteIndex = Convert.ToDouble(p_intSiTree);
+                        }
+                        break;
+                    case "SI_DF2":
+                        p_dblSiteIndex = SI_DF2(p_intSIAgeDia, p_intSIHtFt, this.ConditionClassHabitatTypeCd);
+                        break;
+                    case "SI_LP5":
+                        getAvgDbhAndBasalArea(p_intSICondId);
+                        p_dblSiteIndex = SI_LP5(p_intSIAgeDia, p_intSIHtFt, this.ConditionClassBasalAreaPerAcre,
+                            this.ConditionClassAverageDia);
+                        break;
+                    case "SI_PP6":
+                        p_dblSiteIndex = SI_PP6(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "TSHE1":
+                        p_dblSiteIndex = TSHE1(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "qPSME1":
+                        p_dblSiteIndex = qPSME1(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "qPSME12":
+                        p_dblSiteIndex = qPSME12(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "qPSME13":
+                        p_dblSiteIndex = qPSME13(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "zABCO2":
+                        p_dblSiteIndex = zABCO2(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "zABMA2":
+                        p_dblSiteIndex = zABMA2(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "zABPR2":
+                        p_dblSiteIndex = zABPR2(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "zALRU3":
+                        p_dblSiteIndex = zALRU3(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "zARME1":
+                        p_dblSiteIndex = zARME1(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "zDunning":
+                        p_dblSiteIndex = zDunning(p_intSIAgeDia, p_intSIHtFt);
+                        if (p_intSISpCd == 119 || p_intSISpCd == 117 ||
+                            p_intSISpCd == 64 || p_intSISpCd == 101 ||
+                            p_intSISpCd == 108 || p_intSISpCd == 109 ||
+                            p_intSISpCd == 113 || p_intSISpCd == 120 ||
+                            p_intSISpCd == 127 || p_intSISpCd == 264)
+                        {
+                            p_dblSiteIndex = p_dblSiteIndex * 0.9;
+                        }
+                        else if (p_intSISpCd == 81)
+                        {
+                            p_dblSiteIndex = p_dblSiteIndex * 0.76;
+                        }
+                        break;
+                    case "zLIDE1":
+                        p_dblSiteIndex = zLIDE1(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "zPICO3":
+                        getAvgDbhAndBasalArea(p_intSICondId);
+                        p_dblSiteIndex = zPICO3(p_intSIAgeDia,
+                            p_intSIHtFt,
+                            this.ConditionClassBasalAreaPerAcre,
+                            this.ConditionClassAverageDia);
+                        break;
+                    case "zPIPO8":
+                        p_dblSiteIndex = zPIPO8(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "zPIPO9":
+                        p_dblSiteIndex = zPIPO9(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "zPSME14":
+                        p_dblSiteIndex = zPSME14(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "zQUKE":
+                        p_dblSiteIndex = zQUKE(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    case "zTSME":
+                        p_dblSiteIndex = zTSME(p_intSIAgeDia, p_intSIHtFt);
+                        break;
+                    default:
+                        p_intSIFVSSpecies = 999;
+                        break;
+                }
+                // If there is a cross-reference slf species code use it, otherwise use input species code
+                int intSpCd = -1;
+                bool boolSlfSpecies = Int32.TryParse(strSlfSpCd, out intSpCd);
+                if (boolSlfSpecies) p_intSIFVSSpecies = intSpCd;
             }
 
             /// <summary>
@@ -2891,7 +3685,7 @@ namespace FIA_Biosum_Manager
             ///This function needs to be called prior to running an equation that uses CCF
             ///</summary>
             ///<param name="p_intCondId">The id of the condition</param>  
-            private void getAvgDbhAndBasalArea(int p_intCondId)
+            private void getAvgDbhAndBasalArea_old(int p_intCondId)
             {
 
                 this.ConditionClassAverageDia = 0;
@@ -2921,6 +3715,49 @@ namespace FIA_Biosum_Manager
                     }
                 }
                 _oAdo.m_OleDbDataReader.Dispose();
+
+                if (dblCount > 0)
+                {
+                    this.ConditionClassAverageDia = dblDia / dblCount;
+                }
+                this.ConditionClassBasalAreaPerAcre = dblBasalArea;
+            }
+
+            private void getAvgDbhAndBasalArea(int p_intCondId)
+            {
+                this.ConditionClassAverageDia = 0;
+                this.ConditionClassBasalAreaPerAcre = 0;
+
+                //Variables to accumulate the data from the tree table
+                double dblCount = 0;
+                double dblDia = 0;
+                double dblBasalArea = 0;
+
+                using (OleDbConnection conn = new OleDbConnection(_oAdo.getMDBConnString(_strTempMDBFileNewProcess, "", "")))
+                {
+                    conn.Open();
+
+                    string strSQL = "SELECT t.tpacurr, t.dia " +
+                        "FROM " + this.TreeTable + " t " +
+                        "WHERE t.biosum_cond_id = '" +
+                        this.BiosumPlotId + Convert.ToString(p_intCondId).Trim() +
+                        "' AND t.statuscd=1 AND t.tpacurr IS NOT NULL and t.dia IS NOT NULL AND t.dia >= 1";
+
+                    _oAdo.SqlQueryReader(conn, strSQL);
+
+                    if (_oAdo.m_OleDbDataReader.HasRows)
+                    {
+                        while (_oAdo.m_OleDbDataReader.Read())
+                        {
+                            double tempTpa = Convert.ToDouble(_oAdo.m_OleDbDataReader["tpacurr"]);
+                            double tempDia = Convert.ToDouble(_oAdo.m_OleDbDataReader["dia"]);
+                            dblCount = dblCount + tempTpa;
+                            dblDia = dblDia + tempDia * tempTpa;
+                            dblBasalArea = dblBasalArea + (Math.Pow(tempDia, 2) * 0.00545415) * tempTpa;
+                        }
+                    }
+                    _oAdo.m_OleDbDataReader.Dispose();
+                }
 
                 if (dblCount > 0)
                 {
@@ -3862,7 +4699,7 @@ namespace FIA_Biosum_Manager
 
         }
 
-        private IDictionary<String, String> LoadSiteIndexEquations(string strVariant)
+        private IDictionary<String, String> LoadSiteIndexEquations_old(string strVariant)
         {
             //instantiate the dictionary so we can add equation records
             IDictionary<String, String> _dictSiteIdxEq = new Dictionary<String, String>();
@@ -3909,7 +4746,64 @@ namespace FIA_Biosum_Manager
             return _dictSiteIdxEq;
         }
 
-        public void StartFIA2FVS(ODBCMgr odbcmgr, dao_data_access oDao,
+        private IDictionary<String, String> LoadSiteIndexEquations(string strVariant)
+        {
+            //instantiate the dictionary so we can add equation records
+            IDictionary<String, String> _dictSiteIdxEq = new Dictionary<String, String>();
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+            //create env object so we can get the appDir
+            env pEnv = new env();
+            //open the reference db file
+            string strCon = oDataMgr.GetConnectionString(frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
+                frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceSqliteFile);
+            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strCon))
+            {
+                con.Open();
+
+                oDataMgr.m_strSQL = "SELECT * FROM " + Tables.Reference.DefaultSiteIndexEquationsTable + 
+                    " WHERE FVS_VARIANT = '" + strVariant + "'";
+                oDataMgr.SqlQueryReader(con, oDataMgr.m_strSQL);
+
+                if (oDataMgr.m_DataReader.HasRows)
+                {
+                    while (oDataMgr.m_DataReader.Read())
+                    {
+                        if (oDataMgr.m_DataReader["FVS_VARIANT"] == System.DBNull.Value ||
+                            oDataMgr.m_DataReader["FIA_SPCD"] == System.DBNull.Value ||
+                            oDataMgr.m_DataReader["EQUATION"] == System.DBNull.Value)
+                        {
+                            //If either variant, spcd, or equation is null, we don't add because we can't use
+                        }
+                        else
+                        {
+                            string strFvsVariant = Convert.ToString(oDataMgr.m_DataReader["FVS_VARIANT"]);
+                            string strFiaSpCd = Convert.ToString(oDataMgr.m_DataReader["FIA_SPCD"]);
+                            string strRegion = SI_EMPTY;
+                            if (oDataMgr.m_DataReader["REGION"] != System.DBNull.Value)
+                            {
+                                strRegion = Convert.ToString(oDataMgr.m_DataReader["REGION"]);
+                            }
+                            string strSlfSpcd = SI_EMPTY;
+                            if (oDataMgr.m_DataReader["SLF_SPCD"] != System.DBNull.Value)
+                            {
+                                strSlfSpcd = Convert.ToString(oDataMgr.m_DataReader["SLF_SPCD"]);
+                            }
+                            string strEquation = Convert.ToString(oDataMgr.m_DataReader["EQUATION"]);
+                            string strValue = strEquation + SI_DELIM + strSlfSpcd + SI_DELIM + strRegion;
+                            if (!_dictSiteIdxEq.ContainsKey(strFvsVariant + SI_DELIM + strFiaSpCd))
+                            {
+                                _dictSiteIdxEq.Add(strFvsVariant + SI_DELIM + strFiaSpCd, strValue);
+                            }
+                            
+                        }
+                    }
+                }
+            }
+            oDataMgr = null;
+            return _dictSiteIdxEq;
+        }
+
+        public void StartFIA2FVS_old(ODBCMgr odbcmgr, dao_data_access oDao,
             ado_data_access oAdo, string strTempMDB, bool bOverwrite,
             string strDebugFile, string strVariant, List<string> lstStates, string strSourceStandTableAlias, string strSourceTreeTableAlias)
         {
@@ -4252,7 +5146,7 @@ namespace FIA_Biosum_Manager
                 oDataMgr.SqlNonQuery(con, strSQL);
             }
 
-            UpdateFvsInSqliteConfigurationTable();
+            UpdateFvsInSqliteConfigurationTable_old();
 
             // Remove target DSN if it exists
             if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName))
@@ -4269,7 +5163,393 @@ namespace FIA_Biosum_Manager
             }
             DebugLogMessage("*****END*****" + System.DateTime.Now.ToString() + "\r\n", 2);
         }
+        public void StartFIA2FVS(ODBCMgr odbcmgr, dao_data_access oDao,
+            ado_data_access oAdo, string strTempMDB, bool bOverwrite,
+            string strDebugFile, string strVariant, List<string> lstStates, string strSourceStandTableAlias, string strSourceTreeTableAlias)
+        {
+            m_strTempMDBFileNewProcess = strTempMDB;
 
+            // Copy the target database from BioSum application directory
+            string applicationDb = frmMain.g_oEnv.strAppDir + "\\db\\" + Tables.FIA2FVS.DefaultFvsInputFile;
+            string strInDirAndFile = m_strDataDirectory + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
+            if (!File.Exists(strInDirAndFile))
+            {
+                // create FVSIn.db if missing
+                File.Copy(applicationDb, strInDirAndFile, true);
+            }
+
+            // Create temporary SQLite database for the variant being worked on
+            env oEnv = new env();
+            string strVariantWorkDb = frmMain.g_oUtils.getRandomFile(oEnv.strTempDir, "db");
+            File.Copy(applicationDb, strVariantWorkDb, true);
+
+            int intProgressBarCounter = 0;
+
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+            string strWorkDbConn = oDataMgr.GetConnectionString(strVariantWorkDb);
+            string strTargetDbConn = oDataMgr.GetConnectionString(strInDirAndFile);
+            this.m_strDebugFile = strDebugFile;
+            DebugLogMessage("*****START*****" + System.DateTime.Now.ToString() + "\r\n");
+            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strTargetDbConn))
+            {
+                // Connect to target database (FVSIn.db)
+                con.Open();
+                bool bCreateTables = false;
+                if (!oDataMgr.TableExist(con, Tables.FIA2FVS.DefaultFvsInputStandTableName) ||
+                    !oDataMgr.TableExist(con, Tables.FIA2FVS.DefaultFvsInputTreeTableName))
+                {
+                    bCreateTables = true;
+                }
+                if (bCreateTables == true)
+                {
+                    frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
+                        "Creating FVS_INIT_COND tables For Variant " + strVariant);
+                    CreateFVSInputTables(con);
+                }
+                else if (bCreateTables == false && lstStates.Count > 0)
+                {
+                    frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
+                        "Deleting existing records from FVS_STANDINIT_COND and FVS_TREEINIT_COND tables For Variant " + strVariant);
+
+                    // Delete existing state records if there is conflict with source
+                    string csv = String.Join(",", lstStates.Select(x => x.ToString()).ToArray());
+
+                    // Delete existing records from tree table
+                    string strSql = "DELETE FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                            " WHERE stand_cn IN(select stand_cn from " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                            " where state in (" + csv + ") AND VARIANT = '" + strVariant + "')";
+                    DebugLogSQL(strSql);
+                    oDataMgr.SqlNonQuery(con, strSql);
+
+                    // Delete existing records from stand table
+                    strSql = "DELETE FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                            " WHERE STATE IN (" + csv + ")" +
+                            " AND VARIANT = '" + strVariant + "'";
+                    DebugLogSQL(strSql);
+                    oDataMgr.SqlNonQuery(con, strSql);
+                }
+                else if (bOverwrite == true)
+                {
+                    // Delete existing records from tree table that correspond to selected variant
+                    string strSql = "DELETE FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                        " WHERE TRIM(VARIANT) = '" + strVariant + "'";
+                    DebugLogSQL(strSql);
+                    oDataMgr.SqlNonQuery(con, strSql);
+
+                    // Delete existing records from stand table for selected variant
+                    strSql = "DELETE FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                        " WHERE TRIM(VARIANT) = '" + strVariant + "'";
+                    DebugLogSQL(strSql);
+                    oDataMgr.SqlNonQuery(con, strSql);
+                }
+
+
+                // Ensure FIADB indexes are in plac
+                AddFIADBIndexes(con);
+            }
+
+            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strWorkDbConn))
+            {
+                con.Open();
+
+                frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
+                        "Creating work FVS_INIT_COND tables For Variant " + strVariant);
+                CreateFVSInputTables(con);
+
+                // Ensure FIADB indexes are in place
+                AddFIADBIndexes(con);
+            }
+
+            frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
+            // Check to see if the target DSN exists and if so, delete so we can add
+            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName))
+            {
+                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName);
+            }
+            odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName, strVariantWorkDb);
+            if (!string.IsNullOrEmpty(odbcmgr.m_strError))
+            {
+                DebugLogSQL("ODBCMgr error: " + odbcmgr.m_strError);
+                return;
+            }
+            else
+            {
+                DebugLogSQL("Created DSN for " + ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName);
+            }
+            // Link stand table to temp database
+            oDao.CreateSQLiteTableLink(m_strTempMDBFileNewProcess, Tables.FIA2FVS.DefaultFvsInputStandTableName, Tables.FIA2FVS.DefaultFvsInputStandTableName,
+                ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName, strVariantWorkDb);
+            // Set the index, required to by ODBC to update
+            if (!oDao.IndexExists(m_strTempMDBFileNewProcess, Tables.FIA2FVS.DefaultFvsInputStandTableName, "STAND_CN"))
+            {
+                oDao.CreatePrimaryKeyIndex(m_strTempMDBFileNewProcess, Tables.FIA2FVS.DefaultFvsInputStandTableName, "STAND_CN");
+            }
+            // Link tree table to temp database
+            oDao.CreateSQLiteTableLink(m_strTempMDBFileNewProcess, Tables.FIA2FVS.DefaultFvsInputTreeTableName, Tables.FIA2FVS.DefaultFvsInputTreeTableName,
+                ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName, strVariantWorkDb);
+            // Set the index, required to by ODBC to update
+            if (!oDao.IndexExists(m_strTempMDBFileNewProcess, Tables.FIA2FVS.DefaultFvsInputTreeTableName, "TREE_CN"))
+            {
+                oDao.CreatePrimaryKeyIndex(m_strTempMDBFileNewProcess, Tables.FIA2FVS.DefaultFvsInputTreeTableName, "TREE_CN");
+            }
+
+            // Link DWM tables
+            string strMasterAuxDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.db";
+            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.DWMDsnName))
+            {
+                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.DWMDsnName);
+            }
+            odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.DWMDsnName, strMasterAuxDb);
+            string strBiosumRefDb = frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
+                        frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceSqliteFile;
+            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.BiosumRefDsnName))
+            {
+                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.BiosumRefDsnName);
+            }
+            odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.BiosumRefDsnName, strBiosumRefDb);
+
+            if (!string.IsNullOrEmpty(odbcmgr.m_strError))
+            {
+                DebugLogSQL("ODBCMgr error: " + odbcmgr.m_strError);
+                return;
+            }
+            else
+            {
+                DebugLogSQL("Created DSN for " + ODBCMgr.DSN_KEYS.DWMDsnName);
+            }
+
+            // Attach tables needed for Site Index and Fuel columns
+            LinkSiteIndexAndFuelColumnsTables();
+
+            frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
+                "Populating FVS_STANDINIT_COND and FVS_TREEINIT_COND tables For Variant " + strVariant);
+            string strAccdbConnection = oAdo.getMDBConnString(m_strTempMDBFileNewProcess, "", "");
+            using (OleDbConnection oAccessConn = new OleDbConnection(strAccdbConnection))
+            {
+                oAccessConn.Open();
+
+                DebugLogSQL(Queries.FVS.FVSInput.StandInit.PopulateStandInit(strSourceStandTableAlias, this.m_strCondTable,
+                    strVariant));
+                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.PopulateStandInit(strSourceStandTableAlias, this.m_strCondTable,
+                    strVariant));
+
+                DebugLogSQL(Queries.FVS.FVSInput.TreeInit.PopulateTreeInit(strSourceTreeTableAlias, strSourceStandTableAlias,
+                    this.m_strCondTable, this.m_strTreeTable, strVariant));
+                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.PopulateTreeInit(strSourceTreeTableAlias, strSourceStandTableAlias,
+                    this.m_strCondTable, this.m_strTreeTable, strVariant));
+
+                frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
+                frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
+                    "Customizing FVS_STANDINIT_COND table For Variant " + strVariant);
+                // Populate the STAND_ID and SAM_WT from the BioSum Cond table
+                DebugLogSQL(Queries.FVS.FVSInput.StandInit.UpdateFromCond(this.m_strCondTable, strVariant));
+                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.UpdateFromCond(this.m_strCondTable, strVariant));
+
+                //Overwrite FOREST_TYPE with FOREST_TYPE_FIA, PV_CODE with PV_FIA_HABTYPCD1
+                DebugLogSQL(Queries.FVS.FVSInput.StandInit.UpdateForestTypeAndPvCode());
+                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.UpdateForestTypeAndPvCode());
+
+                //Null FUEL_MODEL if not checked
+                if (new int[]
+                {
+                    (int) m_enumDWMOption.SKIP_FUEL_MODEL_AND_DWM_DATA,
+                    (int) m_enumDWMOption.USE_DWM_DATA_ONLY
+                }.Contains(m_intDWMOption))
+                {
+                    DebugLogSQL(Queries.FVS.FVSInput.StandInit.SetFuelModelToNull());
+                    oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.StandInit.SetFuelModelToNull());
+                }
+
+
+                // SITE_INDEX and SITE_SPECIES 
+                if (m_intError == 0)
+                {
+                    GenerateSiteIndexAndSiteSpeciesSQL(strVariant);
+                }
+
+                //Create lookup table for DWM Fuelbed Type Code to convert to FVS format
+                if (m_intError == 0 && new int[]
+                {
+                    (int) m_enumDWMOption.USE_FUEL_MODEL_OR_DWM_DATA,
+                    (int) m_enumDWMOption.USE_FUEL_MODEL_ONLY
+                }.Contains(m_intDWMOption))
+                {
+                    
+                    CreateDwmFuelbedTypeCodeFvsConversionTable(oAccessConn);
+                    m_ado.m_strSQL =
+                        Queries.FVS.FVSInput.StandInit.UpdateFuelModel(Tables.FIA2FVS.DefaultFvsInputStandTableName, m_strCondTable);
+                    m_ado.SqlNonQuery(oAccessConn, m_ado.m_strSQL);
+                    m_ado.SqlNonQuery(oAccessConn, "DROP TABLE Ref_DWM_Fuelbed_Type_Codes;");
+                }
+                // set fuel columns to null
+                
+                using (System.Data.SQLite.SQLiteConnection workConn = new System.Data.SQLite.SQLiteConnection(strWorkDbConn))
+                {
+                    workConn.Open();
+                    DebugLogSQL(Queries.FVS.FVSInput.StandInit.SetFuelColumnsToNull());
+                    oDataMgr.SqlNonQuery(workConn, Queries.FVS.FVSInput.StandInit.SetFuelColumnsToNull());
+                }
+                // Copy DWM fields from FVSIn.accdb
+                if (m_intError == 0 && new int[]
+                {
+                    (int) m_enumDWMOption.USE_FUEL_MODEL_OR_DWM_DATA,
+                    (int) m_enumDWMOption.USE_DWM_DATA_ONLY
+                }.Contains(m_intDWMOption))
+                {
+                    PopulateFuelColumns(strAccdbConnection, strVariantWorkDb, Tables.FIA2FVS.DefaultFvsInputStandTableName);
+                }
+
+                frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
+                frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
+                    "Customizing FVS_TREEINIT_COND table For Variant " + strVariant);
+                // Create temp table in MS Access
+                string strTempTreeTable = "temp_tree";
+                if (oAdo.TableExist(oAccessConn, strTempTreeTable))
+                {
+                    oAdo.SqlNonQuery(oAccessConn, "DROP TABLE " + strTempTreeTable);
+                }
+                string strSQL = "SELECT * INTO " + strTempTreeTable + " FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName;
+                DebugLogSQL(strSQL);
+                oAdo.SqlNonQuery(oAccessConn, strSQL);
+
+                //Add indexes to improve performance
+                string[] arrTempTreeIndexes = new string[] { "TEMP_TREE_TREE_CN_IDX", "TEMP_TREE_TREE_ID_IDX" };
+                string[] arrTempTreeFields = new string[] { "TREE_CN", "TREE_ID" };
+                for (int i = 0; i < arrTempTreeIndexes.Length; i++)
+                {
+                    if (oAdo.ColumnExist(oAccessConn, strTempTreeTable, arrTempTreeFields[i]))
+                    {
+                        oAdo.AddIndex(oAccessConn, strTempTreeTable, arrTempTreeIndexes[i], arrTempTreeFields[i]);
+                    }
+                }
+
+                // These are the fields we are changing that need to be updated at the end
+                IList<string> lstFields = new List<string>();
+
+                // Delete seedlings if not desired
+                if (!bIncludeSeedlings)
+                {
+                    frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
+                    DebugLogSQL(Queries.FVS.FVSInput.TreeInit.DeleteSeedlings(strTempTreeTable));
+                    oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.DeleteSeedlings(strTempTreeTable));
+                    DebugLogSQL(Queries.FVS.FVSInput.TreeInit.DeleteSeedlings(Tables.FIA2FVS.DefaultFvsInputTreeTableName));
+                    oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.DeleteSeedlings(Tables.FIA2FVS.DefaultFvsInputTreeTableName));
+                }
+
+                // Populate the STAND_ID from the BioSum Cond table
+                DebugLogSQL(Queries.FVS.FVSInput.TreeInit.UpdateFromCond(this.m_strCondTable, strVariant, strTempTreeTable));
+                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.UpdateFromCond(this.m_strCondTable, strVariant, strTempTreeTable));
+                lstFields.Add("STAND_ID");
+
+                // Populate the TREE_ID and BioSum Tree table
+                DebugLogSQL(Queries.FVS.FVSInput.TreeInit.UpdateFromTree(this.m_strTreeTable, strTempTreeTable));
+                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.UpdateFromTree(this.m_strTreeTable, strTempTreeTable));
+                lstFields.Add("TREE_ID");
+
+                frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
+                // Update tree_count
+                DebugLogSQL(Queries.FVS.FVSInput.TreeInit.UpdateTreeCount(this.m_strTreeTable, strTempTreeTable));
+                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.UpdateTreeCount(this.m_strTreeTable, strTempTreeTable));
+                lstFields.Add("TREE_COUNT");
+
+                // Manage calibraton columns; Set to null if not selected
+                frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
+                // 30-OCT-2023: Start using DG and HTG from FIA2FVS. Set to null if calibration data not selected
+                if (!bUsePrevHtCalibrationData)
+                {
+                    DebugLogSQL(Queries.FVS.FVSInput.TreeInit.SetCalibrationColumnsToNull(strTempTreeTable, "HTG"));
+                    oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.SetCalibrationColumnsToNull(strTempTreeTable, "HTG"));
+                    lstFields.Add("HTG");
+                }
+                if (!bUsePrevDiaCalibrationData)
+                {
+                    DebugLogSQL(Queries.FVS.FVSInput.TreeInit.SetCalibrationColumnsToNull(strTempTreeTable, "DG"));
+                    oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.SetCalibrationColumnsToNull(strTempTreeTable, "DG"));
+                    lstFields.Add("DG");
+                }
+
+                // Update damage codes for cull and mistletoe
+                frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
+                UpdateDamageCodesForCullAndMistletoe(m_strTreeTable, strTempMDB, strTempTreeTable);
+                lstFields.Add("Damage1");
+                lstFields.Add("Severity1");
+                lstFields.Add("Damage2");
+                lstFields.Add("Severity2");
+                lstFields.Add("Damage3");
+                lstFields.Add("Severity3");
+                lstFields.Add("TREEVALUE");
+
+                // Copy modified fields to final FVSIn.db
+                DebugLogSQL(Queries.FVS.FVSInput.TreeInit.UpdateFieldsFromTempTable(strTempTreeTable, lstFields));
+                oAdo.SqlNonQuery(oAccessConn, Queries.FVS.FVSInput.TreeInit.UpdateFieldsFromTempTable(strTempTreeTable, lstFields));
+
+                // Delete link to target stand table from temp database
+                string strSql = "DROP TABLE " + Tables.FIA2FVS.DefaultFvsInputStandTableName;
+                DebugLogSQL(strSql);
+                oAdo.SqlNonQuery(oAccessConn, strSql);
+
+                // Delete link to target tree table from temp database
+                strSql = "DROP TABLE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName;
+                DebugLogSQL(strSql);
+                oAdo.SqlNonQuery(oAccessConn, strSql);
+            }
+
+            // Make changes to the FIA2FVS records as needed
+            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strWorkDbConn))
+            {
+                con.Open();
+                string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                                " SET GROUPS = '" + strGroup + "'";
+                DebugLogSQL(strSQL);
+                oDataMgr.SqlNonQuery(con, strSQL);
+
+                oDataMgr.m_strSQL = "ATTACH DATABASE '" + strInDirAndFile + "' AS target";
+                oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
+
+                // Populate variant field in tree table
+                oDataMgr.m_strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                    " SET VARIANT = '" + strVariant + "' WHERE VARIANT IS NULL";
+                oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
+
+                oDataMgr.m_strSQL = "INSERT INTO target." + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                    " SELECT * FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName;
+                oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
+
+                oDataMgr.m_strSQL = "INSERT INTO target." + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                    " SELECT * FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName;
+                oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
+            }
+
+
+            UpdateFvsInSqliteConfigurationTable();
+
+            // Remove DSNs if they exist
+            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName))
+            {
+                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName);
+            }
+            if (!string.IsNullOrEmpty(odbcmgr.m_strError))
+            {
+                DebugLogSQL("ODBCMgr error: " + odbcmgr.m_strError);
+            }
+            else
+            {
+                DebugLogSQL("Removed DSN for " + ODBCMgr.DSN_KEYS.Fia2FvsOutputDsnName);
+            }
+            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.DWMDsnName))
+            {
+                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.DWMDsnName);
+            }
+            if (!string.IsNullOrEmpty(odbcmgr.m_strError))
+            {
+                DebugLogSQL("ODBCMgr error: " + odbcmgr.m_strError);
+            }
+            else
+            {
+                DebugLogSQL("Removed DSN for " + ODBCMgr.DSN_KEYS.DWMDsnName);
+            }
+            DebugLogMessage("*****END*****" + System.DateTime.Now.ToString() + "\r\n", 2);
+        }
         private void CopyFuelColumns(string strTempMDBFile, string strVariant)
         {
             ado_data_access oAdo = new ado_data_access();
@@ -4294,6 +5574,147 @@ namespace FIA_Biosum_Manager
             //m_dao.CreateTableLink(this.m_strTempMDBFile, "FVS_TreeInit", this.m_strInDir + "\\" + this.strFVSInMDBFile,
             //    "FVS_TreeInit", true);
 
+        }
+
+        private void LinkSiteIndexAndFuelColumnsTables()
+        {
+            dao_data_access oDao = new dao_data_access();
+            ado_data_access oAdo = new ado_data_access();
+
+            using (OleDbConnection con = new OleDbConnection(oAdo.getMDBConnString(m_strTempMDBFileNewProcess, "", "")))
+            {
+                con.Open();
+
+                // FIA_TREE_SPECIES_REF
+                if (!oAdo.TableExist(con, m_strFiaTreeSpeciesRefTable))
+                {
+                    oDao.CreateTableLink(m_strTempMDBFileNewProcess, m_strFiaTreeSpeciesRefTable,
+                        frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
+                        frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceDbFile, m_strFiaTreeSpeciesRefTable);
+                }
+
+                // FVS_TREE_SPECIES
+                if (!oAdo.TableExist(con, Tables.Reference.DefaultFVSTreeSpeciesTableName))
+                {
+                    oDao.CreateTableLink(m_strTempMDBFileNewProcess, Tables.Reference.DefaultFVSTreeSpeciesTableName,
+                        frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
+                        frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceDbFile, Tables.Reference.DefaultFVSTreeSpeciesTableName);
+                }
+
+                // REF_FOREST_TYPE and REF_FOREST_TYPE_GROUP
+                string strBioSumRefDb = frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
+                        frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceSqliteFile;
+                if (!oAdo.TableExist(con, m_strRefForestTypeTable))
+                {
+                    oDao.CreateSQLiteTableLink(m_strTempMDBFileNewProcess, m_strRefForestTypeTable,
+                        m_strRefForestTypeTable, ODBCMgr.DSN_KEYS.BiosumRefDsnName, strBioSumRefDb);
+                }
+                if (!oAdo.TableExist(con, m_strRefForestTypeGroupTable))
+                {
+                    oDao.CreateSQLiteTableLink(m_strTempMDBFileNewProcess, m_strRefForestTypeGroupTable,
+                        m_strRefForestTypeGroupTable, ODBCMgr.DSN_KEYS.BiosumRefDsnName, strBioSumRefDb);
+                }
+
+                // DWM tables
+                string strMasterAuxDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.db";
+                if (!oAdo.TableExist(con, m_strDwmCoarseWoodyDebrisTable))
+                {
+                    oDao.CreateSQLiteTableLink(m_strTempMDBFileNewProcess, m_strDwmCoarseWoodyDebrisTable, m_strDwmCoarseWoodyDebrisTable,
+                        ODBCMgr.DSN_KEYS.DWMDsnName, strMasterAuxDb);
+                }
+                if (!oAdo.TableExist(con, m_strDwmDuffLitterTable))
+                {
+                    oDao.CreateSQLiteTableLink(m_strTempMDBFileNewProcess, m_strDwmDuffLitterTable, m_strDwmDuffLitterTable,
+                        ODBCMgr.DSN_KEYS.DWMDsnName, strMasterAuxDb);
+                }
+                if (!oAdo.TableExist(con, m_strDwmFineWoodyDebrisTable))
+                {
+                    oDao.CreateSQLiteTableLink(m_strTempMDBFileNewProcess, m_strDwmFineWoodyDebrisTable, m_strDwmFineWoodyDebrisTable,
+                        ODBCMgr.DSN_KEYS.DWMDsnName, strMasterAuxDb);
+                }
+                if (!oAdo.TableExist(con, m_strDwmTransectSegmentTable))
+                {
+                    oDao.CreateSQLiteTableLink(m_strTempMDBFileNewProcess, m_strDwmTransectSegmentTable, m_strDwmTransectSegmentTable,
+                        ODBCMgr.DSN_KEYS.DWMDsnName, strMasterAuxDb);
+                }
+
+
+            }
+        }
+
+        public void CreateFVSInputTables(System.Data.SQLite.SQLiteConnection p_Conn)
+        {
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+
+            string strSql = "ATTACH DATABASE '" + m_strSourceFiaDb + "' AS source";
+            DebugLogSQL(strSql);
+            oDataMgr.SqlNonQuery(p_Conn, strSql);
+
+            // Query schema and create empty stand table
+            strSql = "SELECT sql FROM source.sqlite_master WHERE type = 'table' " +
+                "AND name = '" + Tables.FIA2FVS.DefaultFvsInputStandTableName + "'";
+            DebugLogSQL(strSql);
+            strSql = oDataMgr.getSingleStringValueFromSQLQuery(p_Conn, strSql, "sqlite_master");
+            if (!String.IsNullOrEmpty(strSql))
+            {
+                DebugLogSQL(strSql);
+                oDataMgr.SqlNonQuery(p_Conn, strSql);
+            }
+
+            // Add BioSum DWM fields to empty stand table
+            string[] arrDwmFields = new string[] {"SmallMediumTotalLength", "LargeTotalLength", "CWDTotalLength",
+                                                        "DuffPitCount", "LitterPitCount"};
+            string[] arrDwmTypes = new string[] { "DOUBLE", "DOUBLE", "DOUBLE", "LONG", "LONG" };
+            for (int i = 0; i < arrDwmFields.Length; i++)
+            {
+                oDataMgr.AddColumn(p_Conn, Tables.FIA2FVS.DefaultFvsInputStandTableName, arrDwmFields[i], arrDwmTypes[i], null);
+                DebugLogSQL("Added column " + arrDwmFields[i] + " to table " + Tables.FIA2FVS.DefaultFvsInputStandTableName);
+            }
+
+            // Create empty tree table
+            strSql = "SELECT sql FROM source.sqlite_master WHERE type = 'table' " +
+                "AND name = '" + Tables.FIA2FVS.DefaultFvsInputTreeTableName + "'";
+            DebugLogSQL(strSql);
+            strSql = oDataMgr.getSingleStringValueFromSQLQuery(p_Conn, strSql, "sqlite_master");
+            if (!String.IsNullOrEmpty(strSql))
+            {
+                DebugLogSQL(strSql);
+                oDataMgr.SqlNonQuery(p_Conn, strSql);
+            }
+
+            // Add VARIANT field to empty tree table
+            oDataMgr.AddColumn(p_Conn, Tables.FIA2FVS.DefaultFvsInputTreeTableName, "VARIANT", "CHAR", "2");
+
+            // Disconnect from source database
+            strSql = "DETACH DATABASE 'source'";
+            DebugLogSQL(strSql);
+            oDataMgr.SqlNonQuery(p_Conn, strSql);
+        }
+
+        public void AddFIADBIndexes(System.Data.SQLite.SQLiteConnection p_Conn)
+        {
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+
+            string[] arrStandIndexNames = new string[] { "FVS_STANDINIT_COND_STAND_CN_IDX", "FVS_STANDINIT_COND_STAND_ID_IDX" };
+            string[] arrStandIndexColumns = new string[] { "STAND_CN", "STAND_ID" };
+            for (int i = 0; i < arrStandIndexColumns.Length; i++)
+            {
+                if (!oDataMgr.IndexExist(p_Conn, arrStandIndexNames[i]) &&
+                     oDataMgr.FieldExist(p_Conn, $@"SELECT * FROM {Tables.FIA2FVS.DefaultFvsInputStandTableName}", arrStandIndexColumns[i]))
+                {
+                    oDataMgr.AddIndex(p_Conn, Tables.FIA2FVS.DefaultFvsInputStandTableName, arrStandIndexNames[i], arrStandIndexColumns[i]);
+                }
+            }
+            string[] arrTreeIndexNames = new string[] { "FVS_TREEINIT_COND_STAND_CN_IDX", "FVS_TREEINIT_COND_STAND_ID_IDX", "FVS_TREEINIT_COND_STANDPLOT_CN_IDX", "FVS_TREEINIT_COND_STANDPLOT_ID_IDX", "FVS_TREEINIT_COND_TREE_CN_IDX", "FVS_TREEINIT_TREE_ID_IDX" };
+            string[] arrTreeIndexColumns = new string[] { "STAND_CN", "STAND_ID", "STANDPLOT_CN", "STANDPLOT_ID", "TREE_CN", "TREE_ID" };
+            for (int i = 0; i < arrTreeIndexColumns.Length; i++)
+            {
+                if (!oDataMgr.IndexExist(p_Conn, arrTreeIndexNames[i]) &&
+                     oDataMgr.FieldExist(p_Conn, $@"SELECT * FROM {Tables.FIA2FVS.DefaultFvsInputTreeTableName}", arrTreeIndexColumns[i]))
+                {
+                    oDataMgr.AddIndex(p_Conn, Tables.FIA2FVS.DefaultFvsInputTreeTableName, arrTreeIndexNames[i], arrTreeIndexColumns[i]);
+                }
+            }
         }
 
         private void UpdateDamageCodesForCullAndMistletoe(string strTreeTable, string strTempMDBFile, string strTempTreeTable)

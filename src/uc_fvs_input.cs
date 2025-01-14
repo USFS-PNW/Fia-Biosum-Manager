@@ -43,6 +43,7 @@ namespace FIA_Biosum_Manager
         private DataMgr m_dataMgr = new DataMgr();
         private string m_strConn = "";
         private bool m_bOverwrite = true;
+        private bool m_bKcpOverwrite = true;
         private IDictionary<string, List<string>> m_dictVariantStates = null;
         private System.Windows.Forms.Button btnHelp;
         private int m_intError = 0;
@@ -51,13 +52,13 @@ namespace FIA_Biosum_Manager
         //list view column constants
         private const int COL_CHECKBOX = 0;
         private const int COL_VARIANT = 1;
-        private const int COL_RX = 2;
-        private const int COL_STANDCOUNT = 3;
-        private const int COL_TREECOUNT = 4;
-        private const int COL_MDBOUT = 5;
-        private const int COL_SUMMARYCOUNT = 6;
-        private const int COL_CUTCOUNT = 7;
-        private const int COL_LEFTCOUNT = 8;
+        //private const int COL_RX = 2;
+        private const int COL_STANDCOUNT = 2;
+        private const int COL_TREECOUNT = 3;
+        //private const int COL_MDBOUT = 5;
+        //private const int COL_SUMMARYCOUNT = 6;
+        //private const int COL_CUTCOUNT = 7;
+        //private const int COL_LEFTCOUNT = 8;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.Label lblProgress;
         private System.Windows.Forms.Button btnCancel;
@@ -75,21 +76,21 @@ namespace FIA_Biosum_Manager
         private Help m_oHelp;
         private string m_xpsFile = Help.DefaultFvsXPSFile;
         private string m_strDebugFile;
-        private TabControl tabControl1;
+        //private TabControl tabControl1;
         private TabPage tabPage2;
         private TextBox txtDataDir;
         private Button btnCreateFvsInput;
-        //private Button btnCreateFvsInputNew;
+        private Button btnCreateFvsInputNew;
         public ListView lstFvsInput;
         private ComboBox cmbAction;
-        private Label lblRxCnt;
+        //private Label lblRxCnt;
         private Label label1;
         private Button btnChkAll;
-        private Button btnRxPackage;
+        //private Button btnRxPackage;
         private Button btnClearAll;
         private Label lblRxPackageCnt;
         private Button btnRefresh;
-        private Button btnRx;
+        //private Button btnRx;
         private TabPage tabPage1;
         private GroupBox otherOptionsGroupBox;
         private GroupBox grpCalibOptions;
@@ -117,6 +118,7 @@ namespace FIA_Biosum_Manager
         private CheckBox chkIncludeSeedlings;
         private CheckBox chkUsePrevDia;
         private Label lblSurfaceWarning;
+        private GroupBox grpFVSlist;
 
         delegate string[] GetListBoxItemsDlg(CheckedListBox checkedListBox);
 
@@ -172,12 +174,12 @@ namespace FIA_Biosum_Manager
         /// Required method for Designer support - do not modify 
         /// the contents of this method with the code editor.
         /// </summary>
+        
+
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(uc_fvs_input));
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.tabControl1 = new System.Windows.Forms.TabControl();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
             this.lblSelectedGroup = new System.Windows.Forms.Label();
             this.cmbSelectedGroup = new System.Windows.Forms.ComboBox();
             this.btnDatamart = new System.Windows.Forms.Button();
@@ -185,18 +187,13 @@ namespace FIA_Biosum_Manager
             this.lblFiaDatamartFile = new System.Windows.Forms.Label();
             this.txtDataDir = new System.Windows.Forms.TextBox();
             this.btnCreateFvsInput = new System.Windows.Forms.Button();
-            //this.btnCreateFvsInputNew = new System.Windows.Forms.Button();
+            this.btnCreateFvsInputNew = new System.Windows.Forms.Button();
             this.lstFvsInput = new System.Windows.Forms.ListView();
             this.cmbAction = new System.Windows.Forms.ComboBox();
-            this.lblRxCnt = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.btnChkAll = new System.Windows.Forms.Button();
-            this.btnRxPackage = new System.Windows.Forms.Button();
             this.btnClearAll = new System.Windows.Forms.Button();
-            this.lblRxPackageCnt = new System.Windows.Forms.Label();
             this.btnRefresh = new System.Windows.Forms.Button();
-            this.btnRx = new System.Windows.Forms.Button();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
             this.otherOptionsGroupBox = new System.Windows.Forms.GroupBox();
             this.chkIncludeSeedlings = new System.Windows.Forms.CheckBox();
             this.grpCalibOptions = new System.Windows.Forms.GroupBox();
@@ -224,10 +221,9 @@ namespace FIA_Biosum_Manager
             this.btnClose = new System.Windows.Forms.Button();
             this.lblTitle = new System.Windows.Forms.Label();
             this.lblSurfaceWarning = new System.Windows.Forms.Label();
+            this.grpFVSlist = new System.Windows.Forms.GroupBox();
             this.groupBox1.SuspendLayout();
-            this.tabControl1.SuspendLayout();
-            this.tabPage2.SuspendLayout();
-            this.tabPage1.SuspendLayout();
+            this.grpFVSlist.SuspendLayout();
             this.otherOptionsGroupBox.SuspendLayout();
             this.grpCalibOptions.SuspendLayout();
             this.grpDWMOptions.SuspendLayout();
@@ -236,13 +232,24 @@ namespace FIA_Biosum_Manager
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.tabControl1);
             this.groupBox1.Controls.Add(this.btnCancel);
             this.groupBox1.Controls.Add(this.progressBar1);
             this.groupBox1.Controls.Add(this.lblProgress);
             this.groupBox1.Controls.Add(this.btnHelp);
             this.groupBox1.Controls.Add(this.btnClose);
             this.groupBox1.Controls.Add(this.lblTitle);
+            this.groupBox1.Controls.Add(this.lblSelectedGroup);
+            this.groupBox1.Controls.Add(this.cmbSelectedGroup);
+            this.groupBox1.Controls.Add(this.btnDatamart);
+            this.groupBox1.Controls.Add(this.txtFIADatamart);
+            this.groupBox1.Controls.Add(this.lblFiaDatamartFile);
+            this.groupBox1.Controls.Add(this.txtDataDir);
+            this.groupBox1.Controls.Add(this.btnCreateFvsInput);
+            this.groupBox1.Controls.Add(this.label1);
+            this.groupBox1.Controls.Add(this.grpFVSlist);
+            this.groupBox1.Controls.Add(this.grpCalibOptions);
+            this.groupBox1.Controls.Add(this.grpDWMOptions);
+            this.groupBox1.Controls.Add(this.otherOptionsGroupBox);
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox1.Location = new System.Drawing.Point(0, 0);
             this.groupBox1.Name = "groupBox1";
@@ -251,52 +258,68 @@ namespace FIA_Biosum_Manager
             this.groupBox1.TabStop = false;
             this.groupBox1.Enter += new System.EventHandler(this.groupBox1_Enter);
             // 
-            // tabControl1
+            // btnCancel
             // 
-            this.tabControl1.Controls.Add(this.tabPage2);
-            this.tabControl1.Controls.Add(this.tabPage1);
-            this.tabControl1.Location = new System.Drawing.Point(7, 51);
-            this.tabControl1.Name = "tabControl1";
-            this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(795, 495);
-            this.tabControl1.TabIndex = 100;
-            this.tabControl1.TabIndexChanged += new System.EventHandler(this.tabControl1_TabIndexChanged);
-            this.tabControl1.Resize += new System.EventHandler(this.tabControl1_Resize);
+            this.btnCancel.Location = new System.Drawing.Point(567, 559);
+            this.btnCancel.Name = "btnCancel";
+            this.btnCancel.Size = new System.Drawing.Size(56, 24);
+            this.btnCancel.TabIndex = 99;
+            this.btnCancel.Text = "Cancel";
+            this.btnCancel.Visible = false;
+            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
-            // tabPage2
+            // progressBar1
             // 
-            this.tabPage2.Controls.Add(this.lblSelectedGroup);
-            this.tabPage2.Controls.Add(this.cmbSelectedGroup);
-            this.tabPage2.Controls.Add(this.btnDatamart);
-            this.tabPage2.Controls.Add(this.txtFIADatamart);
-            this.tabPage2.Controls.Add(this.lblFiaDatamartFile);
-            this.tabPage2.Controls.Add(this.txtDataDir);
-            this.tabPage2.Controls.Add(this.btnCreateFvsInput);
-            //this.tabPage2.Controls.Add(this.btnCreateFvsInputNew);
-            this.tabPage2.Controls.Add(this.lstFvsInput);
-            this.tabPage2.Controls.Add(this.cmbAction);
-            this.tabPage2.Controls.Add(this.lblRxCnt);
-            this.tabPage2.Controls.Add(this.label1);
-            this.tabPage2.Controls.Add(this.btnChkAll);
-            this.tabPage2.Controls.Add(this.btnRxPackage);
-            this.tabPage2.Controls.Add(this.btnClearAll);
-            this.tabPage2.Controls.Add(this.lblRxPackageCnt);
-            this.tabPage2.Controls.Add(this.btnRefresh);
-            this.tabPage2.Controls.Add(this.btnRx);
-            this.tabPage2.Location = new System.Drawing.Point(4, 25);
-            this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(787, 466);
-            this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "Main Menu";
-            this.tabPage2.UseVisualStyleBackColor = true;
-            this.tabPage2.SizeChanged += new System.EventHandler(this.tabControl1_Resize);
+            this.progressBar1.Location = new System.Drawing.Point(312, 559);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(240, 8);
+            this.progressBar1.TabIndex = 99;
+            this.progressBar1.Visible = false;
+            // 
+            // lblProgress
+            // 
+            this.lblProgress.Location = new System.Drawing.Point(312, 575);
+            this.lblProgress.Name = "lblProgress";
+            this.lblProgress.Size = new System.Drawing.Size(239, 16);
+            this.lblProgress.TabIndex = 99;
+            this.lblProgress.Text = "lblProgress";
+            this.lblProgress.Visible = false;
+            // 
+            // btnHelp
+            // 
+            this.btnHelp.ForeColor = System.Drawing.SystemColors.HotTrack;
+            this.btnHelp.Location = new System.Drawing.Point(7, 559);
+            this.btnHelp.Name = "btnHelp";
+            this.btnHelp.Size = new System.Drawing.Size(96, 32);
+            this.btnHelp.TabIndex = 99;
+            this.btnHelp.Text = "Help";
+            this.btnHelp.Click += new System.EventHandler(this.btnHelp_Click);
+            // 
+            // btnClose
+            // 
+            this.btnClose.Location = new System.Drawing.Point(697, 559);
+            this.btnClose.Name = "btnClose";
+            this.btnClose.Size = new System.Drawing.Size(96, 32);
+            this.btnClose.TabIndex = 6;
+            this.btnClose.Text = "Close";
+            this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
+            // 
+            // lblTitle
+            // 
+            this.lblTitle.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTitle.ForeColor = System.Drawing.Color.Green;
+            this.lblTitle.Location = new System.Drawing.Point(3, 18);
+            this.lblTitle.Name = "lblTitle";
+            this.lblTitle.Size = new System.Drawing.Size(794, 32);
+            this.lblTitle.TabIndex = 99;
+            this.lblTitle.Text = "Create FVS Input";
             // 
             // lblSelectedGroup
             // 
             this.lblSelectedGroup.AutoSize = true;
             this.lblSelectedGroup.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblSelectedGroup.Location = new System.Drawing.Point(276, 385);
+            this.lblSelectedGroup.Location = new System.Drawing.Point(340, 520);
             this.lblSelectedGroup.Name = "lblSelectedGroup";
             this.lblSelectedGroup.Size = new System.Drawing.Size(121, 17);
             this.lblSelectedGroup.TabIndex = 104;
@@ -307,7 +330,7 @@ namespace FIA_Biosum_Manager
             this.cmbSelectedGroup.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbSelectedGroup.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.cmbSelectedGroup.FormattingEnabled = true;
-            this.cmbSelectedGroup.Location = new System.Drawing.Point(442, 382);
+            this.cmbSelectedGroup.Location = new System.Drawing.Point(443, 517);
             this.cmbSelectedGroup.Name = "cmbSelectedGroup";
             this.cmbSelectedGroup.Size = new System.Drawing.Size(250, 24);
             this.cmbSelectedGroup.TabIndex = 103;
@@ -315,7 +338,7 @@ namespace FIA_Biosum_Manager
             // btnDatamart
             // 
             this.btnDatamart.Image = ((System.Drawing.Image)(resources.GetObject("btnDatamart.Image")));
-            this.btnDatamart.Location = new System.Drawing.Point(698, 349);
+            this.btnDatamart.Location = new System.Drawing.Point(734, 484);
             this.btnDatamart.Name = "btnDatamart";
             this.btnDatamart.Size = new System.Drawing.Size(59, 32);
             this.btnDatamart.TabIndex = 102;
@@ -324,7 +347,7 @@ namespace FIA_Biosum_Manager
             // txtFIADatamart
             // 
             this.txtFIADatamart.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtFIADatamart.Location = new System.Drawing.Point(279, 354);
+            this.txtFIADatamart.Location = new System.Drawing.Point(315, 489);
             this.txtFIADatamart.Name = "txtFIADatamart";
             this.txtFIADatamart.Size = new System.Drawing.Size(413, 22);
             this.txtFIADatamart.TabIndex = 101;
@@ -333,53 +356,28 @@ namespace FIA_Biosum_Manager
             // 
             this.lblFiaDatamartFile.AutoSize = true;
             this.lblFiaDatamartFile.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblFiaDatamartFile.Location = new System.Drawing.Point(276, 334);
+            this.lblFiaDatamartFile.Location = new System.Drawing.Point(312, 469);
             this.lblFiaDatamartFile.Name = "lblFiaDatamartFile";
             this.lblFiaDatamartFile.Size = new System.Drawing.Size(354, 17);
             this.lblFiaDatamartFile.TabIndex = 100;
-            this.lblFiaDatamartFile.Text = "Path to the FIA Datamart input SQLite database";
+            this.lblFiaDatamartFile.Text = "Path to the SQLite database sourced from FIA Datamart";
             // 
             // txtDataDir
             // 
             this.txtDataDir.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtDataDir.Location = new System.Drawing.Point(128, 48);
+            this.txtDataDir.Location = new System.Drawing.Point(173, 48);
             this.txtDataDir.Name = "txtDataDir";
-            this.txtDataDir.Size = new System.Drawing.Size(629, 23);
+            this.txtDataDir.Size = new System.Drawing.Size(589, 23);
             this.txtDataDir.TabIndex = 99;
             // 
             // btnCreateFvsInput
             // 
-            this.btnCreateFvsInput.Location = new System.Drawing.Point(528, 424);
+            this.btnCreateFvsInput.Location = new System.Drawing.Point(464, 559);
             this.btnCreateFvsInput.Name = "btnCreateFvsInput";
             this.btnCreateFvsInput.Size = new System.Drawing.Size(229, 32);
             this.btnCreateFvsInput.TabIndex = 5;
             this.btnCreateFvsInput.Text = "Create FVS Input Database File";
             this.btnCreateFvsInput.Click += new System.EventHandler(this.btnCreateFvsInput_Click);
-            //
-            // btnCreateFvsInputNew
-            //
-            //this.btnCreateFvsInputNew.Location = new System.Drawing.Point(200, 424);
-            //this.btnCreateFvsInputNew.Name = "btnCreateFvsInputNew";
-            //this.btnCreateFvsInputNew.Size = new System.Drawing.Size(125, 32);
-            //this.btnCreateFvsInputNew.TabIndex = 5;
-            //this.btnCreateFvsInputNew.Text = "Run New Process";
-            //this.btnCreateFvsInputNew.Click += new System.EventHandler(this.btnCreateFvsInputNew_Click);
-            // 
-            // lstFvsInput
-            // 
-            this.lstFvsInput.CheckBoxes = true;
-            this.lstFvsInput.GridLines = true;
-            this.lstFvsInput.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
-            this.lstFvsInput.HideSelection = false;
-            this.lstFvsInput.Location = new System.Drawing.Point(6, 84);
-            this.lstFvsInput.MultiSelect = false;
-            this.lstFvsInput.Name = "lstFvsInput";
-            this.lstFvsInput.Size = new System.Drawing.Size(740, 239);
-            this.lstFvsInput.TabIndex = 0;
-            this.lstFvsInput.UseCompatibleStateImageBehavior = false;
-            this.lstFvsInput.View = System.Windows.Forms.View.Details;
-            this.lstFvsInput.SelectedIndexChanged += new System.EventHandler(this.lstFvsInput_SelectedIndexChanged);
-            this.lstFvsInput.MouseUp += new System.Windows.Forms.MouseEventHandler(this.lstFvsInput_MouseUp);
             // 
             // cmbAction
             // 
@@ -396,151 +394,60 @@ namespace FIA_Biosum_Manager
             this.cmbAction.SelectedIndexChanged += new System.EventHandler(this.cmbAction_SelectedIndexChanged);
             this.cmbAction.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.cmbAction_KeyPress);
             // 
-            // lblRxCnt
-            // 
-            this.lblRxCnt.BackColor = System.Drawing.Color.White;
-            this.lblRxCnt.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblRxCnt.Location = new System.Drawing.Point(191, 12);
-            this.lblRxCnt.Name = "lblRxCnt";
-            this.lblRxCnt.Size = new System.Drawing.Size(32, 16);
-            this.lblRxCnt.TabIndex = 99;
-            this.lblRxCnt.Text = "0";
-            // 
             // label1
             // 
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(6, 48);
+            this.label1.Location = new System.Drawing.Point(6, 50);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(116, 24);
+            this.label1.Size = new System.Drawing.Size(156, 24);
             this.label1.TabIndex = 99;
-            this.label1.Text = "Data Directory";
+            this.label1.Text = "Target directory for FVSIn.db";
+            // 
+            // grpFVSlist
+            // 
+            this.grpFVSlist.Controls.Add(this.lstFvsInput);
+            this.grpFVSlist.Controls.Add(this.btnChkAll);
+            this.grpFVSlist.Controls.Add(this.btnClearAll);
+            this.grpFVSlist.Location = new System.Drawing.Point(28, 75);
+            this.grpFVSlist.Name = "grpFVSlist";
+            this.grpFVSlist.Size = new System.Drawing.Size(275, 228);
+            this.grpFVSlist.TabIndex = 103;
+            this.grpFVSlist.TabStop = false;
+            this.grpFVSlist.Text = "Variant Selection";
+            // 
+            // lstFvsInput
+            // 
+            this.lstFvsInput.CheckBoxes = true;
+            this.lstFvsInput.GridLines = true;
+            this.lstFvsInput.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.lstFvsInput.HideSelection = false;
+            this.lstFvsInput.Location = new System.Drawing.Point(6, 16);
+            this.lstFvsInput.MultiSelect = false;
+            this.lstFvsInput.Name = "lstFvsInput";
+            this.lstFvsInput.Size = new System.Drawing.Size(231, 165);
+            this.lstFvsInput.TabIndex = 0;
+            this.lstFvsInput.UseCompatibleStateImageBehavior = false;
+            this.lstFvsInput.View = System.Windows.Forms.View.Details;
+            this.lstFvsInput.SelectedIndexChanged += new System.EventHandler(this.lstFvsInput_SelectedIndexChanged);
+            this.lstFvsInput.MouseUp += new System.Windows.Forms.MouseEventHandler(this.lstFvsInput_MouseUp);
             // 
             // btnChkAll
             // 
-            this.btnChkAll.Location = new System.Drawing.Point(6, 340);
+            this.btnChkAll.Location = new System.Drawing.Point(6, 186);
             this.btnChkAll.Name = "btnChkAll";
             this.btnChkAll.Size = new System.Drawing.Size(75, 32);
             this.btnChkAll.TabIndex = 1;
             this.btnChkAll.Text = "Check All";
             this.btnChkAll.Click += new System.EventHandler(this.btnChkAll_Click);
             // 
-            // btnRxPackage
-            // 
-            this.btnRxPackage.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnRxPackage.Location = new System.Drawing.Point(229, 6);
-            this.btnRxPackage.Name = "btnRxPackage";
-            this.btnRxPackage.Size = new System.Drawing.Size(90, 30);
-            this.btnRxPackage.TabIndex = 99;
-            this.btnRxPackage.Text = "Packages";
-            this.btnRxPackage.Click += new System.EventHandler(this.btnRxPackage_Click);
-            // 
             // btnClearAll
             // 
-            this.btnClearAll.Location = new System.Drawing.Point(85, 340);
+            this.btnClearAll.Location = new System.Drawing.Point(85, 186);
             this.btnClearAll.Name = "btnClearAll";
             this.btnClearAll.Size = new System.Drawing.Size(75, 32);
             this.btnClearAll.TabIndex = 2;
             this.btnClearAll.Text = "Clear All";
             this.btnClearAll.Click += new System.EventHandler(this.btnClearAll_Click);
-            // 
-            // lblRxPackageCnt
-            // 
-            this.lblRxPackageCnt.BackColor = System.Drawing.Color.White;
-            this.lblRxPackageCnt.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblRxPackageCnt.Location = new System.Drawing.Point(324, 11);
-            this.lblRxPackageCnt.Name = "lblRxPackageCnt";
-            this.lblRxPackageCnt.Size = new System.Drawing.Size(32, 16);
-            this.lblRxPackageCnt.TabIndex = 99;
-            this.lblRxPackageCnt.Text = "0";
-            // 
-            // btnRefresh
-            // 
-            this.btnRefresh.Location = new System.Drawing.Point(165, 340);
-            this.btnRefresh.Name = "btnRefresh";
-            this.btnRefresh.Size = new System.Drawing.Size(64, 32);
-            this.btnRefresh.TabIndex = 3;
-            this.btnRefresh.Text = "Refresh";
-            this.btnRefresh.Click += new System.EventHandler(this.btnRefresh_Click);
-            // 
-            // btnRx
-            // 
-            this.btnRx.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnRx.Location = new System.Drawing.Point(96, 6);
-            this.btnRx.Name = "btnRx";
-            this.btnRx.Size = new System.Drawing.Size(90, 30);
-            this.btnRx.TabIndex = 99;
-            this.btnRx.Text = "Treatments";
-            this.btnRx.Click += new System.EventHandler(this.btnRx_Click);
-            // 
-            // tabPage1
-            // 
-            this.tabPage1.Controls.Add(this.otherOptionsGroupBox);
-            this.tabPage1.Controls.Add(this.grpCalibOptions);
-            this.tabPage1.Controls.Add(this.grpDWMOptions);
-            this.tabPage1.Location = new System.Drawing.Point(4, 25);
-            this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(787, 466);
-            this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "FVSIn Options";
-            this.tabPage1.UseVisualStyleBackColor = true;
-            // 
-            // otherOptionsGroupBox
-            // 
-            this.otherOptionsGroupBox.Controls.Add(this.chkIncludeSeedlings);
-            this.otherOptionsGroupBox.Location = new System.Drawing.Point(451, 96);
-            this.otherOptionsGroupBox.Name = "otherOptionsGroupBox";
-            this.otherOptionsGroupBox.Size = new System.Drawing.Size(330, 288);
-            this.otherOptionsGroupBox.TabIndex = 103;
-            this.otherOptionsGroupBox.TabStop = false;
-            this.otherOptionsGroupBox.Text = "Other Options";
-            // 
-            // chkIncludeSeedlings
-            // 
-            this.chkIncludeSeedlings.AutoSize = true;
-            this.chkIncludeSeedlings.Checked = true;
-            this.chkIncludeSeedlings.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkIncludeSeedlings.Location = new System.Drawing.Point(6, 21);
-            this.chkIncludeSeedlings.Name = "chkIncludeSeedlings";
-            this.chkIncludeSeedlings.Size = new System.Drawing.Size(139, 21);
-            this.chkIncludeSeedlings.TabIndex = 4;
-            this.chkIncludeSeedlings.Text = "Include seedlings";
-            this.chkIncludeSeedlings.UseVisualStyleBackColor = true;
-            // 
-            // grpCalibOptions
-            // 
-            this.grpCalibOptions.Controls.Add(this.chkUsePrevDia);
-            this.grpCalibOptions.Controls.Add(this.chkUsePrevHt);
-            this.grpCalibOptions.Location = new System.Drawing.Point(451, 6);
-            this.grpCalibOptions.Name = "grpCalibOptions";
-            this.grpCalibOptions.Size = new System.Drawing.Size(330, 85);
-            this.grpCalibOptions.TabIndex = 102;
-            this.grpCalibOptions.TabStop = false;
-            this.grpCalibOptions.Text = "Tree Growth Calibration Data";
-            // 
-            // chkUsePrevDia
-            // 
-            this.chkUsePrevDia.AutoSize = true;
-            this.chkUsePrevDia.Checked = true;
-            this.chkUsePrevDia.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkUsePrevDia.Location = new System.Drawing.Point(6, 43);
-            this.chkUsePrevDia.Name = "chkUsePrevDia";
-            this.chkUsePrevDia.Size = new System.Drawing.Size(318, 21);
-            this.chkUsePrevDia.TabIndex = 3;
-            this.chkUsePrevDia.Text = "Include previous diameter**, where available**";
-            this.chkUsePrevDia.UseVisualStyleBackColor = true;
-            // 
-            // chkUsePrevHt
-            // 
-            this.chkUsePrevHt.AutoSize = true;
-            this.chkUsePrevHt.Checked = true;
-            this.chkUsePrevHt.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkUsePrevHt.Location = new System.Drawing.Point(6, 20);
-            this.chkUsePrevHt.Name = "chkUsePrevHt";
-            this.chkUsePrevHt.Size = new System.Drawing.Size(302, 21);
-            this.chkUsePrevHt.TabIndex = 2;
-            this.chkUsePrevHt.Text = "Include previous height**, where available**";
-            this.chkUsePrevHt.UseVisualStyleBackColor = true;
             // 
             // grpDWMOptions
             // 
@@ -555,12 +462,21 @@ namespace FIA_Biosum_Manager
             this.grpDWMOptions.Controls.Add(this.txtMinCwdTL);
             this.grpDWMOptions.Controls.Add(this.label3);
             this.grpDWMOptions.Controls.Add(this.txtMinSmallFwdTL);
-            this.grpDWMOptions.Location = new System.Drawing.Point(6, 6);
+            this.grpDWMOptions.Location = new System.Drawing.Point(308, 75);
             this.grpDWMOptions.Name = "grpDWMOptions";
             this.grpDWMOptions.Size = new System.Drawing.Size(439, 378);
             this.grpDWMOptions.TabIndex = 101;
             this.grpDWMOptions.TabStop = false;
             this.grpDWMOptions.Text = "Down Woody Material";
+            // 
+            // lblSurfaceWarning
+            // 
+            this.lblSurfaceWarning.AutoSize = true;
+            this.lblSurfaceWarning.Location = new System.Drawing.Point(5, 43);
+            this.lblSurfaceWarning.Name = "lblSurfaceWarning";
+            this.lblSurfaceWarning.Size = new System.Drawing.Size(434, 17);
+            this.lblSurfaceWarning.TabIndex = 106;
+            this.lblSurfaceWarning.Text = "If surface fuel models included. FVS will ignore all DWM data loaded";
             // 
             // linkLabelFuelModel
             // 
@@ -574,54 +490,6 @@ namespace FIA_Biosum_Manager
             this.linkLabelFuelModel.Text = "Include Scott and Burgan (2005) surface fuel model (from DWM_fuelbed_typcd)";
             this.linkLabelFuelModel.UseCompatibleTextRendering = true;
             this.linkLabelFuelModel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelFuelModel_LinkClicked);
-            // 
-            // groupBox2
-            // 
-            this.groupBox2.Controls.Add(this.label6);
-            this.groupBox2.Controls.Add(this.label5);
-            this.groupBox2.Controls.Add(this.chkLstBoxDuffYears);
-            this.groupBox2.Controls.Add(this.chkLstBoxLitterYears);
-            this.groupBox2.Location = new System.Drawing.Point(7, 176);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(236, 190);
-            this.groupBox2.TabIndex = 104;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Duff/Litter Years to Exclude";
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(123, 16);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(40, 17);
-            this.label6.TabIndex = 105;
-            this.label6.Text = "Litter";
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(6, 16);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(34, 17);
-            this.label5.TabIndex = 104;
-            this.label5.Text = "Duff";
-            // 
-            // chkLstBoxDuffYears
-            // 
-            this.chkLstBoxDuffYears.FormattingEnabled = true;
-            this.chkLstBoxDuffYears.Location = new System.Drawing.Point(9, 35);
-            this.chkLstBoxDuffYears.Name = "chkLstBoxDuffYears";
-            this.chkLstBoxDuffYears.Size = new System.Drawing.Size(100, 140);
-            this.chkLstBoxDuffYears.TabIndex = 6;
-            // 
-            // chkLstBoxLitterYears
-            // 
-            this.chkLstBoxLitterYears.FormattingEnabled = true;
-            this.chkLstBoxLitterYears.Location = new System.Drawing.Point(126, 35);
-            this.chkLstBoxLitterYears.Name = "chkLstBoxLitterYears";
-            this.chkLstBoxLitterYears.Size = new System.Drawing.Size(100, 140);
-            this.chkLstBoxLitterYears.Sorted = true;
-            this.chkLstBoxLitterYears.TabIndex = 7;
             // 
             // chkDwmFuelModel
             // 
@@ -704,71 +572,110 @@ namespace FIA_Biosum_Manager
             this.txtMinSmallFwdTL.Text = "1";
             this.txtMinSmallFwdTL.Validating += new System.ComponentModel.CancelEventHandler(this.txtMinSmallFwdTL_Validating);
             // 
-            // btnCancel
+            // groupBox2
             // 
-            this.btnCancel.Location = new System.Drawing.Point(567, 559);
-            this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(56, 24);
-            this.btnCancel.TabIndex = 99;
-            this.btnCancel.Text = "Cancel";
-            this.btnCancel.Visible = false;
-            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+            this.groupBox2.Controls.Add(this.label6);
+            this.groupBox2.Controls.Add(this.label5);
+            this.groupBox2.Controls.Add(this.chkLstBoxDuffYears);
+            this.groupBox2.Controls.Add(this.chkLstBoxLitterYears);
+            this.groupBox2.Location = new System.Drawing.Point(7, 176);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(236, 190);
+            this.groupBox2.TabIndex = 104;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Duff/Litter Years to Exclude";
             // 
-            // progressBar1
+            // label6
             // 
-            this.progressBar1.Location = new System.Drawing.Point(312, 559);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(240, 8);
-            this.progressBar1.TabIndex = 99;
-            this.progressBar1.Visible = false;
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(123, 16);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(40, 17);
+            this.label6.TabIndex = 105;
+            this.label6.Text = "Litter";
             // 
-            // lblProgress
+            // label5
             // 
-            this.lblProgress.Location = new System.Drawing.Point(312, 575);
-            this.lblProgress.Name = "lblProgress";
-            this.lblProgress.Size = new System.Drawing.Size(239, 16);
-            this.lblProgress.TabIndex = 99;
-            this.lblProgress.Text = "lblProgress";
-            this.lblProgress.Visible = false;
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(6, 16);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(34, 17);
+            this.label5.TabIndex = 104;
+            this.label5.Text = "Duff";
             // 
-            // btnHelp
+            // chkLstBoxDuffYears
             // 
-            this.btnHelp.ForeColor = System.Drawing.SystemColors.HotTrack;
-            this.btnHelp.Location = new System.Drawing.Point(7, 559);
-            this.btnHelp.Name = "btnHelp";
-            this.btnHelp.Size = new System.Drawing.Size(96, 32);
-            this.btnHelp.TabIndex = 99;
-            this.btnHelp.Text = "Help";
-            this.btnHelp.Click += new System.EventHandler(this.btnHelp_Click);
+            this.chkLstBoxDuffYears.FormattingEnabled = true;
+            this.chkLstBoxDuffYears.Location = new System.Drawing.Point(9, 35);
+            this.chkLstBoxDuffYears.Name = "chkLstBoxDuffYears";
+            this.chkLstBoxDuffYears.Size = new System.Drawing.Size(100, 140);
+            this.chkLstBoxDuffYears.TabIndex = 6;
             // 
-            // btnClose
+            // chkLstBoxLitterYears
             // 
-            this.btnClose.Location = new System.Drawing.Point(678, 555);
-            this.btnClose.Name = "btnClose";
-            this.btnClose.Size = new System.Drawing.Size(96, 32);
-            this.btnClose.TabIndex = 6;
-            this.btnClose.Text = "Close";
-            this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
+            this.chkLstBoxLitterYears.FormattingEnabled = true;
+            this.chkLstBoxLitterYears.Location = new System.Drawing.Point(126, 35);
+            this.chkLstBoxLitterYears.Name = "chkLstBoxLitterYears";
+            this.chkLstBoxLitterYears.Size = new System.Drawing.Size(100, 140);
+            this.chkLstBoxLitterYears.Sorted = true;
+            this.chkLstBoxLitterYears.TabIndex = 7;
             // 
-            // lblTitle
+            // otherOptionsGroupBox
             // 
-            this.lblTitle.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblTitle.ForeColor = System.Drawing.Color.Green;
-            this.lblTitle.Location = new System.Drawing.Point(3, 18);
-            this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(794, 32);
-            this.lblTitle.TabIndex = 99;
-            this.lblTitle.Text = "Create FVS Input";
+            this.otherOptionsGroupBox.Controls.Add(this.chkIncludeSeedlings);
+            this.otherOptionsGroupBox.Location = new System.Drawing.Point(28, 407);
+            this.otherOptionsGroupBox.Name = "otherOptionsGroupBox";
+            this.otherOptionsGroupBox.Size = new System.Drawing.Size(275, 60);
+            this.otherOptionsGroupBox.TabIndex = 103;
+            this.otherOptionsGroupBox.TabStop = false;
+            this.otherOptionsGroupBox.Text = "Other Options";
             // 
-            // lblSurfaceWarning
+            // chkIncludeSeedlings
             // 
-            this.lblSurfaceWarning.AutoSize = true;
-            this.lblSurfaceWarning.Location = new System.Drawing.Point(5, 43);
-            this.lblSurfaceWarning.Name = "lblSurfaceWarning";
-            this.lblSurfaceWarning.Size = new System.Drawing.Size(434, 17);
-            this.lblSurfaceWarning.TabIndex = 106;
-            this.lblSurfaceWarning.Text = "If surface fuel models included. FVS will ignore all DWM data loaded";
+            this.chkIncludeSeedlings.AutoSize = true;
+            this.chkIncludeSeedlings.Checked = true;
+            this.chkIncludeSeedlings.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkIncludeSeedlings.Location = new System.Drawing.Point(6, 21);
+            this.chkIncludeSeedlings.Name = "chkIncludeSeedlings";
+            this.chkIncludeSeedlings.Size = new System.Drawing.Size(139, 21);
+            this.chkIncludeSeedlings.TabIndex = 4;
+            this.chkIncludeSeedlings.Text = "Include seedlings from FIADB";
+            this.chkIncludeSeedlings.UseVisualStyleBackColor = true;
+            // 
+            // grpCalibOptions
+            // 
+            this.grpCalibOptions.Controls.Add(this.chkUsePrevDia);
+            this.grpCalibOptions.Controls.Add(this.chkUsePrevHt);
+            this.grpCalibOptions.Location = new System.Drawing.Point(28, 307);
+            this.grpCalibOptions.Name = "grpCalibOptions";
+            this.grpCalibOptions.Size = new System.Drawing.Size(275, 95);
+            this.grpCalibOptions.TabIndex = 102;
+            this.grpCalibOptions.TabStop = false;
+            this.grpCalibOptions.Text = "Tree Growth Calibration Data";
+            // 
+            // chkUsePrevHt
+            // 
+            this.chkUsePrevHt.AutoSize = true;
+            this.chkUsePrevHt.Checked = true;
+            this.chkUsePrevHt.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkUsePrevHt.Location = new System.Drawing.Point(6, 20);
+            this.chkUsePrevHt.Name = "chkUsePrevHt";
+            this.chkUsePrevHt.Size = new System.Drawing.Size(302, 21);
+            this.chkUsePrevHt.TabIndex = 2;
+            this.chkUsePrevHt.Text = "Include previous height, if available";
+            this.chkUsePrevHt.UseVisualStyleBackColor = true;
+            // 
+            // chkUsePrevDia
+            // 
+            this.chkUsePrevDia.AutoSize = true;
+            this.chkUsePrevDia.Checked = true;
+            this.chkUsePrevDia.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkUsePrevDia.Location = new System.Drawing.Point(6, 43);
+            this.chkUsePrevDia.Name = "chkUsePrevDia";
+            this.chkUsePrevDia.Size = new System.Drawing.Size(318, 21);
+            this.chkUsePrevDia.TabIndex = 3;
+            this.chkUsePrevDia.Text = "Include previous diameter, if available";
+            this.chkUsePrevDia.UseVisualStyleBackColor = true;
             // 
             // uc_fvs_input
             // 
@@ -777,10 +684,6 @@ namespace FIA_Biosum_Manager
             this.Size = new System.Drawing.Size(800, 600);
             this.Resize += new System.EventHandler(this.uc_fvs_input_Resize);
             this.groupBox1.ResumeLayout(false);
-            this.tabControl1.ResumeLayout(false);
-            this.tabPage2.ResumeLayout(false);
-            this.tabPage2.PerformLayout();
-            this.tabPage1.ResumeLayout(false);
             this.otherOptionsGroupBox.ResumeLayout(false);
             this.otherOptionsGroupBox.PerformLayout();
             this.grpCalibOptions.ResumeLayout(false);
@@ -789,15 +692,16 @@ namespace FIA_Biosum_Manager
             this.grpDWMOptions.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            this.grpFVSlist.ResumeLayout(false);
+            this.grpFVSlist.PerformLayout();
             this.ResumeLayout(false);
-
         }
         #endregion
 
         private void uc_fvs_input_Resize(object sender, System.EventArgs e)
         {
             this.Resize_Fvs_Input();
-            this.tabControl1_Resize(sender, e);
+            //this.tabControl1_Resize(sender, e);
         }
 
         public void Resize_Fvs_Input()
@@ -830,6 +734,7 @@ namespace FIA_Biosum_Manager
             this.LoadDataSources();
             this.populate_listbox();
             this.populate_FIA2FVS_combobox();
+            PopulateDefaultFIADatamart();
         }
 
         private void populate_FIA2FVS_combobox()
@@ -864,10 +769,44 @@ namespace FIA_Biosum_Manager
                         }
                     }
                 }
+                oDataMgr.m_DataReader.Close();
+            }
+        }
+        private void PopulateDefaultFIADatamart()
+        {
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+            string strFVSIndb = m_strProjDir + "\\fvs\\data\\" + Tables.FIA2FVS.DefaultFvsInputFile;
+            if (System.IO.File.Exists(strFVSIndb))
+            {
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strFVSIndb)))
+                {
+                    conn.Open();
+                    if (oDataMgr.TableExist(conn, "biosum_fvsin_configuration"))
+                    {
+                        oDataMgr.m_strSQL = "SELECT * FROM biosum_fvsin_configuration WHERE Setting = 'Source FIA Data Mart database'";
+                        oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
+                        if (oDataMgr.m_DataReader.HasRows)
+                        {
+                            while (oDataMgr.m_DataReader.Read())
+                            {
+                                if (oDataMgr.m_DataReader["Value"] != DBNull.Value &&
+                                    Convert.ToString(oDataMgr.m_DataReader["Value"]).Trim().Length > 0)
+                                {
+                                    string strSourceDb = Convert.ToString(oDataMgr.m_DataReader["Value"]).Trim();
+                                    if (System.IO.File.Exists(strSourceDb))
+                                    {
+                                        txtFIADatamart.Text = strSourceDb;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    oDataMgr.m_DataReader.Close();
+                }
             }
         }
 
-        private void populate_listbox()
+        private void populate_listbox_old()
         {
             //bool bResult;
             string strInDirAndFile;
@@ -881,7 +820,7 @@ namespace FIA_Biosum_Manager
                 //load rx properties
                 RxItem_Collection oRxItem_Collection = new RxItem_Collection();
                 this.m_oRxTools.LoadAllRxItemsFromTableIntoRxCollection(m_oQueries, oRxItem_Collection);
-                this.lblRxCnt.Text = Convert.ToString(oRxItem_Collection.Count);
+                //this.lblRxCnt.Text = Convert.ToString(oRxItem_Collection.Count);
                 //load rxpackage properties
                 RxPackageItem_Collection oRxPackageItem_Collection = new RxPackageItem_Collection();
                 this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_oQueries, oRxPackageItem_Collection);
@@ -893,7 +832,7 @@ namespace FIA_Biosum_Manager
                 this.lstFvsInput.Columns.Add("Variant", 55, HorizontalAlignment.Left);
                 this.lstFvsInput.Columns.Add("Package", 55, HorizontalAlignment.Left);
                 this.lstFvsInput.Columns.Add("Stands", 70, HorizontalAlignment.Left);
-                this.lstFvsInput.Columns.Add("Trees", 70, HorizontalAlignment.Left);
+                this.lstFvsInput.Columns.Add("Trees", 80, HorizontalAlignment.Left);
                 this.lstFvsInput.Columns.Add("FVS Output DB", 230, HorizontalAlignment.Left);
                 this.lstFvsInput.Columns.Add("SUMMARY RECS", 100, HorizontalAlignment.Left);
                 this.lstFvsInput.Columns.Add("CUTLIST RECS", 100, HorizontalAlignment.Left);
@@ -935,7 +874,7 @@ namespace FIA_Biosum_Manager
                             System.IO.Directory.CreateDirectory(txtDataDir.Text.Trim() + "\\" + strVariant);
                         //rx
                         entryListItem.SubItems.Add(rxPackageItem.RxPackageId);
-                        this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, COL_RX, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
+                        //this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, COL_RX, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
                         //simulation year cycle
                         if (rxPackageItem.RxCycleLength > 0)
                         {
@@ -948,17 +887,17 @@ namespace FIA_Biosum_Manager
                         entryListItem.SubItems.Add(" ");
                         this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_TREECOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
                         //out mdb file name
-                        entryListItem.SubItems.Add(" ");  //out mdb file
-                        this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_MDBOUT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
-                        //summary record count
-                        entryListItem.SubItems.Add(" ");  //summary record count
-                        this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_SUMMARYCOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
-                        //treecut list record count
-                        entryListItem.SubItems.Add(" ");  //tree cut list record count
-                        this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_CUTCOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
-                        //tree standing (uncut) record count
-                        entryListItem.SubItems.Add(" ");  //tree standing record count
-                        this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_LEFTCOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
+                        //entryListItem.SubItems.Add(" ");  //out mdb file
+                        //this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_MDBOUT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
+                        //////summary record count
+                        //entryListItem.SubItems.Add(" ");  //summary record count
+                        //this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_SUMMARYCOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
+                        //////treecut list record count
+                        //entryListItem.SubItems.Add(" ");  //tree cut list record count
+                        //this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_CUTCOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
+                        //////tree standing (uncut) record count
+                        //entryListItem.SubItems.Add(" ");  //tree standing record count
+                        //this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_LEFTCOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
 
                         //check to see if there is an input and output dsn name
                         this.m_strLocFile = strVariant + ".loc";
@@ -966,9 +905,11 @@ namespace FIA_Biosum_Manager
                         //this.m_strOutMDBFile = this.m_oRxTools.GetRxPackageFvsOutDbFileName(m_ado.m_OleDbDataReader);
                         //strOutDirAndFile = this.txtDataDir.Text.Trim() + "\\" + m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim() + "\\" + this.m_strOutMDBFile.Trim();
 
-                        frmMain.g_sbpInfo.Text = "Processing FVS Input Variant/RxPackage " +
-                            strVariant + "/" +
-                            strRxPackage + "...Stand By";
+                        frmMain.g_sbpInfo.Text = "Processing FVS Input Variant " +
+                            strVariant + 
+                            //"/" +
+                            //strRxPackage + 
+                            "...Stand By";
 
                         //check fvs in values
                         strInDirAndFile = $@"{this.txtDataDir.Text.Trim()}\{strVariant}\{Tables.FIA2FVS.DefaultFvsInputFile}";
@@ -982,33 +923,131 @@ namespace FIA_Biosum_Manager
                             entryListItem.SubItems[COL_TREECOUNT].Text = Convert.ToString(m_VariantCountsDict[strVariant][1]);
                         }
 
-                        strOutDirAndFile = $@"{this.txtDataDir.Text.Trim()}\{Path.GetFileName(Tables.FVS.DefaultFVSOutDbFile)}";
-                        if (File.Exists(strOutDirAndFile) == true)
+                        //strOutDirAndFile = $@"{this.txtDataDir.Text.Trim()}\{Path.GetFileName(Tables.FVS.DefaultFVSOutDbFile)}";
+                        //if (File.Exists(strOutDirAndFile) == true)
+                        //{
+                        //    strConn = this.m_dataMgr.GetConnectionString(strOutDirAndFile);
+                        //    using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
+                        //    {
+                        //        oConn.Open();
+                        //        entryListItem.SubItems[COL_MDBOUT].Text = this.m_strOutMDBFile;
+                        //        if (frmMain.g_bSuppressFVSInputTableRowCount == false)
+                        //        {
+                        //            if (m_dataMgr.TableExist(oConn, Tables.FVS.DefaultFVSSummaryTableName) == true)
+                        //            {
+                        //                entryListItem.SubItems[COL_SUMMARYCOUNT].Text = Convert.ToString(Convert.ToInt32(this.m_dataMgr.getRecordCount(oConn, $@"select count(*) from {Tables.FVS.DefaultFVSSummaryTableName}", Tables.FVS.DefaultFVSSummaryTableName)));
+                        //            }
+                        //            if (m_dataMgr.TableExist(oConn, Tables.FVS.DefaultFVSCutListTableName) == true)
+                        //            {
+                        //                entryListItem.SubItems[COL_CUTCOUNT].Text = Convert.ToString(Convert.ToInt32(this.m_dataMgr.getRecordCount(oConn, $@"select count(*) from {Tables.FVS.DefaultFVSCutListTableName}", Tables.FVS.DefaultFVSCutListTableName)));
+                        //            }
+                        //            if (m_dataMgr.TableExist(oConn, Tables.FVS.DefaultFVSTreeListTableName) == true)
+                        //            {
+                        //                entryListItem.SubItems[COL_LEFTCOUNT].Text = Convert.ToString(Convert.ToInt32(this.m_dataMgr.getRecordCount(oConn, $@"select count(*) from {Tables.FVS.DefaultFVSTreeListTableName}", Tables.FVS.DefaultFVSTreeListTableName)));
+                        //            }
+                        //        }
+                        //    }
+
+                        //}
+
+                    }
+
+                }
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("!!Error!! \n" +
+                                "Module - uc_fvs_input:populate_listbox() \n" +
+                                "Err Msg - " + e.Message,
+                                "Create FVS Input", System.Windows.Forms.MessageBoxButtons.OK,
+                                System.Windows.Forms.MessageBoxIcon.Exclamation);
+
+                this.m_intError = -1;
+            }
+            this.Refresh();
+
+        }
+        private void populate_listbox()
+        {
+            //bool bResult;
+            string strInDirAndFile;
+            //bool bFoundDsnIn;
+            try
+            {
+                //load rx properties
+                //RxItem_Collection oRxItem_Collection = new RxItem_Collection();
+                //this.m_oRxTools.LoadAllRxItemsFromTableIntoRxCollection(m_oQueries, oRxItem_Collection);
+                ////load rxpackage properties
+                //RxPackageItem_Collection oRxPackageItem_Collection = new RxPackageItem_Collection();
+                //this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_oQueries, oRxPackageItem_Collection);
+                this.lstFvsInput.Clear();
+                this.m_oLvRowColors.InitializeRowCollection();
+
+                this.lstFvsInput.Columns.Add("", 2, HorizontalAlignment.Left);
+                this.lstFvsInput.Columns.Add("Variant", 55, HorizontalAlignment.Left);
+                this.lstFvsInput.Columns.Add("Stands", 70, HorizontalAlignment.Left);
+                this.lstFvsInput.Columns.Add("Trees", 80, HorizontalAlignment.Left);
+
+                this.lstFvsInput.Columns[COL_CHECKBOX].Width = -2;
+
+                List<string> lstVariants = new List<string>();
+                using (System.Data.OleDb.OleDbConnection conn = new System.Data.OleDb.OleDbConnection(m_strConn))
+                {
+                    conn.Open();
+
+                    m_ado.SqlQueryReader(conn, Queries.FVS.GetFVSVariantSQL(m_oQueries.m_oFIAPlot.m_strPlotTable));
+                    if (m_ado.m_OleDbDataReader.HasRows)
+                    {
+                        while (m_ado.m_OleDbDataReader.Read())
                         {
-                            strConn = this.m_dataMgr.GetConnectionString(strOutDirAndFile);
-                            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
-                            {
-                                oConn.Open();
-                                entryListItem.SubItems[COL_MDBOUT].Text = this.m_strOutMDBFile;
-                                if (frmMain.g_bSuppressFVSInputTableRowCount == false)
-                                {
-                                    if (m_dataMgr.TableExist(oConn, Tables.FVS.DefaultFVSSummaryTableName) == true)
-                                    {
-                                        entryListItem.SubItems[COL_SUMMARYCOUNT].Text = Convert.ToString(Convert.ToInt32(this.m_dataMgr.getRecordCount(oConn, $@"select count(*) from {Tables.FVS.DefaultFVSSummaryTableName}", Tables.FVS.DefaultFVSSummaryTableName)));
-                                    }
-                                    if (m_dataMgr.TableExist(oConn, Tables.FVS.DefaultFVSCutListTableName) == true)
-                                    {
-                                        entryListItem.SubItems[COL_CUTCOUNT].Text = Convert.ToString(Convert.ToInt32(this.m_dataMgr.getRecordCount(oConn, $@"select count(*) from {Tables.FVS.DefaultFVSCutListTableName}", Tables.FVS.DefaultFVSCutListTableName)));
-                                    }
-                                    if (m_dataMgr.TableExist(oConn, Tables.FVS.DefaultFVSTreeListTableName) == true)
-                                    {
-                                        entryListItem.SubItems[COL_LEFTCOUNT].Text = Convert.ToString(Convert.ToInt32(this.m_dataMgr.getRecordCount(oConn, $@"select count(*) from {Tables.FVS.DefaultFVSTreeListTableName}", Tables.FVS.DefaultFVSTreeListTableName)));
-                                    }
-                                }
-                            }
-
+                            string strCurrentVariant = m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim();
+                            lstVariants.Add(strCurrentVariant);
                         }
+                    }
+                    m_ado.m_OleDbDataReader.Close();
+                }
+                //Keep a count of records in FVS_StandInit and FVS_TreeInit tables in each variant
+                m_VariantCountsDict = new Dictionary<string, int[]>();
+                foreach (string strVariant in lstVariants)
+                {
+                    System.Windows.Forms.ListViewItem entryListItem =
+                    this.lstFvsInput.Items.Add("");
+                    entryListItem.UseItemStyleForSubItems = false;
+                    this.m_oLvRowColors.AddRow();
+                    this.m_oLvRowColors.AddColumns(lstFvsInput.Items.Count - 1, lstFvsInput.Columns.Count);
+                    this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_CHECKBOX, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
 
+                    //fvs_variant
+                    if (m_VariantCountsDict.ContainsKey(strVariant) == false)
+                    {
+                        m_VariantCountsDict.Add(strVariant, null); //fvs_standinit, fvs_treeinit counts
+                    }
+
+                    entryListItem.SubItems.Add(strVariant);
+                    this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_VARIANT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
+                    if (!System.IO.Directory.Exists(txtDataDir.Text.Trim() + "\\" + strVariant))
+                        System.IO.Directory.CreateDirectory(txtDataDir.Text.Trim() + "\\" + strVariant);
+                    //FVS_StandInit Stand_ID count
+                    entryListItem.SubItems.Add(" ");
+                    this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_STANDCOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
+                    //FVS_TreeInit row count
+                    entryListItem.SubItems.Add(" ");
+                    this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_TREECOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
+
+
+                    frmMain.g_sbpInfo.Text = "Processing FVS Input Variant " +
+                        strVariant + "...Stand By";
+
+                    //check fvs in values
+                    strInDirAndFile = $@"{this.txtDataDir.Text.Trim()}\{Tables.FIA2FVS.DefaultFvsInputFile}";
+                    if (frmMain.g_bSuppressFVSInputTableRowCount == false && System.IO.File.Exists(strInDirAndFile) == true)
+                    {
+                        if (m_VariantCountsDict[strVariant] == null)
+                        {
+                            m_VariantCountsDict[strVariant] = getFVSSQLiteInputRecordCounts(strInDirAndFile, strVariant);
+                        }
+                        entryListItem.SubItems[COL_STANDCOUNT].Text = Convert.ToString(m_VariantCountsDict[strVariant][0]);
+                        entryListItem.SubItems[COL_TREECOUNT].Text = Convert.ToString(m_VariantCountsDict[strVariant][1]);
                     }
 
                 }
@@ -1091,7 +1130,7 @@ namespace FIA_Biosum_Manager
             this.cmbAction.Enabled = true;
             this.btnRefresh.Enabled = true;
             this.btnCreateFvsInput.Enabled = true;
-            //this.btnCreateFvsInputNew.Enabled = true;
+            this.btnCreateFvsInputNew.Enabled = true;
             this.btnChkAll.Enabled = true;
             this.btnClearAll.Enabled = true;
             this.btnClose.Enabled = true;
@@ -1104,7 +1143,7 @@ namespace FIA_Biosum_Manager
             this.m_thread = null;
         }
 
-        public void CreateFia2FvsInputFiles()
+        public void CreateFia2FvsInputFiles_old()
         {
             if (this.lstFvsInput.CheckedItems.Count == 0)
             {
@@ -1261,20 +1300,15 @@ namespace FIA_Biosum_Manager
             this.m_frmTherm.progressBar2.Maximum = 100;
             this.m_frmTherm.progressBar2.Value = 0;
             this.m_frmTherm.lblMsg2.Text = "Overall Progress";
-            this.m_thread = new Thread(new ThreadStart(ExtractFIA2FVSRecords));
+            this.m_thread = new Thread(new ThreadStart(ExtractFIA2FVSRecords_old));
             this.m_thread.IsBackground = true;
             this.m_thread.Start();
 
         }
 
-        public void CreateFia2FvsInputFilesSqlite()
+        public void CreateFia2FvsInputFiles()
         {
-            if (this.lstFvsInput.CheckedItems.Count == 0)
-            {
-                MessageBox.Show("No Boxes Are Checked", "Append", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                return;
-            }
-
+            m_bOverwrite = false;
             // Make sure the database is chosen and that such a file exists
             bool bValidFile = true;
             if (!String.IsNullOrEmpty(txtFIADatamart.Text))
@@ -1294,16 +1328,17 @@ namespace FIA_Biosum_Manager
             }
             if (bValidFile == false)
             {
-                MessageBox.Show("You must specify a source input database on the FVSIn FIA2FVS tab before proceeding!", "FIA Biosum");
+                MessageBox.Show("You must specify a source input database before proceeding!", "FIA Biosum");
                 return;
             }
 
             // Make sure a group is selected
             if (cmbSelectedGroup.SelectedIndex < 0)
             {
-                MessageBox.Show("You must specify a group on the FVSIn FIA2FVS tab before proceeding!", "FIA Biosum");
+                MessageBox.Show("You must specify a group before proceeding!", "FIA Biosum");
                 return;
             }
+            string strInDirAndFile = this.txtDataDir.Text + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
 
             // Check for existing files
             List<string> lstVariants = new List<string>();
@@ -1314,7 +1349,6 @@ namespace FIA_Biosum_Manager
                 {
                     var item = this.lstFvsInput.Items[x];
                     string strVariant = item.SubItems[1].Text.Trim();
-                    string strInDirAndFile = this.txtDataDir.Text + "\\" + strVariant + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
                     if (!lstVariants.Contains(strInDirAndFile))
                     {
                         if (File.Exists(strInDirAndFile))
@@ -1327,9 +1361,17 @@ namespace FIA_Biosum_Manager
                                 if (oDataMgr.TableExist(con, Tables.FIA2FVS.DefaultFvsInputStandTableName) &&
                                     oDataMgr.TableExist(con, Tables.FIA2FVS.DefaultFvsInputTreeTableName))
                                 {
-                                    // Only add to warnings if both tables exist
-                                    lstVariants.Add(strInDirAndFile);
+                                    oDataMgr.SqlQueryReader(con, "SELECT * FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName + " WHERE TRIM(VARIANT) = '" + strVariant + "'");
+                                    if (oDataMgr.m_DataReader.HasRows)
+                                    {
+                                        // Only add to warnings if both tables exist and selected variant is in stand table
+                                        if (!lstVariants.Contains(strVariant))
+                                        {
+                                            lstVariants.Add(strVariant);
+                                        }
+                                    }
                                 }
+                                oDataMgr.m_DataReader.Close();
                             }
                         }
                     }
@@ -1339,59 +1381,41 @@ namespace FIA_Biosum_Manager
             if (lstVariants.Count > 0)
             {
                 System.Text.StringBuilder sb = new System.Text.StringBuilder();
-                sb.Append("The FVS input databases listed below exist for the selected variants. ");
-                sb.Append("Click 'Yes' to append data to the existing databases or 'No' to overwrite them with new data. \r\n\r\n");
-                foreach (var item in lstVariants)
+                m_dictVariantStates = new Dictionary<string, List<string>>();    // Re-initialize dictionary
+                string connFiadbDb = oDataMgr.GetConnectionString(this.txtFIADatamart.Text);
+                using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(connFiadbDb))
                 {
-                    sb.Append(item + "\r");
-                }
-                DialogResult res = MessageBox.Show(sb.ToString(), "FIA BioSum", MessageBoxButtons.YesNoCancel);
-                switch (res)
-                {
-                    case DialogResult.Cancel:
-                        return;
-                    case DialogResult.Yes:
-                        m_bOverwrite = false;
-                        break;
-                    case DialogResult.No:
-                        break;
-                }
+                    con.Open();
 
-                if (!m_bOverwrite)
-                {
-                    m_dictVariantStates = new Dictionary<string, List<string>>();    // Re-initialize dictionary
-                    string connFiadbDb = oDataMgr.GetConnectionString(this.txtFIADatamart.Text);
-                    using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(connFiadbDb))
+                    oDataMgr.SqlNonQuery(con, "ATTACH '" + strInDirAndFile + "' as target");
+                    foreach (var strVariant in lstVariants)
                     {
-                        con.Open();
-                        foreach (var strVariant in lstVariants)
+                        string strQuery = "SELECT distinct STATE FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                                            " INTERSECT SELECT distinct STATE" +
+                                            " FROM target." + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                                            " WHERE TRIM(VARIANT) = '" + strVariant + "'";
+                        List<string> lstStates = oDataMgr.getStringList(con, strQuery);
+                        if (lstStates.Count > 0)
                         {
-                            oDataMgr.SqlNonQuery(con, "ATTACH '" + strVariant + "' as target");
-                            string strQuery = "SELECT distinct STATE FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
-                                              " INTERSECT SELECT distinct STATE" +
-                                              " FROM target." + Tables.FIA2FVS.DefaultFvsInputStandTableName;
-                            List<string> lstStates = oDataMgr.getStringList(con, strQuery);
-                            if (lstStates.Count > 0)
-                            {
-                                m_dictVariantStates.Add(strVariant, lstStates);
-                            }
-                            oDataMgr.SqlNonQuery(con, "DETACH DATABASE 'target'");
+                            m_dictVariantStates.Add(strVariant, lstStates);
                         }
                     }
+                    oDataMgr.SqlNonQuery(con, "DETACH DATABASE 'target'");
                 }
                 if (m_dictVariantStates != null &&
                     m_dictVariantStates.Keys.Count > 0)
                 {
                     sb = new System.Text.StringBuilder();
-                    sb.Append("The FVS input databases listed below already contain records for state codes ");
+                    sb.Append("FVS input data for the variant(s) listed below already contain records for state codes ");
                     sb.Append("in the FIA Datamart input SQLite database. ");
                     sb.Append("Click 'Yes' to replace the existing stands ");
                     sb.Append("and trees for those states or 'No' to stop this process.\r\n\r\n");
+                    
                     foreach (var strVariant in m_dictVariantStates.Keys)
                     {
                         sb.Append(strVariant + "\r");
                     }
-                    res = MessageBox.Show(sb.ToString(), "FIA BioSum", MessageBoxButtons.YesNoCancel);
+                    DialogResult res = MessageBox.Show(sb.ToString(), "FIA BioSum", MessageBoxButtons.YesNoCancel);
                     switch (res)
                     {
                         case DialogResult.Cancel:
@@ -1403,6 +1427,45 @@ namespace FIA_Biosum_Manager
                     }
                 }
 
+            }
+
+            // Check for existing kcp template file in fvs\data folder
+            string strKcpTargetPath = this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\" + 
+                Tables.FIA2FVS.KcpFileBiosumKeywords + Tables.FIA2FVS.KcpFileExtension;
+
+            if (System.IO.File.Exists(strKcpTargetPath))
+            {
+                string strMessage = "BioSum has found an existing " + Tables.FIA2FVS.KcpFileBiosumKeywords + Tables.FIA2FVS.KcpFileExtension +
+                    "file. Do you wish to overwrite it?";
+                DialogResult res = MessageBox.Show(strMessage, "FIA BioSum", MessageBoxButtons.YesNo);
+                if (res != DialogResult.Yes)
+                {
+                    m_bKcpOverwrite = false;
+                }
+                else
+                {
+                    strMessage = "Would you like to make a copy of your existing " + Tables.FIA2FVS.KcpFileBiosumKeywords +
+                        Tables.FIA2FVS.KcpFileExtension + " file? The name of the file backup will include today's date.";
+                    res = MessageBox.Show(strMessage, "FIA BioSum", MessageBoxButtons.YesNo);
+                    if (res == DialogResult.Yes)
+                    {
+                        string strFileSuffix = "_" + DateTime.Now.ToString("MMddyyyy");
+                        string strExtension = System.IO.Path.GetExtension(strKcpTargetPath);
+                        string strNewFileName = System.IO.Path.GetFileNameWithoutExtension(strKcpTargetPath) + strFileSuffix + strExtension;
+                        // Check to see if the backup database already exists; If it does, abort the process so user can delete
+                        if (System.IO.File.Exists(this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\" + strNewFileName))
+                        {
+                            MessageBox.Show("A backup file from today already exists: " + Tables.FIA2FVS.KcpFileBiosumKeywords + Tables.FIA2FVS.KcpFileExtension
+                                + strFileSuffix + ". Delete this file manually if you want to " +
+                                "back up today's data again!! The current file will not be overwritten.", "FIA BioSum");
+                            m_bKcpOverwrite = false;
+                        }
+                        else
+                        {
+                            System.IO.File.Copy(strKcpTargetPath, this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\" + strNewFileName);
+                        }
+                    }
+                }
             }
 
             this.m_frmTherm = new frmTherm(((frmDialog)ParentForm), "EXTRACT FIA2FVS FVS INPUT FILE",
@@ -1424,7 +1487,7 @@ namespace FIA_Biosum_Manager
             this.m_frmTherm.progressBar2.Maximum = 100;
             this.m_frmTherm.progressBar2.Value = 0;
             this.m_frmTherm.lblMsg2.Text = "Overall Progress";
-            this.m_thread = new Thread(new ThreadStart(ExtractFIA2FVSRecordsSqlite));
+            this.m_thread = new Thread(new ThreadStart(ExtractFIA2FVSRecords));
             this.m_thread.IsBackground = true;
             this.m_thread.Start();
         }
@@ -1607,7 +1670,7 @@ namespace FIA_Biosum_Manager
 
         }
 
-        private void ExtractFIA2FVSRecords()
+        private void ExtractFIA2FVSRecords_old()
         {
             m_intError = 0;
             string strCurVariant = "";
@@ -1718,7 +1781,7 @@ namespace FIA_Biosum_Manager
                             {
                                 lstStates = m_dictVariantStates[strInDirAndFile];
                             }
-                            p_fvsinput.StartFIA2FVS(odbcmgr, oDao, oAdo, strTempMDB, m_bOverwrite, m_strDebugFile, 
+                            p_fvsinput.StartFIA2FVS_old(odbcmgr, oDao, oAdo, strTempMDB, m_bOverwrite, m_strDebugFile, 
                                 strCurVariant, lstStates, strSourceStandTableAlias, 
                                 strSourceTreeTableAlias);
                         }
@@ -1729,7 +1792,7 @@ namespace FIA_Biosum_Manager
                         // This happens at the end
                         if (File.Exists(strInDirAndFile) == true) //redundant check here, but leaves " " instead of new "0"
                         {
-                            int[] fvsInputRecordCounts = getFVSSQLiteInputRecordCounts(strInDirAndFile);
+                            int[] fvsInputRecordCounts = getFVSSQLiteInputRecordCounts_old(strInDirAndFile);
                             frmMain.g_oDelegate.SetListViewSubItemPropertyValue(this.lstFvsInput, x, COL_STANDCOUNT, "Text",
                                 Convert.ToString(fvsInputRecordCounts[0]));
                             frmMain.g_oDelegate.SetListViewSubItemPropertyValue(this.lstFvsInput, x, COL_TREECOUNT, "Text",
@@ -1824,7 +1887,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void ExtractFIA2FVSRecordsSqlite()
+        private void ExtractFIA2FVSRecords()
         {
             m_intError = 0;
             string strCurVariant = "";
@@ -1883,6 +1946,13 @@ namespace FIA_Biosum_Manager
                 m_strTreeTable = m_oQueries.m_oFIAPlot.m_strTreeTable;
                 string strTreeMdb = m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree);
                 oDao.CreateTableLink(strTempMDB, m_strTreeTable, strTreeMdb, m_strTreeTable);
+                // Link to plot table
+                m_strPlotTable = m_oQueries.m_oFIAPlot.m_strPlotTable;
+                string strPlotMdb = m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Plot);
+                oDao.CreateTableLink(strTempMDB, m_strPlotTable, strPlotMdb, m_strPlotTable);
+                // Link to sitetree table
+                string strSiteTreeMdb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + "\\db\\master.mdb";
+                oDao.CreateTableLink(strTempMDB, "sitetree", strSiteTreeMdb, "sitetree");
 
                 // Link to the input SQLite table; Takes the whole path to the DB
                 string strSourceStandTableAlias = Tables.FIA2FVS.DefaultFvsInputStandTableName + "_1";
@@ -1915,7 +1985,7 @@ namespace FIA_Biosum_Manager
                     {
                         //get the variant
                         strVariant = frmMain.g_oDelegate.GetListViewSubItemPropertyValue(lstFvsInput, x, COL_VARIANT, "Text", false).ToString().Trim();
-                        string strInDirAndFile = p_fvsinput.strDataDirectory + "\\" + strVariant + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
+                        string strInDirAndFile = p_fvsinput.strDataDirectory + "\\" + Tables.FIA2FVS.DefaultFvsInputFile;
                         //see if this is a new variant
                         if (strVariant.Trim().ToUpper() != strCurVariant.Trim().ToUpper())
                         {
@@ -1924,17 +1994,11 @@ namespace FIA_Biosum_Manager
                                 "Value", 1);
                             strCurVariant = strVariant;
 
-                            // Running old BioSum FVSIn process
-                            p_fvsinput.Start(strCurVariant, m_strDebugFile);
-                            intValue = intValue + interval;
-                            frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar2, "Value", intValue);
-                            // Done
-
                             List<string> lstStates = new List<string>();
                             if (m_dictVariantStates != null &&
-                                m_dictVariantStates.ContainsKey(strInDirAndFile))
+                                m_dictVariantStates.ContainsKey(strCurVariant))
                             {
-                                lstStates = m_dictVariantStates[strInDirAndFile];
+                                lstStates = m_dictVariantStates[strCurVariant];
                             }
                             p_fvsinput.StartFIA2FVS(odbcmgr, oDao, oAdo, strTempMDB, m_bOverwrite, m_strDebugFile,
                                 strCurVariant, lstStates, strSourceStandTableAlias,
@@ -1945,9 +2009,11 @@ namespace FIA_Biosum_Manager
                             "Value", 7);
 
                         // This happens at the end
-                        if (File.Exists(strInDirAndFile) == true) //redundant check here, but leaves " " instead of new "0"
+                        // Populates stand and tree count on screen. Uses " " instead of 0
+                        // for variants that haven't been run yet
+                        if (File.Exists(strInDirAndFile) == true) 
                         {
-                            int[] fvsInputRecordCounts = getFVSSQLiteInputRecordCounts(strInDirAndFile);
+                            int[] fvsInputRecordCounts = getFVSSQLiteInputRecordCounts(strInDirAndFile, strVariant);
                             frmMain.g_oDelegate.SetListViewSubItemPropertyValue(this.lstFvsInput, x, COL_STANDCOUNT, "Text",
                                 Convert.ToString(fvsInputRecordCounts[0]));
                             frmMain.g_oDelegate.SetListViewSubItemPropertyValue(this.lstFvsInput, x, COL_TREECOUNT, "Text",
@@ -1967,12 +2033,15 @@ namespace FIA_Biosum_Manager
                 }
 
                 // Copy KCP files to output directory
-                string[] arrKcpFiles = { Tables.FIA2FVS.KcpFileBiosumKeywords };
-                foreach (var kcp in arrKcpFiles)
+                if (m_bKcpOverwrite == true)
                 {
-                    string sourcePath = frmMain.g_oEnv.strAppDir + @"\scripts\" + kcp;
-                    string targetPath = this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\" + kcp + Tables.FIA2FVS.KcpFileExtension;
-                    File.Copy(sourcePath, targetPath, true);
+                    string[] arrKcpFiles = { Tables.FIA2FVS.KcpFileBiosumKeywords };
+                    foreach (var kcp in arrKcpFiles)
+                    {
+                        string sourcePath = frmMain.g_oEnv.strAppDir + @"\scripts\" + kcp;
+                        string targetPath = this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\" + kcp + Tables.FIA2FVS.KcpFileExtension;
+                        File.Copy(sourcePath, targetPath, true);
+                    }
                 }
 
                 odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName);    // Clean up DSN
@@ -2149,7 +2218,7 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oDelegate.SetControlPropertyValue(cmbAction, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnRefresh, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnCreateFvsInput, "Enabled", true);
-                //frmMain.g_oDelegate.SetControlPropertyValue(btnCreateFvsInputNew, "Enabled", true);
+                frmMain.g_oDelegate.SetControlPropertyValue(btnCreateFvsInputNew, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnChkAll, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnClearAll, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue(btnClose, "Enabled", true);
@@ -2208,7 +2277,7 @@ namespace FIA_Biosum_Manager
             return new int[] { stands, trees };
         }
 
-        private int[] getFVSSQLiteInputRecordCounts(string strDirAndFile)
+        private int[] getFVSSQLiteInputRecordCounts_old(string strDirAndFile)
         {
             int stands = 0;
             int trees = 0;
@@ -2254,6 +2323,54 @@ namespace FIA_Biosum_Manager
             }
             return new int[] { stands, trees };
         }
+        private int[] getFVSSQLiteInputRecordCounts(string strDirAndFile, string strFVSVariant)
+        {
+            int stands = 0;
+            int trees = 0;
+            try
+            {
+                if (File.Exists(strDirAndFile))
+                {
+                    SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+                    string connSourceDb = oDataMgr.GetConnectionString(strDirAndFile);
+                    using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(connSourceDb))
+                    {
+                        string strSql = "";
+                        con.Open();
+                        // Do stuff in sqlite side
+                        if (oDataMgr.TableExist(con, Tables.FIA2FVS.DefaultFvsInputStandTableName))
+                        {
+                            strSql = "SELECT COUNT(*) as StandInitCount " +
+                                     "FROM (SELECT DISTINCT STAND_CN FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName + 
+                                     " WHERE VARIANT = '" + strFVSVariant + "')";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2 && System.IO.File.Exists(m_strDebugFile))
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + strSql + "\r\n");
+                            stands = (int)oDataMgr.getSingleDoubleValueFromSQLQuery(con, strSql, Tables.FIA2FVS.DefaultFvsInputStandTableName);
+                        }
+                        if (oDataMgr.TableExist(con, Tables.FIA2FVS.DefaultFvsInputTreeTableName))
+                        {
+                            strSql = "SELECT COUNT(*) as TreeInitCount " +
+                                     "FROM (SELECT DISTINCT TREE_CN FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                                     " WHERE VARIANT = '" + strFVSVariant + "')";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2 && System.IO.File.Exists(m_strDebugFile))
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + strSql + "\r\n");
+                            trees = (int)oDataMgr.getSingleDoubleValueFromSQLQuery(con, strSql, Tables.FIA2FVS.DefaultFvsInputTreeTableName);
+                        }
+                    }
+                    oDataMgr = null;
+                }
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("!!Error!! \n" +
+                                "Module - uc_fvs_input:getFVSSQLiteInputRecordCounts  \n" +
+                                "Err Msg - " + e.Message.ToString().Trim(),
+                    "FVS Input", MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation);
+                this.m_intError = -1;
+            }
+            return new int[] { stands, trees };
+        }
 
         private void btnRx_Click(object sender, System.EventArgs e)
         {
@@ -2268,15 +2385,15 @@ namespace FIA_Biosum_Manager
                 m_oHelp = new Help(m_xpsFile, m_oEnv);
             }
             string helpPage = "INPUT_DATA";
-            switch (tabControl1.SelectedIndex)
-            {
-                case 0:
-                    helpPage = "INPUT_DATA";
-                    break;
-                case 1:
-                    helpPage = "INPUT_OPTIONS";
-                    break;
-            }
+            //switch (tabControl1.SelectedIndex)
+            //{
+            //    case 0:
+            //        helpPage = "INPUT_DATA";
+            //        break;
+            //    case 1:
+            //        helpPage = "INPUT_OPTIONS";
+            //        break;
+            //}
             m_oHelp.ShowHelp(new string[] { "FVS", helpPage });
         }
         private void txtDataDir_KeyPress(object sender, System.Windows.Forms.KeyPressEventArgs e)
@@ -2357,7 +2474,7 @@ namespace FIA_Biosum_Manager
             get { return _frmDialog; }
         }
 
-        private void btnCreateFvsInput_Click(object sender, EventArgs e)
+        private void btnCreateFvsInput_Click_old(object sender, EventArgs e)
         {
             if (this.lstFvsInput.CheckedItems.Count == 0)
             {
@@ -2365,7 +2482,7 @@ namespace FIA_Biosum_Manager
                 return;
             }
 
-            CreateFia2FvsInputFiles();
+            CreateFia2FvsInputFiles_old();
             //@ToDo: 22-MAR-2022 Delete all references to cmbAction when we are sure we don't need it anymore
             //string strAction = cmbAction.Text.Trim().ToUpper();
             //switch (strAction)
@@ -2393,7 +2510,7 @@ namespace FIA_Biosum_Manager
             //}
         }
 
-        private void btnCreateFvsInputNew_Click(object sender, EventArgs e)
+        private void btnCreateFvsInput_Click(object sender, EventArgs e)
         {
             if (this.lstFvsInput.CheckedItems.Count == 0)
             {
@@ -2401,7 +2518,7 @@ namespace FIA_Biosum_Manager
                 return;
             }
 
-            CreateFia2FvsInputFilesSqlite();
+            CreateFia2FvsInputFiles();
         }
 
         private void cmbAction_SelectedIndexChanged(object sender, EventArgs e)
@@ -2448,24 +2565,24 @@ namespace FIA_Biosum_Manager
 
         private void tabControl1_Resize(object sender, EventArgs e)
         {
-            tabControl1.Top = this.lblTitle.Bottom + 5;
-            tabControl1.Left = 5;
-            tabControl1.Width = this.Width - 10;
-            tabControl1.Height = this.Height - 100;
+            //tabControl1.Top = this.lblTitle.Bottom + 5;
+            //tabControl1.Left = 5;
+            //tabControl1.Width = this.Width - 10;
+            //tabControl1.Height = this.Height - 100;
 
             btnClose.Top = groupBox1.Bottom - btnClose.Height - 5;
-            btnClose.Left = tabControl1.Right - btnClose.Width;
-            btnHelp.Left = tabControl1.Left;
+            //btnClose.Left = tabControl1.Right - btnClose.Width;
+            //btnHelp.Left = tabControl1.Left;
             btnHelp.Top = btnClose.Top;
 
 
             label1.Left = tabPage2.Left + 5;
             txtDataDir.Left = label1.Right + 5;
             txtDataDir.Width = tabPage2.Width - txtDataDir.Left;
-            btnRx.Left = txtDataDir.Left;
-            lblRxCnt.Left = btnRx.Left + btnRx.Width + 10;
-            btnRxPackage.Left = lblRxCnt.Left + lblRxCnt.Width + 10;
-            lblRxPackageCnt.Left = btnRxPackage.Left + btnRxPackage.Width + 10;
+            //btnRx.Left = txtDataDir.Left;
+            //lblRxCnt.Left = btnRx.Left + btnRx.Width + 10;
+            //btnRxPackage.Left = lblRxCnt.Left + lblRxCnt.Width + 10;
+            //lblRxPackageCnt.Left = btnRxPackage.Left + btnRxPackage.Width + 10;
 
             //resize all of the controls on the inside
             lstFvsInput.Left = tabPage2.Left + 5;
@@ -2476,8 +2593,8 @@ namespace FIA_Biosum_Manager
             //btns under lstFvsInput position based on tabControl perimeter
             btnCreateFvsInput.Top = lstFvsInput.Bottom + 80;
             btnCreateFvsInput.Left = lstFvsInput.Right - btnCreateFvsInput.Width;
-            //btnCreateFvsInputNew.Top = lstFvsInput.Bottom + 80;
-            //btnCreateFvsInputNew.Left = lstFvsInput.Right - btnCreateFvsInput.Width - 5 - btnCreateFvsInputNew.Width;
+            btnCreateFvsInputNew.Top = lstFvsInput.Bottom + 80;
+            btnCreateFvsInputNew.Left = lstFvsInput.Right - btnCreateFvsInput.Width - 5 - btnCreateFvsInputNew.Width;
 
             cmbAction.Top = btnCreateFvsInput.Top + (int)(btnCreateFvsInput.Height * .5) - (int)(cmbAction.Height * .5);
             cmbAction.Left = btnCreateFvsInput.Left - cmbAction.Width - 5;

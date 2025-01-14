@@ -1024,8 +1024,8 @@ namespace FIA_Biosum_Manager
 			if (this.m_intError==0)  
 			{
                 UpdateThermPercent();
-				this.m_intError= ReferenceOptimizerScenarioForm.uc_scenario_filter1.Val_PlotFilterSqlite(ReferenceOptimizerScenarioForm.uc_scenario_filter1.txtCurrentSQL.Text.Trim());
-				if (this.m_intError!=0)
+                this.m_intError = ReferenceOptimizerScenarioForm.uc_scenario_filter1.Val_PlotFilterSqlite(ReferenceOptimizerScenarioForm.uc_scenario_filter1.txtCurrentSQL.Text.Trim());
+                if (this.m_intError!=0)
 					MessageBox.Show(ReferenceOptimizerScenarioForm.uc_scenario_filter1.m_strError,"FIA Biosum");
 
 			}
@@ -1033,8 +1033,8 @@ namespace FIA_Biosum_Manager
 			if (this.m_intError==0)  
 			{
                 UpdateThermPercent();
-				this.m_intError = ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.Val_CondFilterSqlite(ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.txtCurrentSQL.Text.Trim());
-				if (this.m_intError!=0)
+                this.m_intError = ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.Val_CondFilterSqlite(ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.txtCurrentSQL.Text.Trim());
+                if (this.m_intError!=0)
 					MessageBox.Show(ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.m_strError,"FIA Biosum");
 
 			}
@@ -1240,6 +1240,7 @@ namespace FIA_Biosum_Manager
 		public string m_strPlotTable;
         public string m_strPlotPathAndFile;
 		public string m_strRxTable;
+        public string m_strRxPathAndFile;
         public string m_strRxPackageTable;
 		public string m_strTravelTimeTable;
 		public string m_strCondTable;
@@ -1395,6 +1396,7 @@ namespace FIA_Biosum_Manager
                         this.m_strTempMDBFile = strValue;
                     }
                 }
+
                 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
@@ -1585,8 +1587,28 @@ namespace FIA_Biosum_Manager
 
                     FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
-					//CREATE TABLE LINKS
-					CreateScenarioResultTableLinks();
+                    //CREATE TABLE LINKS
+
+                    // Manually link to rx and rxpackage tables
+                    if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.MasterDsnName))
+                    {
+                        odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.MasterDsnName);
+                    }
+                    odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.MasterDsnName,m_strRxPathAndFile);
+
+                    m_oDao.CreateSQLiteTableLink(m_strTempMDBFile, m_strRxTable, m_strRxTable,
+                        ODBCMgr.DSN_KEYS.MasterDsnName, m_strRxPathAndFile);
+                    m_oDao.CreateSQLiteTableLink(m_strTempMDBFile, m_strRxPackageTable, m_strRxPackageTable,
+                        ODBCMgr.DSN_KEYS.MasterDsnName, m_strRxPathAndFile);
+
+                    if (m_oDao.m_intError != 0)
+                    {
+                        m_oDao.m_strError = "!!Error Creating Treatment Prescription Table Links!!!";
+                        this.m_intError = m_oDao.m_intError;
+                    }
+
+
+                    CreateScenarioResultTableLinks();
                     if (this.m_intError != 0)
                     {
                         FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
@@ -3402,6 +3424,20 @@ namespace FIA_Biosum_Manager
             }
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Treatment Prescriptions:" + this.m_strRxTable + "\r\n");
+
+            oValue = frmMain.g_oDelegate.GetValueExecuteControlMethodWithParam(ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_datasource1,
+                "getDataSourcePathAndFile", arr1, true);
+            if (oValue != null)
+            {
+                string strValue = Convert.ToString(oValue);
+                if (strValue != "false")
+                {
+                    this.m_strRxPathAndFile = strValue;
+                }
+            }
+
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "Treatment Prescriptions Path and File:" + this.m_strRxPathAndFile + "\r\n");
 
             /**************************************************************
 			 **get the treatment package table
@@ -7337,21 +7373,42 @@ namespace FIA_Biosum_Manager
             /**************************
 			 **get the treatment list
 			 **************************/
-            this.m_strSQL = "SELECT rx FROM " + this.m_strRxTable + ";";
-            this.m_ado.SqlQueryReader(this.m_TempMDBFileConn, this.m_strSQL);
-            if (!this.m_ado.m_OleDbDataReader.HasRows)
+            //this.m_strSQL = "SELECT rx FROM " + this.m_strRxTable + ";";
+            //this.m_ado.SqlQueryReader(this.m_TempMDBFileConn, this.m_strSQL);
+            //if (!this.m_ado.m_OleDbDataReader.HasRows)
+            //{
+            //    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+            //    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+            //    this.m_intError = -1;
+            //    MessageBox.Show("No Treatments Found In The Treatment Table");
+            //    return;
+            //}
+            //while (this.m_ado.m_OleDbDataReader.Read())
+            //{
+            //    strRxList += this.m_ado.m_OleDbDataReader["rx"].ToString().Trim();
+            //}
+            //this.m_ado.m_OleDbDataReader.Close();
+
+            string strRxConn = m_dataMgr.GetConnectionString(this.m_strRxPathAndFile);
+            using (System.Data.SQLite.SQLiteConnection rxConn = new System.Data.SQLite.SQLiteConnection(strRxConn))
             {
-                FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
-                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
-                this.m_intError = -1;
-                MessageBox.Show("No Treatments Found In The Treatment Table");
-                return;
+                rxConn.Open();
+                m_dataMgr.m_strSQL = "SELECT rx FROM " + this.m_strRxTable;
+                m_dataMgr.SqlQueryReader(rxConn, m_dataMgr.m_strSQL);
+                if (!m_dataMgr.m_DataReader.HasRows)
+                {
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    this.m_intError = -1;
+                    MessageBox.Show("No Treatments Found In The Treatment Table");
+                    return;
+                }
+                while (m_dataMgr.m_DataReader.Read())
+                {
+                    strRxList += m_dataMgr.m_DataReader["rx"].ToString().Trim();
+                }
+                m_dataMgr.m_DataReader.Close();
             }
-            while (this.m_ado.m_OleDbDataReader.Read())
-            {
-                strRxList += this.m_ado.m_OleDbDataReader["rx"].ToString().Trim();
-            }
-            this.m_ado.m_OleDbDataReader.Close();
 
             FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
@@ -7776,6 +7833,10 @@ namespace FIA_Biosum_Manager
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
                     m_dataMgr.SqlNonQuery(conn, this.m_strSQL);
+                    this.m_strSQL = "ATTACH DATABASE '" + this.m_strRxPathAndFile + "' AS prescriptions";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+                    m_dataMgr.SqlNonQuery(conn, this.m_strSQL);
 
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n--cond_audit--\r\n\r\n");
@@ -7963,79 +8024,68 @@ namespace FIA_Biosum_Manager
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
                     m_dataMgr.SqlNonQuery(conn, this.m_strSQL);
-                }
 
-                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic)) return;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+                    if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic)) return;
 
+                    //BIOSUM_COND_ID + RX RECORD AUDIT
+                    /**********************************************************************************
+                    **Insert all the biosum_cond_id + rx combinations into the cond_rx_audit table
+                    ***********************************************************************************/
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n--cond_rx_audit--\r\n");
+                    //cycle1
+                    this.m_strSQL = "INSERT INTO " + Tables.Audit.DefaultCondRxAuditTableName +
+                         "(biosum_cond_id,rxpackage,rx,rxcycle)  " +
+                         "SELECT a.biosum_cond_id, b.rxpackage,b.rx,b.rxcycle " +
+                         "FROM " + Tables.Audit.DefaultCondAuditTableName + " AS a, " +
+                        "(SELECT DISTINCT rxpackage,simyear1_rx AS rx,'1' AS rxcycle " +
+                         "FROM " + this.m_strRxPackageTable + " " +
+                         "WHERE simyear1_rx IS NOT NULL AND LENGTH(TRIM(simyear1_rx)) > 0 AND simyear1_rx<>'000') AS b ;";  //+ 
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+                    m_dataMgr.SqlNonQuery(conn, this.m_strSQL);
+                    //cycle2
+                    this.m_strSQL = "INSERT INTO " + Tables.Audit.DefaultCondRxAuditTableName +
+                         "(biosum_cond_id,rxpackage,rx,rxcycle)  " +
+                         "SELECT a.biosum_cond_id, b.rxpackage,b.rx,b.rxcycle " +
+                         "FROM " + Tables.Audit.DefaultCondAuditTableName + " AS a, " +
+                        "(SELECT DISTINCT rxpackage,simyear2_rx AS rx,'2' AS rxcycle " +
+                         "FROM " + this.m_strRxPackageTable + " " +
+                         "WHERE simyear2_rx IS NOT NULL AND LENGTH(TRIM(simyear2_rx)) > 0 AND simyear2_rx<>'000') AS b ;";  //+ 
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+                    m_dataMgr.SqlNonQuery(conn, this.m_strSQL);
+                    //cycle3
+                    this.m_strSQL = "INSERT INTO " + Tables.Audit.DefaultCondRxAuditTableName +
+                        "(biosum_cond_id,rxpackage,rx,rxcycle)  " +
+                         "SELECT a.biosum_cond_id, b.rxpackage,b.rx,b.rxcycle " +
+                         "FROM " + Tables.Audit.DefaultCondAuditTableName + " AS a, " +
+                        "(SELECT DISTINCT rxpackage,simyear3_rx AS rx,'3' AS rxcycle " +
+                         "FROM " + this.m_strRxPackageTable + " " +
+                         "WHERE simyear3_rx IS NOT NULL AND LENGTH(TRIM(simyear3_rx)) > 0 AND simyear3_rx<>'000') AS b ;";  //+ 
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+                    m_dataMgr.SqlNonQuery(conn, this.m_strSQL);
+                    //cycle4
+                    this.m_strSQL = "INSERT INTO " + Tables.Audit.DefaultCondRxAuditTableName +
+                         "(biosum_cond_id,rxpackage,rx,rxcycle)  " +
+                         "SELECT a.biosum_cond_id, b.rxpackage,b.rx,b.rxcycle " +
+                         "FROM " + Tables.Audit.DefaultCondAuditTableName + " AS a, " +
+                        "(SELECT DISTINCT rxpackage,simyear4_rx AS rx,'4' AS rxcycle " +
+                         "FROM " + this.m_strRxPackageTable + " " +
+                         "WHERE simyear4_rx IS NOT NULL AND LENGTH(TRIM(simyear4_rx)) > 0 AND simyear4_rx<>'000') AS b ;";  //+ 
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+                    m_dataMgr.SqlNonQuery(conn, this.m_strSQL);
 
-                //BIOSUM_COND_ID + RX RECORD AUDIT
-                /**********************************************************************************
-                **Insert all the biosum_cond_id + rx combinations into the cond_rx_audit table
-                ***********************************************************************************/
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n--cond_rx_audit--\r\n");
-                //cycle1
-                this.m_strSQL = "INSERT INTO " + Tables.Audit.DefaultCondRxAuditTableName +
-                     "(biosum_cond_id,rxpackage,rx,rxcycle)  " +
-                     "SELECT a.biosum_cond_id, b.rxpackage,b.rx,b.rxcycle " +
-                     "FROM " + Tables.Audit.DefaultCondAuditTableName + " a, " +
-                    "(SELECT DISTINCT rxpackage,simyear1_rx AS rx,'1' AS rxcycle " +
-                     "FROM " + this.m_strRxPackageTable + " " +
-                     "WHERE simyear1_rx IS NOT NULL AND LEN(TRIM(simyear1_rx)) > 0 AND simyear1_rx<>'000') b ;";  //+ 
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
-                this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
-                //cycle2
-                this.m_strSQL = "INSERT INTO " + Tables.Audit.DefaultCondRxAuditTableName +
-                     "(biosum_cond_id,rxpackage,rx,rxcycle)  " +
-                     "SELECT a.biosum_cond_id, b.rxpackage,b.rx,b.rxcycle " +
-                     "FROM " + Tables.Audit.DefaultCondAuditTableName + " a, " +
-                    "(SELECT DISTINCT rxpackage,simyear2_rx AS rx,'2' AS rxcycle " +
-                     "FROM " + this.m_strRxPackageTable + " " +
-                     "WHERE simyear2_rx IS NOT NULL AND LEN(TRIM(simyear2_rx)) > 0 AND simyear2_rx<>'000') b ;";  //+ 
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
-                this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
-                //cycle3
-                this.m_strSQL = "INSERT INTO " + Tables.Audit.DefaultCondRxAuditTableName +
-                    "(biosum_cond_id,rxpackage,rx,rxcycle)  " +
-                     "SELECT a.biosum_cond_id, b.rxpackage,b.rx,b.rxcycle " +
-                     "FROM " + Tables.Audit.DefaultCondAuditTableName + " a, " +
-                    "(SELECT DISTINCT rxpackage,simyear3_rx AS rx,'3' AS rxcycle " +
-                     "FROM " + this.m_strRxPackageTable + " " +
-                     "WHERE simyear3_rx IS NOT NULL AND LEN(TRIM(simyear3_rx)) > 0 AND simyear3_rx<>'000') b ;";  //+ 
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
-                this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
-                //cycle4
-                this.m_strSQL = "INSERT INTO " + Tables.Audit.DefaultCondRxAuditTableName +
-                     "(biosum_cond_id,rxpackage,rx,rxcycle)  " +
-                     "SELECT a.biosum_cond_id, b.rxpackage,b.rx,b.rxcycle " +
-                     "FROM " + Tables.Audit.DefaultCondAuditTableName + " a, " +
-                    "(SELECT DISTINCT rxpackage,simyear4_rx AS rx,'4' AS rxcycle " +
-                     "FROM " + this.m_strRxPackageTable + " " +
-                     "WHERE simyear4_rx IS NOT NULL AND LEN(TRIM(simyear4_rx)) > 0 AND simyear4_rx<>'000') b ;";  //+ 
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
-                this.m_ado.SqlNonQuery(this.m_TempMDBFileConn, this.m_strSQL);
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+                    if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic)) return;
 
+                    /*********************************************************************************
+                    **check to see if the cond + rx record exists in the fvs prepost variables table
+                    *********************************************************************************/
 
-
-                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic)) return;
-
-
-                /*********************************************************************************
-                 **check to see if the cond + rx record exists in the fvs prepost variables table
-                 *********************************************************************************/
-
-
-                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_dataMgr.GetConnectionString(ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\" + Tables.Audit.DefaultCondAuditTableSqliteDbFile)))
-                {
-                    conn.Open();
-                    m_strSQL = "ATTACH DATABASE '" + m_strSystemResultsDbPathAndFile + "' AS results";
-                    m_dataMgr.SqlNonQuery(conn, m_strSQL);
                     m_strSQL = "UPDATE " + Tables.Audit.DefaultCondRxAuditTableName +
                         " SET fvs_prepost_variables_yn = 'Y' " +
                         "WHERE EXISTS (SELECT biosum_cond_id,rxpackage,rx,rxcycle " +
@@ -8068,10 +8118,6 @@ namespace FIA_Biosum_Manager
                     /****************************************************************************
                      **check to see if the plot + rx record exists in the harvest costs table
                      ****************************************************************************/
-                    this.m_strSQL = "ATTACH DATABASE '" + this.m_strProcessorResultsPathAndFile + "' AS processor_results";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
-                    m_dataMgr.SqlNonQuery(conn, this.m_strSQL);
 
                     this.m_strSQL = "UPDATE " + Tables.Audit.DefaultCondRxAuditTableName +
                     " SET harvest_costs_yn = 'Y' " +
@@ -8107,8 +8153,6 @@ namespace FIA_Biosum_Manager
                     /*********************************************************************************
                      **check to see if the plot + rx record exists in the processor tree vol val table
                      *********************************************************************************/
-                    this.m_strSQL = "ATTACH DATABASE '" + this.m_strSQLiteWorkTablesDb + "' AS work_tables";
-                    m_dataMgr.SqlNonQuery(conn, this.m_strSQL);
 
                     this.m_strSQL = "SELECT COUNT(*) FROM " +
                                     "(SELECT a.biosum_cond_id " +
@@ -8144,10 +8188,10 @@ namespace FIA_Biosum_Manager
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
                     m_dataMgr.SqlNonQuery(conn, this.m_strSQL);
-                }
 
-                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic)) return;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+                    if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic)) return;
+                }
 
             }
 

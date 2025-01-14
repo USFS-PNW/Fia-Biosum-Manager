@@ -267,7 +267,7 @@ namespace FIA_Biosum_Manager
 
 			//create links to all the tables in our datasource list
 			
-			for (x=0;x<=this.m_lvDataSource.Items.Count-1;x++)
+			for (x=0; x<=this.m_lvDataSource.Items.Count-1;x++)
 			{
 
 				if (this.m_lvDataSource.Items[x].SubItems[frmSqlBuilder.FILESTATUS].Text.Trim()=="Found")
@@ -280,7 +280,7 @@ namespace FIA_Biosum_Manager
 						//see if the table has been added already
 						if (str.IndexOf(strPathAndTable,0) < 0)
 						{
-                            //// temporary while GIS tables are in SQLite but master ones aren't
+                            //// temporary while only some tables are in SQLite
                             if (m_lvDataSource.Items[x].SubItems[frmSqlBuilder.MDBFILE].Text.Trim().ToUpper() == "GIS_TRAVEL_TIMES.DB")
                             {
                                 if (p_odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.GisTravelTimesDsnName))
@@ -293,8 +293,37 @@ namespace FIA_Biosum_Manager
                                 p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim(), m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim(),
                                     ODBCMgr.DSN_KEYS.GisTravelTimesDsnName, m_lvDataSource.Items[x].SubItems[frmSqlBuilder.PATH].Text.Trim() + "\\" +
                                     m_lvDataSource.Items[x].SubItems[frmSqlBuilder.MDBFILE].Text.Trim());
-
                             }
+							else if (m_lvDataSource.Items[x].SubItems[frmSqlBuilder.MDBFILE].Text.Trim().ToUpper() == "MASTER.DB")
+                            {
+								if (p_odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.MasterDsnName))
+								{
+									p_odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.MasterDsnName);
+								}
+								p_odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.MasterDsnName, m_lvDataSource.Items[x].SubItems[frmSqlBuilder.PATH].Text.Trim() + "\\" +
+									m_lvDataSource.Items[x].SubItems[frmSqlBuilder.MDBFILE].Text.Trim());
+
+								p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim(), m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim(),
+									ODBCMgr.DSN_KEYS.MasterDsnName, m_lvDataSource.Items[x].SubItems[frmSqlBuilder.PATH].Text.Trim() + "\\" +
+									m_lvDataSource.Items[x].SubItems[frmSqlBuilder.MDBFILE].Text.Trim());
+							}
+							else if (m_lvDataSource.Items[x].SubItems[frmSqlBuilder.MDBFILE].Text.Trim().ToUpper() == "BIOSUM_REF.DB")
+                            {
+								macrosubst oMacroSub = new macrosubst();
+								oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
+								string strPathAndFile = oMacroSub.GeneralTranslateVariableSubstitution(m_lvDataSource.Items[x].SubItems[frmSqlBuilder.PATH].Text.Trim())
+									+ "\\" + m_lvDataSource.Items[x].SubItems[frmSqlBuilder.MDBFILE].Text.Trim();
+
+								if (p_odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.BiosumRefDsnName))
+								{
+									p_odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.BiosumRefDsnName);
+								}
+								p_odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.BiosumRefDsnName, strPathAndFile);
+
+								p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim(),
+									m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim(),
+									ODBCMgr.DSN_KEYS.BiosumRefDsnName, strPathAndFile);
+							}
                             else
                             {
 								p_dao.CreateTableLink(this.m_strTempMDBFile,

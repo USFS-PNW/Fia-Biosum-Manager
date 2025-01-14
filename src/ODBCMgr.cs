@@ -218,7 +218,10 @@ namespace FIA_Biosum_Manager
             static public string GisTravelTimesDsnName { get { return "TRAVEL_TIMES"; } }
             static public string WorkTablesDsnName { get { return "WORK_TABLES"; } }
             static public string MasterAuxDsnName { get { return "MASTER_AUX"; } }
+            static public string DWMDsnName { get { return "DWM"; } }
             static public string MasterDsnName { get { return "MASTER"; } }
+            static public string BiosumRefDsnName { get { return "BIOSUM_REF"; } }
+            static public string TemporaryDsnName { get { return "TEMP"; } }
         }
 
     }
