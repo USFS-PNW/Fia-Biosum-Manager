@@ -1954,20 +1954,12 @@ namespace FIA_Biosum_Manager
                     "RXPACKAGE CHAR(3)," +
                     "DESCRIPTION CHAR(255)," +
                     "SIMYEAR1_RX CHAR(3)," +
-                    "SIMYEAR1_RX_CATEGORY CHAR(100)," +
-                    "SIMYEAR1_RX_SUBCATEGORY CHAR(100)," +
                     "SIMYEAR1_RX_DESCRIPTION CHAR(255)," +
                     "SIMYEAR2_RX CHAR(3)," +
-                    "SIMYEAR2_RX_CATEGORY CHAR(100)," +
-                    "SIMYEAR2_RX_SUBCATEGORY CHAR(100)," +
                     "SIMYEAR2_RX_DESCRIPTION CHAR(255)," +
                     "SIMYEAR3_RX CHAR(3)," +
-                    "SIMYEAR3_RX_CATEGORY CHAR(100)," +
-                    "SIMYEAR3_RX_SUBCATEGORY CHAR(100)," +
                     "SIMYEAR3_RX_DESCRIPTION CHAR(255)," +
                     "SIMYEAR4_RX CHAR(3)," +
-                    "SIMYEAR4_RX_CATEGORY CHAR(100)," +
-                    "SIMYEAR4_RX_SUBCATEGORY CHAR(100)," +
                     "SIMYEAR4_RX_DESCRIPTION CHAR(255)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (RXPACKAGE))";
             }
