@@ -2151,10 +2151,6 @@ namespace FIA_Biosum_Manager
                             oDao.CreateMDB(strNewDbFile);
                             oDao.OpenDb(strNewDbFile);
                             //
-                            //create a link in the new file to the new table
-                            //
-                            oDao.CreateTableLink(oDao.m_DaoDatabase, "fvs_commands_temp", frmMain.g_oEnv.strAppDir + "\\db\\ref_fvscommands.mdb", "fvs_commands");
-                            //
                             //create a link to all tables from the old file to the new file
                             //
                             if (strTablesArray != null)
@@ -2218,12 +2214,6 @@ namespace FIA_Biosum_Manager
                             System.IO.File.Delete(strOldDbFile);
                             System.IO.File.Copy(strNewDbFile,strOldDbFile,true);
 
-                        }
-                        else
-                        {
-                            //copy ref_master.mdb to project db directory if file does not exist
-                            if (System.IO.File.Exists(ReferenceProjectDirectory.Trim() + "\\db\\ref_fvscommands.mdb") == false)
-                                System.IO.File.Copy(frmMain.g_oEnv.strAppDir + "\\db\\ref_fvscommands.mdb", this.ReferenceProjectDirectory + "\\db\\ref_fvscommands.mdb", true);
                         }
 
                         
