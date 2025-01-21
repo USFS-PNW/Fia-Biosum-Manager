@@ -5564,12 +5564,13 @@ namespace FIA_Biosum_Manager
             string strTargetPostTable = strSourcePostTable + "_WEIGHTED";
             string strPrePostWeightedDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
                 "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile;
-            string strRefreshDb = "";
+
+
+            Dictionary<string, Dictionary<string, double[]>> correctionFactors = new Dictionary<string, Dictionary<string, double[]>>();
 
             using (var calculateConn = new SQLiteConnection(strCalculateConn))
             {
                 calculateConn.Open();
-                strRefreshDb = calculateConn.DataSource;
 
                 string strFvsPrePostDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
                                              Tables.FVS.DefaultFVSOutPrePostDbFile;
@@ -5597,6 +5598,11 @@ namespace FIA_Biosum_Manager
                 _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
                 m_oDataMgr.AddIndex(calculateConn, strWeightsByRxCyclePostTable, "index_" + strWeightsByRxCyclePostTable.ToLower() + "_composite", "biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant");
 
+                //Add column for weights and populate
+                m_oDataMgr.AddColumn(calculateConn, strWeightsByRxCyclePreTable, "weight", "DOUBLE", "");
+                m_oDataMgr.AddColumn(calculateConn, strWeightsByRxCyclePostTable, "weight", "DOUBLE", "");
+
+
                 //Calculate values for each row in table
                 double dblWeight = -1;
                 string strWeight = "";
@@ -5621,6 +5627,14 @@ namespace FIA_Biosum_Manager
                     }
                     if (Double.TryParse(strWeight, out dblWeight))
                     {
+                        // Populate weight column
+                        m_oDataMgr.m_strSQL = "UPDATE " + strTargetTableName +
+                            " SET weight = " + dblWeight +
+                            " WHERE rxcycle = '" + strRxCycle + "'";
+                        _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
+                        m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
+                        _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
+
                         // Apply weights to each cycle
 
                         m_oDataMgr.m_strSQL = "UPDATE " + strTargetTableName + " AS w " +
@@ -5636,19 +5650,88 @@ namespace FIA_Biosum_Manager
                         "* " + dblWeight +
                         " ELSE NULL END" +
                         " WHERE w.rxcycle = '" + strRxCycle + "'";
-                        //m_oDataMgr.m_strSQL = "UPDATE " + strTargetTableName + " AS w " +
-                        //"SET " + strVariableName + " = " +
-                        //"(SELECT " + strFieldName + " FROM " + strSourceTableName + " AS p " +
-                        //"WHERE w.biosum_cond_id = p.biosum_cond_id AND w.rxpackage = p.rxpackage " +
-                        //"AND w.rx = p.rx AND w.rxcycle = p.rxcycle AND w.fvs_variant = p.fvs_variant)" +
-                        //" * " + dblWeight + " WHERE w.rxcycle = '" + strRxCycle + "'";
                         _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
                         m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
                         _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
 
                     }
                 }
-               // Sum by rxpackage across cycles
+                // TO DO: sum weights where values are null for each biosum_cond_id
+                // multiply each value by 1 / (1 - (sum of weights wehre value is null))
+                // this can be done now or to the sum at the end
+
+                // idea: dictionary where biosum_cond_id is key and SELECT SUM(weight) FROM
+                // table WHERE value IS NULL GROUP BY biosum_cond_id where SUM(weight) is
+                // value and then multiply sum_pre and sum_post by 1 / (1 - value)
+                // where biosum_cond_id = key
+                // implemented as loop through dictionary
+
+
+                m_oDataMgr.m_strSQL = "SELECT biosum_cond_id, rxpackage, weight FROM " + strWeightsByRxCyclePreTable +
+                    " WHERE " + strVariableName + " IS NULL";
+                m_oDataMgr.SqlQueryReader(calculateConn, m_oDataMgr.m_strSQL);
+                if (m_oDataMgr.m_DataReader.HasRows)
+                {
+                    while (m_oDataMgr.m_DataReader.Read())
+                    {
+                        double dblWt = Convert.ToDouble(m_oDataMgr.m_DataReader["wteight"]);
+                        if (dblWt != 0)
+                        {
+                            string strCondId = m_oDataMgr.m_DataReader["biosum_cond_id"].ToString().Trim();
+                            string strRxPkg = m_oDataMgr.m_DataReader["rxpackage"].ToString().Trim();
+                            double[] entry = { dblWt, 1 };
+                            if (!correctionFactors.ContainsKey(strCondId))
+                            {
+                                Dictionary<string, double[]> dictEntry = new Dictionary<string, double[]> { { strRxPkg, entry } };
+                                correctionFactors.Add(strCondId, dictEntry);
+                            }
+                            else if (!correctionFactors[strCondId].ContainsKey(strRxPkg))
+                            {
+                                correctionFactors[strCondId].Add(strRxPkg, entry);
+                            }
+                            else
+                            {
+                                double dblCurWtSum = correctionFactors[strCondId][strRxPkg][0];
+                                correctionFactors[strCondId][strRxPkg][0] = dblCurWtSum + dblWt;
+                                correctionFactors[strCondId][strRxPkg][1]++;
+                            }
+                        }
+                    }
+                }
+
+                m_oDataMgr.m_strSQL = "SELECT biosum_cond_id, rxpackage, weight FROM " + strWeightsByRxCyclePostTable +
+                    " WHERE " + strVariableName + " IS NULL";
+                m_oDataMgr.SqlQueryReader(calculateConn, m_oDataMgr.m_strSQL);
+                if (m_oDataMgr.m_DataReader.HasRows)
+                {
+                    while (m_oDataMgr.m_DataReader.Read())
+                    {
+                        double dblWt = Convert.ToDouble(m_oDataMgr.m_DataReader["weight"]);
+                        if (dblWt != 0)
+                        {
+                            string strCondId = m_oDataMgr.m_DataReader["biosum_cond_id"].ToString().Trim();
+                            string strRxPkg = m_oDataMgr.m_DataReader["rxpackage"].ToString().Trim();
+                            double[] entry = { dblWt, 1 };
+                            if (!correctionFactors.ContainsKey(strCondId))
+                            {
+                                Dictionary<string, double[]> dictEntry = new Dictionary<string, double[]> { { strRxPkg, entry } };
+                                correctionFactors.Add(strCondId, dictEntry);
+                            }
+                            else if (!correctionFactors[strCondId].ContainsKey(strRxPkg))
+                            {
+                                correctionFactors[strCondId].Add(strRxPkg, entry);
+                            }
+                            else
+                            {
+                                double dblCurWtSum = correctionFactors[strCondId][strRxPkg][0];
+                                correctionFactors[strCondId][strRxPkg][0] = dblCurWtSum + dblWt;
+                                correctionFactors[strCondId][strRxPkg][1]++;
+                            }
+                        }
+                    }
+                }
+
+                // Sum by rxpackage across cycles
                 m_oDataMgr.m_strSQL = "CREATE TABLE " + strWeightsByRxPkgPreTable +
                 " AS SELECT biosum_cond_id, rxpackage, \'0\' AS rx, " +
                 "SUM(" + strVariableName + ") AS sum_pre FROM " + strWeightsByRxCyclePreTable +
@@ -5742,6 +5825,53 @@ namespace FIA_Biosum_Manager
                 _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
                 m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
                 _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
+
+                foreach (string strCondId in correctionFactors.Keys)
+                {
+                    foreach (string strRxPkg in correctionFactors[strCondId].Keys)
+                    {
+                        if (correctionFactors[strCondId][strRxPkg][1] > 4)
+                        {
+                            m_oDataMgr.m_strSQL = "UPDATE " + strTargetPreTable +
+                                " SET " + strVariableName + " = NULL " +
+                                "WHERE biosum_cond_id = '" + strCondId + "'" +
+                                " AND rxpackage = '" + strRxPkg + "'";
+                            _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
+                            m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
+                            _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
+
+                            m_oDataMgr.m_strSQL = "UPDATE " + strTargetPostTable +
+                                " SET " + strVariableName + " = NULL " +
+                                "WHERE biosum_cond_id = '" + strCondId + "'" +
+                                " AND rxpackage = '" + strRxPkg + "'";
+                            _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
+                            m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
+                            _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
+                        }
+                        else
+                        {
+                            m_oDataMgr.m_strSQL = "UPDATE " + strTargetPreTable +
+                               " SET " + strVariableName + " = " + strVariableName +
+                               " * (1 / (1 - " + correctionFactors[strCondId][strRxPkg][0] + "))" +
+                               " WHERE biosum_cond_id = '" + strCondId + "'" +
+                               " AND rxpackage = '" + strRxPkg + "'";
+                            _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
+                            m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
+                            _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
+
+                            m_oDataMgr.m_strSQL = "UPDATE " + strTargetPostTable +
+                                " SET " + strVariableName + " = " + strVariableName +
+                                " * (1 / (1 - " + correctionFactors[strCondId][strRxPkg][0] + "))" +
+                                " WHERE biosum_cond_id = '" + strCondId + "'" +
+                                " AND rxpackage = '" + strRxPkg + "'";
+                            _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
+                            m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
+                            _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
+                        }
+                        
+                    }
+                }
+
                 calculateConn.Close();
             }
         }
@@ -6250,5 +6380,6 @@ namespace FIA_Biosum_Manager
         }
 
     }
+
 
 }
