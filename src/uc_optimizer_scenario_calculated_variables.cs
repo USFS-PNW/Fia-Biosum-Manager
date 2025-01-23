@@ -5674,7 +5674,7 @@ namespace FIA_Biosum_Manager
                 {
                     while (m_oDataMgr.m_DataReader.Read())
                     {
-                        double dblWt = Convert.ToDouble(m_oDataMgr.m_DataReader["wteight"]);
+                        double dblWt = Convert.ToDouble(m_oDataMgr.m_DataReader["weight"]);
                         if (dblWt != 0)
                         {
                             string strCondId = m_oDataMgr.m_DataReader["biosum_cond_id"].ToString().Trim();
@@ -5806,6 +5806,10 @@ namespace FIA_Biosum_Manager
                 if (counter1 > 0)
                 {
                     counter1 = counter1 + counter1Interval;
+                    if (counter1 > 100)
+                    {
+                        counter1 = 100;
+                    }
                     UpdateProgressBar1("Calculating values for " + strVariableName, counter1);
                 }
 
