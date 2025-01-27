@@ -164,6 +164,10 @@ namespace FIA_Biosum_Manager
         public Button BtnFvsImport;
         public Button BtnEconImport;
         private Button BtnRecalculateAll;
+        private GroupBox grpBoxThreshold;
+        private Label lblThresholdExplination;
+        private TextBox txtThreshold;
+        private Label lblThreshold;
         private FIA_Biosum_Manager.OptimizerScenarioTools m_oOptimizerScenarioTools = new OptimizerScenarioTools();
         private frmTherm m_frmTherm;
         private int idxRxCycle = 0;
@@ -190,6 +194,8 @@ namespace FIA_Biosum_Manager
             this.grpBoxEconomicVariable.Height = this.grpboxSummary.Height;
             this.grpBoxEconomicVariable.Width = this.grpboxSummary.Width;
             this.grpBoxEconomicVariable.Hide();
+
+            
 
             //m_oValidate.RoundDecimalLength = 0;
             //m_oValidate.Money = false;
@@ -304,6 +310,10 @@ namespace FIA_Biosum_Manager
             this.LblSelectedVariable = new System.Windows.Forms.Label();
             this.lblSelectedFVSVariable = new System.Windows.Forms.Label();
             this.lblTitle = new System.Windows.Forms.Label();
+            this.grpBoxThreshold = new System.Windows.Forms.GroupBox();
+            this.lblThresholdExplination = new System.Windows.Forms.Label();
+            this.txtThreshold = new System.Windows.Forms.TextBox();
+            this.lblThreshold = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.grpBoxEconomicVariable.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -317,6 +327,7 @@ namespace FIA_Biosum_Manager
             this.grpBoxFvsBaseline.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            this.grpBoxThreshold.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -557,6 +568,7 @@ namespace FIA_Biosum_Manager
             this.pnlSummary.Controls.Add(this.btnProperties);
             this.pnlSummary.Controls.Add(this.btnNewFvs);
             this.pnlSummary.Controls.Add(this.lstVariables);
+            this.pnlSummary.Controls.Add(this.grpBoxThreshold);
             this.pnlSummary.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlSummary.Location = new System.Drawing.Point(3, 22);
             this.pnlSummary.Name = "pnlSummary";
@@ -641,7 +653,7 @@ namespace FIA_Biosum_Manager
             this.lstVariables.Location = new System.Drawing.Point(18, 18);
             this.lstVariables.MultiSelect = false;
             this.lstVariables.Name = "lstVariables";
-            this.lstVariables.Size = new System.Drawing.Size(654, 336);
+            this.lstVariables.Size = new System.Drawing.Size(584, 326);
             this.lstVariables.TabIndex = 2;
             this.lstVariables.UseCompatibleStateImageBehavior = false;
             this.lstVariables.View = System.Windows.Forms.View.Details;
@@ -652,7 +664,7 @@ namespace FIA_Biosum_Manager
             // 
             this.vName.DisplayIndex = 1;
             this.vName.Text = "Variable Name";
-            this.vName.Width = 200;
+            this.vName.Width = 170;
             // 
             // vDescription
             // 
@@ -664,7 +676,7 @@ namespace FIA_Biosum_Manager
             // 
             this.vType.DisplayIndex = 3;
             this.vType.Text = "Type";
-            this.vType.Width = 100;
+            this.vType.Width = 60;
             // 
             // vId
             // 
@@ -936,6 +948,51 @@ namespace FIA_Biosum_Manager
             this.lblTitle.Size = new System.Drawing.Size(866, 32);
             this.lblTitle.TabIndex = 27;
             this.lblTitle.Text = "Calculated Variables";
+            //
+            // grpBoxThreshold
+            //
+            this.grpBoxThreshold.Controls.Add(this.lblThresholdExplination);
+            this.grpBoxThreshold.Controls.Add(this.txtThreshold);
+            this.grpBoxThreshold.Controls.Add(this.lblThreshold);
+            this.grpBoxThreshold.Location = new System.Drawing.Point(620, 18);
+            this.grpBoxThreshold.Name = "grpBoxThreshold";
+            this.grpBoxThreshold.Size = new System.Drawing.Size(215, 320);
+            this.grpBoxThreshold.TabIndex = 75;
+            this.grpBoxThreshold.TabStop = false;
+            this.grpBoxThreshold.Text = "Null Threshold";
+            //
+            // lblThreshold
+            //
+            this.lblThreshold.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblThreshold.Location = new System.Drawing.Point(6, 292);
+            this.lblThreshold.Name = "lblThreshold";
+            this.lblThreshold.Size = new System.Drawing.Size(120, 22);
+            this.lblThreshold.TabIndex = 100;
+            this.lblThreshold.Text = "Null Threshold:";
+            //
+            // txtThreshold
+            //
+            this.txtThreshold.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtThreshold.Location = new System.Drawing.Point(129, 292);
+            this.txtThreshold.Name = "txtThreshold";
+            this.txtThreshold.Size = new System.Drawing.Size(30, 22);
+            this.txtThreshold.TabIndex = 101;
+            //
+            // lblThresholdExplination
+            //
+            this.lblThresholdExplination.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.4F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblThresholdExplination.Location = new System.Drawing.Point(6, 18);
+            this.lblThresholdExplination.Name = "lblThresholdExplination";
+            this.lblThresholdExplination.Size = new System.Drawing.Size(187, 270);
+            this.lblThresholdExplination.TabIndex = 100;
+            this.lblThresholdExplination.Text = "Weighted variables are computed from up to " +
+                "8 time points in the simulation, designated as PRE or POST " +
+                "for each of the 4 BioSum Cycles. Select a threshold determining the " +
+                "maximum number of null value cases for a stand-RxPackage combination, " +
+                "above which the weighted value for the variable will be assigned null. " +
+                "If the null count is less than or equal to the threshold, " +
+                "then an adjusted weight value reflecting only the non-null cases " +
+                "will be assigned in the weighted PREPOST table.";
             // 
             // uc_optimizer_scenario_calculated_variables
             // 
