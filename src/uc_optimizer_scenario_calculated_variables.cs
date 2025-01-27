@@ -956,34 +956,34 @@ namespace FIA_Biosum_Manager
             this.grpBoxThreshold.Controls.Add(this.lblThreshold);
             this.grpBoxThreshold.Location = new System.Drawing.Point(620, 18);
             this.grpBoxThreshold.Name = "grpBoxThreshold";
-            this.grpBoxThreshold.Size = new System.Drawing.Size(215, 320);
+            this.grpBoxThreshold.Size = new System.Drawing.Size(215, 280);
             this.grpBoxThreshold.TabIndex = 75;
             this.grpBoxThreshold.TabStop = false;
             this.grpBoxThreshold.Text = "Null Threshold";
             //
             // lblThreshold
             //
-            this.lblThreshold.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblThreshold.Location = new System.Drawing.Point(6, 292);
+            this.lblThreshold.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblThreshold.Location = new System.Drawing.Point(6, 240);
             this.lblThreshold.Name = "lblThreshold";
-            this.lblThreshold.Size = new System.Drawing.Size(120, 22);
+            this.lblThreshold.Size = new System.Drawing.Size(95, 22);
             this.lblThreshold.TabIndex = 100;
             this.lblThreshold.Text = "Null Threshold:";
             //
             // txtThreshold
             //
-            this.txtThreshold.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtThreshold.Location = new System.Drawing.Point(129, 292);
+            this.txtThreshold.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtThreshold.Location = new System.Drawing.Point(104, 237);
             this.txtThreshold.Name = "txtThreshold";
             this.txtThreshold.Size = new System.Drawing.Size(30, 22);
             this.txtThreshold.TabIndex = 101;
             //
             // lblThresholdExplination
             //
-            this.lblThresholdExplination.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.4F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblThresholdExplination.Location = new System.Drawing.Point(6, 18);
+            this.lblThresholdExplination.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblThresholdExplination.Location = new System.Drawing.Point(6, 24);
             this.lblThresholdExplination.Name = "lblThresholdExplination";
-            this.lblThresholdExplination.Size = new System.Drawing.Size(187, 270);
+            this.lblThresholdExplination.Size = new System.Drawing.Size(187, 200);
             this.lblThresholdExplination.TabIndex = 100;
             this.lblThresholdExplination.Text = "Weighted variables are computed from up to " +
                 "8 time points in the simulation, designated as PRE or POST " +
@@ -1032,20 +1032,12 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Form name: " + this.Name + "\r\n\r\n");
             }
 
-             //Check for SQLite configuration database
-            if (!System.IO.File.Exists(this.m_strCalculatedVariablesDb) || !System.IO.File.Exists(this.m_strCalculatedPrePostDb))
-            {
-                //this.migrate_access_data
-                string errorMsg = "!! optimizer_definitions.db or prepost_fvs_weighted.db not found. Upgrade for v5.11.0 to migrate data !!";
-                MessageBox.Show(errorMsg, "FIA Biosum");
-                return;
-            }
-
             SQLiteConnect();
             // One and only one transaction for this form
             m_oDataMgr.m_Transaction = m_oDataMgr.m_Connection.BeginTransaction();
 
-            this.loadLstVariables();
+            loadLstVariables();
+            loadnullthreshold();
             
             if (m_oDataMgr.TableExist(m_oDataMgr.m_Connection, m_strFvsViewTableName))
             {            
@@ -1092,12 +1084,13 @@ namespace FIA_Biosum_Manager
             {
                 using (SQLiteConnection conn = new SQLiteConnection(m_oDataMgr.GetConnectionString(strPrePostWeightedDb)))
                 {
-                    string[] arrTableNames = m_oDataMgr.getTableNames(m_oDataMgr.m_Connection);
+                    conn.Open();
+                    string[] arrTableNames = m_oDataMgr.getTableNames(conn);
                     if (arrTableNames.Length > 0)
                     BtnRecalculateAll.Enabled = true;
-                    conn.Close();
                 }
             }
+
         }
 
         protected void loadvalues_access()
@@ -1654,7 +1647,6 @@ namespace FIA_Biosum_Manager
         private void loadLstVariables()
         {            
             //Loading the first (main) groupbox
-            //Only instantiate the m_oAdo if it is null so we don't wipe everything out in subsequent refreshes
             DataMgr oDataMgr = new DataMgr();
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(this.m_strCalculatedVariablesDb)))
             {
@@ -1689,6 +1681,48 @@ namespace FIA_Biosum_Manager
                     this.m_oLvAlternateColors.ListView();
                 }
                 oDataMgr.m_DataReader.Close();
+            }
+        }
+        private void loadnullthreshold()
+        {
+            DataMgr oDataMgr = new DataMgr();
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(this.m_strCalculatedVariablesDb)))
+            {
+                conn.Open();
+                oDataMgr.m_strSQL = "SELECT threshold FROM " + Tables.OptimizerDefinitions.DefaultFvsNullThresholdTableName;
+                oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
+
+                if (oDataMgr.m_intError == 0 && oDataMgr.m_DataReader.HasRows)
+                {
+                    while (oDataMgr.m_DataReader.Read())
+                    {
+                        string strThreshold = oDataMgr.m_DataReader["threshold"].ToString().Trim();
+                        this.txtThreshold.Text = strThreshold;
+                    }                
+                }
+                oDataMgr.m_DataReader.Close();
+            }
+        }
+        private void savenullthreshold()
+        {
+            int intNewThreshold = Convert.ToInt32(this.txtThreshold.Text);
+            int intCurrentThreshold = 0; 
+            m_oDataMgr.m_strSQL = "SELECT threshold FROM " + Tables.OptimizerDefinitions.DefaultFvsNullThresholdTableName;
+            m_oDataMgr.SqlQueryReader(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
+
+            if (m_oDataMgr.m_intError == 0 && m_oDataMgr.m_DataReader.HasRows)
+            {
+                while (m_oDataMgr.m_DataReader.Read())
+                {
+                    intCurrentThreshold = Convert.ToInt32(m_oDataMgr.m_DataReader["threshold"]);
+                }
+            }
+            m_oDataMgr.m_DataReader.Close();
+            if (intNewThreshold != intCurrentThreshold)
+            {
+                m_oDataMgr.m_strSQL = "UPDATE " + Tables.OptimizerDefinitions.DefaultFvsNullThresholdTableName +
+                " SET threshold = " + intNewThreshold;
+                m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
             }
         }
 
@@ -1973,6 +2007,8 @@ namespace FIA_Biosum_Manager
                         }
                         m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, strSql);
                         m_oDataMgr.m_Transaction.Commit();
+
+                        savenullthreshold();
                     }
                 }
                 catch (System.Data.SQLite.SQLiteException errSQLite)
@@ -3746,7 +3782,8 @@ namespace FIA_Biosum_Manager
 
                     if (m_intError == 0)
                     {
-                        this.loadLstVariables();
+                        loadLstVariables();
+                        loadnullthreshold();
                     }
 
                     frmMain.g_sbpInfo.Text = "Ready";
@@ -4275,7 +4312,8 @@ namespace FIA_Biosum_Manager
                 m_oDataMgr.ResetTransactionObjectToDataAdapterArray();
             }
             // Update UI
-            this.loadLstVariables();
+            loadLstVariables();
+            loadnullthreshold();
         }
 
         private void InitializeOleDbTransactionCommands()
@@ -4328,7 +4366,8 @@ namespace FIA_Biosum_Manager
                 savevalues("ECON");
 
                 //Reload the main grid
-                this.loadLstVariables();
+                loadLstVariables();
+                loadnullthreshold();
                 
                 frmMain.g_sbpInfo.Text = "Ready";
                 frmMain.g_oFrmMain.DeactivateStandByAnimation();
@@ -4639,6 +4678,7 @@ namespace FIA_Biosum_Manager
             {
                 return;
             }
+            savenullthreshold();
             // assemble the path for the backup database
             string strDbName = System.IO.Path.GetFileNameWithoutExtension(Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile);
             string strDbFolder = System.IO.Path.GetDirectoryName(Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile);
@@ -5891,7 +5931,7 @@ namespace FIA_Biosum_Manager
                 {
                     foreach (string strRxPkg in correctionFactors[strCondId].Keys)
                     {
-                        if (correctionFactors[strCondId][strRxPkg][1] > 4)
+                        if (correctionFactors[strCondId][strRxPkg][1] > Convert.ToInt32(txtThreshold.Text))
                         {
                             m_oDataMgr.m_strSQL = "UPDATE " + strTargetPreTable +
                                 " SET " + strVariableName + " = NULL " +
