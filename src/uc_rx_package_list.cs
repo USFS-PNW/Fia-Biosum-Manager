@@ -26,7 +26,6 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Button btnCancel;
 		private System.Windows.Forms.Button btnClear;
 		private System.Windows.Forms.Button btnHelp;
-		private FIA_Biosum_Manager.ado_data_access m_ado;
 
 		private Queries m_oQueries; 
 		string m_strTable="";		

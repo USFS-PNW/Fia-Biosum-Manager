@@ -733,7 +733,7 @@ namespace FIA_Biosum_Manager
             string strDbFile = this.ReferenceProcessorScenarioForm.LoadedQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.HarvestMethods);
             m_descrDictionary.Clear();
             m_steepDescrDictionary.Clear();
-            this.m_oRxTools.LoadRxHarvestMethodsSqlite(strDbFile, this.ReferenceProcessorScenarioForm.LoadedQueries, 
+            this.m_oRxTools.LoadRxHarvestMethods(strDbFile, this.ReferenceProcessorScenarioForm.LoadedQueries, 
                 cmbMethod, cmbSteepSlopeMethod, m_descrDictionary, m_steepDescrDictionary);
 
 			this.cmbSteepSlopePercent.Items.Clear();

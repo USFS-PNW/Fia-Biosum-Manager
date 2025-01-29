@@ -3351,7 +3351,7 @@ namespace FIA_Biosum_Manager
 
 
 
-                    strFVSOutDbFile = oRxTools.GetRxPackageFvsOutDbFileName(oDataReader);
+                    //strFVSOutDbFile = oRxTools.GetRxPackageFvsOutDbFileName(oDataReader);
                     if (System.IO.File.Exists(strSourceDir + "\\" + strVariant + "\\" + strFVSOutDbFile))
                     {
                         

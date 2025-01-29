@@ -2399,7 +2399,7 @@ namespace FIA_Biosum_Manager
                     m_ado.OpenConnection(m_strTempMDBFileConnectionString);
 
                 }
-                m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNumAccess(m_ado, m_ado.m_OleDbConnection, m_oFVSPrePostSeqNumItemCollection);
+                //m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNumAccess(m_ado, m_ado.m_OleDbConnection, m_oFVSPrePostSeqNumItemCollection);
             
 
                 m_intProgressOverallCurrentCount = 0;
@@ -2604,7 +2604,7 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
                             if (m_bDebug && frmMain.g_intDebugLevel > 1)
                                 this.WriteText(m_strDebugFile, "\r\nSTART:Create DAO Audit Table Links " + System.DateTime.Now.ToString() + "\r\n");
-                            m_oRxTools.CreateFVSOutputTableLinks(strAuditDbFile, strOutDirAndFile);
+                            //m_oRxTools.CreateFVSOutputTableLinks(strAuditDbFile, strOutDirAndFile);
                             m_intProgressStepCurrentCount++;
                             UpdateTherm(m_frmTherm.progressBar1,
                                          m_intProgressStepCurrentCount,
@@ -7858,7 +7858,7 @@ namespace FIA_Biosum_Manager
 
                 GetPrePostSeqNumConfiguration(p_strSourceTableName, p_strRxPackageId);
 
-                m_oRxTools.CreateFVSPrePostSeqNumTables(p_oAdo, p_oConn, m_oFVSPrePostSeqNumItem, p_strSourceTableName, p_strSourceTableName, p_bAudit, m_bDebug, m_strDebugFile);
+                //m_oRxTools.CreateFVSPrePostSeqNumTables(p_oAdo, p_oConn, m_oFVSPrePostSeqNumItem, p_strSourceTableName, p_strSourceTableName, p_bAudit, m_bDebug, m_strDebugFile);
             }
             else
             {

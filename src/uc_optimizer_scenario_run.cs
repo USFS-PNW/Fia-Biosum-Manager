@@ -1637,7 +1637,7 @@ namespace FIA_Biosum_Manager
 
                     FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
-                    m_oRxTools.CreateTableLinksToFVSPrePostTablesSqlite(m_strTempMDBFile);
+                    m_oRxTools.CreateTableLinksToFVSPrePostTables(m_strTempMDBFile);
                     m_intError = m_oRxTools.m_intError;
                     if (this.m_intError != 0)
                     {
@@ -15605,7 +15605,7 @@ namespace FIA_Biosum_Manager
             _uc_scenario_run.uc_filesize_monitor3.Information = "FVS Context Reference Tables";
 
             // Add FVS PRE-POST tables
-            m_oRxTools.CreateTableLinksToFVSPrePostTables(this.m_strFvsContextDbPathAndFile);
+            //m_oRxTools.CreateTableLinksToFVSPrePostTables(this.m_strFvsContextDbPathAndFile);
             m_intError = m_oRxTools.m_intError;
             if (this.m_intError != 0)
             {

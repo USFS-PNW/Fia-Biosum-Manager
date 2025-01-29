@@ -595,7 +595,6 @@ namespace FIA_Biosum_Manager
                         btnDelete.Enabled = true;
 
                     btnEdit.Enabled = true;
-                    btnSeqNum.Enabled = true;
                     btnSave.Enabled = m_bSave;
                    
                 }
@@ -604,8 +603,7 @@ namespace FIA_Biosum_Manager
                     btnEdit.Enabled = false;
                     btnSave.Enabled = m_bSave;
                     btnDelete.Enabled = false;
-                    btnSeqNum.Enabled = false;
-                }
+                 }
                 chkPRE1BaseYear.Enabled = false;
                 chkPRE2BaseYear.Enabled = false;
                 chkPRE3BaseYear.Enabled = false;
@@ -625,7 +623,6 @@ namespace FIA_Biosum_Manager
                 btnDelete.Enabled = false;
                 btnSave.Enabled = false;
                 btnEdit.Enabled = false;
-                btnSeqNum.Enabled = false;
                 
                 chkPRE1BaseYear.Enabled = chkPRE1BaseYear.Visible;
                 chkPRE2BaseYear.Enabled = chkPRE2BaseYear.Visible;
@@ -705,12 +702,10 @@ namespace FIA_Biosum_Manager
                 if (btnDelete.Text == "Undelete Customization")
                 {
                     btnEdit.Enabled = false;
-                    btnSeqNum.Enabled = false;
                 }
                 else
                 {
                     btnEdit.Enabled = true;
-                    btnSeqNum.Enabled = true;
                 }
                 btnSave.Enabled = m_bSave;
 
@@ -720,7 +715,6 @@ namespace FIA_Biosum_Manager
                 btnEdit.Enabled = false;
                 btnSave.Enabled = m_bSave;
                 btnDelete.Enabled = false;
-                btnSeqNum.Enabled = false;
                 return;
             }
 
@@ -1800,345 +1794,14 @@ namespace FIA_Biosum_Manager
             {
                 btnDelete.Text = "Delete Customization";
                 btnEdit.Enabled = true;
-                btnSeqNum.Enabled = true;
             }
             else
             {
                 btnDelete.Text = "Undelete Customization";
                 btnSave.Enabled = true;
                 btnEdit.Enabled = false;
-                btnSeqNum.Enabled = false;
                 m_bSave = true; // Keeps save button enabled if selection changes
             }
-        }
-
-        private void btnSeqNum_Click(object sender, EventArgs e)
-        {
-            
-            int x;
-            if (lvFVSTables.SelectedItems.Count == 0) return;
-
-            ViewSeqNumAssignments(lvFVSTables.SelectedItems[0].SubItems[COL_TABLENAME].Text.Trim().ToUpper(),m_oCurFVSPrepostSeqNumItem_Collection.Item(m_intCurSeqNumItemIndex));
-
-           
-        }
-        private void ViewSeqNumAssignments(string p_strTable,FVSPrePostSeqNumItem p_oItem)
-        {
-            int x;
-            string strPotFireBaseYearFile = "";
-            OpenFileDialog OpenFileDialog1 = new OpenFileDialog();
-            OpenFileDialog1.Title = "Open FVS Output Access File";
-            OpenFileDialog1.Filter = "MS Access Database File (*.MDB,*.MDE,*.ACCDB) |*.mdb;*.mde;*.accdb";
-
-            DialogResult result = OpenFileDialog1.ShowDialog();
-
-            if (result == DialogResult.OK)
-            {
-                if (OpenFileDialog1.FileName.Trim().Length > 0)
-                {
-                    
-                    dao_data_access oDao = new dao_data_access();
-                    if (oDao.TableExists(OpenFileDialog1.FileName.Trim(), p_strTable) == true)
-                    {
-                        frmMain.g_oFrmMain.ActivateStandByAnimation(
-                            this.ParentForm.WindowState,
-                            this.ParentForm.Left,
-                            this.ParentForm.Height,
-                            this.ParentForm.Width,
-                            this.ParentForm.Top);
-                        string strTempFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
-                        oDao.CreateMDB(strTempFile);
-                        oDao.CreateTableLink(strTempFile, p_strTable, OpenFileDialog1.FileName.Trim(), p_strTable);
-                        if (p_strTable.Trim().ToUpper() != "FVS_SUMMARY") oDao.CreateTableLink(strTempFile, "FVS_SUMMARY", OpenFileDialog1.FileName.Trim(), "FVS_SUMMARY");
-                        //check base year file and table exist
-                        if (p_strTable.Trim().ToUpper() == "FVS_POTFIRE")
-                        {
-                            strPotFireBaseYearFile = frmMain.g_oUtils.getFileName(OpenFileDialog1.FileName.Trim());
-                            strPotFireBaseYearFile = strPotFireBaseYearFile.Substring(0, 9) + "_POTFIRE_BaseYr.MDB";
-                            strPotFireBaseYearFile = frmMain.g_oUtils.getDirectory(OpenFileDialog1.FileName.Trim()) + "\\" + strPotFireBaseYearFile;
-                            if (System.IO.File.Exists(strPotFireBaseYearFile))
-                            {
-                                if (oDao.TableExists(strPotFireBaseYearFile,"FVS_POTFIRE"))
-                                {
-                                  oDao.CreateTableLink(strTempFile, p_strTable + "_BaseYear", strPotFireBaseYearFile, p_strTable);
-                                }
-                                else
-                                {
-                                    strPotFireBaseYearFile="";
-                                }
-                            }
-                            else
-                            {
-                                strPotFireBaseYearFile="";
-                            }
-                            
-                        }
-                        oDao.m_DaoWorkspace.Close();
-                        oDao = null;
-                        //make sure selected table exists
-                        ado_data_access oAdo = new ado_data_access();
-                        oAdo.OpenConnection(oAdo.getMDBConnString(strTempFile.Trim(), "", ""));
-                        if (oAdo.m_intError == 0)
-                        {
-
-                            frmGridView frmGridView1 = new frmGridView();
-
-                            if (p_strTable.Trim().ToUpper().IndexOf("FVS_POTFIRE", 0) < 0)
-                            {
-                                m_oRxTools.CreateFVSPrePostSeqNumTables(oAdo, oAdo.m_OleDbConnection, p_oItem, p_strTable, p_strTable, false, false, "");
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "temp_table1"))
-                                {
-                                    oAdo.m_strSQL = "DROP TABLE temp_table1";
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                                }
-                            }
-
-                            if (p_strTable.Trim().ToUpper() == "FVS_STRCLASS")
-                            {
-                                //assign a sequence number to each row in the FVS Output table for removal code = 0 and group by standid,year
-                                oAdo.m_strSQL = Queries.FVS.FVSOutputTable_PrePostStrClassSQL("", "FVS_STRCLASS", true, "0");
-
-
-
-                                frmMain.g_sbpInfo.Text = "Loading " + p_strTable.Trim() + "...Stand by";
-                                frmGridView1.LoadDataSet(
-                                    oAdo.m_OleDbConnection,
-                                    oAdo.m_OleDbConnection.ConnectionString,
-                                    oAdo.m_strSQL, p_strTable.Trim() + "_RemovalCodeEq0");
-
-                                //assign a sequence number to each row in the FVS Output table for removal code = 1 and group by standid,year
-                                oAdo.m_strSQL = Queries.FVS.FVSOutputTable_PrePostStrClassSQL("", "FVS_STRCLASS", true, "1");
-
-
-                                frmGridView1.LoadDataSet(
-                                    oAdo.m_OleDbConnection,
-                                    oAdo.m_OleDbConnection.ConnectionString,
-                                    oAdo.m_strSQL, p_strTable.Trim() + "_RemovalCodeEq1");
-
-
-                                //assign a sequence number to each row in the FVS_SUMMARY table and group by standid,year
-                                string[] strSQL = Queries.FVS.FVSOutputTable_AssignSummarySeqNumSQL("temp_table1", "temp_table2", "FVS_SUMMARY", p_strTable.Trim());
-                                for (x = 0; x <= strSQL.Length - 1; x++)
-                                {
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL[x]);
-                                }
-                                oAdo.m_strSQL = "SELECT * FROM temp_table1";
-                                frmGridView1.LoadDataSet(
-                                   oAdo.m_OleDbConnection,
-                                   oAdo.m_OleDbConnection.ConnectionString,
-                                   oAdo.m_strSQL, "FVS_SUMMARY_with_" + p_strTable.Trim() + "_RowCounts");
-
-                                //view the PRE-POST records that will be retrieved based on sequential number assignment filters
-                                oAdo.m_strSQL = Queries.FVS.FVSOutputTable_StrClassPrePostSeqNumByCycle("FVS_STRCLASS", p_strTable + "_PREPOST_SEQNUM_MATRIX", p_oItem);
-                                frmGridView1.LoadDataSet(
-                                 oAdo.m_OleDbConnection,
-                                 oAdo.m_OleDbConnection.ConnectionString,
-                                 oAdo.m_strSQL, p_strTable + "_CURRENT_PREPOST_SEQNUM_ASSIGNMENTS");
-
-                                frmGridView1.TileGridViews();
-
-                            }
-                            else if (p_strTable.Trim().ToUpper() == "FVS_POTFIRE")
-                            {
-                                string[] strSQL = null;
-
-
-                                frmMain.g_sbpInfo.Text = "Loading " + p_strTable.Trim() + "...Stand by";
-
-                                //assign a sequence number to each row in the FVS Output table and group by standid,year
-                                oAdo.m_strSQL = Queries.FVS.FVSOutputTable_PrePostGenericSQL("", p_strTable.Trim(), true);
-
-
-
-                                frmGridView1.LoadDataSet(
-                                    oAdo.m_OleDbConnection,
-                                    oAdo.m_OleDbConnection.ConnectionString,
-                                    oAdo.m_strSQL, p_strTable.Trim() + "_BaseYearNotIncluded");
-
-
-
-
-
-                                if (strPotFireBaseYearFile.Trim().Length > 0)
-                                {
-                                    if (oAdo.TableExist(oAdo.m_OleDbConnection, "FVS_POTFIRE_BASEYEAR_WORK_TABLE"))
-                                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE FVS_POTFIRE_BASEYEAR_WORK_TABLE");
-
-                                    string[] strSQLArray = null;
-                                    if (oAdo.ColumnExist(oAdo.m_OleDbConnection, "FVS_POTFIRE", "ID"))
-                                    {
-
-                                        strSQLArray = Queries.FVS.FVSOutputTable_PrePostPotFireBaseYearIDColumnSQL
-                                            ("FVS_POTFIRE_BASEYEAR", "FVS_POTFIRE", "FVS_POTFIRE_BASEYEAR_WORK_TABLE");
-                                    }
-                                    else
-                                    {
-                                        strSQLArray = Queries.FVS.FVSOutputTable_PrePostPotFireBaseYearSQL
-                                           ("FVS_POTFIRE_BASEYEAR", "FVS_POTFIRE", "FVS_POTFIRE_BASEYEAR_WORK_TABLE");
-                                    }
-
-                                    for (x = 0; x <= strSQLArray.Length - 1; x++)
-                                    {
-                                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQLArray[x]);
-                                    }
-
-                                    //assign a sequence number to each row in the FVS Output table and group by standid,year
-                                    oAdo.m_strSQL = Queries.FVS.FVSOutputTable_PrePostGenericSQL("", "FVS_POTFIRE_BASEYEAR_WORK_TABLE", true);
-
-                                    frmGridView1.LoadDataSet(
-                                        oAdo.m_OleDbConnection,
-                                        oAdo.m_OleDbConnection.ConnectionString,
-                                        oAdo.m_strSQL, p_strTable.Trim() + "_BaseYearIncluded");
-
-
-                                    //assign a sequence number to each row in the FVS_SUMMARY table and group by standid,year
-                                    strSQL = Queries.FVS.FVSOutputTable_AssignSummarySeqNumSQL("temp_table_baseyearincluded", "temp_table2", "FVS_SUMMARY", "FVS_POTFIRE_BASEYEAR_WORK_TABLE");
-                                    for (x = 0; x <= strSQL.Length - 1; x++)
-                                    {
-                                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL[x]);
-                                    }
-                                    oAdo.m_strSQL = "SELECT * FROM temp_table_baseyearincluded";
-                                    frmGridView1.LoadDataSet(
-                                       oAdo.m_OleDbConnection,
-                                       oAdo.m_OleDbConnection.ConnectionString,
-                                       oAdo.m_strSQL, "FVS_SUMMARY_with_" + p_strTable.Trim() + "_BaseYearIncluded_RowCounts");
-                                }
-
-
-
-                                //assign a sequence number to each row in the FVS_SUMMARY table and group by standid,year
-                                strSQL = Queries.FVS.FVSOutputTable_AssignSummarySeqNumSQL("temp_table1", "temp_table2", "FVS_SUMMARY", p_strTable.Trim());
-                                for (x = 0; x <= strSQL.Length - 1; x++)
-                                {
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL[x]);
-                                }
-                                oAdo.m_strSQL = "SELECT * FROM temp_table1";
-                                frmGridView1.LoadDataSet(
-                                   oAdo.m_OleDbConnection,
-                                   oAdo.m_OleDbConnection.ConnectionString,
-                                   oAdo.m_strSQL, "FVS_SUMMARY_with_" + p_strTable.Trim() + "_BaseYearNotIncluded_RowCounts");
-
-
-                                if (p_oItem.RxCycle1PreSeqNumBaseYearYN == "Y" ||
-                                    p_oItem.RxCycle2PreSeqNumBaseYearYN == "Y" ||
-                                    p_oItem.RxCycle3PreSeqNumBaseYearYN == "Y" ||
-                                    p_oItem.RxCycle4PreSeqNumBaseYearYN == "Y")
-                                {
-                                    m_oRxTools.CreateFVSPrePostSeqNumTables(oAdo, oAdo.m_OleDbConnection, p_oItem, "FVS_POTFIRE_BASEYEAR_WORK_TABLE", "FVS_POTFIRE_BASEYEAR_WORK_TABLE", false, false, "");
-                                    if (oAdo.TableExist(oAdo.m_OleDbConnection, "temp_table1"))
-                                    {
-                                        oAdo.m_strSQL = "DROP TABLE temp_table1";
-                                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                                    }
-
-                                    //view the PRE-POST records that will be retrieved based on sequential number assignment filters
-                                    oAdo.m_strSQL = Queries.FVS.FVSOutputTable_GenericPrePostSeqNumByCycle("FVS_POTFIRE_BASEYEAR_WORK_TABLE", "FVS_POTFIRE_BASEYEAR_WORK_TABLE_PREPOST_SEQNUM_MATRIX");
-
-                                    frmGridView1.LoadDataSet(
-                                      oAdo.m_OleDbConnection,
-                                      oAdo.m_OleDbConnection.ConnectionString,
-                                      oAdo.m_strSQL, p_strTable + "_CURRENT_PREPOST_SEQNUM_ASSIGN_BaseYearIncluded");
-                                }
-                                else
-                                {
-
-                                    m_oRxTools.CreateFVSPrePostSeqNumTables(oAdo, oAdo.m_OleDbConnection, p_oItem, p_strTable, p_strTable, false, false, "");
-                                    if (oAdo.TableExist(oAdo.m_OleDbConnection, "temp_table1"))
-                                    {
-                                        oAdo.m_strSQL = "DROP TABLE temp_table1";
-                                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                                    }
-
-                                    //view the PRE-POST records that will be retrieved based on sequential number assignment filters
-                                    oAdo.m_strSQL = Queries.FVS.FVSOutputTable_GenericPrePostSeqNumByCycle(p_strTable, p_strTable + "_PREPOST_SEQNUM_MATRIX");
-
-                                    frmGridView1.LoadDataSet(
-                                      oAdo.m_OleDbConnection,
-                                      oAdo.m_OleDbConnection.ConnectionString,
-                                      oAdo.m_strSQL, p_strTable + "_CURRENT_PREPOST_SEQNUM_ASSIGN_BaseYearNotIncluded");
-                                }
-
-
-                                frmGridView1.TileGridViews();
-                            }
-                            else if (p_strTable.Trim().ToUpper() == "FVS_CUTLIST")
-                            {
-                                frmMain.g_sbpInfo.Text = "Loading " + p_strTable.Trim() + "...Stand by";
-                                string[] strSQL = Queries.FVS.FVSOutputTable_TreeHarvestSeqNumSQL("temp_table1", "temp_table2", "FVS_SUMMARY", "FVS_CUTLIST");
-                                for (x = 0; x <= strSQL.Length - 1; x++)
-                                {
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL[x]);
-                                }
-                                oAdo.m_strSQL = "SELECT * FROM temp_table1";
-                                frmGridView1.LoadDataSet(
-                                   oAdo.m_OleDbConnection,
-                                   oAdo.m_OleDbConnection.ConnectionString,
-                                   oAdo.m_strSQL, "FVS_SUMMARY_with_FVS_CUTLIST_RowCounts");
-
-                                //view the PRE records that will be retrieved based on sequential number assignment filters
-                                oAdo.m_strSQL = Queries.FVS.FVSOutputTable_GenericPrePostSeqNumByCycle(p_strTable, p_strTable + "_PREPOST_SEQNUM_MATRIX");
-
-                                frmGridView1.LoadDataSet(
-                                  oAdo.m_OleDbConnection,
-                                  oAdo.m_OleDbConnection.ConnectionString,
-                                  oAdo.m_strSQL, p_strTable + "_CURRENT_PREPOST_SEQNUM_ASSIGNMENTS");
-
-                                frmGridView1.TileGridViews();
-
-                            }
-                            else
-                            {
-                                oAdo.m_strSQL = Queries.FVS.FVSOutputTable_PrePostGenericSQL("", p_strTable.Trim(), true);
-
-
-                                frmMain.g_sbpInfo.Text = "Loading " + p_strTable.Trim() + "...Stand by";
-                                frmGridView1.LoadDataSet(
-                                    oAdo.m_OleDbConnection,
-                                    oAdo.m_OleDbConnection.ConnectionString,
-                                    oAdo.m_strSQL, p_strTable.Trim());
-
-                                string[] strSQL = Queries.FVS.FVSOutputTable_AssignSummarySeqNumSQL("temp_table1", "temp_table2", "FVS_SUMMARY", p_strTable.Trim());
-                                for (x = 0; x <= strSQL.Length - 1; x++)
-                                {
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL[x]);
-                                }
-                                oAdo.m_strSQL = "SELECT * FROM temp_table1";
-                                frmGridView1.LoadDataSet(
-                                   oAdo.m_OleDbConnection,
-                                   oAdo.m_OleDbConnection.ConnectionString,
-                                   oAdo.m_strSQL, "FVS_SUMMARY_with_" + p_strTable.Trim() + "_RowCounts");
-
-                                //view the PRE-POST records that will be retrieved based on sequential number assignment filters
-                                oAdo.m_strSQL = Queries.FVS.FVSOutputTable_GenericPrePostSeqNumByCycle(p_strTable, p_strTable + "_PREPOST_SEQNUM_MATRIX");
-
-                                frmGridView1.LoadDataSet(
-                                  oAdo.m_OleDbConnection,
-                                  oAdo.m_OleDbConnection.ConnectionString,
-                                  oAdo.m_strSQL, p_strTable + "_CURRENT_PREPOST_SEQNUM_ASSIGNMENTS");
-
-                                frmGridView1.TileGridViews();
-                            }
-
-                            frmMain.g_sbpInfo.Text = "Ready";
-                            frmMain.g_oFrmMain.DeactivateStandByAnimation();
-                            frmGridView1.ShowDialog();
-                            if (oAdo.TableExist(oAdo.m_OleDbConnection, "temp_table1"))
-                            {
-                                oAdo.m_strSQL = "DROP TABLE temp_table1";
-                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                            }
-                        }
-                        else frmMain.g_oFrmMain.DeactivateStandByAnimation();
-                        oAdo.CloseConnection(oAdo.m_OleDbConnection);
-                    }
-                    else
-                    {
-                        MessageBox.Show(p_strTable.Trim() + " not found", "FIA Biosum", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                    }
-                }
-            }
-
-            OpenFileDialog1 = null;
         }
 
         private void btnClose_Click(object sender, EventArgs e)

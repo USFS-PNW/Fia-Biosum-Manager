@@ -345,28 +345,7 @@ namespace FIA_Biosum_Manager
                        " WHERE fvs_variant IS NOT NULL AND " +
                               "LEN(TRIM(fvs_variant)) > 0;";
             }
-            /// <summary>
-            /// return the query that will assign a variant to each rx package that is in the list
-            /// </summary>
-            /// <param name="p_strPlotTable"></param>
-            /// <param name="p_strRxPackageTable"></param>
-            /// <param name="p_strRxPackageList"></param>
-            /// <param name="p_strFilter">include a filter using alias (a) for plot table and alias (b) for rxpackage table</param>
-            /// <returns></returns>
-            static public string GetFVSVariantRxPackageSQL(string p_strPlotTable, string p_strRxPackageTable,string p_strFilter)
-			{
-				return "SELECT DISTINCT  a.fvs_variant,  b.rxpackage, b.rxcycle_length, b.simyear1_rx," + 
-																					   "b.simyear2_rx," + 
-																					   "b.simyear3_rx," + 
-																					   "b.simyear4_rx  " + 
-					"FROM " + p_strPlotTable + " a, " + 
-						"(SELECT rxpackage,simyear1_rx,simyear2_rx,simyear3_rx,simyear4_rx,rxcycle_length " + 
-						 "FROM " + p_strRxPackageTable +  ") b " + 
-					"WHERE a.fvs_variant IS NOT NULL AND " + 
-						 "LEN(TRIM(a.fvs_variant)) > 0 AND " + 
-						"b.rxpackage IS NOT NULL AND LEN(TRIM(b.rxpackage)) > 0 AND " + 
-					    p_strFilter;
-			}
+
             /// <summary>
             ///  Assign a sequence number to each record of the FVS output table and group by standid,year
             /// </summary>
