@@ -238,8 +238,6 @@ namespace FIA_Biosum_Manager
 			public string m_strTreeSpcTable;
 			public string m_strFvsTreeTable;
 			public string m_strFvsTreeSpcRefTable;
-            public string m_strFVSWesternTreeSpeciesTable;
-            public string m_strFVSEasternTreeSpeciesTable;
             public string m_strFVSPrePostSeqNumTable;
             public string m_strFVSPrePostSeqNumRxPackageAssgnTable;
 			private Queries _oQueries=null;	
@@ -265,8 +263,6 @@ namespace FIA_Biosum_Manager
 			{
 				m_strRxTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREATMENT PRESCRIPTIONS");
 				m_strRxHarvestCostColumnsTable=ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREATMENT PRESCRIPTIONS HARVEST COST COLUMNS");
-                m_strFVSWesternTreeSpeciesTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("FVS WESTERN TREE SPECIES TRANSLATOR");
-                m_strFVSEasternTreeSpeciesTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("FVS EASTERN TREE SPECIES TRANSLATOR");
 				m_strRxPackageTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREATMENT PACKAGES");
 				m_strTreeSpcTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREE SPECIES");
 				m_strFvsTreeTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("FVS TREE LIST FOR PROCESSOR");

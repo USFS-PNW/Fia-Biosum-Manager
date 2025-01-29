@@ -5812,11 +5812,7 @@ namespace FIA_Biosum_Manager
 			m_strLogDate = m_strLogDate.Replace("/","_"); m_strLogDate=m_strLogDate.Replace(":","_");
 
             if (m_oFVSPrePostSeqNumItemCollection == null) m_oFVSPrePostSeqNumItemCollection = new FVSPrePostSeqNumItem_Collection();
-            if (m_ado.m_OleDbConnection.State == ConnectionState.Closed)
-            {
-                m_ado.OpenConnection(m_strTempMDBFileConnectionString);
-               
-            }
+
             // Loads the sequence number configurations from db\fvsmaster.db\fvs_output_prepost_seqnum
             string strDbConn = SQLite.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
             m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(strDbConn, m_oFVSPrePostSeqNumItemCollection);
@@ -5826,18 +5822,6 @@ namespace FIA_Biosum_Manager
 			try
 			{
 				bSkip=false;
-
-               
-
-				if (this.m_ado.m_OleDbConnection.State == System.Data.ConnectionState.Open)
-					this.m_ado.m_OleDbConnection.Close();
-
-				while (this.m_ado.m_OleDbConnection.State != System.Data.ConnectionState.Closed)
-				{
-					System.Threading.Thread.Sleep(1000);
-				}
-
-
                 intCount = (int)frmMain.g_oDelegate.GetListViewItemsPropertyValue(oLv, "Count", false);
                 m_intProgressOverallTotalCount = intCount + 1;
 
@@ -6251,10 +6235,6 @@ namespace FIA_Biosum_Manager
                                                     frmMain.g_oUtils.WriteText(m_strLogFile, strItemWarning + "\r\n");
                                                 }
 
-
-
-
-
                                             }
                                             else if (strSourceTableArray[y].Trim().ToUpper() == "FVS_ATRTLIST")
                                             {
@@ -6263,9 +6243,6 @@ namespace FIA_Biosum_Manager
 
                                                 intItemWarning = 0;
                                                 strItemWarning = "";
-
-                                                
-
                                                 this.Validate_TreeListTables(strConnAudit, "fvs_atrtlist", "fvs_summary", ref intItemError, ref strItemError, ref intItemWarning, 
                                                     ref strItemWarning, true, strRunTitle);
 
@@ -6346,8 +6323,6 @@ namespace FIA_Biosum_Manager
                                                     frmMain.g_oUtils.WriteText(m_strLogFile, strItemWarning + "\r\n");
                                                 }
 
-
-
                                                 if (intItemError != 0)
                                                 {
                                                     frmMain.g_oUtils.WriteText(m_strLogFile, strItemError + "\r\n");
@@ -6356,44 +6331,26 @@ namespace FIA_Biosum_Manager
                                             }
                                             else
                                             {
-                                                if (strSourceTableArray[y].Trim().ToUpper() !=
-                                                    m_oQueries.m_oFvs.m_strFVSWesternTreeSpeciesTable.Trim().ToUpper() &&
-                                                    strSourceTableArray[y].Trim().ToUpper() !=
-                                                    m_oQueries.m_oFvs.m_strFVSEasternTreeSpeciesTable.Trim().ToUpper())
+                                                frmMain.g_oUtils.WriteText(m_strLogFile, "-----" + strSourceTableArray[y].Trim().ToUpper() + "-----\r\n");
+                                                frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "Processing Audit..." + strSourceTableArray[y].Trim());
+                                                intItemWarning = 0;
+                                                strItemWarning = "";
+
+                                                this.Validate_FVSGenericTableSqlite(strConn, strSourceTableArray[y].Trim(), strSourceTableArray[y], ref intItemError, ref strItemError, ref intItemWarning, 
+                                                    ref strItemWarning, true, strRunTitle);
+                                                if (intItemError == 0 && intItemWarning == 0)
                                                 {
-                                                    frmMain.g_oUtils.WriteText(m_strLogFile, "-----" + strSourceTableArray[y].Trim().ToUpper() + "-----\r\n");
-                                                    frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "Processing Audit..." + strSourceTableArray[y].Trim());
-
-
-                                                    intItemWarning = 0;
-                                                    strItemWarning = "";
-
-                                                    this.Validate_FVSGenericTableSqlite(strConn, strSourceTableArray[y].Trim(), strSourceTableArray[y], ref intItemError, ref strItemError, ref intItemWarning, 
-                                                        ref strItemWarning, true, strRunTitle);
-                                                    if (intItemError == 0 && intItemWarning == 0)
-                                                    {
-                                                        frmMain.g_oUtils.WriteText(m_strLogFile, "OK\r\n\r\n");
-                                                    }
-                                                    else if (intItemWarning != 0)
-                                                    {
-                                                        frmMain.g_oUtils.WriteText(m_strLogFile, strItemWarning + "\r\n");
-                                                    }
-
-                                                    if (intItemError != 0)
-                                                    {
-                                                        frmMain.g_oUtils.WriteText(m_strLogFile, strItemError + "\r\n");
-                                                    }
-
+                                                    frmMain.g_oUtils.WriteText(m_strLogFile, "OK\r\n\r\n");
+                                                }
+                                                else if (intItemWarning != 0)
+                                                {
+                                                    frmMain.g_oUtils.WriteText(m_strLogFile, strItemWarning + "\r\n");
                                                 }
 
-
-                                            }
-
-                                            if (strSourceTableArray[y].Trim().ToUpper() != "FVS_TREELIST" &&
-                                                strSourceTableArray[y].Trim().ToUpper() != "FVS_CUTLIST" &&
-                                                strSourceTableArray[y].Trim().ToUpper() != "FVS_ATRTLIST")
-                                            {
-
+                                                if (intItemError != 0)
+                                                {
+                                                    frmMain.g_oUtils.WriteText(m_strLogFile, strItemError + "\r\n");
+                                                }
                                             }
                                             if (intItemError != 0) break;
                                         }

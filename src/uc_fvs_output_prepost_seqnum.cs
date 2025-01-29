@@ -24,7 +24,6 @@ namespace FIA_Biosum_Manager
         private FIA_Biosum_Manager.FVSPrePostSeqNumItem_Collection m_oCurFVSPrepostSeqNumItem_Collection = new FVSPrePostSeqNumItem_Collection();
         private FIA_Biosum_Manager.FVSPrePostSeqNumItem_Collection m_oSavFVSPrepostSeqNumItem_Collection = new FVSPrePostSeqNumItem_Collection();
         private FIA_Biosum_Manager.RxPackageItem_Collection m_oRxPackageItem_Collection = null;
-        private ado_data_access m_oAdo = new ado_data_access();
         private RxTools m_oRxTools = new RxTools();
 
         private ComboBox m_cmbFVSStrClassPre1;
@@ -261,9 +260,6 @@ namespace FIA_Biosum_Manager
                 cmbPOST4.Items.Add(x.ToString().Trim());
             }
 
-            if (m_oAdo.m_intError == 0)
-            {
-                //InitializePrePostSeqNumTablesAccess(m_oAdo, m_oAdo.m_OleDbConnection);
                 InitializePrePostSeqNumTables(SQLite);
                 string strDbConn = SQLite.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
                 m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(strDbConn, m_oCurFVSPrepostSeqNumItem_Collection);
@@ -376,7 +372,6 @@ namespace FIA_Biosum_Manager
                 }
                 lvFVSTables.Columns[COL_TABLENAME].Width = -1;  // This sizes the column to the width of the longest table name when loaded
 
-            }
             
             
            
@@ -1952,102 +1947,8 @@ namespace FIA_Biosum_Manager
             }
             m_oHelp.ShowHelp(new string[] { "FVS", "SEQUENCE_NUMBERS" });
         }
-
-        public static void migrateAccessData1()
-        {
-            dao_data_access oDao = new dao_data_access();
-            ado_data_access oAdo = new ado_data_access();
-            string strPrePostSeqNumLink = $@"{Tables.FVS.DefaultFVSPrePostSeqNumTable}_1";
-            string strRxPackageAssignLink = $@"{Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable}_1";
-
-            FIA_Biosum_Manager.Datasource oProjectDs = new Datasource();
-            oProjectDs.m_strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\project.mdb";
-            oProjectDs.m_strDataSourceTableName = "datasource";
-            oProjectDs.m_strScenarioId = "";
-            oProjectDs.LoadTableColumnNamesAndDataTypes = false;
-            oProjectDs.LoadTableRecordCount = false;
-            oProjectDs.populate_datasource_array();
-            int intSeqNumDefs = oProjectDs.getValidTableNameRow(Datasource.TableTypes.SeqNumDefinitions);
-            int intSeqNumRxPkgAssign = oProjectDs.getValidTableNameRow(Datasource.TableTypes.SeqNumRxPackageAssign);
-            if (intSeqNumDefs > -1 && intSeqNumRxPkgAssign > -1)
-            {
-                string strSeqNumDefsTable = oProjectDs.m_strDataSource[intSeqNumDefs, Datasource.TABLE].Trim();
-                string strSeqNumRxPkgAssignTable = oProjectDs.m_strDataSource[intSeqNumRxPkgAssign, Datasource.TABLE].Trim();
-                oDao.CreateSQLiteTableLink(oProjectDs.getFullPathAndFile(Datasource.TableTypes.SeqNumDefinitions), Tables.FVS.DefaultFVSPrePostSeqNumTable,
-                    strPrePostSeqNumLink, ODBCMgr.DSN_KEYS.FvsMasterDbDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile, true);
-                oDao.CreateSQLiteTableLink(oProjectDs.getFullPathAndFile(Datasource.TableTypes.SeqNumDefinitions), Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable,
-                    strRxPackageAssignLink, ODBCMgr.DSN_KEYS.FvsMasterDbDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile, true);
-                if (oDao != null)
-                {
-                    oDao.m_DaoWorkspace.Close();
-                    oDao = null;
-                }
-                string strCopyConn = oAdo.getMDBConnString(oAdo.getMDBConnString(oProjectDs.getFullPathAndFile(Datasource.TableTypes.SeqNumDefinitions), "", ""), "", "");
-                int i = 0;
-                int intError = 0;
-                using (var oCopyConn = new System.Data.OleDb.OleDbConnection(strCopyConn))
-                {
-                    oCopyConn.Open();
-                    do
-                    {
-                        // break out of loop if it runs too long
-                        if (i > 20)
-                        {
-                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to migrate sequence number settings! ", "FIA Biosum");
-                            break;
-                        }
-                        System.Threading.Thread.Sleep(1000);
-                        i++;
-                    }
-                    while (!oAdo.TableExist(oCopyConn, strRxPackageAssignLink));
-
-                    oAdo.m_strSQL = $@"INSERT INTO {strPrePostSeqNumLink} SELECT * FROM {strSeqNumDefsTable}";
-                    oAdo.SqlNonQuery(oCopyConn, oAdo.m_strSQL);
-                    if (oAdo.m_intError == 0)
-                    {
-                        oAdo.m_strSQL = $@"INSERT INTO {strRxPackageAssignLink} SELECT * FROM {strSeqNumRxPkgAssignTable}";
-                        oAdo.SqlNonQuery(oCopyConn, oAdo.m_strSQL);
-                        intError = oAdo.m_intError;
-                    }
-                    else
-                    {
-                        intError = oAdo.m_intError;
-                    }
-
-                    if (oAdo.TableExist(oCopyConn, strPrePostSeqNumLink))
-                    {
-                        oAdo.SqlNonQuery(oCopyConn, "DROP TABLE " + strPrePostSeqNumLink);
-                    }
-                    if (oAdo.TableExist(oCopyConn, strRxPackageAssignLink))
-                    {
-                        oAdo.SqlNonQuery(oCopyConn, "DROP TABLE " + strRxPackageAssignLink);
-                    }
-                }
-                if (intError == 0)
-                {
-                    // Update entries in project data sources table
-                    string strMasterPath = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{System.IO.Path.GetDirectoryName(Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile)}";
-                    string strFvsMasterDb = System.IO.Path.GetFileName(Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile);
-                    oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.SeqNumDefinitions, strMasterPath, strFvsMasterDb, Tables.FVS.DefaultFVSPrePostSeqNumTable);
-                    oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.SeqNumRxPackageAssign, strMasterPath, strFvsMasterDb, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable);
-                }
-            }
-
-
-
-
-
-
-
-
-            ODBCMgr odbcMgr = new ODBCMgr();
-            // Remove ODBC entry for the new SQLite fvs_master.db file
-            if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsMasterDbDsnName))
-            {
-                odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsMasterDbDsnName);
-            }
-        }
     }
+
     /*********************************************************************************************************
 	 **FVS Output PREPOST SeqNum Definition Item                          
 	 *********************************************************************************************************/

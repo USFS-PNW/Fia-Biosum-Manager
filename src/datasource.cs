@@ -57,8 +57,6 @@ namespace FIA_Biosum_Manager
             Datasource.TableTypes.SeqNumRxPackageAssign, 
 			"Tree Species",
 			Datasource.TableTypes.FvsTreeSpecies,
-			"FVS Western Tree Species Translator",
-			"FVS Eastern Tree Species Translator",
 			"Travel Times",
 			"Processing Sites",
 			"FVS Tree List For Processor",
