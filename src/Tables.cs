@@ -2628,7 +2628,7 @@ namespace FIA_Biosum_Manager
             static public string DefaultCalculatedOptimizerVariablesTableName { get { return "calculated_optimizer_variables"; } }
             static public string DefaultCalculatedEconVariablesTableName { get { return "calculated_econ_variables_definition"; } }
             static public string DefaultCalculatedFVSVariablesTableName { get { return "calculated_fvs_variables_definition"; } }
-            static public string DefaultFvsNullThresholdTableName { get { return "fvs_null_threshold"; } }
+            static public string DefaultOptimizerProjectConfigTableName { get { return "project_config"; } }
             static public string DefaultSqliteDbFile { get { return @"optimizer\db\optimizer_definitions.db"; } }
 
 

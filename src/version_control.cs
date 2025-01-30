@@ -7481,16 +7481,20 @@ namespace FIA_Biosum_Manager
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strCalculatedVariablesDb)))
             {
                 conn.Open();
-                if (!oDataMgr.ColumnExist(conn, Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName, "USE_NEGATIVES"))
+                if (!oDataMgr.ColumnExist(conn, Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName, "NEGATIVES_YN"))
                 {
-                    oDataMgr.AddColumn(conn, Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName, "USE_NEGATIVES", "CHAR", "1");
+                    oDataMgr.AddColumn(conn, Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName, "NEGATIVES_YN", "CHAR", "1");
+
+                    oDataMgr.m_strSQL = "UPDATE " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName +
+                        " SET NEGATIVES_YN = 'N'";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
-                if (!oDataMgr.TableExist(conn, Tables.OptimizerDefinitions.DefaultFvsNullThresholdTableName))
+                if (!oDataMgr.TableExist(conn, Tables.OptimizerDefinitions.DefaultOptimizerProjectConfigTableName))
                 {
-                    oDataMgr.m_strSQL = "CREATE TABLE " + Tables.OptimizerDefinitions.DefaultFvsNullThresholdTableName + " (threshold INTEGER)";
+                    oDataMgr.m_strSQL = "CREATE TABLE " + Tables.OptimizerDefinitions.DefaultOptimizerProjectConfigTableName + " (fvs_null_threshold INTEGER)";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 
-                    oDataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerDefinitions.DefaultFvsNullThresholdTableName + " VALUES (4)";
+                    oDataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerDefinitions.DefaultOptimizerProjectConfigTableName + " VALUES (4)";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
             }
