@@ -5757,24 +5757,21 @@ namespace FIA_Biosum_Manager
                         double dblWt = Convert.ToDouble(m_oDataMgr.m_DataReader["weight"]);
                         string strCondId = m_oDataMgr.m_DataReader["biosum_cond_id"].ToString().Trim();
                         string strRxPkg = m_oDataMgr.m_DataReader["rxpackage"].ToString().Trim();
-                        if (dblWt != 0)
+                        double[] entry = { dblWt, 1 };
+                        if (!correctionFactors.ContainsKey(strCondId))
                         {
-                            double[] entry = { dblWt, 1 };
-                            if (!correctionFactors.ContainsKey(strCondId))
-                            {
-                                Dictionary<string, double[]> dictEntry = new Dictionary<string, double[]> { { strRxPkg, entry } };
-                                correctionFactors.Add(strCondId, dictEntry);
-                            }
-                            else if (!correctionFactors[strCondId].ContainsKey(strRxPkg))
-                            {
-                                correctionFactors[strCondId].Add(strRxPkg, entry);
-                            }
-                            else
-                            {
-                                double dblCurWtSum = correctionFactors[strCondId][strRxPkg][0];
-                                correctionFactors[strCondId][strRxPkg][0] = dblCurWtSum + dblWt;
-                                correctionFactors[strCondId][strRxPkg][1]++;
-                            }
+                            Dictionary<string, double[]> dictEntry = new Dictionary<string, double[]> { { strRxPkg, entry } };
+                            correctionFactors.Add(strCondId, dictEntry);
+                        }
+                        else if (!correctionFactors[strCondId].ContainsKey(strRxPkg))
+                        {
+                            correctionFactors[strCondId].Add(strRxPkg, entry);
+                        }
+                        else 
+                        {
+                            double dblCurWtSum = correctionFactors[strCondId][strRxPkg][0];
+                            correctionFactors[strCondId][strRxPkg][0] = dblCurWtSum + dblWt;
+                            correctionFactors[strCondId][strRxPkg][1]++;
                         }
                     }
                 }
@@ -5789,17 +5786,16 @@ namespace FIA_Biosum_Manager
                         double dblWt = Convert.ToDouble(m_oDataMgr.m_DataReader["weight"]);
                         string strCondId = m_oDataMgr.m_DataReader["biosum_cond_id"].ToString().Trim();
                         string strRxPkg = m_oDataMgr.m_DataReader["rxpackage"].ToString().Trim();
-                        if (dblWt != 0)
-                        {
-                            double[] entry = { dblWt, 1 };
-                            if (!correctionFactors.ContainsKey(strCondId))
-                            {
-                                Dictionary<string, double[]> dictEntry = new Dictionary<string, double[]> { { strRxPkg, entry } };
-                                correctionFactors.Add(strCondId, dictEntry);
-                            }
-                            else if (!correctionFactors[strCondId].ContainsKey(strRxPkg))
+                        double[] entry = { dblWt, 1 };
 
-                                correctionFactors[strCondId].Add(strRxPkg, entry);
+                        if (!correctionFactors.ContainsKey(strCondId))
+                        {
+                            Dictionary<string, double[]> dictEntry = new Dictionary<string, double[]> { { strRxPkg, entry } };
+                            correctionFactors.Add(strCondId, dictEntry);
+                        }
+                        else if (!correctionFactors[strCondId].ContainsKey(strRxPkg))
+                        {
+                            correctionFactors[strCondId].Add(strRxPkg, entry);
                         }
                         else
                         {
@@ -5961,10 +5957,12 @@ namespace FIA_Biosum_Manager
                             _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
                         }
                         m_oDataMgr.m_strSQL = "UPDATE " + strTargetPreTable +
-                            " SET " + strVariableName + "_null_count = " + correctionFactors[strCondId][strRxPkg][1];
+                            " SET " + strVariableName + "_null_count = " + correctionFactors[strCondId][strRxPkg][1] + 
+                            " WHERE biosum_cond_id = '" + strCondId + "' AND rxpackage = '" + strRxPkg + "' AND  rxcycle = '1'";
                         m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
-                        m_oDataMgr.m_strSQL = "UPDATE " + strTargetPreTable +
-                            " SET " + strVariableName + "_null_count = " + correctionFactors[strCondId][strRxPkg][1];
+                        m_oDataMgr.m_strSQL = "UPDATE " + strTargetPostTable +
+                            " SET " + strVariableName + "_null_count = " + correctionFactors[strCondId][strRxPkg][1] +
+                            " WHERE biosum_cond_id = '" + strCondId + "' AND rxpackage = '" + strRxPkg + "' AND  rxcycle = '1'";
                         m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
                     }
                 }
