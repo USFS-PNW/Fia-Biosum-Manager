@@ -3792,7 +3792,6 @@ namespace FIA_Biosum_Manager
                 dblMetricHeight = p_intSIHtFt * 0.3048; //Convert from feet to metric
                 dblSI = 1.37 + a + (b + c * Math.Pow(p_intSIDiaAge, d)) * (dblMetricHeight - 1.37 - e * Math.Pow((double)(1 - Math.Exp(f * p_intSIDiaAge)), g));
 
-                dblSI = dblSI / 0.3048; //Convert from metric to feet
                 return dblSI;
             }
             /// <summary>
