@@ -3351,7 +3351,7 @@ namespace FIA_Biosum_Manager
 
 
 
-                    strFVSOutDbFile = oRxTools.GetRxPackageFvsOutDbFileName(oDataReader);
+                    //strFVSOutDbFile = oRxTools.GetRxPackageFvsOutDbFileName(oDataReader);
                     if (System.IO.File.Exists(strSourceDir + "\\" + strVariant + "\\" + strFVSOutDbFile))
                     {
                         
@@ -7372,8 +7372,8 @@ namespace FIA_Biosum_Manager
                     deleteConn.Open();
                     oAdo.m_strSQL = $@"DELETE FROM {oProjectDs.m_strDataSourceTableName} WHERE TABLE_TYPE IN 
                         ('Treatment Prescriptions Assigned FVS Commands', 'Treatment Prescription Categories', 'Treatment Prescription Subcategories',
-                         'Treatment Package Assigned FVS Commands', 'Treatment Package FVS Commands Order', 'FVS Western Tree Species Translator', 
-                         'FVS Eastern Tree Species Translator')";
+                         'Treatment Package Assigned FVS Commands', 'Treatment Package FVS Commands Order', 'Treatment Package Members', 
+                         'FVS Western Tree Species Translator', 'FVS Eastern Tree Species Translator')";
                     oAdo.SqlNonQuery(deleteConn, oAdo.m_strSQL);
                 }
             }

@@ -20,7 +20,6 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Label lblPackageMember;
 		private System.Windows.Forms.Label lblDesc;
 		private FIA_Biosum_Manager.frmRxItem _frmRxItem=null;
-		private ado_data_access m_oAdo = new ado_data_access();
 		private Queries m_oQueries = new Queries();
         private ComboBox cmbRxId;
         private Label lblId;
@@ -230,9 +229,6 @@ namespace FIA_Biosum_Manager
 			}
 			else
 			{
-                //this.m_oQueries.m_oFvs.LoadDatasource=true;
-                //this.m_oQueries.LoadDatasources(true);
-                //this.m_oAdo.OpenConnection(m_oAdo.getMDBConnString(this.m_oQueries.m_strTempDbFile,"",""));
                 this.LoadAvailableRxIdComboBox();
                 this.cmbRxId.Enabled = true;
 			}

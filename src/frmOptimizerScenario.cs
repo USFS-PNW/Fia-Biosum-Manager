@@ -5372,15 +5372,15 @@ namespace FIA_Biosum_Manager
             //
             //delete the old table links first in case any are obsolete
             //
-            if (System.IO.File.Exists(strTargetMdb))
-            {
-                oRxTools.DeleteTableLinksToFVSPrePostTables(strTargetMdb);
-            }
+            //if (System.IO.File.Exists(strTargetMdb))
+            //{
+            //    oRxTools.DeleteTableLinksToFVSPrePostTables(strTargetMdb);
+            //}
             
             //
             //load list box with all the pre and post table columns
             //
-            oRxTools.CreateTableLinksToFVSPrePostTables(strTargetMdb);
+            //oRxTools.CreateTableLinksToFVSPrePostTables(strTargetMdb);
             oRxTools = null;
             p_oAdo.OpenConnection(p_oAdo.getMDBConnString(strTargetMdb, "", ""));
             System.Collections.Generic.Dictionary<string, System.Collections.Generic.IList<String>> _dictFVSTables = 

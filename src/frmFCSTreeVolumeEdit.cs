@@ -216,11 +216,6 @@ namespace FIA_Biosum_Manager
           oDao.m_DaoWorkspace.Close();
 
           //
-          //CREATE LINK IN TEMP MDB TO ALL VARIANT & PACKAGE FVS_SUMMARY TABLES
-          //
-          m_oRxTools.CreateTableLinksToFVSOutSummaryTables(m_oQueries, m_oQueries.m_strTempDbFile);
-
-          //
           //OPEN CONNECTION TO TEMP DB FILE
           //
           m_oAdo = new ado_data_access();
@@ -1897,12 +1892,6 @@ namespace FIA_Biosum_Manager
                              SET b.diahtcd=IIF(ref.woodland_yn='N', 1, 2) WHERE b.fvscreatedtree_yn='Y'";
         m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
 
-            //Update FVSCreatedTrees balive=fvs_summary.BA
-            var regex = new Regex(@"fvs_tree_IN_([A-Z]{2})_(P\d{3}).*");
-            var strVariant = regex.Match(strFvsTreeTable).Groups[1];
-            var strPackage = regex.Match(strFvsTreeTable).Groups[2];
-            //var strFvsSummaryTable = $"fvs_summary_IN_{strVariant}_{strPackage}"; //e.g., fvs_tree_IN_BM_P009_TREE_CUTLIST
-
             //Get the list of variant, rxpackages from FVS_CutTree that have FVS Created trees
             IDictionary<string, List<string>> dictVariantRxPackage = new Dictionary<string, List<string>>();
             m_oAdo.m_strSQL = $@"SELECT DISTINCT FVS_VARIANT, RXPACKAGE FROM {strFvsTreeTable} WHERE fvscreatedtree_yn='Y'";
@@ -1934,6 +1923,8 @@ namespace FIA_Biosum_Manager
                 List<string> lstPackages = dictVariantRxPackage[keyVariant];
                 foreach (var rxPkg in lstPackages)
                 {
+                    //@ToDo: Update FVSCreatedTrees balive=fvs_summary.BA
+                    // This sql will never run because strFvsSummaryTable no longer exists at this location
                     var strFvsSummaryTable = $"fvs_summary_IN_{keyVariant}_P{rxPkg}"; //e.g., fvs_summary_IN_BM_P009
                     if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, strFvsSummaryTable))
                     {

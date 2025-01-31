@@ -36,7 +36,6 @@
             this.chkFfe = new System.Windows.Forms.CheckBox();
             this.cmbDefault = new System.Windows.Forms.ComboBox();
             this.btnAssignTemplate = new System.Windows.Forms.Button();
-            this.btnSeqNum = new System.Windows.Forms.Button();
             this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
@@ -89,7 +88,6 @@
             // 
             this.groupBox1.Controls.Add(this.label4);
             this.groupBox1.Controls.Add(this.groupBox3);
-            this.groupBox1.Controls.Add(this.btnSeqNum);
             this.groupBox1.Controls.Add(this.label9);
             this.groupBox1.Controls.Add(this.label10);
             this.groupBox1.Controls.Add(this.label7);
@@ -194,19 +192,6 @@
             this.btnAssignTemplate.Text = "Assign";
             this.btnAssignTemplate.UseVisualStyleBackColor = true;
             this.btnAssignTemplate.Click += new System.EventHandler(this.btnAssignTemplate_Click);
-            // 
-            // btnSeqNum
-            // 
-            this.btnSeqNum.Enabled = false;
-            this.btnSeqNum.Location = new System.Drawing.Point(116, 636);
-            this.btnSeqNum.Margin = new System.Windows.Forms.Padding(4);
-            this.btnSeqNum.Name = "btnSeqNum";
-            this.btnSeqNum.Size = new System.Drawing.Size(307, 28);
-            this.btnSeqNum.TabIndex = 97;
-            this.btnSeqNum.Text = "View Sequence Number Assignments";
-            this.btnSeqNum.UseVisualStyleBackColor = true;
-            this.btnSeqNum.Visible = false;
-            this.btnSeqNum.Click += new System.EventHandler(this.btnSeqNum_Click);
             // 
             // label9
             // 
@@ -789,7 +774,6 @@
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.Button btnSeqNum;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.CheckBox chkFfe;

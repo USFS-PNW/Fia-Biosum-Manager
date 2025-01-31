@@ -42,7 +42,6 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.GroupBox grpboxFVSCycleLength;
 		private System.Windows.Forms.ComboBox cmbRx;
 		private FIA_Biosum_Manager.Queries m_oQueries = new Queries();
-		private ado_data_access m_oAdo = new ado_data_access();
 		private RxTools m_oRxTools = new RxTools();
 		private string _strRxPackageId="";
         public bool m_bSave = false;
@@ -465,7 +464,6 @@ namespace FIA_Biosum_Manager
 
 			this.m_oQueries.m_oFvs.LoadDatasource=true;
 			this.m_oQueries.LoadDatasources(true);
-			this.m_oAdo.OpenConnection(m_oAdo.getMDBConnString(this.m_oQueries.m_strTempDbFile,"",""));
 			//
 			//populate category list box
 			//

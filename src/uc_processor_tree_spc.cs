@@ -3095,8 +3095,7 @@ namespace FIA_Biosum_Manager
                                     "a.* " + 
                             "FROM " + m_oQueries.m_oFIAPlot.m_strTreeTable + " a," + 
                                     "fvsouttreetemp2 b " + 
-                            "WHERE MID(a.fvs_tree_id,1,2)='" + strFvsVariant + "' AND " + 
-                                  "a.fvs_tree_id=b.fvs_tree_id AND " +
+                            "WHERE a.fvs_tree_id=b.fvs_tree_id AND " +
                                   "a.biosum_cond_id=b.biosum_cond_id AND " + 
                                   "a.spcd=" + strFiaSpCd + " AND " + 
                                   "TRIM(b.fvs_species)='" + strFvsSpCd + "'";

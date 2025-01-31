@@ -284,7 +284,7 @@ namespace FIA_Biosum_Manager
             //this.m_oRxTools.LoadRxHarvestMethods(m_oAdo,m_oAdo.m_OleDbConnection,m_oQueries,cmbMethod,cmbSteepSlopeMethod);
             m_descrDictionary.Clear();
             m_steepDescrDictionary.Clear();
-            this.m_oRxTools.LoadRxHarvestMethodsSqlite(strDbFile, m_oQueries, cmbMethod, cmbSteepSlopeMethod, m_descrDictionary,
+            this.m_oRxTools.LoadRxHarvestMethods(strDbFile, m_oQueries, cmbMethod, cmbSteepSlopeMethod, m_descrDictionary,
                 m_steepDescrDictionary);
 		    for (x=0;x<=this.cmbMethod.Items.Count-1;x++)
 			{

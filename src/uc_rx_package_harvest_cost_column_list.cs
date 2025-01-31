@@ -27,7 +27,6 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Label lblDesc;
 		private Queries m_oQueries = new Queries();
 		private RxTools m_oRxTools = new RxTools();
-		private ado_data_access m_oAdo = new ado_data_access();
 		private string m_strColumnNameList="";
         private string m_strHarvestTableColumnNameList = "";
         private FIA_Biosum_Manager.frmRxPackageItem _frmRxPackageItem=null;
@@ -73,8 +72,6 @@ namespace FIA_Biosum_Manager
 			m_oQueries.m_oFvs.LoadDatasource=true;
 			m_oQueries.m_oReference.LoadDatasource=true;
 			m_oQueries.LoadDatasources(true);
-			m_oAdo = new ado_data_access();
-			m_oAdo.OpenConnection(m_oAdo.getMDBConnString(m_oQueries.m_strTempDbFile,"",""));
 			
 			this.lvRxHarvestCostColumns.Clear();
 			
