@@ -87,7 +87,8 @@ namespace FIA_Biosum_Manager
         const int ECON_DETAILS_TABLE = 0;
         const int FVS_DETAILS_TABLE = 1;
 
-
+        private const int WEIGHT_SUM = 0;
+        private const int NULL_COUNT = 1;
 
 
         private FIA_Biosum_Manager.uc_optimizer_scenario_fvs_prepost_variables_effective.Variables _oCurVar;
@@ -5755,15 +5756,8 @@ namespace FIA_Biosum_Manager
                         _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
                     }
                 }
-                // TO DO: sum weights where values are null for each biosum_cond_id
-                // multiply each value by 1 / (1 - (sum of weights wehre value is null))
-                // this can be done now or to the sum at the end
 
-                // idea: dictionary where biosum_cond_id is key and SELECT SUM(weight) FROM
-                // table WHERE value IS NULL GROUP BY biosum_cond_id where SUM(weight) is
-                // value and then multiply sum_pre and sum_post by 1 / (1 - value)
-                // where biosum_cond_id = key
-                // implemented as loop through dictionary
+                // Get biosum_cond_id/rxpackage combinations where the value is null. Store the sum of the weights and the null count
 
                 m_oDataMgr.m_strSQL = "SELECT COUNT(*) FROM (SELECT DISTINCT biosum_cond_id, rxpackage FROM " + strWeightsByRxCyclePreTable + ")";
                 intTotal += Convert.ToInt32(m_oDataMgr.getRecordCount(calculateConn, m_oDataMgr.m_strSQL, strWeightsByRxCyclePreTable));
@@ -5790,9 +5784,9 @@ namespace FIA_Biosum_Manager
                         }
                         else 
                         {
-                            double dblCurWtSum = correctionFactors[strCondId][strRxPkg][0];
-                            correctionFactors[strCondId][strRxPkg][0] = dblCurWtSum + dblWt;
-                            correctionFactors[strCondId][strRxPkg][1]++;
+                            double dblCurWtSum = correctionFactors[strCondId][strRxPkg][WEIGHT_SUM];
+                            correctionFactors[strCondId][strRxPkg][WEIGHT_SUM] = dblCurWtSum + dblWt;
+                            correctionFactors[strCondId][strRxPkg][NULL_COUNT]++;
                         }
                     }
                 }
@@ -5820,12 +5814,14 @@ namespace FIA_Biosum_Manager
                         }
                         else
                         {
-                            double dblCurWtSum = correctionFactors[strCondId][strRxPkg][0];
-                            correctionFactors[strCondId][strRxPkg][0] = dblCurWtSum + dblWt;
-                            correctionFactors[strCondId][strRxPkg][1]++;
+                            double dblCurWtSum = correctionFactors[strCondId][strRxPkg][WEIGHT_SUM];
+                            correctionFactors[strCondId][strRxPkg][WEIGHT_SUM] = dblCurWtSum + dblWt;
+                            correctionFactors[strCondId][strRxPkg][NULL_COUNT]++;
                         }
                     }
                 }
+
+                m_oDataMgr.m_DataReader.Close();
 
 
                 // Sum by rxpackage across cycles
@@ -5937,7 +5933,7 @@ namespace FIA_Biosum_Manager
                 {
                     foreach (string strRxPkg in correctionFactors[strCondId].Keys)
                     {
-                        if (correctionFactors[strCondId][strRxPkg][1] > Convert.ToInt32(cmbThreshold.SelectedItem))
+                        if (correctionFactors[strCondId][strRxPkg][NULL_COUNT] > Convert.ToInt32(cmbThreshold.SelectedItem))
                         {
                             intMissing++;
                             m_oDataMgr.m_strSQL = "UPDATE " + strTargetPreTable +
@@ -5961,7 +5957,7 @@ namespace FIA_Biosum_Manager
                             intCorrected++;
                             m_oDataMgr.m_strSQL = "UPDATE " + strTargetPreTable +
                                " SET " + strVariableName + " = " + strVariableName +
-                               " * (1 / (1 - " + correctionFactors[strCondId][strRxPkg][0] + "))" +
+                               " * (1 / (1 - " + correctionFactors[strCondId][strRxPkg][WEIGHT_SUM] + "))" +
                                " WHERE biosum_cond_id = '" + strCondId + "'" +
                                " AND rxpackage = '" + strRxPkg + "'";
                             _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
@@ -5970,7 +5966,7 @@ namespace FIA_Biosum_Manager
 
                             m_oDataMgr.m_strSQL = "UPDATE " + strTargetPostTable +
                                 " SET " + strVariableName + " = " + strVariableName +
-                                " * (1 / (1 - " + correctionFactors[strCondId][strRxPkg][0] + "))" +
+                                " * (1 / (1 - " + correctionFactors[strCondId][strRxPkg][WEIGHT_SUM] + "))" +
                                 " WHERE biosum_cond_id = '" + strCondId + "'" +
                                 " AND rxpackage = '" + strRxPkg + "'";
                             _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
@@ -5978,11 +5974,11 @@ namespace FIA_Biosum_Manager
                             _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
                         }
                         m_oDataMgr.m_strSQL = "UPDATE " + strTargetPreTable +
-                            " SET " + strVariableName + "_null_count = " + correctionFactors[strCondId][strRxPkg][1] + 
+                            " SET " + strVariableName + "_null_count = " + correctionFactors[strCondId][strRxPkg][NULL_COUNT] + 
                             " WHERE biosum_cond_id = '" + strCondId + "' AND rxpackage = '" + strRxPkg + "' AND  rxcycle = '1'";
                         m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
                         m_oDataMgr.m_strSQL = "UPDATE " + strTargetPostTable +
-                            " SET " + strVariableName + "_null_count = " + correctionFactors[strCondId][strRxPkg][1] +
+                            " SET " + strVariableName + "_null_count = " + correctionFactors[strCondId][strRxPkg][NULL_COUNT] +
                             " WHERE biosum_cond_id = '" + strCondId + "' AND rxpackage = '" + strRxPkg + "' AND  rxcycle = '1'";
                         m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
                     }
