@@ -89,7 +89,7 @@ namespace FIA_Biosum_Manager
 
         private const int WEIGHT_SUM = 0;
         private const int NULL_COUNT = 1;
-
+        private int intNullThreshold = 4;
 
         private FIA_Biosum_Manager.uc_optimizer_scenario_fvs_prepost_variables_effective.Variables _oCurVar;
         public bool m_bFirstTime = true;
@@ -1253,7 +1253,7 @@ namespace FIA_Biosum_Manager
                             cboFvsVariableBaselinePkg.Items.Add(Convert.ToString(m_oDataMgr.m_DataReader["rxpackage"]));
                         }
                     }
-                    
+                    m_oDataMgr.m_DataReader.Close();
 
                     //Create temporary table to populate datagrid
                     if (m_oDataMgr.TableExist(m_oDataMgr.m_Connection, m_strFvsViewTableName))
@@ -1308,6 +1308,7 @@ namespace FIA_Biosum_Manager
 
                         }
                     }
+                    m_oDataMgr.m_DataReader.Close();
 
                     strSql = "SELECT rxcycle, MIN(Year) as MinYear, \"PRE\" as pre_or_post" +
                      " FROM " + strFvsPostTableName +
@@ -1347,6 +1348,7 @@ namespace FIA_Biosum_Manager
                             m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, insertSql);
                         }
                     }
+                    m_oDataMgr.m_DataReader.Close();
 
                     string strPrimaryKeys = "rxcycle, pre_or_post, rxyear";
                     string strColumns = "rxcycle, pre_or_post, rxyear, weight";
@@ -1354,8 +1356,6 @@ namespace FIA_Biosum_Manager
 
                     m_oDataMgr.m_strSQL = "DROP TABLE " + m_strFvsViewTableName;
                     m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
-
-                    calculateConn.Close();
                 }
                 BtnFvsImport.Enabled = true;
             }
@@ -1719,6 +1719,7 @@ namespace FIA_Biosum_Manager
                         string strThreshold = oDataMgr.m_DataReader["fvs_null_threshold"].ToString().Trim();
                         this.cmbThreshold.SelectedItem = strThreshold;
                         this.cmbThreshold.Text = strThreshold;
+                        intNullThreshold = Convert.ToInt32(strThreshold);
                     }                
                 }
                 oDataMgr.m_DataReader.Close();
@@ -1727,23 +1728,13 @@ namespace FIA_Biosum_Manager
         private void savenullthreshold()
         {
             int intNewThreshold = Convert.ToInt32(this.cmbThreshold.SelectedItem);
-            int intCurrentThreshold = 0;
-            m_oDataMgr.m_strSQL = "SELECT fvs_null_threshold FROM " + Tables.OptimizerDefinitions.DefaultOptimizerProjectConfigTableName;
-            m_oDataMgr.SqlQueryReader(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
-
-            if (m_oDataMgr.m_intError == 0 && m_oDataMgr.m_DataReader.HasRows)
-            {
-                while (m_oDataMgr.m_DataReader.Read())
-                {
-                    intCurrentThreshold = Convert.ToInt32(m_oDataMgr.m_DataReader["fvs_null_threshold"]);
-                }
-            }
-            m_oDataMgr.m_DataReader.Close();
-            if (intNewThreshold != intCurrentThreshold)
+            if (intNewThreshold != intNullThreshold)
             {
                 m_oDataMgr.m_strSQL = "UPDATE " + Tables.OptimizerDefinitions.DefaultOptimizerProjectConfigTableName +
                 " SET fvs_null_threshold = " + intNewThreshold;
                 m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
+                m_oDataMgr.m_Transaction.Commit();
+                intNullThreshold = intNewThreshold;
             }
         }
 
@@ -5155,7 +5146,7 @@ namespace FIA_Biosum_Manager
                             }
                         }
 
-
+                        oDataMgr.m_DataReader.Close();
 
                         if (lstTables.Count > 0)
                         {
@@ -5329,6 +5320,7 @@ namespace FIA_Biosum_Manager
                                         }
                                     }
                                 }
+                                oDataMgr.m_DataReader.Close();
                                 int intMissing = 0;
                                 int intCorrected = 0;
                                 int intCorrect = 0;
@@ -5934,7 +5926,7 @@ namespace FIA_Biosum_Manager
                 {
                     foreach (string strRxPkg in correctionFactors[strCondId].Keys)
                     {
-                        if (correctionFactors[strCondId][strRxPkg][NULL_COUNT] > Convert.ToInt32(cmbThreshold.SelectedItem))
+                        if (correctionFactors[strCondId][strRxPkg][NULL_COUNT] > intNullThreshold)
                         {
                             intMissing++;
                             m_oDataMgr.m_strSQL = "UPDATE " + strTargetPreTable +
