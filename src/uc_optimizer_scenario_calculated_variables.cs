@@ -166,9 +166,10 @@ namespace FIA_Biosum_Manager
         public Button BtnEconImport;
         private Button BtnRecalculateAll;
         private GroupBox grpBoxThreshold;
-        private Label lblThresholdExplination;
-        private TextBox txtThreshold;
+        private Label lblThresholdExplanation;
         private Label lblThreshold;
+        private Button btnSaveThreshold;
+        private ComboBox cmbThreshold;
         private FIA_Biosum_Manager.OptimizerScenarioTools m_oOptimizerScenarioTools = new OptimizerScenarioTools();
         private frmTherm m_frmTherm;
         private int idxRxCycle = 0;
@@ -312,9 +313,10 @@ namespace FIA_Biosum_Manager
             this.lblSelectedFVSVariable = new System.Windows.Forms.Label();
             this.lblTitle = new System.Windows.Forms.Label();
             this.grpBoxThreshold = new System.Windows.Forms.GroupBox();
-            this.lblThresholdExplination = new System.Windows.Forms.Label();
-            this.txtThreshold = new System.Windows.Forms.TextBox();
+            this.lblThresholdExplanation = new System.Windows.Forms.Label();
             this.lblThreshold = new System.Windows.Forms.Label();
+            this.btnSaveThreshold = new System.Windows.Forms.Button();
+            this.cmbThreshold = new System.Windows.Forms.ComboBox();
             this.groupBox1.SuspendLayout();
             this.grpBoxEconomicVariable.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -952,9 +954,10 @@ namespace FIA_Biosum_Manager
             //
             // grpBoxThreshold
             //
-            this.grpBoxThreshold.Controls.Add(this.lblThresholdExplination);
-            this.grpBoxThreshold.Controls.Add(this.txtThreshold);
+            this.grpBoxThreshold.Controls.Add(this.lblThresholdExplanation);
             this.grpBoxThreshold.Controls.Add(this.lblThreshold);
+            this.grpBoxThreshold.Controls.Add(this.btnSaveThreshold);
+            this.grpBoxThreshold.Controls.Add(this.cmbThreshold);
             this.grpBoxThreshold.Location = new System.Drawing.Point(620, 18);
             this.grpBoxThreshold.Name = "grpBoxThreshold";
             this.grpBoxThreshold.Size = new System.Drawing.Size(215, 280);
@@ -971,22 +974,32 @@ namespace FIA_Biosum_Manager
             this.lblThreshold.TabIndex = 100;
             this.lblThreshold.Text = "Null Threshold:";
             //
-            // txtThreshold
+            // cmbThreshold
             //
-            this.txtThreshold.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtThreshold.Location = new System.Drawing.Point(104, 237);
-            this.txtThreshold.Name = "txtThreshold";
-            this.txtThreshold.Size = new System.Drawing.Size(30, 22);
-            this.txtThreshold.TabIndex = 101;
+            this.cmbThreshold.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbThreshold.Location = new System.Drawing.Point(104, 237);
+            this.cmbThreshold.Name = "cmbThreshold";
+            this.cmbThreshold.Size = new System.Drawing.Size(50, 22);
+            this.cmbThreshold.TabIndex = 77;
             //
-            // lblThresholdExplination
+            // btnSaveThreshold
             //
-            this.lblThresholdExplination.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblThresholdExplination.Location = new System.Drawing.Point(6, 24);
-            this.lblThresholdExplination.Name = "lblThresholdExplination";
-            this.lblThresholdExplination.Size = new System.Drawing.Size(187, 200);
-            this.lblThresholdExplination.TabIndex = 100;
-            this.lblThresholdExplination.Text = "Weighted variables are computed from up to " +
+            this.btnSaveThreshold.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnSaveThreshold.Location = new System.Drawing.Point(160, 237);
+            this.btnSaveThreshold.Name = "btnSaveThreshold";
+            this.btnSaveThreshold.Size = new System.Drawing.Size(80, 22);
+            this.btnSaveThreshold.TabIndex = 92;
+            this.btnSaveThreshold.Text = "Save";
+            this.btnSaveThreshold.Click += new System.EventHandler(this.btnSaveThreshold_Click);
+            //
+            // lblThresholdExplanation
+            //
+            this.lblThresholdExplanation.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblThresholdExplanation.Location = new System.Drawing.Point(6, 24);
+            this.lblThresholdExplanation.Name = "lblThresholdExplanation";
+            this.lblThresholdExplanation.Size = new System.Drawing.Size(187, 200);
+            this.lblThresholdExplanation.TabIndex = 100;
+            this.lblThresholdExplanation.Text = "Weighted variables are computed from up to " +
                 "8 time points in the simulation, designated as PRE or POST " +
                 "for each of the 4 BioSum Cycles. Select a threshold determining the " +
                 "maximum number of null value cases for a stand-RxPackage combination, " +
@@ -1038,6 +1051,10 @@ namespace FIA_Biosum_Manager
             m_oDataMgr.m_Transaction = m_oDataMgr.m_Connection.BeginTransaction();
 
             loadLstVariables();
+            for (int i = 0; i <= 7; i++)
+            {
+                this.cmbThreshold.Items.Add(i);
+            }
             loadnullthreshold();
             
             if (m_oDataMgr.TableExist(m_oDataMgr.m_Connection, m_strFvsViewTableName))
@@ -1235,6 +1252,7 @@ namespace FIA_Biosum_Manager
                             cboFvsVariableBaselinePkg.Items.Add(Convert.ToString(m_oDataMgr.m_DataReader["rxpackage"]));
                         }
                     }
+                    
 
                     //Create temporary table to populate datagrid
                     if (m_oDataMgr.TableExist(m_oDataMgr.m_Connection, m_strFvsViewTableName))
@@ -1698,7 +1716,7 @@ namespace FIA_Biosum_Manager
                     while (oDataMgr.m_DataReader.Read())
                     {
                         string strThreshold = oDataMgr.m_DataReader["fvs_null_threshold"].ToString().Trim();
-                        this.txtThreshold.Text = strThreshold;
+                        this.cmbThreshold.SelectedItem = strThreshold;
                     }                
                 }
                 oDataMgr.m_DataReader.Close();
@@ -1706,8 +1724,8 @@ namespace FIA_Biosum_Manager
         }
         private void savenullthreshold()
         {
-            int intNewThreshold = Convert.ToInt32(this.txtThreshold.Text);
-            int intCurrentThreshold = 0; 
+            int intNewThreshold = Convert.ToInt32(this.cmbThreshold.SelectedItem);
+            int intCurrentThreshold = 0;
             m_oDataMgr.m_strSQL = "SELECT fvs_null_threshold FROM " + Tables.OptimizerDefinitions.DefaultOptimizerProjectConfigTableName;
             m_oDataMgr.SqlQueryReader(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
 
@@ -2015,8 +2033,6 @@ namespace FIA_Biosum_Manager
                         }
                         m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, strSql);
                         m_oDataMgr.m_Transaction.Commit();
-
-                        savenullthreshold();
                     }
                 }
                 catch (System.Data.SQLite.SQLiteException errSQLite)
@@ -2967,6 +2983,10 @@ namespace FIA_Biosum_Manager
             this.updateWeightColumn(VARIABLE_FVS, true);
             this.SumWeights(false);
         }
+        private void btnSaveThreshold_Click(object sender, EventArgs e)
+        {
+            savenullthreshold();
+        }
 
         private void btnProperties_Click(object sender, EventArgs e)
         {
@@ -3590,6 +3610,7 @@ namespace FIA_Biosum_Manager
                 string strWeightsByRxPkgPostTable = "WEIGHTS_BY_RXPACKAGE_POST";
 
                 this.val_data_fvs(strSourceDatabaseName, strSourcePreTable, strSourcePostTable);
+                savenullthreshold();
                 if (this.m_intError == 0)
                 {
                     string strDestinationLinkDir = this.m_oEnv.strTempDir;
@@ -3726,14 +3747,14 @@ namespace FIA_Biosum_Manager
 
                     MessageBox.Show("Variable calculation complete! " +
                         "For the variable " + lblFvsVariableName.Text + ", " + intMissing + " stand-package " +
-                        "combinations had more than " + txtThreshold.Text + " missing cases in the PREPOST data and were " +
+                        "combinations had more than " + cmbThreshold.SelectedItem + " missing cases in the PREPOST data and were " +
                         "therefore attributed as NULL in the Weighted tables (" +
                         "and will need to be accounted for in Optimizer if the variable is used " +
                         "in effectiveness determination); " + intCorrected + " stand-package combinations " +
-                        "had fewer than " + txtThreshold.Text + " missing cases, so the Weighted tables " +
+                        "had fewer than " + cmbThreshold.SelectedItem + " missing cases, so the Weighted tables " +
                         "contain a value based only on the non-null cases; and " + intCorrect +
                         " stand-package combinations had no missing cases. " +
-                        "Click Cancel to return to the main Calculated Variables page", "FIA Biosum");
+                        "Click OK to close this dialog.", "FIA Biosum");
                 }
             }
             catch (Exception e2)
@@ -5916,7 +5937,7 @@ namespace FIA_Biosum_Manager
                 {
                     foreach (string strRxPkg in correctionFactors[strCondId].Keys)
                     {
-                        if (correctionFactors[strCondId][strRxPkg][1] > Convert.ToInt32(txtThreshold.Text))
+                        if (correctionFactors[strCondId][strRxPkg][1] > Convert.ToInt32(cmbThreshold.SelectedItem))
                         {
                             intMissing++;
                             m_oDataMgr.m_strSQL = "UPDATE " + strTargetPreTable +
