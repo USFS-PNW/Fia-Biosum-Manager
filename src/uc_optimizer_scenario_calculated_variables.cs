@@ -961,7 +961,7 @@ namespace FIA_Biosum_Manager
             this.grpBoxThreshold.Controls.Add(this.cmbThreshold);
             this.grpBoxThreshold.Location = new System.Drawing.Point(620, 18);
             this.grpBoxThreshold.Name = "grpBoxThreshold";
-            this.grpBoxThreshold.Size = new System.Drawing.Size(215, 280);
+            this.grpBoxThreshold.Size = new System.Drawing.Size(215, 315);
             this.grpBoxThreshold.TabIndex = 75;
             this.grpBoxThreshold.TabStop = false;
             this.grpBoxThreshold.Text = "Null Threshold";
@@ -985,8 +985,8 @@ namespace FIA_Biosum_Manager
             //
             // btnSaveThreshold
             //
-            this.btnSaveThreshold.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSaveThreshold.Location = new System.Drawing.Point(160, 237);
+            this.btnSaveThreshold.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnSaveThreshold.Location = new System.Drawing.Point(6, 268);
             this.btnSaveThreshold.Name = "btnSaveThreshold";
             this.btnSaveThreshold.Size = new System.Drawing.Size(80, 22);
             this.btnSaveThreshold.TabIndex = 92;
@@ -1718,6 +1718,7 @@ namespace FIA_Biosum_Manager
                     {
                         string strThreshold = oDataMgr.m_DataReader["fvs_null_threshold"].ToString().Trim();
                         this.cmbThreshold.SelectedItem = strThreshold;
+                        this.cmbThreshold.Text = strThreshold;
                     }                
                 }
                 oDataMgr.m_DataReader.Close();
