@@ -1731,10 +1731,11 @@ namespace FIA_Biosum_Manager
             if (intNewThreshold != intNullThreshold)
             {
                 m_oDataMgr.m_strSQL = "UPDATE " + Tables.OptimizerDefinitions.DefaultOptimizerProjectConfigTableName +
-                " SET fvs_null_threshold = " + intNewThreshold;
+                    " SET fvs_null_threshold = " + intNewThreshold;
                 m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
-                m_oDataMgr.m_Transaction.Commit();
                 intNullThreshold = intNewThreshold;
+                m_oDataMgr.m_Transaction.Commit();
+                m_oDataMgr.m_Transaction = m_oDataMgr.m_Connection.BeginTransaction();
             }
         }
 
