@@ -7473,6 +7473,31 @@ namespace FIA_Biosum_Manager
                     }
                 }
             }
+
+            // update optimizer calculated variables db to add null threshold table
+            // and use negative column to variables table
+            frmMain.g_sbpInfo.Text = "Version Update: Updated Optimizer Calculated Variables ...Stand by";
+            string strCalculatedVariablesDb = ReferenceProjectDirectory.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultSqliteDbFile;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strCalculatedVariablesDb)))
+            {
+                conn.Open();
+                if (!oDataMgr.ColumnExist(conn, Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName, "NEGATIVES_YN"))
+                {
+                    oDataMgr.AddColumn(conn, Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName, "NEGATIVES_YN", "CHAR", "1");
+
+                    oDataMgr.m_strSQL = "UPDATE " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName +
+                        " SET NEGATIVES_YN = 'N'";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+                if (!oDataMgr.TableExist(conn, Tables.OptimizerDefinitions.DefaultOptimizerProjectConfigTableName))
+                {
+                    oDataMgr.m_strSQL = "CREATE TABLE " + Tables.OptimizerDefinitions.DefaultOptimizerProjectConfigTableName + " (fvs_null_threshold INTEGER)";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+                    oDataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerDefinitions.DefaultOptimizerProjectConfigTableName + " VALUES (4)";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+            }
         }
 
 
