@@ -100,7 +100,6 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oFrmMain.Top);
             bool bPerformCheck = true;
             string strProjVersionFile = this.ReferenceProjectDirectory.Trim() + "\\application.version";
-            //UpdateDatasources_5_11_2();
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "version_control.PerformVersionCheck: strProjVersionFile=" + strProjVersionFile + "\r\n");
@@ -586,10 +585,20 @@ namespace FIA_Biosum_Manager
                         UpdateProjectVersionFile(strProjVersionFile);
                         bPerformCheck = false;
                     }
+                    // Upgrade from 5.11.1 to 5.11.2 (rx, rxPackage, harvest_methods, FVSIn move to SQLite)
+                    else if ((Convert.ToInt16(m_strAppVerArray[APP_VERSION_MAJOR]) == 5 &&
+                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR1]) == 11 &&
+                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR2]) == 2) &&
+                        (Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MAJOR]) == 5 &&
+                        Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR1]) == 11 &&
+                        Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR2]) == 1))
+                    {
+                        UpdateDatasources_5_11_2();
+                        UpdateProjectVersionFile(strProjVersionFile);
+                        bPerformCheck = false;
+                    }
                 }
             }
-
-            //UpdateDatasources_5_11_2();
 
             if (bPerformCheck)
             {

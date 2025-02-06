@@ -204,7 +204,7 @@ namespace FIA_Biosum_Manager
         public const int PROJDIR = 0;
         public const int OLDPROJDIR = 1;
 
-		public static string g_strAppVer = "5.11.1";
+		public static string g_strAppVer = "5.11.2";
         public static string g_strBiosumDataDir = "\\FIABiosum";
         public static int g_intRefDbVer = 8;
         public static bool g_bUseOracleXE = false;
