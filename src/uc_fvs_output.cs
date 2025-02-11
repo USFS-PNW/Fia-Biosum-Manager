@@ -706,6 +706,7 @@ namespace FIA_Biosum_Manager
                 {
                     strVariant = key;
                     RxPackageItem_Collection oRxPackageItemCollection = dictFvsVariantPackage[key];
+                    lstRunTitles.Clear();   //Eliminate duplicate entries on FVSOut screen
                     for (int i = 0; i < oRxPackageItemCollection.Count; i++)
                     {
                         RxPackageItem rxPackageItem = oRxPackageItemCollection.Item(i);
