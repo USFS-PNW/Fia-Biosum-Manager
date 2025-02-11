@@ -1314,33 +1314,37 @@ namespace FIA_Biosum_Manager
         public void val_data(System.Collections.Generic.IList<string> lstRx)
         {
             this.m_intError = 0;
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
             if (this.rdoTreatment.Checked == true)
             {
-                string strFvsMDB =
-                    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                    "\\db\\fvsmaster.mdb";
-                m_oAdo.OpenConnection(m_oAdo.getMDBConnString(strFvsMDB, "", ""));
-                string strRxClause = "AND RX IN (";
-                foreach (string strRx in lstRx)
+                var dataSource = this.ReferenceProcessorScenarioForm.LoadedQueries.m_oDataSource;
+                string strRxDb = dataSource.getFullPathAndFile(Datasource.TableTypes.Rx);
+                string strTable = dataSource.getValidDataSourceTableName(Datasource.TableTypes.Rx);
+                using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strRxDb)))
                 {
-                    strRxClause = strRxClause + "'" + strRx + "',";
-                }
-                //Trim the trailing comma
-                strRxClause = strRxClause.Substring(0, (strRxClause.Length - 1));
-                strRxClause = strRxClause + " )";
-                m_oAdo.m_strSQL = "SELECT * from " + Tables.FVS.DefaultRxTableName + " " +
-                                  "WHERE (TRIM(HarvestMethodLowSlope) = '' " +
-                                  "OR TRIM(HarvestMethodSteepSlope) = '') " + strRxClause;
-                m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                if (m_oAdo.m_intError == 0)
-                {
-                    if (m_oAdo.m_OleDbDataReader.HasRows)
+                    oConn.Open();
+                    string strRxClause = "AND RX IN (";
+                    foreach (string strRx in lstRx)
                     {
-                        this.m_intError = -1;
-                        MessageBox.Show("Harvest method is selected to be defined by treatment but at " +
-                                        "least one treatment is not associated with a harvest method!", "FIA Biosum", 
-                                        System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                        return;
+                        strRxClause = strRxClause + "'" + strRx + "',";
+                    }
+                    //Trim the trailing comma
+                    strRxClause = strRxClause.Substring(0, (strRxClause.Length - 1));
+                    strRxClause = strRxClause + " )";
+                    oDataMgr.m_strSQL = "SELECT * from " + strTable + " " +
+                                      "WHERE (TRIM(HarvestMethodLowSlope) = '' " +
+                                      "OR TRIM(HarvestMethodSteepSlope) = '') " + strRxClause;
+                    oDataMgr.SqlQueryReader(oConn, oDataMgr.m_strSQL);
+                    if (oDataMgr.m_intError == 0)
+                    {
+                        if (oDataMgr.m_DataReader.HasRows)
+                        {
+                            this.m_intError = -1;
+                            MessageBox.Show("Harvest method is selected to be defined by treatment but at " +
+                                            "least one treatment is not associated with a harvest method!", "FIA Biosum",
+                                            System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+                            return;
+                        }
                     }
                 }
             }
