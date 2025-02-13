@@ -860,8 +860,6 @@ namespace FIA_Biosum_Manager
 
                     entryListItem.SubItems.Add(strVariant);
                     this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_VARIANT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
-                    if (!System.IO.Directory.Exists(txtDataDir.Text.Trim() + "\\" + strVariant))
-                        System.IO.Directory.CreateDirectory(txtDataDir.Text.Trim() + "\\" + strVariant);
                     //FVS_StandInit Stand_ID count
                     entryListItem.SubItems.Add(" ");
                     this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_fvs_input.COL_STANDCOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
