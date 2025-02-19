@@ -207,6 +207,7 @@ namespace FIA_Biosum_Manager
 		public static string g_strAppVer = "5.11.2";
         public static string g_strBiosumDataDir = "\\FIABiosum";
         public static int g_intRefDbVer = 8;
+        public static int g_intRefSqliteDbVer = 10;
         public static bool g_bUseOracleXE = false;
 
 		private System.Windows.Forms.MenuItem mnuSettings;
@@ -4460,7 +4461,7 @@ namespace FIA_Biosum_Manager
                             oDataMgr.m_strSQL = "SELECT version_num FROM " + Tables.Reference.DefaultBiosumReferenceVersionTableName;
                             double dblVersion = oDataMgr.getSingleDoubleValueFromSQLQuery(conn, oDataMgr.m_strSQL, 
                                 Tables.Reference.DefaultBiosumReferenceVersionTableName);
-                            if (dblVersion >= g_intRefDbVer)
+                            if (dblVersion >= g_intRefSqliteDbVer)
                             {
                                 bCopyDatabase = false;
                             }
