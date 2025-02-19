@@ -150,7 +150,9 @@ namespace FIA_Biosum_Manager
                 // https://learn.microsoft.com/en-us/answers/questions/1129597/wpf-apps-crash-on-windows-10-11-after-windows-upda?page=2#answers
                 // 28-FEB-2023: Created custom GetFixedDocumentSequence function per above posting to get around patch breaking the built-in
                 // GetFixedDocumentSequence. It seems slower but does work
-                xpsDocumentViewer.xpsViewer1.Document = this.GetFixedDocumentSequence(xpsDoc);
+                //xpsDocumentViewer.xpsViewer1.Document = this.GetFixedDocumentSequence(xpsDoc);
+                var fixedDocumentSequence = xpsDoc.GetFixedDocumentSequence();  // 13-FEB-2025: Switching back to the built-in GetFixedDocumentSequence(). It appears to work again.
+                xpsDocumentViewer.xpsViewer1.Document = fixedDocumentSequence;
                 xpsDocumentViewer.ReferenceHelp = this;
 
                 m_intCurrentPageNumber = PageNumber;
@@ -168,7 +170,7 @@ namespace FIA_Biosum_Manager
                 m_oXpsDocument = xpsDoc;
                 xpsDocumentViewer.ShowDialog();
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 MessageBox.Show("An error occurred while trying to display the Help! Please contact the BioSum support.", "FIA Biosum");
             }                     
