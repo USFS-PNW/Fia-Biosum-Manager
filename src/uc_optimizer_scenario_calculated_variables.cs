@@ -3714,8 +3714,6 @@ namespace FIA_Biosum_Manager
                                         lblFvsVariableName.Text + " FROM " + strSourcePostTable;
                             m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
 
-                            m_oDataMgr.AddColumn(conn, strTargetPreTable, lblFvsVariableName.Text + "_null_count", "INTEGER", "");
-                            m_oDataMgr.AddColumn(conn, strTargetPostTable, lblFvsVariableName.Text + "_null_count", "INTEGER", "");
                             bNewTables = true;
                         }
                     }
@@ -3739,15 +3737,16 @@ namespace FIA_Biosum_Manager
                     frmMain.g_sbpInfo.Text = "Ready";
                     frmMain.g_oFrmMain.DeactivateStandByAnimation();
 
-                    MessageBox.Show("Variable calculation complete! " +
+                    MessageBox.Show("Variable calculation complete!\n\n" +
                         "For the variable " + lblFvsVariableName.Text + ", " + intMissing + " stand-package " +
                         "combinations had more than " + cmbThreshold.SelectedItem + " missing cases in the PREPOST data and were " +
                         "therefore attributed as NULL in the Weighted tables (" +
                         "and will need to be accounted for in Optimizer if the variable is used " +
-                        "in effectiveness determination); " + intCorrected + " stand-package combinations " +
-                        "had fewer than " + cmbThreshold.SelectedItem + " missing cases, so the Weighted tables " +
-                        "contain a value based only on the non-null cases; and " + intCorrect +
-                        " stand-package combinations had no missing cases. " +
+                        "in effectiveness determination).\n\n" + intCorrected + 
+                        " stand-package combinations " +
+                        "had " + cmbThreshold.SelectedItem + " or fewer missing cases, so the Weighted tables " +
+                        "contain a value based only on the non-null cases.\n\n" +
+                        intCorrect + " stand-package combinations had no missing cases.\n\n" +
                         "Click OK to close this dialog.", "FIA Biosum");
                 }
             }
@@ -5817,7 +5816,6 @@ namespace FIA_Biosum_Manager
 
                 m_oDataMgr.m_DataReader.Close();
 
-
                 // Sum by rxpackage across cycles
                 m_oDataMgr.m_strSQL = "CREATE TABLE " + strWeightsByRxPkgPreTable +
                 " AS SELECT biosum_cond_id, rxpackage, \'0\' AS rx, " +
@@ -5873,12 +5871,15 @@ namespace FIA_Biosum_Manager
                 {
                     m_oDataMgr.AddColumn(prePostConn, strTargetPreTable,
                         strVariableName, "DOUBLE", "");
-                    m_oDataMgr.AddColumn(prePostConn, strTargetPreTable,
-                        strVariableName + "_null_count", "INTEGER", "");
                     m_oDataMgr.AddColumn(prePostConn, strTargetPostTable,
                         strVariableName, "DOUBLE", "");
+                }
+                if (correctionFactors.Keys.Count > 0)
+                {
+                    m_oDataMgr.AddColumn(prePostConn, strTargetPreTable,
+                    strVariableName + "_null_count", "INTEGER", "");
                     m_oDataMgr.AddColumn(prePostConn, strTargetPostTable,
-                        strVariableName + "_null_count", "INTEGER", "");
+                    strVariableName + "_null_count", "INTEGER", "");
                 }
                 prePostConn.Close();
             }
@@ -5905,8 +5906,7 @@ namespace FIA_Biosum_Manager
                 }
 
                 m_oDataMgr.m_strSQL = "UPDATE " + strTargetPreTable + " AS f " +
-                "SET " + strVariableName + "_null_count = 0, " +
-                strVariableName + " = (SELECT (sum_pre + sum_post) FROM " + strWeightsByRxPkgPostTable +
+                "SET " + strVariableName + " = (SELECT (sum_pre + sum_post) FROM " + strWeightsByRxPkgPostTable +
                 " AS pt INNER JOIN " + strWeightsByRxPkgPreTable + " AS pe ON pt.biosum_cond_id = pe.biosum_cond_id " +
                 "WHERE pe.biosum_cond_id = f.biosum_cond_id AND pt.rxpackage = '" + strBaselinePkg +
                 "' AND pe.rxpackage = '" + strBaselinePkg + "') WHERE f.rxcycle = '1'";
@@ -5915,8 +5915,7 @@ namespace FIA_Biosum_Manager
                 _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
 
                 m_oDataMgr.m_strSQL = "UPDATE " + strTargetPostTable + " AS f " +
-                    "SET " + strVariableName + "_null_count = 0, " +
-                    strVariableName + " = (SELECT (sum_pre + sum_post) FROM " + strWeightsByRxPkgPostTable +
+                    "SET " + strVariableName + " = (SELECT (sum_pre + sum_post) FROM " + strWeightsByRxPkgPostTable +
                     " AS pt INNER JOIN " + strWeightsByRxPkgPreTable + " AS pe ON pt.rxpackage = pe.rxpackage AND pt.biosum_cond_id = pe.biosum_cond_id " +
                     "WHERE pe.rxpackage = f.rxpackage AND pe.biosum_cond_id = f.biosum_cond_id) " + "WHERE f.rxcycle = '1'";
                 _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);

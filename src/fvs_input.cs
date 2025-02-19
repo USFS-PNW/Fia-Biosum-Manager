@@ -886,12 +886,14 @@ namespace FIA_Biosum_Manager
                     string strStand_ID = "null";
                     string strSite_Species = "null";
                     string strSite_Index = "null";
+                    string strBase_Age = "null";
 
                     frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", x);
                     strStand_ID = "\'" + this.m_dt.Rows[x]["biosum_cond_id"].ToString().Trim() + "\'";
                     oSiteIndex.getSiteIndex(m_dt.Rows[x]);
                     strSite_Species = "\'" + oSiteIndex.SiteIndexSpeciesAlphaCode + "\'";
                     strSite_Index = oSiteIndex.SiteIndex;
+                    strBase_Age = oSiteIndex.BaseAge;
 
                     if (strSite_Species.Contains("@"))
                     {
@@ -903,11 +905,16 @@ namespace FIA_Biosum_Manager
                         strSite_Index = "null";
                     }
 
+                    if (strBase_Age.Contains("@") || strBase_Age == "")
+                    {
+                        strBase_Age = "null";
+                    }
+
                     if (strSite_Species != "null" && strSite_Index != "null")
                     {
                         m_ado.m_strSQL =
                             Queries.FVS.FVSInput.StandInit.InsertSiteIndexSpeciesRowNew(strStand_ID, strSite_Species,
-                                strSite_Index);
+                                strSite_Index, strBase_Age);
                         DebugLogSQL(m_ado.m_strSQL);
                         m_ado.SqlNonQuery(conn, m_ado.m_strSQL);
                     }
@@ -1779,6 +1786,7 @@ namespace FIA_Biosum_Manager
             string _strFVSVariant = "";
             string _strSiteIndexSpecies = "";
             string _strSiteIndex = "";
+            string _strBaseAge = "";
             string _strSiteIndexSpeciesAlphaCode = "";
             string _strCCHabitatTypeCd;
             IDictionary<String, String> _dictSiteIdxEq;
@@ -1871,6 +1879,11 @@ namespace FIA_Biosum_Manager
             {
                 get { return _strSiteIndex; }
                 set { _strSiteIndex = value; }
+            }
+            public string BaseAge
+            {
+                get { return _strBaseAge; }
+                set { _strBaseAge = value; }
             }
             public string SiteIndexSpeciesAlphaCode
             {
@@ -2200,6 +2213,7 @@ namespace FIA_Biosum_Manager
                 this.SiteIndex = "@";
                 this.SiteIndexSpecies = "@";
                 this.SiteIndexSpeciesAlphaCode = "@";
+                this.BaseAge = "@";
 
                 double dblSiteIndex = 0;
 
@@ -2431,6 +2445,8 @@ namespace FIA_Biosum_Manager
                 int p_intSiTree)
             {
 
+                // added base age as parameter for several equations
+                // input 0 for that paramter for the old method
 
                 //
                 //Western Cascades variant
@@ -2440,7 +2456,7 @@ namespace FIA_Biosum_Manager
 
                     if (p_intSISpCd == 11) //pacific silver fir
                     {
-                        p_dblSiteIndex = ABAM2(p_intSIAgeDia, p_intSIHtFt);
+                        p_dblSiteIndex = ABAM2(p_intSIAgeDia, p_intSIHtFt, 0);
                         p_intSIFVSSpecies = 11;
                     }
                     else if (p_intSISpCd == 17 || p_intSISpCd == 15)  //grand fir or white fir
@@ -2460,7 +2476,7 @@ namespace FIA_Biosum_Manager
                     }
                     else if (p_intSISpCd == 22) //noble fir
                     {
-                        p_dblSiteIndex = ABPR1(p_intSIAgeDia, p_intSIHtFt);
+                        p_dblSiteIndex = ABPR1(p_intSIAgeDia, p_intSIHtFt, 0);
                         p_intSIFVSSpecies = 22;
                     }
                     else if (p_intSISpCd == 42 ||
@@ -2468,7 +2484,7 @@ namespace FIA_Biosum_Manager
                         p_intSISpCd == 202 ||
                         p_intSISpCd == 242)  //Alaska cedar, western white pine, Douglas-fir, red cedar
                     {
-                        p_dblSiteIndex = qPSME13(p_intSIAgeDia, p_intSIHtFt);
+                        p_dblSiteIndex = qPSME13(p_intSIAgeDia, p_intSIHtFt, 0);
                         p_intSIFVSSpecies = 202;
                     }
                     else if (p_intSISpCd == 108) //lodgepole
@@ -2482,7 +2498,7 @@ namespace FIA_Biosum_Manager
                     }
                     else if (p_intSISpCd == 119) //western white pine
                     {
-                        p_dblSiteIndex = PIMO3(p_intSIAgeDia, p_intSIHtFt);
+                        p_dblSiteIndex = PIMO3(p_intSIAgeDia, p_intSIHtFt, 0);
                         p_intSIFVSSpecies = 119;
                     }
                     else if (p_intSISpCd == 122)  //ponderosa pine
@@ -2507,7 +2523,7 @@ namespace FIA_Biosum_Manager
                     }
                     else if (p_intSISpCd == 72 || p_intSISpCd == 73) //subalpine larch (larix lyallii)
                     {
-                        p_dblSiteIndex = LAOC1_OR(p_intSIAgeDia, p_intSIHtFt);
+                        p_dblSiteIndex = LAOC1_OR(p_intSIAgeDia, p_intSIHtFt, 0);
                         p_intSIFVSSpecies = 73;
                     }
                     else if (p_intSISpCd == 211 ||
@@ -2533,7 +2549,7 @@ namespace FIA_Biosum_Manager
                         //black cottonwood, white oak, juniper, whitebark pine,
                         //knobcone pine, pacific yew
                         //pacific dogwood, hawthorne, bitter cherry, willow
-                        p_dblSiteIndex = qPSME13(p_intSIAgeDia, p_intSIHtFt);
+                        p_dblSiteIndex = qPSME13(p_intSIAgeDia, p_intSIHtFt, 0);
                         p_intSIFVSSpecies = 202;
                     }
                     else
@@ -2555,7 +2571,7 @@ namespace FIA_Biosum_Manager
                     }
                     else if (p_intSISpCd == 73)  //western larch
                     {
-                        p_dblSiteIndex = LAOC1_OR(p_intSIAgeDia, p_intSIHtFt);
+                        p_dblSiteIndex = LAOC1_OR(p_intSIAgeDia, p_intSIHtFt, 0);
                         p_intSIFVSSpecies = 73;
                     }
                     else if (p_intSISpCd == 202) //Douglas-fir
@@ -2615,7 +2631,7 @@ namespace FIA_Biosum_Manager
                 {
                     if (p_intSISpCd == 11) //pacific silver fir
                     {
-                        p_dblSiteIndex = ABAM2(p_intSIAgeDia, p_intSIHtFt);
+                        p_dblSiteIndex = ABAM2(p_intSIAgeDia, p_intSIHtFt, 0);
                         p_intSIFVSSpecies = 11;
                     }
                     else if (p_intSISpCd == 17 || p_intSISpCd == 15)  //grand fir or white fir
@@ -2640,7 +2656,7 @@ namespace FIA_Biosum_Manager
                     }
                     else if (p_intSISpCd == 22) //noble fir
                     {
-                        p_dblSiteIndex = ABPR1(p_intSIAgeDia, p_intSIHtFt);
+                        p_dblSiteIndex = ABPR1(p_intSIAgeDia, p_intSIHtFt, 0);
                         p_intSIFVSSpecies = 22;
                     }
                     else if (p_intSISpCd == 108) //lodgepole
@@ -2654,7 +2670,7 @@ namespace FIA_Biosum_Manager
                     }
                     else if (p_intSISpCd == 119) //western white pine
                     {
-                        p_dblSiteIndex = PIMO3(p_intSIAgeDia, p_intSIHtFt);
+                        p_dblSiteIndex = PIMO3(p_intSIAgeDia, p_intSIHtFt, 0);
                         p_intSIFVSSpecies = 119;
                     }
                     else if (p_intSISpCd == 122)  //ponderosa pine
@@ -2679,7 +2695,7 @@ namespace FIA_Biosum_Manager
                     }
                     else if (p_intSISpCd == 73 || p_intSISpCd == 72)  //western larch
                     {
-                        p_dblSiteIndex = LAOC1_OR(p_intSIAgeDia, p_intSIHtFt);
+                        p_dblSiteIndex = LAOC1_OR(p_intSIAgeDia, p_intSIHtFt, 0);
                         p_intSIFVSSpecies = 73;
                     }
                     else if (p_intSISpCd == 42 ||
@@ -2707,7 +2723,7 @@ namespace FIA_Biosum_Manager
                         //paper birch, golden chink, quaking aspen
                         // black cottonwood, white oak, juniper, whitebark pine, knobcone pine, pacific yew
                         //pacific dogwood, hawthorne, bitter cherry, willow
-                        p_dblSiteIndex = qPSME13(p_intSIAgeDia, p_intSIHtFt);
+                        p_dblSiteIndex = qPSME13(p_intSIAgeDia, p_intSIHtFt, 0);
                         p_intSIFVSSpecies = 202;
 
                     }
@@ -2729,7 +2745,7 @@ namespace FIA_Biosum_Manager
                     }
                     else if (p_intSISpCd == 73)  //western larch
                     {
-                        p_dblSiteIndex = LAOC1_OR(p_intSIAgeDia, p_intSIHtFt);
+                        p_dblSiteIndex = LAOC1_OR(p_intSIAgeDia, p_intSIHtFt, 0);
                         p_intSIFVSSpecies = 73;
                     }
                     else if (p_intSISpCd == 202) //Douglas-fir
@@ -3047,7 +3063,7 @@ namespace FIA_Biosum_Manager
                         //white-fir, Douglas-fir, western hemlock
                         //sugar pine (!), brewer spruce, giant sequoia, bishop pine
 
-                        p_dblSiteIndex = zPSME14(p_intSIAgeDia, p_intSIHtFt);
+                        p_dblSiteIndex = zPSME14(p_intSIAgeDia, p_intSIHtFt, 0);
                         p_intSIFVSSpecies = 202;
                     }
                     else if (p_intSISpCd == 20 || p_intSISpCd == 21 ||
@@ -3075,7 +3091,7 @@ namespace FIA_Biosum_Manager
                     {
                         //Jeffrey pine, western white pine, ponderosa pine,
                         //Monterey pine, gray pine
-                        p_dblSiteIndex = zPIPO9(p_intSIAgeDia, p_intSIHtFt);
+                        p_dblSiteIndex = zPIPO9(p_intSIAgeDia, p_intSIHtFt, 0);
                         p_intSIFVSSpecies = 122;
                     }
                     else if (p_intSISpCd == 818 || p_intSISpCd == 231 ||
@@ -3148,7 +3164,7 @@ namespace FIA_Biosum_Manager
                             p_dblSiteIndex = ABGR1(p_intSIAgeDia, p_intSIHtFt);
                             break;
                         case "LAOC1_OR":
-                            p_dblSiteIndex = LAOC1_OR(p_intSIAgeDia, p_intSIHtFt);
+                            p_dblSiteIndex = LAOC1_OR(p_intSIAgeDia, p_intSIHtFt, 0);
                             break;
                         case "PIEN3":
                             p_dblSiteIndex = PIEN3(p_intSIAgeDia, p_intSIHtFt);
@@ -3200,6 +3216,7 @@ namespace FIA_Biosum_Manager
                 string strEquation = "";
                 string strSlfSpCd = "";
                 string strRegion = "";
+                string strBaseAge = "";
                 if (_dictSiteIdxEq.ContainsKey(strKey))
                 {
                     // If the key is found extract the values from the delimited string
@@ -3207,28 +3224,46 @@ namespace FIA_Biosum_Manager
                     strEquation = arrValues[0];
                     strSlfSpCd = arrValues[1];
                     strRegion = arrValues[2];
+                    strBaseAge = arrValues[3];
                 }
+                if (_strBaseAge != strBaseAge)
+                {
+                    _strBaseAge = strBaseAge;
+                }
+                
                 // Reset site index and species code, in case they aren't found in database
                 p_dblSiteIndex = 0;
+
+                int intBaseAge = 0;
+                if (!strBaseAge.Contains("@") && strBaseAge != "")
+                {
+                    intBaseAge = Convert.ToInt32(strBaseAge);
+                }
                 // Return the numeric FVS-FIA species code; 
                 p_intSIFVSSpecies = p_intSISpCd;
                 // Calculate the site index for the equation from the database
                 switch (strEquation)
                 {
                     case "ABAM2":
-                        p_dblSiteIndex = ABAM2(p_intSIAgeDia, p_intSIHtFt);
+                        p_dblSiteIndex = ABAM2(p_intSIAgeDia, p_intSIHtFt, intBaseAge);
                         break;
                     case "ABGR1":
                         p_dblSiteIndex = ABGR1(p_intSIAgeDia, p_intSIHtFt);
                         break;
                     case "ABPR1":
-                        p_dblSiteIndex = ABPR1(p_intSIAgeDia, p_intSIHtFt);
+                        p_dblSiteIndex = ABPR1(p_intSIAgeDia, p_intSIHtFt, intBaseAge);
+                        break;
+                    case "ALRU1":
+                        p_dblSiteIndex = ALRU1(p_intSIAgeDia, p_intSIHtFt);
                         break;
                     case "ALRU2":
                         p_dblSiteIndex = ALRU2(p_intSIAgeDia, p_intSIHtFt);
                         break;
                     case "LAOC1_OR":
-                        p_dblSiteIndex = LAOC1_OR(p_intSIAgeDia, p_intSIHtFt);
+                        p_dblSiteIndex = LAOC1_OR(p_intSIAgeDia, p_intSIHtFt, intBaseAge);
+                        break;
+                    case "LAOC1_WA":
+                        p_dblSiteIndex = LAOC1_WA(p_intSIAgeDia, p_intSIHtFt);
                         break;
                     case "PIEN3":
                         p_dblSiteIndex = PIEN3(p_intSIAgeDia, p_intSIHtFt);
@@ -3237,7 +3272,7 @@ namespace FIA_Biosum_Manager
                         p_dblSiteIndex = PIMO2(p_intSIAgeDia, p_intSIHtFt);
                         break;
                     case "PIMO3":
-                        p_dblSiteIndex = PIMO3(p_intSIAgeDia, p_intSIHtFt);
+                        p_dblSiteIndex = PIMO3(p_intSIAgeDia, p_intSIHtFt, intBaseAge);
                         break;
                     case "PIPO3":
                         p_dblSiteIndex = PIPO3(p_intSIAgeDia, p_intSIHtFt);
@@ -3277,7 +3312,7 @@ namespace FIA_Biosum_Manager
                         p_dblSiteIndex = qPSME12(p_intSIAgeDia, p_intSIHtFt);
                         break;
                     case "qPSME13":
-                        p_dblSiteIndex = qPSME13(p_intSIAgeDia, p_intSIHtFt);
+                        p_dblSiteIndex = qPSME13(p_intSIAgeDia, p_intSIHtFt, intBaseAge);
                         break;
                     case "zABCO2":
                         p_dblSiteIndex = zABCO2(p_intSIAgeDia, p_intSIHtFt);
@@ -3323,10 +3358,10 @@ namespace FIA_Biosum_Manager
                         p_dblSiteIndex = zPIPO8(p_intSIAgeDia, p_intSIHtFt);
                         break;
                     case "zPIPO9":
-                        p_dblSiteIndex = zPIPO9(p_intSIAgeDia, p_intSIHtFt);
+                        p_dblSiteIndex = zPIPO9(p_intSIAgeDia, p_intSIHtFt, intBaseAge);
                         break;
                     case "zPSME14":
-                        p_dblSiteIndex = zPSME14(p_intSIAgeDia, p_intSIHtFt);
+                        p_dblSiteIndex = zPSME14(p_intSIAgeDia, p_intSIHtFt, intBaseAge);
                         break;
                     case "zQUKE":
                         p_dblSiteIndex = zQUKE(p_intSIAgeDia, p_intSIHtFt);
@@ -3355,7 +3390,7 @@ namespace FIA_Biosum_Manager
             /// <param name="p_intSIDiaAge"></param>
             /// <param name="p_intSIHtFt"></param>
             /// <returns></returns>
-            private double ABAM2(int p_intSIDiaAge, int p_intSIHtFt)
+            private double ABAM2(int p_intSIDiaAge, int p_intSIHtFt, int intBaseAge)
             {
                 double dblSI;
                 int intHtFt;
@@ -3363,10 +3398,10 @@ namespace FIA_Biosum_Manager
 
                 intAgeDia = p_intSIDiaAge;
                 intHtFt = p_intSIHtFt;
-                dblSI = intHtFt * Math.Exp((-0.0268797) * (intAgeDia - 100) / intAgeDia + 0.0046259 * Math.Pow((double)(intAgeDia - 100), 2) / 100
-                    - 0.0015862 * Math.Pow((double)(intAgeDia - 100), 3) / 10000
-                    - 0.0761453 * (intAgeDia - 100) / (Math.Pow((double)intHtFt, 0.5))
-                    + 0.0891105 * (intAgeDia - 100) / intHtFt);
+                dblSI = intHtFt * Math.Exp((-0.0268797) * (intAgeDia - intBaseAge) / intAgeDia + 0.0046259 * Math.Pow((double)(intAgeDia - intBaseAge), 2) / 100
+                    - 0.0015862 * Math.Pow((double)(intAgeDia - intBaseAge), 3) / 10000
+                    - 0.0761453 * (intAgeDia - intBaseAge) / (Math.Pow((double)intHtFt, 0.5))
+                    + 0.0891105 * (intAgeDia - intBaseAge) / intHtFt);
                 return dblSI;
             }
             /// <summary>
@@ -3495,20 +3530,20 @@ namespace FIA_Biosum_Manager
             /// <param name="p_intSIDiaAge"></param>
             /// <param name="p_intSIHtFt"></param>
             /// <returns></returns>
-            private double ABPR1(int p_intSIDiaAge, int p_intSIHtFt)
+            private double ABPR1(int p_intSIDiaAge, int p_intSIHtFt, int intBaseAge)
             {
                 double dblSI = 0;
                 double a, b, c;
-                if (p_intSIDiaAge <= 100)
+                if (p_intSIDiaAge <= intBaseAge)
                 {
                     dblSI = 4.5
                         + 0.2145
-                        * (100.0 - p_intSIDiaAge)
+                        * (intBaseAge - p_intSIDiaAge)
                         + 0.0089
-                        * ((100.0 - p_intSIDiaAge) * (100.0 - p_intSIDiaAge))
+                        * ((intBaseAge - p_intSIDiaAge) * (intBaseAge - p_intSIDiaAge))
                         + (p_intSIHtFt - 4.5)
-                        * (1.0 + 0.00386 * (100.0 - p_intSIDiaAge) + 1.2518
-                        * Math.Pow((100.0 - p_intSIDiaAge), 5) / Math.Pow(10.0, 10));
+                        * (1.0 + 0.00386 * (intBaseAge - p_intSIDiaAge) + 1.2518
+                        * Math.Pow((intBaseAge - p_intSIDiaAge), 5) / Math.Pow(10.0, 10));
                 }
                 else
                 {
@@ -3530,19 +3565,19 @@ namespace FIA_Biosum_Manager
             /// <param name="p_intSIDiaAge"></param>
             /// <param name="p_intSIHtFt"></param>
             /// <returns></returns>
-            private double qPSME13(int p_intSIDiaAge, int p_intSIHtFt)
+            private double qPSME13(int p_intSIDiaAge, int p_intSIHtFt, int intBaseAge)
             {
                 double dblSI = 0;
                 double a, b;
-                if (p_intSIDiaAge <= 100)
+                if (p_intSIDiaAge <= intBaseAge)
                 {
-                    a = .010006 * ((100 - p_intSIDiaAge) * (100 - p_intSIDiaAge));
-                    b = 1 + .00549779 * (100 - p_intSIDiaAge) + (1.46842 * Math.Pow(10, -14))
-                        * (Math.Pow(100 - p_intSIDiaAge, 7));
+                    a = .010006 * ((intBaseAge - p_intSIDiaAge) * (intBaseAge - p_intSIDiaAge));
+                    b = 1 + .00549779 * (intBaseAge - p_intSIDiaAge) + (1.46842 * Math.Pow(10, -14))
+                        * (Math.Pow(intBaseAge - p_intSIDiaAge, 7));
                 }
                 else
                 {
-                    a = 7.66772 * (Math.Exp(-0.95 * Math.Pow(100.0 / (p_intSIDiaAge - 100.0), 2)));
+                    a = 7.66772 * (Math.Exp(-0.95 * Math.Pow(100.0 / (p_intSIDiaAge - intBaseAge), 2)));
                     b = 1.0 - 0.730948 * Math.Pow(Math.Log10((double)p_intSIDiaAge) - 2, 0.8);
 
                 }
@@ -3690,7 +3725,7 @@ namespace FIA_Biosum_Manager
             /// <param name="p_intSIDiaAge"></param>
             /// <param name="p_intSIHtFt"></param>
             /// <returns></returns>
-            private double PIMO3(int p_intSIDiaAge, int p_intSIHtFt)
+            private double PIMO3(int p_intSIDiaAge, int p_intSIHtFt, int intBaseAge)
             {
                 double dblSI;
                 int intHtFt;
@@ -3700,7 +3735,7 @@ namespace FIA_Biosum_Manager
 
                 intDiaAge = p_intSIDiaAge;
                 intHtFt = p_intSIHtFt;
-                c1 = intDiaAge - 100;
+                c1 = intDiaAge - intBaseAge;
                 a = Math.Exp(0.37072 * (Math.Log((double)intDiaAge) - Math.Log((double)100)) - 0.03745 * c1 + (0.00021645) * Math.Pow((double)c1, 2));
                 b = (Math.Pow((double)intHtFt, (1 + 0.005936 * c1 - (0.00003879) * Math.Pow((double)c1, 2))));
                 dblSI = a * b;
@@ -3821,10 +3856,10 @@ namespace FIA_Biosum_Manager
             /// <param name="p_intSIDiaAge">ring count at breast height</param>
             /// <param name="p_intSIHtFt">total tree height in feet</param>
             /// <returns></returns>
-            private double LAOC1_OR(int p_intSIDiaAge, int p_intSIHtFt)
+            private double LAOC1_OR(int p_intSIDiaAge, int p_intSIHtFt, int intBaseAge)
             {
                 int intSIDiaAge = 0;
-                if (p_intSIDiaAge > 100) intSIDiaAge = 100;
+                if (p_intSIDiaAge > (intBaseAge * 2)) intSIDiaAge = (intBaseAge * 2);
                 else intSIDiaAge = p_intSIDiaAge;
 
                 double dblSI = 78.07
@@ -4258,7 +4293,7 @@ namespace FIA_Biosum_Manager
             /// <param name="p_intSIDiaAge"></param>
             /// <param name="p_intSIHtFt"></param>
             /// <returns></returns>
-            private double zPSME14(int p_intSIDiaAge, int p_intSIHtFt)
+            private double zPSME14(int p_intSIDiaAge, int p_intSIHtFt, int intBaseAge)
             {
                 double dblSI;
                 double temp;
@@ -4272,9 +4307,9 @@ namespace FIA_Biosum_Manager
                 b3 = 0.00797252;
                 b4 = -0.000133377;
 
-                temp = b1 * (p_intSIDiaAge - 50) + b2 *
-                    Math.Pow((double)(p_intSIDiaAge - 50), 2) + b3 * Math.Log(p_intSIHtFt - 4.5) *
-                    (p_intSIDiaAge - 50) + b4 * Math.Log(p_intSIHtFt - 4.5) * Math.Pow((double)(p_intSIDiaAge - 50), 2);
+                temp = b1 * (p_intSIDiaAge - intBaseAge) + b2 *
+                    Math.Pow((double)(p_intSIDiaAge - intBaseAge), 2) + b3 * Math.Log(p_intSIHtFt - 4.5) *
+                    (p_intSIDiaAge - intBaseAge) + b4 * Math.Log(p_intSIHtFt - 4.5) * Math.Pow((double)(p_intSIDiaAge - intBaseAge), 2);
                 dblSI = 4.5 + (p_intSIHtFt - 4.5) * Math.Exp(temp);
                 theTest = 0;
                 while (theTest < 0.999)
@@ -4297,7 +4332,7 @@ namespace FIA_Biosum_Manager
             /// <param name="p_intSIDiaAge"></param>
             /// <param name="p_intSIHtFt"></param>
             /// <returns></returns>
-            private double zPIPO9(int p_intSIDiaAge, int p_intSIHtFt)
+            private double zPIPO9(int p_intSIDiaAge, int p_intSIHtFt, int intBaseAge)
             {
                 double dblSI;
                 double temp;
@@ -4311,12 +4346,12 @@ namespace FIA_Biosum_Manager
                 b3 = 0.0120483;
                 b4 = -0.0000718058;
 
-                temp = b1 * (p_intSIDiaAge - 50) + b2 *
-                    Math.Pow((double)(p_intSIDiaAge - 50), 2) + b3 *
+                temp = b1 * (p_intSIDiaAge - intBaseAge) + b2 *
+                    Math.Pow((double)(p_intSIDiaAge - intBaseAge), 2) + b3 *
                     Math.Log(p_intSIHtFt - 4.5) *
-                    (p_intSIDiaAge - 50) + b4 *
+                    (p_intSIDiaAge - intBaseAge) + b4 *
                     Math.Log(p_intSIHtFt - 4.5) *
-                    Math.Pow((double)(p_intSIDiaAge - 50), 2);
+                    Math.Pow((double)(p_intSIDiaAge - intBaseAge), 2);
 
                 dblSI = 4.5 + (p_intSIHtFt - 4.5) * Math.Exp(temp);
                 theTest = 0;
@@ -4658,8 +4693,18 @@ namespace FIA_Biosum_Manager
                             {
                                 strSlfSpcd = Convert.ToString(oDataMgr.m_DataReader["SLF_SPCD"]);
                             }
-                            string strEquation = Convert.ToString(oDataMgr.m_DataReader["EQUATION"]);
-                            string strValue = strEquation + SI_DELIM + strSlfSpcd + SI_DELIM + strRegion;
+                            string strEquation = SI_EMPTY;
+                            if (oDataMgr.m_DataReader["EQUATION"] != System.DBNull.Value)
+                            {
+                                strEquation = Convert.ToString(oDataMgr.m_DataReader["EQUATION"]);
+                            }
+                            string strBaseAge = SI_EMPTY;
+                            if (oDataMgr.m_DataReader["BASE_AGE"] != System.DBNull.Value)
+                            {
+                                strBaseAge = Convert.ToString(oDataMgr.m_DataReader["BASE_AGE"]);
+                            }
+
+                            string strValue = strEquation + SI_DELIM + strSlfSpcd + SI_DELIM + strRegion + SI_DELIM + strBaseAge;
                             if (!_dictSiteIdxEq.ContainsKey(strFvsVariant + SI_DELIM + strFiaSpCd))
                             {
                                 _dictSiteIdxEq.Add(strFvsVariant + SI_DELIM + strFiaSpCd, strValue);
