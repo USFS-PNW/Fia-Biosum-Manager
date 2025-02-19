@@ -796,8 +796,8 @@ namespace FIA_Biosum_Manager
                                 }
                             }
                         }
+                        oDataMgr.m_DataReader.Close();
                     }
-                    oDataMgr.m_DataReader.Close();
                 }
             }
         }
@@ -1039,8 +1039,8 @@ namespace FIA_Biosum_Manager
                                             lstVariants.Add(strVariant);
                                         }
                                     }
+                                    oDataMgr.m_DataReader.Close();
                                 }
-                                oDataMgr.m_DataReader.Close();
                             }
                         }
                     }
