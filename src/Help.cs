@@ -245,6 +245,7 @@ namespace FIA_Biosum_Manager
 
         }
 
+        // Temporarily used to test workaround for MS Help issue #293 in December 2022. Proof of concept
         public void ShowPdfHelp(string p_strPdfFile, string p_strPageNumber)
         {
             System.Diagnostics.Process proc = new System.Diagnostics.Process();

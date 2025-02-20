@@ -2508,8 +2508,8 @@ namespace FIA_Biosum_Manager
             {
                 m_oHelp = new Help(m_xpsFile, m_oEnv);
             }
-            //m_oHelp.ShowHelp(new string[] { "DATABASE", "NEWPROJECT" });
-            m_oHelp.ShowPdfHelp(m_pdfFile, "1");
+            m_oHelp.ShowHelp(new string[] { "DATABASE", "NEWPROJECT" });
+            //m_oHelp.ShowPdfHelp(m_pdfFile, "1");
         }
 
 		

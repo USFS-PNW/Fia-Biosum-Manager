@@ -9069,7 +9069,8 @@ namespace FIA_Biosum_Manager
             if (m_oHelp == null)
             {
                 m_oHelp = new Help(m_xpsFile, m_oEnv);
-                m_oHelp.ShowPdfHelp(m_pdfFile, "2");
+                m_oHelp.ShowHelp(new string[] { "DATABASE", "PLOT_DATA_MENU" });
+                //m_oHelp.ShowPdfHelp(m_pdfFile, "2");
             }
         }
 
