@@ -4704,7 +4704,7 @@ namespace FIA_Biosum_Manager
                     "measday INTEGER," +
                     "elev INTEGER," +
                     "fvs_variant CHAR(2)," +
-                    "fvsloccode INTEGER," +
+                    "fvs_loc_cd INTEGER," +
                     "half_state CHAR(10)," +
                     "subplot_count_plot INTEGER," +
                     "gis_yard_dist_ft DOUBLE," +
@@ -4717,6 +4717,7 @@ namespace FIA_Biosum_Manager
                     "ecosubcd CHAR(7)," +
                     "biosum_status_cd INTEGER," +
                     "cn CHAR(34)," +
+                    "RDDISTCD INTEGER," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_plot_id))";
             }
 
@@ -4857,7 +4858,7 @@ namespace FIA_Biosum_Manager
                     "cn CHAR(34)," +
                     "biosum_status_cd INTEGER, " +
                     "model_YN CHAR(1), " +
-                    "dwm_fuelbed_typcd VARCHAR(3)," +
+                    "dwm_fuelbed_typcd CHAR(3)," +
                     "balive DOUBLE, " +
                     "stdorgcd INTEGER," + 
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id))";
@@ -4967,6 +4968,107 @@ namespace FIA_Biosum_Manager
                     "biosum_status_cd BYTE)";
 
             }
+            public void CreateSqliteTreeTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteTreeTableSQL(p_strTableName));
+                CreateSqliteTreeTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
+            }
+            public void CreateSqliteTreeTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "biosum_cond_id");
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "subp");
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx3", "tree");
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx4", "condid");
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx5", "idb_dmg_agent3_cd");
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx6", "idb_severity3_cd");
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx7", "fvs_tree_id");
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx8", "idb_alltree_id");
+            }
+            public string CreateSqliteTreeTableSQL (string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + "(" +
+                    "biosum_cond_id CHAR(25)," +
+                    "invyr INTEGER," +
+                    "statecd INTEGER," +
+                    "unitcd INTEGER," +
+                    "countycd INTEGER," +
+                    "subp INTEGER," +
+                    "tree INTEGER," +
+                    "condid INTEGER," +
+                    "statuscd INTEGER," +
+                    "spcd INTEGER," +
+                    "spgrpcd INTEGER," +
+                    "dia DOUBLE," +
+                    "diahtcd INTEGER," +
+                    "ht DOUBLE," +
+                    "htcd INTEGER," +
+                    "actualht DOUBLE," +
+                    "formcl INTEGER," +
+                    "treeclcd INTEGER," +
+                    "cr DOUBLE," +
+                    "cclcd INTEGER," +
+                    "cull DOUBLE," +
+                    "roughcull DOUBLE," +
+                    "decaycd INTEGER," +
+                    "stocking DOUBLE," +
+                    "tpacurr DOUBLE," +
+                    "wdldstem INTEGER," +
+                    "volcfnet DOUBLE," +
+                    "volcfgrs DOUBLE," +
+                    "volcsnet DOUBLE," +
+                    "volcsgrs DOUBLE," +
+                    "volbfnet DOUBLE," +
+                    "volbfgrs DOUBLE," +
+                    "voltsgrs DOUBLE," +
+                    "drybiot DOUBLE," +
+                    "drybiom DOUBLE," +
+                    "bhage INTEGER," +
+                    "cullbf DOUBLE," +
+                    "cullcf DOUBLE," +
+                    "cullsf DOUBLE," +
+                    "totage DOUBLE," +
+                    "mist_cl_cd INTEGER," +
+                    "agentcd INTEGER," +
+                    "damtyp1 INTEGER," +
+                    "damsev1 INTEGER," +
+                    "damtyp2 INTEGER," +
+                    "damsev2 INTEGER," +
+                    "tpa_unadj DOUBLE," +
+                    "idb_dmg_agent3_cd INTEGER," +
+                    "idb_severity3_cd INTEGER," +
+                    "fvs_dmg_ag1 CHAR(2)," +
+                    "fvs_dmg_sv1 CHAR(2)," +
+                    "fvs_dmg_ag2 CHAR(2)," +
+                    "fvs_dmg_sv2 CHAR(2)," +
+                    "fvs_dmg_ag3 CHAR(2)," +
+                    "fvs_dmg_sv3 CHAR(2)," +
+                    "inc10yr INTEGER," +
+                    "condprop_specific DOUBLE," +
+                    "sitree INTEGER," +
+                    "upper_dia DOUBLE," +
+                    "upper_dia_ht DOUBLE," +
+                    "centroid_dia DOUBLE," +
+                    "centroid_dia_ht_actual DOUBLE," +
+                    "sawht INTEGER," +
+                    "htdmp DOUBLE," +
+                    "boleht INTEGER," +
+                    "cull_fld INTEGER," +
+                    "culldead INTEGER," +
+                    "cullform INTEGER," +
+                    "cullmstop INTEGER," +
+                    "cfsnd INTEGER," +
+                    "bfsnd INTEGER," +
+                    "standing_dead_cd INTEGER," +
+                    "volcfsnd DOUBLE," +
+                    "drybio_bole DOUBLE," +
+                    "drybio_top DOUBLE," +
+                    "drybio_sapling DOUBLE," +
+                    "drybio_wdld_spp DOUBLE," +
+                    "fvs_tree_id CHAR(10)," +
+                    "idb_alltree_id INTEGER," +
+                    "cn CHAR(34)," +
+                    "biosum_status_cd INTEGER)";
+            }
             public void CreateSiteTreeTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
                 p_oAdo.SqlNonQuery(p_oConn, CreateSiteTreeTableSQL(p_strTableName));
@@ -4998,6 +5100,36 @@ namespace FIA_Biosum_Manager
                     "condlist INTEGER," +
                     "biosum_status_cd BYTE)";
 
+            }
+            public void CreateSqliteSiteTreeTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteSiteTreeTableSQL(p_strTableName));
+                CreateSqliteSiteTreeTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
+            }
+            public void CreateSqliteSiteTreeTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "condid");
+            }
+            public string CreateSqliteSiteTreeTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + "(" +
+                    "biosum_plot_id CHAR(24)," +
+                    "invyr INTEGER," +
+                    "condid INTEGER," +
+                    "tree INTEGER," +
+                    "spcd INREGER," +
+                    "dia DOUBLE," +
+                    "ht DOUBLE," +
+                    "agedia INTEGER," +
+                    "spgrpcd INTEGER," +
+                    "sitree INTEGER," +
+                    "sibase INTEGER," +
+                    "subp INTEGER," +
+                    "method INTEGER," +
+                    "sitree_est INTEGER," +
+                    "validcd INTEGER," +
+                    "condlist INTEGER," +
+                    "biosum_status_cd INTEGER)";
             }
             public void CreatePopEstnUnitTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
