@@ -5399,56 +5399,60 @@ namespace FIA_Biosum_Manager
                 string p_strFIADBCondTable,
                 string p_strRsCd,
                 string p_strEvalId,
-                string p_strCondProp)
+                string p_strCondProp,
+                string p_strFiadbPath)
             {
-                string[] strSQL = new string[21];
+                string[] strSQL = new string[22];
+
+                // ATTACH THE FIADB DATABASE
+                strSQL[0] = $@"ATTACH DATABASE '{p_strFiadbPath}' AS FIADB";
 
                 //
                 //CREATE THE BIOSUM PLOT TABLE WITH 
                 //ONLY THE CURRENTLY SELECTED EVALUATION
                 //
-                strSQL[0] = "CREATE TABLE BIOSUM_PLOT AS " +
+                strSQL[1] = "CREATE TABLE BIOSUM_PLOT AS " +
                             "SELECT p.* " + 
                             "FROM " + p_strFIADBPlotTable + " p, " + 
                                 "(SELECT DISTINCT PLT_CN " + 
-                                 "FROM " + p_strPpsaTable + " " + 
+                                 "FROM FIADB." + p_strPpsaTable + " " + 
                                  "WHERE RSCD=" + p_strRsCd + " AND EVALID=" + p_strEvalId + ") ppsa " + 
                             "WHERE p.CN = ppsa.PLT_CN";
                 //
                 //CREATE BIOSUM_PPSA
                 //
-                strSQL[1] = "CREATE TABLE BIOSUM_PPSA AS " +
-                            "SELECT ppsa.*,p.CYCLE,p.SUBCYCLE " + 
-                            "FROM " + p_strPpsaTable + " ppsa " + 
+                strSQL[2] = "CREATE TABLE BIOSUM_PPSA AS " +
+                            "SELECT ppsa.*,p.CYCLE,p.SUBCYCLE " +
+                            "FROM FIADB." + p_strPpsaTable + " ppsa " + 
                             "INNER JOIN BIOSUM_PLOT p " + 
                             "ON ppsa.PLT_CN=p.CN " + 
                             "WHERE RSCD=" + p_strRsCd + " AND EVALID=" + p_strEvalId;
                 //
                 //CREATE BIOSUM COND TABLE
                 //
-                strSQL[2] = "CREATE TABLE BIOSUM_COND AS " +
+                strSQL[3] = "CREATE TABLE BIOSUM_COND AS " +
                             "SELECT c.* FROM " + p_strFIADBCondTable + " c," + 
                             "(SELECT CN FROM BIOSUM_PLOT) p " + 
                             "WHERE c.PLT_CN = p.CN";
 
                 //change hazardous condition to sampled
-                strSQL[3] = "UPDATE BIOSUM_COND SET cond_status_cd = 1 " +
+                strSQL[4] = "UPDATE BIOSUM_COND SET cond_status_cd = 1 " +
                             "WHERE COND_NONSAMPLE_REASN_CD = 5";
 
                 //update condition satatus to NONSAMPLED if the condition proportion is less than .25
-                strSQL[4] = "UPDATE BIOSUM_COND SET cond_status_cd = 5 " +
+                strSQL[5] = "UPDATE BIOSUM_COND SET cond_status_cd = 5 " +
                             "WHERE cond_status_cd = 1 AND condprop_unadj < ." + p_strCondProp;
 
                 //join pop_estn_unit,pop_stratum,pop_eval tables into biosum_eus_temp
-                strSQL[5] = "CREATE TABLE BIOSUM_EUS_TEMP AS " +
+                strSQL[6] = "CREATE TABLE BIOSUM_EUS_TEMP AS " +
                             "SELECT pe.rscd, pe.evalid,ps.estn_unit,ps.stratumcd," +
                                    "pe.eval_descr,peu.estn_unit_descr,peu.arealand_eu," +
                                    "peu.areatot_eu , ps.p1pointcnt, ps.p2pointcnt," +
                                    "peu.p1pntcnt_eu as p1pointcnt_eu,peu.area_used," +
                                    "ps.adj_factor_macr,ps.adj_factor_subp," +
                                    "ps.adj_factor_micr,ps.expns,pe.LAND_ONLY " +
-                            "FROM " + p_strPopEstUnitTable + " peu," +
-                                      p_strPopEvalTable + " pe," + p_strPopStratumTable + " ps " +
+                            "FROM FIADB." + p_strPopEstUnitTable + " peu, FIADB." +
+                                      p_strPopEvalTable + " pe, FIADB." + p_strPopStratumTable + " ps " +
                                       "WHERE  ((pe.rscd=" + p_strRsCd + " AND pe.EVALID=" + p_strEvalId + ")) AND " +
                                               "(pe.rscd = ps.rscd AND pe.evalid = ps.evalid) AND " +
                                               "(ps.rscd = peu.rscd AND ps.evalid = peu.evalid AND " +
@@ -5457,7 +5461,7 @@ namespace FIA_Biosum_Manager
                 //
                 //SUM UP UNADJUSTED FACTORS FOR DENIED ACCESS
                 //
-                strSQL[6] = "CREATE TABLE BIOSUM_PPSA_DENIED_ACCESS AS " +
+                strSQL[7] = "CREATE TABLE BIOSUM_PPSA_DENIED_ACCESS AS " +
                             "SELECT DISTINCT ppsa.evalid, ppsa.estn_unit, ppsa.statecd, ppsa.stratumcd, ppsa.plot," +
                                             "ppsa.countycd, ppsa.subcycle, ppsa.cycle, ppsa.unitcd," +
                             " SUM(CASE WHEN eus.LAND_ONLY = 'N' AND c.COND_STATUS_CD IN(1, 2, 3, 4) THEN 0" +
@@ -5488,9 +5492,9 @@ namespace FIA_Biosum_Manager
                                      "ppsa.plot, ppsa.countycd, ppsa.subcycle, ppsa.cycle, ppsa.unitcd";
 
                 //DELETE DENIED_COND=1
-                strSQL[7] = "DELETE FROM BIOSUM_PPSA_DENIED_ACCESS WHERE DENIED_COND =  1";
+                strSQL[8] = "DELETE FROM BIOSUM_PPSA_DENIED_ACCESS WHERE DENIED_COND =  1";
                 //JOIN THE 2 TABLES
-                strSQL[8] = "CREATE TABLE BIOSUM_PPSA_TEMP AS " +
+                strSQL[9] = "CREATE TABLE BIOSUM_PPSA_TEMP AS " +
                             "SELECT ppsa.*," +
                                    "denied.denied_macr," +
                                    "denied.denied_micr," +
@@ -5510,7 +5514,7 @@ namespace FIA_Biosum_Manager
                 //
                 //CALCULATE ADJUSTMENTS
                 //
-                strSQL[9] = "CREATE TABLE BIOSUM_EUS_ACCESS AS" +
+                strSQL[10] = "CREATE TABLE BIOSUM_EUS_ACCESS AS" +
                                 " SELECT DISTINCT " +
                                 "eus.rscd, eus.evalid, eus.estn_unit, eus.stratumcd," +
                                 "eus.arealand_eu, eus.areatot_eu," +
@@ -5576,12 +5580,12 @@ namespace FIA_Biosum_Manager
                                     "eus.p2pointcnt," +
                                     "p2pointcnt_man";
 
-                strSQL[10] = "ALTER TABLE BIOSUM_EUS_ACCESS ADD COLUMN STRATUM_AREA DOUBLE";
-                strSQL[11] = "ALTER TABLE BIOSUM_EUS_ACCESS ADD COLUMN DOUBLE_SAMPLING INTEGER";
+                strSQL[11] = "ALTER TABLE BIOSUM_EUS_ACCESS ADD COLUMN STRATUM_AREA DOUBLE";
+                strSQL[12] = "ALTER TABLE BIOSUM_EUS_ACCESS ADD COLUMN DOUBLE_SAMPLING INTEGER";
                 //
                 //CALCULATE STRATUM AREA
                 //
-                strSQL[12] = "UPDATE BIOSUM_EUS_ACCESS " +
+                strSQL[13] = "UPDATE BIOSUM_EUS_ACCESS " +
                                 "SET double_sampling = " +
                                 "CASE WHEN p1pointcnt_eu is null OR p1pointcnt is null OR p1pointcnt = p1pointcnt_eu THEN 0 " +
                                 "ELSE 1 " +
@@ -5593,7 +5597,7 @@ namespace FIA_Biosum_Manager
                 //
                 //MERGE BIOSUM_EUS_ACCESS WITH BIOSUM_EUS_TEMP INTO  biosum_pop_stratum_adjustment_factors
                 //
-                strSQL[13] = "CREATE TABLE biosum_pop_stratum_adjustment_factors AS " +
+                strSQL[14] = "CREATE TABLE biosum_pop_stratum_adjustment_factors AS " +
                             "SELECT a.rscd,a.evalid," +
                                   "a.estn_unit,a.stratumcd," +
                                   "a.p2pointcnt_man,a.stratum_area," +
@@ -5610,12 +5614,12 @@ namespace FIA_Biosum_Manager
                              "a.estn_unit = b.estn_unit AND " +
                              "a.stratumcd = b.stratumcd";
 
-                strSQL[14] = "ALTER TABLE biosum_pop_stratum_adjustment_factors ADD COLUMN stratum_cn CHAR(34)";
+                strSQL[15] = "ALTER TABLE biosum_pop_stratum_adjustment_factors ADD COLUMN stratum_cn CHAR(34)";
                 //
                 //UPDATE THE  biosum_pop_stratum_adjustment_factors TABLE 
                 //WITH THE KEY COLUMN FROM THE POP_STRATUM TABLE
                 //
-                strSQL[15] = "UPDATE biosum_pop_stratum_adjustment_factors" +
+                strSQL[16] = "UPDATE biosum_pop_stratum_adjustment_factors" +
                     " SET (STRATUM_CN) =" +
                     " (SELECT POP_STRATUM.cn FROM " + p_strPopStratumTable +
                     " WHERE " + p_strPopStratumTable + ".RSCD = biosum_pop_stratum_adjustment_factors.RSCD" +
@@ -5636,11 +5640,11 @@ namespace FIA_Biosum_Manager
                 //
                 //CLEAN UP
                 //
-                strSQL[16] = "DROP TABLE BIOSUM_PPSA";
-                strSQL[17] = "DROP TABLE BIOSUM_EUS_TEMP";
-                strSQL[18] = "DROP TABLE BIOSUM_PPSA_DENIED_ACCESS";
-                strSQL[19] = "DROP TABLE BIOSUM_PPSA_TEMP";
-                strSQL[20] = "DROP TABLE BIOSUM_EUS_ACCESS";
+                strSQL[17] = "DROP TABLE BIOSUM_PPSA";
+                strSQL[18] = "DROP TABLE BIOSUM_EUS_TEMP";
+                strSQL[19] = "DROP TABLE BIOSUM_PPSA_DENIED_ACCESS";
+                strSQL[20] = "DROP TABLE BIOSUM_PPSA_TEMP";
+                strSQL[21] = "DROP TABLE BIOSUM_EUS_ACCESS";
                 return strSQL;
             }
              

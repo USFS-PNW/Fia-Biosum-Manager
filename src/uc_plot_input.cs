@@ -2157,9 +2157,8 @@ namespace FIA_Biosum_Manager
 
 
 
-                //open the FIADB ACCESS DbFile
-                DataMgr oDataMgr = new DataMgr();
-                string strConnection = oDataMgr.GetConnectionString(txtFiadbInputFile.Text.Trim());
+                //open the FIADBDbFile
+                string strConnection = SQLite.GetConnectionString(m_strTempDbFile);
                 using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
                 {
                     con.Open();
@@ -2167,32 +2166,32 @@ namespace FIA_Biosum_Manager
                     {
                         this.SetLabelValue(m_frmTherm.lblMsg, "Text", "Drop Work Tables");
                         SetThermValue(m_frmTherm.progressBar1, "Value", 10);
-                        if (oDataMgr.TableExist(con, "BIOSUM_PLOT"))
-                            oDataMgr.SqlNonQuery(con, "DROP TABLE BIOSUM_PLOT");
+                        if (SQLite.TableExist(con, "BIOSUM_PLOT"))
+                            SQLite.SqlNonQuery(con, "DROP TABLE BIOSUM_PLOT");
                         SetThermValue(m_frmTherm.progressBar1, "Value", 20);
-                        if (oDataMgr.TableExist(con, "BIOSUM_COND"))
-                            oDataMgr.SqlNonQuery(con, "DROP TABLE BIOSUM_COND");
+                        if (SQLite.TableExist(con, "BIOSUM_COND"))
+                            SQLite.SqlNonQuery(con, "DROP TABLE BIOSUM_COND");
                         SetThermValue(m_frmTherm.progressBar1, "Value", 30);
-                        if (oDataMgr.TableExist(con, frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName))
-                            oDataMgr.SqlNonQuery(con, "DROP TABLE " + frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName);
+                        if (SQLite.TableExist(con, frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName))
+                            SQLite.SqlNonQuery(con, "DROP TABLE " + frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName);
                         SetThermValue(m_frmTherm.progressBar1, "Value", 40);
-                        if (oDataMgr.TableExist(con, "BIOSUM_PPSA"))
-                            oDataMgr.SqlNonQuery(con, "DROP TABLE BIOSUM_PPSA");
+                        if (SQLite.TableExist(con, "BIOSUM_PPSA"))
+                            SQLite.SqlNonQuery(con, "DROP TABLE BIOSUM_PPSA");
                         SetThermValue(m_frmTherm.progressBar1, "Value", 50);
-                        if (oDataMgr.TableExist(con, "BIOSUM_EUS_TEMP"))
-                            oDataMgr.SqlNonQuery(con, "DROP TABLE BIOSUM_EUS_TEMP");
+                        if (SQLite.TableExist(con, "BIOSUM_EUS_TEMP"))
+                            SQLite.SqlNonQuery(con, "DROP TABLE BIOSUM_EUS_TEMP");
                         SetThermValue(m_frmTherm.progressBar1, "Value", 60);
-                        if (oDataMgr.TableExist(con, "BIOSUM_PPSA_DENIED_ACCESS"))
-                            oDataMgr.SqlNonQuery(con, "DROP TABLE BIOSUM_PPSA_DENIED_ACCESS");
+                        if (SQLite.TableExist(con, "BIOSUM_PPSA_DENIED_ACCESS"))
+                            SQLite.SqlNonQuery(con, "DROP TABLE BIOSUM_PPSA_DENIED_ACCESS");
                         SetThermValue(m_frmTherm.progressBar1, "Value", 70);
-                        if (oDataMgr.TableExist(con, "BIOSUM_PPSA_TEMP"))
-                            oDataMgr.SqlNonQuery(con, "DROP TABLE BIOSUM_PPSA_TEMP");
+                        if (SQLite.TableExist(con, "BIOSUM_PPSA_TEMP"))
+                            SQLite.SqlNonQuery(con, "DROP TABLE BIOSUM_PPSA_TEMP");
                         SetThermValue(m_frmTherm.progressBar1, "Value", 80);
-                        if (oDataMgr.TableExist(con, "BIOSUM_EUS_TEMP"))
-                            oDataMgr.SqlNonQuery(con, "DROP TABLE BIOSUM_EUS_TEMP");
+                        if (SQLite.TableExist(con, "BIOSUM_EUS_TEMP"))
+                            SQLite.SqlNonQuery(con, "DROP TABLE BIOSUM_EUS_TEMP");
                         SetThermValue(m_frmTherm.progressBar1, "Value", 90);
-                        if (oDataMgr.TableExist(con, "BIOSUM_EUS_ACCESS"))
-                            oDataMgr.SqlNonQuery(con, "DROP TABLE BIOSUM_EUS_ACCESS");
+                        if (SQLite.TableExist(con, "BIOSUM_EUS_ACCESS"))
+                            SQLite.SqlNonQuery(con, "DROP TABLE BIOSUM_EUS_ACCESS");
 
                         SetThermValue(m_frmTherm.progressBar1, "Value", 100);
                         System.Threading.Thread.Sleep(2000);
@@ -2206,7 +2205,8 @@ namespace FIA_Biosum_Manager
                             "COND",
                              m_strCurrFIADBRsCd,
                              m_strCurrFIADBEvalId,
-                             frmMain.g_oDelegate.GetControlPropertyValue(cmbCondPropPercent, "Text", false).ToString().Trim());
+                             frmMain.g_oDelegate.GetControlPropertyValue(cmbCondPropPercent, "Text", false).ToString().Trim(),
+                             frmMain.g_oDelegate.GetControlPropertyValue(txtFiadbInputFile, "Text", false).ToString().Trim());
                         SetThermValue(m_frmTherm.progressBar1, "Value", 0);
                         this.SetLabelValue(m_frmTherm.lblMsg, "Text", "Calculate Adjustment Factors For RsCd=" + m_strCurrFIADBRsCd + " and EvalId=" + m_strCurrFIADBEvalId);
 
@@ -2214,14 +2214,14 @@ namespace FIA_Biosum_Manager
                         {
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, strSql[x] + "\r\n");
-                            oDataMgr.SqlNonQuery(con, strSql[x]);
+                            SQLite.SqlNonQuery(con, strSql[x]);
                             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", 20 + x + 5);
-                            if (oDataMgr.m_intError != 0) break;
+                            if (SQLite.m_intError != 0) break;
                         }
                     }
                 }
 
-                m_intError = oDataMgr.m_intError;
+                m_intError = SQLite.m_intError;
                 SetThermValue(m_frmTherm.progressBar1, "Value", 100);
                 System.Threading.Thread.Sleep(2000);
                 SetThermValue(m_frmTherm.progressBar2, "Value", 60);
@@ -2241,33 +2241,33 @@ namespace FIA_Biosum_Manager
                     //plot table
                     strFIADBDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtFiadbInputFile, "Text", false);
                     strFIADBDbFile = strFIADBDbFile.Trim();
-                    strSourceTableName = "BIOSUM_PLOT";
-                    strDestTableLinkName = "fiadb_plot_input";
+                    //strSourceTableName = "BIOSUM_PLOT";
+                    //strDestTableLinkName = "fiadb_plot_input";
                     //oDao.CreateTableLink(this.m_strTempMDBFile,strDestTableLinkName,strFIADBDbFile,strSourceTableName,true);
                     //@ToDo: This is where it breaks because I have stopped creating the MS Access m_strTempMDBFile
                     //Should no longer be needed with conversion to SQLite. Use SQLite attach instead
-                    oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, strSourceTableName, strDestTableLinkName,
-                        ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 40);
+                    //oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, strSourceTableName, strDestTableLinkName,
+                    //    ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
+                    //SetThermValue(m_frmTherm.progressBar1, "Value", 40);
                     //cond table
-                    strSourceTableName = "BIOSUM_COND";
-                    strDestTableLinkName = "fiadb_cond_input";
-                    if (oDao.m_intError==0) oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, strSourceTableName, strDestTableLinkName,
-                                                ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 70);
+                    //strSourceTableName = "BIOSUM_COND";
+                    //strDestTableLinkName = "fiadb_cond_input";
+                    //if (oDao.m_intError==0) oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, strSourceTableName, strDestTableLinkName,
+                    //                            ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
+                    //SetThermValue(m_frmTherm.progressBar1, "Value", 70);
                     //biosum adjustment factors table
-                    strSourceTableName = frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName;
-                    strDestTableLinkName = "fiadb_biosum_adjustment_factors_input";
-                    if (oDao.m_intError==0) oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, strSourceTableName, strDestTableLinkName,
-                                                ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-                    m_intError = oDao.m_intError;
+                    //strSourceTableName = frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName;
+                    //strDestTableLinkName = "fiadb_biosum_adjustment_factors_input";
+                    //if (oDao.m_intError==0) oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, strSourceTableName, strDestTableLinkName,
+                    //                            ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
+                    //m_intError = oDao.m_intError;
                     
                     //destroy the object and release it from memory
-                    oDao.m_DaoWorkspace.Close();
-                    oDao.m_DaoWorkspace = null;
-                    oDao = null;
+                    //oDao.m_DaoWorkspace.Close();
+                    //oDao.m_DaoWorkspace = null;
+                    //oDao = null;
 
-                     m_intError = m_ado.m_intError;
+                     m_intError = SQLite.m_intError;
                     SetThermValue(m_frmTherm.progressBar1, "Value", 100);
                     System.Threading.Thread.Sleep(2000);
                     SetThermValue(m_frmTherm.progressBar2, "Value", 70);                  
@@ -2286,8 +2286,6 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_ado.m_strSQL+ "\r\n");
                     m_ado.SqlNonQuery(oConn, m_ado.m_strSQL);
                     SetThermValue(m_frmTherm.progressBar1, "Value", 50);
-                    
-
                     m_intError = m_ado.m_intError;
                 }
                 //append work table to production table
