@@ -4700,13 +4700,10 @@ namespace FIA_Biosum_Manager
                     "countycd INTEGER," +
                     p_strTableName + " INTEGER," +
                     "measyear INTEGER," +
-                    "measmon INTEGER," +
-                    "measday INTEGER," +
                     "elev INTEGER," +
                     "fvs_variant CHAR(2)," +
                     "fvs_loc_cd INTEGER," +
                     "half_state CHAR(10)," +
-                    "subplot_count_plot INTEGER," +
                     "gis_yard_dist_ft DOUBLE," +
                     "num_cond INTEGER," +
                     "one_cond_yn CHAR(1)," +
@@ -4814,7 +4811,6 @@ namespace FIA_Biosum_Manager
                     "condprop DOUBLE," +
                     "cond_status_cd INTEGER," +
                     "fortypcd INTEGER," +
-                    "ground_land_class_pnw CHAR(3)," +
                     "owncd INTEGER," +
                     "owngrpcd INTEGER," +
                     "reservcd INTEGER," +
@@ -4857,7 +4853,6 @@ namespace FIA_Biosum_Manager
                     "macrprop_unadj DOUBLE," +
                     "cn CHAR(34)," +
                     "biosum_status_cd INTEGER, " +
-                    "model_YN CHAR(1), " +
                     "dwm_fuelbed_typcd CHAR(3)," +
                     "balive DOUBLE, " +
                     "stdorgcd INTEGER," + 
@@ -5025,7 +5020,6 @@ namespace FIA_Biosum_Manager
                     "bhage INTEGER," +
                     "cullbf DOUBLE," +
                     "cullcf DOUBLE," +
-                    "cullsf DOUBLE," +
                     "totage DOUBLE," +
                     "mist_cl_cd INTEGER," +
                     "agentcd INTEGER," +
@@ -5034,15 +5028,6 @@ namespace FIA_Biosum_Manager
                     "damtyp2 INTEGER," +
                     "damsev2 INTEGER," +
                     "tpa_unadj DOUBLE," +
-                    "idb_dmg_agent3_cd INTEGER," +
-                    "idb_severity3_cd INTEGER," +
-                    "fvs_dmg_ag1 CHAR(2)," +
-                    "fvs_dmg_sv1 CHAR(2)," +
-                    "fvs_dmg_ag2 CHAR(2)," +
-                    "fvs_dmg_sv2 CHAR(2)," +
-                    "fvs_dmg_ag3 CHAR(2)," +
-                    "fvs_dmg_sv3 CHAR(2)," +
-                    "inc10yr INTEGER," +
                     "condprop_specific DOUBLE," +
                     "sitree INTEGER," +
                     "upper_dia DOUBLE," +
@@ -5065,7 +5050,6 @@ namespace FIA_Biosum_Manager
                     "drybio_sapling DOUBLE," +
                     "drybio_wdld_spp DOUBLE," +
                     "fvs_tree_id CHAR(10)," +
-                    "idb_alltree_id INTEGER," +
                     "cn CHAR(34)," +
                     "biosum_status_cd INTEGER)";
             }
@@ -5126,7 +5110,6 @@ namespace FIA_Biosum_Manager
                     "sibase INTEGER," +
                     "subp INTEGER," +
                     "method INTEGER," +
-                    "sitree_est INTEGER," +
                     "validcd INTEGER," +
                     "condlist INTEGER," +
                     "biosum_status_cd INTEGER)";
