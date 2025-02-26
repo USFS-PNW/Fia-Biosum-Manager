@@ -5001,7 +5001,7 @@ namespace FIA_Biosum_Manager
                     "formcl INTEGER," +
                     "treeclcd INTEGER," +
                     "cr DOUBLE," +
-                    "cclcd INTEGER," +
+                    "cclcd INTEGER DEFAULT 0," +
                     "cull DOUBLE," +
                     "roughcull DOUBLE," +
                     "decaycd INTEGER," +
