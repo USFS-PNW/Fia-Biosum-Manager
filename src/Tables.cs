@@ -5372,6 +5372,39 @@ namespace FIA_Biosum_Manager
                     "biosum_status_cd BYTE)";
             }
 
+            public void CreateSQLiteBiosumPopStratumAdjustmentFactorsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteBiosumPopStratumAdjustmentFactorsTableSQL(p_strTableName));
+                CreateSqliteBiosumPopStratumAdjustmentFactorsTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
+            }
+            public void CreateSqliteBiosumPopStratumAdjustmentFactorsTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "rscd,evalid");
+            }
+            public string CreateSqliteBiosumPopStratumAdjustmentFactorsTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "stratum_cn CHAR(34)," +
+                    "rscd DOUBLE," +
+                    "evalid DOUBLE," +
+                    "eval_descr CHAR(255)," +
+                    "estn_unit INTEGER," +
+                    "estn_unit_descr CHAR(255)," +
+                    "stratumcd INTEGER," +
+                    "p2pointcnt_man DOUBLE," +
+                    "double_sampling INTEGER," +
+                    "stratum_area DOUBLE," +
+                    "expns DOUBLE," +
+                    "pmh_macr DOUBLE," +
+                    "pmh_sub DOUBLE," +
+                    "pmh_micr DOUBLE," +
+                    "pmh_cond DOUBLE," +
+                    "adj_factor_macr DOUBLE," +
+                    "adj_factor_subp DOUBLE," +
+                    "adj_factor_micr DOUBLE," +
+                    "biosum_status_cd CHAR(1))";
+            }
+
             public void CreateDWMCoarseWoodyDebrisTable(FIA_Biosum_Manager.ado_data_access p_oAdo,
                 System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
