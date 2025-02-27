@@ -960,9 +960,7 @@ namespace FIA_Biosum_Manager
 				frmMain.g_oTables.m_oFIAPlot.CreateSiteTreeTable(p_ado,p_ado.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultSiteTreeTableName);
 				//tree table
 				frmMain.g_oTables.m_oFIAPlot.CreateTreeTable(p_ado,p_ado.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName);
-                //biosum pop stratum adjustment factors table
-                frmMain.g_oTables.m_oFIAPlot.CreateBiosumPopStratumAdjustmentFactorsTable(p_ado, p_ado.m_OleDbConnection, frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName);
-
+                //frmMain.g_oTables.m_oFIAPlot.CreateBiosumPopStratumAdjustmentFactorsTable(p_ado, p_ado.m_OleDbConnection, frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName);
 				p_ado.CloseConnection(p_ado.m_OleDbConnection);
 
                 //master.db file: Migrating POP tables to SQLite
@@ -980,6 +978,8 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopPlotStratumAssgnTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName);
                     //pop stratum table
                     frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopStratumTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName);
+                    //biosum pop stratum adjustment factors table
+                    frmMain.g_oTables.m_oFIAPlot.CreateSQLiteBiosumPopStratumAdjustmentFactorsTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName);
                 }
 
                 //
@@ -1305,7 +1305,7 @@ namespace FIA_Biosum_Manager
                     strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
                         "('BIOSUM Pop Stratum Adjustment Factors'," +
                         "'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," +
-                        "'master.mdb'," +
+                        "'master.db'," +
                         "'" + frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName + "');";
                     p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
 
