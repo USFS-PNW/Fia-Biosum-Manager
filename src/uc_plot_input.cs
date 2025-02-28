@@ -85,7 +85,6 @@ namespace FIA_Biosum_Manager
 		private string m_strTempMDBFile;
         private string m_strTempDbFile;
         private string m_strTempMDBFileConn;
-        private string m_strPopMDBFile;
         private System.Data.OleDb.OleDbConnection m_connTempMDBFile;
 		private FIA_Biosum_Manager.ado_data_access m_ado;
 		private System.Data.DataTable m_dtStateCounty;
@@ -2122,8 +2121,6 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.CurrentThreadProcessStarted = true;
           
             int x = 0;
-            string strSourceTableName = "";
-            string strDestTableLinkName = "";
             string strFIADBDbFile = "";
 
             m_intAddedPlotRows = 0;
@@ -2157,7 +2154,7 @@ namespace FIA_Biosum_Manager
 
 
 
-                //open the FIADBDbFile
+                //open the temp db file
                 string strConnection = SQLite.GetConnectionString(m_strTempDbFile);
                 using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
                 {
@@ -2196,6 +2193,8 @@ namespace FIA_Biosum_Manager
                         SetThermValue(m_frmTherm.progressBar1, "Value", 100);
                         System.Threading.Thread.Sleep(2000);
                         SetThermValue(m_frmTherm.progressBar2, "Value", 30);
+                        strFIADBDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtFiadbInputFile, "Text", false);
+                        strFIADBDbFile = strFIADBDbFile.Trim();
                         string[] strSql = Queries.FIAPlot.FIADBPlotInput_CalculateAdjustmentFactorsSQL(
                             "POP_PLOT_STRATUM_ASSGN",
                             "POP_ESTN_UNIT",
@@ -2206,7 +2205,7 @@ namespace FIA_Biosum_Manager
                              m_strCurrFIADBRsCd,
                              m_strCurrFIADBEvalId,
                              frmMain.g_oDelegate.GetControlPropertyValue(cmbCondPropPercent, "Text", false).ToString().Trim(),
-                             frmMain.g_oDelegate.GetControlPropertyValue(txtFiadbInputFile, "Text", false).ToString().Trim());
+                             strFIADBDbFile);
                         SetThermValue(m_frmTherm.progressBar1, "Value", 0);
                         this.SetLabelValue(m_frmTherm.lblMsg, "Text", "Calculate Adjustment Factors For RsCd=" + m_strCurrFIADBRsCd + " and EvalId=" + m_strCurrFIADBEvalId);
 
@@ -2229,18 +2228,16 @@ namespace FIA_Biosum_Manager
                 //create tablelinks to the projects main folder
                 if (this.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
                 {
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 0);
-                    this.SetLabelValue(m_frmTherm.lblMsg, "Text", "Create table links");
+                    //SetThermValue(m_frmTherm.progressBar1, "Value", 0);
+                    //this.SetLabelValue(m_frmTherm.lblMsg, "Text", "Create table links");
                     //create a table link from the newly created BIOSUM_ADJFACTORS into the master.mdb
 
                     //instatiate dao for creating links in the temp table
                     //to the fiadb plot, cond, and tree input tables
-                    dao_data_access oDao = new dao_data_access();
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 10);
+                    //dao_data_access oDao = new dao_data_access();
+                    //SetThermValue(m_frmTherm.progressBar1, "Value", 10);
                     //create links to the fiadb input tables in the temp mdb file
                     //plot table
-                    strFIADBDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtFiadbInputFile, "Text", false);
-                    strFIADBDbFile = strFIADBDbFile.Trim();
                     //strSourceTableName = "BIOSUM_PLOT";
                     //strDestTableLinkName = "fiadb_plot_input";
                     //oDao.CreateTableLink(this.m_strTempMDBFile,strDestTableLinkName,strFIADBDbFile,strSourceTableName,true);
@@ -2267,9 +2264,9 @@ namespace FIA_Biosum_Manager
                     //oDao.m_DaoWorkspace = null;
                     //oDao = null;
 
-                     m_intError = SQLite.m_intError;
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 100);
-                    System.Threading.Thread.Sleep(2000);
+                    //m_intError = SQLite.m_intError;
+                    //SetThermValue(m_frmTherm.progressBar1, "Value", 100);
+                    //System.Threading.Thread.Sleep(2000);
                     SetThermValue(m_frmTherm.progressBar2, "Value", 70);                  
                     
                 }
@@ -2279,29 +2276,41 @@ namespace FIA_Biosum_Manager
                 {
                     SetThermValue(m_frmTherm.progressBar1, "Value", 0);
                     this.SetLabelValue(m_frmTherm.lblMsg, "Text", "Deleting Old Data");
-                    //open the connection to the temp mdb file 
-                    this.m_ado.OpenConnection(m_ado.getMDBConnString(this.m_strTempMDBFile,"",""), ref oConn);
-                    m_ado.m_strSQL = "DELETE FROM " + this.m_strBiosumPopStratumAdjustmentFactorsTable + " WHERE biosum_status_cd=9 or (rscd=" + m_strCurrFIADBRsCd + " and evalid=" + m_strCurrFIADBEvalId + ")";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_ado.m_strSQL+ "\r\n");
-                    m_ado.SqlNonQuery(oConn, m_ado.m_strSQL);
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 50);
-                    m_intError = m_ado.m_intError;
-                }
-                //append work table to production table
-                if (this.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    this.SetLabelValue(m_frmTherm.lblMsg, "Text", "Appending New Data");
-                    //delete any previous rscd and evalid that equal the current ones
-                    m_ado.m_strSQL = "INSERT INTO " + this.m_strBiosumPopStratumAdjustmentFactorsTable + " SELECT a.*,9 AS biosum_status_cd FROM fiadb_biosum_adjustment_factors_input a";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_ado.m_strSQL + "\r\n");
-                    m_ado.SqlNonQuery(oConn, m_ado.m_strSQL);
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 100);
-                    SetThermValue(m_frmTherm.progressBar2, "Value", 100);
-                     System.Threading.Thread.Sleep(2000);
+                    //open the connection to the temp mdb file
+                    using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
+                    {
+                        con.Open();
+                        SQLite.m_strSQL = $@"ATTACH DATABASE '{m_strMasterDbFile}' AS MASTER";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(con, SQLite.m_strSQL);
+                        //delete any previous rscd and evalid that equal the current ones
+                        SQLite.m_strSQL = $@"DELETE FROM MASTER.{this.m_strBiosumPopStratumAdjustmentFactorsTable} WHERE biosum_status_cd=9 or (rscd={m_strCurrFIADBRsCd} and evalid={m_strCurrFIADBEvalId})";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(con, SQLite.m_strSQL);
+                        SetThermValue(m_frmTherm.progressBar1, "Value", 50);
+                        m_intError = SQLite.m_intError;
 
+                        //append work table to production table
+                        if (this.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                        {
+                            this.SetLabelValue(m_frmTherm.lblMsg, "Text", "Appending New Data");
+                            //SQLite.m_strSQL = $@"INSERT INTO MASTER.{this.m_strBiosumPopStratumAdjustmentFactorsTable} SELECT a.*,9 AS biosum_status_cd FROM biosum_pop_stratum_adjustment_factors a";
+                            SQLite.m_strSQL = $@"INSERT INTO MASTER.biosum_pop_stratum_adjustment_factors 
+                                SELECT stratum_cn,rscd,evalid,eval_descr,estn_unit,estn_unit_descr,stratumcd,
+                                p2pointcnt_man,double_sampling,stratum_area,expns,pmh_macr,pmh_sub,pmh_micr,
+                                pmh_cond,adj_factor_macr,adj_factor_subp,adj_factor_micr,9 AS biosum_status_cd 
+                                FROM biosum_pop_stratum_adjustment_factors";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(con, SQLite.m_strSQL);
+                            SetThermValue(m_frmTherm.progressBar1, "Value", 100);
+                            SetThermValue(m_frmTherm.progressBar2, "Value", 100);
+                        }
+                    }
                 }
+
 
 
                 if (this.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
@@ -8928,59 +8937,6 @@ namespace FIA_Biosum_Manager
             return dictStateEvalid;
         }
 
-        private void CreatePopTablesAccess()
-        {
-            string strConn = m_ado.getMDBConnString(m_strPopMDBFile, "", "");
-            using (OleDbConnection conn = new OleDbConnection(strConn))
-            {
-                conn.Open();
-                //pop estimation unit table
-                if (m_ado.TableExist(conn, this.m_strPopEstUnitTable))
-                {
-                    m_ado.SqlNonQuery(conn, "DELETE * FROM " + this.m_strPopEstUnitTable);
-                }
-                else
-                {
-                    frmMain.g_oTables.m_oFIAPlot.CreatePopEstnUnitTable(m_ado, conn, this.m_strPopEstUnitTable);
-                }
-                //pop eval table
-                if (m_ado.TableExist(conn, this.m_strPopEvalTable))
-                {
-                    m_ado.SqlNonQuery(conn, "DELETE * FROM " + this.m_strPopEvalTable);
-                }
-                else
-                {
-                    frmMain.g_oTables.m_oFIAPlot.CreatePopEvalTable(m_ado, conn, this.m_strPopEvalTable);
-                }
-                //pop plot stratum assignment table
-                if (m_ado.TableExist(conn, this.m_strPpsaTable))
-                {
-                    m_ado.SqlNonQuery(conn, "DELETE * FROM " + this.m_strPpsaTable);
-                }
-                else
-                {
-                    frmMain.g_oTables.m_oFIAPlot.CreatePopPlotStratumAssgnTable(m_ado, conn, this.m_strPpsaTable);
-                }
-                //pop stratum table
-                if (m_ado.TableExist(conn, this.m_strPopStratumTable))
-                {
-                    m_ado.SqlNonQuery(conn, "DELETE * FROM " + this.m_strPopStratumTable);
-                }
-                else
-                {
-                    frmMain.g_oTables.m_oFIAPlot.CreatePopStratumTable(m_ado, conn, this.m_strPopStratumTable);
-                }
-            }
-
-            //instatiate dao for creating links in the temp table
-            //dao_data_access oDao = new dao_data_access();
-
-            ////destroy the object and release it from memory
-            //oDao.m_DaoWorkspace.Close();
-            //oDao.m_DaoWorkspace = null;
-            //oDao = null;
-        }
-
         private void CreatePopTables()
         {
             string strConn = SQLite.GetConnectionString(m_strTempDbFile);
@@ -9031,10 +8987,10 @@ namespace FIA_Biosum_Manager
             //instatiate dao for creating links in the temp table
             dao_data_access oDao = new dao_data_access();
 
-            oDao.CreateTableLink(this.m_strTempMDBFile, this.m_strPopEvalTable, this.m_strPopMDBFile, this.m_strPopEvalTable);
-            oDao.CreateTableLink(this.m_strTempMDBFile, this.m_strPopEstUnitTable, this.m_strPopMDBFile, this.m_strPopEstUnitTable);
-            oDao.CreateTableLink(this.m_strTempMDBFile, this.m_strPopStratumTable, this.m_strPopMDBFile, this.m_strPopStratumTable);
-            oDao.CreateTableLink(this.m_strTempMDBFile, this.m_strPpsaTable, this.m_strPopMDBFile, this.m_strPpsaTable);
+            oDao.CreateTableLink(this.m_strTempMDBFile, this.m_strPopEvalTable, this.m_strMasterDbFile, this.m_strPopEvalTable);
+            oDao.CreateTableLink(this.m_strTempMDBFile, this.m_strPopEstUnitTable, this.m_strMasterDbFile, this.m_strPopEstUnitTable);
+            oDao.CreateTableLink(this.m_strTempMDBFile, this.m_strPopStratumTable, this.m_strMasterDbFile, this.m_strPopStratumTable);
+            oDao.CreateTableLink(this.m_strTempMDBFile, this.m_strPpsaTable, this.m_strMasterDbFile, this.m_strPpsaTable);
 
             //destroy the object and release it from memory
             oDao.m_DaoWorkspace.Close();
