@@ -6471,30 +6471,6 @@ namespace FIA_Biosum_Manager
                     return;
                 }
 
-                //@ToDo: May want to take some of the conditions out when everyone is on OpCost 10 for performance
-                string strOPCOSTVersion = "";
-                bool bUsesOPCOSTRefAccdb = false;
-                if (!String.IsNullOrEmpty(frmMain.g_strOPCOSTDirectory))
-                {
-                    strOPCOSTVersion = System.IO.Path.GetFileName(frmMain.g_strOPCOSTDirectory);
-                    string[] strPieces = strOPCOSTVersion.Split('_');
-                    if (strPieces.Length > 0)
-                    {
-                        int intVersion = -1;
-                        bool isInteger = int.TryParse(strPieces[0], out intVersion);
-                        if (intVersion > 9)
-                            bUsesOPCOSTRefAccdb = true;
-                    }
-                }
-
-                if (bUsesOPCOSTRefAccdb == true && ! System.IO.File.Exists(m_strOPCOSTRefPath))
-                {
-                    string strMessage = "BioSum could not find the OPCOST reference database! ";
-                    strMessage += "It should be located at " + m_strOPCOSTRefPath + ". Processing halted!";
-                    MessageBox.Show(strMessage, "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                    return;
-                }
-
                 //Check to make sure OpCost path is set; If not, try to use the default
                 bool bOpcostFileExists = false;
                 if (frmMain.g_strOPCOSTDirectory.Trim().Length > 0)

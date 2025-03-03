@@ -924,19 +924,9 @@ namespace FIA_Biosum_Manager
             m_strError = "";
             frmMain.g_sbpInfo.Text = "Validating scenario rule definitions...Stand by";
 
-            frmMain.g_oFrmMain.ActivateStandByAnimation(
-                this.WindowState,
-                this.Left,
-                this.Height,
-                this.Width,
-                this.Top);
-
             this.uc_processor_scenario_harvest_method1.val_data(lstRx);
             this.m_intError = uc_processor_scenario_harvest_method1.m_intError;
-            //Placeholder for future validations
-            //if (m_intError == 0) m_intError = uc_processor_scenario_merch_chip_value1.m_intError;
 
-            frmMain.g_oFrmMain.DeactivateStandByAnimation();
             frmMain.g_sbpInfo.Text = "Ready";
         }
 
