@@ -5054,10 +5054,22 @@ namespace FIA_Biosum_Manager
             using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strWorkDbConn))
             {
                 con.Open();
-                string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                oDataMgr.m_strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
                                 " SET GROUPS = '" + strGroup + "'";
-                DebugLogSQL(strSQL);
-                oDataMgr.SqlNonQuery(con, strSQL);
+                DebugLogSQL(oDataMgr.m_strSQL);
+                oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
+
+                // Overwrite ASAL_AREA_FACTOR, INV_PLOT_SIZE, BRK_DBH, NUM_PLOTS in stand table
+                // to prevent inflated TPAs for variants outside of CA, OR, WA
+                oDataMgr.m_strSQL = Queries.FVS.FVSInput.StandInit.OverwriteFieldsForTPA();
+                DebugLogSQL(oDataMgr.m_strSQL);
+                oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
+
+                // Overwrite PLOT_ID in tree table
+                // to prevent inflated TPAs for variants outside of CA, OR, WA
+                oDataMgr.m_strSQL = Queries.FVS.FVSInput.TreeInit.OverwritePlotID();
+                DebugLogSQL(oDataMgr.m_strSQL);
+                oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
 
                 oDataMgr.m_strSQL = "ATTACH DATABASE '" + strInDirAndFile + "' AS target";
                 oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
