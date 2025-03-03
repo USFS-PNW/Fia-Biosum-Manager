@@ -5059,7 +5059,7 @@ namespace FIA_Biosum_Manager
                 DebugLogSQL(oDataMgr.m_strSQL);
                 oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
 
-                // Overwrite ASAL_AREA_FACTOR, INV_PLOT_SIZE, BRK_DBH, NUM_PLOTS in stand table
+                // Overwrite BASAL_AREA_FACTOR, INV_PLOT_SIZE, BRK_DBH, NUM_PLOTS in stand table
                 // to prevent inflated TPAs for variants outside of CA, OR, WA
                 oDataMgr.m_strSQL = Queries.FVS.FVSInput.StandInit.OverwriteFieldsForTPA();
                 DebugLogSQL(oDataMgr.m_strSQL);
