@@ -4974,10 +4974,7 @@ namespace FIA_Biosum_Manager
                 p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "subp");
                 p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx3", "tree");
                 p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx4", "condid");
-                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx5", "idb_dmg_agent3_cd");
-                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx6", "idb_severity3_cd");
-                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx7", "fvs_tree_id");
-                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx8", "idb_alltree_id");
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx5", "fvs_tree_id");
             }
             public string CreateSqliteTreeTableSQL (string p_strTableName)
             {

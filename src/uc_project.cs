@@ -934,42 +934,25 @@ namespace FIA_Biosum_Manager
                 //
                 //master file
                 //
-                //copy default master database to the new project directory (not currently used)
-                strSourceFile = this.m_oEnv.strAppDir + "\\db\\master.mdb";
-				strDestFile = this.txtRootDirectory.Text.Trim() + "\\db\\master.mdb";
-				p_frmTherm.Increment(3);
+                strDestFile = $@"{this.txtRootDirectory.Text.Trim()}\{frmMain.g_oTables.m_oFIAPlot.DefaultPopTableDbFile}";
+                strConn = p_dataMgr.GetConnectionString(strDestFile);
+                p_frmTherm.Increment(3);
 				p_frmTherm.lblMsg.Text = strDestFile;
 				p_frmTherm.lblMsg.Refresh();
-				//System.IO.File.Copy(strSourceFile, strDestFile,true);	
-				p_dao.CreateMDB(strDestFile);
-				strConn = p_ado.getMDBConnString(strDestFile,"admin","");
-				p_ado.OpenConnection(strConn);
-				//plot table
-				frmMain.g_oTables.m_oFIAPlot.CreatePlotTable(p_ado,p_ado.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableName);
-				//cond table
-				frmMain.g_oTables.m_oFIAPlot.CreateConditionTable(p_ado,p_ado.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultConditionTableName);
-				//pop estimation unit table
-				frmMain.g_oTables.m_oFIAPlot.CreatePopEstnUnitTable(p_ado,p_ado.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableName);
-				//pop eval table
-				frmMain.g_oTables.m_oFIAPlot.CreatePopEvalTable(p_ado,p_ado.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName);
-				//pop plot stratum assignment table
-				frmMain.g_oTables.m_oFIAPlot.CreatePopPlotStratumAssgnTable(p_ado,p_ado.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName);
-				//pop stratum table
-				frmMain.g_oTables.m_oFIAPlot.CreatePopStratumTable(p_ado,p_ado.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName);
-				//site tree table
-				frmMain.g_oTables.m_oFIAPlot.CreateSiteTreeTable(p_ado,p_ado.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultSiteTreeTableName);
-				//tree table
-				frmMain.g_oTables.m_oFIAPlot.CreateTreeTable(p_ado,p_ado.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName);
-                //frmMain.g_oTables.m_oFIAPlot.CreateBiosumPopStratumAdjustmentFactorsTable(p_ado, p_ado.m_OleDbConnection, frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName);
-				p_ado.CloseConnection(p_ado.m_OleDbConnection);
-
-                //master.db file: Migrating POP tables to SQLite
-                strDestFile = this.txtRootDirectory.Text.Trim() + "\\" + frmMain.g_oTables.m_oFIAPlot.DefaultPopTableDbFile;
                 p_dataMgr.CreateDbFile(strDestFile);
-                strConn = p_dataMgr.GetConnectionString(strDestFile);
                 using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConn))
                 {
                     con.Open();
+                    //plot table
+                    frmMain.g_oTables.m_oFIAPlot.CreateSqlitePlotTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableName);
+                    //cond table
+                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteConditionTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultConditionTableName);
+                    //site tree table
+                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteSiteTreeTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultSiteTreeTableName);
+                    //tree table
+                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteTreeTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName);
+                    //biosum pop stratum adjustment factors table
+                    frmMain.g_oTables.m_oFIAPlot.CreateSQLiteBiosumPopStratumAdjustmentFactorsTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName);
                     //pop estimation unit table
                     frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopEstnUnitTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableName);
                     //pop eval table
@@ -978,8 +961,6 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopPlotStratumAssgnTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName);
                     //pop stratum table
                     frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopStratumTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName);
-                    //biosum pop stratum adjustment factors table
-                    frmMain.g_oTables.m_oFIAPlot.CreateSQLiteBiosumPopStratumAdjustmentFactorsTable(p_dataMgr, con, frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName);
                 }
 
                 //
@@ -1173,21 +1154,21 @@ namespace FIA_Biosum_Manager
 					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " + 
 						"('Plot'," + 
 						"'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," + 
-						"'master.mdb'," + 
+						"'master.db'," + 
 						"'plot');";
 					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
 
 					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " + 
 						"('Condition'," + 
 						"'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," + 
-						"'master.mdb'," + 
+						"'master.db'," + 
 						"'cond');";
 					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
 
 					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " + 
 						"('Tree'," + 
 						"'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," + 
-						"'master.mdb'," + 
+						"'master.db'," + 
 						"'tree');";
 					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
 
@@ -1293,7 +1274,7 @@ namespace FIA_Biosum_Manager
 					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
 						"('Site Tree'," + 
 						"'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," + 
-						"'master.mdb'," + 
+						"'master.db'," + 
 						"'sitetree');";
 					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
 
