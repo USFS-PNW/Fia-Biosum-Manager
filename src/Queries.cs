@@ -4252,6 +4252,16 @@ namespace FIA_Biosum_Manager
                             {Tables.FIA2FVS.DefaultFvsInputStandTableName}.VARIANT = '{strVariant}'";
                         return strSQL;
                     }
+
+                    public static string OverwriteFieldsForTPA()
+                    {
+                        string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                            " SET BASAL_AREA_FACTOR = 0," +
+                            "INV_PLOT_SIZE = 1," +
+                            "BRK_DBH = 999," +
+                            "NUM_PLOTS = 1";
+                        return strSQL;
+                    }
                 }
 
 		        //All the queries necessary to create the FVSIn.accdb FVS_TreeInit table using intermediate tables
@@ -4703,7 +4713,7 @@ namespace FIA_Biosum_Manager
                         return arrTreeValueUpdates;
                     }
 
-                        public static string UpdateFieldsFromTempTable(string strSourceTable, IList<string> lstFields)
+                    public static string UpdateFieldsFromTempTable(string strSourceTable, IList<string> lstFields)
                     {
                         string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
                          " INNER JOIN " + strSourceTable + " ON " + strSourceTable + ".TREE_CN = " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".TREE_CN" +
@@ -4717,6 +4727,13 @@ namespace FIA_Biosum_Manager
                         }
                         sb.Length--;    // Remove trailing comma
                         strSQL = strSQL + sb.ToString();
+                        return strSQL;
+                    }
+
+                    public static string OverwritePlotID()
+                    {
+                        string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                            " SET PLOT_ID = 1";
                         return strSQL;
                     }
 
