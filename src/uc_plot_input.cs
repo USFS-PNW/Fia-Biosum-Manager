@@ -3265,17 +3265,17 @@ namespace FIA_Biosum_Manager
 	        }
 	    }
 
-        private void DeleteFromTablesWhereFilterSqlite (DataMgr p_dataMgr, System.Data.SQLite.SQLiteConnection conn, string[] strTableNames, string strDeleteFilter)
+        private void DeleteFromTablesWhereFilterSqlite(System.Data.SQLite.SQLiteConnection conn, string[] strTableNames, string strDeleteFilter)
         {
             foreach (string table in strTableNames)
             {
-                if (p_dataMgr.TableExist(conn, table))
+                if (SQLite.TableExist(conn, table))
                 {
-                    p_dataMgr.m_strSQL = "DELETE FROM " + table + strDeleteFilter;
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    SQLite.m_strSQL = "DELETE FROM " + table + strDeleteFilter;
+                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
-                            p_dataMgr.m_strSQL + "\r\n");
+                            SQLite.m_strSQL + "\r\n");
                 }
             }
         }
@@ -5118,7 +5118,7 @@ namespace FIA_Biosum_Manager
                 System.Data.DataTable dtFIADBDwmTransectSegment = oDataMgr.getTableSchema(conn, "select * from " + strFiaTS);
 
                 //Preemptively remove any records that were not imported successfully 
-                DeleteFromTablesWhereFilterSqlite(oDataMgr, conn,
+                DeleteFromTablesWhereFilterSqlite(conn,
                     new string[]
                         {m_strDwmCwdTable, m_strDwmFwdTable, m_strDwmDuffLitterTable, m_strDwmTransectSegmentTable},
                     " WHERE biosum_status_cd=9");
@@ -8438,8 +8438,7 @@ namespace FIA_Biosum_Manager
 		}
 		private void LoadMDBFiadbPopFiles()
 		{
-				this.m_strCurrentProcess="mdbFiadbInputPopTables";	
-				this.m_ado = new ado_data_access();
+		    this.m_strCurrentProcess="mdbFiadbInputPopTables";	
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -8448,27 +8447,19 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//\r\n");
             }
 
-            //create a temporary mdb file with links to all the project tables
-            //and return the name of the file that contains the links
-            this.m_strTempMDBFile = m_oDatasource.CreateMDBAndTableDataSourceLinks();
-            // Add links to the POP tables
-            CreatePopTableLinks();
+		    this.m_bLoadStateCountyList=true;
+			this.m_bLoadStateCountyPlotList=true;
 
-				this.m_bLoadStateCountyList=true;
-				this.m_bLoadStateCountyPlotList=true;
-
-				this.StartTherm("2", "Add SQLite Pop Table Data");
-				this.m_frmTherm.progressBar2.Maximum=3;
-				this.m_frmTherm.progressBar2.Minimum=0;
-				this.m_frmTherm.progressBar2.Value=0;
-				this.m_frmTherm.lblMsg2.Text = "Overall Progress";
-				this.m_strTableType="POPULATION STRATUM";
+			this.StartTherm("2", "Add SQLite Pop Table Data");
+			this.m_frmTherm.progressBar2.Maximum=3;
+			this.m_frmTherm.progressBar2.Minimum=0;
+			this.m_frmTherm.progressBar2.Value=0;
+			this.m_frmTherm.lblMsg2.Text = "Overall Progress";
+			this.m_strTableType="POPULATION STRATUM";
 			    
-				this.m_strCurrentFiadbTable = this.cmbFiadbPopStratumTable.Text;
-			    this.m_strCurrentFiadbInputFile = this.txtFiadbInputFile.Text;
-			    this.m_strCurrentBiosumTable=this.m_strPopStratumTable;
-
-			
+			this.m_strCurrentFiadbTable = this.cmbFiadbPopStratumTable.Text;
+			this.m_strCurrentFiadbInputFile = this.txtFiadbInputFile.Text;
+			this.m_strCurrentBiosumTable=this.m_strPopStratumTable;			
 
 				this.thdProcessRecords = new Thread(new ThreadStart(mdbFiadbInputPopTables));
 				this.thdProcessRecords.IsBackground = true;
@@ -8562,51 +8553,30 @@ namespace FIA_Biosum_Manager
             {
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Maximum", 4);
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Minimum", 0);
-                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", 0);
-
-				//instatiate dao for creating links in the temp table
-				//to the fiadb plot, cond, and tree input tables
-				dao_data_access p_dao1 = new dao_data_access();
-                DataMgr oDataMgr = new DataMgr();
-                //add link to SQLite input
-                p_dao1.CreateSQLiteTableLink(this.m_strTempMDBFile, strSourceTable.Trim(), strSourceTableLink,
-                    ODBCMgr.DSN_KEYS.PlotInputDsnName, strSourceFile.Trim(), true);
-                //destroy the object and release it from memory
-                p_dao1.m_DaoWorkspace.Close();
-                p_dao1.m_DaoWorkspace = null;
-                p_dao1 = null;
-
-
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", 1);
 
-
-				//get an ado connection string for the temp mdb file
-				this.m_strTempMDBFileConn = this.m_ado.getMDBConnString(this.m_strTempMDBFile,"","");
-
-   					
-				//create a new connection to the temp MDB file
-				this.m_connTempMDBFile = new System.Data.OleDb.OleDbConnection();
-
-				//open the connection to the temp mdb file 
-				this.m_ado.OpenConnection(this.m_strTempMDBFileConn,ref this.m_connTempMDBFile);
-
-				this.m_ado.m_strSQL = "DELETE FROM " + strDestTable;
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_ado.m_strSQL);
-                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", 2);
-
-                /****************************************************************
-				 **get the table structure that results from executing the sql
-				 ****************************************************************/
-                //get the fiabiosum table structures
-                System.Data.DataTable dtDestSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from " + strDestTable);
-                //get the fiadb table structures
-                string strConnection = oDataMgr.GetConnectionString(strSourceFile.Trim());
-                using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
+                //open the connection to the temp db file
+                string strConn = SQLite.GetConnectionString(m_strTempDbFile);
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                 {
-                    con.Open();
-                    DataTable dtSourceSchema = oDataMgr.getTableSchema(con, "select * from " + strSourceTable.Trim());
+                    conn.Open();
+                    SQLite.m_strSQL = "DELETE FROM " + strDestTable;
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", 2);
+                    //get the fiabiosum table structures
+                    DataTable dtDestSchema = dtDestSchema = SQLite.getTableSchema(conn, "select * from " + strDestTable);
+                    //attach the source schema
+                    SQLite.m_strSQL = $@"ATTACH DATABASE '{strSourceFile.Trim()}' AS FIADB";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                    /****************************************************************
+                     **get the table structure that results from executing the sql
+                     ****************************************************************/
+                    //get the fiadb table structures
+                    DataTable dtSourceSchema = SQLite.getTableSchema(conn, "select * from FIADB." + strSourceTable.Trim());
 
                     //build field list string to insert sql by matching 
                     //up the column names in the biosum plot table and the fiadb plot table
@@ -8631,54 +8601,31 @@ namespace FIA_Biosum_Manager
                             }
                         }
                     }
+                    SQLite.m_strSQL = "INSERT INTO " + strDestTable + " (" + strFields + ")" +
+                        " SELECT " + strFields + " FROM FIADB." + strSourceTable + "   " +
+                        "WHERE rscd = " + this.m_strCurrFIADBRsCd + " AND " +
+                        "evalid = " + this.m_strCurrFIADBEvalId;
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
+                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", 3);
+                    SQLite.m_strSQL = $@"UPDATE {strDestTable} SET (biosum_status_cd) = (select 9 from FIADB.{strSourceTable} where trim({strDestTable}.cn) = trim(FIADB.{strSourceTable}.cn))";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                 }
 
-				this.m_ado.m_strSQL = "INSERT INTO " + strDestTable + " (" + strFields + ")" + 
-					" SELECT " + strFields + " FROM " + strSourceTableLink + "   " + 
-					"WHERE rscd = " + this.m_strCurrFIADBRsCd + " AND " + 
-						  "evalid = " + this.m_strCurrFIADBEvalId;
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_ado.m_strSQL);
-
-                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", 3);
-				this.m_ado.m_strSQL = "UPDATE " + strDestTable + " d INNER JOIN " + strSourceTableLink + " s ON d.cn=trim(s.cn) " +
-					"SET d.biosum_status_cd=9";
-				this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_ado.m_strSQL);
-
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", 4);
-				this.m_connTempMDBFile.Close();
-				while (this.m_connTempMDBFile.State != System.Data.ConnectionState.Closed)
-					System.Threading.Thread.Sleep(1000);
-				this.m_connTempMDBFile=null;				
 			}
 			catch 
 			{
 				this.m_intError=-1;
-				if (this.m_connTempMDBFile != null)
-				{
-					if (this.m_connTempMDBFile.State == System.Data.ConnectionState.Open)
-					{
-						this.m_connTempMDBFile.Close();
-						while (this.m_connTempMDBFile.State != System.Data.ConnectionState.Closed)
-							System.Threading.Thread.Sleep(1000);
-						this.m_connTempMDBFile=null;
-					}
-				}
 				((frmDialog)this.ParentForm).Enabled=true;
 			}
 			finally
 			{
-				if (this.m_connTempMDBFile != null)
-				{
-					if (this.m_connTempMDBFile.State == System.Data.ConnectionState.Open)
-					{
-						this.m_connTempMDBFile.Close();
-						while (this.m_connTempMDBFile.State != System.Data.ConnectionState.Closed)
-							System.Threading.Thread.Sleep(1000);
-						this.m_connTempMDBFile=null;
-					}
-				}
+
 				((frmDialog)this.ParentForm).Enabled=true;
 				
 				this.AddPlotRecordsFinished();
