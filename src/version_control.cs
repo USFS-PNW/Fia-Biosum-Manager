@@ -7662,6 +7662,43 @@ namespace FIA_Biosum_Manager
                 oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.Condition, ReferenceProjectDirectory + "\\db", strMasterDb, arrTargetTables[1]);
                 oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.Tree, ReferenceProjectDirectory + "\\db", strMasterDb, arrTargetTables[2]);
                 oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.SiteTree, ReferenceProjectDirectory + "\\db", strMasterDb, arrTargetTables[3]);
+
+                // Update processor datasources
+                strDestFile = ReferenceProjectDirectory.Trim() + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
+                {
+                    conn.Open();
+
+                    oDataMgr.m_strSQL = "UPDATE " + Tables.Scenario.DefaultScenarioDatasourceTableName +
+                        " SET file = '" + strMasterDb + "' WHERE table_type IN ('" +
+                        Datasource.TableTypes.Plot + "', '" +
+                        Datasource.TableTypes.Condition + "', '" +
+                        Datasource.TableTypes.Tree + "')";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+
+                // Update optimizer datasources
+                strDestFile = ReferenceProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
+                {
+                    conn.Open();
+
+                    oDataMgr.m_strSQL = "UPDATE " + Tables.Scenario.DefaultScenarioDatasourceTableName +
+                        " SET file = '" + strMasterDb + "' WHERE table_type IN ('" +
+                        Datasource.TableTypes.Plot + "', '" +
+                        Datasource.TableTypes.Condition + "')";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+            }
+
+            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.MasterDsnName))
+            {
+                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.MasterDsnName);
+            }
+            if (oDao != null)
+            {
+                oDao.m_DaoWorkspace.Close();
+                oDao = null;
             }
         }
 
