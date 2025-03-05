@@ -4612,6 +4612,7 @@ namespace FIA_Biosum_Manager
             {
             }
             public string DefaultPlotTableDbFile { get { return @"db\master.mdb"; } }
+            public string DefaultPlotTableSqliteDbFile { get { return @"db\master.db"; } }
             public string DefaultPlotTableName { get { return "plot"; } }
             public string DefaultConditionTableDbFile { get { return @"db\master.mdb"; } }
             public string DefaultConditionTableName { get { return "cond"; } }

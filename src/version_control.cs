@@ -600,6 +600,8 @@ namespace FIA_Biosum_Manager
                 }
             }
 
+            UpdateDatasources_5_12_0();
+
             if (bPerformCheck)
             {
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
@@ -7509,9 +7511,161 @@ namespace FIA_Biosum_Manager
             }
         }
 
+        public void UpdateDatasources_5_12_0()
+        {
+            DataMgr oDataMgr = new DataMgr();
+            ODBCMgr odbcmgr = new ODBCMgr();
+            dao_data_access oDao = new dao_data_access();
+            ado_data_access oAdo = new ado_data_access();
+            utils oUtils = new utils();
 
+            // Migrate plot, cond, tree, and sitetree tables from master.mdb to master.db
+            frmMain.g_sbpInfo.Text = "Version Update: Moving plot, cond, tree, and sitetree tables ...Stand by";
 
-        // Method to compare two versions. 
+            string strDestFile = ReferenceProjectDirectory.Trim() + "\\" + frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableSqliteDbFile;
+            if (!System.IO.File.Exists(strDestFile))
+            {
+                oDataMgr.CreateDbFile(strDestFile);
+            }
+
+            // Create tables if they don't exist
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
+            {
+                conn.Open();
+
+                if (!oDataMgr.TableExist(conn, frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableName))
+                {
+                    frmMain.g_oTables.m_oFIAPlot.CreateSqlitePlotTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableName);
+                }
+                else
+                {
+                    oDataMgr.m_strSQL = "DELETE FROM " + frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableName;
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+                if (!oDataMgr.TableExist(conn, frmMain.g_oTables.m_oFIAPlot.DefaultConditionTableName))
+                {
+                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteConditionTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultConditionTableName);
+                }
+                else
+                {
+                    oDataMgr.m_strSQL = "DELETE FROM " + frmMain.g_oTables.m_oFIAPlot.DefaultConditionTableName;
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+                if (!oDataMgr.TableExist(conn, frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName))
+                {
+                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteTreeTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName);
+                }
+                else
+                {
+                    oDataMgr.m_strSQL = "DELETE FROM " + frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName;
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+                if (!oDataMgr.TableExist(conn, frmMain.g_oTables.m_oFIAPlot.DefaultSiteTreeTableName))
+                {
+                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteSiteTreeTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultSiteTreeTableName);
+                }
+                else
+                {
+                    oDataMgr.m_strSQL = "DELETE FROM " + frmMain.g_oTables.m_oFIAPlot.DefaultSiteTreeTableName;
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+            }
+
+            Datasource oProjectDs = new Datasource();
+            // Find path to existing tables
+            oProjectDs.m_strDataSourceMDBFile = this.ReferenceProjectDirectory + "\\db\\project.mdb";
+            oProjectDs.m_strDataSourceTableName = "datasource";
+            oProjectDs.m_strScenarioId = "";
+            oProjectDs.LoadTableColumnNamesAndDataTypes = false;
+            oProjectDs.LoadTableRecordCount = false;
+            oProjectDs.populate_datasource_array();
+            // plot
+            int intPlotTable = oProjectDs.getTableNameRow(Datasource.TableTypes.Plot);
+
+            // Create DSN if needed
+            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.MasterDsnName))
+            {
+                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.MasterDsnName);
+            }
+            odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.MasterDsnName, strDestFile);
+
+            string[] arrTargetTables = { frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableName, frmMain.g_oTables.m_oFIAPlot.DefaultConditionTableName, 
+                frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName, frmMain.g_oTables.m_oFIAPlot.DefaultSiteTreeTableName };
+            string strSourceFile = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.PATH].Trim() + "\\" + oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            string strMasterDb = System.IO.Path.GetFileName(frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableSqliteDbFile);
+
+            // Set new temporary database
+            string strTempAccdb = oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
+            oDao.CreateMDB(strTempAccdb);
+
+            //link access tables to temporary database
+            oDao.CreateTableLinks(strTempAccdb, strSourceFile);
+
+            for (int i = 0; i < arrTargetTables.Length; i++)
+            {
+                oDao.CreateSQLiteTableLink(strTempAccdb, arrTargetTables[i],
+                    arrTargetTables[i] + "_1", ODBCMgr.DSN_KEYS.MasterDsnName, strDestFile);
+            }
+            System.Threading.Thread.Sleep(4000);
+
+            if (oProjectDs.DataSourceTableExist(intPlotTable))
+            {
+                string strCopyConn = oAdo.getMDBConnString(strTempAccdb, "", "");
+                using (OleDbConnection copyConn = new System.Data.OleDb.OleDbConnection(strCopyConn))
+                {
+                    copyConn.Open();
+                    oAdo.m_strSQL = "INSERT INTO " + arrTargetTables[0] + "_1 " +
+                        "SELECT biosum_plot_id, statecd, invyr, unitcd, countycd, " + arrTargetTables[0] + ", " +
+                        "measyear, elev, fvs_variant, fvsloccode AS fvs_loc_cd, half_state, gis_yard_dist_ft, " +
+                        "num_cond, one_cond_yn, lat, lon, macro_breakpoint_dia, precipitation, " +
+                        "ecosubcd, biosum_status_cd, cn FROM " + arrTargetTables[0];
+                    oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                    oAdo.m_strSQL = "INSERT INTO " + arrTargetTables[1] + "_1 " +
+                        "SELECT biosum_cond_id, biosum_plot_id, invyr, condid, condprop, cond_status_cd, " +
+                        "fortypcd, owncd, owngrpcd, reservcd, siteclcd, sibase, sicond, sisp, " +
+                        "slope, aspect, stdage, stdszcd, habtypcd1, adforcd, qmd_all_inch, " +
+                        "qmd_hwd_inch, qmd_swd_inch, acres, unitcd, vol_loc_grp, tpacurr, " +
+                        "hwd_tpacurr, swd_tpacurr, ba_ft2_ac, hwd_ba_ft2_ac, swd_ba_ft2_ac, " +
+                        "vol_ac_grs_ft3, hwd_vol_ac_grs_ft3, swd_vol_ac_grs_ft3, " +
+                        "volcsgrs, hwd_volcsgrs, swd_volcsgrs, gsstkcd, alstkcd, " +
+                        "condprop_unadj, micrprop_unadj, subpprop_unadj, macrprop_unadj, " +
+                        "cn, biosum_status_cd, dwm_fuelbed_typcd, balive, stdorgcd FROM " + arrTargetTables[1];
+                    oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                    oAdo.m_strSQL = "INSERT INTO " + arrTargetTables[2] + "_1 " +
+                        "SELECT biosum_cond_id, invyr, statecd, unitcd, countycd, subp, " +
+                        "tree, condid, statuscd, spcd, spgrpcd, dia, diahtcd, ht, htcd, actualht, " +
+                        "formcl, treeclcd, cr, cclcd, cull, roughcull, decaycd, stocking, tpacurr, wdldstem, " +
+                        "volcfnet, volcfgrs, volcsnet, volcsgrs, volbfnet, volbfgrs, voltsgrs, " +
+                        "drybiot, drybiom, bhage, cullbf, cullcf, totage, mist_cl_cd, agentcd, " +
+                        "damtyp1, damsev1, damtyp2, damsev2, tpa_unadj, condprop_specific, sitree, " +
+                        "upper_dia, upper_dia_ht, centroid_dia, centroid_dia_ht_actual, sawht, htdmp, " +
+                        "boleht, cull_fld, culldead, cullform, cullmstop, cfsnd, bfsnd, standing_dead_cd, " +
+                        "volcfsnd, drybio_bole, drybio_top, drybio_sapling, drybio_wdld_spp, " +
+                        "fvs_tree_id, cn, biosum_status_cd FROM " + arrTargetTables[2];
+                    oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                    oAdo.m_strSQL = "INSERT INTO " + arrTargetTables[3] + "_1 " +
+                        "SELECT biosum_plot_id, invyr, condid, tree, spcd, dia, ht, agedia, " +
+                        "spgrpcd, sitree, sibase, subp, method, validcd, condlist, biosum_status_cd FROM " + arrTargetTables[3];
+                    oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                    oAdo.m_strSQL = "DROP TABLE " + arrTargetTables[0] + "_1";
+                    oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                    oAdo.m_strSQL = "DROP TABLE " + arrTargetTables[1] + "_1";
+                    oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                    oAdo.m_strSQL = "DROP TABLE " + arrTargetTables[2] + "_1";
+                    oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                    oAdo.m_strSQL = "DROP TABLE " + arrTargetTables[3] + "_1";
+                    oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                }
+
+                // Update project datasources
+                oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.Plot, ReferenceProjectDirectory + "\\db", strMasterDb, arrTargetTables[0]);
+                oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.Condition, ReferenceProjectDirectory + "\\db", strMasterDb, arrTargetTables[1]);
+                oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.Tree, ReferenceProjectDirectory + "\\db", strMasterDb, arrTargetTables[2]);
+                oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.SiteTree, ReferenceProjectDirectory + "\\db", strMasterDb, arrTargetTables[3]);
+            }
+        }
+
+        // Method to compare two versions.
         // Returns 1 if v2 is smaller, -1 
         // if v1 is smaller, 0 if equal 
         public int VersionCompare(string v1, string v2)
