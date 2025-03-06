@@ -8110,7 +8110,6 @@ namespace FIA_Biosum_Manager
                         bLoad = false;
                     }
                     SQLite.m_DataReader.Close();
-                    SQLite.CloseConnection(SQLite.m_Connection);
                 } // Closing connection
 
                 if (bLoad)
