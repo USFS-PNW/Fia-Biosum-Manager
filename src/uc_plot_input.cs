@@ -2217,6 +2217,10 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", 20 + x + 5);
                             if (SQLite.m_intError != 0) break;
                         }
+
+                        // Add indexes to BIOSUM_PLOT and BIOSUM_COND tables
+                        SQLite.AddIndex(con, "BIOSUM_PLOT", "BIOSUM_PLOT_idx1", "CN");
+                        SQLite.AddIndex(con, "BIOSUM_COND", "BIOSUM_COND_idx1", "CN");
                     }
                 }
 
@@ -2402,16 +2406,8 @@ namespace FIA_Biosum_Manager
 			string strFields="";
 			
 			int x=0;
-			int y=0;
-			string strCol="";
-            string str="";
-            string str2 = "";
 
 			string strSourceTableLink="";
-            string strFIADBDbFile = "";
-            string strSourceTableName = "";
-            string strDestTableLinkName = "";
-
             m_intAddedPlotRows=0;
 		    m_intAddedCondRows=0;
 		    m_intAddedTreeRows=0;
@@ -2429,10 +2425,6 @@ namespace FIA_Biosum_Manager
             //-----------PREPARATION FOR ADDING PLOT RECORDS---------//
             try
             {
-                //instatiate the oledb data access class
-                this.m_ado = new ado_data_access();
-                DataMgr oDataMgr = new DataMgr();
-
                 //progress bar 1: single process
                 this.SetThermValue(m_frmTherm.progressBar1,"Maximum", 100);
                 this.SetThermValue(m_frmTherm.progressBar1,"Minimum", 0);
@@ -2447,50 +2439,13 @@ namespace FIA_Biosum_Manager
                 this.SetLabelValue(m_frmTherm.lblMsg2, "Text", "Overall Progress");
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)m_frmTherm, "Visible", true);
 
-
-
-
-                //create a temporary mdb file with links to all the project tables
-                //and return the name of the file that contains the links
-                this.m_strTempMDBFile = m_oDatasource.CreateMDBAndTableDataSourceLinks();
-                this.CreatePopTableLinks();
-
-                //instatiate dao for creating links in the temp table
-                //to the fiadb plot, cond, and tree input tables
-                dao_data_access p_dao1 = new dao_data_access();
-                this.SetLabelValue(m_frmTherm.lblMsg, "Text", "Creating Datasource Links");
-                //create links to the fiadb input tables in the temp mdb file
-                //plot table
-                //str = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtMDBFiadbInputFile, "Text", false);
-                //str2 = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbPlotTable, "Text", false);
-                //p_dao1.CreateTableLink(this.m_strTempMDBFile, "fiadb_plot_input", str.Trim(), str2.Trim());
-                //cond table
-                //str2 = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbCondTable, "Text", false);
-                //p_dao1.CreateTableLink(this.m_strTempMDBFile, "fiadb_cond_input", str.Trim(), str2.Trim());
-                //plot table
-                strFIADBDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtFiadbInputFile, "Text", false);
-                strFIADBDbFile = strFIADBDbFile.Trim();
-                strSourceTableName = "BIOSUM_PLOT";
-                strDestTableLinkName = "fiadb_plot_input";
-                p_dao1.CreateSQLiteTableLink(this.m_strTempMDBFile, strSourceTableName, strDestTableLinkName,
-                    ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-                
-                //cond table
-                strSourceTableName = "BIOSUM_COND";
-                strDestTableLinkName = "fiadb_cond_input";
-                if (p_dao1.m_intError == 0) p_dao1.CreateSQLiteTableLink(this.m_strTempMDBFile, strSourceTableName, strDestTableLinkName,
-                    ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-
                 //tree table
-                str2 = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbTreeTable, "Text", false);
-                if (p_dao1.m_intError == 0) p_dao1.CreateSQLiteTableLink(this.m_strTempMDBFile, str2.Trim(), "fiadb_tree_input",
-                    ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-                //seedling
-                str2 = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbSeedlingTable, "Text", false);
-                if (p_dao1.m_intError == 0 && str2.Trim().Length > 0 && str2.Trim() != "<Optional Table>" && Checked(ckImportSeedlings))
+                string strTreeSource = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbTreeTable, "Text", false);
+                //seedling table
+                string strSeedlingSource = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbSeedlingTable, "Text", false);
+                if (strSeedlingSource.Trim().Length > 0 && strSeedlingSource.Trim() != "<Optional Table>" && Checked(ckImportSeedlings))
                 {
-                    p_dao1.CreateSQLiteTableLink(this.m_strTempMDBFile, str2.Trim(), frmMain.g_oTables.m_oFIAPlot.DefaultSeedlingTableName,
-                    ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
+                    // Do nothing
                 }
                 else
                 {
@@ -2498,17 +2453,7 @@ namespace FIA_Biosum_Manager
                 }
 
                 //site tree
-                str2 = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbSiteTreeTable, "Text", false);
-                if (p_dao1.m_intError == 0) p_dao1.CreateSQLiteTableLink(this.m_strTempMDBFile, str2.Trim(), "fiadb_site_tree_input",
-                    ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-
-                m_intError = p_dao1.m_intError;
-
-                //destroy the object and release it from memory
-                p_dao1.m_DaoWorkspace.Close();
-                p_dao1.m_DaoWorkspace = null;
-                p_dao1 = null;
-
+                string strSiteTreeSource = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbSiteTreeTable, "Text", false);
 
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", 10);
 
@@ -2522,199 +2467,203 @@ namespace FIA_Biosum_Manager
                 System.Data.DataTable dtFIADBSiteTreeSchema = new DataTable();
                 DataTable dtFIADBSeedlingSchema = new DataTable();
 
-                //get an ado connection string for the temp mdb file
-                this.m_strTempMDBFileConn = this.m_ado.getMDBConnString(this.m_strTempMDBFile, "", "");
-
-                //create a new connection to the temp MDB file
-                this.m_connTempMDBFile = new System.Data.OleDb.OleDbConnection();
-
-                //open the connection to the temp mdb file 
-                this.m_ado.OpenConnection(this.m_strTempMDBFileConn, ref this.m_connTempMDBFile);
-
-                //Before processing new plot information, delete any records that were not completely processed
-                DeleteFromTablesWhereFilter(m_ado, m_connTempMDBFile, new string[] {this.m_strPlotTable},
-                    " WHERE biosum_status_cd=9 OR LEN(biosum_plot_id)=0;");
-                DeleteFromTablesWhereFilter(m_ado, m_connTempMDBFile, new string[]
+                string strConn = SQLite.GetConnectionString(m_strMasterDbFile);
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                 {
-                    m_strCondTable, m_strTreeTable, m_strSiteTreeTable
-                }, " WHERE biosum_status_cd=9;");
+                    conn.Open();
+                    //Before processing new plot information, delete any records that were not completely processed
+                    DeleteFromTablesWhereFilterSqlite(conn, new string[] { this.m_strPlotTable },
+                        " WHERE biosum_status_cd=9 OR LENGTH(biosum_plot_id)=0;");
+                    DeleteFromTablesWhereFilterSqlite(conn, new string[]
+                    {m_strCondTable, m_strTreeTable, m_strSiteTreeTable}, " WHERE biosum_status_cd=9;");
+                    if (m_intError == 0)
+                        m_intError = SQLite.m_intError;
 
-                if (m_intError == 0)
-                    m_intError = m_ado.m_intError;
-
-                if (this.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm,"AbortProcess"))
-                {
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 20);
-
-                    /****************************************************************
-                     **get the table structure that results from executing the sql
-                     ****************************************************************/
-                    //get the fiabiosum table structures
-                    dtPlotSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from " + this.m_strPlotTable);
-                    dtCondSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from " + this.m_strCondTable);
-                    dtTreeSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from " + this.m_strTreeTable);
-                    dtSiteTreeSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from " + this.m_strSiteTreeTable);
-
-                    //get the fiadb table structures
-                    dtFIADBPlotSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from fiadb_plot_input");
-                    dtFIADBCondSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from fiadb_cond_input");
-                    dtFIADBTreeSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from fiadb_tree_input");
-                    if (m_bLoadSeedlings)
+                    if (this.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
                     {
-                        dtFIADBSeedlingSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from " + frmMain.g_oTables.m_oFIAPlot.DefaultSeedlingTableName);
-                    }
-                    dtFIADBSiteTreeSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from fiadb_site_tree_input");
-                    m_intError = m_ado.m_intError;
-                }
+                        SetThermValue(m_frmTherm.progressBar1, "Value", 20);
 
-                if (this.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm,"AbortProcess"))
-                {
-                    //-------------PLOT TABLE----------------//
-                    strSourceTableLink = "fiadb_plot_input";
-                    //build field list string to insert sql by matching columns in thebiosum and fiadb plot tables
-                    strFields = CreateStrFieldsFromDataTables(dtPlotSchema, dtFIADBPlotSchema);
+                        /****************************************************************
+                         **get the table structure that results from executing the sql
+                         ****************************************************************/
+                        //get the fiabiosum table structures
+                        dtPlotSchema = SQLite.getTableSchema(conn, "select * from " + this.m_strPlotTable);
+                        dtCondSchema = SQLite.getTableSchema(conn, "select * from " + this.m_strCondTable);
+                        dtTreeSchema = SQLite.getTableSchema(conn, "select * from " + this.m_strTreeTable);
+                        dtSiteTreeSchema = SQLite.getTableSchema(conn, "select * from " + this.m_strSiteTreeTable);
 
-                    SetLabelValue(m_frmTherm.lblMsg,"Text","Plot Table: Insert New Plot Records");
-                    if (Checked(rdoFilterByFile) == true && m_strPlotIdList.Trim().Length > 0 &&
-                        !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                    {
-                        string strDelimiter = ",";
-                        string[] strPlotIdArray = m_strPlotIdList.Split(strDelimiter.ToCharArray());
-                        this.m_ado.m_strSQL = "SELECT CN INTO input_cn FROM " + this.m_strPlotTable + " WHERE 1=2";
+                        SQLite.m_strSQL = $@"ATTACH DATABASE '{m_strTempDbFile}' AS TEMPDB";
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
-                                m_ado.m_strSQL + "\r\n");
-                        this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-                        for (x = 0; x <= strPlotIdArray.Length - 1; x++)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
+                        SQLite.m_strSQL = $@"ATTACH DATABASE '{m_strCurrentFiadbInputFile}' AS FIADB";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
+                        //get the fiadb table structures
+                        dtFIADBPlotSchema = SQLite.getTableSchema(conn, "select * from TEMPDB.BIOSUM_PLOT");
+                        dtFIADBCondSchema = SQLite.getTableSchema(conn, "select * from TEMPDB.BIOSUM_COND");
+                        dtFIADBTreeSchema = SQLite.getTableSchema(conn, $@"select * from FIADB.{strTreeSource}");
+                        if (m_bLoadSeedlings)
                         {
-                            if (strPlotIdArray[x] != null && strPlotIdArray[x].Trim().Length > 0)
-                            {
-                                this.m_ado.m_strSQL = "INSERT INTO input_cn (CN) VALUES (" + strPlotIdArray[x].Trim() + ")";
+                            dtFIADBSeedlingSchema = SQLite.getTableSchema(conn, "select * from FIADB." + strSeedlingSource);
+                        }
+                        dtFIADBSiteTreeSchema = SQLite.getTableSchema(conn, $@"select * from FIADB.{strSiteTreeSource}");
+                        m_intError = SQLite.m_intError;
+                    }
+
+                    if (this.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                    {
+                        //-------------PLOT TABLE----------------//
+                        //build field list string to insert sql by matching columns in thebiosum and fiadb plot tables
+                        strFields = CreateStrFieldsFromDataTables(dtPlotSchema, dtFIADBPlotSchema);
+
+                        SetLabelValue(m_frmTherm.lblMsg, "Text", "Plot Table: Insert New Plot Records");
+                        if (Checked(rdoFilterByFile) == true && m_strPlotIdList.Trim().Length > 0 &&
+                            !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                        {
+                            string strDelimiter = ",";
+                            string[] strPlotIdArray = m_strPlotIdList.Split(strDelimiter.ToCharArray());
+                            SQLite.m_strSQL = "CREATE TABLE TEMPDB.input_cn (CN CHAR(34))";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
-                                    m_ado.m_strSQL + "\r\n");
-                                this.m_ado.SqlNonQuery(this.m_connTempMDBFile, m_ado.m_strSQL);
+                                    SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                            for (x = 0; x <= strPlotIdArray.Length - 1; x++)
+                            {
+                                if (strPlotIdArray[x] != null && strPlotIdArray[x].Trim().Length > 0)
+                                {
+                                    SQLite.m_strSQL = "INSERT INTO input_cn (CN) VALUES (" + strPlotIdArray[x].Trim() + ")";
+                                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
+                                        SQLite.m_strSQL + "\r\n");
+                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                }
+                            }
+                            SQLite.m_strSQL = "CREATE TABLE TEMPDB.tempplot as SELECT '999999999999999999999999' AS biosum_plot_id,9 AS biosum_status_cd, p.* " +
+                                "FROM BIOSUM_PLOT p ,TEMPDB." + this.m_strPpsaTable + " ppsa, input_cn" +
+                                " WHERE p.cn=input_cn.cn AND " +
+                                "p.cn=ppsa.plt_cn AND " +
+                                "ppsa.rscd = " + this.m_strCurrFIADBRsCd + " AND " +
+                                "ppsa.evalid = " + this.m_strCurrFIADBEvalId;
+                        }
+                        else
+                        {
+
+                            /********************************************************
+                             **create plot input insert command
+                             ********************************************************/
+                            //check the user defined filters
+                            SQLite.m_strSQL = SQLite.m_strSQL = "CREATE TABLE TEMPDB.tempplot as SELECT '999999999999999999999999' AS biosum_plot_id,9 AS biosum_status_cd, p.* " +
+                                "FROM BIOSUM_PLOT p ,TEMPDB." + this.m_strPpsaTable + " ppsa" +
+                                " WHERE p.cn=ppsa.plt_cn AND " +
+                                "ppsa.rscd = " + this.m_strCurrFIADBRsCd + " AND " +
+                                "ppsa.evalid = " + this.m_strCurrFIADBEvalId;
+                        }
+
+                        if (Checked(rdoFilterNone))
+                        {
+                            //forested/nonforested filters
+                            if (Checked(chkNonForested) &&
+                                Checked(chkForested))
+                            {
+                                //all plots
+
+                            }
+                            else if (Checked(chkForested))
+                            {
+                                //forested plots
+                                SQLite.m_strSQL = SQLite.m_strSQL + " AND p.plot_status_cd = 1";
+                            }
+                            else
+                            {
+                                //nonforested plots
+                                SQLite.m_strSQL = SQLite.m_strSQL + " AND p.plot_status_cd IS NULL OR p.plot_status_cd <> 1";
                             }
                         }
-                        this.m_ado.m_strSQL = "SELECT '999999999999999999999999' AS biosum_plot_id,9 AS biosum_status_cd,p.* INTO tempplot " +
-                            " FROM " + strSourceTableLink + " p," +
-                            this.m_strPpsaTable + " ppsa, " +
-                            "input_cn " +
-                            " WHERE p.cn=input_cn.cn AND " +
-                            "p.cn=ppsa.plt_cn AND " +
-                            "ppsa.rscd = " + this.m_strCurrFIADBRsCd + " AND " +
-                            "ppsa.evalid = " + this.m_strCurrFIADBEvalId;
+
+                        else if (Checked(rdoFilterByMenu))
+                        {
+                            if (Checked(chkNonForested) &&
+                                Checked(chkForested))
+                            {
+                                //all plots
+                            }
+                            else if (Checked(chkForested))
+                            {
+                                //forested plots
+                                SQLite.m_strSQL = SQLite.m_strSQL + " AND (p.plot_status_cd = 1) ";
+                            }
+                            else
+                            {
+                                //nonforested plots
+                                SQLite.m_strSQL = SQLite.m_strSQL + " AND (p.plot_status_cd IS NULL OR p.plot_status_cd <> 1) ";
+                            }
+                            if (this.m_strStateCountyPlotSQL.Trim().Length > 0)
+                            {
+                                //state,county,plot filter
+                                this.BuildFilterByPlotString("ppsa.statecd", "ppsa.countycd", "ppsa.plot", false);
+                                SQLite.m_strSQL += " AND " + this.m_strStateCountyPlotSQL.Trim() + ";";
+                            }
+                            else
+                            {
+                                //state,county filter
+                                this.BuildFilterByStateCountyString("ppsa.statecd", "ppsa.countycd", false);
+                                SQLite.m_strSQL += " AND " + this.m_strStateCountySQL.Trim() + ";";
+                            }
+
+                        }
+
+                        //insert new plot records
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        m_intError = SQLite.m_intError;
                     }
-                    else
+
+                    if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
                     {
+                        SetThermValue(m_frmTherm.progressBar1, "Value", 30);
+                        SetLabelValue(m_frmTherm.lblMsg, "Text", "Plot Table: Update Biosum_Plot_Id Column");
+                        System.Data.SQLite.SQLiteTransaction p_transTempPlot = conn.BeginTransaction();
 
-                        /********************************************************
-                         **create plot input insert command
-                         ********************************************************/
-                        //check the user defined filters
-                        this.m_ado.m_strSQL = "SELECT '999999999999999999999999' AS biosum_plot_id,9 AS biosum_status_cd,p.* INTO tempplot " +
-                            "FROM " + strSourceTableLink + " p, " + this.m_strPpsaTable + " ppsa" +
-                            " WHERE p.cn=ppsa.plt_cn " +
-                            " AND ppsa.rscd = " + this.m_strCurrFIADBRsCd + " AND " +
-                            "ppsa.evalid = " + this.m_strCurrFIADBEvalId;
+                        //update the biosum_plot_id column
+                        SQLite.m_DataSet = new DataSet("FIADB");
+                        SQLite.m_DataAdapter = new System.Data.SQLite.SQLiteDataAdapter();
+                        SQLite.AddSQLQueryToDataSet(conn,
+                            ref SQLite.m_DataAdapter,
+                            ref SQLite.m_DataSet,
+                            ref p_transTempPlot,
+                            "SELECT * FROM tempplot", "tempplot");
+
+                        SQLite.ConfigureDataAdapterUpdateCommand(conn,
+                            SQLite.m_DataAdapter,
+                            p_transTempPlot,
+                            "SELECT biosum_plot_id FROM tempplot",
+                            "SELECT CN FROM tempplot",
+                            "tempplot");
+
+                        for (x = 0; x <= SQLite.m_DataSet.Tables["tempplot"].Rows.Count - 1; x++)
+                        {
+                            strBiosumPlotId = this.CreateBiosumPlotId(SQLite.m_DataSet.Tables["tempplot"].Rows[x]);
+                            SQLite.m_DataSet.Tables["tempplot"].Rows[x].BeginEdit();
+                            SQLite.m_DataSet.Tables["tempplot"].Rows[x]["biosum_plot_id"] = strBiosumPlotId;
+                            SQLite.m_DataSet.Tables["tempplot"].Rows[x].EndEdit();
+                        }
+                        SQLite.m_DataAdapter.Update(SQLite.m_DataSet.Tables["tempplot"]);
+                        p_transTempPlot.Commit();
+                        SQLite.m_DataSet.Tables["tempplot"].AcceptChanges();
+                        p_transTempPlot = null;
+                        SQLite.m_DataAdapter.Dispose();
+                        SQLite.m_DataAdapter = null;
+                        m_intError = SQLite.m_intError;
                     }
-
-                    if (Checked(rdoFilterNone))
-                    {
-                        //forested/nonforested filters
-                        if (Checked(chkNonForested) &&
-                            Checked(chkForested))
-                        {
-                            //all plots
-
-                        }
-                        else if (Checked(chkForested))
-                        {
-                            //forested plots
-                            this.m_ado.m_strSQL = m_ado.m_strSQL + " AND p.plot_status_cd = 1";
-                        }
-                        else
-                        {
-                            //nonforested plots
-                            this.m_ado.m_strSQL = m_ado.m_strSQL + " AND p.plot_status_cd IS NULL OR p.plot_status_cd <> 1";
-                        }
-                    }
-                   
-                    else if (Checked(rdoFilterByMenu))
-                    {
-                        if (Checked(chkNonForested) &&
-                            Checked(chkForested))
-                        {
-                            //all plots
-                        }
-                        else if (Checked(chkForested))
-                        {
-                            //forested plots
-                            this.m_ado.m_strSQL = m_ado.m_strSQL + " AND (p.plot_status_cd = 1) ";
-                        }
-                        else
-                        {
-                            //nonforested plots
-                            this.m_ado.m_strSQL = m_ado.m_strSQL + " AND (p.plot_status_cd IS NULL OR p.plot_status_cd <> 1) ";
-                        }
-                        if (this.m_strStateCountyPlotSQL.Trim().Length > 0)
-                        {
-                            //state,county,plot filter
-                            this.BuildFilterByPlotString("ppsa.statecd", "ppsa.countycd", "ppsa.plot", false);
-                            this.m_ado.m_strSQL += " AND " + this.m_strStateCountyPlotSQL.Trim() + ";";
-                        }
-                        else
-                        {
-                            //state,county filter
-                            this.BuildFilterByStateCountyString("ppsa.statecd", "ppsa.countycd", false);
-                            this.m_ado.m_strSQL += " AND " + this.m_strStateCountySQL.Trim() + ";";
-                        }
-
-                    }
-
-                    //insert new plot records
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-                    m_intError = m_ado.m_intError;
                 }
 
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 30);
-                    SetLabelValue(m_frmTherm.lblMsg,"Text","Plot Table: Update Biosum_Plot_Id Column");
-                    System.Data.OleDb.OleDbTransaction p_transTempPlot = this.m_connTempMDBFile.BeginTransaction();
+ 
 
-                    //update the biosum_plot_id column
-                    this.m_ado.m_DataSet = new DataSet("FIADB");
-                    this.m_ado.m_OleDbDataAdapter = new System.Data.OleDb.OleDbDataAdapter();
-                    this.m_ado.AddSQLQueryToDataSet(this.m_connTempMDBFile,
-                        ref m_ado.m_OleDbDataAdapter,
-                        ref m_ado.m_DataSet,
-                        ref p_transTempPlot,
-                        "SELECT * FROM tempplot", "tempplot");
 
-                    this.m_ado.ConfigureDataAdapterUpdateCommand(this.m_connTempMDBFile,
-                        m_ado.m_OleDbDataAdapter,
-                        p_transTempPlot,
-                        "SELECT biosum_plot_id FROM tempplot",
-                        "SELECT CN FROM tempplot",
-                        "tempplot");
-
-                    for (x = 0; x <= this.m_ado.m_DataSet.Tables["tempplot"].Rows.Count - 1; x++)
-                    {
-                        strBiosumPlotId = this.CreateBiosumPlotId(this.m_ado.m_DataSet.Tables["tempplot"].Rows[x]);
-                        this.m_ado.m_DataSet.Tables["tempplot"].Rows[x].BeginEdit();
-                        this.m_ado.m_DataSet.Tables["tempplot"].Rows[x]["biosum_plot_id"] = strBiosumPlotId;
-                        this.m_ado.m_DataSet.Tables["tempplot"].Rows[x].EndEdit();
-                    }
-                    m_ado.m_OleDbDataAdapter.Update(this.m_ado.m_DataSet.Tables["tempplot"]);
-                    p_transTempPlot.Commit();
-                    this.m_ado.m_DataSet.Tables["tempplot"].AcceptChanges();
-                    p_transTempPlot = null;
-                    m_ado.m_OleDbDataAdapter.Dispose();
-                    m_ado.m_OleDbDataAdapter = null;
-                    m_intError = m_ado.m_intError;
-                }
 
                 if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
                 {
@@ -2964,7 +2913,7 @@ namespace FIA_Biosum_Manager
                         GetThermValue(m_frmTherm.progressBar1, "Maximum"));
                     SetThermValue(m_frmTherm.progressBar2, "Value", 80);
                     //m_intError = ImportDownWoodyMaterials(m_ado);
-                    m_intError = ImportDownWoodyMaterialsSqlite(oDataMgr);
+                    m_intError = ImportDownWoodyMaterialsSqlite();
                 }
 
 				//Growth Removal Mortality Section
@@ -5028,7 +4977,7 @@ namespace FIA_Biosum_Manager
 	        return p_ado.m_intError;
 	    }
 
-        private int ImportDownWoodyMaterialsSqlite(DataMgr p_dataMgr)
+        private int ImportDownWoodyMaterialsSqlite()
         {
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -5226,7 +5175,7 @@ namespace FIA_Biosum_Manager
 
             SetLabelValue(m_frmTherm.lblMsg, "Text", "");
             SetThermValue(m_frmTherm.progressBar1, "Value", GetThermValue(m_frmTherm.progressBar1, "Maximum"));
-            return p_dataMgr.m_intError;
+            return oDataMgr.m_intError;
         }
 
       //  private int ImportGrowthRemovalMortality(ado_data_access p_ado)
@@ -8927,22 +8876,6 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopStratumTable(SQLite, conn, this.m_strPopStratumTable);
                 }
             }
-        }
-
-        private void CreatePopTableLinks()
-        {
-            //instatiate dao for creating links in the temp table
-            dao_data_access oDao = new dao_data_access();
-
-            oDao.CreateTableLink(this.m_strTempMDBFile, this.m_strPopEvalTable, this.m_strMasterDbFile, this.m_strPopEvalTable);
-            oDao.CreateTableLink(this.m_strTempMDBFile, this.m_strPopEstUnitTable, this.m_strMasterDbFile, this.m_strPopEstUnitTable);
-            oDao.CreateTableLink(this.m_strTempMDBFile, this.m_strPopStratumTable, this.m_strMasterDbFile, this.m_strPopStratumTable);
-            oDao.CreateTableLink(this.m_strTempMDBFile, this.m_strPpsaTable, this.m_strMasterDbFile, this.m_strPpsaTable);
-
-            //destroy the object and release it from memory
-            oDao.m_DaoWorkspace.Close();
-            oDao.m_DaoWorkspace = null;
-            oDao = null;
         }
 
         private List<string> QueryFiadbStates()
