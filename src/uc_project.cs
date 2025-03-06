@@ -964,25 +964,6 @@ namespace FIA_Biosum_Manager
                 }
 
                 //
-                //master_aux file: Where additional input tables are stored
-                //
-                strDestFile = this.txtRootDirectory.Text.Trim() + "\\db\\master_aux.accdb";
-				p_frmTherm.Increment(4);
-				p_frmTherm.lblMsg.Text = strDestFile;
-				p_frmTherm.lblMsg.Refresh();
-				//System.IO.File.Copy(strSourceFile, strDestFile,true);	
-				p_dao.CreateMDB(strDestFile);
-				strConn = p_ado.getMDBConnString(strDestFile,"admin","");
-				p_ado.OpenConnection(strConn);
-                //DWM Section
-                frmMain.g_oTables.m_oFIAPlot.CreateDWMCoarseWoodyDebrisTable(p_ado, p_ado.m_OleDbConnection, frmMain.g_oTables.m_oFIAPlot.DefaultDWMCoarseWoodyDebrisName);
-                frmMain.g_oTables.m_oFIAPlot.CreateDWMFineWoodyDebrisTable(p_ado, p_ado.m_OleDbConnection, frmMain.g_oTables.m_oFIAPlot.DefaultDWMFineWoodyDebrisName);
-                frmMain.g_oTables.m_oFIAPlot.CreateDWMDuffLitterFuelTable(p_ado, p_ado.m_OleDbConnection, frmMain.g_oTables.m_oFIAPlot.DefaultDWMDuffLitterFuelName);
-                frmMain.g_oTables.m_oFIAPlot.CreateDWMTransectSegmentTable(p_ado, p_ado.m_OleDbConnection, frmMain.g_oTables.m_oFIAPlot.DefaultDWMTransectSegmentName);
-
-				p_ado.CloseConnection(p_ado.m_OleDbConnection);
-
-                //
                 //master_aux.db
                 //
                 strDestFile = this.txtRootDirectory.Text.Trim() + "\\db\\master_aux.db";
