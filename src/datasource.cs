@@ -1722,7 +1722,8 @@ namespace FIA_Biosum_Manager
             static public string RxPackage = "Treatment Packages";
             static public string Rx = "Treatment Prescriptions";
             static public string RxHarvestCostColumns = "Treatment Prescriptions Harvest Cost Columns";
-        }
+			static public string TreeSpecies = "Tree Species";
+		}
 		
 	}
 

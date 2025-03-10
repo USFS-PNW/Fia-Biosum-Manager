@@ -1013,11 +1013,23 @@ namespace FIA_Biosum_Manager
 				p_frmTherm.lblMsg.Text = strDestFile;
 				p_frmTherm.lblMsg.Refresh();
 				System.IO.File.Copy(strSourceFile, strDestFile,true);
-                //
-                //prepopulated OPCOST ref file file
-                //
-                //copy default master database to the new project directory
-                strSourceFile = this.m_oEnv.strAppDir + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile;
+
+				//
+				//prepopulated ref master file
+				//
+				//copy default ref_master SQLitedatabase to the new project directory
+				strSourceFile = $@"{this.m_oEnv.strAppDir}\{Tables.Reference.DefaultRefMasterDbFile}";
+				strDestFile = $@"{this.txtRootDirectory.Text.Trim()}\{Tables.Reference.DefaultRefMasterDbFile}";
+				p_frmTherm.Increment(6);
+				p_frmTherm.lblMsg.Text = strDestFile;
+				p_frmTherm.lblMsg.Refresh();
+				System.IO.File.Copy(strSourceFile, strDestFile, true);
+
+				//
+				//prepopulated OPCOST ref file file
+				//
+				//copy default master database to the new project directory
+				strSourceFile = this.m_oEnv.strAppDir + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile;
                 strDestFile = this.txtRootDirectory.Text.Trim() + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile;
                 System.IO.File.Copy(strSourceFile, strDestFile, true);
                 //

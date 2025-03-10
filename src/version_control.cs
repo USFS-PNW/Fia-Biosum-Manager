@@ -7691,9 +7691,66 @@ namespace FIA_Biosum_Manager
                 }
             }
 
+            // Migrate tree_species table to SQLite
+            frmMain.g_sbpInfo.Text = "Version Update: Moving tree species table ...Stand by";
+            string strRefMasterPath = $@"{ReferenceProjectDirectory.Trim()}\{Tables.Reference.DefaultRefMasterDbFile}";
+            if (!System.IO.File.Exists(strRefMasterPath))
+            {
+                strSourceFile = $@"{frmMain.g_oEnv.strAppDir}\{Tables.Reference.DefaultRefMasterDbFile}";
+                System.IO.File.Copy(strSourceFile, strRefMasterPath, true);
+            }
+            // Create DSN if needed
+            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.RefMasterDsnName))
+            {
+                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.RefMasterDsnName);
+            }
+            odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.RefMasterDsnName, strRefMasterPath);
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strRefMasterPath)))
+            {
+                conn.Open();
+                if (oDataMgr.TableExist(conn,Tables.Reference.DefaultTreeSpeciesTableName))
+                {
+                    oDataMgr.m_strSQL = $@"DELETE FROM {Tables.Reference.DefaultTreeSpeciesTableName}";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+            }
+            string strRefMasterAccdb = oProjectDs.getFullPathAndFile(Datasource.TableTypes.TreeSpecies);
+            oDao.CreateSQLiteTableLink(strRefMasterAccdb, Tables.Reference.DefaultTreeSpeciesTableName,
+                Tables.Reference.DefaultTreeSpeciesTableName + "_1", ODBCMgr.DSN_KEYS.RefMasterDsnName, strRefMasterPath);
+            System.Threading.Thread.Sleep(4000);
+            int intTreeSpeciesTable = oProjectDs.getTableNameRow(Datasource.TableTypes.TreeSpecies);
+            string strTreeSpeciesTableName = oProjectDs.m_strDataSource[intTreeSpeciesTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
+            string strRefConn = oAdo.getMDBConnString(strRefMasterAccdb, "", "");
+            using (OleDbConnection copyConn = new System.Data.OleDb.OleDbConnection(strRefConn))
+            {
+                copyConn.Open();
+                oAdo.m_strSQL = "INSERT INTO " + Tables.Reference.DefaultTreeSpeciesTableName + "_1" +
+                        " SELECT ID,SPCD,COMMON_NAME,GENUS,SPECIES,VARIETY,SUBSPECIES,FVS_VARIANT," +
+                        "FVS_INPUT_SPCD, COMMENTS FROM " + strTreeSpeciesTableName;
+                oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                oAdo.m_strSQL = "DROP TABLE " + Tables.Reference.DefaultTreeSpeciesTableName + "_1";
+                oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+            }
+            // Update project datasources
+            oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.TreeSpecies, ReferenceProjectDirectory + "\\db", 
+                System.IO.Path.GetFileName(strRefMasterPath), Tables.Reference.DefaultTreeSpeciesTableName);
+            // Update processor datasource
+            strDestFile = ReferenceProjectDirectory.Trim() + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
+            {
+                conn.Open();
+                oDataMgr.m_strSQL = "UPDATE " + Tables.Scenario.DefaultScenarioDatasourceTableName +
+                    " SET file = '" + System.IO.Path.GetFileName(strRefMasterPath) + "' WHERE table_type = '" + Datasource.TableTypes.TreeSpecies + "'";
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+            }
+
             if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.MasterDsnName))
             {
                 odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.MasterDsnName);
+            }
+            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.RefMasterDsnName))
+            {
+                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.RefMasterDsnName);
             }
             if (oDao != null)
             {

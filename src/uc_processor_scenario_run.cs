@@ -1048,11 +1048,14 @@ namespace FIA_Biosum_Manager
                 this.btnRunOC7.Top = this.btnChkAll.Top;
                 this.btnRun.Top = this.btnChkAll.Top;
                 this.lblMsg.Top = this.btnRun.Top - this.lblMsg.Height - 5;
-                this.m_lvEx.Height = this.lblMsg.Top - this.m_lvEx.Top + 10;
-                this.m_lvEx.Width = this.panel1.Width - (m_lvEx.Left * 2);
-                this.btnRun.Left = this.m_lvEx.Width - (int)(m_lvEx.Width * .5) - (int)(btnRun.Width * .5);
-                this.btnRunOC7.Left = (int) this.btnRun.Left + 150;
-                this.lblMsg.Width = this.m_lvEx.Width;
+                if (this.m_lvEx != null)
+                {
+                    this.m_lvEx.Height = this.lblMsg.Top - this.m_lvEx.Top + 10;
+                    this.m_lvEx.Width = this.panel1.Width - (m_lvEx.Left * 2);
+                    this.btnRun.Left = this.m_lvEx.Width - (int)(m_lvEx.Width * .5) - (int)(btnRun.Width * .5);
+                    this.btnRunOC7.Left = (int)this.btnRun.Left + 150;
+                    this.lblMsg.Width = this.m_lvEx.Width;
+                }
 
                 if (uc_filesize_monitor1.lblMaxSize.Left + uc_filesize_monitor1.lblMaxSize.Width > uc_filesize_monitor1.Width)
                 {
