@@ -555,7 +555,7 @@ namespace FIA_Biosum_Manager
                     }
 
                     UpdateFvsInConfigurationTable();
-                    CreateConfigurationTextFile();
+                    //CreateConfigurationTextFile();
                 }
 
             }
@@ -582,9 +582,9 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void CreateConfigurationTextFile()
+        public void CreateConfigurationTextFile(List<string> lstSelectedVariants)
         {
-            string logFile = m_strProjDir + "/fvs/data/" + m_strVariant + "/biosum_fvs_input_configurations.txt";
+            string logFile = m_strProjDir + "/fvs/data/biosum_fvs_input_configurations.txt";
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.AppendLine("========================================================");
             stringBuilder.AppendLine("FVSIn.accdb created: " + DateTime.Now.ToString());
@@ -610,6 +610,11 @@ namespace FIA_Biosum_Manager
             stringBuilder.AppendLine("Include seedlings: " + m_bIncludeSeedlings.ToString());
             stringBuilder.AppendLine("Source FIA Data Mart database: " + m_strSourceFiaDb);
             stringBuilder.AppendLine("Selected FVS group: " + m_strGroup);
+            stringBuilder.AppendLine("Selected Variants: ");
+            foreach (string variant in lstSelectedVariants)
+            {
+                stringBuilder.AppendLine(variant);
+            }
             frmMain.g_oUtils.WriteText(logFile, stringBuilder.ToString());
         }
 
@@ -653,6 +658,11 @@ namespace FIA_Biosum_Manager
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                     DebugLogSQL(oDataMgr.m_strSQL);
 
+                }
+                else
+                {
+                    oDataMgr.m_strSQL = "DELETE FROM biosum_fvsin_configuration";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
 
                 List<string[]> configs = CreateFVSInConfigurationList();
