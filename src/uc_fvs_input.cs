@@ -1258,6 +1258,7 @@ namespace FIA_Biosum_Manager
 
             dao_data_access oDao = new dao_data_access();
             ado_data_access oAdo = new ado_data_access();
+            utils oUtils = new utils();
 
             try
             {
@@ -1387,7 +1388,8 @@ namespace FIA_Biosum_Manager
 
                 }
 
-                p_fvsinput.CreateConfigurationTextFile(lstSelectedVariants);
+                string strSelectedVariants = oUtils.ConvertListToString(lstSelectedVariants, ", ");
+                p_fvsinput.CreateConfigurationTextFile(strSelectedVariants);
 
                 // Copy KCP files to output directory
                 if (m_bKcpOverwrite == true)

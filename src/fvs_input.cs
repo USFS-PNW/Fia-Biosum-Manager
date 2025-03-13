@@ -555,7 +555,6 @@ namespace FIA_Biosum_Manager
                     }
 
                     UpdateFvsInConfigurationTable();
-                    //CreateConfigurationTextFile();
                 }
 
             }
@@ -582,13 +581,14 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        public void CreateConfigurationTextFile(List<string> lstSelectedVariants)
+        public void CreateConfigurationTextFile(string p_strSelectedVariants)
         {
             string logFile = m_strProjDir + "/fvs/data/biosum_fvs_input_configurations.txt";
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.AppendLine("========================================================");
-            stringBuilder.AppendLine("FVSIn.accdb created: " + DateTime.Now.ToString());
+            stringBuilder.AppendLine("FVSIn.db created: " + DateTime.Now.ToString());
             stringBuilder.AppendLine("========================================================");
+            stringBuilder.AppendLine("Selected variants: " + p_strSelectedVariants);
             string choice =
                 (intDWMOption == (int)m_enumDWMOption.USE_FUEL_MODEL_ONLY ||
                  intDWMOption == (int)m_enumDWMOption.USE_FUEL_MODEL_OR_DWM_DATA)
@@ -610,11 +610,6 @@ namespace FIA_Biosum_Manager
             stringBuilder.AppendLine("Include seedlings: " + m_bIncludeSeedlings.ToString());
             stringBuilder.AppendLine("Source FIA Data Mart database: " + m_strSourceFiaDb);
             stringBuilder.AppendLine("Selected FVS group: " + m_strGroup);
-            stringBuilder.AppendLine("Selected Variants: ");
-            foreach (string variant in lstSelectedVariants)
-            {
-                stringBuilder.AppendLine(variant);
-            }
             frmMain.g_oUtils.WriteText(logFile, stringBuilder.ToString());
         }
 
