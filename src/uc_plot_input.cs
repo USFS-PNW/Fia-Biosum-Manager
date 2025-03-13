@@ -2659,250 +2659,223 @@ namespace FIA_Biosum_Manager
                         SQLite.m_DataAdapter = null;
                         m_intError = SQLite.m_intError;
                     }
-                }
 
- 
-
-
-
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 40);
-                    //insert the new plot records into the plot table
-                    m_ado.m_strSQL = "INSERT INTO " + this.m_strPlotTable + " (biosum_plot_id,biosum_status_cd," + strFields + ") " +
-                        "SELECT TRIM(biosum_plot_id),biosum_status_cd," + strFields + " FROM tempplot";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-                    m_intError = m_ado.m_intError;
-                }
-
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    //create plot column update work table
-                    this.m_strSQL = "SELECT biosum_plot_id, statecd as cond_ttl " +
-                        "INTO plot_column_updates_work_table FROM " + this.m_strPlotTable.Trim() + " WHERE 1=2;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_strSQL + "\r\n");
-                    this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_strSQL);
-                    System.Threading.Thread.Sleep(10000);
-                    m_intError = m_ado.m_intError;
-                }
-
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    SetThermValue(m_frmTherm.progressBar1,"Value",40);
-                    SetThermValue(m_frmTherm.progressBar2,"Value",20);
-                    //-------------CONDITION TABLE----------------//
-                    strSourceTableLink = "fiadb_cond_input";
-                    //build field list string to insert sql by matching FIADB and BioSum Cond columns
-                    strFields = CreateStrFieldsFromDataTables(dtFIADBCondSchema, dtCondSchema);
-                    /********************************************************
-                     **create condition input insert command
-                     ********************************************************/
-                    //check the user defined filters
-                    SetLabelValue(m_frmTherm.lblMsg,"Text","Condition Table: Insert New  Records");
-                    this.m_ado.m_strSQL = "SELECT p.biosum_plot_id, TRIM(p.biosum_plot_id) + TRIM(CSTR(c.condid)) AS biosum_cond_id,9 AS biosum_status_cd,c.*" +
-                        " INTO tempcond FROM " + strSourceTableLink + " c, " +
-                        this.m_strPlotTable +  " p" +
-                        " WHERE c.plt_cn=p.cn AND" +
-                        " p.biosum_status_cd=9";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-                    m_intError = m_ado.m_intError;
-                }
-
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 50);
-                    //insert the new condition records into the condition table
-                    m_ado.m_strSQL = "INSERT INTO " + this.m_strCondTable + " (biosum_plot_id,biosum_cond_id,biosum_status_cd," + strFields + ") " +
-                        "SELECT TRIM(biosum_plot_id),TRIM(biosum_cond_id),biosum_status_cd," + strFields + " FROM tempcond";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_ado.m_strSQL + "\r\n");
-                    this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-
-                    // Trying this since I couldn't update from SQLite strSourceTableLink
-                    // Get ODBC error 'Operation Must Use an updateable query'
-                    // Seems to work vs creating a new temp table with this field
-                    // Added new column to tempcond with varchar datatype to link to cond table
-                    m_ado.AddColumn(this.m_connTempMDBFile, "tempcond", "CN_JOIN", "VARCHAR", "34");
-                    // Populate new column
-                    if (m_ado.m_intError == 0)
+                    if (m_intError == 0 & !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
                     {
-                        m_ado.m_strSQL = "UPDATE tempcond SET CN_JOIN = TRIM(CN)";
+                        SetThermValue(m_frmTherm.progressBar1, "Value", 40);
+                        // insert the new plot records into the plot table
+                        SQLite.m_strSQL = "INSERT INTO " + this.m_strPlotTable + " (biosum_plot_id, biosum_status_cd, " + strFields + ") " +
+                            "SELECT TRIM(biosum_plot_id), biosum_status_cd, " + strFields + " FROM tempplot";
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                        this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        m_intError = SQLite.m_intError;
                     }
 
-                    m_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " d " +
-                        "INNER JOIN tempcond s " +
-                        "ON d.cn = s.CN_JOIN " +
-                        "SET d.cond_status_cd = s.cond_status_cd";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    if (m_ado.m_intError == 0)
-                        this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-
-                    //create cond column work table
-                    this.m_strSQL = "SELECT biosum_cond_id, qmd_all_inch,qmd_hwd_inch," +
-                        "qmd_swd_inch,tpacurr,hwd_tpacurr,swd_tpacurr,ba_ft2_ac," +
-                        "hwd_ba_ft2_ac,swd_ba_ft2_ac,vol_ac_grs_stem_ttl_ft3," +
-                        "hwd_vol_ac_grs_stem_ttl_ft3,swd_vol_ac_grs_stem_ttl_ft3," +
-                        "vol_ac_grs_ft3, hwd_vol_ac_grs_ft3," +
-                        "swd_vol_ac_grs_ft3,volcsgrs," +
-                        "hwd_volcsgrs, swd_volcsgrs INTO cond_column_updates_work_table " +
-                        "FROM " + this.m_strCondTable.Trim() + " WHERE 1=2;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_strSQL + "\r\n");
-                    if (m_ado.m_intError == 0)
-                        m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_strSQL);
-                    m_intError = m_ado.m_intError;
-                }
-
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 55);
-                    SetThermValue(m_frmTherm.progressBar2, "Value", 40);
-                    //-------------TREE TABLE----------------//
-                    strSourceTableLink = "fiadb_tree_input";
-                    //build field list string to insert sql by matching FIADB and BioSum Tree columns
-                    strFields = CreateStrFieldsFromDataTables(dtFIADBTreeSchema, dtTreeSchema);
-                    /********************************************************
-                     **create tree input insert command
-                     ********************************************************/
-                    //check the user defined filters
-                    SetLabelValue(m_frmTherm.lblMsg,"Text","Tree Table: Insert New  Records");
-                    this.m_ado.m_strSQL = "SELECT TRIM(p.biosum_plot_id) + TRIM(CSTR(t.condid)) AS biosum_cond_id,9 AS biosum_status_cd,t.* INTO temptree FROM " + strSourceTableLink + " t " +
-                        " INNER JOIN " + this.m_strPlotTable + " p ON t.plt_cn=TRIM(p.cn) " +
-                        " WHERE p.biosum_status_cd=9 AND t.statuscd<>0;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    if (m_ado.m_intError == 0)
-                        this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-                    m_intError = m_ado.m_intError;
-                }
-
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 60);
-                    //insert the new tree records into the tree table; Note that temptree is used later for GRM processing
-                    m_ado.m_strSQL = "INSERT INTO " + this.m_strTreeTable + " (biosum_cond_id,biosum_status_cd," + strFields + ") " +
-                        "SELECT TRIM(biosum_cond_id),biosum_status_cd," + strFields + " FROM temptree";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-                }
-
-                // SEEDLINGS
-                if (m_intError == 0 && m_bLoadSeedlings == true && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 65);
-                    //-------------SEEDLING TABLE----------------//
-                    strSourceTableLink = frmMain.g_oTables.m_oFIAPlot.DefaultSeedlingTableName;
-                    SetLabelValue(m_frmTherm.lblMsg, "Text", "Seedling Table: Insert New  Records");
-                    if (this.m_ado.TableExist(this.m_connTempMDBFile, "tempseedling"))
+                    if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
                     {
-                        this.m_ado.m_strSQL = "DROP TABLE tempseedling";
+                        // create plot column update work table
+                        SQLite.m_strSQL = "CREATE TABLE TEMPDB.plot_column_updates_work_table AS " +
+                            "SELECT biosum_plot_id, statecd AS cond_ttl FROM " + this.m_strPlotTable + " WHERE 1=2";
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                        if (m_ado.m_intError == 0)
-                            this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        m_intError = SQLite.m_intError;
                     }
-                    this.m_ado.m_strSQL = "SELECT TRIM(p.biosum_plot_id) + TRIM(CSTR(s.condid)) AS biosum_cond_id,9 AS biosum_status_cd, 0.1 as dia, 1 as diahtcd, " +
-                        "'1' + Format(SPCD,'000') + '00' + SUBP AS fvs_tree_id, 1 as statuscd, s.* INTO tempseedling FROM " + 
-                        strSourceTableLink + " s " + " INNER JOIN " + this.m_strPlotTable + " p ON s.plt_cn=TRIM(p.cn) " +
-                        " WHERE p.biosum_status_cd=9;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    if (m_ado.m_intError == 0)
-                        this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-                    //Set DIAHTCD for Seedlings using FIA_TREE_SPECIES_REF.WOODLAND_YN
-                    this.m_ado.m_strSQL = $@"UPDATE tempseedling t 
-                                             INNER JOIN FIA_TREE_SPECIES_REF ref ON cint(t.spcd)=ref.spcd
-                                             SET t.diahtcd=IIF(ref.woodland_yn='N', 1, 2)";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    if (m_ado.m_intError == 0)
-                        this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-                    //Prepend CN with "S" to indicate seedlings
-                    this.m_ado.m_strSQL = $@"UPDATE tempseedling t                                             
-                                             SET CN = 'S' + CN";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    if (m_ado.m_intError == 0)
-                        this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-                    //build field list string to insert sql by matching FIADB and BioSum Tree columns
-                    strFields = CreateStrFieldsFromDataTables(dtFIADBSeedlingSchema, dtTreeSchema);
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 70);
-                    //insert the new seedling records into the tree table
-                    m_ado.m_strSQL = "INSERT INTO " + this.m_strTreeTable + " (biosum_cond_id,biosum_status_cd,dia,diahtcd,fvs_tree_id,statuscd," + strFields + ") " +
-                        "SELECT TRIM(biosum_cond_id),biosum_status_cd,dia,diahtcd,fvs_tree_id,statuscd, " + strFields + " FROM tempseedling";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
 
-                    m_intError = m_ado.m_intError;
-                }
+                    if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                    {
+                        SetThermValue(m_frmTherm.progressBar1, "Value", 40);
+                        SetThermValue(m_frmTherm.progressBar2, "Value", 20);
+                        //-------------CONDITION TABLE----------------//
+                        //build field list string to insert sql by matching FIADB and BioSum Cond columns
+                        strFields = CreateStrFieldsFromDataTables(dtFIADBCondSchema, dtCondSchema);
+                        /********************************************************
+                         **create condition input insert command
+                         ********************************************************/
+                        //check the user defined filters
+                        SetLabelValue(m_frmTherm.lblMsg, "Text", "Condition Table: Insert New  Records");
+                        SQLite.m_strSQL = "CREATE TABLE TEMPDB.tempcond AS " +
+                            "SELECT p.biosum_plot_id, TRIM(p.biosum_plot_id) || c.condid AS biosum_cond_id, 9 AS biosum_stats_cd, c.* " +
+                            "FROM BIOSUM_COND AS c, " + this.m_strPlotTable + " AS p " +
+                            "WHERE c.plt_cn = p.cn AND p.biosum_status_cd = 9";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        m_intError = SQLite.m_intError;
+                    }
 
+                    if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                    {
+                        SetThermValue(m_frmTherm.progressBar1, "Value", 50);
+                        //insert the new condition records into the condition table
+                        SQLite.m_strSQL = "INSERT INTO " + this.m_strCondTable + " (biosum_plot_id, biosum_cond_id, biosum_status_cd, " + strFields + ") " +
+                            "SELECT TRIM(biosum_plot_id), TRIM(biosum_cond_id), biosum_status_cd, " + strFields + " FROM TEMPDB.tempcond";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
 
+                        SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS d " +
+                            "SET cond_status_cd = s.cond_status_cd " +
+                            "FROM TEMPDB.tempcond AS s WHERE TRIM(d.cn) = TRIM(s.cn)";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
 
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 80);
-                    //update the cullbf column
-                    this.m_ado.m_strSQL = "UPDATE " + this.m_strTreeTable + " " +
-                        "SET cullbf=IIF(cullbf IS NULL," +
-                        "IIF(cull IS NOT NULL AND roughcull IS NOT NULL," +
-                        "cull + roughcull," +
-                        "IIF(cull IS NOT NULL,cull," +
-                        "IIF(roughcull IS NOT NULL,roughcull,0))),cullbf)";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-                    m_intError = m_ado.m_intError;
-                }
+                        //create cond column work table
+                        SQLite.m_strSQL = "CREATE TABLE TEMPDB.cond_column_updates_work_table AS " +
+                            "SELECT biosum_cond_id, qmd_all_inch, qmd_hwd_inch, qmd_swd_inch, tpacurr, " +
+                            "hwd_tpacurr, swd_tpacurr, ba_ft2_ac, hwd_ba_ft2_ac, swd_ba_ft2_ac, " +
+                            "vol_ac_grs_stem_ttl_ft3, hwd_vol_ac_grs_stem_ttl_ft3, swd_vol_ac_grs_stem_ttl_ft3, " +
+                            "vol_ac_grs_ft3, hwd_vol_ac_grs_ft3, swd_vol_ac_grs_ft3, volcsgrs, hwd_volcsgrs, swd_volcsgrs " +
+                            "FROM " + this.m_strCondTable + " WHERE 1=2";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        m_intError = SQLite.m_intError;
+                    }
 
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    //-------------SITE TREE TABLE----------------//
-                    strSourceTableLink = "fiadb_site_tree_input";
-                    //build field list string to insert sql by matching biosum fiadb SiteTree table
-                    strFields = CreateStrFieldsFromDataTables(dtFIADBSiteTreeSchema, dtSiteTreeSchema);
-                    /********************************************************
-                     **create site tree input insert command
-                     ********************************************************/
-                    //check the user defined filters
-                    SetLabelValue(m_frmTherm.lblMsg,"Text","Site Tree Table: Insert New  Records");
-                    this.m_ado.m_strSQL = "SELECT TRIM(p.biosum_plot_id) AS biosum_plot_id,9 AS biosum_status_cd,t.* INTO tempsitetree FROM " + strSourceTableLink + " t " +
-                        " INNER JOIN " + this.m_strPlotTable + " p ON t.plt_cn=TRIM(p.cn) " +
-                        " WHERE p.biosum_status_cd=9";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-                    m_intError = m_ado.m_intError;
-                }
+                    if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                    {
+                        SetThermValue(m_frmTherm.progressBar1, "Value", 55);
+                        SetThermValue(m_frmTherm.progressBar2, "Value", 40);
+                        //-------------TREE TABLE----------------//
+                        //build field list string to insert sql by matching FIADB and BioSum Tree columns
+                        strFields = CreateStrFieldsFromDataTables(dtFIADBTreeSchema, dtTreeSchema);
+                        /********************************************************
+                         **create tree input insert command
+                         ********************************************************/
+                        //check the user defined filters
+                        SetLabelValue(m_frmTherm.lblMsg, "Text", "Tree Table: Insert New  Records");
+                        SQLite.m_strSQL = "CREATE TABLE TEMPDB.temptree AS " +
+                            "SELECT TRIM(p.biosum_plot_id) || t.condid AS biosum_cond_id, 9 AS biosum_status_cd, t.* " +
+                            "FROM FIADB." + strTreeSource + " AS t, " + this.m_strPlotTable + " AS p " +
+                            "WHERE t.plt_cn = TRIM(p.cn) AND p.biosum_status_cd = 9 AND t.statuscd <> 0";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        m_intError = SQLite.m_intError;
+                    }
 
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 80);
-                    //insert the new condition records into the condition table
-                    m_ado.m_strSQL = "INSERT INTO " + this.m_strSiteTreeTable + " (biosum_plot_id,biosum_status_cd," + strFields + ") " +
-                        "SELECT TRIM(biosum_plot_id),biosum_status_cd," + strFields + " FROM tempsitetree";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
+                    if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                    {
+                        SetThermValue(m_frmTherm.progressBar1, "Value", 60);
+                        //insert the new tree records into the tree table; Note that temptree is used later for GRM processing
+                        SQLite.m_strSQL = "INSERT INTO " + this.m_strTreeTable + " (biosum_cond_id, biosum_status_cd, " + strFields + ") " +
+                            "SELECT TRIM(biosum_cond_id), biosum_status_cd, " + strFields + " FROM TEMPDB.temptree";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        m_intError = SQLite.m_intError;
+                    }
 
-                    m_intError = m_ado.m_intError;
-                }
+                    // SEEDLINGS
+                    if (m_intError == 0 && m_bLoadSeedlings == true && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                    {
+                        SetThermValue(m_frmTherm.progressBar1, "Value", 65);
+                        //-------------SEEDLING TABLE----------------//
+                        SetLabelValue(m_frmTherm.lblMsg, "Text", "Seedling Table: Insert New  Records");
+                        if (SQLite.TableExist(conn, "TEMPDB.tempseedling"))
+                        {
+                            SQLite.m_strSQL = "DROP TABLE TEMPDB.tempseedling";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        }
+                        SQLite.m_strSQL = "CREATE TABLE TEMPDB.tempseedling AS " +
+                            "SELECT TRIM(p.biosum_plot_id) + CAST(s.condid AS TEXT) AS biosum_cond_id, 9 AS biosum_status_cd, " +
+                            "0.1 AS dia, 1 AS diahtcd, '1' || printf('%03d', SPCD) || '00' || SUBP AS fvs_tree_id, 1 AS statuscd, s.* " +
+                            "FROM FIADB." + strSeedlingSource + " AS s, " + this.m_strPlotTable + " AS p " +
+                            "WHERE s.plt_cn = TRIM(p.cn) AND p.biosum_status_cd = 9";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
 
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control) m_frmTherm, "AbortProcess"))
-                {
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 100);
-                    SetThermValue(m_frmTherm.progressBar2, "Value", 60);
-                    m_intError = UpdateColumns(m_ado);
+                        //Set DIAHTCD for Seedlings using FIA_TREE_SPECIES_REF.WOODLAND_YN
+                        SQLite.m_strSQL = "UPDATE TEMPDB.tempseedling AS t " +
+                            "SET diahtcd = CASE WHEN ref.woodland_yn = 'N' THEN 1 ELSE 2 END " +
+                            "FROM FIA_TREE_SPECIES_REF AS red WHERE spcd = ref.spcd";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
+                        //Prepend CN with "S" to indicate seedlings
+                        SQLite.m_strSQL = "UPDATE TEMPDB.tempseedling SET CN = 'S' || CN";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
+                        //build field list string to insert sql by matching FIADB and BioSum Tree columns
+                        //build field list string to insert sql by matching FIADB and BioSum Tree columns
+                        strFields = CreateStrFieldsFromDataTables(dtFIADBSeedlingSchema, dtTreeSchema);
+                        SetThermValue(m_frmTherm.progressBar1, "Value", 70);
+
+                        //insert the new seedling records into the tree table
+                        SQLite.m_strSQL = "INSERT INTO " + this.m_strTreeTable + " (biosum_cond_id, biosum_status_cd, dia, " +
+                            "diahtcd, fvs_tree_id, statuscd, " + strFields + ") " +
+                            "SELECT TRIM(biosum_cond_id), biosum_status_cd, dia, diahtcd, fvs_tree_id, statuscd, " + strFields +
+                            " FROM TEMPDB.tempseedling";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        m_intError = SQLite.m_intError;
+                    }
+
+                    if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                    {
+                        SetThermValue(m_frmTherm.progressBar1, "Value", 80);
+                        //update the cullbf column
+                        SQLite.m_strSQL = "UPDATE " + this.m_strTreeTable +
+                            " SET cullbf = CASE WHEN bullbf IS NULL " +
+                            "THEN CASE WHEN cull IS NOT NULL AND roughcull IS NOT NULL " +
+                            "THEN cull + roughcull " +
+                            "ELSE CASE WHEN cull IS NOT NULL THEN cull " +
+                            "ELSE CASE WHEN roughcull IS NOT NULL THEN roughcull ELSE 0 " +
+                            "END END END ELSE cullbf END";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        m_intError = SQLite.m_intError;
+                    }
+
+                    if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                    {
+                        //-------------SITE TREE TABLE----------------//
+                        //build field list string to insert sql by matching biosum fiadb SiteTree table
+                        strFields = CreateStrFieldsFromDataTables(dtFIADBSiteTreeSchema, dtSiteTreeSchema);
+                        /********************************************************
+                         **create site tree input insert command
+                         ********************************************************/
+                        //check the user defined filters
+                        SetLabelValue(m_frmTherm.lblMsg, "Text", "Site Tree Table: Insert New  Records");
+                        SQLite.m_strSQL = "CREATE TABLE TEMPDB.tempsitetree AS " +
+                            "SELECT TRIM(p.biosum_plot_id) AS biosum_plot_id, 9 AS biosum_status_cd, t.* " +
+                            "FROM FIADB." + strSiteTreeSource + " AS t, " + this.m_strPlotTable + " AS p " +
+                            "WHERE t.plt_cn = TRIM(p.cn) AND p.biosum_status_cd = 9";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        m_intError = SQLite.m_intError;
+                    }
+
+                    if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                    {
+                        SetThermValue(m_frmTherm.progressBar1, "Value", 80);
+                        //insert the new condition records into the condition table
+                        SQLite.m_strSQL = "INSERT INTO " + this.m_strSiteTreeTable + " (biosum_plot_id, biosum_status_cd, " + strFields + ") " +
+                            "SELECT TRIM(biosum_plot_id), biosum_status_cd, " + strFields + " FROM TEMPDB.tempsitetree";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        m_intError = SQLite.m_intError;
+                    }
+
+                    if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                    {
+                        SetThermValue(m_frmTherm.progressBar1, "Value", 100);
+                        SetThermValue(m_frmTherm.progressBar2, "Value", 60);
+                        m_intError = UpdateColumns(m_ado);
+                    }
                 }
 
 				//Down Woody Materials Section
