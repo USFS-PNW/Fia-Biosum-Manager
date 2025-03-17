@@ -41,6 +41,7 @@ namespace FIA_Biosum_Manager
 		private int m_intCurrRow=0;
 		public int m_intError=0;
         private bool handleCheck = true;
+		private SQLite.ADO.DataMgr SQLite { get; set; } = new SQLite.ADO.DataMgr();
 
 
 		private const int MENU_FILTERBYVALUE=0;
@@ -82,7 +83,6 @@ namespace FIA_Biosum_Manager
 		FIA_Biosum_Manager.RxPackageItem m_oRxPackageItem=null;
 		string m_strRxCycleList="";
 		string[] m_strRxCycleArray=null;
-		string[] m_strFVSVariantsArray=null;
         private Button btnView;
 
         private env m_oEnv;
@@ -118,21 +118,7 @@ namespace FIA_Biosum_Manager
 			m_oQueries.m_oFIAPlot.LoadDatasource=true;
 			m_oQueries.LoadDatasources(true);
 
-			this.m_strTempMDBFile = m_oQueries.m_oDataSource.CreateMDBAndTableDataSourceLinks();
             m_oRxTools.LoadAllRxPackageItems(m_oRxPackageItem_Collection);			
-			this.m_ado = new ado_data_access();
-			this.m_strConn = this.m_ado.getMDBConnString(this.m_oQueries.m_strTempDbFile,"","");
-			this.m_ado.OpenConnection(this.m_strConn);
-			if (this.m_ado.m_intError != 0)
-			{
-				this.m_intError = this.m_ado.m_intError;
-				this.m_ado = null;
-				return ;
-
-			}
-
-
-			m_strFVSVariantsArray = frmMain.g_oUtils.ConvertListToArray(m_oRxTools.GetListOfFVSVariantsInPlotTable(m_ado,m_ado.m_OleDbConnection,m_oQueries.m_oFIAPlot.m_strPlotTable),",");
 
 			this.cmbAudit.Text = Convert.ToString(this.cmbAudit.Items[0]).Trim();
 
@@ -140,13 +126,6 @@ namespace FIA_Biosum_Manager
                 System.IO.File.Delete(m_strDebugFile);
 
             System.Threading.Thread.Sleep(2000);
-
-            
-			
-            				 
-          
-
-
 		}
 
 		/// <summary> 
@@ -168,22 +147,16 @@ namespace FIA_Biosum_Manager
 		{
 			string strColumnName="";
 			this.InitializePopup();			                                         
-			this.m_ado.m_DataSet = new DataSet("tree_species");
-			this.m_ado.m_OleDbDataAdapter = new System.Data.OleDb.OleDbDataAdapter();
-			
-			this.InitializeOleDbTransactionCommands();
+			SQLite.m_DataSet = new DataSet("tree_species");
+			SQLite.m_DataAdapter = new System.Data.SQLite.SQLiteDataAdapter();
+			string strMasterConn = SQLite.GetConnectionString(m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree));
+			SQLite.OpenConnection(strMasterConn);
+			// Attach tree_species database so we can access tree_species table
 
-            //this.m_ado.m_strSQL = "SELECT id, fvs_variant, spcd," +
-            //                              "fvs_common_name,fvs_input_spcd,fvs_species," + 
-            //                              "common_name,genus,species," +
-            //                              "variety,subspecies,comments " + 
-            //                      "FROM " + this.m_oQueries.m_oFvs.m_strTreeSpcTable + " s " + 
-            //                      "WHERE EXISTS (SELECT DISTINCT(spcd) " +
-            //                                    "FROM " + this.m_oQueries.m_oFIAPlot.m_strTreeTable + " t " + 
-            //                                    "WHERE s.spcd=t.spcd) " + 
-            //                                    "ORDER BY fvs_variant, spcd;";
 
-            this.m_ado.m_strSQL = "SELECT s.fvs_variant, s.spcd, s.common_name, " +
+			this.InitializeSqliteTransactionCommands();
+
+            SQLite.m_strSQL = "SELECT s.fvs_variant, s.spcd, s.common_name, " +
                                   "s.fvs_input_spcd, f.fvs_species, f.fvs_common_name, " +
                                   "s.genus, s.species, comments, s.id " +
                                   "FROM " + this.m_oQueries.m_oFvs.m_strTreeSpcTable + " s, " +
@@ -1981,7 +1954,7 @@ namespace FIA_Biosum_Manager
 					this.m_ado.m_OleDbDataAdapter.Update(this.m_ado.m_DataSet.Tables["tree_species"]);
 					this.m_ado.m_OleDbTransaction.Commit();
 					this.m_ado.m_DataSet.Tables["tree_species"].AcceptChanges();
-					this.InitializeOleDbTransactionCommands();
+					this.InitializeSqliteTransactionCommands();
 				}
 					
 					
@@ -2014,29 +1987,29 @@ namespace FIA_Biosum_Manager
 		{
 			this.savevalues();
 		}
-		private void InitializeOleDbTransactionCommands()
+		private void InitializeSqliteTransactionCommands()
 		{
-            this.m_ado.m_strSQL = "select id, fvs_variant,spcd,fvs_input_spcd,common_name,genus,species,comments from " + this.m_oQueries.m_oFvs.m_strTreeSpcTable + " order by fvs_variant, spcd;";
+            SQLite.m_strSQL = "select id, fvs_variant,spcd,fvs_input_spcd,common_name,genus,species,comments from " + this.m_oQueries.m_oFvs.m_strTreeSpcTable + " order by fvs_variant, spcd;";
 			//initialize the transaction object with the connection
-			this.m_ado.m_OleDbTransaction = this.m_ado.m_OleDbConnection.BeginTransaction();
+			SQLite.m_Transaction = SQLite.m_Connection.BeginTransaction();
 
-			this.m_ado.ConfigureDataAdapterInsertCommand(this.m_ado.m_OleDbConnection,
-				this.m_ado.m_OleDbDataAdapter,
-				this.m_ado.m_OleDbTransaction,
-				this.m_ado.m_strSQL,
+			SQLite.ConfigureDataAdapterInsertCommand(SQLite.m_Connection,
+				SQLite.m_DataAdapter,
+				SQLite.m_Transaction,
+				SQLite.m_strSQL,
 				this.m_oQueries.m_oFvs.m_strTreeSpcTable);
 
-            this.m_ado.m_strSQL = "select fvs_variant, spcd,fvs_input_spcd,common_name,genus,species,comments from " + m_oQueries.m_oFvs.m_strTreeSpcTable + " order by fvs_variant, spcd;";
-			this.m_ado.ConfigureDataAdapterUpdateCommand(this.m_ado.m_OleDbConnection,
-				this.m_ado.m_OleDbDataAdapter,
-				this.m_ado.m_OleDbTransaction,
-				this.m_ado.m_strSQL,"select id from " + m_oQueries.m_oFvs.m_strTreeSpcTable,
+			SQLite.m_strSQL = "select fvs_variant, spcd,fvs_input_spcd,common_name,genus,species,comments from " + m_oQueries.m_oFvs.m_strTreeSpcTable + " order by fvs_variant, spcd;";
+			SQLite.ConfigureDataAdapterUpdateCommand(SQLite.m_Connection,
+				SQLite.m_DataAdapter,
+				SQLite.m_Transaction,
+				SQLite.m_strSQL,"select id from " + m_oQueries.m_oFvs.m_strTreeSpcTable,
 				m_oQueries.m_oFvs.m_strTreeSpcTable);
 
-            this.m_ado.m_strSQL = "select fvs_variant, spcd, common_name,fvs_input_spcd,genus,species,comments from " + m_oQueries.m_oFvs.m_strTreeSpcTable + " order by fvs_variant, spcd;";
-			this.m_ado.ConfigureDataAdapterDeleteCommand(this.m_ado.m_OleDbConnection,
-				this.m_ado.m_OleDbDataAdapter,
-				this.m_ado.m_OleDbTransaction,
+			SQLite.m_strSQL = "select fvs_variant, spcd, common_name,fvs_input_spcd,genus,species,comments from " + m_oQueries.m_oFvs.m_strTreeSpcTable + " order by fvs_variant, spcd;";
+			SQLite.ConfigureDataAdapterDeleteCommand(SQLite.m_Connection,
+				SQLite.m_DataAdapter,
+				SQLite.m_Transaction,
 				"select id from " + m_oQueries.m_oFvs.m_strTreeSpcTable,
 				m_oQueries.m_oFvs.m_strTreeSpcTable);
 		}
