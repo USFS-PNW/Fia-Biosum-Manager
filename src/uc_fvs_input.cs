@@ -1258,6 +1258,7 @@ namespace FIA_Biosum_Manager
 
             dao_data_access oDao = new dao_data_access();
             ado_data_access oAdo = new ado_data_access();
+            utils oUtils = new utils();
 
             try
             {
@@ -1331,6 +1332,7 @@ namespace FIA_Biosum_Manager
                 int steps = m_VariantCountsDict.Keys.Count * 2;
                 int interval = (int)Math.Floor((double)90 / steps);
                 int intValue = interval;
+                List<string> lstSelectedVariants = new List<string> { };
                 for (int x = 0; x <= this.lstFvsInput.Items.Count - 1; x++)
                 {
                     frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar2, "Value", intValue);
@@ -1346,6 +1348,7 @@ namespace FIA_Biosum_Manager
                                 m_frmTherm.progressBar1,
                                 "Value", 1);
                             strCurVariant = strVariant;
+                            lstSelectedVariants.Add(strCurVariant);
 
                             List<string> lstStates = new List<string>();
                             if (m_dictVariantStates != null &&
@@ -1384,6 +1387,9 @@ namespace FIA_Biosum_Manager
                     if (bAbort == true) break;
 
                 }
+
+                string strSelectedVariants = oUtils.ConvertListToString(lstSelectedVariants, ", ");
+                p_fvsinput.CreateConfigurationTextFile(strSelectedVariants);
 
                 // Copy KCP files to output directory
                 if (m_bKcpOverwrite == true)

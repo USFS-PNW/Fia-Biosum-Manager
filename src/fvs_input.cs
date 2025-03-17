@@ -555,7 +555,6 @@ namespace FIA_Biosum_Manager
                     }
 
                     UpdateFvsInConfigurationTable();
-                    CreateConfigurationTextFile();
                 }
 
             }
@@ -582,13 +581,14 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void CreateConfigurationTextFile()
+        public void CreateConfigurationTextFile(string p_strSelectedVariants)
         {
-            string logFile = m_strProjDir + "/fvs/data/" + m_strVariant + "/biosum_fvs_input_configurations.txt";
+            string logFile = m_strProjDir + "/fvs/data/biosum_fvs_input_configurations.txt";
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.AppendLine("========================================================");
-            stringBuilder.AppendLine("FVSIn.accdb created: " + DateTime.Now.ToString());
+            stringBuilder.AppendLine("FVSIn.db created: " + DateTime.Now.ToString());
             stringBuilder.AppendLine("========================================================");
+            stringBuilder.AppendLine("Selected variants: " + p_strSelectedVariants);
             string choice =
                 (intDWMOption == (int)m_enumDWMOption.USE_FUEL_MODEL_ONLY ||
                  intDWMOption == (int)m_enumDWMOption.USE_FUEL_MODEL_OR_DWM_DATA)
@@ -653,6 +653,11 @@ namespace FIA_Biosum_Manager
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                     DebugLogSQL(oDataMgr.m_strSQL);
 
+                }
+                else
+                {
+                    oDataMgr.m_strSQL = "DELETE FROM biosum_fvsin_configuration";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
 
                 List<string[]> configs = CreateFVSInConfigurationList();

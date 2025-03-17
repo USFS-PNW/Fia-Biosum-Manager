@@ -441,6 +441,24 @@ namespace FIA_Biosum_Manager
 			if (strList.Trim().Length > 0) strList = strList.Substring(0,strList.Length - 1);
 			return strList;
 		}
+
+		public string ConvertListToString(List<String> p_lstStrings, string p_strDelimiter)
+        {
+			string strList = "";
+			if (p_lstStrings.Count == 0)
+            {
+				return strList;
+            }
+			foreach (string item in p_lstStrings)
+            {
+				strList += item + p_strDelimiter;
+            }
+			if (strList.Trim().Length > 0)
+            {
+				strList = strList.Substring(0, strList.Length - p_strDelimiter.Length);
+            }
+			return strList;
+        }
 		public void LoadStringToCharArray(string str, ref char[] p_Array, bool bInit,int intBegin)
 		{
 			int x=0;
