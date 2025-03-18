@@ -152,10 +152,13 @@ namespace FIA_Biosum_Manager
 			string strMasterConn = SQLite.GetConnectionString(m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree));
 			SQLite.OpenConnection(strMasterConn);
 			// Attach tree_species database so we can access tree_species table
-
+			SQLite.m_strSQL = $@"ATTACH '{m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.TreeSpecies)}' as REF_MASTER";
+			SQLite.SqlNonQuery(SQLite.m_Connection, SQLite.m_strSQL);
+			// Attach fvs_tree_species database so we can access fvs_tree_species table
+			SQLite.m_strSQL = $@"ATTACH '{m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.FvsTreeSpecies)}' as BIOSUM_REF";
+			SQLite.SqlNonQuery(SQLite.m_Connection, SQLite.m_strSQL);
 
 			this.InitializeSqliteTransactionCommands();
-
             SQLite.m_strSQL = "SELECT s.fvs_variant, s.spcd, s.common_name, " +
                                   "s.fvs_input_spcd, f.fvs_species, f.fvs_common_name, " +
                                   "s.genus, s.species, comments, s.id " +
@@ -165,21 +168,19 @@ namespace FIA_Biosum_Manager
                                   "AND s.fvs_input_spcd = f.spcd " +
                                   "AND s.fvs_variant = f.fvs_variant " +
                                   "ORDER BY s.fvs_variant, s.spcd; ";
+			this.m_dtTableSchema = SQLite.getTableSchema(SQLite.m_Connection, SQLite.m_Transaction, SQLite.m_strSQL);
 
-			this.m_dtTableSchema = this.m_ado.getTableSchema(this.m_ado.m_OleDbConnection,
-				                                             this.m_ado.m_OleDbTransaction,
-				                                             this.m_ado.m_strSQL);
-			if (this.m_ado.m_intError == 0)
+			if (SQLite.m_intError == 0)
 			{
-				this.m_ado.m_OleDbCommand = this.m_ado.m_OleDbConnection.CreateCommand();
-				this.m_ado.m_OleDbCommand.CommandText = this.m_ado.m_strSQL;
-				this.m_ado.m_OleDbDataAdapter.SelectCommand = this.m_ado.m_OleDbCommand;
-				this.m_ado.m_OleDbDataAdapter.SelectCommand.Transaction = this.m_ado.m_OleDbTransaction;
+				SQLite.m_Command = SQLite.m_Connection.CreateCommand();
+				SQLite.m_Command.CommandText = SQLite.m_strSQL;
+				SQLite.m_DataAdapter.SelectCommand = SQLite.m_Command;
+				SQLite.m_DataAdapter.SelectCommand.Transaction = SQLite.m_Transaction;
 				try 
 				{
 
-					this.m_ado.m_OleDbDataAdapter.Fill(this.m_ado.m_DataSet,"tree_species");
-					this.m_dv = new DataView(this.m_ado.m_DataSet.Tables["tree_species"]);
+					SQLite.m_DataAdapter.Fill(SQLite.m_DataSet,"tree_species");
+					this.m_dv = new DataView(SQLite.m_DataSet.Tables["tree_species"]);
 				
 					this.m_dv.AllowNew = false;       //cannot append new records
 					this.m_dv.AllowDelete = false;    //cannot delete records
@@ -213,7 +214,7 @@ namespace FIA_Biosum_Manager
 					 **we will use those to create new columnstyles for the columns in our grid
 					 ******************************************************************************/
 					//get the number of columns from the scenario_rx_intensity data set
-					int numCols = this.m_ado.m_DataSet.Tables["tree_species"].Columns.Count;
+					int numCols = SQLite.m_DataSet.Tables["tree_species"].Columns.Count;
                 
                     
 					/************************************************
@@ -221,7 +222,7 @@ namespace FIA_Biosum_Manager
 					 ************************************************/
 					for(int i = 0; i < numCols; ++i)
 					{
-                        strColumnName = this.m_ado.m_DataSet.Tables["tree_species"].Columns[i].ColumnName;
+                        strColumnName = SQLite.m_DataSet.Tables["tree_species"].Columns[i].ColumnName;
 
 					    /******************************************************************
 					    **create a new instance of the DataGridColoredTextBoxColumn class
@@ -261,27 +262,25 @@ namespace FIA_Biosum_Manager
                     this.m_dg.CaptionText = strCaption;
                     this.m_dg.DataSource = this.m_dv;  
 
-					if (this.m_ado.m_DataSet.Tables["tree_species"].Rows.Count > 0)
+					if (SQLite.m_DataSet.Tables["tree_species"].Rows.Count > 0)
 					{
 						this.btnDelete.Enabled=true;
 						this.btnEdit.Enabled=true;
 					}
-
 				
-
 					this.m_dg.Expand(-1);
 				}
 				catch (Exception e)
 				{
 					MessageBox.Show(e.Message,"Table",MessageBoxButtons.OK,MessageBoxIcon.Error);
-					this.m_intError=-1;
-					this.m_ado.m_OleDbConnection.Close();
-					this.m_ado.m_OleDbConnection = null;
-					this.m_ado.m_DataSet.Clear();
-					this.m_ado.m_DataSet= null;
-					this.m_ado.m_OleDbDataAdapter.Dispose();
-					this.m_ado.m_OleDbDataAdapter = null;
-					this.m_ado = null;
+					this.m_intError=-1;					
+					SQLite.m_Connection.Close();
+					SQLite.m_Connection = null;
+					SQLite.m_DataSet.Clear();
+					SQLite.m_DataSet= null;
+					SQLite.m_DataAdapter.Dispose();
+					SQLite.m_DataAdapter = null;
+					SQLite = null;
 					return;
 
 				}
@@ -289,7 +288,7 @@ namespace FIA_Biosum_Manager
 			
 			
 
-				if (this.m_ado.m_DataSet.Tables["tree_species"].Rows.Count == 0)
+				if (SQLite.m_DataSet.Tables["tree_species"].Rows.Count == 0)
 				{
 					this.m_intCurrRow = 1;
 				}
@@ -304,7 +303,7 @@ namespace FIA_Biosum_Manager
 					System.EventHandler(this.m_dg_CurrentCellChanged);
 
 			}
-			if (this.m_ado.m_intError < 0)
+			if (SQLite.m_intError < 0)
 			{
 				this.ParentForm.Close();
 			}
@@ -2029,8 +2028,8 @@ namespace FIA_Biosum_Manager
 			try
 			{
 
-				if (this.m_ado.m_OleDbDataAdapter != null)
-					this.m_ado.m_OleDbDataAdapter.Dispose();
+				if (SQLite.m_DataAdapter != null)
+					SQLite.m_DataAdapter.Dispose();
 
 				if (this.m_dv != null)
 					this.m_dv.Dispose();
@@ -2038,16 +2037,16 @@ namespace FIA_Biosum_Manager
 				if (this.m_dg != null)
 					this.m_dg.Dispose();
 
-				this.m_ado.m_DataSet.Clear();
-				this.m_ado.m_DataSet.Dispose();
+				SQLite.m_DataSet.Clear();
+				SQLite.m_DataSet.Dispose();
 
-				if (this.m_ado.m_OleDbConnection != null)
+				if (SQLite.m_Connection != null)
 				{
-					this.m_ado.m_OleDbConnection.Close();
-					this.m_ado.m_OleDbConnection.Dispose();
-					this.m_ado.m_OleDbConnection = null;
+					SQLite.m_Connection.Close();
+					SQLite.m_Connection.Dispose();
+					SQLite.m_Connection = null;
 				}
-				this.m_ado = null;
+				SQLite.m_Connection = null;
 				this.m_DataSource = null;
 
 			}

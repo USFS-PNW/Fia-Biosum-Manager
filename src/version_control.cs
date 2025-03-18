@@ -7430,6 +7430,9 @@ namespace FIA_Biosum_Manager
             // Update project datasources
             oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.TreeSpecies, ReferenceProjectDirectory + "\\db", 
                 System.IO.Path.GetFileName(strRefMasterPath), Tables.Reference.DefaultTreeSpeciesTableName);
+            oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.FvsTreeSpecies, "@@appdata@@\\fiabiosum", 
+                Tables.Reference.DefaultBiosumReferenceSqliteFile, Tables.Reference.DefaultFVSTreeSpeciesTableName);
+
             // Update processor datasource
             strDestFile = ReferenceProjectDirectory.Trim() + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
