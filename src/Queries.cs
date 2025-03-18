@@ -4796,46 +4796,41 @@ namespace FIA_Biosum_Manager
                     string p_strFIAPlotTable,
                     string p_strFIACondTable)
                 {
-                    return "UPDATE " + p_strInputVolumesTable + " i " +
-                           "INNER JOIN ((" + p_strFIATreeTable + " t " +
-                           "INNER JOIN " + p_strFIACondTable + " c " +
-                           "ON t.biosum_cond_id=c.biosum_cond_id) " +
-                           "INNER JOIN " + p_strFIAPlotTable + " p " +
-                           "ON p.biosum_plot_id=c.biosum_plot_id) " +
-                           "ON i.tre_cn=t.cn " +
-                           "SET i.spcd=t.spcd," +
-                           "i.statuscd=IIF(t.statuscd IS NULL,1,t.statuscd)," +
-                           "i.treeclcd=t.treeclcd," +
-                           "i.cull=IIF(t.cull IS NULL,0,t.cull)," +
-                           "i.roughcull=IIF(t.roughcull IS NULL,0,t.roughcull)," +
-                           "i.decaycd=IIF(t.decaycd IS NULL,0,t.decaycd)," +
-                           "i.balive=c.balive," +
-                           "i.precipitation=p.precipitation";
+                    return "UPDATE " + p_strInputVolumesTable + " AS i " +
+                        "SET spcd = t.spcd, " +
+                        "statuscd = CASE WHEN t.statuscd IS NULL THEN 1 ELSE t.statuscd END, " +
+                        "treeclcd = t.treeclcd, " +
+                        "cull = CASE WHEN t.cull IS NULL THEN 0 ELSE t.cull END, " +
+                        "roughcull = CASE WHEN t.roughcull IS NULL THEN 0 ELSE t.roughcull END, " +
+                        "decaycd = CASE WHEN t.decaycd IS NULL THEN 0 ELSE t.decaycd END, " +
+                        "balive = c.balive, precipitation = p.precipitation " +
+                        "FROM " + p_strFIATreeTable + " AS t, " + p_strFIACondTable + " AS c, " + p_strFIAPlotTable + " AS p " +
+                        "WHERE t.biosum_cond_id = c.biosum_cond_id AND p.biosum_plot_id = c.biosum_plot_id AND i.tre_cn = t.cn";
                 }
 
                 public static string BuildInputTableForVolumeCalculation_Step3(
                     string p_strInputVolumesTable,
                     string p_strFIACondTable)
                 {
-                    return "UPDATE " + p_strInputVolumesTable + " i " +
-                           "INNER JOIN " + p_strFIACondTable + " c " +
-                           "ON i.cnd_cn=c.biosum_cond_id " +
-                           "SET i.vol_loc_grp=IIF(INSTR(1,c.vol_loc_grp,'22') > 0,'S26LEOR',c.vol_loc_grp)," +
-                           "i.statuscd=IIF(i.statuscd IS NULL,1,i.statuscd)," +
-                           "i.cull=IIF(i.cull IS NULL,0,i.cull)," +
-                           "i.roughcull=IIF(i.roughcull IS NULL,0,i.roughcull)," +
-                           "i.decaycd=IIF(i.decaycd IS NULL,0,i.decaycd)";
+                    return "UPDATE " + p_strInputVolumesTable + " AS i " +
+                        "SET vol_loc_grp = CASE WHEN INSTR(c.vol_loc_grp, '22') > 0 THEN 'S26LEOR' ELSE c.vol_loc_grp END, " +
+                        "statuscd = CASE WHEN i.statuscd IS NULL THEN 1 ELSE i.statuscd END, " +
+                        "cull = CASE WHEN i.cull NULL THEN 0 ELSE i.cull END, " +
+                        "roughcull = CASE WHEN i.roughcull IS NULL THEN 0 ELSE i.roughcull END, " +
+                        "decaycd = CASE WHEN i.decaycd IS NULL THEN 0 ELSE i.decaycd END " +
+                        "FROM " + p_strFIACondTable + " AS c WHERE i.cnd_cn = c.biosum_cond_id";
                 }
 
                 public static string BuildInputTableForVolumeCalculation_Step4(
                     string p_strCullTable,
                     string p_strInputVolumesTable)
                 {
-                    return "SELECT tre_cn, IIF(cull IS NOT NULL AND roughcull IS NOT NULL, cull + roughcull," +
-                           "IIF(cull IS NOT NULL,cull," +
-                           "IIF(roughcull IS NOT NULL, roughcull,0))) AS totalcull " +
-                           "INTO " + p_strCullTable + " " +
-                           "FROM " + p_strInputVolumesTable;
+                    return "CREATE TABLE " + p_strCullTable +
+                        " AS SELECT tre_cn, CASE WHEN cull IS NOT NULL AND roughcull IS NOT NULL " +
+                        "THEN cull + roughcull ELSE CASE WHEN cull IS NOT NULL " +
+                        "THEN cull ELSE CASE WHEN roughcull IS NOT NULL " +
+                        "THEN roughcull ELSE 0 END END END AS totalcull " +
+                        "FROM " + p_strInputVolumesTable;
                 }
 
                 public class PNWRS
@@ -4856,14 +4851,13 @@ namespace FIA_Biosum_Manager
                         string p_strCullTable,
                         string p_strInputVolumesTable)
                     {
-                        return "UPDATE " + p_strInputVolumesTable + " a " +
-                               "INNER JOIN " + p_strCullTable + " b " +
-                               "ON a.tre_cn=b.tre_cn " +
-                               "SET a.treeclcd=" +
-                               "IIF(a.SpCd IN (62,65,66,106,133,138,304,321,322,475,756,758,990),3," +
-                               "IIF(a.StatusCd=2,3," +
-                               "IIF(b.totalcull < 75,2," +
-                               "IIF(a.roughcull > 37.5,3,4))))";
+                        return "UPDATE " + p_strInputVolumesTable + " AS a " +
+                            "SET treeclcd = CASE WHEN a.spcd IN (62,65,66,106,133,138,304,321,322,475,756,758,990) " +
+                            "THEN 3 ELSE CASE WHEN a.statuscd = 2 " +
+                            "THEN 3 ELSE CASE WHEN b.totalcull < 75 " +
+                            "THEN 2 ELSE CASE WHEN a.roughcull > 37.5 " +
+                            "THEN 3 ELSE 4 END END END END " +
+                            "FROM " + p_strCullTable + " AS b WHERE a.tre_cn = b.tre_cn";
                     }
 
                     /// <summary>
@@ -4877,12 +4871,12 @@ namespace FIA_Biosum_Manager
                         string p_strCullTable,
                         string p_strInputVolumesTable)
                     {
-                        return "UPDATE " + p_strInputVolumesTable + " a " +
-                               "INNER JOIN " + p_strCullTable + " b " +
-                               "ON a.tre_cn=b.tre_cn " +
-                               "SET a.treeclcd=" +
-                               "IIF(a.DecayCd > 1,4,IIF(a.DIA < 9 AND a.SpCd < 300,4,a.treeclcd)) " +
-                               "WHERE a.treeclcd=3 AND a.statuscd=2 AND a.SpCd NOT IN (62,65,66,106,133,138,304,321,322,475,756,758,990)";
+                        return "UPDATE " + p_strInputVolumesTable + " AS a " +
+                            "SET treeclcd = CASE WHEN a.decaycd > 1 THEN 4 " +
+                            "ELSE CASE WHEN a.dia < 9 AND a.spcd < 300 " +
+                            "THEN 4 ELSE a.treeclcd END END " +
+                            "FROM " + p_strCullTable + " AS b WHERE a.tre_cn = b.tre_cn " +
+                            "AND a.treeclcd = 3 AND a.statuscd = 2 AND a.spcd NOT IN (62,65,66,106,133,138,304,321,322,475,756,758,990)";
                     }
                 }
 
