@@ -23,19 +23,8 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Button btnAuditCheckAll;
 		private System.Windows.Forms.Button btnAuditClearAll;
 		private string m_strProjDir;
-		private FIA_Biosum_Manager.Datasource m_DataSource;
-		private string m_strPlotTable;
-		private string m_strFvsOutTreeTable;
-		//private string m_strTreeSpcCvtTable;
-		//private string m_strTreeSpcTable;
-		private string m_strFVSTreeSpcTable;
-		private string m_strCondTable;
-		private string m_strTreeTable;
-		private string m_strSiteTreeTable;
-		private string m_strTempMDBFile;
-		private FIA_Biosum_Manager.ado_data_access m_ado;
+		private string m_strTempDbFile;
         private ODBCMgr m_odbcmgr = new ODBCMgr();
-        private string m_strConn;
 		private System.Data.DataView m_dv;
 		public int m_intIndex=0;
 		private int m_intCurrRow=0;
@@ -159,15 +148,20 @@ namespace FIA_Biosum_Manager
 			SQLite.SqlNonQuery(SQLite.m_Connection, SQLite.m_strSQL);
 
 			this.InitializeSqliteTransactionCommands();
-            SQLite.m_strSQL = "SELECT s.fvs_variant, s.spcd, s.common_name, " +
-                                  "s.fvs_input_spcd, f.fvs_species, f.fvs_common_name, " +
-                                  "s.genus, s.species, comments, s.id " +
-                                  "FROM " + this.m_oQueries.m_oFvs.m_strTreeSpcTable + " s, " +
-                                  this.m_oQueries.m_oFvs.m_strFvsTreeSpcRefTable + " f " +
-                                  "WHERE EXISTS (SELECT DISTINCT(spcd) FROM " + this.m_oQueries.m_oFIAPlot.m_strTreeTable + " t WHERE s.spcd=t.spcd) " +
-                                  "AND s.fvs_input_spcd = f.spcd " +
-                                  "AND s.fvs_variant = f.fvs_variant " +
-                                  "ORDER BY s.fvs_variant, s.spcd; ";
+			//SQLite.m_strSQL = "SELECT s.fvs_variant, s.spcd, s.common_name, " +
+			//                      "s.fvs_input_spcd, f.fvs_species, f.fvs_common_name, " +
+			//                      "s.genus, s.species, comments, s.id " +
+			//                      "FROM " + this.m_oQueries.m_oFvs.m_strTreeSpcTable + " s, " +
+			//                      this.m_oQueries.m_oFvs.m_strFvsTreeSpcRefTable + " f " +
+			//                      "WHERE EXISTS (SELECT DISTINCT(spcd) FROM " + this.m_oQueries.m_oFIAPlot.m_strTreeTable + " t WHERE s.spcd=t.spcd) " +
+			//                      "AND s.fvs_input_spcd = f.spcd " +
+			//                      "AND s.fvs_variant = f.fvs_variant " +
+			//                      "ORDER BY s.fvs_variant, s.spcd; ";
+			// 2025-03-19: Change this query so spcd missing from fvs_tree_species will still appear on the grid but with null fields
+			SQLite.m_strSQL = $@"SELECT s.fvs_variant, s.spcd, s.common_name, s.fvs_input_spcd, f.fvs_species, f.fvs_common_name, s.genus, s.species, comments, s.id
+				FROM {this.m_oQueries.m_oFvs.m_strTreeSpcTable} s LEFT JOIN {this.m_oQueries.m_oFvs.m_strFvsTreeSpcRefTable} f ON s.fvs_input_spcd = f.spcd AND s.fvs_variant = f.fvs_variant
+				WHERE EXISTS (SELECT DISTINCT(spcd) FROM tree t WHERE s.spcd=t.spcd)
+				ORDER BY s.fvs_variant, s.spcd";
 			this.m_dtTableSchema = SQLite.getTableSchema(SQLite.m_Connection, SQLite.m_Transaction, SQLite.m_strSQL);
 
 			if (SQLite.m_intError == 0)
@@ -694,11 +688,11 @@ namespace FIA_Biosum_Manager
 						this.m_dv.RowStateFilter = System.Data.DataViewRowState.CurrentRows;
 						if (this.m_dv.RowFilter.ToString().Trim().Length > 0)
 						{
-							MessageBox.Show(strCol + " Maximum: " + this.m_ado.m_DataSet.Tables[0].Compute(strFilter,this.m_dv.RowFilter.ToString()));
+							MessageBox.Show(strCol + " Maximum: " + SQLite.m_DataSet.Tables[0].Compute(strFilter,this.m_dv.RowFilter.ToString()));
 						}
 						else
 						{
-							MessageBox.Show(strCol + " Maximum: " + this.m_ado.m_DataSet.Tables[0].Compute(strFilter, null));
+							MessageBox.Show(strCol + " Maximum: " + SQLite.m_DataSet.Tables[0].Compute(strFilter, null));
 						}
 					}
 					catch
@@ -713,11 +707,11 @@ namespace FIA_Biosum_Manager
 						this.m_dv.RowStateFilter = System.Data.DataViewRowState.CurrentRows;
 						if (this.m_dv.RowFilter.ToString().Trim().Length > 0)
 						{
-							MessageBox.Show(strCol + " Minimum: " + this.m_ado.m_DataSet.Tables[0].Compute(strFilter,this.m_dv.RowFilter.ToString()));
+							MessageBox.Show(strCol + " Minimum: " + SQLite.m_DataSet.Tables[0].Compute(strFilter,this.m_dv.RowFilter.ToString()));
 						}
 						else
 						{
-							MessageBox.Show(strCol + " Minimum: " + this.m_ado.m_DataSet.Tables[0].Compute(strFilter, null));
+							MessageBox.Show(strCol + " Minimum: " + SQLite.m_DataSet.Tables[0].Compute(strFilter, null));
 						}
 					}
 					catch
@@ -733,11 +727,11 @@ namespace FIA_Biosum_Manager
 						this.m_dv.RowStateFilter = System.Data.DataViewRowState.CurrentRows;
 						if (this.m_dv.RowFilter.ToString().Trim().Length > 0)
 						{
-							MessageBox.Show(strCol + " Average: " + this.m_ado.m_DataSet.Tables[0].Compute(strFilter,this.m_dv.RowFilter.ToString()));
+							MessageBox.Show(strCol + " Average: " + SQLite.m_DataSet.Tables[0].Compute(strFilter,this.m_dv.RowFilter.ToString()));
 						}
 						else
 						{
-							MessageBox.Show(strCol + " Average: " + this.m_ado.m_DataSet.Tables[0].Compute(strFilter, null));
+							MessageBox.Show(strCol + " Average: " + SQLite.m_DataSet.Tables[0].Compute(strFilter, null));
 						}
 					}
 					catch
@@ -753,11 +747,11 @@ namespace FIA_Biosum_Manager
 						this.m_dv.RowStateFilter = System.Data.DataViewRowState.CurrentRows;
 						if (this.m_dv.RowFilter.ToString().Trim().Length > 0)
 						{
-							MessageBox.Show(strCol + " Sum: " + this.m_ado.m_DataSet.Tables[0].Compute(strFilter,this.m_dv.RowFilter.ToString()));
+							MessageBox.Show(strCol + " Sum: " + SQLite.m_DataSet.Tables[0].Compute(strFilter,this.m_dv.RowFilter.ToString()));
 						}
 						else
 						{
-							MessageBox.Show(strCol + " Sum: " + this.m_ado.m_DataSet.Tables[0].Compute(strFilter, null));
+							MessageBox.Show(strCol + " Sum: " + SQLite.m_DataSet.Tables[0].Compute(strFilter, null));
 						}
 					}
 					catch
@@ -783,11 +777,11 @@ namespace FIA_Biosum_Manager
 						this.m_dv.RowStateFilter = System.Data.DataViewRowState.CurrentRows;
 						if (this.m_dv.RowFilter.ToString().Trim().Length > 0)
 						{
-							MessageBox.Show(strCol + " Count: " + this.m_ado.m_DataSet.Tables[0].Compute(strFilter,this.m_dv.RowFilter.ToString() + " and " + strExp));
+							MessageBox.Show(strCol + " Count: " + SQLite.m_DataSet.Tables[0].Compute(strFilter,this.m_dv.RowFilter.ToString() + " and " + strExp));
 						}
 						else
 						{
-							MessageBox.Show(strCol + " Count: " + this.m_ado.m_DataSet.Tables[0].Compute(strFilter, strExp));
+							MessageBox.Show(strCol + " Count: " + SQLite.m_DataSet.Tables[0].Compute(strFilter, strExp));
 						}
 					}
 					catch
@@ -805,9 +799,6 @@ namespace FIA_Biosum_Manager
 					this.DeleteRecords();
 
 					break;
-					
-					
-		    
 			}
 		}
 		
@@ -1003,8 +994,7 @@ namespace FIA_Biosum_Manager
 							this.m_strDeletedList = p_dv[x]["id"].ToString().Trim();
 						}
 						strList += "," + p_dv[x]["id"].ToString().Trim() + ",";
-						this.m_intDeletedCount++;
-						
+						this.m_intDeletedCount++;						
 					}
 				}
 			if (this.m_intDeletedCount > 0)
@@ -1015,7 +1005,7 @@ namespace FIA_Biosum_Manager
 				{
 					this.m_dv.AllowDelete = true;
 
-					if (this.m_intError==0 && this.m_ado.m_intError==0)
+					if (this.m_intError==0 && SQLite.m_intError==0)
 					{
 						//delete any plots that are in the delete list
 						for (x=0; x < p_dv.Count;x++)
@@ -1619,10 +1609,10 @@ namespace FIA_Biosum_Manager
                         if (this.lstAudit.Items[x].Checked == true)
                         {
                             //check to make sure the spcd exists in fia_tree_species_ref before trying to add
-                            this.m_ado.m_strSQL = "SELECT common_name FROM " + Tables.ProcessorScenarioRun.DefaultFiaTreeSpeciesRefTableName +
-                                                  " WHERE spcd = " + this.lstAudit.Items[x].SubItems[1].Text.Trim() + ";";
-                            this.m_ado.SqlQueryReader(this.m_ado.m_OleDbConnection, this.m_ado.m_OleDbTransaction, this.m_ado.m_strSQL);
-                            if (!this.m_ado.m_OleDbDataReader.HasRows)
+                            SQLite.m_strSQL = "SELECT common_name FROM " + Tables.ProcessorScenarioRun.DefaultFiaTreeSpeciesRefTableName +
+                                                  " WHERE spcd = " + this.lstAudit.Items[x].SubItems[1].Text.Trim();
+							SQLite.SqlQueryReader(SQLite.m_Connection, SQLite.m_Transaction, SQLite.m_strSQL);
+                            if (!SQLite.m_DataReader.HasRows)
                             {
                                 string strMessage = "spcd " + this.lstAudit.Items[x].SubItems[1].Text.Trim() + " is missing from the " +
                                                     Tables.ProcessorScenarioRun.DefaultFiaTreeSpeciesRefTableName + " table. If this is a " +
@@ -1632,30 +1622,30 @@ namespace FIA_Biosum_Manager
                             }
                             
                             //get the species information if a record with the same species already exists
-                            this.m_ado.m_strSQL = "SELECT DISTINCT common_name,genus,species " +
+                            SQLite.m_strSQL = "SELECT DISTINCT common_name,genus,species " +
                                 "FROM " + this.m_oQueries.m_oFvs.m_strTreeSpcTable + " t " +
                                 "WHERE SPCD = " + this.lstAudit.Items[x].SubItems[1].Text.Trim() + ";";
 
-                            this.m_ado.SqlQueryReader(this.m_ado.m_OleDbConnection, this.m_ado.m_OleDbTransaction, this.m_ado.m_strSQL);
+                            SQLite.SqlQueryReader(SQLite.m_Connection, SQLite.m_Transaction, SQLite.m_strSQL);
 
                             strCommonName = "";
                             strGenus = "";
                             strSpc = "";
 
-                            if (this.m_ado.m_OleDbDataReader.HasRows)
+                            if (SQLite.m_DataReader.HasRows)
                             {
-                                this.m_ado.m_OleDbDataReader.Read();
-                                if (this.m_ado.m_OleDbDataReader["common_name"] != System.DBNull.Value)
+							SQLite.m_DataReader.Read();
+                                if (SQLite.m_DataReader["common_name"] != System.DBNull.Value)
                                 {
-                                    strCommonName = Convert.ToString(this.m_ado.m_OleDbDataReader["common_name"]).Trim();
-                                    if (this.m_ado.m_OleDbDataReader["genus"] != System.DBNull.Value)
-                                        strGenus = Convert.ToString(this.m_ado.m_OleDbDataReader["genus"]).Trim();
-                                    if (this.m_ado.m_OleDbDataReader["species"] != System.DBNull.Value)
-                                        strSpc = Convert.ToString(this.m_ado.m_OleDbDataReader["species"]).Trim();                                }
+                                    strCommonName = Convert.ToString(SQLite.m_DataReader["common_name"]).Trim();
+                                    if (SQLite.m_DataReader["genus"] != System.DBNull.Value)
+                                        strGenus = Convert.ToString(SQLite.m_DataReader["genus"]).Trim();
+                                    if (SQLite.m_DataReader["species"] != System.DBNull.Value)
+                                        strSpc = Convert.ToString(SQLite.m_DataReader["species"]).Trim();                                }
                             }
-                            this.m_ado.m_OleDbDataReader.Close();
+						SQLite.m_DataReader.Close();
 
-                            System.Data.DataRow p_row = this.m_ado.m_DataSet.Tables["tree_species"].NewRow();
+                            System.Data.DataRow p_row = SQLite.m_DataSet.Tables["tree_species"].NewRow();
                             p_row["id"] = intId;
                             p_row["fvs_variant"] = this.lstAudit.Items[x].Text;
                             p_row["spcd"] = Convert.ToInt32(this.lstAudit.Items[x].SubItems[1].Text);
@@ -1675,7 +1665,7 @@ namespace FIA_Biosum_Manager
                             p_row["species"] = strSpc;
                             p_row["comments"] = "Added during tree species audit " + DateTime.Now.ToString("MMddyyyy");
 
-                            this.m_ado.m_DataSet.Tables["tree_species"].Rows.Add(p_row);
+                            SQLite.m_DataSet.Tables["tree_species"].Rows.Add(p_row);
                             p_row = null;
                             this.lstAudit.Items[x].Remove();
                             intId++;
@@ -1939,46 +1929,34 @@ namespace FIA_Biosum_Manager
 			try
 			{
 				
-				p_dtChanges = this.m_ado.m_DataSet.Tables["tree_species"].GetChanges();
+				p_dtChanges = SQLite.m_DataSet.Tables["tree_species"].GetChanges();
 								
 				//check if any inserted rows
-				//p_Rows = p_dtChanges.Select(null,null, DataViewRowState.Added);
 				if (p_dtChanges.HasErrors)
 				{
-					this.m_ado.m_DataSet.Tables["tree_species"].RejectChanges();
+					SQLite.m_DataSet.Tables["tree_species"].RejectChanges();
 					this.m_intError=-1;
 				}
 				else
 				{
-					this.m_ado.m_OleDbDataAdapter.Update(this.m_ado.m_DataSet.Tables["tree_species"]);
-					this.m_ado.m_OleDbTransaction.Commit();
-					this.m_ado.m_DataSet.Tables["tree_species"].AcceptChanges();
+					SQLite.m_DataAdapter.Update(SQLite.m_DataSet.Tables["tree_species"]);
+					SQLite.m_Transaction.Commit();
+					SQLite.m_DataSet.Tables["tree_species"].AcceptChanges();
 					this.InitializeSqliteTransactionCommands();
-				}
-					
-					
-				
-
-				
+				}																	
 			}
 			catch (Exception caught)
 			{
 				this.m_intError=-1;
 				MessageBox.Show(caught.Message);
-				this.m_ado.m_DataSet.Tables["tree_species"].RejectChanges();
+				SQLite.m_DataSet.Tables["tree_species"].RejectChanges();
 				//rollback the transaction to the original records 
-				this.m_ado.m_OleDbTransaction.Rollback();
-				
-			}
-			
-
+				SQLite.m_Transaction.Rollback();				
+			}			
 			p_dtChanges=null;
 			
-
-
 			this.m_dg.CurrentRowIndex = intCurrRow;		
-			this.btnSave.Enabled=false;	
-            
+			this.btnSave.Enabled=false;	            
 			return;
 		}
 
@@ -2027,27 +2005,33 @@ namespace FIA_Biosum_Manager
 		{
 			try
 			{
+                if (this.m_dv != null)
+                    this.m_dv.Dispose();
 
-				if (SQLite.m_DataAdapter != null)
-					SQLite.m_DataAdapter.Dispose();
+                if (this.m_dg != null)
+                    this.m_dg.Dispose();
 
-				if (this.m_dv != null)
-					this.m_dv.Dispose();
+                SQLite.CloseAndDisposeConnection(SQLite.m_Connection, true);
+				//if (SQLite.m_DataAdapter != null)
+				//	SQLite.m_DataAdapter.Dispose();
 
-				if (this.m_dg != null)
-					this.m_dg.Dispose();
+				//if (this.m_dv != null)
+				//	this.m_dv.Dispose();
 
-				SQLite.m_DataSet.Clear();
-				SQLite.m_DataSet.Dispose();
+				//if (this.m_dg != null)
+				//	this.m_dg.Dispose();
 
-				if (SQLite.m_Connection != null)
-				{
-					SQLite.m_Connection.Close();
-					SQLite.m_Connection.Dispose();
-					SQLite.m_Connection = null;
-				}
-				SQLite.m_Connection = null;
-				this.m_DataSource = null;
+				//SQLite.m_DataSet.Clear();
+				//SQLite.m_DataSet.Dispose();
+
+				//if (SQLite.m_Connection != null)
+				//{
+				//	SQLite.m_Connection.Close();
+				//	SQLite.m_Connection.Dispose();
+				//	SQLite.m_Connection = null;
+				//}
+				//SQLite.m_Connection = null;
+				//this.m_DataSource = null;
 
 			}
 			catch (Exception e)
@@ -2074,11 +2058,11 @@ namespace FIA_Biosum_Manager
 			FIA_Biosum_Manager.uc_processor_tree_spc_edit  p_uc;
 			if (p_strAction.Trim().ToUpper()=="NEW")
 			{
-				p_uc = new uc_processor_tree_spc_edit(this.m_ado,this.m_oQueries.m_oFvs.m_strTreeSpcTable,this.m_oQueries.m_oFvs.m_strFvsTreeSpcRefTable,"");
+				p_uc = new uc_processor_tree_spc_edit(SQLite,this.m_oQueries.m_oFvs.m_strTreeSpcTable,this.m_oQueries.m_oFvs.m_strFvsTreeSpcRefTable,"");
 			}
 			else
 			{
-				p_uc = new uc_processor_tree_spc_edit(this.m_ado,this.m_oQueries.m_oFvs.m_strTreeSpcTable,this.m_oQueries.m_oFvs.m_strFvsTreeSpcRefTable,this.m_dg[this.m_intCurrRow-1,this.getGridColumn("fvs_variant")].ToString().Trim());
+				p_uc = new uc_processor_tree_spc_edit(SQLite,this.m_oQueries.m_oFvs.m_strTreeSpcTable,this.m_oQueries.m_oFvs.m_strFvsTreeSpcRefTable,this.m_dg[this.m_intCurrRow-1,this.getGridColumn("fvs_variant")].ToString().Trim());
 			}
 			
 			frmTemp.Controls.Add(p_uc);
@@ -2157,7 +2141,7 @@ namespace FIA_Biosum_Manager
 					if (p_strAction.Trim().ToUpper()=="NEW")
 					{
 						this.m_dv.AllowNew = true;
-						System.Data.DataRow p_row =	this.m_ado.m_DataSet.Tables["tree_species"].NewRow();
+						System.Data.DataRow p_row =	SQLite.m_DataSet.Tables["tree_species"].NewRow();
 						p_row["id"] = Convert.ToInt32(p_uc.strId);
 						p_row["fvs_variant"] = p_uc.strVariant;
 						p_row["spcd"] = Convert.ToInt32(p_uc.strSpCd);
@@ -2174,7 +2158,7 @@ namespace FIA_Biosum_Manager
 						{
                             p_row["fvs_input_spcd"] = p_uc.intConvertToSpCd;
 						}
-						this.m_ado.m_DataSet.Tables["tree_species"].Rows.Add(p_row);
+						SQLite.m_DataSet.Tables["tree_species"].Rows.Add(p_row);
 						p_row=null;
 						this.m_dv.AllowNew = false;
 
@@ -2227,20 +2211,20 @@ namespace FIA_Biosum_Manager
 		}
 		private int getUniqueId()
 		{
-            string strUniqueId="";
+            string strUniqueId;
 			int intId=0;
 			int intId2=0;
-			strUniqueId = this.m_ado.getSingleStringValueFromSQLQuery(this.m_ado.m_OleDbConnection,
-				this.m_ado.m_OleDbTransaction,
+			strUniqueId = SQLite.getSingleStringValueFromSQLQuery(SQLite.m_Connection,
+				SQLite.m_Transaction,
 				"select max(id) as maxid from " + this.m_oQueries.m_oFvs.m_strTreeSpcTable,
 				this.m_oQueries.m_oFvs.m_strTreeSpcTable);
 
 			if (strUniqueId != null && strUniqueId.Trim().Length > 0)
 				intId = Convert.ToInt32(strUniqueId) + 1;
 
-			if (this.m_ado.m_DataSet.Tables["tree_species"].Compute("Max(id)", null) != System.DBNull.Value)
+			if (SQLite.m_DataSet.Tables["tree_species"].Compute("Max(id)", null) != System.DBNull.Value)
 			{
-				intId2 = Convert.ToInt32(this.m_ado.m_DataSet.Tables["tree_species"].Compute("Max(id)", null));
+				intId2 = Convert.ToInt32(SQLite.m_DataSet.Tables["tree_species"].Compute("Max(id)", null));
 			}
 			if (intId2 >= intId) 
 			{
@@ -2266,7 +2250,7 @@ namespace FIA_Biosum_Manager
 			string strCurConvertedSpCd;
 			try
 			{
-				System.Data.DataTable p_dt = this.m_ado.m_DataSet.Tables["tree_species"];
+				System.Data.DataTable p_dt = SQLite.m_DataSet.Tables["tree_species"];
 				for (int x=0;x<=p_dt.Rows.Count-1;x++)
 				{
 					if (p_dt.Rows[x].RowState != System.Data.DataRowState.Deleted)
@@ -2292,11 +2276,6 @@ namespace FIA_Biosum_Manager
 						{
 							strCurConvertedSpCd="";
 						}
-						
-							
-						
-
-				
 
 						//make sure no duplicate variant + spcd + fvs spcd combinations
 						for (int y=x+1;y<=p_dt.Rows.Count-1;y++)
@@ -2393,31 +2372,31 @@ namespace FIA_Biosum_Manager
 				this.lstAudit.Columns.Add("fvs_variant", 80, HorizontalAlignment.Left);
 				this.lstAudit.Columns.Add("spcd", 80, HorizontalAlignment.Left);
 
-				this.m_ado.m_strSQL = "SELECT t.spcd,p.fvs_variant " + 
+				SQLite.m_strSQL = "SELECT t.spcd,p.fvs_variant " + 
 									  "FROM " + this.m_oQueries.m_oFIAPlot.m_strTreeTable + " t," + 
 												this.m_oQueries.m_oFIAPlot.m_strPlotTable + " p " + 
 									  "INNER JOIN " + this.m_oQueries.m_oFIAPlot.m_strCondTable + " c "  + 
 									  "ON p.biosum_plot_id=c.biosum_plot_id " +
 									  "WHERE t.biosum_cond_id=c.biosum_cond_id AND " + 
-					                        "p.fvs_variant IS NOT NULL AND LEN(TRIM(p.fvs_variant)) > 0 " + 
+					                        "p.fvs_variant IS NOT NULL AND LENGTH(TRIM(p.fvs_variant)) > 0 " + 
 									  "ORDER by p.fvs_variant,t.spcd;";
 
 
-				this.m_ado.SqlQueryReader(this.m_ado.m_OleDbConnection,this.m_ado.m_OleDbTransaction,this.m_ado.m_strSQL);
-                if (this.m_ado.m_intError == 0)
+				SQLite.SqlQueryReader(SQLite.m_Connection, SQLite.m_Transaction, SQLite.m_strSQL);
+                if (SQLite.m_intError == 0)
                 {
-                    if (this.m_ado.m_OleDbDataReader.HasRows)
+                    if (SQLite.m_DataReader.HasRows)
                     {
-                        while (this.m_ado.m_OleDbDataReader.Read())
+                        while (SQLite.m_DataReader.Read())
                         {
 
-                            if (this.m_ado.m_OleDbDataReader["spcd"] != System.DBNull.Value)
+                            if (SQLite.m_DataReader["spcd"] != System.DBNull.Value)
                             {
 
                                 strVar = "";
-                                strSpCd = this.m_ado.m_OleDbDataReader["spcd"].ToString().Trim();
-                                if (this.m_ado.m_OleDbDataReader["fvs_variant"] != System.DBNull.Value)
-                                    strVar = this.m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim();
+                                strSpCd = SQLite.m_DataReader["spcd"].ToString().Trim();
+                                if (SQLite.m_DataReader["fvs_variant"] != System.DBNull.Value)
+                                    strVar = SQLite.m_DataReader["fvs_variant"].ToString().Trim();
 
                                 strConcat = strSpCd + strVar;
                                 if (strBuild.IndexOf(strConcat, 0, strBuild.Length) == -1)
@@ -2437,7 +2416,7 @@ namespace FIA_Biosum_Manager
                             {
 
 
-                                System.Data.DataRow[] p_rows = this.m_ado.m_DataSet.Tables["tree_species"].Select("spcd = " + strValues[x, 0].ToString().Trim() + " and trim(fvs_variant) = '" + strValues[x, 1].ToString().Trim() + "'");
+                                System.Data.DataRow[] p_rows = SQLite.m_DataSet.Tables["tree_species"].Select("spcd = " + strValues[x, 0].ToString().Trim() + " and trim(fvs_variant) = '" + strValues[x, 1].ToString().Trim() + "'");
                                 if (p_rows != null)
                                 {
                                     if (p_rows.Length == 0)
@@ -2454,7 +2433,7 @@ namespace FIA_Biosum_Manager
                             }
                         }
                     }
-                    this.m_ado.m_OleDbDataReader.Close();
+                    SQLite.m_DataReader.Close();
 
                     if (this.lstAudit.Items.Count == 0)
                     {
@@ -2532,7 +2511,7 @@ namespace FIA_Biosum_Manager
                 }
             }
 
-            oAdo.OpenConnection(oAdo.getMDBConnString(this.m_strTempMDBFile,"",""));
+            oAdo.OpenConnection(oAdo.getMDBConnString(this.m_strTempDbFile,"",""));
 			if (oAdo.TableExist(oAdo.m_OleDbConnection,"treetemp"))
 				oAdo.SqlNonQuery(oAdo.m_OleDbConnection,"DROP TABLE treetemp");
 
@@ -3044,7 +3023,7 @@ namespace FIA_Biosum_Manager
             List<string> strSqlCommandList;
 
             ado_data_access oAdo = new ado_data_access();
-            oAdo.OpenConnection(oAdo.getMDBConnString(this.m_strTempMDBFile, "", ""));
+            oAdo.OpenConnection(oAdo.getMDBConnString(this.m_strTempDbFile, "", ""));
 
             if (oAdo.TableExist(oAdo.m_OleDbConnection, "fvsouttreetemp2"))
                 oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE fvsouttreetemp2");

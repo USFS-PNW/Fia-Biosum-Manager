@@ -38,7 +38,7 @@ namespace FIA_Biosum_Manager
         private int m_intConvertToSpCd;
         private string m_strFvsSpeciesCode;
         private System.Collections.Generic.IDictionary<String, String> m_dictFvsCommonName;
-        private ado_data_access m_ado;
+        private SQLite.ADO.DataMgr m_dataMgr;
         private Label label8;
         private Label lblFvsCommonName;
         private string m_strTreeSpcTable;
@@ -48,45 +48,45 @@ namespace FIA_Biosum_Manager
 		/// </summary>
 		private System.ComponentModel.Container components = null;
 
-		public uc_processor_tree_spc_edit(ado_data_access p_ado,string p_strTreeSpcTable,string p_strFvsTreeSpcTable,string p_strVariant)
+		public uc_processor_tree_spc_edit(SQLite.ADO.DataMgr p_dataMgr,string p_strTreeSpcTable,string p_strFvsTreeSpcTable,string p_strVariant)
 		{
 			// This call is required by the Windows.Forms Form Designer.
 			InitializeComponent();
 
-            m_ado = p_ado;                
+            m_dataMgr = p_dataMgr;                
             // Populate reference dictionary of spcd and fvs_common_name from fvs_tree_species
             m_dictFvsCommonName = new System.Collections.Generic.Dictionary<String, String>();
             m_strTreeSpcTable = p_strTreeSpcTable;
 
 			if (p_strVariant.Trim().Length > 0)
 			{
-				p_ado.m_strSQL = "SELECT  spcd,fvs_species,common_name,fvs_common_name " + 
+                p_dataMgr.m_strSQL = "SELECT  spcd,fvs_species,common_name,fvs_common_name " + 
 					"FROM " + p_strFvsTreeSpcTable + " " + 
-					"WHERE LEN(TRIM(fvs_species)) > 0 AND " + 
-					"LEN(TRIM(common_name)) > 0 AND " + 
+					"WHERE LENGTH(TRIM(fvs_species)) > 0 AND " + 
+					"LENGTH(TRIM(common_name)) > 0 AND " + 
 					"TRIM(fvs_variant) = '" + p_strVariant.Trim() +  "' order by spcd;";
-			
-				p_ado.SqlQueryReader(p_ado.m_OleDbConnection,p_ado.m_OleDbTransaction,p_ado.m_strSQL);
-				if (p_ado.m_OleDbDataReader.HasRows)
+
+                p_dataMgr.SqlQueryReader(p_dataMgr.m_Connection, p_dataMgr.m_Transaction, p_dataMgr.m_strSQL);
+				if (p_dataMgr.m_DataReader.HasRows)
 				{
-					while (p_ado.m_OleDbDataReader.Read())
+					while (p_dataMgr.m_DataReader.Read())
 					{
-                        string strMySpCd = Convert.ToString(p_ado.m_OleDbDataReader["spcd"]);
-                        this.cmbFvsSpCd.Items.Add(strMySpCd + " - " + Convert.ToString(p_ado.m_OleDbDataReader["common_name"]) + " - " + p_ado.m_OleDbDataReader["fvs_species"]);
+                        string strMySpCd = Convert.ToString(p_dataMgr.m_DataReader["spcd"]);
+                        this.cmbFvsSpCd.Items.Add(strMySpCd + " - " + Convert.ToString(p_dataMgr.m_DataReader["common_name"]) + " - " + p_dataMgr.m_DataReader["fvs_species"]);
 
                         if (!m_dictFvsCommonName.ContainsKey(strMySpCd))
                         {
-                            m_dictFvsCommonName.Add(strMySpCd, Convert.ToString(p_ado.m_OleDbDataReader["fvs_common_name"]));
+                            m_dictFvsCommonName.Add(strMySpCd, Convert.ToString(p_dataMgr.m_DataReader["fvs_common_name"]));
                         }
 					}
 
 				}
 
                 // Only show fvs variants on the form that exist in the fvs_tree_species table
-                p_ado.m_strSQL = "SELECT distinct fvs_variant " +
+                p_dataMgr.m_strSQL = "SELECT distinct fvs_variant " +
                     "FROM " + p_strFvsTreeSpcTable + " ";
-                p_ado.SqlQueryReader(p_ado.m_OleDbConnection, p_ado.m_OleDbTransaction, p_ado.m_strSQL);
-                if (p_ado.m_OleDbDataReader.HasRows)
+                p_dataMgr.SqlQueryReader(p_dataMgr.m_Connection, p_dataMgr.m_Transaction, p_dataMgr.m_strSQL);
+                if (p_dataMgr.m_DataReader.HasRows)
                 {
                     // Copy all the combo box items into dictionary with variant as key
                     System.Collections.Generic.IDictionary<String, String> dictVariantItems = 
@@ -101,9 +101,9 @@ namespace FIA_Biosum_Manager
                     }
                     // Clear combo box items
                     this.cmbVariant.Items.Clear();
-                    while (p_ado.m_OleDbDataReader.Read())
+                    while (p_dataMgr.m_DataReader.Read())
                     {
-                        string strNextVariant = Convert.ToString(p_ado.m_OleDbDataReader["fvs_variant"]).Trim();
+                        string strNextVariant = Convert.ToString(p_dataMgr.m_DataReader["fvs_variant"]).Trim();
                         // Only add combo box items back that are in the fvs_species table
                         if (dictVariantItems.ContainsKey(strNextVariant))
                         {
@@ -112,14 +112,10 @@ namespace FIA_Biosum_Manager
                     }
                 }
 
-				p_ado.m_OleDbDataReader.Close();
+                p_dataMgr.m_DataReader.Close();
 			}
             this.m_strFvsTreeSpcTable = p_strFvsTreeSpcTable;
-			this.m_strVariant = p_strVariant;
-
-			
-
-
+			this.m_strVariant = p_strVariant;		
 			// TODO: Add any initialization after the InitializeComponent call
 
 		}
@@ -537,10 +533,10 @@ namespace FIA_Biosum_Manager
             else
             {
                 //check to make sure the spcd exists in fia_tree_species_ref before trying to add
-                this.m_ado.m_strSQL = "SELECT common_name FROM " + Tables.ProcessorScenarioRun.DefaultFiaTreeSpeciesRefTableName +
+                m_dataMgr.m_strSQL = "SELECT common_name FROM " + Tables.ProcessorScenarioRun.DefaultFiaTreeSpeciesRefTableName +
                                       " WHERE spcd = " + this.txtSpCd.Text.Trim() + ";";
-                this.m_ado.SqlQueryReader(this.m_ado.m_OleDbConnection, this.m_ado.m_OleDbTransaction, this.m_ado.m_strSQL);
-                if (!this.m_ado.m_OleDbDataReader.HasRows)
+                m_dataMgr.SqlQueryReader(m_dataMgr.m_Connection, m_dataMgr.m_Transaction, m_dataMgr.m_strSQL);
+                if (!m_dataMgr.m_DataReader.HasRows)
                 {
                     string strMessage = "!!spcd " + this.txtSpCd.Text.Trim() + " is missing from the " +
                                         Tables.ProcessorScenarioRun.DefaultFiaTreeSpeciesRefTableName + " table. If this is a " +
@@ -550,7 +546,7 @@ namespace FIA_Biosum_Manager
                     this.txtSpCd.Focus();
                     return;
                 }
-                this.m_ado.m_OleDbDataReader.Close();
+                m_dataMgr.m_DataReader.Close();
 			}
 
             if (this.cmbFvsSpCd.Text.Trim().Length == 0)
@@ -574,23 +570,23 @@ namespace FIA_Biosum_Manager
             else
             {
                 //check to make sure the spcd exists in fia_tree_species_ref before trying to add
-                string strCommonName = m_ado.FixString(txtCommon.Text.Trim(), "'", "''");
-                this.m_ado.m_strSQL = "SELECT spcd FROM " + m_strTreeSpcTable +
+                string strCommonName = m_dataMgr.FixString(txtCommon.Text.Trim(), "'", "''");
+                m_dataMgr.m_strSQL = "SELECT spcd FROM " + m_strTreeSpcTable +
                                       " WHERE spcd <> " + this.txtSpCd.Text.Trim() + " AND TRIM(common_name) = '" +
                                       strCommonName + "';";
-                this.m_ado.SqlQueryReader(this.m_ado.m_OleDbConnection, this.m_ado.m_OleDbTransaction, this.m_ado.m_strSQL);
-                if (this.m_ado.m_OleDbDataReader.HasRows)
+                m_dataMgr.SqlQueryReader(m_dataMgr.m_Connection, m_dataMgr.m_Transaction, m_dataMgr.m_strSQL);
+                if (m_dataMgr.m_DataReader.HasRows)
                 {
-                    this.m_ado.m_OleDbDataReader.Read();
+                    m_dataMgr.m_DataReader.Read();
                     string strMessage = "!!common_name '" + this.txtCommon.Text + "' is already in use for spcd " +
-                                         Convert.ToString(this.m_ado.m_OleDbDataReader["spcd"]).Trim() + ". " +
+                                         Convert.ToString(m_dataMgr.m_DataReader["spcd"]).Trim() + ". " +
                                          "common_name + spcd combinations must be unique!!";
                     System.Windows.Forms.MessageBox.Show(strMessage, "FIA Biosum");
                     this.m_intError = -1;
                     this.txtCommon.Focus();
                     return;
                 }
-                this.m_ado.m_OleDbDataReader.Close();
+                m_dataMgr.m_DataReader.Close();
             }
 		}
 
@@ -623,22 +619,22 @@ namespace FIA_Biosum_Manager
                         intMyConvertToSpcd = m_intConvertToSpCd;
                     }
                     this.m_dictFvsCommonName.Clear();
-					m_ado.m_strSQL = "SELECT  spcd,fvs_species,common_name,fvs_common_name " + 
+					m_dataMgr.m_strSQL = "SELECT  spcd,fvs_species,common_name,fvs_common_name " + 
 						"FROM " + m_strFvsTreeSpcTable + " " + 
-						"WHERE LEN(TRIM(fvs_species)) > 0 AND " + 
-						"LEN(TRIM(common_name)) > 0 AND " + 
+						"WHERE LENGTH(TRIM(fvs_species)) > 0 AND " + 
+						"LENGTH(TRIM(common_name)) > 0 AND " + 
 						"TRIM(fvs_variant) = '" + m_strVariant.Trim() +  "' order by spcd;";
-			
-					m_ado.SqlQueryReader(m_ado.m_OleDbConnection,m_ado.m_OleDbTransaction,m_ado.m_strSQL);
-					if (m_ado.m_OleDbDataReader.HasRows)
+
+                    m_dataMgr.SqlQueryReader(m_dataMgr.m_Connection, m_dataMgr.m_Transaction, m_dataMgr.m_strSQL);
+					if (m_dataMgr.m_DataReader.HasRows)
 					{
-						while (m_ado.m_OleDbDataReader.Read())
+						while (m_dataMgr.m_DataReader.Read())
 						{
-                            string strMySpCd = Convert.ToString(m_ado.m_OleDbDataReader["spcd"]);
-                            this.cmbFvsSpCd.Items.Add(strMySpCd + " - " + Convert.ToString(m_ado.m_OleDbDataReader["common_name"]) + " - " + m_ado.m_OleDbDataReader["fvs_species"]);
+                            string strMySpCd = Convert.ToString(m_dataMgr.m_DataReader["spcd"]);
+                            this.cmbFvsSpCd.Items.Add(strMySpCd + " - " + Convert.ToString(m_dataMgr.m_DataReader["common_name"]) + " - " + m_dataMgr.m_DataReader["fvs_species"]);
                             if (!m_dictFvsCommonName.ContainsKey(strMySpCd))
                             {
-                                m_dictFvsCommonName.Add(strMySpCd, Convert.ToString(m_ado.m_OleDbDataReader["fvs_common_name"]));
+                                m_dictFvsCommonName.Add(strMySpCd, Convert.ToString(m_dataMgr.m_DataReader["fvs_common_name"]));
                             }
 						}
 
@@ -647,7 +643,7 @@ namespace FIA_Biosum_Manager
                             this.intConvertToSpCd = intMyConvertToSpcd;
                         }
 					}
-					m_ado.m_OleDbDataReader.Close();
+                    m_dataMgr.m_DataReader.Close();
 				}
 			}
 		}
