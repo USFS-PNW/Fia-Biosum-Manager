@@ -2877,7 +2877,7 @@ namespace FIA_Biosum_Manager
                     {
                         SetThermValue(m_frmTherm.progressBar1, "Value", 100);
                         SetThermValue(m_frmTherm.progressBar2, "Value", 60);
-                        m_intError = UpdateColumns(m_ado);
+                        m_intError = UpdateColumns(conn);
                     }
 
                     //Down Woody Materials Section
@@ -3746,810 +3746,677 @@ namespace FIA_Biosum_Manager
 
             SetLabelValue(m_frmTherm.lblMsg,"Text", "Updating Condition Table Columns...Stand By");
             frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
-
-				
             SetThermValue(m_frmTherm.progressBar1, "Value", 6);
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+
+            //tpa column
+            //sum trees per acre on a condition 
+            //for live trees >= 5 inches in diameter 
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-
-				//tpa column
-				//sum trees per acre on a condition 
-				//for live trees >= 5 inches in diameter 
-				p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,tpacurr) " + 
-					"SELECT DISTINCT(a.biosum_cond_id),a.tottpa as tpa  " + 
-					"FROM " + this.m_strTreeTable + " t, " + 
-					"(SELECT biosum_cond_id, SUM(tpacurr) as tottpa " + 
-					"FROM " + this.m_strTreeTable + " " +
-                    //issue_253: include saplings in tpacurr
-                    //"WHERE  dia >= 5 AND statuscd=1 " + 
-                    "WHERE statuscd=1 " +
-                    "GROUP BY biosum_cond_id) a " + 
-					"WHERE t.biosum_status_cd=9 AND " + 
-					"a.biosum_cond_id=t.biosum_cond_id;";
-
-				strTime = System.DateTime.Now.ToString();
+                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, tpacurr) " +
+                    "SELECT DISTINCT(a.biosum_cond_id), a.tottpa AS tpacurr " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(tpacurr) AS tottpa " +
+                    "FROM " + this.m_strTreeTable + " WHERE statuscd = 1 GROUP BY biosum_cond_id) AS a " +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
+                strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 7);
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-			{
-				p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-					"INNER JOIN cond_column_updates_work_table u " + 
-					"ON c.biosum_cond_id = u.biosum_cond_id " + 
-					"SET c.TPACURR = u.TPACURR;";
 
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET tpacurr = u.tpacurr " +
+                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 8);
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+
+            //swd_tpa
+            //sum trees per acre on a condition 
+            //for softwood live trees >= 5 inches in diameter 
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-
-				//swd_tpa
-				//sum trees per acre on a condition 
-				//for softwood live trees >= 5 inches in diameter 
-				p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
+				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-				p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,swd_tpacurr) " + 
-					"SELECT DISTINCT(a.biosum_cond_id),a.totswdtpa as swd_tpa  " + 
-					"FROM " + this.m_strTreeTable + " t, " + 
-					"(SELECT biosum_cond_id, SUM(tpacurr) as totswdtpa " + 
-					"FROM " + this.m_strTreeTable + " " +
-                    //issue_253: include saplings in tpacurr  
-                    //"WHERE spcd < 300 AND dia >= 5 AND statuscd=1 " +
-                    "WHERE spcd < 300 AND statuscd = 1 " +
-                    "GROUP BY biosum_cond_id ) a " + 
-					"WHERE t.biosum_status_cd=9 AND " + 
-					"a.biosum_cond_id=t.biosum_cond_id;";
-
-				strTime = System.DateTime.Now.ToString();
+                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, swd_tpacurr) " +
+                    "SELECT DISTINCT(a.biosum_cond_id), a.totswdtpa AS swd_tpacurr " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(tpacurr) AS totswdtpa " +
+                    "FROM " + this.m_strTreeTable + " WHERE spcd < 300 AND statuscd = 1 GROUP BY biosum_cond_id) AS a " +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
+                strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 9);
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-			{
-				p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-					"INNER JOIN cond_column_updates_work_table u " + 
-					"ON c.biosum_cond_id = u.biosum_cond_id " + 
-					"SET c.SWD_TPACURR = u.SWD_TPACURR;";
 
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET swd_tpacurr = u.swd_tpacurr " +
+                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 10);
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+
+            //hwd tpa
+            //sum trees per acre on a condition 
+            //for hardwood live trees >= 5 inches in diameter
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-
-				//hwd tpa
-				//sum trees per acre on a condition 
-				//for hardwood live trees >= 5 inches in diameter 
-				p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
+				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table;";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-				p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,hwd_tpacurr) " + 
-					"SELECT DISTINCT(a.biosum_cond_id),a.tothwdtpa as hwd_tpacurr  " + 
-					"FROM " + this.m_strTreeTable + " t, " + 
-					"(SELECT biosum_cond_id, SUM(tpacurr) as tothwdtpa " + 
-					"FROM " + this.m_strTreeTable + " " +
-                    //issue_253: include saplings in tpacurr  
-                    //"WHERE spcd > 299 AND dia >= 5 AND statuscd=1 " + 
-                    "WHERE spcd > 299 AND statuscd=1 " +
-                    "GROUP BY biosum_cond_id ) a " + 
-					"WHERE t.biosum_status_cd=9 AND " + 
-					"a.biosum_cond_id=t.biosum_cond_id;";
-
-				strTime = System.DateTime.Now.ToString();
+                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, hwd_tpacurr) " +
+                    "SELECT DISTINCT (a.biosum_cond_id), a.tothwdtpa AS hwd_tpacurr " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(tpacurr) AS tothwdtpa " +
+                    "FROM " + this.m_strTreeTable + " WHERE spcd > 299 AND statuscd = 1 GROUP BY biosum_cond_id) AS a" +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
+                strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 11);
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-			{
-				p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-					"INNER JOIN cond_column_updates_work_table u " + 
-					"ON c.biosum_cond_id = u.biosum_cond_id " + 
-					"SET c.HWD_TPACURR = u.HWD_TPACURR;";
 
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET hwd_tpacurr = u.hwd_tpacurr " +
+                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 12);
-                
 
             //vol_ac_grs_ft3
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+
+            //total
+            //for all live trees >= 5 inches in diameter 
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-
-				//total
-				//for all live trees >= 5 inches in diameter 
-				p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
+                SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-				p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,vol_ac_grs_ft3) " + 
-					"SELECT DISTINCT(a.biosum_cond_id),a.tot_volgrsft3 as vol_ac_grs_ft3  " + 
-					"FROM " + this.m_strTreeTable + " t, " + 
-					"(SELECT biosum_cond_id, SUM(volcfgrs * tpacurr) as tot_volgrsft3 " + 
-					"FROM " + this.m_strTreeTable + " WHERE volcfgrs IS NOT NULL AND tpacurr IS NOT NULL AND statuscd=1 AND dia >=5 " + 
-					"GROUP BY biosum_cond_id ) a " + 
-					"WHERE t.biosum_status_cd=9 AND " + 
-					"a.biosum_cond_id=t.biosum_cond_id;";
-
+                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, vol_ac_grs_ft3) " +
+                    "SELECT DISTINCT(a.biosum_cond_id), a.tot_volgrsft3 AS vol_ac_grs_ft3 " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(volcfgrs * tpacurr) AS tot_volgrsft3 " +
+                    "FROM " + this.m_strTreeTable + " WHERE volcfgrs IS NOT NULL AND tpacurr IS NOT NULL AND statuscd = 1 AND dia >= 5 " +
+                    "GROUP BY biosum_cond_id) AS a " +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 13);
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-			{
-				p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-					"INNER JOIN cond_column_updates_work_table u " + 
-					"ON c.biosum_cond_id = u.biosum_cond_id " + 
-					"SET c.VOL_AC_GRS_FT3 = u.VOL_AC_GRS_FT3;";
 
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET vol_ac_grs_ft3 = u.vol_ac_grs_ft3 " +
+                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 14);
 
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            //hwd
+            //for all live hardwood trees >= 5 inches in diameter 
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-
-				//hwd
-				//for all live hardwood trees >= 5 inches in diameter 
-				p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
+				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-				p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,hwd_vol_ac_grs_ft3) " + 
-					"SELECT DISTINCT(a.biosum_cond_id),a.tot_volgrsft3 as hwd_vol_ac_grs_ft3  " + 
-					"FROM " + this.m_strTreeTable + " t, " + 
-					"(SELECT biosum_cond_id, SUM(volcfgrs * tpacurr) as tot_volgrsft3 " + 
-					 	"FROM " + this.m_strTreeTable + " " + 
-                        "WHERE spcd > 299 AND volcfgrs IS NOT NULL AND tpacurr IS NOT NULL AND statuscd=1 AND dia >=5 " + 
-					"GROUP BY biosum_cond_id ) a " + 
-					"WHERE t.biosum_status_cd=9 AND " + 
-					"a.biosum_cond_id=t.biosum_cond_id;";
-
+                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, hwd_vol_ac_grs_ft3) " +
+                    "SELECT DISTINCT(a.biosum_cond_id), a.tot_volgrsft3 AS hwd_vol_ac_grs_ft3 " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(volcfgrs * tpacurr) AS tot_volgrsft3 " +
+                    "FROM " + this.m_strTreeTable + " WHERE spcd > 299 AND volcfgrs IS NOT NULL AND tpacurr IS NOT NULL " +
+                    "AND statuscd = 1 AND dia >= 5 GROUP BY biosum_cond_id) AS a " +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 15);
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-			{
-				p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-					"INNER JOIN cond_column_updates_work_table u " + 
-					"ON c.biosum_cond_id = u.biosum_cond_id " + 
-					"SET c.HWD_VOL_AC_GRS_FT3 = u.HWD_VOL_AC_GRS_FT3;";
 
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET hwd_vol_ac_grs_ft3 = u.hwd_vol_ac_grs_ft3 " +
+                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 16);
 
-
-
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            //SWD
+            //for all live softwood trees >= 5 inches in diameter 
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-
-				//SWD
-				//for all live softwood trees >= 5 inches in diameter 
-				p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
+				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-				p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,swd_vol_ac_grs_ft3) " + 
-					"SELECT DISTINCT(a.biosum_cond_id),a.tot_volgrsft3 as swd_vol_ac_grs_ft3  " + 
-					"FROM " + this.m_strTreeTable + " t, " + 
-					"(SELECT biosum_cond_id, SUM(volcfgrs * tpacurr) as tot_volgrsft3 " + 
-					"FROM " + this.m_strTreeTable + " " + 
-					"WHERE spcd < 300 AND volcfgrs IS NOT NULL AND tpacurr IS NOT NULL AND statuscd=1 AND dia >=5 " + 
-					"GROUP BY biosum_cond_id ) a " + 
-					"WHERE t.biosum_status_cd=9 AND " + 
-					"a.biosum_cond_id=t.biosum_cond_id;";
-
+                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, swd_vol_ac_grs_ft3) " +
+                    "SELECT DISTINCT(a.biosum_cond_id), a.tot_volgrsft3 AS swd_vol_ac_grs_ft3 " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(volcfgrs * tpacurr) AS tot_volgrsft3 " +
+                    "FROM " + this.m_strTreeTable + " WHERE spcd < 300 AND volcfgrs IS NOT NULL AND tpacurr IS NOT NULL " +
+                    "AND statuscd = 1 AND dia >= 5 GROUP BY biosum_cond_id) AS a " +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 17);
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-			{
-				p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-					"INNER JOIN cond_column_updates_work_table u " + 
-					"ON c.biosum_cond_id = u.biosum_cond_id " + 
-					"SET c.SWD_VOL_AC_GRS_FT3 = u.SWD_VOL_AC_GRS_FT3;";
 
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET swd_vol_ac_grs_ft3 = u.swd_vol_ac_grs_ft3 " +
+                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value",18);
 
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            //ba_ft2_ac basal area column
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-				//ba_ft2_ac basal area column
-				p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
+				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-				p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,ba_ft2_ac) " + 
-					"SELECT a.biosum_cond_id, b.tottemp AS ba_ft2_ac " + 
-					"FROM " + this.m_strCondTable + " a, " +  
-					"(SELECT biosum_cond_id, SUM((.005454154 * dia^2)  * tpacurr)  AS tottemp " + 
-						"FROM " + this.m_strTreeTable + " " + 
-						"WHERE biosum_status_cd=9  AND statuscd=1 " + 
-						"GROUP BY biosum_cond_id)  b " + 
-					"WHERE a.biosum_cond_id = b.biosum_cond_id ";
-
-
-				strTime = System.DateTime.Now.ToString();
+                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, ba_ft2_ac) " +
+                    "SELECT a.biosum_cond_id, b.tottemp AS ba_ft2_ac " +
+                    "FROM " + this.m_strCondTable + " AS a, " +
+                    "(SELECT biosum_cond_id, SUM((.005454154 * dia^2) * tpacurr) AS tottemp " +
+                    "FROM " + this.m_strTreeTable + " WHERE biosum_status_cd = 9 " +
+                    "AND statuscd = 1 GROUP BY biosum_cond_id) AS b " +
+                    "WHERE a.biosum_cond_id = b.biosum_cond_id";
+                strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 19);
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-			{
-				p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-					"INNER JOIN cond_column_updates_work_table u " + 
-					"ON c.biosum_cond_id = u.biosum_cond_id " + 
-					"SET c.BA_FT2_AC = u.BA_FT2_AC;";
 
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET ba_ft2_ac = u.ba_ft2_ac " +
+                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 20);
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+
+            //swd_ba_ft2_ac softwood basal area 
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-
-				//swd_ba_ft2_ac softwood basal area 
-				p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
+				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-				p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,swd_ba_ft2_ac) " + 
-					"SELECT a.biosum_cond_id, b.tottemp AS swd_ba_ft2_ac " + 
-					"FROM " + this.m_strCondTable + " a, " +  
-					"(SELECT biosum_cond_id, SUM((.005454154 * dia^2)  * tpacurr)  AS tottemp " + 
-					"FROM " + this.m_strTreeTable + " " + 
-					"WHERE biosum_status_cd=9 AND " + 
-						    "spcd < 300 AND statuscd=1 " + 
-					"GROUP BY biosum_cond_id)  b " + 
-					"WHERE a.biosum_cond_id = b.biosum_cond_id ";
-
-
-				strTime = System.DateTime.Now.ToString();
+                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, swd_ba_ft2_ac) " +
+                    "SELECT a.biosum_cond_id, b.tottemp AS swd_ba_ft2_ac " +
+                    "FROM " + this.m_strCondTable + " AS a, " +
+                    "(SELECT biosum_cond_id, SUM((.005454154 * dia^2) * tpacurr) AS tottemp " +
+                    "FROM " + this.m_strTreeTable + " WHERE biosum_status_cd = 9 " +
+                    "AND spcd < 300 AND statuscd = 1 GROUP BY biosum_cond_id) AS b " +
+                    "WHERE a.biosum_cond_id = b.biosum_cond_id";
+                strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 21);
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-			{
-				p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-					"INNER JOIN cond_column_updates_work_table u " + 
-					"ON c.biosum_cond_id = u.biosum_cond_id " + 
-					"SET c.SWD_BA_FT2_AC = u.SWD_BA_FT2_AC";
 
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET swd_ba_ft2_ac = u.swd_ba_ft2_ac " +
+                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 22);
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+
+            //hardwood ba_ft2_ac
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-				//hardwood ba_ft2_ac
-				p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
+				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-				p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,hwd_ba_ft2_ac) " + 
-					"SELECT a.biosum_cond_id, b.tottemp AS hwd_ba_ft2_ac " + 
-					"FROM " + this.m_strCondTable + " a, " +  
-					"(SELECT biosum_cond_id, SUM((.005454154 * dia^2)  * tpacurr)  AS tottemp " + 
-					"FROM " + this.m_strTreeTable + " " + 
-					"WHERE biosum_status_cd=9 AND " + 
-					"spcd > 299 AND statuscd=1 " + 
-					"GROUP BY biosum_cond_id)  b " + 
-					"WHERE a.biosum_cond_id = b.biosum_cond_id ";
-
-				strTime = System.DateTime.Now.ToString();
+                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, hwd_ba_ft2_ac) " +
+                    "SELECT a.biosum_cond_id, b.tottemp AS hwd_ba_ft2_ac " +
+                    "FROM " + this.m_strCondTable + " AS a, " +
+                    "(SELECT biosum_cond_id, SUM((.005454154 * dia^2) * tpacurr) AS tottemp " +
+                    "FROM " + this.m_strTreeTable + " WHERE biosum_status_cd = 9 " +
+                    "AND spcd > 299 AND statuscd = 1 GROUP BY biosum_cond_id) AS b " +
+                    "WHERE a.biosum_cond_id = b.biosum_cond_id";
+                strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 23);
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-			{
-				p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-					"INNER JOIN cond_column_updates_work_table u " + 
-					"ON c.biosum_cond_id = u.biosum_cond_id " + 
-					"SET c.HWD_BA_FT2_AC = u.HWD_BA_FT2_AC";
 
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET hwd_ba_ft2_ac = u.hwd_ba_ft2_ac " +
+                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 24);
 
 			//volcsgrs  
 			//gross sawlog
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-				p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
+				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-				p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,volcsgrs) " + 
-					"SELECT DISTINCT(a.biosum_cond_id),a.ttl as  volcsgrs " + 
-					"FROM " + this.m_strTreeTable + " t, " + 
-					"(SELECT biosum_cond_id, SUM(volcsgrs) as ttl " + 
-					"FROM " + this.m_strTreeTable + " " + 
-					"GROUP BY biosum_cond_id) a " + 
-					"WHERE t.biosum_status_cd=9 AND " + 
-					"a.biosum_cond_id=t.biosum_cond_id;";
-
+                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, volcsgrs) " +
+                    "SELECT DISTINCT(a.biosum_cond_id), a.tt1 AS volcsgrs " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(volcsgrs) AS tt1 " +
+                    "FROM " + this.m_strTreeTable + " GROUP BY biosum_cond_id) AS a " +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 25);
 
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-
-				p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-					"INNER JOIN cond_column_updates_work_table u " + 
-					"ON c.biosum_cond_id = u.biosum_cond_id " + 
-					"SET c.volcsgrs = u.volcsgrs;";
-
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET volcsgrs = u.volcsgrs " +
+                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
-
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 26);
 
-
 			//swd_volcsgrs      
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-
-				p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
+				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-				p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,swd_volcsgrs) " + 
-					"SELECT DISTINCT(a.biosum_cond_id),a.ttl as swd_volcsgrs  " + 
-					"FROM " + this.m_strTreeTable + " t, " + 
-					"(SELECT biosum_cond_id, SUM(volcsgrs) as ttl " + 
-					"FROM " + this.m_strTreeTable + " " + 
-					"WHERE SPCD < 300 " + 
-					"GROUP BY biosum_cond_id ) a " + 
-					"WHERE t.biosum_status_cd=9 AND " + 
-					"a.biosum_cond_id=t.biosum_cond_id;";
-
+                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, swd_volcsgrs) " +
+                    "SELECT DISTINCT(a.biosum_cond_id), a.ttl AS swd_volcsgrs " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(volcsgrs) AS ttl " +
+                    "FROM " + this.m_strTreeTable + " WHERE spcd < 300 GROUP BY biosum_cond_id) AS a " +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 27);
 
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-
-				p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-					"INNER JOIN cond_column_updates_work_table u " + 
-					"ON c.biosum_cond_id = u.biosum_cond_id " + 
-					"SET c.SWD_volcsgrs = u.SWD_volcsgrs";
-
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET swd_volcsgrs = u.swd_volcsgrs " +
+                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 28);
 
 			//hwd_volcsgrs      
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-
-				p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
+				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-				p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,hwd_volcsgrs) " + 
-					"SELECT DISTINCT(a.biosum_cond_id),a.ttl as hwd_volcsgrs  " + 
-					"FROM " + this.m_strTreeTable + " t, " + 
-					"(SELECT biosum_cond_id, SUM(volcsgrs) as ttl " + 
-					"FROM " + this.m_strTreeTable + " " + 
-					"WHERE SPCD > 299 " + 
-					"GROUP BY biosum_cond_id ) a " + 
-					"WHERE t.biosum_status_cd=9 AND " + 
-					"a.biosum_cond_id=t.biosum_cond_id;";
-
+                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, hwd_volcsgrs) " +
+                    "SELECT DISTINCT(a.biosum_cond_id), a.ttl AS hwd_volcsgrs " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(volcsgrs) AS ttl " +
+                    "FROM " + this.m_strTreeTable + " WHERE spcd > 299 GROUP BY biosum_cond_id) AS a " +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 29);
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-
-				p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-					"INNER JOIN cond_column_updates_work_table u " + 
-					"ON c.biosum_cond_id = u.biosum_cond_id " + 
-					"SET c.HWD_volcsgrs = u.HWD_volcsgrs";
-
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET hwd_volcsgrs = u.hwd_volcsgrs " +
+                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 30);
 
             //qmd_all_inch 
             // quadratic mean diameter for all the live trees on the condition
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-				p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
+				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-				p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,qmd_all_inch) " +
-                    "SELECT c.biosum_cond_id, SQR(c.ba_ft2_ac/(.005454154 * c.tpacurr)) as qmd_all_inch " + 
-					"FROM " + this.m_strCondTable + " c " + 
-					"WHERE c.biosum_status_cd=9 AND " + 
-						    "c.ba_ft2_ac IS NOT NULL AND " + 
-							"c.ba_ft2_ac <> 0 AND " + 
-						    "c.tpacurr IS NOT NULL AND " + 
-						    "c.tpacurr <> 0;";
-
-				strTime = System.DateTime.Now.ToString();
+                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, qmd_all_inch) " +
+                    "SELECT c.biosum_cond_id, SQRT(c.ba_ft2_ac / (.005454154 * c.tpacurr)) AS qmd_all_inch " +
+                    "FROM " + this.m_strCondTable + " AS c " +
+                    "WHERE c.biosum_status_cd = 9 AND c.ba_ft2_ac IS NOT NULL " +
+                    "AND c.ba_ft2_ac <> 0 AND c.tpacurr IS NOT NULL AND c.tpacurr <> 0";
+                strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 31);
 
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-
-				p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-					"INNER JOIN cond_column_updates_work_table u " + 
-					"ON c.biosum_cond_id = u.biosum_cond_id " +
-                    "SET c.qmd_all_inch = u.qmd_all_inch;";
-
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET qmd_all_inch = u.qmd_all_inch " +
+                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
-
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 32);
 
-
             //qmd_swd_inch      
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
+				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-					p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-
-					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,qmd_swd_inch) " +
-                        "SELECT c.biosum_cond_id, SQR(c.swd_ba_ft2_ac/(.005454154 * c.swd_tpacurr)) as qmd_swd_inch " + 
-						"FROM " + this.m_strCondTable + " c " + 
-						"WHERE c.biosum_status_cd=9 AND " + 
-						"c.swd_ba_ft2_ac IS NOT NULL AND " + 
-						"c.swd_ba_ft2_ac <> 0 AND " + 
-						"c.swd_tpacurr IS NOT NULL AND " + 
-						"c.swd_tpacurr <> 0;";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
+                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, qmd_swd_inch) " +
+                    "SELECT c.biosum_cond_id, SQRT(c.swd_ba_ft2_ac / (.005454154 * c.swd_tpacurr)) AS qmd_swd_inch " +
+                    "FROM " + this.m_strCondTable + " AS c " +
+                    "WHERE c.biosum_status_cd = 9 AND c.swd_ba_ft2_ac IS NOT NULL AND c.swd_ba_ft2_ac <> 0 " +
+                    "AND c.swd_tpacurr IS NOT NULL AND c.swd_tpacurr <> 0";
+                strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 33);
 
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-
-				p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-					"INNER JOIN cond_column_updates_work_table u " + 
-					"ON c.biosum_cond_id = u.biosum_cond_id " +
-                    "SET c.qmd_swd_inch = u.qmd_swd_inch";
-
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET qmd_swd_inch = u.qmd_swd_inch " +
+                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 34);
 
             // qmd_hwd_inch    
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-
-				p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
+				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-				p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id, qmd_hwd_inch) " +
-                    "SELECT c.biosum_cond_id, SQR(c.hwd_ba_ft2_ac/(.005454154 * c.hwd_tpacurr)) as qmd_hwd_inch " + 
-					"FROM " + this.m_strCondTable + " c " + 
-					"WHERE c.biosum_status_cd=9 AND " + 
-					"c.hwd_ba_ft2_ac IS NOT NULL AND " + 
-					"c.hwd_ba_ft2_ac <> 0 AND " + 
-					"c.hwd_tpacurr IS NOT NULL AND " + 
-					"c.hwd_tpacurr <> 0;";
-
-				strTime = System.DateTime.Now.ToString();
+                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, qmd_hwd_inch) " +
+                    "SELECT c.biosum_cond_id, SQRT(c.hwd_ba_ft2_ac / (.005454154 * c.hwd_tpacurr)) AS qmd_hwd_inch " +
+                    "FROM " + this.m_strCondTable + " AS c " +
+                    "WHERE c.biosum_status_cd = 9 AND c.hwd_ba_ft2_ac IS NOT NULL " +
+                    "AND c.hwd_ba_ft2_ac <> 0 AND c.hwd_tpacurr IS NOT NULL AND c.hwd_tpacurr <> 0";
+                strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 35);
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-
-				p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-					"INNER JOIN cond_column_updates_work_table u " + 
-					"ON c.biosum_cond_id = u.biosum_cond_id " +
-                    "SET c.qmd_hwd_inch = u.qmd_hwd_inch";
-
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET qmd_hwd_inch = u.qmd_hwd_inch " +
+                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 36);
 
-
-
 			//VOL_AC_GRS_STEM_TTL_FT
             //gross wood volume of the total stem from ground to tip
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-				p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
+				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-            p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table(biosum_cond_id, vol_ac_grs_stem_ttl_ft3) " +
-                "SELECT DISTINCT(a.biosum_cond_id),a.ttl as vol_ac_grs_stem_ttl_ft3 " +
-                "FROM " + this.m_strTreeTable + " t, " +
-                "(SELECT biosum_cond_id, SUM(voltsgrs * tpacurr) as ttl " +
-                "FROM " + this.m_strTreeTable + " " +
-                "WHERE voltsgrs IS NOT NULL AND tpacurr IS NOT NULL AND statuscd = 1 AND dia >= 1 " +
-                "GROUP BY biosum_cond_id ) a " +
-                "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
-
+                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, vol_ac_grs_stem_ttl_ft3) " +
+                    "SELECT DISTINCT(a.biosum_cond_id), a.ttl AS vol_ac_grs_stem_ttl_ft3 " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(voltsgrs * tpacurr) AS ttl " +
+                    "FROM " + this.m_strTreeTable + " WHERE voltsgrs IS NOT NULL AND tpacurr IS NOT NULL " +
+                    "AND statuscd = 1 AND dia >= 1 GROUP BY biosum_cond_id) AS a " +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
                 strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 37);
 
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-
-				p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-					"INNER JOIN cond_column_updates_work_table u " + 
-					"ON c.biosum_cond_id = u.biosum_cond_id " + 
-					"SET c.vol_ac_grs_stem_ttl_ft3 = u.vol_ac_grs_stem_ttl_ft3;";
-
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET vol_ac_grs_stem_ttl_ft3 = u.vol_ac_grs_stem_ttl_ft3 " +
+                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
-
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 38);
 
-
 			//hwd_vol_ac_grs_stem_ttl_ft
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-
-				p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
+				SQLite.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-            p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table(biosum_cond_id, hwd_vol_ac_grs_stem_ttl_ft3) " +
-                "SELECT DISTINCT(a.biosum_cond_id),a.ttl as  hwd_vol_ac_grs_stem_ttl_ft3 " +
-                "FROM " + this.m_strTreeTable + " t, " +
-                "(SELECT biosum_cond_id, SUM(voltsgrs * tpacurr) as ttl " +
-                "FROM " + this.m_strTreeTable + " " +
-                "WHERE spcd > 299 AND voltsgrs IS NOT NULL AND tpacurr IS NOT NULL AND statuscd = 1 AND dia >= 1 " +
-                "GROUP BY biosum_cond_id ) a " +
-                "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
-
+                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, hwd_vol_ac_grs_stem_ttl_ft3) " +
+                    "SELECT DISTINCT(a.biosum_cond_id), a.ttl AS hwd_vol_ac_grs_stem_ttl_ft3 " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(voltsgrs * tpacurr) AS ttl " +
+                    "FROM " + this.m_strTreeTable + " WHERE spcd > 299 AND voltsgrs IS NOT NULL " +
+                    "AND tpacurr IS NOT NULL AND statuscd = 1 AND dia >= 1 GROUP BY biosum_cond_id) AS a " +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
                 strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 39);
 
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-
-				p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-					"INNER JOIN cond_column_updates_work_table u " + 
-					"ON c.biosum_cond_id = u.biosum_cond_id " + 
-					"SET c.hwd_vol_ac_grs_stem_ttl_ft3 = u.hwd_vol_ac_grs_stem_ttl_ft3";
-
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET hwd_vol_ac_grs_stem_ttl_ft3 = u.hwd_vol_ac_grs_stem_ttl_ft3 " +
+                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn,SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
 				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 40);
 
 			//swd_vol_ac_grs_stem_ttl_ft     
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-
-				p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
+				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table(biosum_cond_id, swd_vol_ac_grs_stem_ttl_ft3) " +
-                "SELECT DISTINCT(a.biosum_cond_id),a.ttl as swd_vol_ac_grs_stem_ttl_ft3 " +
-                "FROM " + this.m_strTreeTable + " t, " +
-                "(SELECT biosum_cond_id, SUM(voltsgrs * tpacurr) as ttl " +
-                "FROM " + this.m_strTreeTable + " " +
-                "WHERE spcd< 300 AND voltsgrs IS NOT NULL AND tpacurr IS NOT NULL AND statuscd = 1 AND dia >= 1 " +
-                "GROUP BY biosum_cond_id ) a " +
-                "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
-
+                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table(biosum_cond_id, swd_vol_ac_grs_stem_tl_ft3) " +
+                    "SELECT DISTINCT(a.biosum_cond_id), a.ttl AS swd_vol_ac_grs_stem_ttl_ft3 " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(voltsgrs * tpacurr) AS ttl " +
+                    "FROM " + this.m_strTreeTable + " WHERE spcd < 300 AND voltsgrs IS NOT NULL " +
+                    "AND tpacurr IS NOT NULL AND statuscd = 1 AND dia >= 1 GROUP BY biosum_cond_id) AS a " +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
                 strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 41);
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-
-				p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-					"INNER JOIN cond_column_updates_work_table u " + 
-					"ON c.biosum_cond_id = u.biosum_cond_id " + 
-					"SET c.swd_vol_ac_grs_stem_ttl_ft3 = u.swd_vol_ac_grs_stem_ttl_ft3";
-
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET swd_vol_ac_grs_stem_ttl_ft3 = u.swd_vol_ac_grs_stem_ttl_ft3 " +
+                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 42);
+
+
 			//----------------------PLOT COLUMN UPDATES-----------------------//
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//----------------------PLOT COLUMN UPDATES-----------------------//\r\n");
-            SetThermValue(m_frmTherm.progressBar1, "Maximum", 4);
+            SetThermValue(m_frmTherm.progressBar1, "Maximum", 5);
             SetThermValue(m_frmTherm.progressBar1, "Minimum", 0);
             SetThermValue(m_frmTherm.progressBar1, "Value", 0);
             SetLabelValue(m_frmTherm.lblMsg,"Text","Updating Plot Table Columns...Stand By");
@@ -4560,86 +4427,90 @@ namespace FIA_Biosum_Manager
                 /********************************************
 				 **update fvs_variant and fvs_loc_cd
 				 ********************************************/
+                string strPlotGeomTable = "FIADB.PLOTGEOM";
+                SQLite.m_strSQL = "UPDATE " + this.m_strPlotTable + " AS p " +
+                    "SET fvs_variant = g.fvs_variant, fvs_loc_cd = g.fvs_loc_cd " +
+                    "FROM " + strPlotGeomTable + " AS g " +
+                    "WHERE TRIM(g.cn) = p.cn";
+                strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+                strTime += " " + System.DateTime.Now.ToString();
             }
+            SetThermValue(m_frmTherm.progressBar1, "Value", 1);
 
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-
 				/********************************************
 				 **update the plot half state field
 				 ********************************************/
-				p_ado.m_strSQL = "UPDATE " + this.m_strPlotTable + " p " + 
-					" INNER JOIN " + this.m_strCondTable + " c " + 
-					"ON p.biosum_plot_id = c.biosum_plot_id  " + 
-					" SET p.half_state = MID(c.vol_loc_grp,5,LEN(TRIM(c.vol_loc_grp))) " + 
-					" WHERE c.condid=1;";
-
+                SQLite.m_strSQL = "UPDATE " + this.m_strPlotTable + " AS p " +
+                    "SET half_state = SUBSTR(c.vol_loc_grp, 5, LENGTH(TRIM(c.vol_loc_grp))) " +
+                    "FROM " + this.m_strCondTable + " AS c " +
+                    "WHERE p.biosum_plot_id = c.biosum_plot_id AND c.condid = 1";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
-
-				
-				 
 			}
-            SetThermValue(m_frmTherm.progressBar1, "Value", 1);
+            SetThermValue(m_frmTherm.progressBar1, "Value", 2);
 
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
 				/***************************************************
 				 **update the number of conditions on each plot
 				 ***************************************************/
 				//use the biosum_plot_input as our work table so delete all records
-				p_ado.m_strSQL = "DELETE FROM plot_column_updates_work_table ";
+				SQLite.m_strSQL = "DELETE FROM TEMP.plot_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
 				//insert the condition counts into the work table
-				p_ado.m_strSQL = "INSERT INTO plot_column_updates_work_table (biosum_plot_id, cond_ttl) " + 
-					" SELECT biosum_plot_id , COUNT(biosum_plot_id) " + 
-					" FROM " + this.m_strCondTable + 
-					" GROUP BY biosum_plot_id;";
+                SQLite.m_strSQL = "INSERT INTO TEMP.plot_column_updates_work_table (biosum_plot_id, cond_ttl) " +
+                    "SELECT biosum_plot_id, COUNT(biosum_plot_id) " +
+                    "FROM " + this.m_strCondTable + " GROUP BY biosum_plot_id";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-			}
-            SetThermValue(m_frmTherm.progressBar1, "Value", 2);
-
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-			{
-
-				p_ado.m_strSQL = "UPDATE " + this.m_strPlotTable  + " p " + 
-					"INNER JOIN plot_column_updates_work_table i " + 
-					"ON  p.biosum_plot_id = i.biosum_plot_id " + 
-					"SET p.num_cond = i.cond_ttl, p.one_cond_yn = IIF(i.cond_ttl > 1,'N','Y');";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 3);
 
-		    //Set plot.gis_yard_dist_ft to fiadb_fvs_variant.MoveDistance_ft if available
-		    if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-		    {
-		        if (p_ado.ColumnExist(this.m_connTempMDBFile, Tables.Reference.DefaultFiadbFVSVariantTableName, "MoveDistance_ft"))
-		        {
-		            p_ado.m_strSQL = String.Format(
-		                @"UPDATE {0} p INNER JOIN {1} ffv 
-                        ON p.statecd=ffv.statecd and p.countycd=ffv.countycd and p.plot=ffv.plot 
-                        SET p.gis_yard_dist_ft=ffv.MoveDistance_ft 
-                        WHERE ffv.MoveDistance_ft IS NOT NULL and p.biosum_status_cd=9;",
-		                m_strPlotTable, Tables.Reference.DefaultFiadbFVSVariantTableName);
-		            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-		                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-		            p_ado.SqlNonQuery(this.m_connTempMDBFile, p_ado.m_strSQL);
-		        }
-		    }
-		    SetThermValue(m_frmTherm.progressBar1, "Value", 4);
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strPlotTable + " AS p " +
+                    "SET num_cond = i.cond_ttl, one_cond_yn = CASE WHEN i.cond_ttl > 1 THEN 'N' ELSE 'Y' " +
+                    "FROM TEMP.plot_column_updates_work_table AS i " +
+                    "WHERE p.biosum_plot_id = i.biosum_plot_id";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 4);
 
-		    return p_ado.m_intError;
+		    //Set plot.gis_yard_dist_ft based on rddistcd using crosswalk table in ref_master.db
+		    if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+		    {
+                string strRefMasterDb = frmMain.g_oEnv.strAppDir + Tables.Reference.DefaultRefMasterDbFile;
+                SQLite.m_strSQL = "ATTACH DATABASE '" + strRefMasterDb + "' AS REFMASTER";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+                string strDistXrefTable = "REFMASTER.road_class_to_ft_xref";
+                SQLite.m_strSQL = "UPDATE " + this.m_strPlotTable + " AS p " +
+                    "SET gis_yard_dist_ft = x.distance_ft " +
+                    "FROM " + strDistXrefTable + " AS x " +
+                    "WHERE x.RDDISTCD = p.RDDISTCD";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            }
+		    SetThermValue(m_frmTherm.progressBar1, "Value", 5);
+
+		    return SQLite.m_intError;
 		}
 
 	    private int ImportDownWoodyMaterials(ado_data_access p_ado)
