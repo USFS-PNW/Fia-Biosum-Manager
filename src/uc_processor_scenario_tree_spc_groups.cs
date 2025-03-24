@@ -765,6 +765,8 @@ namespace FIA_Biosum_Manager
             set { _strScenarioId = value; }
         }
 
+        private SQLite.ADO.DataMgr SQLite { get; set; } = new SQLite.ADO.DataMgr();
+
         public void loadvalues()
         {
 
@@ -818,9 +820,10 @@ namespace FIA_Biosum_Manager
                 System.Threading.Thread.Sleep(5000);
             }
 
+            //@ToDo: Changed this to compile; Won't work until SQLite connection is established
             strSqlCommandList = Queries.Processor.AuditFvsOut_SelectIntoUnionOfFVSTreeTablesUsingListArray(
-                m_ado,
-                m_ado.m_OleDbConnection,
+                SQLite,
+                SQLite.m_Connection,
                 "fvsouttreetemp2",
                 "fvs_tree_id,fvs_variant,fvs_species,FvsCreatedTree_YN,biosum_cond_id");
 

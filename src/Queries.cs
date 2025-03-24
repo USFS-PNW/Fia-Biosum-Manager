@@ -5712,23 +5712,26 @@ namespace FIA_Biosum_Manager
 				return strSql;
 				
 			}
-            public static List<string> AuditFvsOut_SelectIntoUnionOfFVSTreeTablesUsingListArray(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strIntoTable, string p_strColumnList)
+            public static List<string> AuditFvsOut_SelectIntoUnionOfFVSTreeTablesUsingListArray(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strIntoTable, string p_strColumnList)
             {
                 List<string> strList = new List<string>();
-                string strSql = "";
+                string strSql;
 
                 // This is an update from the original implementation when all the cut lists were in separate databases
                 // No more need to generate multiple sql statements by variant, rxpackage
-                if (p_oAdo.TableExist(p_oConn, Tables.FVS.DefaultFVSCutTreeTableName))
+                if (p_oDataMgr.AttachedTableExist(p_oConn, Tables.FVS.DefaultFVSCutTreeTableName))
                 {
                     strSql = $@"SELECT count(*) FROM {Tables.FVS.DefaultFVSCutTreeTableName}";
-                    long lngCount = p_oAdo.getRecordCount(p_oAdo.m_OleDbConnection, strSql, Tables.FVS.DefaultFVSCutTreeTableName);
+                    long lngCount = p_oDataMgr.getRecordCount(p_oConn, strSql, Tables.FVS.DefaultFVSCutTreeTableName);
                     if (lngCount > 0)
                     {
-                        strSql = $@"SELECT DISTINCT { p_strColumnList}
-                        INTO {p_strIntoTable} FROM {Tables.FVS.DefaultFVSCutTreeTableName}";
+                        //strSql = $@"SELECT DISTINCT { p_strColumnList}
+                        //INTO {p_strIntoTable} FROM {Tables.FVS.DefaultFVSCutTreeTableName}";
+                        strSql = $@"CREATE TABLE {p_strIntoTable} AS SELECT DISTINCT {p_strColumnList} FROM {Tables.FVS.DefaultFVSCutTreeTableName}";
                         strList.Add(strSql);
-                    }                           
+                        strSql = $@"CREATE TABLE fvsouttreetemp AS SELECT DISTINCT * FROM {p_strIntoTable}";
+                        strList.Add(strSql);
+                    }
                 }
                 return strList;
             }
