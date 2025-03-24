@@ -2961,8 +2961,8 @@ namespace FIA_Biosum_Manager
 				string strSpCd = this.lstAudit.SelectedItems[0].SubItems[1].Text.Trim();
 				for (int x=0;x<=p_cm.Count-1;x++)
 				{
-					string strVariantCellValue = this.m_dg[x,1].ToString().Trim();
-					string strSpCdCellValue = m_dg[x,2].ToString().Trim();
+					string strVariantCellValue = this.m_dg[x,0].ToString().Trim();
+					string strSpCdCellValue = m_dg[x,1].ToString().Trim();
 					if (strVariantCellValue == strVariant && strSpCd == strSpCdCellValue)
 					{
 						m_dg.CurrentRowIndex = x;
