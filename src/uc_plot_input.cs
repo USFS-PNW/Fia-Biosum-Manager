@@ -3404,6 +3404,14 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
 			SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
+            //Set spcd to 998 is it is 4 digits long
+            SetLabelValue(m_frmTherm.lblMsg, "Text", "Updating Tree spcd Column...Stand By");
+            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
+            SQLite.m_strSQL = "UPDATE " + this.m_strTreeTable + " SET spcd = 998 WHERE spcd > 999";
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
             //
             //drybiot,drybiom,voltsgrs processing
             //                   
