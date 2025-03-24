@@ -4883,19 +4883,34 @@ namespace FIA_Biosum_Manager
                 public static string WriteCalculatedVolumeAndBiomassColumnsToTreeTable(
                     string p_strBiosumCalcOutputTable)
                 {
-                    return $@"UPDATE {frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName} t 
-                                INNER JOIN {Tables.VolumeAndBiomass.BiosumCalcOutputTable} o ON t.CN = o.TRE_CN
-                                SET t.volcfgrs=IIF(o.VOLCFGRS_CALC IS NOT NULL, o.VOLCFGRS_CALC, null),
-                                t.volcfnet=IIF(o.VOLCFNET_CALC IS NOT NULL, o.VOLCFNET_CALC, null),
-                                t.volcfsnd=IIF(o.VOLCFSND_CALC IS NOT NULL, o.VOLCFSND_CALC, null),
-                                t.volcsgrs=IIF(o.VOLCSGRS_CALC IS NOT NULL, o.VOLCSGRS_CALC, null),
-                                t.voltsgrs=IIF(o.VOLTSGRS_CALC IS NOT NULL,o.VOLTSGRS_CALC,null),
-                                t.drybiom=IIF(t.DRYBIOM IS NULL,o.DRYBIOM_CALC,t.DRYBIOM),
-                                t.drybiot=IIF(t.DRYBIOT IS NULL,o.DRYBIOT_CALC,t.DRYBIOT),
-                                t.drybio_bole=IIF(o.DRYBIO_BOLE_CALC IS NOT NULL, o.DRYBIO_BOLE_CALC, null),
-                                t.drybio_top=IIF(o.DRYBIO_TOP_CALC IS NOT NULL, o.DRYBIO_TOP_CALC, null),
-                                t.drybio_sapling=IIF(o.DRYBIO_SAPLING_CALC IS NOT NULL, o.DRYBIO_SAPLING_CALC, null),
-                                t.drybio_wdld_spp=IIF(o.DRYBIO_WDLD_SPP_CALC IS NOT NULL, o.DRYBIO_WDLD_SPP_CALC, null)";
+                    //return $@"UPDATE {frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName} t 
+                    //            INNER JOIN {Tables.VolumeAndBiomass.BiosumCalcOutputTable} o ON t.CN = o.TRE_CN
+                    //            SET t.volcfgrs=IIF(o.VOLCFGRS_CALC IS NOT NULL, o.VOLCFGRS_CALC, null),
+                    //            t.volcfnet=IIF(o.VOLCFNET_CALC IS NOT NULL, o.VOLCFNET_CALC, null),
+                    //            t.volcfsnd=IIF(o.VOLCFSND_CALC IS NOT NULL, o.VOLCFSND_CALC, null),
+                    //            t.volcsgrs=IIF(o.VOLCSGRS_CALC IS NOT NULL, o.VOLCSGRS_CALC, null),
+                    //            t.voltsgrs=IIF(o.VOLTSGRS_CALC IS NOT NULL,o.VOLTSGRS_CALC,null),
+                    //            t.drybiom=IIF(t.DRYBIOM IS NULL,o.DRYBIOM_CALC,t.DRYBIOM),
+                    //            t.drybiot=IIF(t.DRYBIOT IS NULL,o.DRYBIOT_CALC,t.DRYBIOT),
+                    //            t.drybio_bole=IIF(o.DRYBIO_BOLE_CALC IS NOT NULL, o.DRYBIO_BOLE_CALC, null),
+                    //            t.drybio_top=IIF(o.DRYBIO_TOP_CALC IS NOT NULL, o.DRYBIO_TOP_CALC, null),
+                    //            t.drybio_sapling=IIF(o.DRYBIO_SAPLING_CALC IS NOT NULL, o.DRYBIO_SAPLING_CALC, null),
+                    //            t.drybio_wdld_spp=IIF(o.DRYBIO_WDLD_SPP_CALC IS NOT NULL, o.DRYBIO_WDLD_SPP_CALC, null)";
+
+                    return "UPDATE " + frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName + " AS t " +
+                        "SET volcfgrs = CASE WHEN o.volcfgrs_calc IS NOT NULL THEN o.volcfgrs_calc ELSE NULL END, " +
+                        "volcfnet = CASE WHEN o.volcfnet_calc IS NOT NULL THEN o.volcfnet_calc ELSE NULL END, " +
+                        "volcfsnd = CASE WHEN o.volcfsnd_calc IS NOT NULL THEN o.volcfsnd_calc ELSE NULL END, " +
+                        "volcsgrs = CASE WHEN o.volcsgrs_calc IS NOT NULL THEN o.volcsgrs_calc ELSE NULL END, " +
+                        "voltsgrs = CASE WHEN o.voltsgrs_calc IS NOT NULL THEN o.voltsgrs_calc ELSE NULL END, " +
+                        "drybiom = CASE WHEN t.drybiom IS NULL THEN o.drybiom_calc ELSE t.drybiom END, " +
+                        "drybiot = CASE WHEN t.drybiot IS NULL END o.drybiot_calc ELSE t.drybiot END, " +
+                        "drybio_bole = CASE WHEN o.drybio_bole_calc IS NOT NULL THEN o.drybio_bole_calc ELSE NULL END, " +
+                        "drybio_top = CASE WHEN o.drybio_top_calc IS NOT NULL THEN o.drybio_top_calc ELSE NULL END, " +
+                        "drybio_sapling = CASE WHEN o.drybio_sapling_calc IS NOT NULL THEN o.drybio_sapling_calc ELSE NULL, " +
+                        "drybio_wdld_spp = CASE WHEN o.drybio_wdld_spp_calc IS NOT NULL THEN o.drybio_wdld_spp_calc ELSE NULL END " +
+                        "FROM " + p_strBiosumCalcOutputTable + " AS o " +
+                        "WHERE t.cn = o.tre_cn";
                 }
             }
 
