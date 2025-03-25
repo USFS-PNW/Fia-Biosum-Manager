@@ -4815,7 +4815,7 @@ namespace FIA_Biosum_Manager
                     return "UPDATE " + p_strInputVolumesTable + " AS i " +
                         "SET vol_loc_grp = CASE WHEN INSTR(c.vol_loc_grp, '22') > 0 THEN 'S26LEOR' ELSE c.vol_loc_grp END, " +
                         "statuscd = CASE WHEN i.statuscd IS NULL THEN 1 ELSE i.statuscd END, " +
-                        "cull = CASE WHEN i.cull NULL THEN 0 ELSE i.cull END, " +
+                        "cull = CASE WHEN i.cull IS NULL THEN 0 ELSE i.cull END, " +
                         "roughcull = CASE WHEN i.roughcull IS NULL THEN 0 ELSE i.roughcull END, " +
                         "decaycd = CASE WHEN i.decaycd IS NULL THEN 0 ELSE i.decaycd END " +
                         "FROM " + p_strFIACondTable + " AS c WHERE i.cnd_cn = c.biosum_cond_id";
@@ -4904,10 +4904,10 @@ namespace FIA_Biosum_Manager
                         "volcsgrs = CASE WHEN o.volcsgrs_calc IS NOT NULL THEN o.volcsgrs_calc ELSE NULL END, " +
                         "voltsgrs = CASE WHEN o.voltsgrs_calc IS NOT NULL THEN o.voltsgrs_calc ELSE NULL END, " +
                         "drybiom = CASE WHEN t.drybiom IS NULL THEN o.drybiom_calc ELSE t.drybiom END, " +
-                        "drybiot = CASE WHEN t.drybiot IS NULL END o.drybiot_calc ELSE t.drybiot END, " +
+                        "drybiot = CASE WHEN t.drybiot IS NULL THEN o.drybiot_calc ELSE t.drybiot END, " +
                         "drybio_bole = CASE WHEN o.drybio_bole_calc IS NOT NULL THEN o.drybio_bole_calc ELSE NULL END, " +
                         "drybio_top = CASE WHEN o.drybio_top_calc IS NOT NULL THEN o.drybio_top_calc ELSE NULL END, " +
-                        "drybio_sapling = CASE WHEN o.drybio_sapling_calc IS NOT NULL THEN o.drybio_sapling_calc ELSE NULL, " +
+                        "drybio_sapling = CASE WHEN o.drybio_sapling_calc IS NOT NULL THEN o.drybio_sapling_calc ELSE NULL END, " +
                         "drybio_wdld_spp = CASE WHEN o.drybio_wdld_spp_calc IS NOT NULL THEN o.drybio_wdld_spp_calc ELSE NULL END " +
                         "FROM " + p_strBiosumCalcOutputTable + " AS o " +
                         "WHERE t.cn = o.tre_cn";

@@ -3164,7 +3164,7 @@ namespace FIA_Biosum_Manager
             SQLite.m_strSQL = "UPDATE " + strDestTable + " AS t " +
                 "SET biosum_cond_id = c.biosum_cond_id " +
                 "FROM " + m_strPlotTable + " AS p, " + m_strCondTable + " AS c " +
-                "WHERE c.biosum_plot_id = p.biosum_cond_id AND TRIM(p.cn) = TRIM(t.plt_cn) AND TRIM(t.condid) = TRIM(c.condid) " +
+                "WHERE c.biosum_plot_id = p.biosum_plot_id AND TRIM(p.cn) = TRIM(t.plt_cn) AND TRIM(t.condid) = TRIM(c.condid) " +
                 "AND t.biosum_cond_id = '9999999999999999999999999' AND p.biosum_status_cd=9";
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
@@ -3221,7 +3221,7 @@ namespace FIA_Biosum_Manager
 
         private void InsertIntoDestTableFromSourceTableSqlite (System.Data.SQLite.SQLiteConnection p_conn,
             string strSourceTable = null, string strDestTable = null,
-            string strFields = null, bool InsertBiosumCondIdAndStatusCode = false)
+            string strSourceFields = null, string strDestFields = null, bool InsertBiosumCondIdAndStatusCode = false)
         {
             string strInsertIntoValues = "INSERT INTO {0} ({1}) ";
             string strSelectColumns = "SELECT {2} FROM {3} AS f, {4} AS p ON f.plt_cn=p.cn;";
@@ -3229,9 +3229,9 @@ namespace FIA_Biosum_Manager
             {
                 strInsertIntoValues = "INSERT INTO {0} (biosum_cond_id, biosum_status_cd, {1}) ";
                 strSelectColumns =
-                    "SELECT '9999999999999999999999999' AS biosum_cond_id, 9 AS biosum_status_cd, {1} FROM {3} AS f, {4} p ON f.plt_cn=trim(p.cn);";
+                    "SELECT '9999999999999999999999999' AS biosum_cond_id, 9 AS biosum_status_cd, {2} FROM {3} AS f, {4} AS p ON f.plt_cn=trim(p.cn);";
             }
-            SQLite.m_strSQL = String.Format(strInsertIntoValues + strSelectColumns, strDestTable, strFields, strSourceTable, "templot");
+            SQLite.m_strSQL = String.Format(strInsertIntoValues + strSelectColumns, strDestTable, strDestFields, strSourceFields, strSourceTable, "tempplot");
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
             SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
@@ -3301,7 +3301,7 @@ namespace FIA_Biosum_Manager
 			//update the condition proportion column
             SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
                 "SET condprop = CASE WHEN ps.pmh_macr IS NOT NULL AND ps.pmh_macr > 0 THEN c.condprop_unadj / ps.pmh_macr " +
-                "ELSE CASE WHEN ps.pmh_sub IS NOT NULL AND ps.mph_sub > 0 THEN c.condprop_unadj / ps.pmh_sub " +
+                "ELSE CASE WHEN ps.pmh_sub IS NOT NULL AND ps.pmh_sub > 0 THEN c.condprop_unadj / ps.pmh_sub " +
                 "ELSE CASE WHEN ps.pmh_micr IS NOT NULL AND ps.pmh_micr > 0 THEN c.condprop_unadj / ps.pmh_micr " +
                 "ELSE 0 END END END " +
                 "FROM " + this.m_strPpsaTable + " AS ppsa, " + this.m_strPlotTable + " AS p, " + this.m_strBiosumPopStratumAdjustmentFactorsTable + " AS ps " +
@@ -3318,7 +3318,7 @@ namespace FIA_Biosum_Manager
                 "SET acres = CASE WHEN c.condprop IS NOT NULL AND ps.expns IS NOT NULL " +
                 "THEN c.condprop * ps.expns ELSE 0 END " +
                 "FROM " + this.m_strPpsaTable + " AS ppsa, " + this.m_strPlotTable + " AS p, " + this.m_strBiosumPopStratumAdjustmentFactorsTable + " AS ps " +
-                "WHERE ppsa.plt_cn = p.cn AND ppsa.stratum_cdn = ps.stratum_cn AND c.biosum_plot_id = p.biosum_plot_id";
+                "WHERE ppsa.plt_cn = p.cn AND ppsa.stratum_cn = ps.stratum_cn AND c.biosum_plot_id = p.biosum_plot_id";
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
 			SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
@@ -3349,12 +3349,14 @@ namespace FIA_Biosum_Manager
             {
                 //got some nulls
                 SQLite.m_strSQL = "UPDATE " + m_strTreeTable + " AS t " +
-                    "SET condprop_specfic = CASE WHEN c.micrprop_unadj IS NOT NULL AND t.dia < 5 THEN c.micrprop_unadj " +
+                    "SET condprop_specific = CASE WHEN c.micrprop_unadj IS NOT NULL AND t.dia < 5 THEN c.micrprop_unadj " +
                     "ELSE CASE WHEN c.subpprop_unadj IS NOT NULL AND bp.MACRO_BREAKPOINT_DIA IS NOT NULL " +
                     "AND t.dia >= 5 AND t.dia < bp.MACRO_BREAKPOINT_DIA THEN c.subpprop_unadj " +
                     "ELSE CASE WHEN macrprop_unadj IS NOT NULL AND bp.MACRO_BREAKPOINT_DIA IS NOT NULL " +
                     "AND t.dia >= bp.MACRO_BREAKPOINT_DIA THEN c.macrprop_unadj END END END " +
-                    "WHERE t.biosum_status_cd = 9";
+                    "FROM " + this.m_strCondTable + " AS c, " + this.m_strPlotTable + " AS p, " + this.m_strTreeMacroPlotBreakPointDiaTable + " AS bp " +
+                    "WHERE c.biosum_plot_id = p.biosum_plot_id AND p.statecd = bp.statecd AND p.unitcd = bp.unitcd " +
+                    "AND t.biosum_cond_id = c.biosum_cond_id AND t.biosum_status_cd = 9";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
                 SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
@@ -3398,7 +3400,7 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
 			//update tree tpacurr column
             SQLite.m_strSQL = "UPDATE " + this.m_strTreeTable +
-                " SET tpacurr = CASE WHEN t.tpa_unadj IS NOT NULL AND condprop_specific IS NOT NULL " +
+                " SET tpacurr = CASE WHEN tpa_unadj IS NOT NULL AND condprop_specific IS NOT NULL " +
                 "THEN tpa_unadj / condprop_specific ELSE 0 END";
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
@@ -3419,8 +3421,8 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
 
             //step 5 - delete and create work table
-            string strFcsBiosumVolumesInputTable = "TEMP." + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable;
-            if (SQLite.AttachedTableExist(p_conn, strFcsBiosumVolumesInputTable))
+            string strFcsBiosumVolumesInputTable = "TEMPDB." + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable;
+            if (SQLite.AttachedTableExist(p_conn, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable))
             {
                 SQLite.SqlNonQuery(p_conn, "DROP TABLE " + strFcsBiosumVolumesInputTable);
             }
@@ -3444,7 +3446,7 @@ namespace FIA_Biosum_Manager
                 Tuple.Create("CULLFORM", "CULLFORM"),
                 Tuple.Create("CULLMSTOP", "CULLMSTOP"),
                 Tuple.Create("CULL_FLD", "CULL_FLD"),
-                Tuple.Create("DIA", "CASE WHEN DIA IS NOT NULL THEN ROUND(DIA, 2) ELSE DIA)"),
+                Tuple.Create("DIA", "CASE WHEN DIA IS NOT NULL THEN ROUND(DIA, 2) ELSE DIA END"),
                 Tuple.Create("DIAHTCD", "DIAHTCD"),
                 Tuple.Create("FORMCL", "FORMCL"),
                 Tuple.Create("HT", "HT"),
@@ -3491,8 +3493,8 @@ namespace FIA_Biosum_Manager
             SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
             //populate treeclcd column
-            string strCullTotalWorkTable = "TEMP.cull_total_work_table";
-            if (SQLite.AttachedTableExist(p_conn, strCullTotalWorkTable))
+            string strCullTotalWorkTable = "TEMPDB.cull_total_work_table";
+            if (SQLite.AttachedTableExist(p_conn, "cull_total_work_table"))
             {
                 SQLite.SqlNonQuery(p_conn, "DROP TABLE " + strCullTotalWorkTable);
             }
@@ -3514,10 +3516,11 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
             SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-            string strWorkTable = "TEMP." + Tables.VolumeAndBiomass.SqliteWorkTable;
+            string strWorkTable = "TEMPDB." + Tables.VolumeAndBiomass.SqliteWorkTable;
             frmMain.g_oTables.m_oFvs.CreateSqliteInputFCSBiosumVolumesWorkTable(SQLite, p_conn, strWorkTable);
-            SQLite.m_strSQL = $@"INSERT INTO {strWorkTable} 
-                                SELECT * FROM {strFcsBiosumVolumesInputTable}";
+            string strInputFields = SQLite.getFieldNames(p_conn, "SELECT * FROM " + strFcsBiosumVolumesInputTable);
+            SQLite.m_strSQL = "INSERT INTO " + strWorkTable + " (" + strInputFields + ") " +
+                "SELECT * FROM " + strFcsBiosumVolumesInputTable;
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
             SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
@@ -3557,7 +3560,8 @@ namespace FIA_Biosum_Manager
                 //
                 //Insert into fcs_tree.biosum_calc
                 //
-                SQLite.m_strSQL = "INSERT INTO FCS." + Tables.VolumeAndBiomass.BiosumVolumeCalcTable + " SELECT * FROM " + strWorkTable;
+                SQLite.m_strSQL = "INSERT INTO FCS." + Tables.VolumeAndBiomass.BiosumVolumeCalcTable + "( " + strInputFields + ") " +
+                    " SELECT " + strInputFields + " FROM " + strWorkTable;
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
                 SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
@@ -3590,29 +3594,32 @@ namespace FIA_Biosum_Manager
                 //
                 if (m_intError == 0)
                 {
-                    SQLite.m_strSQL = "DROP TABLE TEMP." + Tables.VolumeAndBiomass.BiosumCalcOutputTable;
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
-                    SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+                    if (SQLite.AttachedTableExist(p_conn, Tables.VolumeAndBiomass.BiosumCalcOutputTable))
+                    {
+                        SQLite.m_strSQL = "DROP TABLE TEMPDB." + Tables.VolumeAndBiomass.BiosumCalcOutputTable;
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+                        SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+                    }
 
-                    SQLite.m_strSQL = "CREATE TABLE TEMP." + Tables.VolumeAndBiomass.BiosumCalcOutputTable +
+                    SQLite.m_strSQL = "CREATE TABLE TEMPDB." + Tables.VolumeAndBiomass.BiosumCalcOutputTable +
                         " AS SELECT * FROM " + strFcsBiosumVolumesInputTable + " WHERE 1 = 2";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
                     SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                    SQLite.m_strSQL = "INSERT INTO TEMP." + Tables.VolumeAndBiomass.BiosumCalcOutputTable +
-                        " SELECT * FROM FCS." + Tables.VolumeAndBiomass.BiosumVolumeCalcTable +
+                    string strOutputFields = SQLite.getFieldNames(p_conn, "SELECT * FROM TEMPDB." + Tables.VolumeAndBiomass.BiosumCalcOutputTable);
+                    SQLite.m_strSQL = "INSERT INTO TEMPDB." + Tables.VolumeAndBiomass.BiosumCalcOutputTable + " (" + strOutputFields + ") " +
+                        "SELECT " + strOutputFields + " FROM FCS." + Tables.VolumeAndBiomass.BiosumVolumeCalcTable +
                         " WHERE VOLTSGRS_CALC IS NOT NULL AND TRE_CN IS NOT NULL";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
                     SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
                     //update VOLTSGRS
-                    SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.WriteCalculatedVolumeAndBiomassColumnsToTreeTable("TEMP." + Tables.VolumeAndBiomass.BiosumCalcOutputTable);
+                    SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.WriteCalculatedVolumeAndBiomassColumnsToTreeTable("TEMPDB." + Tables.VolumeAndBiomass.BiosumCalcOutputTable);
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
-                    SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
                     SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
                 }
 
@@ -3628,7 +3635,7 @@ namespace FIA_Biosum_Manager
             //for live trees >= 5 inches in diameter 
             if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, tpacurr) " +
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, tpacurr) " +
                     "SELECT DISTINCT(a.biosum_cond_id), a.tottpa AS tpacurr " +
                     "FROM " + this.m_strTreeTable + " AS t, " +
                     "(SELECT biosum_cond_id, SUM(tpacurr) AS tottpa " +
@@ -3646,7 +3653,7 @@ namespace FIA_Biosum_Manager
 			{
                 SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
                     "SET tpacurr = u.tpacurr " +
-                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
                     "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -3661,12 +3668,12 @@ namespace FIA_Biosum_Manager
             //for softwood live trees >= 5 inches in diameter 
             if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
 				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, swd_tpacurr) " +
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, swd_tpacurr) " +
                     "SELECT DISTINCT(a.biosum_cond_id), a.totswdtpa AS swd_tpacurr " +
                     "FROM " + this.m_strTreeTable + " AS t, " +
                     "(SELECT biosum_cond_id, SUM(tpacurr) AS totswdtpa " +
@@ -3684,7 +3691,7 @@ namespace FIA_Biosum_Manager
 			{
                 SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
                     "SET swd_tpacurr = u.swd_tpacurr " +
-                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
                     "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -3699,16 +3706,16 @@ namespace FIA_Biosum_Manager
             //for hardwood live trees >= 5 inches in diameter
             if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table;";
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table;";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
 				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, hwd_tpacurr) " +
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, hwd_tpacurr) " +
                     "SELECT DISTINCT (a.biosum_cond_id), a.tothwdtpa AS hwd_tpacurr " +
                     "FROM " + this.m_strTreeTable + " AS t, " +
                     "(SELECT biosum_cond_id, SUM(tpacurr) AS tothwdtpa " +
-                    "FROM " + this.m_strTreeTable + " WHERE spcd > 299 AND statuscd = 1 GROUP BY biosum_cond_id) AS a" +
+                    "FROM " + this.m_strTreeTable + " WHERE spcd > 299 AND statuscd = 1 GROUP BY biosum_cond_id) AS a " +
                     "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
                 strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -3722,7 +3729,7 @@ namespace FIA_Biosum_Manager
 			{
                 SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
                     "SET hwd_tpacurr = u.hwd_tpacurr " +
-                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
                     "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -3738,12 +3745,12 @@ namespace FIA_Biosum_Manager
             //for all live trees >= 5 inches in diameter 
             if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-                SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
+                SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
 				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, vol_ac_grs_ft3) " +
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, vol_ac_grs_ft3) " +
                     "SELECT DISTINCT(a.biosum_cond_id), a.tot_volgrsft3 AS vol_ac_grs_ft3 " +
                     "FROM " + this.m_strTreeTable + " AS t, " +
                     "(SELECT biosum_cond_id, SUM(volcfgrs * tpacurr) AS tot_volgrsft3 " +
@@ -3762,7 +3769,7 @@ namespace FIA_Biosum_Manager
 			{
                 SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
                     "SET vol_ac_grs_ft3 = u.vol_ac_grs_ft3 " +
-                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
                     "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -3776,12 +3783,12 @@ namespace FIA_Biosum_Manager
             //for all live hardwood trees >= 5 inches in diameter 
             if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
 				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, hwd_vol_ac_grs_ft3) " +
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, hwd_vol_ac_grs_ft3) " +
                     "SELECT DISTINCT(a.biosum_cond_id), a.tot_volgrsft3 AS hwd_vol_ac_grs_ft3 " +
                     "FROM " + this.m_strTreeTable + " AS t, " +
                     "(SELECT biosum_cond_id, SUM(volcfgrs * tpacurr) AS tot_volgrsft3 " +
@@ -3800,7 +3807,7 @@ namespace FIA_Biosum_Manager
 			{
                 SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
                     "SET hwd_vol_ac_grs_ft3 = u.hwd_vol_ac_grs_ft3 " +
-                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
                     "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -3814,12 +3821,12 @@ namespace FIA_Biosum_Manager
             //for all live softwood trees >= 5 inches in diameter 
             if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
 				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, swd_vol_ac_grs_ft3) " +
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, swd_vol_ac_grs_ft3) " +
                     "SELECT DISTINCT(a.biosum_cond_id), a.tot_volgrsft3 AS swd_vol_ac_grs_ft3 " +
                     "FROM " + this.m_strTreeTable + " AS t, " +
                     "(SELECT biosum_cond_id, SUM(volcfgrs * tpacurr) AS tot_volgrsft3 " +
@@ -3838,7 +3845,7 @@ namespace FIA_Biosum_Manager
 			{
                 SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
                     "SET swd_vol_ac_grs_ft3 = u.swd_vol_ac_grs_ft3 " +
-                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
                     "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -3851,15 +3858,15 @@ namespace FIA_Biosum_Manager
             //ba_ft2_ac basal area column
             if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
 				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, ba_ft2_ac) " +
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, ba_ft2_ac) " +
                     "SELECT a.biosum_cond_id, b.tottemp AS ba_ft2_ac " +
                     "FROM " + this.m_strCondTable + " AS a, " +
-                    "(SELECT biosum_cond_id, SUM((.005454154 * dia^2) * tpacurr) AS tottemp " +
+                    "(SELECT biosum_cond_id, SUM((.005454154 * POW(dia, 2)) * tpacurr) AS tottemp " +
                     "FROM " + this.m_strTreeTable + " WHERE biosum_status_cd = 9 " +
                     "AND statuscd = 1 GROUP BY biosum_cond_id) AS b " +
                     "WHERE a.biosum_cond_id = b.biosum_cond_id";
@@ -3875,7 +3882,7 @@ namespace FIA_Biosum_Manager
 			{
                 SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
                     "SET ba_ft2_ac = u.ba_ft2_ac " +
-                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
                     "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -3888,15 +3895,15 @@ namespace FIA_Biosum_Manager
             //swd_ba_ft2_ac softwood basal area 
             if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
 				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, swd_ba_ft2_ac) " +
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, swd_ba_ft2_ac) " +
                     "SELECT a.biosum_cond_id, b.tottemp AS swd_ba_ft2_ac " +
                     "FROM " + this.m_strCondTable + " AS a, " +
-                    "(SELECT biosum_cond_id, SUM((.005454154 * dia^2) * tpacurr) AS tottemp " +
+                    "(SELECT biosum_cond_id, SUM((.005454154 * POW(dia, 2)) * tpacurr) AS tottemp " +
                     "FROM " + this.m_strTreeTable + " WHERE biosum_status_cd = 9 " +
                     "AND spcd < 300 AND statuscd = 1 GROUP BY biosum_cond_id) AS b " +
                     "WHERE a.biosum_cond_id = b.biosum_cond_id";
@@ -3912,7 +3919,7 @@ namespace FIA_Biosum_Manager
 			{
                 SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
                     "SET swd_ba_ft2_ac = u.swd_ba_ft2_ac " +
-                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
                     "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -3925,15 +3932,15 @@ namespace FIA_Biosum_Manager
             //hardwood ba_ft2_ac
             if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
 				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, hwd_ba_ft2_ac) " +
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, hwd_ba_ft2_ac) " +
                     "SELECT a.biosum_cond_id, b.tottemp AS hwd_ba_ft2_ac " +
                     "FROM " + this.m_strCondTable + " AS a, " +
-                    "(SELECT biosum_cond_id, SUM((.005454154 * dia^2) * tpacurr) AS tottemp " +
+                    "(SELECT biosum_cond_id, SUM((.005454154 * POW(dia, 2)) * tpacurr) AS tottemp " +
                     "FROM " + this.m_strTreeTable + " WHERE biosum_status_cd = 9 " +
                     "AND spcd > 299 AND statuscd = 1 GROUP BY biosum_cond_id) AS b " +
                     "WHERE a.biosum_cond_id = b.biosum_cond_id";
@@ -3949,7 +3956,7 @@ namespace FIA_Biosum_Manager
 			{
                 SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
                     "SET hwd_ba_ft2_ac = u.hwd_ba_ft2_ac " +
-                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
                     "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -3963,12 +3970,12 @@ namespace FIA_Biosum_Manager
 			//gross sawlog
             if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
 				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, volcsgrs) " +
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, volcsgrs) " +
                     "SELECT DISTINCT(a.biosum_cond_id), a.tt1 AS volcsgrs " +
                     "FROM " + this.m_strTreeTable + " AS t, " +
                     "(SELECT biosum_cond_id, SUM(volcsgrs) AS tt1 " +
@@ -3986,7 +3993,7 @@ namespace FIA_Biosum_Manager
 			{
                 SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
                     "SET volcsgrs = u.volcsgrs " +
-                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
                     "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -3999,12 +4006,12 @@ namespace FIA_Biosum_Manager
 			//swd_volcsgrs      
             if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
 				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, swd_volcsgrs) " +
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, swd_volcsgrs) " +
                     "SELECT DISTINCT(a.biosum_cond_id), a.ttl AS swd_volcsgrs " +
                     "FROM " + this.m_strTreeTable + " AS t, " +
                     "(SELECT biosum_cond_id, SUM(volcsgrs) AS ttl " +
@@ -4022,7 +4029,7 @@ namespace FIA_Biosum_Manager
 			{
                 SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
                     "SET swd_volcsgrs = u.swd_volcsgrs " +
-                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
                     "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -4035,12 +4042,12 @@ namespace FIA_Biosum_Manager
 			//hwd_volcsgrs      
             if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
 				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, hwd_volcsgrs) " +
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, hwd_volcsgrs) " +
                     "SELECT DISTINCT(a.biosum_cond_id), a.ttl AS hwd_volcsgrs " +
                     "FROM " + this.m_strTreeTable + " AS t, " +
                     "(SELECT biosum_cond_id, SUM(volcsgrs) AS ttl " +
@@ -4058,7 +4065,7 @@ namespace FIA_Biosum_Manager
 			{
                 SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
                     "SET hwd_volcsgrs = u.hwd_volcsgrs " +
-                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
                     "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -4072,12 +4079,12 @@ namespace FIA_Biosum_Manager
             // quadratic mean diameter for all the live trees on the condition
             if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
 				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, qmd_all_inch) " +
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, qmd_all_inch) " +
                     "SELECT c.biosum_cond_id, SQRT(c.ba_ft2_ac / (.005454154 * c.tpacurr)) AS qmd_all_inch " +
                     "FROM " + this.m_strCondTable + " AS c " +
                     "WHERE c.biosum_status_cd = 9 AND c.ba_ft2_ac IS NOT NULL " +
@@ -4094,7 +4101,7 @@ namespace FIA_Biosum_Manager
 			{
                 SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
                     "SET qmd_all_inch = u.qmd_all_inch " +
-                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
                     "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -4107,12 +4114,12 @@ namespace FIA_Biosum_Manager
             //qmd_swd_inch      
             if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
 				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, qmd_swd_inch) " +
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, qmd_swd_inch) " +
                     "SELECT c.biosum_cond_id, SQRT(c.swd_ba_ft2_ac / (.005454154 * c.swd_tpacurr)) AS qmd_swd_inch " +
                     "FROM " + this.m_strCondTable + " AS c " +
                     "WHERE c.biosum_status_cd = 9 AND c.swd_ba_ft2_ac IS NOT NULL AND c.swd_ba_ft2_ac <> 0 " +
@@ -4129,7 +4136,7 @@ namespace FIA_Biosum_Manager
 			{
                 SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
                     "SET qmd_swd_inch = u.qmd_swd_inch " +
-                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
                     "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -4142,12 +4149,12 @@ namespace FIA_Biosum_Manager
             // qmd_hwd_inch    
             if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
 				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, qmd_hwd_inch) " +
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, qmd_hwd_inch) " +
                     "SELECT c.biosum_cond_id, SQRT(c.hwd_ba_ft2_ac / (.005454154 * c.hwd_tpacurr)) AS qmd_hwd_inch " +
                     "FROM " + this.m_strCondTable + " AS c " +
                     "WHERE c.biosum_status_cd = 9 AND c.hwd_ba_ft2_ac IS NOT NULL " +
@@ -4164,7 +4171,7 @@ namespace FIA_Biosum_Manager
 			{
                 SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
                     "SET qmd_hwd_inch = u.qmd_hwd_inch " +
-                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
                     "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -4178,12 +4185,12 @@ namespace FIA_Biosum_Manager
             //gross wood volume of the total stem from ground to tip
             if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
 				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, vol_ac_grs_stem_ttl_ft3) " +
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, vol_ac_grs_stem_ttl_ft3) " +
                     "SELECT DISTINCT(a.biosum_cond_id), a.ttl AS vol_ac_grs_stem_ttl_ft3 " +
                     "FROM " + this.m_strTreeTable + " AS t, " +
                     "(SELECT biosum_cond_id, SUM(voltsgrs * tpacurr) AS ttl " +
@@ -4202,7 +4209,7 @@ namespace FIA_Biosum_Manager
 			{
                 SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
                     "SET vol_ac_grs_stem_ttl_ft3 = u.vol_ac_grs_stem_ttl_ft3 " +
-                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
                     "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -4215,12 +4222,12 @@ namespace FIA_Biosum_Manager
 			//hwd_vol_ac_grs_stem_ttl_ft
             if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-				SQLite.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table;";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
 				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table (biosum_cond_id, hwd_vol_ac_grs_stem_ttl_ft3) " +
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, hwd_vol_ac_grs_stem_ttl_ft3) " +
                     "SELECT DISTINCT(a.biosum_cond_id), a.ttl AS hwd_vol_ac_grs_stem_ttl_ft3 " +
                     "FROM " + this.m_strTreeTable + " AS t, " +
                     "(SELECT biosum_cond_id, SUM(voltsgrs * tpacurr) AS ttl " +
@@ -4239,26 +4246,25 @@ namespace FIA_Biosum_Manager
 			{
                 SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
                     "SET hwd_vol_ac_grs_stem_ttl_ft3 = u.hwd_vol_ac_grs_stem_ttl_ft3 " +
-                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
                     "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
 				SQLite.SqlNonQuery(p_conn,SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 40);
 
 			//swd_vol_ac_grs_stem_ttl_ft     
             if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
-				SQLite.m_strSQL = "DELETE FROM TEMP.cond_column_updates_work_table";
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
 				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                SQLite.m_strSQL = "INSERT INTO TEMP.cond_column_updates_work_table(biosum_cond_id, swd_vol_ac_grs_stem_tl_ft3) " +
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table(biosum_cond_id, swd_vol_ac_grs_stem_ttl_ft3) " +
                     "SELECT DISTINCT(a.biosum_cond_id), a.ttl AS swd_vol_ac_grs_stem_ttl_ft3 " +
                     "FROM " + this.m_strTreeTable + " AS t, " +
                     "(SELECT biosum_cond_id, SUM(voltsgrs * tpacurr) AS ttl " +
@@ -4277,7 +4283,7 @@ namespace FIA_Biosum_Manager
 			{
                 SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
                     "SET swd_vol_ac_grs_stem_ttl_ft3 = u.swd_vol_ac_grs_stem_ttl_ft3 " +
-                    "FROM TEMP.cond_column_updates_work_table AS u " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
                     "WHERE c.biosum_cond_id = u.biosum_cond_id";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -4338,13 +4344,13 @@ namespace FIA_Biosum_Manager
 				 **update the number of conditions on each plot
 				 ***************************************************/
 				//use the biosum_plot_input as our work table so delete all records
-				SQLite.m_strSQL = "DELETE FROM TEMP.plot_column_updates_work_table";
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.plot_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
 				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
 				//insert the condition counts into the work table
-                SQLite.m_strSQL = "INSERT INTO TEMP.plot_column_updates_work_table (biosum_plot_id, cond_ttl) " +
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.plot_column_updates_work_table (biosum_plot_id, cond_ttl) " +
                     "SELECT biosum_plot_id, COUNT(biosum_plot_id) " +
                     "FROM " + this.m_strCondTable + " GROUP BY biosum_plot_id";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -4356,8 +4362,8 @@ namespace FIA_Biosum_Manager
             if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
                 SQLite.m_strSQL = "UPDATE " + this.m_strPlotTable + " AS p " +
-                    "SET num_cond = i.cond_ttl, one_cond_yn = CASE WHEN i.cond_ttl > 1 THEN 'N' ELSE 'Y' " +
-                    "FROM TEMP.plot_column_updates_work_table AS i " +
+                    "SET num_cond = i.cond_ttl, one_cond_yn = CASE WHEN i.cond_ttl > 1 THEN 'N' ELSE 'Y' END " +
+                    "FROM TEMPDB.plot_column_updates_work_table AS i " +
                     "WHERE p.biosum_plot_id = i.biosum_plot_id";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
@@ -4368,7 +4374,7 @@ namespace FIA_Biosum_Manager
 		    //Set plot.gis_yard_dist_ft based on rddistcd using crosswalk table in ref_master.db
 		    if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 		    {
-                string strRefMasterDb = frmMain.g_oEnv.strAppDir + Tables.Reference.DefaultRefMasterDbFile;
+                string strRefMasterDb = frmMain.g_oEnv.strAppDir + "\\" + Tables.Reference.DefaultRefMasterDbFile;
                 SQLite.m_strSQL = "ATTACH DATABASE '" + strRefMasterDb + "' AS REFMASTER";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
@@ -4603,10 +4609,10 @@ namespace FIA_Biosum_Manager
             SQLite.m_strSQL = "ATTACH DATABASE '" + strMasterAuxDb + "' AS AUX";
             SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-            if (!SQLite.AttachedTableExist(p_conn, strFiaCWD) || 
-                !SQLite.AttachedTableExist(p_conn, strFiaCWD) || 
-                !SQLite.AttachedTableExist(p_conn, strFiaDL) ||
-                !SQLite.AttachedTableExist(p_conn, strFiaTS))
+            if (!SQLite.AttachedTableExist(p_conn, m_strDwmCwdTable) || 
+                !SQLite.AttachedTableExist(p_conn, m_strDwmFwdTable) || 
+                !SQLite.AttachedTableExist(p_conn, m_strDwmDuffLitterTable) ||
+                !SQLite.AttachedTableExist(p_conn, m_strDwmTransectSegmentTable))
             {
                 Func<bool, string, string> result = (boolTableExists, tableName) =>
                 {
@@ -4616,10 +4622,10 @@ namespace FIA_Biosum_Manager
                 DialogResult dlgResult = MessageBox.Show(String.Format(
                             "!!Error!!\nModule - uc_plot_input:ImportDownWoodyMaterials\n" + "Err Msg - " +
                             "At least one FIADB Source DWM table was not found:{0}{1}{2}{3}\r\nDo you wish to continue plot data input without DWM?",
-                            result(SQLite.AttachedTableExist(p_conn, strFiaCWD), m_strDwmCwdTable),
-                            result(SQLite.AttachedTableExist(p_conn, strFiaCWD), m_strDwmFwdTable),
-                            result(SQLite.AttachedTableExist(p_conn, strFiaDL), m_strDwmDuffLitterTable),
-                            result(SQLite.AttachedTableExist(p_conn, strFiaTS), m_strDwmTransectSegmentTable)),
+                            result(SQLite.AttachedTableExist(p_conn, m_strDwmCwdTable), m_strDwmCwdTable),
+                            result(SQLite.AttachedTableExist(p_conn, m_strDwmFwdTable), m_strDwmFwdTable),
+                            result(SQLite.AttachedTableExist(p_conn, m_strDwmDuffLitterTable), m_strDwmDuffLitterTable),
+                            result(SQLite.AttachedTableExist(p_conn, m_strDwmTransectSegmentTable), m_strDwmTransectSegmentTable)),
                         "FIA Biosum",
                         MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation);
                 //Disable functionality related to DWM option down the pipeline
@@ -4637,7 +4643,8 @@ namespace FIA_Biosum_Manager
                 }
             } 
 
-            String strFields = "";
+            string strSourceFields = "";
+            string strDestFields = "";
             System.Data.DataTable dtDwmCwd = SQLite.getTableSchema(p_conn, "select * from AUX." + m_strDwmCwdTable);
             System.Data.DataTable dtDwmFwd = SQLite.getTableSchema(p_conn, "select * from AUX." + m_strDwmFwdTable);
             System.Data.DataTable dtDwmDuffLitter = SQLite.getTableSchema(p_conn, "select * from AUX." + m_strDwmDuffLitterTable);
@@ -4658,8 +4665,9 @@ namespace FIA_Biosum_Manager
             {
                 SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM CWD...Stand By");
                 SetThermValue(m_frmTherm.progressBar1, "Value", 2);
-                strFields = CreateStrFieldsFromDataTables(dtFIADBDwmCwd, dtDwmCwd);
-                InsertIntoDestTableFromSourceTableSqlite(p_conn, strFiaCWD, "AUX." + m_strDwmCwdTable, strFields, true);
+                strSourceFields = CreateStrFieldsFromDataTables(dtFIADBDwmCwd, dtDwmCwd, "f.");
+                strDestFields = CreateStrFieldsFromDataTables(dtFIADBDwmCwd, dtDwmCwd);
+                InsertIntoDestTableFromSourceTableSqlite(p_conn, strFiaCWD, "AUX." + m_strDwmCwdTable, strSourceFields, strDestFields, true);
 
                 UpdateDwmBiosumCondIdsSqlite(p_conn, "AUX." + m_strDwmCwdTable);
                 m_intError = SQLite.m_intError;
@@ -4670,8 +4678,9 @@ namespace FIA_Biosum_Manager
             {
                 SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM FWD...Stand By");
                 SetThermValue(m_frmTherm.progressBar1, "Value", 4);
-                strFields = CreateStrFieldsFromDataTables(dtFIADBDwmFwd, dtDwmFwd);
-                InsertIntoDestTableFromSourceTableSqlite(p_conn, strFiaFWD, "AUX." + m_strDwmFwdTable, strFields, true);
+                strSourceFields = CreateStrFieldsFromDataTables(dtFIADBDwmFwd, dtDwmFwd, "f.");
+                strDestFields = CreateStrFieldsFromDataTables(dtFIADBDwmFwd, dtDwmFwd);
+                InsertIntoDestTableFromSourceTableSqlite(p_conn, strFiaFWD, "AUX." + m_strDwmFwdTable, strSourceFields, strDestFields, true);
 
                 UpdateDwmBiosumCondIdsSqlite(p_conn, "AUX." + m_strDwmFwdTable);
                 m_intError = SQLite.m_intError;
@@ -4682,8 +4691,9 @@ namespace FIA_Biosum_Manager
             {
                 SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM DuffLitter...Stand By");
                 SetThermValue(m_frmTherm.progressBar1, "Value", 6);
-                strFields = CreateStrFieldsFromDataTables(dtFIADBDwmDuffLitter, dtDwmDuffLitter);
-                InsertIntoDestTableFromSourceTableSqlite( p_conn, strFiaDL, "AUX." + m_strDwmDuffLitterTable, strFields, true);
+                strSourceFields = CreateStrFieldsFromDataTables(dtFIADBDwmDuffLitter, dtDwmDuffLitter, "f.");
+                strDestFields = CreateStrFieldsFromDataTables(dtFIADBDwmDuffLitter, dtDwmDuffLitter);
+                InsertIntoDestTableFromSourceTableSqlite( p_conn, strFiaDL, "AUX." + m_strDwmDuffLitterTable, strSourceFields, strDestFields, true);
 
                 SQLite.m_strSQL = "UPDATE AUX." + m_strDwmDuffLitterTable + " SET duffdep=0 WHERE duffdep IS NULL AND duff_nonsample_reasn_cd IS NULL";
                 SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
@@ -4699,8 +4709,9 @@ namespace FIA_Biosum_Manager
             {
                 SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM Transect Segment...Stand By");
                 SetThermValue(m_frmTherm.progressBar1, "Value", 8);
-                strFields = CreateStrFieldsFromDataTables(dtFIADBDwmTransectSegment, dtDwmTransectSegment);
-                InsertIntoDestTableFromSourceTableSqlite(p_conn, strFiaTS, "AUX." + m_strDwmTransectSegmentTable, strFields, true);
+                strSourceFields = CreateStrFieldsFromDataTables(dtFIADBDwmTransectSegment, dtDwmTransectSegment, "f.");
+                strDestFields = CreateStrFieldsFromDataTables(dtFIADBDwmTransectSegment, dtDwmTransectSegment);
+                InsertIntoDestTableFromSourceTableSqlite(p_conn, strFiaTS, "AUX." + m_strDwmTransectSegmentTable, strSourceFields, strDestFields, true);
 
                 UpdateDwmBiosumCondIdsSqlite(p_conn, "AUX." + m_strDwmTransectSegmentTable);
                 m_intError = SQLite.m_intError;
@@ -8253,7 +8264,7 @@ namespace FIA_Biosum_Manager
                 {
                     string strFields = "";
                     DataTable dtDestSchema = SQLite.getTableSchema(p_conn, "SELECT * FROM " + pTable);
-                    DataTable dtSourceSchema = SQLite.getTableSchema(p_conn, "FROM * FROM FIADB." + arrSourceTables[i].Trim());
+                    DataTable dtSourceSchema = SQLite.getTableSchema(p_conn, "SELECT * FROM FIADB." + arrSourceTables[i].Trim());
 
                     //build field list string to insert sql by matching 
                     //up the column names in the biosum plot table and the fiadb plot table
