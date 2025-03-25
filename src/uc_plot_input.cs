@@ -2904,10 +2904,10 @@ namespace FIA_Biosum_Manager
 
                         if (Checked(chkDwmImport))
                         {
-                            m_intAddedDwmCwdRows = GetNewRecordCountSqlite(conn, "AUX." + m_strDwmCwdTable );
-                            m_intAddedDwmFwdRows = GetNewRecordCountSqlite(conn, "AUX." + m_strDwmFwdTable);
-                            m_intAddedDwmDuffLitterRows = GetNewRecordCountSqlite(conn, "AUX." + m_strDwmDuffLitterTable);
-                            m_intAddedDwmTransectSegmentRows = GetNewRecordCountSqlite(conn, "AUX." + m_strDwmTransectSegmentTable);
+                            m_intAddedDwmCwdRows = GetNewRecordCountSqlite(conn, m_strDwmCwdTable, "AUX.");
+                            m_intAddedDwmFwdRows = GetNewRecordCountSqlite(conn, m_strDwmFwdTable, "AUX.");
+                            m_intAddedDwmDuffLitterRows = GetNewRecordCountSqlite(conn, m_strDwmDuffLitterTable, "AUX.");
+                            m_intAddedDwmTransectSegmentRows = GetNewRecordCountSqlite(conn, m_strDwmTransectSegmentTable, "AUX.");
                         }
 
                         //Successfully imported and updated plot data. Set biosum_status_cd to 1
@@ -3078,12 +3078,12 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private int GetNewRecordCountSqlite(System.Data.SQLite.SQLiteConnection p_conn, string table)
+        private int GetNewRecordCountSqlite(System.Data.SQLite.SQLiteConnection p_conn, string strTable, string strTablePrefix = null)
         {
-            if (SQLite.TableExist(p_conn, table) || SQLite.AttachedTableExist(p_conn, table) || table.Equals(m_strSeedlingTable))
+            if (SQLite.TableExist(p_conn, strTable) || SQLite.AttachedTableExist(p_conn, strTable) || strTable.Equals(m_strSeedlingTable))
             {
                 int intReturn = -1;
-                switch (table)
+                switch (strTable)
                 {
                     case "fiadb_seedling_input":
                         intReturn = (int)SQLite.getRecordCount(p_conn,
@@ -3091,11 +3091,11 @@ namespace FIA_Biosum_Manager
                         break;
                     case "tree":
                         intReturn = (int)SQLite.getRecordCount(p_conn,
-                            String.Concat("SELECT COUNT(*) FROM ", table, " WHERE biosum_status_cd = 9 AND dia <> 0.1"), table);
+                            String.Concat("SELECT COUNT(*) FROM ", strTable, " WHERE biosum_status_cd = 9 AND dia <> 0.1"), strTable);
                         break;
                     default:
                         intReturn = (int)SQLite.getRecordCount(p_conn,
-                    String.Concat("SELECT COUNT(*) FROM ", table, " WHERE biosum_status_cd = 9"), table);
+                    String.Concat("SELECT COUNT(*) FROM ", strTablePrefix, strTable, " WHERE biosum_status_cd = 9"), strTablePrefix + strTable);
                         break;
                 }
                 return intReturn;
@@ -3229,7 +3229,7 @@ namespace FIA_Biosum_Manager
             {
                 strInsertIntoValues = "INSERT INTO {0} (biosum_cond_id, biosum_status_cd, {1}) ";
                 strSelectColumns =
-                    "SELECT '9999999999999999999999999' AS biosum_cond_id, 9 AS biosum_status_cd, {2} FROM {3} AS f, {4} AS p ON f.plt_cn=trim(p.cn);";
+                    "SELECT '9999999999999999999999999' AS biosum_cond_id, 9 AS biosum_status_cd, {2} FROM {3} AS f, {4} AS p WHERE f.plt_cn=trim(p.cn);";
             }
             SQLite.m_strSQL = String.Format(strInsertIntoValues + strSelectColumns, strDestTable, strDestFields, strSourceFields, strSourceTable, "tempplot");
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
