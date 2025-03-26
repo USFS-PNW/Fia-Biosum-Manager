@@ -341,14 +341,21 @@ namespace FIA_Biosum_Manager
 			}
 		}
 		public uc_gridview(System.Data.OleDb.OleDbConnection p_conn,
-			string strConn, string strSQL,string strDataSetName)
+			string strSQL,string strDataSetName, System.Data.SQLite.SQLiteConnection sqlite_conn)
 		{
 			InitializeComponent();
 			this.InitializePopup();
 			string strColumnName="";
 			this.m_dg.MouseWheel+=new MouseEventHandler(m_dg_MouseWheel);
 			this.m_ds = new DataSet();
-			this.m_da = new System.Data.OleDb.OleDbDataAdapter();
+            if (sqlite_conn == null)
+            {
+				this.m_da = new System.Data.OleDb.OleDbDataAdapter();
+			}
+            else
+            {
+				this.m_SQLite_da = new System.Data.SQLite.SQLiteDataAdapter();
+            }
 
 			this.m_dg.Left = 5;
 			this.toolBar1.Left = 5;
@@ -360,15 +367,26 @@ namespace FIA_Biosum_Manager
 			this.toolBar2.Left = (int)(this.groupBox1.Width * .50) - (int)(this.toolBar2.Width * .50);
 			this.m_dg.Height =  this.toolBar2.Top - this.m_dg.Top;
 
-
-			ado_data_access p_ado = new ado_data_access();
-	
-
-			this.m_da.SelectCommand = new System.Data.OleDb.OleDbCommand(strSQL,p_conn);
+            if (sqlite_conn == null)
+            {
+				this.m_da.SelectCommand = new System.Data.OleDb.OleDbCommand(strSQL, p_conn);
+			}
+            else
+            {
+				this.m_SQLite_da.SelectCommand = new System.Data.SQLite.SQLiteCommand(strSQL, sqlite_conn);
+            }
+			
 			try 
 			{
-
-				this.m_da.Fill(this.m_ds,strDataSetName);
+				if (sqlite_conn == null)
+				{
+					this.m_da.Fill(this.m_ds, strDataSetName);
+				}
+                else
+                {
+					this.m_SQLite_da.Fill(this.m_ds, strDataSetName);
+                }
+					
 				this.m_dv = new DataView(this.m_ds.Tables[strDataSetName]);
 				
 				this.m_dv.AllowNew = false;       //cannot append new records
@@ -468,13 +486,15 @@ namespace FIA_Biosum_Manager
 				this.m_ds = null;
 				this.m_da.Dispose();
 				this.m_da = null;
-				p_ado = null;
+                if (sqlite_conn != null)
+                {
+					sqlite_conn.Close();
+					this.m_SQLite_da.Dispose();
+					this.m_SQLite_da = null;
+                }
 				return;
 
 			}
-
-			
-			p_ado = null;
 
 			this.sbMsg.Text= strDataSetName + " (Read Only)";
 			if (this.m_ds.Tables[strDataSetName].Rows.Count == 0)
@@ -532,9 +552,6 @@ namespace FIA_Biosum_Manager
 			{
 				this.toolBar1.Buttons[3].Enabled=false;
 			}
-
-
-
 		}
 
 		public uc_gridview(System.Data.OleDb.OleDbConnection p_conn, 

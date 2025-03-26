@@ -2995,52 +2995,59 @@ namespace FIA_Biosum_Manager
             string strFvsSpCd = lstAudit.SelectedItems[0].SubItems[2].Text.Trim();
             strFVSVariantArray[0] = strFvsVariant;
 
-            
+			SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(m_strTempDbFile)))
+			{
+				conn.Open();
+				if (oDataMgr.TableExist(conn, "fvsouttreetemp2"))
+					oDataMgr.SqlNonQuery(conn, "DROP TABLE fvsouttreetemp2");
+				if (oDataMgr.TableExist(conn, "fvsouttreetemp"))
+					oDataMgr.SqlNonQuery(conn, "DROP TABLE fvsouttreetemp");
 
-            List<string> strSqlCommandList;
+				// Attach FVSOUT_TREE_LIST.db database
+				if (!oDataMgr.AttachedTableExist(conn, Tables.FVS.DefaultFVSCutTreeTableName))
+				{
+					oDataMgr.m_strSQL = $@"attach '{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSTreeListDbFile}' as TREE_LIST";
+					oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+				}
+				// Attach master.db database
+				if (!oDataMgr.AttachedTableExist(conn, m_oQueries.m_oFIAPlot.m_strTreeTable))
+				{
+					oDataMgr.m_strSQL = $@"attach '{m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree)}' as MASTER";
+					oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+				}
 
-            ado_data_access oAdo = new ado_data_access();
-            oAdo.OpenConnection(oAdo.getMDBConnString(this.m_strTempDbFile, "", ""));
+				List<string> strSqlCommandList = Queries.Processor.AuditFvsOut_SelectIntoUnionOfFVSTreeTablesUsingListArray(
+					oDataMgr,
+					conn,
+					"fvsouttreetemp2",
+					"fvs_tree_id,fvs_species,biosum_cond_id");
 
-            if (oAdo.TableExist(oAdo.m_OleDbConnection, "fvsouttreetemp2"))
-                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE fvsouttreetemp2");
+				for (x = 0; x <= strSqlCommandList.Count - 1; x++)
+				{
+					oDataMgr.SqlNonQuery(conn, strSqlCommandList[x]);
+				}
 
-            strSqlCommandList = Queries.Processor.AuditFvsOut_SelectIntoUnionOfFVSTreeTablesUsingListArray(
-                SQLite,
-                SQLite.m_Connection,
-                "fvsouttreetemp2",
-                "fvs_tree_id,fvs_species,biosum_cond_id");
+				oDataMgr.m_strSQL = "SELECT DISTINCT b.fvs_tree_id," +
+						"b.fvs_species AS FVS_SpCd, a.SpCd AS FIA_SpCd, a.* " +
+				"FROM " + m_oQueries.m_oFIAPlot.m_strTreeTable + " a," +
+						"fvsouttreetemp2 b " +
+				"WHERE trim(a.fvs_tree_id)=b.fvs_tree_id AND " +
+					  "a.biosum_cond_id=b.biosum_cond_id AND " +
+					  "a.spcd=" + strFiaSpCd + " AND " +
+					  "TRIM(b.fvs_species)='" + strFvsSpCd + "'";
 
-            for (x = 0; x <= strSqlCommandList.Count - 1; x++)
-            {
-                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSqlCommandList[x]);
-            }
+				frmMain.g_sbpInfo.Text = "Loading Grid...Stand by";
 
-            oAdo.m_strSQL = "SELECT DISTINCT " + 
-                                    "b.fvs_tree_id," + 
-                                    "b.fvs_species AS FVS_SpCd," + 
-                                    "a.SpCd AS FIA_SpCd," + 
-                                    "a.* " + 
-                            "FROM " + m_oQueries.m_oFIAPlot.m_strTreeTable + " a," + 
-                                    "fvsouttreetemp2 b " + 
-                            "WHERE a.fvs_tree_id=b.fvs_tree_id AND " +
-                                  "a.biosum_cond_id=b.biosum_cond_id AND " + 
-                                  "a.spcd=" + strFiaSpCd + " AND " + 
-                                  "TRIM(b.fvs_species)='" + strFvsSpCd + "'";
-
-            frmMain.g_sbpInfo.Text = "Loading Grid...Stand by";
-
-            frmGridView frmGridView1 = new frmGridView();
-            frmGridView1.LoadDataSet(
-               oAdo.m_OleDbConnection,
-               oAdo.m_OleDbConnection.ConnectionString,
-               oAdo.m_strSQL, "AuditFiaSpCdAndFvsSpCd");
-            frmGridView1.TileGridViews();
-            frmMain.g_sbpInfo.Text = "Ready";
-            frmGridView1.ShowDialog();
-            if (oAdo.TableExist(oAdo.m_OleDbConnection, "fvsouttreetemp2"))
-                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE fvsouttreetemp2");
-            
+				frmGridView frmGridView1 = new frmGridView();
+				frmGridView1.LoadDataSet(conn,
+				   oDataMgr.m_strSQL, "AuditFiaSpCdAndFvsSpCd");
+				frmGridView1.TileGridViews();
+				frmMain.g_sbpInfo.Text = "Ready";
+				frmGridView1.ShowDialog();
+				//if (oDataMgr.TableExist(conn, "fvsouttreetemp2"))
+				//	oDataMgr.SqlNonQuery(conn, "DROP TABLE fvsouttreetemp2");
+			}            
         }
 
         private void lstAudit_ItemCheck(object sender, ItemCheckEventArgs e)

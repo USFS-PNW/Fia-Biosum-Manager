@@ -828,7 +828,7 @@ namespace FIA_Biosum_Manager
         }
 		public void AddGrid(System.Data.OleDb.OleDbConnection p_conn, string strConn,string strSQL, string strDataSet)
 		{
-			this.uc_gridview1 = new uc_gridview(p_conn,strConn,strSQL,strDataSet);
+			this.uc_gridview1 = new uc_gridview(p_conn,strSQL,strDataSet, null);
 			this.Controls.Add(this.uc_gridview1);
 			this.uc_gridview1.Dock = System.Windows.Forms.DockStyle.Fill;
 
