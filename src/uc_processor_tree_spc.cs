@@ -2656,10 +2656,11 @@ namespace FIA_Biosum_Manager
 						}
 						else
 						{
-							strMsg = "Audit Failed.\r\n\r\n" + Convert.ToString(this.lstAudit.Items.Count) + " FIA SpCd + FVS Variant + FVS Species Combinations NOT In The Tree Species Table ";
+						int intMissing = lstAudit.Items.Count - COUNT;	
+						strMsg = "Audit Failed.\r\n\r\n" + Convert.ToString(intMissing) + " FIA SpCd + FVS Variant + FVS Species Combinations NOT In The Tree Species Table ";
 							this.btnAuditAdd.Text = "Add Checked Items To Tree Species Table";
 							//check if all items exist in the tree species table
-							if (COUNT == lstAudit.Items.Count)
+							if (intMissing > 0)
 							{
 
 							}
