@@ -2601,25 +2601,79 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        public System.Collections.Generic.IDictionary<string, RxPackageItem_Collection> GetFvsVariantPackageDictionary(ado_data_access p_oAdo,
-            System.Data.OleDb.OleDbConnection p_oConnQueries, Queries oQueries)
+        public System.Collections.Generic.IDictionary<string, RxPackageItem_Collection> GetFvsVariantPackageDictionary(Queries oQueries)
         {
-            //load rxpackage properties
-            RxPackageItem_Collection oRxPackageItem_Collection = new RxPackageItem_Collection();
-            LoadAllRxPackageItemsFromTableIntoRxPackageCollection(oQueries, oRxPackageItem_Collection);
-
-            string strVariant = "";
             System.Collections.Generic.IDictionary<string, RxPackageItem_Collection> dictReturn =
                 new System.Collections.Generic.Dictionary<string, RxPackageItem_Collection>();
-            if (oRxPackageItem_Collection.Count > 0)
+
+            DataMgr oDataMgr = new DataMgr();
+            string strConn = oDataMgr.GetConnectionString(oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Plot));
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
-                p_oAdo.m_strSQL = Queries.FVS.GetFVSVariantSQL(oQueries.m_oFIAPlot.m_strPlotTable);
-                p_oAdo.SqlQueryReader(p_oConnQueries, p_oAdo.m_strSQL);
-                while (p_oAdo.m_OleDbDataReader.Read())
+                conn.Open();
+                oDataMgr.m_strSQL = Queries.FVS.GetFVSVariantRxPackageSQL(oQueries.m_oFIAPlot.m_strPlotTable, oQueries.m_oFvs.m_strRxPackageTable);
+                oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
+                string strVariant;
+                string strRxPackage;
+                int intIndex = 0;
+                while (oDataMgr.m_DataReader.Read())
                 {
-                    strVariant = p_oAdo.m_OleDbDataReader["fvs_variant"].ToString().Trim();
-                    dictReturn.Add(strVariant, oRxPackageItem_Collection);
+                    strVariant = oDataMgr.m_DataReader["fvs_variant"].ToString().Trim();
+                    strRxPackage = oDataMgr.m_DataReader["rxPackage"].ToString().Trim();
+                    if (!string.IsNullOrEmpty(strRxPackage))
+                    {
+                        if (oDataMgr.m_DataReader["rxpackage"] != System.DBNull.Value)
+                        {
+                            RxPackageItem oRxPackageItem = new RxPackageItem();
+                            oRxPackageItem.Index = intIndex;
+                            oRxPackageItem.RxPackageId = Convert.ToString(oDataMgr.m_DataReader["rxpackage"]);
+                            //treatment cycle length
+                            if (oDataMgr.m_DataReader["rxcycle_length"] != System.DBNull.Value)
+                            {
+                                oRxPackageItem.RxCycleLength = Convert.ToInt32(oDataMgr.m_DataReader["rxcycle_length"]);
+                            }
+                            //sim year 1
+                            if (oDataMgr.m_DataReader["simyear1_rx"] != System.DBNull.Value)
+                            {
+                                oRxPackageItem.SimulationYear1Rx = Convert.ToString(oDataMgr.m_DataReader["simyear1_rx"]);
+                            }
+                            //sim year 2
+                            if (oDataMgr.m_DataReader["simyear2_rx"] != System.DBNull.Value)
+                            {
+                                oRxPackageItem.SimulationYear2Rx = Convert.ToString(oDataMgr.m_DataReader["simyear2_rx"]);
+                            }                            //sim year 3
+                            if (oDataMgr.m_DataReader["simyear3_rx"] != System.DBNull.Value)
+                            {
+                                oRxPackageItem.SimulationYear3Rx = Convert.ToString(oDataMgr.m_DataReader["simyear3_rx"]);
+                            }
+                            //sim year 4
+                            if (oDataMgr.m_DataReader["simyear4_rx"] != System.DBNull.Value)
+                            {
+                                oRxPackageItem.SimulationYear4Rx = Convert.ToString(oDataMgr.m_DataReader["simyear4_rx"]);
+                            }
+                            if (oRxPackageItem.SimulationYear1Rx.Trim().Length == 0) oRxPackageItem.SimulationYear1Rx = "000";
+                            if (oRxPackageItem.SimulationYear2Rx.Trim().Length == 0) oRxPackageItem.SimulationYear2Rx = "000";
+                            if (oRxPackageItem.SimulationYear3Rx.Trim().Length == 0) oRxPackageItem.SimulationYear3Rx = "000";
+                            if (oRxPackageItem.SimulationYear4Rx.Trim().Length == 0) oRxPackageItem.SimulationYear4Rx = "000";
+
+                            RxPackageItem_Collection oRxPackageItemCollection = null;
+                            if (dictReturn.ContainsKey(strVariant))
+                            {
+                                oRxPackageItemCollection = dictReturn[strVariant];
+                                oRxPackageItemCollection.Add(oRxPackageItem);
+                            }
+                            else
+                            {
+                                oRxPackageItemCollection = new RxPackageItem_Collection();
+                                oRxPackageItemCollection.Add(oRxPackageItem);
+                                dictReturn.Add(strVariant, oRxPackageItemCollection);
+                            }
+                            intIndex++;
+                        }
+                    }
+                    
                 }
+                oDataMgr.m_DataReader.Close();
             }
             return dictReturn;
         }

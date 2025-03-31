@@ -310,23 +310,28 @@ namespace FIA_Biosum_Manager
 			}
 
 			/// <summary>
-			/// return the query that will assign a variant to each rx package
+			/// Return the query that will assign a variant to each rx package.
+            /// Converted to SQLite syntax March 2025. No valid Access methods should be using
 			/// </summary>
 			/// <param name="p_strPlotTable"></param>
 			/// <param name="p_strRxPackageTable"></param>
 			/// <returns></returns>
 			static public string GetFVSVariantRxPackageSQL(string p_strPlotTable, string p_strRxPackageTable)
 			{
-				return "SELECT DISTINCT  a.fvs_variant,  b.rxpackage, b.rxcycle_length, b.simyear1_rx," + 
-					                                                                   "b.simyear2_rx," + 
-					                                                                   "b.simyear3_rx," + 
-					                                                                   "b.simyear4_rx  " + 
-					   "FROM " + p_strPlotTable + " a, " + 
-					      "(SELECT rxpackage,simyear1_rx,simyear2_rx,simyear3_rx,simyear4_rx,rxcycle_length " + 
-					       "FROM " + p_strRxPackageTable +  ") b " + 
-					   "WHERE a.fvs_variant IS NOT NULL AND " + 
-					          "LEN(TRIM(a.fvs_variant)) > 0 AND " + 
-					          "b.rxpackage IS NOT NULL AND LEN(TRIM(b.rxpackage)) > 0;";
+                //return "SELECT DISTINCT  a.fvs_variant,  b.rxpackage, b.rxcycle_length, b.simyear1_rx," + 
+                //	                                                                   "b.simyear2_rx," + 
+                //	                                                                   "b.simyear3_rx," + 
+                //	                                                                   "b.simyear4_rx  " + 
+                //	   "FROM " + p_strPlotTable + " a, " + 
+                //	      "(SELECT rxpackage,simyear1_rx,simyear2_rx,simyear3_rx,simyear4_rx,rxcycle_length " + 
+                //	       "FROM " + p_strRxPackageTable +  ") b " + 
+                //	   "WHERE a.fvs_variant IS NOT NULL AND " + 
+                //	          "LEN(TRIM(a.fvs_variant)) > 0 AND " + 
+                //	          "b.rxpackage IS NOT NULL AND LEN(TRIM(b.rxpackage)) > 0;";
+                return $@"SELECT DISTINCT  a.fvs_variant,  b.rxpackage, b.rxcycle_length, b.simyear1_rx, b.simyear2_rx, b.simyear3_rx, b.simyear4_rx 
+                    FROM {p_strPlotTable} a, (SELECT rxpackage,simyear1_rx,simyear2_rx,simyear3_rx,simyear4_rx,rxcycle_length 
+                    FROM {p_strRxPackageTable}) b WHERE a.fvs_variant IS NOT NULL AND LENGTH(TRIM(a.fvs_variant)) > 0 AND b.rxpackage IS NOT NULL 
+                    AND LENGTH(TRIM(b.rxpackage)) > 0 ORDER BY FVS_VARIANT, RXPACKAGE";
 			}
             /// <summary>
             /// return the query that will assign a variant to each rx package

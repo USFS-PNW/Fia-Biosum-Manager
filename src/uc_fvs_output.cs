@@ -692,15 +692,8 @@ namespace FIA_Biosum_Manager
                     return;
                 }
 
-                //load rxpackage properties
-                m_oRxPackageItem_Collection = new RxPackageItem_Collection();
-				this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_oQueries,this.m_oRxPackageItem_Collection);
-
                 // Get variants/rxPackages in project
-                //            m_ado.m_strSQL = Queries.FVS.GetFVSVariantRxPackageSQL(this.m_oQueries.m_oFIAPlot.m_strPlotTable,this.m_oQueries.m_oFvs.m_strRxPackageTable);				
-                //this.m_ado.SqlQueryReader(this.m_ado.m_OleDbConnection,this.m_ado.m_strSQL);
-                IDictionary<string, RxPackageItem_Collection> dictFvsVariantPackage = this.m_oRxTools.GetFvsVariantPackageDictionary(this.m_ado,
-                    this.m_ado.m_OleDbConnection, m_oQueries);
+                IDictionary<string, RxPackageItem_Collection> dictFvsVariantPackage = this.m_oRxTools.GetFvsVariantPackageDictionary(m_oQueries);
                 IList<string> lstRunTitles = new List<string>();
                 foreach (string key in dictFvsVariantPackage.Keys)
                 {
@@ -711,12 +704,6 @@ namespace FIA_Biosum_Manager
                     {
                         RxPackageItem rxPackageItem = oRxPackageItemCollection.Item(i);
                         strPackage = rxPackageItem.RxPackageId;
-
-                        //this.m_strOutMDBFile = this.m_oRxTools.GetRxPackageFvsOutDbFileName(m_ado.m_OleDbDataReader);
-                        // This is the Access DB for this variant/package ie: FVSOUT_CA_P001-001-001-001-001.MDB
-                        //strOutDirAndFile = this.txtOutDir.Text.Trim() + "\\" +
-                        //       this.m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim() + "\\" +
-                        //        this.m_strOutMDBFile.Trim();
 
                         // Example RunTitle: FVSOUT_WC_P999-999-999-999-999
                         strCurRunTitle = this.m_oRxTools.GetRxPackageRunTitle(strVariant, rxPackageItem);
