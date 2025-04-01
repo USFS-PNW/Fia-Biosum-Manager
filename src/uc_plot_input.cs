@@ -2786,7 +2786,7 @@ namespace FIA_Biosum_Manager
                             SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                         }
                         SQLite.m_strSQL = "CREATE TABLE TEMPDB.tempseedling AS " +
-                            "SELECT TRIM(p.biosum_plot_id) + CAST(s.condid AS TEXT) AS biosum_cond_id, 9 AS biosum_status_cd, " +
+                            "SELECT TRIM(p.biosum_plot_id) || CAST(s.condid AS TEXT) AS biosum_cond_id, 9 AS biosum_status_cd, " +
                             "0.1 AS dia, 1 AS diahtcd, '1' || printf('%03d', SPCD) || '00' || SUBP AS fvs_tree_id, 1 AS statuscd, s.* " +
                             "FROM FIADB." + strSeedlingSource + " AS s, " + this.m_strPlotTable + " AS p " +
                             "WHERE s.plt_cn = TRIM(p.cn) AND p.biosum_status_cd = 9";
@@ -2913,13 +2913,21 @@ namespace FIA_Biosum_Manager
                         //Successfully imported and updated plot data. Set biosum_status_cd to 1
                         string[] arrTables = new string[] {m_strPlotTable, m_strCondTable, m_strTreeTable, m_strSiteTreeTable,
                         m_strPopEvalTable, m_strPopStratumTable, m_strPpsaTable, m_strPopEstUnitTable, m_strBiosumPopStratumAdjustmentFactorsTable,
-                        "AUX." + m_strDwmCwdTable, "AUX." + m_strDwmFwdTable, "AUX." + m_strDwmDuffLitterTable, "AUX." + m_strDwmTransectSegmentTable};
+                        m_strDwmCwdTable, m_strDwmFwdTable, m_strDwmDuffLitterTable, m_strDwmTransectSegmentTable};
                         foreach (string table in arrTables)
                         {
                             if (SQLite.TableExist(conn, table) || SQLite.AttachedTableExist(conn, table))
                             {
-                                SQLite.m_strSQL = "UPDATE " + table +
+                                if (table == m_strDwmCwdTable || table == m_strDwmFwdTable || table == m_strDwmDuffLitterTable || table == m_strDwmTransectSegmentTable)
+                                {
+                                    SQLite.m_strSQL = "UPDATE AUX." + table +
                                     " SET biosum_status_cd = 1 WHERE biosum_status_cd = 9";
+                                }
+                                else
+                                {
+                                    SQLite.m_strSQL = "UPDATE " + table +
+                                    " SET biosum_status_cd = 1 WHERE biosum_status_cd = 9";
+                                }
                                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
                                 SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
@@ -3304,8 +3312,8 @@ namespace FIA_Biosum_Manager
                 "ELSE CASE WHEN ps.pmh_sub IS NOT NULL AND ps.pmh_sub > 0 THEN c.condprop_unadj / ps.pmh_sub " +
                 "ELSE CASE WHEN ps.pmh_micr IS NOT NULL AND ps.pmh_micr > 0 THEN c.condprop_unadj / ps.pmh_micr " +
                 "ELSE 0 END END END " +
-                "FROM " + this.m_strPpsaTable + " AS ppsa, " + this.m_strPlotTable + " AS p, " + this.m_strBiosumPopStratumAdjustmentFactorsTable + " AS ps " +
-                "WHERE ppsa.plt_cn = p.cn AND ppsa.stratum_cn = ps.stratum_cn AND c.biosum_plot_id = p.biosum_plot_id";
+                "FROM TEMPDB." + this.m_strPpsaTable + " AS ppsa, " + this.m_strPlotTable + " AS p, TEMPDB." + this.m_strBiosumPopStratumAdjustmentFactorsTable + " AS ps " +
+                "WHERE TRIM(ppsa.plt_cn) = p.cn AND ppsa.stratum_cn = ps.stratum_cn AND c.biosum_plot_id = p.biosum_plot_id";
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
 			SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
@@ -3317,7 +3325,7 @@ namespace FIA_Biosum_Manager
             SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
                 "SET acres = CASE WHEN c.condprop IS NOT NULL AND ps.expns IS NOT NULL " +
                 "THEN c.condprop * ps.expns ELSE 0 END " +
-                "FROM " + this.m_strPpsaTable + " AS ppsa, " + this.m_strPlotTable + " AS p, " + this.m_strBiosumPopStratumAdjustmentFactorsTable + " AS ps " +
+                "FROM TEMPDB." + this.m_strPpsaTable + " AS ppsa, " + this.m_strPlotTable + " AS p, TEMPDB." + this.m_strBiosumPopStratumAdjustmentFactorsTable + " AS ps " +
                 "WHERE ppsa.plt_cn = p.cn AND ppsa.stratum_cn = ps.stratum_cn AND c.biosum_plot_id = p.biosum_plot_id";
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
@@ -8094,7 +8102,7 @@ namespace FIA_Biosum_Manager
                         }
                     }
                     SQLite.m_strSQL = "INSERT INTO " + strDestTable + " (" + strFields + ")" +
-                        " SELECT " + strFields + " FROM FIADB." + strSourceTable + "   " +
+                        " SELECT " + strFields + " FROM FIADB." + strSourceTable + " " +
                         "WHERE rscd = " + this.m_strCurrFIADBRsCd + " AND " +
                         "evalid = " + this.m_strCurrFIADBEvalId;
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)

@@ -5165,7 +5165,7 @@ namespace FIA_Biosum_Manager
                     "invyr INTEGER," +
                     "condid INTEGER," +
                     "tree INTEGER," +
-                    "spcd INREGER," +
+                    "spcd INTEGER," +
                     "dia DOUBLE," +
                     "ht DOUBLE," +
                     "agedia INTEGER," +
