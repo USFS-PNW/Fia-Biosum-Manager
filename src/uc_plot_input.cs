@@ -82,16 +82,15 @@ namespace FIA_Biosum_Manager
         private string m_strMasterDbFile = "";
 
 
-		private string m_strTempMDBFile;
+		//private string m_strTempMDBFile;
         private string m_strTempDbFile;
-        private string m_strTempMDBFileConn;
-        private System.Data.OleDb.OleDbConnection m_connTempMDBFile;
-		private FIA_Biosum_Manager.ado_data_access m_ado;
+        //private string m_strTempMDBFileConn;
+        //private System.Data.OleDb.OleDbConnection m_connTempMDBFile;
+		//private FIA_Biosum_Manager.ado_data_access m_ado;
 		private System.Data.DataTable m_dtStateCounty;
 		private System.Data.DataTable m_dtPlot;
 		private int m_intError;
         private string m_strError;
-		//private string m_strError;
 		private string m_strPlotTable;
 		private string m_strCondTable;
 		private string m_strTreeTable;
@@ -108,6 +107,7 @@ namespace FIA_Biosum_Manager
         private string m_strDwmDuffLitterTable = frmMain.g_oTables.m_oFIAPlot.DefaultDWMDuffLitterFuelName;
         private string m_strDwmTransectSegmentTable = frmMain.g_oTables.m_oFIAPlot.DefaultDWMTransectSegmentName;
 		private string m_strSQL;
+        private string m_strCondPropPercent = "";
 
 		private FIA_Biosum_Manager.frmTherm m_frmTherm;
 		private string m_strPlotIdList="";
@@ -125,24 +125,17 @@ namespace FIA_Biosum_Manager
 		private string m_strCurrFIADBRsCd="";
 		private string m_strTableType;
 		private System.Windows.Forms.GroupBox groupBox8;
-		private System.Windows.Forms.Button btnMDBTreeBrowse;
-		private System.Windows.Forms.TextBox txtMDBTree;
+		private System.Windows.Forms.Button btnDBTreeBrowse;
+		private System.Windows.Forms.TextBox txtDBTree;
 		private System.Windows.Forms.GroupBox groupBox9;
-		private System.Windows.Forms.Button btnMDBCondBrowse;
-		private System.Windows.Forms.TextBox txtMDBCond;
+		private System.Windows.Forms.Button btnDBCondBrowse;
+		private System.Windows.Forms.TextBox txtDBCond;
 		private System.Windows.Forms.GroupBox groupBox10;
-		private System.Windows.Forms.Button btnMDBPlotBrowse;
-		private System.Windows.Forms.TextBox txtMDBPlotTable;
-		private System.Windows.Forms.TextBox txtMDBCondTable;
-		private System.Windows.Forms.TextBox txtMDBTreeTable;
-		private System.Windows.Forms.TextBox txtMDBPlot;
-		private System.Windows.Forms.Button btnIDBInvAppend;
-		private System.Windows.Forms.ListView lstIDBInv;
-		private System.Windows.Forms.Button btnIDBInvHelp;
-		private System.Windows.Forms.Button btnIDBInvPrevious;
-		private System.Windows.Forms.Button btnIDBInvNext;
-		private System.Windows.Forms.Button btnIDBInvCancel;
-		private System.Windows.Forms.GroupBox grpboxIDBInv;
+		private System.Windows.Forms.Button btnDBPlotBrowse;
+		private System.Windows.Forms.TextBox txtDBPlotTable;
+		private System.Windows.Forms.TextBox txtDBCondTable;
+		private System.Windows.Forms.TextBox txtDBTreeTable;
+		private System.Windows.Forms.TextBox txtDBPlot;
 		private System.Threading.Thread thdProcessRecords;
 		private int m_intAddedPlotRows=0;
 		private int m_intAddedCondRows=0;
@@ -164,7 +157,7 @@ namespace FIA_Biosum_Manager
 
 		private bool m_bLoadStateCountyList=true;
 		private bool m_bLoadStateCountyPlotList=true;
-		private System.Windows.Forms.GroupBox grpboxMDBFiadbInput;
+		private System.Windows.Forms.GroupBox grpboxDBFiadbInput;
 		private System.Windows.Forms.GroupBox groupBox15;
 		private System.Windows.Forms.GroupBox groupBox16;
 		private System.Windows.Forms.GroupBox groupBox17;
@@ -173,7 +166,7 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.GroupBox groupBox20;
 		private System.Windows.Forms.GroupBox groupBox21;
 		private System.Windows.Forms.GroupBox groupBox22;
-		private System.Windows.Forms.Button btnboxMDBFiadbInputFile;
+		private System.Windows.Forms.Button btnboxDBFiadbInputFile;
 		private System.Windows.Forms.ComboBox cmbFiadbPlotTable;
 		private System.Windows.Forms.ComboBox cmbFiadbCondTable;
 		private System.Windows.Forms.GroupBox groupBox23;
@@ -183,18 +176,18 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.ComboBox cmbFiadbPopEstUnitTable;
 		private System.Windows.Forms.ComboBox cmbFiadbPopStratumTable;
 		private System.Windows.Forms.ComboBox cmbFiadbPpsaTable;
-		private System.Windows.Forms.Button btnMDBFiadbInputFinish;
-		private System.Windows.Forms.Button btnMDBFiadbInputHelp;
-		private System.Windows.Forms.Button btnMDBFiadbInputPrev;
-		private System.Windows.Forms.Button btnMDBFiadbInputNext;
-		private System.Windows.Forms.Button btnMDBFiadbInputCancel;
+		private System.Windows.Forms.Button btnDBFiadbInputFinish;
+		private System.Windows.Forms.Button btnDBFiadbInputHelp;
+		private System.Windows.Forms.Button btnDBFiadbInputPrev;
+		private System.Windows.Forms.Button btnDBFiadbInputNext;
+		private System.Windows.Forms.Button btnDBFiadbInputCancel;
 		private System.Windows.Forms.TextBox txtFiadbInputFile;
 		private System.Windows.Forms.GroupBox groupBox24;
 		private System.Windows.Forms.ComboBox cmbFiadbSiteTreeTable;
 		private System.Windows.Forms.GroupBox groupBox25;
-		private System.Windows.Forms.TextBox txtMDBSiteTreeTable;
-		private System.Windows.Forms.Button btnMDBSiteTreeBrowse;
-        private System.Windows.Forms.TextBox txtMDBSiteTree;
+		private System.Windows.Forms.TextBox txtDBSiteTreeTable;
+		private System.Windows.Forms.Button btnDBSiteTreeBrowse;
+        private System.Windows.Forms.TextBox txtDBSiteTree;
         private Label label2;
         private ComboBox cmbCondPropPercent;
         private Label label1;
@@ -258,12 +251,12 @@ namespace FIA_Biosum_Manager
 		{
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(uc_plot_input));
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.grpboxMDBFiadbInput = new System.Windows.Forms.GroupBox();
+            this.grpboxDBFiadbInput = new System.Windows.Forms.GroupBox();
             this.groupBox24 = new System.Windows.Forms.GroupBox();
             this.cmbFiadbSiteTreeTable = new System.Windows.Forms.ComboBox();
             this.groupBox23 = new System.Windows.Forms.GroupBox();
             this.txtFiadbInputFile = new System.Windows.Forms.TextBox();
-            this.btnboxMDBFiadbInputFile = new System.Windows.Forms.Button();
+            this.btnboxDBFiadbInputFile = new System.Windows.Forms.Button();
             this.groupBox15 = new System.Windows.Forms.GroupBox();
             this.cmbFiadbPopEstUnitTable = new System.Windows.Forms.ComboBox();
             this.groupBox16 = new System.Windows.Forms.GroupBox();
@@ -280,11 +273,11 @@ namespace FIA_Biosum_Manager
             this.cmbFiadbCondTable = new System.Windows.Forms.ComboBox();
             this.groupBox22 = new System.Windows.Forms.GroupBox();
             this.cmbFiadbPlotTable = new System.Windows.Forms.ComboBox();
-            this.btnMDBFiadbInputFinish = new System.Windows.Forms.Button();
-            this.btnMDBFiadbInputHelp = new System.Windows.Forms.Button();
-            this.btnMDBFiadbInputPrev = new System.Windows.Forms.Button();
-            this.btnMDBFiadbInputNext = new System.Windows.Forms.Button();
-            this.btnMDBFiadbInputCancel = new System.Windows.Forms.Button();
+            this.btnDBFiadbInputFinish = new System.Windows.Forms.Button();
+            this.btnDBFiadbInputHelp = new System.Windows.Forms.Button();
+            this.btnDBFiadbInputPrev = new System.Windows.Forms.Button();
+            this.btnDBFiadbInputNext = new System.Windows.Forms.Button();
+            this.btnDBFiadbInputCancel = new System.Windows.Forms.Button();
             this.grpboxFIADBInv = new System.Windows.Forms.GroupBox();
             this.btnFIADBInvAppend = new System.Windows.Forms.Button();
             this.lstFIADBInv = new System.Windows.Forms.ListView();
@@ -292,13 +285,6 @@ namespace FIA_Biosum_Manager
             this.btnFIADBInvPrevious = new System.Windows.Forms.Button();
             this.btnFIADBInvNext = new System.Windows.Forms.Button();
             this.btnFIADBInvCancel = new System.Windows.Forms.Button();
-            this.grpboxIDBInv = new System.Windows.Forms.GroupBox();
-            this.btnIDBInvAppend = new System.Windows.Forms.Button();
-            this.lstIDBInv = new System.Windows.Forms.ListView();
-            this.btnIDBInvHelp = new System.Windows.Forms.Button();
-            this.btnIDBInvPrevious = new System.Windows.Forms.Button();
-            this.btnIDBInvNext = new System.Windows.Forms.Button();
-            this.btnIDBInvCancel = new System.Windows.Forms.Button();
             this.grpboxFilterByState = new System.Windows.Forms.GroupBox();
             this.btnFilterByStateFinish = new System.Windows.Forms.Button();
             this.btnFilterByStateUnselect = new System.Windows.Forms.Button();
@@ -338,25 +324,25 @@ namespace FIA_Biosum_Manager
             this.btnFilterByPlotNext = new System.Windows.Forms.Button();
             this.btnFilterByPlotCancel = new System.Windows.Forms.Button();
             this.groupBox25 = new System.Windows.Forms.GroupBox();
-            this.txtMDBSiteTreeTable = new System.Windows.Forms.TextBox();
-            this.btnMDBSiteTreeBrowse = new System.Windows.Forms.Button();
-            this.txtMDBSiteTree = new System.Windows.Forms.TextBox();
+            this.txtDBSiteTreeTable = new System.Windows.Forms.TextBox();
+            this.btnDBSiteTreeBrowse = new System.Windows.Forms.Button();
+            this.txtDBSiteTree = new System.Windows.Forms.TextBox();
             this.groupBox8 = new System.Windows.Forms.GroupBox();
-            this.txtMDBTreeTable = new System.Windows.Forms.TextBox();
-            this.btnMDBTreeBrowse = new System.Windows.Forms.Button();
-            this.txtMDBTree = new System.Windows.Forms.TextBox();
+            this.txtDBTreeTable = new System.Windows.Forms.TextBox();
+            this.btnDBTreeBrowse = new System.Windows.Forms.Button();
+            this.txtDBTree = new System.Windows.Forms.TextBox();
             this.groupBox9 = new System.Windows.Forms.GroupBox();
-            this.txtMDBCondTable = new System.Windows.Forms.TextBox();
-            this.btnMDBCondBrowse = new System.Windows.Forms.Button();
-            this.txtMDBCond = new System.Windows.Forms.TextBox();
+            this.txtDBCondTable = new System.Windows.Forms.TextBox();
+            this.btnDBCondBrowse = new System.Windows.Forms.Button();
+            this.txtDBCond = new System.Windows.Forms.TextBox();
             this.groupBox10 = new System.Windows.Forms.GroupBox();
-            this.txtMDBPlotTable = new System.Windows.Forms.TextBox();
-            this.btnMDBPlotBrowse = new System.Windows.Forms.Button();
-            this.txtMDBPlot = new System.Windows.Forms.TextBox();
+            this.txtDBPlotTable = new System.Windows.Forms.TextBox();
+            this.btnDBPlotBrowse = new System.Windows.Forms.Button();
+            this.txtDBPlot = new System.Windows.Forms.TextBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.cmbFiadbPlotGeomTable = new System.Windows.Forms.ComboBox();
             this.groupBox1.SuspendLayout();
-            this.grpboxMDBFiadbInput.SuspendLayout();
+            this.grpboxDBFiadbInput.SuspendLayout();
             this.groupBox24.SuspendLayout();
             this.groupBox23.SuspendLayout();
             this.groupBox15.SuspendLayout();
@@ -368,7 +354,6 @@ namespace FIA_Biosum_Manager
             this.groupBox21.SuspendLayout();
             this.groupBox22.SuspendLayout();
             this.grpboxFIADBInv.SuspendLayout();
-            this.grpboxIDBInv.SuspendLayout();
             this.grpboxFilterByState.SuspendLayout();
             this.grpboxFilter.SuspendLayout();
             this.groupBox7.SuspendLayout();
@@ -382,9 +367,8 @@ namespace FIA_Biosum_Manager
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.grpboxMDBFiadbInput);
+            this.groupBox1.Controls.Add(this.grpboxDBFiadbInput);
             this.groupBox1.Controls.Add(this.grpboxFIADBInv);
-            this.groupBox1.Controls.Add(this.grpboxIDBInv);
             this.groupBox1.Controls.Add(this.grpboxFilterByState);
             this.groupBox1.Controls.Add(this.grpboxFilter);
             this.groupBox1.Controls.Add(this.lblTitle);
@@ -400,30 +384,30 @@ namespace FIA_Biosum_Manager
             // 
             // grpboxMDBFiadbInput
             // 
-            this.grpboxMDBFiadbInput.Controls.Add(this.groupBox2);
-            this.grpboxMDBFiadbInput.Controls.Add(this.groupBox24);
-            this.grpboxMDBFiadbInput.Controls.Add(this.groupBox23);
-            this.grpboxMDBFiadbInput.Controls.Add(this.groupBox15);
-            this.grpboxMDBFiadbInput.Controls.Add(this.groupBox16);
-            this.grpboxMDBFiadbInput.Controls.Add(this.groupBox17);
-            this.grpboxMDBFiadbInput.Controls.Add(this.groupBox18);
-            this.grpboxMDBFiadbInput.Controls.Add(this.groupBox19);
-            this.grpboxMDBFiadbInput.Controls.Add(this.groupBox20);
-            this.grpboxMDBFiadbInput.Controls.Add(this.groupBox21);
-            this.grpboxMDBFiadbInput.Controls.Add(this.groupBox22);
-            this.grpboxMDBFiadbInput.Controls.Add(this.btnMDBFiadbInputFinish);
-            this.grpboxMDBFiadbInput.Controls.Add(this.btnMDBFiadbInputHelp);
-            this.grpboxMDBFiadbInput.Controls.Add(this.btnMDBFiadbInputPrev);
-            this.grpboxMDBFiadbInput.Controls.Add(this.btnMDBFiadbInputNext);
-            this.grpboxMDBFiadbInput.Controls.Add(this.btnMDBFiadbInputCancel);
-            this.grpboxMDBFiadbInput.Location = new System.Drawing.Point(19, 70);
-            this.grpboxMDBFiadbInput.Margin = new System.Windows.Forms.Padding(4);
-            this.grpboxMDBFiadbInput.Name = "grpboxMDBFiadbInput";
-            this.grpboxMDBFiadbInput.Padding = new System.Windows.Forms.Padding(4);
-            this.grpboxMDBFiadbInput.Size = new System.Drawing.Size(1344, 450);
-            this.grpboxMDBFiadbInput.TabIndex = 35;
-            this.grpboxMDBFiadbInput.TabStop = false;
-            this.grpboxMDBFiadbInput.Text = "FIADB SQLite Database File Input";
+            this.grpboxDBFiadbInput.Controls.Add(this.groupBox2);
+            this.grpboxDBFiadbInput.Controls.Add(this.groupBox24);
+            this.grpboxDBFiadbInput.Controls.Add(this.groupBox23);
+            this.grpboxDBFiadbInput.Controls.Add(this.groupBox15);
+            this.grpboxDBFiadbInput.Controls.Add(this.groupBox16);
+            this.grpboxDBFiadbInput.Controls.Add(this.groupBox17);
+            this.grpboxDBFiadbInput.Controls.Add(this.groupBox18);
+            this.grpboxDBFiadbInput.Controls.Add(this.groupBox19);
+            this.grpboxDBFiadbInput.Controls.Add(this.groupBox20);
+            this.grpboxDBFiadbInput.Controls.Add(this.groupBox21);
+            this.grpboxDBFiadbInput.Controls.Add(this.groupBox22);
+            this.grpboxDBFiadbInput.Controls.Add(this.btnDBFiadbInputFinish);
+            this.grpboxDBFiadbInput.Controls.Add(this.btnDBFiadbInputHelp);
+            this.grpboxDBFiadbInput.Controls.Add(this.btnDBFiadbInputPrev);
+            this.grpboxDBFiadbInput.Controls.Add(this.btnDBFiadbInputNext);
+            this.grpboxDBFiadbInput.Controls.Add(this.btnDBFiadbInputCancel);
+            this.grpboxDBFiadbInput.Location = new System.Drawing.Point(19, 70);
+            this.grpboxDBFiadbInput.Margin = new System.Windows.Forms.Padding(4);
+            this.grpboxDBFiadbInput.Name = "grpboxMDBFiadbInput";
+            this.grpboxDBFiadbInput.Padding = new System.Windows.Forms.Padding(4);
+            this.grpboxDBFiadbInput.Size = new System.Drawing.Size(1344, 450);
+            this.grpboxDBFiadbInput.TabIndex = 35;
+            this.grpboxDBFiadbInput.TabStop = false;
+            this.grpboxDBFiadbInput.Text = "FIADB SQLite Database File Input";
             // 
             // groupBox24
             // 
@@ -448,7 +432,7 @@ namespace FIA_Biosum_Manager
             // groupBox23
             // 
             this.groupBox23.Controls.Add(this.txtFiadbInputFile);
-            this.groupBox23.Controls.Add(this.btnboxMDBFiadbInputFile);
+            this.groupBox23.Controls.Add(this.btnboxDBFiadbInputFile);
             this.groupBox23.Location = new System.Drawing.Point(25, 20);
             this.groupBox23.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox23.Name = "groupBox23";
@@ -469,13 +453,13 @@ namespace FIA_Biosum_Manager
             // 
             // btnboxMDBFiadbInputFile
             // 
-            this.btnboxMDBFiadbInputFile.Image = ((System.Drawing.Image)(resources.GetObject("btnboxMDBFiadbInputFile.Image")));
-            this.btnboxMDBFiadbInputFile.Location = new System.Drawing.Point(740, 12);
-            this.btnboxMDBFiadbInputFile.Margin = new System.Windows.Forms.Padding(4);
-            this.btnboxMDBFiadbInputFile.Name = "btnboxMDBFiadbInputFile";
-            this.btnboxMDBFiadbInputFile.Size = new System.Drawing.Size(40, 40);
-            this.btnboxMDBFiadbInputFile.TabIndex = 1;
-            this.btnboxMDBFiadbInputFile.Click += new System.EventHandler(this.btnboxMDBFiadbInputFile_Click);
+            this.btnboxDBFiadbInputFile.Image = ((System.Drawing.Image)(resources.GetObject("btnboxMDBFiadbInputFile.Image")));
+            this.btnboxDBFiadbInputFile.Location = new System.Drawing.Point(740, 12);
+            this.btnboxDBFiadbInputFile.Margin = new System.Windows.Forms.Padding(4);
+            this.btnboxDBFiadbInputFile.Name = "btnboxMDBFiadbInputFile";
+            this.btnboxDBFiadbInputFile.Size = new System.Drawing.Size(40, 40);
+            this.btnboxDBFiadbInputFile.TabIndex = 1;
+            this.btnboxDBFiadbInputFile.Click += new System.EventHandler(this.btnboxDBFiadbInputFile_Click);
             // 
             // groupBox15
             // 
@@ -639,55 +623,55 @@ namespace FIA_Biosum_Manager
             // 
             // btnMDBFiadbInputFinish
             // 
-            this.btnMDBFiadbInputFinish.Enabled = false;
-            this.btnMDBFiadbInputFinish.Location = new System.Drawing.Point(730, 408);
-            this.btnMDBFiadbInputFinish.Margin = new System.Windows.Forms.Padding(4);
-            this.btnMDBFiadbInputFinish.Name = "btnMDBFiadbInputFinish";
-            this.btnMDBFiadbInputFinish.Size = new System.Drawing.Size(90, 30);
-            this.btnMDBFiadbInputFinish.TabIndex = 7;
-            this.btnMDBFiadbInputFinish.Text = "Append";
+            this.btnDBFiadbInputFinish.Enabled = false;
+            this.btnDBFiadbInputFinish.Location = new System.Drawing.Point(730, 408);
+            this.btnDBFiadbInputFinish.Margin = new System.Windows.Forms.Padding(4);
+            this.btnDBFiadbInputFinish.Name = "btnMDBFiadbInputFinish";
+            this.btnDBFiadbInputFinish.Size = new System.Drawing.Size(90, 30);
+            this.btnDBFiadbInputFinish.TabIndex = 7;
+            this.btnDBFiadbInputFinish.Text = "Append";
             // 
             // btnMDBFiadbInputHelp
             // 
-            this.btnMDBFiadbInputHelp.ForeColor = System.Drawing.SystemColors.HotTrack;
-            this.btnMDBFiadbInputHelp.Location = new System.Drawing.Point(30, 408);
-            this.btnMDBFiadbInputHelp.Margin = new System.Windows.Forms.Padding(4);
-            this.btnMDBFiadbInputHelp.Name = "btnMDBFiadbInputHelp";
-            this.btnMDBFiadbInputHelp.Size = new System.Drawing.Size(80, 30);
-            this.btnMDBFiadbInputHelp.TabIndex = 3;
-            this.btnMDBFiadbInputHelp.Text = "Help";
-            this.btnMDBFiadbInputHelp.Click += new System.EventHandler(this.btnMDBFiadbInputHelp_Click);
+            this.btnDBFiadbInputHelp.ForeColor = System.Drawing.SystemColors.HotTrack;
+            this.btnDBFiadbInputHelp.Location = new System.Drawing.Point(30, 408);
+            this.btnDBFiadbInputHelp.Margin = new System.Windows.Forms.Padding(4);
+            this.btnDBFiadbInputHelp.Name = "btnMDBFiadbInputHelp";
+            this.btnDBFiadbInputHelp.Size = new System.Drawing.Size(80, 30);
+            this.btnDBFiadbInputHelp.TabIndex = 3;
+            this.btnDBFiadbInputHelp.Text = "Help";
+            this.btnDBFiadbInputHelp.Click += new System.EventHandler(this.btnDBFiadbInputHelp_Click);
             // 
             // btnMDBFiadbInputPrev
             // 
-            this.btnMDBFiadbInputPrev.Enabled = false;
-            this.btnMDBFiadbInputPrev.Location = new System.Drawing.Point(530, 408);
-            this.btnMDBFiadbInputPrev.Margin = new System.Windows.Forms.Padding(4);
-            this.btnMDBFiadbInputPrev.Name = "btnMDBFiadbInputPrev";
-            this.btnMDBFiadbInputPrev.Size = new System.Drawing.Size(90, 30);
-            this.btnMDBFiadbInputPrev.TabIndex = 5;
-            this.btnMDBFiadbInputPrev.TabStop = false;
-            this.btnMDBFiadbInputPrev.Text = "< Previous";
+            this.btnDBFiadbInputPrev.Enabled = false;
+            this.btnDBFiadbInputPrev.Location = new System.Drawing.Point(530, 408);
+            this.btnDBFiadbInputPrev.Margin = new System.Windows.Forms.Padding(4);
+            this.btnDBFiadbInputPrev.Name = "btnMDBFiadbInputPrev";
+            this.btnDBFiadbInputPrev.Size = new System.Drawing.Size(90, 30);
+            this.btnDBFiadbInputPrev.TabIndex = 5;
+            this.btnDBFiadbInputPrev.TabStop = false;
+            this.btnDBFiadbInputPrev.Text = "< Previous";
             // 
             // btnMDBFiadbInputNext
             // 
-            this.btnMDBFiadbInputNext.Location = new System.Drawing.Point(620, 408);
-            this.btnMDBFiadbInputNext.Margin = new System.Windows.Forms.Padding(4);
-            this.btnMDBFiadbInputNext.Name = "btnMDBFiadbInputNext";
-            this.btnMDBFiadbInputNext.Size = new System.Drawing.Size(90, 30);
-            this.btnMDBFiadbInputNext.TabIndex = 6;
-            this.btnMDBFiadbInputNext.Text = "Next >";
-            this.btnMDBFiadbInputNext.Click += new System.EventHandler(this.btnMDBFiadbInputNext_Click);
+            this.btnDBFiadbInputNext.Location = new System.Drawing.Point(620, 408);
+            this.btnDBFiadbInputNext.Margin = new System.Windows.Forms.Padding(4);
+            this.btnDBFiadbInputNext.Name = "btnMDBFiadbInputNext";
+            this.btnDBFiadbInputNext.Size = new System.Drawing.Size(90, 30);
+            this.btnDBFiadbInputNext.TabIndex = 6;
+            this.btnDBFiadbInputNext.Text = "Next >";
+            this.btnDBFiadbInputNext.Click += new System.EventHandler(this.btnDBFiadbInputNext_Click);
             // 
             // btnMDBFiadbInputCancel
             // 
-            this.btnMDBFiadbInputCancel.Location = new System.Drawing.Point(420, 408);
-            this.btnMDBFiadbInputCancel.Margin = new System.Windows.Forms.Padding(4);
-            this.btnMDBFiadbInputCancel.Name = "btnMDBFiadbInputCancel";
-            this.btnMDBFiadbInputCancel.Size = new System.Drawing.Size(80, 30);
-            this.btnMDBFiadbInputCancel.TabIndex = 4;
-            this.btnMDBFiadbInputCancel.Text = "Cancel";
-            this.btnMDBFiadbInputCancel.Click += new System.EventHandler(this.btnMDBFiadbInputCancel_Click);
+            this.btnDBFiadbInputCancel.Location = new System.Drawing.Point(420, 408);
+            this.btnDBFiadbInputCancel.Margin = new System.Windows.Forms.Padding(4);
+            this.btnDBFiadbInputCancel.Name = "btnMDBFiadbInputCancel";
+            this.btnDBFiadbInputCancel.Size = new System.Drawing.Size(80, 30);
+            this.btnDBFiadbInputCancel.TabIndex = 4;
+            this.btnDBFiadbInputCancel.Text = "Cancel";
+            this.btnDBFiadbInputCancel.Click += new System.EventHandler(this.btnDBFiadbInputCancel_Click);
             // 
             // grpboxFIADBInv
             // 
@@ -772,89 +756,6 @@ namespace FIA_Biosum_Manager
             this.btnFIADBInvCancel.TabIndex = 20;
             this.btnFIADBInvCancel.Text = "Cancel";
             this.btnFIADBInvCancel.Click += new System.EventHandler(this.btnFIADBInvCancel_Click);
-            // 
-            // grpboxIDBInv
-            // 
-            this.grpboxIDBInv.Controls.Add(this.btnIDBInvAppend);
-            this.grpboxIDBInv.Controls.Add(this.lstIDBInv);
-            this.grpboxIDBInv.Controls.Add(this.btnIDBInvHelp);
-            this.grpboxIDBInv.Controls.Add(this.btnIDBInvPrevious);
-            this.grpboxIDBInv.Controls.Add(this.btnIDBInvNext);
-            this.grpboxIDBInv.Controls.Add(this.btnIDBInvCancel);
-            this.grpboxIDBInv.Location = new System.Drawing.Point(20, 2395);
-            this.grpboxIDBInv.Margin = new System.Windows.Forms.Padding(4);
-            this.grpboxIDBInv.Name = "grpboxIDBInv";
-            this.grpboxIDBInv.Padding = new System.Windows.Forms.Padding(4);
-            this.grpboxIDBInv.Size = new System.Drawing.Size(840, 450);
-            this.grpboxIDBInv.TabIndex = 33;
-            this.grpboxIDBInv.TabStop = false;
-            this.grpboxIDBInv.Text = "Select IDB Inventory";
-            // 
-            // btnIDBInvAppend
-            // 
-            this.btnIDBInvAppend.Enabled = false;
-            this.btnIDBInvAppend.Location = new System.Drawing.Point(730, 408);
-            this.btnIDBInvAppend.Margin = new System.Windows.Forms.Padding(4);
-            this.btnIDBInvAppend.Name = "btnIDBInvAppend";
-            this.btnIDBInvAppend.Size = new System.Drawing.Size(90, 30);
-            this.btnIDBInvAppend.TabIndex = 34;
-            this.btnIDBInvAppend.Text = "Append";
-            this.btnIDBInvAppend.Click += new System.EventHandler(this.btnIDBInvAppend_Click);
-            // 
-            // lstIDBInv
-            // 
-            this.lstIDBInv.FullRowSelect = true;
-            this.lstIDBInv.GridLines = true;
-            this.lstIDBInv.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
-            this.lstIDBInv.HideSelection = false;
-            this.lstIDBInv.Location = new System.Drawing.Point(20, 40);
-            this.lstIDBInv.Margin = new System.Windows.Forms.Padding(4);
-            this.lstIDBInv.MultiSelect = false;
-            this.lstIDBInv.Name = "lstIDBInv";
-            this.lstIDBInv.Size = new System.Drawing.Size(799, 349);
-            this.lstIDBInv.TabIndex = 30;
-            this.lstIDBInv.UseCompatibleStateImageBehavior = false;
-            this.lstIDBInv.View = System.Windows.Forms.View.Details;
-            this.lstIDBInv.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.lstIDBInv_ItemCheck);
-            // 
-            // btnIDBInvHelp
-            // 
-            this.btnIDBInvHelp.Location = new System.Drawing.Point(20, 408);
-            this.btnIDBInvHelp.Margin = new System.Windows.Forms.Padding(4);
-            this.btnIDBInvHelp.Name = "btnIDBInvHelp";
-            this.btnIDBInvHelp.Size = new System.Drawing.Size(80, 30);
-            this.btnIDBInvHelp.TabIndex = 23;
-            this.btnIDBInvHelp.Text = "Help";
-            // 
-            // btnIDBInvPrevious
-            // 
-            this.btnIDBInvPrevious.Location = new System.Drawing.Point(530, 408);
-            this.btnIDBInvPrevious.Margin = new System.Windows.Forms.Padding(4);
-            this.btnIDBInvPrevious.Name = "btnIDBInvPrevious";
-            this.btnIDBInvPrevious.Size = new System.Drawing.Size(90, 30);
-            this.btnIDBInvPrevious.TabIndex = 22;
-            this.btnIDBInvPrevious.Text = "< Previous";
-            this.btnIDBInvPrevious.Click += new System.EventHandler(this.btnIDBInvPrevious_Click);
-            // 
-            // btnIDBInvNext
-            // 
-            this.btnIDBInvNext.Location = new System.Drawing.Point(620, 408);
-            this.btnIDBInvNext.Margin = new System.Windows.Forms.Padding(4);
-            this.btnIDBInvNext.Name = "btnIDBInvNext";
-            this.btnIDBInvNext.Size = new System.Drawing.Size(90, 30);
-            this.btnIDBInvNext.TabIndex = 21;
-            this.btnIDBInvNext.Text = "Next >";
-            this.btnIDBInvNext.Click += new System.EventHandler(this.btnIDBInvNext_Click);
-            // 
-            // btnIDBInvCancel
-            // 
-            this.btnIDBInvCancel.Location = new System.Drawing.Point(420, 408);
-            this.btnIDBInvCancel.Margin = new System.Windows.Forms.Padding(4);
-            this.btnIDBInvCancel.Name = "btnIDBInvCancel";
-            this.btnIDBInvCancel.Size = new System.Drawing.Size(80, 30);
-            this.btnIDBInvCancel.TabIndex = 20;
-            this.btnIDBInvCancel.Text = "Cancel";
-            this.btnIDBInvCancel.Click += new System.EventHandler(this.btnIDBInvCancel_Click);
             // 
             // grpboxFilterByState
             // 
@@ -1307,9 +1208,9 @@ namespace FIA_Biosum_Manager
             // 
             // groupBox25
             // 
-            this.groupBox25.Controls.Add(this.txtMDBSiteTreeTable);
-            this.groupBox25.Controls.Add(this.btnMDBSiteTreeBrowse);
-            this.groupBox25.Controls.Add(this.txtMDBSiteTree);
+            this.groupBox25.Controls.Add(this.txtDBSiteTreeTable);
+            this.groupBox25.Controls.Add(this.btnDBSiteTreeBrowse);
+            this.groupBox25.Controls.Add(this.txtDBSiteTree);
             this.groupBox25.Location = new System.Drawing.Point(24, 248);
             this.groupBox25.Name = "groupBox25";
             this.groupBox25.Size = new System.Drawing.Size(624, 73);
@@ -1319,34 +1220,34 @@ namespace FIA_Biosum_Manager
             // 
             // txtMDBSiteTreeTable
             // 
-            this.txtMDBSiteTreeTable.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtMDBSiteTreeTable.Location = new System.Drawing.Point(408, 27);
-            this.txtMDBSiteTreeTable.Name = "txtMDBSiteTreeTable";
-            this.txtMDBSiteTreeTable.Size = new System.Drawing.Size(152, 30);
-            this.txtMDBSiteTreeTable.TabIndex = 1;
+            this.txtDBSiteTreeTable.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtDBSiteTreeTable.Location = new System.Drawing.Point(408, 27);
+            this.txtDBSiteTreeTable.Name = "txtMDBSiteTreeTable";
+            this.txtDBSiteTreeTable.Size = new System.Drawing.Size(152, 30);
+            this.txtDBSiteTreeTable.TabIndex = 1;
             // 
             // btnMDBSiteTreeBrowse
             // 
-            this.btnMDBSiteTreeBrowse.Image = ((System.Drawing.Image)(resources.GetObject("btnMDBSiteTreeBrowse.Image")));
-            this.btnMDBSiteTreeBrowse.Location = new System.Drawing.Point(573, 23);
-            this.btnMDBSiteTreeBrowse.Name = "btnMDBSiteTreeBrowse";
-            this.btnMDBSiteTreeBrowse.Size = new System.Drawing.Size(32, 32);
-            this.btnMDBSiteTreeBrowse.TabIndex = 2;
-            this.btnMDBSiteTreeBrowse.Click += new System.EventHandler(this.btnMDBSiteTreeBrowse_Click);
+            this.btnDBSiteTreeBrowse.Image = ((System.Drawing.Image)(resources.GetObject("btnMDBSiteTreeBrowse.Image")));
+            this.btnDBSiteTreeBrowse.Location = new System.Drawing.Point(573, 23);
+            this.btnDBSiteTreeBrowse.Name = "btnMDBSiteTreeBrowse";
+            this.btnDBSiteTreeBrowse.Size = new System.Drawing.Size(32, 32);
+            this.btnDBSiteTreeBrowse.TabIndex = 2;
+            this.btnDBSiteTreeBrowse.Click += new System.EventHandler(this.btnDBSiteTreeBrowse_Click);
             // 
             // txtMDBSiteTree
             // 
-            this.txtMDBSiteTree.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtMDBSiteTree.Location = new System.Drawing.Point(17, 27);
-            this.txtMDBSiteTree.Name = "txtMDBSiteTree";
-            this.txtMDBSiteTree.Size = new System.Drawing.Size(383, 30);
-            this.txtMDBSiteTree.TabIndex = 0;
+            this.txtDBSiteTree.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtDBSiteTree.Location = new System.Drawing.Point(17, 27);
+            this.txtDBSiteTree.Name = "txtMDBSiteTree";
+            this.txtDBSiteTree.Size = new System.Drawing.Size(383, 30);
+            this.txtDBSiteTree.TabIndex = 0;
             // 
             // groupBox8
             // 
-            this.groupBox8.Controls.Add(this.txtMDBTreeTable);
-            this.groupBox8.Controls.Add(this.btnMDBTreeBrowse);
-            this.groupBox8.Controls.Add(this.txtMDBTree);
+            this.groupBox8.Controls.Add(this.txtDBTreeTable);
+            this.groupBox8.Controls.Add(this.btnDBTreeBrowse);
+            this.groupBox8.Controls.Add(this.txtDBTree);
             this.groupBox8.Location = new System.Drawing.Point(24, 167);
             this.groupBox8.Name = "groupBox8";
             this.groupBox8.Size = new System.Drawing.Size(624, 73);
@@ -1356,34 +1257,34 @@ namespace FIA_Biosum_Manager
             // 
             // txtMDBTreeTable
             // 
-            this.txtMDBTreeTable.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtMDBTreeTable.Location = new System.Drawing.Point(408, 27);
-            this.txtMDBTreeTable.Name = "txtMDBTreeTable";
-            this.txtMDBTreeTable.Size = new System.Drawing.Size(152, 30);
-            this.txtMDBTreeTable.TabIndex = 1;
+            this.txtDBTreeTable.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtDBTreeTable.Location = new System.Drawing.Point(408, 27);
+            this.txtDBTreeTable.Name = "txtMDBTreeTable";
+            this.txtDBTreeTable.Size = new System.Drawing.Size(152, 30);
+            this.txtDBTreeTable.TabIndex = 1;
             // 
             // btnMDBTreeBrowse
             // 
-            this.btnMDBTreeBrowse.Image = ((System.Drawing.Image)(resources.GetObject("btnMDBTreeBrowse.Image")));
-            this.btnMDBTreeBrowse.Location = new System.Drawing.Point(573, 23);
-            this.btnMDBTreeBrowse.Name = "btnMDBTreeBrowse";
-            this.btnMDBTreeBrowse.Size = new System.Drawing.Size(32, 32);
-            this.btnMDBTreeBrowse.TabIndex = 2;
-            this.btnMDBTreeBrowse.Click += new System.EventHandler(this.btnMDBTreeBrowse_Click);
+            this.btnDBTreeBrowse.Image = ((System.Drawing.Image)(resources.GetObject("btnMDBTreeBrowse.Image")));
+            this.btnDBTreeBrowse.Location = new System.Drawing.Point(573, 23);
+            this.btnDBTreeBrowse.Name = "btnMDBTreeBrowse";
+            this.btnDBTreeBrowse.Size = new System.Drawing.Size(32, 32);
+            this.btnDBTreeBrowse.TabIndex = 2;
+            this.btnDBTreeBrowse.Click += new System.EventHandler(this.btnDBTreeBrowse_Click);
             // 
             // txtMDBTree
             // 
-            this.txtMDBTree.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtMDBTree.Location = new System.Drawing.Point(17, 27);
-            this.txtMDBTree.Name = "txtMDBTree";
-            this.txtMDBTree.Size = new System.Drawing.Size(383, 30);
-            this.txtMDBTree.TabIndex = 0;
+            this.txtDBTree.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtDBTree.Location = new System.Drawing.Point(17, 27);
+            this.txtDBTree.Name = "txtMDBTree";
+            this.txtDBTree.Size = new System.Drawing.Size(383, 30);
+            this.txtDBTree.TabIndex = 0;
             // 
             // groupBox9
             // 
-            this.groupBox9.Controls.Add(this.txtMDBCondTable);
-            this.groupBox9.Controls.Add(this.btnMDBCondBrowse);
-            this.groupBox9.Controls.Add(this.txtMDBCond);
+            this.groupBox9.Controls.Add(this.txtDBCondTable);
+            this.groupBox9.Controls.Add(this.btnDBCondBrowse);
+            this.groupBox9.Controls.Add(this.txtDBCond);
             this.groupBox9.Location = new System.Drawing.Point(24, 95);
             this.groupBox9.Name = "groupBox9";
             this.groupBox9.Size = new System.Drawing.Size(624, 65);
@@ -1393,34 +1294,34 @@ namespace FIA_Biosum_Manager
             // 
             // txtMDBCondTable
             // 
-            this.txtMDBCondTable.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtMDBCondTable.Location = new System.Drawing.Point(408, 24);
-            this.txtMDBCondTable.Name = "txtMDBCondTable";
-            this.txtMDBCondTable.Size = new System.Drawing.Size(152, 30);
-            this.txtMDBCondTable.TabIndex = 1;
+            this.txtDBCondTable.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtDBCondTable.Location = new System.Drawing.Point(408, 24);
+            this.txtDBCondTable.Name = "txtMDBCondTable";
+            this.txtDBCondTable.Size = new System.Drawing.Size(152, 30);
+            this.txtDBCondTable.TabIndex = 1;
             // 
             // btnMDBCondBrowse
             // 
-            this.btnMDBCondBrowse.Image = ((System.Drawing.Image)(resources.GetObject("btnMDBCondBrowse.Image")));
-            this.btnMDBCondBrowse.Location = new System.Drawing.Point(573, 18);
-            this.btnMDBCondBrowse.Name = "btnMDBCondBrowse";
-            this.btnMDBCondBrowse.Size = new System.Drawing.Size(32, 32);
-            this.btnMDBCondBrowse.TabIndex = 2;
-            this.btnMDBCondBrowse.Click += new System.EventHandler(this.btnMDBCondBrowse_Click);
+            this.btnDBCondBrowse.Image = ((System.Drawing.Image)(resources.GetObject("btnMDBCondBrowse.Image")));
+            this.btnDBCondBrowse.Location = new System.Drawing.Point(573, 18);
+            this.btnDBCondBrowse.Name = "btnMDBCondBrowse";
+            this.btnDBCondBrowse.Size = new System.Drawing.Size(32, 32);
+            this.btnDBCondBrowse.TabIndex = 2;
+            this.btnDBCondBrowse.Click += new System.EventHandler(this.btnDBCondBrowse_Click);
             // 
             // txtMDBCond
             // 
-            this.txtMDBCond.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtMDBCond.Location = new System.Drawing.Point(17, 24);
-            this.txtMDBCond.Name = "txtMDBCond";
-            this.txtMDBCond.Size = new System.Drawing.Size(383, 30);
-            this.txtMDBCond.TabIndex = 0;
+            this.txtDBCond.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtDBCond.Location = new System.Drawing.Point(17, 24);
+            this.txtDBCond.Name = "txtMDBCond";
+            this.txtDBCond.Size = new System.Drawing.Size(383, 30);
+            this.txtDBCond.TabIndex = 0;
             // 
             // groupBox10
             // 
-            this.groupBox10.Controls.Add(this.txtMDBPlotTable);
-            this.groupBox10.Controls.Add(this.btnMDBPlotBrowse);
-            this.groupBox10.Controls.Add(this.txtMDBPlot);
+            this.groupBox10.Controls.Add(this.txtDBPlotTable);
+            this.groupBox10.Controls.Add(this.btnDBPlotBrowse);
+            this.groupBox10.Controls.Add(this.txtDBPlot);
             this.groupBox10.Location = new System.Drawing.Point(24, 22);
             this.groupBox10.Name = "groupBox10";
             this.groupBox10.Size = new System.Drawing.Size(624, 66);
@@ -1430,28 +1331,28 @@ namespace FIA_Biosum_Manager
             // 
             // txtMDBPlotTable
             // 
-            this.txtMDBPlotTable.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtMDBPlotTable.Location = new System.Drawing.Point(408, 26);
-            this.txtMDBPlotTable.Name = "txtMDBPlotTable";
-            this.txtMDBPlotTable.Size = new System.Drawing.Size(152, 30);
-            this.txtMDBPlotTable.TabIndex = 1;
+            this.txtDBPlotTable.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtDBPlotTable.Location = new System.Drawing.Point(408, 26);
+            this.txtDBPlotTable.Name = "txtMDBPlotTable";
+            this.txtDBPlotTable.Size = new System.Drawing.Size(152, 30);
+            this.txtDBPlotTable.TabIndex = 1;
             // 
             // btnMDBPlotBrowse
             // 
-            this.btnMDBPlotBrowse.Image = ((System.Drawing.Image)(resources.GetObject("btnMDBPlotBrowse.Image")));
-            this.btnMDBPlotBrowse.Location = new System.Drawing.Point(573, 22);
-            this.btnMDBPlotBrowse.Name = "btnMDBPlotBrowse";
-            this.btnMDBPlotBrowse.Size = new System.Drawing.Size(32, 32);
-            this.btnMDBPlotBrowse.TabIndex = 2;
-            this.btnMDBPlotBrowse.Click += new System.EventHandler(this.btnMDBPlotBrowse_Click);
+            this.btnDBPlotBrowse.Image = ((System.Drawing.Image)(resources.GetObject("btnMDBPlotBrowse.Image")));
+            this.btnDBPlotBrowse.Location = new System.Drawing.Point(573, 22);
+            this.btnDBPlotBrowse.Name = "btnMDBPlotBrowse";
+            this.btnDBPlotBrowse.Size = new System.Drawing.Size(32, 32);
+            this.btnDBPlotBrowse.TabIndex = 2;
+            this.btnDBPlotBrowse.Click += new System.EventHandler(this.btnDBPlotBrowse_Click);
             // 
             // txtMDBPlot
             // 
-            this.txtMDBPlot.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtMDBPlot.Location = new System.Drawing.Point(17, 26);
-            this.txtMDBPlot.Name = "txtMDBPlot";
-            this.txtMDBPlot.Size = new System.Drawing.Size(383, 30);
-            this.txtMDBPlot.TabIndex = 0;
+            this.txtDBPlot.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtDBPlot.Location = new System.Drawing.Point(17, 26);
+            this.txtDBPlot.Name = "txtMDBPlot";
+            this.txtDBPlot.Size = new System.Drawing.Size(383, 30);
+            this.txtDBPlot.TabIndex = 0;
             // 
             // groupBox2
             // 
@@ -1482,7 +1383,7 @@ namespace FIA_Biosum_Manager
             this.Name = "uc_plot_input";
             this.Size = new System.Drawing.Size(880, 3375);
             this.groupBox1.ResumeLayout(false);
-            this.grpboxMDBFiadbInput.ResumeLayout(false);
+            this.grpboxDBFiadbInput.ResumeLayout(false);
             this.groupBox24.ResumeLayout(false);
             this.groupBox23.ResumeLayout(false);
             this.groupBox23.PerformLayout();
@@ -1495,7 +1396,6 @@ namespace FIA_Biosum_Manager
             this.groupBox21.ResumeLayout(false);
             this.groupBox22.ResumeLayout(false);
             this.grpboxFIADBInv.ResumeLayout(false);
-            this.grpboxIDBInv.ResumeLayout(false);
             this.grpboxFilterByState.ResumeLayout(false);
             this.grpboxFilter.ResumeLayout(false);
             this.groupBox7.ResumeLayout(false);
@@ -1523,64 +1423,53 @@ namespace FIA_Biosum_Manager
 		{
             this.Width = 1100;
             this.m_DialogWd = this.Width + 10;
-			this.m_DialogHt = this.groupBox1.Top + this.grpboxMDBFiadbInput.Top + this.grpboxMDBFiadbInput.Height + 100 ;
+			this.m_DialogHt = this.groupBox1.Top + this.grpboxDBFiadbInput.Top + this.grpboxDBFiadbInput.Height + 100 ;
 
 		
 					
-			this.grpboxFilterByState.Left = this.grpboxMDBFiadbInput.Left;
-			this.grpboxFilterByState.Width = this.grpboxMDBFiadbInput.Width;
-			this.grpboxFilterByState.Height = this.grpboxMDBFiadbInput.Height;
-			this.grpboxFilterByState.Top = this.grpboxMDBFiadbInput.Top;
-            this.btnFilterByStateHelp.Location = this.btnMDBFiadbInputHelp.Location;
-            this.btnFilterByStateCancel.Location = this.btnMDBFiadbInputCancel.Location;
-            this.btnFilterByStatePrevious.Location = this.btnMDBFiadbInputPrev.Location;
-			this.btnFilterByStateNext.Location = this.btnMDBFiadbInputNext.Location;
-			this.btnFilterByStateFinish.Location = this.btnMDBFiadbInputFinish.Location;
+			this.grpboxFilterByState.Left = this.grpboxDBFiadbInput.Left;
+			this.grpboxFilterByState.Width = this.grpboxDBFiadbInput.Width;
+			this.grpboxFilterByState.Height = this.grpboxDBFiadbInput.Height;
+			this.grpboxFilterByState.Top = this.grpboxDBFiadbInput.Top;
+            this.btnFilterByStateHelp.Location = this.btnDBFiadbInputHelp.Location;
+            this.btnFilterByStateCancel.Location = this.btnDBFiadbInputCancel.Location;
+            this.btnFilterByStatePrevious.Location = this.btnDBFiadbInputPrev.Location;
+			this.btnFilterByStateNext.Location = this.btnDBFiadbInputNext.Location;
+			this.btnFilterByStateFinish.Location = this.btnDBFiadbInputFinish.Location;
 			this.grpboxFilterByState.Visible=false;	
 
-			this.grpboxFilter.Left = this.grpboxMDBFiadbInput.Left;
-			this.grpboxFilter.Width = this.grpboxMDBFiadbInput.Width;
-			this.grpboxFilter.Height = this.grpboxMDBFiadbInput.Height;
-			this.grpboxFilter.Top = this.grpboxMDBFiadbInput.Top;
-			this.btnFilterHelp.Location = this.btnMDBFiadbInputHelp.Location;
-			this.btnFilterCancel.Location = this.btnMDBFiadbInputCancel.Location;
-			this.btnFilterPrevious.Location = this.btnMDBFiadbInputPrev.Location;
-			this.btnFilterNext.Location = this.btnMDBFiadbInputNext.Location;
-			this.btnFilterFinish.Location = this.btnMDBFiadbInputFinish.Location;
+			this.grpboxFilter.Left = this.grpboxDBFiadbInput.Left;
+			this.grpboxFilter.Width = this.grpboxDBFiadbInput.Width;
+			this.grpboxFilter.Height = this.grpboxDBFiadbInput.Height;
+			this.grpboxFilter.Top = this.grpboxDBFiadbInput.Top;
+			this.btnFilterHelp.Location = this.btnDBFiadbInputHelp.Location;
+			this.btnFilterCancel.Location = this.btnDBFiadbInputCancel.Location;
+			this.btnFilterPrevious.Location = this.btnDBFiadbInputPrev.Location;
+			this.btnFilterNext.Location = this.btnDBFiadbInputNext.Location;
+			this.btnFilterFinish.Location = this.btnDBFiadbInputFinish.Location;
 			this.grpboxFilter.Visible=false;	
 
-			this.grpboxFilterByPlot.Left = this.grpboxMDBFiadbInput.Left;
-			this.grpboxFilterByPlot.Width = this.grpboxMDBFiadbInput.Width;
-			this.grpboxFilterByPlot.Height = this.grpboxMDBFiadbInput.Height;
-			this.grpboxFilterByPlot.Top = this.grpboxMDBFiadbInput.Top;
-			this.btnFilterByPlotHelp.Location = this.btnMDBFiadbInputHelp.Location;
-			this.btnFilterByPlotCancel.Location = this.btnMDBFiadbInputCancel.Location;
-			this.btnFilterByPlotPrevious.Location = this.btnMDBFiadbInputPrev.Location;
-			this.btnFilterByPlotNext.Location = this.btnMDBFiadbInputNext.Location;
-			this.btnFilterByPlotFinish.Location = this.btnMDBFiadbInputFinish.Location;
+			this.grpboxFilterByPlot.Left = this.grpboxDBFiadbInput.Left;
+			this.grpboxFilterByPlot.Width = this.grpboxDBFiadbInput.Width;
+			this.grpboxFilterByPlot.Height = this.grpboxDBFiadbInput.Height;
+			this.grpboxFilterByPlot.Top = this.grpboxDBFiadbInput.Top;
+			this.btnFilterByPlotHelp.Location = this.btnDBFiadbInputHelp.Location;
+			this.btnFilterByPlotCancel.Location = this.btnDBFiadbInputCancel.Location;
+			this.btnFilterByPlotPrevious.Location = this.btnDBFiadbInputPrev.Location;
+			this.btnFilterByPlotNext.Location = this.btnDBFiadbInputNext.Location;
+			this.btnFilterByPlotFinish.Location = this.btnDBFiadbInputFinish.Location;
 			this.grpboxFilterByPlot.Visible=false;
 
-			this.grpboxIDBInv.Left = this.grpboxMDBFiadbInput.Left;
-			this.grpboxIDBInv.Width = this.grpboxMDBFiadbInput.Width;
-			this.grpboxIDBInv.Height = this.grpboxMDBFiadbInput.Height;
-			this.grpboxIDBInv.Top = this.grpboxMDBFiadbInput.Top;
-			this.btnIDBInvHelp.Location = this.btnMDBFiadbInputHelp.Location;
-			this.btnIDBInvCancel.Location = this.btnMDBFiadbInputCancel.Location;
-			this.btnIDBInvPrevious.Location = this.btnMDBFiadbInputPrev.Location;
-			this.btnIDBInvNext.Location = this.btnMDBFiadbInputNext.Location;
-			this.btnIDBInvAppend.Location = this.btnMDBFiadbInputFinish.Location;
-			this.grpboxIDBInv.Visible=false;	
-
-			this.grpboxFIADBInv.Left = this.grpboxMDBFiadbInput.Left;
-			this.grpboxFIADBInv.Width = this.grpboxMDBFiadbInput.Width;
-			this.grpboxFIADBInv.Height = this.grpboxMDBFiadbInput.Height;
-			this.grpboxFIADBInv.Top = this.grpboxMDBFiadbInput.Top;
-			this.btnFIADBInvHelp.Location = this.btnMDBFiadbInputHelp.Location;
+			this.grpboxFIADBInv.Left = this.grpboxDBFiadbInput.Left;
+			this.grpboxFIADBInv.Width = this.grpboxDBFiadbInput.Width;
+			this.grpboxFIADBInv.Height = this.grpboxDBFiadbInput.Height;
+			this.grpboxFIADBInv.Top = this.grpboxDBFiadbInput.Top;
+			this.btnFIADBInvHelp.Location = this.btnDBFiadbInputHelp.Location;
             this.btnFIADBInvHelp.Click += new System.EventHandler(this.btnFIADBInvHelp_Click);
-			this.btnFIADBInvCancel.Location = this.btnMDBFiadbInputCancel.Location;
-			this.btnFIADBInvPrevious.Location = this.btnMDBFiadbInputPrev.Location;
-			this.btnFIADBInvNext.Location = this.btnMDBFiadbInputNext.Location;
-			this.btnFIADBInvAppend.Location = this.btnMDBFiadbInputFinish.Location;
+			this.btnFIADBInvCancel.Location = this.btnDBFiadbInputCancel.Location;
+			this.btnFIADBInvPrevious.Location = this.btnDBFiadbInputPrev.Location;
+			this.btnFIADBInvNext.Location = this.btnDBFiadbInputNext.Location;
+			this.btnFIADBInvAppend.Location = this.btnDBFiadbInputFinish.Location;
 			this.grpboxFIADBInv.Visible=false;	
 
 			this.lstFilterByState.Clear();
@@ -1651,7 +1540,7 @@ namespace FIA_Biosum_Manager
 		private void btnFilterPrevious_Click(object sender, System.EventArgs e)
 		{
 			this.grpboxFilter.Visible=false;
-            this.grpboxMDBFiadbInput.Visible = true;
+            this.grpboxDBFiadbInput.Visible = true;
 		}
 
 		private void rdoFilterByFile_Click(object sender, System.EventArgs e)
@@ -1896,177 +1785,7 @@ namespace FIA_Biosum_Manager
 			return strBiosumPlotId;
 		}
 		
-        private string CreateBiosumPlotId(System.Data.OleDb.OleDbDataReader p_dr)
-		{
-			string strBiosumPlotId="";
-			string strInvId ="";
-			string strStateCd = "";
-			string strCycle="";
-			string strSubCycle="";
-			string strCountyCd="";
-			string strPlot="";
-			string strForestBlm="";
-
-			
-			//inventory id
-			strBiosumPlotId = "1";
-			if (p_dr["measyear"] != System.DBNull.Value &&
-				p_dr["measyear"].ToString().Trim().Length > 0)
-			{
-				strInvId = p_dr["measyear"].ToString().Trim();
-			}
-			else
-			{
-				strInvId = "9999";
-			}
-
-			strBiosumPlotId = strBiosumPlotId + strInvId;
-
-
-			
-			//state
-			if (p_dr["statecd"] != System.DBNull.Value &&
-				p_dr["statecd"].ToString().Trim().Length > 0)
-			{
-				strStateCd= p_dr["statecd"].ToString().Trim();
-			}
-
-			switch (strStateCd.Trim().Length)
-			{
-				case 0:
-					strBiosumPlotId = strBiosumPlotId + "99";
-					break;
-				case 1:
-					strBiosumPlotId =  strBiosumPlotId + "0" + strStateCd.Trim();
-					break;
-				default:
-					strBiosumPlotId = strBiosumPlotId + strStateCd.Trim();
-					break;
-			}
-
-			//cycle
-			if (p_dr["cycle"] != System.DBNull.Value &&
-				p_dr["cycle"].ToString().Trim().Length > 0)
-			{
-				strCycle = p_dr["cycle"].ToString().Trim();
-			}
-				
-			switch (strCycle.Trim().Length)
-			{
-				case 0:
-					strBiosumPlotId = strBiosumPlotId + "00";
-					break;
-				case 1:
-					strBiosumPlotId =  strBiosumPlotId + "0" + strCycle.Trim();
-					break;
-				default:
-					strBiosumPlotId = strBiosumPlotId + strCycle.Trim();
-					break;
-			}
-
-			//subcycle
-			if (p_dr["subcycle"] != System.DBNull.Value &&
-				p_dr["subcycle"].ToString().Trim().Length > 0)
-			{
-				strSubCycle = p_dr["subcycle"].ToString().Trim();
-			}
-				
-			switch (strSubCycle.Trim().Length)
-			{
-				case 0:
-					strBiosumPlotId = strBiosumPlotId + "00";
-					break;
-				case 1:
-					strBiosumPlotId =  strBiosumPlotId + "0" + strSubCycle.Trim();
-					break;
-				default:
-					strBiosumPlotId = strBiosumPlotId + strSubCycle.Trim();
-					break;
-			}
-
-
-			//countycode
-
-			if (p_dr["countycd"] != System.DBNull.Value &&
-				p_dr["countycd"].ToString().Trim().Length > 0)
-			{
-				strCountyCd = p_dr["countycd"].ToString().Trim();
-			}
-
-			switch (strCountyCd.Trim().Length)
-			{
-				case 0:
-					strBiosumPlotId = strBiosumPlotId + "999";
-					break;
-				case 1:
-					strBiosumPlotId = strBiosumPlotId + "00" + strCountyCd.Trim();
-					break;
-				case 2:
-					strBiosumPlotId = strBiosumPlotId + "0" + strCountyCd.Trim();
-					break;
-				default:
-					strBiosumPlotId = strBiosumPlotId + strCountyCd.Trim();
-					break;
-			}
-
-			//plot
-			if (p_dr["plot"] != System.DBNull.Value &&
-				p_dr["plot"].ToString().Trim().Length > 0)
-			{
-				strPlot = p_dr["plot"].ToString().Trim();
-			}
-
-
-			switch (strPlot.Trim().Length)
-			{
-				case 0:
-					strBiosumPlotId = strBiosumPlotId + "9999999";
-					break;
-				case 1:
-					strBiosumPlotId = strBiosumPlotId + "000000" + strPlot.Trim();
-					break;
-				case 2:
-					strBiosumPlotId = strBiosumPlotId + "00000" + strPlot.Trim();
-					break;
-				case 3:
-					strBiosumPlotId = strBiosumPlotId + "0000" + strPlot.Trim();
-					break;
-				case 4:
-					strBiosumPlotId = strBiosumPlotId + "000" + strPlot.Trim();
-					break;
-				case 5:
-					strBiosumPlotId = strBiosumPlotId + "00" + strPlot.Trim();
-					break;
-				case 6:
-					strBiosumPlotId = strBiosumPlotId + "0" + strPlot.Trim();
-					break;
-				default:
-					strBiosumPlotId = strBiosumPlotId + strPlot.Trim();
-					break;
-			}
-
-
-			
-			//forest or blm district - need value for pnw idb unique key value
-		    strForestBlm="000";
-
-			switch (strForestBlm.Trim().Length)
-			{
-				case 0:
-					strBiosumPlotId = strBiosumPlotId + "999";
-					break;
-				case 1:
-					strBiosumPlotId = strBiosumPlotId + "00" + strForestBlm.Trim();
-					break;
-				case 2:
-					strBiosumPlotId = strBiosumPlotId + "0" + strForestBlm.Trim();
-					break;
-				default:
-					strBiosumPlotId = strBiosumPlotId + strForestBlm.Trim();
-					break;
-			}
-			return strBiosumPlotId;
-		}
+        
         private void CleanupThread()
         {
            // ((frmDialog)this.ParentForm).m_frmMain.Visible = true;
@@ -2129,7 +1848,6 @@ namespace FIA_Biosum_Manager
             m_intAddedSiteTreeRows = 0;
 
             this.m_intError = 0;
-            System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
 
             //-----------PREPARATION FOR CALCULATING ADJUSTMENTS---------//
 
@@ -2192,6 +1910,7 @@ namespace FIA_Biosum_Manager
                         SetThermValue(m_frmTherm.progressBar2, "Value", 30);
                         strFIADBDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtFiadbInputFile, "Text", false);
                         strFIADBDbFile = strFIADBDbFile.Trim();
+                        m_strCondPropPercent = frmMain.g_oDelegate.GetControlPropertyValue(cmbCondPropPercent, "Text", false).ToString().Trim();
                         string[] strSql = Queries.FIAPlot.FIADBPlotInput_CalculateAdjustmentFactorsSQL(
                             "POP_PLOT_STRATUM_ASSGN",
                             "POP_ESTN_UNIT",
@@ -2201,7 +1920,7 @@ namespace FIA_Biosum_Manager
                             "COND",
                              m_strCurrFIADBRsCd,
                              m_strCurrFIADBEvalId,
-                             frmMain.g_oDelegate.GetControlPropertyValue(cmbCondPropPercent, "Text", false).ToString().Trim(),
+                             m_strCondPropPercent,
                              strFIADBDbFile);
                         SetThermValue(m_frmTherm.progressBar1, "Value", 0);
                         this.SetLabelValue(m_frmTherm.lblMsg, "Text", "Calculate Adjustment Factors For RsCd=" + m_strCurrFIADBRsCd + " and EvalId=" + m_strCurrFIADBEvalId);
@@ -2226,51 +1945,6 @@ namespace FIA_Biosum_Manager
                 System.Threading.Thread.Sleep(2000);
                 SetThermValue(m_frmTherm.progressBar2, "Value", 60);
                 
-                //create tablelinks to the projects main folder
-                if (this.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    //SetThermValue(m_frmTherm.progressBar1, "Value", 0);
-                    //this.SetLabelValue(m_frmTherm.lblMsg, "Text", "Create table links");
-                    //create a table link from the newly created BIOSUM_ADJFACTORS into the master.mdb
-
-                    //instatiate dao for creating links in the temp table
-                    //to the fiadb plot, cond, and tree input tables
-                    //dao_data_access oDao = new dao_data_access();
-                    //SetThermValue(m_frmTherm.progressBar1, "Value", 10);
-                    //create links to the fiadb input tables in the temp mdb file
-                    //plot table
-                    //strSourceTableName = "BIOSUM_PLOT";
-                    //strDestTableLinkName = "fiadb_plot_input";
-                    //oDao.CreateTableLink(this.m_strTempMDBFile,strDestTableLinkName,strFIADBDbFile,strSourceTableName,true);
-                    //@ToDo: This is where it breaks because I have stopped creating the MS Access m_strTempMDBFile
-                    //Should no longer be needed with conversion to SQLite. Use SQLite attach instead
-                    //oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, strSourceTableName, strDestTableLinkName,
-                    //    ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-                    //SetThermValue(m_frmTherm.progressBar1, "Value", 40);
-                    //cond table
-                    //strSourceTableName = "BIOSUM_COND";
-                    //strDestTableLinkName = "fiadb_cond_input";
-                    //if (oDao.m_intError==0) oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, strSourceTableName, strDestTableLinkName,
-                    //                            ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-                    //SetThermValue(m_frmTherm.progressBar1, "Value", 70);
-                    //biosum adjustment factors table
-                    //strSourceTableName = frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName;
-                    //strDestTableLinkName = "fiadb_biosum_adjustment_factors_input";
-                    //if (oDao.m_intError==0) oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, strSourceTableName, strDestTableLinkName,
-                    //                            ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-                    //m_intError = oDao.m_intError;
-                    
-                    //destroy the object and release it from memory
-                    //oDao.m_DaoWorkspace.Close();
-                    //oDao.m_DaoWorkspace = null;
-                    //oDao = null;
-
-                    //m_intError = SQLite.m_intError;
-                    //SetThermValue(m_frmTherm.progressBar1, "Value", 100);
-                    //System.Threading.Thread.Sleep(2000);
-                    SetThermValue(m_frmTherm.progressBar2, "Value", 70);                  
-                    
-                }
                 //delete any records from the production biosum adjustment factor table that did not previously complete processing (error or user cancelled)
                 //or any previous rscd and evalid that equal the current ones
                 if (this.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
@@ -2330,22 +2004,14 @@ namespace FIA_Biosum_Manager
             }
             catch (System.Threading.ThreadAbortException err)
             {
-                if (oConn != null)
+                if (SQLite != null)
                 {
-                    if (oConn.State != System.Data.ConnectionState.Closed)
+                    if (SQLite.m_DataSet != null)
                     {
-                        m_ado.CloseConnection(oConn);
+                        SQLite.m_DataSet.Clear();
+                        SQLite.m_DataSet.Dispose();
                     }
-                    oConn = null;
-                }
-                if (m_ado != null)
-                {
-                    if (m_ado.m_DataSet != null)
-                    {
-                        this.m_ado.m_DataSet.Clear();
-                        this.m_ado.m_DataSet.Dispose();
-                    }
-                    this.m_ado = null;
+                    SQLite = null;
                 }
                 this.CancelThreadCleanup();
                 this.ThreadCleanUp();
@@ -2364,24 +2030,6 @@ namespace FIA_Biosum_Manager
             finally
             {
 
-            }
-
-            if (oConn != null)
-            {
-                if (oConn.State != System.Data.ConnectionState.Closed)
-                {
-                    m_ado.CloseConnection(oConn);
-                }
-                oConn = null;
-            }
-            if (m_ado != null)
-            {
-                if (m_ado.m_DataSet != null)
-                {
-                    this.m_ado.m_DataSet.Clear();
-                    this.m_ado.m_DataSet.Dispose();
-                }
-                this.m_ado = null;
             }
             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Enabled", true);
             if (this.m_frmTherm != null) frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)m_frmTherm, "Visible", false);
@@ -2469,9 +2117,9 @@ namespace FIA_Biosum_Manager
                 {
                     conn.Open();
                     //Before processing new plot information, delete any records that were not completely processed
-                    DeleteFromTablesWhereFilterSqlite(conn, new string[] { this.m_strPlotTable },
+                    DeleteFromTablesWhereFilter(conn, new string[] { this.m_strPlotTable },
                         " WHERE biosum_status_cd=9 OR LENGTH(biosum_plot_id)=0;");
-                    DeleteFromTablesWhereFilterSqlite(conn, new string[]
+                    DeleteFromTablesWhereFilter(conn, new string[]
                     {m_strCondTable, m_strTreeTable, m_strSiteTreeTable}, " WHERE biosum_status_cd=9;");
                     if (m_intError == 0)
                         m_intError = SQLite.m_intError;
@@ -2888,7 +2536,7 @@ namespace FIA_Biosum_Manager
                         GetThermValue(m_frmTherm.progressBar1, "Maximum"));
                         SetThermValue(m_frmTherm.progressBar2, "Value", 80);
 
-                        m_intError = ImportDownWoodyMaterialsSqlite(conn);
+                        m_intError = ImportDownWoodyMaterials(conn);
                     }
 
                     //count the number of records added to each table and
@@ -2896,18 +2544,18 @@ namespace FIA_Biosum_Manager
                     if (this.m_intError == 0 &&
                         !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
                     {
-                        m_intAddedPlotRows = GetNewRecordCountSqlite(conn, m_strPlotTable);
-                        m_intAddedCondRows = GetNewRecordCountSqlite(conn, m_strCondTable);
-                        m_intAddedTreeRows = GetNewRecordCountSqlite(conn, m_strTreeTable);
-                        m_intAddedSeedlingRows = GetNewRecordCountSqlite(conn, m_strSeedlingTable);
-                        m_intAddedSiteTreeRows = GetNewRecordCountSqlite(conn, m_strSiteTreeTable);
+                        m_intAddedPlotRows = GetNewRecordCount(conn, m_strPlotTable);
+                        m_intAddedCondRows = GetNewRecordCount(conn, m_strCondTable);
+                        m_intAddedTreeRows = GetNewRecordCount(conn, m_strTreeTable);
+                        m_intAddedSeedlingRows = GetNewRecordCount(conn, m_strSeedlingTable);
+                        m_intAddedSiteTreeRows = GetNewRecordCount(conn, m_strSiteTreeTable);
 
                         if (Checked(chkDwmImport))
                         {
-                            m_intAddedDwmCwdRows = GetNewRecordCountSqlite(conn, m_strDwmCwdTable, "AUX.");
-                            m_intAddedDwmFwdRows = GetNewRecordCountSqlite(conn, m_strDwmFwdTable, "AUX.");
-                            m_intAddedDwmDuffLitterRows = GetNewRecordCountSqlite(conn, m_strDwmDuffLitterTable, "AUX.");
-                            m_intAddedDwmTransectSegmentRows = GetNewRecordCountSqlite(conn, m_strDwmTransectSegmentTable, "AUX.");
+                            m_intAddedDwmCwdRows = GetNewRecordCount(conn, m_strDwmCwdTable, "AUX.");
+                            m_intAddedDwmFwdRows = GetNewRecordCount(conn, m_strDwmFwdTable, "AUX.");
+                            m_intAddedDwmDuffLitterRows = GetNewRecordCount(conn, m_strDwmDuffLitterTable, "AUX.");
+                            m_intAddedDwmTransectSegmentRows = GetNewRecordCount(conn, m_strDwmTransectSegmentTable, "AUX.");
                         }
 
                         //Successfully imported and updated plot data. Set biosum_status_cd to 1
@@ -2943,6 +2591,10 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Button)m_frmTherm.btnCancel,
                             "Visible", false);
 
+                        // Save configuration
+                        SaveLoadConfigurationTxt(conn);
+                        SaveLoadConfigurationTable(conn);
+
                         MessageBox.Show(CreateRecordsAddedMessage(), "Add Plot Data");
 
                         this.m_strLoadedPopEstUnitInputTable =
@@ -2964,7 +2616,7 @@ namespace FIA_Biosum_Manager
                     else
                     {
                         // A DataMgr error occurred so delete all the incompletely processed new records
-                        DeleteFromTablesWhereFilterSqlite(conn, new string[] { m_strPlotTable, m_strCondTable, m_strTreeTable, m_strPopEvalTable, m_strPopStratumTable,
+                        DeleteFromTablesWhereFilter(conn, new string[] { m_strPlotTable, m_strCondTable, m_strTreeTable, m_strPopEvalTable, m_strPopStratumTable,
                                 m_strPpsaTable, m_strPopEstUnitTable, m_strSiteTreeTable, m_strBiosumPopStratumAdjustmentFactorsTable,
                                 "AUX." + m_strDwmCwdTable, "AUX." + m_strDwmFwdTable, "AUX." + m_strDwmDuffLitterTable, "AUX." + m_strDwmTransectSegmentTable },
                                 " WHERE biosum_status_cd = 9");
@@ -3003,7 +2655,7 @@ namespace FIA_Biosum_Manager
 			catch (Exception err)
 			{
 				MessageBox.Show("!!Error!! \n" + 
-					"Module - uc_plot_input:mdbFIADBFileInput  \n" + 
+					"Module - uc_plot_input:dbFIADBFileInput  \n" + 
 					"Err Msg - " + err.Message.ToString().Trim(),
 					"FIA Biosum",System.Windows.Forms.MessageBoxButtons.OK,
 					System.Windows.Forms.MessageBoxIcon.Exclamation);
@@ -3058,35 +2710,8 @@ namespace FIA_Biosum_Manager
         /// <param name="p_conn"></param>
         /// <param name="table"></param>
         /// <returns></returns>
-	    private int GetNewRecordCount(ado_data_access p_ado, OleDbConnection p_conn, string table)
-        {
-            if (p_ado.TableExist(p_conn, table) || table.Equals(m_strSeedlingTable))
-            {
-                int intReturn = -1;
-                switch (table)
-                {
-                    case "fiadb_seedling_input":
-                        intReturn = (int)p_ado.getRecordCount(p_conn,
-                            String.Concat("select count(*) from ", m_strTreeTable, " where biosum_status_cd=9 and dia=0.1;"), m_strTreeTable);
-                        break;
-                    case "tree":
-                        intReturn = (int)p_ado.getRecordCount(p_conn,
-                            String.Concat("select count(*) from ", table, " where biosum_status_cd=9 and dia<>0.1;"), table);
-                        break;
-                    default:
-                        intReturn = (int)p_ado.getRecordCount(p_conn,
-                    String.Concat("select count(*) from ", table, " where biosum_status_cd=9;"), table);
-                        break;
-                }
-                return intReturn;
-            }
-            else
-            {
-                return 0;
-            }
-        }
-
-        private int GetNewRecordCountSqlite(System.Data.SQLite.SQLiteConnection p_conn, string strTable, string strTablePrefix = null)
+	    
+        private int GetNewRecordCount(System.Data.SQLite.SQLiteConnection p_conn, string strTable, string strTablePrefix = null)
         {
             if (SQLite.TableExist(p_conn, strTable) || SQLite.AttachedTableExist(p_conn, strTable) || strTable.Equals(m_strSeedlingTable))
             {
@@ -3119,22 +2744,8 @@ namespace FIA_Biosum_Manager
 	    /// </summary>
 	    /// <param name="strTableName">An array of table names to delete</param>
 	    /// <param name="strDeleteFilter">A WHERE clause for the delete query</param>
-	    private void DeleteFromTablesWhereFilter(ado_data_access p_ado, OleDbConnection conn, string[] strTableNames, string strDeleteFilter)
-	    {
-	        foreach (string table in strTableNames)
-	        {
-	            if (p_ado.TableExist(conn, table))
-	            {
-	                p_ado.m_strSQL = "DELETE FROM " + table + strDeleteFilter;
-	                p_ado.SqlNonQuery(m_connTempMDBFile, p_ado.m_strSQL);
-	                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-	                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
-	                        p_ado.m_strSQL + "\r\n");
-	            }
-	        }
-	    }
-
-        private void DeleteFromTablesWhereFilterSqlite(System.Data.SQLite.SQLiteConnection p_conn, string[] strTableNames, string strDeleteFilter)
+	
+        private void DeleteFromTablesWhereFilter(System.Data.SQLite.SQLiteConnection p_conn, string[] strTableNames, string strDeleteFilter)
         {
             foreach (string table in strTableNames)
             {
@@ -3152,22 +2763,10 @@ namespace FIA_Biosum_Manager
 	    /// <summary>
 	    /// After importing DWM table data from FIADB to Master.mdb, join the DWM table with the plot/cond tables to get the BSCID
 	    /// </summary>
-	    /// <param name="p_ado">Reference to the temporary database used to link FIADB and Master during plot input phase</param>
+	    /// <param name="SQLite">Reference to the temporary database used to link FIADB and Master during plot input phase</param>
 	    /// <param name="strDestTable">The DWM table to update</param>
-	    private void UpdateDwmBiosumCondIds(ado_data_access p_ado, string strDestTable = null)
-	    {
-	        p_ado.m_strSQL = String.Format(
-	            "UPDATE {0} t INNER JOIN ({1} p INNER JOIN {2} c ON c.biosum_plot_id = p.biosum_plot_id) ON (p.cn = t.plt_cn) AND (t.CONDID = c.condid) " +
-	            "SET t.biosum_cond_id=c.biosum_cond_id WHERE t.biosum_cond_id='9999999999999999999999999' AND p.biosum_status_cd=9;",
-	            strDestTable, m_strPlotTable, m_strCondTable);
-	        p_ado.SqlNonQuery(m_connTempMDBFile, p_ado.m_strSQL);
-	        m_intError = p_ado.m_intError;
 
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-	    }
-
-        private void UpdateDwmBiosumCondIdsSqlite(System.Data.SQLite.SQLiteConnection p_conn, string strDestTable = null)
+        private void UpdateDwmBiosumCondIds(System.Data.SQLite.SQLiteConnection p_conn, string strDestTable = null)
         {
             SQLite.m_strSQL = "UPDATE " + strDestTable + " AS t " +
                 "SET biosum_cond_id = c.biosum_cond_id " +
@@ -3179,26 +2778,6 @@ namespace FIA_Biosum_Manager
             SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
             m_intError = SQLite.m_intError;
         }
-        
-	    /// <summary>
-	    /// Creates temporary DWM table from FIADB that associates dwm data with a biosum_cond_id. 
-	    /// Assumes that the FIADB DWM table has a plt_cn and condid.
-	    /// </summary>
-	    /// <param name="strSourceTable"></param>
-	    /// <param name="strTempTable"></param>
-	    private void SelectIntoTempDWMTableFromSourceDWMTable(ado_data_access p_ado, string strSourceTable = null, string strTempTable = null)
-	    {
-	        p_ado.m_strSQL = String.Format(
-	            "SELECT TRIM(c.biosum_cond_id) AS biosum_cond_id, 9 as biosum_status_cd, t.* INTO {0} " +
-	            "FROM {1} t INNER JOIN ({2} p INNER JOIN {3} c ON c.biosum_plot_id = p.biosum_plot_id) ON (p.cn = t.plt_cn) AND (t.CONDID = c.condid) " +
-	            "WHERE p.biosum_status_cd=9;", strTempTable, strSourceTable, m_strPlotTable, m_strCondTable);
-	        p_ado.SqlNonQuery(m_connTempMDBFile, p_ado.m_strSQL);
-	        m_intError = p_ado.m_intError;
-
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-	    }
-
         /// <summary>
         /// Generates and executes an SQL "INSERT INTO dest_tablename (columns) SELECT columns FROM source_tablename" statement
         /// strInsertFields contains a subset of the source table columns that are common with the dest table.
@@ -3206,28 +2785,8 @@ namespace FIA_Biosum_Manager
         /// <param name="strSourceTable"></param>
         /// <param name="strDestTable"></param>
         /// <param name="strInsertFields"></param>
-        private void InsertIntoDestTableFromSourceTable(ado_data_access p_ado, 
-            string strSourceTable = null, string strDestTable = null,
-            string strSourceFields = null, string strDestFields = null,
-            bool InsertBiosumCondIdAndStatusCode = false)
-        {
-            string strInsertIntoValues = "INSERT INTO {0} ({1}) ";
-            string strSelectColumns = "SELECT {2} FROM {3} dwm INNER JOIN {4} p ON dwm.plt_cn=p.cn;";
-            if (InsertBiosumCondIdAndStatusCode)
-            {
-                strInsertIntoValues = "INSERT INTO {0} (biosum_cond_id, biosum_status_cd, {1}) ";
-                strSelectColumns =
-                    "SELECT '9999999999999999999999999' AS biosum_cond_id, 9 AS biosum_status_cd, {2} FROM {3} dwm INNER JOIN {4} p ON dwm.plt_cn=trim(p.cn);";
-            }
-            p_ado.m_strSQL = String.Format(strInsertIntoValues + strSelectColumns, 
-                strDestTable, strDestFields, strSourceFields, strSourceTable, "tempplot");
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-            p_ado.SqlNonQuery(m_connTempMDBFile, p_ado.m_strSQL);
-            m_intError = p_ado.m_intError;
-        }
-
-        private void InsertIntoDestTableFromSourceTableSqlite (System.Data.SQLite.SQLiteConnection p_conn,
+        
+        private void InsertIntoDestTableFromSourceTable(System.Data.SQLite.SQLiteConnection p_conn,
             string strSourceTable = null, string strDestTable = null,
             string strSourceFields = null, string strDestFields = null, bool InsertBiosumCondIdAndStatusCode = false)
         {
@@ -4402,193 +3961,7 @@ namespace FIA_Biosum_Manager
 		    return SQLite.m_intError;
 		}
 
-	    private int ImportDownWoodyMaterials(ado_data_access p_ado)
-	    {
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.ImportDownWoodyMaterials\r\n");
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//\r\n");
-            }
-            
-
-            SetLabelValue(m_frmTherm.lblMsg,"Text","Importing DWM data...Stand By");
-            SetThermValue(m_frmTherm.progressBar1,"Maximum", 14);
-            SetThermValue(m_frmTherm.progressBar1, "Minimum", 0);
-            SetThermValue(m_frmTherm.progressBar1, "Value", 0);
-
-		    string strFIADBDbFile = "";
-		    strFIADBDbFile = (string) frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox) txtFiadbInputFile, "Text", false);
-		    strFIADBDbFile = strFIADBDbFile.Trim();
-		    String strFiaCWD = "fiadb_dwm_cwd_input";
-		    String strFiaFWD = "fiadb_dwm_fwd_input";
-		    String strFiaDL = "fiadb_dwm_dufflitter_input";
-		    String strFiaTS = "fiadb_dwm_transect_segment_input";
-
-		    p_ado.CloseConnection(m_connTempMDBFile);
-	        m_connTempMDBFile.Dispose();
-	        m_connTempMDBFile = null;
-
-
-            //If any of the FIADB source DWM tables do not exist,
-            //show message, uncheck the DWM checkbox, return early
-            DataMgr oDataMgr = new DataMgr();
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strFIADBDbFile)))
-	        {
-	            conn.Open();
-                if (!oDataMgr.TableExist(conn, m_strDwmCwdTable) ||
-                    !oDataMgr.TableExist(conn, m_strDwmFwdTable) ||
-                    !oDataMgr.TableExist(conn, m_strDwmDuffLitterTable) ||
-                    !oDataMgr.TableExist(conn, m_strDwmTransectSegmentTable))
-                {
-	                Func<bool, string, string> result = (boolTableExists, tableName) =>
-	                {
-	                    if (!boolTableExists) return "\r\n - " + tableName;
-	                    else return "";
-	                };
-	                DialogResult dlgResult = MessageBox.Show(String.Format(
-	                        "!!Error!!\nModule - uc_plot_input:ImportDownWoodyMaterials\n" + "Err Msg - " +
-	                        "At least one FIADB Source DWM table was not found:{0}{1}{2}{3}\r\nDo you wish to continue plot data input without DWM?",
-	                        result(oDataMgr.TableExist(conn, m_strDwmCwdTable), m_strDwmCwdTable),
-	                        result(oDataMgr.TableExist(conn, m_strDwmFwdTable), m_strDwmFwdTable),
-	                        result(oDataMgr.TableExist(conn, m_strDwmDuffLitterTable), m_strDwmDuffLitterTable),
-	                        result(oDataMgr.TableExist(conn, m_strDwmTransectSegmentTable), m_strDwmTransectSegmentTable)),
-	                    "FIA Biosum",
-	                    MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation);
-	                //Disable functionality related to DWM option down the pipeline
-	                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.CheckBox) chkDwmImport,
-	                    "Checked", false);
-
-	                if (dlgResult == DialogResult.No)
-	                {
-	                    return -1; //terminates plot input processing.
-	                }
-	                else if (dlgResult == DialogResult.Yes)
-	                {
-                        //m_intError == 0 keeps performing plot input.
-	                    return 0;
-	                }
-	            }
-	        }
-
-		    dao_data_access p_dao = new dao_data_access();
-            //Link to FIADB source tables in temporary database
-            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmCwdTable, strFiaCWD,  ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmFwdTable, strFiaFWD,  ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmDuffLitterTable, strFiaDL,  ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmTransectSegmentTable, strFiaTS,  ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-
-            //Link to Master_AUX.accdb DWM source tables in temporary database
-            string strMasterAuxDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.accdb"; 
-		    p_dao.CreateTableLink(m_strTempMDBFile, m_strDwmCwdTable, strMasterAuxDb, m_strDwmCwdTable);
-		    p_dao.CreateTableLink(m_strTempMDBFile, m_strDwmFwdTable, strMasterAuxDb, m_strDwmFwdTable);
-		    p_dao.CreateTableLink(m_strTempMDBFile, m_strDwmDuffLitterTable, strMasterAuxDb, m_strDwmDuffLitterTable);
-		    p_dao.CreateTableLink(m_strTempMDBFile, m_strDwmTransectSegmentTable, strMasterAuxDb, m_strDwmTransectSegmentTable);
-
-		    m_intError = p_dao.m_intError;
-		    p_dao.m_DaoWorkspace.Close();
-	        p_dao.m_DaoWorkspace = null;
-	        p_dao.m_DaoDbEngine = null;
-		    p_dao = null;
-
-            m_connTempMDBFile = new OleDbConnection(m_strTempMDBFileConn);
-	        m_connTempMDBFile.Open();
-
-            SetThermValue(m_frmTherm.progressBar1, "Value", 1);
-
-		    String strSourceFields = "";
-		    String strDestFields = "";
-		    System.Data.DataTable dtDwmCwd = p_ado.getTableSchema(m_connTempMDBFile, "select * from " + m_strDwmCwdTable);
-		    System.Data.DataTable dtDwmFwd = p_ado.getTableSchema(m_connTempMDBFile, "select * from " + m_strDwmFwdTable);
-		    System.Data.DataTable dtDwmDuffLitter = p_ado.getTableSchema(m_connTempMDBFile, "select * from " + m_strDwmDuffLitterTable);
-		    System.Data.DataTable dtDwmTransectSegment = p_ado.getTableSchema(m_connTempMDBFile, "select * from " + m_strDwmTransectSegmentTable);
-		    System.Data.DataTable dtFIADBDwmCwd = p_ado.getTableSchema(m_connTempMDBFile, "select * from " + strFiaCWD);
-		    System.Data.DataTable dtFIADBDwmFwd = p_ado.getTableSchema(m_connTempMDBFile, "select * from " + strFiaFWD);
-		    System.Data.DataTable dtFIADBDwmDuffLitter = p_ado.getTableSchema(m_connTempMDBFile, "select * from " + strFiaDL);
-		    System.Data.DataTable dtFIADBDwmTransectSegment = p_ado.getTableSchema(m_connTempMDBFile, "select * from " + strFiaTS);
-
-
-            //Preemptively remove any records that were not imported successfully 
-	        DeleteFromTablesWhereFilter(p_ado, m_connTempMDBFile,
-	            new string[]
-	                {m_strDwmCwdTable, m_strDwmFwdTable, m_strDwmDuffLitterTable, m_strDwmTransectSegmentTable},
-	            " WHERE biosum_status_cd=9");
-
-	        //DWM Coarse Woody Debris FIADB into Master.MDB Table
-	        if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control) m_frmTherm, "AbortProcess"))
-	        {
-	            SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM CWD...Stand By");
-	            SetThermValue(m_frmTherm.progressBar1, "Value", 2);
-	            strDestFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmCwd, dtDestSchema: dtDwmCwd);
-	            strSourceFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmCwd, dtDestSchema: dtDwmCwd,
-	                strTablePrefix: "dwm.");
-	            InsertIntoDestTableFromSourceTable(p_ado, strSourceTable: strFiaCWD, strDestTable: m_strDwmCwdTable,
-	                strDestFields: strDestFields, strSourceFields: strSourceFields, InsertBiosumCondIdAndStatusCode: true);
-	            UpdateDwmBiosumCondIds(p_ado, m_strDwmCwdTable);
-	            m_intError = p_ado.m_intError;
-	        }
-
-	        //DWM Fine Woody Debris FIADB into Master.MDB Table
-	        if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control) m_frmTherm, "AbortProcess"))
-	        {
-	            SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM FWD...Stand By");
-	            SetThermValue(m_frmTherm.progressBar1, "Value", 4);
-	            strDestFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmFwd, dtDestSchema: dtDwmFwd);
-	            strSourceFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmFwd, dtDestSchema: dtDwmFwd,
-	                strTablePrefix: "dwm.");
-	            InsertIntoDestTableFromSourceTable(p_ado, strSourceTable: strFiaFWD, strDestTable: m_strDwmFwdTable,
-	                strDestFields: strDestFields, strSourceFields: strSourceFields, InsertBiosumCondIdAndStatusCode: true);
-	            UpdateDwmBiosumCondIds(p_ado, m_strDwmFwdTable);
-	            m_intError = p_ado.m_intError;
-	        }
-
-	        //DWM Duff Litter Fuel FIADB into Master.MDB Table
-	        if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control) m_frmTherm, "AbortProcess"))
-	        {
-	            SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM DuffLitter...Stand By");
-	            SetThermValue(m_frmTherm.progressBar1, "Value", 6);
-	            strDestFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmDuffLitter,
-	                dtDestSchema: dtDwmDuffLitter);
-	            strSourceFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmDuffLitter,
-	                dtDestSchema: dtDwmDuffLitter, strTablePrefix: "dwm.");
-	            InsertIntoDestTableFromSourceTable(p_ado, strSourceTable: strFiaDL,
-	                strDestTable: m_strDwmDuffLitterTable,
-	                strDestFields: strDestFields, strSourceFields: strSourceFields,
-	                InsertBiosumCondIdAndStatusCode: true);
-                p_ado.SqlNonQuery(m_connTempMDBFile,
-                    String.Format(
-                        "UPDATE {0} SET duffdep=0 WHERE duffdep IS NULL AND duff_nonsample_reasn_cd IS NULL;", //or other metacodes are null? dlf_sample_method, dl_status_cd, etc.
-                        m_strDwmDuffLitterTable));
-                p_ado.SqlNonQuery(m_connTempMDBFile,
-                    String.Format(
-                        "UPDATE {0} SET littdep=0 WHERE littdep IS NULL AND litter_nonsample_reasn_cd IS NULL;", //or other metacodes are null? dlf_sample_method, dl_status_cd, etc.
-                        m_strDwmDuffLitterTable));
-	            UpdateDwmBiosumCondIds(p_ado, m_strDwmDuffLitterTable);
-	            m_intError = p_ado.m_intError;
-	        }
-
-	        //DWM Transect Segment FIADB into Master.MDB Table
-	        if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control) m_frmTherm, "AbortProcess"))
-	        {
-	            SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM Transect Segment...Stand By");
-	            SetThermValue(m_frmTherm.progressBar1, "Value", 8);
-	            strDestFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmTransectSegment,
-	                dtDestSchema: dtDwmTransectSegment);
-	            strSourceFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmTransectSegment,
-	                dtDestSchema: dtDwmTransectSegment, strTablePrefix: "dwm.");
-	            InsertIntoDestTableFromSourceTable(p_ado, strSourceTable: strFiaTS,
-	                strDestTable: m_strDwmTransectSegmentTable,
-	                strDestFields: strDestFields, strSourceFields: strSourceFields, InsertBiosumCondIdAndStatusCode: true);
-	            UpdateDwmBiosumCondIds(p_ado, m_strDwmTransectSegmentTable);
-	            m_intError = p_ado.m_intError;
-	        }
-
-            SetLabelValue(m_frmTherm.lblMsg,"Text","");
-            SetThermValue(m_frmTherm.progressBar1, "Value", GetThermValue(m_frmTherm.progressBar1, "Maximum"));
-	        return p_ado.m_intError;
-	    }
-
-        private int ImportDownWoodyMaterialsSqlite(System.Data.SQLite.SQLiteConnection p_conn)
+        private int ImportDownWoodyMaterials(System.Data.SQLite.SQLiteConnection p_conn)
         {
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -4663,7 +4036,7 @@ namespace FIA_Biosum_Manager
             System.Data.DataTable dtFIADBDwmTransectSegment = SQLite.getTableSchema(p_conn, "select * from " + strFiaTS);
 
             //Preemptively remove any records that were not imported successfully 
-            DeleteFromTablesWhereFilterSqlite(p_conn,
+            DeleteFromTablesWhereFilter(p_conn,
                 new string[]
                     {"AUX." + m_strDwmCwdTable, "AUX." + m_strDwmFwdTable, "AUX." + m_strDwmDuffLitterTable, "AUX." + m_strDwmTransectSegmentTable},
                 " WHERE biosum_status_cd=9");
@@ -4675,9 +4048,9 @@ namespace FIA_Biosum_Manager
                 SetThermValue(m_frmTherm.progressBar1, "Value", 2);
                 strSourceFields = CreateStrFieldsFromDataTables(dtFIADBDwmCwd, dtDwmCwd, "f.");
                 strDestFields = CreateStrFieldsFromDataTables(dtFIADBDwmCwd, dtDwmCwd);
-                InsertIntoDestTableFromSourceTableSqlite(p_conn, strFiaCWD, "AUX." + m_strDwmCwdTable, strSourceFields, strDestFields, true);
+                InsertIntoDestTableFromSourceTable(p_conn, strFiaCWD, "AUX." + m_strDwmCwdTable, strSourceFields, strDestFields, true);
 
-                UpdateDwmBiosumCondIdsSqlite(p_conn, "AUX." + m_strDwmCwdTable);
+                UpdateDwmBiosumCondIds(p_conn, "AUX." + m_strDwmCwdTable);
                 m_intError = SQLite.m_intError;
             }
 
@@ -4688,9 +4061,9 @@ namespace FIA_Biosum_Manager
                 SetThermValue(m_frmTherm.progressBar1, "Value", 4);
                 strSourceFields = CreateStrFieldsFromDataTables(dtFIADBDwmFwd, dtDwmFwd, "f.");
                 strDestFields = CreateStrFieldsFromDataTables(dtFIADBDwmFwd, dtDwmFwd);
-                InsertIntoDestTableFromSourceTableSqlite(p_conn, strFiaFWD, "AUX." + m_strDwmFwdTable, strSourceFields, strDestFields, true);
+                InsertIntoDestTableFromSourceTable(p_conn, strFiaFWD, "AUX." + m_strDwmFwdTable, strSourceFields, strDestFields, true);
 
-                UpdateDwmBiosumCondIdsSqlite(p_conn, "AUX." + m_strDwmFwdTable);
+                UpdateDwmBiosumCondIds(p_conn, "AUX." + m_strDwmFwdTable);
                 m_intError = SQLite.m_intError;
             }
 
@@ -4701,14 +4074,14 @@ namespace FIA_Biosum_Manager
                 SetThermValue(m_frmTherm.progressBar1, "Value", 6);
                 strSourceFields = CreateStrFieldsFromDataTables(dtFIADBDwmDuffLitter, dtDwmDuffLitter, "f.");
                 strDestFields = CreateStrFieldsFromDataTables(dtFIADBDwmDuffLitter, dtDwmDuffLitter);
-                InsertIntoDestTableFromSourceTableSqlite( p_conn, strFiaDL, "AUX." + m_strDwmDuffLitterTable, strSourceFields, strDestFields, true);
+                InsertIntoDestTableFromSourceTable( p_conn, strFiaDL, "AUX." + m_strDwmDuffLitterTable, strSourceFields, strDestFields, true);
 
                 SQLite.m_strSQL = "UPDATE AUX." + m_strDwmDuffLitterTable + " SET duffdep=0 WHERE duffdep IS NULL AND duff_nonsample_reasn_cd IS NULL";
                 SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
                 SQLite.m_strSQL = "UPDATE " + m_strDwmDuffLitterTable + " SET littdep=0 WHERE littdep IS NULL AND litter_nonsample_reasn_cd IS NULL";
                 SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                UpdateDwmBiosumCondIdsSqlite( p_conn, "AUX." + m_strDwmDuffLitterTable);
+                UpdateDwmBiosumCondIds( p_conn, "AUX." + m_strDwmDuffLitterTable);
                 m_intError = SQLite.m_intError;
             }
 
@@ -4719,9 +4092,9 @@ namespace FIA_Biosum_Manager
                 SetThermValue(m_frmTherm.progressBar1, "Value", 8);
                 strSourceFields = CreateStrFieldsFromDataTables(dtFIADBDwmTransectSegment, dtDwmTransectSegment, "f.");
                 strDestFields = CreateStrFieldsFromDataTables(dtFIADBDwmTransectSegment, dtDwmTransectSegment);
-                InsertIntoDestTableFromSourceTableSqlite(p_conn, strFiaTS, "AUX." + m_strDwmTransectSegmentTable, strSourceFields, strDestFields, true);
+                InsertIntoDestTableFromSourceTable(p_conn, strFiaTS, "AUX." + m_strDwmTransectSegmentTable, strSourceFields, strDestFields, true);
 
-                UpdateDwmBiosumCondIdsSqlite(p_conn, "AUX." + m_strDwmTransectSegmentTable);
+                UpdateDwmBiosumCondIds(p_conn, "AUX." + m_strDwmTransectSegmentTable);
                 m_intError = SQLite.m_intError;
             }
 
@@ -4980,7 +4353,7 @@ namespace FIA_Biosum_Manager
 		private void btnFilterNext_Click(object sender, System.EventArgs e)
 		{
 				
-		    if (this.LoadMDBFiadbPopEvalTable() && m_intError==0)
+		    if (this.LoadDBFiadbPopEvalTable() && m_intError==0)
 			{	
 			    this.m_strLoadedPopEvalInputTable=this.cmbFiadbPopEvalTable.Text;
 				this.FIADBLoadInv();
@@ -5040,7 +4413,7 @@ namespace FIA_Biosum_Manager
 			
 		}
 
-		private void mdbInputStateCounty()
+		private void dbInputStateCounty()
 		{
 	
 			string strState="";
@@ -5151,7 +4524,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void mdbInputPlot()
+        private void dbInputPlot()
 		{
 			this.m_intError=0;
 			int intAddedPlotRows=0;
@@ -5289,7 +4662,7 @@ namespace FIA_Biosum_Manager
 
 		private void btnFilterByStateNext_Click(object sender, System.EventArgs e)
 		{
-		    this.mdbInputPlot();
+		    this.dbInputPlot();
 			if (this.m_intError==0)
 			{
 				this.grpboxFilterByPlot.Visible=true;
@@ -5895,140 +5268,33 @@ namespace FIA_Biosum_Manager
             }	
 		}
 
-		private void btnMDBInputCancel_Click(object sender, System.EventArgs e)
+		private void btnDBInputCancel_Click(object sender, System.EventArgs e)
 		{
 			((frmDialog)this.ParentForm).Close();
 		}
 
-		private void btnMDBPlotBrowse_Click(object sender, System.EventArgs e)
+		private void btnDBPlotBrowse_Click(object sender, System.EventArgs e)
 		{
 			this.GetMDBFileAndTable("SQLite Data File Containing Plot Table Data",
 				"Select Plot Table",
-				ref this.txtMDBPlot,
-				ref this.txtMDBPlotTable);
+				ref this.txtDBPlot,
+				ref this.txtDBPlotTable);
 		}
 
-		private void btnMDBCondBrowse_Click(object sender, System.EventArgs e)
+		private void btnDBCondBrowse_Click(object sender, System.EventArgs e)
 		{
 			this.GetMDBFileAndTable("SQLite Data File Containing Condition Table Data",
 				"Select Condition Table",
-				ref this.txtMDBCond,
-				ref this.txtMDBCondTable);
+				ref this.txtDBCond,
+				ref this.txtDBCondTable);
 		}
 
-		private void btnMDBTreeBrowse_Click(object sender, System.EventArgs e)
+		private void btnDBTreeBrowse_Click(object sender, System.EventArgs e)
 		{
 			this.GetMDBFileAndTable("SQLite Data File Containing Tree Table Data",
 				"Select Tree Table",
-				ref this.txtMDBTree,
-				ref this.txtMDBTreeTable);
-		}
-
-		private void btnIDBInvPrevious_Click(object sender, System.EventArgs e)
-		{
-			this.grpboxFilter.Visible=true;
-			this.grpboxIDBInv.Visible=false;
-		}
-
-		private void btnIDBInvCancel_Click(object sender, System.EventArgs e)
-		{
-			((frmDialog)this.ParentForm).Close();
-		}
-		private void idbLoadInv()
-		{
-            string strId="";
-			string strDS="";
-			string strDesc="";
-			string strDef="";
-			int intAddedRows=0;
-    
-
-			      
-			this.lstIDBInv.Clear();
-			this.lstIDBInv.Columns.Add("Id", 30, HorizontalAlignment.Left);
-			this.lstIDBInv.Columns.Add("Data Source", 100, HorizontalAlignment.Left);
-			this.lstIDBInv.Columns.Add("Description", 100, HorizontalAlignment.Left);
-			this.lstIDBInv.Columns.Add("Definition", 100, HorizontalAlignment.Left);
-            this.m_strIDBInv="";
-			this.m_intError=0;
-
-			
-
-			FIA_Biosum_Manager.ado_data_access p_ado = new ado_data_access();
-
-			
-			//get all the project datasources
-
-			string strMDBFile = ((frmDialog)this.ParentForm).m_frmMain.frmProject.uc_project1.txtRootDirectory.Text.ToString().Trim() + "\\db\\ref_master.mdb";
-			string strConn = p_ado.getMDBConnString(strMDBFile,"","");
-			p_ado.m_strSQL = "select * from inventories order by idb_data_source";
-
-	
-
-           
-				p_ado.SqlQueryReader(strConn,p_ado.m_strSQL);
-				if (p_ado.m_intError==0)
-				{
-					try
-					{
-						//load up each row in the FIADB plot input table
-
-						while (p_ado.m_OleDbDataReader.Read())
-						{
-							strDS="";
-							strDesc="";
-							strDef="";
-							
-							//make sure the row is not null values
-							if (p_ado.m_OleDbDataReader[0] != System.DBNull.Value &&
-								p_ado.m_OleDbDataReader[0].ToString().Trim().Length > 0)
-							{
-								strId =p_ado.m_OleDbDataReader["inv_id"].ToString();
-								strDS= p_ado.m_OleDbDataReader["idb_data_source"].ToString();
-								strDesc = p_ado.m_OleDbDataReader["description"].ToString();
-								strDef = p_ado.m_OleDbDataReader["inv_id_def"].ToString();
-								this.lstIDBInv.BeginUpdate();
-								System.Windows.Forms.ListViewItem listItem = new ListViewItem();
-								listItem.Text=strId;
-								listItem.SubItems.Add(strDS);
-								listItem.SubItems.Add(strDesc);
-								listItem.SubItems.Add(strDef);
-								this.lstIDBInv.Items.Add(listItem);
-								this.lstIDBInv.EndUpdate();
-								intAddedRows++;
-							}
-
-						}
-						p_ado.m_OleDbDataReader.Close();
-						if (intAddedRows == 0 )
-						{
-							this.m_intError=-1;
-							MessageBox.Show("!!No Inventories Loaded !","Load Inventories");
-						}
-						else
-						{
-							this.lstIDBInv.Columns[0].Width = -1;
-							this.lstIDBInv.Columns[1].Width = -1;
-							this.lstIDBInv.Columns[2].Width = -1;
-							this.lstIDBInv.Columns[3].Width = -1;
-						}
-						((frmDialog)this.ParentForm).Enabled=true;
-					}
-					catch (Exception caught)
-					{
-						this.m_intError=-1;
-						MessageBox.Show(caught.Message);
-					}
-					p_ado.m_OleDbConnection.Close();
-				}
-				else
-				{
-					this.m_intError=p_ado.m_intError;
-				}
-			
-			
-			
-			p_ado=null;
+				ref this.txtDBTree,
+				ref this.txtDBTreeTable);
 		}
 
 		private void FIADBLoadInv()
@@ -6134,968 +5400,7 @@ namespace FIA_Biosum_Manager
                 }
             }
 		}
-
-
-		private void btnIDBInvSelectAll_Click(object sender, System.EventArgs e)
-		{
-			for (int x=0; x<= this.lstIDBInv.Items.Count-1;x++)
-			{
-				this.lstIDBInv.Items[x].Checked=true;
-			}
-		}
-
-		private void btnIDBInvClearAll_Click(object sender, System.EventArgs e)
-		{
-			for (int x=0; x<= this.lstIDBInv.Items.Count-1;x++)
-			{
-				this.lstIDBInv.Items[x].Checked=false;
-			}
-		}
-
-
-		private void BuildFilterByIDBInvString(string strStateFieldAlias,string strCountyFieldAlias,bool bStringDataType)
-		{
-		
-			//string strCurInv;
-			string strCurState="";
-			//string strInv="";
-			string strState="";
-			string strCounty="";
-			bool bAllCounties;
-			string strStateList="";
-			string strCountyList="";
-			int y=0;
-         
-			this.m_strIDBInv="";
-			if (this.lstFilterByState.CheckedItems.Count == this.lstFilterByState.Items.Count)
-			{
-				this.m_bAllCountiesSelected = true;
-				bAllCounties=true;
-			}
-			else
-			{
-				this.m_bAllCountiesSelected = false;
-				bAllCounties=false;
-			}
-			this.m_strStateCountySQL="";
-			
-			for (int x=0; x <= this.lstFilterByState.Items.Count -1;x++)
-			{
-				if (this.lstFilterByState.Items[x].Checked==true)
-				{
-					strState = this.lstFilterByState.Items[x].SubItems[1].Text.Trim();
-					strCounty = this.lstFilterByState.Items[x].SubItems[2].Text.Trim();
-					if (strState.Trim().Length > 0)
-					{
-					}
-					//check to see if this is a new state
-					if (strState !=
-						strCurState && strState.Trim().Length > 0)
-
-					{
-
-						if (strCurState.Trim().Length == 0)
-						{
-							//first time
-							strCurState = strState;
-						}
-						if (this.m_bAllCountiesSelected == true)
-						{
-							if (strStateList.Trim().Length ==0)
-							{
-								if (bStringDataType == false)
-								{
-									strStateList = strState;
-								}
-								else
-								{
-									strStateList = "'" + strState.Trim() + "'";
-								}
-							}
-							else
-							{
-								if (bStringDataType == false)
-								{
-									strStateList += "," + strState;
-								}
-								else
-								{
-									strStateList += ",'" + strState.Trim() + "'";
-								}
-							}
-							strCurState=strState;
-						}
-						else
-						{
-							
-							//current state
-							//check if all counties for this state are selected
-							strCountyList="";
-							bAllCounties=true;
-
-							//check to see if the previous list item is the same state and if
-							//it is checked
-							if (x-1 >=0)
-							{
-								if (this.lstFilterByState.Items[x-1].SubItems[1].Text.Trim() == 
-									strState.Trim() && this.lstFilterByState.Items[x-1].Checked==false)
-								{
-									bAllCounties=false;
-								}
-							}
-							
-							for (y=x;y<=this.lstFilterByState.Items.Count-1;y++)
-							{
-								if (this.lstFilterByState.Items[y].Checked==true)
-								{
-
-									if (strState.Trim() != this.lstFilterByState.Items[y].SubItems[1].Text.Trim())
-									{
-										break;
-									}
-									strCounty =  this.lstFilterByState.Items[y].SubItems[2].Text.Trim();
-									if (strCountyList.Trim().Length ==0)
-									{
-										if (bStringDataType == false)
-										{
-											strCountyList = strCounty;
-										}
-										else
-										{
-											strCountyList = "'" + strCounty.Trim() + "'";
-										}
-									}
-									else
-									{
-										if (bStringDataType == false)
-										{
-											strCountyList += "," + strCounty;
-										}
-										else
-										{
-											strCountyList += ",'" + strCounty.Trim() + "'";
-										}
-									}
-
-								}
-								else
-								{
-									if (strState.Trim() == this.lstFilterByState.Items[y].SubItems[1].Text.Trim())
-									{
-										bAllCounties=false;
-									}
-								}
-							}
-							strCurState=strState;
-							if (y<=this.lstFilterByState.Items.Count-1)
-							{
-								x = y - 1;
-							}
-							else
-							{
-								x = y;
-							}
-							if (bAllCounties==true)
-							{
-								if (this.m_strStateCountySQL.Trim().Length > 0)
-								{
-									if (bStringDataType == false)
-									{
-										this.m_strStateCountySQL += " OR (" + strStateFieldAlias  + " = " + strCurState + ")";
-									}
-									else
-									{
-										this.m_strStateCountySQL += " OR ( trim(" + strStateFieldAlias.Trim()  + ") = '" + strCurState.Trim() + "')";
-									}
-								}
-								else
-								{
-									if (bStringDataType == false)
-									{
-										this.m_strStateCountySQL = "(" + strStateFieldAlias  + " = " + strCurState + ")";
-									}
-									else
-									{
-										this.m_strStateCountySQL = "( trim(" + strStateFieldAlias.Trim()  + ") = '" + strCurState.Trim() + "')";
-									}
-								}
-							}
-							else
-							{
-								if (this.m_strStateCountySQL.Trim().Length > 0)
-								{
-									if (bStringDataType == false)
-									{
-										this.m_strStateCountySQL += " OR (" + strStateFieldAlias + " = " + strCurState  + " AND " + strCountyFieldAlias + " IN (" + strCountyList + "))";
-									}
-									else
-									{
-										this.m_strStateCountySQL += " OR ( trim(" + strStateFieldAlias.Trim() + ") = '" + strCurState.Trim()  + "' AND trim(" + strCountyFieldAlias.Trim() + ") IN (" + strCountyList + "))";
-									}
-								}
-								else
-								{
-									if (bStringDataType == false)
-									{
-										this.m_strStateCountySQL = "(" + strStateFieldAlias + " = " + strCurState  + " AND " + strCountyFieldAlias + " IN (" + strCountyList + "))";
-									}
-									else
-									{
-										this.m_strStateCountySQL = "( trim(" + strStateFieldAlias.Trim() + ") = '" + strCurState.Trim()  + "' AND trim(" + strCountyFieldAlias.Trim() + ") IN (" + strCountyList + "))";
-									}
-								}
-							}
-						}
-
-					}
-				}
-			}
-			if (this.m_bAllCountiesSelected==true)
-			{
-				if (bStringDataType==false)
-				{
-					this.m_strStateCountySQL = "(" + strStateFieldAlias + " IN (" + strStateList + "))";
-				}
-				else
-				{
-					this.m_strStateCountySQL = "( trim(" + strStateFieldAlias.Trim() + ") IN (" + strStateList + "))";
-				}
-			}
-			else
-			{
-				this.m_strStateCountySQL = "(" + this.m_strStateCountySQL + ")";
-			}
-		}
-
-		private void lstIDBInv_ItemCheck(object sender, System.Windows.Forms.ItemCheckEventArgs e)
-		{
-			
-		}
-
-		private void btnIDBInvNext_Click(object sender, System.EventArgs e)
-		{
-			if (this.lstIDBInv.SelectedItems.Count > 0)
-			{
-				this.m_strIDBInv = this.lstIDBInv.SelectedItems[0].Text.Trim();
-				this.mdbInputStateCounty();
-				this.grpboxIDBInv.Visible=false;
-				this.grpboxFilterByState.Visible=true;
-			}
-			else
-			{
-				MessageBox.Show("Select A PNW IDB Inventory","Add Plot Data",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
-			}
-		}
-
-		private void btnIDBInvAppend_Click(object sender, System.EventArgs e)
-		{
-			if (this.lstIDBInv.SelectedItems.Count > 0)
-			{
-				
-				
-				this.m_strIDBInv = this.lstIDBInv.SelectedItems[0].Text.Trim();
-                this.LoadIDBPlotCondTreeData_Start();
-			}
-			else
-			{
-				MessageBox.Show("Select A PNW IDB Inventory","Add Plot Data",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
-			}
-
-		
-		}
-        private void LoadIDBPlotCondTreeData_Process()
-		{
-            frmMain.g_oDelegate.CurrentThreadProcessStarted = true;
-			string strFields="";
-			string strValues="";
-			int intAddedPlotRows=0;
-			int intAddedCondRows=0;
-			int intAddedTreeRows=0;
-			int intAddedSiteTreeRows=0;
-			int x=0;
-			int y=0;
-			string strCol="";
-			string strTime="";
-            string str = "";
-            string str2 = "";
-
-
-
-			this.m_intError=0;	
-						
-			
-            
-			try
-			{
-				//-----------PREPARATION FOR ADDING PLOT RECORDS---------//
-                    
-				//instatiate the oledb data access class
-				this.m_ado = new ado_data_access();
-
-
-                //progress bar 1: single process
-                this.SetThermValue(m_frmTherm.progressBar1, "Maximum", 100);
-                this.SetThermValue(m_frmTherm.progressBar1, "Minimum", 0);
-                this.SetThermValue(m_frmTherm.progressBar1, "Value", 0);
-                this.SetLabelValue(m_frmTherm.lblMsg, "Text", "");
-                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)m_frmTherm, "Visible", true);
-
-                //progress bar 2: overall progress
-                this.SetThermValue(m_frmTherm.progressBar2, "Maximum", 100);
-                this.SetThermValue(m_frmTherm.progressBar2, "Minimum", 0);
-                this.SetThermValue(m_frmTherm.progressBar2, "Value", 0);
-                this.SetLabelValue(m_frmTherm.lblMsg2, "Text", "Overall Progress");
-                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)m_frmTherm, "Visible", true);
-
-
-
-
-				//get all the project datasources
-                FIA_Biosum_Manager.Datasource p_datasource = new Datasource();
-                p_datasource.m_strDataSourceMDBFile = this.ReferenceFormDialog.m_frmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\project.mdb";
-                p_datasource.LoadTableColumnNamesAndDataTypes = false;
-                p_datasource.LoadTableRecordCount = false;
-                p_datasource.m_strDataSourceTableName = "datasource";
-                p_datasource.m_strScenarioId = "";
-                p_datasource.populate_datasource_array();
-
-				//create a temporary mdb file with links to all the project tables
-				//and return the name of the file that contains the links
-				this.m_strTempMDBFile = p_datasource.CreateMDBAndTableDataSourceLinks();
-
-			
-				//instatiate dao for creating links in the temp table
-				//to the fiadb plot, cond, and tree input tables
-				dao_data_access p_dao1 = new dao_data_access();
-                this.SetLabelValue(m_frmTherm.lblMsg, "Text", "Creating Datasource Links");
-
-				//create links to the idb input tables in the temp mdb file
-                //create links to the fiadb input tables in the temp mdb file
-                //plot table
-                str = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtMDBPlot, "Text", false);
-                str2 = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtMDBPlotTable, "Text", false);
-                p_dao1.CreateTableLink(this.m_strTempMDBFile, "idb_plot_input", str.Trim(), str2.Trim());
-                //cond table
-                str = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtMDBCond, "Text", false);
-                str2 = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtMDBCondTable, "Text", false);
-                p_dao1.CreateTableLink(this.m_strTempMDBFile, "idb_cond_input", str.Trim(), str2.Trim());
-                //tree table
-                str = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtMDBTree, "Text", false);
-                str2 = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtMDBTreeTable, "Text", false);
-                p_dao1.CreateTableLink(this.m_strTempMDBFile, "idb_tree_input", str.Trim(), str2.Trim());
-                //site tree
-                str = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtMDBSiteTree, "Text", false);
-                str2 = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtMDBSiteTreeTable, "Text", false);
-                p_dao1.CreateTableLink(this.m_strTempMDBFile, "idb_site_tree_input", str.Trim(), str2.Trim());
-
-				//destroy the object and release it from memory
-				p_dao1.m_DaoWorkspace.Close();
-				p_dao1 = null;
-
-                SetThermValue(m_frmTherm.progressBar1, "Value", 20);
-
-				//get an ado connection string for the temp mdb file
-				this.m_strTempMDBFileConn = this.m_ado.getMDBConnString(this.m_strTempMDBFile,"","");
-
-				//get the biosum plot, cond, and tree table names
-				this.m_strPlotTable = p_datasource.getValidDataSourceTableName("PLOT");
-				this.m_strCondTable = p_datasource.getValidDataSourceTableName("CONDITION");
-				this.m_strTreeTable = p_datasource.getValidDataSourceTableName("TREE");
-				this.m_strSiteTreeTable = p_datasource.getValidDataSourceTableName("SITE TREE");
-
-   					
-				//create a new connection to the temp MDB file
-				this.m_connTempMDBFile = new System.Data.OleDb.OleDbConnection();
-
-				//open the connection to the temp mdb file 
-				this.m_ado.OpenConnection(this.m_strTempMDBFileConn,ref this.m_connTempMDBFile);
-
-				/****************************************************************
-				 **get the table structure that results from executing the sql
-				 ****************************************************************/
-				//get the fiabiosum table structures
-				System.Data.DataTable p_dtPlotSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from " + this.m_strPlotTable);
-				System.Data.DataTable p_dtCondSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from " + this.m_strCondTable);
-				System.Data.DataTable p_dtTreeSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from " + this.m_strTreeTable);
-				System.Data.DataTable p_dtSiteTreeSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from " + this.m_strSiteTreeTable);
-				//get the idb table structures
-				System.Data.DataTable p_dtIDBPlotSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from idb_plot_input");
-				System.Data.DataTable p_dtIDBCondSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from idb_cond_input");
-				System.Data.DataTable p_dtIDBTreeSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from idb_tree_input");
-				System.Data.DataTable p_dtIDBSiteTreeSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from idb_site_tree_input");
-
-				System.Data.DataTable p_dtTreeWorkTable = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from idb_tree_input");
-				System.Data.DataTable p_dtSiteTreeWorkTable = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from idb_site_tree_input");
-
-
-
-                SetThermValue(m_frmTherm.progressBar1, "Value", 30);
-                
-
-             
-				this.m_strSQL = "SELECT biosum_plot_id, statecd as cond_ttl " + 
-					"FROM " + this.m_strPlotTable.Trim() + ";";
-
-
-				/****************************************************************
-				 **get the table structure that results from executing the sql
-				 ****************************************************************/
-				System.Data.DataTable p_dtPlotWorkTable = this.m_ado.getTableSchema(this.m_connTempMDBFile,this.m_strSQL);
-
-				
-                this.m_ado.m_strSQL = "SELECT * INTO plot_column_updates_work_table " + 
-					                  "FROM (SELECT biosum_plot_id, statecd as cond_ttl " + 
-											"FROM " + this.m_strPlotTable.Trim() + ") "  + 
-					                  "WHERE 1 = 2";
-
-				this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_ado.m_strSQL);
-
-				this.m_ado.m_strSQL = "SELECT biosum_plot_id INTO temp_plot_table FROM " + this.m_strPlotTable + " WHERE 1=2";
-				this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_ado.m_strSQL);
-
-				this.m_ado.m_strSQL = "select * INTO temp_tree_input FROM idb_tree_input WHERE 1 = 2";
-				this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_ado.m_strSQL);
-
-				this.m_ado.m_strSQL = "select * INTO tree_work_table FROM idb_tree_input WHERE 1 = 2";
-				this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_ado.m_strSQL);
-
-                SetThermValue(m_frmTherm.progressBar1, "Value", 100);
-                SetThermValue(m_frmTherm.progressBar2, "Value", 20);
-                
-				System.Threading.Thread.Sleep(2000);
-
-				//-------------------------------PLOT----------------------------------//
-                SetThermValue(m_frmTherm.progressBar1, "Value", 0);
-                SetLabelValue(m_frmTherm.lblMsg,"Text","Plot Table: Inserting Plot Records...Stand By");
-                frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
-
-				//build field list string to insert sql by matching 
-				//up the column names in the biosum plot table and the fiadb plot table
-				strFields = "";
-				for (x=0; x<=p_dtPlotSchema.Rows.Count-1;x++)
-				{
-					strCol = p_dtPlotSchema.Rows[x]["columnname"].ToString().Trim();
-					//see if there is an equivalent FIADB column
-					for (y=0; y<=p_dtIDBPlotSchema.Rows.Count-1;y++)
-					{
-						if (strCol.Trim().ToUpper() == p_dtIDBPlotSchema.Rows[y]["columnname"].ToString().ToUpper())
-						{
-							if (strFields.Trim().Length == 0)
-							{
-								strFields = strCol;
-							}
-							else
-							{	
-								strFields += "," + strCol;
-							}
-							break;
-						}
-					}
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 50);
-                /********************************************************
-				 **create plot input insert command
-				 ********************************************************/
-				//check the user defined filters
-				if (Checked(rdoFilterNone)==true)
-				{
-					//forested/nonforested filters
-					if (Checked(chkNonForested)==true && Checked(chkForested)==true)
-					{
-						//all plots
-						this.m_strSQL = "INSERT INTO " + this.m_strPlotTable + " (" + strFields + ")" + 
-							" SELECT " + strFields + " " + 
-							" FROM idb_plot_input " + 
-							" WHERE MID(biosum_plot_id,2,4)='" + this.m_strIDBInv.Trim() + "' ";
-					}
-					else if (Checked(chkForested)==true)
-					{
-						//forested plots
-						this.m_strSQL = "INSERT INTO " + this.m_strPlotTable + " (" + strFields + ")" + 
-							" SELECT " + strFields + " FROM idb_plot_input " + 
-							" WHERE MID(biosum_plot_id,2,4)='" + this.m_strIDBInv.Trim() + "' AND " + 
-							" Plot_status_cd = 1;";
-
-					}
-					else
-					{
-						//nonforested plots
-						this.m_strSQL = "INSERT INTO " + this.m_strPlotTable + " (" + strFields + ")" + 
-							" SELECT " + strFields + " FROM idb_plot_input " + 
-							" WHERE MID(biosum_plot_id,2,4)='" + this.m_strIDBInv.Trim() + "' AND " + 
-							"plot_status_cd IS NULL or plot_status_cd <> 1;";
-					}
-				}
-				else if (Checked(rdoFilterByFile) == true)
-				{
-					//user defined plot_cn filter
-					this.m_strSQL = "INSERT INTO  " + this.m_strPlotTable + " (" + strFields + ")" + 
-						" SELECT " + strFields + " FROM idb_plot_input WHERE idb_plot_id  IN (" + this.m_strPlotIdList.Trim() + ");";
-				}
-				else if (Checked(rdoFilterByMenu)==true) 
-				{
-					if (Checked(chkNonForested)==true && Checked(chkForested)==true)
-					{
-						//all plots
-						this.m_strSQL = "INSERT INTO " + this.m_strPlotTable + " (" + strFields + ")" + 
-							" SELECT " + strFields + " FROM idb_plot_input " + 
-							" WHERE MID(biosum_plot_id,2,4)='" + this.m_strIDBInv.Trim() + "' AND ";
-					}
-					else if (Checked(chkForested)==true)
-					{
-						//forested plots
-						this.m_strSQL = "INSERT INTO " + this.m_strPlotTable + " (" + strFields + ")" + 
-							" SELECT " + strFields + " FROM idb_plot_input " + 
-							" WHERE MID(biosum_plot_id,2,4)='" + this.m_strIDBInv.Trim() + "' AND " + 
-							       "(plot_status_cd = 1) AND ";
-					}
-					else
-					{
-						//nonforested plots
-						this.m_strSQL = "INSERT INTO " + this.m_strPlotTable + " (" + strFields + ")" + 
-							" SELECT " + strFields + " FROM fiadb_plot_input " + 
-							" WHERE MID(biosum_plot_id,2,4)='" + this.m_strIDBInv.Trim() + "' AND " + 
-							       "(plot_status_cd IS NULL or plot_status_cd <> 1) AND ";
-					}
-					if (this.m_strStateCountyPlotSQL.Trim().Length > 0)
-					{
-						//state,county,plot filter
-						this.m_strSQL += this.m_strStateCountyPlotSQL.Trim() + ";";
-					}
-					else
-					{
-						//state,county filter
-						this.m_strSQL += this.m_strStateCountySQL.Trim() + ";";
-					}
-
-				}
-				else
-				{
-					this.m_strSQL = "INSERT INTO " + this.m_strPlotTable + " (" + strFields + ")" + 
-						" SELECT " + strFields + " FROM fiadb_plot_input " + 
-						" WHERE MID(biosum_plot_id,2,4)='" + this.m_strIDBInv.Trim() + "';";
-				
-				}
-				this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-                SetThermValue(m_frmTherm.progressBar1, "Value", 75);
-
-				if (this.m_ado.m_intError == 0)
-				{
-					this.m_ado.m_strSQL="INSERT INTO temp_plot_table SELECT biosum_plot_id FROM " + this.m_strPlotTable + " WHERE biosum_status_cd=9";
-					this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_ado.m_strSQL);
-
-					intAddedPlotRows = Convert.ToInt32(this.m_ado.getRecordCount(this.m_connTempMDBFile,"select count(*) from " + this.m_strPlotTable + " where biosum_status_cd = 9;",this.m_strPlotTable));
-				}
-				else
-				{
-					this.m_intError=this.m_ado.m_intError;
-					//error occured so remove new plot records
-					this.m_strSQL = "DELETE FROM " + this.m_strPlotTable + " WHERE biosum_status_cd=9;";
-					this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 100);
-				System.Threading.Thread.Sleep(2000);
-                SetThermValue(m_frmTherm.progressBar2, "Value", 40);
-                SetThermValue(m_frmTherm.progressBar1, "Value", 0);
-				//-------------------------------COND----------------------------------//
-				if (intAddedPlotRows > 0 && this.m_intError==0 && this.m_ado.m_intError==0)
-				{
-                    SetLabelValue(m_frmTherm.lblMsg,"Text","Cond Table: Inserting Condition Records...Stand By");
-					frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)m_frmTherm,"Refresh");
-
-					//build field list string to insert sql by matching 
-					//up the column names in the biosum cond table and the fiadb cond table
-					strFields = "";
-					strValues = "";
-					for (x=0; x<=p_dtCondSchema.Rows.Count-1;x++)
-					{
-						strCol = p_dtCondSchema.Rows[x]["columnname"].ToString().Trim();
-						//see if there is an equivalent FIADB column
-						for (y=0; y<=p_dtIDBCondSchema.Rows.Count-1;y++)
-						{
-							if (strCol.Trim().ToUpper() == p_dtIDBCondSchema.Rows[y]["columnname"].ToString().ToUpper())
-							{
-								if (strFields.Trim().Length == 0)
-								{
-									strFields = strCol;
-									strValues = "c." + strCol.Trim();
-									//strValues = strCol;
-								}
-								else
-								{	
-									strFields += "," + strCol;
-									strValues += ",c." + strCol.Trim();
-									//strValues += "," + strCol.Trim();
-								}
-								break;
-							}
-						}
-					}
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 40);
-				
-					//create cond input insert command
-				
-					
-
-					this.m_strSQL = "INSERT INTO " + this.m_strCondTable + " (" + strFields + ")" + 
-						" SELECT " + strValues + " FROM idb_cond_input c INNER JOIN " + this.m_strPlotTable + " p ON c.idb_plot_id=p.idb_plot_id WHERE p.biosum_status_cd=9";
-
-					strTime = System.DateTime.Now.ToString();
-				
-					this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 80);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-					
-					this.m_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " " + 
-						     "SET owngrpcd = IIF(owngrpcd IS NOT NULL AND owngrpcd < 10, (owngrpcd * 10),owngrpcd)";
-
-					this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_ado.m_strSQL);
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 85);
-
-				
-
-					if (this.m_ado.m_intError != 0)
-					{
-						//remove new plot and cond records since error occured
-						this.m_intError=this.m_ado.m_intError;
-						this.m_strSQL = "DELETE FROM " + this.m_strPlotTable + " WHERE biosum_status_cd=9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						this.m_strSQL = "DELETE FROM " + this.m_strCondTable + " WHERE biosum_status_cd=9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-					}
-
-					//delete plot records from the input table
-					//that already exist in the biosum plot table
-					strTime = System.DateTime.Now.ToString();
-
-				
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 100);
-				System.Threading.Thread.Sleep(2000);
-                SetThermValue(m_frmTherm.progressBar2, "Value", 60);
-                SetThermValue(m_frmTherm.progressBar1, "Value", 0);
-				//-------------------------------TREE----------------------------------//
-				if (intAddedPlotRows > 0 && this.m_intError==0 && this.m_ado.m_intError==0)
-				{
-                    SetLabelValue(m_frmTherm.lblMsg,"Text","Tree Table: Inserting Tree Records...Stand By");
-					frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
-					
-					strTime = System.DateTime.Now.ToString();
-					//copy the inv trees to a temp file
-					if (this.m_strPlotIdList.Trim().Length > 0)
-					{
-						this.m_strSQL = " INSERT INTO tree_work_table SELECT * FROM idb_tree_input";
-					}
-					else
-					{
-						this.m_strSQL = " INSERT INTO tree_work_table SELECT * FROM idb_tree_input WHERE MID(biosum_cond_id,2,4) = '" + this.m_strIDBInv.Trim() + "'";
-					}
-					this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 10);
-
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				
-					/***************************************************
-					 **get a list of fields that are not in the 
-					 **biosum tree table and delete them from the
-					 **tree work table
-					 ***************************************************/
-					string[] strFieldList;
-					strFieldList = new string[p_dtIDBTreeSchema.Rows.Count];
-
-					for (x=0; x<=p_dtIDBTreeSchema.Rows.Count-1;x++)
-					{
-						strFieldList[x]="";
-						strCol = p_dtIDBTreeSchema.Rows[x]["columnname"].ToString().Trim();
-						//see if there is an equivalent FIADB column
-						for (y=0; y<=p_dtTreeSchema.Rows.Count-1;y++)
-						{
-							if (strCol.Trim().ToUpper() == p_dtTreeSchema.Rows[y]["columnname"].ToString().ToUpper())
-							{
-								break;
-							}
-						}
-						if (y > p_dtTreeSchema.Rows.Count-1)
-							strFieldList[x]=strCol;
-					}
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 20);
-
-					//close the connection to the temp mdb file
-					this.m_connTempMDBFile.Close();
-					while (m_connTempMDBFile.State == System.Data.ConnectionState.Open)
-						System.Threading.Thread.Sleep(1000);
-					m_connTempMDBFile.Dispose();
-					m_connTempMDBFile=null;
-					
-
-
-					//instatiate dao again to delete the fields from the tree work table
-					//in the temp MDB file
-					dao_data_access p_dao3 = new dao_data_access();
-
-					p_dao3.DeleteField(this.m_strTempMDBFile,"tree_work_table", strFieldList);
-
-					p_dao3 = null;
-                    SetThermValue(m_frmTherm.progressBar1, "Value",30);
-					
-
-					
-
-					//reopen the connection to the temp mdb file 
-					this.m_connTempMDBFile = new System.Data.OleDb.OleDbConnection();
-					this.m_ado.OpenConnection(this.m_strTempMDBFileConn,ref this.m_connTempMDBFile);
-
-					strTime = System.DateTime.Now.ToString();
-					//copy the inv trees to a temp file
-					this.m_strSQL = " INSERT INTO " + this.m_strTreeTable + " SELECT t.* FROM tree_work_table t INNER JOIN " + this.m_strCondTable + " c ON t.biosum_cond_id = c.biosum_cond_id WHERE c.biosum_status_cd=9;";
-					this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 75);
-					if (this.m_ado.m_intError != 0)
-					{
-						//remove new plot and cond records since error occured
-						this.m_intError=this.m_ado.m_intError;
-						this.m_strSQL = "DELETE FROM " + this.m_strPlotTable + " WHERE biosum_status_cd=9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						this.m_strSQL = "DELETE FROM " + this.m_strCondTable + " WHERE biosum_status_cd=9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						this.m_strSQL = "DELETE FROM " + this.m_strTreeTable + " WHERE biosum_status_cd=9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-					}
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 100);
-				System.Threading.Thread.Sleep(2000);
-                SetThermValue(m_frmTherm.progressBar2, "Value", 80);
-                SetThermValue(m_frmTherm.progressBar1, "Value", 0);
-				//-------------------------------SITE TREE----------------------------------//
-				if (intAddedPlotRows > 0 && this.m_intError==0 && this.m_ado.m_intError==0)
-				{
-                    SetLabelValue(m_frmTherm.lblMsg,"Text","Site Tree Table: Inserting Site Tree Records...Stand By");
-                    frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
-
-
-					//build field list string to insert sql by matching 
-					//up the column names in the biosum cond table and the fiadb cond table
-					
-					strFields = "";
-					strValues = "";
-					for (x=0; x<=p_dtSiteTreeSchema.Rows.Count-1;x++)
-					{
-						strCol = p_dtSiteTreeSchema.Rows[x]["columnname"].ToString().Trim();
-						//see if there is an equivalent FIADB column
-						for (y=0; y<=p_dtIDBSiteTreeSchema.Rows.Count-1;y++)
-						{
-							if (strCol.Trim().ToUpper() == p_dtIDBSiteTreeSchema.Rows[y]["columnname"].ToString().ToUpper())
-							{
-								if (strFields.Trim().Length == 0)
-								{
-									strFields = strCol;
-									strValues = "t." + strCol.Trim();
-								}
-								else
-								{	
-									strFields += "," + strCol;
-									strValues += ",t." + strCol.Trim();
-								}
-								break;
-							}
-						}
-					}
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 50);
-					//create cond input insert command
-
-					this.m_strSQL = "INSERT INTO " + this.m_strSiteTreeTable + " (" + strFields + ")" + 
-						" SELECT " + strValues + " FROM idb_site_tree_input t INNER JOIN temp_plot_table p ON TRIM(t.biosum_plot_id)=p.biosum_plot_id";
-
-					strTime = System.DateTime.Now.ToString();
-				
-					this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-
-					if (this.m_ado.m_intError != 0)
-					{
-						//remove new plot and cond records since error occured
-						this.m_intError=this.m_ado.m_intError;
-						this.m_strSQL = "DELETE FROM " + this.m_strPlotTable + " WHERE biosum_status_cd=9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						this.m_strSQL = "DELETE FROM " + this.m_strCondTable + " WHERE biosum_status_cd=9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						this.m_strSQL = "DELETE FROM " + this.m_strTreeTable + " WHERE biosum_status_cd=9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						this.m_strSQL = "DELETE FROM " + this.m_strSiteTreeTable + " WHERE biosum_status_cd=9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-					}
-
-
-					
-
-					
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 100);
-				System.Threading.Thread.Sleep(2000);
-                SetThermValue(m_frmTherm.progressBar2, "Value", 95);
-                SetThermValue(m_frmTherm.progressBar1, "Value", 0);
-				if (intAddedPlotRows > 0 && this.m_intError==0 && this.m_ado.m_intError==0)
-				{
-				    SetLabelValue(m_frmTherm.lblMsg,"Text","Updating Columns...Stand By");
-                    frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
-				
-
-					//this.UpdateColumns(this.m_ado);
-					
-
-					if (this.m_intError==0)
-					{
-				
-
-						intAddedPlotRows= (int)this.m_ado.getRecordCount(this.m_connTempMDBFile,"select count(*) from " + this.m_strPlotTable + " WHERE biosum_status_cd=9",this.m_strPlotTable);
-						intAddedCondRows= (int)this.m_ado.getRecordCount(this.m_connTempMDBFile,"select count(*) from " + this.m_strCondTable  + " WHERE biosum_status_cd=9",this.m_strCondTable);
-						intAddedTreeRows= (int)this.m_ado.getRecordCount(this.m_connTempMDBFile,"select count(*) from " + this.m_strTreeTable  + " WHERE biosum_status_cd=9",this.m_strTreeTable);
-						intAddedSiteTreeRows= (int)this.m_ado.getRecordCount(this.m_connTempMDBFile,"select count(*) from " + this.m_strSiteTreeTable  + " WHERE biosum_status_cd=9",this.m_strSiteTreeTable);
-
-
-						this.m_strSQL = " UPDATE " + this.m_strPlotTable + " SET biosum_status_cd=1 WHERE biosum_status_cd = 9";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						this.m_strSQL = " UPDATE " + this.m_strCondTable + " SET biosum_status_cd=1 WHERE biosum_status_cd = 9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						this.m_strSQL = " UPDATE " + this.m_strTreeTable + " SET biosum_status_cd=1 WHERE biosum_status_cd = 9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						this.m_strSQL = " UPDATE " + this.m_strSiteTreeTable + " SET biosum_status_cd=1 WHERE biosum_status_cd = 9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-
-
-                        SetThermValue(m_frmTherm.progressBar1, "Value",GetThermValue(m_frmTherm.progressBar1,"Maximum"));
-                        SetLabelValue(m_frmTherm.lblMsg,"Text","Done");
-                        frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
-
-						MessageBox.Show("Successfully Appended \n" + 
-							intAddedPlotRows.ToString().Trim() + " Plot Records \n" + 
-							intAddedCondRows.ToString().Trim() + " Condition Records \n" + 
-							intAddedTreeRows.ToString().Trim() + " Tree Records \n" + 
-							intAddedSiteTreeRows.ToString().Trim() + " Site Tree Records","Add Plot Data");
-
-					}
-					else
-					{
-
-						//error occurred in the updatecolumns so delete the records
-						this.m_strSQL = "DELETE FROM " + this.m_strPlotTable + " WHERE biosum_status_cd = 9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						//delete added cond records since error occured
-						this.m_strSQL = "DELETE FROM " + this.m_strCondTable + " WHERE biosum_status_cd = 9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						//delete added cond records since error occured
-						this.m_strSQL = "DELETE FROM " + this.m_strTreeTable + " WHERE biosum_status_cd = 9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						this.m_strSQL = "DELETE FROM " + this.m_strSiteTreeTable + " WHERE biosum_status_cd = 9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-
-                        SetThermValue(m_frmTherm.progressBar1, "Value", GetThermValue(m_frmTherm.progressBar1, "Maximum"));
-                        frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
-
-					}
-				}
-				this.m_strCurrentProcess="";
-                SetThermValue(m_frmTherm.progressBar1, "Value", GetThermValue(m_frmTherm.progressBar1, "Maximum"));
-                SetThermValue(m_frmTherm.progressBar2, "Value", 100);		
-				if (this.m_intError != 0 || this.m_ado.m_intError != 0)
-					MessageBox.Show("!!Error Occured Adding Plot Records: 0 Records Added!!","Add Plot Data",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
-				
-				if (this.m_connTempMDBFile.State == System.Data.ConnectionState.Open)
-				{
-					this.m_connTempMDBFile.Close();
-					while (m_connTempMDBFile.State == System.Data.ConnectionState.Open)
-						System.Threading.Thread.Sleep(1000);
-					m_connTempMDBFile.Dispose();
-					m_connTempMDBFile=null;
-				}
-				this.m_ado=null;
-                
-                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Visible", true);
-                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Enabled", true);
-
-
-                LoadDBPlotCondTreeData_Finish();
-
-            }
-            catch (System.Threading.ThreadInterruptedException err)
-            {
-                MessageBox.Show("Threading Interruption Error " + err.Message.ToString());
-            }
-            catch (System.Threading.ThreadAbortException err)
-            {
-                if (this.m_connTempMDBFile != null)
-                {
-                    if (m_connTempMDBFile.State != System.Data.ConnectionState.Closed)
-                    {
-                        m_ado.CloseConnection(m_connTempMDBFile);
-                    }
-                    m_connTempMDBFile = null;
-                }
-                if (m_ado != null)
-                {
-                    if (m_ado.m_DataSet != null)
-                    {
-                        this.m_ado.m_DataSet.Clear();
-                        this.m_ado.m_DataSet.Dispose();
-                    }
-                    this.m_ado = null;
-                }
-                this.CancelThreadCleanup();
-                this.ThreadCleanUp();
-                this.CleanupThread();
-
-            }
-            catch (Exception err)
-            {
-                MessageBox.Show("!!Error!! \n" +
-                    "Module - uc_plot_input:LoadIDBPlotCondTreeData_Process  \n" +
-                    "Err Msg - " + err.Message.ToString().Trim(),
-                    "FVS Biosum", System.Windows.Forms.MessageBoxButtons.OK,
-                    System.Windows.Forms.MessageBoxIcon.Exclamation);
-                this.m_intError = -1;
-            }
-            finally
-            {
-
-            }
-
-            if (this.m_connTempMDBFile != null)
-            {
-                if (m_connTempMDBFile.State != System.Data.ConnectionState.Closed)
-                {
-                    m_ado.CloseConnection(m_connTempMDBFile);
-                }
-                m_connTempMDBFile = null;
-            }
-            if (m_ado != null)
-            {
-                if (m_ado.m_DataSet != null)
-                {
-                    this.m_ado.m_DataSet.Clear();
-                    this.m_ado.m_DataSet.Dispose();
-                }
-                this.m_ado = null;
-            }
-            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Enabled", true);
-            if (this.m_frmTherm != null) frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)m_frmTherm, "Visible", false);
-
-
-
-
-            LoadDBPlotCondTreeData_Finish();
-
-            CleanupThread();
-
-            frmMain.g_oDelegate.m_oEventThreadStopped.Set();
-            this.Invoke(frmMain.g_oDelegate.m_oDelegateThreadFinished);
-			
-		
-		
-		}
+        
         private bool Checked(System.Windows.Forms.RadioButton p_rdoButton)
         {
             return (bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.RadioButton)p_rdoButton, "Checked", false);
@@ -7191,49 +5496,46 @@ namespace FIA_Biosum_Manager
 			try
 			{
 
-				if (this.m_ado == null)
+				if (SQLite == null)
 				{
-					this.m_ado = new ado_data_access();
+                    SQLite = new DataMgr();
 				}
 				else
 				{
-					this.m_ado = null;
-					this.m_ado = new ado_data_access();
-				}
-				if (this.m_connTempMDBFile == null)
-				{
-
-				}
-				else
-				{
-
-					this.m_connTempMDBFile = null;
-				}
-				this.m_ado.OpenConnection(this.m_strTempMDBFileConn);
-
-
-				if (this.m_strCurrentProcess=="mdbFIADBFileInput" ||
-					this.m_strCurrentProcess=="txtFileInput" ||
-					this.m_strCurrentProcess=="mdbIDBFileInput")
-				{
-                    DeleteFromTablesWhereFilter(m_ado, m_ado.m_OleDbConnection,
-                        new string[]
-                        {
-                            //m_strPlotTable, m_strCondTable, m_strTreeTable, m_strSiteTreeTable, m_strDwmCwdTable,
-                            //m_strDwmFwdTable, m_strDwmDuffLitterTable, m_strDwmTransectSegmentTable
-                            m_strPlotTable, m_strCondTable, m_strTreeTable, m_strSiteTreeTable, m_strDwmCwdTable + "_master",
-                            m_strDwmFwdTable+ "_master", m_strDwmDuffLitterTable+ "_master", m_strDwmTransectSegmentTable+ "_master"
-                        },
-                        " WHERE biosum_status_cd=9");
+					SQLite = null;
+					SQLite = new DataMgr();
 				}
 
+                if (this.m_strCurrentProcess == "dbFIADBFileInput" ||
+                        this.m_strCurrentProcess == "txtFileInput" ||
+                        this.m_strCurrentProcess == "dbIDBFileInput")
+                {
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(m_strMasterDbFile)))
+                    {
+                        conn.Open();
+
+                        DeleteFromTablesWhereFilter(conn,
+                            new string[]
+                            {m_strPlotTable, m_strCondTable, m_strTreeTable, m_strSiteTreeTable},
+                            " WHERE biosum_status_cd=9");
+                    }
+
+                    string strMasterAuxConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.db");
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strMasterAuxConn))
+                    {
+                        conn.Open();
+
+                        DeleteFromTablesWhereFilter(conn,
+                            new string[]
+                            {m_strDwmCwdTable, m_strDwmFwdTable, m_strDwmDuffLitterTable, m_strDwmTransectSegmentTable},
+                            " WHERE biosum_status_cd=9");
+                    }
+                }
 				MessageBox.Show("!!User Canceled Adding Plot Records: 0 Records Added!!","Add Plot Data",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
 				frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)m_frmTherm,"Visible",false);
 				//((frmDialog)this.ParentForm).m_frmMain.Visible=true;
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Visible", true);
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Enabled", true);
-
-
 
 			}
 			catch 
@@ -7252,7 +5554,7 @@ namespace FIA_Biosum_Manager
                 this.CalculateAdjustments_Start();
                 if (m_intError == 0)
                 {
-                    this.LoadMDBFiadbPopFiles();
+                    this.LoadDBFiadbPopFiles();
                     this.m_strLoadedPopEstUnitTxtInputFile = "";
                     this.m_strLoadedPopEvalTxtInputFile = "";
                     this.m_strLoadedPopStratumTxtInputFile = "";
@@ -7309,13 +5611,13 @@ namespace FIA_Biosum_Manager
 					this.m_strLoadedFiadbInputFile.Trim().ToUpper() != 
 					this.txtFiadbInputFile.Text.Trim().ToUpper())
 				{
-					this.LoadMDBFiadbPopFiles();
+					this.LoadDBFiadbPopFiles();
 				}
 				
 
 				if (m_intError==0)
 				{
-					this.mdbInputStateCounty();
+					this.dbInputStateCounty();
 					this.grpboxFilterByState.Visible=true;
 					this.lstFilterByState.Refresh();
 					this.grpboxFIADBInv.Visible=false;
@@ -7361,21 +5663,6 @@ namespace FIA_Biosum_Manager
             this.m_strCurrentProcess = "dbFIADBFileInput";
             this.StartTherm("2", "Add SQLite Plot,Cond,Site Tree, & Tree Table Data");
             frmMain.g_oDelegate.m_oThread = new Thread(new ThreadStart(LoadDBPlotCondTreeData_Process));
-            frmMain.g_oDelegate.m_oThread.IsBackground = true;
-            frmMain.g_oDelegate.CurrentThreadProcessIdle = false;
-            frmMain.g_oDelegate.m_oThread.Start();
-        }
-        private void LoadIDBPlotCondTreeData_Start()
-        {
-            frmMain.g_oDelegate.InitializeThreadEvents();
-            frmMain.g_oDelegate.m_oEventStopThread.Reset();
-            frmMain.g_oDelegate.m_oEventThreadStopped.Reset();
-            frmMain.g_oDelegate.CurrentThreadProcessAborted = false;
-            frmMain.g_oDelegate.CurrentThreadProcessDone = false;
-            frmMain.g_oDelegate.CurrentThreadProcessStarted = false;
-            this.m_strCurrentProcess = "mdbIDBFileInput";
-            this.StartTherm("2", "Add MS Access Plot,Cond,Site Tree, & Tree Table Data");
-            frmMain.g_oDelegate.m_oThread = new Thread(new ThreadStart(LoadIDBPlotCondTreeData_Process));
             frmMain.g_oDelegate.m_oThread.IsBackground = true;
             frmMain.g_oDelegate.CurrentThreadProcessIdle = false;
             frmMain.g_oDelegate.m_oThread.Start();
@@ -7430,7 +5717,7 @@ namespace FIA_Biosum_Manager
 			this.m_bLoadStateCountyPlotList=true;
 		}
 
-		private void btnboxMDBFiadbInputFile_Click(object sender, System.EventArgs e)
+		private void btnboxDBFiadbInputFile_Click(object sender, System.EventArgs e)
 		{
 			
 				OpenFileDialog OpenFileDialog1 = new OpenFileDialog();
@@ -7523,7 +5810,7 @@ namespace FIA_Biosum_Manager
 			OpenFileDialog1 = null;			
 		}
 
-		private void btnMDBFiadbInputNext_Click(object sender, System.EventArgs e)
+		private void btnDBFiadbInputNext_Click(object sender, System.EventArgs e)
 		{
             
             if (this.cmbFiadbPopEvalTable.Text.Trim().Length == 0 ||
@@ -7550,15 +5837,15 @@ namespace FIA_Biosum_Manager
 		
 
 			this.grpboxFilter.Visible=true;
-			this.grpboxMDBFiadbInput.Visible=false;
+			this.grpboxDBFiadbInput.Visible=false;
 
 		}
-		private bool LoadMDBFiadbPopEvalTable()
+		private bool LoadDBFiadbPopEvalTable()
 		{
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.LoadMDBFiadPopEvalTable\r\n");
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.LoadDBFiadPopEvalTable\r\n");
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//\r\n");
             }
             string strCN="";
@@ -7678,12 +5965,6 @@ namespace FIA_Biosum_Manager
 
                     //create a temporary db file for the temporary pop tables
                     this.m_strTempDbFile = frmMain.g_oUtils.getRandomFile(m_oEnv.strTempDir, "db");
-                    //this.m_strTempMDBFile = m_oDatasource.CreateMDBAndTableDataSourceLinks();
-                    //this.m_strPopMDBFile = this.m_strTempMDBFile;
-                    //if (this.m_ado == null)
-                    //{
-                    //    this.m_ado = new ado_data_access();
-                    //}
 
                     //create pop tables in temporary db file
                     CreatePopTables();
@@ -7743,207 +6024,14 @@ namespace FIA_Biosum_Manager
             }
 			return bLoad;
 		}
-
-		private bool LoadMDBFiadbPopEvalTable2()
+		private void LoadDBFiadbPopFiles()
 		{
-			string strCN="";
-			string strCNDelimited="";
-			string strEvalId="";
-			string strEvalIdDelimited="";
-			string strRsCd="";
-			string strRsCdDelimited="";
-			string strStateCd="";
-			string strStateCdDelimited="";
-			string strLocNm="";
-			string strLocNmDelimited="";
-			string strEvalDesc="";
-			string strEvalDescDelimited="";
-			string strRptYr="";
-			string strRptYrDelimited="";
-			string strNotes="";
-			string strNotesDelimited="";
-			int x=0;
-			m_intError=0;
-			bool bLoad=false;
-			if (this.m_ado==null)
-				this.m_ado = new ado_data_access();
-			if (m_oDatasource==null) this.InitializeDatasource();
-				
-			try
-			{
-				//check if the eval list box has no values
-				if (this.lstFIADBInv.Items.Count==0)
-				{
-					bLoad=true;
-				}
-				//see if the same values in the list as the table
-				m_ado.SqlQueryReader(m_ado.getMDBConnString(this.txtFiadbInputFile.Text.Trim(),"",""),"SELECT * FROM " + this.cmbFiadbPopEvalTable.Text.Trim());
-				if (m_ado.m_intError==0)
-				{
-					if (m_ado.m_OleDbDataReader.HasRows)
-					{
-						while (m_ado.m_OleDbDataReader.Read())
-						{
-							//initialize eval values
-							strCN="";
-							strEvalId="";
-							strRsCd="";
-							strStateCd="";
-							strLocNm="";
-							strEvalDesc="";
-							strRptYr="";
-							strNotes="";
-							strCN =m_ado.m_OleDbDataReader["cn"].ToString();
-							strEvalId =m_ado.m_OleDbDataReader["evalid"].ToString();
-							strRsCd= m_ado.m_OleDbDataReader["RsCd"].ToString();
-							strStateCd = m_ado.m_OleDbDataReader["statecd"].ToString();
-							if (m_ado.m_OleDbDataReader["location_nm"] != System.DBNull.Value)
-								strLocNm = m_ado.m_OleDbDataReader["location_nm"].ToString();
-							if (m_ado.m_OleDbDataReader["eval_descr"] != System.DBNull.Value)
-								strEvalDesc = m_ado.m_OleDbDataReader["eval_descr"].ToString();
-							if (m_ado.m_OleDbDataReader["report_year_nm"] != System.DBNull.Value)
-								strRptYr = m_ado.m_OleDbDataReader["report_year_nm"].ToString();
-							if (m_ado.m_OleDbDataReader["notes"] != System.DBNull.Value)
-								strNotes = m_ado.m_OleDbDataReader["notes"].ToString();	
-							//string all the eval records
-							strCNDelimited=strCNDelimited + strCN + " " + "#";
-							strEvalIdDelimited=strEvalIdDelimited + strEvalId + " " + "#";
-							strRsCdDelimited = strRsCdDelimited + strRsCd + " " + "#";
-							strStateCdDelimited = strStateCdDelimited + strStateCd + " " + "#";
-							strLocNmDelimited = strLocNmDelimited + strLocNm + " " + "#";
-							strEvalDescDelimited = strEvalDescDelimited + strEvalDesc + " " + "#";
-							strRptYrDelimited = strRptYrDelimited + strRptYr + " " + "#";
-							strNotesDelimited = strNotesDelimited + strNotes + " " + "#";
-							if (!bLoad)
-							{
-								//see if the tables eval row is found in the list box
-								for (x=0;x<=this.lstFIADBInv.Items.Count-1;x++)
-								{
-									if (strEvalId.Trim() == this.lstFIADBInv.Items[x].SubItems[0].Text.Trim() && 
-										strRsCd.Trim() == this.lstFIADBInv.Items[x].SubItems[1].Text.Trim() && 
-										strStateCd.Trim() == this.lstFIADBInv.Items[x].SubItems[2].Text.Trim() &&
-										strLocNm.Trim() == this.lstFIADBInv.Items[x].SubItems[3].Text.Trim() &&
-										strEvalDesc.Trim() == this.lstFIADBInv.Items[x].SubItems[4].Text.Trim() &&
-										strRptYr.Trim() == this.lstFIADBInv.Items[x].SubItems[5].Text.Trim() && 
-										strNotes.Trim() == this.lstFIADBInv.Items[x].SubItems[6].Text.Trim())
-										break;
-								}
-								if (x > this.lstFIADBInv.Items.Count) 
-								{
-									//the eval table record is not found in the list box
-									bLoad=true;
-								}
-							}
-						}
-						m_ado.m_OleDbDataReader.Close();
-						while (m_ado.m_OleDbDataReader.IsClosed==false)
-							System.Threading.Thread.Sleep(1000);
-						
-						if (bLoad)
-						{
-							//remove the delimiter from the end of the string list
-							if (strCNDelimited.Trim().Length > 0) strCNDelimited = strCNDelimited.Substring(0,strCNDelimited.Length - 1);
-							if (strEvalIdDelimited.Trim().Length > 0) strEvalIdDelimited = strEvalIdDelimited.Substring(0,strEvalIdDelimited.Length - 1);
-							if (strRsCdDelimited.Trim().Length > 0) strRsCdDelimited = strRsCdDelimited.Substring(0,strRsCdDelimited.Length - 1);
-							if (strStateCdDelimited.Trim().Length > 0) strStateCdDelimited=strStateCdDelimited.Substring(0,strStateCdDelimited.Length - 1);
-							if (strLocNmDelimited.Trim().Length > 0) strLocNmDelimited=strLocNmDelimited.Substring(0,strLocNmDelimited.Length - 1);
-							if (strEvalDescDelimited.Trim().Length > 0) strEvalDescDelimited=strEvalDescDelimited.Substring(0,strEvalDescDelimited.Length - 1);
-							if (strRptYrDelimited.Trim().Length > 0) strRptYrDelimited=strRptYrDelimited.Substring(0,strRptYrDelimited.Length - 1);
-							if (strNotesDelimited.Trim().Length > 0) strNotesDelimited=strNotesDelimited.Substring(0,strNotesDelimited.Length - 1);
-
-							//create a temporary mdb file with links to all the project tables
-							this.m_strTempMDBFile = m_oDatasource.CreateMDBAndTableDataSourceLinks();
-
-							//get a connection string for the temp mdb file
-							this.m_strTempMDBFileConn = this.m_ado.getMDBConnString(this.m_strTempMDBFile,"","");
-							this.m_ado.OpenConnection(m_strTempMDBFileConn);
-							if (m_ado.m_intError==0)
-							{
-
-								//delete the current eval records that have a value of 9
-								m_ado.m_strSQL = "DELETE FROM " + this.m_strPopEvalTable + " WHERE biosum_status_cd=9";
-								m_ado.SqlNonQuery(m_ado.m_OleDbConnection,m_ado.m_strSQL);
-								if (m_ado.m_intError==0)
-								{
-									//covert the string lists to arrays
-									FIA_Biosum_Manager.utils oUtils = new FIA_Biosum_Manager.utils();
-									string[] strCNArray = oUtils.ConvertListToArray(strCNDelimited,"#");
-									string[] strEvalIdArray = oUtils.ConvertListToArray(strEvalIdDelimited,"#");
-									string[] strRsCdArray = oUtils.ConvertListToArray(strRsCdDelimited,"#");
-									string[] strStateCdArray = oUtils.ConvertListToArray(strStateCdDelimited,"#");
-									string[] strLocNmArray = oUtils.ConvertListToArray(strLocNmDelimited,"#");
-									string[] strEvalDescArray = oUtils.ConvertListToArray(strEvalDescDelimited,"#");
-									string[] strRptYrArray = oUtils.ConvertListToArray(strRptYrDelimited,"#");
-									string[] strNotesArray = oUtils.ConvertListToArray(strNotesDelimited,"#");
-									oUtils=null;
-									//insert the evaluation records into the biosum evaluation table
-									for (x=0;x<=strEvalIdArray.Length-1;x++)
-									{
-										m_ado.m_strSQL="INSERT INTO " + this.m_strPopEvalTable + " " + 
-											"(CN,RSCD,EVALID,EVAL_DESCR,STATECD," + 
-											"LOCATION_NM,REPORT_YEAR_NM,NOTES," + 
-											"START_INVYR,END_INVYR,BIOSUM_STATUS_CD) VALUES " + 
-											"('" + strCNArray[x].Trim() + "'," + 
-											strRsCdArray[x].Trim() + "," + 
-											strEvalIdArray[x].Trim() + ",'" + 
-											strEvalDescArray[x] + "'," + 
-											strStateCdArray[x] + ",'" + 
-											strLocNmArray[x] + "','" + 
-											strRptYrArray[x] + "','" + 
-											strNotesArray[x] + "',null,null,9)";
-										m_ado.SqlNonQuery(m_ado.m_OleDbConnection,m_ado.m_strSQL);	
-										if (m_ado.m_intError!=0)
-										{
-											this.m_intError=m_ado.m_intError;
-											break;
-										}
-									}
-								}          							
-								else m_intError=m_ado.m_intError;
-								m_ado.m_OleDbConnection.Close();
-								while (this.m_ado.m_OleDbConnection.State != System.Data.ConnectionState.Closed)
-									System.Threading.Thread.Sleep(1000);
-							}
-							else m_intError=m_ado.m_intError;
-						}
-					}
-					else
-					{
-						MessageBox.Show("There are no Population Evaluations in the " + this.cmbFiadbPopEvalTable.Text + " table ",
-							"FIA Biosum",
-							System.Windows.Forms.MessageBoxButtons.OK,
-							System.Windows.Forms.MessageBoxIcon.Exclamation);
-						m_intError=-1;
-						m_ado.m_OleDbDataReader.Close();
-						while (m_ado.m_OleDbDataReader.IsClosed==false)
-							System.Threading.Thread.Sleep(1000);
-						bLoad=false;
-						
-					}
-				}
-
-			}
-			catch (Exception e)
-			{
-				this.m_intError=-1;
-				MessageBox.Show(e.Message,
-					"FIA Biosum",
-					System.Windows.Forms.MessageBoxButtons.OK,
-					System.Windows.Forms.MessageBoxIcon.Exclamation);
-				return false;
-			}
-			return bLoad;
-
-
-		}
-		private void LoadMDBFiadbPopFiles()
-		{
-		    this.m_strCurrentProcess="mdbFiadbInputPopTables";	
+		    this.m_strCurrentProcess="dbFiadbInputPopTables";	
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.LoadMDBFiadbPopFiles\r\n");
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.LoadDBFiadbPopFiles\r\n");
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//\r\n");
             }
 
@@ -7961,7 +6049,7 @@ namespace FIA_Biosum_Manager
 			this.m_strCurrentFiadbInputFile = this.txtFiadbInputFile.Text;
 			this.m_strCurrentBiosumTable=this.m_strPopStratumTable;			
 
-				this.thdProcessRecords = new Thread(new ThreadStart(mdbFiadbInputPopTables));
+				this.thdProcessRecords = new Thread(new ThreadStart(dbFiadbInputPopTables));
 				this.thdProcessRecords.IsBackground = true;
 				this.thdProcessRecords.Start();
 				while (thdProcessRecords.IsAlive)
@@ -7980,7 +6068,7 @@ namespace FIA_Biosum_Manager
 					this.m_strCurrentFiadbTable = this.cmbFiadbPopEstUnitTable.Text;
 					this.m_strCurrentFiadbInputFile = this.txtFiadbInputFile.Text;
 					this.m_strCurrentBiosumTable = this.m_strPopEstUnitTable;
-					this.thdProcessRecords = new Thread(new ThreadStart(mdbFiadbInputPopTables));
+					this.thdProcessRecords = new Thread(new ThreadStart(dbFiadbInputPopTables));
 					this.thdProcessRecords.IsBackground = true;
 					this.thdProcessRecords.Start();
 					while (thdProcessRecords.IsAlive)
@@ -8000,7 +6088,7 @@ namespace FIA_Biosum_Manager
 					this.m_frmTherm.lblMsg.Text = "ppsa table";
 					this.m_strCurrentFiadbTable = this.cmbFiadbPpsaTable.Text;
 					this.m_strCurrentBiosumTable = this.m_strPpsaTable;
-					this.thdProcessRecords = new Thread(new ThreadStart(mdbFiadbInputPopTables));
+					this.thdProcessRecords = new Thread(new ThreadStart(dbFiadbInputPopTables));
 					this.thdProcessRecords.IsBackground = true;
 					this.thdProcessRecords.Start();
 					while (thdProcessRecords!=null && thdProcessRecords.IsAlive)
@@ -8025,7 +6113,7 @@ namespace FIA_Biosum_Manager
 			    this.m_strCurrentProcess="";	
 			
 		}
-		private void mdbFiadbInputPopTables()
+		private void dbFiadbInputPopTables()
 		{
 		   
 			string strFields="";
@@ -8045,7 +6133,7 @@ namespace FIA_Biosum_Manager
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.mdbFiadbInputPopTables\r\n");
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.dbFiadbInputPopTables\r\n");
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//\r\n");
             }
 
@@ -8136,7 +6224,7 @@ namespace FIA_Biosum_Manager
 
 		}
 
-		private void btnMDBFiadbInputCancel_Click(object sender, System.EventArgs e)
+		private void btnDBFiadbInputCancel_Click(object sender, System.EventArgs e)
 		{
 			((frmDialog)this.ParentForm).Close();
 		}
@@ -8149,12 +6237,12 @@ namespace FIA_Biosum_Manager
 		
 		}
 
-		private void btnMDBSiteTreeBrowse_Click(object sender, System.EventArgs e)
+		private void btnDBSiteTreeBrowse_Click(object sender, System.EventArgs e)
 		{
 			this.GetMDBFileAndTable("SQLite Data File Containing Site Tree Table Data",
 									"Select Site Tree Table",
-									ref this.txtMDBSiteTree,
-									ref this.txtMDBSiteTreeTable);
+									ref this.txtDBSiteTree,
+									ref this.txtDBSiteTreeTable);
 		}
 		private void GetMDBFileAndTable(string p_strDialogTitleGetMDBFile,
 			string p_strDialogTitleGetMDBTable,
@@ -8434,7 +6522,7 @@ namespace FIA_Biosum_Manager
             chkForested.Enabled = !rdoFilterByFile.Checked;
         }
 
-        private void btnMDBFiadbInputHelp_Click(object sender, EventArgs e)
+        private void btnDBFiadbInputHelp_Click(object sender, EventArgs e)
         {
             if (m_oHelp == null)
             {
@@ -8478,6 +6566,129 @@ namespace FIA_Biosum_Manager
                 m_oHelp = new Help(m_xpsFile, m_oEnv);
             }
             m_oHelp.ShowHelp(new string[] { "DATABASE", "FILTER_BY_PLOT" });
+        }
+
+        private void SaveLoadConfigurationTxt(System.Data.SQLite.SQLiteConnection p_conn)
+        {
+            string strConfigTxtFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\biosum_plot_input_configuration.txt";
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.AppendLine("========================================================");
+            stringBuilder.AppendLine("Plot data loaded: " + DateTime.Now.ToString());
+            stringBuilder.AppendLine("========================================================");
+
+            string strSqliteVersion = "";
+            SQLite.m_strSQL = "SELECT sqlite_version() AS v";
+            SQLite.SqlQueryReader(p_conn, SQLite.m_strSQL);
+            if (SQLite.m_DataReader.HasRows)
+            {
+                while (SQLite.m_DataReader.Read())
+                {
+                    strSqliteVersion = SQLite.m_DataReader["v"].ToString();
+                }
+            }
+            SQLite.m_DataReader.Close();
+
+            stringBuilder.AppendLine("SQLite version number: " + strSqliteVersion);
+
+            stringBuilder.AppendLine("Source FIADB database: " + m_strCurrentFiadbInputFile);
+            // if using .txt file
+            if (rdoFilterByFile.Checked)
+            {
+                stringBuilder.AppendLine("Plot_CN list .txt file: " + txtFilterByFile.Text.Trim());
+            }
+
+            string strChecked = "No";
+            if (chkForested.Checked)
+            {
+                strChecked = "Yes";
+            }
+            stringBuilder.AppendLine("Forested: " + strChecked);
+            strChecked = "No";
+            if (chkNonForested.Checked)
+            {
+                strChecked = "Yes";
+            }
+            stringBuilder.AppendLine("Non Forested: " + strChecked);
+            strChecked = "No";
+            if (ckImportSeedlings.Checked)
+            {
+                strChecked = "Yes";
+            }
+            stringBuilder.AppendLine("Load seedling data: " + strChecked);
+            strChecked = "No";
+            if (chkDwmImport.Checked)
+            {
+                strChecked = "Yes";
+            }
+            stringBuilder.AppendLine("Load down woody material data: " + strChecked);
+
+            stringBuilder.AppendLine("Percent condition proportion: " + m_strCondPropPercent);
+            stringBuilder.AppendLine("EvalId: " + m_strCurrFIADBEvalId);
+            frmMain.g_oUtils.WriteText(strConfigTxtFile, stringBuilder.ToString());
+        }
+
+        private void SaveLoadConfigurationTable(System.Data.SQLite.SQLiteConnection p_conn)
+        {
+            string strConfigTable = "biosum_plot_input_configuration";
+            if (!SQLite.TableExist(p_conn, strConfigTable))
+            {
+                SQLite.m_strSQL = "CREATE TABLE " + strConfigTable +
+                    " (Setting CHAR(255), Value CHAR(255))";
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            }
+            else
+            {
+                SQLite.m_strSQL = "DELETE FROM " + strConfigTable;
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            }
+
+            string strSqliteVersion = "";
+            SQLite.m_strSQL = "SELECT sqlite_version() AS v";
+            SQLite.SqlQueryReader(p_conn, SQLite.m_strSQL);
+            if (SQLite.m_DataReader.HasRows)
+            {
+                while (SQLite.m_DataReader.Read())
+                {
+                    strSqliteVersion = SQLite.m_DataReader["v"].ToString();
+                }
+            }
+            SQLite.m_DataReader.Close();
+
+            SQLite.m_strSQL = "INSERT INTO " + strConfigTable +
+                " VALUES ('Load date and time', '" + DateTime.Now.ToString() + "')," +
+                "('SQLite version number', '" + strSqliteVersion + "')," +
+                "('Source FIADB database', '" + m_strCurrentFiadbInputFile + "'),";
+            if (rdoFilterByFile.Checked)
+            {
+                SQLite.m_strSQL += "('Plot_CN list .txt file', '" + txtFilterByFile.Text.Trim() + "'),";
+            }
+            string strChecked = "No";
+            if (chkForested.Checked)
+            {
+                strChecked = "Yes";
+            }
+            SQLite.m_strSQL += "('Forested', '" + strChecked + "'),";
+            strChecked = "No";
+            if (chkNonForested.Checked)
+            {
+                strChecked = "Yes";
+            }
+            SQLite.m_strSQL += "('Non Forested', '" + strChecked + "'),";
+            strChecked = "No";
+            if (ckImportSeedlings.Checked)
+            {
+                strChecked = "Yes";
+            }
+            SQLite.m_strSQL += "('Load seedling data', '" + strChecked + "'),";
+            strChecked = "No";
+            if (chkDwmImport.Checked)
+            {
+                strChecked = "Yes";
+            }
+            SQLite.m_strSQL += "('Load down woody material', '" + strChecked + "')," +
+                "('Percent condition proportion', '" + m_strCondPropPercent + "')," +
+                "('EvalId', '" + m_strCurrFIADBEvalId + "')";
+            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
         }
 
         /*
@@ -8531,7 +6742,7 @@ namespace FIA_Biosum_Manager
          
         }
          */
-	}
+    }
     
 	
 }
