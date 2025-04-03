@@ -5,7 +5,6 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Data.Common;
-using System.Data.OleDb;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -82,11 +81,7 @@ namespace FIA_Biosum_Manager
         private string m_strMasterDbFile = "";
 
 
-		//private string m_strTempMDBFile;
         private string m_strTempDbFile;
-        //private string m_strTempMDBFileConn;
-        //private System.Data.OleDb.OleDbConnection m_connTempMDBFile;
-		//private FIA_Biosum_Manager.ado_data_access m_ado;
 		private System.Data.DataTable m_dtStateCounty;
 		private System.Data.DataTable m_dtPlot;
 		private int m_intError;
