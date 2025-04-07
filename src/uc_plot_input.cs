@@ -2371,8 +2371,14 @@ namespace FIA_Biosum_Manager
 
                         //Successfully imported and updated plot data. Set biosum_status_cd to 1
                         string[] arrTables = new string[] {m_strPlotTable, m_strCondTable, m_strTreeTable, m_strSiteTreeTable,
-                        m_strPopEvalTable, m_strPopStratumTable, m_strPpsaTable, m_strPopEstUnitTable, m_strBiosumPopStratumAdjustmentFactorsTable,
-                        m_strDwmCwdTable, m_strDwmFwdTable, m_strDwmDuffLitterTable, m_strDwmTransectSegmentTable};
+                                m_strPopEvalTable, m_strPopStratumTable, m_strPpsaTable, m_strPopEstUnitTable, m_strBiosumPopStratumAdjustmentFactorsTable};
+                        if (Checked(chkDwmImport))
+                        {
+                            arrTables = new string[] {m_strPlotTable, m_strCondTable, m_strTreeTable, m_strSiteTreeTable,
+                                m_strPopEvalTable, m_strPopStratumTable, m_strPpsaTable, m_strPopEstUnitTable, m_strBiosumPopStratumAdjustmentFactorsTable,
+                                m_strDwmCwdTable, m_strDwmFwdTable, m_strDwmDuffLitterTable, m_strDwmTransectSegmentTable};
+                        }
+                        
                         foreach (string table in arrTables)
                         {
                             if (SQLite.TableExist(conn, table) || SQLite.AttachedTableExist(conn, table))
