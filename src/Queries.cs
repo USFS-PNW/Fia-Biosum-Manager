@@ -2211,7 +2211,6 @@ namespace FIA_Biosum_Manager
             /// <param name="p_strRxPackage"></param>
             /// <param name="p_strRx"></param>
             /// <param name="p_strRxCycle"></param>
-            /// <param name="p_strRxYear"></param>
             /// <returns></returns>
             static public string FVSOutputTable_AuditFVSTreeId(string p_strFvsTreeIdAuditTable,
                                                                string p_strCasesTable,
@@ -2220,15 +2219,15 @@ namespace FIA_Biosum_Manager
                                                                string p_strRxPackage,
                                                                string p_strRx,
                                                                string p_strRxCycle,
-                                                               string p_strRxYear, string p_strRunTitle)
+                                                               string p_strRunTitle)
             {
                 return "INSERT INTO " + p_strFvsTreeIdAuditTable + " " +
-                                "(biosum_cond_id, rxpackage,rx,rxcycle,rxyear,fvs_variant, fvs_tree_id) " +
+                                "(biosum_cond_id, rxpackage,rx,rxcycle,rxyear,fvs_variant, fvs_tree_id, FOUND_FvsTreeId_YN) " +
                                  "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + p_strRxPackage.Trim() + "' AS rxpackage," +
                                 "'" + p_strRx.Trim() + "' AS rx,'" + p_strRxCycle.Trim() + "' AS rxcycle," +
                                 "cast(t.year as text) AS rxyear," +
                                 "c.Variant AS fvs_variant, " +
-                                "Trim(t.treeid) AS fvs_tree_id " +
+                                "Trim(t.treeid) AS fvs_tree_id, 'N' AS FOUND_FvsTreeId_YN " +
                                 "FROM " + p_strCasesTable + " c," + p_strCutListTable + " t," + p_strFVSCutListPrePostSeqNumTable + " p " +
                                 "WHERE c.CaseID = t.CaseID AND t.standid=p.standid AND t.year=p.year AND  " + 
                                       "p.cycle" + p_strRxCycle.Trim() + "_PRE_YN='Y' AND " + 
