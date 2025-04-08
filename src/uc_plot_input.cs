@@ -2751,9 +2751,9 @@ namespace FIA_Biosum_Manager
                 SQLite.m_strSQL = "SELECT COUNT (*) AS ROWCOUNT " +
                     "FROM " + this.m_strTreeTable + " AS a, " +
                     "(SELECT t.* FROM " + this.m_strTreeTable + " AS t " +
-                    "WHERE NOT EXITS (SELECT * FROM " + this.m_strTreeMacroPlotBreakPointDiaTable + " AS bp " +
+                    "WHERE NOT EXISTS (SELECT * FROM " + this.m_strTreeMacroPlotBreakPointDiaTable + " AS bp " +
                     "WHERE t.statecd = bp.statecd AND t.unitcd = bp.unitcd)) AS b " +
-                    "WHERE a.CN = b.CN AND a.condprop_specific IS NULL AND a.biosum_status_cd 9";
+                    "WHERE a.CN = b.CN AND a.condprop_specific IS NULL AND a.biosum_status_cd = 9";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
                 //handle for those states and units that do not have macro plot
