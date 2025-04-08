@@ -1822,7 +1822,6 @@ namespace FIA_Biosum_Manager
                         SQLite.m_DataSet.Clear();
                         SQLite.m_DataSet.Dispose();
                     }
-                    SQLite = null;
                 }
                 this.CancelThreadCleanup();
                 this.ThreadCleanUp();
