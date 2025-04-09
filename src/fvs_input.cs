@@ -878,7 +878,7 @@ namespace FIA_Biosum_Manager
                 }
 
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
-                    "Writing BioSum FVS_StandInit For Variant " + strVariant);
+                    "Calculating Site Index For Variant " + strVariant);
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Minimum", 0);
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Maximum",
                     m_ado.m_DataSet.Tables["standlist"].Rows.Count);
@@ -4744,6 +4744,10 @@ namespace FIA_Biosum_Manager
             string strVariantWorkDb = frmMain.g_oUtils.getRandomFile(oEnv.strTempDir, "db");
             File.Copy(applicationDb, strVariantWorkDb, true);
 
+            frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
+                    "Writing BioSum FVS_StandInit and FVS_TreeInit For Variant " + this.m_strVariant);
+            frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Minimum", 0);
+            frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Maximum", 8);
             int intProgressBarCounter = 0;
 
             SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
@@ -4805,7 +4809,7 @@ namespace FIA_Biosum_Manager
                 }
 
 
-                // Ensure FIADB indexes are in plac
+                // Ensure FIADB indexes are in place
                 AddFIADBIndexes(con);
             }
 
@@ -4943,7 +4947,6 @@ namespace FIA_Biosum_Manager
                 }
                 
                 // set fuel columns to null
-                
                 using (System.Data.SQLite.SQLiteConnection workConn = new System.Data.SQLite.SQLiteConnection(strWorkDbConn))
                 {
                     workConn.Open();
@@ -4960,7 +4963,8 @@ namespace FIA_Biosum_Manager
                     PopulateFuelColumns(strAccdbConnection, strVariantWorkDb, Tables.FIA2FVS.DefaultFvsInputStandTableName);
                 }
 
-                frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
+                frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Maximum", 8);
+                frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", 3);
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
                     "Customizing FVS_TREEINIT_COND table For Variant " + strVariant);
                 // Create temp table in MS Access
