@@ -5632,8 +5632,8 @@ namespace FIA_Biosum_Manager
                                   "a.estn_unit,a.stratumcd," +
                                   "a.p2pointcnt_man,a.stratum_area," +
                                   "a.double_sampling," +
-                                  "a.pmh_macr,a.pmh_micr," +
-                                  "a.pmh_sub,a.pmh_cond," +
+                                  "ROUND(a.pmh_macr, 4) AS pmh_macr, ROUND(a.pmh_micr, 4) AS pmh_micr," +
+                                  "ROUND(a.pmh_sub, 4) AS pmh_sub, ROUND(a.pmh_cond, 4) AS pmh_cond," +
                                   "b.eval_descr,b.estn_unit_descr," +
                                   "b.adj_factor_macr, b.adj_factor_subp," +
                                   "b.adj_factor_micr, b.expns " +

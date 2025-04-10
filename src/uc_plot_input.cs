@@ -2083,6 +2083,23 @@ namespace FIA_Biosum_Manager
                         m_intError = SQLite.m_intError;
                     }
 
+                    // abort if no plots are loaded into tempplot
+                    if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                    {
+                        SQLite.m_strSQL = "SELECT * FROM tempplot";
+                        SQLite.SqlQueryReader(conn, SQLite.m_strSQL);
+                        if (!SQLite.m_DataReader.HasRows)
+                        {
+                            SQLite.m_strSQL = "DROP TABLE TEMPDB.tempplot";
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                            SQLite.m_strSQL = "DROP TABLE TEMPDB.input_cn";
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                            MessageBox.Show("!!No selected plots exist in selected EvalId!!", "FIA Biosum",
+                            System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+                            m_intError = -1;
+                        }
+                    }
+
                     if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
                     {
                         SetThermValue(m_frmTherm.progressBar1, "Value", 30);
@@ -2439,9 +2456,12 @@ namespace FIA_Biosum_Manager
                         MessageBox.Show("!!Error Occured Adding Plot Records: 0 Records Added!!", "FIA Biosum",
                             System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
                     }
-
-                    SQLite.m_DataSet.Clear();
-                    SQLite.m_DataSet.Dispose();
+                    
+                    if (SQLite.m_DataSet != null)
+                    {
+                        SQLite.m_DataSet.Clear();
+                        SQLite.m_DataSet.Dispose();
+                    }
 
                     frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Visible", true);
                     frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Enabled", true);
@@ -2462,7 +2482,6 @@ namespace FIA_Biosum_Manager
                         SQLite.m_DataSet.Clear();
                         SQLite.m_DataSet.Dispose();
                     }
-                    SQLite = null;
                 }
                 this.CancelThreadCleanup();
 			    this.ThreadCleanUp();
@@ -2488,7 +2507,6 @@ namespace FIA_Biosum_Manager
                     SQLite.m_DataSet.Clear();
                     SQLite.m_DataSet.Dispose();
                 }
-                SQLite = null;
             }
             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Enabled", true);
 			if (this.m_frmTherm != null) frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)m_frmTherm,"Visible",false);
