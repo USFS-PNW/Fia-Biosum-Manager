@@ -246,7 +246,11 @@ namespace FIA_Biosum_Manager
 			string strConn, string strSQL, string strTableName)
 		{
             this.AddDataSet(p_conn,strConn,strSQL,strTableName);
-
+		}
+		public void LoadDataSet(System.Data.SQLite.SQLiteConnection p_conn,
+			string strSQL, string strTableName)
+		{
+			this.AddDataSet(p_conn, strSQL, strTableName);
 		}
 		public void LoadDataSet(string strConn, string strSQL)
 		{
@@ -360,7 +364,7 @@ namespace FIA_Biosum_Manager
 			                    string strDataSetName)
 		{
 			this.m_intArrayCount++;
-			this.uc_gridview1 = new uc_gridview(p_conn, strConn,strSQL,strDataSetName);
+			this.uc_gridview1 = new uc_gridview(p_conn,strSQL,strDataSetName, null);
 			this.uc_gridview1.ReferenceGridViewForm=this;
 			this.uc_gridview_collection1.Add(this.uc_gridview1);
 			if (this.uc_gridview1.m_intError==0)
@@ -390,7 +394,43 @@ namespace FIA_Biosum_Manager
 				this.ResizeGridViewItem();
 				this.resize_frmGridView();
 			}
+		}
 
+		private void AddDataSet(System.Data.SQLite.SQLiteConnection p_conn,
+						string strSQL,
+						string strDataSetName)
+		{
+			this.m_intArrayCount++;
+			this.uc_gridview1 = new uc_gridview(null, strSQL, strDataSetName, p_conn);
+			this.uc_gridview1.ReferenceGridViewForm = this;
+			this.uc_gridview_collection1.Add(this.uc_gridview1);
+			if (this.uc_gridview1.m_intError == 0)
+			{
+				this.m_intNumberOfGridViews++;
+				this.Controls.Add(this.uc_gridview1);
+				MenuItem p_menuitem = new MenuItem();
+				MenuItem p_menuitem2 = new MenuItem();
+				p_menuitem.Text = strDataSetName;
+				p_menuitem2.Text = strDataSetName;
+				m_ContextMenu.MenuItems.Add(p_menuitem);
+				m_ContextMenu2.MenuItems.Add(p_menuitem2);
+				p_menuitem.Click += new System.EventHandler(this.m_ContextMenu_Click);
+				p_menuitem2.Click += new System.EventHandler(this.m_ContextMenu2_Click);
+				for (int x = 0; x <= this.btnMaxSize.DropDownMenu.MenuItems.Count - 1; x++)
+				{
+					if (x < this.btnMaxSize.DropDownMenu.MenuItems.Count - 1)
+					{
+						this.btnMaxSize.DropDownMenu.MenuItems[x].Checked = false;
+					}
+					else this.btnMaxSize.DropDownMenu.MenuItems[x].Checked = true;
+					this.btnMultPane.DropDownMenu.MenuItems[x].Checked = true;
+				}
+				this.uc_gridview1.m_intID = this.m_intNumberOfGridViews;
+				this.uc_gridview1.Width = this.Width - this.m_vScrollBar.Width;
+				this.uc_gridview1.Visible = true;
+				this.ResizeGridViewItem();
+				this.resize_frmGridView();
+			}
 		}
 
 		private void AddDataSet(System.Data.OleDb.OleDbConnection p_conn, 

@@ -310,23 +310,28 @@ namespace FIA_Biosum_Manager
 			}
 
 			/// <summary>
-			/// return the query that will assign a variant to each rx package
+			/// Return the query that will assign a variant to each rx package.
+            /// Converted to SQLite syntax March 2025. No valid Access methods should be using
 			/// </summary>
 			/// <param name="p_strPlotTable"></param>
 			/// <param name="p_strRxPackageTable"></param>
 			/// <returns></returns>
 			static public string GetFVSVariantRxPackageSQL(string p_strPlotTable, string p_strRxPackageTable)
 			{
-				return "SELECT DISTINCT  a.fvs_variant,  b.rxpackage, b.rxcycle_length, b.simyear1_rx," + 
-					                                                                   "b.simyear2_rx," + 
-					                                                                   "b.simyear3_rx," + 
-					                                                                   "b.simyear4_rx  " + 
-					   "FROM " + p_strPlotTable + " a, " + 
-					      "(SELECT rxpackage,simyear1_rx,simyear2_rx,simyear3_rx,simyear4_rx,rxcycle_length " + 
-					       "FROM " + p_strRxPackageTable +  ") b " + 
-					   "WHERE a.fvs_variant IS NOT NULL AND " + 
-					          "LEN(TRIM(a.fvs_variant)) > 0 AND " + 
-					          "b.rxpackage IS NOT NULL AND LEN(TRIM(b.rxpackage)) > 0;";
+                //return "SELECT DISTINCT  a.fvs_variant,  b.rxpackage, b.rxcycle_length, b.simyear1_rx," + 
+                //	                                                                   "b.simyear2_rx," + 
+                //	                                                                   "b.simyear3_rx," + 
+                //	                                                                   "b.simyear4_rx  " + 
+                //	   "FROM " + p_strPlotTable + " a, " + 
+                //	      "(SELECT rxpackage,simyear1_rx,simyear2_rx,simyear3_rx,simyear4_rx,rxcycle_length " + 
+                //	       "FROM " + p_strRxPackageTable +  ") b " + 
+                //	   "WHERE a.fvs_variant IS NOT NULL AND " + 
+                //	          "LEN(TRIM(a.fvs_variant)) > 0 AND " + 
+                //	          "b.rxpackage IS NOT NULL AND LEN(TRIM(b.rxpackage)) > 0;";
+                return $@"SELECT DISTINCT  a.fvs_variant,  b.rxpackage, b.rxcycle_length, b.simyear1_rx, b.simyear2_rx, b.simyear3_rx, b.simyear4_rx 
+                    FROM {p_strPlotTable} a, (SELECT rxpackage,simyear1_rx,simyear2_rx,simyear3_rx,simyear4_rx,rxcycle_length 
+                    FROM {p_strRxPackageTable}) b WHERE a.fvs_variant IS NOT NULL AND LENGTH(TRIM(a.fvs_variant)) > 0 AND b.rxpackage IS NOT NULL 
+                    AND LENGTH(TRIM(b.rxpackage)) > 0 ORDER BY FVS_VARIANT, RXPACKAGE";
 			}
             /// <summary>
             /// return the query that will assign a variant to each rx package
@@ -2206,7 +2211,6 @@ namespace FIA_Biosum_Manager
             /// <param name="p_strRxPackage"></param>
             /// <param name="p_strRx"></param>
             /// <param name="p_strRxCycle"></param>
-            /// <param name="p_strRxYear"></param>
             /// <returns></returns>
             static public string FVSOutputTable_AuditFVSTreeId(string p_strFvsTreeIdAuditTable,
                                                                string p_strCasesTable,
@@ -2215,15 +2219,15 @@ namespace FIA_Biosum_Manager
                                                                string p_strRxPackage,
                                                                string p_strRx,
                                                                string p_strRxCycle,
-                                                               string p_strRxYear, string p_strRunTitle)
+                                                               string p_strRunTitle)
             {
                 return "INSERT INTO " + p_strFvsTreeIdAuditTable + " " +
-                                "(biosum_cond_id, rxpackage,rx,rxcycle,rxyear,fvs_variant, fvs_tree_id) " +
+                                "(biosum_cond_id, rxpackage,rx,rxcycle,rxyear,fvs_variant, fvs_tree_id, FOUND_FvsTreeId_YN) " +
                                  "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + p_strRxPackage.Trim() + "' AS rxpackage," +
                                 "'" + p_strRx.Trim() + "' AS rx,'" + p_strRxCycle.Trim() + "' AS rxcycle," +
                                 "cast(t.year as text) AS rxyear," +
                                 "c.Variant AS fvs_variant, " +
-                                "Trim(t.treeid) AS fvs_tree_id " +
+                                "Trim(t.treeid) AS fvs_tree_id, 'N' AS FOUND_FvsTreeId_YN " +
                                 "FROM " + p_strCasesTable + " c," + p_strCutListTable + " t," + p_strFVSCutListPrePostSeqNumTable + " p " +
                                 "WHERE c.CaseID = t.CaseID AND t.standid=p.standid AND t.year=p.year AND  " + 
                                       "p.cycle" + p_strRxCycle.Trim() + "_PRE_YN='Y' AND " + 
@@ -5721,23 +5725,26 @@ namespace FIA_Biosum_Manager
 				return strSql;
 				
 			}
-            public static List<string> AuditFvsOut_SelectIntoUnionOfFVSTreeTablesUsingListArray(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strIntoTable, string p_strColumnList)
+            public static List<string> AuditFvsOut_SelectIntoUnionOfFVSTreeTablesUsingListArray(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strIntoTable, string p_strColumnList)
             {
                 List<string> strList = new List<string>();
-                string strSql = "";
+                string strSql;
 
                 // This is an update from the original implementation when all the cut lists were in separate databases
                 // No more need to generate multiple sql statements by variant, rxpackage
-                if (p_oAdo.TableExist(p_oConn, Tables.FVS.DefaultFVSCutTreeTableName))
+                if (p_oDataMgr.AttachedTableExist(p_oConn, Tables.FVS.DefaultFVSCutTreeTableName))
                 {
                     strSql = $@"SELECT count(*) FROM {Tables.FVS.DefaultFVSCutTreeTableName}";
-                    long lngCount = p_oAdo.getRecordCount(p_oAdo.m_OleDbConnection, strSql, Tables.FVS.DefaultFVSCutTreeTableName);
+                    long lngCount = p_oDataMgr.getRecordCount(p_oConn, strSql, Tables.FVS.DefaultFVSCutTreeTableName);
                     if (lngCount > 0)
                     {
-                        strSql = $@"SELECT DISTINCT { p_strColumnList}
-                        INTO {p_strIntoTable} FROM {Tables.FVS.DefaultFVSCutTreeTableName}";
+                        //strSql = $@"SELECT DISTINCT { p_strColumnList}
+                        //INTO {p_strIntoTable} FROM {Tables.FVS.DefaultFVSCutTreeTableName}";
+                        strSql = $@"CREATE TABLE {p_strIntoTable} AS SELECT DISTINCT {p_strColumnList} FROM {Tables.FVS.DefaultFVSCutTreeTableName}";
                         strList.Add(strSql);
-                    }                           
+                        strSql = $@"CREATE TABLE fvsouttreetemp AS SELECT DISTINCT * FROM {p_strIntoTable}";
+                        strList.Add(strSql);
+                    }
                 }
                 return strList;
             }

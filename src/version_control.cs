@@ -261,11 +261,11 @@ namespace FIA_Biosum_Manager
                         }
                             
                     }
-                    if ((Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MAJOR]) < 5) ||
-                       (Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MAJOR]) == 5 &&
-                       Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR1]) <= 2 &&
-                       Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR2]) == 0))
-                        UpgradeFVSOutTreeListFiles();
+                    //if ((Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MAJOR]) < 5) ||
+                    //   (Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MAJOR]) == 5 &&
+                    //   Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR1]) <= 2 &&
+                    //   Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR2]) == 0))
+                    //    UpgradeFVSOutTreeListFiles();
 
                     if (frmMain.g_strAppVer == "5.3.0" || (frmMain.g_strAppVer=="5.3.1" && m_strProjectVersion!="5.3.0"))
                     {
@@ -413,7 +413,7 @@ namespace FIA_Biosum_Manager
                                 Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR1]) == 7))
                             {
                                 UpdateDatasources_5_7_0();
-                                Update_5_7_0();
+                                //Update_5_7_0();
                             }
 
                             UpdateProjectVersionFile(strProjVersionFile);
@@ -3079,191 +3079,6 @@ namespace FIA_Biosum_Manager
             oAdo.CloseConnection(oAdo.m_OleDbConnection);
             oAdo = null;
         }
-        private void UpgradeFVSOutTreeListFiles()
-        {
-            int x,y;
-            string strFile="";
-            List<string> strVariant = new List<string>(); //hold the variants that have an existing variant_tree_cutlist.mdb
-            string[] strPackageArray = null;
-            
-            string[] strFiles = System.IO.Directory.GetFiles(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\FVS\\Data\\TreeLists","*.mdb");
-            if (strFiles != null && strFiles.Length > 0)
-            {
-                frmMain.g_sbpInfo.Text = "Version Update: Update FVS_CUTLIST...Stand By";
-                ado_data_access oAdo = new ado_data_access();
-                RxTools oRxTools = new RxTools();
-                Queries oQueries = new Queries();
-                RxPackageItem_Collection oRxPackageItemCollection = new RxPackageItem_Collection();
-			    oQueries.m_oFvs.LoadDatasource=true;
-			    oQueries.m_oFIAPlot.LoadDatasource=true;
-			    oQueries.LoadDatasources(true);
-                //
-                //open the work file containing the links
-                //
-                oAdo.OpenConnection(oAdo.getMDBConnString(oQueries.m_strTempDbFile,"",""));
-                //
-                //get all the variants
-                //
-			    string strVariantsList = oRxTools.GetListOfFVSVariantsInPlotTable(oAdo,oAdo.m_OleDbConnection,oQueries.m_oFIAPlot.m_strPlotTable);
-                string[] strVariantsArray=frmMain.g_oUtils.ConvertListToArray(strVariantsList,",");
-                //
-                //close the work file containing the links
-                //
-                oAdo.CloseConnection(oAdo.m_OleDbConnection);
-                //
-                //get all the packages
-                //
-                oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(oQueries, oRxPackageItemCollection);
-                //
-                //create DAO instance
-                //
-			    dao_data_access oDao = new dao_data_access();
-                //
-                //create temp fvscutlist file and table
-                //
-                string strTempFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "ACCDB");
-                oDao.CreateMDB(strTempFile);
-                oAdo.OpenConnection(oAdo.getMDBConnString(strTempFile, "", ""));
-                frmMain.g_oTables.m_oFvs.CreateFVSOutProcessorIn(oAdo, oAdo.m_OleDbConnection, Tables.FVS.DefaultFVSTreeTableName);
-                oAdo.CloseConnection(oAdo.m_OleDbConnection);
-                //
-                //create links to the source (old) fvs tree cutlist tables
-                //
-			    string strSourceTreeListDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()  + "\\fvs\\data\\TreeLists";
-			    string strDestinationTreeListLinkTableName="";
-                string strSourceTreeListLinkTableName="";
-			    for (x=0;x<=strVariantsArray.Length-1;x++)
-			    {
-                    //make sure BiosumCalc directory exists
-                    if (System.IO.Directory.Exists(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\fvs\\data\\" + strVariantsArray[x].Trim() + "\\BiosumCalc") == false)
-                    {
-                        System.IO.Directory.CreateDirectory(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\fvs\\data\\" + strVariantsArray[x].Trim() + "\\BiosumCalc");
-                    }
-                    //source table link
-                    strSourceTreeListLinkTableName = strVariantsArray[x].Trim() + "_TREE_CUTLIST";
-                    if (System.IO.File.Exists(strSourceTreeListDir + "\\" + strSourceTreeListLinkTableName.Trim() + ".MDB"))
-                    {
-                        oDao.CreateTableLink(oQueries.m_strTempDbFile, "fvs_tree_IN_" + strSourceTreeListLinkTableName.Trim(), strSourceTreeListDir + "\\" + strSourceTreeListLinkTableName.Trim() + ".MDB", "fvs_tree", true);
-                        strVariant.Add(strVariantsArray[x].Trim());
-                        
-                    }
-                    
-			
-			    }
-                //
-                //remove DAO instance
-                //
-                oDao.m_DaoWorkspace.Close();
-                oDao=null;
-                //
-                //reopen the work file containing the links
-                //
-                oAdo.OpenConnection(oAdo.getMDBConnString(oQueries.m_strTempDbFile,"",""));
-                //
-                //create the variant + package cut list mdb file (new)
-                //
-                for (x = 0; x <= strVariant.Count - 1; x++)
-                {
-                    //get a list of packages in the old cutlist mdb
-                    strSourceTreeListLinkTableName = "fvs_tree_IN_" + strVariant[x].Trim() + "_TREE_CUTLIST";
-                    string strPackageList = oAdo.CreateCommaDelimitedList(oAdo.m_OleDbConnection, "SELECT DISTINCT rxpackage FROM " + strSourceTreeListLinkTableName, ",");
-                    if (strPackageList.Trim().Length > 0)
-                    {
-                        strPackageArray = frmMain.g_oUtils.ConvertListToArray(strPackageList, ",");
-                        if (strPackageArray != null && strPackageArray.Length > 0)
-                        {
-                            for (y = 0; y <= strPackageArray.Length - 1; y++)
-                            {
-                                if (strPackageArray[y] != null && strPackageArray[y].Trim().Length > 0)
-                                {
-                                    //destination table creation
-                                    strFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\fvs\\data\\" + strVariant[x].Trim() + "\\BiosumCalc\\" + strVariant[x].Trim() + "_P" + strPackageArray[y].Trim() + "_TREE_CUTLIST.MDB";
-                                    if (System.IO.File.Exists(strFile) == false)
-                                    {
-                                        System.IO.File.Copy(strTempFile, strFile, false);
-                                    }
-                                }
-
-                            }
-                        }
-                    }
-                }
-                //
-                //close the work file containing the links
-                //
-                oAdo.CloseConnection(oAdo.m_OleDbConnection);
-                //
-                //create links to variant\BiosumCalc\variant_package_tree_cutlist.mdb files
-                //
-                // 29-JUL-2022: No longer valid method
-                //oRxTools.CreateTableLinksToFVSOutTreeListTables(oQueries, oQueries.m_strTempDbFile);
-                //
-                //reopen the work file containing the links
-                //
-                oAdo.OpenConnection(oAdo.getMDBConnString(oQueries.m_strTempDbFile, "", ""));
-                //
-                //get processing date and time
-                //
-                System.DateTime oDate = System.DateTime.Now;
-                string strDateFormat = "yyyy-MM-dd_HH-mm-ss";
-                string strFileDate = oDate.ToString(strDateFormat);
-                strFileDate = strFileDate.Replace("/", "_"); strFileDate = strFileDate.Replace(":", "_");
-                //
-                //append for source trees to the destination trees
-                //
-                if (strVariant != null)
-                {
-                    for (x = 0; x <= strVariant.Count - 1; x++)
-                    {
-                        for (y = 0; y <= oRxPackageItemCollection.Count - 1; y++)
-                        {
-
-                            strDestinationTreeListLinkTableName = "fvs_tree_IN_" + strVariant[x].Trim() + "_P" + oRxPackageItemCollection.Item(y).RxPackageId + "_TREE_CUTLIST";
-                            strSourceTreeListLinkTableName = "fvs_tree_IN_" + strVariant[x].Trim() + "_TREE_CUTLIST";
-                            if (oAdo.TableExist(oAdo.m_OleDbConnection, strSourceTreeListLinkTableName) &&
-                                oAdo.TableExist(oAdo.m_OleDbConnection, strDestinationTreeListLinkTableName))
-                            {
-                                //make a backup of the destination file
-                                frmMain.g_sbpInfo.Text = "Version Update: FVS_CUTLIST - Make backup of " + strVariant[x].Trim() + "_P" + oRxPackageItemCollection.Item(y).RxPackageId + "_TREE_CUTLIST.MDB...Stand By";
-                                strFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\fvs\\data\\" + strVariant[x].Trim() + "\\BiosumCalc\\" + strVariant[x].Trim() + "_P" + oRxPackageItemCollection.Item(y).RxPackageId + "_TREE_CUTLIST.MDB";
-                                System.IO.File.Copy(strFile, strFile + "_" + strFileDate);
-                                //delete any current records from the destination table
-                                oAdo.m_strSQL = "DELETE FROM " + strDestinationTreeListLinkTableName;
-                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                                //insert the package
-                                frmMain.g_sbpInfo.Text = "Version Update: FVS_CUTLIST - Insert Records into " + strVariant[x].Trim() + "_P" + oRxPackageItemCollection.Item(y).RxPackageId + "_TREE_CUTLIST.FVS_TREE table...Stand By";
-                                oAdo.m_strSQL = "INSERT INTO " + strDestinationTreeListLinkTableName + " " +
-                                                "SELECT * FROM " + strSourceTreeListLinkTableName + " " +
-                                                "WHERE rxpackage = '" + oRxPackageItemCollection.Item(y).RxPackageId + "'";
-                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-
-
-
-                            }
-                        }
-
-                    }
-                }
-                //
-                //close connection
-                //
-                oAdo.CloseConnection(oAdo.m_OleDbConnection);
-                //
-                //rename the old fvs cutlist files
-                //
-                for (x = 0; x <= strFiles.Length - 1; x++)
-                {
-                    if (strFiles[x].Substring(strFiles[x].Length - 4, 4) == ".MDB")
-                    {
-                        System.IO.File.Copy(strFiles[x].Trim(), strFiles[x].Trim() + "_VersionControlUpgrade_" + strFileDate);
-                        System.IO.File.Delete(strFiles[x].Trim());
-                    }
-                }
-                
-			
-
-            }
-        }
         private void UpgradeToPrePostSeqNumMatrix()
         {
             FIA_Biosum_Manager.Datasource oDs = new Datasource();
@@ -4076,125 +3891,6 @@ namespace FIA_Biosum_Manager
 
             oAdo = null;
 
-        }
-        private void Update_5_7_0()
-        {
-            frmMain.g_sbpInfo.Text = "Version Update: Updating to version 5.7.0...Stand by";
-            string strTreeFile = "";
-            string strTreeTable = "";
-            int intTreeTableType;
-
-
-
-
-
-            //
-            //MAIN PROJECT DATASOURCE
-            //
-            FIA_Biosum_Manager.Datasource oDs = new Datasource();
-            oDs.m_strDataSourceMDBFile = ReferenceProjectDirectory.Trim() + "\\db\\project.mdb";
-            oDs.m_strDataSourceTableName = "datasource";
-            oDs.m_strScenarioId = "";
-            oDs.LoadTableColumnNamesAndDataTypes = false;
-            oDs.LoadTableRecordCount = false;
-            oDs.populate_datasource_array();
-
-            ado_data_access oAdo = new ado_data_access();
-
-            intTreeTableType = oDs.getDataSourceTableNameRow("TREE");
-
-            if (intTreeTableType > -1)
-            {
-                //even though listed in datasource table, the file and table could possibly not exist
-                if (oDs.m_strDataSource[intTreeTableType, Datasource.FILESTATUS] == "F" &&
-                    oDs.m_strDataSource[intTreeTableType, Datasource.TABLESTATUS] == "F")
-                {
-                    strTreeTable = oDs.m_strDataSource[intTreeTableType, Datasource.TABLE].Trim();
-
-                    strTreeFile = oDs.m_strDataSource[intTreeTableType, Datasource.PATH].Trim() + "\\" +
-                                oDs.m_strDataSource[intTreeTableType, Datasource.MDBFILE].Trim();
-
-
-                    //open the project db file
-                    oAdo.OpenConnection(oAdo.getMDBConnString(strTreeFile, "", ""));
-                    if (oAdo.ColumnExist(oAdo.m_OleDbConnection, strTreeTable, "voltsgrs") == false)
-                    {
-                        oAdo.AddColumn(oAdo.m_OleDbConnection, strTreeTable, "voltsgrs", "DOUBLE", "");
-                    }
-                    oAdo.CloseConnection(oAdo.m_OleDbConnection);
-                }
-            }
-            //
-            //BACKUP AND DELETE THE CUTLIST TABLES
-            //
-            System.DateTime oDate = System.DateTime.Now;
-            string strDateFormat = "yyyy-MM-dd_HH-mm-ss";
-            string strFileDate = oDate.ToString(strDateFormat);
-            strFileDate = strFileDate.Replace("/", "_"); strFileDate = strFileDate.Replace(":", "_");
-            List<string> strFiles = new List<string>();
-            string strFile = "";
-            string strFolder = "";
-            RxTools oRxTools = new RxTools();
-            Queries oQueries = new Queries();
-            RxPackageItem_Collection oRxPackageItemCollection = new RxPackageItem_Collection();
-            oQueries.m_oFvs.LoadDatasource = true;
-            oQueries.m_oFIAPlot.LoadDatasource = true;
-            oQueries.LoadDatasources(true);
-            //
-            //open the work file containing the links
-            //
-            oAdo.OpenConnection(oAdo.getMDBConnString(oQueries.m_strTempDbFile, "", ""));
-            //
-            //get all the variants
-            //
-            string strVariantsList = oRxTools.GetListOfFVSVariantsInPlotTable(oAdo, oAdo.m_OleDbConnection, oQueries.m_oFIAPlot.m_strPlotTable);
-            string[] strVariantsArray = frmMain.g_oUtils.ConvertListToArray(strVariantsList, ",");
-            //
-            //close the work file containing the links
-            //
-            oAdo.CloseConnection(oAdo.m_OleDbConnection);
-            //
-            //get all the packages
-            //
-            oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(oQueries, oRxPackageItemCollection);
-
-            for (int x = 0; x <= strVariantsArray.Length - 1; x++)
-            {
-                strFolder = ReferenceProjectDirectory + "\\FVS\\Data\\" + strVariantsArray[x].Trim() + "\\BiosumCalc";
-
-                for (int y = 0; y <= oRxPackageItemCollection.Count - 1; y++)
-                {
-                    strFile = strFolder + "\\" + strVariantsArray[x].Trim() + "_P" + oRxPackageItemCollection.Item(y).RxPackageId + "_TREE_CUTLIST.MDB";
-                    if (System.IO.File.Exists(strFile))
-                    {
-                        strFiles.Add(strFile);
-                    }
-                }
-
-
-
-            }
-
-            if (strFiles != null && strFiles.Count > 0)
-            {
-
-                if (strFiles[0] != null & strFiles[0].Trim().Length > 0)
-                {
-
-                    //
-                    //rename the old fvs cutlist files
-                    //
-                    for (int x = 0; x <= strFiles.Count - 1; x++)
-                    {
-                        if (strFiles[x] != null && strFiles[x].Trim().Length > 0)
-                        {
-                            System.IO.File.Copy(strFiles[x].Trim(), strFiles[x].Trim() + "_VersionControlUpgrade_" + strFileDate);
-                            System.IO.File.Delete(strFiles[x].Trim());
-                        }
-
-                    }
-                }
-            }
         }
 
         private void UpdateDatasources_5_7_7()
@@ -7734,6 +7430,9 @@ namespace FIA_Biosum_Manager
             // Update project datasources
             oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.TreeSpecies, ReferenceProjectDirectory + "\\db", 
                 System.IO.Path.GetFileName(strRefMasterPath), Tables.Reference.DefaultTreeSpeciesTableName);
+            oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.FvsTreeSpecies, "@@appdata@@\\fiabiosum", 
+                Tables.Reference.DefaultBiosumReferenceSqliteFile, Tables.Reference.DefaultFVSTreeSpeciesTableName);
+
             // Update processor datasource
             strDestFile = ReferenceProjectDirectory.Trim() + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
