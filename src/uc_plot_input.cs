@@ -1873,7 +1873,7 @@ namespace FIA_Biosum_Manager
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.LoadMDBPlotCondTreeData_Process\r\n");
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.LoadDBPlotCondTreeData_Process\r\n");
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//\r\n");
             }
 
@@ -1981,12 +1981,23 @@ namespace FIA_Biosum_Manager
                         //build field list string to insert sql by matching columns in thebiosum and fiadb plot tables
                         strFields = CreateStrFieldsFromDataTables(dtPlotSchema, dtFIADBPlotSchema);
 
+                        if (SQLite.TableExist(conn, "tempplot") || SQLite.AttachedTableExist(conn, "tempplot"))
+                        {
+                            SQLite.m_strSQL = "DROP TABLE tempplot";
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        }
+
                         SetLabelValue(m_frmTherm.lblMsg, "Text", "Plot Table: Insert New Plot Records");
                         if (Checked(rdoFilterByFile) == true && m_strPlotIdList.Trim().Length > 0 &&
                             !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
                         {
                             string strDelimiter = ",";
                             string[] strPlotIdArray = m_strPlotIdList.Split(strDelimiter.ToCharArray());
+                            if (SQLite.TableExist(conn, "input_cn") || SQLite.AttachedTableExist(conn, "input_cn"))
+                            {
+                                SQLite.m_strSQL = "DROP TABLE input_cn";
+                                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                            }
                             SQLite.m_strSQL = "CREATE TABLE TEMPDB.input_cn (CN CHAR(34))";
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
@@ -2090,9 +2101,9 @@ namespace FIA_Biosum_Manager
                         SQLite.SqlQueryReader(conn, SQLite.m_strSQL);
                         if (!SQLite.m_DataReader.HasRows)
                         {
-                            SQLite.m_strSQL = "DROP TABLE TEMPDB.tempplot";
+                            SQLite.m_strSQL = "DROP TABLE tempplot";
                             SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
-                            SQLite.m_strSQL = "DROP TABLE TEMPDB.input_cn";
+                            SQLite.m_strSQL = "DROP TABLE input_cn";
                             SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                             MessageBox.Show("!!No selected plots exist in selected EvalId!!", "FIA Biosum",
                             System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
@@ -2153,11 +2164,16 @@ namespace FIA_Biosum_Manager
                     if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
                     {
                         // create plot column update work table
-                        SQLite.m_strSQL = "CREATE TABLE TEMPDB.plot_column_updates_work_table AS " +
+                        if (!SQLite.AttachedTableExist(conn, "plot_column_updates_work_table"))
+                        {
+                            System.Data.SQLite.SQLiteTransaction p_transPlotColumnUpdates = conn.BeginTransaction();
+                            SQLite.m_strSQL = "CREATE TABLE TEMPDB.plot_column_updates_work_table AS " +
                             "SELECT biosum_plot_id, statecd AS cond_ttl FROM " + this.m_strPlotTable + " WHERE 1=2";
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
-                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                            p_transPlotColumnUpdates.Commit();
+                        }
                         m_intError = SQLite.m_intError;
                     }
 
@@ -2171,6 +2187,11 @@ namespace FIA_Biosum_Manager
                         /********************************************************
                          **create condition input insert command
                          ********************************************************/
+                        if (SQLite.TableExist(conn, "tempcond") || SQLite.AttachedTableExist(conn, "tempcond"))
+                        {
+                            SQLite.m_strSQL = "DROP TABLE tempcond";
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        }
                         //check the user defined filters
                         SetLabelValue(m_frmTherm.lblMsg, "Text", "Condition Table: Insert New  Records");
                         SQLite.m_strSQL = "CREATE TABLE TEMPDB.tempcond AS " +
@@ -2201,15 +2222,18 @@ namespace FIA_Biosum_Manager
                         SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
 
                         //create cond column work table
-                        SQLite.m_strSQL = "CREATE TABLE TEMPDB.cond_column_updates_work_table AS " +
+                        if (!SQLite.AttachedTableExist(conn, "cond_column_updates_work_table"))
+                        {
+                            SQLite.m_strSQL = "CREATE TABLE TEMPDB.cond_column_updates_work_table AS " +
                             "SELECT biosum_cond_id, qmd_all_inch, qmd_hwd_inch, qmd_swd_inch, tpacurr, " +
                             "hwd_tpacurr, swd_tpacurr, ba_ft2_ac, hwd_ba_ft2_ac, swd_ba_ft2_ac, " +
                             "vol_ac_grs_stem_ttl_ft3, hwd_vol_ac_grs_stem_ttl_ft3, swd_vol_ac_grs_stem_ttl_ft3, " +
                             "vol_ac_grs_ft3, hwd_vol_ac_grs_ft3, swd_vol_ac_grs_ft3, volcsgrs, hwd_volcsgrs, swd_volcsgrs " +
                             "FROM " + this.m_strCondTable + " WHERE 1=2";
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
-                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        }
                         m_intError = SQLite.m_intError;
                     }
 
@@ -2223,6 +2247,11 @@ namespace FIA_Biosum_Manager
                         /********************************************************
                          **create tree input insert command
                          ********************************************************/
+                        if (SQLite.TableExist(conn, "temptree") || SQLite.AttachedTableExist(conn, "temptree"))
+                        {
+                            SQLite.m_strSQL = "DROP TABLE temptree";
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        }
                         //check the user defined filters
                         SetLabelValue(m_frmTherm.lblMsg, "Text", "Tree Table: Insert New  Records");
                         SQLite.m_strSQL = "CREATE TABLE TEMPDB.temptree AS " +
@@ -2253,11 +2282,9 @@ namespace FIA_Biosum_Manager
                         SetThermValue(m_frmTherm.progressBar1, "Value", 65);
                         //-------------SEEDLING TABLE----------------//
                         SetLabelValue(m_frmTherm.lblMsg, "Text", "Seedling Table: Insert New  Records");
-                        if (SQLite.TableExist(conn, "TEMPDB.tempseedling"))
+                        if (SQLite.TableExist(conn, "tempseedling") || SQLite.AttachedTableExist(conn, "tempseedling"))
                         {
-                            SQLite.m_strSQL = "DROP TABLE TEMPDB.tempseedling";
-                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.m_strSQL = "DROP TABLE tempseedling";
                             SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                         }
                         SQLite.m_strSQL = "CREATE TABLE TEMPDB.tempseedling AS " +
@@ -2324,6 +2351,11 @@ namespace FIA_Biosum_Manager
                         /********************************************************
                          **create site tree input insert command
                          ********************************************************/
+                        if (SQLite.TableExist(conn, "tempsitetree") || SQLite.AttachedTableExist(conn, "tempsitetree"))
+                        {
+                            SQLite.m_strSQL = "DROP TABLE tempsitetree";
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        }
                         //check the user defined filters
                         SetLabelValue(m_frmTherm.lblMsg, "Text", "Site Tree Table: Insert New  Records");
                         SQLite.m_strSQL = "CREATE TABLE TEMPDB.tempsitetree AS " +
@@ -2823,7 +2855,7 @@ namespace FIA_Biosum_Manager
 
             //step 5 - delete and create work table
             string strFcsBiosumVolumesInputTable = "TEMPDB." + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable;
-            if (SQLite.AttachedTableExist(p_conn, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable))
+            if (SQLite.TableExist(p_conn, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable) || SQLite.AttachedTableExist(p_conn, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable))
             {
                 SQLite.SqlNonQuery(p_conn, "DROP TABLE " + strFcsBiosumVolumesInputTable);
             }
@@ -2895,7 +2927,7 @@ namespace FIA_Biosum_Manager
 
             //populate treeclcd column
             string strCullTotalWorkTable = "TEMPDB.cull_total_work_table";
-            if (SQLite.AttachedTableExist(p_conn, "cull_total_work_table"))
+            if (SQLite.TableExist(p_conn, "cull_total_work_table") || SQLite.AttachedTableExist(p_conn, "cull_total_work_table"))
             {
                 SQLite.SqlNonQuery(p_conn, "DROP TABLE " + strCullTotalWorkTable);
             }
@@ -2918,6 +2950,10 @@ namespace FIA_Biosum_Manager
             SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
             string strWorkTable = "TEMPDB." + Tables.VolumeAndBiomass.SqliteWorkTable;
+            if (SQLite.TableExist(p_conn, Tables.VolumeAndBiomass.SqliteWorkTable) || SQLite.AttachedTableExist(p_conn, Tables.VolumeAndBiomass.SqliteWorkTable))
+            {
+                SQLite.SqlNonQuery(p_conn, "DROP TABLE " + Tables.VolumeAndBiomass.SqliteWorkTable);
+            }
             frmMain.g_oTables.m_oFvs.CreateSqliteInputFCSBiosumVolumesWorkTable(SQLite, p_conn, strWorkTable);
             string strInputFields = SQLite.getFieldNames(p_conn, "SELECT * FROM " + strFcsBiosumVolumesInputTable);
             SQLite.m_strSQL = "INSERT INTO " + strWorkTable + " (" + strInputFields + ") " +
@@ -2995,11 +3031,9 @@ namespace FIA_Biosum_Manager
                 //
                 if (m_intError == 0)
                 {
-                    if (SQLite.AttachedTableExist(p_conn, Tables.VolumeAndBiomass.BiosumCalcOutputTable))
+                    if (SQLite.TableExist(p_conn, Tables.VolumeAndBiomass.BiosumCalcOutputTable) || SQLite.AttachedTableExist(p_conn, Tables.VolumeAndBiomass.BiosumCalcOutputTable))
                     {
-                        SQLite.m_strSQL = "DROP TABLE TEMPDB." + Tables.VolumeAndBiomass.BiosumCalcOutputTable;
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+                        SQLite.m_strSQL = "DROP TABLE " + Tables.VolumeAndBiomass.BiosumCalcOutputTable;
                         SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
                     }
 
@@ -3036,6 +3070,11 @@ namespace FIA_Biosum_Manager
             //for live trees >= 5 inches in diameter 
             if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
+                SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
                 SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, tpacurr) " +
                     "SELECT DISTINCT(a.biosum_cond_id), a.tottpa AS tpacurr " +
                     "FROM " + this.m_strTreeTable + " AS t, " +
