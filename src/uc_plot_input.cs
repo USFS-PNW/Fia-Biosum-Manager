@@ -2186,6 +2186,7 @@ namespace FIA_Biosum_Manager
                          **create condition input insert command
                          ********************************************************/
                         //check the user defined filters
+                        SetLabelValue(m_frmTherm.lblMsg, "Text", "Condition Table: Insert New  Records");
                         if (SQLite.TableExist(conn, "tempcond") || SQLite.AttachedTableExist(conn, "tempcond"))
                         {
                             SQLite.m_strSQL = "DELETE FROM TEMPDB.tempcond";
@@ -2203,7 +2204,6 @@ namespace FIA_Biosum_Manager
                         }
                         else
                         {
-                            SetLabelValue(m_frmTherm.lblMsg, "Text", "Condition Table: Insert New  Records");
                             SQLite.m_strSQL = "CREATE TABLE TEMPDB.tempcond AS " +
                                 "SELECT p.biosum_plot_id, TRIM(p.biosum_plot_id) || c.condid AS biosum_cond_id, 9 AS biosum_status_cd, c.* " +
                                 "FROM BIOSUM_COND AS c, " + this.m_strPlotTable + " AS p " +
@@ -2258,20 +2258,33 @@ namespace FIA_Biosum_Manager
                         /********************************************************
                          **create tree input insert command
                          ********************************************************/
-                        if (SQLite.TableExist(conn, "temptree") || SQLite.AttachedTableExist(conn, "temptree"))
-                        {
-                            SQLite.m_strSQL = "DROP TABLE temptree";
-                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
-                        }
                         //check the user defined filters
                         SetLabelValue(m_frmTherm.lblMsg, "Text", "Tree Table: Insert New  Records");
-                        SQLite.m_strSQL = "CREATE TABLE TEMPDB.temptree AS " +
+                        if (SQLite.TableExist(conn, "temptree") || SQLite.AttachedTableExist(conn, "temptree"))
+                        {
+                            SQLite.m_strSQL = "DELETE FROM TEMPDB.temptree";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
+                            SQLite.m_strSQL = "INSERT INTO TEMPDB.temptree " +
+                                "SELECT TRIM(p.biosum_plot_id) || t.condid AS biosum_cond_id, 9 AS biosum_status_cd, t.* " +
+                                "FROM FIADB." + strTreeSource + " AS t, " + this.m_strPlotTable + " AS p " +
+                                "WHERE t.plt_cn = TRIM(p.cn) AND p.biosum_status_cd = 9 AND t.statuscd <> 0";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        }
+                        else
+                        {
+                            SQLite.m_strSQL = "CREATE TABLE TEMPDB.temptree AS " +
                             "SELECT TRIM(p.biosum_plot_id) || t.condid AS biosum_cond_id, 9 AS biosum_status_cd, t.* " +
                             "FROM FIADB." + strTreeSource + " AS t, " + this.m_strPlotTable + " AS p " +
                             "WHERE t.plt_cn = TRIM(p.cn) AND p.biosum_status_cd = 9 AND t.statuscd <> 0";
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
-                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        }
                         m_intError = SQLite.m_intError;
                     }
 
@@ -2295,17 +2308,31 @@ namespace FIA_Biosum_Manager
                         SetLabelValue(m_frmTherm.lblMsg, "Text", "Seedling Table: Insert New  Records");
                         if (SQLite.TableExist(conn, "tempseedling") || SQLite.AttachedTableExist(conn, "tempseedling"))
                         {
-                            SQLite.m_strSQL = "DROP TABLE tempseedling";
+                            SQLite.m_strSQL = "DELETE FROM TEMPDB.tempseedling";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
+                            SQLite.m_strSQL = "INSERT INTO TEMPDB.tempseedling " +
+                                "SELECT TRIM(p.biosum_plot_id) || CAST(s.condid AS TEXT) AS biosum_cond_id, 9 AS biosum_status_cd, " +
+                                "0.1 AS dia, 1 AS diahtcd, '1' || printf('%03d', SPCD) || '00' || SUBP AS fvs_tree_id, 1 AS statuscd, s.* " +
+                                "FROM FIADB." + strSeedlingSource + " AS s, " + this.m_strPlotTable + " AS p " +
+                                "WHERE s.plt_cn = TRIM(p.cn) AND p.biosum_status_cd = 9";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
                             SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                         }
-                        SQLite.m_strSQL = "CREATE TABLE TEMPDB.tempseedling AS " +
+                        else
+                        {
+                            SQLite.m_strSQL = "CREATE TABLE TEMPDB.tempseedling AS " +
                             "SELECT TRIM(p.biosum_plot_id) || CAST(s.condid AS TEXT) AS biosum_cond_id, 9 AS biosum_status_cd, " +
                             "0.1 AS dia, 1 AS diahtcd, '1' || printf('%03d', SPCD) || '00' || SUBP AS fvs_tree_id, 1 AS statuscd, s.* " +
                             "FROM FIADB." + strSeedlingSource + " AS s, " + this.m_strPlotTable + " AS p " +
                             "WHERE s.plt_cn = TRIM(p.cn) AND p.biosum_status_cd = 9";
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
-                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        }
 
                         //Set DIAHTCD for Seedlings using FIA_TREE_SPECIES_REF.WOODLAND_YN
                         SQLite.m_strSQL = "UPDATE TEMPDB.tempseedling AS t " +
@@ -2362,20 +2389,33 @@ namespace FIA_Biosum_Manager
                         /********************************************************
                          **create site tree input insert command
                          ********************************************************/
-                        if (SQLite.TableExist(conn, "tempsitetree") || SQLite.AttachedTableExist(conn, "tempsitetree"))
-                        {
-                            SQLite.m_strSQL = "DROP TABLE tempsitetree";
-                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
-                        }
                         //check the user defined filters
                         SetLabelValue(m_frmTherm.lblMsg, "Text", "Site Tree Table: Insert New  Records");
-                        SQLite.m_strSQL = "CREATE TABLE TEMPDB.tempsitetree AS " +
+                        if (SQLite.TableExist(conn, "tempsitetree") || SQLite.AttachedTableExist(conn, "tempsitetree"))
+                        {
+                            SQLite.m_strSQL = "DELETE FROM TEMPDB.tempsitetree";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
+                            SQLite.m_strSQL = "INSERT INTO TEMPDB.tempsitetree " +
+                                "SELECT TRIM(p.biosum_plot_id) AS biosum_plot_id, 9 AS biosum_status_cd, t.* " +
+                                "FROM FIADB." + strSiteTreeSource + " AS t, " + this.m_strPlotTable + " AS p " +
+                                "WHERE t.plt_cn = TRIM(p.cn) AND p.biosum_status_cd = 9";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        }
+                        else
+                        {
+                            SQLite.m_strSQL = "CREATE TABLE TEMPDB.tempsitetree AS " +
                             "SELECT TRIM(p.biosum_plot_id) AS biosum_plot_id, 9 AS biosum_status_cd, t.* " +
                             "FROM FIADB." + strSiteTreeSource + " AS t, " + this.m_strPlotTable + " AS p " +
                             "WHERE t.plt_cn = TRIM(p.cn) AND p.biosum_status_cd = 9";
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
-                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        }
                         m_intError = SQLite.m_intError;
                     }
 
