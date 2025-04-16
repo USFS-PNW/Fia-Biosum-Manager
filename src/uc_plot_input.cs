@@ -2166,13 +2166,11 @@ namespace FIA_Biosum_Manager
                         // create plot column update work table
                         if (!SQLite.AttachedTableExist(conn, "plot_column_updates_work_table"))
                         {
-                            System.Data.SQLite.SQLiteTransaction p_transPlotColumnUpdates = conn.BeginTransaction();
                             SQLite.m_strSQL = "CREATE TABLE TEMPDB.plot_column_updates_work_table AS " +
                             "SELECT biosum_plot_id, statecd AS cond_ttl FROM " + this.m_strPlotTable + " WHERE 1=2";
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
                             SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
-                            p_transPlotColumnUpdates.Commit();
                         }
                         m_intError = SQLite.m_intError;
                     }
@@ -2187,21 +2185,33 @@ namespace FIA_Biosum_Manager
                         /********************************************************
                          **create condition input insert command
                          ********************************************************/
+                        //check the user defined filters
                         if (SQLite.TableExist(conn, "tempcond") || SQLite.AttachedTableExist(conn, "tempcond"))
                         {
-                            Thread.Sleep(3000);
-                            SQLite.m_strSQL = "DROP TABLE tempcond";
+                            SQLite.m_strSQL = "DELETE FROM TEMPDB.tempcond";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
+                            SQLite.m_strSQL = "INSERT INTO TEMPDB.tempcond " +
+                                "SELECT p.biosum_plot_id, TRIM(p.biosum_plot_id) || c.condid AS biosum_cond_id, 9 AS biosum_status_cd, c.* " +
+                                "FROM BIOSUM_COND AS c, " + this.m_strPlotTable + " AS p " +
+                                "WHERE c.plt_cn = p.cn AND p.biosum_status_cd = 9";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
                             SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                         }
-                        //check the user defined filters
-                        SetLabelValue(m_frmTherm.lblMsg, "Text", "Condition Table: Insert New  Records");
-                        SQLite.m_strSQL = "CREATE TABLE TEMPDB.tempcond AS " +
-                            "SELECT p.biosum_plot_id, TRIM(p.biosum_plot_id) || c.condid AS biosum_cond_id, 9 AS biosum_status_cd, c.* " +
-                            "FROM BIOSUM_COND AS c, " + this.m_strPlotTable + " AS p " +
-                            "WHERE c.plt_cn = p.cn AND p.biosum_status_cd = 9";
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
-                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        else
+                        {
+                            SetLabelValue(m_frmTherm.lblMsg, "Text", "Condition Table: Insert New  Records");
+                            SQLite.m_strSQL = "CREATE TABLE TEMPDB.tempcond AS " +
+                                "SELECT p.biosum_plot_id, TRIM(p.biosum_plot_id) || c.condid AS biosum_cond_id, 9 AS biosum_status_cd, c.* " +
+                                "FROM BIOSUM_COND AS c, " + this.m_strPlotTable + " AS p " +
+                                "WHERE c.plt_cn = p.cn AND p.biosum_status_cd = 9";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        }
                         m_intError = SQLite.m_intError;
                     }
 
