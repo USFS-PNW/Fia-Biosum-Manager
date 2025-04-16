@@ -2908,9 +2908,12 @@ namespace FIA_Biosum_Manager
             string strFcsBiosumVolumesInputTable = "TEMPDB." + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable;
             if (SQLite.TableExist(p_conn, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable) || SQLite.AttachedTableExist(p_conn, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable))
             {
-                SQLite.SqlNonQuery(p_conn, "DROP TABLE " + strFcsBiosumVolumesInputTable);
+                SQLite.SqlNonQuery(p_conn, "DELETE FROM " + strFcsBiosumVolumesInputTable);
             }
-            frmMain.g_oTables.m_oFvs.CreateSQLiteInputFCSBiosumVolumesTable(SQLite, p_conn, strFcsBiosumVolumesInputTable);
+            else
+            {
+                frmMain.g_oTables.m_oFvs.CreateSQLiteInputFCSBiosumVolumesTable(SQLite, p_conn, strFcsBiosumVolumesInputTable);
+            }
 
             var treeToFcsBiosumVolumesInputTable = new List<Tuple<string, string>>
             {
@@ -2980,13 +2983,29 @@ namespace FIA_Biosum_Manager
             string strCullTotalWorkTable = "TEMPDB.cull_total_work_table";
             if (SQLite.TableExist(p_conn, "cull_total_work_table") || SQLite.AttachedTableExist(p_conn, "cull_total_work_table"))
             {
-                SQLite.SqlNonQuery(p_conn, "DROP TABLE " + strCullTotalWorkTable);
+                SQLite.m_strSQL = "DELETE FROM " + strCullTotalWorkTable;
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+                SQLite.m_strSQL = "INSERT INTO " + strCullTotalWorkTable +
+                    " SELECT tre_cn, CASE WHEN cull IS NOT NULL AND roughcull IS NOT NULL " +
+                    "THEN cull + roughcull ELSE CASE WHEN cull IS NOT NULL " +
+                    "THEN cull ELSE CASE WHEN roughcull IS NOT NULL " +
+                    "THEN roughcull ELSE 0 END END END AS totalcull " +
+                    "FROM " + strFcsBiosumVolumesInputTable;
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
             }
-            SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step4(
+            else
+            {
+                SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step4(
                                 strCullTotalWorkTable, strFcsBiosumVolumesInputTable);
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
-            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            }
 
             SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.PNWRS.BuildInputTableForVolumeCalculation_Step5(
                 strCullTotalWorkTable, strFcsBiosumVolumesInputTable);
@@ -3003,9 +3022,13 @@ namespace FIA_Biosum_Manager
             string strWorkTable = "TEMPDB." + Tables.VolumeAndBiomass.SqliteWorkTable;
             if (SQLite.TableExist(p_conn, Tables.VolumeAndBiomass.SqliteWorkTable) || SQLite.AttachedTableExist(p_conn, Tables.VolumeAndBiomass.SqliteWorkTable))
             {
-                SQLite.SqlNonQuery(p_conn, "DROP TABLE " + Tables.VolumeAndBiomass.SqliteWorkTable);
+                SQLite.SqlNonQuery(p_conn, "DELETE FROM " + Tables.VolumeAndBiomass.SqliteWorkTable);
             }
-            frmMain.g_oTables.m_oFvs.CreateSqliteInputFCSBiosumVolumesWorkTable(SQLite, p_conn, strWorkTable);
+            else
+            {
+                frmMain.g_oTables.m_oFvs.CreateSqliteInputFCSBiosumVolumesWorkTable(SQLite, p_conn, strWorkTable);
+            }
+            
             string strInputFields = SQLite.getFieldNames(p_conn, "SELECT * FROM " + strFcsBiosumVolumesInputTable);
             SQLite.m_strSQL = "INSERT INTO " + strWorkTable + " (" + strInputFields + ") " +
                 "SELECT * FROM " + strFcsBiosumVolumesInputTable;
@@ -3084,15 +3107,19 @@ namespace FIA_Biosum_Manager
                 {
                     if (SQLite.TableExist(p_conn, Tables.VolumeAndBiomass.BiosumCalcOutputTable) || SQLite.AttachedTableExist(p_conn, Tables.VolumeAndBiomass.BiosumCalcOutputTable))
                     {
-                        SQLite.m_strSQL = "DROP TABLE " + Tables.VolumeAndBiomass.BiosumCalcOutputTable;
+                        SQLite.m_strSQL = "DELETE FROM " + Tables.VolumeAndBiomass.BiosumCalcOutputTable;
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
                         SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
                     }
-
-                    SQLite.m_strSQL = "CREATE TABLE TEMPDB." + Tables.VolumeAndBiomass.BiosumCalcOutputTable +
+                    else
+                    {
+                        SQLite.m_strSQL = "CREATE TABLE TEMPDB." + Tables.VolumeAndBiomass.BiosumCalcOutputTable +
                         " AS SELECT * FROM " + strFcsBiosumVolumesInputTable + " WHERE 1 = 2";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
-                    SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+                        SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+                    }
 
                     string strOutputFields = SQLite.getFieldNames(p_conn, "SELECT * FROM TEMPDB." + Tables.VolumeAndBiomass.BiosumCalcOutputTable);
                     SQLite.m_strSQL = "INSERT INTO TEMPDB." + Tables.VolumeAndBiomass.BiosumCalcOutputTable + " (" + strOutputFields + ") " +
