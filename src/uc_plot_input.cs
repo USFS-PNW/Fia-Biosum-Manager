@@ -2189,6 +2189,7 @@ namespace FIA_Biosum_Manager
                          ********************************************************/
                         if (SQLite.TableExist(conn, "tempcond") || SQLite.AttachedTableExist(conn, "tempcond"))
                         {
+                            Thread.Sleep(3000);
                             SQLite.m_strSQL = "DROP TABLE tempcond";
                             SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                         }
