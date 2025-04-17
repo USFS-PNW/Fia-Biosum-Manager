@@ -69,9 +69,6 @@ namespace FIA_Biosum_Manager
 		Queries m_oQueries = new Queries();
 		RxTools m_oRxTools = new RxTools();
         FIA_Biosum_Manager.RxPackageItem_Collection m_oRxPackageItem_Collection = new RxPackageItem_Collection();
-		FIA_Biosum_Manager.RxPackageItem m_oRxPackageItem=null;
-		string m_strRxCycleList="";
-		string[] m_strRxCycleArray=null;
         private Button btnView;
 
         private env m_oEnv;
@@ -86,6 +83,7 @@ namespace FIA_Biosum_Manager
         public Button btnSave;
         private Button btnCancel;
         private DataGrid m_dg;
+		private string m_strAuditType;
 
 		/// <summary> 
 		/// Required designer variable.
@@ -116,8 +114,6 @@ namespace FIA_Biosum_Manager
 
 			// Used by Processor audit
 			m_strTempDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
-
-			System.Threading.Thread.Sleep(2000);
 		}
 
 		/// <summary> 
@@ -161,11 +157,11 @@ namespace FIA_Biosum_Manager
 			//                      "AND s.fvs_variant = f.fvs_variant " +
 			//                      "ORDER BY s.fvs_variant, s.spcd; ";
 			// 2025-03-19: Change this query so spcd missing from fvs_tree_species will still appear on the grid but with null fields
-			SQLite.m_strSQL = $@"SELECT s.fvs_variant, s.spcd, s.common_name, s.fvs_input_spcd, f.fvs_species, f.fvs_common_name, s.genus, s.species, comments, s.id
-				FROM {this.m_oQueries.m_oFvs.m_strTreeSpcTable} s LEFT JOIN {this.m_oQueries.m_oFvs.m_strFvsTreeSpcRefTable} f ON s.fvs_input_spcd = f.spcd AND s.fvs_variant = f.fvs_variant
-				WHERE EXISTS (SELECT DISTINCT(spcd) FROM tree t WHERE s.spcd=t.spcd)
-				ORDER BY s.fvs_variant, s.spcd";
-			this.m_dtTableSchema = SQLite.getTableSchema(SQLite.m_Connection, SQLite.m_Transaction, SQLite.m_strSQL);
+			//SQLite.m_strSQL = $@"SELECT s.fvs_variant, s.spcd, s.common_name, s.fvs_input_spcd, f.fvs_species, f.fvs_common_name, s.genus, s.species, comments, s.id
+			//	FROM {this.m_oQueries.m_oFvs.m_strTreeSpcTable} s LEFT JOIN {this.m_oQueries.m_oFvs.m_strFvsTreeSpcRefTable} f ON s.fvs_input_spcd = f.spcd AND s.fvs_variant = f.fvs_variant
+			//	WHERE EXISTS (SELECT DISTINCT(spcd) FROM tree t WHERE s.spcd=t.spcd)
+			//	ORDER BY s.fvs_variant, s.spcd";
+			//this.m_dtTableSchema = SQLite.getTableSchema(SQLite.m_Connection, SQLite.m_Transaction, SQLite.m_strSQL);
 
 			if (SQLite.m_intError == 0)
 			{
@@ -1328,6 +1324,7 @@ namespace FIA_Biosum_Manager
             this.grpBoxTreeSpc.TabIndex = 29;
             this.grpBoxTreeSpc.TabStop = false;
             this.grpBoxTreeSpc.Text = "Tree Species Table";
+            this.grpBoxTreeSpc.Visible = false;
             // 
             // btnDelete
             // 
@@ -1425,10 +1422,11 @@ namespace FIA_Biosum_Manager
                 "t Tree Ratios In The Tree Species Table"});
             this.cmbAudit.Location = new System.Drawing.Point(16, 184);
             this.cmbAudit.Name = "cmbAudit";
-            this.cmbAudit.Size = new System.Drawing.Size(656, 21);
+            this.cmbAudit.Size = new System.Drawing.Size(656, 24);
             this.cmbAudit.TabIndex = 34;
             this.cmbAudit.Text = "Assess Data Readiness: Check If Each Tree And FVS Variant Combination Is In The T" +
     "ree Species Table";
+            this.cmbAudit.Visible = false;
             this.cmbAudit.SelectedIndexChanged += new System.EventHandler(this.cmbAudit_SelectedIndexChanged);
             // 
             // btnAudit
@@ -1449,6 +1447,7 @@ namespace FIA_Biosum_Manager
             this.btnAuditClearAll.Size = new System.Drawing.Size(72, 32);
             this.btnAuditClearAll.TabIndex = 32;
             this.btnAuditClearAll.Text = "Clear All";
+            this.btnAuditClearAll.Visible = false;
             this.btnAuditClearAll.Click += new System.EventHandler(this.btnAuditClearAll_Click);
             // 
             // btnAuditCheckAll
@@ -1459,6 +1458,7 @@ namespace FIA_Biosum_Manager
             this.btnAuditCheckAll.Size = new System.Drawing.Size(72, 32);
             this.btnAuditCheckAll.TabIndex = 31;
             this.btnAuditCheckAll.Text = "Check All";
+            this.btnAuditCheckAll.Visible = false;
             this.btnAuditCheckAll.Click += new System.EventHandler(this.btnAuditCheckAll_Click);
             // 
             // btnAuditAdd
@@ -1469,6 +1469,7 @@ namespace FIA_Biosum_Manager
             this.btnAuditAdd.Size = new System.Drawing.Size(312, 32);
             this.btnAuditAdd.TabIndex = 30;
             this.btnAuditAdd.Text = "Add Checked Items To Tree Species Table";
+            this.btnAuditAdd.Visible = false;
             this.btnAuditAdd.Click += new System.EventHandler(this.btnAuditAdd_Click);
             // 
             // lstAudit
@@ -1481,7 +1482,7 @@ namespace FIA_Biosum_Manager
             this.lstAudit.Location = new System.Drawing.Point(16, 24);
             this.lstAudit.MultiSelect = false;
             this.lstAudit.Name = "lstAudit";
-            this.lstAudit.Size = new System.Drawing.Size(656, 104);
+            this.lstAudit.Size = new System.Drawing.Size(656, 175);
             this.lstAudit.TabIndex = 27;
             this.lstAudit.UseCompatibleStateImageBehavior = false;
             this.lstAudit.View = System.Windows.Forms.View.Details;
@@ -1493,7 +1494,7 @@ namespace FIA_Biosum_Manager
             this.lblTitle.Dock = System.Windows.Forms.DockStyle.Top;
             this.lblTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTitle.ForeColor = System.Drawing.Color.Green;
-            this.lblTitle.Location = new System.Drawing.Point(3, 16);
+            this.lblTitle.Location = new System.Drawing.Point(3, 18);
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(730, 24);
             this.lblTitle.TabIndex = 1;
@@ -1625,11 +1626,11 @@ namespace FIA_Biosum_Manager
                             }
                             
                             //get the species information if a record with the same species already exists
-                            SQLite.m_strSQL = "SELECT DISTINCT common_name,genus,species " +
-                                "FROM " + this.m_oQueries.m_oFvs.m_strTreeSpcTable + " t " +
-                                "WHERE SPCD = " + this.lstAudit.Items[x].SubItems[1].Text.Trim() + ";";
+                            //SQLite.m_strSQL = "SELECT DISTINCT common_name,genus,species " +
+                            //    "FROM " + this.m_oQueries.m_oFvs.m_strTreeSpcTable + " t " +
+                            //    "WHERE SPCD = " + this.lstAudit.Items[x].SubItems[1].Text.Trim() + ";";
 
-                            SQLite.SqlQueryReader(SQLite.m_Connection, SQLite.m_Transaction, SQLite.m_strSQL);
+                            //SQLite.SqlQueryReader(SQLite.m_Connection, SQLite.m_Transaction, SQLite.m_strSQL);
 
                             strCommonName = "";
                             strGenus = "";
@@ -1969,29 +1970,29 @@ namespace FIA_Biosum_Manager
 		}
 		private void InitializeSqliteTransactionCommands()
 		{
-            SQLite.m_strSQL = "select id, fvs_variant,spcd,fvs_input_spcd,common_name,genus,species,comments from " + this.m_oQueries.m_oFvs.m_strTreeSpcTable + " order by fvs_variant, spcd;";
-			//initialize the transaction object with the connection
-			SQLite.m_Transaction = SQLite.m_Connection.BeginTransaction();
+   //         SQLite.m_strSQL = "select id, fvs_variant,spcd,fvs_input_spcd,common_name,genus,species,comments from " + this.m_oQueries.m_oFvs.m_strTreeSpcTable + " order by fvs_variant, spcd;";
+			////initialize the transaction object with the connection
+			//SQLite.m_Transaction = SQLite.m_Connection.BeginTransaction();
 
-			SQLite.ConfigureDataAdapterInsertCommand(SQLite.m_Connection,
-				SQLite.m_DataAdapter,
-				SQLite.m_Transaction,
-				SQLite.m_strSQL,
-				this.m_oQueries.m_oFvs.m_strTreeSpcTable);
+			//SQLite.ConfigureDataAdapterInsertCommand(SQLite.m_Connection,
+			//	SQLite.m_DataAdapter,
+			//	SQLite.m_Transaction,
+			//	SQLite.m_strSQL,
+			//	this.m_oQueries.m_oFvs.m_strTreeSpcTable);
 
-			SQLite.m_strSQL = "select fvs_variant, spcd,fvs_input_spcd,common_name,genus,species,comments from " + m_oQueries.m_oFvs.m_strTreeSpcTable + " order by fvs_variant, spcd;";
-			SQLite.ConfigureDataAdapterUpdateCommand(SQLite.m_Connection,
-				SQLite.m_DataAdapter,
-				SQLite.m_Transaction,
-				SQLite.m_strSQL,"select id from " + m_oQueries.m_oFvs.m_strTreeSpcTable,
-				m_oQueries.m_oFvs.m_strTreeSpcTable);
+			//SQLite.m_strSQL = "select fvs_variant, spcd,fvs_input_spcd,common_name,genus,species,comments from " + m_oQueries.m_oFvs.m_strTreeSpcTable + " order by fvs_variant, spcd;";
+			//SQLite.ConfigureDataAdapterUpdateCommand(SQLite.m_Connection,
+			//	SQLite.m_DataAdapter,
+			//	SQLite.m_Transaction,
+			//	SQLite.m_strSQL,"select id from " + m_oQueries.m_oFvs.m_strTreeSpcTable,
+			//	m_oQueries.m_oFvs.m_strTreeSpcTable);
 
-			SQLite.m_strSQL = "select fvs_variant, spcd, common_name,fvs_input_spcd,genus,species,comments from " + m_oQueries.m_oFvs.m_strTreeSpcTable + " order by fvs_variant, spcd;";
-			SQLite.ConfigureDataAdapterDeleteCommand(SQLite.m_Connection,
-				SQLite.m_DataAdapter,
-				SQLite.m_Transaction,
-				"select id from " + m_oQueries.m_oFvs.m_strTreeSpcTable,
-				m_oQueries.m_oFvs.m_strTreeSpcTable);
+			//SQLite.m_strSQL = "select fvs_variant, spcd, common_name,fvs_input_spcd,genus,species,comments from " + m_oQueries.m_oFvs.m_strTreeSpcTable + " order by fvs_variant, spcd;";
+			//SQLite.ConfigureDataAdapterDeleteCommand(SQLite.m_Connection,
+			//	SQLite.m_DataAdapter,
+			//	SQLite.m_Transaction,
+			//	"select id from " + m_oQueries.m_oFvs.m_strTreeSpcTable,
+			//	m_oQueries.m_oFvs.m_strTreeSpcTable);
 		}
 
 		private void btnDelete_Click(object sender, System.EventArgs e)
@@ -2014,7 +2015,11 @@ namespace FIA_Biosum_Manager
                 if (this.m_dg != null)
                     this.m_dg.Dispose();
 
-                SQLite.CloseAndDisposeConnection(SQLite.m_Connection, true);
+                if (SQLite.m_Connection != null)
+                {
+					SQLite.CloseAndDisposeConnection(SQLite.m_Connection, true);
+				}
+				
 				//if (SQLite.m_DataAdapter != null)
 				//	SQLite.m_DataAdapter.Dispose();
 
@@ -2059,168 +2064,168 @@ namespace FIA_Biosum_Manager
 			frmTemp.Text = "FVS: Processor Tree Species (" + p_strAction + ")";
 
 			FIA_Biosum_Manager.uc_processor_tree_spc_edit  p_uc;
-			if (p_strAction.Trim().ToUpper()=="NEW")
-			{
-				p_uc = new uc_processor_tree_spc_edit(SQLite,this.m_oQueries.m_oFvs.m_strTreeSpcTable,this.m_oQueries.m_oFvs.m_strFvsTreeSpcRefTable,"");
-			}
-			else
-			{
-				p_uc = new uc_processor_tree_spc_edit(SQLite,this.m_oQueries.m_oFvs.m_strTreeSpcTable,this.m_oQueries.m_oFvs.m_strFvsTreeSpcRefTable,this.m_dg[this.m_intCurrRow-1,this.getGridColumn("fvs_variant")].ToString().Trim());
-			}
-			
-			frmTemp.Controls.Add(p_uc);
-			frmTemp.ProcessorTreeSpcEditUserControl=p_uc ;
+   //         if (p_strAction.Trim().ToUpper() == "NEW")
+   //         {
+   //             p_uc = new uc_processor_tree_spc_edit(SQLite, this.m_oQueries.m_oFvs.m_strTreeSpcTable, this.m_oQueries.m_oFvs.m_strFvsTreeSpcRefTable, "");
+   //         }
+   //         else
+   //         {
+   //             p_uc = new uc_processor_tree_spc_edit(SQLite, this.m_oQueries.m_oFvs.m_strTreeSpcTable, this.m_oQueries.m_oFvs.m_strFvsTreeSpcRefTable, this.m_dg[this.m_intCurrRow - 1, this.getGridColumn("fvs_variant")].ToString().Trim());
+   //         }
 
-			frmTemp.Height=0;
-			frmTemp.Width=0;
-			if (p_uc.Top + p_uc.Height > frmTemp.ClientSize.Height + 2)
-			{
-				for (int x=1;;x++)
-				{
-					frmTemp.Height = x;
-					if (p_uc.Top + 
-						p_uc.Height < 
-						frmTemp.ClientSize.Height)
-					{
-						break;
-					}
-				}
+   //         frmTemp.Controls.Add(p_uc);
+			//frmTemp.ProcessorTreeSpcEditUserControl=p_uc ;
 
-			}
-			if (p_uc.Left + p_uc.Width > frmTemp.ClientSize.Width + 2)
-			{
-				for (int x=1;;x++)
-				{
-					frmTemp.Width = x;
-					if (p_uc.Left + 
-						p_uc.Width < 
-						frmTemp.ClientSize.Width)
-					{
-						break;
-					}
-				}
+			//frmTemp.Height=0;
+			//frmTemp.Width=0;
+			//if (p_uc.Top + p_uc.Height > frmTemp.ClientSize.Height + 2)
+			//{
+			//	for (int x=1;;x++)
+			//	{
+			//		frmTemp.Height = x;
+			//		if (p_uc.Top + 
+			//			p_uc.Height < 
+			//			frmTemp.ClientSize.Height)
+			//		{
+			//			break;
+			//		}
+			//	}
 
-			}
+			//}
+			//if (p_uc.Left + p_uc.Width > frmTemp.ClientSize.Width + 2)
+			//{
+			//	for (int x=1;;x++)
+			//	{
+			//		frmTemp.Width = x;
+			//		if (p_uc.Left + 
+			//			p_uc.Width < 
+			//			frmTemp.ClientSize.Width)
+			//		{
+			//			break;
+			//		}
+			//	}
+
+			//}
 			frmTemp.DisposeOfFormWhenClosing = false;
-			p_uc.Dock = System.Windows.Forms.DockStyle.Fill;
+			//p_uc.Dock = System.Windows.Forms.DockStyle.Fill;
 			frmTemp.Left = 0;
 			frmTemp.Top = 0;
 			frmTemp.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
 			frmTemp.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-			try
-			{
-				if (p_strAction.Trim().ToUpper() == "NEW")
-				{
-					p_uc.strId = Convert.ToString(this.getUniqueId());
-				}
-				else
-				{
-					p_uc.strId = this.m_dg[this.m_intCurrRow-1,this.getGridColumn("id")].ToString().Trim();
-					p_uc.strSpCd = this.m_dg[this.m_intCurrRow-1,this.getGridColumn("spcd")].ToString().Trim();
-					p_uc.strVariant = this.m_dg[this.m_intCurrRow-1,this.getGridColumn("fvs_variant")].ToString().Trim();
-					p_uc.strCommonName = this.m_dg[this.m_intCurrRow-1,this.getGridColumn("common_name")].ToString().Trim();
-					p_uc.strTreeSpeciesGenus = this.m_dg[this.m_intCurrRow-1,this.getGridColumn("genus")].ToString().Trim();
-					p_uc.strTreeSpecies = this.m_dg[this.m_intCurrRow-1,this.getGridColumn("species")].ToString().Trim();
-                    int intConvertToSpcd = -1;
-                    bool bValidSpcd = int.TryParse(this.m_dg[this.m_intCurrRow - 1, this.getGridColumn("fvs_input_spcd")].ToString().Trim(), 
-                        out intConvertToSpcd);
-                    if (bValidSpcd == true)
-                    {
-                        p_uc.intConvertToSpCd = intConvertToSpcd;
-                    }
-                    else
-                    {
-                        // Try setting to same as FIA spcd if invalid fvs_input_spcd column
-                        int intSpCd = -1;
-                        if (int.TryParse(p_uc.strSpCd, out intSpCd) == true)
-                        {
-                            p_uc.intConvertToSpCd = intSpCd;
-                        }
-                    }
-				}
-				System.Windows.Forms.DialogResult result = frmTemp.ShowDialog();
-				if (result==System.Windows.Forms.DialogResult.OK)
-				{
-					if (p_strAction.Trim().ToUpper()=="NEW")
-					{
-						this.m_dv.AllowNew = true;
-						System.Data.DataRow p_row =	SQLite.m_DataSet.Tables["tree_species"].NewRow();
-						p_row["id"] = Convert.ToInt32(p_uc.strId);
-						p_row["fvs_variant"] = p_uc.strVariant;
-						p_row["spcd"] = Convert.ToInt32(p_uc.strSpCd);
-						p_row["fvs_species"] = p_uc.strFvsSpeciesCode;
-						p_row["fvs_common_name"] = p_uc.strFvsCommonName;
-						p_row["common_name"] = p_uc.strCommonName;
-						p_row["genus"] = p_uc.strTreeSpeciesGenus;
-						p_row["species"] = p_uc.strTreeSpecies;
-                        if (p_uc.intConvertToSpCd < 1)
-						{
-							p_row["fvs_input_spcd"] = System.DBNull.Value;
-						}
-						else
-						{
-                            p_row["fvs_input_spcd"] = p_uc.intConvertToSpCd;
-						}
-						SQLite.m_DataSet.Tables["tree_species"].Rows.Add(p_row);
-						p_row=null;
-						this.m_dv.AllowNew = false;
+			//try
+			//{
+			//	if (p_strAction.Trim().ToUpper() == "NEW")
+			//	{
+			//		p_uc.strId = Convert.ToString(this.getUniqueId());
+			//	}
+			//	else
+			//	{
+			//		p_uc.strId = this.m_dg[this.m_intCurrRow-1,this.getGridColumn("id")].ToString().Trim();
+			//		p_uc.strSpCd = this.m_dg[this.m_intCurrRow-1,this.getGridColumn("spcd")].ToString().Trim();
+			//		p_uc.strVariant = this.m_dg[this.m_intCurrRow-1,this.getGridColumn("fvs_variant")].ToString().Trim();
+			//		p_uc.strCommonName = this.m_dg[this.m_intCurrRow-1,this.getGridColumn("common_name")].ToString().Trim();
+			//		p_uc.strTreeSpeciesGenus = this.m_dg[this.m_intCurrRow-1,this.getGridColumn("genus")].ToString().Trim();
+			//		p_uc.strTreeSpecies = this.m_dg[this.m_intCurrRow-1,this.getGridColumn("species")].ToString().Trim();
+   //                 int intConvertToSpcd = -1;
+   //                 bool bValidSpcd = int.TryParse(this.m_dg[this.m_intCurrRow - 1, this.getGridColumn("fvs_input_spcd")].ToString().Trim(), 
+   //                     out intConvertToSpcd);
+   //                 if (bValidSpcd == true)
+   //                 {
+   //                     p_uc.intConvertToSpCd = intConvertToSpcd;
+   //                 }
+   //                 else
+   //                 {
+   //                     // Try setting to same as FIA spcd if invalid fvs_input_spcd column
+   //                     int intSpCd = -1;
+   //                     if (int.TryParse(p_uc.strSpCd, out intSpCd) == true)
+   //                     {
+   //                         p_uc.intConvertToSpCd = intSpCd;
+   //                     }
+   //                 }
+			//	}
+			//	System.Windows.Forms.DialogResult result = frmTemp.ShowDialog();
+			//	if (result==System.Windows.Forms.DialogResult.OK)
+			//	{
+			//		if (p_strAction.Trim().ToUpper()=="NEW")
+			//		{
+			//			this.m_dv.AllowNew = true;
+			//			System.Data.DataRow p_row =	SQLite.m_DataSet.Tables["tree_species"].NewRow();
+			//			p_row["id"] = Convert.ToInt32(p_uc.strId);
+			//			p_row["fvs_variant"] = p_uc.strVariant;
+			//			p_row["spcd"] = Convert.ToInt32(p_uc.strSpCd);
+			//			p_row["fvs_species"] = p_uc.strFvsSpeciesCode;
+			//			p_row["fvs_common_name"] = p_uc.strFvsCommonName;
+			//			p_row["common_name"] = p_uc.strCommonName;
+			//			p_row["genus"] = p_uc.strTreeSpeciesGenus;
+			//			p_row["species"] = p_uc.strTreeSpecies;
+   //                     if (p_uc.intConvertToSpCd < 1)
+			//			{
+			//				p_row["fvs_input_spcd"] = System.DBNull.Value;
+			//			}
+			//			else
+			//			{
+   //                         p_row["fvs_input_spcd"] = p_uc.intConvertToSpCd;
+			//			}
+			//			SQLite.m_DataSet.Tables["tree_species"].Rows.Add(p_row);
+			//			p_row=null;
+			//			this.m_dv.AllowNew = false;
 
-					}
-					else
-					{
-						this.m_dg[this.m_intCurrRow-1,this.getGridColumn("fvs_variant")] = p_uc.strVariant;
-						this.m_dg[this.m_intCurrRow-1,this.getGridColumn("spcd")] = p_uc.strSpCd;
-						this.m_dg[this.m_intCurrRow-1,this.getGridColumn("fvs_species")] = p_uc.strFvsSpeciesCode;
-						this.m_dg[this.m_intCurrRow-1,this.getGridColumn("common_name")] = p_uc.strCommonName;
-						this.m_dg[this.m_intCurrRow-1,this.getGridColumn("genus")] = p_uc.strTreeSpeciesGenus;
-						this.m_dg[this.m_intCurrRow-1,this.getGridColumn("species")] = p_uc.strTreeSpecies;
-                        if (p_uc.intConvertToSpCd < 1)
-						{
-							this.m_dg[this.m_intCurrRow-1,this.getGridColumn("fvs_input_spcd")] = System.DBNull.Value;
-						}
-						else
-						{
-							this.m_dg[this.m_intCurrRow-1,this.getGridColumn("fvs_input_spcd")] = p_uc.intConvertToSpCd;
-						}
+			//		}
+			//		else
+			//		{
+			//			this.m_dg[this.m_intCurrRow-1,this.getGridColumn("fvs_variant")] = p_uc.strVariant;
+			//			this.m_dg[this.m_intCurrRow-1,this.getGridColumn("spcd")] = p_uc.strSpCd;
+			//			this.m_dg[this.m_intCurrRow-1,this.getGridColumn("fvs_species")] = p_uc.strFvsSpeciesCode;
+			//			this.m_dg[this.m_intCurrRow-1,this.getGridColumn("common_name")] = p_uc.strCommonName;
+			//			this.m_dg[this.m_intCurrRow-1,this.getGridColumn("genus")] = p_uc.strTreeSpeciesGenus;
+			//			this.m_dg[this.m_intCurrRow-1,this.getGridColumn("species")] = p_uc.strTreeSpecies;
+   //                     if (p_uc.intConvertToSpCd < 1)
+			//			{
+			//				this.m_dg[this.m_intCurrRow-1,this.getGridColumn("fvs_input_spcd")] = System.DBNull.Value;
+			//			}
+			//			else
+			//			{
+			//				this.m_dg[this.m_intCurrRow-1,this.getGridColumn("fvs_input_spcd")] = p_uc.intConvertToSpCd;
+			//			}
 						
-						this.m_dg[this.m_intCurrRow-1,this.getGridColumn("fvs_common_name")] = p_uc.strFvsCommonName;
-						this.m_dg.SetDataBinding(this.m_dv,"");
-						this.m_dg.Update();
+			//			this.m_dg[this.m_intCurrRow-1,this.getGridColumn("fvs_common_name")] = p_uc.strFvsCommonName;
+			//			this.m_dg.SetDataBinding(this.m_dv,"");
+			//			this.m_dg.Update();
 
-					}
+			//		}
 
 
-					if (this.btnSave.Enabled==false) this.btnSave.Enabled=true;
-					if (this.btnDelete.Enabled==false) this.btnDelete.Enabled=true;
-					if (this.btnEdit.Enabled==false) this.btnEdit.Enabled=true;
-				}
-				frmTemp.Close();
-				frmTemp.Dispose();
-				frmTemp=null;
-			}
-			catch (Exception e)
-			{
-				MessageBox.Show("!!Error!! \n" + 
-					"Module - uc_processor_tree_spc:EditForm() \n" + 
-					"Err Msg - " + e.Message,
-					"FIA Biosum",System.Windows.Forms.MessageBoxButtons.OK,
-					System.Windows.Forms.MessageBoxIcon.Exclamation);
+			//		if (this.btnSave.Enabled==false) this.btnSave.Enabled=true;
+			//		if (this.btnDelete.Enabled==false) this.btnDelete.Enabled=true;
+			//		if (this.btnEdit.Enabled==false) this.btnEdit.Enabled=true;
+			//	}
+			//	frmTemp.Close();
+			//	frmTemp.Dispose();
+			//	frmTemp=null;
+			//}
+			//catch (Exception e)
+			//{
+			//	MessageBox.Show("!!Error!! \n" + 
+			//		"Module - uc_processor_tree_spc:EditForm() \n" + 
+			//		"Err Msg - " + e.Message,
+			//		"FIA Biosum",System.Windows.Forms.MessageBoxButtons.OK,
+			//		System.Windows.Forms.MessageBoxIcon.Exclamation);
 
-				this.m_intError=-1;
-			}
+			//	this.m_intError=-1;
+			//}
 
 
 
 		}
 		private int getUniqueId()
 		{
-            string strUniqueId;
+            string strUniqueId = "0";
 			int intId=0;
 			int intId2=0;
-			strUniqueId = SQLite.getSingleStringValueFromSQLQuery(SQLite.m_Connection,
-				SQLite.m_Transaction,
-				"select max(id) as maxid from " + this.m_oQueries.m_oFvs.m_strTreeSpcTable,
-				this.m_oQueries.m_oFvs.m_strTreeSpcTable);
+			//strUniqueId = SQLite.getSingleStringValueFromSQLQuery(SQLite.m_Connection,
+			//	SQLite.m_Transaction,
+			//	"select max(id) as maxid from " + this.m_oQueries.m_oFvs.m_strTreeSpcTable,
+			//	this.m_oQueries.m_oFvs.m_strTreeSpcTable);
 
 			if (strUniqueId != null && strUniqueId.Trim().Length > 0)
 				intId = Convert.ToInt32(strUniqueId) + 1;
@@ -2316,35 +2321,19 @@ namespace FIA_Biosum_Manager
 				this.m_intError=-1;
 			}
 		}
-
 		private void btnAudit_Click(object sender, System.EventArgs e)
 		{
 			frmMain.g_sbpInfo.Text = "Running Audit...Stand By";
-			if (this.cmbAudit.Text.Trim() == "Assess Data Readiness: Check If Each FIA Tree Spc And FVS Variant Combination Is In The Tree Spc Table")
+			// m_strAudit type is set in SetMenuOptions function
+			if (m_strAuditType.Equals("FVS"))
 			{
 				this.AuditSpCdCvt();
 			}
-			//else if (this.cmbAudit.Text.Trim()== "Assess Data Readiness: Check If Each FIA Site Tree Spc, FVS Variant, And FVS Tree Spc Combination Is In The Tree Spc Table")
-			//{
-
-			//}
-			else if (this.cmbAudit.Text.Trim()== "Assess Data Readiness: Check If Each FIA Tree Spc, FVS Variant, And FVS Tree Spc Combination Is In The Tree Spc Table")
+			else
 			{
 				this.AuditFvsOutSpCdCvt();
 			}
-            //else if (this.cmbAudit.Text.Trim() == "Assess Data Readiness: Check If Oven Dry Weight And Green Weight Conversion Ratios Exist In The Tree Spc Table")
-				
-            //{
-            //    this.AuditOvenDryGreenWtRatio();
-            //}
-            //LCB - Hiding; No longer needed with species groups changes
-            //else if (this.cmbAudit.Text.Trim() == "Assess Data Readiness: Check If a 2-Character FVS Tree Species Value is Assigned To Each Tree Species Table Record")
-            //{
-            //    this.AuditAssignFvsSpcAlphaChar();
-            //}
-			frmMain.g_sbpInfo.Text = "Ready";
-			
-			
+			frmMain.g_sbpInfo.Text = "Ready";			
 		}
 
 		/// <summary>
@@ -2368,100 +2357,87 @@ namespace FIA_Biosum_Manager
 
 				int count=0;
 				string strSpCd="";
-				string strVar="";
-				string strBuild="";
-				string strConcat="";
 				string strMsg="";
-				this.lstAudit.Columns.Add("fvs_variant", 80, HorizontalAlignment.Left);
-				this.lstAudit.Columns.Add("spcd", 80, HorizontalAlignment.Left);
+				this.lstAudit.Columns.Add("spcd", 60, HorizontalAlignment.Left);
+				this.lstAudit.Columns.Add("fvs_tree_id", 80, HorizontalAlignment.Left);
+				this.lstAudit.Columns.Add("cn", 160, HorizontalAlignment.Left);
+				this.lstAudit.Columns.Add("dia", 80, HorizontalAlignment.Left);
+				this.lstAudit.Columns.Add("statecd", 60, HorizontalAlignment.Left);
+				this.lstAudit.Columns.Add("plot", 80, HorizontalAlignment.Left);
 
-				SQLite.m_strSQL = "SELECT t.spcd,p.fvs_variant " + 
-									  "FROM " + this.m_oQueries.m_oFIAPlot.m_strTreeTable + " t," + 
-												this.m_oQueries.m_oFIAPlot.m_strPlotTable + " p " + 
-									  "INNER JOIN " + this.m_oQueries.m_oFIAPlot.m_strCondTable + " c "  + 
-									  "ON p.biosum_plot_id=c.biosum_plot_id " +
-									  "WHERE t.biosum_cond_id=c.biosum_cond_id AND " + 
-					                        "p.fvs_variant IS NOT NULL AND LENGTH(TRIM(p.fvs_variant)) > 0 " + 
-									  "ORDER by p.fvs_variant,t.spcd;";
+				string strMasterConn = SQLite.GetConnectionString(m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree));
+				using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strMasterConn))
+				{
+					conn.Open();
+					SQLite.m_strSQL = $@"ATTACH '{m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.FiaTreeSpeciesReference)}' as BIOSUM_REF";
+					SQLite.SqlQueryReader(conn, SQLite.m_strSQL);
+					SQLite.m_strSQL = $@"SELECT t.spcd, fvs_tree_id,t.cn,dia, t.statecd, plot
+						FROM {this.m_oQueries.m_oFIAPlot.m_strTreeTable} t, {this.m_oQueries.m_oFIAPlot.m_strCondTable},{this.m_oQueries.m_oFIAPlot.m_strPlotTable}
+						LEFT JOIN FIA_TREE_SPECIES_REF ON FIA_TREE_SPECIES_REF.spcd = t.spcd
+						WHERE t.biosum_cond_id = {this.m_oQueries.m_oFIAPlot.m_strCondTable}.biosum_cond_id and {this.m_oQueries.m_oFIAPlot.m_strCondTable}.biosum_plot_id = {this.m_oQueries.m_oFIAPlot.m_strPlotTable}.biosum_plot_id
+						AND fvs_tree_id is not null AND common_name is null ORDER BY t.spcd, plot";
+					SQLite.SqlQueryReader(conn, SQLite.m_strSQL);
 
-
-				SQLite.SqlQueryReader(SQLite.m_Connection, SQLite.m_Transaction, SQLite.m_strSQL);
-                if (SQLite.m_intError == 0)
-                {
-                    if (SQLite.m_DataReader.HasRows)
-                    {
-                        while (SQLite.m_DataReader.Read())
-                        {
-
-                            if (SQLite.m_DataReader["spcd"] != System.DBNull.Value)
-                            {
-
-                                strVar = "";
-                                strSpCd = SQLite.m_DataReader["spcd"].ToString().Trim();
-                                if (SQLite.m_DataReader["fvs_variant"] != System.DBNull.Value)
-                                    strVar = SQLite.m_DataReader["fvs_variant"].ToString().Trim();
-
-                                strConcat = strSpCd + strVar;
-                                if (strBuild.IndexOf(strConcat, 0, strBuild.Length) == -1)
-                                {
-                                    strValues[count, 0] = strSpCd;
-                                    strValues[count, 1] = strVar;
-                                    strBuild = strBuild + "'" + strSpCd + strVar + "',";
-                                    count++;
-                                }
-                            }
-                        }
-
-                        if (count > 0)
-                        {
-                            //int y=0;
-                            for (int x = 0; x <= count - 1; x++)
-                            {
-
-
-                                System.Data.DataRow[] p_rows = SQLite.m_DataSet.Tables["tree_species"].Select("spcd = " + strValues[x, 0].ToString().Trim() + " and trim(fvs_variant) = '" + strValues[x, 1].ToString().Trim() + "'");
-                                if (p_rows != null)
-                                {
-                                    if (p_rows.Length == 0)
+					if (SQLite.m_intError == 0)
+					{
+						if (SQLite.m_DataReader.HasRows)
+						{
+							while (SQLite.m_DataReader.Read())
+							{
+								if (SQLite.m_DataReader["spcd"] != System.DBNull.Value)
+								{									
+									strSpCd = SQLite.m_DataReader["spcd"].ToString().Trim();
+									this.lstAudit.Items.Add(strSpCd);
+									this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(SQLite.m_DataReader["fvs_tree_id"].ToString().Trim());
+									string strCn = "";
+                                    if (SQLite.m_DataReader["cn"] != System.DBNull.Value)
                                     {
-                                        this.lstAudit.Items.Add(strValues[x, 1].ToString().Trim());
-                                        this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(strValues[x, 0].ToString().Trim());
-                                    }
-                                }
-                                else
-                                {
-                                    this.lstAudit.Items.Add(strValues[x, 1].ToString().Trim());
-                                    this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(strValues[x, 0].ToString().Trim());
-                                }
-                            }
-                        }
-                    }
-                    SQLite.m_DataReader.Close();
+										strCn = SQLite.m_DataReader["cn"].ToString().Trim();
+									}
+									this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(strCn);
+									string strDia = "";
+									if (SQLite.m_DataReader["dia"] != System.DBNull.Value)
+									{
+										strDia = SQLite.m_DataReader["dia"].ToString().Trim();
+									}
+									this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(strDia);
+									string strState = "";
+									if (SQLite.m_DataReader["statecd"] != System.DBNull.Value)
+									{
+										strState = SQLite.m_DataReader["statecd"].ToString().Trim();
+									}
+									this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(strState);
+									string strPlot = "";
+									if (SQLite.m_DataReader["plot"] != System.DBNull.Value)
+									{
+										strPlot = SQLite.m_DataReader["plot"].ToString().Trim();
+									}
+									this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(strPlot);
+								}
+							}
 
-                    if (this.lstAudit.Items.Count == 0)
-                    {
-                        strMsg = "Audit Passed. \r\n\r\n  Every FIA Tree SpCd + FVS Variant Combination In Your Project Is Found In The Tree Species Table";
-                    }
-                    else
-                    {
-                        strMsg = "Audit Failed.\r\n\r\n" + Convert.ToString(this.lstAudit.Items.Count) + " FIA SpCd + FVS Variant Combinations Are NOT Found In The Tree Species Table. ";
-                        strMsg += "The SpCd/Variant assignments are listed at the top of the form.\r\n";
-                        strMsg += "To update the tree species table in your project with these SpCd/Variant combinations\r\n";
-                        strMsg += "check the items to add and click the <Add Checked Items To Tree Species Table> button.";
+						}
+						SQLite.m_DataReader.Close();
 
-                        btnAuditAdd.Enabled = true;
-                        btnAuditCheckAll.Enabled = true;
-                        btnAuditClearAll.Enabled = true;
-                        lstAudit.CheckBoxes = true;
-                    }
-                    frmMain.g_oFrmMain.DeactivateStandByAnimation();
-                    MessageBox.Show(strMsg,
-                        "Tree Species",
-                        System.Windows.Forms.MessageBoxButtons.OK,
-                        System.Windows.Forms.MessageBoxIcon.Information);
-                }
-                else
-                    frmMain.g_oFrmMain.DeactivateStandByAnimation();
+						if (this.lstAudit.Items.Count == 0)
+						{
+							strMsg = "Audit Passed. \r\n\r\nEvery FIA Tree SpCd In Your Project Is Found In The FIA Tree Species Reference Table";
+						}
+						else
+						{
+							strMsg = "Audit Failed.\r\n\r\n" + Convert.ToString(this.lstAudit.Items.Count) + " FIA SpCd Are NOT Found In The FIA Tree Species Reference Table. ";
+							strMsg += "The SpCd occurrences are listed on the form.\r\n";
+							strMsg += "To update the BioSum FIA Tree Species Reference Table contact a System Administrator.";
+						}
+						frmMain.g_oFrmMain.DeactivateStandByAnimation();
+						MessageBox.Show(strMsg,
+							"Tree Species",
+							System.Windows.Forms.MessageBoxButtons.OK,
+							System.Windows.Forms.MessageBoxIcon.Information);
+					}
+					else
+						frmMain.g_oFrmMain.DeactivateStandByAnimation();
+				}
 			}
 			catch (Exception e)
 			{
@@ -2536,13 +2512,13 @@ namespace FIA_Biosum_Manager
 				oDataMgr.SqlNonQuery(oDataMgr.m_Connection, "DROP TABLE spcd_variant_temp_work_table");
 
 			//let the user know if there are no records in the tree species  table
-			if (oDataMgr.getRecordCount(oDataMgr.m_Connection, "select count(*) from " + this.m_oQueries.m_oFvs.m_strTreeSpcTable + ";", m_oQueries.m_oFvs.m_strTreeSpcTable) == 0)
-			{
-				MessageBox.Show("0 Records In The FVS Tree Species Table", "FIA Biosum",
-					System.Windows.Forms.MessageBoxButtons.OK,
-					System.Windows.Forms.MessageBoxIcon.Exclamation);
-				return;
-			}
+			//if (oDataMgr.getRecordCount(oDataMgr.m_Connection, "select count(*) from " + this.m_oQueries.m_oFvs.m_strTreeSpcTable + ";", m_oQueries.m_oFvs.m_strTreeSpcTable) == 0)
+			//{
+			//	MessageBox.Show("0 Records In The FVS Tree Species Table", "FIA Biosum",
+			//		System.Windows.Forms.MessageBoxButtons.OK,
+			//		System.Windows.Forms.MessageBoxIcon.Exclamation);
+			//	return;
+			//}
             
             frmMain.g_oFrmMain.ActivateStandByAnimation(this.ParentForm.WindowState,
                 this.ParentForm.Left, this.ParentForm.Height, this.ParentForm.Width, this.ParentForm.Top);
@@ -2599,28 +2575,29 @@ namespace FIA_Biosum_Manager
 				"AND TRIM(fvsouttable_fvs_variant) = TRIM(fvs.fvs_variant))";
 			oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
 
-            oDataMgr.m_strSQL = "DELETE FROM spcd_variant_temp_work_table as w " +
-                           "WHERE EXISTS (SELECT s.spcd,s.fvs_variant,f.fvs_species,s.fvs_input_spcd " +
-                           "FROM " + this.m_oQueries.m_oFvs.m_strTreeSpcTable + " s, " +
-                           this.m_oQueries.m_oFvs.m_strFvsTreeSpcRefTable + " f " +
-                           "WHERE  w.treetable_spcd = s.spcd " +
-                           "AND TRIM(w.fvsouttable_fvs_variant)=TRIM(s.fvs_variant) " +
-                           "AND (CAST(w.fvsouttable_spcd AS INTEGER)= s.spcd OR CAST(w.fvsouttable_spcd AS INTEGER) = s.fvs_input_spcd) " +
-                           "AND (CAST(w.fvsouttable_spcd AS INTEGER)= f.spcd AND TRIM(w.fvsouttable_fvs_variant) = TRIM(f.fvs_variant)) " +
-                           "AND f.spcd = s.fvs_input_spcd)";
+   //@ToDo: This may need to be updated without reference to obsolete tree_species tables
+			//         oDataMgr.m_strSQL = "DELETE FROM spcd_variant_temp_work_table as w " +
+   //                        "WHERE EXISTS (SELECT s.spcd,s.fvs_variant,f.fvs_species,s.fvs_input_spcd " +
+   //                        "FROM " + this.m_oQueries.m_oFvs.m_strTreeSpcTable + " s, " +
+   //                        this.m_oQueries.m_oFvs.m_strFvsTreeSpcRefTable + " f " +
+   //                        "WHERE  w.treetable_spcd = s.spcd " +
+   //                        "AND TRIM(w.fvsouttable_fvs_variant)=TRIM(s.fvs_variant) " +
+   //                        "AND (CAST(w.fvsouttable_spcd AS INTEGER)= s.spcd OR CAST(w.fvsouttable_spcd AS INTEGER) = s.fvs_input_spcd) " +
+   //                        "AND (CAST(w.fvsouttable_spcd AS INTEGER)= f.spcd AND TRIM(w.fvsouttable_fvs_variant) = TRIM(f.fvs_variant)) " +
+   //                        "AND f.spcd = s.fvs_input_spcd)";
 
-			oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
+			//oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
 
-			oDataMgr.m_strSQL = "UPDATE spcd_variant_temp_work_table as w INNER JOIN " +
-                                this.m_oQueries.m_oFvs.m_strTreeSpcTable + " t " +
-                            "ON w.treetable_spcd = t.spcd AND " +
-                               "W.fvsouttable_fvs_variant = t.FVS_VARIANT " +
-                            "SET w.exist_in_tree_species_table_yn = 'Y'";
-			oDataMgr.m_strSQL = "UPDATE spcd_variant_temp_work_table " +
-				"SET exist_in_tree_species_table_yn = " +
-				"(SELECT 'Y' FROM tree_species t where treetable_spcd = t.spcd " +
-				"AND fvsouttable_fvs_variant = t.FVS_VARIANT)";
-			oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
+			//oDataMgr.m_strSQL = "UPDATE spcd_variant_temp_work_table as w INNER JOIN " +
+   //                             this.m_oQueries.m_oFvs.m_strTreeSpcTable + " t " +
+   //                         "ON w.treetable_spcd = t.spcd AND " +
+   //                            "W.fvsouttable_fvs_variant = t.FVS_VARIANT " +
+   //                         "SET w.exist_in_tree_species_table_yn = 'Y'";
+			//oDataMgr.m_strSQL = "UPDATE spcd_variant_temp_work_table " +
+			//	"SET exist_in_tree_species_table_yn = " +
+			//	"(SELECT 'Y' FROM tree_species t where treetable_spcd = t.spcd " +
+			//	"AND fvsouttable_fvs_variant = t.FVS_VARIANT)";
+			//oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
 
 			try
 			{
@@ -2935,20 +2912,20 @@ namespace FIA_Biosum_Manager
 		}
 		public void SetMenuOptions(string strType)
 		{
-			this.cmbAudit.Items.Clear();
-			if (strType.Trim().ToUpper() == "FVS")
-			{
-               this.cmbAudit.Items.Add("Assess Data Readiness: Check If Each FIA Tree Spc And FVS Variant Combination Is In The Tree Spc Table");
-			   this.cmbAudit.SelectedIndex = 0;
-			}
-			else
-			{
-               //this.cmbAudit.Items.Add("Assess Data Readiness: Check If a 2-Character FVS Tree Species Value is Assigned To Each Tree Species Table Record");
-			   this.cmbAudit.Items.Add("Assess Data Readiness: Check If Each FIA Tree Spc, FVS Variant, And FVS Tree Spc Combination Is In The Tree Spc Table");
-			   //this.cmbAudit.Items.Add("Assess Data Readiness: Check If Oven Dry Weight And Green Weight Conversion Ratios Exist In The Tree Spc Table");
-			   this.cmbAudit.SelectedIndex = 0;
-			}
-
+			//this.cmbAudit.Items.Clear();
+			m_strAuditType = strType.ToUpper();
+			//if (strType.Trim().ToUpper() == "FVS")
+			//{
+   //            this.cmbAudit.Items.Add("Assess Data Readiness: Check If Each FIA Tree Spc And FVS Variant Combination Is In The Tree Spc Table");
+			//   this.cmbAudit.SelectedIndex = 0;
+			//}
+			//else
+			//{
+   //            //this.cmbAudit.Items.Add("Assess Data Readiness: Check If a 2-Character FVS Tree Species Value is Assigned To Each Tree Species Table Record");
+			//   this.cmbAudit.Items.Add("Assess Data Readiness: Check If Each FIA Tree Spc, FVS Variant, And FVS Tree Spc Combination Is In The Tree Spc Table");
+			//   //this.cmbAudit.Items.Add("Assess Data Readiness: Check If Oven Dry Weight And Green Weight Conversion Ratios Exist In The Tree Spc Table");
+			//   this.cmbAudit.SelectedIndex = 0;
+			//}
 		}
 
 		private void lstAudit_SelectedIndexChanged(object sender, System.EventArgs e)

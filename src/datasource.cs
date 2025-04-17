@@ -55,7 +55,6 @@ namespace FIA_Biosum_Manager
 			"Treatment Packages",
 			Datasource.TableTypes.SeqNumDefinitions,
             Datasource.TableTypes.SeqNumRxPackageAssign, 
-			"Tree Species",
 			Datasource.TableTypes.FvsTreeSpecies,
 			"Travel Times",
 			"Processing Sites",
@@ -77,8 +76,6 @@ namespace FIA_Biosum_Manager
 	        "Treatment Prescriptions",
 	        "Treatment Prescriptions Harvest Cost Columns",
 	        "Treatment Packages",
-	        "Tree Species",
-	        "FVS Tree Species",
 	        "Travel Times",
 	        "Processing Sites",
 	        "FVS Tree List For Processor",
@@ -98,8 +95,6 @@ namespace FIA_Biosum_Manager
 	        "Treatment Prescriptions",
 	        "Treatment Prescriptions Harvest Cost Columns",
 	        "Treatment Packages",
-	        "Tree Species",
-	        "FVS Tree Species",
 	        "Travel Times",
 	        "Processing Sites",
 	        "FVS Tree List For Processor",
@@ -1227,12 +1222,6 @@ namespace FIA_Biosum_Manager
 				case "HARVEST COSTS":
 					p_dao.CreatePrimaryKeyIndex(p_strMDBPathAndFile,p_strTable,"biosum_cond_id,rx");
 					break;
-				case "TREE SPECIES":
-					p_dao.CreatePrimaryKeyIndex(p_strMDBPathAndFile,p_strTable,"id");
-					p_dao.CreateAutoNumber(p_strMDBPathAndFile,p_strTable,"id");
-					break;
-				case "FVS TREE SPECIES":
-					break;
 				case "TREATMENT PRESCRIPTIONS":
 					p_dao.CreatePrimaryKeyIndex(p_strMDBPathAndFile,p_strTable,"rx");
 					break;
@@ -1272,8 +1261,6 @@ namespace FIA_Biosum_Manager
 				case "HARVEST COSTS":
 					p_dao.CreatePrimaryKeyIndex(p_dao.m_DaoDatabase,p_strTable,"biosum_cond_id,rx");
 					break;
-				case "FVS TREE SPECIES":
-					break;
 				case "TREATMENT PRESCRIPTIONS":
 					p_dao.CreatePrimaryKeyIndex(p_dao.m_DaoDatabase,p_strTable,"rx");
 					break;
@@ -1291,11 +1278,6 @@ namespace FIA_Biosum_Manager
 					break;
 				case "PROCESSING SITES":
 					p_dao.CreatePrimaryKeyIndex(p_dao.m_DaoDatabase,p_strTable,"psite_id");
-					break;
-				
-				case "TREE SPECIES":
-					p_dao.CreatePrimaryKeyIndex(p_dao.m_DaoDatabase,p_strTable,"id");
-					p_dao.CreateAutoNumber(p_dao.m_DaoDatabase,p_strTable,"id");
 					break;
 				case "TREE SPECIES AND DIAMETER GROUPS DOLLAR VALUES":
 					p_dao.CreatePrimaryKeyIndex(p_dao.m_DaoDatabase,p_strTable,"id");
@@ -1317,9 +1299,6 @@ namespace FIA_Biosum_Manager
 				case "HARVEST COSTS":
 					frmMain.g_oTables.m_oProcessor.CreateHarvestCostsTableIndexes(p_oAdo,p_oConn,p_strTableName);
 					break;
-				case "FVS TREE SPECIES":
-					frmMain.g_oTables.m_oReference.CreateFVSTreeSpeciesTableIndexes(p_oAdo,p_oConn,p_strTableName);
-					break;
 				case "TREATMENT PRESCRIPTIONS":
 					frmMain.g_oTables.m_oFvs.CreateRxTableIndexes(p_oAdo,p_oConn,p_strTableName);
 					break;
@@ -1334,9 +1313,6 @@ namespace FIA_Biosum_Manager
 					break;
 				case "PROCESSING SITES":
 					frmMain.g_oTables.m_oTravelTime.CreateProcessingSiteTableIndexes(p_oAdo,p_oConn,p_strTableName);
-					break;
-				case "TREE SPECIES":
-					frmMain.g_oTables.m_oReference.CreateTreeSpeciesTableIndexes(p_oAdo,p_oConn,p_strTableName);
 					break;
                 case "HARVEST METHODS":
                     frmMain.g_oTables.m_oReference.CreateHarvestMethodsTableIndexes(p_oAdo, p_oConn, p_strTableName);
@@ -1388,10 +1364,6 @@ namespace FIA_Biosum_Manager
 					oItem.VariableName="HarvestCostsTable";
                     if (p_strTableName.Trim().Length == 0) p_strTableName = Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName;
 					break;
-				case "FVS TREE SPECIES":
-					oItem.VariableName="FvsTreeSpeciesTable";
-					if (p_strTableName.Trim().Length == 0) p_strTableName=Tables.Reference.DefaultFVSTreeSpeciesTableName;
-					break;
                 case "FIADB FVS VARIANT":
 					oItem.VariableName="FiadbFvsVariantTable";
 					if (p_strTableName.Trim().Length == 0) p_strTableName=Tables.Reference.DefaultFiadbFVSVariantTableName;
@@ -1423,10 +1395,6 @@ namespace FIA_Biosum_Manager
 				case "PROCESSING SITES":
 					oItem.VariableName="PSitesTable";
                     if (p_strTableName.Trim().Length == 0) p_strTableName = Tables.TravelTime.DefaultProcessingSiteTableName;
-					break;
-				case "TREE SPECIES":
-					oItem.VariableName="TreeSpeciesTable";
-					if (p_strTableName.Trim().Length == 0) p_strTableName=Tables.Reference.DefaultTreeSpeciesTableName;
 					break;
                 case "BIOSUM POP STRATUM ADJUSTMENT FACTORS":
                     oItem.VariableName="BiosumPopStratumAdjustmentFactorTable";
