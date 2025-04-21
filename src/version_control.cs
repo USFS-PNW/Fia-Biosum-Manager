@@ -600,7 +600,7 @@ namespace FIA_Biosum_Manager
                 }
             }
 
-            //UpdateDatasources_5_12_0();
+            UpdateDatasources_5_12_0();
 
             if (bPerformCheck)
             {
@@ -7432,6 +7432,8 @@ namespace FIA_Biosum_Manager
                 System.IO.Path.GetFileName(strRefMasterPath), Tables.Reference.DefaultTreeSpeciesTableName);
             oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.FvsTreeSpecies, "@@appdata@@\\fiabiosum", 
                 Tables.Reference.DefaultBiosumReferenceSqliteFile, Tables.Reference.DefaultFVSTreeSpeciesTableName);
+            oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.FiaTreeMacroPlotBreakpointDia, "@@appdata@@\\fiabiosum",
+                Tables.Reference.DefaultTreeMacroPlotBreakPointDiaTableDbFile, Tables.Reference.DefaultTreeMacroPlotBreakPointDiaTableName);
 
             // Update processor datasource
             strDestFile = ReferenceProjectDirectory.Trim() + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;

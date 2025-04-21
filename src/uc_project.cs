@@ -1008,17 +1008,17 @@ namespace FIA_Biosum_Manager
                 //
                 //copy default master database to the new project directory
                 strSourceFile = this.m_oEnv.strAppDir + "\\db\\ref_master.mdb";
-				strDestFile = this.txtRootDirectory.Text.Trim() + "\\db\\ref_master.mdb";
-				p_frmTherm.Increment(6);
-				p_frmTherm.lblMsg.Text = strDestFile;
-				p_frmTherm.lblMsg.Refresh();
-				System.IO.File.Copy(strSourceFile, strDestFile,true);
+                strDestFile = this.txtRootDirectory.Text.Trim() + "\\db\\ref_master.mdb";
+                p_frmTherm.Increment(6);
+                p_frmTherm.lblMsg.Text = strDestFile;
+                p_frmTherm.lblMsg.Refresh();
+                System.IO.File.Copy(strSourceFile, strDestFile, true);
 
-				//
-				//prepopulated ref master file
-				//
-				//copy default ref_master SQLitedatabase to the new project directory
-				strSourceFile = $@"{this.m_oEnv.strAppDir}\{Tables.Reference.DefaultRefMasterDbFile}";
+                //
+                //prepopulated ref master file
+                //
+                //copy default ref_master SQLitedatabase to the new project directory
+                strSourceFile = $@"{this.m_oEnv.strAppDir}\{Tables.Reference.DefaultRefMasterDbFile}";
 				strDestFile = $@"{this.txtRootDirectory.Text.Trim()}\{Tables.Reference.DefaultRefMasterDbFile}";
 				p_frmTherm.Increment(6);
 				p_frmTherm.lblMsg.Text = strDestFile;
@@ -1264,8 +1264,8 @@ namespace FIA_Biosum_Manager
 
                     strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
                         "('FIA Tree Macro Plot Breakpoint Diameter'," +
-                        "'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," +
-                        "'ref_master.mdb'," +
+						"'@@appdata@@\\fiabiosum'," +
+						"'biosum_ref.db'," +
                         "'TreeMacroPlotBreakPointDia');";
                     p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
 
