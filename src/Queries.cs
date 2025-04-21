@@ -237,7 +237,6 @@ namespace FIA_Biosum_Manager
 			public string m_strRxPackageTable;
 			public string m_strTreeSpcTable;
 			public string m_strFvsTreeTable;
-			public string m_strFvsTreeSpcRefTable;
             public string m_strFVSPrePostSeqNumTable;
             public string m_strFVSPrePostSeqNumRxPackageAssgnTable;
 			private Queries _oQueries=null;	
@@ -264,13 +263,10 @@ namespace FIA_Biosum_Manager
 				m_strRxTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREATMENT PRESCRIPTIONS");
 				m_strRxHarvestCostColumnsTable=ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREATMENT PRESCRIPTIONS HARVEST COST COLUMNS");
 				m_strRxPackageTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREATMENT PACKAGES");
-				m_strTreeSpcTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("TREE SPECIES");
 				m_strFvsTreeTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("FVS TREE LIST FOR PROCESSOR");
-				m_strFvsTreeSpcRefTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName(Datasource.TableTypes.FvsTreeSpecies.ToUpper());
                 m_strFVSPrePostSeqNumTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("FVS PRE-POST SEQNUM DEFINITIONS");
                 m_strFVSPrePostSeqNumRxPackageAssgnTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName("FVS PRE-POST SEQNUM TREATMENT PACKAGE ASSIGNMENTS");
-				
-			
+							
 				if (this.m_strRxTable.Trim().Length == 0) 
 				{
 					
@@ -281,20 +277,6 @@ namespace FIA_Biosum_Manager
 				if (this.m_strRxHarvestCostColumnsTable.Trim().Length == 0 && ReferenceQueries._strScenarioType!="optimizer")
 				{
 					MessageBox.Show("!!Could Not Locate Rx Harvest Cost Columns Table!!","FIA Biosum",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
-					ReferenceQueries.m_intError=-1;
-					return;
-				}
-
-                if (this.m_strTreeSpcTable.Trim().Length == 0 && ReferenceQueries._strScenarioType != "optimizer")
-				{
-					MessageBox.Show("!!Could Not Locate Tree Species Table!!","FIA Biosum",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
-					ReferenceQueries.m_intError=-1;
-					return;
-				}
-
-				if (this.m_strFvsTreeSpcRefTable.Trim().Length == 0 && !ReferenceQueries.Scenario)
-				{
-					MessageBox.Show("!!Could Not Locate FVS Tree Species Reference Table!!","FIA Biosum",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
 					ReferenceQueries.m_intError=-1;
 					return;
 				}
@@ -7065,8 +7047,10 @@ namespace FIA_Biosum_Manager
 		{
 			
 			public string m_strRefHarvestMethodTable="";
+            public string m_strFiaTreeSpeciesRefTable = "";
 
-			private Queries _oQueries=null;	
+
+            private Queries _oQueries=null;	
 			private bool _bLoadDataSources=true;
 			string m_strSql="";
 
@@ -7089,17 +7073,22 @@ namespace FIA_Biosum_Manager
 			public void LoadDatasources()
 			{
 				m_strRefHarvestMethodTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName(Datasource.TableTypes.HarvestMethods);
-				
-			
-				if (m_strRefHarvestMethodTable.Trim().Length == 0 && this._oQueries._strScenarioType!="optimizer") 
-				{
-					
+                m_strFiaTreeSpeciesRefTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName(Datasource.TableTypes.FiaTreeSpeciesReference);
+
+                if (m_strRefHarvestMethodTable.Trim().Length == 0 && this._oQueries._strScenarioType!="optimizer") 
+				{					
 					MessageBox.Show("!!Could Not Locate Harvest Methods Reference Table!!","FIA Biosum",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
 					ReferenceQueries.m_intError=-1;
 					return;
-				}					
-			
-			}
+				}
+
+                if (m_strRefHarvestMethodTable.Trim().Length == 0)
+                {
+                    MessageBox.Show("!!Could Not Locate FIA Tree Species Reference Table!!", "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+                    ReferenceQueries.m_intError = -1;
+                    return;
+                }
+            }
 			/// <summary>
 			/// 
 			/// </summary>

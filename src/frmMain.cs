@@ -4166,7 +4166,7 @@ namespace FIA_Biosum_Manager
 
 				}
 				p_uc.Dock = System.Windows.Forms.DockStyle.Fill;
-				p_uc.loadvalues();
+				//p_uc.loadvalues();
 							
 
 				p_uc.SetMenuOptions(p_strPanel);

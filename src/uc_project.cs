@@ -1234,13 +1234,6 @@ namespace FIA_Biosum_Manager
 					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
 
 					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-						"('" + Datasource.TableTypes.FvsTreeSpecies + "'," + 
-						"'@@AppData@@" + frmMain.g_strBiosumDataDir + "'," + 
-						"'" + Tables.Reference.DefaultBiosumReferenceDbFile + "'," + 
-						"'fvs_tree_species');";
-					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
-
-					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
 						"('Travel Times'," + 
 						"'" + this.txtRootDirectory.Text.ToString().Trim() + "\\gis\\db'," + 
 						"'" + Tables.TravelTime.DefaultTravelTimeDbFile + "'," + 
