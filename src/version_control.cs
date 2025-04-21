@@ -600,7 +600,7 @@ namespace FIA_Biosum_Manager
                 }
             }
 
-            UpdateDatasources_5_12_0();
+            //UpdateDatasources_5_12_0();
 
             if (bPerformCheck)
             {
@@ -7395,18 +7395,12 @@ namespace FIA_Biosum_Manager
                 oAdo.m_strSQL = $@"DELETE FROM {oProjectDs.m_strDataSourceTableName} WHERE TABLE_TYPE IN ('{Datasource.TableTypes.TreeSpecies}','{Datasource.TableTypes.FvsTreeSpecies}')";
                 oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
             }
-<<<<<<< HEAD
+
             // Update project datasources
-            oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.TreeSpecies, ReferenceProjectDirectory + "\\db", 
-                System.IO.Path.GetFileName(strRefMasterPath), Tables.Reference.DefaultTreeSpeciesTableName);
-            oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.FvsTreeSpecies, "@@appdata@@\\fiabiosum", 
-                Tables.Reference.DefaultBiosumReferenceSqliteFile, Tables.Reference.DefaultFVSTreeSpeciesTableName);
             oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.FiaTreeMacroPlotBreakpointDia, "@@appdata@@\\fiabiosum",
                 Tables.Reference.DefaultTreeMacroPlotBreakPointDiaTableDbFile, Tables.Reference.DefaultTreeMacroPlotBreakPointDiaTableName);
-=======
             oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.FiaTreeSpeciesReference, "@@appdata@@\\fiabiosum",
                 Tables.Reference.DefaultBiosumReferenceSqliteFile, Tables.Reference.DefaultFIATreeSpeciesTableName);
->>>>>>> c01535be92ecee7e4b22687667a3c1348d63c795
 
             // Update processor datasource
             strDestFile = ReferenceProjectDirectory.Trim() + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
