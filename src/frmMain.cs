@@ -3863,28 +3863,27 @@ namespace FIA_Biosum_Manager
 
 
 
-			//plot fvs variant
-			this.m_btnFvsVariant = new btnMainForm(this);
-			this.m_pnlFvs.Controls.Add(this.m_btnFvsVariant);
-			this.m_btnFvsVariant.Size = this.btnMain1.Size;
-			this.m_btnFvsVariant.Location = this.btnMain1.Location;
-			this.m_btnFvsVariant.Text = "Plot FVS Variants";
-			this.m_btnFvsVariant.strToolTip = "Step 1 - Assign An FVS Variant To Each Plot";
+			////plot fvs variant
+			//this.m_btnFvsVariant = new btnMainForm(this);
+			//this.m_pnlFvs.Controls.Add(this.m_btnFvsVariant);
+			//this.m_btnFvsVariant.Size = this.btnMain1.Size;
+			//this.m_btnFvsVariant.Location = this.btnMain1.Location;
+			//this.m_btnFvsVariant.Text = "Plot FVS Variants";
+			//this.m_btnFvsVariant.strToolTip = "Step 1 - Assign An FVS Variant To Each Plot";
 
 			//rx input and edit
 			this.m_btnFvsRx = new btnMainForm(this);
 			this.m_pnlFvs.Controls.Add(this.m_btnFvsRx);
 			this.m_btnFvsRx.Size = this.btnMain1.Size;
-			this.m_btnFvsRx.Left  = this.m_btnFvsVariant.Left;
-			this.m_btnFvsRx.Top = this.m_btnFvsVariant.Top + this.m_btnFvsVariant.Height + 5;
-			this.m_btnFvsRx.Text = "Rx";
+            this.m_btnFvsRx.Location = this.btnMain1.Location;
+            this.m_btnFvsRx.Text = "Rx";
 			this.m_btnFvsRx.strToolTip = "Step 2 - Assign A Label Identifier To Each FVS Treatment";
 
 			//rx package input and edit
 			this.m_btnFvsRxPackage = new btnMainForm(this);
 			this.m_pnlFvs.Controls.Add(this.m_btnFvsRxPackage);
 			this.m_btnFvsRxPackage.Size = this.btnMain1.Size;
-			this.m_btnFvsRxPackage.Left  = this.m_btnFvsVariant.Left;
+			this.m_btnFvsRxPackage.Left  = this.m_btnFvsRx.Left;
 			this.m_btnFvsRxPackage.Top = this.m_btnFvsRx.Top + this.m_btnFvsRx.Height + 5;
 			this.m_btnFvsRxPackage.Text = "Rx Package";
 			this.m_btnFvsRxPackage.strToolTip = "Step 3 - Assign one or more FVS treatments to a package";
@@ -3894,7 +3893,7 @@ namespace FIA_Biosum_Manager
 			this.m_btnFvsTreeSpc = new btnMainForm(this);
 			this.m_pnlFvs.Controls.Add(this.m_btnFvsTreeSpc);
 			this.m_btnFvsTreeSpc.Size = this.btnMain1.Size;
-			this.m_btnFvsTreeSpc.Left = this.m_btnFvsVariant.Left;
+			this.m_btnFvsTreeSpc.Left = this.m_btnFvsRx.Left;
 			this.m_btnFvsTreeSpc.Top = this.m_btnFvsRxPackage.Top + this.m_btnFvsRxPackage.Height + 5;
 			this.m_btnFvsTreeSpc.Text = "Tree Species";
 			this.m_btnFvsTreeSpc.strToolTip = "Step 4 - Assess Data Readiness: Check If Each Tree Species And FVS Variant Combination Is In The Tree Species Table";
@@ -3904,7 +3903,7 @@ namespace FIA_Biosum_Manager
 			this.m_btnFvsInput = new btnMainForm(this);
 			this.m_pnlFvs.Controls.Add(this.m_btnFvsInput);
 			this.m_btnFvsInput.Size = this.btnMain1.Size;
-			this.m_btnFvsInput.Left = this.m_btnFvsVariant.Left;
+			this.m_btnFvsInput.Left = this.m_btnFvsRx.Left;
 			this.m_btnFvsInput.Top = this.m_btnFvsTreeSpc.Top + this.m_btnFvsTreeSpc.Height + 5;
 			this.m_btnFvsInput.Text = "FVS Input";
 			this.m_btnFvsInput.strToolTip = "Step 5 - Create FVS Input";
@@ -3923,7 +3922,7 @@ namespace FIA_Biosum_Manager
             this.m_btnFvsOutput = new btnMainForm(this);
 			this.m_pnlFvs.Controls.Add(this.m_btnFvsOutput);
 			this.m_btnFvsOutput.Size = this.btnMain1.Size;
-			this.m_btnFvsOutput.Left = this.m_btnFvsVariant.Left;
+			this.m_btnFvsOutput.Left = this.m_btnFvsRx.Left;
 			this.m_btnFvsOutput.Top = this.m_btnFvsInput.Top + this.m_btnFvsInput.Height + 5;
             this.m_btnFvsOutput.Text = "FVS Output Data";
 			this.m_btnFvsOutput.strToolTip = "Step 6 - Update FVS PRE/POST And Processor Tree Tables With FVS Output data";

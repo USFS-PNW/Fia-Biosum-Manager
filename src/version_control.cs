@@ -7395,6 +7395,10 @@ namespace FIA_Biosum_Manager
                 oAdo.m_strSQL = $@"DELETE FROM {oProjectDs.m_strDataSourceTableName} WHERE TABLE_TYPE IN ('{Datasource.TableTypes.TreeSpecies}','{Datasource.TableTypes.FvsTreeSpecies}')";
                 oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
             }
+
+            // Update project datasources
+            oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.FiaTreeMacroPlotBreakpointDia, "@@appdata@@\\fiabiosum",
+                Tables.Reference.DefaultTreeMacroPlotBreakPointDiaTableDbFile, Tables.Reference.DefaultTreeMacroPlotBreakPointDiaTableName);
             oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.FiaTreeSpeciesReference, "@@appdata@@\\fiabiosum",
                 Tables.Reference.DefaultBiosumReferenceSqliteFile, Tables.Reference.DefaultFIATreeSpeciesTableName);
 

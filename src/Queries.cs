@@ -4782,46 +4782,41 @@ namespace FIA_Biosum_Manager
                     string p_strFIAPlotTable,
                     string p_strFIACondTable)
                 {
-                    return "UPDATE " + p_strInputVolumesTable + " i " +
-                           "INNER JOIN ((" + p_strFIATreeTable + " t " +
-                           "INNER JOIN " + p_strFIACondTable + " c " +
-                           "ON t.biosum_cond_id=c.biosum_cond_id) " +
-                           "INNER JOIN " + p_strFIAPlotTable + " p " +
-                           "ON p.biosum_plot_id=c.biosum_plot_id) " +
-                           "ON i.tre_cn=t.cn " +
-                           "SET i.spcd=t.spcd," +
-                           "i.statuscd=IIF(t.statuscd IS NULL,1,t.statuscd)," +
-                           "i.treeclcd=t.treeclcd," +
-                           "i.cull=IIF(t.cull IS NULL,0,t.cull)," +
-                           "i.roughcull=IIF(t.roughcull IS NULL,0,t.roughcull)," +
-                           "i.decaycd=IIF(t.decaycd IS NULL,0,t.decaycd)," +
-                           "i.balive=c.balive," +
-                           "i.precipitation=p.precipitation";
+                    return "UPDATE " + p_strInputVolumesTable + " AS i " +
+                        "SET spcd = t.spcd, " +
+                        "statuscd = CASE WHEN t.statuscd IS NULL THEN 1 ELSE t.statuscd END, " +
+                        "treeclcd = t.treeclcd, " +
+                        "cull = CASE WHEN t.cull IS NULL THEN 0 ELSE t.cull END, " +
+                        "roughcull = CASE WHEN t.roughcull IS NULL THEN 0 ELSE t.roughcull END, " +
+                        "decaycd = CASE WHEN t.decaycd IS NULL THEN 0 ELSE t.decaycd END, " +
+                        "balive = c.balive, precipitation = p.precipitation " +
+                        "FROM " + p_strFIATreeTable + " AS t, " + p_strFIACondTable + " AS c, " + p_strFIAPlotTable + " AS p " +
+                        "WHERE t.biosum_cond_id = c.biosum_cond_id AND p.biosum_plot_id = c.biosum_plot_id AND i.tre_cn = t.cn";
                 }
 
                 public static string BuildInputTableForVolumeCalculation_Step3(
                     string p_strInputVolumesTable,
                     string p_strFIACondTable)
                 {
-                    return "UPDATE " + p_strInputVolumesTable + " i " +
-                           "INNER JOIN " + p_strFIACondTable + " c " +
-                           "ON i.cnd_cn=c.biosum_cond_id " +
-                           "SET i.vol_loc_grp=IIF(INSTR(1,c.vol_loc_grp,'22') > 0,'S26LEOR',c.vol_loc_grp)," +
-                           "i.statuscd=IIF(i.statuscd IS NULL,1,i.statuscd)," +
-                           "i.cull=IIF(i.cull IS NULL,0,i.cull)," +
-                           "i.roughcull=IIF(i.roughcull IS NULL,0,i.roughcull)," +
-                           "i.decaycd=IIF(i.decaycd IS NULL,0,i.decaycd)";
+                    return "UPDATE " + p_strInputVolumesTable + " AS i " +
+                        "SET vol_loc_grp = CASE WHEN INSTR(c.vol_loc_grp, '22') > 0 THEN 'S26LEOR' ELSE c.vol_loc_grp END, " +
+                        "statuscd = CASE WHEN i.statuscd IS NULL THEN 1 ELSE i.statuscd END, " +
+                        "cull = CASE WHEN i.cull IS NULL THEN 0 ELSE i.cull END, " +
+                        "roughcull = CASE WHEN i.roughcull IS NULL THEN 0 ELSE i.roughcull END, " +
+                        "decaycd = CASE WHEN i.decaycd IS NULL THEN 0 ELSE i.decaycd END " +
+                        "FROM " + p_strFIACondTable + " AS c WHERE i.cnd_cn = c.biosum_cond_id";
                 }
 
                 public static string BuildInputTableForVolumeCalculation_Step4(
                     string p_strCullTable,
                     string p_strInputVolumesTable)
                 {
-                    return "SELECT tre_cn, IIF(cull IS NOT NULL AND roughcull IS NOT NULL, cull + roughcull," +
-                           "IIF(cull IS NOT NULL,cull," +
-                           "IIF(roughcull IS NOT NULL, roughcull,0))) AS totalcull " +
-                           "INTO " + p_strCullTable + " " +
-                           "FROM " + p_strInputVolumesTable;
+                    return "CREATE TABLE " + p_strCullTable +
+                        " AS SELECT tre_cn, CASE WHEN cull IS NOT NULL AND roughcull IS NOT NULL " +
+                        "THEN cull + roughcull ELSE CASE WHEN cull IS NOT NULL " +
+                        "THEN cull ELSE CASE WHEN roughcull IS NOT NULL " +
+                        "THEN roughcull ELSE 0 END END END AS totalcull " +
+                        "FROM " + p_strInputVolumesTable;
                 }
 
                 public class PNWRS
@@ -4842,14 +4837,13 @@ namespace FIA_Biosum_Manager
                         string p_strCullTable,
                         string p_strInputVolumesTable)
                     {
-                        return "UPDATE " + p_strInputVolumesTable + " a " +
-                               "INNER JOIN " + p_strCullTable + " b " +
-                               "ON a.tre_cn=b.tre_cn " +
-                               "SET a.treeclcd=" +
-                               "IIF(a.SpCd IN (62,65,66,106,133,138,304,321,322,475,756,758,990),3," +
-                               "IIF(a.StatusCd=2,3," +
-                               "IIF(b.totalcull < 75,2," +
-                               "IIF(a.roughcull > 37.5,3,4))))";
+                        return "UPDATE " + p_strInputVolumesTable + " AS a " +
+                            "SET treeclcd = CASE WHEN a.spcd IN (62,65,66,106,133,138,304,321,322,475,756,758,990) " +
+                            "THEN 3 ELSE CASE WHEN a.statuscd = 2 " +
+                            "THEN 3 ELSE CASE WHEN b.totalcull < 75 " +
+                            "THEN 2 ELSE CASE WHEN a.roughcull > 37.5 " +
+                            "THEN 3 ELSE 4 END END END END " +
+                            "FROM " + p_strCullTable + " AS b WHERE a.tre_cn = b.tre_cn";
                     }
 
                     /// <summary>
@@ -4863,31 +4857,46 @@ namespace FIA_Biosum_Manager
                         string p_strCullTable,
                         string p_strInputVolumesTable)
                     {
-                        return "UPDATE " + p_strInputVolumesTable + " a " +
-                               "INNER JOIN " + p_strCullTable + " b " +
-                               "ON a.tre_cn=b.tre_cn " +
-                               "SET a.treeclcd=" +
-                               "IIF(a.DecayCd > 1,4,IIF(a.DIA < 9 AND a.SpCd < 300,4,a.treeclcd)) " +
-                               "WHERE a.treeclcd=3 AND a.statuscd=2 AND a.SpCd NOT IN (62,65,66,106,133,138,304,321,322,475,756,758,990)";
+                        return "UPDATE " + p_strInputVolumesTable + " AS a " +
+                            "SET treeclcd = CASE WHEN a.decaycd > 1 THEN 4 " +
+                            "ELSE CASE WHEN a.dia < 9 AND a.spcd < 300 " +
+                            "THEN 4 ELSE a.treeclcd END END " +
+                            "FROM " + p_strCullTable + " AS b WHERE a.tre_cn = b.tre_cn " +
+                            "AND a.treeclcd = 3 AND a.statuscd = 2 AND a.spcd NOT IN (62,65,66,106,133,138,304,321,322,475,756,758,990)";
                     }
                 }
 
                 public static string WriteCalculatedVolumeAndBiomassColumnsToTreeTable(
                     string p_strBiosumCalcOutputTable)
                 {
-                    return $@"UPDATE {frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName} t 
-                                INNER JOIN {Tables.VolumeAndBiomass.BiosumCalcOutputTable} o ON t.CN = o.TRE_CN
-                                SET t.volcfgrs=IIF(o.VOLCFGRS_CALC IS NOT NULL, o.VOLCFGRS_CALC, null),
-                                t.volcfnet=IIF(o.VOLCFNET_CALC IS NOT NULL, o.VOLCFNET_CALC, null),
-                                t.volcfsnd=IIF(o.VOLCFSND_CALC IS NOT NULL, o.VOLCFSND_CALC, null),
-                                t.volcsgrs=IIF(o.VOLCSGRS_CALC IS NOT NULL, o.VOLCSGRS_CALC, null),
-                                t.voltsgrs=IIF(o.VOLTSGRS_CALC IS NOT NULL,o.VOLTSGRS_CALC,null),
-                                t.drybiom=IIF(t.DRYBIOM IS NULL,o.DRYBIOM_CALC,t.DRYBIOM),
-                                t.drybiot=IIF(t.DRYBIOT IS NULL,o.DRYBIOT_CALC,t.DRYBIOT),
-                                t.drybio_bole=IIF(o.DRYBIO_BOLE_CALC IS NOT NULL, o.DRYBIO_BOLE_CALC, null),
-                                t.drybio_top=IIF(o.DRYBIO_TOP_CALC IS NOT NULL, o.DRYBIO_TOP_CALC, null),
-                                t.drybio_sapling=IIF(o.DRYBIO_SAPLING_CALC IS NOT NULL, o.DRYBIO_SAPLING_CALC, null),
-                                t.drybio_wdld_spp=IIF(o.DRYBIO_WDLD_SPP_CALC IS NOT NULL, o.DRYBIO_WDLD_SPP_CALC, null)";
+                    //return $@"UPDATE {frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName} t 
+                    //            INNER JOIN {Tables.VolumeAndBiomass.BiosumCalcOutputTable} o ON t.CN = o.TRE_CN
+                    //            SET t.volcfgrs=IIF(o.VOLCFGRS_CALC IS NOT NULL, o.VOLCFGRS_CALC, null),
+                    //            t.volcfnet=IIF(o.VOLCFNET_CALC IS NOT NULL, o.VOLCFNET_CALC, null),
+                    //            t.volcfsnd=IIF(o.VOLCFSND_CALC IS NOT NULL, o.VOLCFSND_CALC, null),
+                    //            t.volcsgrs=IIF(o.VOLCSGRS_CALC IS NOT NULL, o.VOLCSGRS_CALC, null),
+                    //            t.voltsgrs=IIF(o.VOLTSGRS_CALC IS NOT NULL,o.VOLTSGRS_CALC,null),
+                    //            t.drybiom=IIF(t.DRYBIOM IS NULL,o.DRYBIOM_CALC,t.DRYBIOM),
+                    //            t.drybiot=IIF(t.DRYBIOT IS NULL,o.DRYBIOT_CALC,t.DRYBIOT),
+                    //            t.drybio_bole=IIF(o.DRYBIO_BOLE_CALC IS NOT NULL, o.DRYBIO_BOLE_CALC, null),
+                    //            t.drybio_top=IIF(o.DRYBIO_TOP_CALC IS NOT NULL, o.DRYBIO_TOP_CALC, null),
+                    //            t.drybio_sapling=IIF(o.DRYBIO_SAPLING_CALC IS NOT NULL, o.DRYBIO_SAPLING_CALC, null),
+                    //            t.drybio_wdld_spp=IIF(o.DRYBIO_WDLD_SPP_CALC IS NOT NULL, o.DRYBIO_WDLD_SPP_CALC, null)";
+
+                    return "UPDATE " + frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName + " AS t " +
+                        "SET volcfgrs = CASE WHEN o.volcfgrs_calc IS NOT NULL THEN o.volcfgrs_calc ELSE NULL END, " +
+                        "volcfnet = CASE WHEN o.volcfnet_calc IS NOT NULL THEN o.volcfnet_calc ELSE NULL END, " +
+                        "volcfsnd = CASE WHEN o.volcfsnd_calc IS NOT NULL THEN o.volcfsnd_calc ELSE NULL END, " +
+                        "volcsgrs = CASE WHEN o.volcsgrs_calc IS NOT NULL THEN o.volcsgrs_calc ELSE NULL END, " +
+                        "voltsgrs = CASE WHEN o.voltsgrs_calc IS NOT NULL THEN o.voltsgrs_calc ELSE NULL END, " +
+                        "drybiom = CASE WHEN t.drybiom IS NULL THEN o.drybiom_calc ELSE t.drybiom END, " +
+                        "drybiot = CASE WHEN t.drybiot IS NULL THEN o.drybiot_calc ELSE t.drybiot END, " +
+                        "drybio_bole = CASE WHEN o.drybio_bole_calc IS NOT NULL THEN o.drybio_bole_calc ELSE NULL END, " +
+                        "drybio_top = CASE WHEN o.drybio_top_calc IS NOT NULL THEN o.drybio_top_calc ELSE NULL END, " +
+                        "drybio_sapling = CASE WHEN o.drybio_sapling_calc IS NOT NULL THEN o.drybio_sapling_calc ELSE NULL END, " +
+                        "drybio_wdld_spp = CASE WHEN o.drybio_wdld_spp_calc IS NOT NULL THEN o.drybio_wdld_spp_calc ELSE NULL END " +
+                        "FROM " + p_strBiosumCalcOutputTable + " AS o " +
+                        "WHERE t.cn = o.tre_cn";
                 }
             }
 
@@ -5605,8 +5614,8 @@ namespace FIA_Biosum_Manager
                                   "a.estn_unit,a.stratumcd," +
                                   "a.p2pointcnt_man,a.stratum_area," +
                                   "a.double_sampling," +
-                                  "a.pmh_macr,a.pmh_micr," +
-                                  "a.pmh_sub,a.pmh_cond," +
+                                  "ROUND(a.pmh_macr, 4) AS pmh_macr, ROUND(a.pmh_micr, 4) AS pmh_micr," +
+                                  "ROUND(a.pmh_sub, 4) AS pmh_sub, ROUND(a.pmh_cond, 4) AS pmh_cond," +
                                   "b.eval_descr,b.estn_unit_descr," +
                                   "b.adj_factor_macr, b.adj_factor_subp," +
                                   "b.adj_factor_micr, b.expns " +
