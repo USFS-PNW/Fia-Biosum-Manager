@@ -5,7 +5,6 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Data.Common;
-using System.Data.OleDb;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -82,16 +81,11 @@ namespace FIA_Biosum_Manager
         private string m_strMasterDbFile = "";
 
 
-		private string m_strTempMDBFile;
         private string m_strTempDbFile;
-        private string m_strTempMDBFileConn;
-        private System.Data.OleDb.OleDbConnection m_connTempMDBFile;
-		private FIA_Biosum_Manager.ado_data_access m_ado;
 		private System.Data.DataTable m_dtStateCounty;
 		private System.Data.DataTable m_dtPlot;
 		private int m_intError;
         private string m_strError;
-		//private string m_strError;
 		private string m_strPlotTable;
 		private string m_strCondTable;
 		private string m_strTreeTable;
@@ -108,6 +102,7 @@ namespace FIA_Biosum_Manager
         private string m_strDwmDuffLitterTable = frmMain.g_oTables.m_oFIAPlot.DefaultDWMDuffLitterFuelName;
         private string m_strDwmTransectSegmentTable = frmMain.g_oTables.m_oFIAPlot.DefaultDWMTransectSegmentName;
 		private string m_strSQL;
+        private string m_strCondPropPercent = "";
 
 		private FIA_Biosum_Manager.frmTherm m_frmTherm;
 		private string m_strPlotIdList="";
@@ -124,25 +119,10 @@ namespace FIA_Biosum_Manager
 		private string m_strCurrFIADBEvalId="";
 		private string m_strCurrFIADBRsCd="";
 		private string m_strTableType;
-		private System.Windows.Forms.GroupBox groupBox8;
-		private System.Windows.Forms.Button btnMDBTreeBrowse;
-		private System.Windows.Forms.TextBox txtMDBTree;
-		private System.Windows.Forms.GroupBox groupBox9;
-		private System.Windows.Forms.Button btnMDBCondBrowse;
-		private System.Windows.Forms.TextBox txtMDBCond;
-		private System.Windows.Forms.GroupBox groupBox10;
-		private System.Windows.Forms.Button btnMDBPlotBrowse;
-		private System.Windows.Forms.TextBox txtMDBPlotTable;
-		private System.Windows.Forms.TextBox txtMDBCondTable;
-		private System.Windows.Forms.TextBox txtMDBTreeTable;
-		private System.Windows.Forms.TextBox txtMDBPlot;
-		private System.Windows.Forms.Button btnIDBInvAppend;
-		private System.Windows.Forms.ListView lstIDBInv;
-		private System.Windows.Forms.Button btnIDBInvHelp;
-		private System.Windows.Forms.Button btnIDBInvPrevious;
-		private System.Windows.Forms.Button btnIDBInvNext;
-		private System.Windows.Forms.Button btnIDBInvCancel;
-		private System.Windows.Forms.GroupBox grpboxIDBInv;
+		private System.Windows.Forms.TextBox txtDBPlotTable;
+		private System.Windows.Forms.TextBox txtDBCondTable;
+		private System.Windows.Forms.TextBox txtDBTreeTable;
+		private System.Windows.Forms.TextBox txtDBPlot;
 		private System.Threading.Thread thdProcessRecords;
 		private int m_intAddedPlotRows=0;
 		private int m_intAddedCondRows=0;
@@ -164,7 +144,7 @@ namespace FIA_Biosum_Manager
 
 		private bool m_bLoadStateCountyList=true;
 		private bool m_bLoadStateCountyPlotList=true;
-		private System.Windows.Forms.GroupBox grpboxMDBFiadbInput;
+		private System.Windows.Forms.GroupBox grpboxDBFiadbInput;
 		private System.Windows.Forms.GroupBox groupBox15;
 		private System.Windows.Forms.GroupBox groupBox16;
 		private System.Windows.Forms.GroupBox groupBox17;
@@ -173,7 +153,7 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.GroupBox groupBox20;
 		private System.Windows.Forms.GroupBox groupBox21;
 		private System.Windows.Forms.GroupBox groupBox22;
-		private System.Windows.Forms.Button btnboxMDBFiadbInputFile;
+		private System.Windows.Forms.Button btnboxDBFiadbInputFile;
 		private System.Windows.Forms.ComboBox cmbFiadbPlotTable;
 		private System.Windows.Forms.ComboBox cmbFiadbCondTable;
 		private System.Windows.Forms.GroupBox groupBox23;
@@ -183,18 +163,14 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.ComboBox cmbFiadbPopEstUnitTable;
 		private System.Windows.Forms.ComboBox cmbFiadbPopStratumTable;
 		private System.Windows.Forms.ComboBox cmbFiadbPpsaTable;
-		private System.Windows.Forms.Button btnMDBFiadbInputFinish;
-		private System.Windows.Forms.Button btnMDBFiadbInputHelp;
-		private System.Windows.Forms.Button btnMDBFiadbInputPrev;
-		private System.Windows.Forms.Button btnMDBFiadbInputNext;
-		private System.Windows.Forms.Button btnMDBFiadbInputCancel;
+		private System.Windows.Forms.Button btnDBFiadbInputFinish;
+		private System.Windows.Forms.Button btnDBFiadbInputHelp;
+		private System.Windows.Forms.Button btnDBFiadbInputPrev;
+		private System.Windows.Forms.Button btnDBFiadbInputNext;
+		private System.Windows.Forms.Button btnDBFiadbInputCancel;
 		private System.Windows.Forms.TextBox txtFiadbInputFile;
 		private System.Windows.Forms.GroupBox groupBox24;
 		private System.Windows.Forms.ComboBox cmbFiadbSiteTreeTable;
-		private System.Windows.Forms.GroupBox groupBox25;
-		private System.Windows.Forms.TextBox txtMDBSiteTreeTable;
-		private System.Windows.Forms.Button btnMDBSiteTreeBrowse;
-        private System.Windows.Forms.TextBox txtMDBSiteTree;
         private Label label2;
         private ComboBox cmbCondPropPercent;
         private Label label1;
@@ -258,12 +234,12 @@ namespace FIA_Biosum_Manager
 		{
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(uc_plot_input));
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.grpboxMDBFiadbInput = new System.Windows.Forms.GroupBox();
+            this.grpboxDBFiadbInput = new System.Windows.Forms.GroupBox();
             this.groupBox24 = new System.Windows.Forms.GroupBox();
             this.cmbFiadbSiteTreeTable = new System.Windows.Forms.ComboBox();
             this.groupBox23 = new System.Windows.Forms.GroupBox();
             this.txtFiadbInputFile = new System.Windows.Forms.TextBox();
-            this.btnboxMDBFiadbInputFile = new System.Windows.Forms.Button();
+            this.btnboxDBFiadbInputFile = new System.Windows.Forms.Button();
             this.groupBox15 = new System.Windows.Forms.GroupBox();
             this.cmbFiadbPopEstUnitTable = new System.Windows.Forms.ComboBox();
             this.groupBox16 = new System.Windows.Forms.GroupBox();
@@ -280,11 +256,11 @@ namespace FIA_Biosum_Manager
             this.cmbFiadbCondTable = new System.Windows.Forms.ComboBox();
             this.groupBox22 = new System.Windows.Forms.GroupBox();
             this.cmbFiadbPlotTable = new System.Windows.Forms.ComboBox();
-            this.btnMDBFiadbInputFinish = new System.Windows.Forms.Button();
-            this.btnMDBFiadbInputHelp = new System.Windows.Forms.Button();
-            this.btnMDBFiadbInputPrev = new System.Windows.Forms.Button();
-            this.btnMDBFiadbInputNext = new System.Windows.Forms.Button();
-            this.btnMDBFiadbInputCancel = new System.Windows.Forms.Button();
+            this.btnDBFiadbInputFinish = new System.Windows.Forms.Button();
+            this.btnDBFiadbInputHelp = new System.Windows.Forms.Button();
+            this.btnDBFiadbInputPrev = new System.Windows.Forms.Button();
+            this.btnDBFiadbInputNext = new System.Windows.Forms.Button();
+            this.btnDBFiadbInputCancel = new System.Windows.Forms.Button();
             this.grpboxFIADBInv = new System.Windows.Forms.GroupBox();
             this.btnFIADBInvAppend = new System.Windows.Forms.Button();
             this.lstFIADBInv = new System.Windows.Forms.ListView();
@@ -292,13 +268,6 @@ namespace FIA_Biosum_Manager
             this.btnFIADBInvPrevious = new System.Windows.Forms.Button();
             this.btnFIADBInvNext = new System.Windows.Forms.Button();
             this.btnFIADBInvCancel = new System.Windows.Forms.Button();
-            this.grpboxIDBInv = new System.Windows.Forms.GroupBox();
-            this.btnIDBInvAppend = new System.Windows.Forms.Button();
-            this.lstIDBInv = new System.Windows.Forms.ListView();
-            this.btnIDBInvHelp = new System.Windows.Forms.Button();
-            this.btnIDBInvPrevious = new System.Windows.Forms.Button();
-            this.btnIDBInvNext = new System.Windows.Forms.Button();
-            this.btnIDBInvCancel = new System.Windows.Forms.Button();
             this.grpboxFilterByState = new System.Windows.Forms.GroupBox();
             this.btnFilterByStateFinish = new System.Windows.Forms.Button();
             this.btnFilterByStateUnselect = new System.Windows.Forms.Button();
@@ -337,26 +306,14 @@ namespace FIA_Biosum_Manager
             this.btnFilterByPlotPrevious = new System.Windows.Forms.Button();
             this.btnFilterByPlotNext = new System.Windows.Forms.Button();
             this.btnFilterByPlotCancel = new System.Windows.Forms.Button();
-            this.groupBox25 = new System.Windows.Forms.GroupBox();
-            this.txtMDBSiteTreeTable = new System.Windows.Forms.TextBox();
-            this.btnMDBSiteTreeBrowse = new System.Windows.Forms.Button();
-            this.txtMDBSiteTree = new System.Windows.Forms.TextBox();
-            this.groupBox8 = new System.Windows.Forms.GroupBox();
-            this.txtMDBTreeTable = new System.Windows.Forms.TextBox();
-            this.btnMDBTreeBrowse = new System.Windows.Forms.Button();
-            this.txtMDBTree = new System.Windows.Forms.TextBox();
-            this.groupBox9 = new System.Windows.Forms.GroupBox();
-            this.txtMDBCondTable = new System.Windows.Forms.TextBox();
-            this.btnMDBCondBrowse = new System.Windows.Forms.Button();
-            this.txtMDBCond = new System.Windows.Forms.TextBox();
-            this.groupBox10 = new System.Windows.Forms.GroupBox();
-            this.txtMDBPlotTable = new System.Windows.Forms.TextBox();
-            this.btnMDBPlotBrowse = new System.Windows.Forms.Button();
-            this.txtMDBPlot = new System.Windows.Forms.TextBox();
+            this.txtDBTreeTable = new System.Windows.Forms.TextBox();
+            this.txtDBCondTable = new System.Windows.Forms.TextBox();
+            this.txtDBPlotTable = new System.Windows.Forms.TextBox();
+            this.txtDBPlot = new System.Windows.Forms.TextBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.cmbFiadbPlotGeomTable = new System.Windows.Forms.ComboBox();
             this.groupBox1.SuspendLayout();
-            this.grpboxMDBFiadbInput.SuspendLayout();
+            this.grpboxDBFiadbInput.SuspendLayout();
             this.groupBox24.SuspendLayout();
             this.groupBox23.SuspendLayout();
             this.groupBox15.SuspendLayout();
@@ -368,23 +325,17 @@ namespace FIA_Biosum_Manager
             this.groupBox21.SuspendLayout();
             this.groupBox22.SuspendLayout();
             this.grpboxFIADBInv.SuspendLayout();
-            this.grpboxIDBInv.SuspendLayout();
             this.grpboxFilterByState.SuspendLayout();
             this.grpboxFilter.SuspendLayout();
             this.groupBox7.SuspendLayout();
             this.grpboxFilterByPlot.SuspendLayout();
-            this.groupBox25.SuspendLayout();
-            this.groupBox8.SuspendLayout();
-            this.groupBox9.SuspendLayout();
-            this.groupBox10.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.grpboxMDBFiadbInput);
+            this.groupBox1.Controls.Add(this.grpboxDBFiadbInput);
             this.groupBox1.Controls.Add(this.grpboxFIADBInv);
-            this.groupBox1.Controls.Add(this.grpboxIDBInv);
             this.groupBox1.Controls.Add(this.grpboxFilterByState);
             this.groupBox1.Controls.Add(this.grpboxFilter);
             this.groupBox1.Controls.Add(this.lblTitle);
@@ -400,30 +351,30 @@ namespace FIA_Biosum_Manager
             // 
             // grpboxMDBFiadbInput
             // 
-            this.grpboxMDBFiadbInput.Controls.Add(this.groupBox2);
-            this.grpboxMDBFiadbInput.Controls.Add(this.groupBox24);
-            this.grpboxMDBFiadbInput.Controls.Add(this.groupBox23);
-            this.grpboxMDBFiadbInput.Controls.Add(this.groupBox15);
-            this.grpboxMDBFiadbInput.Controls.Add(this.groupBox16);
-            this.grpboxMDBFiadbInput.Controls.Add(this.groupBox17);
-            this.grpboxMDBFiadbInput.Controls.Add(this.groupBox18);
-            this.grpboxMDBFiadbInput.Controls.Add(this.groupBox19);
-            this.grpboxMDBFiadbInput.Controls.Add(this.groupBox20);
-            this.grpboxMDBFiadbInput.Controls.Add(this.groupBox21);
-            this.grpboxMDBFiadbInput.Controls.Add(this.groupBox22);
-            this.grpboxMDBFiadbInput.Controls.Add(this.btnMDBFiadbInputFinish);
-            this.grpboxMDBFiadbInput.Controls.Add(this.btnMDBFiadbInputHelp);
-            this.grpboxMDBFiadbInput.Controls.Add(this.btnMDBFiadbInputPrev);
-            this.grpboxMDBFiadbInput.Controls.Add(this.btnMDBFiadbInputNext);
-            this.grpboxMDBFiadbInput.Controls.Add(this.btnMDBFiadbInputCancel);
-            this.grpboxMDBFiadbInput.Location = new System.Drawing.Point(19, 70);
-            this.grpboxMDBFiadbInput.Margin = new System.Windows.Forms.Padding(4);
-            this.grpboxMDBFiadbInput.Name = "grpboxMDBFiadbInput";
-            this.grpboxMDBFiadbInput.Padding = new System.Windows.Forms.Padding(4);
-            this.grpboxMDBFiadbInput.Size = new System.Drawing.Size(1344, 450);
-            this.grpboxMDBFiadbInput.TabIndex = 35;
-            this.grpboxMDBFiadbInput.TabStop = false;
-            this.grpboxMDBFiadbInput.Text = "FIADB SQLite Database File Input";
+            this.grpboxDBFiadbInput.Controls.Add(this.groupBox2);
+            this.grpboxDBFiadbInput.Controls.Add(this.groupBox24);
+            this.grpboxDBFiadbInput.Controls.Add(this.groupBox23);
+            this.grpboxDBFiadbInput.Controls.Add(this.groupBox15);
+            this.grpboxDBFiadbInput.Controls.Add(this.groupBox16);
+            this.grpboxDBFiadbInput.Controls.Add(this.groupBox17);
+            this.grpboxDBFiadbInput.Controls.Add(this.groupBox18);
+            this.grpboxDBFiadbInput.Controls.Add(this.groupBox19);
+            this.grpboxDBFiadbInput.Controls.Add(this.groupBox20);
+            this.grpboxDBFiadbInput.Controls.Add(this.groupBox21);
+            this.grpboxDBFiadbInput.Controls.Add(this.groupBox22);
+            this.grpboxDBFiadbInput.Controls.Add(this.btnDBFiadbInputFinish);
+            this.grpboxDBFiadbInput.Controls.Add(this.btnDBFiadbInputHelp);
+            this.grpboxDBFiadbInput.Controls.Add(this.btnDBFiadbInputPrev);
+            this.grpboxDBFiadbInput.Controls.Add(this.btnDBFiadbInputNext);
+            this.grpboxDBFiadbInput.Controls.Add(this.btnDBFiadbInputCancel);
+            this.grpboxDBFiadbInput.Location = new System.Drawing.Point(19, 70);
+            this.grpboxDBFiadbInput.Margin = new System.Windows.Forms.Padding(4);
+            this.grpboxDBFiadbInput.Name = "grpboxMDBFiadbInput";
+            this.grpboxDBFiadbInput.Padding = new System.Windows.Forms.Padding(4);
+            this.grpboxDBFiadbInput.Size = new System.Drawing.Size(1344, 450);
+            this.grpboxDBFiadbInput.TabIndex = 35;
+            this.grpboxDBFiadbInput.TabStop = false;
+            this.grpboxDBFiadbInput.Text = "FIADB SQLite Database File Input";
             // 
             // groupBox24
             // 
@@ -448,7 +399,7 @@ namespace FIA_Biosum_Manager
             // groupBox23
             // 
             this.groupBox23.Controls.Add(this.txtFiadbInputFile);
-            this.groupBox23.Controls.Add(this.btnboxMDBFiadbInputFile);
+            this.groupBox23.Controls.Add(this.btnboxDBFiadbInputFile);
             this.groupBox23.Location = new System.Drawing.Point(25, 20);
             this.groupBox23.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox23.Name = "groupBox23";
@@ -469,13 +420,13 @@ namespace FIA_Biosum_Manager
             // 
             // btnboxMDBFiadbInputFile
             // 
-            this.btnboxMDBFiadbInputFile.Image = ((System.Drawing.Image)(resources.GetObject("btnboxMDBFiadbInputFile.Image")));
-            this.btnboxMDBFiadbInputFile.Location = new System.Drawing.Point(740, 12);
-            this.btnboxMDBFiadbInputFile.Margin = new System.Windows.Forms.Padding(4);
-            this.btnboxMDBFiadbInputFile.Name = "btnboxMDBFiadbInputFile";
-            this.btnboxMDBFiadbInputFile.Size = new System.Drawing.Size(40, 40);
-            this.btnboxMDBFiadbInputFile.TabIndex = 1;
-            this.btnboxMDBFiadbInputFile.Click += new System.EventHandler(this.btnboxMDBFiadbInputFile_Click);
+            this.btnboxDBFiadbInputFile.Image = ((System.Drawing.Image)(resources.GetObject("btnboxMDBFiadbInputFile.Image")));
+            this.btnboxDBFiadbInputFile.Location = new System.Drawing.Point(740, 12);
+            this.btnboxDBFiadbInputFile.Margin = new System.Windows.Forms.Padding(4);
+            this.btnboxDBFiadbInputFile.Name = "btnboxMDBFiadbInputFile";
+            this.btnboxDBFiadbInputFile.Size = new System.Drawing.Size(40, 40);
+            this.btnboxDBFiadbInputFile.TabIndex = 1;
+            this.btnboxDBFiadbInputFile.Click += new System.EventHandler(this.btnboxDBFiadbInputFile_Click);
             // 
             // groupBox15
             // 
@@ -639,55 +590,55 @@ namespace FIA_Biosum_Manager
             // 
             // btnMDBFiadbInputFinish
             // 
-            this.btnMDBFiadbInputFinish.Enabled = false;
-            this.btnMDBFiadbInputFinish.Location = new System.Drawing.Point(730, 408);
-            this.btnMDBFiadbInputFinish.Margin = new System.Windows.Forms.Padding(4);
-            this.btnMDBFiadbInputFinish.Name = "btnMDBFiadbInputFinish";
-            this.btnMDBFiadbInputFinish.Size = new System.Drawing.Size(90, 30);
-            this.btnMDBFiadbInputFinish.TabIndex = 7;
-            this.btnMDBFiadbInputFinish.Text = "Append";
+            this.btnDBFiadbInputFinish.Enabled = false;
+            this.btnDBFiadbInputFinish.Location = new System.Drawing.Point(730, 408);
+            this.btnDBFiadbInputFinish.Margin = new System.Windows.Forms.Padding(4);
+            this.btnDBFiadbInputFinish.Name = "btnMDBFiadbInputFinish";
+            this.btnDBFiadbInputFinish.Size = new System.Drawing.Size(90, 30);
+            this.btnDBFiadbInputFinish.TabIndex = 7;
+            this.btnDBFiadbInputFinish.Text = "Append";
             // 
             // btnMDBFiadbInputHelp
             // 
-            this.btnMDBFiadbInputHelp.ForeColor = System.Drawing.SystemColors.HotTrack;
-            this.btnMDBFiadbInputHelp.Location = new System.Drawing.Point(30, 408);
-            this.btnMDBFiadbInputHelp.Margin = new System.Windows.Forms.Padding(4);
-            this.btnMDBFiadbInputHelp.Name = "btnMDBFiadbInputHelp";
-            this.btnMDBFiadbInputHelp.Size = new System.Drawing.Size(80, 30);
-            this.btnMDBFiadbInputHelp.TabIndex = 3;
-            this.btnMDBFiadbInputHelp.Text = "Help";
-            this.btnMDBFiadbInputHelp.Click += new System.EventHandler(this.btnMDBFiadbInputHelp_Click);
+            this.btnDBFiadbInputHelp.ForeColor = System.Drawing.SystemColors.HotTrack;
+            this.btnDBFiadbInputHelp.Location = new System.Drawing.Point(30, 408);
+            this.btnDBFiadbInputHelp.Margin = new System.Windows.Forms.Padding(4);
+            this.btnDBFiadbInputHelp.Name = "btnMDBFiadbInputHelp";
+            this.btnDBFiadbInputHelp.Size = new System.Drawing.Size(80, 30);
+            this.btnDBFiadbInputHelp.TabIndex = 3;
+            this.btnDBFiadbInputHelp.Text = "Help";
+            this.btnDBFiadbInputHelp.Click += new System.EventHandler(this.btnDBFiadbInputHelp_Click);
             // 
             // btnMDBFiadbInputPrev
             // 
-            this.btnMDBFiadbInputPrev.Enabled = false;
-            this.btnMDBFiadbInputPrev.Location = new System.Drawing.Point(530, 408);
-            this.btnMDBFiadbInputPrev.Margin = new System.Windows.Forms.Padding(4);
-            this.btnMDBFiadbInputPrev.Name = "btnMDBFiadbInputPrev";
-            this.btnMDBFiadbInputPrev.Size = new System.Drawing.Size(90, 30);
-            this.btnMDBFiadbInputPrev.TabIndex = 5;
-            this.btnMDBFiadbInputPrev.TabStop = false;
-            this.btnMDBFiadbInputPrev.Text = "< Previous";
+            this.btnDBFiadbInputPrev.Enabled = false;
+            this.btnDBFiadbInputPrev.Location = new System.Drawing.Point(530, 408);
+            this.btnDBFiadbInputPrev.Margin = new System.Windows.Forms.Padding(4);
+            this.btnDBFiadbInputPrev.Name = "btnMDBFiadbInputPrev";
+            this.btnDBFiadbInputPrev.Size = new System.Drawing.Size(90, 30);
+            this.btnDBFiadbInputPrev.TabIndex = 5;
+            this.btnDBFiadbInputPrev.TabStop = false;
+            this.btnDBFiadbInputPrev.Text = "< Previous";
             // 
             // btnMDBFiadbInputNext
             // 
-            this.btnMDBFiadbInputNext.Location = new System.Drawing.Point(620, 408);
-            this.btnMDBFiadbInputNext.Margin = new System.Windows.Forms.Padding(4);
-            this.btnMDBFiadbInputNext.Name = "btnMDBFiadbInputNext";
-            this.btnMDBFiadbInputNext.Size = new System.Drawing.Size(90, 30);
-            this.btnMDBFiadbInputNext.TabIndex = 6;
-            this.btnMDBFiadbInputNext.Text = "Next >";
-            this.btnMDBFiadbInputNext.Click += new System.EventHandler(this.btnMDBFiadbInputNext_Click);
+            this.btnDBFiadbInputNext.Location = new System.Drawing.Point(620, 408);
+            this.btnDBFiadbInputNext.Margin = new System.Windows.Forms.Padding(4);
+            this.btnDBFiadbInputNext.Name = "btnMDBFiadbInputNext";
+            this.btnDBFiadbInputNext.Size = new System.Drawing.Size(90, 30);
+            this.btnDBFiadbInputNext.TabIndex = 6;
+            this.btnDBFiadbInputNext.Text = "Next >";
+            this.btnDBFiadbInputNext.Click += new System.EventHandler(this.btnDBFiadbInputNext_Click);
             // 
             // btnMDBFiadbInputCancel
             // 
-            this.btnMDBFiadbInputCancel.Location = new System.Drawing.Point(420, 408);
-            this.btnMDBFiadbInputCancel.Margin = new System.Windows.Forms.Padding(4);
-            this.btnMDBFiadbInputCancel.Name = "btnMDBFiadbInputCancel";
-            this.btnMDBFiadbInputCancel.Size = new System.Drawing.Size(80, 30);
-            this.btnMDBFiadbInputCancel.TabIndex = 4;
-            this.btnMDBFiadbInputCancel.Text = "Cancel";
-            this.btnMDBFiadbInputCancel.Click += new System.EventHandler(this.btnMDBFiadbInputCancel_Click);
+            this.btnDBFiadbInputCancel.Location = new System.Drawing.Point(420, 408);
+            this.btnDBFiadbInputCancel.Margin = new System.Windows.Forms.Padding(4);
+            this.btnDBFiadbInputCancel.Name = "btnMDBFiadbInputCancel";
+            this.btnDBFiadbInputCancel.Size = new System.Drawing.Size(80, 30);
+            this.btnDBFiadbInputCancel.TabIndex = 4;
+            this.btnDBFiadbInputCancel.Text = "Cancel";
+            this.btnDBFiadbInputCancel.Click += new System.EventHandler(this.btnDBFiadbInputCancel_Click);
             // 
             // grpboxFIADBInv
             // 
@@ -772,89 +723,6 @@ namespace FIA_Biosum_Manager
             this.btnFIADBInvCancel.TabIndex = 20;
             this.btnFIADBInvCancel.Text = "Cancel";
             this.btnFIADBInvCancel.Click += new System.EventHandler(this.btnFIADBInvCancel_Click);
-            // 
-            // grpboxIDBInv
-            // 
-            this.grpboxIDBInv.Controls.Add(this.btnIDBInvAppend);
-            this.grpboxIDBInv.Controls.Add(this.lstIDBInv);
-            this.grpboxIDBInv.Controls.Add(this.btnIDBInvHelp);
-            this.grpboxIDBInv.Controls.Add(this.btnIDBInvPrevious);
-            this.grpboxIDBInv.Controls.Add(this.btnIDBInvNext);
-            this.grpboxIDBInv.Controls.Add(this.btnIDBInvCancel);
-            this.grpboxIDBInv.Location = new System.Drawing.Point(20, 2395);
-            this.grpboxIDBInv.Margin = new System.Windows.Forms.Padding(4);
-            this.grpboxIDBInv.Name = "grpboxIDBInv";
-            this.grpboxIDBInv.Padding = new System.Windows.Forms.Padding(4);
-            this.grpboxIDBInv.Size = new System.Drawing.Size(840, 450);
-            this.grpboxIDBInv.TabIndex = 33;
-            this.grpboxIDBInv.TabStop = false;
-            this.grpboxIDBInv.Text = "Select IDB Inventory";
-            // 
-            // btnIDBInvAppend
-            // 
-            this.btnIDBInvAppend.Enabled = false;
-            this.btnIDBInvAppend.Location = new System.Drawing.Point(730, 408);
-            this.btnIDBInvAppend.Margin = new System.Windows.Forms.Padding(4);
-            this.btnIDBInvAppend.Name = "btnIDBInvAppend";
-            this.btnIDBInvAppend.Size = new System.Drawing.Size(90, 30);
-            this.btnIDBInvAppend.TabIndex = 34;
-            this.btnIDBInvAppend.Text = "Append";
-            this.btnIDBInvAppend.Click += new System.EventHandler(this.btnIDBInvAppend_Click);
-            // 
-            // lstIDBInv
-            // 
-            this.lstIDBInv.FullRowSelect = true;
-            this.lstIDBInv.GridLines = true;
-            this.lstIDBInv.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
-            this.lstIDBInv.HideSelection = false;
-            this.lstIDBInv.Location = new System.Drawing.Point(20, 40);
-            this.lstIDBInv.Margin = new System.Windows.Forms.Padding(4);
-            this.lstIDBInv.MultiSelect = false;
-            this.lstIDBInv.Name = "lstIDBInv";
-            this.lstIDBInv.Size = new System.Drawing.Size(799, 349);
-            this.lstIDBInv.TabIndex = 30;
-            this.lstIDBInv.UseCompatibleStateImageBehavior = false;
-            this.lstIDBInv.View = System.Windows.Forms.View.Details;
-            this.lstIDBInv.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.lstIDBInv_ItemCheck);
-            // 
-            // btnIDBInvHelp
-            // 
-            this.btnIDBInvHelp.Location = new System.Drawing.Point(20, 408);
-            this.btnIDBInvHelp.Margin = new System.Windows.Forms.Padding(4);
-            this.btnIDBInvHelp.Name = "btnIDBInvHelp";
-            this.btnIDBInvHelp.Size = new System.Drawing.Size(80, 30);
-            this.btnIDBInvHelp.TabIndex = 23;
-            this.btnIDBInvHelp.Text = "Help";
-            // 
-            // btnIDBInvPrevious
-            // 
-            this.btnIDBInvPrevious.Location = new System.Drawing.Point(530, 408);
-            this.btnIDBInvPrevious.Margin = new System.Windows.Forms.Padding(4);
-            this.btnIDBInvPrevious.Name = "btnIDBInvPrevious";
-            this.btnIDBInvPrevious.Size = new System.Drawing.Size(90, 30);
-            this.btnIDBInvPrevious.TabIndex = 22;
-            this.btnIDBInvPrevious.Text = "< Previous";
-            this.btnIDBInvPrevious.Click += new System.EventHandler(this.btnIDBInvPrevious_Click);
-            // 
-            // btnIDBInvNext
-            // 
-            this.btnIDBInvNext.Location = new System.Drawing.Point(620, 408);
-            this.btnIDBInvNext.Margin = new System.Windows.Forms.Padding(4);
-            this.btnIDBInvNext.Name = "btnIDBInvNext";
-            this.btnIDBInvNext.Size = new System.Drawing.Size(90, 30);
-            this.btnIDBInvNext.TabIndex = 21;
-            this.btnIDBInvNext.Text = "Next >";
-            this.btnIDBInvNext.Click += new System.EventHandler(this.btnIDBInvNext_Click);
-            // 
-            // btnIDBInvCancel
-            // 
-            this.btnIDBInvCancel.Location = new System.Drawing.Point(420, 408);
-            this.btnIDBInvCancel.Margin = new System.Windows.Forms.Padding(4);
-            this.btnIDBInvCancel.Name = "btnIDBInvCancel";
-            this.btnIDBInvCancel.Size = new System.Drawing.Size(80, 30);
-            this.btnIDBInvCancel.TabIndex = 20;
-            this.btnIDBInvCancel.Text = "Cancel";
-            this.btnIDBInvCancel.Click += new System.EventHandler(this.btnIDBInvCancel_Click);
             // 
             // grpboxFilterByState
             // 
@@ -1305,154 +1173,6 @@ namespace FIA_Biosum_Manager
             this.btnFilterByPlotCancel.Text = "Cancel";
             this.btnFilterByPlotCancel.Click += new System.EventHandler(this.btnFilterByPlotCancel_Click);
             // 
-            // groupBox25
-            // 
-            this.groupBox25.Controls.Add(this.txtMDBSiteTreeTable);
-            this.groupBox25.Controls.Add(this.btnMDBSiteTreeBrowse);
-            this.groupBox25.Controls.Add(this.txtMDBSiteTree);
-            this.groupBox25.Location = new System.Drawing.Point(24, 248);
-            this.groupBox25.Name = "groupBox25";
-            this.groupBox25.Size = new System.Drawing.Size(624, 73);
-            this.groupBox25.TabIndex = 31;
-            this.groupBox25.TabStop = false;
-            this.groupBox25.Text = "Site Tree Data";
-            // 
-            // txtMDBSiteTreeTable
-            // 
-            this.txtMDBSiteTreeTable.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtMDBSiteTreeTable.Location = new System.Drawing.Point(408, 27);
-            this.txtMDBSiteTreeTable.Name = "txtMDBSiteTreeTable";
-            this.txtMDBSiteTreeTable.Size = new System.Drawing.Size(152, 30);
-            this.txtMDBSiteTreeTable.TabIndex = 1;
-            // 
-            // btnMDBSiteTreeBrowse
-            // 
-            this.btnMDBSiteTreeBrowse.Image = ((System.Drawing.Image)(resources.GetObject("btnMDBSiteTreeBrowse.Image")));
-            this.btnMDBSiteTreeBrowse.Location = new System.Drawing.Point(573, 23);
-            this.btnMDBSiteTreeBrowse.Name = "btnMDBSiteTreeBrowse";
-            this.btnMDBSiteTreeBrowse.Size = new System.Drawing.Size(32, 32);
-            this.btnMDBSiteTreeBrowse.TabIndex = 2;
-            this.btnMDBSiteTreeBrowse.Click += new System.EventHandler(this.btnMDBSiteTreeBrowse_Click);
-            // 
-            // txtMDBSiteTree
-            // 
-            this.txtMDBSiteTree.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtMDBSiteTree.Location = new System.Drawing.Point(17, 27);
-            this.txtMDBSiteTree.Name = "txtMDBSiteTree";
-            this.txtMDBSiteTree.Size = new System.Drawing.Size(383, 30);
-            this.txtMDBSiteTree.TabIndex = 0;
-            // 
-            // groupBox8
-            // 
-            this.groupBox8.Controls.Add(this.txtMDBTreeTable);
-            this.groupBox8.Controls.Add(this.btnMDBTreeBrowse);
-            this.groupBox8.Controls.Add(this.txtMDBTree);
-            this.groupBox8.Location = new System.Drawing.Point(24, 167);
-            this.groupBox8.Name = "groupBox8";
-            this.groupBox8.Size = new System.Drawing.Size(624, 73);
-            this.groupBox8.TabIndex = 30;
-            this.groupBox8.TabStop = false;
-            this.groupBox8.Text = "Tree Data";
-            // 
-            // txtMDBTreeTable
-            // 
-            this.txtMDBTreeTable.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtMDBTreeTable.Location = new System.Drawing.Point(408, 27);
-            this.txtMDBTreeTable.Name = "txtMDBTreeTable";
-            this.txtMDBTreeTable.Size = new System.Drawing.Size(152, 30);
-            this.txtMDBTreeTable.TabIndex = 1;
-            // 
-            // btnMDBTreeBrowse
-            // 
-            this.btnMDBTreeBrowse.Image = ((System.Drawing.Image)(resources.GetObject("btnMDBTreeBrowse.Image")));
-            this.btnMDBTreeBrowse.Location = new System.Drawing.Point(573, 23);
-            this.btnMDBTreeBrowse.Name = "btnMDBTreeBrowse";
-            this.btnMDBTreeBrowse.Size = new System.Drawing.Size(32, 32);
-            this.btnMDBTreeBrowse.TabIndex = 2;
-            this.btnMDBTreeBrowse.Click += new System.EventHandler(this.btnMDBTreeBrowse_Click);
-            // 
-            // txtMDBTree
-            // 
-            this.txtMDBTree.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtMDBTree.Location = new System.Drawing.Point(17, 27);
-            this.txtMDBTree.Name = "txtMDBTree";
-            this.txtMDBTree.Size = new System.Drawing.Size(383, 30);
-            this.txtMDBTree.TabIndex = 0;
-            // 
-            // groupBox9
-            // 
-            this.groupBox9.Controls.Add(this.txtMDBCondTable);
-            this.groupBox9.Controls.Add(this.btnMDBCondBrowse);
-            this.groupBox9.Controls.Add(this.txtMDBCond);
-            this.groupBox9.Location = new System.Drawing.Point(24, 95);
-            this.groupBox9.Name = "groupBox9";
-            this.groupBox9.Size = new System.Drawing.Size(624, 65);
-            this.groupBox9.TabIndex = 29;
-            this.groupBox9.TabStop = false;
-            this.groupBox9.Text = "Condition Data";
-            // 
-            // txtMDBCondTable
-            // 
-            this.txtMDBCondTable.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtMDBCondTable.Location = new System.Drawing.Point(408, 24);
-            this.txtMDBCondTable.Name = "txtMDBCondTable";
-            this.txtMDBCondTable.Size = new System.Drawing.Size(152, 30);
-            this.txtMDBCondTable.TabIndex = 1;
-            // 
-            // btnMDBCondBrowse
-            // 
-            this.btnMDBCondBrowse.Image = ((System.Drawing.Image)(resources.GetObject("btnMDBCondBrowse.Image")));
-            this.btnMDBCondBrowse.Location = new System.Drawing.Point(573, 18);
-            this.btnMDBCondBrowse.Name = "btnMDBCondBrowse";
-            this.btnMDBCondBrowse.Size = new System.Drawing.Size(32, 32);
-            this.btnMDBCondBrowse.TabIndex = 2;
-            this.btnMDBCondBrowse.Click += new System.EventHandler(this.btnMDBCondBrowse_Click);
-            // 
-            // txtMDBCond
-            // 
-            this.txtMDBCond.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtMDBCond.Location = new System.Drawing.Point(17, 24);
-            this.txtMDBCond.Name = "txtMDBCond";
-            this.txtMDBCond.Size = new System.Drawing.Size(383, 30);
-            this.txtMDBCond.TabIndex = 0;
-            // 
-            // groupBox10
-            // 
-            this.groupBox10.Controls.Add(this.txtMDBPlotTable);
-            this.groupBox10.Controls.Add(this.btnMDBPlotBrowse);
-            this.groupBox10.Controls.Add(this.txtMDBPlot);
-            this.groupBox10.Location = new System.Drawing.Point(24, 22);
-            this.groupBox10.Name = "groupBox10";
-            this.groupBox10.Size = new System.Drawing.Size(624, 66);
-            this.groupBox10.TabIndex = 28;
-            this.groupBox10.TabStop = false;
-            this.groupBox10.Text = "Plot Data";
-            // 
-            // txtMDBPlotTable
-            // 
-            this.txtMDBPlotTable.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtMDBPlotTable.Location = new System.Drawing.Point(408, 26);
-            this.txtMDBPlotTable.Name = "txtMDBPlotTable";
-            this.txtMDBPlotTable.Size = new System.Drawing.Size(152, 30);
-            this.txtMDBPlotTable.TabIndex = 1;
-            // 
-            // btnMDBPlotBrowse
-            // 
-            this.btnMDBPlotBrowse.Image = ((System.Drawing.Image)(resources.GetObject("btnMDBPlotBrowse.Image")));
-            this.btnMDBPlotBrowse.Location = new System.Drawing.Point(573, 22);
-            this.btnMDBPlotBrowse.Name = "btnMDBPlotBrowse";
-            this.btnMDBPlotBrowse.Size = new System.Drawing.Size(32, 32);
-            this.btnMDBPlotBrowse.TabIndex = 2;
-            this.btnMDBPlotBrowse.Click += new System.EventHandler(this.btnMDBPlotBrowse_Click);
-            // 
-            // txtMDBPlot
-            // 
-            this.txtMDBPlot.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtMDBPlot.Location = new System.Drawing.Point(17, 26);
-            this.txtMDBPlot.Name = "txtMDBPlot";
-            this.txtMDBPlot.Size = new System.Drawing.Size(383, 30);
-            this.txtMDBPlot.TabIndex = 0;
-            // 
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.cmbFiadbPlotGeomTable);
@@ -1482,7 +1202,7 @@ namespace FIA_Biosum_Manager
             this.Name = "uc_plot_input";
             this.Size = new System.Drawing.Size(880, 3375);
             this.groupBox1.ResumeLayout(false);
-            this.grpboxMDBFiadbInput.ResumeLayout(false);
+            this.grpboxDBFiadbInput.ResumeLayout(false);
             this.groupBox24.ResumeLayout(false);
             this.groupBox23.ResumeLayout(false);
             this.groupBox23.PerformLayout();
@@ -1495,20 +1215,11 @@ namespace FIA_Biosum_Manager
             this.groupBox21.ResumeLayout(false);
             this.groupBox22.ResumeLayout(false);
             this.grpboxFIADBInv.ResumeLayout(false);
-            this.grpboxIDBInv.ResumeLayout(false);
             this.grpboxFilterByState.ResumeLayout(false);
             this.grpboxFilter.ResumeLayout(false);
             this.groupBox7.ResumeLayout(false);
             this.groupBox7.PerformLayout();
             this.grpboxFilterByPlot.ResumeLayout(false);
-            this.groupBox25.ResumeLayout(false);
-            this.groupBox25.PerformLayout();
-            this.groupBox8.ResumeLayout(false);
-            this.groupBox8.PerformLayout();
-            this.groupBox9.ResumeLayout(false);
-            this.groupBox9.PerformLayout();
-            this.groupBox10.ResumeLayout(false);
-            this.groupBox10.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.ResumeLayout(false);
 
@@ -1523,64 +1234,53 @@ namespace FIA_Biosum_Manager
 		{
             this.Width = 1100;
             this.m_DialogWd = this.Width + 10;
-			this.m_DialogHt = this.groupBox1.Top + this.grpboxMDBFiadbInput.Top + this.grpboxMDBFiadbInput.Height + 100 ;
+			this.m_DialogHt = this.groupBox1.Top + this.grpboxDBFiadbInput.Top + this.grpboxDBFiadbInput.Height + 100 ;
 
 		
 					
-			this.grpboxFilterByState.Left = this.grpboxMDBFiadbInput.Left;
-			this.grpboxFilterByState.Width = this.grpboxMDBFiadbInput.Width;
-			this.grpboxFilterByState.Height = this.grpboxMDBFiadbInput.Height;
-			this.grpboxFilterByState.Top = this.grpboxMDBFiadbInput.Top;
-            this.btnFilterByStateHelp.Location = this.btnMDBFiadbInputHelp.Location;
-            this.btnFilterByStateCancel.Location = this.btnMDBFiadbInputCancel.Location;
-            this.btnFilterByStatePrevious.Location = this.btnMDBFiadbInputPrev.Location;
-			this.btnFilterByStateNext.Location = this.btnMDBFiadbInputNext.Location;
-			this.btnFilterByStateFinish.Location = this.btnMDBFiadbInputFinish.Location;
+			this.grpboxFilterByState.Left = this.grpboxDBFiadbInput.Left;
+			this.grpboxFilterByState.Width = this.grpboxDBFiadbInput.Width;
+			this.grpboxFilterByState.Height = this.grpboxDBFiadbInput.Height;
+			this.grpboxFilterByState.Top = this.grpboxDBFiadbInput.Top;
+            this.btnFilterByStateHelp.Location = this.btnDBFiadbInputHelp.Location;
+            this.btnFilterByStateCancel.Location = this.btnDBFiadbInputCancel.Location;
+            this.btnFilterByStatePrevious.Location = this.btnDBFiadbInputPrev.Location;
+			this.btnFilterByStateNext.Location = this.btnDBFiadbInputNext.Location;
+			this.btnFilterByStateFinish.Location = this.btnDBFiadbInputFinish.Location;
 			this.grpboxFilterByState.Visible=false;	
 
-			this.grpboxFilter.Left = this.grpboxMDBFiadbInput.Left;
-			this.grpboxFilter.Width = this.grpboxMDBFiadbInput.Width;
-			this.grpboxFilter.Height = this.grpboxMDBFiadbInput.Height;
-			this.grpboxFilter.Top = this.grpboxMDBFiadbInput.Top;
-			this.btnFilterHelp.Location = this.btnMDBFiadbInputHelp.Location;
-			this.btnFilterCancel.Location = this.btnMDBFiadbInputCancel.Location;
-			this.btnFilterPrevious.Location = this.btnMDBFiadbInputPrev.Location;
-			this.btnFilterNext.Location = this.btnMDBFiadbInputNext.Location;
-			this.btnFilterFinish.Location = this.btnMDBFiadbInputFinish.Location;
+			this.grpboxFilter.Left = this.grpboxDBFiadbInput.Left;
+			this.grpboxFilter.Width = this.grpboxDBFiadbInput.Width;
+			this.grpboxFilter.Height = this.grpboxDBFiadbInput.Height;
+			this.grpboxFilter.Top = this.grpboxDBFiadbInput.Top;
+			this.btnFilterHelp.Location = this.btnDBFiadbInputHelp.Location;
+			this.btnFilterCancel.Location = this.btnDBFiadbInputCancel.Location;
+			this.btnFilterPrevious.Location = this.btnDBFiadbInputPrev.Location;
+			this.btnFilterNext.Location = this.btnDBFiadbInputNext.Location;
+			this.btnFilterFinish.Location = this.btnDBFiadbInputFinish.Location;
 			this.grpboxFilter.Visible=false;	
 
-			this.grpboxFilterByPlot.Left = this.grpboxMDBFiadbInput.Left;
-			this.grpboxFilterByPlot.Width = this.grpboxMDBFiadbInput.Width;
-			this.grpboxFilterByPlot.Height = this.grpboxMDBFiadbInput.Height;
-			this.grpboxFilterByPlot.Top = this.grpboxMDBFiadbInput.Top;
-			this.btnFilterByPlotHelp.Location = this.btnMDBFiadbInputHelp.Location;
-			this.btnFilterByPlotCancel.Location = this.btnMDBFiadbInputCancel.Location;
-			this.btnFilterByPlotPrevious.Location = this.btnMDBFiadbInputPrev.Location;
-			this.btnFilterByPlotNext.Location = this.btnMDBFiadbInputNext.Location;
-			this.btnFilterByPlotFinish.Location = this.btnMDBFiadbInputFinish.Location;
+			this.grpboxFilterByPlot.Left = this.grpboxDBFiadbInput.Left;
+			this.grpboxFilterByPlot.Width = this.grpboxDBFiadbInput.Width;
+			this.grpboxFilterByPlot.Height = this.grpboxDBFiadbInput.Height;
+			this.grpboxFilterByPlot.Top = this.grpboxDBFiadbInput.Top;
+			this.btnFilterByPlotHelp.Location = this.btnDBFiadbInputHelp.Location;
+			this.btnFilterByPlotCancel.Location = this.btnDBFiadbInputCancel.Location;
+			this.btnFilterByPlotPrevious.Location = this.btnDBFiadbInputPrev.Location;
+			this.btnFilterByPlotNext.Location = this.btnDBFiadbInputNext.Location;
+			this.btnFilterByPlotFinish.Location = this.btnDBFiadbInputFinish.Location;
 			this.grpboxFilterByPlot.Visible=false;
 
-			this.grpboxIDBInv.Left = this.grpboxMDBFiadbInput.Left;
-			this.grpboxIDBInv.Width = this.grpboxMDBFiadbInput.Width;
-			this.grpboxIDBInv.Height = this.grpboxMDBFiadbInput.Height;
-			this.grpboxIDBInv.Top = this.grpboxMDBFiadbInput.Top;
-			this.btnIDBInvHelp.Location = this.btnMDBFiadbInputHelp.Location;
-			this.btnIDBInvCancel.Location = this.btnMDBFiadbInputCancel.Location;
-			this.btnIDBInvPrevious.Location = this.btnMDBFiadbInputPrev.Location;
-			this.btnIDBInvNext.Location = this.btnMDBFiadbInputNext.Location;
-			this.btnIDBInvAppend.Location = this.btnMDBFiadbInputFinish.Location;
-			this.grpboxIDBInv.Visible=false;	
-
-			this.grpboxFIADBInv.Left = this.grpboxMDBFiadbInput.Left;
-			this.grpboxFIADBInv.Width = this.grpboxMDBFiadbInput.Width;
-			this.grpboxFIADBInv.Height = this.grpboxMDBFiadbInput.Height;
-			this.grpboxFIADBInv.Top = this.grpboxMDBFiadbInput.Top;
-			this.btnFIADBInvHelp.Location = this.btnMDBFiadbInputHelp.Location;
+			this.grpboxFIADBInv.Left = this.grpboxDBFiadbInput.Left;
+			this.grpboxFIADBInv.Width = this.grpboxDBFiadbInput.Width;
+			this.grpboxFIADBInv.Height = this.grpboxDBFiadbInput.Height;
+			this.grpboxFIADBInv.Top = this.grpboxDBFiadbInput.Top;
+			this.btnFIADBInvHelp.Location = this.btnDBFiadbInputHelp.Location;
             this.btnFIADBInvHelp.Click += new System.EventHandler(this.btnFIADBInvHelp_Click);
-			this.btnFIADBInvCancel.Location = this.btnMDBFiadbInputCancel.Location;
-			this.btnFIADBInvPrevious.Location = this.btnMDBFiadbInputPrev.Location;
-			this.btnFIADBInvNext.Location = this.btnMDBFiadbInputNext.Location;
-			this.btnFIADBInvAppend.Location = this.btnMDBFiadbInputFinish.Location;
+			this.btnFIADBInvCancel.Location = this.btnDBFiadbInputCancel.Location;
+			this.btnFIADBInvPrevious.Location = this.btnDBFiadbInputPrev.Location;
+			this.btnFIADBInvNext.Location = this.btnDBFiadbInputNext.Location;
+			this.btnFIADBInvAppend.Location = this.btnDBFiadbInputFinish.Location;
 			this.grpboxFIADBInv.Visible=false;	
 
 			this.lstFilterByState.Clear();
@@ -1651,7 +1351,7 @@ namespace FIA_Biosum_Manager
 		private void btnFilterPrevious_Click(object sender, System.EventArgs e)
 		{
 			this.grpboxFilter.Visible=false;
-            this.grpboxMDBFiadbInput.Visible = true;
+            this.grpboxDBFiadbInput.Visible = true;
 		}
 
 		private void rdoFilterByFile_Click(object sender, System.EventArgs e)
@@ -1705,7 +1405,7 @@ namespace FIA_Biosum_Manager
             {
                 if (this.rdoFilterNone.Checked == true)
                 {
-                    LoadMDBPlotCondTreeData_Start();
+                    LoadDBPlotCondTreeData_Start();
                 }
                 else if (this.rdoFilterByFile.Checked == true)
                 {
@@ -1714,7 +1414,7 @@ namespace FIA_Biosum_Manager
                         this.m_strPlotIdList = this.CreateDelimitedStringList(this.txtFilterByFile.Text.Trim(), ",", ",", false);
                         if (this.m_intError == 0)
                         {
-                            this.LoadMDBPlotCondTreeData_Start();
+                            this.LoadDBPlotCondTreeData_Start();
                         }
                     }
                     else
@@ -1896,177 +1596,7 @@ namespace FIA_Biosum_Manager
 			return strBiosumPlotId;
 		}
 		
-        private string CreateBiosumPlotId(System.Data.OleDb.OleDbDataReader p_dr)
-		{
-			string strBiosumPlotId="";
-			string strInvId ="";
-			string strStateCd = "";
-			string strCycle="";
-			string strSubCycle="";
-			string strCountyCd="";
-			string strPlot="";
-			string strForestBlm="";
-
-			
-			//inventory id
-			strBiosumPlotId = "1";
-			if (p_dr["measyear"] != System.DBNull.Value &&
-				p_dr["measyear"].ToString().Trim().Length > 0)
-			{
-				strInvId = p_dr["measyear"].ToString().Trim();
-			}
-			else
-			{
-				strInvId = "9999";
-			}
-
-			strBiosumPlotId = strBiosumPlotId + strInvId;
-
-
-			
-			//state
-			if (p_dr["statecd"] != System.DBNull.Value &&
-				p_dr["statecd"].ToString().Trim().Length > 0)
-			{
-				strStateCd= p_dr["statecd"].ToString().Trim();
-			}
-
-			switch (strStateCd.Trim().Length)
-			{
-				case 0:
-					strBiosumPlotId = strBiosumPlotId + "99";
-					break;
-				case 1:
-					strBiosumPlotId =  strBiosumPlotId + "0" + strStateCd.Trim();
-					break;
-				default:
-					strBiosumPlotId = strBiosumPlotId + strStateCd.Trim();
-					break;
-			}
-
-			//cycle
-			if (p_dr["cycle"] != System.DBNull.Value &&
-				p_dr["cycle"].ToString().Trim().Length > 0)
-			{
-				strCycle = p_dr["cycle"].ToString().Trim();
-			}
-				
-			switch (strCycle.Trim().Length)
-			{
-				case 0:
-					strBiosumPlotId = strBiosumPlotId + "00";
-					break;
-				case 1:
-					strBiosumPlotId =  strBiosumPlotId + "0" + strCycle.Trim();
-					break;
-				default:
-					strBiosumPlotId = strBiosumPlotId + strCycle.Trim();
-					break;
-			}
-
-			//subcycle
-			if (p_dr["subcycle"] != System.DBNull.Value &&
-				p_dr["subcycle"].ToString().Trim().Length > 0)
-			{
-				strSubCycle = p_dr["subcycle"].ToString().Trim();
-			}
-				
-			switch (strSubCycle.Trim().Length)
-			{
-				case 0:
-					strBiosumPlotId = strBiosumPlotId + "00";
-					break;
-				case 1:
-					strBiosumPlotId =  strBiosumPlotId + "0" + strSubCycle.Trim();
-					break;
-				default:
-					strBiosumPlotId = strBiosumPlotId + strSubCycle.Trim();
-					break;
-			}
-
-
-			//countycode
-
-			if (p_dr["countycd"] != System.DBNull.Value &&
-				p_dr["countycd"].ToString().Trim().Length > 0)
-			{
-				strCountyCd = p_dr["countycd"].ToString().Trim();
-			}
-
-			switch (strCountyCd.Trim().Length)
-			{
-				case 0:
-					strBiosumPlotId = strBiosumPlotId + "999";
-					break;
-				case 1:
-					strBiosumPlotId = strBiosumPlotId + "00" + strCountyCd.Trim();
-					break;
-				case 2:
-					strBiosumPlotId = strBiosumPlotId + "0" + strCountyCd.Trim();
-					break;
-				default:
-					strBiosumPlotId = strBiosumPlotId + strCountyCd.Trim();
-					break;
-			}
-
-			//plot
-			if (p_dr["plot"] != System.DBNull.Value &&
-				p_dr["plot"].ToString().Trim().Length > 0)
-			{
-				strPlot = p_dr["plot"].ToString().Trim();
-			}
-
-
-			switch (strPlot.Trim().Length)
-			{
-				case 0:
-					strBiosumPlotId = strBiosumPlotId + "9999999";
-					break;
-				case 1:
-					strBiosumPlotId = strBiosumPlotId + "000000" + strPlot.Trim();
-					break;
-				case 2:
-					strBiosumPlotId = strBiosumPlotId + "00000" + strPlot.Trim();
-					break;
-				case 3:
-					strBiosumPlotId = strBiosumPlotId + "0000" + strPlot.Trim();
-					break;
-				case 4:
-					strBiosumPlotId = strBiosumPlotId + "000" + strPlot.Trim();
-					break;
-				case 5:
-					strBiosumPlotId = strBiosumPlotId + "00" + strPlot.Trim();
-					break;
-				case 6:
-					strBiosumPlotId = strBiosumPlotId + "0" + strPlot.Trim();
-					break;
-				default:
-					strBiosumPlotId = strBiosumPlotId + strPlot.Trim();
-					break;
-			}
-
-
-			
-			//forest or blm district - need value for pnw idb unique key value
-		    strForestBlm="000";
-
-			switch (strForestBlm.Trim().Length)
-			{
-				case 0:
-					strBiosumPlotId = strBiosumPlotId + "999";
-					break;
-				case 1:
-					strBiosumPlotId = strBiosumPlotId + "00" + strForestBlm.Trim();
-					break;
-				case 2:
-					strBiosumPlotId = strBiosumPlotId + "0" + strForestBlm.Trim();
-					break;
-				default:
-					strBiosumPlotId = strBiosumPlotId + strForestBlm.Trim();
-					break;
-			}
-			return strBiosumPlotId;
-		}
+        
         private void CleanupThread()
         {
            // ((frmDialog)this.ParentForm).m_frmMain.Visible = true;
@@ -2129,15 +1659,11 @@ namespace FIA_Biosum_Manager
             m_intAddedSiteTreeRows = 0;
 
             this.m_intError = 0;
-            System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
 
             //-----------PREPARATION FOR CALCULATING ADJUSTMENTS---------//
 
             try
             {
-                //instatiate the oledb data access class
-                this.m_ado = new ado_data_access();
-
                 //progress bar 1: single process
                 this.SetThermValue(m_frmTherm.progressBar1, "Maximum", 100);
                 this.SetThermValue(m_frmTherm.progressBar1, "Minimum", 0);
@@ -2156,45 +1682,46 @@ namespace FIA_Biosum_Manager
 
                 //open the temp db file
                 string strConnection = SQLite.GetConnectionString(m_strTempDbFile);
-                using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConnection))
                 {
-                    con.Open();
+                    conn.Open();
                     if (!GetBooleanValue((Control)m_frmTherm, "AbortProcess"))
                     {
                         this.SetLabelValue(m_frmTherm.lblMsg, "Text", "Drop Work Tables");
                         SetThermValue(m_frmTherm.progressBar1, "Value", 10);
-                        if (SQLite.TableExist(con, "BIOSUM_PLOT"))
-                            SQLite.SqlNonQuery(con, "DROP TABLE BIOSUM_PLOT");
+                        if (SQLite.TableExist(conn, "BIOSUM_PLOT"))
+                            SQLite.SqlNonQuery(conn, "DROP TABLE BIOSUM_PLOT");
                         SetThermValue(m_frmTherm.progressBar1, "Value", 20);
-                        if (SQLite.TableExist(con, "BIOSUM_COND"))
-                            SQLite.SqlNonQuery(con, "DROP TABLE BIOSUM_COND");
+                        if (SQLite.TableExist(conn, "BIOSUM_COND"))
+                            SQLite.SqlNonQuery(conn, "DROP TABLE BIOSUM_COND");
                         SetThermValue(m_frmTherm.progressBar1, "Value", 30);
-                        if (SQLite.TableExist(con, frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName))
-                            SQLite.SqlNonQuery(con, "DROP TABLE " + frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName);
+                        if (SQLite.TableExist(conn, frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName))
+                            SQLite.SqlNonQuery(conn, "DROP TABLE " + frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName);
                         SetThermValue(m_frmTherm.progressBar1, "Value", 40);
-                        if (SQLite.TableExist(con, "BIOSUM_PPSA"))
-                            SQLite.SqlNonQuery(con, "DROP TABLE BIOSUM_PPSA");
+                        if (SQLite.TableExist(conn, "BIOSUM_PPSA"))
+                            SQLite.SqlNonQuery(conn, "DROP TABLE BIOSUM_PPSA");
                         SetThermValue(m_frmTherm.progressBar1, "Value", 50);
-                        if (SQLite.TableExist(con, "BIOSUM_EUS_TEMP"))
-                            SQLite.SqlNonQuery(con, "DROP TABLE BIOSUM_EUS_TEMP");
+                        if (SQLite.TableExist(conn, "BIOSUM_EUS_TEMP"))
+                            SQLite.SqlNonQuery(conn, "DROP TABLE BIOSUM_EUS_TEMP");
                         SetThermValue(m_frmTherm.progressBar1, "Value", 60);
-                        if (SQLite.TableExist(con, "BIOSUM_PPSA_DENIED_ACCESS"))
-                            SQLite.SqlNonQuery(con, "DROP TABLE BIOSUM_PPSA_DENIED_ACCESS");
+                        if (SQLite.TableExist(conn, "BIOSUM_PPSA_DENIED_ACCESS"))
+                            SQLite.SqlNonQuery(conn, "DROP TABLE BIOSUM_PPSA_DENIED_ACCESS");
                         SetThermValue(m_frmTherm.progressBar1, "Value", 70);
-                        if (SQLite.TableExist(con, "BIOSUM_PPSA_TEMP"))
-                            SQLite.SqlNonQuery(con, "DROP TABLE BIOSUM_PPSA_TEMP");
+                        if (SQLite.TableExist(conn, "BIOSUM_PPSA_TEMP"))
+                            SQLite.SqlNonQuery(conn, "DROP TABLE BIOSUM_PPSA_TEMP");
                         SetThermValue(m_frmTherm.progressBar1, "Value", 80);
-                        if (SQLite.TableExist(con, "BIOSUM_EUS_TEMP"))
-                            SQLite.SqlNonQuery(con, "DROP TABLE BIOSUM_EUS_TEMP");
+                        if (SQLite.TableExist(conn, "BIOSUM_EUS_TEMP"))
+                            SQLite.SqlNonQuery(conn, "DROP TABLE BIOSUM_EUS_TEMP");
                         SetThermValue(m_frmTherm.progressBar1, "Value", 90);
-                        if (SQLite.TableExist(con, "BIOSUM_EUS_ACCESS"))
-                            SQLite.SqlNonQuery(con, "DROP TABLE BIOSUM_EUS_ACCESS");
+                        if (SQLite.TableExist(conn, "BIOSUM_EUS_ACCESS"))
+                            SQLite.SqlNonQuery(conn, "DROP TABLE BIOSUM_EUS_ACCESS");
 
                         SetThermValue(m_frmTherm.progressBar1, "Value", 100);
                         System.Threading.Thread.Sleep(2000);
                         SetThermValue(m_frmTherm.progressBar2, "Value", 30);
                         strFIADBDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtFiadbInputFile, "Text", false);
                         strFIADBDbFile = strFIADBDbFile.Trim();
+                        m_strCondPropPercent = frmMain.g_oDelegate.GetControlPropertyValue(cmbCondPropPercent, "Text", false).ToString().Trim();
                         string[] strSql = Queries.FIAPlot.FIADBPlotInput_CalculateAdjustmentFactorsSQL(
                             "POP_PLOT_STRATUM_ASSGN",
                             "POP_ESTN_UNIT",
@@ -2204,7 +1731,7 @@ namespace FIA_Biosum_Manager
                             "COND",
                              m_strCurrFIADBRsCd,
                              m_strCurrFIADBEvalId,
-                             frmMain.g_oDelegate.GetControlPropertyValue(cmbCondPropPercent, "Text", false).ToString().Trim(),
+                             m_strCondPropPercent,
                              strFIADBDbFile);
                         SetThermValue(m_frmTherm.progressBar1, "Value", 0);
                         this.SetLabelValue(m_frmTherm.lblMsg, "Text", "Calculate Adjustment Factors For RsCd=" + m_strCurrFIADBRsCd + " and EvalId=" + m_strCurrFIADBEvalId);
@@ -2213,14 +1740,14 @@ namespace FIA_Biosum_Manager
                         {
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, strSql[x] + "\r\n");
-                            SQLite.SqlNonQuery(con, strSql[x]);
+                            SQLite.SqlNonQuery(conn, strSql[x]);
                             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", 20 + x + 5);
                             if (SQLite.m_intError != 0) break;
                         }
 
                         // Add indexes to BIOSUM_PLOT and BIOSUM_COND tables
-                        SQLite.AddIndex(con, "BIOSUM_PLOT", "BIOSUM_PLOT_idx1", "CN");
-                        SQLite.AddIndex(con, "BIOSUM_COND", "BIOSUM_COND_idx1", "CN");
+                        SQLite.AddIndex(conn, "BIOSUM_PLOT", "BIOSUM_PLOT_idx1", "CN");
+                        SQLite.AddIndex(conn, "BIOSUM_COND", "BIOSUM_COND_idx1", "CN");
                     }
                 }
 
@@ -2229,51 +1756,6 @@ namespace FIA_Biosum_Manager
                 System.Threading.Thread.Sleep(2000);
                 SetThermValue(m_frmTherm.progressBar2, "Value", 60);
                 
-                //create tablelinks to the projects main folder
-                if (this.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    //SetThermValue(m_frmTherm.progressBar1, "Value", 0);
-                    //this.SetLabelValue(m_frmTherm.lblMsg, "Text", "Create table links");
-                    //create a table link from the newly created BIOSUM_ADJFACTORS into the master.mdb
-
-                    //instatiate dao for creating links in the temp table
-                    //to the fiadb plot, cond, and tree input tables
-                    //dao_data_access oDao = new dao_data_access();
-                    //SetThermValue(m_frmTherm.progressBar1, "Value", 10);
-                    //create links to the fiadb input tables in the temp mdb file
-                    //plot table
-                    //strSourceTableName = "BIOSUM_PLOT";
-                    //strDestTableLinkName = "fiadb_plot_input";
-                    //oDao.CreateTableLink(this.m_strTempMDBFile,strDestTableLinkName,strFIADBDbFile,strSourceTableName,true);
-                    //@ToDo: This is where it breaks because I have stopped creating the MS Access m_strTempMDBFile
-                    //Should no longer be needed with conversion to SQLite. Use SQLite attach instead
-                    //oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, strSourceTableName, strDestTableLinkName,
-                    //    ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-                    //SetThermValue(m_frmTherm.progressBar1, "Value", 40);
-                    //cond table
-                    //strSourceTableName = "BIOSUM_COND";
-                    //strDestTableLinkName = "fiadb_cond_input";
-                    //if (oDao.m_intError==0) oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, strSourceTableName, strDestTableLinkName,
-                    //                            ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-                    //SetThermValue(m_frmTherm.progressBar1, "Value", 70);
-                    //biosum adjustment factors table
-                    //strSourceTableName = frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName;
-                    //strDestTableLinkName = "fiadb_biosum_adjustment_factors_input";
-                    //if (oDao.m_intError==0) oDao.CreateSQLiteTableLink(this.m_strTempMDBFile, strSourceTableName, strDestTableLinkName,
-                    //                            ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-                    //m_intError = oDao.m_intError;
-                    
-                    //destroy the object and release it from memory
-                    //oDao.m_DaoWorkspace.Close();
-                    //oDao.m_DaoWorkspace = null;
-                    //oDao = null;
-
-                    //m_intError = SQLite.m_intError;
-                    //SetThermValue(m_frmTherm.progressBar1, "Value", 100);
-                    //System.Threading.Thread.Sleep(2000);
-                    SetThermValue(m_frmTherm.progressBar2, "Value", 70);                  
-                    
-                }
                 //delete any records from the production biosum adjustment factor table that did not previously complete processing (error or user cancelled)
                 //or any previous rscd and evalid that equal the current ones
                 if (this.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
@@ -2333,22 +1815,13 @@ namespace FIA_Biosum_Manager
             }
             catch (System.Threading.ThreadAbortException err)
             {
-                if (oConn != null)
+                if (SQLite != null)
                 {
-                    if (oConn.State != System.Data.ConnectionState.Closed)
+                    if (SQLite.m_DataSet != null)
                     {
-                        m_ado.CloseConnection(oConn);
+                        SQLite.m_DataSet.Clear();
+                        SQLite.m_DataSet.Dispose();
                     }
-                    oConn = null;
-                }
-                if (m_ado != null)
-                {
-                    if (m_ado.m_DataSet != null)
-                    {
-                        this.m_ado.m_DataSet.Clear();
-                        this.m_ado.m_DataSet.Dispose();
-                    }
-                    this.m_ado = null;
                 }
                 this.CancelThreadCleanup();
                 this.ThreadCleanUp();
@@ -2368,24 +1841,6 @@ namespace FIA_Biosum_Manager
             {
 
             }
-
-            if (oConn != null)
-            {
-                if (oConn.State != System.Data.ConnectionState.Closed)
-                {
-                    m_ado.CloseConnection(oConn);
-                }
-                oConn = null;
-            }
-            if (m_ado != null)
-            {
-                if (m_ado.m_DataSet != null)
-                {
-                    this.m_ado.m_DataSet.Clear();
-                    this.m_ado.m_DataSet.Dispose();
-                }
-                this.m_ado = null;
-            }
             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Enabled", true);
             if (this.m_frmTherm != null) frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)m_frmTherm, "Visible", false);
 
@@ -2399,7 +1854,7 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.m_oEventThreadStopped.Set();
             this.Invoke(frmMain.g_oDelegate.m_oDelegateThreadFinished);
         }
-		private void LoadMDBPlotCondTreeData_Process()
+		private void LoadDBPlotCondTreeData_Process()
         {
             frmMain.g_oDelegate.CurrentThreadProcessStarted = true;
 			string strBiosumPlotId="";
@@ -2418,7 +1873,7 @@ namespace FIA_Biosum_Manager
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.LoadMDBPlotCondTreeData_Process\r\n");
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.LoadDBPlotCondTreeData_Process\r\n");
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//\r\n");
             }
 
@@ -2472,9 +1927,9 @@ namespace FIA_Biosum_Manager
                 {
                     conn.Open();
                     //Before processing new plot information, delete any records that were not completely processed
-                    DeleteFromTablesWhereFilterSqlite(conn, new string[] { this.m_strPlotTable },
+                    DeleteFromTablesWhereFilter(conn, new string[] { this.m_strPlotTable },
                         " WHERE biosum_status_cd=9 OR LENGTH(biosum_plot_id)=0;");
-                    DeleteFromTablesWhereFilterSqlite(conn, new string[]
+                    DeleteFromTablesWhereFilter(conn, new string[]
                     {m_strCondTable, m_strTreeTable, m_strSiteTreeTable}, " WHERE biosum_status_cd=9;");
                     if (m_intError == 0)
                         m_intError = SQLite.m_intError;
@@ -2502,6 +1957,12 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
                         SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
 
+                        string strBiosumRefDb = frmMain.g_oEnv.strAppDir + "\\db\\" + Tables.Reference.DefaultBiosumReferenceSqliteFile;
+                        SQLite.m_strSQL = "ATTACH DATABASE '" + strBiosumRefDb + "' AS REF";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
                         //get the fiadb table structures
                         dtFIADBPlotSchema = SQLite.getTableSchema(conn, "select * from TEMPDB.BIOSUM_PLOT");
                         dtFIADBCondSchema = SQLite.getTableSchema(conn, "select * from TEMPDB.BIOSUM_COND");
@@ -2520,12 +1981,23 @@ namespace FIA_Biosum_Manager
                         //build field list string to insert sql by matching columns in thebiosum and fiadb plot tables
                         strFields = CreateStrFieldsFromDataTables(dtPlotSchema, dtFIADBPlotSchema);
 
+                        if (SQLite.TableExist(conn, "tempplot") || SQLite.AttachedTableExist(conn, "tempplot"))
+                        {
+                            SQLite.m_strSQL = "DROP TABLE tempplot";
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        }
+
                         SetLabelValue(m_frmTherm.lblMsg, "Text", "Plot Table: Insert New Plot Records");
                         if (Checked(rdoFilterByFile) == true && m_strPlotIdList.Trim().Length > 0 &&
                             !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
                         {
                             string strDelimiter = ",";
                             string[] strPlotIdArray = m_strPlotIdList.Split(strDelimiter.ToCharArray());
+                            if (SQLite.TableExist(conn, "input_cn") || SQLite.AttachedTableExist(conn, "input_cn"))
+                            {
+                                SQLite.m_strSQL = "DROP TABLE input_cn";
+                                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                            }
                             SQLite.m_strSQL = "CREATE TABLE TEMPDB.input_cn (CN CHAR(34))";
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
@@ -2622,6 +2094,23 @@ namespace FIA_Biosum_Manager
                         m_intError = SQLite.m_intError;
                     }
 
+                    // abort if no plots are loaded into tempplot
+                    if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                    {
+                        SQLite.m_strSQL = "SELECT * FROM tempplot";
+                        SQLite.SqlQueryReader(conn, SQLite.m_strSQL);
+                        if (!SQLite.m_DataReader.HasRows)
+                        {
+                            SQLite.m_strSQL = "DROP TABLE tempplot";
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                            SQLite.m_strSQL = "DROP TABLE input_cn";
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                            MessageBox.Show("!!No selected plots exist in selected EvalId!!", "FIA Biosum",
+                            System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+                            m_intError = -1;
+                        }
+                    }
+
                     if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
                     {
                         SetThermValue(m_frmTherm.progressBar1, "Value", 30);
@@ -2659,390 +2148,409 @@ namespace FIA_Biosum_Manager
                         SQLite.m_DataAdapter = null;
                         m_intError = SQLite.m_intError;
                     }
-                }
 
- 
-
-
-
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 40);
-                    //insert the new plot records into the plot table
-                    m_ado.m_strSQL = "INSERT INTO " + this.m_strPlotTable + " (biosum_plot_id,biosum_status_cd," + strFields + ") " +
-                        "SELECT TRIM(biosum_plot_id),biosum_status_cd," + strFields + " FROM tempplot";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-                    m_intError = m_ado.m_intError;
-                }
-
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    //create plot column update work table
-                    this.m_strSQL = "SELECT biosum_plot_id, statecd as cond_ttl " +
-                        "INTO plot_column_updates_work_table FROM " + this.m_strPlotTable.Trim() + " WHERE 1=2;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_strSQL + "\r\n");
-                    this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_strSQL);
-                    System.Threading.Thread.Sleep(10000);
-                    m_intError = m_ado.m_intError;
-                }
-
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    SetThermValue(m_frmTherm.progressBar1,"Value",40);
-                    SetThermValue(m_frmTherm.progressBar2,"Value",20);
-                    //-------------CONDITION TABLE----------------//
-                    strSourceTableLink = "fiadb_cond_input";
-                    //build field list string to insert sql by matching FIADB and BioSum Cond columns
-                    strFields = CreateStrFieldsFromDataTables(dtFIADBCondSchema, dtCondSchema);
-                    /********************************************************
-                     **create condition input insert command
-                     ********************************************************/
-                    //check the user defined filters
-                    SetLabelValue(m_frmTherm.lblMsg,"Text","Condition Table: Insert New  Records");
-                    this.m_ado.m_strSQL = "SELECT p.biosum_plot_id, TRIM(p.biosum_plot_id) + TRIM(CSTR(c.condid)) AS biosum_cond_id,9 AS biosum_status_cd,c.*" +
-                        " INTO tempcond FROM " + strSourceTableLink + " c, " +
-                        this.m_strPlotTable +  " p" +
-                        " WHERE c.plt_cn=p.cn AND" +
-                        " p.biosum_status_cd=9";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-                    m_intError = m_ado.m_intError;
-                }
-
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 50);
-                    //insert the new condition records into the condition table
-                    m_ado.m_strSQL = "INSERT INTO " + this.m_strCondTable + " (biosum_plot_id,biosum_cond_id,biosum_status_cd," + strFields + ") " +
-                        "SELECT TRIM(biosum_plot_id),TRIM(biosum_cond_id),biosum_status_cd," + strFields + " FROM tempcond";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_ado.m_strSQL + "\r\n");
-                    this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-
-                    // Trying this since I couldn't update from SQLite strSourceTableLink
-                    // Get ODBC error 'Operation Must Use an updateable query'
-                    // Seems to work vs creating a new temp table with this field
-                    // Added new column to tempcond with varchar datatype to link to cond table
-                    m_ado.AddColumn(this.m_connTempMDBFile, "tempcond", "CN_JOIN", "VARCHAR", "34");
-                    // Populate new column
-                    if (m_ado.m_intError == 0)
+                    if (m_intError == 0 & !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
                     {
-                        m_ado.m_strSQL = "UPDATE tempcond SET CN_JOIN = TRIM(CN)";
+                        SetThermValue(m_frmTherm.progressBar1, "Value", 40);
+                        // insert the new plot records into the plot table
+                        SQLite.m_strSQL = "INSERT INTO " + this.m_strPlotTable + " (biosum_plot_id, biosum_status_cd, " + strFields + ") " +
+                            "SELECT TRIM(biosum_plot_id), biosum_status_cd, " + strFields + " FROM tempplot";
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                        this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        m_intError = SQLite.m_intError;
                     }
 
-                    m_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " d " +
-                        "INNER JOIN tempcond s " +
-                        "ON d.cn = s.CN_JOIN " +
-                        "SET d.cond_status_cd = s.cond_status_cd";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    if (m_ado.m_intError == 0)
-                        this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-
-                    //create cond column work table
-                    this.m_strSQL = "SELECT biosum_cond_id, qmd_all_inch,qmd_hwd_inch," +
-                        "qmd_swd_inch,tpacurr,hwd_tpacurr,swd_tpacurr,ba_ft2_ac," +
-                        "hwd_ba_ft2_ac,swd_ba_ft2_ac,vol_ac_grs_stem_ttl_ft3," +
-                        "hwd_vol_ac_grs_stem_ttl_ft3,swd_vol_ac_grs_stem_ttl_ft3," +
-                        "vol_ac_grs_ft3, hwd_vol_ac_grs_ft3," +
-                        "swd_vol_ac_grs_ft3,volcsgrs," +
-                        "hwd_volcsgrs, swd_volcsgrs INTO cond_column_updates_work_table " +
-                        "FROM " + this.m_strCondTable.Trim() + " WHERE 1=2;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_strSQL + "\r\n");
-                    if (m_ado.m_intError == 0)
-                        m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_strSQL);
-                    m_intError = m_ado.m_intError;
-                }
-
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 55);
-                    SetThermValue(m_frmTherm.progressBar2, "Value", 40);
-                    //-------------TREE TABLE----------------//
-                    strSourceTableLink = "fiadb_tree_input";
-                    //build field list string to insert sql by matching FIADB and BioSum Tree columns
-                    strFields = CreateStrFieldsFromDataTables(dtFIADBTreeSchema, dtTreeSchema);
-                    /********************************************************
-                     **create tree input insert command
-                     ********************************************************/
-                    //check the user defined filters
-                    SetLabelValue(m_frmTherm.lblMsg,"Text","Tree Table: Insert New  Records");
-                    this.m_ado.m_strSQL = "SELECT TRIM(p.biosum_plot_id) + TRIM(CSTR(t.condid)) AS biosum_cond_id,9 AS biosum_status_cd,t.* INTO temptree FROM " + strSourceTableLink + " t " +
-                        " INNER JOIN " + this.m_strPlotTable + " p ON t.plt_cn=TRIM(p.cn) " +
-                        " WHERE p.biosum_status_cd=9 AND t.statuscd<>0;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    if (m_ado.m_intError == 0)
-                        this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-                    m_intError = m_ado.m_intError;
-                }
-
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 60);
-                    //insert the new tree records into the tree table; Note that temptree is used later for GRM processing
-                    m_ado.m_strSQL = "INSERT INTO " + this.m_strTreeTable + " (biosum_cond_id,biosum_status_cd," + strFields + ") " +
-                        "SELECT TRIM(biosum_cond_id),biosum_status_cd," + strFields + " FROM temptree";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-                }
-
-                // SEEDLINGS
-                if (m_intError == 0 && m_bLoadSeedlings == true && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 65);
-                    //-------------SEEDLING TABLE----------------//
-                    strSourceTableLink = frmMain.g_oTables.m_oFIAPlot.DefaultSeedlingTableName;
-                    SetLabelValue(m_frmTherm.lblMsg, "Text", "Seedling Table: Insert New  Records");
-                    if (this.m_ado.TableExist(this.m_connTempMDBFile, "tempseedling"))
+                    if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
                     {
-                        this.m_ado.m_strSQL = "DROP TABLE tempseedling";
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                        if (m_ado.m_intError == 0)
-                            this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
+                        // create plot column update work table
+                        if (!SQLite.AttachedTableExist(conn, "plot_column_updates_work_table"))
+                        {
+                            SQLite.m_strSQL = "CREATE TABLE TEMPDB.plot_column_updates_work_table AS " +
+                            "SELECT biosum_plot_id, statecd AS cond_ttl FROM " + this.m_strPlotTable + " WHERE 1=2";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        }
+                        m_intError = SQLite.m_intError;
                     }
-                    this.m_ado.m_strSQL = "SELECT TRIM(p.biosum_plot_id) + TRIM(CSTR(s.condid)) AS biosum_cond_id,9 AS biosum_status_cd, 0.1 as dia, 1 as diahtcd, " +
-                        "'1' + Format(SPCD,'000') + '00' + SUBP AS fvs_tree_id, 1 as statuscd, s.* INTO tempseedling FROM " + 
-                        strSourceTableLink + " s " + " INNER JOIN " + this.m_strPlotTable + " p ON s.plt_cn=TRIM(p.cn) " +
-                        " WHERE p.biosum_status_cd=9;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    if (m_ado.m_intError == 0)
-                        this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-                    //Set DIAHTCD for Seedlings using FIA_TREE_SPECIES_REF.WOODLAND_YN
-                    this.m_ado.m_strSQL = $@"UPDATE tempseedling t 
-                                             INNER JOIN FIA_TREE_SPECIES_REF ref ON cint(t.spcd)=ref.spcd
-                                             SET t.diahtcd=IIF(ref.woodland_yn='N', 1, 2)";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    if (m_ado.m_intError == 0)
-                        this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-                    //Prepend CN with "S" to indicate seedlings
-                    this.m_ado.m_strSQL = $@"UPDATE tempseedling t                                             
-                                             SET CN = 'S' + CN";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    if (m_ado.m_intError == 0)
-                        this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-                    //build field list string to insert sql by matching FIADB and BioSum Tree columns
-                    strFields = CreateStrFieldsFromDataTables(dtFIADBSeedlingSchema, dtTreeSchema);
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 70);
-                    //insert the new seedling records into the tree table
-                    m_ado.m_strSQL = "INSERT INTO " + this.m_strTreeTable + " (biosum_cond_id,biosum_status_cd,dia,diahtcd,fvs_tree_id,statuscd," + strFields + ") " +
-                        "SELECT TRIM(biosum_cond_id),biosum_status_cd,dia,diahtcd,fvs_tree_id,statuscd, " + strFields + " FROM tempseedling";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
 
-                    m_intError = m_ado.m_intError;
-                }
+                    if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                    {
+                        SetThermValue(m_frmTherm.progressBar1, "Value", 40);
+                        SetThermValue(m_frmTherm.progressBar2, "Value", 20);
+                        //-------------CONDITION TABLE----------------//
+                        //build field list string to insert sql by matching FIADB and BioSum Cond columns
+                        strFields = CreateStrFieldsFromDataTables(dtFIADBCondSchema, dtCondSchema);
+                        /********************************************************
+                         **create condition input insert command
+                         ********************************************************/
+                        //check the user defined filters
+                        SetLabelValue(m_frmTherm.lblMsg, "Text", "Condition Table: Insert New  Records");
+                        if (SQLite.TableExist(conn, "tempcond") || SQLite.AttachedTableExist(conn, "tempcond"))
+                        {
+                            SQLite.m_strSQL = "DELETE FROM TEMPDB.tempcond";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
 
+                            SQLite.m_strSQL = "INSERT INTO TEMPDB.tempcond " +
+                                "SELECT p.biosum_plot_id, TRIM(p.biosum_plot_id) || c.condid AS biosum_cond_id, 9 AS biosum_status_cd, c.* " +
+                                "FROM BIOSUM_COND AS c, " + this.m_strPlotTable + " AS p " +
+                                "WHERE c.plt_cn = p.cn AND p.biosum_status_cd = 9";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        }
+                        else
+                        {
+                            SQLite.m_strSQL = "CREATE TABLE TEMPDB.tempcond AS " +
+                                "SELECT p.biosum_plot_id, TRIM(p.biosum_plot_id) || c.condid AS biosum_cond_id, 9 AS biosum_status_cd, c.* " +
+                                "FROM BIOSUM_COND AS c, " + this.m_strPlotTable + " AS p " +
+                                "WHERE c.plt_cn = p.cn AND p.biosum_status_cd = 9";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        }
+                        m_intError = SQLite.m_intError;
+                    }
 
+                    if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                    {
+                        SetThermValue(m_frmTherm.progressBar1, "Value", 50);
+                        //insert the new condition records into the condition table
+                        SQLite.m_strSQL = "INSERT INTO " + this.m_strCondTable + " (biosum_plot_id, biosum_cond_id, biosum_status_cd, " + strFields + ") " +
+                            "SELECT TRIM(biosum_plot_id), TRIM(biosum_cond_id), biosum_status_cd, " + strFields + " FROM TEMPDB.tempcond";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
 
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 80);
-                    //update the cullbf column
-                    this.m_ado.m_strSQL = "UPDATE " + this.m_strTreeTable + " " +
-                        "SET cullbf=IIF(cullbf IS NULL," +
-                        "IIF(cull IS NOT NULL AND roughcull IS NOT NULL," +
-                        "cull + roughcull," +
-                        "IIF(cull IS NOT NULL,cull," +
-                        "IIF(roughcull IS NOT NULL,roughcull,0))),cullbf)";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-                    m_intError = m_ado.m_intError;
-                }
+                        SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS d " +
+                            "SET cond_status_cd = s.cond_status_cd " +
+                            "FROM TEMPDB.tempcond AS s WHERE TRIM(d.cn) = TRIM(s.cn)";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
 
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    //-------------SITE TREE TABLE----------------//
-                    strSourceTableLink = "fiadb_site_tree_input";
-                    //build field list string to insert sql by matching biosum fiadb SiteTree table
-                    strFields = CreateStrFieldsFromDataTables(dtFIADBSiteTreeSchema, dtSiteTreeSchema);
-                    /********************************************************
-                     **create site tree input insert command
-                     ********************************************************/
-                    //check the user defined filters
-                    SetLabelValue(m_frmTherm.lblMsg,"Text","Site Tree Table: Insert New  Records");
-                    this.m_ado.m_strSQL = "SELECT TRIM(p.biosum_plot_id) AS biosum_plot_id,9 AS biosum_status_cd,t.* INTO tempsitetree FROM " + strSourceTableLink + " t " +
-                        " INNER JOIN " + this.m_strPlotTable + " p ON t.plt_cn=TRIM(p.cn) " +
-                        " WHERE p.biosum_status_cd=9";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
-                    m_intError = m_ado.m_intError;
-                }
+                        //create cond column work table
+                        if (!SQLite.AttachedTableExist(conn, "cond_column_updates_work_table"))
+                        {
+                            SQLite.m_strSQL = "CREATE TABLE TEMPDB.cond_column_updates_work_table AS " +
+                            "SELECT biosum_cond_id, qmd_all_inch, qmd_hwd_inch, qmd_swd_inch, tpacurr, " +
+                            "hwd_tpacurr, swd_tpacurr, ba_ft2_ac, hwd_ba_ft2_ac, swd_ba_ft2_ac, " +
+                            "vol_ac_grs_stem_ttl_ft3, hwd_vol_ac_grs_stem_ttl_ft3, swd_vol_ac_grs_stem_ttl_ft3, " +
+                            "vol_ac_grs_ft3, hwd_vol_ac_grs_ft3, swd_vol_ac_grs_ft3, volcsgrs, hwd_volcsgrs, swd_volcsgrs " +
+                            "FROM " + this.m_strCondTable + " WHERE 1=2";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        }
+                        m_intError = SQLite.m_intError;
+                    }
 
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 80);
-                    //insert the new condition records into the condition table
-                    m_ado.m_strSQL = "INSERT INTO " + this.m_strSiteTreeTable + " (biosum_plot_id,biosum_status_cd," + strFields + ") " +
-                        "SELECT TRIM(biosum_plot_id),biosum_status_cd," + strFields + " FROM tempsitetree";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                    this.m_ado.SqlNonQuery(this.m_connTempMDBFile, this.m_ado.m_strSQL);
+                    if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                    {
+                        SetThermValue(m_frmTherm.progressBar1, "Value", 55);
+                        SetThermValue(m_frmTherm.progressBar2, "Value", 40);
+                        //-------------TREE TABLE----------------//
+                        //build field list string to insert sql by matching FIADB and BioSum Tree columns
+                        strFields = CreateStrFieldsFromDataTables(dtFIADBTreeSchema, dtTreeSchema);
+                        /********************************************************
+                         **create tree input insert command
+                         ********************************************************/
+                        //check the user defined filters
+                        SetLabelValue(m_frmTherm.lblMsg, "Text", "Tree Table: Insert New  Records");
+                        if (SQLite.TableExist(conn, "temptree") || SQLite.AttachedTableExist(conn, "temptree"))
+                        {
+                            SQLite.m_strSQL = "DELETE FROM TEMPDB.temptree";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
 
-                    m_intError = m_ado.m_intError;
-                }
+                            SQLite.m_strSQL = "INSERT INTO TEMPDB.temptree " +
+                                "SELECT TRIM(p.biosum_plot_id) || t.condid AS biosum_cond_id, 9 AS biosum_status_cd, t.* " +
+                                "FROM FIADB." + strTreeSource + " AS t, " + this.m_strPlotTable + " AS p " +
+                                "WHERE t.plt_cn = TRIM(p.cn) AND p.biosum_status_cd = 9 AND t.statuscd <> 0";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        }
+                        else
+                        {
+                            SQLite.m_strSQL = "CREATE TABLE TEMPDB.temptree AS " +
+                            "SELECT TRIM(p.biosum_plot_id) || t.condid AS biosum_cond_id, 9 AS biosum_status_cd, t.* " +
+                            "FROM FIADB." + strTreeSource + " AS t, " + this.m_strPlotTable + " AS p " +
+                            "WHERE t.plt_cn = TRIM(p.cn) AND p.biosum_status_cd = 9 AND t.statuscd <> 0";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        }
+                        m_intError = SQLite.m_intError;
+                    }
 
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control) m_frmTherm, "AbortProcess"))
-                {
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 100);
-                    SetThermValue(m_frmTherm.progressBar2, "Value", 60);
-                    m_intError = UpdateColumns(m_ado);
-                }
+                    if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                    {
+                        SetThermValue(m_frmTherm.progressBar1, "Value", 60);
+                        //insert the new tree records into the tree table; Note that temptree is used later for GRM processing
+                        SQLite.m_strSQL = "INSERT INTO " + this.m_strTreeTable + " (biosum_cond_id, biosum_status_cd, " + strFields + ") " +
+                            "SELECT TRIM(biosum_cond_id), biosum_status_cd, " + strFields + " FROM TEMPDB.temptree";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        m_intError = SQLite.m_intError;
+                    }
 
-				//Down Woody Materials Section
-                if (m_intError == 0 && Checked(chkDwmImport) &&
-                    !GetBooleanValue((System.Windows.Forms.Control) m_frmTherm, "AbortProcess"))
-                {
-                    SetThermValue(m_frmTherm.progressBar1, "Value",
+                    // SEEDLINGS
+                    if (m_intError == 0 && m_bLoadSeedlings == true && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                    {
+                        SetThermValue(m_frmTherm.progressBar1, "Value", 65);
+                        //-------------SEEDLING TABLE----------------//
+                        SetLabelValue(m_frmTherm.lblMsg, "Text", "Seedling Table: Insert New  Records");
+                        if (SQLite.TableExist(conn, "tempseedling") || SQLite.AttachedTableExist(conn, "tempseedling"))
+                        {
+                            SQLite.m_strSQL = "DELETE FROM TEMPDB.tempseedling";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
+                            SQLite.m_strSQL = "INSERT INTO TEMPDB.tempseedling " +
+                                "SELECT TRIM(p.biosum_plot_id) || CAST(s.condid AS TEXT) AS biosum_cond_id, 9 AS biosum_status_cd, " +
+                                "0.1 AS dia, 1 AS diahtcd, '1' || printf('%03d', SPCD) || '00' || SUBP AS fvs_tree_id, 1 AS statuscd, s.* " +
+                                "FROM FIADB." + strSeedlingSource + " AS s, " + this.m_strPlotTable + " AS p " +
+                                "WHERE s.plt_cn = TRIM(p.cn) AND p.biosum_status_cd = 9";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        }
+                        else
+                        {
+                            SQLite.m_strSQL = "CREATE TABLE TEMPDB.tempseedling AS " +
+                            "SELECT TRIM(p.biosum_plot_id) || CAST(s.condid AS TEXT) AS biosum_cond_id, 9 AS biosum_status_cd, " +
+                            "0.1 AS dia, 1 AS diahtcd, '1' || printf('%03d', SPCD) || '00' || SUBP AS fvs_tree_id, 1 AS statuscd, s.* " +
+                            "FROM FIADB." + strSeedlingSource + " AS s, " + this.m_strPlotTable + " AS p " +
+                            "WHERE s.plt_cn = TRIM(p.cn) AND p.biosum_status_cd = 9";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        }
+
+                        //Set DIAHTCD for Seedlings using FIA_TREE_SPECIES_REF.WOODLAND_YN
+                        SQLite.m_strSQL = "UPDATE TEMPDB.tempseedling AS t " +
+                            "SET diahtcd = CASE WHEN ref.woodland_yn = 'N' THEN 1 ELSE 2 END " +
+                            "FROM REF.FIA_TREE_SPECIES_REF AS ref WHERE t.spcd = ref.spcd";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
+                        //Prepend CN with "S" to indicate seedlings
+                        SQLite.m_strSQL = "UPDATE TEMPDB.tempseedling SET CN = 'S' || CN";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
+                        //build field list string to insert sql by matching FIADB and BioSum Tree columns
+                        //build field list string to insert sql by matching FIADB and BioSum Tree columns
+                        strFields = CreateStrFieldsFromDataTables(dtFIADBSeedlingSchema, dtTreeSchema);
+                        SetThermValue(m_frmTherm.progressBar1, "Value", 70);
+
+                        //insert the new seedling records into the tree table
+                        SQLite.m_strSQL = "INSERT INTO " + this.m_strTreeTable + " (biosum_cond_id, biosum_status_cd, dia, " +
+                            "diahtcd, fvs_tree_id, statuscd, " + strFields + ") " +
+                            "SELECT TRIM(biosum_cond_id), biosum_status_cd, dia, diahtcd, fvs_tree_id, statuscd, " + strFields +
+                            " FROM TEMPDB.tempseedling";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        m_intError = SQLite.m_intError;
+                    }
+
+                    if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                    {
+                        SetThermValue(m_frmTherm.progressBar1, "Value", 80);
+                        //update the cullbf column
+                        SQLite.m_strSQL = "UPDATE " + this.m_strTreeTable +
+                            " SET cullbf = CASE WHEN cullbf IS NULL " +
+                            "THEN CASE WHEN cull IS NOT NULL AND roughcull IS NOT NULL " +
+                            "THEN cull + roughcull " +
+                            "ELSE CASE WHEN cull IS NOT NULL THEN cull " +
+                            "ELSE CASE WHEN roughcull IS NOT NULL THEN roughcull ELSE 0 " +
+                            "END END END ELSE cullbf END";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        m_intError = SQLite.m_intError;
+                    }
+
+                    if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                    {
+                        //-------------SITE TREE TABLE----------------//
+                        //build field list string to insert sql by matching biosum fiadb SiteTree table
+                        strFields = CreateStrFieldsFromDataTables(dtFIADBSiteTreeSchema, dtSiteTreeSchema);
+                        /********************************************************
+                         **create site tree input insert command
+                         ********************************************************/
+                        //check the user defined filters
+                        SetLabelValue(m_frmTherm.lblMsg, "Text", "Site Tree Table: Insert New  Records");
+                        if (SQLite.TableExist(conn, "tempsitetree") || SQLite.AttachedTableExist(conn, "tempsitetree"))
+                        {
+                            SQLite.m_strSQL = "DELETE FROM TEMPDB.tempsitetree";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
+                            SQLite.m_strSQL = "INSERT INTO TEMPDB.tempsitetree " +
+                                "SELECT TRIM(p.biosum_plot_id) AS biosum_plot_id, 9 AS biosum_status_cd, t.* " +
+                                "FROM FIADB." + strSiteTreeSource + " AS t, " + this.m_strPlotTable + " AS p " +
+                                "WHERE t.plt_cn = TRIM(p.cn) AND p.biosum_status_cd = 9";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        }
+                        else
+                        {
+                            SQLite.m_strSQL = "CREATE TABLE TEMPDB.tempsitetree AS " +
+                            "SELECT TRIM(p.biosum_plot_id) AS biosum_plot_id, 9 AS biosum_status_cd, t.* " +
+                            "FROM FIADB." + strSiteTreeSource + " AS t, " + this.m_strPlotTable + " AS p " +
+                            "WHERE t.plt_cn = TRIM(p.cn) AND p.biosum_status_cd = 9";
+                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        }
+                        m_intError = SQLite.m_intError;
+                    }
+
+                    if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                    {
+                        SetThermValue(m_frmTherm.progressBar1, "Value", 80);
+                        //insert the new condition records into the condition table
+                        SQLite.m_strSQL = "INSERT INTO " + this.m_strSiteTreeTable + " (biosum_plot_id, biosum_status_cd, " + strFields + ") " +
+                            "SELECT TRIM(biosum_plot_id), biosum_status_cd, " + strFields + " FROM TEMPDB.tempsitetree";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        m_intError = SQLite.m_intError;
+                    }
+
+                    if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                    {
+                        SetThermValue(m_frmTherm.progressBar1, "Value", 100);
+                        SetThermValue(m_frmTherm.progressBar2, "Value", 60);
+                        m_intError = UpdateColumns(conn);
+                    }
+
+                    //Down Woody Materials Section
+                    if (m_intError == 0 && Checked(chkDwmImport) &&
+                        !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                    {
+                        SetThermValue(m_frmTherm.progressBar1, "Value",
                         GetThermValue(m_frmTherm.progressBar1, "Maximum"));
-                    SetThermValue(m_frmTherm.progressBar2, "Value", 80);
-                    //m_intError = ImportDownWoodyMaterials(m_ado);
-                    m_intError = ImportDownWoodyMaterialsSqlite();
-                }
+                        SetThermValue(m_frmTherm.progressBar2, "Value", 80);
 
-				//Growth Removal Mortality Section
-                //if (m_intError == 0 && Checked(chkGrmImport) &&
-                //    !GetBooleanValue((System.Windows.Forms.Control) m_frmTherm, "AbortProcess"))
-                //{
-                //    SetThermValue(m_frmTherm.progressBar1, "Value",
-                //        GetThermValue(m_frmTherm.progressBar1, "Maximum"));
-                //    SetThermValue(m_frmTherm.progressBar2, "Value", 90);
-                //    m_intError = ImportGrowthRemovalMortality(m_ado);
-                //}
+                        m_intError = ImportDownWoodyMaterials(conn);
+                    }
 
-                //The connection should be closed if necessary and reopened
-                if (m_connTempMDBFile != null && m_connTempMDBFile.State == System.Data.ConnectionState.Open)
-                {
-                    m_connTempMDBFile.Dispose();
-                }
-
-                using (m_connTempMDBFile = new OleDbConnection(m_strTempMDBFileConn))
-                {
-                    m_connTempMDBFile.Open();
-
-                    //If no ADO errors have occured,
                     //count the number of records added to each table and
                     //set their biosum_status_cd values to 1
                     if (this.m_intError == 0 &&
-                        !GetBooleanValue((System.Windows.Forms.Control) m_frmTherm, "AbortProcess"))
+                        !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
                     {
-
-                        //Record counts associated with imported plots for each table
-                        m_intAddedPlotRows = GetNewRecordCount(m_ado, m_connTempMDBFile, m_strPlotTable);
-                        m_intAddedCondRows = GetNewRecordCount(m_ado, m_connTempMDBFile, m_strCondTable);
-                        m_intAddedTreeRows = GetNewRecordCount(m_ado, m_connTempMDBFile, m_strTreeTable);
-                        m_intAddedSeedlingRows = GetNewRecordCount(m_ado, m_connTempMDBFile, m_strSeedlingTable);
-                        m_intAddedSiteTreeRows = GetNewRecordCount(m_ado, m_connTempMDBFile, m_strSiteTreeTable);
+                        m_intAddedPlotRows = GetNewRecordCount(conn, m_strPlotTable);
+                        m_intAddedCondRows = GetNewRecordCount(conn, m_strCondTable);
+                        m_intAddedTreeRows = GetNewRecordCount(conn, m_strTreeTable);
+                        m_intAddedSeedlingRows = GetNewRecordCount(conn, m_strSeedlingTable);
+                        m_intAddedSiteTreeRows = GetNewRecordCount(conn, m_strSiteTreeTable);
 
                         if (Checked(chkDwmImport))
                         {
-                            //m_intAddedDwmCwdRows = GetNewRecordCount(m_ado, m_connTempMDBFile, m_strDwmCwdTable);
-                            //m_intAddedDwmFwdRows = GetNewRecordCount(m_ado, m_connTempMDBFile, m_strDwmFwdTable);
-                            //m_intAddedDwmDuffLitterRows =
-                            //    GetNewRecordCount(m_ado, m_connTempMDBFile, m_strDwmDuffLitterTable);
-                            //m_intAddedDwmTransectSegmentRows = GetNewRecordCount(m_ado, m_connTempMDBFile,
-                            //    m_strDwmTransectSegmentTable);
-                            m_intAddedDwmCwdRows = GetNewRecordCount(m_ado, m_connTempMDBFile, m_strDwmCwdTable + "_master");
-                            m_intAddedDwmFwdRows = GetNewRecordCount(m_ado, m_connTempMDBFile, m_strDwmFwdTable + "_master");
-                            m_intAddedDwmDuffLitterRows =
-                                GetNewRecordCount(m_ado, m_connTempMDBFile, m_strDwmDuffLitterTable + "_master");
-                            m_intAddedDwmTransectSegmentRows = GetNewRecordCount(m_ado, m_connTempMDBFile,
-                                m_strDwmTransectSegmentTable + "_master");
+                            m_intAddedDwmCwdRows = GetNewRecordCount(conn, m_strDwmCwdTable, "AUX.");
+                            m_intAddedDwmFwdRows = GetNewRecordCount(conn, m_strDwmFwdTable, "AUX.");
+                            m_intAddedDwmDuffLitterRows = GetNewRecordCount(conn, m_strDwmDuffLitterTable, "AUX.");
+                            m_intAddedDwmTransectSegmentRows = GetNewRecordCount(conn, m_strDwmTransectSegmentTable, "AUX.");
                         }
 
                         //Successfully imported and updated plot data. Set biosum_status_cd to 1
-                        //string[] arrTables = new string[]{m_strPlotTable, m_strCondTable, m_strTreeTable, m_strPopEvalTable, m_strPopStratumTable,
-                        //    m_strPpsaTable, m_strPopEstUnitTable, m_strSiteTreeTable,
-                        //    m_strBiosumPopStratumAdjustmentFactorsTable,
-                        //    m_strDwmCwdTable, m_strDwmFwdTable, m_strDwmDuffLitterTable, m_strDwmTransectSegmentTable};
-                        string[] arrTables = new string[]{m_strPlotTable, m_strCondTable, m_strTreeTable, m_strPopEvalTable, m_strPopStratumTable,
-                            m_strPpsaTable, m_strPopEstUnitTable, m_strSiteTreeTable,
-                            m_strBiosumPopStratumAdjustmentFactorsTable,
-                            m_strDwmCwdTable + "_master", m_strDwmFwdTable + "_master", m_strDwmDuffLitterTable + "_master", m_strDwmTransectSegmentTable + "_master"};
+                        string[] arrTables = new string[] {m_strPlotTable, m_strCondTable, m_strTreeTable, m_strSiteTreeTable,
+                                m_strPopEvalTable, m_strPopStratumTable, m_strPpsaTable, m_strPopEstUnitTable, m_strBiosumPopStratumAdjustmentFactorsTable};
+                        if (Checked(chkDwmImport))
+                        {
+                            arrTables = new string[] {m_strPlotTable, m_strCondTable, m_strTreeTable, m_strSiteTreeTable,
+                                m_strPopEvalTable, m_strPopStratumTable, m_strPpsaTable, m_strPopEstUnitTable, m_strBiosumPopStratumAdjustmentFactorsTable,
+                                m_strDwmCwdTable, m_strDwmFwdTable, m_strDwmDuffLitterTable, m_strDwmTransectSegmentTable};
+                        }
+                        
                         foreach (string table in arrTables)
                         {
-                            if (m_ado.TableExist(m_connTempMDBFile, table))
+                            if (SQLite.TableExist(conn, table) || SQLite.AttachedTableExist(conn, table))
                             {
-                                m_ado.m_strSQL = "UPDATE " + table +
-                                                 " SET biosum_status_cd = 1 WHERE biosum_status_cd = 9;";
+                                if (table == m_strDwmCwdTable || table == m_strDwmFwdTable || table == m_strDwmDuffLitterTable || table == m_strDwmTransectSegmentTable)
+                                {
+                                    SQLite.m_strSQL = "UPDATE AUX." + table +
+                                    " SET biosum_status_cd = 1 WHERE biosum_status_cd = 9";
+                                }
+                                else
+                                {
+                                    SQLite.m_strSQL = "UPDATE " + table +
+                                    " SET biosum_status_cd = 1 WHERE biosum_status_cd = 9";
+                                }
                                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, this.m_ado.m_strSQL + "\r\n");
-                                m_ado.SqlNonQuery(m_connTempMDBFile, m_ado.m_strSQL);
+                                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                             }
                         }
 
-
                         // Save POP tables to SQLite
-                        SaveSqlitePopTables(this.m_strCurrFIADBEvalId, this.m_strCurrFIADBRsCd);
+                        SaveSqlitePopTables(conn, this.m_strCurrFIADBEvalId, this.m_strCurrFIADBRsCd);
                         SetThermValue(m_frmTherm.progressBar1, "Value",
                         GetThermValue(m_frmTherm.progressBar1, "Maximum"));
                         SetThermValue(m_frmTherm.progressBar2, "Value",
                         GetThermValue(m_frmTherm.progressBar2, "Maximum"));
-                        frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Button) m_frmTherm.btnCancel,
+                        frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Button)m_frmTherm.btnCancel,
                             "Visible", false);
+
+                        // Save configuration
+                        SaveLoadConfigurationTxt(conn);
+                        SaveLoadConfigurationTable(conn);
 
                         MessageBox.Show(CreateRecordsAddedMessage(), "Add Plot Data");
 
                         this.m_strLoadedPopEstUnitInputTable =
-                            (string) frmMain.g_oDelegate.GetControlPropertyValue(
-                                (System.Windows.Forms.ComboBox) cmbFiadbPopEstUnitTable, "Text", false);
+                            (string)frmMain.g_oDelegate.GetControlPropertyValue(
+                                (System.Windows.Forms.ComboBox)cmbFiadbPopEstUnitTable, "Text", false);
                         this.m_strLoadedPopStratumInputTable =
-                            (string) frmMain.g_oDelegate.GetControlPropertyValue(
-                                (System.Windows.Forms.ComboBox) cmbFiadbPopStratumTable, "Text", false);
+                            (string)frmMain.g_oDelegate.GetControlPropertyValue(
+                                (System.Windows.Forms.ComboBox)cmbFiadbPopStratumTable, "Text", false);
                         this.m_strLoadedPpsaInputTable =
-                            (string) frmMain.g_oDelegate.GetControlPropertyValue(
-                                (System.Windows.Forms.ComboBox) cmbFiadbPpsaTable, "Text", false);
+                            (string)frmMain.g_oDelegate.GetControlPropertyValue(
+                                (System.Windows.Forms.ComboBox)cmbFiadbPpsaTable, "Text", false);
                         this.m_strLoadedFIADBEvalId = this.m_strCurrFIADBEvalId;
                         this.m_strLoadedFIADBRsCd = this.m_strCurrFIADBRsCd;
                         this.m_strLoadedFiadbInputFile =
-                            (string) frmMain.g_oDelegate.GetControlPropertyValue(
-                                (System.Windows.Forms.TextBox) txtFiadbInputFile, "Text", false);
+                            (string)frmMain.g_oDelegate.GetControlPropertyValue(
+                                (System.Windows.Forms.TextBox)txtFiadbInputFile, "Text", false);
                         System.Threading.Thread.Sleep(1000);
                     }
-
-                    //An ADO error occurred, so delete all the incompletely processed new records
                     else
                     {
-                        DeleteFromTablesWhereFilter(m_ado, m_connTempMDBFile, new string[]
-                            {
-                                m_strPlotTable, m_strCondTable, m_strTreeTable, m_strPopEvalTable, m_strPopStratumTable,
-                                m_strPpsaTable, m_strPopEstUnitTable, m_strSiteTreeTable,
-                                m_strBiosumPopStratumAdjustmentFactorsTable,
-                                //m_strDwmCwdTable, m_strDwmFwdTable, m_strDwmDuffLitterTable,
-                                //m_strDwmTransectSegmentTable
-                                m_strDwmCwdTable + "_master", m_strDwmFwdTable + "_master", m_strDwmDuffLitterTable + "_master",
-                                m_strDwmTransectSegmentTable + "_master"
-                            },
-                            " WHERE biosum_status_cd=9;");
+                        // A DataMgr error occurred so delete all the incompletely processed new records
+                        DeleteFromTablesWhereFilter(conn, new string[] { m_strPlotTable, m_strCondTable, m_strTreeTable, m_strPopEvalTable, m_strPopStratumTable,
+                                m_strPpsaTable, m_strPopEstUnitTable, m_strSiteTreeTable, m_strBiosumPopStratumAdjustmentFactorsTable,
+                                "AUX." + m_strDwmCwdTable, "AUX." + m_strDwmFwdTable, "AUX." + m_strDwmDuffLitterTable, "AUX." + m_strDwmTransectSegmentTable },
+                                " WHERE biosum_status_cd = 9");
                         MessageBox.Show("!!Error Occured Adding Plot Records: 0 Records Added!!", "FIA Biosum",
                             System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
                     }
+                    
+                    if (SQLite.m_DataSet != null)
+                    {
+                        SQLite.m_DataSet.Clear();
+                        SQLite.m_DataSet.Dispose();
+                    }
+
+                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Visible", true);
+                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Enabled", true);
+
+                    LoadDBPlotCondTreeData_Finish();
                 }
-
-                this.m_ado.m_DataSet.Clear();
-                this.m_ado.m_DataSet.Dispose();
-                this.m_ado = null;
-
-                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Visible", true);
-                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Enabled", true);
-
-                LoadMDBPlotCondTreeData_Finish();
             }
             catch (System.Threading.ThreadInterruptedException err)
 			{
@@ -3050,22 +2558,13 @@ namespace FIA_Biosum_Manager
 			}
 			catch  (System.Threading.ThreadAbortException err)
 			{
-                if (this.m_connTempMDBFile != null)
+                if (SQLite != null)
                 {
-                    if (m_connTempMDBFile.State != System.Data.ConnectionState.Closed)
+                    if (SQLite.m_DataSet != null)
                     {
-                        m_ado.CloseConnection(m_connTempMDBFile);
+                        SQLite.m_DataSet.Clear();
+                        SQLite.m_DataSet.Dispose();
                     }
-                    m_connTempMDBFile = null;
-                }
-                if (m_ado != null)
-                {
-                    if (m_ado.m_DataSet != null)
-                    {
-                        this.m_ado.m_DataSet.Clear();
-                        this.m_ado.m_DataSet.Dispose();
-                    }
-                    this.m_ado = null;
                 }
                 this.CancelThreadCleanup();
 			    this.ThreadCleanUp();
@@ -3074,7 +2573,7 @@ namespace FIA_Biosum_Manager
 			catch (Exception err)
 			{
 				MessageBox.Show("!!Error!! \n" + 
-					"Module - uc_plot_input:mdbFIADBFileInput  \n" + 
+					"Module - uc_plot_input:dbFIADBFileInput  \n" + 
 					"Err Msg - " + err.Message.ToString().Trim(),
 					"FIA Biosum",System.Windows.Forms.MessageBoxButtons.OK,
 					System.Windows.Forms.MessageBoxIcon.Exclamation);
@@ -3084,27 +2583,17 @@ namespace FIA_Biosum_Manager
 			{
                
 			}
-
-            if (this.m_connTempMDBFile != null)
+            if (SQLite != null)
             {
-                if (m_connTempMDBFile.State != System.Data.ConnectionState.Closed)
+                if (SQLite.m_DataSet != null)
                 {
-                    m_ado.CloseConnection(m_connTempMDBFile);
+                    SQLite.m_DataSet.Clear();
+                    SQLite.m_DataSet.Dispose();
                 }
-                m_connTempMDBFile = null;
-            }
-            if (m_ado != null)
-            {
-                if (m_ado.m_DataSet != null)
-                {
-                    this.m_ado.m_DataSet.Clear();
-                    this.m_ado.m_DataSet.Dispose();
-                }
-                this.m_ado = null;
             }
             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Enabled", true);
 			if (this.m_frmTherm != null) frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)m_frmTherm,"Visible",false);
-            LoadMDBPlotCondTreeData_Finish();
+            LoadDBPlotCondTreeData_Finish();
             CleanupThread();
             frmMain.g_oDelegate.m_oEventThreadStopped.Set();
             this.Invoke(frmMain.g_oDelegate.m_oDelegateThreadFinished);
@@ -3138,52 +2627,25 @@ namespace FIA_Biosum_Manager
         /// <param name="p_conn"></param>
         /// <param name="table"></param>
         /// <returns></returns>
-	    private int GetNewRecordCount(ado_data_access p_ado, OleDbConnection p_conn, string table)
+	    
+        private int GetNewRecordCount(System.Data.SQLite.SQLiteConnection p_conn, string strTable, string strTablePrefix = null)
         {
-            if (p_ado.TableExist(p_conn, table) || table.Equals(m_strSeedlingTable))
+            if (SQLite.TableExist(p_conn, strTable) || SQLite.AttachedTableExist(p_conn, strTable) || strTable.Equals(m_strSeedlingTable))
             {
                 int intReturn = -1;
-                switch (table)
+                switch (strTable)
                 {
                     case "fiadb_seedling_input":
-                        intReturn = (int)p_ado.getRecordCount(p_conn,
-                            String.Concat("select count(*) from ", m_strTreeTable, " where biosum_status_cd=9 and dia=0.1;"), m_strTreeTable);
+                        intReturn = (int)SQLite.getRecordCount(p_conn,
+                            String.Concat("SELECT COUNT(*) FROM ", m_strTreeTable, " WHERE biosum_status_cd = 9 AND dia = 0.1"), m_strTreeTable);
                         break;
                     case "tree":
-                        intReturn = (int)p_ado.getRecordCount(p_conn,
-                            String.Concat("select count(*) from ", table, " where biosum_status_cd=9 and dia<>0.1;"), table);
+                        intReturn = (int)SQLite.getRecordCount(p_conn,
+                            String.Concat("SELECT COUNT(*) FROM ", strTable, " WHERE biosum_status_cd = 9 AND dia <> 0.1"), strTable);
                         break;
                     default:
-                        intReturn = (int)p_ado.getRecordCount(p_conn,
-                    String.Concat("select count(*) from ", table, " where biosum_status_cd=9;"), table);
-                        break;
-                }
-                return intReturn;
-            }
-            else
-            {
-                return 0;
-            }
-        }
-
-        private int GetNewRecordCountSqlite(ado_data_access p_ado, OleDbConnection p_conn, string table)
-        {
-            if (p_ado.TableExist(p_conn, table) || table.Equals(m_strSeedlingTable))
-            {
-                int intReturn = -1;
-                switch (table)
-                {
-                    case "fiadb_seedling_input":
-                        intReturn = (int)p_ado.getRecordCount(p_conn,
-                            String.Concat("select count(*) from ", m_strTreeTable, " where biosum_status_cd=9 and dia=0.1;"), m_strTreeTable);
-                        break;
-                    case "tree":
-                        intReturn = (int)p_ado.getRecordCount(p_conn,
-                            String.Concat("select count(*) from ", table, " where biosum_status_cd=9 and dia<>0.1;"), table);
-                        break;
-                    default:
-                        intReturn = (int)p_ado.getRecordCount(p_conn,
-                    String.Concat("select count(*) from ", table, " where biosum_status_cd='9';"), table);
+                        intReturn = (int)SQLite.getRecordCount(p_conn,
+                    String.Concat("SELECT COUNT(*) FROM ", strTablePrefix, strTable, " WHERE biosum_status_cd = 9"), strTablePrefix + strTable);
                         break;
                 }
                 return intReturn;
@@ -3199,29 +2661,15 @@ namespace FIA_Biosum_Manager
 	    /// </summary>
 	    /// <param name="strTableName">An array of table names to delete</param>
 	    /// <param name="strDeleteFilter">A WHERE clause for the delete query</param>
-	    private void DeleteFromTablesWhereFilter(ado_data_access p_ado, OleDbConnection conn, string[] strTableNames, string strDeleteFilter)
-	    {
-	        foreach (string table in strTableNames)
-	        {
-	            if (p_ado.TableExist(conn, table))
-	            {
-	                p_ado.m_strSQL = "DELETE FROM " + table + strDeleteFilter;
-	                p_ado.SqlNonQuery(m_connTempMDBFile, p_ado.m_strSQL);
-	                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-	                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
-	                        p_ado.m_strSQL + "\r\n");
-	            }
-	        }
-	    }
-
-        private void DeleteFromTablesWhereFilterSqlite(System.Data.SQLite.SQLiteConnection conn, string[] strTableNames, string strDeleteFilter)
+	
+        private void DeleteFromTablesWhereFilter(System.Data.SQLite.SQLiteConnection p_conn, string[] strTableNames, string strDeleteFilter)
         {
             foreach (string table in strTableNames)
             {
-                if (SQLite.TableExist(conn, table))
+                if (SQLite.TableExist(p_conn, table))
                 {
                     SQLite.m_strSQL = "DELETE FROM " + table + strDeleteFilter;
-                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                    SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
                             SQLite.m_strSQL + "\r\n");
@@ -3232,62 +2680,21 @@ namespace FIA_Biosum_Manager
 	    /// <summary>
 	    /// After importing DWM table data from FIADB to Master.mdb, join the DWM table with the plot/cond tables to get the BSCID
 	    /// </summary>
-	    /// <param name="p_ado">Reference to the temporary database used to link FIADB and Master during plot input phase</param>
+	    /// <param name="SQLite">Reference to the temporary database used to link FIADB and Master during plot input phase</param>
 	    /// <param name="strDestTable">The DWM table to update</param>
-	    private void UpdateDwmBiosumCondIds(ado_data_access p_ado, string strDestTable = null)
-	    {
-	        p_ado.m_strSQL = String.Format(
-	            "UPDATE {0} t INNER JOIN ({1} p INNER JOIN {2} c ON c.biosum_plot_id = p.biosum_plot_id) ON (p.cn = t.plt_cn) AND (t.CONDID = c.condid) " +
-	            "SET t.biosum_cond_id=c.biosum_cond_id WHERE t.biosum_cond_id='9999999999999999999999999' AND p.biosum_status_cd=9;",
-	            strDestTable, m_strPlotTable, m_strCondTable);
-	        p_ado.SqlNonQuery(m_connTempMDBFile, p_ado.m_strSQL);
-	        m_intError = p_ado.m_intError;
 
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-	    }
-
-        private void UpdateDwmBiosumCondIdsSqlite(ado_data_access p_ado, string strDestTable = null)
+        private void UpdateDwmBiosumCondIds(System.Data.SQLite.SQLiteConnection p_conn, string strDestTable = null)
         {
-            //p_ado.m_strSQL = String.Format(
-            //    "SELECT c.biosum_cond_id, p.biosum_status_cd INTO temptable FROM {0} t INNER JOIN ({1} p INNER JOIN {2} c ON c.biosum_plot_id = p.biosum_plot_id) ON (TRIM(p.cn) = TRIM(t.PLT_CN)) AND (TRIM(t.CONDID) = TRIM(c.condid))",
-            //    strDestTable + "_master", m_strPlotTable, m_strCondTable);
-            //p_ado.SqlNonQuery(m_connTempMDBFile, p_ado.m_strSQL);
-            //p_ado.m_strSQL = String.Format(
-            //    "UPDATE  {0} a, temptable b SET a.biosum_cond_id = b.biosum_cond_id WHERE a.biosum_cond_id = '9999999999999999999999999' AND b.biosum_status_cd = 9",
-            //    strDestTable + "_master");
-            //p_ado.SqlNonQuery(m_connTempMDBFile, p_ado.m_strSQL);
-            //p_ado.m_strSQL = "DROP TABLE temptable";
-            //p_ado.SqlNonQuery(m_connTempMDBFile, p_ado.m_strSQL);
-            p_ado.m_strSQL = String.Format(
-            "UPDATE {0} t INNER JOIN ({1} p INNER JOIN {2} c ON c.biosum_plot_id = p.biosum_plot_id) ON (TRIM(p.cn) = TRIM(t.plt_cn)) AND (TRIM(t.CONDID) = TRIM(c.condid)) " +
-            "SET t.biosum_cond_id=c.biosum_cond_id WHERE t.biosum_cond_id='9999999999999999999999999' AND p.biosum_status_cd=9;",
-               strDestTable + "_master", m_strPlotTable, m_strCondTable);
+            SQLite.m_strSQL = "UPDATE " + strDestTable + " AS t " +
+                "SET biosum_cond_id = c.biosum_cond_id " +
+                "FROM " + m_strPlotTable + " AS p, " + m_strCondTable + " AS c " +
+                "WHERE c.biosum_plot_id = p.biosum_plot_id AND TRIM(p.cn) = TRIM(t.plt_cn) AND TRIM(t.condid) = TRIM(c.condid) " +
+                "AND t.biosum_cond_id = '9999999999999999999999999' AND p.biosum_status_cd=9";
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-            p_ado.SqlNonQuery(m_connTempMDBFile, p_ado.m_strSQL);
-            m_intError = p_ado.m_intError;
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            m_intError = SQLite.m_intError;
         }
-        
-	    /// <summary>
-	    /// Creates temporary DWM table from FIADB that associates dwm data with a biosum_cond_id. 
-	    /// Assumes that the FIADB DWM table has a plt_cn and condid.
-	    /// </summary>
-	    /// <param name="strSourceTable"></param>
-	    /// <param name="strTempTable"></param>
-	    private void SelectIntoTempDWMTableFromSourceDWMTable(ado_data_access p_ado, string strSourceTable = null, string strTempTable = null)
-	    {
-	        p_ado.m_strSQL = String.Format(
-	            "SELECT TRIM(c.biosum_cond_id) AS biosum_cond_id, 9 as biosum_status_cd, t.* INTO {0} " +
-	            "FROM {1} t INNER JOIN ({2} p INNER JOIN {3} c ON c.biosum_plot_id = p.biosum_plot_id) ON (p.cn = t.plt_cn) AND (t.CONDID = c.condid) " +
-	            "WHERE p.biosum_status_cd=9;", strTempTable, strSourceTable, m_strPlotTable, m_strCondTable);
-	        p_ado.SqlNonQuery(m_connTempMDBFile, p_ado.m_strSQL);
-	        m_intError = p_ado.m_intError;
-
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-	    }
-
         /// <summary>
         /// Generates and executes an SQL "INSERT INTO dest_tablename (columns) SELECT columns FROM source_tablename" statement
         /// strInsertFields contains a subset of the source table columns that are common with the dest table.
@@ -3295,47 +2702,24 @@ namespace FIA_Biosum_Manager
         /// <param name="strSourceTable"></param>
         /// <param name="strDestTable"></param>
         /// <param name="strInsertFields"></param>
-        private void InsertIntoDestTableFromSourceTable(ado_data_access p_ado, 
+        
+        private void InsertIntoDestTableFromSourceTable(System.Data.SQLite.SQLiteConnection p_conn,
             string strSourceTable = null, string strDestTable = null,
-            string strSourceFields = null, string strDestFields = null,
-            bool InsertBiosumCondIdAndStatusCode = false)
+            string strSourceFields = null, string strDestFields = null, bool InsertBiosumCondIdAndStatusCode = false)
         {
             string strInsertIntoValues = "INSERT INTO {0} ({1}) ";
-            string strSelectColumns = "SELECT {2} FROM {3} dwm INNER JOIN {4} p ON dwm.plt_cn=p.cn;";
+            string strSelectColumns = "SELECT {2} FROM {3} AS f, {4} AS p ON f.plt_cn=p.cn;";
             if (InsertBiosumCondIdAndStatusCode)
             {
                 strInsertIntoValues = "INSERT INTO {0} (biosum_cond_id, biosum_status_cd, {1}) ";
                 strSelectColumns =
-                    "SELECT '9999999999999999999999999' AS biosum_cond_id, 9 AS biosum_status_cd, {2} FROM {3} dwm INNER JOIN {4} p ON dwm.plt_cn=trim(p.cn);";
+                    "SELECT '9999999999999999999999999' AS biosum_cond_id, 9 AS biosum_status_cd, {2} FROM {3} AS f, {4} AS p WHERE f.plt_cn=trim(p.cn);";
             }
-            p_ado.m_strSQL = String.Format(strInsertIntoValues + strSelectColumns, 
-                strDestTable, strDestFields, strSourceFields, strSourceTable, "tempplot");
+            SQLite.m_strSQL = String.Format(strInsertIntoValues + strSelectColumns, strDestTable, strDestFields, strSourceFields, strSourceTable, "tempplot");
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-            p_ado.SqlNonQuery(m_connTempMDBFile, p_ado.m_strSQL);
-            m_intError = p_ado.m_intError;
-        }
-
-        private void InsertIntoDestTableFromSourceTableSqlite (ado_data_access p_ado,
-            string strSourceTable = null, string strDestTable = null,
-            string strSourceFields = null, string strDestFields = null,
-            bool InsertBiosumCondIdAndStatusCode = false)
-        {
-            string strInsertIntoValues = "INSERT INTO {0} ({1}) ";
-            string strSelectColumns = "SELECT {2} FROM {3} dwm INNER JOIN {4} p ON dwm.plt_cn=p.cn;";
-            if (InsertBiosumCondIdAndStatusCode)
-            {
-                strInsertIntoValues = "INSERT INTO {0} (biosum_cond_id, biosum_status_cd, {1}) ";
-                strSelectColumns =
-                    "SELECT '9999999999999999999999999' AS biosum_cond_id, 9 AS biosum_status_cd, {2} FROM {3} dwm INNER JOIN {4} p ON dwm.plt_cn=trim(p.cn);";
-            }
-            p_ado.m_strSQL = String.Format(strInsertIntoValues + strSelectColumns,
-                strDestTable + "_master", strDestFields, strSourceFields, strSourceTable + "_fiadb", "tempplot");
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-            p_ado.SqlNonQuery(m_connTempMDBFile, p_ado.m_strSQL);
-
-            m_intError = p_ado.m_intError;
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            m_intError = SQLite.m_intError;
         }
 
 	    private string CreateStrFieldsFromDataTables(DataTable dtSourceSchema=null, DataTable dtDestSchema=null, string strTablePrefix="")
@@ -3373,7 +2757,7 @@ namespace FIA_Biosum_Manager
 	    }
 
    
-	    private int UpdateColumns(FIA_Biosum_Manager.ado_data_access p_ado)
+	    private int UpdateColumns(System.Data.SQLite.SQLiteConnection p_conn)
 		{
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -3383,8 +2767,6 @@ namespace FIA_Biosum_Manager
             }
 
 			//create work tables
-
-
             string strColumns = "";
             string strValues = "";
 			string strTime = System.DateTime.Now.ToString();
@@ -3394,1590 +2776,1143 @@ namespace FIA_Biosum_Manager
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//----------------------COND AND TREE COLUMN UPDATES-----------------------//\r\n");
                
-                SetThermValue(m_frmTherm.progressBar1,"Maximum",42);
-                SetThermValue(m_frmTherm.progressBar1, "Minimum", 0);
+            SetThermValue(m_frmTherm.progressBar1,"Maximum",42);
+            SetThermValue(m_frmTherm.progressBar1, "Minimum", 0);
+            SetThermValue(m_frmTherm.progressBar1, "Value", 0);
+
+            SetLabelValue(m_frmTherm.lblMsg,"Text","Updating Condition Proportion Column...Stand By");
+			frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
+			//update the condition proportion column
+            SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                "SET condprop = CASE WHEN ps.pmh_macr IS NOT NULL AND ps.pmh_macr > 0 THEN c.condprop_unadj / ps.pmh_macr " +
+                "ELSE CASE WHEN ps.pmh_sub IS NOT NULL AND ps.pmh_sub > 0 THEN c.condprop_unadj / ps.pmh_sub " +
+                "ELSE CASE WHEN ps.pmh_micr IS NOT NULL AND ps.pmh_micr > 0 THEN c.condprop_unadj / ps.pmh_micr " +
+                "ELSE 0 END END END " +
+                "FROM TEMPDB." + this.m_strPpsaTable + " AS ppsa, " + this.m_strPlotTable + " AS p, TEMPDB." + this.m_strBiosumPopStratumAdjustmentFactorsTable + " AS ps " +
+                "WHERE TRIM(ppsa.plt_cn) = p.cn AND ppsa.stratum_cn = ps.stratum_cn AND c.biosum_plot_id = p.biosum_plot_id";
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+			SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+            SetLabelValue(m_frmTherm.lblMsg,"Text","Updating Condition Acres Column...Stand By");
+            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
+
+			//update acres column
+            SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                "SET acres = CASE WHEN c.condprop IS NOT NULL AND ps.expns IS NOT NULL " +
+                "THEN c.condprop * ps.expns ELSE 0 END " +
+                "FROM TEMPDB." + this.m_strPpsaTable + " AS ppsa, " + this.m_strPlotTable + " AS p, TEMPDB." + this.m_strBiosumPopStratumAdjustmentFactorsTable + " AS ps " +
+                "WHERE ppsa.plt_cn = p.cn AND ppsa.stratum_cn = ps.stratum_cn AND c.biosum_plot_id = p.biosum_plot_id";
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+			SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+            //update condprop_specific column for when plot.macro_breakpoint_dia has a value
+            SetLabelValue(m_frmTherm.lblMsg, "Text", "Updating Tree Condprop Specific Column...Stand By");
+            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
+            SQLite.m_strSQL = "UPDATE " + this.m_strTreeTable + " AS t " +
+                "SET condprop_specific = CASE WHEN c.micrprop_unadj IS NOT NULL AND t.dia < 5 THEN c.micrprop_unadj " +
+                "ELSE CASE WHEN c.subpprop_unadj IS NOT NULL AND p.MACRO_BREAKPOINT_DIA IS NOT NULL " +
+                "AND t.dia >=5 AND t.dia < p.MACRO_BREAKPOINT_DIA THEN c.subpprop_unadj " +
+                "ELSE CASE WHEN c.macrprop_unadj IS NOT NULL AND p.MACRO_BREAKPOINT_DIA IS NOT NULL " +
+                "AND t.dia >= p.MACRO_BREAKPOINT_DIA THEN c.macrprop_unadj END END END " +
+                "FROM " + this.m_strCondTable + " AS c, " + this.m_strPlotTable + " AS p " +
+                "WHERE c.biosum_plot_id = p.biosum_plot_id AND t.biosum_status_cd = 9";
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            //check if null values 
+            SQLite.m_strSQL = "SELECT COUNT(*) AS ROWCOUNT " +
+                "FROM " + this.m_strTreeTable + " AS t, " + this.m_strTreeMacroPlotBreakPointDiaTable + " AS bp " +
+                "WHERE t.biosum_status_cd = 9 AND t.condprop_specific IS NULL " +
+                "AND t.statecd = bp.statecd AND t.unitcd = bp.unitcd";
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+            //check if condprop_specific null and exists in the tree macro plot breakpoint diameter table
+            if ((double)SQLite.getSingleDoubleValueFromSQLQuery(p_conn, SQLite.m_strSQL, "temp") > 0)
+            {
+                //got some nulls
+                SQLite.m_strSQL = "UPDATE " + m_strTreeTable + " AS t " +
+                    "SET condprop_specific = CASE WHEN c.micrprop_unadj IS NOT NULL AND t.dia < 5 THEN c.micrprop_unadj " +
+                    "ELSE CASE WHEN c.subpprop_unadj IS NOT NULL AND bp.MACRO_BREAKPOINT_DIA IS NOT NULL " +
+                    "AND t.dia >= 5 AND t.dia < bp.MACRO_BREAKPOINT_DIA THEN c.subpprop_unadj " +
+                    "ELSE CASE WHEN macrprop_unadj IS NOT NULL AND bp.MACRO_BREAKPOINT_DIA IS NOT NULL " +
+                    "AND t.dia >= bp.MACRO_BREAKPOINT_DIA THEN c.macrprop_unadj END END END " +
+                    "FROM " + this.m_strCondTable + " AS c, " + this.m_strPlotTable + " AS p, " + this.m_strTreeMacroPlotBreakPointDiaTable + " AS bp " +
+                    "WHERE c.biosum_plot_id = p.biosum_plot_id AND p.statecd = bp.statecd AND p.unitcd = bp.unitcd " +
+                    "AND t.biosum_cond_id = c.biosum_cond_id AND t.biosum_status_cd = 9";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            }
+            else
+            {
+                //see if we have nulls and no MACRO PLOT for the unit code
+                SQLite.m_strSQL = "SELECT COUNT (*) AS ROWCOUNT " +
+                    "FROM " + this.m_strTreeTable + " AS a, " +
+                    "(SELECT t.* FROM " + this.m_strTreeTable + " AS t " +
+                    "WHERE NOT EXISTS (SELECT * FROM " + this.m_strTreeMacroPlotBreakPointDiaTable + " AS bp " +
+                    "WHERE t.statecd = bp.statecd AND t.unitcd = bp.unitcd)) AS b " +
+                    "WHERE a.CN = b.CN AND a.condprop_specific IS NULL AND a.biosum_status_cd = 9";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                //handle for those states and units that do not have macro plot
+                if ((double)SQLite.getSingleDoubleValueFromSQLQuery(p_conn, SQLite.m_strSQL, "temp") > 0)
+                {
+                    SQLite.m_strSQL = "UPDATE " + this.m_strTreeTable + " AS t " +
+                        "SET condprop_specific = CASE WHEN c.micrprop_unadj IS NOT NULL AND t.dia < 5 " +
+                        "THEN c.micrprop_unadj ELSE CASE WHEN c.subpprop_unadj IS NOT NULL AND t.dia >= 5 " +
+                        "THEN c.subpprop_unadj END END END " +
+                        "FROM " + this.m_strCondTable + " AS c, " + this.m_strPlotTable + " AS p " +
+                        "WHERE c.biosum_plot_id = p.biosum_plot_id AND t.biosum_cond_id = c.biosum_cond_id " +
+                        "AND t.condid = c.condid AND t.biosum_status_cd = 9";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                    SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+                }
+            }
+
+            //Update fvs_tree_id column for tracking a tree between BioSum and FVS for lifetime of project
+            SetLabelValue(m_frmTherm.lblMsg, "Text", "Updating Tree fvs_tree_id Column...Stand By");
+            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control) this.m_frmTherm, "Refresh");
+            SQLite.m_strSQL = "UPDATE " + this.m_strTreeTable + " SET fvs_tree_id = CAST((subp * 1000 + tree) AS TEXT) WHERE dia > 0.1";
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+            SetLabelValue(m_frmTherm.lblMsg,"Text","Updating Tree tpacurr Column...Stand By");
+            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
+			//update tree tpacurr column
+            SQLite.m_strSQL = "UPDATE " + this.m_strTreeTable +
+                " SET tpacurr = CASE WHEN tpa_unadj IS NOT NULL AND condprop_specific IS NOT NULL " +
+                "THEN tpa_unadj / condprop_specific ELSE 0 END";
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+			SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+            //Set spcd to 998 is it is 4 digits long
+            SetLabelValue(m_frmTherm.lblMsg, "Text", "Updating Tree spcd Column...Stand By");
+            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
+            SQLite.m_strSQL = "UPDATE " + this.m_strTreeTable + " SET spcd = 998 WHERE spcd > 999";
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+            //
+            //drybiot,drybiom,voltsgrs processing
+            //                   
+            SetLabelValue(m_frmTherm.lblMsg, "Text", "Start Volume and Biomass Calculations...Stand By");
+            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
+
+            //step 5 - delete and create work table
+            string strFcsBiosumVolumesInputTable = "TEMPDB." + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable;
+            if (SQLite.TableExist(p_conn, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable) || SQLite.AttachedTableExist(p_conn, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable))
+            {
+                SQLite.SqlNonQuery(p_conn, "DELETE FROM " + strFcsBiosumVolumesInputTable);
+            }
+            else
+            {
+                frmMain.g_oTables.m_oFvs.CreateSQLiteInputFCSBiosumVolumesTable(SQLite, p_conn, strFcsBiosumVolumesInputTable);
+            }
+
+            var treeToFcsBiosumVolumesInputTable = new List<Tuple<string, string>>
+            {
+                Tuple.Create("ACTUALHT", "ACTUALHT"),
+                Tuple.Create("BFSND", "BFSND"),
+                Tuple.Create("BOLEHT", "BOLEHT"),
+                Tuple.Create("CENTROID_DIA", "CENTROID_DIA"),
+                Tuple.Create("CENTROID_DIA_HT_ACTUAL", "CENTROID_DIA_HT_ACTUAL"),
+                Tuple.Create("CFSND", "CFSND"),
+                Tuple.Create("CND_CN", "BIOSUM_COND_ID AS CND_CN"),
+                Tuple.Create("COUNTYCD", "COUNTYCD"),
+                Tuple.Create("CR", "CR"),
+                Tuple.Create("CULL", "CULL"),
+                Tuple.Create("CULLBF", "CULLBF"),
+                Tuple.Create("CULLCF", "CULLCF"),
+                Tuple.Create("CULLDEAD", "CULLDEAD"),
+                Tuple.Create("CULLFORM", "CULLFORM"),
+                Tuple.Create("CULLMSTOP", "CULLMSTOP"),
+                Tuple.Create("CULL_FLD", "CULL_FLD"),
+                Tuple.Create("DIA", "CASE WHEN DIA IS NOT NULL THEN ROUND(DIA, 2) ELSE DIA END"),
+                Tuple.Create("DIAHTCD", "DIAHTCD"),
+                Tuple.Create("FORMCL", "FORMCL"),
+                Tuple.Create("HT", "HT"),
+                Tuple.Create("HTDMP", "HTDMP"),
+                Tuple.Create("INVYR", "INVYR"),
+                Tuple.Create("PLOT", "CAST(SUBSTR(BIOSUM_COND_ID, 16, 6) AS INTEGER) AS PLOT"),
+                Tuple.Create("PLT_CN", "SUBSTR(BIOSUM_COND_ID, 1, LENGTH(BIOSUM_COND_ID) - 1) AS PLT_CN"),
+                Tuple.Create("ROUGHCULL", "ROUGHCULL"),
+                Tuple.Create("SAWHT", "SAWHT"),
+                Tuple.Create("SITREE", "SITREE"),
+                Tuple.Create("SPCD", "SPCD"),
+                Tuple.Create("STANDING_DEAD_CD", "STANDING_DEAD_CD"),
+                Tuple.Create("STATECD", "STATECD"),
+                Tuple.Create("STATUSCD", "STATUSCD"),
+                Tuple.Create("SUBP", "SUBP"),
+                Tuple.Create("TOTAGE", "TOTAGE"),
+                Tuple.Create("TREE", "TREE"),
+                Tuple.Create("TREECLCD", "TREECLCD"),
+                Tuple.Create("TRE_CN", "CN AS TRE_CN"),
+                Tuple.Create("UPPER_DIA", "UPPER_DIA"),
+                Tuple.Create("UPPER_DIA_HT", "UPPER_DIA_HT"),
+                Tuple.Create("VOL_LOC_GRP", "'' AS VOL_LOC_GRP"),
+                Tuple.Create("WDLDSTEM", "WDLDSTEM"),
+            };
+
+            strColumns = string.Join(",", treeToFcsBiosumVolumesInputTable.Select(e => e.Item1));
+            strValues = string.Join(",", treeToFcsBiosumVolumesInputTable.Select(e => e.Item2));
+
+            //insert records
+            SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step1(strFcsBiosumVolumesInputTable, m_strTreeTable, strColumns, strValues);
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+            SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step2(strFcsBiosumVolumesInputTable, m_strTreeTable,m_strPlotTable,m_strCondTable);
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+
+            SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step3(strFcsBiosumVolumesInputTable, m_strCondTable);
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+            //populate treeclcd column
+            string strCullTotalWorkTable = "TEMPDB.cull_total_work_table";
+            if (SQLite.TableExist(p_conn, "cull_total_work_table") || SQLite.AttachedTableExist(p_conn, "cull_total_work_table"))
+            {
+                SQLite.m_strSQL = "DELETE FROM " + strCullTotalWorkTable;
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+                SQLite.m_strSQL = "INSERT INTO " + strCullTotalWorkTable +
+                    " SELECT tre_cn, CASE WHEN cull IS NOT NULL AND roughcull IS NOT NULL " +
+                    "THEN cull + roughcull ELSE CASE WHEN cull IS NOT NULL " +
+                    "THEN cull ELSE CASE WHEN roughcull IS NOT NULL " +
+                    "THEN roughcull ELSE 0 END END END AS totalcull " +
+                    "FROM " + strFcsBiosumVolumesInputTable;
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            }
+            else
+            {
+                SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step4(
+                                strCullTotalWorkTable, strFcsBiosumVolumesInputTable);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            }
+
+            SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.PNWRS.BuildInputTableForVolumeCalculation_Step5(
+                strCullTotalWorkTable, strFcsBiosumVolumesInputTable);
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+            SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.PNWRS.BuildInputTableForVolumeCalculation_Step6(
+                            strCullTotalWorkTable, strFcsBiosumVolumesInputTable);
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+            string strWorkTable = "TEMPDB." + Tables.VolumeAndBiomass.SqliteWorkTable;
+            if (SQLite.TableExist(p_conn, Tables.VolumeAndBiomass.SqliteWorkTable) || SQLite.AttachedTableExist(p_conn, Tables.VolumeAndBiomass.SqliteWorkTable))
+            {
+                SQLite.SqlNonQuery(p_conn, "DELETE FROM " + Tables.VolumeAndBiomass.SqliteWorkTable);
+            }
+            else
+            {
+                frmMain.g_oTables.m_oFvs.CreateSqliteInputFCSBiosumVolumesWorkTable(SQLite, p_conn, strWorkTable);
+            }
+            
+            string strInputFields = SQLite.getFieldNames(p_conn, "SELECT * FROM " + strFcsBiosumVolumesInputTable);
+            SQLite.m_strSQL = "INSERT INTO " + strWorkTable + " (" + strInputFields + ") " +
+                "SELECT * FROM " + strFcsBiosumVolumesInputTable;
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+            if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase) == false)
+            {
+                m_intError = -1;
+                m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase + " not found";
+            }
+            if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR") == false)
+            {
+                m_intError = -1;
+                m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR not found";
+            }
+            if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_tree_calc.bat") == false)
+            {
+                m_intError = -1;
+                m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_tree_calc.bat not found";
+            }
+            if (m_intError == 0)
+            {
+                //
+                //Remove data from fcs_tree.db
+                //
+                string strFcsTreeDb = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase;
+                SQLite.m_strSQL = "ATTACH DATABASE '" + strFcsTreeDb + "' AS FCS";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+                SQLite.m_strSQL = "DELETE FROM FCS." + Tables.VolumeAndBiomass.BiosumVolumeCalcTable;
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
                 SetThermValue(m_frmTherm.progressBar1, "Value", 0);
-                
-                SetLabelValue(m_frmTherm.lblMsg,"Text","Updating Condition Proportion Column...Stand By");
-			    frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
-					//update the condition proportion column
-					p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-									 "INNER JOIN ((" + this.m_strPpsaTable + " ppsa " + 
-												 "INNER JOIN " + this.m_strPlotTable + " p " + 
-												 "ON ppsa.plt_cn= p.cn) " + 
-												 "INNER JOIN " + this.m_strBiosumPopStratumAdjustmentFactorsTable + " ps " + 
-												 "ON ppsa.stratum_cn=ps.stratum_cn) " + 
-									 "ON c.biosum_plot_id = p.biosum_plot_id " + 
-									 "SET condprop = IIf(ps.pmh_macr Is Not Null And ps.pmh_macr>0," + 
-														 "c.condprop_unadj/ps.pmh_macr," + 
-													"IIf(ps.pmh_sub Is Not Null And ps.pmh_sub>0," + 
-														 "c.condprop_unadj/ps.pmh_sub," + 
-													"IIf(ps.pmh_micr Is Not Null And ps.pmh_micr>0," + 
-														 "c.condprop_unadj/ps.pmh_micr,0)))";
 
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                //
+                //Insert into fcs_tree.biosum_calc
+                //
+                SQLite.m_strSQL = "INSERT INTO FCS." + Tables.VolumeAndBiomass.BiosumVolumeCalcTable + "( " + strInputFields + ") " +
+                    " SELECT " + strInputFields + " FROM " + strWorkTable;
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+                SetThermValue(m_frmTherm.progressBar1, "Value", 1);
 
-                    SetLabelValue(m_frmTherm.lblMsg,"Text","Updating Condition Acres Column...Stand By");
-                    frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
-
-					//update acres column
-					p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-									 "INNER JOIN ((" + this.m_strPpsaTable + " ppsa " + 
-												 "INNER JOIN " + this.m_strPlotTable + " p " + 
-												 "ON ppsa.plt_cn= p.cn) " +
-                                                 "INNER JOIN " + this.m_strBiosumPopStratumAdjustmentFactorsTable + " ps " + 
-												 "ON ppsa.stratum_cn=ps.stratum_cn) " + 
-									 "ON c.biosum_plot_id = p.biosum_plot_id " + 
-									 "SET acres = IIF( c.condprop IS NOT NULL and ps.expns IS NOT NULL," + 
-													"c.condprop * ps.expns,0)";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-
-                    //update condprop_specific column for when plot.macro_breakpoint_dia has a value
-                    SetLabelValue(m_frmTherm.lblMsg, "Text", "Updating Tree Condprop Specific Column...Stand By");
-                    frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
-                    
-                    p_ado.m_strSQL = "UPDATE " + m_strTreeTable + " t " +
-                                        "INNER JOIN (" + m_strCondTable + " c INNER JOIN " + m_strPlotTable + " p ON c.biosum_plot_id=p.biosum_plot_id) " +
-                                        "ON t.biosum_cond_id = c.biosum_cond_id " +
-                                        "SET t.condprop_specific = " +
-                                        "IIF(c.micrprop_unadj IS NOT NULL AND t.dia < 5," +
-                                            "c.micrprop_unadj," +
-                                        "IIF(c.subpprop_unadj IS NOT NULL AND " +
-                                            "p.MACRO_BREAKPOINT_DIA IS NOT NULL AND " +
-                                            "t.dia >= 5 AND " +
-                                            "t.dia < p.MACRO_BREAKPOINT_DIA," +
-                                            "c.subpprop_unadj," +
-                                        "IIF(c.macrprop_unadj IS NOT NULL AND " +
-                                            "p.MACRO_BREAKPOINT_DIA IS NOT NULL AND " +
-                                            "t.dia >= p.MACRO_BREAKPOINT_DIA," +
-                                            "c.macrprop_unadj))) " + 
-                                        "WHERE t.biosum_status_cd=9";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-                    p_ado.SqlNonQuery(this.m_connTempMDBFile, p_ado.m_strSQL);
-                    //check if null values 
-                    p_ado.m_strSQL = "SELECT COUNT(*) AS ROWCOUNT " +
-                                     "FROM " + m_strTreeTable + " t," +
-                                               m_strTreeMacroPlotBreakPointDiaTable + " bp " +
-                                     "WHERE t.biosum_status_cd=9 AND " +
-                                           "t.condprop_specific IS NULL AND " +
-                                           "t.statecd = bp.statecd AND " +
-                                           "t.unitcd = bp.unitcd";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-                    //check if condprop_specific null and exists in the tree macro plot breakpoint diameter table
-                    if ((double)p_ado.getSingleDoubleValueFromSQLQuery(m_connTempMDBFile, p_ado.m_strSQL, "temp") > 0)
+                //
+                //Run Java app to calculate volume/biomass
+                //
+                if (m_intError == 0)
+                {
+                    frmMain.g_oUtils.RunProcess(
+                        frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum", "fcs_tree_calc.bat",
+                        "BAT");
+                    if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory +
+                                                "\\FIABiosum\\fcs_error_msg.txt"))
                     {
-                        //got some nulls
-                        p_ado.m_strSQL = "UPDATE " + m_strTreeTable + " t " +
-                                         "INNER JOIN ((" + m_strCondTable + " c " +
-                                            "INNER JOIN " + m_strPlotTable + " p ON c.biosum_plot_id=p.biosum_plot_id) " +
-                                            "INNER JOIN " + m_strTreeMacroPlotBreakPointDiaTable + " bp ON p.statecd = bp.statecd AND p.unitcd=bp.unitcd) " +
-                                         "ON t.biosum_cond_id = c.biosum_cond_id " +
-                                         "SET t.condprop_specific = " +
-                                         "IIF(c.micrprop_unadj IS NOT NULL AND t.dia < 5," +
-                                                "c.micrprop_unadj," +
-                                         "IIF(c.subpprop_unadj IS NOT NULL AND " +
-                                             "bp.MACRO_BREAKPOINT_DIA IS NOT NULL AND " +
-                                             "t.dia >= 5 AND t.dia < bp.MACRO_BREAKPOINT_DIA," +
-                                                "c.subpprop_unadj," +
-                                         "IIF(c.macrprop_unadj IS NOT NULL AND " +
-                                             "bp.MACRO_BREAKPOINT_DIA IS NOT NULL AND " +
-                                             "t.dia >= bp.MACRO_BREAKPOINT_DIA," +
-                                                "c.macrprop_unadj))) " +
-                                         "WHERE t.biosum_status_cd=9";
+                        // Read entire text file content in one string  
+                        m_strError = System.IO.File.ReadAllText(
+                            frmMain.g_oEnv.strApplicationDataDirectory +
+                            "\\FIABiosum\\fcs_error_msg.txt");
+                        if (m_strError.IndexOf("JAVA.EXE", 0) > 0)
+                            m_strError = "Problem detected running JAVA.EXE";
+                        m_intError = -2;
+                    }
+                }
+                SetThermValue(m_frmTherm.progressBar1, "Value", 2);
+
+                //
+                //Update with calculated values
+                //
+                if (m_intError == 0)
+                {
+                    if (SQLite.TableExist(p_conn, Tables.VolumeAndBiomass.BiosumCalcOutputTable) || SQLite.AttachedTableExist(p_conn, Tables.VolumeAndBiomass.BiosumCalcOutputTable))
+                    {
+                        SQLite.m_strSQL = "DELETE FROM " + Tables.VolumeAndBiomass.BiosumCalcOutputTable;
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-                        p_ado.SqlNonQuery(this.m_connTempMDBFile, p_ado.m_strSQL);
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+                        SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
                     }
                     else
                     {
-                        //see if we have nulls and no MACRO PLOT for the unit code
-                         p_ado.m_strSQL = "SELECT COUNT(*) AS ROWCOUNT FROM tree a," + 
-                                              "(SELECT t.* FROM tree t " + 
-                                               "WHERE NOT EXISTS " + 
-                                                   "(SELECT  * FROM TreeMacroPlotBreakPointDia bp " + 
-                                                    "WHERE t.statecd=bp.statecd AND t.unitcd=bp.unitcd)) b " + 
-                                         "WHERE a.CN=b.CN AND a.condprop_specific IS NULL AND a.biosum_status_cd=9";
+                        SQLite.m_strSQL = "CREATE TABLE TEMPDB." + Tables.VolumeAndBiomass.BiosumCalcOutputTable +
+                        " AS SELECT * FROM " + strFcsBiosumVolumesInputTable + " WHERE 1 = 2";
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-                        //handle for those states and units that do not have macro plot
-                        if ((double)p_ado.getSingleDoubleValueFromSQLQuery(m_connTempMDBFile, p_ado.m_strSQL, "temp") > 0)
-                        {
-                            p_ado.m_strSQL = "UPDATE " + m_strTreeTable + " t " +
-                                             "INNER JOIN (" + m_strCondTable + " c " +
-                                             "INNER JOIN " + m_strPlotTable + " p ON c.biosum_plot_id=p.biosum_plot_id) " +
-                                             "ON t.biosum_cond_id = c.biosum_cond_id AND t.condid = c.condid " +
-                                             "SET t.condprop_specific = " +
-                                             "IIF(c.micrprop_unadj IS NOT NULL AND t.dia < 5," +
-                                                "c.micrprop_unadj," +
-                                             "IIF(c.subpprop_unadj IS NOT NULL AND t.dia >= 5," +
-                                                "c.subpprop_unadj)) " +
-                                             "WHERE t.biosum_status_cd=9";
-                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-                            p_ado.SqlNonQuery(this.m_connTempMDBFile, p_ado.m_strSQL);
-
-                        }
-
+                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+                        SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
                     }
 
-            		//Update fvs_tree_id column for tracking a tree between BioSum and FVS for lifetime of project
-            		SetLabelValue(m_frmTherm.lblMsg, "Text", "Updating Tree fvs_tree_id Column...Stand By");
-            		frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control) this.m_frmTherm, "Refresh");
-            		p_ado.m_strSQL = "UPDATE " + this.m_strTreeTable + " SET fvs_tree_id = CStr(subp*1000+tree) where dia > 0.1;";
+                    string strOutputFields = SQLite.getFieldNames(p_conn, "SELECT * FROM TEMPDB." + Tables.VolumeAndBiomass.BiosumCalcOutputTable);
+                    SQLite.m_strSQL = "INSERT INTO TEMPDB." + Tables.VolumeAndBiomass.BiosumCalcOutputTable + " (" + strOutputFields + ") " +
+                        "SELECT " + strOutputFields + " FROM FCS." + Tables.VolumeAndBiomass.BiosumVolumeCalcTable +
+                        " WHERE VOLTSGRS_CALC IS NOT NULL AND TRE_CN IS NOT NULL";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-                    this.m_ado.SqlNonQuery(this.m_connTempMDBFile, p_ado.m_strSQL);
+                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+                    SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                    SetLabelValue(m_frmTherm.lblMsg,"Text","Updating Tree tpacurr Column...Stand By");
-                    frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
-					//update tree tpacurr column
-                    p_ado.m_strSQL = "UPDATE " + this.m_strTreeTable + " t " +
-                        "SET tpacurr = IIF(t.tpa_unadj IS NOT NULL AND t.condprop_specific IS NOT NULL," +
-                                       "t.tpa_unadj / t.condprop_specific,0)";
-
+                    //update VOLTSGRS
+                    SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.WriteCalculatedVolumeAndBiomassColumnsToTreeTable("TEMPDB." + Tables.VolumeAndBiomass.BiosumCalcOutputTable);
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_ado.m_strSQL + "\r\n");
-
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-
-                    //
-                    //drybiot,drybiom,voltsgrs processing
-                    //                   
-                        SetLabelValue(m_frmTherm.lblMsg, "Text", "Start Volume and Biomass Calculations...Stand By");
-                        frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
-
-                        //step 5 - delete and create work table
-                        if (p_ado.TableExist(this.m_connTempMDBFile, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable))
-                            p_ado.SqlNonQuery(this.m_connTempMDBFile, "DROP TABLE " + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
-                        frmMain.g_oTables.m_oFvs.CreateOracleInputFCSBiosumVolumesTable(p_ado, this.m_connTempMDBFile, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
-
-
-                        var treeToFcsBiosumVolumesInputTable = new List<Tuple<string, string>>
-                        {
-                            Tuple.Create("ACTUALHT", "ACTUALHT"),
-                            // ("BALIVE", "BALIVE"), //cond table
-                            Tuple.Create("BFSND", "BFSND"),
-                            Tuple.Create("BOLEHT", "BOLEHT"),
-                            Tuple.Create("CENTROID_DIA", "CENTROID_DIA"),
-                            Tuple.Create("CENTROID_DIA_HT_ACTUAL", "CENTROID_DIA_HT_ACTUAL"),
-                            Tuple.Create("CFSND", "CFSND"),
-                            Tuple.Create("CND_CN", "BIOSUM_COND_ID AS CND_CN"),
-                            Tuple.Create("COUNTYCD", "COUNTYCD"),
-                            Tuple.Create("CR", "CR"),
-                            Tuple.Create("CULL", "CULL"),
-                            Tuple.Create("CULLBF", "CULLBF"),
-                            Tuple.Create("CULLCF", "CULLCF"),
-                            Tuple.Create("CULLDEAD", "CULLDEAD"),
-                            Tuple.Create("CULLFORM", "CULLFORM"),
-                            Tuple.Create("CULLMSTOP", "CULLMSTOP"),
-                            Tuple.Create("CULL_FLD", "CULL_FLD"),
-                            // ("DECAYCD", "null as DECAYCD"), // TODO: Update queries following this will set it.
-                            Tuple.Create("DIA", "IIF(DIA IS NOT NULL, ROUND(DIA, 2), DIA)"),
-                            Tuple.Create("DIAHTCD", "DIAHTCD"),
-                            Tuple.Create("FORMCL", "FORMCL"),
-                            Tuple.Create("HT", "HT"),
-                            Tuple.Create("HTDMP", "HTDMP"),
-                            Tuple.Create("INVYR", "INVYR"),
-                            Tuple.Create("PLOT", "CLNG(MID(BIOSUM_COND_ID, 16, 6)) AS PLOT"),
-                            Tuple.Create("PLT_CN", "MID(BIOSUM_COND_ID, 1, LEN(BIOSUM_COND_ID)-1) AS PLT_CN"),
-                            // ("PRECIPITATION", "PRECIPITATION"), //plot table
-                            Tuple.Create("ROUGHCULL", "ROUGHCULL"),
-                            Tuple.Create("SAWHT", "SAWHT"),
-                            Tuple.Create("SITREE", "SITREE"),
-                            Tuple.Create("SPCD", "SPCD"),
-                            Tuple.Create("STANDING_DEAD_CD", "STANDING_DEAD_CD"),
-                            Tuple.Create("STATECD", "STATECD"),
-                            Tuple.Create("STATUSCD", "STATUSCD"),
-                            Tuple.Create("SUBP", "SUBP"),
-                            Tuple.Create("TOTAGE", "TOTAGE"),
-                            Tuple.Create("TREE", "TREE"),
-                            Tuple.Create("TREECLCD", "TREECLCD"),
-                            Tuple.Create("TRE_CN", "CN AS TRE_CN"),
-                            Tuple.Create("UPPER_DIA", "UPPER_DIA"),
-                            Tuple.Create("UPPER_DIA_HT", "UPPER_DIA_HT"),
-                            Tuple.Create("VOL_LOC_GRP", "'' AS VOL_LOC_GRP"),
-                            Tuple.Create("WDLDSTEM", "WDLDSTEM"),
-                        };
-
-                        strColumns = string.Join(",", treeToFcsBiosumVolumesInputTable.Select(e => e.Item1));
-                        strValues = string.Join(",", treeToFcsBiosumVolumesInputTable.Select(e => e.Item2));
-
-                        //insert records
-                        p_ado.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step1(Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable, m_strTreeTable, strColumns, strValues);
-                        
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n\r\n");
-                        p_ado.SqlNonQuery(this.m_connTempMDBFile, p_ado.m_strSQL);
-
-                        p_ado.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step2(Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable, m_strTreeTable,m_strPlotTable,m_strCondTable);
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n\r\n");
-                        p_ado.SqlNonQuery(this.m_connTempMDBFile, p_ado.m_strSQL);
-
-
-                        p_ado.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step3(Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable, m_strCondTable);
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n\r\n");
-                        p_ado.SqlNonQuery(this.m_connTempMDBFile, p_ado.m_strSQL);
-
-                        //populate treeclcd column
-                        if (p_ado.TableExist(m_connTempMDBFile, "CULL_TOTAL_WORK_TABLE"))
-                            p_ado.SqlNonQuery(m_connTempMDBFile, "DROP TABLE CULL_TOTAL_WORK_TABLE");
-
-                        p_ado.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step4(
-                                          "cull_total_work_table",
-                                          Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
-                       
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n\r\n");
-                        p_ado.SqlNonQuery(this.m_connTempMDBFile, p_ado.m_strSQL);
-
-
-                        p_ado.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.PNWRS.BuildInputTableForVolumeCalculation_Step5(
-                            "cull_total_work_table", Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n\r\n");
-                        p_ado.SqlNonQuery(this.m_connTempMDBFile, p_ado.m_strSQL);
-
-
-                        p_ado.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.PNWRS.BuildInputTableForVolumeCalculation_Step6(
-                                       "cull_total_work_table", Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n\r\n");
-                        p_ado.SqlNonQuery(this.m_connTempMDBFile, p_ado.m_strSQL);
-
-                            frmMain.g_oTables.m_oFvs.CreateOracleInputFCSBiosumVolumesWorkTable(p_ado, m_connTempMDBFile, Tables.VolumeAndBiomass.SqliteWorkTable);
-                            p_ado.m_strSQL = $@"INSERT INTO {Tables.VolumeAndBiomass.SqliteWorkTable} 
-                                                SELECT * FROM {Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable}";
-                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n\r\n");
-                            p_ado.SqlNonQuery(m_connTempMDBFile, p_ado.m_strSQL);
-                            if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase) == false)
-                            {
-                                m_intError = -1;
-                                m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase + " not found";
-                            }
-                            if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR") == false)
-                            {
-                                m_intError = -1;
-                                m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR not found";
-                            }
-                            if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_tree_calc.bat") == false)
-                            {
-                                m_intError = -1;
-                                m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_tree_calc.bat not found";
-                            }
-                            if (m_intError == 0)
-                            {
-                                int COUNT = 0;
-                                SQLite.ADO.DataMgr oSQLite = new SQLite.ADO.DataMgr();
-
-                                SQLite = oSQLite;
-                                MSAccess = p_ado;
-                                var columnsAndDataTypes = Tables.VolumeAndBiomass.ColumnsAndDataTypes;
-                                strColumns = string.Join(",", columnsAndDataTypes.Select(item => item.Item1));
-
-                                //
-                                //CONNECT TO SQLITE AND REMOVE DATA FROM SQLITE DB
-                                //
-                                oSQLite.OpenConnection(false, 1,
-                                    frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" +
-                                    Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase, "BIOSUM");
-                                oSQLite.SqlNonQuery(oSQLite.m_Connection, $"DELETE FROM {Tables.VolumeAndBiomass.BiosumVolumeCalcTable}");
-                                SetThermValue(m_frmTherm.progressBar1, "Value", 0);
-                                System.Threading.Thread.Sleep(2000);
-
-                                //
-                                //INSERT ALL THE MS ACCESS DATA INTO SQLITE
-                                //
-                                int intTotalRecs = (int) p_ado.getRecordCount(m_connTempMDBFile, $"SELECT COUNT(*) AS ROWCOUNT FROM {Tables.VolumeAndBiomass.SqliteWorkTable}", Tables.VolumeAndBiomass.SqliteWorkTable);
-
-                                p_ado.SqlQueryReader(m_connTempMDBFile, $"SELECT * FROM {Tables.VolumeAndBiomass.SqliteWorkTable}");
-                                if (p_ado.m_OleDbDataReader.HasRows)
-                                {
-                                    System.Data.SQLite.SQLiteTransaction transaction;
-
-                                    System.Data.SQLite.SQLiteCommand command = oSQLite.m_Connection.CreateCommand();
-
-                                    // Start a local transaction
-                                    transaction = oSQLite.m_Connection.BeginTransaction(IsolationLevel.ReadCommitted);
-                                    // Assign transaction object for a pending local transaction
-                                    command.Transaction = transaction;
-
-
-                                    try
-                                    {
-                                        COUNT = 0;
-                                        SetThermValue(m_frmTherm.progressBar1, "Maximum", intTotalRecs);
-
-                                        while (MSAccess.m_OleDbDataReader.Read())
-                                        {
-                                            COUNT++;
-                                            strValues = utils.GetParsedInsertValues(MSAccess.m_OleDbDataReader, columnsAndDataTypes);
-                                            command.CommandText = $"INSERT INTO {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} ({strColumns}) VALUES ({strValues})";
-                                            command.ExecuteNonQuery();
-                                            //frmMain.g_oDelegate.SetControlPropertyValue((Control)lblSQLite2Msg, "Text", "INSERT DATA: " + COUNT.ToString() + " of " + intTotalCount.ToString());
-                                            frmMain.g_oDelegate.SetControlPropertyValue(
-                                                (System.Windows.Forms.Control) m_frmTherm.lblMsg, "Text",
-                                                "Prepare Tree Data for Volume and Biomass Calculations...Stand By [" +
-                                                COUNT.ToString() + "/" + intTotalRecs.ToString() + "]");
-                                            frmMain.g_oDelegate.ExecuteControlMethod(
-                                                (System.Windows.Forms.Control) this.m_frmTherm.lblMsg, "Refresh");
-                                            if (COUNT <= intTotalRecs)
-                                                SetThermValue(m_frmTherm.progressBar1, "Value", COUNT);
-                                        }
-
-                                        transaction.Commit();
-                                    }
-                                    catch (Exception err)
-                                    {
-                                        m_intError = -1;
-                                        MessageBox.Show(err.Message);
-                                        transaction.Rollback();
-                                    }
-
-                                    transaction.Dispose();
-                                    transaction = null;
-                                }
-
-                                strConn = m_connTempMDBFile.ConnectionString;
-                                MSAccess.m_OleDbDataReader.Close();
-                                MSAccess.m_OleDbDataReader.Dispose();
-                                MSAccess.CloseConnection(m_connTempMDBFile);
-                                m_connTempMDBFile.Dispose();
-                                //oAdo = null;
-                                SetThermValue(m_frmTherm.progressBar1, "Value", 1);
-                                //
-                                //RUN JAVA APP TO CALCULATE VOLUME/BIOMASS
-                                //
-                                if (m_intError == 0)
-                                {
-                                    oSQLite.CloseAndDisposeConnection(oSQLite.m_Connection, true);
-                                    frmMain.g_oUtils.RunProcess(
-                                        frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum", "fcs_tree_calc.bat",
-                                        "BAT");
-                                    if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory +
-                                                              "\\FIABiosum\\fcs_error_msg.txt"))
-                                    {
-                                        // Read entire text file content in one string  
-                                        m_strError = System.IO.File.ReadAllText(
-                                            frmMain.g_oEnv.strApplicationDataDirectory +
-                                            "\\FIABiosum\\fcs_error_msg.txt");
-                                        if (m_strError.IndexOf("JAVA.EXE", 0) > 0)
-                                            m_strError = "Problem detected running JAVA.EXE";
-                                        m_intError = -2;
-                                    }
-                                }
-
-                                SetThermValue(m_frmTherm.progressBar1, "Value", 2);
-                                //
-                                //UPDATE MSACCESS WITH CALCULATED VALUES
-                                //
-                                if (m_intError == 0)
-                                {
-                                    //oAdo = new ado_data_access();
-
-                                    //MSAccess = p_ado;
-
-                                    SQLite.OpenConnection(false, 1,
-                                        frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" +
-                                        Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase, "BIOSUM");
-
-                                    //COUNT = Convert.ToInt32(_oSQLite.getSingleDoubleValueFromSQLQuery(_oSQLite.m_Connection,"SELECT COUNT(*) AS ROWCOUNT FROM BIOSUM_CALC","biosum_calc"));
-
-                                    MSAccess.OpenConnection(strConn, ref m_connTempMDBFile);
-
-                                    if (MSAccess.TableExist(m_connTempMDBFile,
-                                        Tables.VolumeAndBiomass.BiosumCalcOutputTable))
-                                        MSAccess.SqlNonQuery(m_connTempMDBFile,
-                                            $"DROP TABLE {Tables.VolumeAndBiomass.BiosumCalcOutputTable}");
-
-                                    System.Threading.Thread.Sleep(3000);
-
-                                    MSAccess.SqlNonQuery(m_connTempMDBFile,
-                                        $"SELECT * INTO {Tables.VolumeAndBiomass.BiosumCalcOutputTable} FROM {Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable} WHERE 1=2");
-
-
-                                    //MSAccessBeginTransaction("BIOSUM_VOLUME_INPUT", "TRE_CN,VOLCSGRS_CALC,VOLCFGRS_CALC,VOLCFNET_CALC,DRYBIOT_CALC,DRYBIOM_CALC,VOLTSGRS_CALC", "TRE_CN",COUNT , "");
-
-                                    intTotalRecs = Convert.ToInt32(SQLite.getSingleDoubleValueFromSQLQuery(SQLite.m_Connection, 
-                                        $"SELECT COUNT(*) AS ROWCOUNT FROM {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} WHERE VOLTSGRS_CALC IS NOT NULL", 
-                                        Tables.VolumeAndBiomass.BiosumVolumeCalcTable));
-
-                                    SetThermValue(m_frmTherm.progressBar1, "Maximum", intTotalRecs);
-                                    if (intTotalRecs < 50)
-                                    {
-                                        SetThermValue(m_frmTherm.progressBar1, "Maximum", 50);
-                                    }
-
-                                    oSQLite.SqlQueryReader(oSQLite.m_Connection,
-                                        $"SELECT * FROM {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} WHERE VOLTSGRS_CALC IS NOT NULL");
-
-                                    if (oSQLite.m_DataReader.HasRows)
-                                    {
-                                        System.Data.OleDb.OleDbTransaction transaction;
-                                        System.Data.OleDb.OleDbCommand command = m_connTempMDBFile.CreateCommand();
-                                        // Start a local transaction
-                                        transaction = m_connTempMDBFile.BeginTransaction(IsolationLevel.ReadCommitted);
-                                        // Assign transaction object for a pending local transaction
-                                        command.Transaction = transaction;
-                                        try
-                                        {
-                                            COUNT = 0;
-                                            SetThermValue(m_frmTherm.progressBar1, "Value", COUNT);
-
-                                            while (oSQLite.m_DataReader.Read())
-                                            {
-                                                COUNT++;
-                                                if (oSQLite.m_DataReader["TRE_CN"] != DBNull.Value &&
-                                                    Convert.ToString(oSQLite.m_DataReader["TRE_CN"]).Trim().Length > 0)
-                                                {
-                                                    strValues = utils.GetParsedInsertValues(oSQLite.m_DataReader, columnsAndDataTypes);
-                                                    command.CommandText = $"INSERT INTO {Tables.VolumeAndBiomass.BiosumCalcOutputTable} ({strColumns}) VALUES ({strValues})";
-                                                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 3)
-                                                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, command.CommandText + "\r\n\r\n");
-                                                    command.ExecuteNonQuery();
-                                                    SetThermValue(m_frmTherm.progressBar1, "Value", COUNT);
-                                                }
-
-                                                frmMain.g_oDelegate.SetControlPropertyValue(
-                                                    (System.Windows.Forms.Control) m_frmTherm.lblMsg, "Text",
-                                                    "Update MSAccess with SQLite Results..Stand By [" +
-                                                    COUNT.ToString() + "/" + intTotalRecs.ToString() + "]");
-                                                frmMain.g_oDelegate.ExecuteControlMethod(
-                                                    (System.Windows.Forms.Control) this.m_frmTherm.lblMsg, "Refresh");
-                                            }
-
-                                            transaction.Commit();
-                                        }
-                                        catch (Exception err)
-                                        {
-                                            m_intError = -1;
-                                            MessageBox.Show(err.Message);
-                                            transaction.Rollback();
-                                        }
-                                        finally
-                                        {
-                                            //update VOLTSGRS
-                                            if (m_intError == 0)
-                                            {
-                                                MSAccess.m_strSQL =
-                                                    Queries.VolumeAndBiomass.FIAPlotInput.WriteCalculatedVolumeAndBiomassColumnsToTreeTable(Tables.VolumeAndBiomass.BiosumCalcOutputTable);
-                                                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, MSAccess.m_strSQL + "\r\n\r\n");
-                                                    MSAccess.SqlNonQuery(m_connTempMDBFile, MSAccess.m_strSQL);
-                                            }
-                                        }
-
-                                        transaction.Dispose();
-                                        transaction = null;
-                                    }
-
-                                    //MSAccess.CloseConnection(MSAccess.m_OleDbConnection);
-                                    //MSAccess.m_OleDbConnection.Dispose();
-                                    //oAdo = null;
-                                    oSQLite.CloseAndDisposeConnection(oSQLite.m_Connection, true);
-                                    oSQLite = null;
-                                }
-
-                                SetThermValue(m_frmTherm.progressBar1, "Value", m_frmTherm.progressBar1.Maximum);
-                            }
-  
-
-                    
-                
-
-                SetLabelValue(m_frmTherm.lblMsg,"Text", "Updating Condition Table Columns...Stand By");
-                frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
-
-				
-                SetThermValue(m_frmTherm.progressBar1, "Value", 6);
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-
-					//tpa column
-					//sum trees per acre on a condition 
-					//for live trees >= 5 inches in diameter 
-					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,tpacurr) " + 
-						"SELECT DISTINCT(a.biosum_cond_id),a.tottpa as tpa  " + 
-						"FROM " + this.m_strTreeTable + " t, " + 
-						"(SELECT biosum_cond_id, SUM(tpacurr) as tottpa " + 
-						"FROM " + this.m_strTreeTable + " " +
-                        //issue_253: include saplings in tpacurr
-                        //"WHERE  dia >= 5 AND statuscd=1 " + 
-                        "WHERE statuscd=1 " +
-                        "GROUP BY biosum_cond_id) a " + 
-						"WHERE t.biosum_status_cd=9 AND " + 
-						"a.biosum_cond_id=t.biosum_cond_id;";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 7);
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-					p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-						"INNER JOIN cond_column_updates_work_table u " + 
-						"ON c.biosum_cond_id = u.biosum_cond_id " + 
-						"SET c.TPACURR = u.TPACURR;";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 8);
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-
-					//swd_tpa
-					//sum trees per acre on a condition 
-					//for softwood live trees >= 5 inches in diameter 
-					p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-
-					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,swd_tpacurr) " + 
-						"SELECT DISTINCT(a.biosum_cond_id),a.totswdtpa as swd_tpa  " + 
-						"FROM " + this.m_strTreeTable + " t, " + 
-						"(SELECT biosum_cond_id, SUM(tpacurr) as totswdtpa " + 
-						"FROM " + this.m_strTreeTable + " " +
-                        //issue_253: include saplings in tpacurr  
-                        //"WHERE spcd < 300 AND dia >= 5 AND statuscd=1 " +
-                        "WHERE spcd < 300 AND statuscd = 1 " +
-                        "GROUP BY biosum_cond_id ) a " + 
-						"WHERE t.biosum_status_cd=9 AND " + 
-						"a.biosum_cond_id=t.biosum_cond_id;";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 9);
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-					p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-						"INNER JOIN cond_column_updates_work_table u " + 
-						"ON c.biosum_cond_id = u.biosum_cond_id " + 
-						"SET c.SWD_TPACURR = u.SWD_TPACURR;";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 10);
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-
-					//hwd tpa
-					//sum trees per acre on a condition 
-					//for hardwood live trees >= 5 inches in diameter 
-					p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-
-					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,hwd_tpacurr) " + 
-						"SELECT DISTINCT(a.biosum_cond_id),a.tothwdtpa as hwd_tpacurr  " + 
-						"FROM " + this.m_strTreeTable + " t, " + 
-						"(SELECT biosum_cond_id, SUM(tpacurr) as tothwdtpa " + 
-						"FROM " + this.m_strTreeTable + " " +
-                        //issue_253: include saplings in tpacurr  
-                        //"WHERE spcd > 299 AND dia >= 5 AND statuscd=1 " + 
-                        "WHERE spcd > 299 AND statuscd=1 " +
-                        "GROUP BY biosum_cond_id ) a " + 
-						"WHERE t.biosum_status_cd=9 AND " + 
-						"a.biosum_cond_id=t.biosum_cond_id;";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 11);
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-					p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-						"INNER JOIN cond_column_updates_work_table u " + 
-						"ON c.biosum_cond_id = u.biosum_cond_id " + 
-						"SET c.HWD_TPACURR = u.HWD_TPACURR;";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 12);
-                
-
-                //vol_ac_grs_ft3
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-
-					//total
-					//for all live trees >= 5 inches in diameter 
-					p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-
-					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,vol_ac_grs_ft3) " + 
-						"SELECT DISTINCT(a.biosum_cond_id),a.tot_volgrsft3 as vol_ac_grs_ft3  " + 
-						"FROM " + this.m_strTreeTable + " t, " + 
-						"(SELECT biosum_cond_id, SUM(volcfgrs * tpacurr) as tot_volgrsft3 " + 
-						"FROM " + this.m_strTreeTable + " WHERE volcfgrs IS NOT NULL AND tpacurr IS NOT NULL AND statuscd=1 AND dia >=5 " + 
-						"GROUP BY biosum_cond_id ) a " + 
-						"WHERE t.biosum_status_cd=9 AND " + 
-						"a.biosum_cond_id=t.biosum_cond_id;";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 13);
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-					p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-						"INNER JOIN cond_column_updates_work_table u " + 
-						"ON c.biosum_cond_id = u.biosum_cond_id " + 
-						"SET c.VOL_AC_GRS_FT3 = u.VOL_AC_GRS_FT3;";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 14);
-
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-
-					//hwd
-					//for all live hardwood trees >= 5 inches in diameter 
-					p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-
-					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,hwd_vol_ac_grs_ft3) " + 
-						"SELECT DISTINCT(a.biosum_cond_id),a.tot_volgrsft3 as hwd_vol_ac_grs_ft3  " + 
-						"FROM " + this.m_strTreeTable + " t, " + 
-						"(SELECT biosum_cond_id, SUM(volcfgrs * tpacurr) as tot_volgrsft3 " + 
-					 	 "FROM " + this.m_strTreeTable + " " + 
-                         "WHERE spcd > 299 AND volcfgrs IS NOT NULL AND tpacurr IS NOT NULL AND statuscd=1 AND dia >=5 " + 
-						"GROUP BY biosum_cond_id ) a " + 
-						"WHERE t.biosum_status_cd=9 AND " + 
-						"a.biosum_cond_id=t.biosum_cond_id;";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 15);
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-					p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-						"INNER JOIN cond_column_updates_work_table u " + 
-						"ON c.biosum_cond_id = u.biosum_cond_id " + 
-						"SET c.HWD_VOL_AC_GRS_FT3 = u.HWD_VOL_AC_GRS_FT3;";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 16);
-
-
-
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-
-					//SWD
-					//for all live softwood trees >= 5 inches in diameter 
-					p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-
-					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,swd_vol_ac_grs_ft3) " + 
-						"SELECT DISTINCT(a.biosum_cond_id),a.tot_volgrsft3 as swd_vol_ac_grs_ft3  " + 
-						"FROM " + this.m_strTreeTable + " t, " + 
-						"(SELECT biosum_cond_id, SUM(volcfgrs * tpacurr) as tot_volgrsft3 " + 
-						"FROM " + this.m_strTreeTable + " " + 
-						"WHERE spcd < 300 AND volcfgrs IS NOT NULL AND tpacurr IS NOT NULL AND statuscd=1 AND dia >=5 " + 
-						"GROUP BY biosum_cond_id ) a " + 
-						"WHERE t.biosum_status_cd=9 AND " + 
-						"a.biosum_cond_id=t.biosum_cond_id;";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 17);
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-					p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-						"INNER JOIN cond_column_updates_work_table u " + 
-						"ON c.biosum_cond_id = u.biosum_cond_id " + 
-						"SET c.SWD_VOL_AC_GRS_FT3 = u.SWD_VOL_AC_GRS_FT3;";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value",18);
-
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-					//ba_ft2_ac basal area column
-					p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-
-					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,ba_ft2_ac) " + 
-						"SELECT a.biosum_cond_id, b.tottemp AS ba_ft2_ac " + 
-						"FROM " + this.m_strCondTable + " a, " +  
-						"(SELECT biosum_cond_id, SUM((.005454154 * dia^2)  * tpacurr)  AS tottemp " + 
-						 "FROM " + this.m_strTreeTable + " " + 
-						 "WHERE biosum_status_cd=9  AND statuscd=1 " + 
-						 "GROUP BY biosum_cond_id)  b " + 
-						"WHERE a.biosum_cond_id = b.biosum_cond_id ";
-
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 19);
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-					p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-						"INNER JOIN cond_column_updates_work_table u " + 
-						"ON c.biosum_cond_id = u.biosum_cond_id " + 
-						"SET c.BA_FT2_AC = u.BA_FT2_AC;";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 20);
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-
-					//swd_ba_ft2_ac softwood basal area 
-					p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-
-					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,swd_ba_ft2_ac) " + 
-						"SELECT a.biosum_cond_id, b.tottemp AS swd_ba_ft2_ac " + 
-						"FROM " + this.m_strCondTable + " a, " +  
-						"(SELECT biosum_cond_id, SUM((.005454154 * dia^2)  * tpacurr)  AS tottemp " + 
-						"FROM " + this.m_strTreeTable + " " + 
-						"WHERE biosum_status_cd=9 AND " + 
-						      "spcd < 300 AND statuscd=1 " + 
-						"GROUP BY biosum_cond_id)  b " + 
-						"WHERE a.biosum_cond_id = b.biosum_cond_id ";
-
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 21);
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-					p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-						"INNER JOIN cond_column_updates_work_table u " + 
-						"ON c.biosum_cond_id = u.biosum_cond_id " + 
-						"SET c.SWD_BA_FT2_AC = u.SWD_BA_FT2_AC";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 22);
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-					//hardwood ba_ft2_ac
-					p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-
-					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,hwd_ba_ft2_ac) " + 
-						"SELECT a.biosum_cond_id, b.tottemp AS hwd_ba_ft2_ac " + 
-						"FROM " + this.m_strCondTable + " a, " +  
-						"(SELECT biosum_cond_id, SUM((.005454154 * dia^2)  * tpacurr)  AS tottemp " + 
-						"FROM " + this.m_strTreeTable + " " + 
-						"WHERE biosum_status_cd=9 AND " + 
-						"spcd > 299 AND statuscd=1 " + 
-						"GROUP BY biosum_cond_id)  b " + 
-						"WHERE a.biosum_cond_id = b.biosum_cond_id ";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 23);
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-					p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-						"INNER JOIN cond_column_updates_work_table u " + 
-						"ON c.biosum_cond_id = u.biosum_cond_id " + 
-						"SET c.HWD_BA_FT2_AC = u.HWD_BA_FT2_AC";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 24);
-
-				//volcsgrs  
-				//gross sawlog
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-					p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-
-					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,volcsgrs) " + 
-						"SELECT DISTINCT(a.biosum_cond_id),a.ttl as  volcsgrs " + 
-						"FROM " + this.m_strTreeTable + " t, " + 
-						"(SELECT biosum_cond_id, SUM(volcsgrs) as ttl " + 
-						"FROM " + this.m_strTreeTable + " " + 
-						"GROUP BY biosum_cond_id) a " + 
-						"WHERE t.biosum_status_cd=9 AND " + 
-						"a.biosum_cond_id=t.biosum_cond_id;";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 25);
-
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-
-					p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-						"INNER JOIN cond_column_updates_work_table u " + 
-						"ON c.biosum_cond_id = u.biosum_cond_id " + 
-						"SET c.volcsgrs = u.volcsgrs;";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 26);
-
-
-				//swd_volcsgrs      
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-
-					p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-
-					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,swd_volcsgrs) " + 
-						"SELECT DISTINCT(a.biosum_cond_id),a.ttl as swd_volcsgrs  " + 
-						"FROM " + this.m_strTreeTable + " t, " + 
-						"(SELECT biosum_cond_id, SUM(volcsgrs) as ttl " + 
-						"FROM " + this.m_strTreeTable + " " + 
-						"WHERE SPCD < 300 " + 
-						"GROUP BY biosum_cond_id ) a " + 
-						"WHERE t.biosum_status_cd=9 AND " + 
-						"a.biosum_cond_id=t.biosum_cond_id;";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 27);
-
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-
-					p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-						"INNER JOIN cond_column_updates_work_table u " + 
-						"ON c.biosum_cond_id = u.biosum_cond_id " + 
-						"SET c.SWD_volcsgrs = u.SWD_volcsgrs";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 28);
-
-				//hwd_volcsgrs      
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-
-					p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-
-					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,hwd_volcsgrs) " + 
-						"SELECT DISTINCT(a.biosum_cond_id),a.ttl as hwd_volcsgrs  " + 
-						"FROM " + this.m_strTreeTable + " t, " + 
-						"(SELECT biosum_cond_id, SUM(volcsgrs) as ttl " + 
-						"FROM " + this.m_strTreeTable + " " + 
-						"WHERE SPCD > 299 " + 
-						"GROUP BY biosum_cond_id ) a " + 
-						"WHERE t.biosum_status_cd=9 AND " + 
-						"a.biosum_cond_id=t.biosum_cond_id;";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 29);
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-
-					p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-						"INNER JOIN cond_column_updates_work_table u " + 
-						"ON c.biosum_cond_id = u.biosum_cond_id " + 
-						"SET c.HWD_volcsgrs = u.HWD_volcsgrs";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 30);
-
-
-
-
-
-
-
+                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+                    SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+                }
+
+                SetThermValue(m_frmTherm.progressBar1, "Value", m_frmTherm.progressBar1.Maximum);
+            }
+
+            SetLabelValue(m_frmTherm.lblMsg,"Text", "Updating Condition Table Columns...Stand By");
+            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
+            SetThermValue(m_frmTherm.progressBar1, "Value", 6);
+
+            //tpa column
+            //sum trees per acre on a condition 
+            //for live trees >= 5 inches in diameter 
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, tpacurr) " +
+                    "SELECT DISTINCT(a.biosum_cond_id), a.tottpa AS tpacurr " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(tpacurr) AS tottpa " +
+                    "FROM " + this.m_strTreeTable + " WHERE statuscd = 1 GROUP BY biosum_cond_id) AS a " +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
+                strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 7);
+
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET tpacurr = u.tpacurr " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 8);
+
+            //swd_tpa
+            //sum trees per acre on a condition 
+            //for softwood live trees >= 5 inches in diameter 
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, swd_tpacurr) " +
+                    "SELECT DISTINCT(a.biosum_cond_id), a.totswdtpa AS swd_tpacurr " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(tpacurr) AS totswdtpa " +
+                    "FROM " + this.m_strTreeTable + " WHERE spcd < 300 AND statuscd = 1 GROUP BY biosum_cond_id) AS a " +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
+                strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 9);
+
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET swd_tpacurr = u.swd_tpacurr " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 10);
+
+            //hwd tpa
+            //sum trees per acre on a condition 
+            //for hardwood live trees >= 5 inches in diameter
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table;";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, hwd_tpacurr) " +
+                    "SELECT DISTINCT (a.biosum_cond_id), a.tothwdtpa AS hwd_tpacurr " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(tpacurr) AS tothwdtpa " +
+                    "FROM " + this.m_strTreeTable + " WHERE spcd > 299 AND statuscd = 1 GROUP BY biosum_cond_id) AS a " +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
+                strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 11);
+
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET hwd_tpacurr = u.hwd_tpacurr " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 12);
+
+            //vol_ac_grs_ft3
+
+            //total
+            //for all live trees >= 5 inches in diameter 
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, vol_ac_grs_ft3) " +
+                    "SELECT DISTINCT(a.biosum_cond_id), a.tot_volgrsft3 AS vol_ac_grs_ft3 " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(volcfgrs * tpacurr) AS tot_volgrsft3 " +
+                    "FROM " + this.m_strTreeTable + " WHERE volcfgrs IS NOT NULL AND tpacurr IS NOT NULL AND statuscd = 1 AND dia >= 5 " +
+                    "GROUP BY biosum_cond_id) AS a " +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 13);
+
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET vol_ac_grs_ft3 = u.vol_ac_grs_ft3 " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 14);
+
+            //hwd
+            //for all live hardwood trees >= 5 inches in diameter 
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, hwd_vol_ac_grs_ft3) " +
+                    "SELECT DISTINCT(a.biosum_cond_id), a.tot_volgrsft3 AS hwd_vol_ac_grs_ft3 " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(volcfgrs * tpacurr) AS tot_volgrsft3 " +
+                    "FROM " + this.m_strTreeTable + " WHERE spcd > 299 AND volcfgrs IS NOT NULL AND tpacurr IS NOT NULL " +
+                    "AND statuscd = 1 AND dia >= 5 GROUP BY biosum_cond_id) AS a " +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 15);
+
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET hwd_vol_ac_grs_ft3 = u.hwd_vol_ac_grs_ft3 " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 16);
+
+            //SWD
+            //for all live softwood trees >= 5 inches in diameter 
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, swd_vol_ac_grs_ft3) " +
+                    "SELECT DISTINCT(a.biosum_cond_id), a.tot_volgrsft3 AS swd_vol_ac_grs_ft3 " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(volcfgrs * tpacurr) AS tot_volgrsft3 " +
+                    "FROM " + this.m_strTreeTable + " WHERE spcd < 300 AND volcfgrs IS NOT NULL AND tpacurr IS NOT NULL " +
+                    "AND statuscd = 1 AND dia >= 5 GROUP BY biosum_cond_id) AS a " +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 17);
+
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET swd_vol_ac_grs_ft3 = u.swd_vol_ac_grs_ft3 " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value",18);
+
+            //ba_ft2_ac basal area column
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, ba_ft2_ac) " +
+                    "SELECT a.biosum_cond_id, b.tottemp AS ba_ft2_ac " +
+                    "FROM " + this.m_strCondTable + " AS a, " +
+                    "(SELECT biosum_cond_id, SUM((.005454154 * POW(dia, 2)) * tpacurr) AS tottemp " +
+                    "FROM " + this.m_strTreeTable + " WHERE biosum_status_cd = 9 " +
+                    "AND statuscd = 1 GROUP BY biosum_cond_id) AS b " +
+                    "WHERE a.biosum_cond_id = b.biosum_cond_id";
+                strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 19);
+
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET ba_ft2_ac = u.ba_ft2_ac " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 20);
+
+            //swd_ba_ft2_ac softwood basal area 
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, swd_ba_ft2_ac) " +
+                    "SELECT a.biosum_cond_id, b.tottemp AS swd_ba_ft2_ac " +
+                    "FROM " + this.m_strCondTable + " AS a, " +
+                    "(SELECT biosum_cond_id, SUM((.005454154 * POW(dia, 2)) * tpacurr) AS tottemp " +
+                    "FROM " + this.m_strTreeTable + " WHERE biosum_status_cd = 9 " +
+                    "AND spcd < 300 AND statuscd = 1 GROUP BY biosum_cond_id) AS b " +
+                    "WHERE a.biosum_cond_id = b.biosum_cond_id";
+                strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 21);
+
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET swd_ba_ft2_ac = u.swd_ba_ft2_ac " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 22);
+
+            //hardwood ba_ft2_ac
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, hwd_ba_ft2_ac) " +
+                    "SELECT a.biosum_cond_id, b.tottemp AS hwd_ba_ft2_ac " +
+                    "FROM " + this.m_strCondTable + " AS a, " +
+                    "(SELECT biosum_cond_id, SUM((.005454154 * POW(dia, 2)) * tpacurr) AS tottemp " +
+                    "FROM " + this.m_strTreeTable + " WHERE biosum_status_cd = 9 " +
+                    "AND spcd > 299 AND statuscd = 1 GROUP BY biosum_cond_id) AS b " +
+                    "WHERE a.biosum_cond_id = b.biosum_cond_id";
+                strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 23);
+
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET hwd_ba_ft2_ac = u.hwd_ba_ft2_ac " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 24);
+
+			//volcsgrs  
+			//gross sawlog
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, volcsgrs) " +
+                    "SELECT DISTINCT(a.biosum_cond_id), a.tt1 AS volcsgrs " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(volcsgrs) AS tt1 " +
+                    "FROM " + this.m_strTreeTable + " GROUP BY biosum_cond_id) AS a " +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 25);
+
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET volcsgrs = u.volcsgrs " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 26);
+
+			//swd_volcsgrs      
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, swd_volcsgrs) " +
+                    "SELECT DISTINCT(a.biosum_cond_id), a.ttl AS swd_volcsgrs " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(volcsgrs) AS ttl " +
+                    "FROM " + this.m_strTreeTable + " WHERE spcd < 300 GROUP BY biosum_cond_id) AS a " +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 27);
+
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET swd_volcsgrs = u.swd_volcsgrs " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 28);
+
+			//hwd_volcsgrs      
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, hwd_volcsgrs) " +
+                    "SELECT DISTINCT(a.biosum_cond_id), a.ttl AS hwd_volcsgrs " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(volcsgrs) AS ttl " +
+                    "FROM " + this.m_strTreeTable + " WHERE spcd > 299 GROUP BY biosum_cond_id) AS a " +
+                    "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 29);
+
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET hwd_volcsgrs = u.hwd_volcsgrs " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 30);
 
             //qmd_all_inch 
             // quadratic mean diameter for all the live trees on the condition
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-					p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,qmd_all_inch) " +
-                        "SELECT c.biosum_cond_id, SQR(c.ba_ft2_ac/(.005454154 * c.tpacurr)) as qmd_all_inch " + 
-						"FROM " + this.m_strCondTable + " c " + 
-						"WHERE c.biosum_status_cd=9 AND " + 
-						      "c.ba_ft2_ac IS NOT NULL AND " + 
-							  "c.ba_ft2_ac <> 0 AND " + 
-						      "c.tpacurr IS NOT NULL AND " + 
-						      "c.tpacurr <> 0;";
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, qmd_all_inch) " +
+                    "SELECT c.biosum_cond_id, SQRT(c.ba_ft2_ac / (.005454154 * c.tpacurr)) AS qmd_all_inch " +
+                    "FROM " + this.m_strCondTable + " AS c " +
+                    "WHERE c.biosum_status_cd = 9 AND c.ba_ft2_ac IS NOT NULL " +
+                    "AND c.ba_ft2_ac <> 0 AND c.tpacurr IS NOT NULL AND c.tpacurr <> 0";
+                strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 31);
 
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 31);
-
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-
-					p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-						"INNER JOIN cond_column_updates_work_table u " + 
-						"ON c.biosum_cond_id = u.biosum_cond_id " +
-                        "SET c.qmd_all_inch = u.qmd_all_inch;";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 32);
-
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET qmd_all_inch = u.qmd_all_inch " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 32);
 
             //qmd_swd_inch      
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-					p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, qmd_swd_inch) " +
+                    "SELECT c.biosum_cond_id, SQRT(c.swd_ba_ft2_ac / (.005454154 * c.swd_tpacurr)) AS qmd_swd_inch " +
+                    "FROM " + this.m_strCondTable + " AS c " +
+                    "WHERE c.biosum_status_cd = 9 AND c.swd_ba_ft2_ac IS NOT NULL AND c.swd_ba_ft2_ac <> 0 " +
+                    "AND c.swd_tpacurr IS NOT NULL AND c.swd_tpacurr <> 0";
+                strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 33);
 
-					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id,qmd_swd_inch) " +
-                        "SELECT c.biosum_cond_id, SQR(c.swd_ba_ft2_ac/(.005454154 * c.swd_tpacurr)) as qmd_swd_inch " + 
-						"FROM " + this.m_strCondTable + " c " + 
-						"WHERE c.biosum_status_cd=9 AND " + 
-						"c.swd_ba_ft2_ac IS NOT NULL AND " + 
-						"c.swd_ba_ft2_ac <> 0 AND " + 
-						"c.swd_tpacurr IS NOT NULL AND " + 
-						"c.swd_tpacurr <> 0;";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 33);
-
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-
-					p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-						"INNER JOIN cond_column_updates_work_table u " + 
-						"ON c.biosum_cond_id = u.biosum_cond_id " +
-                        "SET c.qmd_swd_inch = u.qmd_swd_inch";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 34);
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET qmd_swd_inch = u.qmd_swd_inch " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 34);
 
             // qmd_hwd_inch    
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-					p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, qmd_hwd_inch) " +
+                    "SELECT c.biosum_cond_id, SQRT(c.hwd_ba_ft2_ac / (.005454154 * c.hwd_tpacurr)) AS qmd_hwd_inch " +
+                    "FROM " + this.m_strCondTable + " AS c " +
+                    "WHERE c.biosum_status_cd = 9 AND c.hwd_ba_ft2_ac IS NOT NULL " +
+                    "AND c.hwd_ba_ft2_ac <> 0 AND c.hwd_tpacurr IS NOT NULL AND c.hwd_tpacurr <> 0";
+                strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 35);
 
-					p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table (biosum_cond_id, qmd_hwd_inch) " +
-                        "SELECT c.biosum_cond_id, SQR(c.hwd_ba_ft2_ac/(.005454154 * c.hwd_tpacurr)) as qmd_hwd_inch " + 
-						"FROM " + this.m_strCondTable + " c " + 
-						"WHERE c.biosum_status_cd=9 AND " + 
-						"c.hwd_ba_ft2_ac IS NOT NULL AND " + 
-						"c.hwd_ba_ft2_ac <> 0 AND " + 
-						"c.hwd_tpacurr IS NOT NULL AND " + 
-						"c.hwd_tpacurr <> 0;";
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET qmd_hwd_inch = u.qmd_hwd_inch " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 36);
 
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 35);
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
+			//VOL_AC_GRS_STEM_TTL_FT
+            //gross wood volume of the total stem from ground to tip
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-					p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-						"INNER JOIN cond_column_updates_work_table u " + 
-						"ON c.biosum_cond_id = u.biosum_cond_id " +
-                        "SET c.qmd_hwd_inch = u.qmd_hwd_inch";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 36);
-
-
-
-				//VOL_AC_GRS_STEM_TTL_FT
-                //gross wood volume of the total stem from ground to tip
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-					p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-
-                p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table(biosum_cond_id, vol_ac_grs_stem_ttl_ft3) " +
-                    "SELECT DISTINCT(a.biosum_cond_id),a.ttl as vol_ac_grs_stem_ttl_ft3 " +
-                    "FROM " + this.m_strTreeTable + " t, " +
-                    "(SELECT biosum_cond_id, SUM(voltsgrs * tpacurr) as ttl " +
-                    "FROM " + this.m_strTreeTable + " " +
-                    "WHERE voltsgrs IS NOT NULL AND tpacurr IS NOT NULL AND statuscd = 1 AND dia >= 1 " +
-                    "GROUP BY biosum_cond_id ) a " +
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, vol_ac_grs_stem_ttl_ft3) " +
+                    "SELECT DISTINCT(a.biosum_cond_id), a.ttl AS vol_ac_grs_stem_ttl_ft3 " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(voltsgrs * tpacurr) AS ttl " +
+                    "FROM " + this.m_strTreeTable + " WHERE voltsgrs IS NOT NULL AND tpacurr IS NOT NULL " +
+                    "AND statuscd = 1 AND dia >= 1 GROUP BY biosum_cond_id) AS a " +
                     "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
+                strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 37);
 
-                    strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 37);
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET vol_ac_grs_stem_ttl_ft3 = u.vol_ac_grs_stem_ttl_ft3 " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 38);
 
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
+			//hwd_vol_ac_grs_stem_ttl_ft
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table;";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-					p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-						"INNER JOIN cond_column_updates_work_table u " + 
-						"ON c.biosum_cond_id = u.biosum_cond_id " + 
-						"SET c.vol_ac_grs_stem_ttl_ft3 = u.vol_ac_grs_stem_ttl_ft3;";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 38);
-
-
-				//hwd_vol_ac_grs_stem_ttl_ft
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-
-					p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-
-                p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table(biosum_cond_id, hwd_vol_ac_grs_stem_ttl_ft3) " +
-                    "SELECT DISTINCT(a.biosum_cond_id),a.ttl as  hwd_vol_ac_grs_stem_ttl_ft3 " +
-                    "FROM " + this.m_strTreeTable + " t, " +
-                    "(SELECT biosum_cond_id, SUM(voltsgrs * tpacurr) as ttl " +
-                    "FROM " + this.m_strTreeTable + " " +
-                    "WHERE spcd > 299 AND voltsgrs IS NOT NULL AND tpacurr IS NOT NULL AND statuscd = 1 AND dia >= 1 " +
-                    "GROUP BY biosum_cond_id ) a " +
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table (biosum_cond_id, hwd_vol_ac_grs_stem_ttl_ft3) " +
+                    "SELECT DISTINCT(a.biosum_cond_id), a.ttl AS hwd_vol_ac_grs_stem_ttl_ft3 " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(voltsgrs * tpacurr) AS ttl " +
+                    "FROM " + this.m_strTreeTable + " WHERE spcd > 299 AND voltsgrs IS NOT NULL " +
+                    "AND tpacurr IS NOT NULL AND statuscd = 1 AND dia >= 1 GROUP BY biosum_cond_id) AS a " +
                     "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
+                strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 39);
 
-                    strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 39);
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET hwd_vol_ac_grs_stem_ttl_ft3 = u.hwd_vol_ac_grs_stem_ttl_ft3 " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn,SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 40);
 
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
+			//swd_vol_ac_grs_stem_ttl_ft     
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.cond_column_updates_work_table";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-					p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-						"INNER JOIN cond_column_updates_work_table u " + 
-						"ON c.biosum_cond_id = u.biosum_cond_id " + 
-						"SET c.hwd_vol_ac_grs_stem_ttl_ft3 = u.hwd_vol_ac_grs_stem_ttl_ft3";
-
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 40);
-
-				//swd_vol_ac_grs_stem_ttl_ft     
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
-
-					p_ado.m_strSQL = "DELETE FROM cond_column_updates_work_table;";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-
-                p_ado.m_strSQL = "INSERT INTO cond_column_updates_work_table(biosum_cond_id, swd_vol_ac_grs_stem_ttl_ft3) " +
-                    "SELECT DISTINCT(a.biosum_cond_id),a.ttl as swd_vol_ac_grs_stem_ttl_ft3 " +
-                    "FROM " + this.m_strTreeTable + " t, " +
-                    "(SELECT biosum_cond_id, SUM(voltsgrs * tpacurr) as ttl " +
-                    "FROM " + this.m_strTreeTable + " " +
-                    "WHERE spcd< 300 AND voltsgrs IS NOT NULL AND tpacurr IS NOT NULL AND statuscd = 1 AND dia >= 1 " +
-                    "GROUP BY biosum_cond_id ) a " +
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.cond_column_updates_work_table(biosum_cond_id, swd_vol_ac_grs_stem_ttl_ft3) " +
+                    "SELECT DISTINCT(a.biosum_cond_id), a.ttl AS swd_vol_ac_grs_stem_ttl_ft3 " +
+                    "FROM " + this.m_strTreeTable + " AS t, " +
+                    "(SELECT biosum_cond_id, SUM(voltsgrs * tpacurr) AS ttl " +
+                    "FROM " + this.m_strTreeTable + " WHERE spcd < 300 AND voltsgrs IS NOT NULL " +
+                    "AND tpacurr IS NOT NULL AND statuscd = 1 AND dia >= 1 GROUP BY biosum_cond_id) AS a " +
                     "WHERE t.biosum_status_cd = 9 AND a.biosum_cond_id = t.biosum_cond_id";
+                strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 41);
 
-                    strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 41);
-                if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-				{
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strCondTable + " AS c " +
+                    "SET swd_vol_ac_grs_stem_ttl_ft3 = u.swd_vol_ac_grs_stem_ttl_ft3 " +
+                    "FROM TEMPDB.cond_column_updates_work_table AS u " +
+                    "WHERE c.biosum_cond_id = u.biosum_cond_id";
+				strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+				strTime += " " + System.DateTime.Now.ToString();
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 42);
 
-					p_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " c " + 
-						"INNER JOIN cond_column_updates_work_table u " + 
-						"ON c.biosum_cond_id = u.biosum_cond_id " + 
-						"SET c.swd_vol_ac_grs_stem_ttl_ft3 = u.swd_vol_ac_grs_stem_ttl_ft3";
 
-					strTime = System.DateTime.Now.ToString();
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-					p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 42);
 			//----------------------PLOT COLUMN UPDATES-----------------------//
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//----------------------PLOT COLUMN UPDATES-----------------------//\r\n");
-            SetThermValue(m_frmTherm.progressBar1, "Maximum", 4);
+            SetThermValue(m_frmTherm.progressBar1, "Maximum", 5);
             SetThermValue(m_frmTherm.progressBar1, "Minimum", 0);
             SetThermValue(m_frmTherm.progressBar1, "Value", 0);
             SetLabelValue(m_frmTherm.lblMsg,"Text","Updating Plot Table Columns...Stand By");
             frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
 
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-			{
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            {
+                /********************************************
+				 **update fvs_variant and fvs_loc_cd
+				 ********************************************/
+                string strPlotGeomTable = "FIADB.PLOTGEOM";
+                SQLite.m_strSQL = "UPDATE " + this.m_strPlotTable + " AS p " +
+                    "SET fvs_variant = g.fvs_variant, fvs_loc_cd = g.fvs_loc_cd " +
+                    "FROM " + strPlotGeomTable + " AS g " +
+                    "WHERE TRIM(g.cn) = p.cn";
+                strTime = System.DateTime.Now.ToString();
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+                strTime += " " + System.DateTime.Now.ToString();
+            }
+            SetThermValue(m_frmTherm.progressBar1, "Value", 1);
 
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
 				/********************************************
 				 **update the plot half state field
 				 ********************************************/
-				p_ado.m_strSQL = "UPDATE " + this.m_strPlotTable + " p " + 
-					" INNER JOIN " + this.m_strCondTable + " c " + 
-					"ON p.biosum_plot_id = c.biosum_plot_id  " + 
-					" SET p.half_state = MID(c.vol_loc_grp,5,LEN(TRIM(c.vol_loc_grp))) " + 
-					" WHERE c.condid=1;";
-
+                SQLite.m_strSQL = "UPDATE " + this.m_strPlotTable + " AS p " +
+                    "SET half_state = SUBSTR(c.vol_loc_grp, 5, LENGTH(TRIM(c.vol_loc_grp))) " +
+                    "FROM " + this.m_strCondTable + " AS c " +
+                    "WHERE p.biosum_plot_id = c.biosum_plot_id AND c.condid = 1";
 				strTime = System.DateTime.Now.ToString();
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 				strTime += " " + System.DateTime.Now.ToString();
-				//MessageBox.Show(strTime);
-
-				
-				 
 			}
-            SetThermValue(m_frmTherm.progressBar1, "Value", 1);
+            SetThermValue(m_frmTherm.progressBar1, "Value", 2);
 
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
 			{
 				/***************************************************
 				 **update the number of conditions on each plot
 				 ***************************************************/
 				//use the biosum_plot_input as our work table so delete all records
-				p_ado.m_strSQL = "DELETE FROM plot_column_updates_work_table ";
+				SQLite.m_strSQL = "DELETE FROM TEMPDB.plot_column_updates_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
 				//insert the condition counts into the work table
-				p_ado.m_strSQL = "INSERT INTO plot_column_updates_work_table (biosum_plot_id, cond_ttl) " + 
-					" SELECT biosum_plot_id , COUNT(biosum_plot_id) " + 
-					" FROM " + this.m_strCondTable + 
-					" GROUP BY biosum_plot_id;";
+                SQLite.m_strSQL = "INSERT INTO TEMPDB.plot_column_updates_work_table (biosum_plot_id, cond_ttl) " +
+                    "SELECT biosum_plot_id, COUNT(biosum_plot_id) " +
+                    "FROM " + this.m_strCondTable + " GROUP BY biosum_plot_id";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
-			}
-            SetThermValue(m_frmTherm.progressBar1, "Value", 2);
-
-            if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-			{
-
-				p_ado.m_strSQL = "UPDATE " + this.m_strPlotTable  + " p " + 
-					"INNER JOIN plot_column_updates_work_table i " + 
-					"ON  p.biosum_plot_id = i.biosum_plot_id " + 
-					"SET p.num_cond = i.cond_ttl, p.one_cond_yn = IIF(i.cond_ttl > 1,'N','Y');";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-				p_ado.SqlNonQuery(this.m_connTempMDBFile,p_ado.m_strSQL);
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 			}
             SetThermValue(m_frmTherm.progressBar1, "Value", 3);
 
-		    //Set plot.gis_yard_dist_ft to fiadb_fvs_variant.MoveDistance_ft if available
-		    if (p_ado.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-		    {
-		        if (p_ado.ColumnExist(this.m_connTempMDBFile, Tables.Reference.DefaultFiadbFVSVariantTableName, "MoveDistance_ft"))
-		        {
-		            p_ado.m_strSQL = String.Format(
-		                @"UPDATE {0} p INNER JOIN {1} ffv 
-                        ON p.statecd=ffv.statecd and p.countycd=ffv.countycd and p.plot=ffv.plot 
-                        SET p.gis_yard_dist_ft=ffv.MoveDistance_ft 
-                        WHERE ffv.MoveDistance_ft IS NOT NULL and p.biosum_status_cd=9;",
-		                m_strPlotTable, Tables.Reference.DefaultFiadbFVSVariantTableName);
-		            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-		                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-		            p_ado.SqlNonQuery(this.m_connTempMDBFile, p_ado.m_strSQL);
-		        }
-		    }
-		    SetThermValue(m_frmTherm.progressBar1, "Value", 4);
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+			{
+                SQLite.m_strSQL = "UPDATE " + this.m_strPlotTable + " AS p " +
+                    "SET num_cond = i.cond_ttl, one_cond_yn = CASE WHEN i.cond_ttl > 1 THEN 'N' ELSE 'Y' END " +
+                    "FROM TEMPDB.plot_column_updates_work_table AS i " +
+                    "WHERE p.biosum_plot_id = i.biosum_plot_id";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+				SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+			}
+            SetThermValue(m_frmTherm.progressBar1, "Value", 4);
 
-		    return p_ado.m_intError;
+		    //Set plot.gis_yard_dist_ft based on rddistcd using crosswalk table in ref_master.db
+		    if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+		    {
+                string strRefMasterDb = frmMain.g_oEnv.strAppDir + "\\" + Tables.Reference.DefaultRefMasterDbFile;
+                SQLite.m_strSQL = "ATTACH DATABASE '" + strRefMasterDb + "' AS REFMASTER";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+                string strDistXrefTable = "REFMASTER.road_class_to_ft_xref";
+                SQLite.m_strSQL = "UPDATE " + this.m_strPlotTable + " AS p " +
+                    "SET gis_yard_dist_ft = x.distance_ft " +
+                    "FROM " + strDistXrefTable + " AS x " +
+                    "WHERE x.RDDISTCD = p.RDDISTCD";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            }
+		    SetThermValue(m_frmTherm.progressBar1, "Value", 5);
+
+		    return SQLite.m_intError;
 		}
 
-	    private int ImportDownWoodyMaterials(ado_data_access p_ado)
-	    {
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.ImportDownWoodyMaterials\r\n");
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//\r\n");
-            }
-            
-
-            SetLabelValue(m_frmTherm.lblMsg,"Text","Importing DWM data...Stand By");
-            SetThermValue(m_frmTherm.progressBar1,"Maximum", 14);
-            SetThermValue(m_frmTherm.progressBar1, "Minimum", 0);
-            SetThermValue(m_frmTherm.progressBar1, "Value", 0);
-
-		    string strFIADBDbFile = "";
-		    strFIADBDbFile = (string) frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox) txtFiadbInputFile, "Text", false);
-		    strFIADBDbFile = strFIADBDbFile.Trim();
-		    String strFiaCWD = "fiadb_dwm_cwd_input";
-		    String strFiaFWD = "fiadb_dwm_fwd_input";
-		    String strFiaDL = "fiadb_dwm_dufflitter_input";
-		    String strFiaTS = "fiadb_dwm_transect_segment_input";
-
-		    p_ado.CloseConnection(m_connTempMDBFile);
-	        m_connTempMDBFile.Dispose();
-	        m_connTempMDBFile = null;
-
-
-            //If any of the FIADB source DWM tables do not exist,
-            //show message, uncheck the DWM checkbox, return early
-            DataMgr oDataMgr = new DataMgr();
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strFIADBDbFile)))
-	        {
-	            conn.Open();
-                if (!oDataMgr.TableExist(conn, m_strDwmCwdTable) ||
-                    !oDataMgr.TableExist(conn, m_strDwmFwdTable) ||
-                    !oDataMgr.TableExist(conn, m_strDwmDuffLitterTable) ||
-                    !oDataMgr.TableExist(conn, m_strDwmTransectSegmentTable))
-                {
-	                Func<bool, string, string> result = (boolTableExists, tableName) =>
-	                {
-	                    if (!boolTableExists) return "\r\n - " + tableName;
-	                    else return "";
-	                };
-	                DialogResult dlgResult = MessageBox.Show(String.Format(
-	                        "!!Error!!\nModule - uc_plot_input:ImportDownWoodyMaterials\n" + "Err Msg - " +
-	                        "At least one FIADB Source DWM table was not found:{0}{1}{2}{3}\r\nDo you wish to continue plot data input without DWM?",
-	                        result(oDataMgr.TableExist(conn, m_strDwmCwdTable), m_strDwmCwdTable),
-	                        result(oDataMgr.TableExist(conn, m_strDwmFwdTable), m_strDwmFwdTable),
-	                        result(oDataMgr.TableExist(conn, m_strDwmDuffLitterTable), m_strDwmDuffLitterTable),
-	                        result(oDataMgr.TableExist(conn, m_strDwmTransectSegmentTable), m_strDwmTransectSegmentTable)),
-	                    "FIA Biosum",
-	                    MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation);
-	                //Disable functionality related to DWM option down the pipeline
-	                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.CheckBox) chkDwmImport,
-	                    "Checked", false);
-
-	                if (dlgResult == DialogResult.No)
-	                {
-	                    return -1; //terminates plot input processing.
-	                }
-	                else if (dlgResult == DialogResult.Yes)
-	                {
-                        //m_intError == 0 keeps performing plot input.
-	                    return 0;
-	                }
-	            }
-	        }
-
-		    dao_data_access p_dao = new dao_data_access();
-            //Link to FIADB source tables in temporary database
-            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmCwdTable, strFiaCWD,  ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmFwdTable, strFiaFWD,  ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmDuffLitterTable, strFiaDL,  ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-            p_dao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmTransectSegmentTable, strFiaTS,  ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-
-            //Link to Master_AUX.accdb DWM source tables in temporary database
-            string strMasterAuxDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.accdb"; 
-		    p_dao.CreateTableLink(m_strTempMDBFile, m_strDwmCwdTable, strMasterAuxDb, m_strDwmCwdTable);
-		    p_dao.CreateTableLink(m_strTempMDBFile, m_strDwmFwdTable, strMasterAuxDb, m_strDwmFwdTable);
-		    p_dao.CreateTableLink(m_strTempMDBFile, m_strDwmDuffLitterTable, strMasterAuxDb, m_strDwmDuffLitterTable);
-		    p_dao.CreateTableLink(m_strTempMDBFile, m_strDwmTransectSegmentTable, strMasterAuxDb, m_strDwmTransectSegmentTable);
-
-		    m_intError = p_dao.m_intError;
-		    p_dao.m_DaoWorkspace.Close();
-	        p_dao.m_DaoWorkspace = null;
-	        p_dao.m_DaoDbEngine = null;
-		    p_dao = null;
-
-            m_connTempMDBFile = new OleDbConnection(m_strTempMDBFileConn);
-	        m_connTempMDBFile.Open();
-
-            SetThermValue(m_frmTherm.progressBar1, "Value", 1);
-
-		    String strSourceFields = "";
-		    String strDestFields = "";
-		    System.Data.DataTable dtDwmCwd = p_ado.getTableSchema(m_connTempMDBFile, "select * from " + m_strDwmCwdTable);
-		    System.Data.DataTable dtDwmFwd = p_ado.getTableSchema(m_connTempMDBFile, "select * from " + m_strDwmFwdTable);
-		    System.Data.DataTable dtDwmDuffLitter = p_ado.getTableSchema(m_connTempMDBFile, "select * from " + m_strDwmDuffLitterTable);
-		    System.Data.DataTable dtDwmTransectSegment = p_ado.getTableSchema(m_connTempMDBFile, "select * from " + m_strDwmTransectSegmentTable);
-		    System.Data.DataTable dtFIADBDwmCwd = p_ado.getTableSchema(m_connTempMDBFile, "select * from " + strFiaCWD);
-		    System.Data.DataTable dtFIADBDwmFwd = p_ado.getTableSchema(m_connTempMDBFile, "select * from " + strFiaFWD);
-		    System.Data.DataTable dtFIADBDwmDuffLitter = p_ado.getTableSchema(m_connTempMDBFile, "select * from " + strFiaDL);
-		    System.Data.DataTable dtFIADBDwmTransectSegment = p_ado.getTableSchema(m_connTempMDBFile, "select * from " + strFiaTS);
-
-
-            //Preemptively remove any records that were not imported successfully 
-	        DeleteFromTablesWhereFilter(p_ado, m_connTempMDBFile,
-	            new string[]
-	                {m_strDwmCwdTable, m_strDwmFwdTable, m_strDwmDuffLitterTable, m_strDwmTransectSegmentTable},
-	            " WHERE biosum_status_cd=9");
-
-	        //DWM Coarse Woody Debris FIADB into Master.MDB Table
-	        if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control) m_frmTherm, "AbortProcess"))
-	        {
-	            SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM CWD...Stand By");
-	            SetThermValue(m_frmTherm.progressBar1, "Value", 2);
-	            strDestFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmCwd, dtDestSchema: dtDwmCwd);
-	            strSourceFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmCwd, dtDestSchema: dtDwmCwd,
-	                strTablePrefix: "dwm.");
-	            InsertIntoDestTableFromSourceTable(p_ado, strSourceTable: strFiaCWD, strDestTable: m_strDwmCwdTable,
-	                strDestFields: strDestFields, strSourceFields: strSourceFields, InsertBiosumCondIdAndStatusCode: true);
-	            UpdateDwmBiosumCondIds(p_ado, m_strDwmCwdTable);
-	            m_intError = p_ado.m_intError;
-	        }
-
-	        //DWM Fine Woody Debris FIADB into Master.MDB Table
-	        if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control) m_frmTherm, "AbortProcess"))
-	        {
-	            SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM FWD...Stand By");
-	            SetThermValue(m_frmTherm.progressBar1, "Value", 4);
-	            strDestFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmFwd, dtDestSchema: dtDwmFwd);
-	            strSourceFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmFwd, dtDestSchema: dtDwmFwd,
-	                strTablePrefix: "dwm.");
-	            InsertIntoDestTableFromSourceTable(p_ado, strSourceTable: strFiaFWD, strDestTable: m_strDwmFwdTable,
-	                strDestFields: strDestFields, strSourceFields: strSourceFields, InsertBiosumCondIdAndStatusCode: true);
-	            UpdateDwmBiosumCondIds(p_ado, m_strDwmFwdTable);
-	            m_intError = p_ado.m_intError;
-	        }
-
-	        //DWM Duff Litter Fuel FIADB into Master.MDB Table
-	        if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control) m_frmTherm, "AbortProcess"))
-	        {
-	            SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM DuffLitter...Stand By");
-	            SetThermValue(m_frmTherm.progressBar1, "Value", 6);
-	            strDestFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmDuffLitter,
-	                dtDestSchema: dtDwmDuffLitter);
-	            strSourceFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmDuffLitter,
-	                dtDestSchema: dtDwmDuffLitter, strTablePrefix: "dwm.");
-	            InsertIntoDestTableFromSourceTable(p_ado, strSourceTable: strFiaDL,
-	                strDestTable: m_strDwmDuffLitterTable,
-	                strDestFields: strDestFields, strSourceFields: strSourceFields,
-	                InsertBiosumCondIdAndStatusCode: true);
-                p_ado.SqlNonQuery(m_connTempMDBFile,
-                    String.Format(
-                        "UPDATE {0} SET duffdep=0 WHERE duffdep IS NULL AND duff_nonsample_reasn_cd IS NULL;", //or other metacodes are null? dlf_sample_method, dl_status_cd, etc.
-                        m_strDwmDuffLitterTable));
-                p_ado.SqlNonQuery(m_connTempMDBFile,
-                    String.Format(
-                        "UPDATE {0} SET littdep=0 WHERE littdep IS NULL AND litter_nonsample_reasn_cd IS NULL;", //or other metacodes are null? dlf_sample_method, dl_status_cd, etc.
-                        m_strDwmDuffLitterTable));
-	            UpdateDwmBiosumCondIds(p_ado, m_strDwmDuffLitterTable);
-	            m_intError = p_ado.m_intError;
-	        }
-
-	        //DWM Transect Segment FIADB into Master.MDB Table
-	        if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control) m_frmTherm, "AbortProcess"))
-	        {
-	            SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM Transect Segment...Stand By");
-	            SetThermValue(m_frmTherm.progressBar1, "Value", 8);
-	            strDestFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmTransectSegment,
-	                dtDestSchema: dtDwmTransectSegment);
-	            strSourceFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmTransectSegment,
-	                dtDestSchema: dtDwmTransectSegment, strTablePrefix: "dwm.");
-	            InsertIntoDestTableFromSourceTable(p_ado, strSourceTable: strFiaTS,
-	                strDestTable: m_strDwmTransectSegmentTable,
-	                strDestFields: strDestFields, strSourceFields: strSourceFields, InsertBiosumCondIdAndStatusCode: true);
-	            UpdateDwmBiosumCondIds(p_ado, m_strDwmTransectSegmentTable);
-	            m_intError = p_ado.m_intError;
-	        }
-
-            SetLabelValue(m_frmTherm.lblMsg,"Text","");
-            SetThermValue(m_frmTherm.progressBar1, "Value", GetThermValue(m_frmTherm.progressBar1, "Maximum"));
-	        return p_ado.m_intError;
-	    }
-
-        private int ImportDownWoodyMaterialsSqlite()
+        private int ImportDownWoodyMaterials(System.Data.SQLite.SQLiteConnection p_conn)
         {
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -4994,331 +3929,130 @@ namespace FIA_Biosum_Manager
 
             string strFIADBDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtFiadbInputFile, "Text", false);
             strFIADBDbFile = strFIADBDbFile.Trim();
-            String strFiaCWD = "fiadb." + m_strDwmCwdTable;
-            String strFiaFWD = "fiadb." + m_strDwmFwdTable;
-            String strFiaDL = "fiadb." + m_strDwmDuffLitterTable;
-            String strFiaTS = "fiadb." + m_strDwmTransectSegmentTable;
+            String strFiaCWD = "FIADB." + m_strDwmCwdTable;
+            String strFiaFWD = "FIADB." + m_strDwmFwdTable;
+            String strFiaDL = "FIADB." + m_strDwmDuffLitterTable;
+            String strFiaTS = "FIADB." + m_strDwmTransectSegmentTable;
 
             string strMasterAuxDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.db";
 
-            ODBCMgr oODBC = new ODBCMgr();
-            dao_data_access oDao = new dao_data_access();
-            ado_data_access oAdo = new ado_data_access();
-
-            if (oODBC.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.MasterAuxDsnName))
-            {
-                oODBC.RemoveUserDSN(ODBCMgr.DSN_KEYS.MasterAuxDsnName);
-            }
-            oODBC.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.MasterAuxDsnName, strMasterAuxDb);
-
             //If any of the FIADB source DWM tables do not exist,
             //show message, uncheck the DWM checkbox, return early
-            DataMgr oDataMgr = new DataMgr();
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strMasterAuxDb)))
+            SQLite.m_strSQL = "ATTACH DATABASE '" + strMasterAuxDb + "' AS AUX";
+            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+            if (!SQLite.AttachedTableExist(p_conn, m_strDwmCwdTable) || 
+                !SQLite.AttachedTableExist(p_conn, m_strDwmFwdTable) || 
+                !SQLite.AttachedTableExist(p_conn, m_strDwmDuffLitterTable) ||
+                !SQLite.AttachedTableExist(p_conn, m_strDwmTransectSegmentTable))
             {
-                conn.Open();
-
-                oDataMgr.m_strSQL = "ATTACH DATABASE '" + strFIADBDbFile + "' AS fiadb";
-                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
-
-                if (!oDataMgr.AttachedTableExist(conn, m_strDwmCwdTable) ||
-                    !oDataMgr.AttachedTableExist(conn, m_strDwmFwdTable) ||
-                    !oDataMgr.AttachedTableExist(conn, m_strDwmDuffLitterTable) ||
-                    !oDataMgr.AttachedTableExist(conn, m_strDwmTransectSegmentTable))
+                Func<bool, string, string> result = (boolTableExists, tableName) =>
                 {
-                    Func<bool, string, string> result = (boolTableExists, tableName) =>
-                    {
-                        if (!boolTableExists) return "\r\n - " + tableName;
-                        else return "";
-                    };
-                    DialogResult dlgResult = MessageBox.Show(String.Format(
+                    if (!boolTableExists) return "\r\n - " + tableName;
+                    else return "";
+                };
+                DialogResult dlgResult = MessageBox.Show(String.Format(
                             "!!Error!!\nModule - uc_plot_input:ImportDownWoodyMaterials\n" + "Err Msg - " +
                             "At least one FIADB Source DWM table was not found:{0}{1}{2}{3}\r\nDo you wish to continue plot data input without DWM?",
-                            result(oDataMgr.AttachedTableExist(conn, m_strDwmCwdTable), m_strDwmCwdTable),
-                            result(oDataMgr.AttachedTableExist(conn, m_strDwmFwdTable), m_strDwmFwdTable),
-                            result(oDataMgr.AttachedTableExist(conn, m_strDwmDuffLitterTable), m_strDwmDuffLitterTable),
-                            result(oDataMgr.AttachedTableExist(conn, m_strDwmTransectSegmentTable), m_strDwmTransectSegmentTable)),
+                            result(SQLite.AttachedTableExist(p_conn, m_strDwmCwdTable), m_strDwmCwdTable),
+                            result(SQLite.AttachedTableExist(p_conn, m_strDwmFwdTable), m_strDwmFwdTable),
+                            result(SQLite.AttachedTableExist(p_conn, m_strDwmDuffLitterTable), m_strDwmDuffLitterTable),
+                            result(SQLite.AttachedTableExist(p_conn, m_strDwmTransectSegmentTable), m_strDwmTransectSegmentTable)),
                         "FIA Biosum",
                         MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                    //Disable functionality related to DWM option down the pipeline
-                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.CheckBox)chkDwmImport,
-                        "Checked", false);
+                //Disable functionality related to DWM option down the pipeline
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.CheckBox)chkDwmImport,
+                    "Checked", false);
 
-                    if (dlgResult == DialogResult.No)
-                    {
-                        return -1; //terminates plot input processing.
-                    }
-                    else if (dlgResult == DialogResult.Yes)
-                    {
-                        //m_intError == 0 keeps performing plot input.
-                        return 0;
-                    }
-                }
-
-                String strSourceFields = "";
-                String strDestFields = "";
-                System.Data.DataTable dtDwmCwd = oDataMgr.getTableSchema(conn, "select * from " + m_strDwmCwdTable);
-                System.Data.DataTable dtDwmFwd = oDataMgr.getTableSchema(conn, "select * from " + m_strDwmFwdTable);
-                System.Data.DataTable dtDwmDuffLitter = oDataMgr.getTableSchema(conn, "select * from " + m_strDwmDuffLitterTable);
-                System.Data.DataTable dtDwmTransectSegment = oDataMgr.getTableSchema(conn, "select * from " + m_strDwmTransectSegmentTable);
-                System.Data.DataTable dtFIADBDwmCwd = oDataMgr.getTableSchema(conn, "select * from " + strFiaCWD);
-                System.Data.DataTable dtFIADBDwmFwd = oDataMgr.getTableSchema(conn, "select * from " + strFiaFWD);
-                System.Data.DataTable dtFIADBDwmDuffLitter = oDataMgr.getTableSchema(conn, "select * from " + strFiaDL);
-                System.Data.DataTable dtFIADBDwmTransectSegment = oDataMgr.getTableSchema(conn, "select * from " + strFiaTS);
-
-                //Preemptively remove any records that were not imported successfully 
-                DeleteFromTablesWhereFilterSqlite(conn,
-                    new string[]
-                        {m_strDwmCwdTable, m_strDwmFwdTable, m_strDwmDuffLitterTable, m_strDwmTransectSegmentTable},
-                    " WHERE biosum_status_cd=9");
-
-                //Link FIADB tables to temp accdb
-                oDao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmCwdTable, m_strDwmCwdTable + "_fiadb", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile);
-                oDao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmFwdTable, m_strDwmFwdTable + "_fiadb", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile);
-                oDao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmDuffLitterTable, m_strDwmDuffLitterTable + "_fiadb", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile);
-                oDao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmTransectSegmentTable, m_strDwmTransectSegmentTable + "_fiadb", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile);
-
-                //Link master_aux.db tables to temp accdb
-                oDao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmCwdTable, m_strDwmCwdTable + "_master", ODBCMgr.DSN_KEYS.MasterAuxDsnName, strMasterAuxDb);
-                oDao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmFwdTable, m_strDwmFwdTable + "_master", ODBCMgr.DSN_KEYS.MasterAuxDsnName, strMasterAuxDb);
-                oDao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmDuffLitterTable, m_strDwmDuffLitterTable + "_master", ODBCMgr.DSN_KEYS.MasterAuxDsnName, strMasterAuxDb);
-                oDao.CreateSQLiteTableLink(m_strTempMDBFile, m_strDwmTransectSegmentTable, m_strDwmTransectSegmentTable + "_master", ODBCMgr.DSN_KEYS.MasterAuxDsnName, strMasterAuxDb);
-
-                //Sleep until tables are linked
-                int i = 0;
-                do
+                if (dlgResult == DialogResult.No)
                 {
-                    // break out of loop if it runs too long
-                    if (i > 20)
-                    {
-                        System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach FIADB and master_aux tables! " +
-                        "Validate the contents of this database before trying to run Treatment Optimizer.", "FIA Biosum");
-                        break;
-                    }
-                    System.Threading.Thread.Sleep(1000);
-                    i++;
+                    return -1; //terminates plot input processing.
                 }
-                while (!this.m_ado.TableExist(m_connTempMDBFile, m_strDwmCwdTable + "_fiadb") || !this.m_ado.TableExist(m_connTempMDBFile, m_strDwmCwdTable + "_master") ||
-                !this.m_ado.TableExist(m_connTempMDBFile, m_strDwmFwdTable + "_fiadb") || !this.m_ado.TableExist(m_connTempMDBFile, m_strDwmFwdTable + "_master") ||
-                !this.m_ado.TableExist(m_connTempMDBFile, m_strDwmDuffLitterTable + "_fiadb") || !this.m_ado.TableExist(m_connTempMDBFile, m_strDwmDuffLitterTable + "_master") ||
-                !this.m_ado.TableExist(m_connTempMDBFile, m_strDwmTransectSegmentTable + "_fiadb") || !this.m_ado.TableExist(m_connTempMDBFile, m_strDwmTransectSegmentTable + "_master"));
-
-                Thread.Sleep(5000);
-
-                //DWM Coarse Woody Debris FIADB into master_aux.db Table
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+                else if (dlgResult == DialogResult.Yes)
                 {
-                    SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM CWD...Stand By");
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 2);
-                    strDestFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmCwd, dtDestSchema: dtDwmCwd);
-                    strSourceFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmCwd, dtDestSchema: dtDwmCwd,
-                        strTablePrefix: "dwm.");
-                    InsertIntoDestTableFromSourceTableSqlite(oAdo, strSourceTable: m_strDwmCwdTable, strDestTable: m_strDwmCwdTable,
-                        strDestFields: strDestFields, strSourceFields: strSourceFields, InsertBiosumCondIdAndStatusCode: true);
-                    //oAdo.AddPrimaryKey(m_connTempMDBFile, m_strDwmCwdTable + "_master", "pk1",  "CN");
-                    
-                    UpdateDwmBiosumCondIdsSqlite(oAdo, m_strDwmCwdTable);
-                    m_intError = oDataMgr.m_intError;
+                    //m_intError == 0 keeps performing plot input.
+                    return 0;
                 }
+            } 
 
-                //DWM Fine Woody Debris FIADB into master_aux.db Table
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM FWD...Stand By");
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 4);
-                    strDestFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmFwd, dtDestSchema: dtDwmFwd);
-                    strSourceFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmFwd, dtDestSchema: dtDwmFwd,
-                        strTablePrefix: "dwm.");
-                    InsertIntoDestTableFromSourceTableSqlite(oAdo, strSourceTable: m_strDwmFwdTable, strDestTable: m_strDwmFwdTable,
-                        strDestFields: strDestFields, strSourceFields: strSourceFields, InsertBiosumCondIdAndStatusCode: true);
-                    UpdateDwmBiosumCondIdsSqlite(oAdo, m_strDwmFwdTable);
-                    m_intError = oDataMgr.m_intError;
-                }
+            string strSourceFields = "";
+            string strDestFields = "";
+            System.Data.DataTable dtDwmCwd = SQLite.getTableSchema(p_conn, "select * from AUX." + m_strDwmCwdTable);
+            System.Data.DataTable dtDwmFwd = SQLite.getTableSchema(p_conn, "select * from AUX." + m_strDwmFwdTable);
+            System.Data.DataTable dtDwmDuffLitter = SQLite.getTableSchema(p_conn, "select * from AUX." + m_strDwmDuffLitterTable);
+            System.Data.DataTable dtDwmTransectSegment = SQLite.getTableSchema(p_conn, "select * from AUX." + m_strDwmTransectSegmentTable);
+            System.Data.DataTable dtFIADBDwmCwd = SQLite.getTableSchema(p_conn, "select * from " + strFiaCWD);
+            System.Data.DataTable dtFIADBDwmFwd = SQLite.getTableSchema(p_conn, "select * from " + strFiaFWD);
+            System.Data.DataTable dtFIADBDwmDuffLitter = SQLite.getTableSchema(p_conn, "select * from " + strFiaDL);
+            System.Data.DataTable dtFIADBDwmTransectSegment = SQLite.getTableSchema(p_conn, "select * from " + strFiaTS);
 
-                //DWM Duff Litter Fuel FIADB into Master.MDB Table
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM DuffLitter...Stand By");
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 6);
-                    strDestFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmDuffLitter,
-                        dtDestSchema: dtDwmDuffLitter);
-                    strSourceFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmDuffLitter,
-                        dtDestSchema: dtDwmDuffLitter, strTablePrefix: "dwm.");
-                    InsertIntoDestTableFromSourceTableSqlite(oAdo, strSourceTable: m_strDwmDuffLitterTable,
-                        strDestTable: m_strDwmDuffLitterTable,
-                        strDestFields: strDestFields, strSourceFields: strSourceFields,
-                        InsertBiosumCondIdAndStatusCode: true);
-                    oDataMgr.m_strSQL = "UPDATE " + m_strDwmDuffLitterTable + " SET duffdep=0 WHERE duffdep IS NULL AND duff_nonsample_reasn_cd IS NULL";
-                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
-                    oDataMgr.m_strSQL = "UPDATE " + m_strDwmDuffLitterTable + " SET littdep=0 WHERE littdep IS NULL AND litter_nonsample_reasn_cd IS NULL";
-                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
-                    UpdateDwmBiosumCondIdsSqlite(oAdo, m_strDwmDuffLitterTable);
-                    m_intError = oDataMgr.m_intError;
-                }
+            //Preemptively remove any records that were not imported successfully 
+            DeleteFromTablesWhereFilter(p_conn,
+                new string[]
+                    {"AUX." + m_strDwmCwdTable, "AUX." + m_strDwmFwdTable, "AUX." + m_strDwmDuffLitterTable, "AUX." + m_strDwmTransectSegmentTable},
+                " WHERE biosum_status_cd=9");
 
-                //DWM Transect Segment FIADB into Master.MDB Table
-                if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
-                {
-                    SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM Transect Segment...Stand By");
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 8);
-                    strDestFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmTransectSegment,
-                        dtDestSchema: dtDwmTransectSegment);
-                    strSourceFields = CreateStrFieldsFromDataTables(dtSourceSchema: dtFIADBDwmTransectSegment,
-                        dtDestSchema: dtDwmTransectSegment, strTablePrefix: "dwm.");
-                    InsertIntoDestTableFromSourceTableSqlite(oAdo, strSourceTable: m_strDwmTransectSegmentTable,
-                        strDestTable: m_strDwmTransectSegmentTable,
-                        strDestFields: strDestFields, strSourceFields: strSourceFields, InsertBiosumCondIdAndStatusCode: true);
-                    UpdateDwmBiosumCondIdsSqlite(oAdo, m_strDwmTransectSegmentTable);
-                    m_intError = oDataMgr.m_intError;
-                }
+            //DWM Coarse Woody Debris FIADB into master_aux.db Table
+            if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            {
+                SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM CWD...Stand By");
+                SetThermValue(m_frmTherm.progressBar1, "Value", 2);
+                strSourceFields = CreateStrFieldsFromDataTables(dtFIADBDwmCwd, dtDwmCwd, "f.");
+                strDestFields = CreateStrFieldsFromDataTables(dtFIADBDwmCwd, dtDwmCwd);
+                InsertIntoDestTableFromSourceTable(p_conn, strFiaCWD, "AUX." + m_strDwmCwdTable, strSourceFields, strDestFields, true);
+
+                UpdateDwmBiosumCondIds(p_conn, "AUX." + m_strDwmCwdTable);
+                m_intError = SQLite.m_intError;
+            }
+
+            //DWM Fine Woody Debris FIADB into master_aux.db Table
+            if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            {
+                SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM FWD...Stand By");
+                SetThermValue(m_frmTherm.progressBar1, "Value", 4);
+                strSourceFields = CreateStrFieldsFromDataTables(dtFIADBDwmFwd, dtDwmFwd, "f.");
+                strDestFields = CreateStrFieldsFromDataTables(dtFIADBDwmFwd, dtDwmFwd);
+                InsertIntoDestTableFromSourceTable(p_conn, strFiaFWD, "AUX." + m_strDwmFwdTable, strSourceFields, strDestFields, true);
+
+                UpdateDwmBiosumCondIds(p_conn, "AUX." + m_strDwmFwdTable);
+                m_intError = SQLite.m_intError;
+            }
+
+            //DWM Duff Litter Fuel FIADB into master_aux.db Table
+            if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            {
+                SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM DuffLitter...Stand By");
+                SetThermValue(m_frmTherm.progressBar1, "Value", 6);
+                strSourceFields = CreateStrFieldsFromDataTables(dtFIADBDwmDuffLitter, dtDwmDuffLitter, "f.");
+                strDestFields = CreateStrFieldsFromDataTables(dtFIADBDwmDuffLitter, dtDwmDuffLitter);
+                InsertIntoDestTableFromSourceTable( p_conn, strFiaDL, "AUX." + m_strDwmDuffLitterTable, strSourceFields, strDestFields, true);
+
+                SQLite.m_strSQL = "UPDATE AUX." + m_strDwmDuffLitterTable + " SET duffdep=0 WHERE duffdep IS NULL AND duff_nonsample_reasn_cd IS NULL";
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+                SQLite.m_strSQL = "UPDATE " + m_strDwmDuffLitterTable + " SET littdep=0 WHERE littdep IS NULL AND litter_nonsample_reasn_cd IS NULL";
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+                UpdateDwmBiosumCondIds( p_conn, "AUX." + m_strDwmDuffLitterTable);
+                m_intError = SQLite.m_intError;
+            }
+
+            //DWM Transect Segment FIADB into master_aux.db Table
+            if (m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            {
+                SetLabelValue(m_frmTherm.lblMsg, "Text", "Importing DWM Transect Segment...Stand By");
+                SetThermValue(m_frmTherm.progressBar1, "Value", 8);
+                strSourceFields = CreateStrFieldsFromDataTables(dtFIADBDwmTransectSegment, dtDwmTransectSegment, "f.");
+                strDestFields = CreateStrFieldsFromDataTables(dtFIADBDwmTransectSegment, dtDwmTransectSegment);
+                InsertIntoDestTableFromSourceTable(p_conn, strFiaTS, "AUX." + m_strDwmTransectSegmentTable, strSourceFields, strDestFields, true);
+
+                UpdateDwmBiosumCondIds(p_conn, "AUX." + m_strDwmTransectSegmentTable);
+                m_intError = SQLite.m_intError;
             }
 
             SetLabelValue(m_frmTherm.lblMsg, "Text", "");
             SetThermValue(m_frmTherm.progressBar1, "Value", GetThermValue(m_frmTherm.progressBar1, "Maximum"));
-            return oDataMgr.m_intError;
+            return SQLite.m_intError;
         }
-
-      //  private int ImportGrowthRemovalMortality(ado_data_access p_ado)
-      //  {
-      //   string strFIADBDbFile = "";
-      //   strFIADBDbFile = (string) frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox) txtFiadbInputFile, "Text", false);
-      //   strFIADBDbFile = strFIADBDbFile.Trim();
-      //      string strMasterAuxDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.accdb";
-      //         m_strGRMComponentTable = (string) frmMain.g_oDelegate.GetControlPropertyValue(cmbGrmComponentTable, "Text", false);
-
-        //         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-        //         {
-        //             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "\r\n//\r\n");
-        //             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.ImportGrowthRemovalMortality\r\n");
-        //             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//\r\n");
-        //         }
-
-        //         DataMgr oDataMgr = new DataMgr();
-        //         using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strFIADBDbFile)))
-        //         {
-        //             conn.Open();
-        //             if (!oDataMgr.TableExist(conn, m_strGRMComponentTable))
-        //          {
-        //              DialogResult dlgResult = MessageBox.Show(
-        //                  "!!Error!!\nModule - uc_plot_input:ImportGrowthRemovalMortality\n" + "Err Msg - " +
-        //                  m_strGRMComponentTable +
-        //                  " was not found in FIADB Source!\r\nDo you wish to continue plot data input without GRM Calibration Data?",
-        //                  "FIA Biosum", MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation);
-
-        //              //Disable functionality related to GRM option down the pipeline
-        //                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.CheckBox) chkGrmImport, "Checked", false); //unchecked value?
-        //              if (dlgResult == DialogResult.No)
-        //              {
-        //                  return -1; //terminates plot input processing.
-        //              }
-        //              else if (dlgResult == DialogResult.Yes)
-        //              {
-        //                  //m_intError == 0 keeps performing plot input.
-        //                  return 0;
-        //              }
-        //          }
-        //      }
-
-        //      using (var conn = new OleDbConnection(p_ado.getMDBConnString(strMasterAuxDb, "","")))
-        //      {
-        //          conn.Open();
-        //          string message = "";
-        //          bool bGrmStandTableNotFound = !p_ado.TableExist(conn, m_strGrmStandTable);
-        //          bool bGrmTreeTableNotFound = !p_ado.TableExist(conn, m_strGrmTreeTable);
-        //          if (bGrmStandTableNotFound)
-        //          {
-        //              message += m_strGrmStandTable + " could not be found in Master_Aux!\r\n";
-        //          }
-        //          if (bGrmTreeTableNotFound)
-        //          {
-        //              message += m_strGrmTreeTable + " could not be found in Master_Aux!\r\n";
-        //          }
-        //          if (bGrmStandTableNotFound || bGrmTreeTableNotFound)
-        //          {
-        //              DialogResult dlgResult = MessageBox.Show(
-        //                  "!!Error!!\nModule - uc_plot_input:ImportGrowthRemovalMortality\n" + "Err Msg - " +
-        //                  message + "\r\nDo you wish to continue plot data input without GRM Calibration Data?",
-        //                  "FIA Biosum", MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation);
-
-        //              //Disable functionality related to GRM option down the pipeline
-        //              frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.CheckBox)chkGrmImport, "Checked", false);
-        //              if (dlgResult == DialogResult.No)
-        //              {
-        //                  return -1; //terminates plot input processing.
-        //              }
-        //              else if (dlgResult == DialogResult.Yes)
-        //              {
-        //                  //m_intError == 0 keeps performing plot input.
-        //                  return 0;
-        //              }
-        //          }
-        //      }
-
-        //      dao_data_access p_dao = new dao_data_access();
-        //         //Link to FIADB source tables in temporary database
-        //         p_dao.CreateSQLiteTableLink(m_strTempMDBFile, m_strGRMComponentTable, m_strGRMComponentTable, ODBCMgr.DSN_KEYS.PlotInputDsnName,
-        //             strFIADBDbFile);
-        //         p_dao.CreateSQLiteTableLink(m_strTempMDBFile, (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbPlotTable,
-        //                 "Text", false), "FIADB_PLOT_TABLE", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-        //         p_dao.CreateSQLiteTableLink(m_strTempMDBFile, (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbCondTable,
-        //                 "Text", false), "FIADB_COND_TABLE", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-        //         p_dao.CreateSQLiteTableLink(m_strTempMDBFile, (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.ComboBox)cmbFiadbTreeTable,
-        //                 "Text", false), "FIADB_TREE_TABLE", ODBCMgr.DSN_KEYS.PlotInputDsnName, strFIADBDbFile, true);
-        //      //Link to Master_AUX.accdb GRM dest tables in temporary database
-        //      p_dao.CreateTableLink(m_strTempMDBFile, m_strGrmStandTable, strMasterAuxDb, m_strGrmStandTable);
-        //      p_dao.CreateTableLink(m_strTempMDBFile, m_strGrmTreeTable, strMasterAuxDb, m_strGrmTreeTable);
-
-        //      m_intError = p_dao.m_intError;
-        //if (p_dao.m_intError != 0) {
-        //	return p_dao.m_intError;
-        //}
-        //      p_dao.m_DaoWorkspace.Close();
-        //      p_dao.m_DaoWorkspace = null;
-        //      p_dao.m_DaoDbEngine = null;
-        //      p_dao = null;
-
-        //      using (var conn = new OleDbConnection(p_ado.getMDBConnString(m_strTempMDBFile, "", "")))
-        //      {
-        //          conn.Open();
-
-        //             //Check if any records with biosum_status_cd=9 exist in the GRM stand and tree tables and remove them
-        //          p_ado.m_strSQL = "DELETE FROM " + m_strGrmStandTable + " WHERE biosum_status_cd=9;";
-        //          p_ado.SqlNonQuery(conn, p_ado.m_strSQL);
-        //          p_ado.m_strSQL = "DELETE FROM " + m_strGrmTreeTable + " WHERE biosum_status_cd=9;";
-        //          p_ado.SqlNonQuery(conn, p_ado.m_strSQL);
-
-        //             //Insert into GRM_Stand
-        //             p_ado.m_strSQL = "INSERT INTO " + m_strGrmStandTable +
-        //                              " (biosum_cond_id, biosum_plot_id, biosum_status_cd, plt_cn, prev_plt_cn, measurement_period) " +
-        //                              "SELECT c.biosum_cond_id, tp.biosum_plot_id, 9 as biosum_status_cd, tp.cn, fp.cn, " +
-        //                                  "IIF(tp.remper IS NOT NULL, CInt(tp.remper), CInt(DateDiff('m', " +
-        //                                  "DateSerial(fp.measyear,fp.measmon,fp.measday), " +
-        //                                  "DateSerial(tp.measyear,tp.measmon,tp.measday))/12.0)) " +
-        //                              "FROM (tempplot tp INNER JOIN fiadb_plot_table fp ON trim(tp.prev_plt_cn) = fp.cn) " +
-        //                                  "INNER JOIN tempcond c ON trim(c.PLT_CN) = trim(tp.CN);";
-        //             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-        //                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-        //             p_ado.SqlNonQuery(conn, p_ado.m_strSQL);
-
-        //          //Insert into GRM_Tree
-        //          p_ado.m_strSQL = "INSERT INTO " + m_strGrmTreeTable +
-        //                              " (biosum_cond_id, biosum_status_cd, fvs_tree_id, tre_cn, prev_tre_cn, " +
-        //                                  "dia_begin, dia_end, " +
-        //                                  "micr_component_al_forest, tre_statuscd, prev_tre_statuscd) " +
-        //                           "SELECT tt.biosum_cond_id, 9 as biosum_status_cd, " +
-        //                                  "tt.SUBP*1000+tt.TREE, tt.CN, grm.PREV_TRE_CN, " +
-        //                                  "grm.DIA_BEGIN, grm.DIA_END, " +
-        //                                  "grm.MICR_COMPONENT_AL_FOREST, tt.STATUSCD, ft.STATUSCD " +
-        //                           "FROM (" + m_strGRMComponentTable + " grm " +
-        //                                  "INNER JOIN temptree tt ON grm.TRE_CN = tt.CN) " +
-        //                                  "LEFT JOIN FIADB_TREE_TABLE ft ON grm.PREV_TRE_CN = ft.CN; ";
-        //             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-        //                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, p_ado.m_strSQL + "\r\n");
-        //             p_ado.SqlNonQuery(conn, p_ado.m_strSQL);
-        //      }
-
-        //      return p_ado.m_intError;
-        //  }
 
         private void ThermCancel(object sender, System.EventArgs e)
 		{
@@ -5428,7 +4162,7 @@ namespace FIA_Biosum_Manager
 		private void btnFilterNext_Click(object sender, System.EventArgs e)
 		{
 				
-		    if (this.LoadMDBFiadbPopEvalTable() && m_intError==0)
+		    if (this.LoadDBFiadbPopEvalTable() && m_intError==0)
 			{	
 			    this.m_strLoadedPopEvalInputTable=this.cmbFiadbPopEvalTable.Text;
 				this.FIADBLoadInv();
@@ -5488,7 +4222,7 @@ namespace FIA_Biosum_Manager
 			
 		}
 
-		private void mdbInputStateCounty()
+		private void dbInputStateCounty()
 		{
 	
 			string strState="";
@@ -5599,7 +4333,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void mdbInputPlot()
+        private void dbInputPlot()
 		{
 			this.m_intError=0;
 			int intAddedPlotRows=0;
@@ -5737,7 +4471,7 @@ namespace FIA_Biosum_Manager
 
 		private void btnFilterByStateNext_Click(object sender, System.EventArgs e)
 		{
-		    this.mdbInputPlot();
+		    this.dbInputPlot();
 			if (this.m_intError==0)
 			{
 				this.grpboxFilterByPlot.Visible=true;
@@ -5815,7 +4549,7 @@ namespace FIA_Biosum_Manager
                 if (this.m_intError == 0)
                 {
 
-                    this.LoadMDBPlotCondTreeData_Start();
+                    this.LoadDBPlotCondTreeData_Start();
                 }
             }	
 		}
@@ -6338,146 +5072,16 @@ namespace FIA_Biosum_Manager
                 if (this.m_intError == 0)
                 {
 
-                    this.LoadMDBPlotCondTreeData_Start();
+                    this.LoadDBPlotCondTreeData_Start();
                 }
             }	
 		}
 
-		private void btnMDBInputCancel_Click(object sender, System.EventArgs e)
+		private void btnDBInputCancel_Click(object sender, System.EventArgs e)
 		{
 			((frmDialog)this.ParentForm).Close();
 		}
 
-		private void btnMDBPlotBrowse_Click(object sender, System.EventArgs e)
-		{
-			this.GetMDBFileAndTable("SQLite Data File Containing Plot Table Data",
-				"Select Plot Table",
-				ref this.txtMDBPlot,
-				ref this.txtMDBPlotTable);
-		}
-
-		private void btnMDBCondBrowse_Click(object sender, System.EventArgs e)
-		{
-			this.GetMDBFileAndTable("SQLite Data File Containing Condition Table Data",
-				"Select Condition Table",
-				ref this.txtMDBCond,
-				ref this.txtMDBCondTable);
-		}
-
-		private void btnMDBTreeBrowse_Click(object sender, System.EventArgs e)
-		{
-			this.GetMDBFileAndTable("SQLite Data File Containing Tree Table Data",
-				"Select Tree Table",
-				ref this.txtMDBTree,
-				ref this.txtMDBTreeTable);
-		}
-
-		private void btnIDBInvPrevious_Click(object sender, System.EventArgs e)
-		{
-			this.grpboxFilter.Visible=true;
-			this.grpboxIDBInv.Visible=false;
-		}
-
-		private void btnIDBInvCancel_Click(object sender, System.EventArgs e)
-		{
-			((frmDialog)this.ParentForm).Close();
-		}
-		private void idbLoadInv()
-		{
-            string strId="";
-			string strDS="";
-			string strDesc="";
-			string strDef="";
-			int intAddedRows=0;
-    
-
-			      
-			this.lstIDBInv.Clear();
-			this.lstIDBInv.Columns.Add("Id", 30, HorizontalAlignment.Left);
-			this.lstIDBInv.Columns.Add("Data Source", 100, HorizontalAlignment.Left);
-			this.lstIDBInv.Columns.Add("Description", 100, HorizontalAlignment.Left);
-			this.lstIDBInv.Columns.Add("Definition", 100, HorizontalAlignment.Left);
-            this.m_strIDBInv="";
-			this.m_intError=0;
-
-			
-
-			FIA_Biosum_Manager.ado_data_access p_ado = new ado_data_access();
-
-			
-			//get all the project datasources
-
-			string strMDBFile = ((frmDialog)this.ParentForm).m_frmMain.frmProject.uc_project1.txtRootDirectory.Text.ToString().Trim() + "\\db\\ref_master.mdb";
-			string strConn = p_ado.getMDBConnString(strMDBFile,"","");
-			p_ado.m_strSQL = "select * from inventories order by idb_data_source";
-
-	
-
-           
-				p_ado.SqlQueryReader(strConn,p_ado.m_strSQL);
-				if (p_ado.m_intError==0)
-				{
-					try
-					{
-						//load up each row in the FIADB plot input table
-
-						while (p_ado.m_OleDbDataReader.Read())
-						{
-							strDS="";
-							strDesc="";
-							strDef="";
-							
-							//make sure the row is not null values
-							if (p_ado.m_OleDbDataReader[0] != System.DBNull.Value &&
-								p_ado.m_OleDbDataReader[0].ToString().Trim().Length > 0)
-							{
-								strId =p_ado.m_OleDbDataReader["inv_id"].ToString();
-								strDS= p_ado.m_OleDbDataReader["idb_data_source"].ToString();
-								strDesc = p_ado.m_OleDbDataReader["description"].ToString();
-								strDef = p_ado.m_OleDbDataReader["inv_id_def"].ToString();
-								this.lstIDBInv.BeginUpdate();
-								System.Windows.Forms.ListViewItem listItem = new ListViewItem();
-								listItem.Text=strId;
-								listItem.SubItems.Add(strDS);
-								listItem.SubItems.Add(strDesc);
-								listItem.SubItems.Add(strDef);
-								this.lstIDBInv.Items.Add(listItem);
-								this.lstIDBInv.EndUpdate();
-								intAddedRows++;
-							}
-
-						}
-						p_ado.m_OleDbDataReader.Close();
-						if (intAddedRows == 0 )
-						{
-							this.m_intError=-1;
-							MessageBox.Show("!!No Inventories Loaded !","Load Inventories");
-						}
-						else
-						{
-							this.lstIDBInv.Columns[0].Width = -1;
-							this.lstIDBInv.Columns[1].Width = -1;
-							this.lstIDBInv.Columns[2].Width = -1;
-							this.lstIDBInv.Columns[3].Width = -1;
-						}
-						((frmDialog)this.ParentForm).Enabled=true;
-					}
-					catch (Exception caught)
-					{
-						this.m_intError=-1;
-						MessageBox.Show(caught.Message);
-					}
-					p_ado.m_OleDbConnection.Close();
-				}
-				else
-				{
-					this.m_intError=p_ado.m_intError;
-				}
-			
-			
-			
-			p_ado=null;
-		}
 
 		private void FIADBLoadInv()
 		{
@@ -6582,968 +5186,7 @@ namespace FIA_Biosum_Manager
                 }
             }
 		}
-
-
-		private void btnIDBInvSelectAll_Click(object sender, System.EventArgs e)
-		{
-			for (int x=0; x<= this.lstIDBInv.Items.Count-1;x++)
-			{
-				this.lstIDBInv.Items[x].Checked=true;
-			}
-		}
-
-		private void btnIDBInvClearAll_Click(object sender, System.EventArgs e)
-		{
-			for (int x=0; x<= this.lstIDBInv.Items.Count-1;x++)
-			{
-				this.lstIDBInv.Items[x].Checked=false;
-			}
-		}
-
-
-		private void BuildFilterByIDBInvString(string strStateFieldAlias,string strCountyFieldAlias,bool bStringDataType)
-		{
-		
-			//string strCurInv;
-			string strCurState="";
-			//string strInv="";
-			string strState="";
-			string strCounty="";
-			bool bAllCounties;
-			string strStateList="";
-			string strCountyList="";
-			int y=0;
-         
-			this.m_strIDBInv="";
-			if (this.lstFilterByState.CheckedItems.Count == this.lstFilterByState.Items.Count)
-			{
-				this.m_bAllCountiesSelected = true;
-				bAllCounties=true;
-			}
-			else
-			{
-				this.m_bAllCountiesSelected = false;
-				bAllCounties=false;
-			}
-			this.m_strStateCountySQL="";
-			
-			for (int x=0; x <= this.lstFilterByState.Items.Count -1;x++)
-			{
-				if (this.lstFilterByState.Items[x].Checked==true)
-				{
-					strState = this.lstFilterByState.Items[x].SubItems[1].Text.Trim();
-					strCounty = this.lstFilterByState.Items[x].SubItems[2].Text.Trim();
-					if (strState.Trim().Length > 0)
-					{
-					}
-					//check to see if this is a new state
-					if (strState !=
-						strCurState && strState.Trim().Length > 0)
-
-					{
-
-						if (strCurState.Trim().Length == 0)
-						{
-							//first time
-							strCurState = strState;
-						}
-						if (this.m_bAllCountiesSelected == true)
-						{
-							if (strStateList.Trim().Length ==0)
-							{
-								if (bStringDataType == false)
-								{
-									strStateList = strState;
-								}
-								else
-								{
-									strStateList = "'" + strState.Trim() + "'";
-								}
-							}
-							else
-							{
-								if (bStringDataType == false)
-								{
-									strStateList += "," + strState;
-								}
-								else
-								{
-									strStateList += ",'" + strState.Trim() + "'";
-								}
-							}
-							strCurState=strState;
-						}
-						else
-						{
-							
-							//current state
-							//check if all counties for this state are selected
-							strCountyList="";
-							bAllCounties=true;
-
-							//check to see if the previous list item is the same state and if
-							//it is checked
-							if (x-1 >=0)
-							{
-								if (this.lstFilterByState.Items[x-1].SubItems[1].Text.Trim() == 
-									strState.Trim() && this.lstFilterByState.Items[x-1].Checked==false)
-								{
-									bAllCounties=false;
-								}
-							}
-							
-							for (y=x;y<=this.lstFilterByState.Items.Count-1;y++)
-							{
-								if (this.lstFilterByState.Items[y].Checked==true)
-								{
-
-									if (strState.Trim() != this.lstFilterByState.Items[y].SubItems[1].Text.Trim())
-									{
-										break;
-									}
-									strCounty =  this.lstFilterByState.Items[y].SubItems[2].Text.Trim();
-									if (strCountyList.Trim().Length ==0)
-									{
-										if (bStringDataType == false)
-										{
-											strCountyList = strCounty;
-										}
-										else
-										{
-											strCountyList = "'" + strCounty.Trim() + "'";
-										}
-									}
-									else
-									{
-										if (bStringDataType == false)
-										{
-											strCountyList += "," + strCounty;
-										}
-										else
-										{
-											strCountyList += ",'" + strCounty.Trim() + "'";
-										}
-									}
-
-								}
-								else
-								{
-									if (strState.Trim() == this.lstFilterByState.Items[y].SubItems[1].Text.Trim())
-									{
-										bAllCounties=false;
-									}
-								}
-							}
-							strCurState=strState;
-							if (y<=this.lstFilterByState.Items.Count-1)
-							{
-								x = y - 1;
-							}
-							else
-							{
-								x = y;
-							}
-							if (bAllCounties==true)
-							{
-								if (this.m_strStateCountySQL.Trim().Length > 0)
-								{
-									if (bStringDataType == false)
-									{
-										this.m_strStateCountySQL += " OR (" + strStateFieldAlias  + " = " + strCurState + ")";
-									}
-									else
-									{
-										this.m_strStateCountySQL += " OR ( trim(" + strStateFieldAlias.Trim()  + ") = '" + strCurState.Trim() + "')";
-									}
-								}
-								else
-								{
-									if (bStringDataType == false)
-									{
-										this.m_strStateCountySQL = "(" + strStateFieldAlias  + " = " + strCurState + ")";
-									}
-									else
-									{
-										this.m_strStateCountySQL = "( trim(" + strStateFieldAlias.Trim()  + ") = '" + strCurState.Trim() + "')";
-									}
-								}
-							}
-							else
-							{
-								if (this.m_strStateCountySQL.Trim().Length > 0)
-								{
-									if (bStringDataType == false)
-									{
-										this.m_strStateCountySQL += " OR (" + strStateFieldAlias + " = " + strCurState  + " AND " + strCountyFieldAlias + " IN (" + strCountyList + "))";
-									}
-									else
-									{
-										this.m_strStateCountySQL += " OR ( trim(" + strStateFieldAlias.Trim() + ") = '" + strCurState.Trim()  + "' AND trim(" + strCountyFieldAlias.Trim() + ") IN (" + strCountyList + "))";
-									}
-								}
-								else
-								{
-									if (bStringDataType == false)
-									{
-										this.m_strStateCountySQL = "(" + strStateFieldAlias + " = " + strCurState  + " AND " + strCountyFieldAlias + " IN (" + strCountyList + "))";
-									}
-									else
-									{
-										this.m_strStateCountySQL = "( trim(" + strStateFieldAlias.Trim() + ") = '" + strCurState.Trim()  + "' AND trim(" + strCountyFieldAlias.Trim() + ") IN (" + strCountyList + "))";
-									}
-								}
-							}
-						}
-
-					}
-				}
-			}
-			if (this.m_bAllCountiesSelected==true)
-			{
-				if (bStringDataType==false)
-				{
-					this.m_strStateCountySQL = "(" + strStateFieldAlias + " IN (" + strStateList + "))";
-				}
-				else
-				{
-					this.m_strStateCountySQL = "( trim(" + strStateFieldAlias.Trim() + ") IN (" + strStateList + "))";
-				}
-			}
-			else
-			{
-				this.m_strStateCountySQL = "(" + this.m_strStateCountySQL + ")";
-			}
-		}
-
-		private void lstIDBInv_ItemCheck(object sender, System.Windows.Forms.ItemCheckEventArgs e)
-		{
-			
-		}
-
-		private void btnIDBInvNext_Click(object sender, System.EventArgs e)
-		{
-			if (this.lstIDBInv.SelectedItems.Count > 0)
-			{
-				this.m_strIDBInv = this.lstIDBInv.SelectedItems[0].Text.Trim();
-				this.mdbInputStateCounty();
-				this.grpboxIDBInv.Visible=false;
-				this.grpboxFilterByState.Visible=true;
-			}
-			else
-			{
-				MessageBox.Show("Select A PNW IDB Inventory","Add Plot Data",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
-			}
-		}
-
-		private void btnIDBInvAppend_Click(object sender, System.EventArgs e)
-		{
-			if (this.lstIDBInv.SelectedItems.Count > 0)
-			{
-				
-				
-				this.m_strIDBInv = this.lstIDBInv.SelectedItems[0].Text.Trim();
-                this.LoadIDBPlotCondTreeData_Start();
-			}
-			else
-			{
-				MessageBox.Show("Select A PNW IDB Inventory","Add Plot Data",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
-			}
-
-		
-		}
-        private void LoadIDBPlotCondTreeData_Process()
-		{
-            frmMain.g_oDelegate.CurrentThreadProcessStarted = true;
-			string strFields="";
-			string strValues="";
-			int intAddedPlotRows=0;
-			int intAddedCondRows=0;
-			int intAddedTreeRows=0;
-			int intAddedSiteTreeRows=0;
-			int x=0;
-			int y=0;
-			string strCol="";
-			string strTime="";
-            string str = "";
-            string str2 = "";
-
-
-
-			this.m_intError=0;	
-						
-			
-            
-			try
-			{
-				//-----------PREPARATION FOR ADDING PLOT RECORDS---------//
-                    
-				//instatiate the oledb data access class
-				this.m_ado = new ado_data_access();
-
-
-                //progress bar 1: single process
-                this.SetThermValue(m_frmTherm.progressBar1, "Maximum", 100);
-                this.SetThermValue(m_frmTherm.progressBar1, "Minimum", 0);
-                this.SetThermValue(m_frmTherm.progressBar1, "Value", 0);
-                this.SetLabelValue(m_frmTherm.lblMsg, "Text", "");
-                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)m_frmTherm, "Visible", true);
-
-                //progress bar 2: overall progress
-                this.SetThermValue(m_frmTherm.progressBar2, "Maximum", 100);
-                this.SetThermValue(m_frmTherm.progressBar2, "Minimum", 0);
-                this.SetThermValue(m_frmTherm.progressBar2, "Value", 0);
-                this.SetLabelValue(m_frmTherm.lblMsg2, "Text", "Overall Progress");
-                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)m_frmTherm, "Visible", true);
-
-
-
-
-				//get all the project datasources
-                FIA_Biosum_Manager.Datasource p_datasource = new Datasource();
-                p_datasource.m_strDataSourceMDBFile = this.ReferenceFormDialog.m_frmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\project.mdb";
-                p_datasource.LoadTableColumnNamesAndDataTypes = false;
-                p_datasource.LoadTableRecordCount = false;
-                p_datasource.m_strDataSourceTableName = "datasource";
-                p_datasource.m_strScenarioId = "";
-                p_datasource.populate_datasource_array();
-
-				//create a temporary mdb file with links to all the project tables
-				//and return the name of the file that contains the links
-				this.m_strTempMDBFile = p_datasource.CreateMDBAndTableDataSourceLinks();
-
-			
-				//instatiate dao for creating links in the temp table
-				//to the fiadb plot, cond, and tree input tables
-				dao_data_access p_dao1 = new dao_data_access();
-                this.SetLabelValue(m_frmTherm.lblMsg, "Text", "Creating Datasource Links");
-
-				//create links to the idb input tables in the temp mdb file
-                //create links to the fiadb input tables in the temp mdb file
-                //plot table
-                str = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtMDBPlot, "Text", false);
-                str2 = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtMDBPlotTable, "Text", false);
-                p_dao1.CreateTableLink(this.m_strTempMDBFile, "idb_plot_input", str.Trim(), str2.Trim());
-                //cond table
-                str = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtMDBCond, "Text", false);
-                str2 = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtMDBCondTable, "Text", false);
-                p_dao1.CreateTableLink(this.m_strTempMDBFile, "idb_cond_input", str.Trim(), str2.Trim());
-                //tree table
-                str = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtMDBTree, "Text", false);
-                str2 = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtMDBTreeTable, "Text", false);
-                p_dao1.CreateTableLink(this.m_strTempMDBFile, "idb_tree_input", str.Trim(), str2.Trim());
-                //site tree
-                str = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtMDBSiteTree, "Text", false);
-                str2 = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.TextBox)txtMDBSiteTreeTable, "Text", false);
-                p_dao1.CreateTableLink(this.m_strTempMDBFile, "idb_site_tree_input", str.Trim(), str2.Trim());
-
-				//destroy the object and release it from memory
-				p_dao1.m_DaoWorkspace.Close();
-				p_dao1 = null;
-
-                SetThermValue(m_frmTherm.progressBar1, "Value", 20);
-
-				//get an ado connection string for the temp mdb file
-				this.m_strTempMDBFileConn = this.m_ado.getMDBConnString(this.m_strTempMDBFile,"","");
-
-				//get the biosum plot, cond, and tree table names
-				this.m_strPlotTable = p_datasource.getValidDataSourceTableName("PLOT");
-				this.m_strCondTable = p_datasource.getValidDataSourceTableName("CONDITION");
-				this.m_strTreeTable = p_datasource.getValidDataSourceTableName("TREE");
-				this.m_strSiteTreeTable = p_datasource.getValidDataSourceTableName("SITE TREE");
-
-   					
-				//create a new connection to the temp MDB file
-				this.m_connTempMDBFile = new System.Data.OleDb.OleDbConnection();
-
-				//open the connection to the temp mdb file 
-				this.m_ado.OpenConnection(this.m_strTempMDBFileConn,ref this.m_connTempMDBFile);
-
-				/****************************************************************
-				 **get the table structure that results from executing the sql
-				 ****************************************************************/
-				//get the fiabiosum table structures
-				System.Data.DataTable p_dtPlotSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from " + this.m_strPlotTable);
-				System.Data.DataTable p_dtCondSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from " + this.m_strCondTable);
-				System.Data.DataTable p_dtTreeSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from " + this.m_strTreeTable);
-				System.Data.DataTable p_dtSiteTreeSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from " + this.m_strSiteTreeTable);
-				//get the idb table structures
-				System.Data.DataTable p_dtIDBPlotSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from idb_plot_input");
-				System.Data.DataTable p_dtIDBCondSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from idb_cond_input");
-				System.Data.DataTable p_dtIDBTreeSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from idb_tree_input");
-				System.Data.DataTable p_dtIDBSiteTreeSchema = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from idb_site_tree_input");
-
-				System.Data.DataTable p_dtTreeWorkTable = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from idb_tree_input");
-				System.Data.DataTable p_dtSiteTreeWorkTable = this.m_ado.getTableSchema(this.m_connTempMDBFile, "select * from idb_site_tree_input");
-
-
-
-                SetThermValue(m_frmTherm.progressBar1, "Value", 30);
-                
-
-             
-				this.m_strSQL = "SELECT biosum_plot_id, statecd as cond_ttl " + 
-					"FROM " + this.m_strPlotTable.Trim() + ";";
-
-
-				/****************************************************************
-				 **get the table structure that results from executing the sql
-				 ****************************************************************/
-				System.Data.DataTable p_dtPlotWorkTable = this.m_ado.getTableSchema(this.m_connTempMDBFile,this.m_strSQL);
-
-				
-                this.m_ado.m_strSQL = "SELECT * INTO plot_column_updates_work_table " + 
-					                  "FROM (SELECT biosum_plot_id, statecd as cond_ttl " + 
-											"FROM " + this.m_strPlotTable.Trim() + ") "  + 
-					                  "WHERE 1 = 2";
-
-				this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_ado.m_strSQL);
-
-				this.m_ado.m_strSQL = "SELECT biosum_plot_id INTO temp_plot_table FROM " + this.m_strPlotTable + " WHERE 1=2";
-				this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_ado.m_strSQL);
-
-				this.m_ado.m_strSQL = "select * INTO temp_tree_input FROM idb_tree_input WHERE 1 = 2";
-				this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_ado.m_strSQL);
-
-				this.m_ado.m_strSQL = "select * INTO tree_work_table FROM idb_tree_input WHERE 1 = 2";
-				this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_ado.m_strSQL);
-
-                SetThermValue(m_frmTherm.progressBar1, "Value", 100);
-                SetThermValue(m_frmTherm.progressBar2, "Value", 20);
-                
-				System.Threading.Thread.Sleep(2000);
-
-				//-------------------------------PLOT----------------------------------//
-                SetThermValue(m_frmTherm.progressBar1, "Value", 0);
-                SetLabelValue(m_frmTherm.lblMsg,"Text","Plot Table: Inserting Plot Records...Stand By");
-                frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
-
-				//build field list string to insert sql by matching 
-				//up the column names in the biosum plot table and the fiadb plot table
-				strFields = "";
-				for (x=0; x<=p_dtPlotSchema.Rows.Count-1;x++)
-				{
-					strCol = p_dtPlotSchema.Rows[x]["columnname"].ToString().Trim();
-					//see if there is an equivalent FIADB column
-					for (y=0; y<=p_dtIDBPlotSchema.Rows.Count-1;y++)
-					{
-						if (strCol.Trim().ToUpper() == p_dtIDBPlotSchema.Rows[y]["columnname"].ToString().ToUpper())
-						{
-							if (strFields.Trim().Length == 0)
-							{
-								strFields = strCol;
-							}
-							else
-							{	
-								strFields += "," + strCol;
-							}
-							break;
-						}
-					}
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 50);
-                /********************************************************
-				 **create plot input insert command
-				 ********************************************************/
-				//check the user defined filters
-				if (Checked(rdoFilterNone)==true)
-				{
-					//forested/nonforested filters
-					if (Checked(chkNonForested)==true && Checked(chkForested)==true)
-					{
-						//all plots
-						this.m_strSQL = "INSERT INTO " + this.m_strPlotTable + " (" + strFields + ")" + 
-							" SELECT " + strFields + " " + 
-							" FROM idb_plot_input " + 
-							" WHERE MID(biosum_plot_id,2,4)='" + this.m_strIDBInv.Trim() + "' ";
-					}
-					else if (Checked(chkForested)==true)
-					{
-						//forested plots
-						this.m_strSQL = "INSERT INTO " + this.m_strPlotTable + " (" + strFields + ")" + 
-							" SELECT " + strFields + " FROM idb_plot_input " + 
-							" WHERE MID(biosum_plot_id,2,4)='" + this.m_strIDBInv.Trim() + "' AND " + 
-							" Plot_status_cd = 1;";
-
-					}
-					else
-					{
-						//nonforested plots
-						this.m_strSQL = "INSERT INTO " + this.m_strPlotTable + " (" + strFields + ")" + 
-							" SELECT " + strFields + " FROM idb_plot_input " + 
-							" WHERE MID(biosum_plot_id,2,4)='" + this.m_strIDBInv.Trim() + "' AND " + 
-							"plot_status_cd IS NULL or plot_status_cd <> 1;";
-					}
-				}
-				else if (Checked(rdoFilterByFile) == true)
-				{
-					//user defined plot_cn filter
-					this.m_strSQL = "INSERT INTO  " + this.m_strPlotTable + " (" + strFields + ")" + 
-						" SELECT " + strFields + " FROM idb_plot_input WHERE idb_plot_id  IN (" + this.m_strPlotIdList.Trim() + ");";
-				}
-				else if (Checked(rdoFilterByMenu)==true) 
-				{
-					if (Checked(chkNonForested)==true && Checked(chkForested)==true)
-					{
-						//all plots
-						this.m_strSQL = "INSERT INTO " + this.m_strPlotTable + " (" + strFields + ")" + 
-							" SELECT " + strFields + " FROM idb_plot_input " + 
-							" WHERE MID(biosum_plot_id,2,4)='" + this.m_strIDBInv.Trim() + "' AND ";
-					}
-					else if (Checked(chkForested)==true)
-					{
-						//forested plots
-						this.m_strSQL = "INSERT INTO " + this.m_strPlotTable + " (" + strFields + ")" + 
-							" SELECT " + strFields + " FROM idb_plot_input " + 
-							" WHERE MID(biosum_plot_id,2,4)='" + this.m_strIDBInv.Trim() + "' AND " + 
-							       "(plot_status_cd = 1) AND ";
-					}
-					else
-					{
-						//nonforested plots
-						this.m_strSQL = "INSERT INTO " + this.m_strPlotTable + " (" + strFields + ")" + 
-							" SELECT " + strFields + " FROM fiadb_plot_input " + 
-							" WHERE MID(biosum_plot_id,2,4)='" + this.m_strIDBInv.Trim() + "' AND " + 
-							       "(plot_status_cd IS NULL or plot_status_cd <> 1) AND ";
-					}
-					if (this.m_strStateCountyPlotSQL.Trim().Length > 0)
-					{
-						//state,county,plot filter
-						this.m_strSQL += this.m_strStateCountyPlotSQL.Trim() + ";";
-					}
-					else
-					{
-						//state,county filter
-						this.m_strSQL += this.m_strStateCountySQL.Trim() + ";";
-					}
-
-				}
-				else
-				{
-					this.m_strSQL = "INSERT INTO " + this.m_strPlotTable + " (" + strFields + ")" + 
-						" SELECT " + strFields + " FROM fiadb_plot_input " + 
-						" WHERE MID(biosum_plot_id,2,4)='" + this.m_strIDBInv.Trim() + "';";
-				
-				}
-				this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-                SetThermValue(m_frmTherm.progressBar1, "Value", 75);
-
-				if (this.m_ado.m_intError == 0)
-				{
-					this.m_ado.m_strSQL="INSERT INTO temp_plot_table SELECT biosum_plot_id FROM " + this.m_strPlotTable + " WHERE biosum_status_cd=9";
-					this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_ado.m_strSQL);
-
-					intAddedPlotRows = Convert.ToInt32(this.m_ado.getRecordCount(this.m_connTempMDBFile,"select count(*) from " + this.m_strPlotTable + " where biosum_status_cd = 9;",this.m_strPlotTable));
-				}
-				else
-				{
-					this.m_intError=this.m_ado.m_intError;
-					//error occured so remove new plot records
-					this.m_strSQL = "DELETE FROM " + this.m_strPlotTable + " WHERE biosum_status_cd=9;";
-					this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 100);
-				System.Threading.Thread.Sleep(2000);
-                SetThermValue(m_frmTherm.progressBar2, "Value", 40);
-                SetThermValue(m_frmTherm.progressBar1, "Value", 0);
-				//-------------------------------COND----------------------------------//
-				if (intAddedPlotRows > 0 && this.m_intError==0 && this.m_ado.m_intError==0)
-				{
-                    SetLabelValue(m_frmTherm.lblMsg,"Text","Cond Table: Inserting Condition Records...Stand By");
-					frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)m_frmTherm,"Refresh");
-
-					//build field list string to insert sql by matching 
-					//up the column names in the biosum cond table and the fiadb cond table
-					strFields = "";
-					strValues = "";
-					for (x=0; x<=p_dtCondSchema.Rows.Count-1;x++)
-					{
-						strCol = p_dtCondSchema.Rows[x]["columnname"].ToString().Trim();
-						//see if there is an equivalent FIADB column
-						for (y=0; y<=p_dtIDBCondSchema.Rows.Count-1;y++)
-						{
-							if (strCol.Trim().ToUpper() == p_dtIDBCondSchema.Rows[y]["columnname"].ToString().ToUpper())
-							{
-								if (strFields.Trim().Length == 0)
-								{
-									strFields = strCol;
-									strValues = "c." + strCol.Trim();
-									//strValues = strCol;
-								}
-								else
-								{	
-									strFields += "," + strCol;
-									strValues += ",c." + strCol.Trim();
-									//strValues += "," + strCol.Trim();
-								}
-								break;
-							}
-						}
-					}
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 40);
-				
-					//create cond input insert command
-				
-					
-
-					this.m_strSQL = "INSERT INTO " + this.m_strCondTable + " (" + strFields + ")" + 
-						" SELECT " + strValues + " FROM idb_cond_input c INNER JOIN " + this.m_strPlotTable + " p ON c.idb_plot_id=p.idb_plot_id WHERE p.biosum_status_cd=9";
-
-					strTime = System.DateTime.Now.ToString();
-				
-					this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 80);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-					
-					this.m_ado.m_strSQL = "UPDATE " + this.m_strCondTable + " " + 
-						     "SET owngrpcd = IIF(owngrpcd IS NOT NULL AND owngrpcd < 10, (owngrpcd * 10),owngrpcd)";
-
-					this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_ado.m_strSQL);
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 85);
-
-				
-
-					if (this.m_ado.m_intError != 0)
-					{
-						//remove new plot and cond records since error occured
-						this.m_intError=this.m_ado.m_intError;
-						this.m_strSQL = "DELETE FROM " + this.m_strPlotTable + " WHERE biosum_status_cd=9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						this.m_strSQL = "DELETE FROM " + this.m_strCondTable + " WHERE biosum_status_cd=9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-					}
-
-					//delete plot records from the input table
-					//that already exist in the biosum plot table
-					strTime = System.DateTime.Now.ToString();
-
-				
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 100);
-				System.Threading.Thread.Sleep(2000);
-                SetThermValue(m_frmTherm.progressBar2, "Value", 60);
-                SetThermValue(m_frmTherm.progressBar1, "Value", 0);
-				//-------------------------------TREE----------------------------------//
-				if (intAddedPlotRows > 0 && this.m_intError==0 && this.m_ado.m_intError==0)
-				{
-                    SetLabelValue(m_frmTherm.lblMsg,"Text","Tree Table: Inserting Tree Records...Stand By");
-					frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
-					
-					strTime = System.DateTime.Now.ToString();
-					//copy the inv trees to a temp file
-					if (this.m_strPlotIdList.Trim().Length > 0)
-					{
-						this.m_strSQL = " INSERT INTO tree_work_table SELECT * FROM idb_tree_input";
-					}
-					else
-					{
-						this.m_strSQL = " INSERT INTO tree_work_table SELECT * FROM idb_tree_input WHERE MID(biosum_cond_id,2,4) = '" + this.m_strIDBInv.Trim() + "'";
-					}
-					this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 10);
-
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-				
-					/***************************************************
-					 **get a list of fields that are not in the 
-					 **biosum tree table and delete them from the
-					 **tree work table
-					 ***************************************************/
-					string[] strFieldList;
-					strFieldList = new string[p_dtIDBTreeSchema.Rows.Count];
-
-					for (x=0; x<=p_dtIDBTreeSchema.Rows.Count-1;x++)
-					{
-						strFieldList[x]="";
-						strCol = p_dtIDBTreeSchema.Rows[x]["columnname"].ToString().Trim();
-						//see if there is an equivalent FIADB column
-						for (y=0; y<=p_dtTreeSchema.Rows.Count-1;y++)
-						{
-							if (strCol.Trim().ToUpper() == p_dtTreeSchema.Rows[y]["columnname"].ToString().ToUpper())
-							{
-								break;
-							}
-						}
-						if (y > p_dtTreeSchema.Rows.Count-1)
-							strFieldList[x]=strCol;
-					}
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 20);
-
-					//close the connection to the temp mdb file
-					this.m_connTempMDBFile.Close();
-					while (m_connTempMDBFile.State == System.Data.ConnectionState.Open)
-						System.Threading.Thread.Sleep(1000);
-					m_connTempMDBFile.Dispose();
-					m_connTempMDBFile=null;
-					
-
-
-					//instatiate dao again to delete the fields from the tree work table
-					//in the temp MDB file
-					dao_data_access p_dao3 = new dao_data_access();
-
-					p_dao3.DeleteField(this.m_strTempMDBFile,"tree_work_table", strFieldList);
-
-					p_dao3 = null;
-                    SetThermValue(m_frmTherm.progressBar1, "Value",30);
-					
-
-					
-
-					//reopen the connection to the temp mdb file 
-					this.m_connTempMDBFile = new System.Data.OleDb.OleDbConnection();
-					this.m_ado.OpenConnection(this.m_strTempMDBFileConn,ref this.m_connTempMDBFile);
-
-					strTime = System.DateTime.Now.ToString();
-					//copy the inv trees to a temp file
-					this.m_strSQL = " INSERT INTO " + this.m_strTreeTable + " SELECT t.* FROM tree_work_table t INNER JOIN " + this.m_strCondTable + " c ON t.biosum_cond_id = c.biosum_cond_id WHERE c.biosum_status_cd=9;";
-					this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-					strTime += " " + System.DateTime.Now.ToString();
-					//MessageBox.Show(strTime);
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 75);
-					if (this.m_ado.m_intError != 0)
-					{
-						//remove new plot and cond records since error occured
-						this.m_intError=this.m_ado.m_intError;
-						this.m_strSQL = "DELETE FROM " + this.m_strPlotTable + " WHERE biosum_status_cd=9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						this.m_strSQL = "DELETE FROM " + this.m_strCondTable + " WHERE biosum_status_cd=9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						this.m_strSQL = "DELETE FROM " + this.m_strTreeTable + " WHERE biosum_status_cd=9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-					}
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 100);
-				System.Threading.Thread.Sleep(2000);
-                SetThermValue(m_frmTherm.progressBar2, "Value", 80);
-                SetThermValue(m_frmTherm.progressBar1, "Value", 0);
-				//-------------------------------SITE TREE----------------------------------//
-				if (intAddedPlotRows > 0 && this.m_intError==0 && this.m_ado.m_intError==0)
-				{
-                    SetLabelValue(m_frmTherm.lblMsg,"Text","Site Tree Table: Inserting Site Tree Records...Stand By");
-                    frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
-
-
-					//build field list string to insert sql by matching 
-					//up the column names in the biosum cond table and the fiadb cond table
-					
-					strFields = "";
-					strValues = "";
-					for (x=0; x<=p_dtSiteTreeSchema.Rows.Count-1;x++)
-					{
-						strCol = p_dtSiteTreeSchema.Rows[x]["columnname"].ToString().Trim();
-						//see if there is an equivalent FIADB column
-						for (y=0; y<=p_dtIDBSiteTreeSchema.Rows.Count-1;y++)
-						{
-							if (strCol.Trim().ToUpper() == p_dtIDBSiteTreeSchema.Rows[y]["columnname"].ToString().ToUpper())
-							{
-								if (strFields.Trim().Length == 0)
-								{
-									strFields = strCol;
-									strValues = "t." + strCol.Trim();
-								}
-								else
-								{	
-									strFields += "," + strCol;
-									strValues += ",t." + strCol.Trim();
-								}
-								break;
-							}
-						}
-					}
-                    SetThermValue(m_frmTherm.progressBar1, "Value", 50);
-					//create cond input insert command
-
-					this.m_strSQL = "INSERT INTO " + this.m_strSiteTreeTable + " (" + strFields + ")" + 
-						" SELECT " + strValues + " FROM idb_site_tree_input t INNER JOIN temp_plot_table p ON TRIM(t.biosum_plot_id)=p.biosum_plot_id";
-
-					strTime = System.DateTime.Now.ToString();
-				
-					this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-
-					if (this.m_ado.m_intError != 0)
-					{
-						//remove new plot and cond records since error occured
-						this.m_intError=this.m_ado.m_intError;
-						this.m_strSQL = "DELETE FROM " + this.m_strPlotTable + " WHERE biosum_status_cd=9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						this.m_strSQL = "DELETE FROM " + this.m_strCondTable + " WHERE biosum_status_cd=9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						this.m_strSQL = "DELETE FROM " + this.m_strTreeTable + " WHERE biosum_status_cd=9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						this.m_strSQL = "DELETE FROM " + this.m_strSiteTreeTable + " WHERE biosum_status_cd=9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-					}
-
-
-					
-
-					
-				}
-                SetThermValue(m_frmTherm.progressBar1, "Value", 100);
-				System.Threading.Thread.Sleep(2000);
-                SetThermValue(m_frmTherm.progressBar2, "Value", 95);
-                SetThermValue(m_frmTherm.progressBar1, "Value", 0);
-				if (intAddedPlotRows > 0 && this.m_intError==0 && this.m_ado.m_intError==0)
-				{
-				    SetLabelValue(m_frmTherm.lblMsg,"Text","Updating Columns...Stand By");
-                    frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
-				
-
-					this.UpdateColumns(this.m_ado);
-					
-
-					if (this.m_intError==0)
-					{
-				
-
-						intAddedPlotRows= (int)this.m_ado.getRecordCount(this.m_connTempMDBFile,"select count(*) from " + this.m_strPlotTable + " WHERE biosum_status_cd=9",this.m_strPlotTable);
-						intAddedCondRows= (int)this.m_ado.getRecordCount(this.m_connTempMDBFile,"select count(*) from " + this.m_strCondTable  + " WHERE biosum_status_cd=9",this.m_strCondTable);
-						intAddedTreeRows= (int)this.m_ado.getRecordCount(this.m_connTempMDBFile,"select count(*) from " + this.m_strTreeTable  + " WHERE biosum_status_cd=9",this.m_strTreeTable);
-						intAddedSiteTreeRows= (int)this.m_ado.getRecordCount(this.m_connTempMDBFile,"select count(*) from " + this.m_strSiteTreeTable  + " WHERE biosum_status_cd=9",this.m_strSiteTreeTable);
-
-
-						this.m_strSQL = " UPDATE " + this.m_strPlotTable + " SET biosum_status_cd=1 WHERE biosum_status_cd = 9";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						this.m_strSQL = " UPDATE " + this.m_strCondTable + " SET biosum_status_cd=1 WHERE biosum_status_cd = 9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						this.m_strSQL = " UPDATE " + this.m_strTreeTable + " SET biosum_status_cd=1 WHERE biosum_status_cd = 9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						this.m_strSQL = " UPDATE " + this.m_strSiteTreeTable + " SET biosum_status_cd=1 WHERE biosum_status_cd = 9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-
-
-                        SetThermValue(m_frmTherm.progressBar1, "Value",GetThermValue(m_frmTherm.progressBar1,"Maximum"));
-                        SetLabelValue(m_frmTherm.lblMsg,"Text","Done");
-                        frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
-
-						MessageBox.Show("Successfully Appended \n" + 
-							intAddedPlotRows.ToString().Trim() + " Plot Records \n" + 
-							intAddedCondRows.ToString().Trim() + " Condition Records \n" + 
-							intAddedTreeRows.ToString().Trim() + " Tree Records \n" + 
-							intAddedSiteTreeRows.ToString().Trim() + " Site Tree Records","Add Plot Data");
-
-					}
-					else
-					{
-
-						//error occurred in the updatecolumns so delete the records
-						this.m_strSQL = "DELETE FROM " + this.m_strPlotTable + " WHERE biosum_status_cd = 9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						//delete added cond records since error occured
-						this.m_strSQL = "DELETE FROM " + this.m_strCondTable + " WHERE biosum_status_cd = 9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						//delete added cond records since error occured
-						this.m_strSQL = "DELETE FROM " + this.m_strTreeTable + " WHERE biosum_status_cd = 9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-						this.m_strSQL = "DELETE FROM " + this.m_strSiteTreeTable + " WHERE biosum_status_cd = 9;";
-						this.m_ado.SqlNonQuery(this.m_connTempMDBFile,this.m_strSQL);
-
-                        SetThermValue(m_frmTherm.progressBar1, "Value", GetThermValue(m_frmTherm.progressBar1, "Maximum"));
-                        frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
-
-					}
-				}
-				this.m_strCurrentProcess="";
-                SetThermValue(m_frmTherm.progressBar1, "Value", GetThermValue(m_frmTherm.progressBar1, "Maximum"));
-                SetThermValue(m_frmTherm.progressBar2, "Value", 100);		
-				if (this.m_intError != 0 || this.m_ado.m_intError != 0)
-					MessageBox.Show("!!Error Occured Adding Plot Records: 0 Records Added!!","Add Plot Data",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
-				
-				if (this.m_connTempMDBFile.State == System.Data.ConnectionState.Open)
-				{
-					this.m_connTempMDBFile.Close();
-					while (m_connTempMDBFile.State == System.Data.ConnectionState.Open)
-						System.Threading.Thread.Sleep(1000);
-					m_connTempMDBFile.Dispose();
-					m_connTempMDBFile=null;
-				}
-				this.m_ado=null;
-                
-                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Visible", true);
-                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Enabled", true);
-
-
-                LoadMDBPlotCondTreeData_Finish();
-
-            }
-            catch (System.Threading.ThreadInterruptedException err)
-            {
-                MessageBox.Show("Threading Interruption Error " + err.Message.ToString());
-            }
-            catch (System.Threading.ThreadAbortException err)
-            {
-                if (this.m_connTempMDBFile != null)
-                {
-                    if (m_connTempMDBFile.State != System.Data.ConnectionState.Closed)
-                    {
-                        m_ado.CloseConnection(m_connTempMDBFile);
-                    }
-                    m_connTempMDBFile = null;
-                }
-                if (m_ado != null)
-                {
-                    if (m_ado.m_DataSet != null)
-                    {
-                        this.m_ado.m_DataSet.Clear();
-                        this.m_ado.m_DataSet.Dispose();
-                    }
-                    this.m_ado = null;
-                }
-                this.CancelThreadCleanup();
-                this.ThreadCleanUp();
-                this.CleanupThread();
-
-            }
-            catch (Exception err)
-            {
-                MessageBox.Show("!!Error!! \n" +
-                    "Module - uc_plot_input:LoadIDBPlotCondTreeData_Process  \n" +
-                    "Err Msg - " + err.Message.ToString().Trim(),
-                    "FVS Biosum", System.Windows.Forms.MessageBoxButtons.OK,
-                    System.Windows.Forms.MessageBoxIcon.Exclamation);
-                this.m_intError = -1;
-            }
-            finally
-            {
-
-            }
-
-            if (this.m_connTempMDBFile != null)
-            {
-                if (m_connTempMDBFile.State != System.Data.ConnectionState.Closed)
-                {
-                    m_ado.CloseConnection(m_connTempMDBFile);
-                }
-                m_connTempMDBFile = null;
-            }
-            if (m_ado != null)
-            {
-                if (m_ado.m_DataSet != null)
-                {
-                    this.m_ado.m_DataSet.Clear();
-                    this.m_ado.m_DataSet.Dispose();
-                }
-                this.m_ado = null;
-            }
-            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Enabled", true);
-            if (this.m_frmTherm != null) frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)m_frmTherm, "Visible", false);
-
-
-
-
-            LoadMDBPlotCondTreeData_Finish();
-
-            CleanupThread();
-
-            frmMain.g_oDelegate.m_oEventThreadStopped.Set();
-            this.Invoke(frmMain.g_oDelegate.m_oDelegateThreadFinished);
-			
-		
-		
-		}
+        
         private bool Checked(System.Windows.Forms.RadioButton p_rdoButton)
         {
             return (bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.RadioButton)p_rdoButton, "Checked", false);
@@ -7639,49 +5282,46 @@ namespace FIA_Biosum_Manager
 			try
 			{
 
-				if (this.m_ado == null)
+				if (SQLite == null)
 				{
-					this.m_ado = new ado_data_access();
+                    SQLite = new DataMgr();
 				}
 				else
 				{
-					this.m_ado = null;
-					this.m_ado = new ado_data_access();
-				}
-				if (this.m_connTempMDBFile == null)
-				{
-
-				}
-				else
-				{
-
-					this.m_connTempMDBFile = null;
-				}
-				this.m_ado.OpenConnection(this.m_strTempMDBFileConn);
-
-
-				if (this.m_strCurrentProcess=="mdbFIADBFileInput" ||
-					this.m_strCurrentProcess=="txtFileInput" ||
-					this.m_strCurrentProcess=="mdbIDBFileInput")
-				{
-                    DeleteFromTablesWhereFilter(m_ado, m_ado.m_OleDbConnection,
-                        new string[]
-                        {
-                            //m_strPlotTable, m_strCondTable, m_strTreeTable, m_strSiteTreeTable, m_strDwmCwdTable,
-                            //m_strDwmFwdTable, m_strDwmDuffLitterTable, m_strDwmTransectSegmentTable
-                            m_strPlotTable, m_strCondTable, m_strTreeTable, m_strSiteTreeTable, m_strDwmCwdTable + "_master",
-                            m_strDwmFwdTable+ "_master", m_strDwmDuffLitterTable+ "_master", m_strDwmTransectSegmentTable+ "_master"
-                        },
-                        " WHERE biosum_status_cd=9");
+					SQLite = null;
+					SQLite = new DataMgr();
 				}
 
+                if (this.m_strCurrentProcess == "dbFIADBFileInput" ||
+                        this.m_strCurrentProcess == "txtFileInput" ||
+                        this.m_strCurrentProcess == "dbIDBFileInput")
+                {
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(m_strMasterDbFile)))
+                    {
+                        conn.Open();
+
+                        DeleteFromTablesWhereFilter(conn,
+                            new string[]
+                            {m_strPlotTable, m_strCondTable, m_strTreeTable, m_strSiteTreeTable},
+                            " WHERE biosum_status_cd=9");
+                    }
+
+                    string strMasterAuxConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.db");
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strMasterAuxConn))
+                    {
+                        conn.Open();
+
+                        DeleteFromTablesWhereFilter(conn,
+                            new string[]
+                            {m_strDwmCwdTable, m_strDwmFwdTable, m_strDwmDuffLitterTable, m_strDwmTransectSegmentTable},
+                            " WHERE biosum_status_cd=9");
+                    }
+                }
 				MessageBox.Show("!!User Canceled Adding Plot Records: 0 Records Added!!","Add Plot Data",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
 				frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)m_frmTherm,"Visible",false);
 				//((frmDialog)this.ParentForm).m_frmMain.Visible=true;
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Visible", true);
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Enabled", true);
-
-
 
 			}
 			catch 
@@ -7700,7 +5340,7 @@ namespace FIA_Biosum_Manager
                 this.CalculateAdjustments_Start();
                 if (m_intError == 0)
                 {
-                    this.LoadMDBFiadbPopFiles();
+                    this.LoadDBFiadbPopFiles();
                     this.m_strLoadedPopEstUnitTxtInputFile = "";
                     this.m_strLoadedPopEvalTxtInputFile = "";
                     this.m_strLoadedPopStratumTxtInputFile = "";
@@ -7708,14 +5348,14 @@ namespace FIA_Biosum_Manager
                     if (this.rdoFilterNone.Checked && m_intError == 0)
                     {
 
-                        this.LoadMDBPlotCondTreeData_Start();
+                        this.LoadDBPlotCondTreeData_Start();
 
                     }
                     else if (this.rdoFilterByFile.Checked && m_intError == 0)
                     {
                         this.m_strPlotIdList = this.CreateDelimitedStringList(this.txtFilterByFile.Text.Trim(), ",", ",", false);
                         if (this.m_intError == 0)
-                            this.LoadMDBPlotCondTreeData_Start();
+                            this.LoadDBPlotCondTreeData_Start();
 
                     }
                 }
@@ -7757,13 +5397,13 @@ namespace FIA_Biosum_Manager
 					this.m_strLoadedFiadbInputFile.Trim().ToUpper() != 
 					this.txtFiadbInputFile.Text.Trim().ToUpper())
 				{
-					this.LoadMDBFiadbPopFiles();
+					this.LoadDBFiadbPopFiles();
 				}
 				
 
 				if (m_intError==0)
 				{
-					this.mdbInputStateCounty();
+					this.dbInputStateCounty();
 					this.grpboxFilterByState.Visible=true;
 					this.lstFilterByState.Refresh();
 					this.grpboxFIADBInv.Visible=false;
@@ -7784,7 +5424,7 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.CurrentThreadProcessAborted = false;
             frmMain.g_oDelegate.CurrentThreadProcessDone = false;
             frmMain.g_oDelegate.CurrentThreadProcessStarted = false;
-            this.m_strCurrentProcess = "mdbFIADBFileInput";
+            this.m_strCurrentProcess = "dbFIADBFileInput";
             this.StartTherm("2", "Calculate Adjustment Factors");
             frmMain.g_oDelegate.m_oThread = new Thread(new ThreadStart(CalculateAdjustments_Process));
             frmMain.g_oDelegate.m_oThread.IsBackground = true;
@@ -7798,7 +5438,7 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private void LoadMDBPlotCondTreeData_Start()
+        private void LoadDBPlotCondTreeData_Start()
         {
             frmMain.g_oDelegate.InitializeThreadEvents();
             frmMain.g_oDelegate.m_oEventStopThread.Reset();
@@ -7806,24 +5446,9 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.CurrentThreadProcessAborted = false;
             frmMain.g_oDelegate.CurrentThreadProcessDone = false;
             frmMain.g_oDelegate.CurrentThreadProcessStarted = false;
-            this.m_strCurrentProcess = "mdbFIADBFileInput";
+            this.m_strCurrentProcess = "dbFIADBFileInput";
             this.StartTherm("2", "Add SQLite Plot,Cond,Site Tree, & Tree Table Data");
-            frmMain.g_oDelegate.m_oThread = new Thread(new ThreadStart(LoadMDBPlotCondTreeData_Process));
-            frmMain.g_oDelegate.m_oThread.IsBackground = true;
-            frmMain.g_oDelegate.CurrentThreadProcessIdle = false;
-            frmMain.g_oDelegate.m_oThread.Start();
-        }
-        private void LoadIDBPlotCondTreeData_Start()
-        {
-            frmMain.g_oDelegate.InitializeThreadEvents();
-            frmMain.g_oDelegate.m_oEventStopThread.Reset();
-            frmMain.g_oDelegate.m_oEventThreadStopped.Reset();
-            frmMain.g_oDelegate.CurrentThreadProcessAborted = false;
-            frmMain.g_oDelegate.CurrentThreadProcessDone = false;
-            frmMain.g_oDelegate.CurrentThreadProcessStarted = false;
-            this.m_strCurrentProcess = "mdbIDBFileInput";
-            this.StartTherm("2", "Add MS Access Plot,Cond,Site Tree, & Tree Table Data");
-            frmMain.g_oDelegate.m_oThread = new Thread(new ThreadStart(LoadIDBPlotCondTreeData_Process));
+            frmMain.g_oDelegate.m_oThread = new Thread(new ThreadStart(LoadDBPlotCondTreeData_Process));
             frmMain.g_oDelegate.m_oThread.IsBackground = true;
             frmMain.g_oDelegate.CurrentThreadProcessIdle = false;
             frmMain.g_oDelegate.m_oThread.Start();
@@ -7843,7 +5468,7 @@ namespace FIA_Biosum_Manager
             this.m_strCurrentProcess = "";
         }
 
-        private void LoadMDBPlotCondTreeData_Finish()
+        private void LoadDBPlotCondTreeData_Finish()
         {
             this.m_strPlotIdList = "";
             
@@ -7878,7 +5503,7 @@ namespace FIA_Biosum_Manager
 			this.m_bLoadStateCountyPlotList=true;
 		}
 
-		private void btnboxMDBFiadbInputFile_Click(object sender, System.EventArgs e)
+		private void btnboxDBFiadbInputFile_Click(object sender, System.EventArgs e)
 		{
 			
 				OpenFileDialog OpenFileDialog1 = new OpenFileDialog();
@@ -7971,7 +5596,7 @@ namespace FIA_Biosum_Manager
 			OpenFileDialog1 = null;			
 		}
 
-		private void btnMDBFiadbInputNext_Click(object sender, System.EventArgs e)
+		private void btnDBFiadbInputNext_Click(object sender, System.EventArgs e)
 		{
             
             if (this.cmbFiadbPopEvalTable.Text.Trim().Length == 0 ||
@@ -7998,15 +5623,15 @@ namespace FIA_Biosum_Manager
 		
 
 			this.grpboxFilter.Visible=true;
-			this.grpboxMDBFiadbInput.Visible=false;
+			this.grpboxDBFiadbInput.Visible=false;
 
 		}
-		private bool LoadMDBFiadbPopEvalTable()
+		private bool LoadDBFiadbPopEvalTable()
 		{
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.LoadMDBFiadPopEvalTable\r\n");
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.LoadDBFiadPopEvalTable\r\n");
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//\r\n");
             }
             string strCN="";
@@ -8126,12 +5751,6 @@ namespace FIA_Biosum_Manager
 
                     //create a temporary db file for the temporary pop tables
                     this.m_strTempDbFile = frmMain.g_oUtils.getRandomFile(m_oEnv.strTempDir, "db");
-                    //this.m_strTempMDBFile = m_oDatasource.CreateMDBAndTableDataSourceLinks();
-                    //this.m_strPopMDBFile = this.m_strTempMDBFile;
-                    //if (this.m_ado == null)
-                    //{
-                    //    this.m_ado = new ado_data_access();
-                    //}
 
                     //create pop tables in temporary db file
                     CreatePopTables();
@@ -8191,207 +5810,14 @@ namespace FIA_Biosum_Manager
             }
 			return bLoad;
 		}
-
-		private bool LoadMDBFiadbPopEvalTable2()
+		private void LoadDBFiadbPopFiles()
 		{
-			string strCN="";
-			string strCNDelimited="";
-			string strEvalId="";
-			string strEvalIdDelimited="";
-			string strRsCd="";
-			string strRsCdDelimited="";
-			string strStateCd="";
-			string strStateCdDelimited="";
-			string strLocNm="";
-			string strLocNmDelimited="";
-			string strEvalDesc="";
-			string strEvalDescDelimited="";
-			string strRptYr="";
-			string strRptYrDelimited="";
-			string strNotes="";
-			string strNotesDelimited="";
-			int x=0;
-			m_intError=0;
-			bool bLoad=false;
-			if (this.m_ado==null)
-				this.m_ado = new ado_data_access();
-			if (m_oDatasource==null) this.InitializeDatasource();
-				
-			try
-			{
-				//check if the eval list box has no values
-				if (this.lstFIADBInv.Items.Count==0)
-				{
-					bLoad=true;
-				}
-				//see if the same values in the list as the table
-				m_ado.SqlQueryReader(m_ado.getMDBConnString(this.txtFiadbInputFile.Text.Trim(),"",""),"SELECT * FROM " + this.cmbFiadbPopEvalTable.Text.Trim());
-				if (m_ado.m_intError==0)
-				{
-					if (m_ado.m_OleDbDataReader.HasRows)
-					{
-						while (m_ado.m_OleDbDataReader.Read())
-						{
-							//initialize eval values
-							strCN="";
-							strEvalId="";
-							strRsCd="";
-							strStateCd="";
-							strLocNm="";
-							strEvalDesc="";
-							strRptYr="";
-							strNotes="";
-							strCN =m_ado.m_OleDbDataReader["cn"].ToString();
-							strEvalId =m_ado.m_OleDbDataReader["evalid"].ToString();
-							strRsCd= m_ado.m_OleDbDataReader["RsCd"].ToString();
-							strStateCd = m_ado.m_OleDbDataReader["statecd"].ToString();
-							if (m_ado.m_OleDbDataReader["location_nm"] != System.DBNull.Value)
-								strLocNm = m_ado.m_OleDbDataReader["location_nm"].ToString();
-							if (m_ado.m_OleDbDataReader["eval_descr"] != System.DBNull.Value)
-								strEvalDesc = m_ado.m_OleDbDataReader["eval_descr"].ToString();
-							if (m_ado.m_OleDbDataReader["report_year_nm"] != System.DBNull.Value)
-								strRptYr = m_ado.m_OleDbDataReader["report_year_nm"].ToString();
-							if (m_ado.m_OleDbDataReader["notes"] != System.DBNull.Value)
-								strNotes = m_ado.m_OleDbDataReader["notes"].ToString();	
-							//string all the eval records
-							strCNDelimited=strCNDelimited + strCN + " " + "#";
-							strEvalIdDelimited=strEvalIdDelimited + strEvalId + " " + "#";
-							strRsCdDelimited = strRsCdDelimited + strRsCd + " " + "#";
-							strStateCdDelimited = strStateCdDelimited + strStateCd + " " + "#";
-							strLocNmDelimited = strLocNmDelimited + strLocNm + " " + "#";
-							strEvalDescDelimited = strEvalDescDelimited + strEvalDesc + " " + "#";
-							strRptYrDelimited = strRptYrDelimited + strRptYr + " " + "#";
-							strNotesDelimited = strNotesDelimited + strNotes + " " + "#";
-							if (!bLoad)
-							{
-								//see if the tables eval row is found in the list box
-								for (x=0;x<=this.lstFIADBInv.Items.Count-1;x++)
-								{
-									if (strEvalId.Trim() == this.lstFIADBInv.Items[x].SubItems[0].Text.Trim() && 
-										strRsCd.Trim() == this.lstFIADBInv.Items[x].SubItems[1].Text.Trim() && 
-										strStateCd.Trim() == this.lstFIADBInv.Items[x].SubItems[2].Text.Trim() &&
-										strLocNm.Trim() == this.lstFIADBInv.Items[x].SubItems[3].Text.Trim() &&
-										strEvalDesc.Trim() == this.lstFIADBInv.Items[x].SubItems[4].Text.Trim() &&
-										strRptYr.Trim() == this.lstFIADBInv.Items[x].SubItems[5].Text.Trim() && 
-										strNotes.Trim() == this.lstFIADBInv.Items[x].SubItems[6].Text.Trim())
-										break;
-								}
-								if (x > this.lstFIADBInv.Items.Count) 
-								{
-									//the eval table record is not found in the list box
-									bLoad=true;
-								}
-							}
-						}
-						m_ado.m_OleDbDataReader.Close();
-						while (m_ado.m_OleDbDataReader.IsClosed==false)
-							System.Threading.Thread.Sleep(1000);
-						
-						if (bLoad)
-						{
-							//remove the delimiter from the end of the string list
-							if (strCNDelimited.Trim().Length > 0) strCNDelimited = strCNDelimited.Substring(0,strCNDelimited.Length - 1);
-							if (strEvalIdDelimited.Trim().Length > 0) strEvalIdDelimited = strEvalIdDelimited.Substring(0,strEvalIdDelimited.Length - 1);
-							if (strRsCdDelimited.Trim().Length > 0) strRsCdDelimited = strRsCdDelimited.Substring(0,strRsCdDelimited.Length - 1);
-							if (strStateCdDelimited.Trim().Length > 0) strStateCdDelimited=strStateCdDelimited.Substring(0,strStateCdDelimited.Length - 1);
-							if (strLocNmDelimited.Trim().Length > 0) strLocNmDelimited=strLocNmDelimited.Substring(0,strLocNmDelimited.Length - 1);
-							if (strEvalDescDelimited.Trim().Length > 0) strEvalDescDelimited=strEvalDescDelimited.Substring(0,strEvalDescDelimited.Length - 1);
-							if (strRptYrDelimited.Trim().Length > 0) strRptYrDelimited=strRptYrDelimited.Substring(0,strRptYrDelimited.Length - 1);
-							if (strNotesDelimited.Trim().Length > 0) strNotesDelimited=strNotesDelimited.Substring(0,strNotesDelimited.Length - 1);
-
-							//create a temporary mdb file with links to all the project tables
-							this.m_strTempMDBFile = m_oDatasource.CreateMDBAndTableDataSourceLinks();
-
-							//get a connection string for the temp mdb file
-							this.m_strTempMDBFileConn = this.m_ado.getMDBConnString(this.m_strTempMDBFile,"","");
-							this.m_ado.OpenConnection(m_strTempMDBFileConn);
-							if (m_ado.m_intError==0)
-							{
-
-								//delete the current eval records that have a value of 9
-								m_ado.m_strSQL = "DELETE FROM " + this.m_strPopEvalTable + " WHERE biosum_status_cd=9";
-								m_ado.SqlNonQuery(m_ado.m_OleDbConnection,m_ado.m_strSQL);
-								if (m_ado.m_intError==0)
-								{
-									//covert the string lists to arrays
-									FIA_Biosum_Manager.utils oUtils = new FIA_Biosum_Manager.utils();
-									string[] strCNArray = oUtils.ConvertListToArray(strCNDelimited,"#");
-									string[] strEvalIdArray = oUtils.ConvertListToArray(strEvalIdDelimited,"#");
-									string[] strRsCdArray = oUtils.ConvertListToArray(strRsCdDelimited,"#");
-									string[] strStateCdArray = oUtils.ConvertListToArray(strStateCdDelimited,"#");
-									string[] strLocNmArray = oUtils.ConvertListToArray(strLocNmDelimited,"#");
-									string[] strEvalDescArray = oUtils.ConvertListToArray(strEvalDescDelimited,"#");
-									string[] strRptYrArray = oUtils.ConvertListToArray(strRptYrDelimited,"#");
-									string[] strNotesArray = oUtils.ConvertListToArray(strNotesDelimited,"#");
-									oUtils=null;
-									//insert the evaluation records into the biosum evaluation table
-									for (x=0;x<=strEvalIdArray.Length-1;x++)
-									{
-										m_ado.m_strSQL="INSERT INTO " + this.m_strPopEvalTable + " " + 
-											"(CN,RSCD,EVALID,EVAL_DESCR,STATECD," + 
-											"LOCATION_NM,REPORT_YEAR_NM,NOTES," + 
-											"START_INVYR,END_INVYR,BIOSUM_STATUS_CD) VALUES " + 
-											"('" + strCNArray[x].Trim() + "'," + 
-											strRsCdArray[x].Trim() + "," + 
-											strEvalIdArray[x].Trim() + ",'" + 
-											strEvalDescArray[x] + "'," + 
-											strStateCdArray[x] + ",'" + 
-											strLocNmArray[x] + "','" + 
-											strRptYrArray[x] + "','" + 
-											strNotesArray[x] + "',null,null,9)";
-										m_ado.SqlNonQuery(m_ado.m_OleDbConnection,m_ado.m_strSQL);	
-										if (m_ado.m_intError!=0)
-										{
-											this.m_intError=m_ado.m_intError;
-											break;
-										}
-									}
-								}          							
-								else m_intError=m_ado.m_intError;
-								m_ado.m_OleDbConnection.Close();
-								while (this.m_ado.m_OleDbConnection.State != System.Data.ConnectionState.Closed)
-									System.Threading.Thread.Sleep(1000);
-							}
-							else m_intError=m_ado.m_intError;
-						}
-					}
-					else
-					{
-						MessageBox.Show("There are no Population Evaluations in the " + this.cmbFiadbPopEvalTable.Text + " table ",
-							"FIA Biosum",
-							System.Windows.Forms.MessageBoxButtons.OK,
-							System.Windows.Forms.MessageBoxIcon.Exclamation);
-						m_intError=-1;
-						m_ado.m_OleDbDataReader.Close();
-						while (m_ado.m_OleDbDataReader.IsClosed==false)
-							System.Threading.Thread.Sleep(1000);
-						bLoad=false;
-						
-					}
-				}
-
-			}
-			catch (Exception e)
-			{
-				this.m_intError=-1;
-				MessageBox.Show(e.Message,
-					"FIA Biosum",
-					System.Windows.Forms.MessageBoxButtons.OK,
-					System.Windows.Forms.MessageBoxIcon.Exclamation);
-				return false;
-			}
-			return bLoad;
-
-
-		}
-		private void LoadMDBFiadbPopFiles()
-		{
-		    this.m_strCurrentProcess="mdbFiadbInputPopTables";	
+		    this.m_strCurrentProcess="dbFiadbInputPopTables";	
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.LoadMDBFiadbPopFiles\r\n");
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.LoadDBFiadbPopFiles\r\n");
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//\r\n");
             }
 
@@ -8409,7 +5835,7 @@ namespace FIA_Biosum_Manager
 			this.m_strCurrentFiadbInputFile = this.txtFiadbInputFile.Text;
 			this.m_strCurrentBiosumTable=this.m_strPopStratumTable;			
 
-				this.thdProcessRecords = new Thread(new ThreadStart(mdbFiadbInputPopTables));
+				this.thdProcessRecords = new Thread(new ThreadStart(dbFiadbInputPopTables));
 				this.thdProcessRecords.IsBackground = true;
 				this.thdProcessRecords.Start();
 				while (thdProcessRecords.IsAlive)
@@ -8428,7 +5854,7 @@ namespace FIA_Biosum_Manager
 					this.m_strCurrentFiadbTable = this.cmbFiadbPopEstUnitTable.Text;
 					this.m_strCurrentFiadbInputFile = this.txtFiadbInputFile.Text;
 					this.m_strCurrentBiosumTable = this.m_strPopEstUnitTable;
-					this.thdProcessRecords = new Thread(new ThreadStart(mdbFiadbInputPopTables));
+					this.thdProcessRecords = new Thread(new ThreadStart(dbFiadbInputPopTables));
 					this.thdProcessRecords.IsBackground = true;
 					this.thdProcessRecords.Start();
 					while (thdProcessRecords.IsAlive)
@@ -8448,7 +5874,7 @@ namespace FIA_Biosum_Manager
 					this.m_frmTherm.lblMsg.Text = "ppsa table";
 					this.m_strCurrentFiadbTable = this.cmbFiadbPpsaTable.Text;
 					this.m_strCurrentBiosumTable = this.m_strPpsaTable;
-					this.thdProcessRecords = new Thread(new ThreadStart(mdbFiadbInputPopTables));
+					this.thdProcessRecords = new Thread(new ThreadStart(dbFiadbInputPopTables));
 					this.thdProcessRecords.IsBackground = true;
 					this.thdProcessRecords.Start();
 					while (thdProcessRecords!=null && thdProcessRecords.IsAlive)
@@ -8473,7 +5899,7 @@ namespace FIA_Biosum_Manager
 			    this.m_strCurrentProcess="";	
 			
 		}
-		private void mdbFiadbInputPopTables()
+		private void dbFiadbInputPopTables()
 		{
 		   
 			string strFields="";
@@ -8493,7 +5919,7 @@ namespace FIA_Biosum_Manager
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.mdbFiadbInputPopTables\r\n");
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.dbFiadbInputPopTables\r\n");
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//\r\n");
             }
 
@@ -8550,7 +5976,7 @@ namespace FIA_Biosum_Manager
                         }
                     }
                     SQLite.m_strSQL = "INSERT INTO " + strDestTable + " (" + strFields + ")" +
-                        " SELECT " + strFields + " FROM FIADB." + strSourceTable + "   " +
+                        " SELECT " + strFields + " FROM FIADB." + strSourceTable + " " +
                         "WHERE rscd = " + this.m_strCurrFIADBRsCd + " AND " +
                         "evalid = " + this.m_strCurrFIADBEvalId;
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -8584,7 +6010,7 @@ namespace FIA_Biosum_Manager
 
 		}
 
-		private void btnMDBFiadbInputCancel_Click(object sender, System.EventArgs e)
+		private void btnDBFiadbInputCancel_Click(object sender, System.EventArgs e)
 		{
 			((frmDialog)this.ParentForm).Close();
 		}
@@ -8597,88 +6023,9 @@ namespace FIA_Biosum_Manager
 		
 		}
 
-		private void btnMDBSiteTreeBrowse_Click(object sender, System.EventArgs e)
-		{
-			this.GetMDBFileAndTable("SQLite Data File Containing Site Tree Table Data",
-									"Select Site Tree Table",
-									ref this.txtMDBSiteTree,
-									ref this.txtMDBSiteTreeTable);
-		}
-		private void GetMDBFileAndTable(string p_strDialogTitleGetMDBFile,
-			string p_strDialogTitleGetMDBTable,
-			ref System.Windows.Forms.TextBox p_txtMDBFile,
-			ref System.Windows.Forms.TextBox p_txtMDBTable)
-		{
-			OpenFileDialog OpenFileDialog1 = new OpenFileDialog();
-			OpenFileDialog1.Title = p_strDialogTitleGetMDBFile;
-			OpenFileDialog1.Filter = "Microsoft Access Database File (*.MDB,*.MDE,*.ACCDB) |*.mdb;*.mde;*.accdb";
-			DialogResult result =  OpenFileDialog1.ShowDialog();
-			if (result == DialogResult.OK) 
-			{
-				if (OpenFileDialog1.FileName.Trim().Length > 0) 
-				{
-					string strFullPath = OpenFileDialog1.FileName.Trim();
-					if (strFullPath.Length > 0) 
-					{
-						utils p_utils = new FIA_Biosum_Manager.utils();
-						string strFile = p_utils.getFileName(strFullPath);
-						string strDir = p_utils.getDirectory(strFullPath);
-						p_utils = null;
-						dao_data_access tempDao = new dao_data_access();
-						tempDao.OpenDb(strFullPath);
-						if (tempDao.m_intError == 0) 
-						{
-							frmDialog frmTemp = new frmDialog();
-							frmTemp.Text = p_strDialogTitleGetMDBTable;
-							frmTemp.uc_select_list_item1.lblMsg.Text= "Table contents of " + strFullPath;
-							frmTemp.uc_select_list_item1.lblMsg.Visible = true;
-							string strLargestString = frmTemp.uc_select_list_item1.lblMsg.Text;
-						
-							frmTemp.uc_project1.Visible=false;
-							frmTemp.uc_select_list_item1.listBox1.Items.Clear();
-							for (int x=0; x <= tempDao.m_DaoDatabase.TableDefs.Count - 1; x++)
-							{
-								if (tempDao.m_DaoDatabase.TableDefs[x].Name.IndexOf("MSys",0) < 0) 		
-								{
-									frmTemp.uc_select_list_item1.listBox1.Items.Add(tempDao.m_DaoDatabase.TableDefs[x].Name);
-									if (tempDao.m_DaoDatabase.TableDefs[x].Name.Trim().Length > 
-										strLargestString.Trim().Length)
-										strLargestString = tempDao.m_DaoDatabase.TableDefs[x].Name;
-								}
+		
 
-							}
-                        
-						
-							tempDao.m_DaoDatabase.Close();
-							tempDao.m_DaoDatabase = null;
-						
-							frmTemp.uc_select_list_item1.Initialize_Width(strLargestString);
-							frmTemp.uc_select_list_item1.Visible=true;
-							result = frmTemp.ShowDialog(this);
-                        
-						
-							if (result == DialogResult.OK) 
-							{
-							
-								p_txtMDBFile.Text = strFullPath;
-								p_txtMDBTable.Text = frmTemp.uc_select_list_item1.listBox1.Text;
-							}
-					
-							frmTemp.Close();
-							frmTemp = null;
-						}
-						tempDao = null;
-					}
-				}
-			}
-			else 
-			{
-			}
-			OpenFileDialog1 = null;
-
-		}
-
-        private void SaveSqlitePopTables(string strEvalId, string strRscd)
+        private void SaveSqlitePopTables(System.Data.SQLite.SQLiteConnection p_conn, string strEvalId, string strRscd)
         {
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -8686,102 +6033,81 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//uc_plot_input.SaveSqlitePopTables\r\n");
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//\r\n");
             }
-
-            DataMgr oDataMgr = new DataMgr();
-            string strConnection = oDataMgr.GetConnectionString(m_strMasterDbFile);
-            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
+            SQLite.m_strSQL = "SELECT COUNT(*) FROM " + this.m_strPopEvalTable + " WHERE evalid=" + strEvalId +
+                " AND rscd= " + strRscd;
+            int intCount = (int) SQLite.getRecordCount(p_conn, SQLite.m_strSQL, this.m_strPopEvalTable);
+            if (intCount > 0 && frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
-                con.Open();
-                string strSQL = "SELECT COUNT(*) FROM " + this.m_strPopEvalTable + " WHERE evalid=" + strEvalId +
-                    " AND rscd= " + strRscd;
-                int intCount = (int) oDataMgr.getRecordCount(con, strSQL, this.m_strPopEvalTable);
-                if (intCount > 0 && frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                {
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "Records exist for evalid " + strEvalId + ". POP tables will not be loaded.\r\n");
-                    return;
-                }
-                else
-                {
-                    //attach FIADB database so we can copy records over
-                    oDataMgr.m_strSQL = "ATTACH DATABASE '" + this.txtFiadbInputFile.Text.Trim() + "' AS FIADB";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
-                            oDataMgr.m_strSQL + "\r\n");
-                    oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
+                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "Records exist for evalid " + strEvalId + ". POP tables will not be loaded.\r\n");
+                return;
+            }
+            else
+            {
+                SQLite.m_strSQL = "INSERT INTO " + this.m_strPopEvalTable + "(CN,RSCD,EVALID,EVAL_DESCR,STATECD," +
+                    "LOCATION_NM,REPORT_YEAR_NM,NOTES," +
+                    "START_INVYR,END_INVYR,GROWTH_ACCT,LAND_ONLY, MODIFIED_DATE, BIOSUM_STATUS_CD)" +
+                    "SELECT CN,RSCD,EVALID,EVAL_DESCR,STATECD," +
+                    "LOCATION_NM,REPORT_YEAR_NM,NOTES," +
+                    "START_INVYR,END_INVYR,GROWTH_ACCT,LAND_ONLY, MODIFIED_DATE,1 " +
+                    "FROM FIADB." + this.m_strPopEvalTable +
+                    " WHERE evalid = " + strEvalId + " AND rscd= " + strRscd;
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
+                        SQLite.m_strSQL + "\r\n");
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                    oDataMgr.m_strSQL = "insert into " + this.m_strPopEvalTable + "(CN,RSCD,EVALID,EVAL_DESCR,STATECD," +
-                        "LOCATION_NM,REPORT_YEAR_NM,NOTES," +
-                        "START_INVYR,END_INVYR,GROWTH_ACCT,LAND_ONLY, MODIFIED_DATE, BIOSUM_STATUS_CD)" +
-                        "select CN,RSCD,EVALID,EVAL_DESCR,STATECD," +
-                        "LOCATION_NM,REPORT_YEAR_NM,NOTES," +
-                        "START_INVYR,END_INVYR,GROWTH_ACCT,LAND_ONLY, MODIFIED_DATE,1 " +
-                        "from FIADB." + this.m_strPopEvalTable +
-                        " where evalid = " + strEvalId + " AND rscd= " + strRscd;
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
-                            oDataMgr.m_strSQL + "\r\n");
-                    oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
+                //get the fiabiosum table structures
+                string[] arrTables = new string[] { this.m_strPopEstUnitTable, this.m_strPopStratumTable, this.m_strPpsaTable };
+                string strPopEstnUnitTableSrc = frmMain.g_oDelegate.GetControlPropertyValue(cmbFiadbPopEstUnitTable, "Text", false).ToString().Trim();
+                string strPopStratumTableSrc = frmMain.g_oDelegate.GetControlPropertyValue(cmbFiadbPopStratumTable, "Text", false).ToString().Trim();
+                string strPpsaTableSrc = frmMain.g_oDelegate.GetControlPropertyValue(cmbFiadbPpsaTable, "Text", false).ToString().Trim();
+                string[] arrSourceTables = new string[] { strPopEstnUnitTableSrc, strPopStratumTableSrc, strPpsaTableSrc };
+                int i = 0;
+                foreach (var pTable in arrTables)
+                {
+                    string strFields = "";
+                    DataTable dtDestSchema = SQLite.getTableSchema(p_conn, "SELECT * FROM " + pTable);
+                    DataTable dtSourceSchema = SQLite.getTableSchema(p_conn, "SELECT * FROM FIADB." + arrSourceTables[i].Trim());
 
-                    //get the fiabiosum table structures
-                    string[] arrTables = new string[] { this.m_strPopEstUnitTable, this.m_strPopStratumTable, this.m_strPpsaTable };
-                    string strPopEstnUnitTableSrc = frmMain.g_oDelegate.GetControlPropertyValue(cmbFiadbPopEstUnitTable, "Text", false).ToString().Trim();
-                    string strPopStratumTableSrc = frmMain.g_oDelegate.GetControlPropertyValue(cmbFiadbPopStratumTable, "Text", false).ToString().Trim();
-                    string strPpsaTableSrc = frmMain.g_oDelegate.GetControlPropertyValue(cmbFiadbPpsaTable, "Text", false).ToString().Trim();
-                    string[] arrSourceTables = new string[] { strPopEstnUnitTableSrc, strPopStratumTableSrc, strPpsaTableSrc };
-                    int i = 0;
-                    foreach (var pTable in arrTables)
+                    //build field list string to insert sql by matching 
+                    //up the column names in the biosum plot table and the fiadb plot table
+                    strFields = "";
+                    for (int x = 0; x <= dtDestSchema.Rows.Count - 1; x++)
                     {
-                        string strSqliteFields = "";
-                        DataTable dtSqliteDestSchema = oDataMgr.getTableSchema(con, "select * from " + pTable);
-                        DataTable dtSourceSchema = oDataMgr.getTableSchema(con, "select * from FIADB." + arrSourceTables[i].Trim());
-
-                        //build field list string to insert sql by matching 
-                        //up the column names in the biosum plot table and the fiadb plot table
-                        strSqliteFields = "";
-                        for (int x = 0; x <= dtSqliteDestSchema.Rows.Count - 1; x++)
+                        string strCol = dtDestSchema.Rows[x]["columnname"].ToString().Trim();
+                        //see if there is an equivalent FIADB column
+                        for (int y = 0; y <= dtSourceSchema.Rows.Count - 1; y++)
                         {
-                            string strCol = dtSqliteDestSchema.Rows[x]["columnname"].ToString().Trim();
-                            //see if there is an equivalent FIADB column
-                            for (int y = 0; y <= dtSourceSchema.Rows.Count - 1; y++)
+                            if (strCol.Trim().ToUpper() == dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper())
                             {
-                                if (strCol.Trim().ToUpper() == dtSourceSchema.Rows[y]["columnname"].ToString().ToUpper())
+                                if (strFields.Trim().Length == 0)
                                 {
-                                    if (strSqliteFields.Trim().Length == 0)
-                                    {
-                                        strSqliteFields = strCol;
-                                    }
-                                    else
-                                    {
-                                        strSqliteFields += "," + strCol;
-                                    }
-                                    break;
+                                    strFields = strCol;
                                 }
+                                else
+                                {
+                                    strFields += "," + strCol;
+                                }
+                                break;
                             }
                         }
-                        oDataMgr.m_strSQL = "INSERT INTO " + pTable + " (" + strSqliteFields + ")" +
-                            " SELECT " + strSqliteFields + " FROM FIADB." + arrSourceTables[i] + "   " +
-                            "WHERE evalid = " + strEvalId + " AND rscd= " + strRscd;
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
-                                oDataMgr.m_strSQL + "\r\n");
-                        oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
-
-                        oDataMgr.m_strSQL = "UPDATE " + pTable +
-                            " SET biosum_status_cd = 1" +
-                            " WHERE evalid = " + strEvalId;
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
-                                oDataMgr.m_strSQL + "\r\n");
-                        oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
-                       i++;
                     }
-
-                    //detach FIADB database
-                    oDataMgr.m_strSQL = "DETACH DATABASE FIADB";
+                    SQLite.m_strSQL = "INSERT INTO " + pTable + " (" + strFields + ")" +
+                        " SELECT " + strFields + " FROM FIADB." + arrSourceTables[i] +
+                        " WHERE evalid = " + strEvalId + " AND rscd = " + strRscd;
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
-                            oDataMgr.m_strSQL + "\r\n");
-                    oDataMgr.SqlNonQuery(con, oDataMgr.m_strSQL);
+                            SQLite.m_strSQL + "\r\n");
+                    SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+
+                    SQLite.m_strSQL = "UPDATE " + pTable +
+                        " SET biosum_status_cd = 1 " +
+                        "WHERE evalid = " + strEvalId;
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
+                            SQLite.m_strSQL + "\r\n");
+                    SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+                    i++;
                 }
             }
         }
@@ -8903,7 +6229,7 @@ namespace FIA_Biosum_Manager
             chkForested.Enabled = !rdoFilterByFile.Checked;
         }
 
-        private void btnMDBFiadbInputHelp_Click(object sender, EventArgs e)
+        private void btnDBFiadbInputHelp_Click(object sender, EventArgs e)
         {
             if (m_oHelp == null)
             {
@@ -8949,58 +6275,131 @@ namespace FIA_Biosum_Manager
             m_oHelp.ShowHelp(new string[] { "DATABASE", "FILTER_BY_PLOT" });
         }
 
-        /*
-        public class FIADB_Adjustments
+        private void SaveLoadConfigurationTxt(System.Data.SQLite.SQLiteConnection p_conn)
         {
-            public FIADB_Adjustments()
+            string strConfigTxtFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\biosum_plot_input_configuration.txt";
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.AppendLine("========================================================");
+            stringBuilder.AppendLine("Plot data loaded: " + DateTime.Now.ToString());
+            stringBuilder.AppendLine("========================================================");
+
+            string strSqliteVersion = "";
+            SQLite.m_strSQL = "SELECT sqlite_version() AS v";
+            SQLite.SqlQueryReader(p_conn, SQLite.m_strSQL);
+            if (SQLite.m_DataReader.HasRows)
             {
-                if (!System.IO.File.Exists(
-                    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\DB\\BIOSUM_RECALC_FIADB_ADJUSTMENTS.ACCDB"))
+                while (SQLite.m_DataReader.Read())
                 {
-                    dao_data_access oDao = new dao_data_access();
-                    oDao.CreateMDB(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\DB\\biosum_recalc_fiadb_adjustments.accdb");
-                    oDao.m_DaoWorkspace.Close();
-                    oDao.m_DaoWorkspace = null;
-                    oDao = null;
+                    strSqliteVersion = SQLite.m_DataReader["v"].ToString();
                 }
             }
-            public enum ModeValues
-            {
-                ADD,
-                DELETE,
-            }
-            private ModeValues _EditMode=ModeValues.ADD;
-            public ModeValues EditMode
-            {
-                get { return _EditMode; }
-                set { _EditMode = value; }
-            }
-            private string _strMSAccessDbFile = "";
-            public string MSAccessDbFile
-            {
-                get { return _strMSAccessDbFile; }
-                set { _strMSAccessDbFile = value; }
-            }
-           
-            private void ImportCSVFiles(
-                string p_strPlotFile,
-                string p_strPopEstUnitFile,
-                string p_strPopEvalFile,
-                string p_strPopStratumFile,
-                string p_strPPSAFile,
-                string p_strCondFile)
-            {
+            SQLite.m_DataReader.Close();
 
-            }
-            public void FIADB_Adjustments_Process()
-            {
+            stringBuilder.AppendLine("SQLite version number: " + strSqliteVersion);
 
+            stringBuilder.AppendLine("Source FIADB database: " + m_strCurrentFiadbInputFile);
+            // if using .txt file
+            if (rdoFilterByFile.Checked)
+            {
+                stringBuilder.AppendLine("Plot_CN list .txt file: " + txtFilterByFile.Text.Trim());
             }
 
-         
+            string strChecked = "No";
+            if (chkForested.Checked)
+            {
+                strChecked = "Yes";
+            }
+            stringBuilder.AppendLine("Forested: " + strChecked);
+            strChecked = "No";
+            if (chkNonForested.Checked)
+            {
+                strChecked = "Yes";
+            }
+            stringBuilder.AppendLine("Non Forested: " + strChecked);
+            strChecked = "No";
+            if (ckImportSeedlings.Checked)
+            {
+                strChecked = "Yes";
+            }
+            stringBuilder.AppendLine("Load seedling data: " + strChecked);
+            strChecked = "No";
+            if (chkDwmImport.Checked)
+            {
+                strChecked = "Yes";
+            }
+            stringBuilder.AppendLine("Load down woody material data: " + strChecked);
+
+            stringBuilder.AppendLine("Percent condition proportion: " + m_strCondPropPercent);
+            stringBuilder.AppendLine("EvalId: " + m_strCurrFIADBEvalId);
+            frmMain.g_oUtils.WriteText(strConfigTxtFile, stringBuilder.ToString());
         }
-         */
-	}
+
+        private void SaveLoadConfigurationTable(System.Data.SQLite.SQLiteConnection p_conn)
+        {
+            string strConfigTable = "biosum_plot_input_configuration";
+            if (!SQLite.TableExist(p_conn, strConfigTable))
+            {
+                SQLite.m_strSQL = "CREATE TABLE " + strConfigTable +
+                    " (Setting CHAR(255), Value CHAR(255))";
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            }
+            else
+            {
+                SQLite.m_strSQL = "DELETE FROM " + strConfigTable;
+                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            }
+
+            string strSqliteVersion = "";
+            SQLite.m_strSQL = "SELECT sqlite_version() AS v";
+            SQLite.SqlQueryReader(p_conn, SQLite.m_strSQL);
+            if (SQLite.m_DataReader.HasRows)
+            {
+                while (SQLite.m_DataReader.Read())
+                {
+                    strSqliteVersion = SQLite.m_DataReader["v"].ToString();
+                }
+            }
+            SQLite.m_DataReader.Close();
+
+            SQLite.m_strSQL = "INSERT INTO " + strConfigTable +
+                " VALUES ('Load date and time', '" + DateTime.Now.ToString() + "')," +
+                "('SQLite version number', '" + strSqliteVersion + "')," +
+                "('Source FIADB database', '" + m_strCurrentFiadbInputFile + "'),";
+            if (rdoFilterByFile.Checked)
+            {
+                SQLite.m_strSQL += "('Plot_CN list .txt file', '" + txtFilterByFile.Text.Trim() + "'),";
+            }
+            string strChecked = "No";
+            if (chkForested.Checked)
+            {
+                strChecked = "Yes";
+            }
+            SQLite.m_strSQL += "('Forested', '" + strChecked + "'),";
+            strChecked = "No";
+            if (chkNonForested.Checked)
+            {
+                strChecked = "Yes";
+            }
+            SQLite.m_strSQL += "('Non Forested', '" + strChecked + "'),";
+            strChecked = "No";
+            if (ckImportSeedlings.Checked)
+            {
+                strChecked = "Yes";
+            }
+            SQLite.m_strSQL += "('Load seedling data', '" + strChecked + "'),";
+            strChecked = "No";
+            if (chkDwmImport.Checked)
+            {
+                strChecked = "Yes";
+            }
+            SQLite.m_strSQL += "('Load down woody material', '" + strChecked + "')," +
+                "('Percent condition proportion', '" + m_strCondPropPercent + "')," +
+                "('EvalId', '" + m_strCurrFIADBEvalId + "')";
+            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+        }
+
+        
+    }
     
 	
 }
