@@ -2360,9 +2360,10 @@ namespace FIA_Biosum_Manager
 				string strMsg="";
 				this.lstAudit.Columns.Add("spcd", 60, HorizontalAlignment.Left);
 				this.lstAudit.Columns.Add("fvs_tree_id", 80, HorizontalAlignment.Left);
-				this.lstAudit.Columns.Add("cn", 160, HorizontalAlignment.Left);
+				this.lstAudit.Columns.Add("cn", 120, HorizontalAlignment.Left);
 				this.lstAudit.Columns.Add("dia", 80, HorizontalAlignment.Left);
 				this.lstAudit.Columns.Add("statecd", 60, HorizontalAlignment.Left);
+				this.lstAudit.Columns.Add("tree", 60, HorizontalAlignment.Left);
 				this.lstAudit.Columns.Add("plot", 80, HorizontalAlignment.Left);
 
 				string strMasterConn = SQLite.GetConnectionString(m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree));
@@ -2371,7 +2372,7 @@ namespace FIA_Biosum_Manager
 					conn.Open();
 					SQLite.m_strSQL = $@"ATTACH '{m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.FiaTreeSpeciesReference)}' as BIOSUM_REF";
 					SQLite.SqlQueryReader(conn, SQLite.m_strSQL);
-					SQLite.m_strSQL = $@"SELECT t.spcd, fvs_tree_id,t.cn,dia, t.statecd, plot
+					SQLite.m_strSQL = $@"SELECT t.spcd, fvs_tree_id,t.cn,dia, t.statecd, t.tree, plot
 						FROM {this.m_oQueries.m_oFIAPlot.m_strTreeTable} t, {this.m_oQueries.m_oFIAPlot.m_strCondTable},{this.m_oQueries.m_oFIAPlot.m_strPlotTable}
 						LEFT JOIN FIA_TREE_SPECIES_REF ON FIA_TREE_SPECIES_REF.spcd = t.spcd
 						WHERE t.biosum_cond_id = {this.m_oQueries.m_oFIAPlot.m_strCondTable}.biosum_cond_id and {this.m_oQueries.m_oFIAPlot.m_strCondTable}.biosum_plot_id = {this.m_oQueries.m_oFIAPlot.m_strPlotTable}.biosum_plot_id
@@ -2407,6 +2408,12 @@ namespace FIA_Biosum_Manager
 										strState = SQLite.m_DataReader["statecd"].ToString().Trim();
 									}
 									this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(strState);
+									string strTree = "";
+									if (SQLite.m_DataReader["tree"] != System.DBNull.Value)
+									{
+										strTree = SQLite.m_DataReader["tree"].ToString().Trim();
+									}
+									this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(strTree);
 									string strPlot = "";
 									if (SQLite.m_DataReader["plot"] != System.DBNull.Value)
 									{
@@ -2465,11 +2472,14 @@ namespace FIA_Biosum_Manager
 			//first get unique tree species
 			string[,] strValues = new string[1000,2];
 
-			this.lstAudit.Columns.Add("fvs_variant", 80, HorizontalAlignment.Left);
-			this.lstAudit.Columns.Add("spcd", 80, HorizontalAlignment.Left);
-			this.lstAudit.Columns.Add("fvs_species_numeric_code",150,HorizontalAlignment.Left);
-			this.lstAudit.Columns.Add("fvs_species_two_letter_code",150,HorizontalAlignment.Left);
-            this.lstAudit.Columns.Add("exist_in_tree_species_table_yn", 180, HorizontalAlignment.Left);
+			this.lstAudit.Columns.Add("fvs_species", 60, HorizontalAlignment.Left);
+			this.lstAudit.Columns.Add("fia_spcd", 60, HorizontalAlignment.Left);
+			this.lstAudit.Columns.Add("fvs_tree_id",80,HorizontalAlignment.Left);
+			this.lstAudit.Columns.Add("cn",120,HorizontalAlignment.Left);
+			this.lstAudit.Columns.Add("dbh", 80, HorizontalAlignment.Left);
+			this.lstAudit.Columns.Add("statecd", 80, HorizontalAlignment.Left);
+			this.lstAudit.Columns.Add("tree", 80, HorizontalAlignment.Left);
+			this.lstAudit.Columns.Add("plot", 80, HorizontalAlignment.Left);
            
             SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
 			string strDbConn = oDataMgr.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
@@ -2492,11 +2502,8 @@ namespace FIA_Biosum_Manager
 			// Attach master database so we can access tree and cond tables
 			oDataMgr.m_strSQL = $@"ATTACH '{m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree)}' as MASTER";
 			oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
-			// Attach tree_species database so we can access tree_species table
-			oDataMgr.m_strSQL = $@"ATTACH '{m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.TreeSpecies)}' as REF_MASTER";
-			oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
-			// Attach fvs_tree_species database so we can access fvs_tree_species table
-			oDataMgr.m_strSQL = $@"ATTACH '{m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.FvsTreeSpecies)}' as BIOSUM_REF";
+			// Attach biosum_ref.db so we can access FIA_TREE_SPECIES_REF
+			oDataMgr.m_strSQL = $@"ATTACH '{m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.FiaTreeSpeciesReference)}' as BIOSUM_REF";
 			oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
 
 			if (oDataMgr.TableExist(oDataMgr.m_Connection, "treetemp"))
@@ -2511,14 +2518,6 @@ namespace FIA_Biosum_Manager
 			if (oDataMgr.TableExist(oDataMgr.m_Connection, "spcd_variant_temp_work_table"))
 				oDataMgr.SqlNonQuery(oDataMgr.m_Connection, "DROP TABLE spcd_variant_temp_work_table");
 
-			//let the user know if there are no records in the tree species  table
-			//if (oDataMgr.getRecordCount(oDataMgr.m_Connection, "select count(*) from " + this.m_oQueries.m_oFvs.m_strTreeSpcTable + ";", m_oQueries.m_oFvs.m_strTreeSpcTable) == 0)
-			//{
-			//	MessageBox.Show("0 Records In The FVS Tree Species Table", "FIA Biosum",
-			//		System.Windows.Forms.MessageBoxButtons.OK,
-			//		System.Windows.Forms.MessageBoxIcon.Exclamation);
-			//	return;
-			//}
             
             frmMain.g_oFrmMain.ActivateStandByAnimation(this.ParentForm.WindowState,
                 this.ParentForm.Left, this.ParentForm.Height, this.ParentForm.Width, this.ParentForm.Top);
@@ -2531,7 +2530,7 @@ namespace FIA_Biosum_Manager
                 oDataMgr,
                 oDataMgr.m_Connection,
                 "fvsouttreetemp2",
-                "fvs_tree_id,fvs_variant,fvs_species,biosum_cond_id");
+				"fvs_tree_id,fvs_species,biosum_cond_id,dbh,FvsCreatedTree_YN");
 			
             for (x = 0; x <= strSqlCommandList.Count - 1; x++)
             {
@@ -2550,58 +2549,27 @@ namespace FIA_Biosum_Manager
 				return;
 			}
 
- 			oDataMgr.m_strSQL = "CREATE TABLE treetemp AS " +
-							  "SELECT t.spcd,t.fvs_tree_id,t.biosum_cond_id " +
-							  "FROM " + this.m_oQueries.m_oFIAPlot.m_strTreeTable + " t " +
-							  "WHERE t.fvs_tree_id IS NOT NULL AND t.biosum_cond_id IS NOT NULL";
+			// Set original spcd for FIA trees
+			oDataMgr.m_strSQL = $@"update fvsouttreetemp set (spcd, tree, cn) = 
+				(select spcd, tree, cn from {this.m_oQueries.m_oFIAPlot.m_strTreeTable} t where fvsouttreetemp.fvs_tree_id = trim(t.fvs_tree_id) and fvsouttreetemp.biosum_cond_id = t.biosum_cond_id)";
 			oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
 
-			oDataMgr.m_strSQL = "CREATE TABLE spcd_variant_temp_work_table AS " +
-							  "SELECT DISTINCT t.spcd as treetable_spcd, " + 
-							  "f.fvs_species as fvsouttable_spcd," +
-							  "f.fvs_variant as fvsouttable_fvs_variant, " +
-							  "' ' AS fvs_species_two_letter_code," +
-							  "'N' AS exist_in_tree_species_table_yn " +
-							  "FROM treetemp t,fvsouttreetemp f " +
-							 "WHERE t.fvs_tree_id = CAST(f.fvs_tree_id AS INTEGER) " +
-							 "AND t.biosum_cond_id = f.biosum_cond_id";
+			// set exist_in_tree_species_table_yn for FIA trees
+			oDataMgr.m_strSQL = $@"update fvsouttreetemp set exist_in_tree_species_table_yn = 'Y'
+				where exists(select 1 from {this.m_oQueries.m_oReference.m_strFiaTreeSpeciesRefTable} r where fvsouttreetemp.spcd = r.spcd)
+				and FvsCreatedTree_YN = 'N' ";
 			oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
 
-			//add the fvs two letter code 
-			oDataMgr.m_strSQL = "UPDATE spcd_variant_temp_work_table " +
-				"SET fvs_species_two_letter_code = " +
-				"(SELECT fvs_species FROM fvs_tree_species fvs " +
-				"WHERE CAST(fvsouttable_spcd AS INTEGER) = fvs.spcd " +
-				"AND TRIM(fvsouttable_fvs_variant) = TRIM(fvs.fvs_variant))";
+			// set exist_in_tree_species_table_yn for FVS trees
+			oDataMgr.m_strSQL = $@"update fvsouttreetemp set exist_in_tree_species_table_yn = 'Y'
+				where exists(select 1 from {this.m_oQueries.m_oReference.m_strFiaTreeSpeciesRefTable} r where cast(fvsouttreetemp.fvs_species as integer) = r.spcd)
+				and FvsCreatedTree_YN = 'Y' ";
 			oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
-
-   //@ToDo: This may need to be updated without reference to obsolete tree_species tables
-			//         oDataMgr.m_strSQL = "DELETE FROM spcd_variant_temp_work_table as w " +
-   //                        "WHERE EXISTS (SELECT s.spcd,s.fvs_variant,f.fvs_species,s.fvs_input_spcd " +
-   //                        "FROM " + this.m_oQueries.m_oFvs.m_strTreeSpcTable + " s, " +
-   //                        this.m_oQueries.m_oFvs.m_strFvsTreeSpcRefTable + " f " +
-   //                        "WHERE  w.treetable_spcd = s.spcd " +
-   //                        "AND TRIM(w.fvsouttable_fvs_variant)=TRIM(s.fvs_variant) " +
-   //                        "AND (CAST(w.fvsouttable_spcd AS INTEGER)= s.spcd OR CAST(w.fvsouttable_spcd AS INTEGER) = s.fvs_input_spcd) " +
-   //                        "AND (CAST(w.fvsouttable_spcd AS INTEGER)= f.spcd AND TRIM(w.fvsouttable_fvs_variant) = TRIM(f.fvs_variant)) " +
-   //                        "AND f.spcd = s.fvs_input_spcd)";
-
-			//oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
-
-			//oDataMgr.m_strSQL = "UPDATE spcd_variant_temp_work_table as w INNER JOIN " +
-   //                             this.m_oQueries.m_oFvs.m_strTreeSpcTable + " t " +
-   //                         "ON w.treetable_spcd = t.spcd AND " +
-   //                            "W.fvsouttable_fvs_variant = t.FVS_VARIANT " +
-   //                         "SET w.exist_in_tree_species_table_yn = 'Y'";
-			//oDataMgr.m_strSQL = "UPDATE spcd_variant_temp_work_table " +
-			//	"SET exist_in_tree_species_table_yn = " +
-			//	"(SELECT 'Y' FROM tree_species t where treetable_spcd = t.spcd " +
-			//	"AND fvsouttable_fvs_variant = t.FVS_VARIANT)";
-			//oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
 
 			try
 			{
-				oDataMgr.m_strSQL = "SELECT * FROM spcd_variant_temp_work_table";
+				oDataMgr.m_strSQL = $@"SELECT fvsouttreetemp.*, statecd, plot FROM fvsouttreetemp, {this.m_oQueries.m_oFIAPlot.m_strCondTable}, {this.m_oQueries.m_oFIAPlot.m_strPlotTable} where exist_in_tree_species_table_yn = 'N'
+					AND fvsouttreetemp.biosum_cond_id = {this.m_oQueries.m_oFIAPlot.m_strCondTable}.biosum_cond_id and {this.m_oQueries.m_oFIAPlot.m_strCondTable}.biosum_plot_id = {this.m_oQueries.m_oFIAPlot.m_strPlotTable}.biosum_plot_id";
 				oDataMgr.SqlQueryReader(oDataMgr.m_Connection, oDataMgr.m_strSQL);
 					if (oDataMgr.m_intError == 0)
 					{
@@ -2609,16 +2577,48 @@ namespace FIA_Biosum_Manager
 						{
 							while (oDataMgr.m_DataReader.Read())
 							{
-
-								if (oDataMgr.m_DataReader["treetable_spcd"] != System.DBNull.Value)
+								if (oDataMgr.m_DataReader["fvs_species"] != System.DBNull.Value)
 								{
-									this.lstAudit.Items.Add(oDataMgr.m_DataReader["fvsouttable_fvs_variant"].ToString().Trim());
-									this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(oDataMgr.m_DataReader["treetable_spcd"].ToString().Trim());
-									this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(oDataMgr.m_DataReader["fvsouttable_spcd"].ToString().Trim());
-									this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(oDataMgr.m_DataReader["fvs_species_two_letter_code"].ToString().Trim());
-									this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(oDataMgr.m_DataReader["exist_in_tree_species_table_yn"].ToString().Trim());
+									this.lstAudit.Items.Add(oDataMgr.m_DataReader["fvs_species"].ToString().Trim());
+								string strSpcd = "";
+                                if (oDataMgr.m_DataReader["spcd"] != System.DBNull.Value)
+                                {
+									strSpcd = oDataMgr.m_DataReader["spcd"].ToString().Trim();
+								}
+								this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(strSpcd);
+								this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(oDataMgr.m_DataReader["fvs_tree_id"].ToString().Trim());
+								string strCn = "";
+								if (oDataMgr.m_DataReader["cn"] != System.DBNull.Value)
+								{
+									strCn = oDataMgr.m_DataReader["cn"].ToString().Trim();
+								}
+								this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(strCn);
+								string strDia = "";
+								if (oDataMgr.m_DataReader["dbh"] != System.DBNull.Value)
+								{
+									strDia = oDataMgr.m_DataReader["dbh"].ToString().Trim();
+								}
+								this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(strDia);
+								string strState = "";
+                                if (oDataMgr.m_DataReader["statecd"] != System.DBNull.Value)
+                                {
+                                    strState = oDataMgr.m_DataReader["statecd"].ToString().Trim();
+                                }
+                                this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(strState);
+								string strTree = "";
+								if (oDataMgr.m_DataReader["tree"] != System.DBNull.Value)
+								{
+									strTree = oDataMgr.m_DataReader["tree"].ToString().Trim();
+								}
+								this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(strTree);
+								string strPlot = "";
+                                if (oDataMgr.m_DataReader["plot"] != System.DBNull.Value)
+                                {
+                                    strPlot = oDataMgr.m_DataReader["plot"].ToString().Trim();
+                                }
+                                this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(strPlot);
 
-									if (oDataMgr.m_DataReader["exist_in_tree_species_table_yn"].ToString().Trim() == "Y") COUNT++;
+								if (oDataMgr.m_DataReader["exist_in_tree_species_table_yn"].ToString().Trim() == "Y") COUNT++;
 
 								}
 							}
@@ -2628,27 +2628,27 @@ namespace FIA_Biosum_Manager
 						string strMsg = "";
 						if (this.lstAudit.Items.Count == 0)
 						{
-							this.btnView.Hide();
-							strMsg = "Audit Passed. \r\n\r\n Every FIA SpCd + FVS Variant + FVS Species Combination is represented in the tree species table";
+							//this.btnView.Hide();
+							strMsg = "Audit Passed. \r\n\r\n Every FIA SpCd or FVS Species is represented in the FIA_TREE_SPECIES_REF table";
 						}
 						else
 						{
 						int intMissing = lstAudit.Items.Count - COUNT;	
-						strMsg = "Audit Failed.\r\n\r\n" + Convert.ToString(intMissing) + " FIA SpCd + FVS Variant + FVS Species Combinations NOT In The Tree Species Table ";
-							this.btnAuditAdd.Text = "Add Checked Items To Tree Species Table";
+						strMsg = "Audit Failed.\r\n\r\n" + Convert.ToString(intMissing) + " FIA SpCd or FVS Species are NOT In The FIA_TREE_SPECIES_REF table. Contact a System Administrator to have them added.";
+							//this.btnAuditAdd.Text = "Add Checked Items To Tree Species Table";
 							//check if all items exist in the tree species table
-							if (intMissing > 0)
-							{
+							//if (intMissing > 0)
+							//{
 
-							}
-							else
-							{
-								lstAudit.CheckBoxes = true;
-								btnAuditCheckAll.Enabled = true;
-								btnAuditClearAll.Enabled = true;
-								btnAuditAdd.Enabled = true;
-							}
-							btnView.Show();
+							//}
+							//else
+							//{
+							//	lstAudit.CheckBoxes = true;
+							//	btnAuditCheckAll.Enabled = true;
+							//	btnAuditClearAll.Enabled = true;
+							//	btnAuditAdd.Enabled = true;
+							//}
+							//btnView.Show();
 						}
 
 
@@ -2660,9 +2660,7 @@ namespace FIA_Biosum_Manager
 
                 }
                 else
-                    frmMain.g_oFrmMain.DeactivateStandByAnimation();
-
-				
+                    frmMain.g_oFrmMain.DeactivateStandByAnimation();				
 			}
 			catch (Exception e)
 			{
@@ -2683,213 +2681,6 @@ namespace FIA_Biosum_Manager
 			oDataMgr.m_Connection.Close();
 			oDataMgr.m_Connection.Dispose();
 		}
-        // 09-OCT-2017: No longer used with Tree Species redesign; issue #58
-        //private void AuditOvenDryGreenWtRatio()
-        //{
-        //    this.lstAudit.Clear();
-			
-        //    btnAuditAdd.Enabled = false;
-        //    btnAuditCheckAll.Enabled = false;
-        //    btnAuditClearAll.Enabled = false;
-        //    btnAuditAdd.Enabled = false;
-        //    lstAudit.CheckBoxes = false;
-        //    this.btnView.Hide();
-        //    //first get unique tree species
-        //    string[,] strValues = new string[1000,2];
-
-        //    this.lstAudit.Columns.Add("Id",80,HorizontalAlignment.Left);
-        //    this.lstAudit.Columns.Add("fvs_variant", 80, HorizontalAlignment.Left);
-        //    this.lstAudit.Columns.Add("spcd", 80, HorizontalAlignment.Left);
-        //    this.lstAudit.Columns.Add("fvs_species_numeric_code",150,HorizontalAlignment.Left);
-        //    this.lstAudit.Columns.Add("fvs_species_two_letter_code",150,HorizontalAlignment.Left);
-
-        //    ado_data_access oAdo = new ado_data_access();
-        //    oAdo.OpenConnection(oAdo.getMDBConnString(this.m_strTempMDBFile,"",""));
-
-
-			
-			
-
-        //    //let the user know if there are no records in the tree species conversion table
-        //    if (oAdo.getRecordCount(oAdo.m_OleDbConnection,"select count(*) from " + this.m_oQueries.m_oFvs.m_strTreeSpcTable + ";",this.m_oQueries.m_oFvs.m_strTreeSpcTable) == 0)
-        //    {
-        //        MessageBox.Show("0 Records In The FVS Tree Species Table","FIA Biosum",
-        //            System.Windows.Forms.MessageBoxButtons.OK,
-        //            System.Windows.Forms.MessageBoxIcon.Exclamation);
-        //        return;
-        //    }
-
-        //    if (oAdo.TableExist(oAdo.m_OleDbConnection,"unique_fvs_tree"))
-        //        oAdo.SqlNonQuery(oAdo.m_OleDbConnection,"DROP TABLE unique_fvs_tree");
-
-        //    if (oAdo.TableExist(oAdo.m_OleDbConnection,"fvsouttreetemp"))
-        //        oAdo.SqlNonQuery(oAdo.m_OleDbConnection,"DROP TABLE fvsouttreetemp");
-
-        //    if (oAdo.TableExist(oAdo.m_OleDbConnection, "fvsouttreetemp2"))
-        //        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE fvsouttreetemp2");
-
-        //    if (oAdo.TableExist(oAdo.m_OleDbConnection,"treespeciestemp"))
-        //        oAdo.SqlNonQuery(oAdo.m_OleDbConnection,"DROP TABLE treespeciestemp");
-
-        //    if (oAdo.TableExist(oAdo.m_OleDbConnection,"fvsspeciestemp"))
-        //        oAdo.SqlNonQuery(oAdo.m_OleDbConnection,"DROP TABLE fvsspeciestemp");
-
-        //    if (oAdo.TableExist(oAdo.m_OleDbConnection,"missing_values"))
-        //        oAdo.SqlNonQuery(oAdo.m_OleDbConnection,"DROP TABLE missing_values");
-
-        //    frmMain.g_oFrmMain.ActivateStandByAnimation(this.ParentForm.WindowState,
-        //        this.ParentForm.Left, this.ParentForm.Height, this.ParentForm.Width, this.ParentForm.Top);
-
-        //    List<string> strSqlCommandList;
-
-        //    strSqlCommandList = Queries.Processor.AuditFvsOut_SelectIntoUnionOfFVSTreeTablesUsingListArray(
-        //        oAdo,
-        //        oAdo.m_OleDbConnection,
-        //        "fvsouttreetemp2",
-        //        m_oRxPackageItem_Collection,
-        //        m_strFVSVariantsArray,
-        //        "fvs_tree_id,fvs_variant,fvs_species");
-
-        //    for (int x = 0; x <= strSqlCommandList.Count - 1; x++)
-        //    {
-        //        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSqlCommandList[x]);
-        //    }
-
-        //    oAdo.m_strSQL = "SELECT DISTINCT * INTO fvsouttreetemp FROM fvsouttreetemp2";
-        //    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-			
-
-        //    //let the user know if there are no records in the fvs out processor in tree table
-        //    if (oAdo.getRecordCount(oAdo.m_OleDbConnection,"select count(*) from fvsouttreetemp;","fvstree") == 0)
-        //    {
-        //        frmMain.g_oFrmMain.DeactivateStandByAnimation();
-        //        MessageBox.Show("0 Records In The FVS-Out Processor-In Tree Tables","FIA Biosum",
-        //            System.Windows.Forms.MessageBoxButtons.OK,
-        //            System.Windows.Forms.MessageBoxIcon.Exclamation);
-        //        return;
-        //    }
-
-        //    //let the user know if there are no records in the fvs out processor in tree table
-        //    string strTreeListTable = "";
-        //    string strTreeListFile="";
-		
-			
-
-			
-
-
-			
-
-        //    //join the FIADB biosum tree table with the FVSOut fvstree cutlist table 
-        //    oAdo.m_strSQL = "select DISTINCT t.spcd,f.fvs_variant,f.fvs_species " + 
-        //                     "INTO unique_fvs_tree " + 
-        //                     "FROM fvsouttreetemp  f," + 
-        //                          m_oQueries.m_oFIAPlot.m_strTreeTable + " t " + 
-        //                     "WHERE f.fvs_tree_id = t.fvs_tree_id;";
-        //    oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-
-			
-        //    //populate a table with records from the tree species that have no values for oven dry weight
-        //    //or dry to green conversion columns
-        //    oAdo.m_strSQL = "SELECT s.id,s.spcd,s.fvs_variant,s.fvs_species " + 
-        //                     "INTO treespeciestemp FROM " + this.m_oQueries.m_oFvs.m_strTreeSpcTable + " s " +
-        //                     "WHERE (s.OD_WGT IS NULL OR " + 
-        //                            "s.OD_WGT =0 OR s.dry_to_green IS NULL OR " + 
-        //                            "s.dry_to_green=0);";
-        //    oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-
-
-        //    oAdo.m_strSQL = "SELECT fvs.spcd,fvs.fvs_variant,fvs.fvs_species as fvs_species_two_letter_code " + 
-        //                     "INTO fvsspeciestemp " + 
-        //                     "FROM " + this.m_oQueries.m_oFvs.m_strFvsTreeSpcRefTable + " fvs ";
-        //    oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-
-			
-        //    //populate a table with records from the tree species table that are found in the fvsout and tree table 
-        //    //by species code,fvs variant, and fvs species 2 letter code. These records are missing oven dry and 
-        //    //dry to green conversion values
-        //    oAdo.m_strSQL = "SELECT DISTINCT s.id, s.spcd, s.fvs_variant,f.fvs_species," + 
-        //                                     "s.fvs_species as fvs_species_two_letter_code " + 
-        //                     "INTO missing_values " + 
-        //                     "FROM treespeciestemp s,unique_fvs_tree f,fvsspeciestemp fvs " + 
-        //                     "WHERE f.spcd = s.spcd  AND " + 
-        //                     "TRIM(UCASE(f.fvs_variant)) = TRIM(UCASE(s.fvs_variant)) AND " + 
-        //                     "TRIM(UCASE(fvs.fvs_species_two_letter_code)) = TRIM(UCASE(s.fvs_species))";
-        //    oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-
-			
-			
-        //    oAdo.m_strSQL = "SELECT * FROM missing_values";
-
-
-
-	
-
-        //    try
-        //    {
-        //        oAdo.SqlQueryReader(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-        //        if (oAdo.m_intError == 0)
-        //        {
-        //            if (oAdo.m_OleDbDataReader.HasRows)
-        //            {
-        //                while (oAdo.m_OleDbDataReader.Read())
-        //                {
-
-        //                    if (oAdo.m_OleDbDataReader["spcd"] != System.DBNull.Value)
-        //                    {
-        //                        this.lstAudit.Items.Add(oAdo.m_OleDbDataReader["id"].ToString().Trim());
-        //                        this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(oAdo.m_OleDbDataReader["fvs_variant"].ToString().Trim());
-        //                        this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(oAdo.m_OleDbDataReader["spcd"].ToString().Trim());
-        //                        this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(oAdo.m_OleDbDataReader["fvs_species"].ToString().Trim());
-        //                        this.lstAudit.Items[this.lstAudit.Items.Count - 1].SubItems.Add(oAdo.m_OleDbDataReader["fvs_species_two_letter_code"].ToString().Trim());
-        //                    }
-        //                }
-        //            }
-
-        //            oAdo.m_OleDbDataReader.Close();
-        //            string strMsg = "";
-        //            if (lstAudit.Items.Count == 0) strMsg = "Audit Passed. \r\n\r\n Every Tree Species Has Wood Weight Ratio Data";
-        //            else
-        //            {
-        //                strMsg = "Audit Failed. \r\n\r\n" + Convert.ToString(this.lstAudit.Items.Count) + " Tree Species Record(s) Are Missing Wood Weight Ratio Data";
-
-        //            }
-        //            frmMain.g_oFrmMain.DeactivateStandByAnimation();
-        //            MessageBox.Show(strMsg,
-        //                           "Tree Species",
-        //                           System.Windows.Forms.MessageBoxButtons.OK,
-        //                           System.Windows.Forms.MessageBoxIcon.Information);
-        //        }
-        //        else
-        //            frmMain.g_oFrmMain.DeactivateStandByAnimation();
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        frmMain.g_oFrmMain.DeactivateStandByAnimation();
-        //        MessageBox.Show("!!Error!! \n" + 
-        //            "Module - uc_processor_tree_spc:AuditOvenDryGreenWtRatio() \n" + 
-        //            "Err Msg - " + e.Message,
-        //            "FIA Biosum",System.Windows.Forms.MessageBoxButtons.OK,
-        //            System.Windows.Forms.MessageBoxIcon.Exclamation);
-
-        //        this.m_intError=-1;
-        //    }
-        //    if (oAdo.TableExist(oAdo.m_OleDbConnection,"unique_fvs_tree"))
-        //        oAdo.SqlNonQuery(oAdo.m_OleDbConnection,"DROP TABLE unique_fvs_tree");
-
-        //    if (oAdo.TableExist(oAdo.m_OleDbConnection,"fvsouttreetemp"))
-        //        oAdo.SqlNonQuery(oAdo.m_OleDbConnection,"DROP TABLE fvsouttreetemp");
-
-        //    if (oAdo.TableExist(oAdo.m_OleDbConnection,"treespeciestemp"))
-        //        oAdo.SqlNonQuery(oAdo.m_OleDbConnection,"DROP TABLE treespeciestemp");
-
-        //    if (oAdo.TableExist(oAdo.m_OleDbConnection,"fvsspeciestemp"))
-        //        oAdo.SqlNonQuery(oAdo.m_OleDbConnection,"DROP TABLE fvsspeciestemp");
-
-        //    if (oAdo.TableExist(oAdo.m_OleDbConnection,"missing_values"))
-        //        oAdo.SqlNonQuery(oAdo.m_OleDbConnection,"DROP TABLE missing_values");
-
-        //}
 
 		/// <summary>
 		/// find the table field in the grid by matching the field name with the column header

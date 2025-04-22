@@ -4122,7 +4122,6 @@ namespace FIA_Biosum_Manager
 			//check to see if the form has already been loaded
 			if (this.IsChildWindowVisible(strTitle) == false) 
 			{
-                this.ActivateStandByAnimation(this.WindowState, this.Left, this.Height, this.Width, this.Top);
 				frmMain.g_sbpInfo.Text = "Loading Tree Species...Stand By";
 				this.m_frmProcessorSpc = new frmDialog(this);
 				this.m_frmProcessorSpc.MaximizeBox = true;
@@ -4183,7 +4182,6 @@ namespace FIA_Biosum_Manager
 
                 p_oParentControl.Enabled = false;
                 m_frmProcessorSpc.ParentControl = p_oParentControl;
-                DeactivateStandByAnimation();
 				this.m_frmProcessorSpc.Show(p_oParentControl);
 
 			}
