@@ -2181,10 +2181,10 @@ namespace FIA_Biosum_Manager
                 else if (x == -3) m_strError = m_strError + "Last Tie-Break Rankings cannot be null in value\r\n";
 				m_intError=x;
 			}
-			if (this.lvFVSVariablesTieBreakerValues.CheckedItems.Count==0)
+			if (!this.lvFVSVariablesTieBreakerValues.Items[0].Checked && !this.lvFVSVariablesTieBreakerValues.Items[1].Checked)
 			{
 				m_intError=-1;
-				m_strError=m_strError + "No tie breaker methods are checked\r\n";
+				m_strError=m_strError + "No tie breaker methods are checked. Choose a Stand Attribute or an Economic Attribute\r\n";
 			}
 			else
 			{
