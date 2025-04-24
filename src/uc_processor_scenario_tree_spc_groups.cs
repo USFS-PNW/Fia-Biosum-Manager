@@ -83,8 +83,6 @@ namespace FIA_Biosum_Manager
         RxPackageItem_Collection m_oRxPackage_Collection = new RxPackageItem_Collection();
         ODBCMgr m_odbcMgr = new ODBCMgr();
 
-        string[] m_strFVSVariantsArray = null;
-
         // scenario-specific variables
         private string _strScenarioId = "";
         private frmProcessorScenario _frmProcessorScenario = null;
@@ -777,60 +775,39 @@ namespace FIA_Biosum_Manager
             this.lstCommonName.Sorted = true;
             this.m_intError = 0;
 
-            this.m_ado = new ado_data_access();
-            this.m_strConn = this.m_ado.getMDBConnString(this.m_oQueries.m_strTempDbFile, "", "");
-            this.m_ado.OpenConnection(this.m_strConn);
-            if (this.m_ado.m_intError != 0)
+            // Create temp SQLite database
+            string strTempDb = frmMain.g_oUtils.getRandomFile(m_oEnv.strTempDir, "db");
+            string strTempConn = SQLite.GetConnectionString(strTempDb);
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strTempConn))
             {
-                this.m_intError = this.m_ado.m_intError;
-                this.m_ado = null;
-                return;
-
-            }
-            //get all the variants in the plot table
-            m_strFVSVariantsArray = frmMain.g_oUtils.ConvertListToArray(m_oRxTools.GetListOfFVSVariantsInPlotTable(m_ado, m_ado.m_OleDbConnection, m_oQueries.m_oFIAPlot.m_strPlotTable), ",");
-
-
-            //create table links
-            if (m_ado.TableExist(m_ado.m_OleDbConnection, "fvsouttreetemp"))
-                m_ado.SqlNonQuery(m_ado.m_OleDbConnection, "DROP TABLE fvsouttreetemp");
-            if (m_ado.TableExist(m_ado.m_OleDbConnection, "fvsouttreetemp2"))
-                m_ado.SqlNonQuery(m_ado.m_OleDbConnection, "DROP TABLE fvsouttreetemp2");
-            //append the multiple fvsout tree tables into a single fvsout tree table
-            List<string> strSqlCommandList;
-
-            // Link to FVSOUT_TREE_LIST.db
-            if (!m_ado.TableExist(m_ado.m_OleDbConnection, Tables.FVS.DefaultFVSCutTreeTableName))
-            {
-                // Set up an ODBC DSN for the FVSOUT_TREE_LIST.db
-                if (m_odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName))
+                conn.Open();
+                if (SQLite.TableExist(conn, "fvsouttreetemp"))
                 {
-                    m_odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName);
+                    SQLite.SqlNonQuery(conn, "DROP TABLE fvsouttreetemp");
                 }
-                m_odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName,
-                    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                    Tables.FVS.DefaultFVSTreeListDbFile);
-                dao_data_access oDao = new dao_data_access();
-                oDao.CreateSQLiteTableLink(m_ado.m_OleDbConnection.DataSource, Tables.FVS.DefaultFVSCutTreeTableName, Tables.FVS.DefaultFVSCutTreeTableName,
-                    ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                    Tables.FVS.DefaultFVSTreeListDbFile);
-                oDao.m_DaoWorkspace.Close();
-                oDao = null;
-                // Sleep to ensure table link is complete
-                System.Threading.Thread.Sleep(5000);
+                if (SQLite.TableExist(conn, "fvsouttreetemp"))
+                {
+                    SQLite.SqlNonQuery(conn, "DROP TABLE fvsouttreetemp2");
+                }
+                // Attach FVSOUT_TREE_LIST.db
+                string strFvsOutTreeListDb = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}{Tables.FVS.DefaultFVSTreeListDbFile}";
+                SQLite.SqlNonQuery(conn, $@"attach '{strFvsOutTreeListDb}' as tree_list");
+
+                //append the multiple fvsout tree tables into a single fvsout tree table
+                List<string> strSqlCommandList = strSqlCommandList = Queries.Processor.AuditFvsOut_SelectIntoUnionOfFVSTreeTablesUsingListArray(
+                    SQLite,
+                    conn,
+                    "fvsouttreetemp2",
+                    "fvs_tree_id,fvs_species,biosum_cond_id,dbh,FvsCreatedTree_YN");
+
+                for (x = 0; x <= strSqlCommandList.Count - 1; x++)
+                {
+                    SQLite.SqlNonQuery(conn, strSqlCommandList[x]);
+                }
             }
 
-            //@ToDo: Changed this to compile; Won't work until SQLite connection is established
-            strSqlCommandList = Queries.Processor.AuditFvsOut_SelectIntoUnionOfFVSTreeTablesUsingListArray(
-                SQLite,
-                SQLite.m_Connection,
-                "fvsouttreetemp2",
-                "fvs_tree_id,fvs_variant,fvs_species,FvsCreatedTree_YN,biosum_cond_id");
 
-            for (x = 0; x <= strSqlCommandList.Count - 1; x++)
-            {
-                m_ado.SqlNonQuery(m_ado.m_OleDbConnection, strSqlCommandList[x]);
-            }
+
 
             m_ado.m_strSQL = "SELECT DISTINCT * INTO fvsouttreetemp FROM fvsouttreetemp2";
             m_ado.SqlNonQuery(m_ado.m_OleDbConnection, m_ado.m_strSQL);
