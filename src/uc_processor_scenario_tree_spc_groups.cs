@@ -57,9 +57,7 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Button btnClearAll6;
 		private System.Windows.Forms.Button btnHelp;
 		public int m_intError=0;
-        private FIA_Biosum_Manager.ado_data_access m_ado;
 		private string m_strFvsOutTreeTable="";
-        private string m_strConn = "";
 		private System.Windows.Forms.ToolTip toolTip1;
 		private System.Windows.Forms.Button btnHwd;
 		private System.Windows.Forms.Button btnSwd;
@@ -80,8 +78,6 @@ namespace FIA_Biosum_Manager
 
 		Queries m_oQueries = new Queries();
         RxTools m_oRxTools = new RxTools();
-        RxPackageItem_Collection m_oRxPackage_Collection = new RxPackageItem_Collection();
-        ODBCMgr m_odbcMgr = new ODBCMgr();
 
         // scenario-specific variables
         private string _strScenarioId = "";
@@ -108,14 +104,8 @@ namespace FIA_Biosum_Manager
 			this.DisplayGroupSet(1);
 
             this.m_oQueries = new Queries();
-            //load datasources
-            //m_oQueries.m_oFvs.LoadDatasource = true;
-            //m_oQueries.m_oFIAPlot.LoadDatasource = true;
             m_oQueries.LoadDatasources(true);
-            m_oRxTools.LoadAllRxPackageItems(m_oRxPackage_Collection);
-
-            this.m_ado = new ado_data_access();
-            spc_common_name_collection1 = new spc_common_name_collection();
+             spc_common_name_collection1 = new spc_common_name_collection();
             this.m_oEnv = new env();
 		}
 
@@ -798,141 +788,97 @@ namespace FIA_Biosum_Manager
                     SQLite,
                     conn,
                     "fvsouttreetemp2",
-                    "fvs_tree_id,fvs_species,biosum_cond_id,dbh,FvsCreatedTree_YN");
+                    "fvs_tree_id,fvs_species,FvsCreatedTree_YN,biosum_cond_id");
 
                 for (x = 0; x <= strSqlCommandList.Count - 1; x++)
                 {
                     SQLite.SqlNonQuery(conn, strSqlCommandList[x]);
                 }
-            }
 
+                SQLite.m_strSQL = "CREATE TABLE fvsouttreetemp AS SELECT DISTINCT * FROM fvsouttreetemp2";
+                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                this.m_strFvsOutTreeTable = "fvsouttreetemp";
 
-
-
-            m_ado.m_strSQL = "SELECT DISTINCT * INTO fvsouttreetemp FROM fvsouttreetemp2";
-            m_ado.SqlNonQuery(m_ado.m_OleDbConnection, m_ado.m_strSQL);
-
-            this.m_strFvsOutTreeTable = "fvsouttreetemp";
-
-
-            //GET ALL TREE SPECIES COMMON NAME
-            /**********************************************************************************
-             **process all tree species in the tree species table and initialize the 
-             **unassigned array variable
-             **********************************************************************************/
-            m_ado.m_strSQL = "SELECT COUNT(*) FROM (SELECT DISTINCT common_name FROM " + this.m_oQueries.m_oFvs.m_strTreeSpcTable + " WHERE spcd IS NOT NULL AND LEN(TRIM(common_name)) > 0 )";
-            this.m_ado.m_strSQL = "SELECT DISTINCT common_name FROM " + this.m_oQueries.m_oFvs.m_strTreeSpcTable + " WHERE spcd IS NOT NULL AND LEN(TRIM(common_name)) > 0";
-            this.m_ado.SqlQueryReader(m_ado.m_OleDbConnection, m_ado.m_strSQL);
-            if (this.m_ado.m_OleDbDataReader.HasRows)
-            {
-                while (this.m_ado.m_OleDbDataReader.Read())
+                //GET ALL TREE SPECIES COMMON NAME
+                /**********************************************************************************
+                 **process all tree species in the tree species table and initialize the 
+                 **unassigned array variable
+                 **********************************************************************************/
+                SQLite.SqlNonQuery(conn, $@"attach '{this.m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.FiaTreeSpeciesReference)}' as BIOSUM_REF");
+                SQLite.m_strSQL = "SELECT DISTINCT spcd, common_name FROM " + this.m_oQueries.m_oReference.m_strFiaTreeSpeciesRefTable + " WHERE spcd IS NOT NULL AND LENGTH(TRIM(common_name)) > 0 ORDER BY common_name";
+                SQLite.SqlQueryReader(conn, SQLite.m_strSQL);
+                if (SQLite.m_DataReader.HasRows)
                 {
-                    spc_common_name1 = new spc_common_name();
-                    spc_common_name1.SpeciesCommonName = this.m_ado.m_OleDbDataReader["common_name"].ToString().Trim();
-                    spc_common_name1.SpeciesGroupLabel = "";
-                    spc_common_name1.SpeciesGroupIndex = -1;
-                    spc_common_name1.FVSOutput = false;
-                    this.spc_common_name_collection1.Add(spc_common_name1);
-
-                }
-            }
-            this.m_ado.m_OleDbDataReader.Close();
-
-            //ASSIGN A TREE SPECIES CODE TO THE SPECIES COMMON NAME
-            /**********************************************************************************
-             **process all tree species in the tree species table and initialize the 
-             **unassigned array variable
-             **********************************************************************************/
-            this.m_ado.m_strSQL = "SELECT DISTINCT spcd,common_name FROM " + this.m_oQueries.m_oFvs.m_strTreeSpcTable + " WHERE spcd IS NOT NULL AND LEN(TRIM(common_name)) > 0";
-            this.m_ado.SqlQueryReader(m_ado.m_OleDbConnection, m_ado.m_strSQL);
-            if (this.m_ado.m_OleDbDataReader.HasRows)
-            {
-                while (this.m_ado.m_OleDbDataReader.Read())
-                {
-                    for (x = 0; x <= this.spc_common_name_collection1.Count - 1; x++)
+                    while (SQLite.m_DataReader.Read())
                     {
-                        if (this.spc_common_name_collection1.Item(x).SpeciesCommonName.Trim().ToUpper() ==
-                            this.m_ado.m_OleDbDataReader["common_name"].ToString().Trim().ToUpper())
+                        spc_common_name1 = new spc_common_name();
+                        spc_common_name1.SpeciesCommonName = SQLite.m_DataReader["common_name"].ToString().Trim();
+                        spc_common_name1.SpeciesCode = Convert.ToInt32(SQLite.m_DataReader["spcd"]);
+                        spc_common_name1.SpeciesGroupLabel = "";
+                        spc_common_name1.SpeciesGroupIndex = -1;
+                        spc_common_name1.FVSOutput = false;
+                        this.spc_common_name_collection1.Add(spc_common_name1);
+
+                    }
+                }
+                SQLite.m_DataReader.Close();
+
+                //GET FVS OUTPUT TREE SPECIES COMMON NAME
+                /***************************************************************************
+                 **process tree species records that match up between the fvs output tree 
+                 **table, tree table, and tree species table
+                 ***************************************************************************/
+                SQLite.SqlNonQuery(conn, $@"attach '{this.m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree)}' as MASTER");
+                SQLite.m_strSQL = $@"CREATE TABLE tree_spc_groups_temp AS SELECT DISTINCT spcd FROM {this.m_oQueries.m_oFIAPlot.m_strTreeTable}";
+                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
+                SQLite.m_strSQL = "SELECT DISTINCT s.common_name " +
+                    "FROM tree_spc_groups_temp t, " + m_oQueries.m_oReference.m_strFiaTreeSpeciesRefTable + " s " +
+                    "WHERE t.spcd = s.spcd";
+                SQLite.SqlQueryReader(conn, SQLite.m_strSQL);
+                if (SQLite.m_DataReader.HasRows)
+                {
+                    while (SQLite.m_DataReader.Read())
+                    {
+                        for (x = 0; x <= this.spc_common_name_collection1.Count - 1; x++)
                         {
-                            this.spc_common_name_collection1.Item(x).SpeciesCode = Convert.ToInt32(this.m_ado.m_OleDbDataReader["spcd"]);
-                            break;
+                            if (this.spc_common_name_collection1.Item(x).SpeciesCommonName.Trim().ToUpper() ==
+                                SQLite.m_DataReader["common_name"].ToString().Trim().ToUpper())
+                                this.spc_common_name_collection1.Item(x).FVSOutput = true;
+
                         }
-
                     }
-
                 }
-            }
-            this.m_ado.m_OleDbDataReader.Close();
+                SQLite.m_DataReader.Close();
 
+                //GET FVS OUTPUT TREE SPECIES COMMON NAME FOR FVS-CREATED TREES
+                /***************************************************************************
+                 **process tree species records that match up between the fvs output tree 
+                 **table and tree species table for fvs-created tree species that may be missing from the tree table
+                 ***************************************************************************/
+                SQLite.m_strSQL = "SELECT DISTINCT s.common_name " +
+                      "FROM " + this.m_strFvsOutTreeTable + " t, " + m_oQueries.m_oReference.m_strFiaTreeSpeciesRefTable + " s " +
+                      "WHERE t.FvsCreatedTree_YN = 'Y' AND " +
+                      "CAST(t.fvs_species as integer) = s.spcd";
 
-            //GET FVS OUTPUT TREE SPECIES COMMON NAME
-            /***************************************************************************
-             **process tree species records that match up between the fvs output tree 
-             **table, tree table, and tree species table
-             ***************************************************************************/
-            this.m_ado.m_strSQL = "SELECT DISTINCT t.spcd,f.fvs_variant " +
-                                  "INTO tree_spc_groups_temp " +
-                                  "FROM " + this.m_oQueries.m_oFIAPlot.m_strTreeTable + " t, " +
-                                            this.m_strFvsOutTreeTable + " f " +
-                                  "WHERE f.fvs_tree_id = t.fvs_tree_id AND f.biosum_cond_id = t.biosum_cond_id";
-            this.m_ado.SqlNonQuery(m_ado.m_OleDbConnection, this.m_ado.m_strSQL);
-
-            m_ado.m_strSQL = "SELECT DISTINCT s.common_name " +
-                  "FROM tree_spc_groups_temp t, " + m_oQueries.m_oFvs.m_strTreeSpcTable + " s " +
-                  "WHERE t.spcd = s.spcd AND " +
-                  "TRIM(UCASE(t.fvs_variant)) = TRIM(UCASE(s.fvs_variant))";
-
-            this.m_ado.SqlQueryReader(m_ado.m_OleDbConnection, this.m_ado.m_strSQL);
-            if (this.m_ado.m_OleDbDataReader.HasRows)
-            {
-                while (this.m_ado.m_OleDbDataReader.Read())
+                SQLite.SqlQueryReader(conn, SQLite.m_strSQL);
+                if (SQLite.m_DataReader.HasRows)
                 {
-                    for (x = 0; x <= this.spc_common_name_collection1.Count - 1; x++)
+                    while (SQLite.m_DataReader.Read())
                     {
-                        if (this.spc_common_name_collection1.Item(x).SpeciesCommonName.Trim().ToUpper() ==
-                            this.m_ado.m_OleDbDataReader["common_name"].ToString().Trim().ToUpper())
-                            this.spc_common_name_collection1.Item(x).FVSOutput = true;
+                        for (x = 0; x <= this.spc_common_name_collection1.Count - 1; x++)
+                        {
+                            if (this.spc_common_name_collection1.Item(x).SpeciesCommonName.Trim().ToUpper() ==
+                                SQLite.m_DataReader["common_name"].ToString().Trim().ToUpper())
+                                this.spc_common_name_collection1.Item(x).FVSOutput = true;
 
+                        }
                     }
                 }
-            }
+                SQLite.m_DataReader.Close();
+            }			
 
-            //GET FVS OUTPUT TREE SPECIES COMMON NAME FOR FVS-CREATED TREES
-            /***************************************************************************
-             **process tree species records that match up between the fvs output tree 
-             **table and tree species table for fvs-created tree species that may be missing from the tree table
-             ***************************************************************************/
-            m_ado.m_strSQL = "SELECT DISTINCT s.common_name " +
-                  "FROM " + this.m_strFvsOutTreeTable + " t, " + m_oQueries.m_oFvs.m_strTreeSpcTable + " s " +
-                  "WHERE t.FvsCreatedTree_YN = 'Y' AND " +
-                  "val(t.fvs_species) = s.spcd AND " +
-                  "TRIM(UCASE(t.fvs_variant)) = TRIM(UCASE(s.fvs_variant))";
-
-            this.m_ado.SqlQueryReader(m_ado.m_OleDbConnection, this.m_ado.m_strSQL);
-            if (this.m_ado.m_OleDbDataReader.HasRows)
-            {
-                while (this.m_ado.m_OleDbDataReader.Read())
-                {
-                    for (x = 0; x <= this.spc_common_name_collection1.Count - 1; x++)
-                    {
-                        if (this.spc_common_name_collection1.Item(x).SpeciesCommonName.Trim().ToUpper() ==
-                            this.m_ado.m_OleDbDataReader["common_name"].ToString().Trim().ToUpper())
-                            this.spc_common_name_collection1.Item(x).FVSOutput = true;
-
-                    }
-                }
-            }
-
-
-            this.m_ado.m_OleDbDataReader.Close();
-			
-            //ScenarioId = this.ReferenceProcessorScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
-            //string strScenarioMDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-            //    "\\processor" + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsDbFile;
-            //ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadTreeSpeciesGroupValues(strScenarioMDB,
-            //    ScenarioId, ReferenceProcessorScenarioForm.m_oProcessorScenarioItem);
-
-             //LOAD USER SPECIES COMMON NAME GROUPING ASSIGNMENTS
+            //LOAD USER SPECIES COMMON NAME GROUPING ASSIGNMENTS
             /****************************************************************************************
              **load any previous group assignments 
              ****************************************************************************************/
@@ -1399,32 +1345,7 @@ namespace FIA_Biosum_Manager
                         //OPEN CONNECTION TO DB FILE CONTAINING PROCESSOR SCENARIO TABLES
                         //
                         //scenario mdb connection                        
-                        ado_data_access oAdo = new ado_data_access();
-                        SQLite.ADO.DataMgr oDataMgr = null;
-                        if (!ReferenceProcessorScenarioForm.m_bUsingSqlite)
-                        {
-                            string strScenarioMDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                                "\\processor\\db\\scenario_processor_rule_definitions.mdb";
-                            oAdo.OpenConnection(oAdo.getMDBConnString(strScenarioMDB, "", ""));
-                            if (oAdo.m_intError == 0)
-                            {
-                                //delete the current groups
-                                //delete all records from the tree species group table
-                                oAdo.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName +
-                                    " WHERE TRIM(UCASE(scenario_id))='" + _strScenarioId.Trim().ToUpper() + "'";
-                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                                if (oAdo.m_intError != 0) return;
-
-                                //delete all records from the tree species group list table
-                                oAdo.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName +
-                                    " WHERE TRIM(UCASE(scenario_id))='" + _strScenarioId.Trim().ToUpper() + "'";
-                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                            }
-                            m_intError = oAdo.m_intError;
-                        }
-                        else
-                        {
-                            oDataMgr = new SQLite.ADO.DataMgr();
+                        SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
                             string strScenarioDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
                                 "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
                             oDataMgr.OpenConnection(oDataMgr.GetConnectionString(strScenarioDB));
@@ -1443,7 +1364,6 @@ namespace FIA_Biosum_Manager
                                 oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
                             }
                             m_intError = oDataMgr.m_intError;
-                        }
 
                         if (m_intError == 0)
                         {
@@ -1454,31 +1374,12 @@ namespace FIA_Biosum_Manager
 
                                         intSpcGrp = Convert.ToInt32(this.spc_common_name_collection1.Item(x).SpeciesGroupIndex);
                                         strCommonName = this.spc_common_name_collection1.Item(x).SpeciesCommonName;
-                                        strCommonName = oAdo.FixString(strCommonName.Trim(), "'", "''");
+                                        strCommonName = oDataMgr.FixString(strCommonName.Trim(), "'", "''");
                                         intSpCd = this.spc_common_name_collection1.Item(x).SpeciesCode;
                                         intGrpCollection = Math.Abs(intSpcGrp / 6);
                                         strGrpLabel = this.spc_groupings_collection1.Item(intSpcGrp).GroupLabel;
                                         strGrpLabel = strGrpLabel.Replace(' ', '_');
                                         str = "," + strGrpLabel.Trim() + ",";
-                                    if (!ReferenceProcessorScenarioForm.m_bUsingSqlite)
-                                    {
-                                        if (strSavedList.IndexOf(str, 0) < 0)
-                                        {
-                                            oAdo.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName + " " +
-                                                "(SPECIES_GROUP,SPECIES_LABEL,SCENARIO_ID) VALUES " +
-                                                "(" + Convert.ToString(intSpcGrp + 1).Trim() + ",'" + strGrpLabel.Trim() + "','" + _strScenarioId.Trim() + "');";
-                                            oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                                            strSavedList += str;
-                                        }
-
-                                        oAdo.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName + " " +
-                                            "(SPECIES_GROUP,common_name,SCENARIO_ID,SPCD) VALUES " +
-                                            "(" + Convert.ToString(intSpcGrp + 1).Trim() + ",'" + strCommonName + "','" + _strScenarioId.Trim() + "', " +
-                                            intSpCd + " );";
-                                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                                    }
-                                    else
-                                    {
                                         if (strSavedList.IndexOf(str, 0) < 0)
                                         {
                                             oDataMgr.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName + " " +
@@ -1493,24 +1394,16 @@ namespace FIA_Biosum_Manager
                                             "(" + Convert.ToString(intSpcGrp + 1).Trim() + ",'" + strCommonName + "','" + _strScenarioId.Trim() + "', " +
                                             intSpCd + " );";
                                         oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
-                                    }
 
                                 }
                             }
                             this.btnSave.Enabled = false;
-                        }
-                        if (oAdo != null && oAdo.m_OleDbConnection != null)
-                        {
-                            if (oAdo.m_OleDbConnection.State == System.Data.ConnectionState.Open)
-                                oAdo.CloseConnection(oAdo.m_OleDbConnection);
-                            oAdo = null;
                         }
                         else if (oDataMgr != null)
                         {
                             oDataMgr.CloseConnection(oDataMgr.m_Connection);
                             oDataMgr = null;
                         }
-
                     }
                     else if (result == DialogResult.Cancel)
                     {

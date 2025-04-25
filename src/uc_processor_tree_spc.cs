@@ -2536,7 +2536,11 @@ namespace FIA_Biosum_Manager
             {
                 oDataMgr.SqlNonQuery(oDataMgr.m_Connection, strSqlCommandList[x]);
             }
-			
+
+			oDataMgr.m_strSQL = $@"CREATE TABLE fvsouttreetemp AS SELECT DISTINCT fvs_tree_id,fvs_species,biosum_cond_id, FvsCreatedTree_YN, max(dbh) as dbh, 0 as spcd, '' as cn, 0 as tree, 'N' as exist_in_tree_species_table_yn FROM fvsouttreetemp2
+                            group by fvs_tree_id, biosum_cond_id";
+			oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
+
 			//let the user know if there are no records in the fvs out processor in tree table
 			if (oDataMgr.getRecordCount(oDataMgr.m_Connection, "select count(*) from fvsouttreetemp;","fvstree") == 0)
 			{
@@ -2796,6 +2800,10 @@ namespace FIA_Biosum_Manager
 				{
 					oDataMgr.SqlNonQuery(conn, strSqlCommandList[x]);
 				}
+
+				oDataMgr.m_strSQL = $@"CREATE TABLE fvsouttreetemp AS SELECT DISTINCT fvs_tree_id,fvs_species,biosum_cond_id, FvsCreatedTree_YN, max(dbh) as dbh, 0 as spcd, '' as cn, 0 as tree, 'N' as exist_in_tree_species_table_yn FROM fvsouttreetemp2
+                            group by fvs_tree_id, biosum_cond_id";
+				oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
 
 				oDataMgr.m_strSQL = "SELECT DISTINCT b.fvs_tree_id," +
 						"b.fvs_species AS FVS_SpCd, a.SpCd AS FIA_SpCd, a.* " +

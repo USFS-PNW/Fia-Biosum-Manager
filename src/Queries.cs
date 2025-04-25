@@ -5722,9 +5722,6 @@ namespace FIA_Biosum_Manager
                     {
                         strSql = $@"CREATE TABLE {p_strIntoTable} AS SELECT DISTINCT {p_strColumnList} FROM {Tables.FVS.DefaultFVSCutTreeTableName}";
                         strList.Add(strSql);
-                        strSql = $@"CREATE TABLE fvsouttreetemp AS SELECT DISTINCT fvs_tree_id,fvs_species,biosum_cond_id, FvsCreatedTree_YN, max(dbh) as dbh, 0 as spcd, '' as cn, 0 as tree, 'N' as exist_in_tree_species_table_yn FROM {p_strIntoTable}
-                            group by fvs_tree_id, biosum_cond_id";
-                        strList.Add(strSql);
                     }
                 }
                 return strList;

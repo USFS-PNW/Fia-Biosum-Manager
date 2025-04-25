@@ -1498,10 +1498,6 @@ namespace FIA_Biosum_Manager
 									strTempTableName = Tables.FVS.DefaultRxTableName;
 									frmMain.g_oTables.m_oFvs.CreateRxTable(oAdoCurrent,oConn,strTempTableName);
 									break;
-								case "TREE SPECIES":
-									strTempTableName = Tables.Reference.DefaultTreeSpeciesTableName;
-									frmMain.g_oTables.m_oReference.CreateTreeSpeciesTable(oAdoCurrent,oConn,strTempTableName);
-									break;
 								case "FVS TREE SPECIES":
 									strTempTableName = Tables.Reference.DefaultFVSTreeSpeciesTableName;
 									frmMain.g_oTables.m_oReference.CreateFVSTreeSpeciesTable(oAdoCurrent,oConn,strTempTableName);
@@ -3929,7 +3925,7 @@ namespace FIA_Biosum_Manager
                 // Harvest Methods table
                 oDao.CreateTableLink(strDestinationDbFile, strDestinationTableName, strSourceDbFile, Tables.Reference.DefaultHarvestMethodsTableName);
                 // Tree Species table
-                oDao.CreateTableLink(strDestinationDbFile, strDestinationSpeciesTableName + "_worktable", strSourceDbFile, Tables.Reference.DefaultTreeSpeciesTableName);
+                //oDao.CreateTableLink(strDestinationDbFile, strDestinationSpeciesTableName + "_worktable", strSourceDbFile, Tables.Reference.DefaultTreeSpeciesTableName);
                 oDao.m_DaoWorkspace.Close();
                 
 

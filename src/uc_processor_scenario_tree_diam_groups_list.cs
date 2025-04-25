@@ -27,7 +27,6 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Button btnCancel;
 		private System.Windows.Forms.Button btnClear;
 		private System.Windows.Forms.Button btnHelp;
-		private FIA_Biosum_Manager.ado_data_access m_ado;
 		private System.Windows.Forms.Button btnDelete;
 
         // scenario-specific variables
@@ -685,60 +684,6 @@ namespace FIA_Biosum_Manager
 				string strMax;
 				string strDef;
 				string strId;
-
-                if (!ReferenceProcessorScenarioForm.m_bUsingSqlite)
-                {
-                    //
-                    //OPEN CONNECTION TO DB FILE CONTAINING PROCESSOR SCENARIO TABLES
-                    //
-                    //scenario mdb connection
-                    string strScenarioMDB =
-                        frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                        "\\processor\\db\\scenario_processor_rule_definitions.mdb";
-                    ado_data_access oAdo = new ado_data_access();
-                    oAdo.OpenConnection(oAdo.getMDBConnString(strScenarioMDB, "", ""));
-                    if (oAdo.m_intError != 0)
-                    {
-                        m_intError = m_ado.m_intError;
-                        m_strError = m_ado.m_strError;
-                        oAdo = null;
-                        return;
-                    }
-
-                    if (this.m_intError == 0)
-                    {
-                        //delete the current records
-                        oAdo.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName +
-                            " WHERE TRIM(UCASE(scenario_id)) = '" + ScenarioId.Trim().ToUpper() + "'";
-                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-
-                        if (oAdo.m_intError == 0)
-                        {
-                            for (x = 0; x <= this.lstTreeDiam.Items.Count - 1; x++)
-                            {
-                                strId = this.lstTreeDiam.Items[x].Text;
-                                strMin = this.lstTreeDiam.Items[x].SubItems[1].Text;
-                                strMax = this.lstTreeDiam.Items[x].SubItems[2].Text;
-                                strDef = this.lstTreeDiam.Items[x].SubItems[3].Text;
-
-                                oAdo.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName + " " +
-                                    "(diam_group,diam_class,min_diam,max_diam,scenario_id) VALUES " +
-                                    "(" + strId + ",'" + strDef.Trim() + "'," +
-                                    strMin + "," + strMax + ",'" + ScenarioId + "');";
-                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                                if (oAdo.m_intError != 0)
-                                {
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    oAdo.CloseConnection(oAdo.m_OleDbConnection);
-                    this.m_intError = oAdo.m_intError;
-                    oAdo = null;
-                }
-                else
-                {
                     string strScenarioDB =
                         frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
                         "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
@@ -784,8 +729,7 @@ namespace FIA_Biosum_Manager
                             }
                         }
                     }
-                }
-                if (this.m_intError == 0)
+                    if (this.m_intError == 0)
                 {
                     this.btnSave.Enabled = false;
                 }

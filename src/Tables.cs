@@ -7129,8 +7129,6 @@ namespace FIA_Biosum_Manager
             {
             }
             static public string DefaultTreeSpeciesTableDbFile { get { return @"db\ref_master.mdb"; } }
-            static public string DefaultTreeSpeciesTableName { get { return "tree_species"; } }
-            static public string DefaultOwnerGroupsTableDbFile { get { return @"db\ref_master.mdb"; } }
             static public string DefaultOwnerGroupsTableName { get { return "owner_groups"; } }
             static public string DefaultFVSTreeSpeciesTableDbFile { get { return @"db\ref_master.mdb"; } }
             static public string DefaultFVSTreeSpeciesTableName { get { return "fvs_tree_species"; } }
