@@ -4966,24 +4966,31 @@ namespace FIA_Biosum_Manager
                 /// <returns></returns>
                 public static string BuildInputTableForVolumeCalculation_Step2(string p_strInputVolumesTable, string p_strFIATreeTable, string p_strFIAPlotTable, string p_strFIACondTable)
                 {
-                    return $@"UPDATE {p_strInputVolumesTable} i 
-                                INNER JOIN (({p_strFIATreeTable} t 
-                                    INNER JOIN {p_strFIACondTable} c ON t.biosum_cond_id=c.biosum_cond_id)
-                                        INNER JOIN {p_strFIAPlotTable} p ON p.biosum_plot_id=c.biosum_plot_id) 
-                                ON i.fvs_tree_id = t.fvs_tree_id and i.biosum_cond_id = t.biosum_cond_id 
-                            SET i.spcd=t.spcd,
-                                i.statuscd=IIF(t.statuscd IS NULL,1,t.statuscd),
-                                i.treeclcd=t.treeclcd,
-                                i.cull=IIF(t.cull IS NULL,0,t.cull),
-                                i.roughcull=IIF(t.roughcull IS NULL,0,t.roughcull),
-                                i.decaycd=IIF(t.decaycd IS NULL,0,t.decaycd),
-                                i.balive=c.balive,
-                                i.precipitation=p.precipitation,
-                                i.ecosubcd = p.ecosubcd,
-                                i.stdorgcd = c.stdorgcd,
-                                i.actualht = IIF(t.actualht <> t.ht, i.ht - t.ht + t.actualht, i.actualht)";
+                    //return $@"UPDATE {p_strInputVolumesTable} i 
+                    //            INNER JOIN (({p_strFIATreeTable} t 
+                    //                INNER JOIN {p_strFIACondTable} c ON t.biosum_cond_id=c.biosum_cond_id)
+                    //                    INNER JOIN {p_strFIAPlotTable} p ON p.biosum_plot_id=c.biosum_plot_id) 
+                    //            ON i.fvs_tree_id = t.fvs_tree_id and i.biosum_cond_id = t.biosum_cond_id 
+                    //        SET i.spcd=t.spcd,
+                    //            i.statuscd=IIF(t.statuscd IS NULL,1,t.statuscd),
+                    //            i.treeclcd=t.treeclcd,
+                    //            i.cull=IIF(t.cull IS NULL,0,t.cull),
+                    //            i.roughcull=IIF(t.roughcull IS NULL,0,t.roughcull),
+                    //            i.decaycd=IIF(t.decaycd IS NULL,0,t.decaycd),
+                    //            i.balive=c.balive,
+                    //            i.precipitation=p.precipitation,
+                    //            i.ecosubcd = p.ecosubcd,
+                    //            i.stdorgcd = c.stdorgcd,
+                    //            i.actualht = IIF(t.actualht <> t.ht, i.ht - t.ht + t.actualht, i.actualht)";
+                    return $@"UPDATE {p_strInputVolumesTable} 
+                        SET (spcd,statuscd,treeclcd,cull,roughcull,decaycd,balive,precipitation,ecosubcd,stdorgcd,actualht) 
+                        = (select t.spcd, case when t.statuscd is null then 1 else t.statuscd end,treeclcd, case when t.cull is null then 0 else t.cull end,case when t.roughcull is null then 1 else t.roughcull end,
+                        case when t.decaycd is null then 0 else t.decaycd end,c.balive, p.precipitation, p.ecosubcd, c.stdorgcd, 
+                        case when t.actualht <> t.ht then {p_strInputVolumesTable}.ht - t.ht + t.actualht else {p_strInputVolumesTable}.actualht end
+                        FROM {p_strFIATreeTable} t inner join {p_strFIACondTable} c, {p_strFIAPlotTable} p
+                        WHERE t.biosum_cond_id = c.biosum_cond_id and {p_strInputVolumesTable}.biosum_cond_id = c.biosum_cond_id and c.biosum_plot_id = p.biosum_plot_id and {p_strInputVolumesTable}.fvs_tree_id = trim(t.fvs_tree_id))
+                        WHERE FvsCreatedTree_YN = 'N'";
                 }
-
                 public static string BuildInputTableForVolumeCalculationDiaHtCdFiadb(string strTreeTable)
                 {
                     return $@"UPDATE {Tables.VolumeAndBiomass.BiosumVolumesInputTable} b 
