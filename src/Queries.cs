@@ -4966,22 +4966,6 @@ namespace FIA_Biosum_Manager
                 /// <returns></returns>
                 public static string BuildInputTableForVolumeCalculation_Step2(string p_strInputVolumesTable, string p_strFIATreeTable, string p_strFIAPlotTable, string p_strFIACondTable)
                 {
-                    //return $@"UPDATE {p_strInputVolumesTable} i 
-                    //            INNER JOIN (({p_strFIATreeTable} t 
-                    //                INNER JOIN {p_strFIACondTable} c ON t.biosum_cond_id=c.biosum_cond_id)
-                    //                    INNER JOIN {p_strFIAPlotTable} p ON p.biosum_plot_id=c.biosum_plot_id) 
-                    //            ON i.fvs_tree_id = t.fvs_tree_id and i.biosum_cond_id = t.biosum_cond_id 
-                    //        SET i.spcd=t.spcd,
-                    //            i.statuscd=IIF(t.statuscd IS NULL,1,t.statuscd),
-                    //            i.treeclcd=t.treeclcd,
-                    //            i.cull=IIF(t.cull IS NULL,0,t.cull),
-                    //            i.roughcull=IIF(t.roughcull IS NULL,0,t.roughcull),
-                    //            i.decaycd=IIF(t.decaycd IS NULL,0,t.decaycd),
-                    //            i.balive=c.balive,
-                    //            i.precipitation=p.precipitation,
-                    //            i.ecosubcd = p.ecosubcd,
-                    //            i.stdorgcd = c.stdorgcd,
-                    //            i.actualht = IIF(t.actualht <> t.ht, i.ht - t.ht + t.actualht, i.actualht)";
                     return $@"UPDATE {p_strInputVolumesTable} 
                         SET (spcd,statuscd,treeclcd,cull,roughcull,decaycd,balive,precipitation,ecosubcd,stdorgcd,actualht) 
                         = (select t.spcd, case when t.statuscd is null then 1 else t.statuscd end,treeclcd, case when t.cull is null then 0 else t.cull end,case when t.roughcull is null then 1 else t.roughcull end,
@@ -4993,18 +4977,25 @@ namespace FIA_Biosum_Manager
                 }
                 public static string BuildInputTableForVolumeCalculationDiaHtCdFiadb(string strTreeTable)
                 {
-                    return $@"UPDATE {Tables.VolumeAndBiomass.BiosumVolumesInputTable} b 
-                            INNER JOIN {strTreeTable} t 
-                            ON t.biosum_cond_id=b.biosum_cond_id AND t.fvs_tree_id=b.fvs_tree_id
-                            SET b.diahtcd=t.diahtcd,
-                            b.standing_dead_cd=t.standing_dead_cd WHERE b.fvscreatedtree_yn='N'";
+                    //return $@"UPDATE {Tables.VolumeAndBiomass.BiosumVolumesInputTable} 
+                    //        INNER JOIN {strTreeTable} t 
+                    //        ON t.biosum_cond_id={Tables.VolumeAndBiomass.BiosumVolumesInputTable}.biosum_cond_id AND trim(t.fvs_tree_id)={Tables.VolumeAndBiomass.BiosumVolumesInputTable}.fvs_tree_id
+                    //        SET diahtcd=t.diahtcd,
+                    //        standing_dead_cd=t.standing_dead_cd WHERE fvscreatedtree_yn='N'";
+                    return $@"UPDATE {Tables.VolumeAndBiomass.BiosumVolumesInputTable}
+                        set (diahtcd, standing_dead_cd) = (SELECT t.diahtcd, t.standing_dead_cd from {strTreeTable} t 
+                        where t.biosum_cond_id={Tables.VolumeAndBiomass.BiosumVolumesInputTable}.biosum_cond_id AND trim(t.fvs_tree_id)={Tables.VolumeAndBiomass.BiosumVolumesInputTable}.fvs_tree_id)
+                        WHERE fvscreatedtree_yn='N'";
                 }
-
                 public static string BuildInputTableForVolumeCalculationDiaHtCdFvs(string strFiaTreeSpeciesRefTable)
                 {
-                    return $@"UPDATE {Tables.VolumeAndBiomass.BiosumVolumesInputTable} b 
-                            INNER JOIN {strFiaTreeSpeciesRefTable} ref ON cint(b.spcd)=ref.spcd
-                            SET b.diahtcd=IIF(ref.woodland_yn='N', 1, 2) WHERE b.fvscreatedtree_yn='Y'";
+                    //return $@"UPDATE {Tables.VolumeAndBiomass.BiosumVolumesInputTable} b 
+                    //        INNER JOIN {strFiaTreeSpeciesRefTable} ref ON cint(b.spcd)=ref.spcd
+                    //        SET b.diahtcd=IIF(ref.woodland_yn='N', 1, 2) WHERE b.fvscreatedtree_yn='Y'";
+                    return $@"UPDATE {Tables.VolumeAndBiomass.BiosumVolumesInputTable} as b
+                        SET diahtcd = case when woodland_yn='N' then 1 else 2 end
+                        FROM {strFiaTreeSpeciesRefTable} r
+                        WHERE CAST(b.spcd as integer)=r.spcd and b.fvscreatedtree_yn='Y'";
                 }
 
                 /// <summary>
@@ -5033,10 +5024,13 @@ namespace FIA_Biosum_Manager
                 /// <returns></returns>
                 public static string BuildInputSQLiteTableForVolumeCalculation_Step2a(string p_strInputVolumesTable, string p_strFIAPlotTable, string p_strFIACondTable)
                 {
-                    return $@"UPDATE (({p_strFIAPlotTable} p INNER JOIN {p_strFIACondTable} c ON p.biosum_plot_id = c.biosum_plot_id) 
-                                INNER JOIN {p_strInputVolumesTable} i ON c.biosum_cond_id = i.biosum_cond_id) 
-                                SET i.precipitation=p.precipitation
-                                WHERE i.fvscreatedtree_yn='Y'";
+                    //return $@"UPDATE (({p_strFIAPlotTable} p INNER JOIN {p_strFIACondTable} c ON p.biosum_plot_id = c.biosum_plot_id) 
+                    //            INNER JOIN {p_strInputVolumesTable} i ON c.biosum_cond_id = i.biosum_cond_id) 
+                    //            SET i.precipitation=p.precipitation
+                    //            WHERE i.fvscreatedtree_yn='Y'";
+                    return $@"UPDATE {p_strInputVolumesTable} as i SET precipitation=p.precipitation
+                        FROM {p_strFIACondTable} c, {p_strFIAPlotTable} p WHERE p.biosum_plot_id=c.biosum_plot_id AND c.biosum_cond_id = i.biosum_cond_id
+                        AND fvscreatedtree_yn='Y'";
                 }
 
                 /// <summary>
@@ -5066,13 +5060,11 @@ namespace FIA_Biosum_Manager
                 /// <returns></returns>
                 public static string BuildInputTableForVolumeCalculation_Step3(string p_strInputVolumesTable, string p_strFIACondTable)
                 {
-                    return $@"UPDATE {p_strInputVolumesTable} i INNER JOIN {p_strFIACondTable} c 
-                                ON i.biosum_cond_id=c.biosum_cond_id 
-                            SET i.vol_loc_grp=c.vol_loc_grp,
-                                i.statuscd=IIF(i.statuscd IS NULL,1,i.statuscd),
-                                i.cull=IIF(i.cull IS NULL,0,i.cull),
-                                i.roughcull=IIF(i.roughcull IS NULL,0,i.roughcull),
-                                i.decaycd=IIF(i.decaycd IS NULL,0,i.decaycd)";
+                    return $@"UPDATE {p_strInputVolumesTable} as i 
+                        SET (vol_loc_grp,statuscd,cull,roughcull,decaycd) 
+                        = (select c.vol_loc_grp, case when statuscd is null then 1 else statuscd end, case when cull is null then 0 else cull end,case when roughcull is null then 0 else roughcull end,
+                        case when decaycd is null then 0 else decaycd end)
+                        FROM {p_strFIACondTable} c WHERE i.biosum_cond_id = c.biosum_cond_id";
                 }
 
                 /// <summary>
