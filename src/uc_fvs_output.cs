@@ -5140,7 +5140,6 @@ namespace FIA_Biosum_Manager
                                            m_intProgressStepTotalCount);
                 if (bRunFcs == true)
                 {
-                    System.Data.OleDb.OleDbConnection oConn1 = new System.Data.OleDb.OleDbConnection();
                     System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strTreeTempDbFile));
 
                     oConn.Open();
@@ -5227,82 +5226,66 @@ namespace FIA_Biosum_Manager
                     if (oDataMgr.TableExist(oConn, "CULL_TOTAL_WORK_TABLE"))
                         oDataMgr.SqlNonQuery(oConn, "DROP TABLE CULL_TOTAL_WORK_TABLE");
 
-                                    oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step4(
-                                                      "cull_total_work_table",
-                                                      Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                    oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step4(
+                        "cull_total_work_table", Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                    oDataMgr.SqlNonQuery(oConn, oDataMgr.m_strSQL);
+                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
+                    m_intProgressStepCurrentCount++;
+                    UpdateTherm(m_frmTherm.progressBar1,
+                        m_intProgressStepCurrentCount,
+                        m_intProgressStepTotalCount);
 
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
-                                    oAdo.SqlNonQuery(oConn1, oAdo.m_strSQL);
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                    oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.PNWRS.BuildInputTableForVolumeCalculation_Step5(
+                        "cull_total_work_table", Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                    oDataMgr.SqlNonQuery(oConn, oDataMgr.m_strSQL);
+                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
-                                    m_intProgressStepCurrentCount++;
-                                    UpdateTherm(m_frmTherm.progressBar1,
-                                               m_intProgressStepCurrentCount,
-                                               m_intProgressStepTotalCount);
+                    m_intProgressStepCurrentCount++;
+                    UpdateTherm(m_frmTherm.progressBar1,
+                        m_intProgressStepCurrentCount,
+                        m_intProgressStepTotalCount);
 
+                    oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.PNWRS.BuildInputTableForVolumeCalculation_Step6(
+                        "cull_total_work_table", Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                    oDataMgr.SqlNonQuery(oConn, oDataMgr.m_strSQL);
+                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
-                                    oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.PNWRS.BuildInputTableForVolumeCalculation_Step5(
-                                                        "cull_total_work_table",
-                                                        Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                    m_intProgressStepCurrentCount++;
+                    UpdateTherm(m_frmTherm.progressBar1,
+                        m_intProgressStepCurrentCount,
+                        m_intProgressStepTotalCount);
 
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
-                                    oAdo.SqlNonQuery(oConn1, oAdo.m_strSQL);
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                    // CLOSE CONNECTION
+                    if (oConn.State == ConnectionState.Open)
+                    {
+                        oConn.Close();
+                    }
 
-                                    m_intProgressStepCurrentCount++;
-                                    UpdateTherm(m_frmTherm.progressBar1,
-                                               m_intProgressStepCurrentCount,
-                                               m_intProgressStepTotalCount);
-
-                                    oAdo.m_strSQL = Queries.VolumeAndBiomass.FVSOut.PNWRS.BuildInputTableForVolumeCalculation_Step6(
-                                                      "cull_total_work_table",
-                                                      Tables.VolumeAndBiomass.BiosumVolumesInputTable);
-
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
-                                    oAdo.SqlNonQuery(oConn1, oAdo.m_strSQL);
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-                                    m_intProgressStepCurrentCount++;
-                                    UpdateTherm(m_frmTherm.progressBar1,
-                                               m_intProgressStepCurrentCount,
-                                               m_intProgressStepTotalCount);
-
-                                    // Drop link to BiosumVolumesInputTable to avoid conflicts
-                                    oAdo.m_strSQL = "DROP TABLE " + Tables.VolumeAndBiomass.BiosumVolumesInputTable;
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
-                                    oAdo.SqlNonQuery(oConn1, oAdo.m_strSQL);
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-                                    // CLOSE MS ACCESS CONNECTION
-                                    if (oConn1.State == ConnectionState.Open)
-                                    {
-                                        oConn1.Close();
-                                    }
-
-                                    if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase) == false)
-                                    {
-                                        m_intError = -1;
-                                        m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase + " not found";
-                                    }
-                                    if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR") == false)
-                                    {
-                                        m_intError = -1;
-                                        m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR not found";
-                                    }
-                                    if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_tree_calc.bat") == false)
-                                    {
-                                        m_intError = -1;
-                                        m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_tree_calc.bat not found";
-                                    }
+                    if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase) == false)
+                    {
+                        m_intError = -1;
+                        m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase + " not found";
+                    }
+                    if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR") == false)
+                    {
+                        m_intError = -1;
+                        m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR not found";
+                    }
+                    if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_tree_calc.bat") == false)
+                    {
+                        m_intError = -1;
+                        m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_tree_calc.bat not found";
+                    }
                                     if (m_intError == 0)
                                     {
                                         //
@@ -5315,8 +5298,6 @@ namespace FIA_Biosum_Manager
                                         UpdateTherm(m_frmTherm.progressBar1,
                                                     m_intProgressStepTotalCount,
                                                     m_intProgressStepTotalCount);
-
-                                        System.Threading.Thread.Sleep(2000);
 
                                         //insert records 
                                         //from 

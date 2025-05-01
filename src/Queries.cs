@@ -4968,7 +4968,7 @@ namespace FIA_Biosum_Manager
                 {
                     return $@"UPDATE {p_strInputVolumesTable} 
                         SET (spcd,statuscd,treeclcd,cull,roughcull,decaycd,balive,precipitation,ecosubcd,stdorgcd,actualht) 
-                        = (select t.spcd, case when t.statuscd is null then 1 else t.statuscd end,treeclcd, case when t.cull is null then 0 else t.cull end,case when t.roughcull is null then 1 else t.roughcull end,
+                        = (select t.spcd, case when t.statuscd is null then 1 else t.statuscd end,treeclcd, case when t.cull is null then 0 else t.cull end,case when t.roughcull is null then 0 else t.roughcull end,
                         case when t.decaycd is null then 0 else t.decaycd end,c.balive, p.precipitation, p.ecosubcd, c.stdorgcd, 
                         case when t.actualht <> t.ht then {p_strInputVolumesTable}.ht - t.ht + t.actualht else {p_strInputVolumesTable}.actualht end
                         FROM {p_strFIATreeTable} t inner join {p_strFIACondTable} c, {p_strFIAPlotTable} p
@@ -5074,10 +5074,12 @@ namespace FIA_Biosum_Manager
                 public static string BuildInputTableForVolumeCalculation_Step4(string p_strCullTable, string p_strInputVolumesTable)
                 {
                     //TODO: does inputVolumesTable have an id column? yes. What is it set to? How is id populated? FVS_TREE.ID?
-                    string columns = "id, IIF(cull IS NOT NULL AND roughcull IS NOT NULL, cull + roughcull, IIF(cull IS NOT NULL,cull, IIF(roughcull IS NOT NULL, roughcull,0))) AS totalcull";
-                    return $@"SELECT {columns} INTO {p_strCullTable} FROM {p_strInputVolumesTable}";
+                    //string columns = "id, IIF(cull IS NOT NULL AND roughcull IS NOT NULL, cull + roughcull, IIF(cull IS NOT NULL,cull, IIF(roughcull IS NOT NULL, roughcull,0))) AS totalcull";
+                    //return $@"SELECT {columns} INTO {p_strCullTable} FROM {p_strInputVolumesTable}";
+                    return $@"CREATE TABLE {p_strCullTable}
+                        AS SELECT ID, (CASE WHEN CULL IS NOT NULL AND ROUGHCULL IS NOT NULL THEN CULL + ROUGHCULL
+                        WHEN CULL IS NOT NULL THEN CULL ELSE ROUGHCULL END) AS TOTALCULL FROM {p_strInputVolumesTable}";
                 }
-
                 public class PNWRS
                 {
                     public PNWRS()
@@ -5093,11 +5095,15 @@ namespace FIA_Biosum_Manager
                     /// <returns></returns>
                     public static string BuildInputTableForVolumeCalculation_Step5(string p_strCullTable, string p_strInputVolumesTable)
                     {
-                        return $@"UPDATE {p_strInputVolumesTable} a INNER JOIN {p_strCullTable} b ON a.id=b.id
-                                   SET a.treeclcd= IIF(a.SpCd IN (62,65,66,106,133,138,304,321,322,475,756,758,990),3,
-                                       IIF(a.StatusCd=2,3,
-                                           IIF(b.totalcull < 75,2,
-                                               IIF(a.roughcull > 37.5,3,4))))";
+                        //return $@"UPDATE {p_strInputVolumesTable} a INNER JOIN {p_strCullTable} b ON a.id=b.id
+                        //           SET a.treeclcd= IIF(a.SpCd IN (62,65,66,106,133,138,304,321,322,475,756,758,990),3,
+                        //               IIF(a.StatusCd=2,3,
+                        //                   IIF(b.totalcull < 75,2,
+                        //                       IIF(a.roughcull > 37.5,3,4))))";
+                        return $@"UPDATE {p_strInputVolumesTable} as a
+                            SET treeclcd =
+                            (SELECT (CASE WHEN a.SpCd IN (62,65,66,106,133,138,304,321,322,475,756,758,990) THEN 3 
+                            WHEN a.statuscd=2 THEN 3 WHEN b.totalcull < 75 THEN 2 WHEN a.roughcull > 37.5 THEN 3 ELSE 4 END) FROM cull_total_work_table b where a.id=b.id)";
                     }
 
                     /// <summary>
@@ -5109,9 +5115,13 @@ namespace FIA_Biosum_Manager
                     /// <returns></returns>
                     public static string BuildInputTableForVolumeCalculation_Step6(string p_strCullTable, string p_strInputVolumesTable)
                     {
-                        return $@"UPDATE {p_strInputVolumesTable} a INNER JOIN {p_strCullTable} b ON a.id=b.id
-                               SET a.treeclcd=IIF(a.DecayCd > 1,4,IIF(a.dbh < 9 AND a.SpCd < 300,4,a.treeclcd)) 
-                               WHERE a.treeclcd=3 AND a.statuscd=2 AND a.SpCd NOT IN (62,65,66,106,133,138,304,321,322,475,756,758,990)";
+                        //return $@"UPDATE {p_strInputVolumesTable} a INNER JOIN {p_strCullTable} b ON a.id=b.id
+                        //       SET a.treeclcd=IIF(a.DecayCd > 1,4,IIF(a.dbh < 9 AND a.SpCd < 300,4,a.treeclcd)) 
+                        //       WHERE a.treeclcd=3 AND a.statuscd=2 AND a.SpCd NOT IN (62,65,66,106,133,138,304,321,322,475,756,758,990)";
+                        return $@"UPDATE biosum_volumes_input as a
+                            SET treeclcd = (SELECT (CASE WHEN DecayCd > 1 THEN 4 
+                            WHEN a.dbh < 9 AND a.SpCd < 300 THEN 4 ELSE a.treeclcd END) FROM cull_total_work_table b where a.id=b.id )
+                            WHERE a.treeclcd=3 AND a.statuscd=2 AND a.SpCd NOT IN (62,65,66,106,133,138,304,321,322,475,756,758,990)";
                     }
                 }
 
