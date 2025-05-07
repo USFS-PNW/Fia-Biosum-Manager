@@ -184,7 +184,6 @@ namespace FIA_Biosum_Manager
 		public int savevalues()
 		{
 			int x = 0;
-			string strSQL = "";
 			DataMgr oDataMgr = new DataMgr();
 			oDataMgr.m_intError = 0;
 			try
