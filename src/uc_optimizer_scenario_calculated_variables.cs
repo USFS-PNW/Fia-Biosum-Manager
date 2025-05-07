@@ -5742,7 +5742,8 @@ namespace FIA_Biosum_Manager
                                 "(SELECT " + strFieldName + " FROM " + strSourceTableName + " AS p " +
                                 "WHERE w.biosum_cond_id = p.biosum_cond_id AND w.rxpackage = p.rxpackage " +
                                 "AND w.rx = p.rx AND w.rxcycle = p.rxcycle AND w.fvs_variant = p.fvs_variant) " +
-                                "WHERE w.rxcycle = '" + strRxCycle + "'";
+                                "* " + dblWeight + 
+                                " WHERE w.rxcycle = '" + strRxCycle + "'";
                         }
                         _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
                         m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);

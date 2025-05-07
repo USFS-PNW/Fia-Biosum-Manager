@@ -3869,7 +3869,7 @@ namespace FIA_Biosum_Manager
         {
             this.m_intError = 0;
             this.m_strError = "";
-
+            DataMgr oDataMgr = new DataMgr();
 
             int x, y;
             //
@@ -3878,20 +3878,43 @@ namespace FIA_Biosum_Manager
             /*************************************************************************
 			 **get the treatment packages mdb file,table, and connection strings
 			 *************************************************************************/
-            string strRxMDBFile = "", strRxPackageTableName = "", strRxConn = "";
-            p_oAdo.getScenarioDataSourceConnStringAndTable(ref strRxMDBFile,
+            string strRxDBFile = "", strRxPackageTableName = "", strRxConn = "";
+            p_oAdo.getScenarioDataSourceConnStringAndTable(ref strRxDBFile,
                                             ref strRxPackageTableName, ref strRxConn,
                                             "Treatment Packages",
                                             p_strScenarioId,
                                             p_oConn);
-            //
-            //GET A LIST OF ALL THE CURRENT TREATMENTS
-            //
-            System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
-            p_oAdo.OpenConnection(strRxConn,ref oConn);
-            string strRxList = p_oAdo.CreateCommaDelimitedList(oConn, "SELECT RXPACKAGE FROM " + strRxPackageTableName, "'");
+
+            string strRxList = "";
+
+            strRxConn = oDataMgr.GetConnectionString(strRxDBFile);
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strRxConn))
+            {
+                conn.Open();
+
+                //
+                //GET A LIST OF ALL THE CURRENT TREATMENTS
+                //
+                oDataMgr.m_strSQL = "SELECT rxpackage FROM " + strRxPackageTableName;
+                oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
+                
+                if (oDataMgr.m_DataReader.HasRows)
+                {
+                    while (oDataMgr.m_DataReader.Read())
+                    {
+                        if (strRxList.Length == 0)
+                        {
+                            strRxList += "'" + oDataMgr.m_DataReader[0].ToString().Trim() + "'";
+                        }
+                        else
+                        {
+                            strRxList += ", '" + oDataMgr.m_DataReader[0].ToString().Trim() + "'";
+                        }
+                    }
+                    oDataMgr.m_DataReader.Close();
+                }
+            }
             string[] strRxArray = frmMain.g_oUtils.ConvertListToArray(strRxList, ",");
-            p_oAdo.CloseConnection(oConn);
             //
             //INITIALIZE RXINTENSITY COLLECTION
             //

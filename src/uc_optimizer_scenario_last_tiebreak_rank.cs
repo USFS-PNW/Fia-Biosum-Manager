@@ -184,7 +184,6 @@ namespace FIA_Biosum_Manager
 		public int savevalues()
 		{
 			int x = 0;
-			string strSQL = "";
 			DataMgr oDataMgr = new DataMgr();
 			oDataMgr.m_intError = 0;
 			try
@@ -202,14 +201,16 @@ namespace FIA_Biosum_Manager
 						{
 							oDataMgr.m_strSQL = "UPDATE scenario_last_tiebreak_rank SET last_tiebreak_rank = " +
 								this.m_DataSet.Tables["scenario_last_tiebreak_rank"].Rows[x]["last_tiebreak_rank"] +
-								" WHERE TRIM(rxpackage) = '" + this.m_DataSet.Tables["scenario_last_tiebreak_rank"].Rows[x]["rxpackage"].ToString().Trim() + "';";
+								" WHERE TRIM(rxpackage) = '" + this.m_DataSet.Tables["scenario_last_tiebreak_rank"].Rows[x]["rxpackage"].ToString().Trim() + "' " +
+								"AND TRIM(UPPER(scenario_id)) = '" + this.m_DataSet.Tables["scenario_last_tiebreak_rank"].Rows[x]["scenario_id"].ToString().Trim().ToUpper() + "'";
 						}
 						else
 						{
 							oDataMgr.m_strSQL = "UPDATE scenario_last_tiebreak_rank SET last_tiebreak_rank = null " +
-									 " WHERE TRIM(rxpackage) = '" + this.m_DataSet.Tables["scenario_last_tiebreak_rank"].Rows[x]["rxpackage"].ToString().Trim() + "';";
+									 " WHERE TRIM(rxpackage) = '" + this.m_DataSet.Tables["scenario_last_tiebreak_rank"].Rows[x]["rxpackage"].ToString().Trim() + "' " +
+									 "AND TRIM(UPPER(scenario_id)) = '" + this.m_DataSet.Tables["scenario_last_tiebreak_rank"].Rows[x]["scenario_id"].ToString().Trim().ToUpper() + "'";
 						}
-						oDataMgr.SqlNonQuery(conn, strSQL);
+						oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 						if (oDataMgr.m_intError < 0) break;
 
 					}
