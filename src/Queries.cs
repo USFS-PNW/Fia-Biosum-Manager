@@ -2231,7 +2231,7 @@ namespace FIA_Biosum_Manager
                 string p_strPlotTable,string p_strCondTable, string p_strPostAuditSummaryTable,string p_strFvsTreeTableName,
                 string p_strRxPackage, string p_strFvsVariant, string p_strRxPackageWorktable)
             {
-                string[] sqlArray = new string[13];
+                string[] sqlArray = new string[12];
                 //sqlArray[0] = $@"SELECT * INTO {p_strRxPackageTable} FROM (SELECT DISTINCT RXPACKAGE AS RXPACKAGE FROM {p_strRxPackageWorktable})";
                 sqlArray[0] = $@"CREATE TABLE {p_strRxPackageTable} AS SELECT DISTINCT RXPACKAGE AS RXPACKAGE FROM {p_strRxPackageWorktable}";
                 //sqlArray[1] = $@"SELECT * INTO {p_strRxTable} FROM (SELECT DISTINCT RX AS RX FROM {p_strRxPackageWorktable})";
@@ -2263,16 +2263,11 @@ namespace FIA_Biosum_Manager
                     "WHEN LENGTH(TRIM(BIOSUM_COND_ID)) >= 24 THEN SUBSTR(BIOSUM_COND_ID,1,24) ELSE BIOSUM_COND_ID END AS BIOSUM_PLOT_ID, " +
                     "BIOSUM_COND_ID FROM " + p_strFvsTreeTableName;
 
-                //sqlArray[9] = "ALTER TABLE fvs_tree_unique_biosum_plot_id_work_table ALTER COLUMN biosum_plot_id CHAR(24)";
-
-                //sqlArray[10] = "ALTER TABLE fvs_tree_unique_biosum_plot_id_work_table ALTER COLUMN biosum_cond_id CHAR(25)";
-
                 sqlArray[9] = "CREATE TABLE fvs_tree_biosum_plot_id_work_table (" +
                                 "ID INTEGER, " +
                                 "RXPACKAGE CHAR(3), " +
                                 "biosum_plot_id CHAR(24), " +
                                 "biosum_cond_id CHAR(25)) ";
-
                 //sqlArray[10] = "INSERT INTO fvs_tree_biosum_plot_id_work_table " +
                 //                "SELECT ID," +
                 //                "'" + p_strRxPackage + "' AS RXPACKAGE," +
@@ -2577,9 +2572,42 @@ namespace FIA_Biosum_Manager
                           "a.FVS_TREE_ID IS NOT NULL AND " +
                           "LEN(TRIM(a.FVS_TREE_ID)) >  0 AND " +
                           "VAL(a.FVS_SPECIES) <> b.SPCD) fvs_species_change_count)";
-                string strDateTimeCreated = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                sqlArray[12] = $@"UPDATE {p_strPostAuditSummaryTable} SET DateTimeCreated ='{strDateTimeCreated}' 
-                                WHERE RXPACKAGE = '{p_strRxPackage}' AND FVS_VARIANT = '{p_strFvsVariant}'";
+                sqlArray[11] = "INSERT INTO  " + p_strPostAuditSummaryTable + " " +
+                    "SELECT * FROM " +
+                    "(SELECT DISTINCT " +
+                        "'001' AS idx," +
+                        "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                        "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
+                        "'BIOSUM_COND_ID' AS COLUMN_NAME," +
+                        "biosum_cond_id_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR, biosum_cond_id_not_found_in_cond_table_count.NOT_FOUND_IN_COND_TABLE_COUNT AS NF_IN_COND_TABLE_ERROR," +
+                        "biosum_cond_id_not_found_in_plot_table_count.NOT_FOUND_IN_PLOT_TABLE_COUNT AS NF_IN_PLOT_TABLE_ERROR, " + 
+                        "'NA' AS VALUE_ERROR,'NA' AS NF_IN_RX_TABLE_ERROR, 'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR, " +
+                        "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR, 'NA' AS NF_IN_TREE_TABLE_ERROR,'NA' AS TREE_SPECIES_CHANGE_WARNING, " +
+                        "current_timestamp FROM " + p_strFvsTreeTableName + " fvs," +
+                        "(SELECT COUNT(*) AS NOVALUE_COUNT FROM fvs_tree_unique_biosum_plot_id_work_table WHERE BIOSUM_COND_ID IS NULL OR LENGTH(TRIM(BIOSUM_COND_ID))= 0) biosum_cond_id_no_value_count," + 
+                        "(SELECT COUNT(*) AS NOT_FOUND_IN_COND_TABLE_COUNT FROM fvs_tree_unique_biosum_plot_id_work_table a WHERE a.BIOSUM_COND_ID IS NOT NULL AND LENGTH(TRIM(a.BIOSUM_COND_ID)) > 0 " +
+                        "AND NOT EXISTS(SELECT b.BIOSUM_COND_ID FROM cond_biosum_cond_id_work_table b WHERE a.BIOSUM_COND_ID = b.BIOSUM_COND_ID)) biosum_cond_id_not_found_in_cond_table_count," +
+                        "(SELECT COUNT(*) AS NOT_FOUND_IN_PLOT_TABLE_COUNT FROM fvs_tree_unique_biosum_plot_id_work_table a WHERE a.BIOSUM_COND_ID IS NOT NULL AND LENGTH(TRIM(a.BIOSUM_COND_ID)) > 0 " +
+                        "AND NOT EXISTS(SELECT b.BIOSUM_PLOT_ID FROM plot_biosum_plot_id_work_table b WHERE b.BIOSUM_PLOT_ID = a.BIOSUM_PLOT_ID)) biosum_cond_id_not_found_in_plot_table_count " +
+                        "UNION " +
+                        "SELECT DISTINCT '002' AS idx,'" + p_strRxPackage + "' AS RXPACKAGE,'" + p_strFvsVariant + "' AS FVS_VARIANT," +
+                        "'RXCYCLE' AS COLUMN_NAME, rxcycle_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR, 'NA' AS NF_IN_COND_TABLE_ERROR," +
+                        "'NA' AS NF_IN_PLOT_TABLE_ERROR, rxcycle_value_notvalid_count.value_notvalid_count AS VALUE_ERROR," +
+                        "'NA' AS NF_IN_RX_TABLE_ERROR,'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR, 'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
+                        "'NA' AS NF_IN_TREE_TABLE_ERROR,'NA' AS TREE_SPECIES_CHANGE_WARNING, current_timestamp " +
+                        "FROM " + p_strFvsTreeTableName + " fvs," +
+                        "(SELECT COUNT(*) AS NOVALUE_COUNT FROM tmpCutTree WHERE RXCYCLE IS NULL OR LENGTH(TRIM(RXCYCLE))= 0) rxcycle_no_value_count, " +
+                        "(SELECT COUNT(*) AS VALUE_NOTVALID_COUNT FROM tmpCutTree a WHERE a.RXCYCLE IS NULL OR a.RXCYCLE NOT IN('1', '2', '3', '4')) rxcycle_value_notvalid_count " +
+                        "UNION " +
+                        "SELECT DISTINCT '003' AS idx,'" + p_strRxPackage + "' AS RXPACKAGE,'" + p_strFvsVariant + "' AS FVS_VARIANT," + 
+                        "'RXPACKAGE' AS COLUMN_NAME, rxpackage_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR,'NA' AS NF_IN_COND_TABLE_ERROR, " +
+                        "'NA' AS NF_IN_PLOT_TABLE_ERROR,'NA' AS VALUE_ERROR,'NA' AS NF_IN_RX_TABLE_ERROR,'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR, " +
+                        "notfound_in_rxpackage_table.NF_IN_RXPACKAGE_TABLE_ERROR, 'NA' AS NF_IN_TREE_TABLE_ERROR,'NA' AS TREE_SPECIES_CHANGE_WARNING, " +
+                        "current_timestamp FROM " + p_strFvsTreeTableName + " fvs," +
+                        "(SELECT COUNT(*) AS NOVALUE_COUNT FROM tmpCutTree WHERE RXPACKAGE IS NULL OR LENGTH(TRIM(RXPACKAGE))= 0) rxpackage_no_value_count, " +
+                        "(SELECT COUNT(*) AS NF_IN_RXPACKAGE_TABLE_ERROR FROM tmpCutTree fvs WHERE fvs.RXPACKAGE IS NOT NULL AND LENGTH(TRIM(fvs.RXPACKAGE)) > 0 " +
+                        "AND NOT EXISTS(SELECT rxp.rxpackage FROM rxpackage_work_table2 rxp WHERE fvs.rxpackage = rxp.rxpackage)) notfound_in_rxpackage_table) ";
+
                 return sqlArray;
             }
 
