@@ -4252,14 +4252,6 @@ namespace FIA_Biosum_Manager
 
             try
             {
-                if (this.m_ado.m_OleDbConnection.State == System.Data.ConnectionState.Open)
-                    this.m_ado.m_OleDbConnection.Close();
-
-                while (this.m_ado.m_OleDbConnection.State != System.Data.ConnectionState.Closed)
-                {
-                    System.Threading.Thread.Sleep(1000);
-                }
-
                 intCount = (int)frmMain.g_oDelegate.GetListViewItemsPropertyValue(oLv, "Count", false);
                 for (x = 0; x <= intCount - 1; x++)
                 {
@@ -4336,6 +4328,12 @@ namespace FIA_Biosum_Manager
                             strPackage = strPackage.Trim();
 
                             //find the package item in the package collection
+                            if (this.m_oRxPackageItem_Collection == null)
+                            {
+                                //load rxpackage properties
+                                m_oRxPackageItem_Collection = new RxPackageItem_Collection();
+                                this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_oQueries, this.m_oRxPackageItem_Collection);
+                            }
                             for (y = 0; y <= this.m_oRxPackageItem_Collection.Count - 1; y++)
                             {
                                 if (this.m_oRxPackageItem_Collection.Item(y).RxPackageId.Trim() == strPackage.Trim())
@@ -4370,80 +4368,14 @@ namespace FIA_Biosum_Manager
                             // With the SQLite rewrite, we run the queries in a temp database instead of PostAudit.accdb
                             // The permanent audit tables are in the new SQLite audits.db
                             strAuditDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile;
-                            string strTempAccdb = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
-                            m_dao.CreateMDB(strTempAccdb);
+                            string strTempDb = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
+                            SQLite.CreateDbFile(strTempDb);
                             string strTempCutListTable = "tmpCutTree";
+                            int intTreeTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("TREE");
+                            int intCondTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("CONDITION");
+                            int intPlotTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("PLOT");
 
-                                int intTreeTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("TREE");
-                                int intCondTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("CONDITION");
-                                int intPlotTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("PLOT");
-
-                                if (System.IO.File.Exists(strTempAccdb))
-                                {
-                                    oAdo.OpenConnection(oAdo.getMDBConnString(strTempAccdb, "", ""));
-                                    if (oAdo.TableExist(oAdo.m_OleDbConnection, m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE]))
-                                    {
-                                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE]);
-                                    }
-                                    if (oAdo.TableExist(oAdo.m_OleDbConnection, m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE]))
-                                    {
-                                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE]);
-                                    }
-                                    if (oAdo.TableExist(oAdo.m_OleDbConnection, m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE]))
-                                    {
-                                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE]);
-                                    }
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, strTempCutListTable))
-                                {
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + strTempCutListTable);
-                                }
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, strRxPackageWorktable))
-                                {
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, $@"DROP TABLE {strRxPackageWorktable}");
-                                }
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, strRxPackageWorktable2))
-                                {
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, $@"DROP TABLE {strRxPackageWorktable2}");
-                                }
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, strRxWorktable))
-                                {
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, $@"DROP TABLE {strRxWorktable}");
-                                }
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "fvs_tree_unique_biosum_plot_id_work_table"))
-                                {
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE fvs_tree_unique_biosum_plot_id_work_table");
-                                }
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "fvs_tree_biosum_plot_id_work_table"))
-                                {
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE fvs_tree_biosum_plot_id_work_table");
-                                }
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "cond_biosum_cond_id_work_table"))
-                                {
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE cond_biosum_cond_id_work_table");
-                                }
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "plot_biosum_plot_id_work_table"))
-                                {
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE plot_biosum_plot_id_work_table");
-                                }
-                                if (oAdo.TableExist(oAdo.m_OleDbConnection, "tree_fvs_tree_id_work_table"))
-                                {
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE tree_fvs_tree_id_work_table");
-                                }
-                                oAdo.CloseConnection(oAdo.m_OleDbConnection);
-                                }
-
-                                dao_data_access oDao = new dao_data_access();
-
-                            ODBCMgr odbcmgr = new ODBCMgr();
-                            // Set up an ODBC DSN for the AUDITS.db
-                            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName))
-                            {
-                                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName);
-                            }
-                            odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName,
-                                strAuditDbFile);
                             // Prepare tmpCutTree for next run
-                            //m_dbConn = SQLite.GetConnectionString(m_strFvsTreeDb);                            
                             string strAuditConn = SQLite.GetConnectionString(strAuditDbFile);
                             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strAuditConn))
                             {
@@ -4564,65 +4496,72 @@ namespace FIA_Biosum_Manager
                                 }
                             }
 
-                            // Create audit table links to SQLite tables; The queries to update these tables have dependencies on Access tables
-                            oDao.CreateSQLiteTableLink(strTempAccdb, strTempCutListTable, strTempCutListTable,
-                                ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
-                            oDao.CreateSQLiteTableLink(strTempAccdb, "audit_Post_SUMMARY", "audit_Post_SUMMARY",
-                                ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
-                            oDao.CreateSQLiteTableLink(strTempAccdb, "audit_Post_NOTFOUND_ERROR", "audit_Post_NOTFOUND_ERROR",
-                                ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
-                            oDao.CreateSQLiteTableLink(strTempAccdb, "audit_Post_SPCDCHANGE_WARNING", "audit_Post_SPCDCHANGE_WARNING",
-                                ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
-                            oDao.CreateSQLiteTableLink(strTempAccdb, strRxPackageWorktable, strRxPackageWorktable,
-                                ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
-
-                            //tree table link
-                            oDao.CreateTableLink(strTempAccdb, m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE],
-                                                      m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.PATH].Trim() + "\\" +
-                                                       m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.MDBFILE].Trim(),
-                                                      m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE], true);
-                            //condition table link
-                            oDao.CreateTableLink(strTempAccdb, m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE],
-                                                      m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.PATH].Trim() + "\\" +
-                                                       m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.MDBFILE].Trim(),
-                                                      m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE], true);
-                            //plot table link
-                            oDao.CreateTableLink(strTempAccdb, m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE],
-                                                      m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.PATH].Trim() + "\\" +
-                                                       m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.MDBFILE].Trim(),
-                                                      m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE], true);
-
-                            oDao.m_DaoWorkspace.Close();
-                            oDao = null;
-                            System.Threading.Thread.Sleep(2000);
-
-                                oAdo.OpenConnection(oAdo.getMDBConnString(strTempAccdb, "", ""));
-
                                 uc_filesize_monitor1.BeginMonitoringFile(strAuditDbFile, 2000000000, "2GB");
                                 uc_filesize_monitor1.Information = "BIOSUM DB file containing FVS OUTPUT PRE/POST AUDIT tables";
-
 
                                 m_intProgressStepCurrentCount++;
                                 UpdateTherm(m_frmTherm.progressBar1,
                                             m_intProgressStepCurrentCount,
                                             m_intProgressStepTotalCount);
 
-                            // audit_Post_SUMMARY
-                            string[] sqlArray = Queries.FVS.FVSOutputTable_AuditPostSummaryFVS(
-                                    strRxWorktable,
-                                    strRxPackageWorktable2,
-                                    m_oQueries.m_oDataSource.m_strDataSource[intTreeTable,Datasource.TABLE],
-                                    m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE],
-                                    m_oQueries.m_oDataSource.m_strDataSource[intCondTable,Datasource.TABLE],
-                                    "audit_Post_SUMMARY", strTempCutListTable,
-                                    strPackage, strVariant, strRxPackageWorktable);
+                                string strTempConn = SQLite.GetConnectionString(strTempDb);
+                            string[] sqlArray = null;
+                                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strTempConn))
+                                {
+                                    conn.Open();
+                                    if (SQLite.TableExist(conn, strRxPackageWorktable2))
+                                    {
+                                        SQLite.SqlNonQuery(conn, $@"DROP TABLE {strRxPackageWorktable2}");
+                                    }
+                                    if (SQLite.TableExist(conn, strRxWorktable))
+                                    {
+                                        SQLite.SqlNonQuery(conn, $@"DROP TABLE {strRxWorktable}");
+                                    }
+                                    if (SQLite.TableExist(conn, "fvs_tree_unique_biosum_plot_id_work_table"))
+                                    {
+                                        SQLite.SqlNonQuery(conn, "DROP TABLE fvs_tree_unique_biosum_plot_id_work_table");
+                                    }
+                                    if (SQLite.TableExist(conn, "fvs_tree_biosum_plot_id_work_table"))
+                                    {
+                                        SQLite.SqlNonQuery(conn, "DROP TABLE fvs_tree_biosum_plot_id_work_table");
+                                    }
+                                    if (SQLite.TableExist(conn, "cond_biosum_cond_id_work_table"))
+                                    {
+                                        SQLite.SqlNonQuery(conn, "DROP TABLE cond_biosum_cond_id_work_table");
+                                    }
+                                    if (SQLite.TableExist(conn, "plot_biosum_plot_id_work_table"))
+                                    {
+                                        SQLite.SqlNonQuery(conn, "DROP TABLE plot_biosum_plot_id_work_table");
+                                    }
+                                    if (SQLite.TableExist(conn, "tree_fvs_tree_id_work_table"))
+                                    {
+                                        SQLite.SqlNonQuery(conn, "DROP TABLE tree_fvs_tree_id_work_table");
+                                    }
+                                    // Attach helper databases
+                                string strMasterDb = m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree);
+                                SQLite.SqlNonQuery(conn, $@"ATTACH DATABASE '{strMasterDb}' AS master");
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                SQLite.SqlNonQuery(conn, $@"ATTACH DATABASE '{strAuditDbFile}' AS audit");
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+
+                                // audit_Post_SUMMARY
+                                sqlArray = Queries.FVS.FVSOutputTable_AuditPostSummaryFVS(
+                                strRxWorktable,
+                                strRxPackageWorktable2,
+                                m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE],
+                                m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE],
+                                m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE],
+                                "audit_Post_SUMMARY", strTempCutListTable,
+                                strPackage, strVariant, strRxPackageWorktable);
 
                                 for (y = 0; y <= sqlArray.Length - 1; y++)
                                 {
                                     strSQL = sqlArray[y];
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
+                                    SQLite.SqlNonQuery(conn, strSQL);
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                                     m_intProgressStepCurrentCount++;
@@ -4631,6 +4570,8 @@ namespace FIA_Biosum_Manager
                                                 m_intProgressStepTotalCount);
 
                                 }
+                            }
+
 
                             int intRowCount = 0;
                             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strAuditConn))
