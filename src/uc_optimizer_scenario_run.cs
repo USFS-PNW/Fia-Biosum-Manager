@@ -7517,7 +7517,14 @@ namespace FIA_Biosum_Manager
             m_ado.SqlNonQuery(this.m_TempMDBFileConn, m_strSQL);
             FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
-            //CompactMDB(m_strFVSPreValidComboDbPathAndFile, m_TempMDBFileConn);
+            // Add indexes to validcombos_fvspre and validcombos_fvspost
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_dataMgr.GetConnectionString(m_strFVSPrePostValidComboDbPathAndFile)))
+            {
+                conn.Open();
+
+                m_dataMgr.AddIndex(conn, "validcombos_fvspost", "idx_validcombos_fvspost", "biosum_cond_id, rxpackage, rx, rxcycle");
+                m_dataMgr.AddIndex(conn, "validcombos_fvspre", "idx_validcombos_fvspre", "biosum_cond_id, rxpackage, rx, rxcycle");
+            }
 
 
             string strWhere = "";
@@ -7541,10 +7548,13 @@ namespace FIA_Biosum_Manager
                     strTable = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_fvs_prepost_variables_effective1.m_oSavVar.TableName(ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_fvs_prepost_variables_effective1.m_oSavVar.m_strPostVarArray[x]);
                     if (strTable.Trim().Length > 0)
                     {
-                        m_strSQL = $@"UPDATE validcombos_fvspost SET variable{Convert.ToString(x + 1).Trim()}_yn='Y' 
-                                    where EXISTS (SELECT biosum_cond_id, rxpackage, rx, rxcycle FROM {strTable} b
-                                    WHERE validcombos_fvspost.biosum_cond_id = b.biosum_cond_id AND validcombos_fvspost.rxpackage = b.rxpackage 
-                                    AND validcombos_fvspost.rx = b.rx AND validcombos_fvspost.rxcycle = b.rxcycle)";
+                        m_strSQL = "WITH matched AS (" +
+                            "SELECT v.biosum_cond_id, v.rxpackage, v.rx, v.rxcycle FROM validcombos_fvspost AS v " +
+                            "INNER JOIN " + strTable + " AS b " +
+                            "ON v.biosum_cond_id = b.biosum_cond_id AND v.rxpackage = b.rxpackage " +
+                            "AND v.rx = b.rx AND v.rxcycle = b.rxcycle) " +
+                            "UPDATE validcombos_fvspost SET variable" + Convert.ToString(x + 1).Trim() + "_yn = 'Y' " +
+                            "WHERE (biosum_cond_id, rxpackage, rx, rxcycle) IN (SELECT biosum_cond_id, rxpackage, rx, rxcycle FROM matched)";
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
                         m_dataMgr.SqlNonQuery(conn, m_strSQL);
@@ -7561,10 +7571,13 @@ namespace FIA_Biosum_Manager
                     strTable = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_fvs_prepost_variables_effective1.m_oSavVar.TableName(ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_fvs_prepost_variables_effective1.m_oSavVar.m_strPreVarArray[x]);
                     if (strTable.Trim().Length > 0)
                     {
-                        m_strSQL = $@"UPDATE validcombos_fvspre SET variable{Convert.ToString(x + 1).Trim()}_yn='Y' 
-                                    where EXISTS (SELECT biosum_cond_id, rxpackage, rx, rxcycle FROM {strTable} b
-                                    WHERE validcombos_fvspre.biosum_cond_id = b.biosum_cond_id AND validcombos_fvspre.rxpackage = b.rxpackage 
-                                    AND validcombos_fvspre.rx = b.rx AND validcombos_fvspre.rxcycle = b.rxcycle)";
+                        m_strSQL = "WITH matched AS ( " +
+                            "SELECT v.biosum_cond_id, v.rxpackage, v.rx, v.rxcycle FROM validcombos_fvspre AS v " +
+                            "INNER JOIN " + strTable + " AS b " +
+                            "ON v.biosum_cond_id = b.biosum_cond_id AND v.rxpackage = b.rxpackage " +
+                            "AND v.rx = b.rx AND v.rxcycle = b.rxcycle) " +
+                            "UPDATE validcombos_fvspre SET variable" + Convert.ToString(x + 1).Trim() + "_yn = 'Y' " +
+                            "WHERE (biosum_cond_id, rxpackage, rx, rxcycle) IN (SELECT biosum_cond_id, rxpackage, rx, rxcycle FROM matched)";
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
                         m_dataMgr.SqlNonQuery(conn, m_strSQL);
@@ -8541,12 +8554,29 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "Selected", true);
             frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "focused", true);
 
+            // Add indexes to weighted tables for performance
+            string strWeightedVariablesDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(strWeightedVariablesDb)))
+            {
+                conn.Open();
+
+                string[] arrTables = p_dataMgr.getTableNames(conn);
+                foreach (string table in arrTables)
+                {
+                    if (!p_dataMgr.IndexExist(conn, "idx_" + table))
+                    {
+                        p_dataMgr.AddIndex(conn, table, "idx_" + table, "biosum_cond_id, rxpackage, rx, rxcycle");
+                    }
+                }
+
+            }
+
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strSystemResultsDbPathAndFile)))
             {
                 conn.Open();
 
                 //attach FVS prepost weighted database
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile + "' AS fvs_weighted";
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + strWeightedVariablesDb + "' AS fvs_weighted";
                 p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
 
                 //attach FVS prepost
@@ -8575,16 +8605,6 @@ namespace FIA_Biosum_Manager
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
-                //insert net revenue per acre into the effective table
-                //p_dataMgr.m_strSQL = "UPDATE " + strEffectiveTableName + " AS e " +
-                //    "SET nr_dpa = CASE WHEN p.max_nr_dpa IS NOT NULL THEN p.max_nr_dpa ELSE 0 END " +
-                //    "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName + " AS p " +
-                //    "WHERE e.biosum_cond_id = p.biosum_cond_id AND " +
-                //    "e.rxpackage = p.rxpackage AND " +
-                //    "e.rx = p.rx AND e.rxcycle = p.rxcycle";
-                //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                //    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-                //p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
 
                 //insert revenue filter field into the effective table
                 if (this.m_oOptimizationVariable.bUseFilter == true)
@@ -8607,6 +8627,7 @@ namespace FIA_Biosum_Manager
                                 "SET " + this.m_oOptimizationVariable.strRevenueAttribute + " = CASE WHEN p." + strDatabase[1] + " IS NOT NULL THEN p." + strDatabase[1] + " ELSE 0 END " +
                                 "FROM " + strDatabase[0] + " AS p " +
                                 "WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
+
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                             p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
@@ -8631,6 +8652,7 @@ namespace FIA_Biosum_Manager
 
                         strPreTable = oFvsVar.TableName(oFvsVar.m_strPreVarArray[x].Trim());
                         strPreColumn = oFvsVar.ColumnName(oFvsVar.m_strPreVarArray[x].Trim());
+                        
                     }
                     if (oFvsVar.m_strPostVarArray[x].Trim().ToUpper() != "NOT DEFINED")
                     {
