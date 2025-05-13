@@ -2226,39 +2226,24 @@ namespace FIA_Biosum_Manager
                     UNION SELECT rxpackage,simyear4_fvscycle AS rxcycle, simyear4_rx as RX FROM {p_strRxPackageTable}";
                 return sqlArray;
             }
-
             static public string[] FVSOutputTable_AuditPostSummaryFVS(string p_strRxTable,string p_strRxPackageTable,string p_strTreeTable,
                 string p_strPlotTable,string p_strCondTable, string p_strPostAuditSummaryTable,string p_strFvsTreeTableName,
                 string p_strRxPackage, string p_strFvsVariant, string p_strRxPackageWorktable)
             {
                 string[] sqlArray = new string[12];
-                //sqlArray[0] = $@"SELECT * INTO {p_strRxPackageTable} FROM (SELECT DISTINCT RXPACKAGE AS RXPACKAGE FROM {p_strRxPackageWorktable})";
                 sqlArray[0] = $@"CREATE TABLE {p_strRxPackageTable} AS SELECT DISTINCT RXPACKAGE AS RXPACKAGE FROM {p_strRxPackageWorktable}";
-                //sqlArray[1] = $@"SELECT * INTO {p_strRxTable} FROM (SELECT DISTINCT RX AS RX FROM {p_strRxPackageWorktable})";
                 sqlArray[1] = $@"CREATE TABLE {p_strRxTable} AS SELECT DISTINCT RX AS RX FROM {p_strRxPackageWorktable}";
 
-                //sqlArray[2] = "SELECT BIOSUM_COND_ID INTO cond_biosum_cond_id_work_table FROM " + p_strCondTable;
                 sqlArray[2] = "CREATE TABLE cond_biosum_cond_id_work_table AS SELECT BIOSUM_COND_ID FROM " + p_strCondTable;
-                //sqlArray[3] = "ALTER TABLE cond_biosum_cond_id_work_table ALTER COLUMN biosum_cond_id CHAR(25) PRIMARY KEY";
                 sqlArray[3] = "CREATE UNIQUE INDEX cond_biosum_cond_id_work_table_idx ON cond_biosum_cond_id_work_table(biosum_cond_id)";
 
-                //sqlArray[4] = "SELECT BIOSUM_PLOT_ID INTO plot_biosum_plot_id_work_table FROM " + p_strPlotTable;
                 sqlArray[4] = "CREATE TABLE plot_biosum_plot_id_work_table AS SELECT BIOSUM_PLOT_ID FROM " + p_strPlotTable;
-                //sqlArray[5] = "ALTER TABLE plot_biosum_plot_id_work_table ALTER COLUMN biosum_plot_id CHAR(24) PRIMARY KEY";
                 sqlArray[5] = "CREATE UNIQUE INDEX plot_biosum_plot_id_work_table_idx ON plot_biosum_plot_id_work_table(biosum_plot_id)";
 
-                //sqlArray[6] = "SELECT biosum_cond_id, SPCD, FVS_TREE_ID, DIA INTO tree_fvs_tree_id_work_table FROM " + p_strTreeTable + " WHERE FVS_TREE_ID IS NOT NULL AND LEN(TRIM(FVS_TREE_ID)) > 0";
-                sqlArray[6] = "CREATE TABLE tree_fvs_tree_id_work_table AS SELECT biosum_cond_id, SPCD, FVS_TREE_ID, DIA FROM " + 
+                sqlArray[6] = "CREATE TABLE tree_fvs_tree_id_work_table AS SELECT biosum_cond_id, SPCD, TRIM(FVS_TREE_ID) AS FVS_TREE_ID, DIA FROM " + 
                     p_strTreeTable + " WHERE FVS_TREE_ID IS NOT NULL AND LENGTH(TRIM(FVS_TREE_ID)) > 0";
-                //sqlArray[7] = "ALTER TABLE tree_fvs_tree_id_work_table ADD PRIMARY KEY (biosum_cond_id,fvs_tree_id);";
                 sqlArray[7] = "CREATE UNIQUE INDEX tree_fvs_tree_id_work_table_idx ON tree_fvs_tree_id_work_table(biosum_cond_id,fvs_tree_id)";
 
-                //sqlArray[8] = "SELECT DISTINCT " +
-                //                "IIF(BIOSUM_COND_ID IS NULL OR LEN(TRIM(BIOSUM_COND_ID)) = 0,''," +
-                //                "IIF(LEN(TRIM(BIOSUM_COND_ID)) >= 24,MID(BIOSUM_COND_ID,1,24),BIOSUM_COND_ID)) AS BIOSUM_PLOT_ID," +
-                //                "BIOSUM_COND_ID " +
-                //              "INTO fvs_tree_unique_biosum_plot_id_work_table " +
-                //              "FROM " + p_strFvsTreeTableName;
                 sqlArray[8] = "CREATE TABLE fvs_tree_unique_biosum_plot_id_work_table AS SELECT DISTINCT CASE WHEN BIOSUM_COND_ID IS NULL OR LENGTH(TRIM(BIOSUM_COND_ID)) = 0 THEN '' " + 
                     "WHEN LENGTH(TRIM(BIOSUM_COND_ID)) >= 24 THEN SUBSTR(BIOSUM_COND_ID,1,24) ELSE BIOSUM_COND_ID END AS BIOSUM_PLOT_ID, " +
                     "BIOSUM_COND_ID FROM " + p_strFvsTreeTableName;
@@ -2268,310 +2253,303 @@ namespace FIA_Biosum_Manager
                                 "RXPACKAGE CHAR(3), " +
                                 "biosum_plot_id CHAR(24), " +
                                 "biosum_cond_id CHAR(25)) ";
-                //sqlArray[10] = "INSERT INTO fvs_tree_biosum_plot_id_work_table " +
-                //                "SELECT ID," +
-                //                "'" + p_strRxPackage + "' AS RXPACKAGE," +
-                //                "IIF(BIOSUM_COND_ID IS NULL OR LEN(TRIM(BIOSUM_COND_ID)) = 0,''," +
-                //                "IIF(LEN(TRIM(BIOSUM_COND_ID)) >= 24,MID(BIOSUM_COND_ID,1,24),BIOSUM_COND_ID)) AS BIOSUM_PLOT_ID," +
-                //                "BIOSUM_COND_ID FROM " + p_strFvsTreeTableName;
-                //                
                 sqlArray[10] = $@"INSERT INTO fvs_tree_biosum_plot_id_work_table SELECT ID,'{p_strRxPackage}' AS RXPACKAGE,
                     CASE WHEN BIOSUM_COND_ID IS NULL OR LENGTH(TRIM(BIOSUM_COND_ID)) = 0 THEN '' WHEN LENGTH(TRIM(BIOSUM_COND_ID)) >= 24 THEN SUBSTR(BIOSUM_COND_ID,1,24) ELSE BIOSUM_COND_ID END
                     AS BIOSUM_PLOT_ID,BIOSUM_COND_ID FROM {p_strFvsTreeTableName}";
 
-                sqlArray[11] =
-                    "INSERT INTO  " + p_strPostAuditSummaryTable + " " +
-                    "SELECT * FROM " +
-                    "(SELECT DISTINCT " +
-                        "'001' AS idx," +
-                        "'" + p_strRxPackage + "' AS RXPACKAGE," +
-                        "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-                        "'BIOSUM_COND_ID' AS COLUMN_NAME," +
-                        "biosum_cond_id_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-                        "biosum_cond_id_not_found_in_cond_table_count.NOT_FOUND_IN_COND_TABLE_COUNT AS NF_IN_COND_TABLE_ERROR," +
-                        "biosum_cond_id_not_found_in_plot_table_count.NOT_FOUND_IN_PLOT_TABLE_COUNT AS NF_IN_PLOT_TABLE_ERROR," +
-                        "'NA'  AS VALUE_ERROR," +
-                        "'NA' AS NF_IN_RX_TABLE_ERROR," +
-                        "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-                        "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-                        "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-                        "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-                     "FROM fvs_tree_unique_biosum_plot_id_work_table fvs," +
-                        "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM fvs_tree_unique_biosum_plot_id_work_table " +
-                         "WHERE BIOSUM_COND_ID IS NULL OR LEN(TRIM(BIOSUM_COND_ID))=0) biosum_cond_id_no_value_count," +
-                        "(SELECT CSTR(COUNT(*)) AS NOT_FOUND_IN_COND_TABLE_COUNT FROM fvs_tree_unique_biosum_plot_id_work_table a " +
-                         "WHERE a.BIOSUM_COND_ID IS NOT NULL AND " +
-                               "LEN(TRIM(a.BIOSUM_COND_ID)) >  0 AND " +
-                               "NOT EXISTS (SELECT b.BIOSUM_COND_ID FROM cond_biosum_cond_id_work_table b " +
-                                           "WHERE a.BIOSUM_COND_ID = b.BIOSUM_COND_ID)) biosum_cond_id_not_found_in_cond_table_count," +
-                        "(SELECT CSTR(COUNT(*)) AS NOT_FOUND_IN_PLOT_TABLE_COUNT FROM fvs_tree_unique_biosum_plot_id_work_table a " +
-                         "WHERE a.BIOSUM_COND_ID IS NOT NULL AND LEN(TRIM(a.BIOSUM_COND_ID)) >  0 AND " +
-                               "NOT EXISTS (SELECT b.BIOSUM_PLOT_ID FROM plot_biosum_plot_id_work_table b " +
-                                           "WHERE b.BIOSUM_PLOT_ID = a.BIOSUM_PLOT_ID)) biosum_cond_id_not_found_in_plot_table_count " +
-                "UNION " +
-                "SELECT DISTINCT " +
-                   "'002' AS idx," +
-                    "'" + p_strRxPackage + "' AS RXPACKAGE," +
-                    "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-                   "'RXCYCLE' AS COLUMN_NAME," +
-                   "rxcycle_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-                   "'NA' AS NF_IN_COND_TABLE_ERROR," +
-                   "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-                   "rxcycle_value_notvalid_count.value_notvalid_count AS VALUE_ERROR," +
-                   "'NA' AS NF_IN_RX_TABLE_ERROR," +
-                   "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-                   "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-                   "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-                   "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-                "FROM " + p_strFvsTreeTableName + " fvs," +
-                   "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-                    "WHERE RXCYCLE IS NULL OR LEN(TRIM(RXCYCLE))=0) rxcycle_no_value_count," +
-                   "(SELECT CSTR(COUNT(*)) AS VALUE_NOTVALID_COUNT FROM " + p_strFvsTreeTableName + " a " +
-                    "WHERE a.RXCYCLE IS NULL OR a.RXCYCLE NOT IN ('1','2','3','4')) rxcycle_value_notvalid_count " +
-                     "UNION " +
-                     "SELECT DISTINCT " +
-                        "'003' AS idx," +
-						"'" + p_strRxPackage + "' AS RXPACKAGE," +
-                        "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-                        "'RXPACKAGE' AS COLUMN_NAME," +
-                        "rxpackage_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-                        "'NA' AS NF_IN_COND_TABLE_ERROR," +
-                        "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-                        "'NA' AS  VALUE_ERROR," +
-                        "'NA' AS NF_IN_RX_TABLE_ERROR," +
-                        "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-                        "notfound_in_rxpackage_table.NF_IN_RXPACKAGE_TABLE_ERROR," +
-                        "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-                        "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-                     "FROM " + p_strFvsTreeTableName + " fvs," +
-                        "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-                         "WHERE RXPACKAGE IS NULL OR LEN(TRIM(RXPACKAGE))=0) rxpackage_no_value_count," +
-                        "(SELECT CSTR(COUNT(*)) AS NF_IN_RXPACKAGE_TABLE_ERROR FROM " + p_strFvsTreeTableName + " fvs " +
-                         "WHERE fvs.RXPACKAGE IS NOT NULL AND LEN(TRIM(fvs.RXPACKAGE)) > 0 AND " +
-                               "NOT EXISTS (SELECT rxp.rxpackage FROM " + p_strRxPackageTable + " rxp " +
-                                           "WHERE fvs.rxpackage = rxp.rxpackage)) notfound_in_rxpackage_table " +
-                     "UNION " +
-                     "SELECT DISTINCT " +
-                        "'004' AS idx," +
-                        "'" + p_strRxPackage + "' AS RXPACKAGE," +
-                        "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-                        "'RX' AS COLUMN_NAME," +
-                        "rx_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-                        "'NA' AS NF_IN_COND_TABLE_ERROR," +
-                        "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-                        "'NA'  AS VALUE_ERROR," +
-                        "rx_not_found_in_rx_table_count.NOT_FOUND_IN_RX_TABLE_COUNT  AS NF_IN_RX_TABLE_ERROR," +
-                        "not_found_rxpackage_rxcycle_rx_combo_count.NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-                        "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-                        "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-                        "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-                     "FROM " + p_strFvsTreeTableName + " fvs," +
-                        "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-                         "WHERE RX IS NULL OR LEN(TRIM(RX))=0) rx_no_value_count," +
-                        "(SELECT CSTR(COUNT(*)) AS NOT_FOUND_IN_RX_TABLE_COUNT FROM " + p_strFvsTreeTableName + " a " +
-                         "WHERE a.RX IS NOT NULL AND LEN(TRIM(a.RX)) >  0 AND " +
-                               "NOT EXISTS (SELECT b.RX FROM " + p_strRxTable + " b " +
-                                           "WHERE a.RX = b.RX)) rx_not_found_in_rx_table_count," +
-                        "(SELECT CSTR(COUNT(*)) AS NF_RXPACKAGE_RXCYCLE_RX_ERROR FROM " + p_strFvsTreeTableName + " fvs " +
-                         "WHERE fvs.RX IS NOT NULL AND LEN(TRIM(fvs.RX)) >  0 AND " +
-                               "NOT EXISTS (SELECT rxp.RX FROM rxpackage_work_table rxp " +
-                                           "WHERE trim(fvs.rxpackage) = trim(rxp.rxpackage) AND " +
-                                                 "TRIM(fvs.rxcycle)=TRIM(rxp.rxcycle) AND " +
-                                                 "TRIM(fvs.rx)=TRIM(rxp.rx))) not_found_rxpackage_rxcycle_rx_combo_count " +
-                "UNION " +
-                "SELECT DISTINCT " +
-                   "'005' AS idx," +
-                    "'" + p_strRxPackage + "' AS RXPACKAGE," +
-                    "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-                   "'RXYEAR' AS COLUMN_NAME," +
-                   "rxyear_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-                   "'NA' AS NF_IN_COND_TABLE_ERROR," +
-                   "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-                   "'NA' AS  VALUE_ERROR," +
-                   "'NA' AS NF_IN_RX_TABLE_ERROR," +
-                   "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-                   "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-                   "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-                   "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-                "FROM " + p_strFvsTreeTableName + " fvs," +
-                   "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-                    "WHERE RXYEAR IS NULL OR LEN(TRIM(RXYEAR))=0) rxyear_no_value_count " +
-                     "UNION " +
-                     "SELECT DISTINCT " +
-                        "'006' AS idx," +
-                        "'" + p_strRxPackage + "' AS RXPACKAGE," +
-                        "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-                        "'TPA' AS COLUMN_NAME," +
-                        "tpa_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-                        "'NA' AS NF_IN_COND_TABLE_ERROR," +
-                        "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-                        "'NA' AS  VALUE_ERROR," +
-                        "'NA' AS NF_IN_RX_TABLE_ERROR," +
-                        "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-                        "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-                        "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-                        "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-                     "FROM " + p_strFvsTreeTableName + " fvs," +
-                        "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-                         "WHERE TPA IS NULL) tpa_no_value_count " +
-                     "UNION " +
-                     "SELECT DISTINCT " +
-                        "'007' AS idx," +
-                         "'" + p_strRxPackage + "' AS RXPACKAGE," +
-                        "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-                        "'VOLCFNET' AS COLUMN_NAME," +
-                        "volcfnet_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-                        "'NA' AS NF_IN_COND_TABLE_ERROR," +
-                        "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-                        "'NA' AS  VALUE_ERROR," +
-                        "'NA' AS NF_IN_RX_TABLE_ERROR," +
-                        "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-                        "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-                        "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-                        "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-                     "FROM " + p_strFvsTreeTableName + " fvs," +
-                        "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-                         "WHERE VOLCFNET IS NULL) volcfnet_no_value_count " +
-                "UNION " +
-                "SELECT DISTINCT " +
-                   "'008' AS idx," +
-                    "'" + p_strRxPackage + "' AS RXPACKAGE," +
-                   "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-                   "'VOLTSGRS' AS COLUMN_NAME," +
-                   "voltsgrs_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-                   "'NA' AS NF_IN_COND_TABLE_ERROR," +
-                   "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-                   "'NA' AS  VALUE_ERROR," +
-                   "'NA' AS NF_IN_RX_TABLE_ERROR," +
-                   "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-                   "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-                   "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-                   "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-                "FROM " + p_strFvsTreeTableName + " fvs," +
-                   "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-                    "WHERE VOLTSGRS IS NULL) voltsgrs_no_value_count " +
-                "UNION " +
-                "SELECT DISTINCT " +
-                   "'009' AS idx," +
-				   "'" + p_strRxPackage + "' AS RXPACKAGE," +
-                  "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-                   "'VOLCFGRS' AS COLUMN_NAME," +
-                   "volcfgrs_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-                   "'NA' AS NF_IN_COND_TABLE_ERROR," +
-                   "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-                   "'NA' AS  VALUE_ERROR," +
-                   "'NA' AS NF_IN_RX_TABLE_ERROR," +
-                   "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-                   "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-                   "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-                   "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-                "FROM " + p_strFvsTreeTableName + " fvs," +
-                    "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-                     "WHERE DBH IS NOT NULL AND DBH >= 5 AND VOLCFGRS IS NULL) volcfgrs_no_value_count " +
-                "UNION " +
-                "SELECT DISTINCT " +
-                   "'010' AS idx," +
-                   "'" + p_strRxPackage + "' AS RXPACKAGE," +
-                   "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-                   "'DRYBIOT' AS COLUMN_NAME," +
-                   "drybiot_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-                   "'NA' AS NF_IN_COND_TABLE_ERROR," +
-                   "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-                   "'NA' AS  VALUE_ERROR," +
-                   "'NA' AS NF_IN_RX_TABLE_ERROR," +
-                   "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-                   "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-                   "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-                   "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-                "FROM " + p_strFvsTreeTableName + " fvs," +
-                   "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-                    "WHERE DRYBIOT IS NULL) drybiot_no_value_count " +
-                "UNION " +
-                "SELECT DISTINCT " +
-                   "'011' AS idx," +
-                   "'" + p_strRxPackage + "' AS RXPACKAGE," +
-                   "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-                   "'DRYBIOM' AS COLUMN_NAME," +
-                   "drybiom_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-                   "'NA' AS NF_IN_COND_TABLE_ERROR," +
-                   "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-                   "'NA' AS  VALUE_ERROR," +
-                   "'NA' AS NF_IN_RX_TABLE_ERROR," +
-                   "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-                   "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-                   "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-                   "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-                "FROM " + p_strFvsTreeTableName + " fvs," +
-                   "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-                    "WHERE DBH IS NOT NULL AND DBH >= 5 AND DRYBIOM IS NULL) drybiom_no_value_count " +
-                "UNION " +
-                "SELECT DISTINCT " +
-                   "'012' AS idx," +
-                   "'" + p_strRxPackage + "' AS RXPACKAGE," +
-                   "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-                   "'FVS_TREE_ID' AS COLUMN_NAME," +
-                   "fvs_tree_id_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-                   "'NA' AS NF_IN_COND_TABLE_ERROR," +
-                   "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-                   "'NA' AS  VALUE_ERROR," +
-                   "'NA' AS NF_IN_RX_TABLE_ERROR," +
-                   "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-                   "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-                   "fvs_tree_id_not_found_in_tree_table_count.NOT_FOUND_IN_TREE_TABLE_COUNT AS NF_IN_TREE_TABLE_ERROR," +
-                   "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-                "FROM " + p_strFvsTreeTableName + " fvs," +
-                   "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-                    "WHERE FVS_TREE_ID IS NULL OR LEN(TRIM(FVS_TREE_ID))=0) fvs_tree_id_no_value_count," +
-                   "(SELECT CSTR(COUNT(*)) AS NOT_FOUND_IN_TREE_TABLE_COUNT FROM " + p_strFvsTreeTableName + " a " +
-                    "WHERE a.FvsCreatedTree_YN='N' AND  " +
-                          "a.FVS_TREE_ID IS NOT NULL AND " +
-                          "LEN(TRIM(a.FVS_TREE_ID)) >  0 AND " +
-                          "NOT EXISTS (SELECT b.FVS_TREE_ID FROM tree_fvs_tree_id_work_table b " +
-                              "WHERE a.fvs_tree_id = b.fvs_tree_id and a.biosum_cond_id = b.biosum_cond_id)) fvs_tree_id_not_found_in_tree_table_count " +
-                "UNION " +
-                "SELECT DISTINCT " +
-                   "'013' AS idx," +
-                    "'" + p_strRxPackage + "' AS RXPACKAGE," +
-                   "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-                   "'FVSCREATEDTREE_YN' AS COLUMN_NAME," +
-                   "fvscreatedtree_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-                   "'NA' AS NF_IN_COND_TABLE_ERROR," +
-                   "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-                   "'NA' AS  VALUE_ERROR," +
-                   "'NA' AS NF_IN_RX_TABLE_ERROR," +
-                   "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-                   "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-                   "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-                   "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-                "FROM " + p_strFvsTreeTableName + " fvs," +
-                   "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-                    "WHERE FvsCreatedTree_YN IS NULL OR LEN(TRIM(FvsCreatedTree_YN))=0) fvscreatedtree_no_value_count " +
-                "UNION " +
-                "SELECT DISTINCT " +
-                   "'014' AS idx," +
-                   "'" + p_strRxPackage + "' AS RXPACKAGE," +
-                   "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-                   "'FVS_SPECIES' AS COLUMN_NAME," +
-                   "fvs_species_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-                   "'NA' AS NF_IN_COND_TABLE_ERROR," +
-                   "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-                   "'NA' AS  VALUE_ERROR," +
-                   "'NA' AS NF_IN_RX_TABLE_ERROR," +
-                   "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-                   "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-                   "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-                  "fvs_species_change_count.TREE_SPECIES_CHANGE_WARNING " +
-                "FROM " + p_strFvsTreeTableName + " fvs," +
-                   "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-                    "WHERE FVS_SPECIES IS NULL OR LEN(TRIM(FVS_SPECIES))=0) fvs_species_no_value_count," +
-                   "(SELECT CSTR(COUNT(*)) AS TREE_SPECIES_CHANGE_WARNING " +
-                    "FROM " + p_strFvsTreeTableName + " a " +
-                    "INNER JOIN tree_fvs_tree_id_work_table b " +
-                    "ON a.fvs_tree_id = b.fvs_tree_id and a.biosum_cond_id = b.biosum_cond_id " +
-                    "WHERE a.FvsCreatedTree_YN='N' AND " +
-                          "a.FVS_TREE_ID IS NOT NULL AND " +
-                          "LEN(TRIM(a.FVS_TREE_ID)) >  0 AND " +
-                          "VAL(a.FVS_SPECIES) <> b.SPCD) fvs_species_change_count)";
+      //          sqlArray[11] =
+      //              "INSERT INTO  " + p_strPostAuditSummaryTable + " " +
+      //              "SELECT * FROM " +
+      //              "(SELECT DISTINCT " +
+      //                  "'001' AS idx," +
+      //                  "'" + p_strRxPackage + "' AS RXPACKAGE," +
+      //                  "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
+      //                  "'BIOSUM_COND_ID' AS COLUMN_NAME," +
+      //                  "biosum_cond_id_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+      //                  "biosum_cond_id_not_found_in_cond_table_count.NOT_FOUND_IN_COND_TABLE_COUNT AS NF_IN_COND_TABLE_ERROR," +
+      //                  "biosum_cond_id_not_found_in_plot_table_count.NOT_FOUND_IN_PLOT_TABLE_COUNT AS NF_IN_PLOT_TABLE_ERROR," +
+      //                  "'NA'  AS VALUE_ERROR," +
+      //                  "'NA' AS NF_IN_RX_TABLE_ERROR," +
+      //                  "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
+      //                  "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
+      //                  "'NA' AS NF_IN_TREE_TABLE_ERROR," +
+      //                  "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
+      //               "FROM fvs_tree_unique_biosum_plot_id_work_table fvs," +
+      //                  "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM fvs_tree_unique_biosum_plot_id_work_table " +
+      //                   "WHERE BIOSUM_COND_ID IS NULL OR LEN(TRIM(BIOSUM_COND_ID))=0) biosum_cond_id_no_value_count," +
+      //                  "(SELECT CSTR(COUNT(*)) AS NOT_FOUND_IN_COND_TABLE_COUNT FROM fvs_tree_unique_biosum_plot_id_work_table a " +
+      //                   "WHERE a.BIOSUM_COND_ID IS NOT NULL AND " +
+      //                         "LEN(TRIM(a.BIOSUM_COND_ID)) >  0 AND " +
+      //                         "NOT EXISTS (SELECT b.BIOSUM_COND_ID FROM cond_biosum_cond_id_work_table b " +
+      //                                     "WHERE a.BIOSUM_COND_ID = b.BIOSUM_COND_ID)) biosum_cond_id_not_found_in_cond_table_count," +
+      //                  "(SELECT CSTR(COUNT(*)) AS NOT_FOUND_IN_PLOT_TABLE_COUNT FROM fvs_tree_unique_biosum_plot_id_work_table a " +
+      //                   "WHERE a.BIOSUM_COND_ID IS NOT NULL AND LEN(TRIM(a.BIOSUM_COND_ID)) >  0 AND " +
+      //                         "NOT EXISTS (SELECT b.BIOSUM_PLOT_ID FROM plot_biosum_plot_id_work_table b " +
+      //                                     "WHERE b.BIOSUM_PLOT_ID = a.BIOSUM_PLOT_ID)) biosum_cond_id_not_found_in_plot_table_count " +
+      //          "UNION " +
+      //          "SELECT DISTINCT " +
+      //             "'002' AS idx," +
+      //              "'" + p_strRxPackage + "' AS RXPACKAGE," +
+      //              "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
+      //             "'RXCYCLE' AS COLUMN_NAME," +
+      //             "rxcycle_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+      //             "'NA' AS NF_IN_COND_TABLE_ERROR," +
+      //             "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
+      //             "rxcycle_value_notvalid_count.value_notvalid_count AS VALUE_ERROR," +
+      //             "'NA' AS NF_IN_RX_TABLE_ERROR," +
+      //             "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
+      //             "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
+      //             "'NA' AS NF_IN_TREE_TABLE_ERROR," +
+      //             "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
+      //          "FROM " + p_strFvsTreeTableName + " fvs," +
+      //             "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
+      //              "WHERE RXCYCLE IS NULL OR LEN(TRIM(RXCYCLE))=0) rxcycle_no_value_count," +
+      //             "(SELECT CSTR(COUNT(*)) AS VALUE_NOTVALID_COUNT FROM " + p_strFvsTreeTableName + " a " +
+      //              "WHERE a.RXCYCLE IS NULL OR a.RXCYCLE NOT IN ('1','2','3','4')) rxcycle_value_notvalid_count " +
+      //               "UNION " +
+      //               "SELECT DISTINCT " +
+      //                  "'003' AS idx," +
+						//"'" + p_strRxPackage + "' AS RXPACKAGE," +
+      //                  "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
+      //                  "'RXPACKAGE' AS COLUMN_NAME," +
+      //                  "rxpackage_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+      //                  "'NA' AS NF_IN_COND_TABLE_ERROR," +
+      //                  "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
+      //                  "'NA' AS  VALUE_ERROR," +
+      //                  "'NA' AS NF_IN_RX_TABLE_ERROR," +
+      //                  "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
+      //                  "notfound_in_rxpackage_table.NF_IN_RXPACKAGE_TABLE_ERROR," +
+      //                  "'NA' AS NF_IN_TREE_TABLE_ERROR," +
+      //                  "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
+      //               "FROM " + p_strFvsTreeTableName + " fvs," +
+      //                  "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
+      //                   "WHERE RXPACKAGE IS NULL OR LEN(TRIM(RXPACKAGE))=0) rxpackage_no_value_count," +
+      //                  "(SELECT CSTR(COUNT(*)) AS NF_IN_RXPACKAGE_TABLE_ERROR FROM " + p_strFvsTreeTableName + " fvs " +
+      //                   "WHERE fvs.RXPACKAGE IS NOT NULL AND LEN(TRIM(fvs.RXPACKAGE)) > 0 AND " +
+      //                         "NOT EXISTS (SELECT rxp.rxpackage FROM " + p_strRxPackageTable + " rxp " +
+      //                                     "WHERE fvs.rxpackage = rxp.rxpackage)) notfound_in_rxpackage_table " +
+      //               "UNION " +
+      //               "SELECT DISTINCT " +
+      //                  "'004' AS idx," +
+      //                  "'" + p_strRxPackage + "' AS RXPACKAGE," +
+      //                  "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
+      //                  "'RX' AS COLUMN_NAME," +
+      //                  "rx_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+      //                  "'NA' AS NF_IN_COND_TABLE_ERROR," +
+      //                  "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
+      //                  "'NA'  AS VALUE_ERROR," +
+      //                  "rx_not_found_in_rx_table_count.NOT_FOUND_IN_RX_TABLE_COUNT  AS NF_IN_RX_TABLE_ERROR," +
+      //                  "not_found_rxpackage_rxcycle_rx_combo_count.NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
+      //                  "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
+      //                  "'NA' AS NF_IN_TREE_TABLE_ERROR," +
+      //                  "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
+      //               "FROM " + p_strFvsTreeTableName + " fvs," +
+      //                  "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
+      //                   "WHERE RX IS NULL OR LEN(TRIM(RX))=0) rx_no_value_count," +
+      //                  "(SELECT CSTR(COUNT(*)) AS NOT_FOUND_IN_RX_TABLE_COUNT FROM " + p_strFvsTreeTableName + " a " +
+      //                   "WHERE a.RX IS NOT NULL AND LEN(TRIM(a.RX)) >  0 AND " +
+      //                         "NOT EXISTS (SELECT b.RX FROM " + p_strRxTable + " b " +
+      //                                     "WHERE a.RX = b.RX)) rx_not_found_in_rx_table_count," +
+      //                  "(SELECT CSTR(COUNT(*)) AS NF_RXPACKAGE_RXCYCLE_RX_ERROR FROM " + p_strFvsTreeTableName + " fvs " +
+      //                   "WHERE fvs.RX IS NOT NULL AND LEN(TRIM(fvs.RX)) >  0 AND " +
+      //                         "NOT EXISTS (SELECT rxp.RX FROM rxpackage_work_table rxp " +
+      //                                     "WHERE trim(fvs.rxpackage) = trim(rxp.rxpackage) AND " +
+      //                                           "TRIM(fvs.rxcycle)=TRIM(rxp.rxcycle) AND " +
+      //                                           "TRIM(fvs.rx)=TRIM(rxp.rx))) not_found_rxpackage_rxcycle_rx_combo_count " +
+      //          "UNION " +
+      //          "SELECT DISTINCT " +
+      //             "'005' AS idx," +
+      //              "'" + p_strRxPackage + "' AS RXPACKAGE," +
+      //              "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
+      //             "'RXYEAR' AS COLUMN_NAME," +
+      //             "rxyear_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+      //             "'NA' AS NF_IN_COND_TABLE_ERROR," +
+      //             "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
+      //             "'NA' AS  VALUE_ERROR," +
+      //             "'NA' AS NF_IN_RX_TABLE_ERROR," +
+      //             "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
+      //             "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
+      //             "'NA' AS NF_IN_TREE_TABLE_ERROR," +
+      //             "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
+      //          "FROM " + p_strFvsTreeTableName + " fvs," +
+      //             "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
+      //              "WHERE RXYEAR IS NULL OR LEN(TRIM(RXYEAR))=0) rxyear_no_value_count " +
+      //               "UNION " +
+      //               "SELECT DISTINCT " +
+      //                  "'006' AS idx," +
+      //                  "'" + p_strRxPackage + "' AS RXPACKAGE," +
+      //                  "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
+      //                  "'TPA' AS COLUMN_NAME," +
+      //                  "tpa_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+      //                  "'NA' AS NF_IN_COND_TABLE_ERROR," +
+      //                  "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
+      //                  "'NA' AS  VALUE_ERROR," +
+      //                  "'NA' AS NF_IN_RX_TABLE_ERROR," +
+      //                  "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
+      //                  "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
+      //                  "'NA' AS NF_IN_TREE_TABLE_ERROR," +
+      //                  "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
+      //               "FROM " + p_strFvsTreeTableName + " fvs," +
+      //                  "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
+      //                   "WHERE TPA IS NULL) tpa_no_value_count " +
+      //               "UNION " +
+      //               "SELECT DISTINCT " +
+      //                  "'007' AS idx," +
+      //                   "'" + p_strRxPackage + "' AS RXPACKAGE," +
+      //                  "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
+      //                  "'VOLCFNET' AS COLUMN_NAME," +
+      //                  "volcfnet_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+      //                  "'NA' AS NF_IN_COND_TABLE_ERROR," +
+      //                  "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
+      //                  "'NA' AS  VALUE_ERROR," +
+      //                  "'NA' AS NF_IN_RX_TABLE_ERROR," +
+      //                  "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
+      //                  "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
+      //                  "'NA' AS NF_IN_TREE_TABLE_ERROR," +
+      //                  "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
+      //               "FROM " + p_strFvsTreeTableName + " fvs," +
+      //                  "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
+      //                   "WHERE VOLCFNET IS NULL) volcfnet_no_value_count " +
+      //          "UNION " +
+      //          "SELECT DISTINCT " +
+      //             "'008' AS idx," +
+      //              "'" + p_strRxPackage + "' AS RXPACKAGE," +
+      //             "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
+      //             "'VOLTSGRS' AS COLUMN_NAME," +
+      //             "voltsgrs_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+      //             "'NA' AS NF_IN_COND_TABLE_ERROR," +
+      //             "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
+      //             "'NA' AS  VALUE_ERROR," +
+      //             "'NA' AS NF_IN_RX_TABLE_ERROR," +
+      //             "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
+      //             "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
+      //             "'NA' AS NF_IN_TREE_TABLE_ERROR," +
+      //             "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
+      //          "FROM " + p_strFvsTreeTableName + " fvs," +
+      //             "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
+      //              "WHERE VOLTSGRS IS NULL) voltsgrs_no_value_count " +
+      //          "UNION " +
+      //          "SELECT DISTINCT " +
+      //             "'009' AS idx," +
+				  // "'" + p_strRxPackage + "' AS RXPACKAGE," +
+      //            "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
+      //             "'VOLCFGRS' AS COLUMN_NAME," +
+      //             "volcfgrs_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+      //             "'NA' AS NF_IN_COND_TABLE_ERROR," +
+      //             "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
+      //             "'NA' AS  VALUE_ERROR," +
+      //             "'NA' AS NF_IN_RX_TABLE_ERROR," +
+      //             "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
+      //             "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
+      //             "'NA' AS NF_IN_TREE_TABLE_ERROR," +
+      //             "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
+      //          "FROM " + p_strFvsTreeTableName + " fvs," +
+      //              "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
+      //               "WHERE DBH IS NOT NULL AND DBH >= 5 AND VOLCFGRS IS NULL) volcfgrs_no_value_count " +
+      //          "UNION " +
+      //          "SELECT DISTINCT " +
+      //             "'010' AS idx," +
+      //             "'" + p_strRxPackage + "' AS RXPACKAGE," +
+      //             "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
+      //             "'DRYBIOT' AS COLUMN_NAME," +
+      //             "drybiot_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+      //             "'NA' AS NF_IN_COND_TABLE_ERROR," +
+      //             "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
+      //             "'NA' AS  VALUE_ERROR," +
+      //             "'NA' AS NF_IN_RX_TABLE_ERROR," +
+      //             "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
+      //             "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
+      //             "'NA' AS NF_IN_TREE_TABLE_ERROR," +
+      //             "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
+      //          "FROM " + p_strFvsTreeTableName + " fvs," +
+      //             "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
+      //              "WHERE DRYBIOT IS NULL) drybiot_no_value_count " +
+      //          "UNION " +
+      //          "SELECT DISTINCT " +
+      //             "'011' AS idx," +
+      //             "'" + p_strRxPackage + "' AS RXPACKAGE," +
+      //             "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
+      //             "'DRYBIOM' AS COLUMN_NAME," +
+      //             "drybiom_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+      //             "'NA' AS NF_IN_COND_TABLE_ERROR," +
+      //             "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
+      //             "'NA' AS  VALUE_ERROR," +
+      //             "'NA' AS NF_IN_RX_TABLE_ERROR," +
+      //             "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
+      //             "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
+      //             "'NA' AS NF_IN_TREE_TABLE_ERROR," +
+      //             "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
+      //          "FROM " + p_strFvsTreeTableName + " fvs," +
+      //             "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
+      //              "WHERE DBH IS NOT NULL AND DBH >= 5 AND DRYBIOM IS NULL) drybiom_no_value_count " +
+      //          "UNION " +
+      //          "SELECT DISTINCT " +
+      //             "'012' AS idx," +
+      //             "'" + p_strRxPackage + "' AS RXPACKAGE," +
+      //             "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
+      //             "'FVS_TREE_ID' AS COLUMN_NAME," +
+      //             "fvs_tree_id_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+      //             "'NA' AS NF_IN_COND_TABLE_ERROR," +
+      //             "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
+      //             "'NA' AS  VALUE_ERROR," +
+      //             "'NA' AS NF_IN_RX_TABLE_ERROR," +
+      //             "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
+      //             "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
+      //             "fvs_tree_id_not_found_in_tree_table_count.NOT_FOUND_IN_TREE_TABLE_COUNT AS NF_IN_TREE_TABLE_ERROR," +
+      //             "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
+      //          "FROM " + p_strFvsTreeTableName + " fvs," +
+      //             "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
+      //              "WHERE FVS_TREE_ID IS NULL OR LEN(TRIM(FVS_TREE_ID))=0) fvs_tree_id_no_value_count," +
+      //             "(SELECT CSTR(COUNT(*)) AS NOT_FOUND_IN_TREE_TABLE_COUNT FROM " + p_strFvsTreeTableName + " a " +
+      //              "WHERE a.FvsCreatedTree_YN='N' AND  " +
+      //                    "a.FVS_TREE_ID IS NOT NULL AND " +
+      //                    "LEN(TRIM(a.FVS_TREE_ID)) >  0 AND " +
+      //                    "NOT EXISTS (SELECT b.FVS_TREE_ID FROM tree_fvs_tree_id_work_table b " +
+      //                        "WHERE a.fvs_tree_id = b.fvs_tree_id and a.biosum_cond_id = b.biosum_cond_id)) fvs_tree_id_not_found_in_tree_table_count " +
+      //          "UNION " +
+      //          "SELECT DISTINCT " +
+      //             "'013' AS idx," +
+      //              "'" + p_strRxPackage + "' AS RXPACKAGE," +
+      //             "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
+      //             "'FVSCREATEDTREE_YN' AS COLUMN_NAME," +
+      //             "fvscreatedtree_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+      //             "'NA' AS NF_IN_COND_TABLE_ERROR," +
+      //             "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
+      //             "'NA' AS  VALUE_ERROR," +
+      //             "'NA' AS NF_IN_RX_TABLE_ERROR," +
+      //             "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
+      //             "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
+      //             "'NA' AS NF_IN_TREE_TABLE_ERROR," +
+      //             "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
+      //          "FROM " + p_strFvsTreeTableName + " fvs," +
+      //             "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
+      //              "WHERE FvsCreatedTree_YN IS NULL OR LEN(TRIM(FvsCreatedTree_YN))=0) fvscreatedtree_no_value_count " +
+      //          "UNION " +
+      //          "SELECT DISTINCT " +
+      //             "'014' AS idx," +
+      //             "'" + p_strRxPackage + "' AS RXPACKAGE," +
+      //             "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
+      //             "'FVS_SPECIES' AS COLUMN_NAME," +
+      //             "fvs_species_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+      //             "'NA' AS NF_IN_COND_TABLE_ERROR," +
+      //             "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
+      //             "'NA' AS  VALUE_ERROR," +
+      //             "'NA' AS NF_IN_RX_TABLE_ERROR," +
+      //             "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
+      //             "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
+      //             "'NA' AS NF_IN_TREE_TABLE_ERROR," +
+      //            "fvs_species_change_count.TREE_SPECIES_CHANGE_WARNING " +
+      //          "FROM " + p_strFvsTreeTableName + " fvs," +
+      //             "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
+      //              "WHERE FVS_SPECIES IS NULL OR LEN(TRIM(FVS_SPECIES))=0) fvs_species_no_value_count," +
+      //             "(SELECT CSTR(COUNT(*)) AS TREE_SPECIES_CHANGE_WARNING " +
+      //              "FROM " + p_strFvsTreeTableName + " a " +
+      //              "INNER JOIN tree_fvs_tree_id_work_table b " +
+      //              "ON a.fvs_tree_id = b.fvs_tree_id and a.biosum_cond_id = b.biosum_cond_id " +
+      //              "WHERE a.FvsCreatedTree_YN='N' AND " +
+      //                    "a.FVS_TREE_ID IS NOT NULL AND " +
+      //                    "LEN(TRIM(a.FVS_TREE_ID)) >  0 AND " +
+      //                    "VAL(a.FVS_SPECIES) <> b.SPCD) fvs_species_change_count)";
                 sqlArray[11] = "INSERT INTO  " + p_strPostAuditSummaryTable + " " +
                     "SELECT * FROM " +
                     "(SELECT DISTINCT " +
@@ -2668,8 +2646,81 @@ namespace FIA_Biosum_Manager
                         "'NA' AS NF_IN_TREE_TABLE_ERROR, 'NA' AS TREE_SPECIES_CHANGE_WARNING, current_timestamp " +
                         "FROM " + p_strFvsTreeTableName + " fvs," +
                         "(SELECT COUNT(*) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-                        "WHERE VOLTSGRS IS NULL) voltsgrs_no_value_count) ";
-
+                        "WHERE VOLTSGRS IS NULL) voltsgrs_no_value_count " +
+                        "UNION " +
+                        "SELECT DISTINCT '009' AS idx,'" + p_strFvsVariant + "' AS FVS_VARIANT," + "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                        "'VOLCFGRS' AS COLUMN_NAME, volcfgrs_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+                        "'NA' AS NF_IN_COND_TABLE_ERROR, 'NA' AS NF_IN_PLOT_TABLE_ERROR," +
+                        "'NA' AS  VALUE_ERROR, 'NA' AS NF_IN_RX_TABLE_ERROR," +
+                        "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR, 'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
+                        "'NA' AS NF_IN_TREE_TABLE_ERROR, 'NA' AS TREE_SPECIES_CHANGE_WARNING, current_timestamp " +
+                        "FROM " + p_strFvsTreeTableName + " fvs," +
+                        "(SELECT COUNT(*) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
+                        "WHERE DBH IS NOT NULL AND DBH >= 5 AND VOLCFGRS IS NULL) volcfgrs_no_value_count " +
+                        "UNION " +
+                        "SELECT DISTINCT '010' AS idx,'" + p_strFvsVariant + "' AS FVS_VARIANT," + "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                        "'DRYBIOT' AS COLUMN_NAME, drybiot_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+                        "'NA' AS NF_IN_COND_TABLE_ERROR, 'NA' AS NF_IN_PLOT_TABLE_ERROR," +
+                        "'NA' AS VALUE_ERROR, 'NA' AS NF_IN_RX_TABLE_ERROR," +
+                        "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR, 'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
+                        "'NA' AS NF_IN_TREE_TABLE_ERROR, 'NA' AS TREE_SPECIES_CHANGE_WARNING, current_timestamp " +
+                        "FROM " + p_strFvsTreeTableName + " fvs," +
+                        "(SELECT COUNT(*) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
+                        "WHERE DRYBIOT IS NULL) drybiot_no_value_count " +
+                        "UNION " +
+                        "SELECT DISTINCT '011' AS idx,'" + p_strFvsVariant + "' AS FVS_VARIANT," + "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                        "'DRYBIOM' AS COLUMN_NAME, drybiom_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+                        "'NA' AS NF_IN_COND_TABLE_ERROR, 'NA' AS NF_IN_PLOT_TABLE_ERROR," +
+                        "'NA' AS  VALUE_ERROR, 'NA' AS NF_IN_RX_TABLE_ERROR," +
+                        "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR, 'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
+                        "'NA' AS NF_IN_TREE_TABLE_ERROR, 'NA' AS TREE_SPECIES_CHANGE_WARNING, current_timestamp " +
+                        "FROM " + p_strFvsTreeTableName + " fvs," +
+                        "(SELECT COUNT(*) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
+                        "WHERE DBH IS NOT NULL AND DBH >= 5 AND DRYBIOM IS NULL) drybiom_no_value_count " +
+                        "UNION " +
+                        "SELECT DISTINCT '012' AS idx,'" + p_strFvsVariant + "' AS FVS_VARIANT," + "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                        "'FVS_TREE_ID' AS COLUMN_NAME," +
+                        "fvs_tree_id_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+                        "'NA' AS NF_IN_COND_TABLE_ERROR, 'NA' AS NF_IN_PLOT_TABLE_ERROR," +
+                        "'NA' AS  VALUE_ERROR, 'NA' AS NF_IN_RX_TABLE_ERROR," +
+                        "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR, 'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
+                        "fvs_tree_id_not_found_in_tree_table_count.NOT_FOUND_IN_TREE_TABLE_COUNT AS NF_IN_TREE_TABLE_ERROR," +
+                        "'NA' AS TREE_SPECIES_CHANGE_WARNING, current_timestamp " +
+                        "FROM " + p_strFvsTreeTableName + " fvs," +
+                        "(SELECT COUNT(*) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
+                        "WHERE FVS_TREE_ID IS NULL OR LENGTH(TRIM(FVS_TREE_ID))=0) fvs_tree_id_no_value_count," +
+                        "(SELECT COUNT(*) AS NOT_FOUND_IN_TREE_TABLE_COUNT FROM " + p_strFvsTreeTableName + " a " +
+                        "WHERE a.FvsCreatedTree_YN='N' AND  a.FVS_TREE_ID IS NOT NULL AND " +
+                        "LENGTH(TRIM(a.FVS_TREE_ID)) >  0 AND NOT EXISTS (SELECT b.FVS_TREE_ID FROM tree_fvs_tree_id_work_table b " +
+                        "WHERE a.fvs_tree_id = b.fvs_tree_id and a.biosum_cond_id = b.biosum_cond_id)) fvs_tree_id_not_found_in_tree_table_count " +
+                        "UNION " +
+                        "SELECT DISTINCT '013' AS idx,'" + p_strFvsVariant + "' AS FVS_VARIANT," + "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                        "'FVSCREATEDTREE_YN' AS COLUMN_NAME, fvscreatedtree_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+                        "'NA' AS NF_IN_COND_TABLE_ERROR, 'NA' AS NF_IN_PLOT_TABLE_ERROR," +
+                        "'NA' AS  VALUE_ERROR, 'NA' AS NF_IN_RX_TABLE_ERROR," +
+                        "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR, 'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
+                        "'NA' AS NF_IN_TREE_TABLE_ERROR, 'NA' AS TREE_SPECIES_CHANGE_WARNING, current_timestamp " +
+                        "FROM " + p_strFvsTreeTableName + " fvs," +
+                        "(SELECT COUNT(*) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
+                        "WHERE FvsCreatedTree_YN IS NULL OR LENGTH(TRIM(FvsCreatedTree_YN))=0) fvscreatedtree_no_value_count " +
+                        "UNION " +
+                        "SELECT DISTINCT '014' AS idx,'" + p_strFvsVariant + "' AS FVS_VARIANT," + "'" + p_strRxPackage + "' AS RXPACKAGE," +
+                        "'FVS_SPECIES' AS COLUMN_NAME, fvs_species_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+                        "'NA' AS NF_IN_COND_TABLE_ERROR, 'NA' AS NF_IN_PLOT_TABLE_ERROR," +
+                        "'NA' AS VALUE_ERROR, 'NA' AS NF_IN_RX_TABLE_ERROR," +
+                        "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR, 'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
+                        "'NA' AS NF_IN_TREE_TABLE_ERROR," +
+                        "fvs_species_change_count.TREE_SPECIES_CHANGE_WARNING, current_timestamp " +
+                        "FROM " + p_strFvsTreeTableName + " fvs," +
+                        "(SELECT COUNT(*) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
+                        "WHERE FVS_SPECIES IS NULL OR LENGTH(TRIM(FVS_SPECIES))=0) fvs_species_no_value_count," +
+                        "(SELECT COUNT(*) AS TREE_SPECIES_CHANGE_WARNING, current_timestamp " +
+                        "FROM " + p_strFvsTreeTableName + " AS a " +
+                        "INNER JOIN tree_fvs_tree_id_work_table b " +
+                        "ON a.fvs_tree_id = b.fvs_tree_id and a.biosum_cond_id = b.biosum_cond_id " +
+                        "WHERE a.FvsCreatedTree_YN='N' AND a.FVS_TREE_ID IS NOT NULL AND " +
+                        "LENGTH(TRIM(a.FVS_TREE_ID)) >  0 AND " +
+                        "CAST(a.FVS_SPECIES AS INTEGER) <> b.SPCD) fvs_species_change_count)";
 
                 return sqlArray;
             }
