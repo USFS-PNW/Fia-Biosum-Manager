@@ -5193,18 +5193,17 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_DeleteFromTreeVolValAndHarvestCostsTable\r\n");
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
+            m_oAdo.m_strSQL = "SELECT c.biosum_cond_id " +
+                "INTO deletefilter " +
+                "FROM " + this.m_oQueries.m_oFIAPlot.m_strCondTable + " c " +
+                "INNER JOIN " + this.m_oQueries.m_oFIAPlot.m_strPlotTable + " p " +
+                "ON p.biosum_plot_id = c.biosum_plot_id WHERE p.fvs_variant = '" + p_strVariant + "'";
+            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
             //
             //DELETE THE VARIANT+RXPACKAGE FROM THE TREEVOLVAL TABLE
             //
-            //@ToDo: This has to be done on the Access side because of references to cond and plot table
-            m_oAdo.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName + " t " +
-                              "WHERE EXISTS (SELECT c.biosum_cond_id,p.fvs_variant " +
-                                            "FROM " + this.m_oQueries.m_oFIAPlot.m_strCondTable + " c," +
-                                                      this.m_oQueries.m_oFIAPlot.m_strPlotTable + " p " +
-                                            "WHERE t.rxpackage='" + p_strRxPackage + "' AND " +
-                                                  "t.biosum_cond_id=c.biosum_cond_id AND " +
-                                                  "p.biosum_plot_id=c.biosum_plot_id AND " +
-                                                  "p.fvs_variant='" + p_strVariant + "')";
+            m_oAdo.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName +
+                " WHERE rxpackage = '" + p_strRxPackage + "' AND biosum_cond_id IN (SELECT biosum_cond_id FROM deletefilter)";
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
 
@@ -5214,14 +5213,8 @@ namespace FIA_Biosum_Manager
                 //
                 //DELETE THE VARIANT+RXPACKAGE FROM THE HARVEST COSTS TABLE
                 //
-                m_oAdo.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName + " t " +
-                                  "WHERE EXISTS (SELECT c.biosum_cond_id,p.fvs_variant " +
-                                                "FROM " + this.m_oQueries.m_oFIAPlot.m_strCondTable + " c," +
-                                                          this.m_oQueries.m_oFIAPlot.m_strPlotTable + " p " +
-                                                "WHERE trim(t.rxpackage)='" + p_strRxPackage + "' AND " +
-                                                     "(trim(t.biosum_cond_id)=c.biosum_cond_id AND " +
-                                                      "p.biosum_plot_id=c.biosum_plot_id AND " +
-                                                      "p.fvs_variant='" + p_strVariant + "'))";
+                m_oAdo.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName +
+                    " WHERE rxpackage = '" + p_strRxPackage + "' AND biosum_cond_id IN (SELECT biosum_cond_id FROM deletefilter)";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
 
@@ -5232,14 +5225,14 @@ namespace FIA_Biosum_Manager
                 //
                 //DELETE THE VARIANT+RXPACKAGE FROM THE additional_kcp_cpa TABLE
                 //
-                m_oAdo.m_strSQL = $@"DELETE FROM {Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName} t 
-                                  WHERE EXISTS (SELECT c.biosum_cond_id,p.fvs_variant FROM {this.m_oQueries.m_oFIAPlot.m_strCondTable} c,
-                                  {this.m_oQueries.m_oFIAPlot.m_strPlotTable} p
-                                  WHERE trim(t.rxpackage)='{p_strRxPackage}' AND (trim(t.biosum_cond_id)=c.biosum_cond_id AND 
-                                  p.biosum_plot_id=c.biosum_plot_id AND p.fvs_variant='{p_strVariant}'))";
+                m_oAdo.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName +
+                    " WHERE rxpackage = '" + p_strRxPackage + "' AND biosum_cond_id IN (SELECT biosum_cond_id FROM deletefilter)";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
 
+                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+
+                m_oAdo.m_strSQL = "DROP TABLE deletefilter";
                 m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
             }
             m_intError = m_oAdo.m_intError;
