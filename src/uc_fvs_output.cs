@@ -4290,7 +4290,7 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "");
 
                         if ((bool)frmMain.g_oDelegate.GetListViewItemPropertyValue(oLv, x, "Checked", false) == true)
-                        {                            
+                        {
                             m_intProgressStepTotalCount = 30;
                             m_intProgressStepCurrentCount = 0;
                             m_intProgressOverallCurrentCount++;
@@ -4317,7 +4317,7 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "ForeColor", Color.White);
                             frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "Post-Processing Audit");
 
-                            
+
 
                             //get the variant
                             strVariant = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_VARIANT, "Text", false);
@@ -4358,12 +4358,12 @@ namespace FIA_Biosum_Manager
                             if (m_oRxPackageItem.SimulationYear4Rx.Trim().Length > 0 && m_oRxPackageItem.SimulationYear4Rx.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "4,";
 
                             if (this.m_strRxCycleList.Trim().Length > 0)
-                                    this.m_strRxCycleList = this.m_strRxCycleList.Substring(0, this.m_strRxCycleList.Length - 1);
+                                this.m_strRxCycleList = this.m_strRxCycleList.Substring(0, this.m_strRxCycleList.Length - 1);
 
-                                this.m_strRxCycleArray = frmMain.g_oUtils.ConvertListToArray(this.m_strRxCycleList, ",");
+                            this.m_strRxCycleArray = frmMain.g_oUtils.ConvertListToArray(this.m_strRxCycleList, ",");
 
-                                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim());
-                                frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
+                            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim());
+                            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
 
                             // With the SQLite rewrite, we run the queries in a temp database instead of PostAudit.accdb
                             // The permanent audit tables are in the new SQLite audits.db
@@ -4483,7 +4483,7 @@ namespace FIA_Biosum_Manager
                                     SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                                 }
                                 int intRxPackageTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("TREATMENT PACKAGES");
-                                string[] SQLiteArray = Queries.FVS.FVSOutputTable_RxPackageWorktable(strRxPackageWorktable, 
+                                string[] SQLiteArray = Queries.FVS.FVSOutputTable_RxPackageWorktable(strRxPackageWorktable,
                                     m_oQueries.m_oDataSource.m_strDataSource[intRxPackageTable, Datasource.TABLE]);
                                 for (y = 0; y <= SQLiteArray.Length - 1; y++)
                                 {
@@ -4496,48 +4496,48 @@ namespace FIA_Biosum_Manager
                                 }
                             }
 
-                                uc_filesize_monitor1.BeginMonitoringFile(strAuditDbFile, 2000000000, "2GB");
-                                uc_filesize_monitor1.Information = "BIOSUM DB file containing FVS OUTPUT PRE/POST AUDIT tables";
+                            uc_filesize_monitor1.BeginMonitoringFile(strAuditDbFile, 2000000000, "2GB");
+                            uc_filesize_monitor1.Information = "BIOSUM DB file containing FVS OUTPUT PRE/POST AUDIT tables";
 
-                                m_intProgressStepCurrentCount++;
-                                UpdateTherm(m_frmTherm.progressBar1,
-                                            m_intProgressStepCurrentCount,
-                                            m_intProgressStepTotalCount);
+                            m_intProgressStepCurrentCount++;
+                            UpdateTherm(m_frmTherm.progressBar1,
+                                        m_intProgressStepCurrentCount,
+                                        m_intProgressStepTotalCount);
 
-                                string strTempConn = SQLite.GetConnectionString(strTempDb);
+                            string strTempConn = SQLite.GetConnectionString(strTempDb);
                             string[] sqlArray = null;
-                                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strTempConn))
+                            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strTempConn))
+                            {
+                                conn.Open();
+                                if (SQLite.TableExist(conn, strRxPackageWorktable2))
                                 {
-                                    conn.Open();
-                                    if (SQLite.TableExist(conn, strRxPackageWorktable2))
-                                    {
-                                        SQLite.SqlNonQuery(conn, $@"DROP TABLE {strRxPackageWorktable2}");
-                                    }
-                                    if (SQLite.TableExist(conn, strRxWorktable))
-                                    {
-                                        SQLite.SqlNonQuery(conn, $@"DROP TABLE {strRxWorktable}");
-                                    }
-                                    if (SQLite.TableExist(conn, "fvs_tree_unique_biosum_plot_id_work_table"))
-                                    {
-                                        SQLite.SqlNonQuery(conn, "DROP TABLE fvs_tree_unique_biosum_plot_id_work_table");
-                                    }
-                                    if (SQLite.TableExist(conn, "fvs_tree_biosum_plot_id_work_table"))
-                                    {
-                                        SQLite.SqlNonQuery(conn, "DROP TABLE fvs_tree_biosum_plot_id_work_table");
-                                    }
-                                    if (SQLite.TableExist(conn, "cond_biosum_cond_id_work_table"))
-                                    {
-                                        SQLite.SqlNonQuery(conn, "DROP TABLE cond_biosum_cond_id_work_table");
-                                    }
-                                    if (SQLite.TableExist(conn, "plot_biosum_plot_id_work_table"))
-                                    {
-                                        SQLite.SqlNonQuery(conn, "DROP TABLE plot_biosum_plot_id_work_table");
-                                    }
-                                    if (SQLite.TableExist(conn, "tree_fvs_tree_id_work_table"))
-                                    {
-                                        SQLite.SqlNonQuery(conn, "DROP TABLE tree_fvs_tree_id_work_table");
-                                    }
-                                    // Attach helper databases
+                                    SQLite.SqlNonQuery(conn, $@"DROP TABLE {strRxPackageWorktable2}");
+                                }
+                                if (SQLite.TableExist(conn, strRxWorktable))
+                                {
+                                    SQLite.SqlNonQuery(conn, $@"DROP TABLE {strRxWorktable}");
+                                }
+                                if (SQLite.TableExist(conn, "fvs_tree_unique_biosum_plot_id_work_table"))
+                                {
+                                    SQLite.SqlNonQuery(conn, "DROP TABLE fvs_tree_unique_biosum_plot_id_work_table");
+                                }
+                                if (SQLite.TableExist(conn, "fvs_tree_biosum_plot_id_work_table"))
+                                {
+                                    SQLite.SqlNonQuery(conn, "DROP TABLE fvs_tree_biosum_plot_id_work_table");
+                                }
+                                if (SQLite.TableExist(conn, "cond_biosum_cond_id_work_table"))
+                                {
+                                    SQLite.SqlNonQuery(conn, "DROP TABLE cond_biosum_cond_id_work_table");
+                                }
+                                if (SQLite.TableExist(conn, "plot_biosum_plot_id_work_table"))
+                                {
+                                    SQLite.SqlNonQuery(conn, "DROP TABLE plot_biosum_plot_id_work_table");
+                                }
+                                if (SQLite.TableExist(conn, "tree_fvs_tree_id_work_table"))
+                                {
+                                    SQLite.SqlNonQuery(conn, "DROP TABLE tree_fvs_tree_id_work_table");
+                                }
+                                // Attach helper databases
                                 string strMasterDb = m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree);
                                 SQLite.SqlNonQuery(conn, $@"ATTACH DATABASE '{strMasterDb}' AS master");
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
@@ -4572,8 +4572,7 @@ namespace FIA_Biosum_Manager
                                 }
                             }
 
-
-                            int intRowCount = 0;
+                            long lngRowCount = 0;
                             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strAuditConn))
                             {
                                 conn.Open();
@@ -4599,8 +4598,8 @@ namespace FIA_Biosum_Manager
                                             m_intProgressStepCurrentCount,
                                             m_intProgressStepTotalCount);
                                 //check if any no value errors
-                                intRowCount = (int)SQLite.getRecordCount(conn, "SELECT COUNT(*) FROM audit_Post_SUMMARY WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE='" + strPackage + "' AND NOVALUE_ERROR IS NOT NULL AND LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND TRIM(NOVALUE_ERROR) <> 'NA' AND CAST(NOVALUE_ERROR as int) > 0", "AUDIT_POST_SUMMARY");
-                                if (intRowCount > 0)
+                                lngRowCount = (int)SQLite.getRecordCount(conn, "SELECT COUNT(*) FROM audit_Post_SUMMARY WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE='" + strPackage + "' AND NOVALUE_ERROR IS NOT NULL AND LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND TRIM(NOVALUE_ERROR) <> 'NA' AND CAST(NOVALUE_ERROR as int) > 0", "AUDIT_POST_SUMMARY");
+                                if (lngRowCount > 0)
                                 {
                                     //insert the new audit records
                                     strSQL = sqlArray[0];
@@ -4629,8 +4628,8 @@ namespace FIA_Biosum_Manager
                                             m_intProgressStepCurrentCount,
                                             m_intProgressStepTotalCount);
                                 //check if any no value errors
-                                intRowCount = (int) SQLite.getRecordCount(conn, "SELECT COUNT(*) FROM audit_Post_SUMMARY WHERE RXPACKAGE='" + strPackage + "' AND VALUE_ERROR IS NOT NULL AND LENGTH(TRIM(VALUE_ERROR)) > 0 AND TRIM(VALUE_ERROR) <> 'NA' AND CAST(VALUE_ERROR as INT) > 0 AND TRIM(COLUMN_NAME) <> 'DBH'", "AUDIT_POST_SUMMARY");
-                                if (intRowCount > 0)
+                                lngRowCount = SQLite.getRecordCount(conn, "SELECT COUNT(*) FROM audit_Post_SUMMARY WHERE RXPACKAGE='" + strPackage + "' AND VALUE_ERROR IS NOT NULL AND LENGTH(TRIM(VALUE_ERROR)) > 0 AND TRIM(VALUE_ERROR) <> 'NA' AND CAST(VALUE_ERROR as INT) > 0 AND TRIM(COLUMN_NAME) <> 'DBH'", "AUDIT_POST_SUMMARY");
+                                if (lngRowCount > 0)
                                 {
                                     //insert the new audit records
                                     strSQL = sqlArray[0];
@@ -4646,10 +4645,11 @@ namespace FIA_Biosum_Manager
                                             m_intProgressStepTotalCount);
 
 
-                            }
-                            //
+
+                                //
                                 //PROCESS NOT FOUND IN TABLES ERRORS
                                 //
+                                //@ToDo: This query needs to be converted to SQLite
                                 sqlArray = Queries.FVS.FVSOutputTable_AuditPostSummaryDetailFVS_NOTFOUND_ERROR(
                                     "audit_Post_NOTFOUND_ERROR",
                                     "audit_Post_SUMMARY",
@@ -4666,25 +4666,25 @@ namespace FIA_Biosum_Manager
                                             m_intProgressStepTotalCount);
                                 //check if any not found in table errors
                                 strSQL = "SELECT COUNT(*) FROM audit_Post_SUMMARY " +
-                                         "WHERE rxpackage='" + strPackage + "' AND " + 
-                                               "(NF_IN_COND_TABLE_ERROR IS NOT NULL AND LEN(TRIM(NF_IN_COND_TABLE_ERROR)) > 0 AND TRIM(NF_IN_COND_TABLE_ERROR) <> 'NA' AND VAL(NF_IN_COND_TABLE_ERROR) > 0) OR " +
-                                               "(NF_IN_PLOT_TABLE_ERROR IS NOT NULL AND LEN(TRIM(NF_IN_PLOT_TABLE_ERROR)) > 0 AND TRIM(NF_IN_PLOT_TABLE_ERROR) <> 'NA' AND VAL(NF_IN_PLOT_TABLE_ERROR) > 0) OR " +
-                                               "(NF_IN_RX_TABLE_ERROR IS NOT NULL AND LEN(TRIM(NF_IN_RX_TABLE_ERROR)) > 0 AND TRIM(NF_IN_RX_TABLE_ERROR) <> 'NA' AND VAL(NF_IN_RX_TABLE_ERROR) > 0) OR " +
-                                               "(NF_IN_RXPACKAGE_TABLE_ERROR IS NOT NULL AND LEN(TRIM(NF_IN_RXPACKAGE_TABLE_ERROR)) > 0 AND TRIM(NF_IN_RXPACKAGE_TABLE_ERROR) <> 'NA' AND VAL(NF_IN_RXPACKAGE_TABLE_ERROR) > 0) OR " +
-                                               "(NF_RXPACKAGE_RXCYCLE_RX_ERROR IS NOT NULL AND LEN(TRIM(NF_RXPACKAGE_RXCYCLE_RX_ERROR)) > 0 AND TRIM(NF_RXPACKAGE_RXCYCLE_RX_ERROR) <> 'NA' AND VAL(NF_RXPACKAGE_RXCYCLE_RX_ERROR) > 0) OR " +
-                                               "(NF_IN_TREE_TABLE_ERROR IS NOT NULL AND LEN(TRIM(NF_IN_TREE_TABLE_ERROR)) > 0 AND TRIM(NF_IN_TREE_TABLE_ERROR) <> 'NA' AND VAL(NF_IN_TREE_TABLE_ERROR) > 0)";
+                                         "WHERE rxpackage='" + strPackage + "' AND " +
+                                               "(NF_IN_COND_TABLE_ERROR IS NOT NULL AND LENGTH(TRIM(NF_IN_COND_TABLE_ERROR)) > 0 AND TRIM(NF_IN_COND_TABLE_ERROR) <> 'NA' AND CAST(NF_IN_COND_TABLE_ERROR AS INTEGER) > 0) OR " +
+                                               "(NF_IN_PLOT_TABLE_ERROR IS NOT NULL AND LENGTH(TRIM(NF_IN_PLOT_TABLE_ERROR)) > 0 AND TRIM(NF_IN_PLOT_TABLE_ERROR) <> 'NA' AND CAST(NF_IN_PLOT_TABLE_ERROR AS INTEGER) > 0) OR " +
+                                               "(NF_IN_RX_TABLE_ERROR IS NOT NULL AND LENGTH(TRIM(NF_IN_RX_TABLE_ERROR)) > 0 AND TRIM(NF_IN_RX_TABLE_ERROR) <> 'NA' AND CAST(NF_IN_RX_TABLE_ERROR AS INTEGER) > 0) OR " +
+                                               "(NF_IN_RXPACKAGE_TABLE_ERROR IS NOT NULL AND LENGTH(TRIM(NF_IN_RXPACKAGE_TABLE_ERROR)) > 0 AND TRIM(NF_IN_RXPACKAGE_TABLE_ERROR) <> 'NA' AND CAST(NF_IN_RXPACKAGE_TABLE_ERROR AS INTEGER) > 0) OR " +
+                                               "(NF_RXPACKAGE_RXCYCLE_RX_ERROR IS NOT NULL AND LENGTH(TRIM(NF_RXPACKAGE_RXCYCLE_RX_ERROR)) > 0 AND TRIM(NF_RXPACKAGE_RXCYCLE_RX_ERROR) <> 'NA' AND CAST(NF_RXPACKAGE_RXCYCLE_RX_ERROR AS INTEGER) > 0) OR " +
+                                               "(NF_IN_TREE_TABLE_ERROR IS NOT NULL AND LENGTH(TRIM(NF_IN_TREE_TABLE_ERROR)) > 0 AND TRIM(NF_IN_TREE_TABLE_ERROR) <> 'NA' AND CAST(NF_IN_TREE_TABLE_ERROR AS INTEGER) > 0)";
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
-                                intRowCount = oAdo.getRecordCount(oAdo.m_OleDbConnection, strSQL, "audit_Post_SUMMARY");
+                                lngRowCount = SQLite.getRecordCount(conn, strSQL, "audit_Post_SUMMARY");
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-                                if (intRowCount > 0)
+                                if (lngRowCount > 0)
                                 {
                                     //insert the new audit records
                                     strSQL = sqlArray[0];
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
+                                    SQLite.SqlNonQuery(conn, strSQL);
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                                 }
@@ -4706,22 +4706,23 @@ namespace FIA_Biosum_Manager
                                 UpdateTherm(m_frmTherm.progressBar1,
                                             m_intProgressStepCurrentCount,
                                             m_intProgressStepTotalCount);
-                                //check if any no value errors
-                                intRowCount = oAdo.getRecordCount(oAdo.m_OleDbConnection, "SELECT COUNT(*) FROM audit_Post_SUMMARY WHERE RXPACKAGE='" + strPackage + "' AND TREE_SPECIES_CHANGE_WARNING IS NOT NULL AND LEN(TRIM(TREE_SPECIES_CHANGE_WARNING)) > 0 AND TRIM(TREE_SPECIES_CHANGE_WARNING) <> 'NA' AND VAL(TREE_SPECIES_CHANGE_WARNING) > 0", "AUDIT_POST_SUMMARY");
-                                if (intRowCount > 0)
-                                {
-                                    //insert the new audit records
-                                    strSQL = sqlArray[0];
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
-                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-                                }
-                                m_intProgressStepCurrentCount++;
-                                UpdateTherm(m_frmTherm.progressBar1,
-                                            m_intProgressStepCurrentCount,
-                                            m_intProgressStepTotalCount);
+                            //check if any no value errors
+                            lngRowCount = SQLite.getRecordCount(conn, "SELECT COUNT(*) FROM audit_Post_SUMMARY WHERE RXPACKAGE='" + strPackage + "' AND TREE_SPECIES_CHANGE_WARNING IS NOT NULL AND LENGTH(TRIM(TREE_SPECIES_CHANGE_WARNING)) > 0 AND TRIM(TREE_SPECIES_CHANGE_WARNING) <> 'NA' AND CAST(TREE_SPECIES_CHANGE_WARNING AS INTEGER) > 0", "AUDIT_POST_SUMMARY");
+                            if (lngRowCount > 0)
+                            {
+                                //insert the new audit records
+                                strSQL = sqlArray[0];
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
+                                SQLite.SqlNonQuery(conn, strSQL);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                            }
+                            m_intProgressStepCurrentCount++;
+                            UpdateTherm(m_frmTherm.progressBar1,
+                                        m_intProgressStepCurrentCount,
+                                        m_intProgressStepTotalCount);
+                        }
                                 //
                                 //process DATA CORRUPTION: TREES ARE MATCHED UP INCORRECTLY
                                 // 22-NOV-2022: No longer running this audit. DBH will never match when we throw away cycle 1
@@ -4986,8 +4987,7 @@ namespace FIA_Biosum_Manager
                                 m_intProgressOverallTotalCount,
                                 m_intProgressOverallTotalCount);
 
-                System.Threading.Thread.Sleep(2000);
-                this.FVSRecordsFinished();
+               this.FVSRecordsFinished();
             }
             catch (System.Threading.ThreadInterruptedException err)
             {
