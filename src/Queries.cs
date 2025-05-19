@@ -2733,11 +2733,11 @@ namespace FIA_Biosum_Manager
                 sqlArray[0] = "INSERT INTO  " + p_strInsertTable + " " +
                                    "SELECT * FROM " +
                                         "(SELECT 'FVS_SPECIES' AS COLUMN_NAME," +
-                                                "'SPCD DOES NOT MATCH: FVS=' + TRIM(FVS.FVS_SPECIES) + ' FIA=' + TRIM(CSTR(FIA.SPCD)) AS WARNING_DESC," +
+                                                "'SPCD DOES NOT MATCH: FVS=' + TRIM(FVS.FVS_SPECIES) + ' FIA=' + TRIM(CAST(FIA.SPCD AS TEXT)) AS WARNING_DESC," +
                                                 "fvs.ID," +
                                                 "fvs.BIOSUM_COND_ID," +
-                                                "fvs.RXPACKAGE," +
                                                 "fvs.FVS_VARIANT," +
+                                                "fvs.RXPACKAGE," +
                                                 "fvs.RXCYCLE," +
                                                 "fvs.FVS_TREE_ID AS FVS_TREE_FVS_TREE_ID," +
                                                 "fia.FVS_TREE_ID AS FIA_TREE_FVS_TREE_ID," +
@@ -2770,13 +2770,13 @@ namespace FIA_Biosum_Manager
                                                 "FVS.FVSCREATEDTREE_YN " +
                                          "FROM " + p_strFvsTreeTableName + " fvs " +
                                          "INNER JOIN " + p_strTreeTable + " fia " +
-                                         "ON fvs.fvs_tree_id = fia.fvs_tree_id and fvs.biosum_cond_id=fia.biosum_cond_id " +
+                                         "ON fvs.fvs_tree_id = trim(fia.fvs_tree_id) and fvs.biosum_cond_id=fia.biosum_cond_id " +
                                          "WHERE fvs.FvsCreatedTree_YN='N' AND " +
                                                "fvs.FVS_TREE_ID IS NOT NULL AND " +
-                                               "LEN(TRIM(fvs.FVS_TREE_ID)) >  0 AND " +
+                                               "LENGTH(TRIM(fvs.FVS_TREE_ID)) >  0 AND " +
                                                "fvs.fvs_variant = '" + p_strFvsVariant + "' AND " +
                                                "fvs.rxpackage = '" + p_strRxPackage + "' AND " +
-                                                "VAL(fvs.FVS_SPECIES) <> fia.SPCD)";
+                                               "CAST(fvs.FVS_SPECIES AS INTEGER) <> fia.SPCD)";
 
                 return sqlArray;
             }
@@ -3022,7 +3022,7 @@ namespace FIA_Biosum_Manager
             /// <param name="p_strFvsTreeTableName"></param>
             /// <param name="p_strFVSTreeFileName"></param>
             /// <returns></returns>
-            public static string[] FVSOutputTable_AuditPostSummaryDetailFVS_NOTFOUND_ERROR(
+            public static string FVSOutputTable_AuditPostSummaryDetailFVS_NOTFOUND_ERROR(
                 string p_strInsertTable, 
                 string p_strPostAuditSummaryTable, 
                 string p_strFvsTreeTableName, 
@@ -3034,47 +3034,46 @@ namespace FIA_Biosum_Manager
                 string p_strRxPackageWorkTable)
             {
 
-                string[] sqlArray = new string[1];
-
-                sqlArray[0] = "INSERT INTO  " + p_strInsertTable + " " +
+                string strSql = "INSERT INTO  " + p_strInsertTable + " " +
                                     "SELECT * FROM " +
+                                    //BIOSUM_COND_ID NOT FOUND
                                     "(SELECT DISTINCT " +
                                         "'BIOSUM_COND_ID' AS COLUMN_NAME," +
                                         "a.BIOSUM_COND_ID AS NOTFOUND_VALUE," +
                                         "'NOT FOUND IN COND TABLE' AS ERROR_DESC," +
-                                        "a.* FROM " + p_strFvsTreeTableName + " a," +
-                                            "(SELECT * FROM fvs_tree_biosum_plot_id_work_table a " +
-                                             "WHERE a.BIOSUM_COND_ID IS NOT NULL AND LEN(TRIM(a.BIOSUM_COND_ID)) >  0 AND " +
-                                                   "NOT EXISTS (SELECT b.BIOSUM_COND_ID FROM cond_biosum_cond_id_work_table  b " +
-                                                               "WHERE a.BIOSUM_COND_ID = b.BIOSUM_COND_ID)) biosum_cond_id_not_found " +
-                                     "WHERE a.ID = biosum_cond_id_not_found.ID " +
-                                     "UNION " +
+                                        "a.* FROM " + p_strFvsTreeTableName + " a " +
+                                    "JOIN( SELECT * FROM fvs_tree_biosum_plot_id_work_table " +
+                                    "WHERE BIOSUM_COND_ID IS NOT NULL AND LENGTH(TRIM(BIOSUM_COND_ID)) > 0 " +
+                                    "AND NOT EXISTS( SELECT 1 FROM cond_biosum_cond_id_work_table b " +
+                                    "WHERE TRIM(b.BIOSUM_COND_ID) = TRIM(fvs_tree_biosum_plot_id_work_table.BIOSUM_COND_ID))" +
+                                    ") biosum_cond_id_not_found ON a.ID = biosum_cond_id_not_found.ID " +
+                                    "UNION " +
                                      "SELECT DISTINCT " +
+                                       // BIOSUM_PLOT_ID NOT FOUND
                                        "'BIOSUM_PLOT_ID' AS COLUMN_NAME," +
                                        "biosum_cond_id_not_found_in_plot_table.BIOSUM_PLOT_ID AS NOTFOUND_VALUE," +
                                        "'NOT FOUND IN PLOT TABLE' AS ERROR_DESC," +
-                                       "a.* FROM " + p_strFvsTreeTableName + " a," +
-                                            "(SELECT * FROM fvs_tree_biosum_plot_id_work_table a " +
-                                             "WHERE a.BIOSUM_COND_ID IS NOT NULL AND " +
-                                                   "LEN(TRIM(a.BIOSUM_COND_ID)) >  0 AND " +
-                                                   "NOT EXISTS (SELECT b.BIOSUM_PLOT_ID FROM plot_biosum_plot_id_work_table  b " +
-                                                               "WHERE a.BIOSUM_PLOT_ID = b.BIOSUM_PLOT_ID)) biosum_cond_id_not_found_in_plot_table " +
-                                     "WHERE a.ID = biosum_cond_id_not_found_in_plot_table.ID " +
+                                       "a.* FROM " + p_strFvsTreeTableName + " a " +
+                                       "JOIN( SELECT * FROM fvs_tree_biosum_plot_id_work_table " +
+                                       "WHERE BIOSUM_COND_ID IS NOT NULL AND LENGTH(TRIM(BIOSUM_COND_ID)) > 0 " +
+                                       "AND NOT EXISTS( SELECT 1 FROM plot_biosum_plot_id_work_table b " +
+                                       "WHERE TRIM(b.BIOSUM_PLOT_ID) = TRIM(fvs_tree_biosum_plot_id_work_table.BIOSUM_PLOT_ID)) " +
+                                       ") biosum_cond_id_not_found_in_plot_table ON a.ID = biosum_cond_id_not_found_in_plot_table.ID " +
                                      "UNION " +
                                      "SELECT DISTINCT " +
+                                       // FVS_TREE_ID NOT FOUND
                                        "'FVS_TREE_ID' AS COLUMN_NAME," +
                                        "a.FVS_TREE_ID AS NOTFOUND_VALUE," +
                                        "'NOT FOUND IN TREE TABLE' AS ERROR_DESC," +
-                                       "a.* FROM " + p_strFvsTreeTableName + " a," +
-                                        "(SELECT * FROM " + p_strFvsTreeTableName + " a " +
-                                         "WHERE a.FvsCreatedTree_YN='N' AND " +
-                                               "a.FVS_TREE_ID IS NOT NULL AND LEN(TRIM(a.FVS_TREE_ID)) >  0 AND " +
-                                               "NOT EXISTS (SELECT b.FVS_TREE_ID FROM tree_fvs_tree_id_work_table b " +
-                                                           "WHERE a.fvs_tree_id = b.fvs_tree_id and a.biosum_cond_id = b.biosum_cond_id)) " +
-                                                           "fvs_tree_id_not_found_in_tree_table " +
-                                     "WHERE a.ID = fvs_tree_id_not_found_in_tree_table.ID " +
+                                       "a.* FROM " + p_strFvsTreeTableName + " a " +
+                                        "JOIN(SELECT * FROM tmpCutTree WHERE FvsCreatedTree_YN = 'N' " +
+                                        "AND FVS_TREE_ID IS NOT NULL AND LENGTH(TRIM(FVS_TREE_ID)) > 0 " +
+                                        "AND NOT EXISTS(SELECT 1 FROM tree_fvs_tree_id_work_table b " +
+                                        "WHERE TRIM(FVS_TREE_ID) = TRIM(b.FVS_TREE_ID) AND TRIM(BIOSUM_COND_ID) = TRIM(b.BIOSUM_COND_ID)) " +
+                                        ") fvs_tree_id_not_found_in_tree_table ON a.ID = fvs_tree_id_not_found_in_tree_table.ID " +
                                      "UNION " +
                                      "SELECT DISTINCT " +
+                                        //RX NOT FOUND
                                         "'RX' AS COLUMN_NAME," +
                                         "a.RX AS NOTFOUND_VALUE," +
                                         "'NOT FOUND IN RX TABLE' AS ERROR_DESC," +
@@ -3082,6 +3081,7 @@ namespace FIA_Biosum_Manager
                                      "WHERE a.RX NOT IN (SELECT b.RX FROM " + p_strRxTable + " b) " +
                                      "UNION " +
                                      "SELECT DISTINCT " +
+                                       //RXPACKAGE NOT FOUND
                                        "'RXPACKAGE' AS COLUMN_NAME," +
                                        "a.RXPACKAGE AS NOTFOUND_VALUE," +
                                        "'NOT FOUND IN RXPACKAGE TABLE' AS ERROR_DESC," +
@@ -3089,22 +3089,19 @@ namespace FIA_Biosum_Manager
                                      "WHERE a.RXPACKAGE NOT IN (SELECT b.RXPACKAGE FROM " + p_strRxPackageTable + " b) " +
                                      "UNION " +
                                      "SELECT DISTINCT " +
+                                        // RXPACKAGE + RXCYCLE + RX NOT FOUND
                                         "'RXPACKAGE + RXCYCLE + RX' AS COLUMN_NAME," +
-                                        "'RXPACKAGE=' + a.RXPACKAGE + ' RXCYCLE=' + a.RXCYCLE + ' RX=' + a.RX  AS NOTFOUND_VALUE," +
+                                        "'RXPACKAGE=' || a.RXPACKAGE || ' RXCYCLE=' || a.RXCYCLE || ' RX=' || a.RX AS NOTFOUND_VALUE," +
                                         "'COMBINATION OF RXPACKAGE, RXCYCLE, AND RX NOT FOUND' AS ERROR_DESC," +
-                                        "a.* FROM " + p_strFvsTreeTableName + " a," +
-                                            "(SELECT * FROM " + p_strFvsTreeTableName + " a " +
-                                             "WHERE a.RX IS NOT NULL AND LEN(TRIM(a.RX)) >  0 AND " +
-                                                   "a.RXPACKAGE IS NOT NULL AND LEN(TRIM(a.RXPACKAGE)) >  0 AND  " +
-                                                   "a.RXCYCLE IS NOT NULL AND LEN(TRIM(a.RXCYCLE)) >  0 AND " +
-                                                   "NOT EXISTS (SELECT rxp.RX FROM " + p_strRxPackageWorkTable + " rxp " +
-                                                               "WHERE TRIM(a.rxpackage) = TRIM(rxp.rxpackage) AND " +
-                                                                     "TRIM(a.rxcycle)=TRIM(rxp.rxcycle) AND  " +
-                                                                     "TRIM(a.rx)=TRIM(rxp.rx))) not_found_rxpackage_rxcycle_rx_combo " +
-                                     "WHERE a.ID = not_found_rxpackage_rxcycle_rx_combo.ID)";
-
-                return sqlArray;
-
+                                        "a.* FROM " + p_strFvsTreeTableName + " a " +
+                                        "JOIN(SELECT * FROM tmpCutTree WHERE RX IS NOT NULL AND LENGTH(TRIM(RX)) > 0 " +
+                                        "AND RXPACKAGE IS NOT NULL AND LENGTH(TRIM(RXPACKAGE)) > 0 " +
+                                        "AND RXCYCLE IS NOT NULL AND LENGTH(TRIM(RXCYCLE)) > 0 " +
+                                        "AND NOT EXISTS( SELECT 1 FROM rxpackage_work_table rxp " +
+                                        "WHERE TRIM(rxp.RXPACKAGE) = TRIM(tmpCutTree.RXPACKAGE) " +
+                  "AND TRIM(rxp.RXCYCLE) = TRIM(tmpCutTree.RXCYCLE) AND TRIM(rxp.RX) = TRIM(tmpCutTree.RX)) " +
+                  ") not_found_rxpackage_rxcycle_rx_combo ON a.ID = not_found_rxpackage_rxcycle_rx_combo.ID)";
+                return strSql;
             }
             public static string[] AppendRuntitleToFVSOut(string strTable)
             {

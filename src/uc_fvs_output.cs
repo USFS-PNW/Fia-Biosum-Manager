@@ -4583,6 +4583,21 @@ namespace FIA_Biosum_Manager
                                 SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                // Attach temp database for access to worktables
+                                SQLite.m_strSQL = $@"ATTACH DATABASE '{strTempDb}' AS TEMPDB";
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                // Attach MASTER database for access to TREE table
+                                SQLite.m_strSQL = $@"ATTACH DATABASE '{m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree)}' AS MASTER";
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
 
                                 //
                                 //process NOVALUE_ERROR column
@@ -4598,7 +4613,7 @@ namespace FIA_Biosum_Manager
                                             m_intProgressStepCurrentCount,
                                             m_intProgressStepTotalCount);
                                 //check if any no value errors
-                                lngRowCount = (int)SQLite.getRecordCount(conn, "SELECT COUNT(*) FROM audit_Post_SUMMARY WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE='" + strPackage + "' AND NOVALUE_ERROR IS NOT NULL AND LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND TRIM(NOVALUE_ERROR) <> 'NA' AND CAST(NOVALUE_ERROR as int) > 0", "AUDIT_POST_SUMMARY");
+                                lngRowCount = SQLite.getRecordCount(conn, "SELECT COUNT(*) FROM audit_Post_SUMMARY WHERE FVS_VARIANT = '" + strVariant + "' AND RXPACKAGE='" + strPackage + "' AND NOVALUE_ERROR IS NOT NULL AND LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND TRIM(NOVALUE_ERROR) <> 'NA' AND CAST(NOVALUE_ERROR as int) > 0", "AUDIT_POST_SUMMARY");
                                 if (lngRowCount > 0)
                                 {
                                     //insert the new audit records
@@ -4644,22 +4659,9 @@ namespace FIA_Biosum_Manager
                                             m_intProgressStepCurrentCount,
                                             m_intProgressStepTotalCount);
 
-
-
                                 //
                                 //PROCESS NOT FOUND IN TABLES ERRORS
                                 //
-                                //@ToDo: This query needs to be converted to SQLite
-                                sqlArray = Queries.FVS.FVSOutputTable_AuditPostSummaryDetailFVS_NOTFOUND_ERROR(
-                                    "audit_Post_NOTFOUND_ERROR",
-                                    "audit_Post_SUMMARY",
-                                    strTempCutListTable,
-                                     m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE].Trim(),
-                                     m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE].Trim(),
-                                     m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE].Trim(),
-                                     strRxWorktable, strRxPackageWorktable2,
-                                     "rxpackage_work_table");
-
                                 m_intProgressStepCurrentCount++;
                                 UpdateTherm(m_frmTherm.progressBar1,
                                             m_intProgressStepCurrentCount,
@@ -4681,7 +4683,12 @@ namespace FIA_Biosum_Manager
                                 if (lngRowCount > 0)
                                 {
                                     //insert the new audit records
-                                    strSQL = sqlArray[0];
+                                    strSQL = Queries.FVS.FVSOutputTable_AuditPostSummaryDetailFVS_NOTFOUND_ERROR(
+                                    "audit_Post_NOTFOUND_ERROR", "audit_Post_SUMMARY", strTempCutListTable,
+                                    m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE].Trim(),
+                                    m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE].Trim(),
+                                    m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE].Trim(),
+                                    strRxWorktable, strRxPackageWorktable2, "rxpackage_work_table");
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
                                     SQLite.SqlNonQuery(conn, strSQL);
