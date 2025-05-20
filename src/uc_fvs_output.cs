@@ -14,7 +14,6 @@ namespace FIA_Biosum_Manager
 	/// <summary> </summary>
 	public class uc_fvs_output : System.Windows.Forms.UserControl
 	{
-		public run_PostFvsForeFrcs procPreFrcs=null;
 		public Hashtable htSelectedRxFile=null;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.Label lblTitle;
@@ -44,25 +43,12 @@ namespace FIA_Biosum_Manager
 		private const int COL_SUMMARYCOUNT = 5;
 		private const int COL_CUTCOUNT = 6;
 
-
-        //private string m_strVariant;
-        private string m_strOutMDBFile="";
-		private string m_strRxTable="";
-		private string m_strPlotTable="";
-		private string m_strCondTable="";
 		private string m_strFvsTreeTable="";
 		private string m_strFVSSummaryAuditYearCountsTable="audit_fvs_summary_year_counts_table";
         private string m_strFVSSummaryAuditPrePostSeqNumTable = "fvs_summary_prepost_seqnum_matrix";
         private string m_strFVSSummaryAuditPrePostSeqNumCountsTable = "audit_fvs_summary_prepost_seqnum_counts_table";
-        private string m_strFVSTreeIdAuditTable = "audit_fvs_tree_id";
-        private string m_strFVSTreeMissingVolumeBiomassValuesTable = "audit_fvs_tree_missing_volume_biomass_values_table";
-		private string[] m_strFVSPrePostYearAuditTablesArray = null;
-        private string[] m_strFVSPrePostSeqNumTablesArray = null;
         private List<string> m_strFVSPreAppendAuditTables = null;
         private List<string> m_strFVSPostAppendAuditTables = null;
-		private ado_data_access m_ado;
-		private dao_data_access m_dao;
-		private string m_strTempMDBFileConnectionString="";
 		private string m_strProjDir="";
         private string m_strFvsTreeDb= frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
         private string m_strFvsOutDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile;
@@ -139,20 +125,6 @@ namespace FIA_Biosum_Manager
             get { return _SQLite; }
             set { _SQLite = value; }
         }
-        private FIA_Biosum_Manager.ado_data_access _MSAccess;
-    
-        public FIA_Biosum_Manager.ado_data_access MSAccess
-        {
-            get { return _MSAccess; }
-            set { _MSAccess = value; }
-        }
-
-		
-
-
-		
-
-
 
 		/// <summary> 
 		/// Required designer variable.
@@ -171,10 +143,6 @@ namespace FIA_Biosum_Manager
 			m_oQueries.m_oFvs.LoadDatasource=true;
 			m_oQueries.m_oFIAPlot.LoadDatasource=true;
 			m_oQueries.LoadDatasources(true);
-			
-			this.m_ado = new ado_data_access();
-			this.m_dao = new dao_data_access();
-
             this.m_oEnv = new env();
 
             this.m_bDebug = frmMain.g_bDebug;
@@ -524,47 +492,10 @@ namespace FIA_Biosum_Manager
 		}
 		#endregion
 
-		#region Private Methods
-		//((frmMain)this.ParentForm.ParentForm).frmProject.uc_project1.m_strProjectDirectory
-
-		#region UNIT TEST
-		private void UnitTest()
-		{
-			try
-			{
-				/*//1) UpdateCondPreValues
-				string strCIDpotFireStandId="4047C01";
-				string strCIDmaster="2001006000000700000075061";
-				procPreFrcs.DbRecsGetCondTabPreValues(strCIDmaster, strCIDpotFireStandId, procPreFrcs.WfSelectedRxList[0].ToString());                 
-				*/
-            
-				//2) DbRecsTdgTsg2ProcDbCopy
-				//procPreFrcs.DbRecsTdgTsg2ProcDbCopy(true);   
-
-				//3) DbRecsFinalizeFvsTree
-				//procPreFrcs.DbRecsFinalizeFvsTree(procPreFrcs.WfSelectedRxList[0].ToString());
-
-				//4) DbRecsUpdateFfeFromPotFire
-				procPreFrcs.DbRecsUpdateFfeFromPotFire(procPreFrcs.WfSelectedRxList[0].ToString());
-            
-			}
-			catch(Exception e)
-			{
-				MessageBox.Show(e.Message,"UnitTest");
-			}
-		}
-
-
-
-		#endregion
-
 		private void btnClose_Click(object sender, System.EventArgs e)
 		{
 			this.ParentForm.Close();
 		}
-
-		#endregion
-
 		public void loadvalues()
 		{
 			int x,y;
@@ -2342,7 +2273,7 @@ namespace FIA_Biosum_Manager
                 oDataMgr.m_strSQL = "DELETE FROM " + strFvsTreeTable  +
                     " WHERE RXPACKAGE='" + p_strPackage.Trim() + "' AND FVS_VARIANT = '" + p_strVariant + "'";
                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + m_ado.m_strSQL + "\r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                 oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
@@ -3313,8 +3244,7 @@ namespace FIA_Biosum_Manager
 
                             //m_oRxTools.CreateFVSOutputTableLinks(strAuditDbFile, strOutDirAndFile);
 
-                            //CreatePotFireTables(strAuditDbFile,strOutDirAndFile,strVariant,strPackage);
-                            CreateSQLitePotFireTables(strAuditDbFile, m_strFvsOutDb, strVariant, strPackage);
+                            CreatePotFireTables(strAuditDbFile, m_strFvsOutDb, strVariant, strPackage);
 
                             //uc_filesize_monitor1.BeginMonitoringFile(
                             //strOutDirAndFile,
@@ -3907,125 +3837,7 @@ namespace FIA_Biosum_Manager
             if (p_intError != 0 && p_bAudit)
                 frmMain.g_oUtils.WriteText(m_strLogFile, p_strError + "\r\n\r\n");
         }
-        /// <summary>
-        /// Create the FVS_POTFIRE table. If the configuration includes baseyear than combine the baseyear POTFIRE table to the 
-        /// standard POTFIRE table.  If the baseyear POTFIRE table is not used then just use the standard POTFIRE table. It is 
-        /// assumed that the standard FVS_POTFIRE table link already exists as a link in the p_strDbFile when this routine is called.
-        /// </summary>
-        /// <param name="p_strDbFile">The FVSOUT_P000-000-000-000_BIOSUM.ACCDB or any accdb file</param>
-        /// <param name="p_strVariant">FVS variant</param>
-        private void CreatePotFireTables(string p_strAuditDbFile, string p_strFVSOutDbFile,string p_strVariant,string p_strRxPackageId)
-        {
 
-            if (m_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "// CreatePotFireTables\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-            int x;
-            string strPotFireBaseYearFile = "";
-            string strPotFireTable = "";
-            ado_data_access oAdo;
-
-
-            dao_data_access oDao = new dao_data_access();
-            //
-            //CHECK TO SEE IF THE BASEYEAR FILE AND TABLE EXIST
-            //
-            strPotFireBaseYearFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)this.txtOutDir, "Text", false);
-            strPotFireBaseYearFile = strPotFireBaseYearFile.Trim();
-            strPotFireBaseYearFile = strPotFireBaseYearFile + "\\" + p_strVariant + "\\FVSOUT_" + p_strVariant + "_POTFIRE_BaseYr.MDB";
-
-            //see which potfire table
-            if (oDao.TableExists(p_strFVSOutDbFile, "FVS_POTFIRE")) strPotFireTable = "FVS_POTFIRE";
-            else if (oDao.TableExists(p_strFVSOutDbFile, "FVS_POTFIRE_EAST")) strPotFireTable = "FVS_POTFIRE_EAST";
-
-            if (!System.IO.File.Exists(strPotFireBaseYearFile) || !oDao.TableExists(strPotFireBaseYearFile, strPotFireTable))
-            {
-                m_bPotFireBaseYearTableExist = false;
-                oDao.m_DaoWorkspace.Close();
-                oDao = null;
-                return;
-            }
-
-            //get the PREPOST SeqNum configuration for the POTFIRE table
-            GetPrePostSeqNumConfiguration(strPotFireTable,p_strRxPackageId);
-            //
-            //CHECK TO SEE IF THE CONFIGURATION INCLUDES BASEYEAR
-            //
-            if (m_oFVSPrePostSeqNumItem.RxCycle1PreSeqNumBaseYearYN == "N" &&
-                m_oFVSPrePostSeqNumItem.RxCycle2PreSeqNumBaseYearYN == "N" &&
-                m_oFVSPrePostSeqNumItem.RxCycle3PreSeqNumBaseYearYN == "N" &&
-                m_oFVSPrePostSeqNumItem.RxCycle4PreSeqNumBaseYearYN == "N")
-            {
-                oDao.m_DaoWorkspace.Close();
-                oDao = null;
-                oAdo = new ado_data_access();
-                oAdo.OpenConnection(oAdo.getMDBConnString(p_strAuditDbFile,"",""));
-                if (oAdo.m_intError == 0)
-                {
-                    if (oAdo.TableExist(oAdo.m_OleDbConnection, "FVS_POTFIRE_TEMP"))
-                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE FVS_POTFIRE_TEMP");
-
-                    oAdo.m_strSQL = "SELECT * INTO FVS_POTFIRE_TEMP FROM " + strPotFireTable;
-                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + strPotFireTable);
-                    oAdo.m_strSQL = "SELECT * INTO " + strPotFireTable + " FROM FVS_POTFIRE_TEMP";
-                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE FVS_POTFIRE_TEMP");
-                    oAdo.CloseConnection(oAdo.m_OleDbConnection);
-                    oAdo = null;
-
-                }
-                return;
-            }
-            //
-            //PROCESS THE BASEYEAR AND STANDARD POTFIRE TABLES INTO ONE FVS_POTFIRE TABLE
-            //
-            oDao.OpenDb(p_strAuditDbFile);
-            oDao.RenameTable(oDao.m_DaoDatabase, strPotFireTable, m_strPotFireStandardAccessLinkedTableName, true,true);
-            oDao.CreateTableLink(oDao.m_DaoDatabase, m_strPotFireBaseYearAccessLinkedTableName, strPotFireBaseYearFile,strPotFireTable,true);
-            oDao.m_DaoDatabase.Close();
-            oDao.m_DaoWorkspace.Close();
-            oDao = null;
-            //create the new FVS_POTFIRE table by inserting the baseyear POTFIRE records
-            oAdo = new ado_data_access();
-            oAdo.OpenConnection(oAdo.getMDBConnString(p_strAuditDbFile,"",""));
-            if (oAdo.m_intError == 0)
-            {
-                if (oAdo.TableExist(oAdo.m_OleDbConnection, "tempBASEYEAR")) oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE TEMPBASEYEAR");
-                if (oAdo.TableExist(oAdo.m_OleDbConnection, "BASEYEAR")) oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE BASEYEAR");
-                if (oAdo.TableExist(oAdo.m_OleDbConnection, "NONBASEYEAR")) oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE NONBASEYEAR");
-                string[] strSQL = Queries.FVS.FVSOutputTable_PrePostPotFireBaseYearSQL(
-                    m_strPotFireBaseYearAccessLinkedTableName,
-                    m_strPotFireStandardAccessLinkedTableName,
-                    "FVS_POTFIRE");
-
-                for (x = 0; x <= strSQL.Length - 1; x++)
-                {
-                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL[x] + "\r\n");
-                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL[x]);
-                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-                    if (oAdo.m_intError != 0) break;
-                }
-                if (oAdo.m_intError == 0)
-                {
-                    //drop the baseyear_yn column
-                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\nALTER TABLE FVS_POTFIRE DROP COLUMN baseyear_yn\r\n");
-                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "ALTER TABLE FVS_POTFIRE DROP COLUMN baseyear_yn");
-                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-                    if (oAdo.TableExist(oAdo.m_OleDbConnection, m_strPotFireStandardAccessLinkedTableName)) oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + m_strPotFireStandardAccessLinkedTableName);
-                    if (oAdo.TableExist(oAdo.m_OleDbConnection, m_strPotFireBaseYearAccessLinkedTableName)) oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + m_strPotFireBaseYearAccessLinkedTableName);
-                }
-                oAdo.CloseConnection(oAdo.m_OleDbConnection);
-            }
-            oAdo = null;
-        }
         /// <summary>
         /// Create the FVS_POTFIRE table. If the configuration includes baseyear than combine the baseyear POTFIRE table to the 
         /// standard POTFIRE table.  If the baseyear POTFIRE table is not used then just use the standard POTFIRE table. Output
@@ -4035,14 +3847,13 @@ namespace FIA_Biosum_Manager
         /// <param name="p_strDbFile">The FVSOut.db file</param>
         /// <param name="p_strVariant">FVS variant</param>
         /// <param name="p_strRxPackage">RxPackage</param>
-
-        private void CreateSQLitePotFireTables(string p_strAuditDbFile, string p_strFVSOutDbFile, string p_strFvsVariant, string p_strRxPackage)
+        private void CreatePotFireTables(string p_strAuditDbFile, string p_strFVSOutDbFile, string p_strFvsVariant, string p_strRxPackage)
         {
 
             if (m_bDebug && frmMain.g_intDebugLevel > 1)
             {
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "// CreateSQLitePotFireTables\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "// CreatePotFireTables\r\n");
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
             int x;
@@ -4232,12 +4043,10 @@ namespace FIA_Biosum_Manager
             string strSQL = "";
             System.Windows.Forms.ListView oLv = (System.Windows.Forms.ListView)frmMain.g_oDelegate.GetListView(this.lstFvsOutput, false);
             System.Windows.Forms.ListViewItem oLvItem = null;
-			Tables oTables = new Tables();	
             string strAuditDbFile;
             string strRxPackageWorktable = "rxpackage_work_table";
             string strRxPackageWorktable2 = "rxpackage_work_table2";
             string strRxWorktable = "rx_work_table";
-            ado_data_access oAdo = new ado_data_access();
 			
             bool bDisplay = false;
 
@@ -4376,8 +4185,8 @@ namespace FIA_Biosum_Manager
                             int intPlotTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("PLOT");
 
                             // Prepare tmpCutTree for next run
-                            string strAuditConn = SQLite.GetConnectionString(strAuditDbFile);
-                            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strAuditConn))
+                            string strTempConn = SQLite.GetConnectionString(strTempDb);
+                            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strTempConn))
                             {
                                 conn.Open();
                                 if (SQLite.TableExist(conn, strTempCutListTable))
@@ -4395,6 +4204,9 @@ namespace FIA_Biosum_Manager
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "Populated table " + strTempCutListTable + "\r\n");
 
+                                SQLite.SqlNonQuery(conn, $@"ATTACH DATABASE '{strAuditDbFile}' AS AUDITS");
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "Attached database " + strAuditDbFile + "\r\n");
                                 if (SQLite.TableExist(conn, "audit_Post_SUMMARY") == false)
                                 {
                                     SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistSUMMARYtableSQL("audit_Post_SUMMARY");
@@ -4504,7 +4316,6 @@ namespace FIA_Biosum_Manager
                                         m_intProgressStepCurrentCount,
                                         m_intProgressStepTotalCount);
 
-                            string strTempConn = SQLite.GetConnectionString(strTempDb);
                             string[] sqlArray = null;
                             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strTempConn))
                             {
@@ -4573,6 +4384,7 @@ namespace FIA_Biosum_Manager
                             }
 
                             long lngRowCount = 0;
+                            string strAuditConn = SQLite.GetConnectionString(strAuditDbFile);
                             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strAuditConn))
                             {
                                 conn.Open();
@@ -4958,19 +4770,6 @@ namespace FIA_Biosum_Manager
                                 
                                 frmMain.g_oUtils.WriteText(m_strLogFile, "Date/Time:" + System.DateTime.Now.ToString().Trim() + "\r\n\r\n");
                                 frmMain.g_oUtils.WriteText(m_strLogFile, "**EOF**");
-
-                            oAdo.CloseConnection(oAdo.m_OleDbConnection);
-                            oAdo.m_OleDbConnection.Dispose();
-                                
-                                //compact and repair when file size is 70 percent of 2GB
-                                if (uc_filesize_monitor1.CurrentPercent(strAuditDbFile,2000000000) > 70)
-                                {
-                                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Compact and Repair");
-                                    frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
-                                    System.Threading.Thread.Sleep(5000);
-                                    m_dao.CompactMDB(strAuditDbFile);
-                                }
-                            
                                 
                                 //detail progress bar
                                 m_intProgressStepCurrentCount++;
@@ -5002,13 +4801,6 @@ namespace FIA_Biosum_Manager
             }
             catch (System.Threading.ThreadAbortException err)
             {
-                if (oAdo.m_OleDbConnection != null)
-                {
-                    if (oAdo.m_OleDbConnection.State != System.Data.ConnectionState.Closed)
-                    {
-                        oAdo.CloseConnection(oAdo.m_OleDbConnection);
-                    }
-                }
                 this.ThreadCleanUp();
                 this.CleanupThread();
 
@@ -5048,9 +4840,7 @@ namespace FIA_Biosum_Manager
 
                 frmMain.g_oDelegate.m_oEventThreadStopped.Set();
                 this.Invoke(frmMain.g_oDelegate.m_oDelegateThreadFinished);
-            }
-
-			
+            }			
 		}
 		private void InitializeAuditLogTableArray(string[] p_strTableArray)
 		{
@@ -6869,579 +6659,6 @@ namespace FIA_Biosum_Manager
             }
         }
         
-        //private void ConvertAlphaSpCd()
-        //{
-        //    if (this.lstFvsOutput.CheckedItems.Count == 0)
-        //    {
-        //        MessageBox.Show("No Boxes Are Checked", "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-        //        return;
-        //    }
-
-        //    if (this.m_intError == 0)
-        //    {
-
-
-        //        this.m_frmTherm = new frmTherm(((frmDialog)ParentForm), "FVS OUT DATA",
-        //            "FVS Output", "2");
-        //        this.m_frmTherm.lblMsg.Text = "";
-        //        this.cmbStep.Enabled = false;
-        //        this.btnExecute.Enabled = false;
-        //        this.btnChkAll.Enabled = false;
-        //        this.btnClearAll.Enabled = false;
-        //        this.btnRefresh.Enabled = false;
-        //        this.btnClose.Enabled = false;
-        //        this.btnHelp.Enabled = false;
-        //        this.btnCancel.Visible = false;
-        //        this.btnViewLogFile.Enabled = false;
-        //        this.btnViewPostLogFile.Enabled = false;
-        //        this.btnAuditDb.Enabled = false;
-        //        this.btnPostAppendAuditDb.Enabled = false;
-        //       // this.grpboxSpCdConvert.Enabled = false;
-
-
-        //        frmMain.g_oDelegate.CurrentThreadProcessAborted = false;
-        //        frmMain.g_oDelegate.CurrentThreadProcessDone = false;
-        //        frmMain.g_oDelegate.CurrentThreadProcessStarted = false;
-        //        frmMain.g_oDelegate.m_oThread = new System.Threading.Thread(new System.Threading.ThreadStart(RunConvertAlphaSpCd_Start));
-        //        frmMain.g_oDelegate.InitializeThreadEvents();
-        //        frmMain.g_oDelegate.m_oThread.IsBackground = true;
-        //        frmMain.g_oDelegate.CurrentThreadProcessIdle = false;
-        //        frmMain.g_oDelegate.m_oThread.Start();
-
-
-        //    }
-        //}
-        //private void RunConvertAlphaSpCd_Start()
-        //{
-
-        //    frmMain.g_oDelegate.InitializeThreadEvents();
-        //    frmMain.g_oDelegate.m_oEventStopThread.Reset();
-        //    frmMain.g_oDelegate.m_oEventThreadStopped.Reset();
-        //    frmMain.g_oDelegate.m_oThread = new Thread(new ThreadStart(this.RunConvertAlphaSpCd_Main));
-        //    frmMain.g_oDelegate.m_oThread.IsBackground = true;
-        //    frmMain.g_oDelegate.m_oThread.Start();
-
-
-        //}
-        //private void RunConvertAlphaSpCd_Main()
-        //{
-
-
-        //    frmMain.g_oDelegate.CurrentThreadProcessName = "main";
-        //    frmMain.g_oDelegate.CurrentThreadProcessStarted = true;
-        //    System.Threading.Thread.Sleep(2000);
-
-        //    this.m_intError = 0;
-        //    int intCount = 0;
-           
-        //    m_strError = "";
-        //    m_strWarning = "";
-        //    m_intWarning = 0;
-
-        //    m_intProgressOverallCurrentCount = 0;
-        //    m_intProgressOverallTotalCount = 0;
-        //    m_intProgressStepCurrentCount = 0;
-        //    m_intProgressStepTotalCount = 0;
-
-        //    string strRx1 = "";
-        //    string strRx2 = "";
-        //    string strRx3 = "";
-        //    string strRx4 = "";
-        //    string strPackage = "";
-        //    string strVariant = "";
-        //    System.Windows.Forms.ListView oLv = (System.Windows.Forms.ListView)frmMain.g_oDelegate.GetListView(this.lstFvsOutput, false);
-        //    System.Windows.Forms.ListViewItem oLvItem = null;
-        //    bool bSkip = false;
-
-
-        //    Tables oTables = new Tables();
-
-
-
-        //    string strOutDirAndFile;
-        //    string strDbFile;
-            
-
-
-
-        //    string[] strSourceTableArray = null;
-        //    ado_data_access oAdo = new ado_data_access();
-
-        //    if (m_bDebug)
-        //        frmMain.g_oUtils.WriteText(m_strDebugFile, "*****START*****" + System.DateTime.Now.ToString() + "\r\n");
-
-
-        //    int x, y,z;
-        //    int intTranslatorTable = 0;
-        //    try
-        //    {
-
-
-        //        if (this.m_ado.m_OleDbConnection.State == System.Data.ConnectionState.Open)
-        //            this.m_ado.m_OleDbConnection.Close();
-
-        //        while (this.m_ado.m_OleDbConnection.State != System.Data.ConnectionState.Closed)
-        //        {
-        //            System.Threading.Thread.Sleep(1000);
-        //        }
-                
-
-        //        intCount = (int)frmMain.g_oDelegate.GetListViewItemsPropertyValue(oLv, "Count", false);
-        //        for (x = 0; x <= intCount - 1; x++)
-        //        {
-        //            oLvItem = (System.Windows.Forms.ListViewItem)frmMain.g_oDelegate.GetListViewItem(oLv, x, false);
-        //            m_oLvAlternateColors.m_oRowCollection.Item(x).m_oColumnCollection.Item(COL_RUNSTATUS).UpdateColumn = true;
-        //            m_oLvAlternateColors.DelegateListViewSubItem(oLvItem, x, COL_RUNSTATUS);
-        //            //see if checked
-        //            if ((bool)frmMain.g_oDelegate.GetListViewItemPropertyValue(oLv, x, "Checked", false))
-        //                m_intProgressOverallTotalCount++;
-        //        }
-        //        //
-        //        //INITIALIZE OVERALL PROGRESS BAR
-        //        //
-        //        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Maximum", 100);
-        //        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Minimum", 0);
-        //        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar2, "Value", 0);
-        //        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg2, "Text", "Overall Progress");
-        //        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "");
-        //        frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Visible", true);
-
-        //        for (x = 0; x <= intCount - 1; x++)
-        //        {
-        //            oLvItem = (System.Windows.Forms.ListViewItem)frmMain.g_oDelegate.GetListViewItem(oLv, x, false);
-        //            this.m_oLvAlternateColors.DelegateListViewSubItem(oLvItem, x, COL_RUNSTATUS);
-        //            frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "");
-        //            this.m_oLvAlternateColors.DelegateListViewSubItem(oLvItem, x, COL_RUNSTATUS);
-        //            frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "");
-
-        //            if ((bool)frmMain.g_oDelegate.GetListViewItemPropertyValue(oLv, x, "Checked", false) == true)
-        //            {
-
-        //                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Maximum", 100);
-        //                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Minimum", 0);
-        //                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", 0);
-
-
-
-                       
-
-
-        //                m_intProgressStepCurrentCount = 0;
-        //                m_intProgressStepTotalCount = 5;
-
-
-
-        //                this.m_oLvAlternateColors.m_oRowCollection.Item(x).m_oColumnCollection.Item(COL_RUNSTATUS).UpdateColumn = false;
-        //                frmMain.g_oDelegate.ExecuteControlMethodWithParam((System.Windows.Forms.Control)oLv, "EnsureVisible", new object[] { x });
-        //                frmMain.g_oDelegate.SetListViewItemPropertyValue(oLv, x, "Selected", true);
-        //                frmMain.g_oDelegate.SetListViewItemPropertyValue(oLv, x, "Focused", true);
-
-
-
-        //                frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "BackColor", Color.DarkGoldenrod);
-        //                frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "ForeColor", Color.White);
-        //                frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "Convert FVS Alpha Codes To FIA Codes");
-
-        //                //get the variant
-        //                strVariant = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_VARIANT, "Text", false);
-        //                strVariant = strVariant.Trim();
-
-        //                //get the package and treatments
-        //                strPackage = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_PACKAGE, "Text", false);
-        //                strPackage = strPackage.Trim();
-
-        //                strRx1 = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_RXCYCLE1, "Text", false);
-        //                strRx1 = strRx1.Trim();
-
-        //                strRx2 = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_RXCYCLE2, "Text", false);
-        //                strRx2 = strRx2.Trim();
-
-        //                strRx3 = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_RXCYCLE3, "Text", false);
-        //                strRx3 = strRx3.Trim();
-
-        //                strRx4 = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_RXCYCLE4, "Text", false);
-        //                strRx4 = strRx4.Trim();
-
-        //                //find the package item in the package collection
-        //                for (y = 0; y <= this.m_oRxPackageItem_Collection.Count - 1; y++)
-        //                {
-        //                    if (this.m_oRxPackageItem_Collection.Item(y).SimulationYear1Rx.Trim() == strRx1.Trim() &&
-        //                        this.m_oRxPackageItem_Collection.Item(y).SimulationYear2Rx.Trim() == strRx2.Trim() &&
-        //                        this.m_oRxPackageItem_Collection.Item(y).SimulationYear3Rx.Trim() == strRx3.Trim() &&
-        //                        this.m_oRxPackageItem_Collection.Item(y).SimulationYear4Rx.Trim() == strRx4.Trim() &&
-        //                        this.m_oRxPackageItem_Collection.Item(y).RxPackageId.Trim() == strPackage.Trim())
-        //                        break;
-
-
-        //                }
-        //                if (y <= m_oRxPackageItem_Collection.Count - 1)
-        //                {
-        //                    this.m_oRxPackageItem = new RxPackageItem();
-        //                    m_oRxPackageItem.CopyProperties(m_oRxPackageItem_Collection.Item(y), m_oRxPackageItem);
-        //                }
-        //                else
-        //                {
-        //                    this.m_oRxPackageItem = null;
-        //                }
-
-        //                //get the list of treatment cycle year fields to reference for this package
-        //                this.m_strRxCycleList = "";
-        //                if (strRx1.Trim().Length > 0 && strRx1.Trim() != "000") this.m_strRxCycleList = "1,";
-        //                if (strRx2.Trim().Length > 0 && strRx2.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "2,";
-        //                if (strRx3.Trim().Length > 0 && strRx3.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "3,";
-        //                if (strRx4.Trim().Length > 0 && strRx4.Trim() != "000") this.m_strRxCycleList = this.m_strRxCycleList + "4,";
-
-        //                if (this.m_strRxCycleList.Trim().Length > 0)
-        //                    this.m_strRxCycleList = this.m_strRxCycleList.Substring(0, this.m_strRxCycleList.Length - 1);
-
-        //                this.m_strRxCycleArray = frmMain.g_oUtils.ConvertListToArray(this.m_strRxCycleList, ",");
-
-        //                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim());
-        //                frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
-
-        //                strDbFile = (string)frmMain.g_oDelegate.GetListViewSubItemPropertyValue(oLv, x, COL_MDBOUT, "Text", false);
-        //                strDbFile = strDbFile.Trim();
-
-        //                strOutDirAndFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)this.txtOutDir, "Text", false);
-        //                strOutDirAndFile = strOutDirAndFile.Trim();
-
-                        
-
-
-
-        //                strOutDirAndFile = strOutDirAndFile + "\\" + strVariant + "\\" + strDbFile;
-
-        //                uc_filesize_monitor1.BeginMonitoringFile(
-        //                    strOutDirAndFile,
-        //                    2000000000, "2gb");
-
-        //                m_intProgressStepCurrentCount++;
-        //                UpdateTherm(this.m_frmTherm.progressBar1,
-        //                            m_intProgressStepCurrentCount,
-        //                            m_intProgressStepTotalCount);
-
-                        
-        //                dao_data_access oDao = new dao_data_access();
-        //                oDao.OpenDb(strOutDirAndFile);
-        //                intTranslatorTable=m_oQueries.m_oDataSource.getValidTableNameRow("FVS WESTERN TREE SPECIES TRANSLATOR");
-
-        //                if (oDao.TableExists(oDao.m_DaoDatabase, m_oQueries.m_oDataSource.m_strDataSource[intTranslatorTable, 4].Trim()))
-        //                    oDao.DeleteTableFromMDB(oDao.m_DaoDatabase, m_oQueries.m_oDataSource.m_strDataSource[intTranslatorTable, Datasource.TABLE].Trim());
-        //                oDao.CreateTableLink(oDao.m_DaoDatabase,
-        //                    m_oQueries.m_oDataSource.m_strDataSource[intTranslatorTable, Datasource.TABLE].Trim(),
-        //                    m_oQueries.m_oDataSource.m_strDataSource[intTranslatorTable, Datasource.PATH].Trim() + "\\" +
-        //                    m_oQueries.m_oDataSource.m_strDataSource[intTranslatorTable, Datasource.MDBFILE].Trim(),
-        //                    m_oQueries.m_oDataSource.m_strDataSource[intTranslatorTable, Datasource.TABLE].Trim());
-        //                oDao.m_DaoDatabase.Close();
-        //                oDao.m_DaoWorkspace.Close();
-        //                oDao = null;
-
-        //                m_intProgressStepCurrentCount++;
-        //                UpdateTherm(this.m_frmTherm.progressBar1,
-        //                            m_intProgressStepCurrentCount,
-        //                            m_intProgressStepTotalCount);
-
-                        
-        //                System.Threading.Thread.Sleep(3000);
-
-
-        //                oAdo.OpenConnection(oAdo.getMDBConnString(strOutDirAndFile, "", ""));
-
-
-
-        //                oAdo.DisplayErrors = false;
-
-        //                strSourceTableArray = oAdo.getTableNames(oAdo.m_OleDbConnection);
-
-        //                m_intProgressStepCurrentCount++;
-        //                UpdateTherm(this.m_frmTherm.progressBar1,
-        //                            m_intProgressStepCurrentCount,
-        //                            m_intProgressStepTotalCount);
-        //                bSkip = true;
-        //                for (y = 0; y <= strSourceTableArray.Length - 1; y++)
-        //                {
-        //                    if (strSourceTableArray[y] == null) break;
-        //                    bSkip = true;
-        //                    for (z = 0; z <= Tables.FVS.g_strFVSOutTablesArray.Length - 1; z++)
-        //                    {
-        //                        if (strSourceTableArray[y].Trim().ToUpper() ==
-        //                            Tables.FVS.g_strFVSOutTablesArray[z].Trim().ToUpper())
-        //                        {
-        //                            bSkip = false; break;
-        //                        }
-
-        //                    }
-        //                    if (bSkip == false)
-        //                    {
-        //                        //
-        //                        //FVS_TREELIST
-        //                        //
-        //                        if (strSourceTableArray[y].Trim().ToUpper() == "FVS_TREELIST")
-        //                        {
-        //                            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim() + " FVS_TREELIST");
-        //                            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
-
-        //                            frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "Processing...FVS_Treelist");
-        //                            if ((double)oAdo.getSingleDoubleValueFromSQLQuery(oAdo.m_OleDbConnection, "SELECT COUNT(*) AS ROWCOUNT FROM FVS_TREELIST", "FVS_TREELIST") > 0)
-        //                            {
-        //                                if (oAdo.ColumnExist(oAdo.m_OleDbConnection, "FVS_TREELIST", "species_temp"))
-        //                                {
-        //                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\nALTER TABLE FVS_TREELIST DROP COLUMN species_temp\r\n");
-        //                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "ALTER TABLE FVS_TREELIST DROP COLUMN species_temp");
-        //                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-        //                                }
-
-        //                                oAdo.m_strSQL = "ALTER TABLE FVS_TREELIST ADD COLUMN species_temp TEXT(10)";
-        //                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
-        //                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-        //                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-        //                                oAdo.m_strSQL = "UPDATE FVS_TREELIST SET species_temp=species";
-        //                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
-        //                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-        //                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-
-        //                                oAdo.m_strSQL = "UPDATE FVS_TREELIST a " +
-        //                                                "INNER JOIN " + m_oQueries.m_oDataSource.m_strDataSource[intTranslatorTable, Datasource.TABLE].Trim() + " b " +
-        //                                                "ON a.species_temp=b.USDA_PLANTS_SYMBOL " +
-        //                                                "SET a.species=b.fia_spcd";
-        //                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
-        //                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-        //                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-        //                                if (oAdo.ColumnExist(oAdo.m_OleDbConnection, "FVS_TREELIST", "species_temp"))
-        //                                {
-        //                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\nALTER TABLE FVS_TREELIST DROP COLUMN species_temp\r\n");
-        //                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "ALTER TABLE FVS_TREELIST DROP COLUMN species_temp");
-        //                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-        //                                }
-        //                            }
-
-        //                        }
-        //                        //
-        //                        //FVS_CUTLIST
-        //                        //
-        //                        else if (strSourceTableArray[y].Trim().ToUpper() == "FVS_CUTLIST")
-        //                        {
-        //                            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim() + " FVS_CUTLIST");
-        //                            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
-
-        //                            frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "Processing...FVS_Cutlist");
-        //                            if ((double)oAdo.getSingleDoubleValueFromSQLQuery(oAdo.m_OleDbConnection, "SELECT COUNT(*) AS ROWCOUNT FROM FVS_CUTLIST", "FVS_CUTLIST") > 0)
-        //                            {
-        //                                if (oAdo.ColumnExist(oAdo.m_OleDbConnection, "FVS_CUTLIST", "species_temp"))
-        //                                {
-        //                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\nALTER TABLE FVS_CUTLIST DROP COLUMN species_temp\r\n");
-        //                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "ALTER TABLE FVS_CUTLIST DROP COLUMN species_temp");
-        //                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-        //                                }
-
-        //                                oAdo.m_strSQL = "ALTER TABLE FVS_CUTLIST ADD COLUMN species_temp TEXT(10)";
-        //                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
-        //                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-        //                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-        //                                oAdo.m_strSQL = "UPDATE FVS_CUTLIST SET species_temp=species";
-        //                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
-        //                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-        //                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-
-        //                                oAdo.m_strSQL = "UPDATE FVS_CUTLIST a " +
-        //                                                "INNER JOIN " + m_oQueries.m_oDataSource.m_strDataSource[intTranslatorTable, Datasource.TABLE].Trim() + " b " +
-        //                                                "ON a.species_temp=b.USDA_PLANTS_SYMBOL " +
-        //                                                "SET a.species=b.fia_spcd";
-        //                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
-        //                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-        //                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-        //                                if (oAdo.ColumnExist(oAdo.m_OleDbConnection, "FVS_CUTLIST", "species_temp"))
-        //                                {
-        //                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\nALTER TABLE FVS_CUTLIST DROP COLUMN species_temp\r\n");
-        //                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "ALTER TABLE FVS_CUTLIST DROP COLUMN species_temp");
-        //                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-        //                                }
-        //                            }
-
-
-        //                        }
-        //                        //
-        //                        //FVS_ATRTLIST
-        //                        //
-        //                        else if (strSourceTableArray[y].Trim().ToUpper() == "FVS_ATRTLIST")
-        //                        {
-        //                            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim() + " FVS_ATRTLIST");
-        //                            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
-
-        //                            frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "Processing...FVS_ATRTList");
-        //                            if ((double)oAdo.getSingleDoubleValueFromSQLQuery(oAdo.m_OleDbConnection, "SELECT COUNT(*) AS ROWCOUNT FROM FVS_ATRTLIST", "FVS_ATRTLIST") > 0)
-        //                            {
-        //                                if (oAdo.ColumnExist(oAdo.m_OleDbConnection, "FVS_ATRTLIST", "species_temp"))
-        //                                {
-        //                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\nALTER TABLE FVS_ATRTLIST DROP COLUMN species_temp\r\n\r\n");
-        //                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "ALTER TABLE FVS_ATRTLIST DROP COLUMN species_temp");
-        //                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-        //                                }
-
-        //                                oAdo.m_strSQL = "ALTER TABLE FVS_ATRTLIST ADD COLUMN species_temp TEXT(10)";
-        //                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
-        //                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-        //                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-        //                                oAdo.m_strSQL = "UPDATE FVS_ATRTLIST SET species_temp=species";
-        //                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
-        //                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-        //                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-
-        //                                oAdo.m_strSQL = "UPDATE FVS_ATRTLIST a " +
-        //                                                "INNER JOIN " + m_oQueries.m_oDataSource.m_strDataSource[intTranslatorTable, Datasource.TABLE].Trim() + " b " +
-        //                                                "ON a.species_temp=b.USDA_PLANTS_SYMBOL " +
-        //                                                "SET a.species=b.fia_spcd";
-        //                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n\r\n");
-        //                                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-        //                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-        //                                if (oAdo.ColumnExist(oAdo.m_OleDbConnection, "FVS_ATRTLIST", "species_temp"))
-        //                                {
-        //                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\nALTER TABLE FVS_ATRTLIST DROP COLUMN species_temp\r\n");
-        //                                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "ALTER TABLE FVS_ATRTLIST DROP COLUMN species_temp");
-        //                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-        //                                }
-        //                            }
-
-
-
-
-        //                        }
-        //                    }
-
-        //                }
-
-
-        //                m_intProgressStepCurrentCount++;
-        //                UpdateTherm(this.m_frmTherm.progressBar1,
-        //                            m_intProgressStepCurrentCount,
-        //                            m_intProgressStepTotalCount);
-
-        //                if (oAdo.m_intError==0)
-        //                {
-        //                    if (oAdo.TableExist(oAdo.m_OleDbConnection, "FVS_CASES"))
-        //                    {
-        //                        oAdo.m_strSQL = "UPDATE FVS_CASES SET BIOSUM_FVSAlphaToFIANumeric_YN='Y'";
-        //                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                            this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oAdo.m_strSQL + "\r\n");
-        //                        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-        //                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
-        //                            this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-        //                        frmMain.g_oDelegate.SetListViewTextValue(
-        //                            oLv,x,COL_CHECKBOX,Convert.ToString(frmMain.g_oDelegate.GetListViewTextValue(oLv,x,COL_CHECKBOX,false).Replace("c","")));
-
-        //                    }
-        //                    frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "BackColor", Color.Green);
-        //                    frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "ForeColor", Color.White);
-        //                    frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "DONE");
-
-        //                }
-        //                else 
-        //                {
-                            
-        //                    frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "BackColor", Color.Red);
-        //                    frmMain.g_oDelegate.SetListViewSubItemPropertyValue(oLv, x, COL_RUNSTATUS, "Text", "ERROR");
-        //                }
-                        
-        //                oAdo.CloseConnection(oAdo.m_OleDbConnection);
-        //                frmMain.g_oDelegate.ExecuteListViewItemsMethod(oLv, "Refresh");
-
-        //                UpdateTherm(this.m_frmTherm.progressBar1,
-        //                            m_intProgressStepTotalCount,
-        //                            m_intProgressStepTotalCount);
-        //                System.Threading.Thread.Sleep(2000);
-
-        //                m_intProgressOverallCurrentCount++;
-        //                UpdateTherm(m_frmTherm.progressBar2,
-        //                            m_intProgressOverallCurrentCount,
-        //                            m_intProgressOverallTotalCount);
-
-        //            }
-        //        }
-        //        UpdateTherm(m_frmTherm.progressBar2,
-        //                    m_intProgressOverallTotalCount,
-        //                    m_intProgressOverallTotalCount);
-
-                
-        //        System.Threading.Thread.Sleep(2000);
-        //        this.FVSRecordsFinished();
-        //    }
-        //    catch (System.Threading.ThreadInterruptedException err)
-        //    {
-        //        MessageBox.Show("Threading Interruption Error " + err.Message.ToString());
-        //    }
-        //    catch (System.Threading.ThreadAbortException err)
-        //    {
-        //        if (oAdo.m_OleDbConnection != null)
-        //        {
-        //            if (oAdo.m_OleDbConnection.State != System.Data.ConnectionState.Closed)
-        //            {
-        //                oAdo.CloseConnection(oAdo.m_OleDbConnection);
-        //            }
-        //        }
-        //        this.ThreadCleanUp();
-        //        this.CleanupThread();
-
-        //    }
-        //    catch (Exception err)
-        //    {
-        //        MessageBox.Show("!!Error!! \n" +
-        //            "Module - uc_fvs_output:ConvertAlphaSpCd_Main  \n" +
-        //            "Err Msg - " + err.Message.ToString().Trim(),
-        //            "FVS Biosum", System.Windows.Forms.MessageBoxButtons.OK,
-        //            System.Windows.Forms.MessageBoxIcon.Exclamation);
-        //        this.m_intError = -1;
-        //    }
-
-        //    if (m_bDebug)
-        //        frmMain.g_oUtils.WriteText(m_strDebugFile, "*****END*****" + System.DateTime.Now.ToString() + "\r\n");
-           
-        //    CleanupThread();
-
-
-        //    frmMain.g_oDelegate.CurrentThreadProcessDone = true;
-        //    frmMain.g_oDelegate.m_oEventThreadStopped.Set();
-        //    this.Invoke(frmMain.g_oDelegate.m_oDelegateThreadFinished);
-        //}
-
         private void groupBox1_Enter(object sender, EventArgs e)
         {
 
@@ -8881,7 +8098,7 @@ namespace FIA_Biosum_Manager
                             if (m_bDebug && frmMain.g_intDebugLevel > 1)
                                 this.WriteText(m_strDebugFile, "strOutDirAndFile=" + m_strFvsOutDb + "  \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
 
-                            frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1, "Processing " + m_strOutMDBFile + "...Stand By");
+                            frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1, "Processing " + m_strFvsOutDb + "...Stand By");
                             strAuditDbFile = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}{Tables.FVS.DefaultFVSAuditsDbFile}";
 
                             //
@@ -8896,7 +8113,7 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
                             if (m_bDebug && frmMain.g_intDebugLevel > 1)
                                 this.WriteText(m_strDebugFile, "\r\nSTART:Create POTFIRE tables " + System.DateTime.Now.ToString() + "\r\n");
-                            CreateSQLitePotFireTables(strAuditDbFile, m_strFvsOutDb, strVariant, strPackage);
+                            CreatePotFireTables(strAuditDbFile, m_strFvsOutDb, strVariant, strPackage);
                             m_intProgressStepCurrentCount++;
                             UpdateTherm(m_frmTherm.progressBar1,
                                          m_intProgressStepCurrentCount,
