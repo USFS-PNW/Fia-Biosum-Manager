@@ -143,13 +143,12 @@ namespace FIA_Biosum_Manager
     private Queries m_oQueries = new Queries();
     string[] m_strFVSTreeTableLinkNameArray = null;
     string m_strTempDBFile = "";
-    string m_strGridTableSource = "";
+        string m_strTreeSampleDBFile = "";
+        string m_strGridTableSource = "";
     static string m_strOldPerc = "0";
     private ProgressBarBasic.ProgressBarBasic progressBarBasic1;
     private Label lblVOLTSGRS;
     private Label label21;
-    private Label label16;
-    private Label lblFSNetwork;
 
     
 
@@ -163,13 +162,10 @@ namespace FIA_Biosum_Manager
 
         public frmFCSTreeVolumeEdit()
     {
-        utils.FS_NETWORK = utils.FS_NETWORK_STATUS.Available;
         this.SetStyle(ControlStyles.OptimizedDoubleBuffer |
                ControlStyles.AllPaintingInWmPaint,
                true);
-      int x,y;
-      string strFVSTreeTableLinkNameList="";
-      string strTableName="";
+      int x;
 
       dao_data_access oDao = new dao_data_access();
       InitializeComponent();
@@ -182,20 +178,22 @@ namespace FIA_Biosum_Manager
       uc_gridview1.CloseButton_Visible = false;
       uc_gridview1.Show();
       ResizeForm();
-      
-      if (frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim().Length > 0)
-      {
 
-          m_oQueries.m_oFvs.LoadDatasource = true;
-          m_oQueries.m_oFIAPlot.LoadDatasource = true;
-          m_oQueries.LoadDatasources(true);
-          // Set up an ODBC DSN for the FVSOUT_TREE_LIST.db
-          if (m_odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName))
-          {
-            m_odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName);
-          }
+            if (frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim().Length > 0)
+            {
+                // We have an open project
+                m_oQueries.m_oFvs.LoadDatasource = true;
+                m_oQueries.m_oFIAPlot.LoadDatasource = true;
+                m_oQueries.LoadDatasources(true);
+
+                m_strTempDBFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
+                m_strTreeSampleDBFile = frmMain.g_oEnv.strAppDir + "\\db\\treesample.accdb";
+
+                //
+                //OPEN CONNECTION TO TREELIST DB FILE
+                //
                 string strFvsTreeListDb = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}{Tables.FVS.DefaultFVSTreeListDbFile}";
-                m_strTempDBFile = m_oQueries.m_strTempDbFile;
+                string strFVSTreeTableName = "";
                 if (File.Exists(strFvsTreeListDb))
                 {
                     using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strFvsTreeListDb)))
@@ -203,60 +201,20 @@ namespace FIA_Biosum_Manager
                         conn.Open();
                         if (m_oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSCutTreeTableName))
                         {
-                            m_odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName,
-                                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                                Tables.FVS.DefaultFVSTreeListDbFile);
-                            oDao.CreateSQLiteTableLink(m_strTempDBFile, Tables.FVS.DefaultFVSCutTreeTableName, Tables.FVS.DefaultFVSCutTreeTableName,
-                                ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                                Tables.FVS.DefaultFVSTreeListDbFile);
+                            strFVSTreeTableName = Tables.FVS.DefaultFVSCutTreeTableName;
                         }
                     }
                 }
-          oDao.CreateTableLink(m_strTempDBFile, "treesample", frmMain.g_oEnv.strAppDir + "\\db\\treesample.accdb", "treesample");
-          oDao.m_DaoWorkspace.Close();
 
-          //
-          //OPEN CONNECTION TO TEMP DB FILE
-          //
-          m_oAdo = new ado_data_access();
-          m_oAdo.OpenConnection(m_oAdo.getMDBConnString(m_oQueries.m_strTempDbFile, "", ""));
-
-          if (m_oAdo.m_intError == 0)
-          {
-            if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, Tables.FVS.DefaultFVSCutTreeTableName))
-            {
-                  strFVSTreeTableLinkNameList = Tables.FVS.DefaultFVSCutTreeTableName + ",";
-            }
-              cmbDatasource.Items.Clear();
-              cmbDatasource.Items.Add("Tree Sample");
-              cmbDatasource.Items.Add("Tree Table");
-              //load the list into an array
-              if (strFVSTreeTableLinkNameList.Trim().Length > 0)
-              {
-                  strFVSTreeTableLinkNameList = strFVSTreeTableLinkNameList.Substring(0, strFVSTreeTableLinkNameList.Length - 1);
-                  m_strFVSTreeTableLinkNameArray = frmMain.g_oUtils.ConvertListToArray(strFVSTreeTableLinkNameList, ",");
-                  for (x = 0; x <= m_strFVSTreeTableLinkNameArray.Length - 1; x++)
-                  {
-                      cmbDatasource.Items.Add(m_strFVSTreeTableLinkNameArray[x].Trim());
-                  }
-              }
-          }
-      }
-      else
-      {
-          m_strTempDBFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
-          oDao.CreateMDB(m_strTempDBFile);
-          oDao.CreateTableLink(m_strTempDBFile, "treesample", frmMain.g_oEnv.strAppDir + "\\db\\treesample.accdb", "treesample");
-          oDao.m_DaoWorkspace.Close();
-      }
-      oDao = null;
-      
-
-      
-   
-      LoadDefaultSingleRecordValues();
-
-      lblFSNetwork.Text = "FCS_TREE.DB BIOSUM_CALC";
+                cmbDatasource.Items.Clear();
+                cmbDatasource.Items.Add("Tree Sample");
+                cmbDatasource.Items.Add("Tree Table");
+                if (!string.IsNullOrEmpty(strFVSTreeTableName))
+                {
+                    cmbDatasource.Items.Add(strFVSTreeTableName);
+                }
+            }         
+        LoadDefaultSingleRecordValues();
     }
      /// <summary>
     /// Required designer variable.
@@ -289,6 +247,8 @@ namespace FIA_Biosum_Manager
             this.progressBarBasic1 = new ProgressBarBasic.ProgressBarBasic();
             this.btnCancel = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.cboDiaHtCd = new System.Windows.Forms.ComboBox();
+            this.label22 = new System.Windows.Forms.Label();
             this.btnDefaultSingle = new System.Windows.Forms.Button();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.lblVOLTSGRS = new System.Windows.Forms.Label();
@@ -333,14 +293,10 @@ namespace FIA_Biosum_Manager
             this.txtCountyCd = new System.Windows.Forms.TextBox();
             this.btnTreeVolSingle = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.lblFSNetwork = new System.Windows.Forms.Label();
-            this.label16 = new System.Windows.Forms.Label();
             this.btnEdit = new System.Windows.Forms.Button();
             this.btnLoad = new System.Windows.Forms.Button();
             this.cmbDatasource = new System.Windows.Forms.ComboBox();
             this.btnLinkTableTest = new System.Windows.Forms.Button();
-            this.label22 = new System.Windows.Forms.Label();
-            this.cboDiaHtCd = new System.Windows.Forms.ComboBox();
             this.panel1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -436,6 +392,27 @@ namespace FIA_Biosum_Manager
             this.groupBox2.TabIndex = 1;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Tree Volumes And Biomass One Record Test";
+            // 
+            // cboDiaHtCd
+            // 
+            this.cboDiaHtCd.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboDiaHtCd.FormattingEnabled = true;
+            this.cboDiaHtCd.Items.AddRange(new object[] {
+            "1",
+            "2"});
+            this.cboDiaHtCd.Location = new System.Drawing.Point(411, 105);
+            this.cboDiaHtCd.Name = "cboDiaHtCd";
+            this.cboDiaHtCd.Size = new System.Drawing.Size(50, 24);
+            this.cboDiaHtCd.TabIndex = 34;
+            // 
+            // label22
+            // 
+            this.label22.AutoSize = true;
+            this.label22.Location = new System.Drawing.Point(351, 108);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(60, 17);
+            this.label22.TabIndex = 33;
+            this.label22.Text = "DiaHtCd";
             // 
             // btnDefaultSingle
             // 
@@ -826,8 +803,6 @@ namespace FIA_Biosum_Manager
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.lblFSNetwork);
-            this.groupBox1.Controls.Add(this.label16);
             this.groupBox1.Controls.Add(this.btnEdit);
             this.groupBox1.Controls.Add(this.btnLoad);
             this.groupBox1.Controls.Add(this.cmbDatasource);
@@ -839,26 +814,6 @@ namespace FIA_Biosum_Manager
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Tree Volumes And Biomass Batch Test";
-            // 
-            // lblFSNetwork
-            // 
-            this.lblFSNetwork.AutoSize = true;
-            this.lblFSNetwork.Location = new System.Drawing.Point(180, 16);
-            this.lblFSNetwork.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lblFSNetwork.Name = "lblFSNetwork";
-            this.lblFSNetwork.Size = new System.Drawing.Size(27, 17);
-            this.lblFSNetwork.TabIndex = 9;
-            this.lblFSNetwork.Text = "NA";
-            // 
-            // label16
-            // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(5, 16);
-            this.label16.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(225, 17);
-            this.label16.TabIndex = 8;
-            this.label16.Text = "FCS Volume and Biomass Method:";
             // 
             // btnEdit
             // 
@@ -901,27 +856,6 @@ namespace FIA_Biosum_Manager
             this.btnLinkTableTest.UseVisualStyleBackColor = true;
             this.btnLinkTableTest.Click += new System.EventHandler(this.btnLinkTableTest_Click);
             // 
-            // label22
-            // 
-            this.label22.AutoSize = true;
-            this.label22.Location = new System.Drawing.Point(351, 108);
-            this.label22.Name = "label22";
-            this.label22.Size = new System.Drawing.Size(60, 17);
-            this.label22.TabIndex = 33;
-            this.label22.Text = "DiaHtCd";
-            // 
-            // cboDiaHtCd
-            // 
-            this.cboDiaHtCd.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cboDiaHtCd.FormattingEnabled = true;
-            this.cboDiaHtCd.Items.AddRange(new object[] {
-            "1",
-            "2"});
-            this.cboDiaHtCd.Location = new System.Drawing.Point(411, 105);
-            this.cboDiaHtCd.Name = "cboDiaHtCd";
-            this.cboDiaHtCd.Size = new System.Drawing.Size(50, 24);
-            this.cboDiaHtCd.TabIndex = 34;
-            // 
             // frmFCSTreeVolumeEdit
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -937,7 +871,6 @@ namespace FIA_Biosum_Manager
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
 
     }
