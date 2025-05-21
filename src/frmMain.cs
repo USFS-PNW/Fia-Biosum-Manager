@@ -437,8 +437,8 @@ namespace FIA_Biosum_Manager
 
             CheckForBiosumRefData();
             CheckForBiosumRefSqliteData();
-            CheckForFcsFiles();
-            
+            CheckForTreeSampleData();
+            CheckForFcsFiles();            
         }
 
 		/// <summary>
@@ -4436,7 +4436,6 @@ namespace FIA_Biosum_Manager
                     System.IO.Path.GetDirectoryName(strDestFile) + " !!", "FIA Biosum");
             }
         }
-
         private void CheckForBiosumRefSqliteData()
         {
             string strDestFile = frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
@@ -4473,6 +4472,26 @@ namespace FIA_Biosum_Manager
             catch (Exception)
             {
                 MessageBox.Show("!! An error occurred while accessing biosum_ref.db at " +
+                    System.IO.Path.GetDirectoryName(strDestFile) + " !!", "FIA Biosum");
+            }
+        }
+
+        private void CheckForTreeSampleData()
+        {
+            string strDestFile = frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
+                frmMain.g_strBiosumDataDir + Tables.Reference.DefaultTreeSampleDbFile;
+            try
+            {
+                string strSourceFile = frmMain.g_oEnv.strAppDir + "\\db" + Tables.Reference.DefaultTreeSampleDbFile;
+                if (System.IO.File.Exists(strDestFile) == false || System.IO.File.Exists(strSourceFile) == true)
+                {
+                    // Copy it the database from the app install directory
+                    System.IO.File.Copy(strSourceFile, strDestFile, true);
+                }
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("!! An error occurred while accessing treesample.db at " +
                     System.IO.Path.GetDirectoryName(strDestFile) + " !!", "FIA Biosum");
             }
         }

@@ -161,24 +161,22 @@ namespace FIA_Biosum_Manager
         private SQLite.ADO.DataMgr m_oDataMgr = new SQLite.ADO.DataMgr();
 
         public frmFCSTreeVolumeEdit()
-    {
-        this.SetStyle(ControlStyles.OptimizedDoubleBuffer |
+        {
+            this.SetStyle(ControlStyles.OptimizedDoubleBuffer |
                ControlStyles.AllPaintingInWmPaint,
                true);
-      int x;
 
-      dao_data_access oDao = new dao_data_access();
-      InitializeComponent();
-      groupBox1.Controls.Add(uc_gridview1);
-      uc_gridview1.Top = 15; uc_gridview1.Left = 5;
-      uc_gridview1.Width = groupBox1.Width - 10;
-      uc_gridview1.Height = cmbDatasource.Top - uc_gridview1.Top - 5;
+            InitializeComponent();
+            groupBox1.Controls.Add(uc_gridview1);
+            uc_gridview1.Top = 15; uc_gridview1.Left = 5;
+            uc_gridview1.Width = groupBox1.Width - 10;
+            uc_gridview1.Height = cmbDatasource.Top - uc_gridview1.Top - 5;
      
            
-      uc_gridview1.CloseButton_Visible = false;
-      uc_gridview1.Show();
-      ResizeForm();
-
+            uc_gridview1.CloseButton_Visible = false;
+            uc_gridview1.Show();
+            ResizeForm();
+            m_strTreeSampleDBFile = $@"{frmMain.g_oEnv.strApplicationDataDirectory.Trim()}{ frmMain.g_strBiosumDataDir}\{ Tables.Reference.DefaultTreeSampleDbFile}";
             if (frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim().Length > 0)
             {
                 // We have an open project
@@ -187,7 +185,6 @@ namespace FIA_Biosum_Manager
                 m_oQueries.LoadDatasources(true);
 
                 m_strTempDBFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
-                m_strTreeSampleDBFile = frmMain.g_oEnv.strAppDir + "\\db\\treesample.accdb";
 
                 //
                 //OPEN CONNECTION TO TREELIST DB FILE
@@ -1975,10 +1972,7 @@ namespace FIA_Biosum_Manager
     }
     private void LoadTreeSample()
     {
-        if (m_oAdo.m_OleDbConnection != null)
-            m_oAdo.CloseConnection(m_oAdo.m_OleDbConnection);
-        uc_gridview1.LoadGridView(
-            m_oAdo.getMDBConnString(m_strTempDBFile, "", ""),
+        uc_gridview1.LoadGridViewSqlite(m_oDataMgr.GetConnectionString(m_strTreeSampleDBFile),
             "SELECT DRYBIOM," +
                    "DRYBIOT," +
                    "DRYBIO_BOLE," +
@@ -1993,21 +1987,21 @@ namespace FIA_Biosum_Manager
                    "id," +
                    "biosum_cond_id, " +
                    "fvs_tree_id," +
-                   "MID(biosum_cond_id, 6, 2 ) AS state," + 
-                   "MID(biosum_cond_id,12,3) AS county," + 
-                   "MID(biosum_cond_id,15,7) AS plot," + 
+                   "SUBSTR(biosum_cond_id, 6, 2) AS state," +
+                   "SUBSTR(biosum_cond_id, 12, 3) AS county," +
+                   "SUBSTR(biosum_cond_id, 15, 7) AS plot," + 
                    "fvs_variant," + 
                    "InvYr," +
                    "SpCd," +
                    "Dbh," +
                    "Ht," +
                    "vol_loc_grp," +
-                   "IIF(actualht IS NULL,Ht,actualht) AS actualht," +
+                   "CASE WHEN actualht IS NULL THEN Ht ELSE actualht END AS actualht," +
                    "statuscd," +
                    "treeclcd," +
                    "cr," +
                    "cull," +
-                   "IIF(roughcull IS NULL,0,roughcull) AS roughcull," +
+                   "CASE WHEN roughcull IS NULL THEN 0 ELSE roughcull END AS roughcull," +
                    "decaycd," +
                    "totage," +
                    //START: ADDED BIOSUM_VOLUME COLUMNS
