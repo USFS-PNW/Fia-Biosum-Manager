@@ -144,6 +144,7 @@ namespace FIA_Biosum_Manager
     string[] m_strFVSTreeTableLinkNameArray = null;
     string m_strTempDBFile = "";
         string m_strTreeSampleDBFile = "";
+        string m_strSelectedDBFile = "";
         string m_strGridTableSource = "";
     static string m_strOldPerc = "0";
     private ProgressBarBasic.ProgressBarBasic progressBarBasic1;
@@ -176,6 +177,7 @@ namespace FIA_Biosum_Manager
             uc_gridview1.CloseButton_Visible = false;
             uc_gridview1.Show();
             ResizeForm();
+            m_strTempDBFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
             m_strTreeSampleDBFile = $@"{frmMain.g_oEnv.strApplicationDataDirectory.Trim()}{ frmMain.g_strBiosumDataDir}\{ Tables.Reference.DefaultTreeSampleDbFile}";
             if (frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim().Length > 0)
             {
@@ -183,8 +185,6 @@ namespace FIA_Biosum_Manager
                 m_oQueries.m_oFvs.LoadDatasource = true;
                 m_oQueries.m_oFIAPlot.LoadDatasource = true;
                 m_oQueries.LoadDatasources(true);
-
-                m_strTempDBFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
 
                 //
                 //OPEN CONNECTION TO TREELIST DB FILE
@@ -1267,12 +1267,6 @@ namespace FIA_Biosum_Manager
         frmMain.g_oDelegate.InitializeThreadEvents();
         frmMain.g_oDelegate.m_oEventStopThread.Reset();
         frmMain.g_oDelegate.m_oEventThreadStopped.Reset();
-
-        //FIA_Biosum_Manager.utils.FS_NETWORK_CHECK();
-
-        //if (FIA_Biosum_Manager.utils.FS_NETWORK == utils.FS_NETWORK_STATUS.NotAvailable)
-        //     frmMain.g_oDelegate.m_oThread = new Thread(new ThreadStart(this.RunBatch_Main_XE));
-        //else
         frmMain.g_oDelegate.m_oThread = new Thread(new ThreadStart(this.RunBatch_Main));
         frmMain.g_oDelegate.m_oThread.IsBackground = true;
         frmMain.g_oDelegate.m_oThread.Start();
@@ -1292,12 +1286,6 @@ namespace FIA_Biosum_Manager
         var columnsAndDataTypes = Tables.VolumeAndBiomass.ColumnsAndDataTypes;
         string strColumns = "";
         string strValues = "";
-        var COUNT = 0;
-        int x = 0;
-        int y = 0;
-        System.Windows.Forms.CurrencyManager oCm;
-        System.Data.DataView oDv;
-        int intCurrRow = 0;
         int intRecordCount = 0;
         int intThermValue = 0;
         int intTotalRecs = 0;
@@ -1311,10 +1299,14 @@ namespace FIA_Biosum_Manager
         frmMain.g_oDelegate.SetControlPropertyValue(progressBarBasic1, "Maximum", 100);
         frmMain.g_oDelegate.SetControlPropertyValue(progressBarBasic1, "Visible", true);
 
-        using (var conn = new System.Data.OleDb.OleDbConnection(m_oAdo.getMDBConnString(m_strTempDBFile, "", "")))
-        {
-            conn.Open();
-            intRecordCount = Convert.ToInt32(m_oAdo.getRecordCount(conn, "SELECT COUNT(*) FROM " + strTable, strTable));
+        // Open the connection on the temp file and attach to the selected db file
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(m_strTempDBFile)))
+            {
+                conn.Open();
+                // Attach selected database with tree records; @ToDo: Remember to detach at end
+                m_oDataMgr.m_strSQL = $@"ATTACH DATABASE '{m_strSelectedDBFile}' AS TREES";
+                m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+                intRecordCount = Convert.ToInt32(m_oDataMgr.getRecordCount(conn, "SELECT COUNT(*) FROM " + strTable, strTable));
 
             frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1,
                 "Building inputs for BioSumComps Volume and Biomass calculations...Stand By");
@@ -1325,14 +1317,14 @@ namespace FIA_Biosum_Manager
             if (strTable != Tables.VolumeAndBiomass.BiosumVolumesInputTable)
             {
                 //delete and create work tables
-                if (m_oAdo.TableExist(conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable))
-                    m_oAdo.SqlNonQuery(conn, "DROP TABLE " + Tables.VolumeAndBiomass.BiosumVolumesInputTable);
-                frmMain.g_oTables.m_oFvs.CreateOracleInputBiosumVolumesTable(m_oAdo, conn,
+                if (m_oDataMgr.TableExist(conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable))
+                        m_oDataMgr.SqlNonQuery(conn, "DROP TABLE " + Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                frmMain.g_oTables.m_oFvs.CreateSQLiteInputBiosumVolumesTable(m_oDataMgr, conn,
                     Tables.VolumeAndBiomass.BiosumVolumesInputTable);
 
-                if (m_oAdo.TableExist(conn, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable))
-                    m_oAdo.SqlNonQuery(conn, "DROP TABLE " + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
-                frmMain.g_oTables.m_oFvs.CreateOracleInputFCSBiosumVolumesTable(m_oAdo, conn,
+                if (m_oDataMgr.TableExist(conn, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable))
+                        m_oDataMgr.SqlNonQuery(conn, "DROP TABLE " + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
+                frmMain.g_oTables.m_oFvs.CreateSQLiteInputFCSBiosumVolumesTable(m_oDataMgr, conn,
                     Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
 
                 intThermValue++;
@@ -1344,9 +1336,9 @@ namespace FIA_Biosum_Manager
 
                 var treeToFcsBiosumVolumesInputTable = new List<Tuple<string, string>>
                 {
-                    Tuple.Create("STATECD", "CINT(MID(BIOSUM_COND_ID,6,2)) AS STATECD"),
-                    Tuple.Create("COUNTYCD", "CINT(MID(BIOSUM_COND_ID,12,3)) AS COUNTYCD"),
-                    Tuple.Create("PLOT", "CINT(MID(BIOSUM_COND_ID, 16, 5)) AS PLOT"),
+                    Tuple.Create("STATECD", "CAST(SUBSTR(BIOSUM_COND_ID,6,2) AS INTEGER) AS STATECD"),
+                    Tuple.Create("COUNTYCD", "CAST(SUBSTR(BIOSUM_COND_ID,12,3) AS INTEGER) AS COUNTYCD"),
+                    Tuple.Create("PLOT", "CAST(SUBSTR(BIOSUM_COND_ID,16,5) AS INTEGER) AS PLOT"),
                     Tuple.Create("INVYR", "INVYR"),
                     Tuple.Create("VOL_LOC_GRP", "VOL_LOC_GRP"),
                     Tuple.Create("TREE", "ID AS TREE"),
@@ -1383,18 +1375,18 @@ namespace FIA_Biosum_Manager
                     Tuple.Create("STANDING_DEAD_CD", "STANDING_DEAD_CD"),
                     Tuple.Create("ECODIV", "ECOSUBCD"),
                     Tuple.Create("STDORGCD", "STDORGCD"),
-                    Tuple.Create("TRE_CN", "CSTR(ID) AS TRE_CN"),
+                    Tuple.Create("TRE_CN", "CAST(ID AS TEXT) AS TRE_CN"),
                     Tuple.Create("CND_CN", "BIOSUM_COND_ID AS CND_CN"),
-                    Tuple.Create("PLT_CN", "MID(BIOSUM_COND_ID,1,LEN(BIOSUM_COND_ID)-1) AS PLT_CN"),
+                    Tuple.Create("PLT_CN", "SUBSTR(BIOSUM_COND_ID, 1, LENGTH(BIOSUM_COND_ID) - 1) AS PLT_CN"),
                 };
                 strColumns = string.Join(",", treeToFcsBiosumVolumesInputTable.Select(e => e.Item1));
                 strValues = string.Join(",", treeToFcsBiosumVolumesInputTable.Select(e => e.Item2));
 
-                m_oAdo.m_strSQL = $"INSERT INTO {Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable} ({strColumns}) SELECT {strValues} FROM {strTable} WHERE DBH >= 1.0";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
-                        m_oAdo.m_strSQL + "\r\n\r\n");
-                m_oAdo.SqlNonQuery(conn, m_oAdo.m_strSQL);
+                    m_oDataMgr.m_strSQL = $"INSERT INTO {Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable} ({strColumns}) SELECT {strValues} FROM {strTable} WHERE DBH >= 1.0";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
+                            m_oDataMgr.m_strSQL + "\r\n\r\n");
+                    m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
             }
 
             intThermValue++;
@@ -1413,11 +1405,11 @@ namespace FIA_Biosum_Manager
 
 
             //Parse MSAccess fcs_biosum_volumes_input and insert into SQLite FCS_TREE.Biosum_Calc table
-            intTotalRecs = (int) m_oAdo.getRecordCount(conn,
+            intTotalRecs = (int)m_oDataMgr.getRecordCount(conn,
                 $"SELECT COUNT(*) AS ROWCOUNT FROM {Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable}",
                 Tables.VolumeAndBiomass.SqliteWorkTable);
-            m_oAdo.SqlQueryReader(conn, $"SELECT * FROM {Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable}");
-            if (m_oAdo.m_OleDbDataReader.HasRows)
+            m_oDataMgr.SqlQueryReader(conn, $"SELECT * FROM {Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable}");
+            if (m_oDataMgr.m_DataReader.HasRows)
             {
                 frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1,
                     $"Filling FCS_TREE.DB BIOSUM_CALC with data from {strTable}...Stand By");
@@ -1427,11 +1419,11 @@ namespace FIA_Biosum_Manager
                 command.Transaction = transaction;
                 try
                 {
-                    while (m_oAdo.m_OleDbDataReader.Read())
+                    while (m_oDataMgr.m_DataReader.Read())
                     {
                         intThermValue++;
                         UpdateThermPercent(0, intRecordCount *3 + 8, intThermValue);
-                        strValues = utils.GetParsedInsertValues(m_oAdo.m_OleDbDataReader, columnsAndDataTypes);
+                        strValues = utils.GetParsedInsertValues(m_oDataMgr.m_DataReader, columnsAndDataTypes);
                         command.CommandText = $"INSERT INTO {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} ({strColumns}) VALUES ({strValues})";
                         command.ExecuteNonQuery();
 //                        frmMain.g_oDelegate.SetControlPropertyValue(
@@ -1457,9 +1449,11 @@ namespace FIA_Biosum_Manager
                 transaction = null;
             }
 
-            m_oAdo.m_OleDbDataReader.Close();
-            m_oAdo.m_OleDbDataReader.Dispose();
-            oSQLite.CloseAndDisposeConnection(oSQLite.m_Connection, true);
+                m_oDataMgr.m_DataReader.Close();
+                m_oDataMgr.m_DataReader.Dispose();
+                m_oDataMgr.m_strSQL = $@"DETACH DATABASE 'TREES'";
+                m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+                oSQLite.CloseAndDisposeConnection(oSQLite.m_Connection, true);
         }
 
         //RUN JAVA APP TO CALCULATE VOLUME/BIOMASS
@@ -1501,7 +1495,8 @@ namespace FIA_Biosum_Manager
             "Wait For BioSumComps.jar Volume and Biomass Calculations To Complete...Stand By");
 
         //Parse SQLite output and insert into Biosum_Calc_Output access table
-        using (var conn = new System.Data.OleDb.OleDbConnection(m_oAdo.getMDBConnString(m_strTempDBFile, "", "")))
+        using (System.Data.SQLite.SQLiteConnection conn = 
+                new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(m_strTempDBFile)))
         {
             conn.Open();
             if (m_intError == 0)
@@ -1511,165 +1506,137 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" +
                     Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase, "BIOSUM_CALC");
 
-                if (m_oAdo.TableExist(conn, Tables.VolumeAndBiomass.BiosumCalcOutputTable)) 
-                    m_oAdo.SqlNonQuery(conn, $"DROP TABLE {Tables.VolumeAndBiomass.BiosumCalcOutputTable}");
+                    if (m_oDataMgr.TableExist(conn, Tables.VolumeAndBiomass.BiosumCalcOutputTable))
+                        m_oDataMgr.SqlNonQuery(conn, $"DROP TABLE {Tables.VolumeAndBiomass.BiosumCalcOutputTable}");
+                    m_oDataMgr.SqlNonQuery(conn, $"CREATE TABLE {Tables.VolumeAndBiomass.BiosumCalcOutputTable} AS SELECT * FROM {Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable} WHERE 1=2");
 
-                System.Threading.Thread.Sleep(3000);
-
-                m_oAdo.SqlNonQuery(conn, $"SELECT * INTO {Tables.VolumeAndBiomass.BiosumCalcOutputTable} FROM {Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable} WHERE 1=2");
-
-                intTotalRecs = Convert.ToInt32(oSQLite.getSingleDoubleValueFromSQLQuery(oSQLite.m_Connection,
-                    $"SELECT COUNT(*) AS ROWCOUNT FROM {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} WHERE VOLTSGRS_CALC IS NOT NULL",
-                    Tables.VolumeAndBiomass.BiosumVolumeCalcTable));
+                    intTotalRecs = Convert.ToInt32(oSQLite.getSingleDoubleValueFromSQLQuery(oSQLite.m_Connection,
+                        $"SELECT COUNT(*) AS ROWCOUNT FROM {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} WHERE VOLTSGRS_CALC IS NOT NULL",
+                        Tables.VolumeAndBiomass.BiosumVolumeCalcTable));
 
                 UpdateThermPercent(0, intRecordCount *3 + 8, intThermValue);
 
-                oSQLite.SqlQueryReader(oSQLite.m_Connection, $"SELECT * FROM {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} WHERE VOLTSGRS_CALC IS NOT NULL");
-                if (oSQLite.m_DataReader.HasRows)
-                {
-                    System.Data.OleDb.OleDbTransaction transaction;
-                    System.Data.OleDb.OleDbCommand command = conn.CreateCommand();
-                    // Start a local transaction
-                    transaction = conn.BeginTransaction(IsolationLevel.ReadCommitted);
-                    // Assign transaction object for a pending local transaction
-                    command.Transaction = transaction;
-                    try
+                    oSQLite.SqlQueryReader(oSQLite.m_Connection, $"SELECT * FROM {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} WHERE VOLTSGRS_CALC IS NOT NULL");
+                    if (oSQLite.m_DataReader.HasRows)
                     {
-                        while (oSQLite.m_DataReader.Read())
+                        // Start a local transaction
+                        System.Data.SQLite.SQLiteTransaction transaction =
+                            conn.BeginTransaction(IsolationLevel.ReadCommitted);
+                        System.Data.SQLite.SQLiteCommand command = conn.CreateCommand();
+                        // Assign transaction object for a pending local transaction
+                        command.Transaction = transaction;
+                        try
                         {
-                            intThermValue++;
-                            UpdateThermPercent(0, intRecordCount *3 + 8, intThermValue);
-                            if (oSQLite.m_DataReader["TRE_CN"] != DBNull.Value && Convert.ToString(oSQLite.m_DataReader["TRE_CN"]).Trim().Length > 0)
+                            while (oSQLite.m_DataReader.Read())
                             {
-                                strValues = utils.GetParsedInsertValues(oSQLite.m_DataReader, columnsAndDataTypes);
-                                command.CommandText = $"INSERT INTO {Tables.VolumeAndBiomass.BiosumCalcOutputTable} ({strColumns}) VALUES ({strValues})";
-                                command.ExecuteNonQuery();
+                                intThermValue++;
+                                UpdateThermPercent(0, intRecordCount * 3 + 8, intThermValue);
+                                if (oSQLite.m_DataReader["TRE_CN"] != DBNull.Value && Convert.ToString(oSQLite.m_DataReader["TRE_CN"]).Trim().Length > 0)
+                                {
+                                    strValues = utils.GetParsedInsertValues(oSQLite.m_DataReader, columnsAndDataTypes);
+                                    command.CommandText = $"INSERT INTO {Tables.VolumeAndBiomass.BiosumCalcOutputTable} ({strColumns}) VALUES ({strValues})";
+                                    command.ExecuteNonQuery();
+                                }
                             }
-
-//                                frmMain.g_oDelegate.SetControlPropertyValue(
-//                                    (System.Windows.Forms.Control) m_frmTherm.lblMsg, "Text",
-//                                    "Update MSAccess with SQLite Results..Stand By [" +
-//                                    COUNT.ToString() + "/" + intTotalRecs.ToString() + "]");
-//                                frmMain.g_oDelegate.ExecuteControlMethod(
-//                                    (System.Windows.Forms.Control) this.m_frmTherm.lblMsg, "Refresh");
+                            transaction.Commit();
                         }
-
-                        transaction.Commit();
+                        catch (Exception err)
+                        {
+                            m_intError = -1;
+                            MessageBox.Show(err.Message);
+                            transaction.Rollback();
+                        }
+                        transaction.Dispose();
+                        transaction = null;
+                        oSQLite.m_DataReader.Close();
                     }
-                    catch (Exception err)
-                    {
-                        m_intError = -1;
-                        MessageBox.Show(err.Message);
-                        transaction.Rollback();
-                    }
-                    finally
-                    {
-                    }
-
-                    transaction.Dispose();
-                    transaction = null;
+                    oSQLite.CloseAndDisposeConnection(oSQLite.m_Connection, true);
+                    oSQLite = null;
                 }
-
-                oSQLite.CloseAndDisposeConnection(oSQLite.m_Connection, true);
-                oSQLite = null;
-            }
 
             UpdateThermPercent(0, intRecordCount *3 + 8, intThermValue);
 
             //step 8 - Update grid with returned results
             frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1,
                 "Update Grid With Volume Values...Stand By");
-            if (m_intError == 0)
-            {
-                //LPOTTS all data will be lost if connection is closed
-                //strConn = m_oAdo.m_OleDbConnection.ConnectionString;
-                //m_oAdo.CloseConnection(m_oAdo.m_OleDbConnection);
-                //m_oAdo.OpenConnection(strConn);
-
-                oCm = (CurrencyManager) this.BindingContext[uc_gridview1.m_dg.DataSource,
-                    uc_gridview1.m_dg.DataMember];
-                oDv = (DataView) oCm.List;
-                intCurrRow = uc_gridview1.m_intCurrRow - 1;
-                y = oDv.Count;
-
-
-                m_oAdo.SqlQueryReader(conn, $"SELECT * FROM {Tables.VolumeAndBiomass.BiosumCalcOutputTable}");
-                if (m_oAdo.m_OleDbDataReader.HasRows)
+                if (m_intError == 0)
                 {
-                    DataColumn[] colPk = new DataColumn[1];
-                    colPk[0] = uc_gridview1.m_ds.Tables[0].Columns["id"];
-                    uc_gridview1.m_ds.Tables[0].PrimaryKey = colPk;
-                    while (m_oAdo.m_OleDbDataReader.Read())
+                    m_oDataMgr.SqlQueryReader(conn, $"SELECT * FROM {Tables.VolumeAndBiomass.BiosumCalcOutputTable}");
+                    if (m_oDataMgr.m_DataReader.HasRows)
                     {
-                        if (intThermValue < intRecordCount *3 + 8)
+                        DataColumn[] colPk = new DataColumn[1];
+                        colPk[0] = uc_gridview1.m_ds.Tables[0].Columns["id"];
+                        uc_gridview1.m_ds.Tables[0].PrimaryKey = colPk;
+                        while (m_oDataMgr.m_DataReader.Read())
                         {
-                            intThermValue++;
-                            UpdateThermPercent(0, intRecordCount *3 + 8, intThermValue);
+                            if (intThermValue < intRecordCount * 3 + 8)
+                            {
+                                intThermValue++;
+                                UpdateThermPercent(0, intRecordCount * 3 + 8, intThermValue);
+                            }
+
+                            System.Object[] p_searchID = new Object[1];
+                            p_searchID[0] = Convert.ToInt32(m_oDataMgr.m_DataReader["tre_cn"]);
+                            p_rowFound = uc_gridview1.m_ds.Tables[0].Rows.Find(p_searchID[0]);
+                            if (p_rowFound != null)
+                            {
+                                if (m_oDataMgr.m_DataReader["DRYBIOM_CALC"] != DBNull.Value)
+                                    p_rowFound["DRYBIOM"] = Convert.ToDouble(m_oDataMgr.m_DataReader["DRYBIOM_CALC"]);
+                                else p_rowFound["DRYBIOM"] = DBNull.Value;
+
+                                if (m_oDataMgr.m_DataReader["DRYBIOT_CALC"] != DBNull.Value)
+                                    p_rowFound["DRYBIOT"] = Convert.ToDouble(m_oDataMgr.m_DataReader["DRYBIOT_CALC"]);
+                                else p_rowFound["DRYBIOT"] = DBNull.Value;
+
+                                if (m_oDataMgr.m_DataReader["DRYBIO_BOLE_CALC"] != DBNull.Value)
+                                    p_rowFound["DRYBIO_BOLE"] = Convert.ToDouble(m_oDataMgr.m_DataReader["DRYBIO_BOLE_CALC"]);
+                                else p_rowFound["DRYBIO_BOLE"] = DBNull.Value;
+
+                                if (m_oDataMgr.m_DataReader["DRYBIO_SAPLING_CALC"] != DBNull.Value)
+                                    p_rowFound["DRYBIO_SAPLING"] = Convert.ToDouble(m_oDataMgr.m_DataReader["DRYBIO_SAPLING_CALC"]);
+                                else p_rowFound["DRYBIO_SAPLING"] = DBNull.Value;
+
+                                if (m_oDataMgr.m_DataReader["DRYBIO_TOP_CALC"] != DBNull.Value)
+                                    p_rowFound["DRYBIO_TOP"] = Convert.ToDouble(m_oDataMgr.m_DataReader["DRYBIO_TOP_CALC"]);
+                                else p_rowFound["DRYBIO_TOP"] = DBNull.Value;
+
+                                if (m_oDataMgr.m_DataReader["DRYBIO_WDLD_SPP_CALC"] != DBNull.Value)
+                                    p_rowFound["DRYBIO_WDLD_SPP"] = Convert.ToDouble(m_oDataMgr.m_DataReader["DRYBIO_WDLD_SPP_CALC"]);
+                                else p_rowFound["DRYBIO_WDLD_SPP"] = DBNull.Value;
+
+                                if (m_oDataMgr.m_DataReader["VOLCFGRS_CALC"] != DBNull.Value)
+                                    p_rowFound["VOLCFGRS"] = Convert.ToDouble(m_oDataMgr.m_DataReader["VOLCFGRS_CALC"]);
+                                else p_rowFound["VOLCFGRS"] = DBNull.Value;
+
+                                if (m_oDataMgr.m_DataReader["VOLCFNET_CALC"] != DBNull.Value)
+                                    p_rowFound["VOLCFNET"] = Convert.ToDouble(m_oDataMgr.m_DataReader["VOLCFNET_CALC"]);
+                                else p_rowFound["VOLCFNET"] = DBNull.Value;
+
+                                if (m_oDataMgr.m_DataReader["VOLCFSND_CALC"] != DBNull.Value)
+                                    p_rowFound["VOLCFSND"] = Convert.ToDouble(m_oDataMgr.m_DataReader["VOLCFSND_CALC"]);
+                                else p_rowFound["VOLCFSND"] = DBNull.Value;
+
+                                if (m_oDataMgr.m_DataReader["VOLCSGRS_CALC"] != DBNull.Value)
+                                    p_rowFound["VOLCSGRS"] = Convert.ToDouble(m_oDataMgr.m_DataReader["VOLCSGRS_CALC"]);
+                                else p_rowFound["VOLCSGRS"] = DBNull.Value;
+
+                                if (m_oDataMgr.m_DataReader["VOLTSGRS_CALC"] != DBNull.Value)
+                                    p_rowFound["VOLTSGRS"] = Convert.ToDouble(m_oDataMgr.m_DataReader["VOLTSGRS_CALC"]);
+                                else p_rowFound["VOLTSGRS"] = DBNull.Value;
+                            }
                         }
-
-                        System.Object[] p_searchID = new Object[1];
-                        p_searchID[0] = Convert.ToInt32(m_oAdo.m_OleDbDataReader["tre_cn"]);
-                        p_rowFound = uc_gridview1.m_ds.Tables[0].Rows.Find(p_searchID[0]);
-                        if (p_rowFound != null)
-                        {
-                            if (m_oAdo.m_OleDbDataReader["DRYBIOM_CALC"] != DBNull.Value)
-                                p_rowFound["DRYBIOM"] = Convert.ToDouble(m_oAdo.m_OleDbDataReader["DRYBIOM_CALC"]);
-                            else p_rowFound["DRYBIOM"] = DBNull.Value;
-
-                            if (m_oAdo.m_OleDbDataReader["DRYBIOT_CALC"] != DBNull.Value)
-                                p_rowFound["DRYBIOT"] = Convert.ToDouble(m_oAdo.m_OleDbDataReader["DRYBIOT_CALC"]);
-                            else p_rowFound["DRYBIOT"] = DBNull.Value;
-
-                            if (m_oAdo.m_OleDbDataReader["DRYBIO_BOLE_CALC"] != DBNull.Value)
-                                p_rowFound["DRYBIO_BOLE"] = Convert.ToDouble(m_oAdo.m_OleDbDataReader["DRYBIO_BOLE_CALC"]);
-                            else p_rowFound["DRYBIO_BOLE"] = DBNull.Value;
-
-                            if (m_oAdo.m_OleDbDataReader["DRYBIO_SAPLING_CALC"] != DBNull.Value)
-                                p_rowFound["DRYBIO_SAPLING"] = Convert.ToDouble(m_oAdo.m_OleDbDataReader["DRYBIO_SAPLING_CALC"]);
-                            else p_rowFound["DRYBIO_SAPLING"] = DBNull.Value;
-
-                            if (m_oAdo.m_OleDbDataReader["DRYBIO_TOP_CALC"] != DBNull.Value)
-                                p_rowFound["DRYBIO_TOP"] = Convert.ToDouble(m_oAdo.m_OleDbDataReader["DRYBIO_TOP_CALC"]);
-                            else p_rowFound["DRYBIO_TOP"] = DBNull.Value;
-
-                            if (m_oAdo.m_OleDbDataReader["DRYBIO_WDLD_SPP_CALC"] != DBNull.Value)
-                                p_rowFound["DRYBIO_WDLD_SPP"] = Convert.ToDouble(m_oAdo.m_OleDbDataReader["DRYBIO_WDLD_SPP_CALC"]);
-                            else p_rowFound["DRYBIO_WDLD_SPP"] = DBNull.Value;
-
-                            if (m_oAdo.m_OleDbDataReader["VOLCFGRS_CALC"] != DBNull.Value)
-                                p_rowFound["VOLCFGRS"] = Convert.ToDouble(m_oAdo.m_OleDbDataReader["VOLCFGRS_CALC"]);
-                            else p_rowFound["VOLCFGRS"] = DBNull.Value;
-
-                            if (m_oAdo.m_OleDbDataReader["VOLCFNET_CALC"] != DBNull.Value)
-                                p_rowFound["VOLCFNET"] = Convert.ToDouble(m_oAdo.m_OleDbDataReader["VOLCFNET_CALC"]);
-                            else p_rowFound["VOLCFNET"] = DBNull.Value;
-
-                            if (m_oAdo.m_OleDbDataReader["VOLCFSND_CALC"] != DBNull.Value)
-                                p_rowFound["VOLCFSND"] = Convert.ToDouble(m_oAdo.m_OleDbDataReader["VOLCFSND_CALC"]);
-                            else p_rowFound["VOLCFSND"] = DBNull.Value;
-
-                            if (m_oAdo.m_OleDbDataReader["VOLCSGRS_CALC"] != DBNull.Value)
-                                p_rowFound["VOLCSGRS"] = Convert.ToDouble(m_oAdo.m_OleDbDataReader["VOLCSGRS_CALC"]);
-                            else p_rowFound["VOLCSGRS"] = DBNull.Value;
-
-                            if (m_oAdo.m_OleDbDataReader["VOLTSGRS_CALC"] != DBNull.Value)
-                                p_rowFound["VOLTSGRS"] = Convert.ToDouble(m_oAdo.m_OleDbDataReader["VOLTSGRS_CALC"]);
-                            else p_rowFound["VOLTSGRS"] = DBNull.Value;
-                        }
+                        m_oDataMgr.m_DataReader.Close();
+                        m_oDataMgr.m_DataReader.Dispose();
                     }
-                }
 
-                m_oAdo.m_OleDbDataReader.Close();
-                m_oAdo.m_OleDbDataReader.Dispose();
-                UpdateThermPercent(0, intRecordCount *3 + 8, intRecordCount *3 + 8);
-                System.Threading.Thread.Sleep(2000);
+                    UpdateThermPercent(0, intRecordCount * 3 + 8, intRecordCount * 3 + 8);
+                }
+                else
+                {
+                    MessageBox.Show(m_strError, "FIA Biosum", MessageBoxButtons.OK,
+                        System.Windows.Forms.MessageBoxIcon.Error);
+                }
             }
-            else
-            {
-                MessageBox.Show(m_strError, "FIA Biosum", MessageBoxButtons.OK,
-                    System.Windows.Forms.MessageBoxIcon.Error);
-            }
-        }
 
         frmMain.g_oDelegate.SetControlPropertyValue(progressBarBasic1, "Visible", false);
         frmMain.g_oDelegate.SetControlPropertyValue(btnCancel, "Visible", false);
@@ -1972,7 +1939,8 @@ namespace FIA_Biosum_Manager
     }
     private void LoadTreeSample()
     {
-        uc_gridview1.LoadGridViewSqlite(m_oDataMgr.GetConnectionString(m_strTreeSampleDBFile),
+            m_strSelectedDBFile = m_strTreeSampleDBFile;
+            uc_gridview1.LoadGridViewSqlite(m_oDataMgr.GetConnectionString(m_strTreeSampleDBFile),
             "SELECT DRYBIOM," +
                    "DRYBIOT," +
                    "DRYBIO_BOLE," +
