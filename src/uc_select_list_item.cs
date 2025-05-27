@@ -13,13 +13,10 @@ namespace FIA_Biosum_Manager
 	/// </summary>
 	public class uc_select_list_item : System.Windows.Forms.UserControl
 	{
-		public  System.Data.OleDb.OleDbConnection m_OleDbConnection;
-		//private System.Data.DataTableCollection m_DataTableCollection;
 		public System.Windows.Forms.ListBox listBox1;
 		private System.Windows.Forms.Button btnCancel;
 		public System.Windows.Forms.Button btnOK;
 		public System.Windows.Forms.GroupBox groupBox1;
-		public dao_data_access p_DAO_data_access;
 		public System.Windows.Forms.Label lblTitle;
 		public string strError;
 		public int intError;
@@ -55,25 +52,6 @@ namespace FIA_Biosum_Manager
 				}
 			}
 			base.Dispose( disposing );
-		}
-		public void DAO_Populate_List_With_Tables(dao_data_access p_DAODatabase)
-		{
-           this.listBox1.Items.Clear();
-		   intError=0;
-		   strError="";
-           try
-			{
-			   for (int x = 0; x <= p_DAODatabase.m_DaoDatabase.TableDefs.Count - 1;x++)
-			   {
-				   MessageBox.Show(p_DAODatabase.m_DaoDatabase.TableDefs[x].Name.ToString());
-			   }
-			}
-			catch
-			{
-			   this.strError = "Error Accessing MDB table names";
-			   this.intError = -1;
-			   return;
-			}
 		}
 
 		#region Component Designer generated code
