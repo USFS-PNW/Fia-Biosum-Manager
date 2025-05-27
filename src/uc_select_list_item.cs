@@ -219,27 +219,27 @@ namespace FIA_Biosum_Manager
         public void loadvalues(string strConn, string strSelectSQL, string strColumn)
         {
         }
-        /// <summary>
-        /// Populate listbox with the strColumn values
-        /// </summary>
-        /// <param name="p_oAdo"></param>
-        /// <param name="p_oConn"></param>
-        /// <param name="strSQL"></param>
-        /// <param name="strColumn"></param>
-        public void loadvalues(ado_data_access p_oAdo,
-                               System.Data.OleDb.OleDbConnection p_oConn,
+		/// <summary>
+		/// Populate listbox with the strColumn values
+		/// </summary>
+		/// <param name="p_oDataMgr"></param>
+		/// <param name="p_oConn"></param>
+		/// <param name="strSQL"></param>
+		/// <param name="strColumn"></param>
+		public void loadvalues(SQLite.ADO.DataMgr p_oDataMgr,
+							   System.Data.SQLite.SQLiteConnection p_oConn,
                                string strSQL, string strColumn)
         {
             listBox1.Items.Clear();
-            p_oAdo.SqlQueryReader(p_oConn, strSQL);
-            if (p_oAdo.m_OleDbDataReader.HasRows)
+			p_oDataMgr.SqlQueryReader(p_oConn, strSQL);
+            if (p_oDataMgr.m_DataReader.HasRows)
             {
-                while (p_oAdo.m_OleDbDataReader.Read())
+                while (p_oDataMgr.m_DataReader.Read())
                 {
-                    if (p_oAdo.m_OleDbDataReader[strColumn] != System.DBNull.Value && 
-                        p_oAdo.m_OleDbDataReader[strColumn].ToString().Trim().Length > 0)
+                    if (p_oDataMgr.m_DataReader[strColumn] != System.DBNull.Value &&
+						p_oDataMgr.m_DataReader[strColumn].ToString().Trim().Length > 0)
                     {
-                        listBox1.Items.Add(p_oAdo.m_OleDbDataReader[strColumn].ToString().Trim());
+                        listBox1.Items.Add(p_oDataMgr.m_DataReader[strColumn].ToString().Trim());
                     }
                 }
             }
