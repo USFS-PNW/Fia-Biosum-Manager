@@ -97,7 +97,7 @@ namespace FIA_Biosum_Manager
             m_strTempDbFile = this.m_oDataSource.CreateMDBAndTableDataSourceLinks();
 		}
 
-        public void LoadDatasourcesSqlite(bool p_bLimited, bool p_bUsingSqlite, string p_strScenarioType, string p_strScenarioId)
+        public void LoadDatasourcesSqlite(bool p_bLimited, string p_strScenarioType, string p_strScenarioId)
         {
             Scenario = true;
             ScenarioType = p_strScenarioType;
@@ -133,7 +133,26 @@ namespace FIA_Biosum_Manager
             m_strTempDbFile = this.m_oDataSource.CreateMDBAndTableDataSourceLinks();
         }
 
-		protected void LoadLimitedDatasources()
+        public void LoadDatasourcesNew(bool p_bLimited)
+        {
+            if (p_bLimited)
+            {
+                LoadLimitedDatasources();
+
+            }
+            else
+            {
+
+            }
+            if (this.m_oFvs.LoadDatasource) this.m_oFvs.LoadDatasources();
+            if (this.m_oFIAPlot.LoadDatasource) this.m_oFIAPlot.LoadDatasources();
+            if (this.m_oReference.LoadDatasource) this.m_oReference.LoadDatasources();
+            if (this.m_oProcessor.LoadDatasource) this.m_oProcessor.LoadDatasources();
+            if (this.m_oTravelTime.LoadDatasource) this.m_oTravelTime.LoadDatasources();
+            m_strTempDbFile = this.m_oDataSource.CreateDB();
+        }
+
+        protected void LoadLimitedDatasources()
 		{
 			string strProjDir=frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
 			
@@ -321,12 +340,20 @@ namespace FIA_Biosum_Manager
             /// <param name="p_strPlotTable"></param>
             /// <param name="p_strRxPackageTable"></param>
             /// <returns></returns>
-            static public string GetFVSVariantSQL(string p_strPlotTable)
+            static public string GetFVSVariantSQL_access(string p_strPlotTable)
             {
                 return "SELECT DISTINCT fvs_variant " +
                        "FROM " + p_strPlotTable +
                        " WHERE fvs_variant IS NOT NULL AND " +
                               "LEN(TRIM(fvs_variant)) > 0;";
+            }
+
+            static public string GetFVSVariantSQL(string p_strPlotTable)
+            {
+                return "SELECT DISTINCT fvs_variant " +
+                    "FROM " + p_strPlotTable +
+                    " WHERE fvs_variant IS NOT NULL AND " +
+                    "LENGTH(TRIM(fvs_variant)) > 0";
             }
 
             /// <summary>
@@ -3084,7 +3111,7 @@ namespace FIA_Biosum_Manager
 
 		            public static string CreateDWMFuelbedTypCdToFVSConversionTable()
 		            {
-		                return "CREATE TABLE Ref_DWM_Fuelbed_Type_Codes (dwm_fuelbed_typcd TEXT(3), fuel_model LONG);";
+		                return "CREATE TABLE Ref_DWM_Fuelbed_Type_Codes (dwm_fuelbed_typcd CHAR(3), fuel_model INTEGER)";
 		            }
 
 		            public static string BulkImportStandDataFromBioSumMaster(string strVariant, string strDestTable,
@@ -3118,6 +3145,13 @@ namespace FIA_Biosum_Manager
 		                    "SET fvs.Fuel_Model=IIF(c.dwm_fuelbed_typcd IS NULL, NULL, ref.Fuel_Model);",
 		                    strDestTable, strCondTableName, "Ref_DWM_Fuelbed_Type_Codes");
 		            }
+                    public static string UpdateFuelModelNew(string strDestTable, string strCondTable)
+                    {
+                        return "UPDATE " + strDestTable + " AS fvs " +
+                            "SET fuel_model = CASE WHEN c.dwm_fuelbed_typcd IS NULL THEN NULL ELSE ref.fuel_model END " +
+                            "FROM " + strCondTable + " AS c LEFT JOIN Ref_DWM_Fuelbed_Type_Codes AS ref " +
+                            "ON c.dwm_fuelbed_typcd = ref.dwm_fuelbed_typcd WHERE fvs.stand_id = c.biosum_cond_id";
+                    }
 
 		            /// <summary>
 		            /// Calculate biomass contribution to condition per CWD piece so that they can be summed
@@ -4051,7 +4085,23 @@ namespace FIA_Biosum_Manager
 		                return strSQL;
 		            }
 
-		            public static string TranslateWorkTableToStandInitTable(string strSourceTable, string strDestTable)
+                    public static string CreateSiteIndexDatasetNew(string strVariant,
+                        string strCondTable, string strPlotTable)
+                    {
+                        string strSQL = "SELECT p.biosum_plot_id, c.biosum_cond_id, p.statecd, " +
+                            "p.countycd, p.plot, p.fvs_variant, p.measyear, " +
+                            "c.adforcd, p.elev, c.condid, c.habtypcd1, " +
+                            "c.stdage, c.slope, c.aspect, c.ground_land_class_pnw, " +
+                            "c.sisp, p.lat, p.lon, c.adforcd, c.habtypcd1, " +
+                            "p.elev, c.cond_status_cd, c.ba_ft2_ac, c.habtypcd1 " +
+                            "FROM " + strCondTable + " AS c, " + strPlotTable + " AS p " +
+                            "WHERE p.biosum_plot_id = c.biosum_plot_id AND c.cond_status_cd = 1 AND " +
+                            "UPPER(TRIM(p.fvs_variant)) = '" + strVariant.Trim().ToUpper() + "'";
+                        return strSQL;
+                    }
+
+
+                    public static string TranslateWorkTableToStandInitTable(string strSourceTable, string strDestTable)
 		            {
 		                string strInsertIntoStandInit =
 		                    "INSERT INTO " + strDestTable;
@@ -4110,7 +4160,7 @@ namespace FIA_Biosum_Manager
 		                return strSQL;
 		            }
 
-                    public static string PopulateStandInit(string strSourceStandTableAlias, string strCondTable, string strVariant)
+                    public static string PopulateStandInitOld(string strSourceStandTableAlias, string strCondTable, string strVariant)
                     {
                         string strSQL = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
                              " SELECT " + strSourceStandTableAlias + ".*" +
@@ -4121,13 +4171,31 @@ namespace FIA_Biosum_Manager
                         return strSQL;
                     }
 
-                    public static string UpdateFromCond(string strCondTable, string strVariant)
+                    public static string PopulateStandInit(string strSourceStandTable, string strCondTable, string strVariant)
+                    {
+                        string strSQL = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                            " SELECT s.* FROM " + strSourceStandTable + " AS s " +
+                            "JOIN " + strCondTable + " AS c ON TRIM(c.cn) = TRIM(s.stand_cn) " +
+                            "WHERE s.variant = '" + strVariant + "' AND c.cond_status_cd = 1";
+                        return strSQL;
+                    }
+
+                    public static string UpdateFromCondOld(string strCondTable, string strVariant)
                     {
                         string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
                          " INNER JOIN " + strCondTable + " ON TRIM(" + strCondTable + ".cn) = TRIM(" + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".STAND_CN)" +
                          " SET STAND_ID = trim(biosum_cond_id)," +
                          " SAM_WT = ACRES" +
                          " WHERE " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".VARIANT = '" + strVariant + "'";
+                        return strSQL;
+                    }
+
+                    public static string UpdateFromCond(string strCondTable, string strVariant)
+                    {
+                        string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName + " AS s " +
+                            "SET stand_id = TRIM(biosum_cond_id), sam_wt = acres " +
+                            "FROM " + strCondTable + " AS c " +
+                            "WHERE TRIM(c.cn) = TRIM(s.stand_cn) AND s.variant = '" + strVariant + "'";
                         return strSQL;
                     }
 
@@ -4250,7 +4318,7 @@ namespace FIA_Biosum_Manager
                     }
                 }
 
-		        //All the queries necessary to create the FVSIn.accdb FVS_TreeInit table using intermediate tables
+                //All the queries necessary to create the FVSIn.accdb FVS_TreeInit table using intermediate tables
                 public class TreeInit
                 {
                     TreeInit()
@@ -4504,7 +4572,7 @@ namespace FIA_Biosum_Manager
                         return "DROP TABLE SPCD_CHANGE_WORK_TABLE;";
                     }
 
-                    public static string PopulateTreeInit(string strSourceTreeTableAlias, string strSourceStandTableAlias,
+                    public static string PopulateTreeInitOld(string strSourceTreeTableAlias, string strSourceStandTableAlias,
                         string strCondTable, string strTreeTable, string strVariant)
                     {
                         string strSql = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
@@ -4520,6 +4588,20 @@ namespace FIA_Biosum_Manager
                         return strSql;
                     }
 
+                    public static string PopulateTreeInit(string strSourceTreeTable, string strSourceStandTable,
+                        string strCondTable, string strTreeTable, string strVariant)
+                    {
+                        string strSQL = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                            " SELECT st.* FROM " + strSourceTreeTable + " AS st, " +
+                            strTreeTable + " AS t, " + strSourceStandTable + " AS ss, " +
+                            strCondTable + " AS c " +
+                            "WHERE c.biosum_cond_id = t.biosum_cond_id AND TRIM(t.cn) = st.tree_cn " +
+                            "AND TRIM(c.cn) = ss.stand_cn AND TRIM(c.cn) = st.stand_cn " +
+                            "AND c.cond_status_cd = 1 AND t.dia > 0 " +
+                            "AND ss.variant = '" + strVariant + "'";
+                        return strSQL;
+                    }
+
                     public static string UpdateFromCond(string strCondTable, string strVariant, string strTargetTable)
                     {
                         string strSQL = "UPDATE(" + strTargetTable +
@@ -4527,6 +4609,15 @@ namespace FIA_Biosum_Manager
                             " INNER JOIN " + Tables.FIA2FVS.DefaultFvsInputStandTableName + " ON " + strTargetTable + ".STAND_CN = " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".STAND_CN" +
                             " SET " + strTargetTable + ".STAND_ID = Trim(" + strCondTable + ".BIOSUM_COND_ID)" +
                             " WHERE " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".VARIANT = '" + strVariant + "'";
+                        return strSQL;
+                    }
+
+                    public static string UpdateFromCondNew(string strCondTable, string strVariant, string strTargetTable)
+                    {
+                        string strSQL = "UPDATE " + strTargetTable + " AS t " +
+                            "SET stand_id = TRIM(c.biosum_cond_id) " +
+                            "FROM " + strCondTable + " AS c, " + Tables.FIA2FVS.DefaultFvsInputStandTableName + " AS s " +
+                            "WHERE t.stand_cn = TRIM(c.cn) AND t.stand_cn = s.stand_cn AND s.variant = '" + strVariant + "'";
                         return strSQL;
                     }
 
@@ -4538,6 +4629,14 @@ namespace FIA_Biosum_Manager
                          " SET TREE_ID = trim(fvs_tree_id)";
                         return strSQL;
                     }
+                    public static string UpdateFromTreeNew(string strTreeTable, string strTargetTable)
+                    {
+                        string strSQL = "UPDATE " + strTargetTable + " AS u " +
+                            "SET tree_id = TRIM(fvs_tree_id) " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE u.tree_cn = TRIM(t.cn) AND u.stand_id = TRIM(t.biosum_cond_id)";
+                        return strSQL;
+                    }
 
                     public static string UpdateTreeCount(string strTreeTable, string strTargetTable)
                     {
@@ -4547,6 +4646,15 @@ namespace FIA_Biosum_Manager
                          " SET TREE_COUNT = tpacurr where statuscd not in (2,3)";
                         return strSQL;
                     }
+                    public static string UpdateTreeCountNew(string strTreeTable, string strTargetTable)
+                    {
+                        string strSQL = "UPDATE " + strTargetTable + " AS u " +
+                            "SET tree_count = tpacurr " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE u.stand_id = TRIM(t.biosum_cond_id) AND u.tree_cn = TRIM(t.cn) " +
+                            "AND statuscd NOT IN (2,3)";
+                        return strSQL;
+                    }
 
                     public static string DeleteSeedlings(string strTargetTable)
                     {
@@ -4554,10 +4662,16 @@ namespace FIA_Biosum_Manager
                          " WHERE DIAMETER = 0.1 AND LEFT(TREE_CN,1) = 'S'";
                         return strSQL;
                     }
+                    public static string DeleteSeedlingsNew(string strTargetTable)
+                    {
+                        string strSQL = "DELETE FROM " + strTargetTable +
+                            " WHERE diameter = 0.1 AND SUBSTR(tree_cn, 1, 1) = 'S'";
+                        return strSQL;
+                    }
 
                     public static string SetCalibrationColumnsToNull(string strTargetTable, string strTargetField)
                     {
-                        string strSQL = $@"UPDATE {strTargetTable} SET {strTargetTable}.{strTargetField} = NULL ";
+                        string strSQL = "UPDATE " + strTargetTable + " SET " + strTargetField + " = NULL ";
                         return strSQL;
                     }
 
@@ -4682,6 +4796,133 @@ namespace FIA_Biosum_Manager
                         return arrDamageCodeUpdates;
                     }
 
+                    public static string[] UpdateDamageCodesForCullNew(string strTreeTable, string strTargetTable)
+                    {
+                        string[] arrDamageCodeUpdates = new string[18];
+                        // First pass updates the damage code and severity fields with cull (25) if they are null or = 96, 97
+                        arrDamageCodeUpdates[0] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage1 = 25, severity1 = (t.cull + t.roughcull) " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) " +
+                            "AND (damage1 IS NULL OR damage1 IN (96,97)) AND history = 1 " +
+                            "AND (t.cull + t.roughcull) > 0";
+                        arrDamageCodeUpdates[1] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage2 = 25, severity2 = (t.cull + t.roughcull) " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 25 AND (damage2 IS NULL OR damage2 IN (96,97)) AND " +
+                            "history = 1 AND (t.cull + t.roughcull) > 0";
+                        arrDamageCodeUpdates[2] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage3 = 25, severity3 = (t.cull + t.roughcull) " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 25 AND damage2 <> 25 AND (damage3 IS NULL OR damage3 IN (96,97) AND " +
+                            "history = 1 AND (t.cull + t.roughcull) > 0";
+                        // second pass updates the damage code and severity fields with mistletoe (30) if they are null or = 96, 97
+                        arrDamageCodeUpdates[3] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage1 = 30, severity1 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "(damage1 IS NULL OR damage1 IN (96,97)) AND history = 1 " +
+                            "AND t.mist_cl_cd > 0 AND t.spcd NOT IN (202, 108, 122, 73)";
+                        arrDamageCodeUpdates[4] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage2 = 30, severity2 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 30 AND (damage2 IS NULL OR damage2 IN (96,97)) AND history = 1 " +
+                            "AND t.mist_cl_cd > 0 AND t.spcd NOT IN (202, 108, 122, 73)";
+                        arrDamageCodeUpdates[5] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage3 = 30, severity3 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 30 AND damage2 <> 30 AND (damage3 IS NULL OR damage3 IN (96,97)) AND history = 1 " +
+                            "AND t.mist_cl_cd > 0 AND t.spcd NOT IN (202, 108, 122, 73)";
+                        // third pass updates the damage code and severity fields with mistletoe (31) if they are null or = 96, 97
+                        arrDamageCodeUpdates[6] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage1 = 31, severity1 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "(damage1 IS NULL OR damage1 IN (96,97)) AND history = 1 " +
+                            "AND t.mist_cl_cd > 0 AND t.spcd = 108";
+                        arrDamageCodeUpdates[7] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage2 = 31, severity2 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 31 AND (damage2 IS NULL OR damage2 IN (96,97)) AND history = 1 " +
+                            "AND t.mist_cl_cd > 0 AND t.spcd = 108";
+                        arrDamageCodeUpdates[8] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage2 = 31, severity2 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 31 AND damage2 <> 31 AND (damage3 IS NULL OR damage3 IN (96,97)) AND history = 1 " +
+                            "AND t.mist_cl_cd > 0 AND t.spcd = 108";
+                        // fourth pass updates the damage code and severity fields with mistletoe (32) if they are null or = 96, 97
+                        arrDamageCodeUpdates[9] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage1 = 32, severity1 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "(damage1 IS NULL OR damage1 IN (96,97)) AND history = 1 AND " +
+                            "t.mist_cl_cd > 0 AND t.spcd = 73";
+                        arrDamageCodeUpdates[10] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage2 = 32, severity2 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 32 AND (damage2 IS NULL OR damage2 IN (96,97)) AND history = 1 AND " +
+                            "t.mist_cl_cd > 0 AND t.spcd = 73";
+                        arrDamageCodeUpdates[11] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage3 = 32, severity3 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 32 AND damage2 <> 32 AND (damage3 IS NULL OR damage3 IN (96,97)) AND history = 1 AND " +
+                            "t.mist_cl_cd > 0 AND t.spcd = 73";
+                        // fifth pass updates the damage code and severity fields with mistletoe (33) if they are null or = 96, 97
+                        arrDamageCodeUpdates[12] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage1 = 33, severity1 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "(damage1 IS NULL OR damage1 IN (96,97)) AND history = 1 AND " +
+                            "t.mist_cl_cd > 0 AND t.spcd = 202";
+                        arrDamageCodeUpdates[13] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage2 = 33, severity2 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 33 AND (damage2 IS NULL OR damage2 IN (96,97)) AND history = 1 AND " +
+                            "t.mist_cl_cd > 0 AND t.spcd = 202";
+                        arrDamageCodeUpdates[14] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage3 = 33, severity3 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 33 AND damage2 <> 33 AND (damage3 IS NULL OR damage3 IN (96,97)) AND history = 1 AND " +
+                            "t.mist_cl_cd > 0 AND t.spcd = 202";
+                        // Final 6th pass updates the damage code and severity fields with mistletoe (34) if they are null or = 96, 97
+                        arrDamageCodeUpdates[15] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage1 = 34, severity1 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "(damage1 IS NULL OR damage1 IN (96,97)) AND history = 1 " +
+                            "AND t.mist_cl_cd > 0 AND t.spcd = 122";
+                        arrDamageCodeUpdates[16] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage2 = 34, severity2 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 34 AND (damage2 IS NULL OR damage2 IN (96,97)) AND history = 1 " +
+                            "AND t.mist_cl_cd > 0 AND t.spcd = 122";
+                        arrDamageCodeUpdates[17] = "UPDATE " + strTargetTable +
+                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
+                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
+                            " SET Damage3 = 34, Severity3 = " + strTreeTable + ".mist_cl_cd" +
+                            " WHERE Damage1 <> 34 AND Damage2 <> 34 AND (Damage3 IS Null OR Damage3 IN (96,97)) AND History = 1" +
+                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 122";
+                        arrDamageCodeUpdates[17] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage3 = 34, severity3 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 34 AND damage2 <> 34 AND (damage3 IS NULL OR damage3 IN (96,97)) AND history = 1 " +
+                            "AND t.mist_cl_cd > 0 AND t.spcd = 122";
+
+                        return arrDamageCodeUpdates;
+                    }
+
                     public static string[] UpdateTreeValue(string strTargetTable)
                     {
                         string[] arrTreeValueUpdates = new string[3];
@@ -4699,6 +4940,7 @@ namespace FIA_Biosum_Manager
                         return arrTreeValueUpdates;
                     }
 
+
                     public static string UpdateFieldsFromTempTable(string strSourceTable, IList<string> lstFields)
                     {
                         string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
@@ -4713,6 +4955,22 @@ namespace FIA_Biosum_Manager
                         }
                         sb.Length--;    // Remove trailing comma
                         strSQL = strSQL + sb.ToString();
+                        return strSQL;
+                    }
+                    public static string UpdateFieldsFromTempTableNew(string strSourceTable, IList<string> lstFields)
+                    {
+                        string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + " AS t " +
+                            "SET ";
+                        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                        foreach (var item in lstFields)
+                        {
+                            sb.Append("t." + item + "= s." + item);
+                            sb.Append(",");
+                        }
+                        sb.Length--; // Remove trailing comma
+                        strSQL += sb.ToString();
+                        strSQL += " FROM " + strSourceTable + " AS s " +
+                            "WHERE s.tree_cn = t.tree_cn AND s.stand_cn = t.stand_cn";
                         return strSQL;
                     }
 

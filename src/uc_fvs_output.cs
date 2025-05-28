@@ -2773,7 +2773,7 @@ namespace FIA_Biosum_Manager
                                     z = m_oQueries.m_oDataSource.getDataSourceTableNameRow("TREE");
                                         oTableLinkItem = new TableLinkItem();
                                         oTableLinkItem.TableName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.TABLE];
-                                        oTableLinkItem.DbFileName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.MDBFILE].Trim();
+                                        oTableLinkItem.DbFileName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.DBFILE].Trim();
                                         oTableLinkItem.Directory = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.PATH].Trim();
 
                                         m_dao.CreateTableLink(oDbFileItem.FullPath,
@@ -2795,7 +2795,7 @@ namespace FIA_Biosum_Manager
                                         oTableLinkItem = new TableLinkItem();
                                         oTableLinkItem.TableName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.TABLE];
                                         oTableLinkItem.LinkedTableName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.TABLE];
-                                        oTableLinkItem.DbFileName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.MDBFILE].Trim();
+                                        oTableLinkItem.DbFileName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.DBFILE].Trim();
                                         oTableLinkItem.Directory = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.PATH].Trim();
                                         macrosubst oMacroSub = new macrosubst();
                                         oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
@@ -2817,7 +2817,7 @@ namespace FIA_Biosum_Manager
                                 z = m_oQueries.m_oDataSource.getDataSourceTableNameRow("CONDITION");
                                 oTableLinkItem = new TableLinkItem();
                                 oTableLinkItem.TableName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.TABLE];
-                                oTableLinkItem.DbFileName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.MDBFILE].Trim();
+                                oTableLinkItem.DbFileName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.DBFILE].Trim();
                                 oTableLinkItem.Directory = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.PATH].Trim();
 
                                 m_dao.CreateTableLink(oDbFileItem.FullPath,
@@ -2836,7 +2836,7 @@ namespace FIA_Biosum_Manager
                                 z = m_oQueries.m_oDataSource.getDataSourceTableNameRow("PLOT");
                                 oTableLinkItem = new TableLinkItem();
                                 oTableLinkItem.TableName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.TABLE];
-                                oTableLinkItem.DbFileName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.MDBFILE].Trim();
+                                oTableLinkItem.DbFileName = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.DBFILE].Trim();
                                 oTableLinkItem.Directory = m_oQueries.m_oDataSource.m_strDataSource[z, Datasource.PATH].Trim();
                                 m_dao.CreateTableLink(oDbFileItem.FullPath,
                                                         oTableLinkItem.TableName,
@@ -6574,17 +6574,17 @@ namespace FIA_Biosum_Manager
                             //tree table link
                             oDao.CreateTableLink(strTempAccdb, m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE],
                                                       m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.PATH].Trim() + "\\" +
-                                                       m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.MDBFILE].Trim(),
+                                                       m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.DBFILE].Trim(),
                                                       m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE], true);
                             //condition table link
                             oDao.CreateTableLink(strTempAccdb, m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE],
                                                       m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.PATH].Trim() + "\\" +
-                                                       m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.MDBFILE].Trim(),
+                                                       m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.DBFILE].Trim(),
                                                       m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE], true);
                             //plot table link
                             oDao.CreateTableLink(strTempAccdb, m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE],
                                                       m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.PATH].Trim() + "\\" +
-                                                       m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.MDBFILE].Trim(),
+                                                       m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.DBFILE].Trim(),
                                                       m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE], true);
 
                             oDao.m_DaoWorkspace.Close();

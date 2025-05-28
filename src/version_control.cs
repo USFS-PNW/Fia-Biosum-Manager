@@ -3717,7 +3717,7 @@ namespace FIA_Biosum_Manager
                     //table found so check the column names
                     //open connection to the db container
                     oMasterConn = new System.Data.OleDb.OleDbConnection();
-                    strPath = oDs.m_strDataSource[intTableType,Datasource.PATH].Trim() + "\\" + oDs.m_strDataSource[intTableType,Datasource.MDBFILE].Trim();
+                    strPath = oDs.m_strDataSource[intTableType,Datasource.PATH].Trim() + "\\" + oDs.m_strDataSource[intTableType,Datasource.DBFILE].Trim();
                     strTable = oDs.m_strDataSource[intTableType, Datasource.TABLE].Trim();
                     oAdo.OpenConnection(oAdo.getMDBConnString(strPath, "", ""), ref oMasterConn);
                     //pmh_macr
@@ -3905,7 +3905,7 @@ namespace FIA_Biosum_Manager
             // Extract table properties from data sources table; Assume still under the old name
             int intHarvestMethodTable = oDs.getValidTableNameRow("FRCS System Harvest Method");
             string strDirectoryPath = oDs.m_strDataSource[intHarvestMethodTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-            string strFileName = oDs.m_strDataSource[intHarvestMethodTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            string strFileName = oDs.m_strDataSource[intHarvestMethodTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
             //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
             string strFileStatus = oDs.m_strDataSource[intHarvestMethodTable, FIA_Biosum_Manager.Datasource.FILESTATUS].Trim();
             string strSourceTableName = oDs.m_strDataSource[intHarvestMethodTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
@@ -4495,7 +4495,7 @@ namespace FIA_Biosum_Manager
             // Extract table properties from data sources table; Assume still under the old name
             int intTreeSpeciesTable = oDs.getValidTableNameRow("Tree Species");
             string strDirectoryPath = oDs.m_strDataSource[intTreeSpeciesTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-            string strFileName = oDs.m_strDataSource[intTreeSpeciesTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            string strFileName = oDs.m_strDataSource[intTreeSpeciesTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
             //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
             string strFileStatus = oDs.m_strDataSource[intTreeSpeciesTable, FIA_Biosum_Manager.Datasource.FILESTATUS].Trim();
             strTargetTable = oDs.m_strDataSource[intTreeSpeciesTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
@@ -4528,7 +4528,7 @@ namespace FIA_Biosum_Manager
 
             int intFvsTreeSpeciesTable = oDs.getValidTableNameRow("FVS Tree Species");
             strDirectoryPath = oDs.m_strDataSource[intFvsTreeSpeciesTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-            strFileName = oDs.m_strDataSource[intFvsTreeSpeciesTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            strFileName = oDs.m_strDataSource[intFvsTreeSpeciesTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
             strFileStatus = oDs.m_strDataSource[intFvsTreeSpeciesTable, FIA_Biosum_Manager.Datasource.FILESTATUS].Trim();
             strTargetTable = oDs.m_strDataSource[intFvsTreeSpeciesTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
             strTableStatus = oDs.m_strDataSource[intFvsTreeSpeciesTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
@@ -4652,7 +4652,7 @@ namespace FIA_Biosum_Manager
             string strTableSuffix = "_ver_control_" + DateTime.Now.ToString("MMddyyyy");
             int intHarvestMethodsTable = oDs.getValidTableNameRow(Datasource.TableTypes.HarvestMethods);
             string strDirectoryPath = oDs.m_strDataSource[intHarvestMethodsTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-            string strFileName = oDs.m_strDataSource[intHarvestMethodsTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            string strFileName = oDs.m_strDataSource[intHarvestMethodsTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
             //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
             string strFileStatus = oDs.m_strDataSource[intHarvestMethodsTable, FIA_Biosum_Manager.Datasource.FILESTATUS].Trim();
             string strTargetTable = oDs.m_strDataSource[intHarvestMethodsTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
@@ -4684,7 +4684,7 @@ namespace FIA_Biosum_Manager
 
             int intTreeSpeciesTable = oDs.getValidTableNameRow("Tree Species");
             strDirectoryPath = oDs.m_strDataSource[intTreeSpeciesTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-            strFileName = oDs.m_strDataSource[intTreeSpeciesTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            strFileName = oDs.m_strDataSource[intTreeSpeciesTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
             //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
             strFileStatus = oDs.m_strDataSource[intTreeSpeciesTable, FIA_Biosum_Manager.Datasource.FILESTATUS].Trim();
             strTargetTable = oDs.m_strDataSource[intTreeSpeciesTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
@@ -4768,7 +4768,7 @@ namespace FIA_Biosum_Manager
             string strTableSuffix = "_ver_control_" + DateTime.Now.ToString("MMddyyyy");
             int intTreeSpeciesTable = oDs.getValidTableNameRow("Tree Species");
             string strDirectoryPath = oDs.m_strDataSource[intTreeSpeciesTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-            string strFileName = oDs.m_strDataSource[intTreeSpeciesTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            string strFileName = oDs.m_strDataSource[intTreeSpeciesTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
             //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
             string strFileStatus = oDs.m_strDataSource[intTreeSpeciesTable, FIA_Biosum_Manager.Datasource.FILESTATUS].Trim();
             string strTargetTable = oDs.m_strDataSource[intTreeSpeciesTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
@@ -4824,7 +4824,7 @@ namespace FIA_Biosum_Manager
             // New column on cond table for dwm
             int intCondTable = oDs.getValidTableNameRow("Condition");
             strDirectoryPath = oDs.m_strDataSource[intCondTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-            strFileName = oDs.m_strDataSource[intCondTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            strFileName = oDs.m_strDataSource[intCondTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
             //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
             strFileStatus = oDs.m_strDataSource[intCondTable, FIA_Biosum_Manager.Datasource.FILESTATUS].Trim();
             strTargetTable = oDs.m_strDataSource[intCondTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
@@ -4863,7 +4863,7 @@ namespace FIA_Biosum_Manager
 
             int intFvsVariantTable = oDs.getValidTableNameRow("FIADB FVS Variant");
             strDirectoryPath = oDs.m_strDataSource[intFvsVariantTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-            strFileName = oDs.m_strDataSource[intFvsVariantTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            strFileName = oDs.m_strDataSource[intFvsVariantTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
             strFileStatus = oDs.m_strDataSource[intFvsVariantTable, FIA_Biosum_Manager.Datasource.FILESTATUS].Trim();
             strTargetTable = oDs.m_strDataSource[intFvsVariantTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
             strTableStatus = oDs.m_strDataSource[intFvsVariantTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
@@ -4884,7 +4884,7 @@ namespace FIA_Biosum_Manager
             frmMain.g_sbpInfo.Text = "Version Update: Adding fvsloccode to Plot table ...Stand by";
             int intPlotTable = oDs.getValidTableNameRow("Plot");
             strDirectoryPath = oDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-            strFileName = oDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            strFileName = oDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
             strFileStatus = oDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.FILESTATUS].Trim();
             strTargetTable = oDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
             strTableStatus = oDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
@@ -5147,7 +5147,7 @@ namespace FIA_Biosum_Manager
 
             int intHarvestMethodsTable = oDs.getValidTableNameRow(Datasource.TableTypes.HarvestMethods);
             string strDirectoryPath = oDs.m_strDataSource[intHarvestMethodsTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-            string strFileName = oDs.m_strDataSource[intHarvestMethodsTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            string strFileName = oDs.m_strDataSource[intHarvestMethodsTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
             //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
             string strFileStatus = oDs.m_strDataSource[intHarvestMethodsTable, FIA_Biosum_Manager.Datasource.FILESTATUS].Trim();
             string strTargetTable = oDs.m_strDataSource[intHarvestMethodsTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
@@ -5255,7 +5255,7 @@ namespace FIA_Biosum_Manager
             if (intTravelTimesTable > -1)
             {
                 strDirectoryPath = oProjectDs.m_strDataSource[intTravelTimesTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-                strFileName = oProjectDs.m_strDataSource[intTravelTimesTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+                strFileName = oProjectDs.m_strDataSource[intTravelTimesTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
                 //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
                 string strTableName = oProjectDs.m_strDataSource[intTravelTimesTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
                 string strTableStatus = oProjectDs.m_strDataSource[intTravelTimesTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
@@ -5411,7 +5411,7 @@ namespace FIA_Biosum_Manager
 
             int intPlotTable = oProjectDs.getValidTableNameRow(Datasource.TableTypes.Plot);
             string strPlotDirectory = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-            string strPlotMdbFile = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            string strPlotMdbFile = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
             string strPlotTable = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
             string strPlotStatus = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
             if (strPlotStatus == "F")
@@ -5441,7 +5441,7 @@ namespace FIA_Biosum_Manager
 
             intPlotTable = oProjectDs.getValidTableNameRow(Datasource.TableTypes.Condition);
             strPlotDirectory = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-            strPlotMdbFile = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            strPlotMdbFile = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
             strPlotTable = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
             strPlotStatus = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
             if (strPlotStatus == "F")
@@ -5555,7 +5555,7 @@ namespace FIA_Biosum_Manager
                 if (intHarvestMethodsTable > -1)
                 {
                     strHarvestMethodDirectoryPath = oProjectDs.m_strDataSource[intHarvestMethodsTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-                    strHarvestMethodFileName = oProjectDs.m_strDataSource[intHarvestMethodsTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+                    strHarvestMethodFileName = oProjectDs.m_strDataSource[intHarvestMethodsTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
                     //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
                     strHarvestMethodTableName = oProjectDs.m_strDataSource[intHarvestMethodsTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
                     
@@ -5577,7 +5577,7 @@ namespace FIA_Biosum_Manager
                 if (intRxHarvestTable > -1)
                 {
                     string strDirectoryPath = oProjectDs.m_strDataSource[intRxHarvestTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-                    string strFileName = oProjectDs.m_strDataSource[intRxHarvestTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+                    string strFileName = oProjectDs.m_strDataSource[intRxHarvestTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
                     //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
                     string strTableName = oProjectDs.m_strDataSource[intRxHarvestTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
                     foreach (string strScenario in lstScenarios)
@@ -5697,7 +5697,7 @@ namespace FIA_Biosum_Manager
             {
                 string strTreeTable = oDs.m_strDataSource[intTreeTableType, Datasource.TABLE].Trim();
                 string strTreeTableDb = oDs.m_strDataSource[intTreeTableType, Datasource.PATH].Trim() + "\\" +
-                                        oDs.m_strDataSource[intTreeTableType, Datasource.MDBFILE].Trim();
+                                        oDs.m_strDataSource[intTreeTableType, Datasource.DBFILE].Trim();
                 using (OleDbConnection conn = new OleDbConnection(oAdo.getMDBConnString(strTreeTableDb, "", "")))
                 {
                     conn.Open();
@@ -5743,7 +5743,7 @@ namespace FIA_Biosum_Manager
             {
                 string strCondTable = oDs.m_strDataSource[intCondTableType, Datasource.TABLE].Trim();
                 string strCondTableDb = oDs.m_strDataSource[intCondTableType, Datasource.PATH].Trim() + "\\" +
-                                        oDs.m_strDataSource[intCondTableType, Datasource.MDBFILE].Trim();
+                                        oDs.m_strDataSource[intCondTableType, Datasource.DBFILE].Trim();
                 using (OleDbConnection conn = new OleDbConnection(oAdo.getMDBConnString(strCondTableDb, "", "")))
                 {
                     conn.Open();
@@ -5763,7 +5763,7 @@ namespace FIA_Biosum_Manager
             {
                 string strPlotTable = oDs.m_strDataSource[intPlotTableType, Datasource.TABLE].Trim();
                 string strPlotTableDb = oDs.m_strDataSource[intPlotTableType, Datasource.PATH].Trim() + "\\" +
-                                        oDs.m_strDataSource[intPlotTableType, Datasource.MDBFILE].Trim();
+                                        oDs.m_strDataSource[intPlotTableType, Datasource.DBFILE].Trim();
                 using (OleDbConnection conn = new OleDbConnection(oAdo.getMDBConnString(strPlotTableDb, "", "")))
                 {
                     conn.Open();
@@ -5979,7 +5979,7 @@ namespace FIA_Biosum_Manager
             {
                 string strCondTable = oDs.m_strDataSource[intCondTableType, Datasource.TABLE].Trim();
                 string strCondTableDb = oDs.m_strDataSource[intCondTableType, Datasource.PATH].Trim() + "\\" +
-                                        oDs.m_strDataSource[intCondTableType, Datasource.MDBFILE].Trim();
+                                        oDs.m_strDataSource[intCondTableType, Datasource.DBFILE].Trim();
                 using (OleDbConnection conn = new OleDbConnection(oAdo.getMDBConnString(strCondTableDb, "", "")))
                 {
                     conn.Open();
@@ -6012,7 +6012,7 @@ namespace FIA_Biosum_Manager
             {
                 string strPlotTable = oDs.m_strDataSource[intPlotTableType, Datasource.TABLE].Trim();
                 string strPlotTableDb = oDs.m_strDataSource[intPlotTableType, Datasource.PATH].Trim() + "\\" +
-                                        oDs.m_strDataSource[intPlotTableType, Datasource.MDBFILE].Trim();
+                                        oDs.m_strDataSource[intPlotTableType, Datasource.DBFILE].Trim();
                 using (OleDbConnection conn = new OleDbConnection(oAdo.getMDBConnString(strPlotTableDb, "", "")))
                 {
                     conn.Open();
@@ -6072,7 +6072,7 @@ namespace FIA_Biosum_Manager
             {
                 string strCondTable = oDs.m_strDataSource[intCondTableType, Datasource.TABLE].Trim();
                 string strCondTableDb = oDs.m_strDataSource[intCondTableType, Datasource.PATH].Trim() + "\\" +
-                                        oDs.m_strDataSource[intCondTableType, Datasource.MDBFILE].Trim();
+                                        oDs.m_strDataSource[intCondTableType, Datasource.DBFILE].Trim();
                 oDao.getFieldNames(strCondTableDb, strCondTable, ref arrFieldNames);
                 if (!arrFieldNames.Contains("cond_status_cd"))
                 {
@@ -6622,7 +6622,7 @@ namespace FIA_Biosum_Manager
                 int intTravelTable = oProjectDs.getTableNameRow(Datasource.TableTypes.TravelTimes);
                 int intPSitesTable = oProjectDs.getTableNameRow(Datasource.TableTypes.ProcessingSites);
                 string strDirectoryPath = oProjectDs.m_strDataSource[intTravelTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-                string strFileName = oProjectDs.m_strDataSource[intTravelTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+                string strFileName = oProjectDs.m_strDataSource[intTravelTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
                 //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
                 string strTableName = oProjectDs.m_strDataSource[intTravelTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
                 string strTableStatus = oProjectDs.m_strDataSource[intTravelTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
@@ -6768,7 +6768,7 @@ namespace FIA_Biosum_Manager
             // gis_travel_times.processing_site
             int intPSitesTable = oProjectDs.getTableNameRow(Datasource.TableTypes.ProcessingSites);
             string strDirectoryPath = oProjectDs.m_strDataSource[intPSitesTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-            string strFileName = oProjectDs.m_strDataSource[intPSitesTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            string strFileName = oProjectDs.m_strDataSource[intPSitesTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
             string strTableName = oProjectDs.m_strDataSource[intPSitesTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
             
             if (oProjectDs.DataSourceTableExist(intPSitesTable))
@@ -6978,7 +6978,7 @@ namespace FIA_Biosum_Manager
             }
             odbcmgr.CreateUserSQLiteDSN(fvsMasterDs, strDestFile);
             string[] arrTargetTables = { Tables.FVS.DefaultRxPackageTableName, Tables.FVS.DefaultRxTableName, Tables.FVS.DefaultRxHarvestCostColumnsTableName };
-            strSourceFile = $@"{oProjectDs.m_strDataSource[intRxPackageTable, FIA_Biosum_Manager.Datasource.PATH].Trim()}\{oProjectDs.m_strDataSource[intRxPackageTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim()}";
+            strSourceFile = $@"{oProjectDs.m_strDataSource[intRxPackageTable, FIA_Biosum_Manager.Datasource.PATH].Trim()}\{oProjectDs.m_strDataSource[intRxPackageTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim()}";
             for (int i = 0; i < arrTargetTables.Length; i++)
             {
                 oDao.CreateSQLiteTableLink(strSourceFile, arrTargetTables[i],
@@ -6987,7 +6987,7 @@ namespace FIA_Biosum_Manager
             System.Threading.Thread.Sleep(4000);
 
             string strDirectoryPath = oProjectDs.m_strDataSource[intSeqNumTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-            string strFileName = oProjectDs.m_strDataSource[intSeqNumTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            string strFileName = oProjectDs.m_strDataSource[intSeqNumTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
             string strTableName = oProjectDs.m_strDataSource[intSeqNumTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();            
             if (oProjectDs.DataSourceTableExist(intSeqNumTable))
             {
@@ -7011,7 +7011,7 @@ namespace FIA_Biosum_Manager
             }
 
             strDirectoryPath = oProjectDs.m_strDataSource[intRxPackageTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-            strFileName = oProjectDs.m_strDataSource[intRxPackageTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            strFileName = oProjectDs.m_strDataSource[intRxPackageTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
             strTableName = oProjectDs.m_strDataSource[intRxPackageTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
 
             if (oProjectDs.DataSourceTableExist(intRxPackageTable))
@@ -7098,14 +7098,14 @@ namespace FIA_Biosum_Manager
             List<String> lstVar = new List<String>();
             int intPlotTable = oProjectDs.getTableNameRow(Datasource.TableTypes.Plot);
             strDirectoryPath = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-            strFileName = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            strFileName = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
             strTableName = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
             string strVariantCon = oAdo.getMDBConnString(strDirectoryPath + "\\" + strFileName, "", "");
             using (OleDbConnection variantCon = new OleDbConnection(strVariantCon))
             {
                 variantCon.Open();
 
-                oAdo.m_strSQL = Queries.FVS.GetFVSVariantSQL(strTableName);
+                oAdo.m_strSQL = Queries.FVS.GetFVSVariantSQL_access(strTableName);
                 oAdo.SqlQueryReader(variantCon, oAdo.m_strSQL);
 
                 if (oAdo.m_OleDbDataReader.HasRows)
@@ -7283,7 +7283,7 @@ namespace FIA_Biosum_Manager
 
             string[] arrTargetTables = { frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableName, frmMain.g_oTables.m_oFIAPlot.DefaultConditionTableName, 
                 frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName, frmMain.g_oTables.m_oFIAPlot.DefaultSiteTreeTableName };
-            string strSourceFile = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.PATH].Trim() + "\\" + oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            string strSourceFile = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.PATH].Trim() + "\\" + oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
             string strMasterDb = System.IO.Path.GetFileName(frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableSqliteDbFile);
 
             // Set new temporary database
