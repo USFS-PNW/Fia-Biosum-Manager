@@ -3816,7 +3816,7 @@ namespace FIA_Biosum_Manager
 
                     public static string[] CalculateFineWoodyDebrisBiomassTonsPerAcreSqlite(string strDwmFineWoodyDebrisTable,
                         string strCondTable, string strMinSmallFwdTransectLengthTotal, string strMinLargeFwdTransectLengthTotal,
-                        string strStandTable)
+                        string strStandTable, string strRefForestTypeTable, string strRefForestTypeGroupTable)
                     {
                         string[] strFwdSqlStmts = new string[8];
                         int idx = 0;
@@ -3843,25 +3843,24 @@ namespace FIA_Biosum_Manager
 
                         //Gather variables for NRS-22 FWD equation into temporary table
                         strFwdSqlStmts[idx++] = "INSERT INTO DWM_FWD_Aggregates_WorkTable " +
-                            "(biosum_cond_id, rsncntcd, smallTotal, smallTL," +
-                            "mediumTotal, mediumTL, largeTotal, largeTL," +
-                            "decayRatio, bulkDensity, smallQMD, mediumQMD, largeQMD," +
+                            "(biosum_cond_id, rsncntcd, smallTotal, smallTL, " +
+                            "mediumTotal, mediumTL, largeTotal, largeTL, " +
+                            "decayRatio, bulkDensity, smallQMD, mediumQMD, largeQMD, " +
                             "SmallMediumTotalLength, LargeTotalLength) " +
-                            "SELECT fwd.biosum_cond_id, first(fwd.rsnctcd) as rsncntcd, " +
-                            "sum(fwd.smallct) as smallTotal, first(fwd.small_tl_cond) as smallTL, " +
-                            "sum(fwd.mediumct) as mediumTotal, first(fwd.medium_tl_cond) as mediumTL, " +
-                            "sum(fwd.largect) as largeTotal, first(fwd.large_tl_cond) as largeTL, " +
-                            "first(rftg.fwd_decay_ratio) as decayRatio, first(rftg.fwd_density) as bulkDensity, " +
-                            "first(rftg.fwd_small_qmd) as smallQMD,  " +
-                            "first(rftg.fwd_medium_qmd) as mediumQMD,  " +
-                            "first(rftg.fwd_large_qmd) as largeQMD, " +
-                            "first(small_tl_cond) as SmallMediumTotalLength, " +
-                            "first(large_tl_cond) as LargeTotalLength " +
-                            "FROM ((" + strDwmFineWoodyDebrisTable + " fwd INNER JOIN " + strCondTable +
-                            " c ON fwd.biosum_cond_id = c.biosum_cond_id) " +
-                            "INNER JOIN REF_FOREST_TYPE rft ON c.fortypcd = rft.[VALUE]) " +
-                            "INNER JOIN REF_FOREST_TYPE_GROUP rftg ON rft.TYPGRPCD = rftg.[VALUE] " +
-                            "WHERE fwd.rsnctcd < 2 OR fwd.rsnctcd IS NULL " +
+                            "SELECT fwd.biosum_cond_id, MIN(fwd.rsnctcd) AS rsncntcd, " +
+                            "SUM(fwd.smallct) AS smallTotal, MIN(fwd.small_tl_cond) AS smallTL, " +
+                            "SUM(fwd.mediumct) AS mediumTotal, MIN(fwd.medium_tl_cond) AS mediumTL, " +
+                            "SUM(fwd.largect) AS largeTotal, MIN(fwd.large_tl_cond) AS largeTL, " +
+                            "MIN(rftg.fwd_decay_ratio) AS decayRatio, MIN(rftg.fwd_density) AS bulkDensity, " +
+                            "MIN(rftg.fwd_small_qmd) AS smallQMD, " +
+                            "MIN(rftg.fwd_medium_qmd) AS mediumQMD, " +
+                            "MIN(rftg.fwd_large_qmd) AS largeQMD, " +
+                            "MIN(small_tl_cond) AS SmallMediumTotalLength, " +
+                            "MIN(large_tl_cond) AS LargeTotalLength " +
+                            "FROM " + strDwmFineWoodyDebrisTable + " AS fwd, " + strCondTable + " AS c, " +
+                            strRefForestTypeTable + " AS rft, " + strRefForestTypeGroupTable + " AS rftg " +
+                            "WHERE fwd.biosum_cond_id = c.biosum_cond_id AND c.fortypcd = rft.typgrpcd = rftg.value AND " +
+                            "(fwd.rsnctcd < 2 OR fwd.rsnctcd IS NULL) " +
                             "GROUP BY fwd.biosum_cond_id";
 
 
@@ -3964,21 +3963,21 @@ namespace FIA_Biosum_Manager
                             "INNER JOIN {2} fvs on dl.biosum_cond_id=fvs.stand_ID " +
                             "GROUP BY dl.biosum_cond_id;", strDwmDuffLitterTable, strCondTable, strStandTable);
                     }
-                    public static string CalculateDuffLitterBiomassTonsPerAcreSqlite(string strDwmDuffLitterTable, string strCondTable, string strStandTable)
+                    public static string CalculateDuffLitterBiomassTonsPerAcreSqlite(string strDwmDuffLitterTable, string strCondTable, string strStandTable,
+                        string strRefForestTypeTable, string strRefForestTypeGroupTable)
                     {
                         return "INSERT INTO DWM_DuffLitter_Aggregates_WorkTable " +
-                            "(biosum_cond_id, DuffPitCount, LitterPitCount," +
+                            "(biosum_cond_id, DuffPitCount, LitterPitCount, " +
                             "fvs_fuel_duff_tonsPerAcre, fvs_fuel_litter_tonsPerAcre) " +
                             "SELECT dl.biosum_cond_id, " +
-                            "SUM(IIF(duffdep IS NOT NULL, 1, 0)), " +
-                            "SUM(IIF(littdep IS NOT NULL, 1, 0)), " +
-                            "(AVG(dl.duffdep)*first(rftg.duff_density)*1.815), " +
-                            "(AVG(dl.littdep)*first(rftg.litter_density)*1.815) " +
-                            "FROM (((" + strDwmDuffLitterTable + " dl " +
-                            "INNER JOIN " + strCondTable + " c ON dl.biosum_cond_id = c.biosum_cond_id) " +
-                            "INNER JOIN REF_FOREST_TYPE rft ON c.fortypcd = rft.[VALUE]) " +
-                            "INNER JOIN REF_FOREST_TYPE_GROUP rftg ON rft.TYPGRPCD = rftg.[VALUE]) " +
-                            "INNER JOIN " + strStandTable + " fvs on dl.biosum_cond_id=fvs.stand_ID " +
+                            "SUM(CASE WHEN duffdep IS NOT NULL THEN 1 ELSE 0 END), " +
+                            "SUM(CASE WHEN littdep IS NOT NULL THEN 1 ELSE 0 END), " +
+                            "(AVG(dl.duffdep) * MIN(rftg.duff_density) * 1.815), " +
+                            "(AVG(dl.littdep) * MIN(rftg.litter_density) * 1.815) " +
+                            "FROM " + strDwmDuffLitterTable + " AS dl, " + strCondTable + " AS c, " +
+                            strRefForestTypeTable + " AS rft, " + strRefForestTypeGroupTable + " AS rftg, " + strStandTable + " AS fvs " +
+                            "WHERE dl.biosum_cond_id = c.biosum_cond_id AND c.fortypcd = rft.value AND " +
+                            "rft.typgrpcd = rftg.value AND dl.biosum_cond_id = fvs.stand_id " +
                             "GROUP BY dl.biosum_cond_id";
                     }
                     public static string CreateDuffLitterBiomassTonsPerAcreSqlite()
@@ -4091,7 +4090,7 @@ namespace FIA_Biosum_Manager
                         string strSQL = "SELECT p.biosum_plot_id, c.biosum_cond_id, p.statecd, " +
                             "p.countycd, p.plot, p.fvs_variant, p.measyear, " +
                             "c.adforcd, p.elev, c.condid, c.habtypcd1, " +
-                            "c.stdage, c.slope, c.aspect, c.ground_land_class_pnw, " +
+                            "c.stdage, c.slope, c.aspect, " +
                             "c.sisp, p.lat, p.lon, c.adforcd, c.habtypcd1, " +
                             "p.elev, c.cond_status_cd, c.ba_ft2_ac, c.habtypcd1 " +
                             "FROM " + strCondTable + " AS c, " + strPlotTable + " AS p " +
@@ -4171,10 +4170,11 @@ namespace FIA_Biosum_Manager
                         return strSQL;
                     }
 
-                    public static string PopulateStandInit(string strSourceStandTable, string strCondTable, string strVariant)
+                    public static string PopulateStandInit(string strSourceStandTable, string strFields, string strCondTable, string strVariant)
                     {
-                        string strSQL = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
-                            " SELECT s.* FROM " + strSourceStandTable + " AS s " +
+                        string strSQL = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputStandTableName + 
+                            " (" + strFields + ") " +
+                            "SELECT s.* FROM " + strSourceStandTable + " AS s " +
                             "JOIN " + strCondTable + " AS c ON TRIM(c.cn) = TRIM(s.stand_cn) " +
                             "WHERE s.variant = '" + strVariant + "' AND c.cond_status_cd = 1";
                         return strSQL;
@@ -4588,11 +4588,12 @@ namespace FIA_Biosum_Manager
                         return strSql;
                     }
 
-                    public static string PopulateTreeInit(string strSourceTreeTable, string strSourceStandTable,
+                    public static string PopulateTreeInit(string strSourceTreeTable, string strFields, string strSourceStandTable,
                         string strCondTable, string strTreeTable, string strVariant)
                     {
                         string strSQL = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
-                            " SELECT st.* FROM " + strSourceTreeTable + " AS st, " +
+                            " (" + strFields + ") " +
+                            "SELECT st.* FROM " + strSourceTreeTable + " AS st, " +
                             strTreeTable + " AS t, " + strSourceStandTable + " AS ss, " +
                             strCondTable + " AS c " +
                             "WHERE c.biosum_cond_id = t.biosum_cond_id AND TRIM(t.cn) = st.tree_cn " +
@@ -4816,7 +4817,7 @@ namespace FIA_Biosum_Manager
                             "SET damage3 = 25, severity3 = (t.cull + t.roughcull) " +
                             "FROM " + strTreeTable + " AS t " +
                             "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
-                            "damage1 <> 25 AND damage2 <> 25 AND (damage3 IS NULL OR damage3 IN (96,97) AND " +
+                            "damage1 <> 25 AND damage2 <> 25 AND (damage3 IS NULL OR damage3 IN (96,97)) AND " +
                             "history = 1 AND (t.cull + t.roughcull) > 0";
                         // second pass updates the damage code and severity fields with mistletoe (30) if they are null or = 96, 97
                         arrDamageCodeUpdates[3] = "UPDATE " + strTargetTable + " AS x " +
@@ -4964,7 +4965,7 @@ namespace FIA_Biosum_Manager
                         System.Text.StringBuilder sb = new System.Text.StringBuilder();
                         foreach (var item in lstFields)
                         {
-                            sb.Append("t." + item + "= s." + item);
+                            sb.Append(item + "= s." + item);
                             sb.Append(",");
                         }
                         sb.Length--; // Remove trailing comma

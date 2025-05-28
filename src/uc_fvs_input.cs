@@ -1548,6 +1548,22 @@ namespace FIA_Biosum_Manager
                    System.Windows.Forms.MessageBoxIcon.Exclamation);
                 this.m_intError = -1;
             }
+            finally
+            {
+                if (oDataMgr != null)
+                {
+                    if (oDataMgr.m_DataSet != null)
+                    {
+                        oDataMgr.m_DataSet.Clear();
+                        oDataMgr.m_DataSet.Dispose();
+                    }
+                    oDataMgr = null;
+                }
+                if (m_intError == 0)
+                {
+                    ThreadCleanUp();
+                }
+            }
         }
         public void StopThread()
         {

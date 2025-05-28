@@ -992,10 +992,10 @@ namespace FIA_Biosum_Manager
         private void GenerateSiteIndexAndSiteSpeciesSQLNew(SQLite.ADO.DataMgr oDataMgr, System.Data.SQLite.SQLiteConnection conn, string strVariant)
         {
             fvs_input.site_index oSiteIndex = new site_index();
-            oSiteIndex.CondTable = this.m_strCondTable;
-            oSiteIndex.PlotTable = this.m_strPlotTable;
-            oSiteIndex.TreeTable = this.m_strTreeTable;
-            oSiteIndex.SiteTreeTable = this.m_strSiteTreeTable;
+            oSiteIndex.CondTable = "master." + this.m_strCondTable;
+            oSiteIndex.PlotTable = "master." + this.m_strPlotTable;
+            oSiteIndex.TreeTable = "master." + this.m_strTreeTable;
+            oSiteIndex.SiteTreeTable = "master." + this.m_strSiteTreeTable;
             oSiteIndex.TreeSpeciesTable = this.m_strTreeSpcTable;
             oSiteIndex.FVSTreeSpeciesTable = this.m_strFVSTreeSpcTable;
             oSiteIndex.SiteIndexEquations = LoadSiteIndexEquations(strVariant.Trim().ToUpper());
@@ -1005,7 +1005,7 @@ namespace FIA_Biosum_Manager
             oSiteIndex.ProjectDirectory = this.m_strProjDir;
 
             oDataMgr.m_strSQL =
-                   Queries.FVS.FVSInput.StandInit.CreateSiteIndexDatasetNew(strVariant, m_strCondTable, m_strPlotTable);
+                   Queries.FVS.FVSInput.StandInit.CreateSiteIndexDatasetNew(strVariant, "master." + m_strCondTable, "master." + m_strPlotTable);
             oDataMgr.CreateDataSet(conn, oDataMgr.m_strSQL, "standlist");
             if (oDataMgr.m_DataSet.Tables["standlist"].Rows.Count == 0)
             {
@@ -1211,7 +1211,7 @@ namespace FIA_Biosum_Manager
                 {
                     string[] strFwdSqlStmts = Queries.FVS.FVSInput.StandInit.CalculateFineWoodyDebrisBiomassTonsPerAcreSqlite(
                         m_strDwmFineWoodyDebrisTable, m_strCondTable, m_strMinSmallFwdTransectLengthTotal,
-                        m_strMinLargeFwdTransectLengthTotal, strStandTable);
+                        m_strMinLargeFwdTransectLengthTotal, strStandTable, null, null);
                     foreach (string strSQL in strFwdSqlStmts)
                     {
                         if (Array.IndexOf(strFwdSqlStmts, strSQL) == 1)
@@ -1287,7 +1287,7 @@ namespace FIA_Biosum_Manager
 
                         string strSQL =
                             Queries.FVS.FVSInput.StandInit.CalculateDuffLitterBiomassTonsPerAcreSqlite(m_strDwmDuffLitterTable,
-                                m_strCondTable, strStandTable);
+                                m_strCondTable, strStandTable, null, null);
                         DebugLogSQL(m_ado.m_strSQL);
                         m_ado.SqlNonQuery(accessConn, strSQL);
                         m_intError = m_ado.m_intError;
@@ -1347,7 +1347,101 @@ namespace FIA_Biosum_Manager
         {
             string strDWMTablesDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.db";
             FIA_Biosum_Manager.Datasource oProjectDs = new Datasource();
-            string strTreeSpeciesDb = oProjectDs.CreateTemporarySQLiteSpeciesRefTable();
+            string strBioSumRefDb = frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
+                        frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceSqliteFile;
+            string strForestTypeTable = "ref.REF_FOREST_TYPE";
+            string strForestTypeGroupTable = "ref.REF_FOREST_TYPE_GROUP";
+
+            if (!oDataMgr.DatabaseAttached(conn, strDWMTablesDb))
+            {
+                oDataMgr.m_strSQL = "ATTACH DATABASE '" + strDWMTablesDb + "' AS dwmdb";
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+            }
+            if (!oDataMgr.DatabaseAttached(conn, strBioSumRefDb))
+            {
+                oDataMgr.m_strSQL = "ATTACH DATABASE '" + strBioSumRefDb + "' AS ref";
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+            }
+
+            //COARSE WOODY DEBRIS
+            string[] strCwdSqlStmts = Queries.FVS.FVSInput.StandInit.CalculateCoarseWoodyDebrisBiomassTonsPerAcreSqlite(
+                "dwmdb." + m_strDwmCoarseWoodyDebrisTable, "ref." + m_strFiaTreeSpeciesRefTable,
+                "dwmdb." + m_strDwmTransectSegmentTable, m_strMinCwdTransectLengthTotal, strStandTable);
+            foreach (string strSQL in strCwdSqlStmts)
+            {
+                if (!String.IsNullOrEmpty(strSQL) && m_intError == 0)
+                {
+                    DebugLogSQL(strSQL);
+                    oDataMgr.SqlNonQuery(conn, strSQL);
+                    m_intError = oDataMgr.m_intError;
+                }
+            }
+
+            //FINE WOODY DEBRIS
+            DebugLogMessage("Executing Fine Woody Debris SQL (multiple steps)\r\n", 1);
+            if (m_intError == 0)
+            {
+                string[] strFwdSqlStmts = Queries.FVS.FVSInput.StandInit.CalculateFineWoodyDebrisBiomassTonsPerAcreSqlite(
+                    "dwmdb." + m_strDwmFineWoodyDebrisTable, "master." + m_strCondTable, m_strMinSmallFwdTransectLengthTotal,
+                    m_strMinLargeFwdTransectLengthTotal, strStandTable, strForestTypeTable, strForestTypeGroupTable);
+                foreach (string strSQL in strFwdSqlStmts)
+                {
+                    DebugLogSQL(strSQL);
+                    oDataMgr.SqlNonQuery(conn, strSQL);
+                    m_intError = oDataMgr.m_intError;
+                }
+            }
+
+            //DUFF LITTER
+            DebugLogMessage("Executing Duff Litter SQL (multiple steps)\r\n", 1);
+            if (m_intError == 0)
+            {
+                oDataMgr.m_strSQL = Queries.FVS.FVSInput.StandInit.CreateDuffLitterBiomassTonsPerAcreSqlite();
+                DebugLogSQL(oDataMgr.m_strSQL);
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                m_intError = oDataMgr.m_intError;
+
+                oDataMgr.m_strSQL = Queries.FVS.FVSInput.StandInit.CalculateDuffLitterBiomassTonsPerAcreSqlite("dwmdb." + m_strDwmDuffLitterTable,
+                                "master." + m_strCondTable, strStandTable, strForestTypeTable, strForestTypeGroupTable);
+                DebugLogSQL(oDataMgr.m_strSQL);
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                m_intError = oDataMgr.m_intError;
+
+                oDataMgr.m_strSQL = Queries.FVS.FVSInput.StandInit.UpdateFvsStandInitDuffLitterColumnsSqlite(strStandTable);
+                DebugLogSQL(oDataMgr.m_strSQL);
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                m_intError = oDataMgr.m_intError;
+
+                if (!string.IsNullOrEmpty(m_strDuffExcludedYears))
+                {
+                    oDataMgr.m_strSQL = Queries.FVS.FVSInput.StandInit.RemoveDuffYearsSqlite(m_strDuffExcludedYears, strStandTable);
+                    DebugLogSQL(oDataMgr.m_strSQL);
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    m_intError = oDataMgr.m_intError;
+                }
+                if (!string.IsNullOrEmpty(m_strLitterExcludedYears))
+                {
+                    oDataMgr.m_strSQL = Queries.FVS.FVSInput.StandInit.RemoveLitterYearsSqlite(m_strLitterExcludedYears, strStandTable);
+                    DebugLogSQL(oDataMgr.m_strSQL);
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    m_intError = oDataMgr.m_intError;
+                }
+            }
+
+            //Clean up worktables
+            DebugLogMessage("Deleting work tables\r\n", 1);
+            if (m_intError == 0)
+            {
+                string[] strDeleteStmts = Queries.FVS.FVSInput.StandInit.DeleteDwmWorkTables();
+                foreach (string strSQL in strDeleteStmts)
+                {
+                    DebugLogSQL(strSQL);
+                    oDataMgr.SqlNonQuery(conn, strSQL);
+                    m_intError = oDataMgr.m_intError;
+                    if (m_intError != 0)
+                        break;
+                }
+            }
         }
 
         private void CreateFVSTreeInit()
@@ -2637,8 +2731,11 @@ namespace FIA_Biosum_Manager
                 string strRefDb = frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
                 frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceSqliteFile;
 
-                dataMgr.m_strSQL = "ATTACH DATABASE '" + strRefDb + "' AS ref";
-                dataMgr.SqlNonQuery(tempConn, dataMgr.m_strSQL);
+                if (!dataMgr.DatabaseAttached(tempConn, strRefDb))
+                {
+                    dataMgr.m_strSQL = "ATTACH DATABASE '" + strRefDb + "' AS ref";
+                    dataMgr.SqlNonQuery(tempConn, dataMgr.m_strSQL);
+                }
 
                 dataMgr.m_strSQL = "SELECT DISTINCT FVS_VARIANT FROM " + Tables.Reference.DefaultSiteIndexEquationsTable;
                 dataMgr.SqlQueryReader(tempConn, dataMgr.m_strSQL);
@@ -2849,7 +2946,7 @@ namespace FIA_Biosum_Manager
             private void GetSiteIndexSpeciesAlphaCodeNew()
             {
                 dataMgr.m_strSQL = "SELECT fvs_species FROM " + FVSTreeSpeciesTable +
-                     "WHERE fvs_variant = '" + FVSVariant + "' AND " +
+                     " WHERE fvs_variant = '" + FVSVariant + "' AND " +
                      "spcd = " + SiteIndexSpecies;
                 SiteIndexSpeciesAlphaCode = dataMgr.getSingleStringValueFromSQLQuery(tempConn, dataMgr.m_strSQL, FVSTreeSpeciesTable);
                 if (SiteIndexSpeciesAlphaCode.Trim().Length == 0)
@@ -5638,26 +5735,37 @@ namespace FIA_Biosum_Manager
                 "Populating FVS_STANDINIT_COND and FVS_TREEINIT_COND tables For Variant " + strVariant);
 
                 // Attach FIADB and master databases
-                oDataMgr.m_strSQL = "ATTACH DATABASE '" + strSourceFiaDb + "' AS source";
-                oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
-                oDataMgr.m_strSQL = "ATTACH DATABASE '" + strMasterDb + "' AS master";
+                if (!oDataMgr.DatabaseAttached(tempConn, strSourceFiaDb))
+                {
+                    oDataMgr.m_strSQL = "ATTACH DATABASE '" + strSourceFiaDb + "' AS source";
+                    oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
+                }
+                if (!oDataMgr.DatabaseAttached(tempConn, strMasterDb))
+                {
+                    oDataMgr.m_strSQL = "ATTACH DATABASE '" + strMasterDb + "' AS master";
+                    oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
+                }
 
-                DebugLogSQL(Queries.FVS.FVSInput.StandInit.PopulateStandInit("source." + Tables.FIA2FVS.DefaultFvsInputStandTableName, 
-                    m_strCondTable, strVariant));
-                oDataMgr.SqlNonQuery(tempConn, Queries.FVS.FVSInput.StandInit.PopulateStandInit("source." + Tables.FIA2FVS.DefaultFvsInputStandTableName, 
-                    m_strCondTable, strVariant));
+                // Get columns in from FIADB version of tables
+                string strStandInitFields = oDataMgr.getFieldNames(tempConn, "SELECT * FROM source." + Tables.FIA2FVS.DefaultFvsInputStandTableName);
+                string strTreeInitFields = oDataMgr.getFieldNames(tempConn, "SELECT * FROM source." + Tables.FIA2FVS.DefaultFvsInputTreeTableName);
 
-                DebugLogSQL(Queries.FVS.FVSInput.TreeInit.PopulateTreeInit("source." + Tables.FIA2FVS.DefaultFvsInputTreeTableName, 
-                    "source." + Tables.FIA2FVS.DefaultFvsInputStandTableName, m_strCondTable, m_strTreeTable, strVariant));
-                oDataMgr.SqlNonQuery(tempConn, Queries.FVS.FVSInput.TreeInit.PopulateTreeInit("source." + Tables.FIA2FVS.DefaultFvsInputTreeTableName,
-                    "source." + Tables.FIA2FVS.DefaultFvsInputStandTableName, m_strCondTable, m_strTreeTable, strVariant));
+                DebugLogSQL(Queries.FVS.FVSInput.StandInit.PopulateStandInit(Tables.FIA2FVS.DefaultFvsInputStandTableName, strStandInitFields,
+                    m_strCondTable, strVariant));
+                oDataMgr.SqlNonQuery(tempConn, Queries.FVS.FVSInput.StandInit.PopulateStandInit("source." + Tables.FIA2FVS.DefaultFvsInputStandTableName, strStandInitFields,
+                    "master." + m_strCondTable, strVariant));
+
+                DebugLogSQL(Queries.FVS.FVSInput.TreeInit.PopulateTreeInit(Tables.FIA2FVS.DefaultFvsInputTreeTableName, strTreeInitFields,
+                    Tables.FIA2FVS.DefaultFvsInputStandTableName, m_strCondTable, m_strTreeTable, strVariant));
+                oDataMgr.SqlNonQuery(tempConn, Queries.FVS.FVSInput.TreeInit.PopulateTreeInit("source." + Tables.FIA2FVS.DefaultFvsInputTreeTableName, strTreeInitFields,
+                    "source." + Tables.FIA2FVS.DefaultFvsInputStandTableName, "master." + m_strCondTable, "master." + m_strTreeTable, strVariant));
 
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
                     "Customizing FVS_STANDINIT_COND table For Variant " + strVariant);
                 // Populate the STAND_ID and SAM_WT from the BioSum Cond table
                 DebugLogSQL(Queries.FVS.FVSInput.StandInit.UpdateFromCond(m_strCondTable, strVariant));
-                oDataMgr.SqlNonQuery(tempConn, Queries.FVS.FVSInput.StandInit.UpdateFromCond(m_strCondTable, strVariant));
+                oDataMgr.SqlNonQuery(tempConn, Queries.FVS.FVSInput.StandInit.UpdateFromCond("master." + m_strCondTable, strVariant));
 
                 //Overwrite FOREST_TYPE with FOREST_TYPE_FIA, PV_CODE with PV_FIA_HABTYPCD1
                 DebugLogSQL(Queries.FVS.FVSInput.StandInit.UpdateForestTypeAndPvCode());
@@ -5683,7 +5791,7 @@ namespace FIA_Biosum_Manager
                 {
                     CreateDwmFuelbedTypeCodeFvsConversionTableNew(oDataMgr, tempConn);
                     oDataMgr.m_strSQL =
-                        Queries.FVS.FVSInput.StandInit.UpdateFuelModelNew(Tables.FIA2FVS.DefaultFvsInputStandTableName, m_strCondTable);
+                        Queries.FVS.FVSInput.StandInit.UpdateFuelModelNew(Tables.FIA2FVS.DefaultFvsInputStandTableName, "master." + m_strCondTable);
                     oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
                     oDataMgr.SqlNonQuery(tempConn, "DROP TABLE Ref_DWM_Fuelbed_Type_Codes");
                 }
@@ -5691,7 +5799,7 @@ namespace FIA_Biosum_Manager
                 // SITE_INDEX and SITE_SPECIES 
                 if (m_intError == 0)
                 {
-                    GenerateSiteIndexAndSiteSpeciesSQLNew(oDataMgr, tempConn, strVariant);
+                    //GenerateSiteIndexAndSiteSpeciesSQLNew(oDataMgr, tempConn, strVariant);
                 }
 
                 // set fuel columns to null
@@ -5705,7 +5813,7 @@ namespace FIA_Biosum_Manager
                     (int) m_enumDWMOption.USE_DWM_DATA_ONLY
                 }.Contains(m_intDWMOption))
                 {
-                    //PopulateFuelColumns(strAccdbConnection, strVariantWorkDb, Tables.FIA2FVS.DefaultFvsInputStandTableName);
+                    PopulateFuelColumnsNew(oDataMgr, tempConn, Tables.FIA2FVS.DefaultFvsInputStandTableName);
                 }
 
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
@@ -5746,19 +5854,19 @@ namespace FIA_Biosum_Manager
                 }
 
                 // Populate the STAND_ID from the BioSum Cond table
-                DebugLogSQL(Queries.FVS.FVSInput.TreeInit.UpdateFromCondNew(m_strCondTable, strVariant, strTempTreeTable));
-                oDataMgr.SqlNonQuery(tempConn, Queries.FVS.FVSInput.TreeInit.UpdateFromCondNew(m_strCondTable, strVariant, strTempTreeTable));
+                DebugLogSQL(Queries.FVS.FVSInput.TreeInit.UpdateFromCondNew( m_strCondTable, strVariant, strTempTreeTable));
+                oDataMgr.SqlNonQuery(tempConn, Queries.FVS.FVSInput.TreeInit.UpdateFromCondNew("master." + m_strCondTable, strVariant, strTempTreeTable));
                 lstFields.Add("STAND_ID");
 
                 // Populate the TREE_ID and BioSum Tree table
                 DebugLogSQL(Queries.FVS.FVSInput.TreeInit.UpdateFromTreeNew(m_strTreeTable, strTempTreeTable));
-                oDataMgr.SqlNonQuery(tempConn, Queries.FVS.FVSInput.TreeInit.UpdateFromTreeNew(m_strTreeTable, strTempTreeTable));
+                oDataMgr.SqlNonQuery(tempConn, Queries.FVS.FVSInput.TreeInit.UpdateFromTreeNew("master." + m_strTreeTable, strTempTreeTable));
                 lstFields.Add("TREE_ID");
 
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
                 // Update tree_count
                 DebugLogSQL(Queries.FVS.FVSInput.TreeInit.UpdateTreeCountNew(m_strTreeTable, strTempTreeTable));
-                oDataMgr.SqlNonQuery(tempConn, Queries.FVS.FVSInput.TreeInit.UpdateTreeCountNew(m_strTreeTable, strTempTreeTable));
+                oDataMgr.SqlNonQuery(tempConn, Queries.FVS.FVSInput.TreeInit.UpdateTreeCountNew("master." + m_strTreeTable, strTempTreeTable));
                 lstFields.Add("TREE_COUNT");
 
                 // Manage calibraton columns; Set to null if not selected
@@ -5779,7 +5887,7 @@ namespace FIA_Biosum_Manager
 
                 // Update damage codes for cull and mistletoe
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
-                UpdateDamageCodesForCullAndMistletoeNew(oDataMgr, tempConn, m_strTreeTable, strTempTreeTable);
+                UpdateDamageCodesForCullAndMistletoeNew(oDataMgr, tempConn, "master." + m_strTreeTable, strTempTreeTable);
                 lstFields.Add("Damage1");
                 lstFields.Add("Severity1");
                 lstFields.Add("Damage2");
@@ -5815,9 +5923,12 @@ namespace FIA_Biosum_Manager
                 oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
 
                 // Copy data from temp tables to final tables
-                oDataMgr.m_strSQL = "ATTACH DATABASE '" + strInDirAndFile + "' AS target";
-                oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
-
+                if (!oDataMgr.DatabaseAttached(tempConn, strInDirAndFile))
+                {
+                    oDataMgr.m_strSQL = "ATTACH DATABASE '" + strInDirAndFile + "' AS target";
+                    oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
+                }
+                
                 oDataMgr.m_strSQL = "INSERT INTO target." + Tables.FIA2FVS.DefaultFvsInputStandTableName +
                     " SELECT * FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName;
                 oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
