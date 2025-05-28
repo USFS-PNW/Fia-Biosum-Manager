@@ -3818,36 +3818,12 @@ namespace FIA_Biosum_Manager
                         string strCondTable, string strMinSmallFwdTransectLengthTotal, string strMinLargeFwdTransectLengthTotal,
                         string strStandTable, string strRefForestTypeTable, string strRefForestTypeGroupTable)
                     {
-                        string[] strFwdSqlStmts = new string[8];
+                        string[] strFwdSqlStmts = new string[7];
                         int idx = 0;
 
-                        //Create empty DWM_FWD_Aggregates_WorkTable table in SQLite
-                        strFwdSqlStmts[idx++] = "CREATE TABLE DWM_FWD_Aggregates_WorkTable " +
-                            "(temp_id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                            "biosum_cond_id CHAR(25)," +
-                            "rsncntcd INTEGER," +
-                            "smallTotal INTEGER," +
-                            "smallTL DOUBLE," +
-                            "mediumTotal INTEGER," +
-                            "mediumTL DOUBLE," +
-                            "largeTotal INTEGER," +
-                            "largeTL DOUBLE," +
-                            "decayRatio DOUBLE," +
-                            "bulkDensity DOUBLE," +
-                            "smallQMD DOUBLE," +
-                            "mediumQMD DOUBLE," +
-                            "largeQMD DOUBLE," +
-                            "SmallMediumTotalLength DOUBLE," +
-                            "LargeTotalLength DOUBLE," +
-                            "ScalingConstants DOUBLE DEFAULT 0.186597208)";
-
                         //Gather variables for NRS-22 FWD equation into temporary table
-                        strFwdSqlStmts[idx++] = "INSERT INTO DWM_FWD_Aggregates_WorkTable " +
-                            "(biosum_cond_id, rsncntcd, smallTotal, smallTL, " +
-                            "mediumTotal, mediumTL, largeTotal, largeTL, " +
-                            "decayRatio, bulkDensity, smallQMD, mediumQMD, largeQMD, " +
-                            "SmallMediumTotalLength, LargeTotalLength) " +
-                            "SELECT fwd.biosum_cond_id, MIN(fwd.rsnctcd) AS rsncntcd, " +
+                        strFwdSqlStmts[idx++] = "CREATE TABLE DWM_FWD_Aggregates_WorkTable AS " +
+                            "SELECT fwd.biosum_cond_id, MIN(fwd.small_tl_cond) AS smallTL, " +
                             "SUM(fwd.smallct) AS smallTotal, MIN(fwd.small_tl_cond) AS smallTL, " +
                             "SUM(fwd.mediumct) AS mediumTotal, MIN(fwd.medium_tl_cond) AS mediumTL, " +
                             "SUM(fwd.largect) AS largeTotal, MIN(fwd.large_tl_cond) AS largeTL, " +
@@ -3856,13 +3832,13 @@ namespace FIA_Biosum_Manager
                             "MIN(rftg.fwd_medium_qmd) AS mediumQMD, " +
                             "MIN(rftg.fwd_large_qmd) AS largeQMD, " +
                             "MIN(small_tl_cond) AS SmallMediumTotalLength, " +
-                            "MIN(large_tl_cond) AS LargeTotalLength " +
+                            "MIN(large_tl_cond) AS LargeTotalLength, " +
+                            "0.186597208 as ScalingConstants " +
                             "FROM " + strDwmFineWoodyDebrisTable + " AS fwd, " + strCondTable + " AS c, " +
                             strRefForestTypeTable + " AS rft, " + strRefForestTypeGroupTable + " AS rftg " +
-                            "WHERE fwd.biosum_cond_id = c.biosum_cond_id AND c.fortypcd = rft.typgrpcd = rftg.value AND " +
-                            "(fwd.rsnctcd < 2 OR fwd.rsnctcd IS NULL) " +
+                            "WHERE fwd.biosum_cond_id = c.biosum_cond_id AND c.fortypcd = rft.value AND " +
+                            "rft.typgrpcd = rftg.value AND (fwd.rsnctcd < 2 OR fwd.rsnctcd IS NULL) " +
                             "GROUP BY fwd.biosum_cond_id";
-
 
                         //Creates a table for scaling FWD TLs because the counts (small, medium, large) are filtered by RsnCtCd
                         strFwdSqlStmts[idx++] = "CREATE TABLE Dwm_Fwd_RsnCtCd_WorkTable AS " +
