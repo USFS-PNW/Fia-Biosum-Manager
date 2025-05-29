@@ -6070,6 +6070,10 @@ namespace FIA_Biosum_Manager
                 oDataMgr.SqlNonQuery(p_Conn, strSql);
             }
 
+            // Add BiosumGeneratedSiteIndex_YN column to stand table
+            oDataMgr.AddColumn(p_Conn, Tables.FIA2FVS.DefaultFvsInputStandTableName, "BioSumGeneratedSiteIndex_YN",
+                "CHAR", "1");
+
             // Add VARIANT field to empty tree table
             oDataMgr.AddColumn(p_Conn, Tables.FIA2FVS.DefaultFvsInputTreeTableName, "VARIANT", "CHAR", "2");
 
