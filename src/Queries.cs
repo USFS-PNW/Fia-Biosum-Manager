@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Forms;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace FIA_Biosum_Manager
 {
@@ -5090,19 +5091,6 @@ namespace FIA_Biosum_Manager
                 }
 
                 /// <summary>
-                /// Insert FVS_TREEs that are not cycle 1 trees
-                /// </summary>
-                /// <param name="p_strInputVolumesTable"></param>
-                /// <param name="p_strFvsTreeTable"></param>
-                /// <returns></returns>
-                public static string BuildInputTableForVolumeCalculation_Step1(string p_strInputVolumesTable, string p_strFvsTreeTable)
-                {
-                    string strColumns = "id,biosum_cond_id,invyr,fvs_variant,spcd,dbh,ht,actualht,cr,fvs_tree_id";
-                    string values = "id,biosum_cond_id,CINT(rxyear) AS invyr, fvs_variant, IIF(FvsCreatedTree_YN='Y',CINT(fvs_species),-1) AS spcd, dbh,ht,ht,pctcr,fvs_tree_id ";
-                    return $@"INSERT INTO {p_strInputVolumesTable} ({strColumns}) SELECT {values} FROM {p_strFvsTreeTable}";
-                }
-
-                /// <summary>
                 /// Update tree fields with values from the MASTER.TREE records
                 /// </summary>
                 /// <param name="p_strInputVolumesTable"></param>
@@ -5145,23 +5133,6 @@ namespace FIA_Biosum_Manager
                 }
 
                 /// <summary>
-                /// Update biosum_volumes_input fields (balive, precipitation)
-                /// </summary>
-                /// <param name="p_strInputVolumesTable"></param>
-                /// <param name="p_strFIATreeTable"></param>
-                /// <param name="p_strFIAPlotTable"></param>
-                /// <param name="p_strFIACondTable"></param>
-                /// <returns></returns>
-                public static string BuildInputTableForVolumeCalculation_Step2a(string p_strInputVolumesTable, string p_strFIAPlotTable, string p_strFIACondTable, string p_strFvsOutSummaryTable)
-                {
-                    return $@"UPDATE (({p_strFIAPlotTable} p INNER JOIN {p_strFIACondTable} c ON p.biosum_plot_id = c.biosum_plot_id) 
-                                INNER JOIN {p_strInputVolumesTable} i ON c.biosum_cond_id = i.biosum_cond_id) 
-                                INNER JOIN {p_strFvsOutSummaryTable} s ON i.invyr = s.Year AND i.biosum_cond_id = s.StandID
-                                SET i.balive=s.ba, i.precipitation=p.precipitation
-                                WHERE i.fvscreatedtree_yn='Y'";
-                }
-
-                /// <summary>
                 /// Update biosum_volumes_input fields (precipitation)
                 /// </summary>
                 /// <param name="p_strInputVolumesTable"></param>
@@ -5196,6 +5167,23 @@ namespace FIA_Biosum_Manager
                                 FROM fvsout.FVS_Summary AS s, fvsout.FVS_Cases c
                                 WHERE biosum_volumes_input.biosum_cond_id = s.StandId and biosum_volumes_input.invyr = s.Year 
                                 and s.CaseID = c.CaseID and c.RunTitle = '{p_strRunTitle}' and FvsCreatedTree_YN = 'Y')";
+                }
+
+                /// <summary>
+                /// Update biosum_volumes_input field (balive) from pre_Fvs_Summary table for FVS-created trees.
+                /// This is an alternate query used by the Tree Troubleshooter to remove a dependency on FVSOut.db
+                /// </summary>
+                /// <param name="p_strInputVolumesTable"></param>
+                /// <param name="p_strFvsVariant"></param>
+                /// <param name="p_strRxPackage"></param>
+                /// <returns></returns>
+                public static string BuildInputSQLiteTableForVolumeCalculation_Step1a(string p_strInputVolumesTable, string p_strFvsVariant,
+                    string p_strRxPackage)
+                {
+                    return $@"UPDATE {p_strInputVolumesTable} as i 
+                        SET(balive) = (select f.ba) FROM {Tables.FVS.DefaultPreFVSSummaryTableName} f
+                        WHERE i.biosum_cond_id = f.biosum_cond_id and i.invyr = f.year
+                        and f.fvs_variant = '{p_strFvsVariant}' and rxpackage = '{p_strRxPackage}' and i.FvsCreatedTree_YN = 'Y'";
                 }
 
                 /// <summary>
@@ -5249,7 +5237,7 @@ namespace FIA_Biosum_Manager
                         return $@"UPDATE {p_strInputVolumesTable} as a
                             SET treeclcd =
                             (SELECT (CASE WHEN a.SpCd IN (62,65,66,106,133,138,304,321,322,475,756,758,990) THEN 3 
-                            WHEN a.statuscd=2 THEN 3 WHEN b.totalcull < 75 THEN 2 WHEN a.roughcull > 37.5 THEN 3 ELSE 4 END) FROM cull_total_work_table b where a.id=b.id)";
+                            WHEN a.statuscd=2 THEN 3 WHEN b.totalcull < 75 THEN 2 WHEN a.roughcull > 37.5 THEN 3 ELSE 4 END) FROM {p_strCullTable} b where a.id=b.id)";
                     }
 
                     /// <summary>
@@ -5266,31 +5254,54 @@ namespace FIA_Biosum_Manager
                         //       WHERE a.treeclcd=3 AND a.statuscd=2 AND a.SpCd NOT IN (62,65,66,106,133,138,304,321,322,475,756,758,990)";
                         return $@"UPDATE biosum_volumes_input as a
                             SET treeclcd = (SELECT (CASE WHEN DecayCd > 1 THEN 4 
-                            WHEN a.dbh < 9 AND a.SpCd < 300 THEN 4 ELSE a.treeclcd END) FROM cull_total_work_table b where a.id=b.id )
+                            WHEN a.dbh < 9 AND a.SpCd < 300 THEN 4 ELSE a.treeclcd END) FROM {p_strCullTable} b where a.id=b.id )
                             WHERE a.treeclcd=3 AND a.statuscd=2 AND a.SpCd NOT IN (62,65,66,106,133,138,304,321,322,475,756,758,990)";
                     }
                 }
 
                 /// <summary>
-                /// Insert into the MS Access Biosum Volume table
+                /// Insert into the Biosum Volume table
                 /// the formatted data in the input volumes table.
-                /// This extra step is needed before importing to 
-                /// Oracle because the performance of formatting of data from Access to 
-                /// the Oracle Linked table is slow.
                 /// </summary>
                 /// <param name="p_strInputVolumesTable"></param>
                 /// <param name="p_strOracleBiosumVolumesTable"></param>
                 /// <returns></returns>
                 public static string BuildInputTableForVolumeCalculation_Step7(string p_strInputVolumesTable, string p_strBiosumVolumesTable)
                 {
-                    string strColumns = "STATECD,COUNTYCD,PLOT,INVYR,VOL_LOC_GRP,TREE,SPCD,DIA,HT," +
-                                        "ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE,TRE_CN,CND_CN,PLT_CN, DIAHTCD, BALIVE, PRECIPITATION";
+                    var treeToFcsBiosumVolumesInputTable = new List<Tuple<string, string>>
+                    {
+                        Tuple.Create("ACTUALHT", "ACTUALHT"),
+                        Tuple.Create("STATECD", "CAST(SUBSTR(BIOSUM_COND_ID,6,2) AS INTEGER) AS STATECD"),
+                        Tuple.Create("COUNTYCD", "CAST(SUBSTR(BIOSUM_COND_ID,12,3) AS INTEGER) AS COUNTYCD"),
+                        Tuple.Create("PLOT", "CAST(SUBSTR(BIOSUM_COND_ID, 16, 6) AS INTEGER) AS PLOT"),
+                        Tuple.Create("INVYR", "INVYR"),
+                        Tuple.Create("VOL_LOC_GRP","VOL_LOC_GRP"),
+                        Tuple.Create("TREE", "ID AS TREE"),
+                        Tuple.Create("SPCD", "SPCD"),
+                        Tuple.Create("DIA", "DBH AS DIA"),
+                        Tuple.Create("HT", "HT"),
+                        Tuple.Create("CR", "CR"),
+                        Tuple.Create("STATUSCD", "STATUSCD"),
+                        Tuple.Create("TREECLCD", "TREECLCD"),
+                        Tuple.Create("ROUGHCULL", "ROUGHCULL"),
+                        Tuple.Create("CULL", "CULL"),
+                        Tuple.Create("DECAYCD", "DECAYCD"),
+                        Tuple.Create("TOTAGE", "TOTAGE"),
+                        Tuple.Create("TRE_CN", "CAST (ID AS INTEGER) AS TRE_CN"),
+                        Tuple.Create("CND_CN", "BIOSUM_COND_ID AS CND_CN"),
+                        Tuple.Create("PLT_CN", "SUBSTR(BIOSUM_COND_ID, 1, LENGTH(BIOSUM_COND_ID) - 1) AS PLT_CN"),
+                        Tuple.Create("DIAHTCD", "DIAHTCD"),
+                        Tuple.Create("PRECIPITATION", "PRECIPITATION"),
+                        Tuple.Create("BALIVE", "BALIVE")
+                    };
 
-                    string strValues =
-                        "CINT(MID(BIOSUM_COND_ID,6,2)) AS STATECD,CINT(MID(BIOSUM_COND_ID,12,3)) AS COUNTYCD,CINT(MID(BIOSUM_COND_ID,16,5)) AS PLOT," +
-                        "INVYR,VOL_LOC_GRP,ID AS TREE,SPCD,DBH AS DIA,HT,ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE," +
-                        "CSTR(ID) AS TRE_CN,BIOSUM_COND_ID AS CND_CN,MID(BIOSUM_COND_ID,1,LEN(BIOSUM_COND_ID)-1) AS PLT_CN, DIAHTCD, BALIVE, PRECIPITATION";
-
+                    //string strColumns = " BALIVE, PRECIPITATION";
+                    //string strValues =
+                    //    "CINT(MID(BIOSUM_COND_ID,6,2)) AS STATECD,CINT(MID(BIOSUM_COND_ID,12,3)) AS COUNTYCD,CINT(MID(BIOSUM_COND_ID,16,5)) AS PLOT," +
+                    //    "INVYR,VOL_LOC_GRP,ID AS TREE,SPCD,DBH AS DIA,HT,ACTUALHT,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE," +
+                    //    "CSTR(ID) AS TRE_CN,BIOSUM_COND_ID AS CND_CN,MID(BIOSUM_COND_ID,1,LEN(BIOSUM_COND_ID)-1) AS PLT_CN, DIAHTCD, BALIVE, PRECIPITATION";
+                    string strColumns = string.Join(",", treeToFcsBiosumVolumesInputTable.Select(e => e.Item1));
+                    string strValues = string.Join(",", treeToFcsBiosumVolumesInputTable.Select(e => e.Item2));
                     return $@"INSERT INTO {p_strBiosumVolumesTable} ({strColumns}) SELECT {strValues} FROM {p_strInputVolumesTable}";
                 }
 
