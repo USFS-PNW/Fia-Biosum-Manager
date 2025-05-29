@@ -996,8 +996,6 @@ namespace FIA_Biosum_Manager
             oSiteIndex.PlotTable = "master." + this.m_strPlotTable;
             oSiteIndex.TreeTable = "master." + this.m_strTreeTable;
             oSiteIndex.SiteTreeTable = "master." + this.m_strSiteTreeTable;
-            oSiteIndex.TreeSpeciesTable = this.m_strTreeSpcTable;
-            oSiteIndex.FVSTreeSpeciesTable = this.m_strFVSTreeSpcTable;
             oSiteIndex.SiteIndexEquations = LoadSiteIndexEquations(strVariant.Trim().ToUpper());
             oSiteIndex.DebugFile = this.m_strDebugFile;
             oSiteIndex.dataMgr = oDataMgr;
@@ -1037,7 +1035,7 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", x);
                 strStand_ID = "\'" + m_dt.Rows[x]["biosum_cond_id"].ToString().Trim() + "\'";
                 oSiteIndex.getSiteIndexNew(m_dt.Rows[x]);
-                strSite_Species = "\'" + oSiteIndex.SiteIndexSpeciesAlphaCode + "\'";
+                strSite_Species = "\'" + oSiteIndex.SiteIndexSpecies + "\'";
                 strSite_Index = oSiteIndex.SiteIndex;
                 strBase_Age = oSiteIndex.BaseAge;
 
@@ -2907,8 +2905,6 @@ namespace FIA_Biosum_Manager
                             this.SiteIndexSpecies = intSISpeciesMax.ToString().Trim();
                             this.SiteIndex = Convert.ToString(Math.Round(dblSIAvgMax, 0)).Trim();
                         }
-                        if (this.SiteIndexSpecies != "@" && this.SiteIndexSpecies.Trim().Length > 0)
-                            GetSiteIndexSpeciesAlphaCodeNew();
                     }
 
                     dataMgr.m_DataSet.Tables.Remove("GetSiteIndex");
@@ -5799,7 +5795,7 @@ namespace FIA_Biosum_Manager
                 // SITE_INDEX and SITE_SPECIES 
                 if (m_intError == 0)
                 {
-                    //GenerateSiteIndexAndSiteSpeciesSQLNew(oDataMgr, tempConn, strVariant);
+                    GenerateSiteIndexAndSiteSpeciesSQLNew(oDataMgr, tempConn, strVariant);
                 }
 
                 // set fuel columns to null
