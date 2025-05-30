@@ -4629,8 +4629,7 @@ namespace FIA_Biosum_Manager
                         string strSQL = "UPDATE " + strTargetTable + " AS u " +
                             "SET tree_count = tpacurr " +
                             "FROM " + strTreeTable + " AS t " +
-                            "WHERE u.stand_id = TRIM(t.biosum_cond_id) AND u.tree_cn = TRIM(t.cn) " +
-                            "AND statuscd NOT IN (2,3)";
+                            "WHERE u.stand_id = TRIM(t.biosum_cond_id) AND u.tree_cn = TRIM(t.cn)";
                         return strSQL;
                     }
 
