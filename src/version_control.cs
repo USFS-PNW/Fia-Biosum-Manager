@@ -600,7 +600,7 @@ namespace FIA_Biosum_Manager
                 }
             }
 
-            //UpdateDatasources_5_12_0();
+            UpdateDatasources_5_12_0();
 
             if (bPerformCheck)
             {
@@ -7411,6 +7411,19 @@ namespace FIA_Biosum_Manager
             if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.MasterDsnName))
             {
                 odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.MasterDsnName);
+            }
+
+            // Add BioSum generated site index flag column to FVS_STANDINIT_COND table in FVSIn.db
+            frmMain.g_sbpInfo.Text = "Version Update: Updating FVSIn.db tables ...Stand by";
+            string strFVSInFile = ReferenceProjectDirectory.Trim() + "\\fvs\\data\\" + Tables.FIA2FVS.DefaultFvsInputFile;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strFVSInFile)))
+            {
+                conn.Open();
+
+                if (!oDataMgr.ColumnExist(conn, Tables.FIA2FVS.DefaultFvsInputStandTableName, "BioSumGeneratedSiteIndex_YN"))
+                {
+                    oDataMgr.AddColumn(conn, Tables.FIA2FVS.DefaultFvsInputStandTableName, "BioSumGeneratedSiteIndex_YN", "CHAR", "1");
+                }
             }
             if (oDao != null)
             {

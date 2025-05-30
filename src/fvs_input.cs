@@ -124,25 +124,9 @@ namespace FIA_Biosum_Manager
                 return;
             }
 
-            if (this.m_strTreeSpcTable.Trim().Length == 0)
-            {
-                MessageBox.Show("!!Could Not Locate Tree Species Table!!", "FVS Input",
-                    System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                this.m_intError = -1;
-                return;
-            }
-
             if (this.m_strSiteTreeTable.Trim().Length == 0)
             {
                 MessageBox.Show("!!Could Not Locate Site Tree Table!!", "FVS Input",
-                    System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                this.m_intError = -1;
-                return;
-            }
-
-            if (this.m_strFVSTreeSpcTable.Trim().Length == 0)
-            {
-                MessageBox.Show("!!Could Not Locate FVS Tree Species Table!!", "FVS Input",
                     System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
                 this.m_intError = -1;
                 return;
