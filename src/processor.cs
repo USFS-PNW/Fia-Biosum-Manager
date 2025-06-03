@@ -100,7 +100,7 @@ namespace FIA_Biosum_Manager
             p_oQueries.m_oFvs.LoadDatasource = true;
             p_oQueries.m_oReference.LoadDatasource = true;
             p_oQueries.m_oProcessor.LoadDatasource = true;
-            p_oQueries.LoadDatasources(true, m_bUsingSqlite, "processor", m_strScenarioId);
+            p_oQueries.LoadDatasources(true, "processor", m_strScenarioId);
 
             //link to all the scenario rule definition tables
             oDao.CreateTableLink(p_oQueries.m_strTempDbFile,

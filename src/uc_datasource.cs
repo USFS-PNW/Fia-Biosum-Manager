@@ -317,7 +317,7 @@ namespace FIA_Biosum_Manager
 			MessageBox.Show(this.lstRequiredTables.Columns[0].Width.ToString());
 		}
 
-		public void LoadValues(string strDebugFile)
+		public void LoadValuesAccess(string strDebugFile)
 		{
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                 frmMain.g_oUtils.WriteText(strDebugFile, "=====================   uc_datasource.LoadValues   =====================\r\n");
@@ -538,7 +538,7 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(strDebugFile, "=====================   uc_datasource.LoadValues completed   =====================\r\n");
         }
 
-        public void LoadValuesSqlite()
+        public void LoadValues()
         {
             LoadLstRequiredTables();
 
@@ -1118,7 +1118,7 @@ namespace FIA_Biosum_Manager
                     }
                     else
                     {
-                        this.LoadValuesSqlite();
+                        this.LoadValues();
                     }
 					
 				    break;
@@ -1976,7 +1976,7 @@ namespace FIA_Biosum_Manager
             }
             else
             {
-                this.LoadValuesSqlite();
+                this.LoadValues();
             }
             
 		}
@@ -2048,7 +2048,7 @@ namespace FIA_Biosum_Manager
                     }
                     else
                     {
-                        this.LoadValuesSqlite();
+                        this.LoadValues();
                     }
 					
 					break;

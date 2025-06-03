@@ -1388,7 +1388,7 @@ namespace FIA_Biosum_Manager
 					oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
                     oFrmScenario.uc_datasource1.strScenarioId = oFrmOptimizerScenario.uc_scenario_open1.txtScenarioId.Text.Trim();
 					oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
-					oFrmScenario.uc_datasource1.LoadValues(frmProject.uc_project1.m_strDebugFile);
+					oFrmScenario.uc_datasource1.LoadValuesAccess(frmProject.uc_project1.m_strDebugFile);
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Loaded datasource values\r\n");
 
@@ -1396,7 +1396,7 @@ namespace FIA_Biosum_Manager
                     oFrmScenario.uc_scenario1.strScenarioId = oFrmOptimizerScenario.uc_scenario_open1.strScenarioId;
                     oFrmScenario.uc_scenario1.strScenarioPath = oFrmOptimizerScenario.uc_scenario_open1.strScenarioPath;
                     oFrmScenario.uc_scenario_notes1.ReferenceOptimizerScenarioForm=oFrmScenario;
-					oFrmScenario.uc_scenario_notes1.LoadValues();
+					oFrmScenario.uc_scenario_notes1.LoadValuesAccess();
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Loaded notes\r\n");
                     oFrmScenario.tlbScenario.Buttons[5].Visible = true; //properties
@@ -1428,7 +1428,7 @@ namespace FIA_Biosum_Manager
 					oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
                     oFrmScenario.uc_datasource1.strScenarioId = oFrmOptimizerScenario.uc_scenario1.txtScenarioId.Text.Trim();
 					oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
-					oFrmScenario.uc_datasource1.LoadValues(frmProject.uc_project1.m_strDebugFile);
+					oFrmScenario.uc_datasource1.LoadValuesAccess(frmProject.uc_project1.m_strDebugFile);
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Loaded datasource values\r\n");
 
@@ -1483,7 +1483,7 @@ namespace FIA_Biosum_Manager
                     oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
                     oFrmScenario.uc_datasource1.strScenarioId = oFrmOptimizerScenario.uc_scenario_open1.txtScenarioId.Text.Trim();
                     oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
-                    oFrmScenario.uc_datasource1.LoadValuesSqlite();
+                    oFrmScenario.uc_datasource1.LoadValues();
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Loaded datasource values\r\n");
 
@@ -1491,7 +1491,7 @@ namespace FIA_Biosum_Manager
                     oFrmScenario.uc_scenario1.strScenarioId = oFrmOptimizerScenario.uc_scenario_open1.strScenarioId;
                     oFrmScenario.uc_scenario1.strScenarioPath = oFrmOptimizerScenario.uc_scenario_open1.strScenarioPath;
                     oFrmScenario.uc_scenario_notes1.ReferenceOptimizerScenarioForm = oFrmScenario;
-                    oFrmScenario.uc_scenario_notes1.LoadValuesSqlite();
+                    oFrmScenario.uc_scenario_notes1.LoadValues();
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Loaded notes\r\n");
                     oFrmScenario.tlbScenario.Buttons[5].Visible = true; //properties
@@ -1523,7 +1523,7 @@ namespace FIA_Biosum_Manager
                     oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
                     oFrmScenario.uc_datasource1.strScenarioId = oFrmOptimizerScenario.uc_scenario1.txtScenarioId.Text.Trim();
                     oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
-                    oFrmScenario.uc_datasource1.LoadValuesSqlite();
+                    oFrmScenario.uc_datasource1.LoadValues();
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Loaded datasource values\r\n");
 
@@ -1572,28 +1572,14 @@ namespace FIA_Biosum_Manager
 					oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
 					oFrmScenario.uc_datasource1.strScenarioId = oFrmProcessorScenario.uc_scenario_open1.txtScenarioId.Text.Trim();
 					oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
-                    if (oFrmProcessorScenario.m_bUsingSqlite == false)
-                    {
-                        oFrmScenario.uc_datasource1.LoadValues(frmProject.uc_project1.m_strDebugFile);
-                    }
-                    else
-                    {
-                        oFrmScenario.uc_datasource1.LoadValuesSqlite();
-                    }
+                    oFrmScenario.uc_datasource1.LoadValues();
                     oFrmScenario.uc_scenario1.strScenarioDescription = oFrmProcessorScenario.uc_scenario_open1.strScenarioDescription;
 					oFrmScenario.uc_scenario1.strScenarioId = oFrmProcessorScenario.uc_scenario_open1.strScenarioId;
 					oFrmScenario.uc_scenario1.strScenarioPath = oFrmProcessorScenario.uc_scenario_open1.strScenarioPath;
 					oFrmScenario.uc_scenario_notes1.ReferenceProcessorScenarioForm=oFrmScenario;
 					oFrmScenario.uc_scenario_notes1.ScenarioType="processor";
                     oFrmScenario.uc_datasource1.UsingSqlite = oFrmProcessorScenario.m_bUsingSqlite;
-                    if (oFrmProcessorScenario.m_bUsingSqlite == false)
-                    {
-                        oFrmScenario.uc_scenario_notes1.LoadValues();
-                    }
-                    else
-                    {
-                        oFrmScenario.uc_scenario_notes1.LoadValuesSqlite();
-                    }
+                    oFrmScenario.uc_scenario_notes1.LoadValues();
 					oFrmScenario.MdiParent = this;
                     oFrmScenario.m_oProcessorScenarioItem.ScenarioId = oFrmScenario.uc_scenario1.strScenarioId;
                     oFrmScenario.m_oProcessorScenarioItem.DbPath = oFrmScenario.uc_scenario1.strScenarioPath;
@@ -1622,15 +1608,7 @@ namespace FIA_Biosum_Manager
 					oFrmScenario.uc_datasource1.strScenarioId = oFrmProcessorScenario.uc_scenario1.txtScenarioId.Text.Trim();
 					oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
                     oFrmScenario.uc_datasource1.UsingSqlite = oFrmProcessorScenario.m_bUsingSqlite;
-                    if (oFrmProcessorScenario.m_bUsingSqlite == false)
-                    {
-                        oFrmScenario.uc_datasource1.LoadValues(frmProject.uc_project1.m_strDebugFile);
-                    }
-                    else
-                    {
-                        oFrmScenario.uc_datasource1.LoadValuesSqlite();
-                    }
-                    
+                    oFrmScenario.uc_datasource1.LoadValues();
 					oFrmScenario.uc_scenario1.strScenarioDescription = oFrmProcessorScenario.uc_scenario1.strScenarioDescription;
 					oFrmScenario.uc_scenario1.strScenarioId = oFrmProcessorScenario.uc_scenario1.strScenarioId;
 					oFrmScenario.uc_scenario1.strScenarioPath = oFrmProcessorScenario.uc_scenario1.strScenarioPath;

@@ -79,22 +79,11 @@ namespace FIA_Biosum_Manager
             set { _oQueries = value; }
             get { return _oQueries; }
         }
-        public ado_data_access ReferenceAdo
-        {
-            set { _oAdo = value; }
-            get { return _oAdo; }
-        }
         public SQLite.ADO.DataMgr ReferenceDataMgr
         {
             set { _DataMgr = value; }
             get { return _DataMgr; }
         }
-        public System.Data.OleDb.OleDbConnection ReferenceOleDbConnection
-        {
-            set { _oConn = value; }
-            get { return _oConn; }
-        }
-
         public string NullCount
         {
             get { return lblNullValueCount.Text.Trim(); }
@@ -299,7 +288,7 @@ namespace FIA_Biosum_Manager
                 frmMain.g_sbpInfo.Text = "Ready";
                 if (ReferenceDataMgr.m_intError == 0)
                 {                    
-                    this.ReferenceAdditionalHarvestCostColumnsUserControl.UpdateNullCounts();
+                    this.ReferenceAdditionalHarvestCostColumnsUserControl.UpdateNullCounts(ReferenceAdditionalHarvestCostColumnsUserControl.TempDb);
                     this.ReferenceAdditionalHarvestCostColumnsUserControl.ReferenceProcessorScenarioForm.m_bSave = true;
                     frmMain.g_oFrmMain.DeactivateStandByAnimation();
                     MessageBox.Show("Done");
@@ -354,7 +343,7 @@ namespace FIA_Biosum_Manager
                 frmMain.g_sbpInfo.Text = "Ready";
                 if (ReferenceDataMgr.m_intError == 0)
                 {
-                    this.ReferenceAdditionalHarvestCostColumnsUserControl.UpdateNullCounts();
+                    this.ReferenceAdditionalHarvestCostColumnsUserControl.UpdateNullCounts(ReferenceAdditionalHarvestCostColumnsUserControl.TempDb);
                     this.ReferenceAdditionalHarvestCostColumnsUserControl.ReferenceProcessorScenarioForm.m_bSave = true;
                     frmMain.g_oFrmMain.DeactivateStandByAnimation();
                     MessageBox.Show("Done");

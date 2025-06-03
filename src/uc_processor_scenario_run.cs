@@ -365,7 +365,7 @@ namespace FIA_Biosum_Manager
             m_oQueries.m_oProcessor.LoadDatasource = true;
             m_oQueries.m_oTravelTime.LoadDatasource = true;
             // The following call creates the temp database that is used for running calculations
-            m_oQueries.LoadDatasources(true, ReferenceProcessorScenarioForm.m_bUsingSqlite, "processor", ScenarioId);
+            m_oQueries.LoadDatasources(true, "processor", ScenarioId);
             //
             //LOAD RX PACKAGE INFO
             //
@@ -5150,7 +5150,7 @@ namespace FIA_Biosum_Manager
                         processor.Escalators oEscalators = mainProcessor.LoadEscalators();
                         ProcessorScenarioItem oTempProcessorScenarioItem = new ProcessorScenarioItem();
                         oTempProcessorScenarioItem.ScenarioId = ScenarioId;
-                        oProcessorScenarioTools.LoadHarvestCostComponentsSqlite(m_strScenarioDb, oTempProcessorScenarioItem);
+                        oProcessorScenarioTools.LoadHarvestCostComponents(m_strScenarioDb, oTempProcessorScenarioItem);
                         if (bRxPackageUsesKcpAdditionalCpa)
                         {
                             strKcpCpaWorkTable = "KcpCpaWorkTable";

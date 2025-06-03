@@ -221,8 +221,6 @@
             this.uc_processor_scenario_additional_harvest_cost_column_item1.Name = "uc_processor_scenario_additional_harvest_cost_column_item1";
             this.uc_processor_scenario_additional_harvest_cost_column_item1.NullCount = "00000";
             this.uc_processor_scenario_additional_harvest_cost_column_item1.ReferenceAdditionalHarvestCostColumnsUserControl = null;
-            this.uc_processor_scenario_additional_harvest_cost_column_item1.ReferenceAdo = null;
-            this.uc_processor_scenario_additional_harvest_cost_column_item1.ReferenceOleDbConnection = null;
             this.uc_processor_scenario_additional_harvest_cost_column_item1.ReferenceQueries = null;
             this.uc_processor_scenario_additional_harvest_cost_column_item1.Size = new System.Drawing.Size(869, 74);
             this.uc_processor_scenario_additional_harvest_cost_column_item1.TabIndex = 0;

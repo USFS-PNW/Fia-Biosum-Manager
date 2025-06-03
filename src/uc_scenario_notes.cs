@@ -187,7 +187,7 @@ namespace FIA_Biosum_Manager
                 oDataMgr = null;
             }		
 		}
-		public void LoadValues()
+		public void LoadValuesAccess()
 		{
 			string strNotes="";
 			FIA_Biosum_Manager.ado_data_access oAdo = new ado_data_access();
@@ -217,7 +217,7 @@ namespace FIA_Biosum_Manager
 			this.txtNotes.Text = strNotes;
 		}
 
-        public void LoadValuesSqlite()
+        public void LoadValues()
         {
             string strNotes = "";
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();

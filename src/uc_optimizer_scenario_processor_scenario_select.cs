@@ -76,19 +76,8 @@ namespace FIA_Biosum_Manager
                     m_oQueries.m_oFIAPlot.LoadDatasource = true;
                     m_oQueries.m_oProcessor.LoadDatasource = true;
                     m_oQueries.m_oReference.LoadDatasource = true;
-                    m_oQueries.LoadDatasources(true, ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite, "processor", strScenarioArray[x]);
-                    if (!ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite)
-                    {
-                        m_oQueries.m_oDataSource.CreateScenarioRuleDefinitionTableLinks(
-                            m_oQueries.m_strTempDbFile,
-                            frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim(),
-                            "P");
-                        oTools.LoadAll(m_oQueries.m_strTempDbFile, m_oQueries, strScenarioArray[x], m_oProcessorScenarioItem_Collection);
-                    }
-                    else
-                    {
-                        oTools.LoadAllSqlite(m_oQueries, strScenarioArray[x], m_oProcessorScenarioItem_Collection);
-                    }
+                    m_oQueries.LoadDatasources(true, "processor", strScenarioArray[x]);
+                    oTools.LoadAll(m_oQueries, strScenarioArray[x], m_oProcessorScenarioItem_Collection);
                 }
             }
             else
@@ -236,20 +225,8 @@ namespace FIA_Biosum_Manager
                     m_oQueries.m_oFIAPlot.LoadDatasource = true;
                     m_oQueries.m_oProcessor.LoadDatasource = true;
                     m_oQueries.m_oReference.LoadDatasource = true;
-                    m_oQueries.LoadDatasources(true, ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite, "processor", strScenarioArray[x]);
-                    // Delete the if/else statement when processor is moved to SQLite
-                    if (!ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite)
-                    {
-                        m_oQueries.m_oDataSource.CreateScenarioRuleDefinitionTableLinks(
-                            m_oQueries.m_strTempDbFile,
-                            frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim(),
-                            "P");
-                        oTools.LoadAll(m_oQueries.m_strTempDbFile, m_oQueries, strScenarioArray[x], m_oProcessorScenarioItem_Collection);
-                    }
-                    else
-                    {
-                        oTools.LoadAllSqlite(m_oQueries, strScenarioArray[x], m_oProcessorScenarioItem_Collection);
-                    }
+                    m_oQueries.LoadDatasources(true, "processor", strScenarioArray[x]);
+                    oTools.LoadAll(m_oQueries, strScenarioArray[x], m_oProcessorScenarioItem_Collection);
                 }
             }
             else
