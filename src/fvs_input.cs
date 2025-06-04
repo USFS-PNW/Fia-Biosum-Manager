@@ -1374,7 +1374,7 @@ namespace FIA_Biosum_Manager
                 double dblBasalArea = 0;
 
                 dataMgr.m_strSQL = "SELECT tpacurr, dia " +
-                    "FROM master." + TreeTable +
+                    "FROM " + TreeTable +
                     " WHERE biosum_cond_id = '" + BiosumPlotId + Convert.ToString(p_intCondId).Trim() +
                     "' AND statuscd = 1 AND tpacurr IS NOT NULL AND dia IS NOT NULL AND dia >= 1";
                 dataMgr.SqlQueryReader(tempConn, dataMgr.m_strSQL);
