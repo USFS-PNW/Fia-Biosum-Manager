@@ -38,7 +38,6 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Button btnTableName;
 		private string m_strDataSourceMDBFile;
 		private string m_strDataSourceTable;
-        private bool m_bUsingSqlite;
 		private System.Windows.Forms.ProgressBar progressBar1;
 		private System.Windows.Forms.Button btnHelp;
 		private System.Windows.Forms.Button btnCopyToSameDbFile;
@@ -73,7 +72,7 @@ namespace FIA_Biosum_Manager
 			// TODO: Add any initialization after the InitializeComponent call
 
 		}
-		public uc_datasource_edit(string p_strScenarioMDBFile, string p_strScenarioId, bool p_bUsingSqlite)
+		public uc_datasource_edit(string p_strScenarioMDBFile, string p_strScenarioId)
 		{
 			// This call is required by the Windows.Forms Form Designer.
 			InitializeComponent();
@@ -81,7 +80,6 @@ namespace FIA_Biosum_Manager
 			this.m_strDataSourceMDBFile = p_strScenarioMDBFile.Trim();
 			this.m_strDataSourceTable = "scenario_datasource";
 			this.m_strScenarioId=p_strScenarioId;
-            this.m_bUsingSqlite = p_bUsingSqlite;
             this.m_oEnv = new env();
 			// TODO: Add any initialization after the InitializeComponent call
 
@@ -588,22 +586,12 @@ namespace FIA_Biosum_Manager
                                         "table_name = '" + this.lblNewTable.Text.Trim() + "'" +
                                         " WHERE table_type = '" + this.lblTableType.Text.Trim() + "';";
                                 }
-
-                                if (! m_bUsingSqlite)
-                                {
-                                    strConn = tempAdo.getMDBConnString(this.m_strDataSourceMDBFile, "admin", "");
-                                    tempAdo.SqlNonQuery(strConn, strSQL);
-                                }
-                                else
-                                {
-                                    strConn = tempDataMgr.GetConnectionString(this.m_strDataSourceMDBFile);
-                                    using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConn))
-                                    {
-                                        con.Open();
-                                        tempDataMgr.SqlNonQuery(con, strSQL);
-                                    }
-                                }
-								
+								strConn = tempDataMgr.GetConnectionString(this.m_strDataSourceMDBFile);
+								using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConn))
+								{
+									con.Open();
+									tempDataMgr.SqlNonQuery(con, strSQL);
+								}								
 							}
 							else tempAdo.CloseConnection(tempAdo.m_OleDbConnection);
 						}
@@ -682,20 +670,12 @@ namespace FIA_Biosum_Manager
                                         " WHERE table_type = '" + this.lblTableType.Text.Trim() + "';";
                                 }
 
-                                if (!m_bUsingSqlite)
-                                {
-                                    strConn = tempAdo.getMDBConnString(this.m_strDataSourceMDBFile.Trim(), "admin", "");
-                                    tempAdo.SqlNonQuery(strConn, strSQL);
-                                }
-                                else
-                                {
-                                    strConn = tempDataMgr.GetConnectionString(this.m_strDataSourceMDBFile);
-                                    using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConn))
-                                    {
-                                        con.Open();
-                                        tempDataMgr.SqlNonQuery(con, strSQL);
-                                    }
-                                }
+								strConn = tempDataMgr.GetConnectionString(this.m_strDataSourceMDBFile);
+								using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConn))
+								{
+									con.Open();
+									tempDataMgr.SqlNonQuery(con, strSQL);
+								}
                             }
 						}
 					}
@@ -725,20 +705,12 @@ namespace FIA_Biosum_Manager
 							" WHERE table_type = '" + this.lblTableType.Text.Trim() + "';";
 					}
 
-                    if (!m_bUsingSqlite)
-                    {
-                        tempAdo.SqlNonQuery(strConn, strSQL);
-                    }
-                    else
-                    {
-                        strConn = tempDataMgr.GetConnectionString(this.m_strDataSourceMDBFile);
-                        using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConn))
-                        {
-                            con.Open();
-                            tempDataMgr.SqlNonQuery(con, strSQL);
-                        }
-                    }
-
+					strConn = tempDataMgr.GetConnectionString(this.m_strDataSourceMDBFile);
+					using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConn))
+					{
+						con.Open();
+						tempDataMgr.SqlNonQuery(con, strSQL);
+					}
 					break;
 				case "copytosamedbfile":
                     frmMain.g_oFrmMain.ActivateStandByAnimation(
@@ -795,21 +767,12 @@ namespace FIA_Biosum_Manager
                                 " WHERE table_type = '" + this.lblTableType.Text.Trim() + "';";
                         }
 
-                        if (!m_bUsingSqlite)
-                        {
-                            strConn = tempAdo.getMDBConnString(this.m_strDataSourceMDBFile.Trim(), "admin", "");
-                            tempAdo.SqlNonQuery(strConn, strSQL);
-                        }
-                        else
-                        {
-                            strConn = tempDataMgr.GetConnectionString(this.m_strDataSourceMDBFile);
-                            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConn))
-                            {
-                                con.Open();
-                                tempDataMgr.SqlNonQuery(con, strSQL);
-                            }
-                        }
-
+						strConn = tempDataMgr.GetConnectionString(this.m_strDataSourceMDBFile);
+						using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConn))
+						{
+							con.Open();
+							tempDataMgr.SqlNonQuery(con, strSQL);
+						}
 					}
                     frmMain.g_oFrmMain.DeactivateStandByAnimation();
 

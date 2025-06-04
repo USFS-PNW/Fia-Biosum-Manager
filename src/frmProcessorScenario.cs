@@ -624,27 +624,13 @@ namespace FIA_Biosum_Manager
                     bool bDeleted = false;
                     if (this.uc_scenario_open1 != null)
 					{
-                        if (!m_bUsingSqlite)
-                        {
-                            bDeleted = uc_scenario1.DeleteScenario_access(uc_scenario_open1.txtScenarioId.Text.Trim());
-                        }
-                        else
-                        {
-                            bDeleted = uc_scenario1.DeleteScenario(uc_scenario_open1.txtScenarioId.Text.Trim());
-                        }
+                        bDeleted = uc_scenario1.DeleteScenario(uc_scenario_open1.txtScenarioId.Text.Trim());
                         if (bDeleted)
-						    uc_scenario_open1.lstScenario.Items.Remove(uc_scenario_open1.lstScenario.SelectedItems[0]);
+                            uc_scenario_open1.lstScenario.Items.Remove(uc_scenario_open1.lstScenario.SelectedItems[0]);
 					}
 					else
 					{
-                        if (!m_bUsingSqlite)
-                        {
-                            bDeleted = uc_scenario1.DeleteScenario_access(uc_scenario1.txtScenarioId.Text.Trim());
-                        }
-                        else
-                        {
-                            bDeleted = uc_scenario1.DeleteScenario(uc_scenario1.txtScenarioId.Text.Trim());
-                        }
+                        bDeleted = uc_scenario1.DeleteScenario(uc_scenario1.txtScenarioId.Text.Trim());
                         if (bDeleted)
                             this.Close();
 					}
@@ -2167,10 +2153,9 @@ namespace FIA_Biosum_Manager
         {
         }
 
-        public void LoadScenario(string p_strScenarioId, Queries p_oQueries, bool bUsingSqlite,
+        public void LoadScenario(string p_strScenarioId, Queries p_oQueries,
             ProcessorScenarioItem_Collection p_oProcessorScenarioItem_Collection)
         {
-
             //
             //LOAD PROJECT DATATASOURCES INFO
             //

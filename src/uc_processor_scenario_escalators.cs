@@ -564,34 +564,24 @@ namespace FIA_Biosum_Manager
 
             try
             {
-                SQLite.ADO.DataMgr oDataMgr = null;
                 //
                 //DELETE THE CURRENT SCENARIO RECORDS
                 //
-                if (!ReferenceProcessorScenarioForm.m_bUsingSqlite)
+                SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+                string strScenarioDB =
+                    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                oDataMgr.OpenConnection(oDataMgr.GetConnectionString(strScenarioDB));
+                if (oDataMgr.m_intError != 0)
                 {
-                    m_oAdo.m_strSQL = "DELETE FROM scenario_cost_revenue_escalators " +
-                        "WHERE TRIM(scenario_id)='" + this.ScenarioId.Trim() + "'";
-                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                    m_intError = oDataMgr.m_intError;
+                    m_strError = oDataMgr.m_strError;
+                    oDataMgr = null;
+                    return;
                 }
-                else
-                {
-                    oDataMgr = new SQLite.ADO.DataMgr();
-                    string strScenarioDB =
-                        frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                        "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
-                    oDataMgr.OpenConnection(oDataMgr.GetConnectionString(strScenarioDB));
-                    if (oDataMgr.m_intError != 0)
-                    {
-                        m_intError = oDataMgr.m_intError;
-                        m_strError = oDataMgr.m_strError;
-                        oDataMgr = null;
-                        return;
-                    }
-                    oDataMgr.m_strSQL = "DELETE FROM scenario_cost_revenue_escalators " +
-                        "WHERE TRIM(scenario_id)='" + this.ScenarioId.Trim() + "'";
-                    oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
-                }
+                oDataMgr.m_strSQL = "DELETE FROM scenario_cost_revenue_escalators " +
+                    "WHERE TRIM(scenario_id)='" + this.ScenarioId.Trim() + "'";
+                oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
 
                 //
                 //scenario id
@@ -633,21 +623,11 @@ namespace FIA_Biosum_Manager
                 //Energy Wood Revenue Cycle4
                 //
                 strValues = strValues + this.uc_processor_scenario_escalators_value3.Cycle4.Trim();
-
-                if (!ReferenceProcessorScenarioForm.m_bUsingSqlite)
-                {
-                    m_oAdo.m_strSQL = Queries.GetInsertSQL(strFields, strValues, "scenario_cost_revenue_escalators");
-                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                }
-                else
-                {
-                    oDataMgr.m_strSQL = Queries.GetInsertSQL(strFields, strValues, "scenario_cost_revenue_escalators");
-                    oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
-                    m_intError = oDataMgr.m_intError;
-
-                    oDataMgr.CloseConnection(oDataMgr.m_Connection);
-                    oDataMgr = null;
-                }
+                oDataMgr.m_strSQL = Queries.GetInsertSQL(strFields, strValues, "scenario_cost_revenue_escalators");
+                oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
+                m_intError = oDataMgr.m_intError;
+                oDataMgr.CloseConnection(oDataMgr.m_Connection);
+                oDataMgr = null;
 
                 this.uc_processor_scenario_escalators_value1.SaveValues();
                 this.uc_processor_scenario_escalators_value2.SaveValues();

@@ -251,8 +251,6 @@ namespace FIA_Biosum_Manager
 
         public void  DeleteWorkTable()
         {
-            if (ReferenceProcessorScenarioForm.m_bUsingSqlite)
-            {
                 SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
                 string strScenarioDB =
                     frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
@@ -268,7 +266,6 @@ namespace FIA_Biosum_Manager
                         dataMgr.SqlNonQuery(oConn, dataMgr.m_strSQL);
                     }
                 }
-            }
         }
         public void loadvaluesFromProperties()
         {

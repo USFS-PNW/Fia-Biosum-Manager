@@ -1154,12 +1154,12 @@ namespace FIA_Biosum_Manager
                 if (ScenarioType.Trim().ToUpper() == "OPTIMIZER")
                 {
                     frmTemp.Text = "Treatment Optimizer: Edit " + this.lstRequiredTables.SelectedItems[0].SubItems[TABLETYPE].Text.Trim() + " Data Source";
-                    p_uc = new uc_datasource_edit(this.m_strDataSourceMDBFile, this.m_strScenarioId, false);
+                    p_uc = new uc_datasource_edit(this.m_strDataSourceMDBFile, this.m_strScenarioId);
                 }
                 else
                 {
                     frmTemp.Text = "Prcoessor: Edit " + this.lstRequiredTables.SelectedItems[0].SubItems[TABLETYPE].Text.Trim() + " Data Source";
-                    p_uc = new uc_datasource_edit(this.m_strDataSourceMDBFile, this.m_strScenarioId, this.UsingSqlite);
+                    p_uc = new uc_datasource_edit(this.m_strDataSourceMDBFile, this.m_strScenarioId);
                 }
             }
 			else
@@ -1273,20 +1273,17 @@ namespace FIA_Biosum_Manager
 			frmTemp.MaximizeBox = false;
 			frmTemp.BackColor = System.Drawing.SystemColors.Control;
 			
-
-
-
 			if (this.m_strScenarioId.Trim().Length > 0)
 			{
                 if (ScenarioType.Trim().ToUpper() == "OPTIMIZER")
                 {
                     frmTemp.Text = "Treatment Optimizer: Edit " + this.lstRequiredTables.SelectedItems[0].SubItems[TABLETYPE].Text.Trim() + " Data Source";
-                    p_uc = new uc_datasource_edit(this.m_strDataSourceMDBFile, this.m_strScenarioId, false);
+                    p_uc = new uc_datasource_edit(this.m_strDataSourceMDBFile, this.m_strScenarioId);
                 }
                 else
                 {
                     frmTemp.Text = "Prcoessor: Edit " + this.lstRequiredTables.SelectedItems[0].SubItems[TABLETYPE].Text.Trim() + " Data Source";
-                    p_uc = new uc_datasource_edit(this.m_strDataSourceMDBFile, this.m_strScenarioId, this.UsingSqlite);
+                    p_uc = new uc_datasource_edit(this.m_strDataSourceMDBFile, this.m_strScenarioId);
                 }
 			}
 			else
@@ -2143,17 +2140,6 @@ namespace FIA_Biosum_Manager
 				return this.m_strProjectDirectory;
 			}
 		}
-        public bool UsingSqlite
-        {
-            set
-            {
-                this.m_bUsingSqlite = value;
-            }
-            get
-            {
-                return this.m_bUsingSqlite;
-            }
-        }
         public FIA_Biosum_Manager.frmOptimizerScenario ReferenceOptimizerScenarioForm
 		{
 			get {return _frmScenario;}
