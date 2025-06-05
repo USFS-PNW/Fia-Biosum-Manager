@@ -1551,26 +1551,24 @@ namespace FIA_Biosum_Manager
         /// </summary>
         /// <param name="p_strVariantArray"></param>
         public string[] getVariants()
-        {
-        
+        {        
             //
             //get all the variants
             //
             int x;
             string[] strVariantArray = null;
-            ado_data_access oAdo = new ado_data_access();
-           
-            x = getDataSourceTableNameRow("PLOT");
-            oAdo.OpenConnection(
-                oAdo.getMDBConnString(
-                m_strDataSource[x,Datasource.PATH].Trim() + "\\" +  
-                m_strDataSource[x, Datasource.DBFILE].Trim(), "", ""));
-            strVariantArray = frmMain.g_oUtils.ConvertListToArray(oAdo.CreateCommaDelimitedList(oAdo.m_OleDbConnection, "SELECT DISTINCT FVS_VARIANT FROM " + m_strDataSource[x, Datasource.TABLE].Trim(), ""), ",");
-            oAdo.CloseConnection(oAdo.m_OleDbConnection);
-            oAdo = null;
-            return strVariantArray;
-        
+			DataMgr dataMgr = new DataMgr();
+
+			x = getDataSourceTableNameRow("PLOT");
+			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dataMgr.GetConnectionString(getFullPathAndFile(Datasource.TableTypes.Plot))))
+			{
+				conn.Open();
+				System.Collections.Generic.List<string> lstVariantArray = dataMgr.getStringList(conn, "SELECT DISTINCT FVS_VARIANT FROM " + m_strDataSource[x, Datasource.TABLE].Trim());
+				strVariantArray = lstVariantArray.ToArray();
+			}
+			return strVariantArray;       
         }
+
         public void ValidateDataSources(
             ref System.Collections.Generic.IDictionary<string, string[]> dictSources)
         {

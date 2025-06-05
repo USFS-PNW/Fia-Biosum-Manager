@@ -13,13 +13,10 @@ namespace FIA_Biosum_Manager
 	/// </summary>
 	public class uc_select_list_item : System.Windows.Forms.UserControl
 	{
-		public  System.Data.OleDb.OleDbConnection m_OleDbConnection;
-		//private System.Data.DataTableCollection m_DataTableCollection;
 		public System.Windows.Forms.ListBox listBox1;
 		private System.Windows.Forms.Button btnCancel;
 		public System.Windows.Forms.Button btnOK;
 		public System.Windows.Forms.GroupBox groupBox1;
-		public dao_data_access p_DAO_data_access;
 		public System.Windows.Forms.Label lblTitle;
 		public string strError;
 		public int intError;
@@ -56,25 +53,6 @@ namespace FIA_Biosum_Manager
 			}
 			base.Dispose( disposing );
 		}
-		public void DAO_Populate_List_With_Tables(dao_data_access p_DAODatabase)
-		{
-           this.listBox1.Items.Clear();
-		   intError=0;
-		   strError="";
-           try
-			{
-			   for (int x = 0; x <= p_DAODatabase.m_DaoDatabase.TableDefs.Count - 1;x++)
-			   {
-				   MessageBox.Show(p_DAODatabase.m_DaoDatabase.TableDefs[x].Name.ToString());
-			   }
-			}
-			catch
-			{
-			   this.strError = "Error Accessing MDB table names";
-			   this.intError = -1;
-			   return;
-			}
-		}
 
 		#region Component Designer generated code
 		/// <summary> 
@@ -83,97 +61,98 @@ namespace FIA_Biosum_Manager
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this.lblMsg = new System.Windows.Forms.Label();
-			this.listBox1 = new System.Windows.Forms.ListBox();
-			this.btnCancel = new System.Windows.Forms.Button();
-			this.btnOK = new System.Windows.Forms.Button();
-			this.groupBox1 = new System.Windows.Forms.GroupBox();
-			this.groupBox2 = new System.Windows.Forms.GroupBox();
-			this.lblTitle = new System.Windows.Forms.Label();
-			this.groupBox1.SuspendLayout();
-			this.groupBox2.SuspendLayout();
-			this.SuspendLayout();
-			// 
-			// lblMsg
-			// 
-			this.lblMsg.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.lblMsg.Location = new System.Drawing.Point(8, 264);
-			this.lblMsg.Name = "lblMsg";
-			this.lblMsg.Size = new System.Drawing.Size(368, 24);
-			this.lblMsg.TabIndex = 3;
-			this.lblMsg.Text = "lblMsg";
-			this.lblMsg.Visible = false;
-			// 
-			// listBox1
-			// 
-			this.listBox1.Location = new System.Drawing.Point(16, 24);
-			this.listBox1.Name = "listBox1";
-			this.listBox1.Size = new System.Drawing.Size(360, 199);
-			this.listBox1.TabIndex = 0;
-			// 
-			// btnCancel
-			// 
-			this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-			this.btnCancel.Location = new System.Drawing.Point(184, 229);
-			this.btnCancel.Name = "btnCancel";
-			this.btnCancel.Size = new System.Drawing.Size(64, 24);
-			this.btnCancel.TabIndex = 2;
-			this.btnCancel.Text = "Cancel";
-			// 
-			// btnOK
-			// 
-			this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-			this.btnOK.Location = new System.Drawing.Point(120, 229);
-			this.btnOK.Name = "btnOK";
-			this.btnOK.Size = new System.Drawing.Size(64, 24);
-			this.btnOK.TabIndex = 1;
-			this.btnOK.Text = "OK";
-			this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
-			// 
-			// groupBox1
-			// 
-			this.groupBox1.Controls.Add(this.groupBox2);
-			this.groupBox1.Controls.Add(this.lblTitle);
-			this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.groupBox1.Location = new System.Drawing.Point(0, 0);
-			this.groupBox1.Name = "groupBox1";
-			this.groupBox1.Size = new System.Drawing.Size(432, 368);
-			this.groupBox1.TabIndex = 3;
-			this.groupBox1.TabStop = false;
-			this.groupBox1.Resize += new System.EventHandler(this.groupBox1_Resize);
-			// 
-			// groupBox2
-			// 
-			this.groupBox2.Controls.Add(this.listBox1);
-			this.groupBox2.Controls.Add(this.lblMsg);
-			this.groupBox2.Controls.Add(this.btnCancel);
-			this.groupBox2.Controls.Add(this.btnOK);
-			this.groupBox2.Location = new System.Drawing.Point(16, 48);
-			this.groupBox2.Name = "groupBox2";
-			this.groupBox2.Size = new System.Drawing.Size(384, 296);
-			this.groupBox2.TabIndex = 26;
-			this.groupBox2.TabStop = false;
-			// 
-			// lblTitle
-			// 
-			this.lblTitle.Dock = System.Windows.Forms.DockStyle.Top;
-			this.lblTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.lblTitle.ForeColor = System.Drawing.Color.Green;
-			this.lblTitle.Location = new System.Drawing.Point(3, 16);
-			this.lblTitle.Name = "lblTitle";
-			this.lblTitle.Size = new System.Drawing.Size(426, 32);
-			this.lblTitle.TabIndex = 25;
-			this.lblTitle.Text = "Table Select";
-			// 
-			// uc_select_list_item
-			// 
-			this.Controls.Add(this.groupBox1);
-			this.Name = "uc_select_list_item";
-			this.Size = new System.Drawing.Size(432, 368);
-			this.Resize += new System.EventHandler(this.uc_select_list_item_Resize);
-			this.groupBox1.ResumeLayout(false);
-			this.groupBox2.ResumeLayout(false);
-			this.ResumeLayout(false);
+            this.lblMsg = new System.Windows.Forms.Label();
+            this.listBox1 = new System.Windows.Forms.ListBox();
+            this.btnCancel = new System.Windows.Forms.Button();
+            this.btnOK = new System.Windows.Forms.Button();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.lblTitle = new System.Windows.Forms.Label();
+            this.groupBox1.SuspendLayout();
+            this.groupBox2.SuspendLayout();
+            this.SuspendLayout();
+            // 
+            // lblMsg
+            // 
+            this.lblMsg.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblMsg.Location = new System.Drawing.Point(8, 264);
+            this.lblMsg.Name = "lblMsg";
+            this.lblMsg.Size = new System.Drawing.Size(368, 24);
+            this.lblMsg.TabIndex = 3;
+            this.lblMsg.Text = "lblMsg";
+            this.lblMsg.Visible = false;
+            // 
+            // listBox1
+            // 
+            this.listBox1.ItemHeight = 16;
+            this.listBox1.Location = new System.Drawing.Point(16, 24);
+            this.listBox1.Name = "listBox1";
+            this.listBox1.Size = new System.Drawing.Size(360, 196);
+            this.listBox1.TabIndex = 0;
+            // 
+            // btnCancel
+            // 
+            this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.btnCancel.Location = new System.Drawing.Point(184, 229);
+            this.btnCancel.Name = "btnCancel";
+            this.btnCancel.Size = new System.Drawing.Size(64, 24);
+            this.btnCancel.TabIndex = 2;
+            this.btnCancel.Text = "Cancel";
+            // 
+            // btnOK
+            // 
+            this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
+            this.btnOK.Location = new System.Drawing.Point(120, 229);
+            this.btnOK.Name = "btnOK";
+            this.btnOK.Size = new System.Drawing.Size(64, 24);
+            this.btnOK.TabIndex = 1;
+            this.btnOK.Text = "OK";
+            this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.groupBox2);
+            this.groupBox1.Controls.Add(this.lblTitle);
+            this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.groupBox1.Location = new System.Drawing.Point(0, 0);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(432, 368);
+            this.groupBox1.TabIndex = 3;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Resize += new System.EventHandler(this.groupBox1_Resize);
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.listBox1);
+            this.groupBox2.Controls.Add(this.lblMsg);
+            this.groupBox2.Controls.Add(this.btnCancel);
+            this.groupBox2.Controls.Add(this.btnOK);
+            this.groupBox2.Location = new System.Drawing.Point(16, 48);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(384, 296);
+            this.groupBox2.TabIndex = 26;
+            this.groupBox2.TabStop = false;
+            // 
+            // lblTitle
+            // 
+            this.lblTitle.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTitle.ForeColor = System.Drawing.Color.Green;
+            this.lblTitle.Location = new System.Drawing.Point(3, 18);
+            this.lblTitle.Name = "lblTitle";
+            this.lblTitle.Size = new System.Drawing.Size(426, 32);
+            this.lblTitle.TabIndex = 25;
+            this.lblTitle.Text = "Table Select";
+            // 
+            // uc_select_list_item
+            // 
+            this.Controls.Add(this.groupBox1);
+            this.Name = "uc_select_list_item";
+            this.Size = new System.Drawing.Size(432, 368);
+            this.Resize += new System.EventHandler(this.uc_select_list_item_Resize);
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox2.ResumeLayout(false);
+            this.ResumeLayout(false);
 
 		}
 		#endregion
@@ -219,27 +198,46 @@ namespace FIA_Biosum_Manager
         public void loadvalues(string strConn, string strSelectSQL, string strColumn)
         {
         }
-        /// <summary>
-        /// Populate listbox with the strColumn values
-        /// </summary>
-        /// <param name="p_oAdo"></param>
-        /// <param name="p_oConn"></param>
-        /// <param name="strSQL"></param>
-        /// <param name="strColumn"></param>
-        public void loadvalues(ado_data_access p_oAdo,
-                               System.Data.OleDb.OleDbConnection p_oConn,
-                               string strSQL, string strColumn)
+		/// <summary>
+		/// Populate listbox with the strColumn values
+		/// </summary>
+		/// <param name="p_oDataMgr"></param>
+		/// <param name="p_oConn"></param>
+		/// <param name="strSQL"></param>
+		/// <param name="strColumn"></param>
+		public void loadvalues(SQLite.ADO.DataMgr p_oDataMgr,
+							   System.Data.SQLite.SQLiteConnection p_oConn,
+                               string strSQL, string[] strColumns)
         {
-            listBox1.Items.Clear();
-            p_oAdo.SqlQueryReader(p_oConn, strSQL);
-            if (p_oAdo.m_OleDbDataReader.HasRows)
+			listBox1.Items.Clear();
+			p_oDataMgr.SqlQueryReader(p_oConn, strSQL);
+            if (p_oDataMgr.m_DataReader.HasRows)
             {
-                while (p_oAdo.m_OleDbDataReader.Read())
+                while (p_oDataMgr.m_DataReader.Read())
                 {
-                    if (p_oAdo.m_OleDbDataReader[strColumn] != System.DBNull.Value && 
-                        p_oAdo.m_OleDbDataReader[strColumn].ToString().Trim().Length > 0)
+                    if (strColumns.Length == 1)
                     {
-                        listBox1.Items.Add(p_oAdo.m_OleDbDataReader[strColumn].ToString().Trim());
+                        if (p_oDataMgr.m_DataReader[strColumns[0]] != System.DBNull.Value &&
+                            p_oDataMgr.m_DataReader[strColumns[0]].ToString().Trim().Length > 0)
+                        {
+                            listBox1.Items.Add(p_oDataMgr.m_DataReader[strColumns[0]].ToString().Trim());
+                        }
+                    }
+                    else if (strColumns.Length > 1)
+                    {
+                        string strDisplay = ""; // Need to concat values because listbox only has one column
+                        for (int i = 0; i < strColumns.Length; i++)
+                        {
+                            if (p_oDataMgr.m_DataReader[strColumns[i]] != System.DBNull.Value &&
+                                p_oDataMgr.m_DataReader[strColumns[i]].ToString().Trim().Length > 0)
+                            {
+                                strDisplay = strDisplay + p_oDataMgr.m_DataReader[strColumns[i]].ToString().Trim();
+                                strDisplay = strDisplay + " | ";
+                            }
+                        }
+                        char[] charsToTrim = { ' ', '|', ' ' };
+                        strDisplay = strDisplay.TrimEnd(charsToTrim);
+                        listBox1.Items.Add(strDisplay);
                     }
                 }
             }

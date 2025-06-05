@@ -7144,6 +7144,7 @@ namespace FIA_Biosum_Manager
             static public string DefaultSiteIndexEquationsTable { get { return "site_index_equations"; } }
             static public string DefaultFIATreeSpeciesTableName { get { return "FIA_TREE_SPECIES_REF"; } }
             static public string DefaultRefMasterDbFile { get { return @"db\ref_master.db"; } }
+            static public string DefaultTreeSampleDbFile { get { return @"\treesample.db"; } }
             public void CreateTreeSpeciesTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
                 p_oAdo.SqlNonQuery(p_oConn, CreateTreeSpeciesTableSQL(p_strTableName));

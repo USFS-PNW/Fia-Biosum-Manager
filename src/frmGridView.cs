@@ -233,7 +233,7 @@ namespace FIA_Biosum_Manager
 
 			}
             if (CallingClient.Trim() == "ProcessorScenario:HarvesCostColumns_EditAll")
-                ReferenceProcessorScenarioAdditionalHarvestCostColumns.UpdateNullCounts();
+                ReferenceProcessorScenarioAdditionalHarvestCostColumns.UpdateNullCounts(ReferenceProcessorScenarioAdditionalHarvestCostColumns.TempDb);
 
 			this.m_intNumberOfGridViews = 0;
             frmMain.g_oFrmMain.Enabled = true;

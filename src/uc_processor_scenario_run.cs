@@ -39,7 +39,6 @@ namespace FIA_Biosum_Manager
         bool m_blnSteepSlope = true;
         
         Queries m_oQueries = new Queries();
-        Tables m_oTables = new Tables();
         RxTools m_oRxTools = new RxTools();
         excel_latebinding.excel_latebinding m_oExcel=null;
         FIA_Biosum_Manager.RxPackageItem_Collection m_oRxPackageItem_Collection = null;
@@ -255,9 +254,7 @@ namespace FIA_Biosum_Manager
             string strDebugFile = frmMain.g_oEnv.strTempDir + "\\biosum_processor_scenario_run_loadvalues.txt";
             if (System.IO.File.Exists(strDebugFile))
                 System.IO.File.Delete(strDebugFile);
-
-            System.Threading.Thread.Sleep(2000);
-
+            
             if (frmMain.g_bDebug)
                 frmMain.g_oUtils.WriteText(strDebugFile, "*****START*****" + System.DateTime.Now.ToString() + "\r\n");
 
@@ -265,8 +262,6 @@ namespace FIA_Biosum_Manager
             m_strOPCOSTRefPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + 
                 "\\" + Tables.Reference.DefaultOpCostReferenceDbFile;
             
-            if (m_oAdo != null && m_oAdo.m_OleDbConnection != null)
-                if (m_oAdo.m_OleDbConnection.State == System.Data.ConnectionState.Open) m_oAdo.CloseConnection(m_oAdo.m_OleDbConnection);
             cmbFilter.Items.Clear();
             cmbFilter.Items.Add("All");
             cmbFilter.Text = "All";
@@ -336,27 +331,13 @@ namespace FIA_Biosum_Manager
             //SCENARIO ID
             //
             ScenarioId = this.ReferenceProcessorScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
+
             //
-            //SCENARIO MDB
+            //SCENARIO RESULTS DB
             //
-            string strScenarioMDB =
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                "\\processor\\db\\scenario_processor_rule_definitions.mdb";
-            //
-            //SCENARIO RESULTS MDB
-            //
-            string strScenarioResultsMDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+            string strScenarioResultsDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
                 "\\processor\\" + ScenarioId + "\\" + Tables.ProcessorScenarioRun.DefaultSqliteResultsDbFile;
-            //    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-            //    "\\processor\\" + ScenarioId + "\\" + Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsDbFile;
-            //if (ReferenceProcessorScenarioForm.m_bUsingSqlite)
-            //{
-            //    strScenarioMDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-            //        "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
-            //    strScenarioResultsMDB =
-            //        frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-            //    "\\processor\\" + ScenarioId + "\\" + Tables.ProcessorScenarioRun.DefaultSqliteResultsDbFile;
-            //}
+
             //
             //LOAD PROJECT DATATASOURCES INFO
             //
@@ -365,7 +346,7 @@ namespace FIA_Biosum_Manager
             m_oQueries.m_oProcessor.LoadDatasource = true;
             m_oQueries.m_oTravelTime.LoadDatasource = true;
             // The following call creates the temp database that is used for running calculations
-            m_oQueries.LoadDatasources(true, ReferenceProcessorScenarioForm.m_bUsingSqlite, "processor", ScenarioId);
+            m_oQueries.LoadDatasources(true, "processor", ScenarioId);
             //
             //LOAD RX PACKAGE INFO
             //
@@ -387,112 +368,8 @@ namespace FIA_Biosum_Manager
             m_oRxTools.LoadAllRxItemsFromTableIntoRxCollection(m_oQueries, m_oRxItem_Collection);
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(strDebugFile, "END: LoadAllRxItemsFromTableIntoRxCollection - " + System.DateTime.Now.ToString() + "\r\n");
-            //
-            //CREATE LINK IN TEMP MDB TO ALL PROCESSOR SCENARIO TABLES
-            //
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(strDebugFile, "START: Create Links to the Scenario tables - " + System.DateTime.Now.ToString() + "\r\n");
-            dao_data_access oDao = new dao_data_access();
-            ODBCMgr odbcmgr = new ODBCMgr();
-            //link to all the scenario rule definition tables
-            if (!ReferenceProcessorScenarioForm.m_bUsingSqlite)
-            {
-                oDao.CreateTableLink(m_oQueries.m_strTempDbFile,
-                    "scenario_cost_revenue_escalators",
-                    strScenarioMDB, "scenario_cost_revenue_escalators", true);
-                oDao.CreateTableLink(m_oQueries.m_strTempDbFile,
-                    "scenario_additional_harvest_costs",
-                    strScenarioMDB, "scenario_additional_harvest_costs", true);
-                oDao.CreateTableLink(m_oQueries.m_strTempDbFile,
-                   "scenario_harvest_cost_columns",
-                   strScenarioMDB, "scenario_harvest_cost_columns", true);
-                oDao.CreateTableLink(m_oQueries.m_strTempDbFile,
-                  "scenario_harvest_method",
-                  strScenarioMDB, "scenario_harvest_method", true);
-                oDao.CreateTableLink(m_oQueries.m_strTempDbFile,
-                    Tables.ProcessorScenarioRuleDefinitions.DefaultMoveInCostsTableName,
-                    strScenarioMDB,
-                    Tables.ProcessorScenarioRuleDefinitions.DefaultMoveInCostsTableName, true);
-                oDao.CreateTableLink(m_oQueries.m_strTempDbFile,
-                 "scenario_tree_species_diam_dollar_values",
-                 strScenarioMDB, "scenario_tree_species_diam_dollar_values", true);
-                oDao.CreateTableLink(m_oQueries.m_strTempDbFile,
-                    Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName,
-                    strScenarioMDB,
-                    Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName, true);
-                oDao.CreateTableLink(m_oQueries.m_strTempDbFile,
-                    Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName,
-                    strScenarioMDB,
-                    Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName, true);
-            }
-            else
-            {
-                // Check to see if the input SQLite DSN exists and if so, delete so we can add
-                if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName))
-                {
-                    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName);
-                }
-                odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName,
-                    this.ReferenceProcessorScenarioForm.LoadedQueries.m_strTempDbFile);
-                //oDao.CreateSQLiteTableLink(m_oQueries.m_strTempDbFile, Tables.ProcessorScenarioRuleDefinitions.DefaultCostRevenueEscalatorsTableName,
-                //    Tables.ProcessorScenarioRuleDefinitions.DefaultCostRevenueEscalatorsTableName, ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName,
-                //    strScenarioDB);
-                //oDao.CreateSQLiteTableLink(m_oQueries.m_strTempDbFile, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName,
-                //    Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName, ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName,
-                //    strScenarioDB);
-                //oDao.CreateSQLiteTableLink(m_oQueries.m_strTempDbFile, Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestCostColumnsTableName,
-                //    Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestCostColumnsTableName, ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName,
-                //    strScenarioDB);
-                //oDao.CreateSQLiteTableLink(m_oQueries.m_strTempDbFile, Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodTableName,
-                //    Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodTableName, ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName,
-                //    strScenarioDB);
-                //oDao.CreateSQLiteTableLink(m_oQueries.m_strTempDbFile, Tables.ProcessorScenarioRuleDefinitions.DefaultMoveInCostsTableName,
-                //    Tables.ProcessorScenarioRuleDefinitions.DefaultMoveInCostsTableName, ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName,
-                //    strScenarioDB);
-                //oDao.CreateSQLiteTableLink(m_oQueries.m_strTempDbFile, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName,
-                //    Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName, ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName,
-                //    strScenarioDB);
-                //oDao.CreateSQLiteTableLink(m_oQueries.m_strTempDbFile, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName,
-                //    Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName, ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName,
-                //    strScenarioDB);
-                oDao.CreateSQLiteTableLink(m_oQueries.m_strTempDbFile, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName,
-                    Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName, ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName,
-                    m_strScenarioDb);
-            }
-
-            //link scenario results tables
-            //if (!ReferenceProcessorScenarioForm.m_bUsingSqlite)
-            //{
-            //    oDao.CreateTableLink(m_oQueries.m_strTempDbFile,
-            //        Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName,
-            //        strScenarioResultsMDB,
-            //        Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName, true);
-            //    oDao.CreateTableLink(m_oQueries.m_strTempDbFile,
-            //        Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName,
-            //        strScenarioResultsMDB,
-            //        Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName, true);
-            //    // additional_kcp_cpa is linked later after we update the schema
-            //}
-            //else
-            //{
-                //Check to see if the input SQLite DSN exists and if so, delete so we can add
-                if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProcessorResultsDsnName))
-                {
-                    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProcessorResultsDsnName);
-                }
-                odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ProcessorResultsDsnName,
-                    strScenarioResultsMDB);
-                oDao.CreateSQLiteTableLink(m_oQueries.m_strTempDbFile, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName,
-                    Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName, ODBCMgr.DSN_KEYS.ProcessorResultsDsnName,
-                    strScenarioResultsMDB);
-                oDao.CreateSQLiteTableLink(m_oQueries.m_strTempDbFile, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName,
-                    Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName, ODBCMgr.DSN_KEYS.ProcessorResultsDsnName,
-                    strScenarioResultsMDB);
-                // additional_kcp_cpa is linked later after we update the schema
-            //}
 
             // Check PRE_FVS_COMPUTE table
-            // Note: For the remainder of processing, the BioSum .accdb is used to access this table
             string strFvsPrePostDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
             IList<string> lstComponents = new List<string>();
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strFvsPrePostDb)))
@@ -549,96 +426,117 @@ namespace FIA_Biosum_Manager
                 }
             }
 
-            oDao.m_DaoDbEngine.Idle(1);
-            oDao.m_DaoDbEngine.Idle(8);
-            oDao.m_DaoWorkspace.Close();
-            oDao.m_DaoDbEngine = null;
-            oDao = null;
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(strDebugFile, "END: Create Links to the Scenario tables - " + System.DateTime.Now.ToString() + "\r\n");
-
-            ////
-            ////CREATE LINK IN TEMP MDB TO ALL VARIANT CUTLIST TABLES
-            ////
-            //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-            //    frmMain.g_oUtils.WriteText(strDebugFile, "START: CreateTableLinksToFVSOutTreeListTables - " + System.DateTime.Now.ToString() + "\r\n");
-            //m_oRxTools.CreateTableLinksToFVSOutTreeListTables(m_oQueries, m_oQueries.m_strTempDbFile);
-            //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-            //    frmMain.g_oUtils.WriteText(strDebugFile, "END: CreateTableLinksToFVSOutTreeListTables - " + System.DateTime.Now.ToString() + "\r\n");
             //
             //OPEN CONNECTION TO TEMP DB FILE
             //
-            m_oAdo = new ado_data_access();
-            m_oAdo.OpenConnection(m_oAdo.getMDBConnString(m_oQueries.m_strTempDbFile, "", ""));
-            if (m_oAdo.m_intError == 0)
+            string strTempDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strTempDbFile)))
             {
-                if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, "ProcessorVariantPackageDateTimeCreated_work_table"))
-                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE ProcessorVariantPackageDateTimeCreated_work_table");
+                conn.Open();
+                if (m_oDataMgr.TableExist(conn, "ProcessorVariantPackageDateTimeCreated_work_table"))
+                    m_oDataMgr.SqlNonQuery(conn, "DROP TABLE ProcessorVariantPackageDateTimeCreated_work_table");
+                //
+                //attach scenario results db
+                //
+                m_oDataMgr.m_strSQL = $@"ATTACH '{strScenarioResultsDb}' as RESULTS";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
+                m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(strDebugFile, "END SQL " + System.DateTime.Now.ToString() + "\r\n");
+                //
+                //attach master db
+                //
+                m_oDataMgr.m_strSQL = $@"ATTACH '{m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Plot)}' as MASTER";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
+                m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(strDebugFile, "END SQL " + System.DateTime.Now.ToString() + "\r\n");
+
                 //
                 //create temp work table with datetimecreated
                 //
-                m_oAdo.m_strSQL = "SELECT DISTINCT biosum_cond_id,rxpackage,DateTimeCreated " +
-                                 "INTO ProcessorVariantPackageDateTimeCreated_work_table " +
-                                 "FROM " + Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName;
+                m_oDataMgr.m_strSQL = "CREATE TABLE ProcessorVariantPackageDateTimeCreated_work_table " +
+                    "AS SELECT DISTINCT biosum_cond_id,rxpackage,DateTimeCreated FROM " +
+                    Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName;
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oAdo.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                    frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
+                m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(strDebugFile, "END SQL " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.AddColumn(m_oAdo.m_OleDbConnection,
-                                    "ProcessorVariantPackageDateTimeCreated_work_table",
-                                    "fvs_variant", "text", "2");
-                m_oAdo.AddIndex(m_oAdo.m_OleDbConnection, "ProcessorVariantPackageDateTimeCreated_work_table", "ProcessorVariantPackageDateTimeCreated_work_table_idx1", "biosum_cond_id");
+                m_oDataMgr.AddColumn(conn,
+                    "ProcessorVariantPackageDateTimeCreated_work_table",
+                    "fvs_variant", "text", "2");
+                m_oDataMgr.AddIndex(conn, "ProcessorVariantPackageDateTimeCreated_work_table", 
+                    "ProcessorVariantPackageDateTimeCreated_work_table_idx1", "biosum_cond_id");
 
-                m_oAdo.m_strSQL = "UPDATE ProcessorVariantPackageDateTimeCreated_work_table a " +
-                                  "INNER JOIN (" + m_oQueries.m_oFIAPlot.m_strPlotTable + " p " +
-                                         "INNER JOIN " + m_oQueries.m_oFIAPlot.m_strCondTable + " c " +
-                                         "ON p.biosum_plot_id=c.biosum_plot_id) " +
-                                  "ON trim(a.biosum_cond_id)=c.biosum_cond_id SET a.fvs_variant = p.fvs_variant;";
+                m_oDataMgr.m_strSQL = $@"UPDATE ProcessorVariantPackageDateTimeCreated_work_table
+                    SET fvs_variant = (SELECT p.fvs_variant FROM {m_oQueries.m_oFIAPlot.m_strPlotTable} p
+                    INNER JOIN {m_oQueries.m_oFIAPlot.m_strCondTable} c ON p.biosum_plot_id = c.biosum_plot_id
+                    WHERE ProcessorVariantPackageDateTimeCreated_work_table.biosum_cond_id = c.biosum_cond_id)
+                    WHERE EXISTS (SELECT 1 FROM {m_oQueries.m_oFIAPlot.m_strPlotTable} p
+                    INNER JOIN {m_oQueries.m_oFIAPlot.m_strCondTable} c ON p.biosum_plot_id = c.biosum_plot_id
+                    WHERE ProcessorVariantPackageDateTimeCreated_work_table.biosum_cond_id = c.biosum_cond_id)";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oAdo.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
+                    frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
+                m_oDataMgr.SqlQueryReader(conn, m_oDataMgr.m_strSQL);
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(strDebugFile, "END SQL " + System.DateTime.Now.ToString() + "\r\n");
+
+                m_oDataMgr.SqlNonQuery(conn, "DETACH database RESULTS");
+            }
                 
-                //
-                //GET LIST OF VARIANTS
-                //
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(strDebugFile, "START: GetListOfFVSVariantsInPlotTable - " + System.DateTime.Now.ToString() + "\r\n");
-                string strVariantsList = m_oRxTools.GetListOfFVSVariantsInPlotTable(m_oAdo, m_oAdo.m_OleDbConnection, m_oQueries.m_oFIAPlot.m_strPlotTable);
-                string[] strVariantsArray = frmMain.g_oUtils.ConvertListToArray(strVariantsList, ",");
-                string strFvsTreeListDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
-                string strFvsTreeListConn = m_oDataMgr.GetConnectionString(strFvsTreeListDb) + ";datetimeformat=CurrentCulture";
+            //
+            //GET LIST OF VARIANTS
+            //
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(strDebugFile, "START: GetListOfFVSVariantsInPlotTable - " + System.DateTime.Now.ToString() + "\r\n");
+            IDictionary<string, RxPackageItem_Collection> dictFvsVariantPackage = m_oRxTools.GetFvsVariantPackageDictionary(m_oQueries);
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(strDebugFile, "END: GetListOfFVSVariantsInPlotTable - " + System.DateTime.Now.ToString() + "\r\n");
 
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(strDebugFile, "END: GetListOfFVSVariantsInPlotTable - " + System.DateTime.Now.ToString() + "\r\n");
-
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(strDebugFile, "START: Populate List " + System.DateTime.Now.ToString() + "\r\n");
-    
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                frmMain.g_oUtils.WriteText(strDebugFile, "START: Populate List " + System.DateTime.Now.ToString() + "\r\n");
+            string strFvsTreeListDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
+            string strFvsTreeListConn = m_oDataMgr.GetConnectionString(strFvsTreeListDb) + ";datetimeformat=CurrentCulture";
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strFvsTreeListConn))
+            {
+                conn.Open();
                 //populate the listview object
                 string strRxPackage = "";
                 string strCount = "";
                 string strVariant = "";
-                m_oDataMgr.m_Connection = new System.Data.SQLite.SQLiteConnection(strFvsTreeListConn);
-                m_oDataMgr.m_Connection.Open();
+
                 // link to PRE_FVS_COMPUTE table
                 string strComputeDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
                 if (m_bLinkFvsComputeTables && System.IO.File.Exists(strComputeDbPath))
                 {
-                    m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, $@"ATTACH DATABASE '{strComputeDbPath}' AS FVSPREPOST;");
+                    m_oDataMgr.SqlNonQuery(conn, $@"ATTACH DATABASE '{strComputeDbPath}' AS FVSPREPOST");
                 }
+                m_oDataMgr.m_strSQL = $@"ATTACH '{strTempDbFile}' AS WORKTABLE";
+                m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+                m_oDataMgr.m_strSQL = $@"ATTACH '{strScenarioResultsDb}' as RESULTS";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
+                m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(strDebugFile, "END SQL " + System.DateTime.Now.ToString() + "\r\n");
+                m_oDataMgr.m_strSQL = $@"ATTACH '{m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Plot)}' as MASTER";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
+                m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(strDebugFile, "END SQL " + System.DateTime.Now.ToString() + "\r\n");
 
-                /* Method-level variable indicating that this variant-rxPackage is an inactive combination:
-                 * There are no rows in the fvs_cutlist table */
-                for (int i = 0; i < strVariantsArray.Length; i++)
+                foreach (string key in dictFvsVariantPackage.Keys)
                 {
-                    strVariant = strVariantsArray[i];
-                    for (int j = 0; j < m_oRxPackageItem_Collection.Count; j++)
+                    strVariant = key;
+                    var oRxPackageItem_Collection = dictFvsVariantPackage[key];
+                    for (int j = 0; j < oRxPackageItem_Collection.Count; j++)
                     {
                         bool _bInactiveVarRxPackage = false;
-                        RxPackageItem rxPackageItem = m_oRxPackageItem_Collection.Item(j);
+                        RxPackageItem rxPackageItem = oRxPackageItem_Collection.Item(j);
                         strRxPackage = rxPackageItem.RxPackageId;
                         if (frmMain.g_bSuppressProcessorScenarioTableRowCount == false)
                         {
@@ -656,7 +554,7 @@ namespace FIA_Biosum_Manager
                         }
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
-                        m_oDataMgr.SqlQueryReader(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
+                        m_oDataMgr.SqlQueryReader(conn, m_oDataMgr.m_strSQL);
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(strDebugFile, "END SQL " + System.DateTime.Now.ToString() + "\r\n");
                         if (m_oDataMgr.m_DataReader.HasRows)
@@ -670,6 +568,7 @@ namespace FIA_Biosum_Manager
                                 if (m_oDataMgr.m_DataReader["rxpackage_variant_count"] != System.DBNull.Value)
                                     strCount = m_oDataMgr.m_DataReader["rxpackage_variant_count"].ToString().Trim();
                             }
+                            m_oDataMgr.m_DataReader.Close();
                         }
                         else if (m_bLinkFvsComputeTables == true)
                         {
@@ -686,7 +585,7 @@ namespace FIA_Biosum_Manager
                                         // Check PRE_FVS_COMPUTE for 1
                                         string strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultPreFVSComputeTableName} WHERE 
                                         FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strRxPackage}' AND RX = '{rxItem.RxId}' AND {component.HarvestCostColumn}= 1";
-                                        long count = m_oDataMgr.getRecordCount(m_oDataMgr.m_Connection, strSQL, Tables.FVS.DefaultPreFVSComputeTableName);
+                                        long count = m_oDataMgr.getRecordCount(conn, strSQL, Tables.FVS.DefaultPreFVSComputeTableName);
                                         if (count > 0)
                                         {
                                             _bInactiveVarRxPackage = true;
@@ -696,8 +595,8 @@ namespace FIA_Biosum_Manager
                                         {
                                             // Check POST_FVS_COMPUTE for 1
                                             strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultPostFVSComputeTableName} WHERE 
-                                        FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strRxPackage}' AND RX = '{rxItem.RxId}' AND {component.HarvestCostColumn}= 1";
-                                            count = m_oDataMgr.getRecordCount(m_oDataMgr.m_Connection, strSQL, Tables.FVS.DefaultPreFVSComputeTableName);
+                                                FVS_VARIANT = '{strVariant}' AND RXPACKAGE = '{strRxPackage}' AND RX = '{rxItem.RxId}' AND {component.HarvestCostColumn}= 1";
+                                            count = m_oDataMgr.getRecordCount(conn, strSQL, Tables.FVS.DefaultPreFVSComputeTableName);
                                             if (count > 0)
                                             {
                                                 _bInactiveVarRxPackage = true;
@@ -737,14 +636,14 @@ namespace FIA_Biosum_Manager
                                 cmbFilter.Items.Add(strVariant);
                             }
                             //find the package item
-                            for (y = 0; y <= m_oRxPackageItem_Collection.Count - 1; y++)
+                            for (y = 0; y <= oRxPackageItem_Collection.Count - 1; y++)
                             {
-                                if (m_oRxPackageItem_Collection.Item(y).RxPackageId.Trim() == strRxPackage.Trim())
+                                if (oRxPackageItem_Collection.Item(y).RxPackageId.Trim() == strRxPackage.Trim())
                                 {
                                     break;
                                 }
                             }
-                            if (y <= m_oRxPackageItem_Collection.Count - 1)
+                            if (y <= oRxPackageItem_Collection.Count - 1)
                             {
                                 frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1, "Loading Scenario Run Data (Variant:" + strVariant + " RxPackage:" + strRxPackage + ")...Stand By");
                                 frmMain.g_oDelegate.ExecuteStatusBarPanelMethod(frmMain.g_sbpInfo.Parent, 1, "Refresh");
@@ -781,9 +680,6 @@ namespace FIA_Biosum_Manager
                                 this.m_oProgressBarEx1.ProgressType = ProgressBarEx.ProgressType.Smooth;
                                 this.m_oProgressBarEx1.ShowPercentage = true;
                                 this.m_oProgressBarEx1.BackColor = Color.LawnGreen;
-
-
-
                                 this.m_oProgressBarEx1.BackgroundColor = Color.Black;
                                 this.m_oProgressBarEx1.TabIndex = 18;
                                 this.m_oProgressBarEx1.Text = "0%";
@@ -792,8 +688,8 @@ namespace FIA_Biosum_Manager
                                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                     frmMain.g_oUtils.WriteText(strDebugFile, "Checkpoint 3" + System.DateTime.Now.ToString() + "\r\n");
 
-                                //tree volval count
-                                m_oAdo.m_strSQL = "SELECT COUNT(*) as rowcount " +
+                                // tree vol val count
+                                m_oDataMgr.m_strSQL = "SELECT COUNT(*) as rowcount " +
                                                   "FROM " + Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName + " t," +
                                                             m_oQueries.m_oFIAPlot.m_strCondTable + " c," +
                                                             m_oQueries.m_oFIAPlot.m_strPlotTable + " p " +
@@ -804,18 +700,16 @@ namespace FIA_Biosum_Manager
                                 if (frmMain.g_bSuppressProcessorScenarioTableRowCount == false && _bInactiveVarRxPackage == false)
                                 {
                                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                        frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oAdo.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
-
-                                    entryListItem.SubItems.Add(Convert.ToString(m_oAdo.getRecordCount(m_oAdo.m_OleDbConnection,
-                                        m_oAdo.m_strSQL, "temp")));
+                                        frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
+                                    entryListItem.SubItems.Add(Convert.ToString(m_oDataMgr.getRecordCount(conn,
+                                        m_oDataMgr.m_strSQL, "temp")));
                                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                         frmMain.g_oUtils.WriteText(strDebugFile, "END SQL " + System.DateTime.Now.ToString() + "\r\n");
-
                                 }
                                 else
                                     entryListItem.SubItems.Add(" ");
                                 //tree harvest cost count
-                                m_oAdo.m_strSQL = "SELECT COUNT(*) as rowcount " +
+                                m_oDataMgr.m_strSQL = "SELECT COUNT(*) as rowcount " +
                                                   "FROM " + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName + " t," +
                                                             m_oQueries.m_oFIAPlot.m_strCondTable + " c," +
                                                             m_oQueries.m_oFIAPlot.m_strPlotTable + " p " +
@@ -826,10 +720,10 @@ namespace FIA_Biosum_Manager
                                 if (frmMain.g_bSuppressProcessorScenarioTableRowCount == false && _bInactiveVarRxPackage == false)
                                 {
                                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                        frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oAdo.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
+                                        frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
 
-                                    entryListItem.SubItems.Add(Convert.ToString(m_oAdo.getRecordCount(m_oAdo.m_OleDbConnection,
-                                        m_oAdo.m_strSQL, "temp")));
+                                    entryListItem.SubItems.Add(Convert.ToString(m_oDataMgr.getRecordCount(conn,
+                                        m_oDataMgr.m_strSQL, "temp")));
 
                                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                         frmMain.g_oUtils.WriteText(strDebugFile, "END SQL: " + System.DateTime.Now.ToString() + "\r\n");
@@ -876,36 +770,28 @@ namespace FIA_Biosum_Manager
                                     m_oDataMgr.m_strSQL = "SELECT DISTINCT DateTimeCreated " +
                                                   "FROM " + Tables.FVS.DefaultFVSCutTreeTableName + " t " +
                                                   "WHERE t.fvs_variant ='" + strVariant + "' and t.rxpackage='" + strRxPackage + "'";
-
                                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                         frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
-
-                                    strFvsTreeDateCreated = (string)m_oDataMgr.getSingleStringValueFromSQLQuery(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL, "temp");
-
+                                    strFvsTreeDateCreated = (string)m_oDataMgr.getSingleStringValueFromSQLQuery(conn, m_oDataMgr.m_strSQL, "temp");
                                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                         frmMain.g_oUtils.WriteText(strDebugFile, "END SQL: " + System.DateTime.Now.ToString() + "\r\n");
                                 }
-
                                 entryListItem.SubItems.Add((strFvsTreeDateCreated.Trim())); //date and time created
 
-
-                                m_oAdo.m_strSQL = "SELECT DateTimeCreated " +
+                                m_oDataMgr.m_strSQL = "SELECT DateTimeCreated " +
                                                   "FROM  ProcessorVariantPackageDateTimeCreated_work_table " +
                                                   "WHERE rxpackage='" + strRxPackage + "' AND " +
                                                         "fvs_variant='" + strVariant + "'";
-
                                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                    frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oAdo.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
-
-                                m_oAdo.m_strSQL = (string)m_oAdo.getSingleStringValueFromSQLQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL, "temp");
-
+                                    frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
+                                string strCreated = (string)m_oDataMgr.getSingleStringValueFromSQLQuery(conn, m_oDataMgr.m_strSQL, "temp");
                                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                     frmMain.g_oUtils.WriteText(strDebugFile, "END SQL: " + System.DateTime.Now.ToString() + "\r\n");
 
                                 //fvstree processing date and time variant,rxpackage 
-                                if (m_oAdo.m_strSQL.Trim().Length > 0)
+                                if (strCreated.Length > 0)
                                 {
-                                    entryListItem.SubItems.Add(m_oAdo.m_strSQL); //date and time created
+                                    entryListItem.SubItems.Add(strCreated); //date and time created
                                 }
                                 else
                                 {
@@ -948,21 +834,18 @@ namespace FIA_Biosum_Manager
                                 strErrMsg = strErrMsg + "Table " + Tables.FVS.DefaultFVSCutTreeTableName + " contains RXPACKAGE: " + strRxPackage + " but " + strRxPackage + " is not a defined package. \r\n";
                             }
                         }
+
+
                     }
-// add another bracket here
                 }
-                m_oDataMgr.m_Connection.Close();
+            }
+    
                 if (strErrMsg.Trim().Length > 0)
                 {
                     MessageBox.Show("Error loading Processor Scenario run list \r\n" + strErrMsg, "FIA Biosum",MessageBoxButtons.OK,MessageBoxIcon.Error);
                 }
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(strDebugFile, "END: Populate List " + System.DateTime.Now.ToString() + "\r\n");
-
-
-
-                m_oAdo.m_OleDbDataReader.Dispose();
-            }
             this.panel1_Resize();
             if (frmMain.g_bDebug)
                 frmMain.g_oUtils.WriteText(strDebugFile, "*****END*****" + System.DateTime.Now.ToString() + "\r\n");
@@ -1125,1368 +1008,7 @@ namespace FIA_Biosum_Manager
         {
 
             btnRun_Click(sender, e);
-        }
-        private void RunScenario_DeleteAll()
-        {
-            m_oAdo.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName;
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection,m_oAdo.m_strSQL);
-
-            m_oAdo.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName;
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection,m_oAdo.m_strSQL);
-        }
-
-        private void RunScenario_LoadScenarioHarvestMethodVariables()
-        {
-            int x;
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel>1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_LoadScenarioHarvestMethodVariables\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-            m_oAdo.m_strSQL = "SELECT userxdefaultharvestmethodyn FROM scenario_harvest_method WHERE TRIM(UCASE(scenario_id))='" + ScenarioId.Trim().ToUpper() + "'";
-            if ((string)m_oAdo.getSingleStringValueFromSQLQuery(m_oAdo.m_OleDbConnection,m_oAdo.m_strSQL,"temp").Trim()=="Y")
-            {
-                ScenarioHarvestMethodVariables.UseDefaultRxHarvestMethod=true;
-            }
-            else
-            {
-                ScenarioHarvestMethodVariables.UseDefaultRxHarvestMethod=false;
-            }
-
-            ScenarioHarvestMethodVariables.HarvestMethodLowSlope = (string)m_oAdo.getSingleStringValueFromSQLQuery(m_oAdo.m_OleDbConnection,"SELECT harvestmethodlowslope FROM scenario_harvest_method WHERE TRIM(UCASE(scenario_id))='" + ScenarioId.Trim().ToUpper() + "'","temp"); 
-            ScenarioHarvestMethodVariables.HarvestMethodSteepSlope = (string)m_oAdo.getSingleStringValueFromSQLQuery(m_oAdo.m_OleDbConnection,"SELECT harvestmethodsteepslope FROM scenario_harvest_method WHERE TRIM(UCASE(scenario_id))='" + ScenarioId.Trim().ToUpper() + "'","temp"); 
-            ScenarioHarvestMethodVariables.SteepSlope = (int)m_oAdo.getSingleDoubleValueFromSQLQuery(m_oAdo.m_OleDbConnection,"SELECT steepslope FROM scenario_harvest_method WHERE TRIM(UCASE(scenario_id))='" + ScenarioId.Trim().ToUpper() + "'","temp");                
-        }
-        private void RunScenario_LoadDiameterVariables(string p_strVariant,string p_strRxPackage)
-        {
-            int x;
-            string strTableName;
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_LoadDiameterVariables\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-
-            strTableName = "fvs_tree_IN_" + p_strVariant + "_P" + p_strRxPackage + "_TREE_CUTLIST";
-
-            m_oAdo.m_strSQL = "SELECT MAX(DBH) AS maxdbh FROM " + strTableName;
-            DiameterVariables.maxdia = (double)m_oAdo.getSingleDoubleValueFromSQLQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL,strTableName);
-
-            m_oAdo.m_strSQL = "SELECT min_chip_dbh FROM scenario_harvest_method WHERE TRIM(UCASE(scenario_id))='" + ScenarioId.Trim().ToUpper() + "'";
-            DiameterVariables.MinDiaChips = (double)m_oAdo.getSingleDoubleValueFromSQLQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL, strTableName);
-
-            m_oAdo.m_strSQL = "SELECT min_sm_log_dbh FROM scenario_harvest_method WHERE TRIM(UCASE(scenario_id))='" + ScenarioId.Trim().ToUpper() + "'";
-            DiameterVariables.MinDiaSmLogs = (double)m_oAdo.getSingleDoubleValueFromSQLQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL, strTableName);
-                
-            DiameterVariables.MaxDiaChips = (double)(DiameterVariables.MinDiaSmLogs - (double)0.1);
-
-            m_oAdo.m_strSQL = "SELECT min_lg_log_dbh FROM scenario_harvest_method WHERE TRIM(UCASE(scenario_id))='" + ScenarioId.Trim().ToUpper() + "'";
-            DiameterVariables.MinDiaLgLogs = (double)m_oAdo.getSingleDoubleValueFromSQLQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL, strTableName);
-
-            DiameterVariables.MaxDiaSmLogs = (double)(DiameterVariables.MinDiaLgLogs - (double)0.1);
-
-            DiameterVariables.MaxDiaLgLogs = DiameterVariables.maxdia;
-
-            m_oAdo.m_strSQL = "SELECT min_dbh_steep_slope FROM scenario_harvest_method WHERE TRIM(UCASE(scenario_id))='" + ScenarioId.Trim().ToUpper() + "'";
-            DiameterVariables.MinDiaSteepSlope = (double)m_oAdo.getSingleDoubleValueFromSQLQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL, strTableName);
-
-            DiameterVariables.DiaClass_BC = "1-" + Convert.ToString(DiameterVariables.MinDiaChips - 0.1).Trim();
-
-            DiameterVariables.DiaClass_CHIPS = Convert.ToString(DiameterVariables.MinDiaChips).Trim() + "-" + Convert.ToString(DiameterVariables.MaxDiaChips).Trim();
-
-            DiameterVariables.DiaClass_SMLOGS = Convert.ToString(DiameterVariables.MaxDiaSmLogs).Trim() + "-" + Convert.ToString(DiameterVariables.MaxDiaSmLogs).Trim();
-
-            DiameterVariables.DiaClass_LGLOGS = Convert.ToString(DiameterVariables.MaxDiaLgLogs).Trim() + "+";
-
-            DiameterVariables.DiaClass_AllLOGS = Convert.ToString(DiameterVariables.MinDiaSteepSlope).Trim() + "+";
-
-            DiameterVariables.DiaCount = DiameterVariables.maxdia * 10;
-
-
-        }
-        private void RunScenario_CreateDiametersTable(string p_strDiametersTableName,bool p_bSteepSlope)
-        {
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_CreateDiametersTable\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-            int x;
-            int y;
-            string strTempTable = "";
-            
-            double diameter;
-            if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection,p_strDiametersTableName.Trim())==true)
-                  m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection,"DROP TABLE " + p_strDiametersTableName);
-
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2 && m_oAdo.m_intError==0)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, Tables.ProcessorScenarioRun.CreateDiametersTableSQL(p_strDiametersTableName) + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-            if (m_oAdo.m_intError==0) 
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, Tables.ProcessorScenarioRun.CreateDiametersTableSQL(p_strDiametersTableName));
-            //This query should include the scenario if it's ever used again
-            m_oAdo.m_strSQL = "SELECT species_group " +
-                              "FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName + " " +
-                              "ORDER BY species_group";
-
-            if (m_oAdo.m_intError == 0)
-            {
-                string[] strSpcGrpArray = frmMain.g_oUtils.ConvertListToArray(m_oAdo.CreateCommaDelimitedList(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL, ""), ",");
-                if (m_oAdo.m_intError == 0)
-                {
-                    for (y = 0; y <= strSpcGrpArray.Length - 1; y++)
-                    {
-                        strTempTable = p_strDiametersTableName.Trim() + strSpcGrpArray[y].Trim();
-                        diameter = 0.9;
-
-                        if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, strTempTable) == true)
-                            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + strTempTable);
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(m_strDebugFile, Tables.ProcessorScenarioRun.CreateDiametersTableSQL(strTempTable) + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, Tables.ProcessorScenarioRun.CreateDiametersTableSQL(strTempTable));
-                        if (m_oAdo.m_intError == 0)
-                        {
-                            for (x = 1; x <= DiameterVariables.DiaCount; x++)
-                            {
-                                diameter = diameter + 0.1;
-                                m_oAdo.m_strSQL = "INSERT INTO " + strTempTable + " " +
-                                                  "(DBH) SELECT ROUND(" + diameter + ",1) AS dbh";
-                                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                                if (m_oAdo.m_intError != 0) break;
-                            }
-                        }
-                        if (m_oAdo.m_intError == 0)
-                        {
-                            if (p_bSteepSlope == false)
-                            {
-                                m_oAdo.m_strSQL = "UPDATE " + strTempTable + " d " +
-                                                      "SET d.class = IIF(d.DBH >= " + DiameterVariables.MinDiaLgLogs.ToString() + ",'LGLOGS'," +
-                                                                    "IIF(d.DBH >= " + DiameterVariables.MinDiaSmLogs.ToString() + " AND " +
-                                                                        "d.DBH < " + DiameterVariables.MinDiaLgLogs.ToString() + ",'SMLOGS'," +
-                                                                    "IIF(d.DBH >= " + DiameterVariables.MinDiaChips.ToString() + " AND " +
-                                                                        "d.DBH < " + DiameterVariables.MinDiaSmLogs.ToString() + ",'CHIPS'," +
-                                                                    "IIF(d.DBH < " + DiameterVariables.MinDiaChips.ToString() + ",'BC',null))))";
-                            }
-                            else
-                            {
-                                m_oAdo.m_strSQL = "UPDATE " + strTempTable + " d " +
-                                                  "SET d.class = IIF(d.DBH >= " + DiameterVariables.MinDiaLgLogs.ToString() + " AND " +
-                                                                    "d.DBH >= " + DiameterVariables.MinDiaSteepSlope.ToString() + ",'LGLOGS'," +
-                                                                "IIF(d.DBH >= " + DiameterVariables.MinDiaSmLogs.ToString() + " AND " +
-                                                                    "d.DBH >= " + DiameterVariables.MinDiaSteepSlope.ToString() + " AND " +
-                                                                    "d.DBH < " + DiameterVariables.MinDiaLgLogs.ToString() + ",'SMLOGS'," +
-                                                                "IIF(d.DBH >= " + DiameterVariables.MinDiaChips.ToString() + " AND " +
-                                                                    "d.DBH >= " + DiameterVariables.MinDiaSteepSlope.ToString() + " AND " +
-                                                                    "d.DBH < " + DiameterVariables.MinDiaSmLogs.ToString() + ",'CHIPS'," +
-                                                                "IIF(d.DBH<" + DiameterVariables.MinDiaChips.ToString() + " " +
-                                                                  ",'BC',Null))))";
-
-                            }
-                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                        }
-                        if (m_oAdo.m_intError == 0)
-                        {
-                            m_oAdo.m_strSQL = "UPDATE " + strTempTable + " " +
-                                         "SET  Util_Logs_Bk = 'N', Util_Chips_Bk = 'N'," +
-                                               "Res_Stmp_Bk = 'N', Res_Lnd_Bk = 'N', Util_Logs_Br = 'N'," +
-                                               "Util_Chips_Br = 'N', Res_Stmp_Br = 'N', Res_Lnd_Br = 'N'," +
-                                               "Util_Logs_Bl = 'N', Util_Chips_Bl = 'N', Res_Stmp_Bl = 'N'," +
-                                               "Res_Lnd_Bl = 'N'," + 
-                                               "NonUtil_Logs_Bl='N',NonUtil_Chips_Bl='N'," + 
-                                               "Species_Group=" + strSpcGrpArray[y].Trim();
-                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-
-                            m_oAdo.m_strSQL = "INSERT INTO " + p_strDiametersTableName + " " +
-                                              "SELECT * FROM " + strTempTable;
-                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-
-                            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + strTempTable);
-                        }
-                        if (m_oAdo.m_intError != 0) break;
-                    }
-                }
-            }
-            m_intError = m_oAdo.m_intError;
-            m_strError = m_oAdo.m_strError;
-
-        }
-        private void RunScenario_AssignDiameterGroups(string p_strDiametersTableName)
-        {
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_AssignDiameterGroups\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-            int x;
-           
-            string strDiamGroupList = "";
-            string strMinDiaList = "";
-            string strSqlList = "";
-            double dblDBH;
-
-            m_oAdo.m_strSQL = "SELECT diam_group, min_diam FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName +
-                " WHERE TRIM(scenario_id)='" + this.ScenarioId.Trim() + "' ";
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-            m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            if (m_oAdo.m_intError == 0)
-            {
-                if (m_oAdo.m_OleDbDataReader.HasRows)
-                {
-                    while (m_oAdo.m_OleDbDataReader.Read())
-                    {
-                        strDiamGroupList = strDiamGroupList + m_oAdo.m_OleDbDataReader["diam_group"].ToString().Trim() + ",";
-                        strMinDiaList = strMinDiaList + m_oAdo.m_OleDbDataReader["min_diam"].ToString().Trim() + ",";
-
-                    }
-                    m_oAdo.m_OleDbDataReader.Close();
-
-                    strDiamGroupList = strDiamGroupList.Substring(0, strDiamGroupList.Length - 1);
-                    strMinDiaList = strMinDiaList.Substring(0, strMinDiaList.Length - 1);
-
-                    string[] strDiamGroupArray = frmMain.g_oUtils.ConvertListToArray(strDiamGroupList, ",");
-                    string[] strMinDiaArray = frmMain.g_oUtils.ConvertListToArray(strMinDiaList, ",");
-
-                    m_oAdo.m_strSQL = "SELECT DBH FROM " + p_strDiametersTableName;
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                    m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                    if (m_oAdo.m_intError == 0)
-                    {
-                        if (m_oAdo.m_OleDbDataReader.HasRows)
-                        {
-                            while (m_oAdo.m_OleDbDataReader.Read())
-                            {
-                                dblDBH = System.Math.Round(Convert.ToDouble(m_oAdo.m_OleDbDataReader["dbh"]), 1);
-                                for (x = 0; x <= strDiamGroupArray.Length - 1; x++)
-                                {
-                                    if (x < strDiamGroupArray.Length - 1)
-                                    {
-                                        if (dblDBH >=
-                                            System.Math.Round(Convert.ToDouble(strMinDiaArray[x]), 1) &&
-                                            dblDBH < System.Math.Round(Convert.ToDouble(strMinDiaArray[x + 1]), 1))
-                                        {
-                                            strSqlList = strSqlList + "UPDATE " + p_strDiametersTableName + " " +
-                                                                      "SET diam_group = " + strDiamGroupArray[x] + " " +
-                                                                      "WHERE DBH=" + Convert.ToString(dblDBH) + ",";
-                                            break;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (dblDBH >= Convert.ToDouble(strMinDiaArray[x]))
-                                        {
-                                            strSqlList = strSqlList + "UPDATE " + p_strDiametersTableName + " " +
-                                                                      "SET diam_group = " + strDiamGroupArray[x] + " " +
-                                                                      "WHERE DBH=" + Convert.ToString(dblDBH) + ",";
-                                            break;
-                                        }
-                                    }
-
-                                }
-
-
-
-                            }
-                            m_oAdo.m_OleDbDataReader.Close();
-                            strSqlList = strSqlList.Substring(0, strSqlList.Length - 1);
-                            string[] strSqlArray = frmMain.g_oUtils.ConvertListToArray(strSqlList, ",");
-                            for (x = 0; x <= strSqlArray.Length - 1; x++)
-                            {
-                                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                    frmMain.g_oUtils.WriteText(m_strDebugFile, strSqlArray[x] + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, strSqlArray[x]);
-                                if (m_oAdo.m_intError != 0) break;
-                            }
-
-                        }
-                        else m_oAdo.m_OleDbDataReader.Close();
-                    }
-                }
-                else m_oAdo.m_OleDbDataReader.Close();
-            }
-            m_intError = m_oAdo.m_intError;
-            m_strError = m_oAdo.m_strError;
-
-
-        }
-        private void RunScenario_SetDiameterFlags(string p_strDiametersTableName,bool p_bSteepSlope)
-        {
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_SetDiameterFlags\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-            string strWoodBin = "";
-            string strSpcGrp = "";
-            string strDbhGrp = "";
-            int x = 0;
-
-
-            string[] strSql = new string[(int)m_oAdo.getSingleDoubleValueFromSQLQuery(m_oAdo.m_OleDbConnection, "SELECT COUNT(*) as reccount FROM scenario_tree_species_diam_dollar_values WHERE TRIM(UCASE(scenario_id))='" + ScenarioId.Trim().ToUpper() + "'", "temp") * 4];
-            m_oAdo.m_strSQL = "SELECT species_group,diam_group,wood_bin FROM scenario_tree_species_diam_dollar_values WHERE TRIM(UCASE(scenario_id))='" + ScenarioId.Trim().ToUpper() + "'";
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-            m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-
-            if (m_oAdo.m_intError == 0)
-            {
-                while (m_oAdo.m_OleDbDataReader.Read())
-                {
-                    strWoodBin = Convert.ToString(m_oAdo.m_OleDbDataReader["wood_bin"]).Trim();
-                    strSpcGrp = Convert.ToString(m_oAdo.m_OleDbDataReader["species_group"]).Trim();
-                    strDbhGrp = Convert.ToString(m_oAdo.m_OleDbDataReader["diam_group"]).Trim();
-
-                    /******************************************************************************
-                     **BRUSH CUT: Set the NonUtil_Chips_Bl Y/N flag depending if the diameter is 
-                     **below minimum chips diameter
-                     ******************************************************************************/
-                    strSql[x] = "UPDATE " + p_strDiametersTableName.Trim() + " " +
-                                "SET NonUtil_Chips_Bl = IIf(DBH <" + DiameterVariables.MinDiaChips.ToString().Trim() + ",'Y','N') " +
-                                "WHERE species_group = " + strSpcGrp + " AND " +
-                                      "diam_group = " + strDbhGrp;
-                    x++;
-                    if (p_bSteepSlope == false)
-                    {
-                       
-                         
-                        /******************************************************************************
-                         **CHIPS: Set the chips Y/N flag depending if the diameters.dbh value falls 
-                         **between the user entered MinChipDBHLT40 and MinLogsDBH value.
-                         **Uupdate value to "Y" in diameters table for Chips if DBH within min/max
-                         **for chip trees
-                         ******************************************************************************/
-                        strSql[x] = "UPDATE " + p_strDiametersTableName.Trim() + " " +
-                                    "SET Util_Chips_Bl = IIf(DBH=" + DiameterVariables.MinDiaChips.ToString().Trim() + " OR " +
-                                                            "DBH > " + DiameterVariables.MinDiaChips.ToString().Trim() + " AND " +
-                                                            "DBH < " + DiameterVariables.MinDiaSmLogs.ToString().Trim() + ",'Y','N') " +
-                                    "WHERE species_group = " + strSpcGrp + " AND " +
-                                          "diam_group = " + strDbhGrp;
-                        x++;
-
-                        if (strWoodBin == "M")
-                        {
-
-
-                            /*******************************************************************************
-                             **SMALL LOGS: Set the Logs Y/N flag depending if the diameters.dbh value falls
-                             **between the user entered MinSmLogsDBH and MinLgLogsDBH
-                             **update value to "Y" in diameters table for Logs if DBH within min/max 
-                             **for small log trees
-                             *******************************************************************************/
-                            strSql[x] = "UPDATE " + p_strDiametersTableName.Trim() + " " +
-                                        "SET Util_Logs_Bl = IIf(DBH = " + DiameterVariables.MinDiaSmLogs.ToString().Trim() + " OR " +
-                                                               "DBH > " + DiameterVariables.MinDiaSmLogs.ToString().Trim() + " AND " +
-                                                               "DBH < " + DiameterVariables.MinDiaLgLogs.ToString().Trim() + ",'Y',Util_Logs_Bl) " +
-                                        "WHERE species_group = " + strSpcGrp + " AND " +
-                                              "diam_group = " + strDbhGrp;
-                            x++;
-
-                            /*******************************************************************************
-                             **LARGE LOGS: Set the Logs Y/N flag depending if the diameters.dbh value is 
-                             **greater or equal to the user entered MinLgLogsDBH 
-                             **update value to "Y" in diameters table for Logs if DBH within min/max 
-                             **for large log trees
-                             *******************************************************************************/
-                            strSql[x] = "UPDATE " + p_strDiametersTableName.Trim() + " " +
-                                        "SET Util_Logs_Bl = IIf(DBH = " + DiameterVariables.MinDiaLgLogs.ToString().Trim() + " OR " +
-                                                               "DBH > " + DiameterVariables.MinDiaLgLogs.ToString().Trim() + ",'Y',Util_Logs_Bl) " +
-                                        "WHERE species_group = " + strSpcGrp + " AND " +
-                                              "diam_group = " + strDbhGrp;
-                            x++;
-                        }
-                        else
-                        {
-                            //EVERYTHING GETS PROCESSED AS CHIPS
-                            /*******************************************************************************
-                             **SMALL LOGS: Set the Chips Y/N flag depending if the diameters.dbh value falls
-                             **between the user entered MinSmLogsDBH and MinLgLogsDBH
-                             **update value to "Y" in diameters table for Logs if DBH within min/max 
-                             **for small log trees
-                             *******************************************************************************/
-                            strSql[x] = "UPDATE " + p_strDiametersTableName.Trim() + " " +
-                                        "SET Util_Chips_Bl = IIf(DBH = " + DiameterVariables.MinDiaSmLogs.ToString().Trim() + " OR " +
-                                                                "DBH > " + DiameterVariables.MinDiaSmLogs.ToString().Trim() + " AND " +
-                                                                "DBH < " + DiameterVariables.MinDiaLgLogs.ToString().Trim() + ",'Y',Util_Chips_Bl) " +
-                                        "WHERE species_group = " + strSpcGrp + " AND " +
-                                              "diam_group = " + strDbhGrp;
-                            x++;
-
-                            /*******************************************************************************
-                             **LARGE LOGS: Set the Chips Y/N flag depending if the diameters.dbh value is 
-                             **greater or equal to the user entered MinLgLogsDBH 
-                             **update value to "Y" in diameters table for Logs if DBH within min/max 
-                             **for large log trees
-                             *******************************************************************************/
-                            strSql[x] = "UPDATE " + p_strDiametersTableName.Trim() + " " +
-                                        "SET Util_Chips_Bl = IIf(DBH = " + DiameterVariables.MinDiaLgLogs.ToString().Trim() + " OR " +
-                                                                "DBH > " + DiameterVariables.MinDiaLgLogs.ToString().Trim() + ",'Y',Util_Chips_Bl) " +
-                                        "WHERE species_group = " + strSpcGrp + " AND " +
-                                              "diam_group = " + strDbhGrp;
-                            x++;
-                        }
-                    }
-                    else
-                    {
-
-                        /******************************************************************************
-                        **CHIPS: Set the chips Y/N flag depending if the diameters.dbh value falls 
-                        **between the user entered MinChipDBHLT40 and MinLogsDBH value and the diameters.dbh 
-                        **exceeds the minimum diameter for steep slopes 
-                        **Update value to "Y" in diameters table for Chips if DBH within min/max
-                        **for chip trees
-                        ******************************************************************************/
-                        strSql[x] = "UPDATE " + p_strDiametersTableName.Trim() + " " +
-                                    "SET Util_Chips_Bl = IIf(DBH=" + DiameterVariables.MinDiaChips.ToString().Trim() + " OR " +
-                                                            "DBH > " + DiameterVariables.MinDiaChips.ToString().Trim() + " AND " +
-                                                            "DBH > " + DiameterVariables.MinDiaSteepSlope.ToString().Trim() + " AND " +
-                                                            "DBH < " + DiameterVariables.MinDiaSmLogs.ToString().Trim() + ",'Y','N') " +
-                                    "WHERE species_group = " + strSpcGrp + " AND " +
-                                          "diam_group = " + strDbhGrp;
-                        x++;
-
-                        
-                        if (strWoodBin == "M")
-                        {
-                            /*******************************************************************************
-                             **SMALL LOGS: Set the Logs Y/N flag depending if the diameters.dbh value falls
-                             **between the user entered MinSmLogsDBH and MinLgLogsDBH
-                             **update value to "Y" in diameters table for Logs if DBH within min/max 
-                             **for small log trees
-                             *******************************************************************************/
-                            strSql[x] = "UPDATE " + p_strDiametersTableName.Trim() + " " +
-                                        "SET Util_Logs_Bl = IIf(DBH >= " + DiameterVariables.MinDiaSmLogs.ToString().Trim() + " AND " +
-                                                               "DBH >= " + DiameterVariables.MinDiaSteepSlope.ToString().Trim() + " AND " +
-                                                               "DBH < " + DiameterVariables.MinDiaLgLogs.ToString().Trim() + ",'Y',Util_Logs_Bl) " +
-                                        "WHERE species_group = " + strSpcGrp + " AND " +
-                                              "diam_group = " + strDbhGrp;
-                            x++;
-
-                            /*******************************************************************************
-                             **LARGE LOGS: Set the Logs Y/N flag depending if the diameters.dbh value is 
-                             **greater or equal to the user entered MinLgLogsDBH 
-                             **update value to "Y" in diameters table for Logs if DBH within min/max 
-                             **for large log trees
-                             *******************************************************************************/
-                            strSql[x] = "UPDATE " + p_strDiametersTableName.Trim() + " " +
-                                       "SET Util_Logs_Bl = IIf(DBH >= " + DiameterVariables.MinDiaLgLogs.ToString().Trim() + " AND " +
-                                                              "DBH >= " + DiameterVariables.MinDiaSteepSlope.ToString().Trim() +
-                                                              ",'Y',Util_Logs_Bl) " +
-                                       "WHERE species_group = " + strSpcGrp + " AND " +
-                                             "diam_group = " + strDbhGrp;
-                            x++;
-                        }
-                        else
-                        {
-                            //EVERYTHING GETS PROCESSED AS CHIPS
-                            /*******************************************************************************
-                             **SMALL LOGS: Set the Chips Y/N flag depending if the diameters.dbh value falls
-                             **between the user entered MinSmLogsDBH and MinLgLogsDBH
-                             **update value to "Y" in diameters table for Logs if DBH within min/max 
-                             **for small log trees
-                             *******************************************************************************/
-                            strSql[x] = "UPDATE " + p_strDiametersTableName.Trim() + " " +
-                                        "SET Util_Chips_Bl = IIf(DBH >= " + DiameterVariables.MinDiaSmLogs.ToString().Trim() + " AND " +
-                                                                "DBH >= " + DiameterVariables.MinDiaSteepSlope.ToString().Trim() + " AND " +
-                                                                "DBH < " + DiameterVariables.MinDiaLgLogs + ",'Y',Util_Chips_Bl) " +
-                                        "WHERE species_group = " + strSpcGrp + " AND " +
-                                              "diam_group = " + strDbhGrp;
-                            x++;
-
-                            /*******************************************************************************
-                             **LARGE LOGS: Set the Chips Y/N flag depending if the diameters.dbh value is 
-                             **greater or equal to the user entered MinLgLogsDBH 
-                             **update value to "Y" in diameters table for Logs if DBH within min/max 
-                             **for large log trees
-                             *******************************************************************************/
-                            strSql[x] = "UPDATE " + p_strDiametersTableName.Trim() + " " +
-                                       "SET Util_Chips_Bl = IIf(DBH >= " + DiameterVariables.MinDiaLgLogs.ToString().Trim() + " AND " +
-                                                              "DBH >= " + DiameterVariables.MinDiaSteepSlope.ToString().Trim() +
-                                                              ",'Y',Util_Chips_Bl) " +
-                                       "WHERE species_group = " + strSpcGrp + " AND " +
-                                             "diam_group = " + strDbhGrp;
-                            x++;
-                        }
-                    }
-
-                }
-                m_oAdo.m_OleDbDataReader.Close();
-                for (x = 0; x <= strSql.Length - 1; x++)
-                {
-                    if (strSql[x] == null) break;
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(m_strDebugFile, strSql[x] + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, strSql[x]);
-                    if (m_oAdo.m_intError != 0) break;
-                }
-            }
-            m_intError = m_oAdo.m_intError;
-            m_strError = m_oAdo.m_strError;
-
-        }
-        private void RunScenario_InitBinsTables(string p_strTreeDataInTableName,
-                                                string p_strBinTableName,
-                                                string p_strHwdBinTableName)
-        {
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_InitBinsTables\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-            //
-            //CREATE THE TREE BINS TABLE
-            //
-            if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, p_strBinTableName))
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + p_strBinTableName);
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, Tables.ProcessorScenarioRun.CreateTreeBinTableSQL(p_strBinTableName) + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, Tables.ProcessorScenarioRun.CreateTreeBinTableSQL(p_strBinTableName));
-            if (m_oAdo.m_intError == 0)
-            {
-                //
-                //INSERT KEY VALUES
-                //
-                m_oAdo.m_strSQL = "INSERT INTO " + p_strBinTableName + " " +
-                                  "(fvs_tree_id,biosum_cond_id,rxpackage,rx,rxcycle,species,species_group,diam_group,dbh) " +
-                                     "SELECT fvs_tree_id,biosum_cond_id,rxpackage,rx,rxcycle," +
-                                            "spcd AS species,species_group,diam_group,dia AS dbh " +
-                                     "FROM " + p_strTreeDataInTableName;
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            }
-            if (m_oAdo.m_intError == 0)
-            {
-                //
-                //INITIALIZE VALUES
-                //
-                m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.InitializeBinsTable(p_strBinTableName, "BC");
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.InitializeBinsTable(p_strBinTableName, "CHIPS");
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.InitializeBinsTable(p_strBinTableName, "SMLOGS");
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.InitializeBinsTable(p_strBinTableName, "LGLOGS");
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            }
-            if (m_oAdo.m_intError == 0)
-            {
-                //
-                //CREATE THE TREE HARDWOOD BINS TABLE
-                //
-                if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, p_strHwdBinTableName))
-                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + p_strHwdBinTableName);
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, Tables.ProcessorScenarioRun.CreateTreeHwdBinTableSQL(p_strHwdBinTableName.Trim()) + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, Tables.ProcessorScenarioRun.CreateTreeHwdBinTableSQL(p_strHwdBinTableName.Trim()));
-            }
-            if (m_oAdo.m_intError == 0)
-            {
-                //
-                //INSERT KEY VALUES
-                //
-                m_oAdo.m_strSQL = "INSERT INTO " + p_strHwdBinTableName + " " +
-                                  "(fvs_tree_id,biosum_cond_id,rxpackage,rx,rxcycle,species,species_group,diam_group,dbh) " +
-                                     "SELECT fvs_tree_id,biosum_cond_id,rxpackage,rx,rxcycle," +
-                                            "spcd AS species,species_group,diam_group,dia AS dbh " +
-                                     "FROM " + p_strTreeDataInTableName;
-               
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            }
-            if (m_oAdo.m_intError == 0)
-            {
-                //
-                //INITIALIZE VALUES
-                //
-                m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.InitializeHwdBinsTable(p_strHwdBinTableName, "BC");
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.InitializeHwdBinsTable(p_strHwdBinTableName, "CHIPS");
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.InitializeHwdBinsTable(p_strHwdBinTableName, "SMLOGS");
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.InitializeHwdBinsTable(p_strHwdBinTableName, "LGLOGS");
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            }
-            m_intError = m_oAdo.m_intError;
-            m_strError = m_oAdo.m_strError;
-           
-
-
-        }
-
-        private void RunScenario_SumBinsByPlotRxSpcGrpDbhGrp(string p_strBinTableName,
-                                                             string p_strHwdBinTableName,
-                                                             string p_strBinSumTableName,
-                                                             string p_strHwdBinSumTableName)
-        {
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_SumBinsByPlotRxSpcGrpDbhGrp\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-            //
-            //DELETE bin_sums table
-            //
-            if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection,p_strBinSumTableName))
-                 m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection,"DROP TABLE " + p_strBinSumTableName);
-            //
-            //CREATE bin_sums table
-            //
-            m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.SumBinByPlotRxSpcGrpDbhGrp(p_strBinTableName,p_strBinSumTableName);
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            if (m_oAdo.m_intError == 0)
-            {
-                //
-                //DELETE hwd_bin_sums table
-                //
-                if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, p_strHwdBinSumTableName))
-                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + p_strHwdBinSumTableName);
-                m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.SumHwdBinByPlotRxSpcGrpDbhGrp(p_strHwdBinTableName, p_strHwdBinSumTableName);
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            }
-            m_intError = m_oAdo.m_intError;
-            m_strError = m_oAdo.m_strError;
-        }
-        private void RunScenario_SumBinsByPlotRx(string p_strBinSumTableName,
-                                                 string p_strHwdBinSumTableName,
-                                                 string p_strBinTotalsTableName,
-                                                 string p_strHwdBinTotalsTableName)
-        {
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_SumBinsByPlotRx\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-            if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, p_strBinTotalsTableName))
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + p_strBinTotalsTableName);
-            m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.SumBinByPlotRx(p_strBinSumTableName, p_strBinTotalsTableName);
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            if (m_oAdo.m_intError == 0)
-            {
-
-                if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, p_strHwdBinTotalsTableName))
-                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + p_strHwdBinTotalsTableName);
-                m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.SumHwdBinByPlotRx(p_strHwdBinSumTableName, p_strHwdBinTotalsTableName);
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            }
-            m_intError = m_oAdo.m_intError;
-            m_strError = m_oAdo.m_strError;
-        }
-        private void RunScenario_InitOutputTable(string p_strBinSumTableName,string p_strBinOutputTableName)
-        {
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_InitOutputTable\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-            //
-            //DELETE OUTPUT TABLE
-            //
-            if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, p_strBinOutputTableName))
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + p_strBinOutputTableName);
-            //
-            //CREATE OUTPUT TABLE
-            //
-            m_oAdo.m_strSQL = Tables.ProcessorScenarioRun.CreateOutputTableSQL(p_strBinOutputTableName);
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection,m_oAdo.m_strSQL);
-            //
-            //INSERT KEY VALUES
-            //
-            m_oAdo.m_strSQL = "INSERT INTO " + p_strBinOutputTableName + " " + 
-                    "(BIOSUM_COND_ID, RXPACKAGE,RX,RXCYCLE) " + 
-                       "SELECT BIOSUM_COND_ID, RXPACKAGE, RX, RXCYCLE " + 
-                       "FROM " + p_strBinSumTableName + " " + 
-                       "GROUP BY BIOSUM_COND_ID, RXPACKAGE, RX, RXCYCLE";
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection,m_oAdo.m_strSQL);
-            if (m_oAdo.m_intError ==0) 
-                frmMain.g_oTables.m_oProcessorScenarioRun.CreateOutputTableIndexes(m_oAdo, m_oAdo.m_OleDbConnection, p_strBinOutputTableName);
-            if (m_oAdo.m_intError == 0)
-            {
-                //
-                //INITIALIZE VALUES
-                //
-                m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.InitializeOutputTableValues(p_strBinOutputTableName);
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            }
-            m_intError = m_oAdo.m_intError;
-            m_strError = m_oAdo.m_strError;
-
-
-        }
-        private void RunScenario_UpdateOutputTable(string p_strBinOutputTableName,
-                                                   string p_strBinTotalsTableName,
-                                                   string p_strHwdBinTotalsTableName,
-                                                   string p_strTreeDataInTableName,
-                                                   string p_strDiametersTableName,
-                                                   string p_strBiomassByLogSizeTableName,
-                                                   string p_strBiomassByStandRxTableName,
-                                                   string p_strVariant,
-                                                   string p_strRxPackage)
-        {
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_UpdateOutputTable\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-            string strTableName = "fvs_tree_IN_" + p_strVariant + "_P" + p_strRxPackage + "_TREE_CUTLIST";
-            //
-            //Update yarding distance, slope  and elevation from PLOT,COND table on output
-            //
-            m_oAdo.m_strSQL = "UPDATE " + p_strBinOutputTableName + " o " +
-                              "INNER JOIN (" + m_oQueries.m_oFIAPlot.m_strPlotTable + " p " +
-                              "INNER JOIN " + m_oQueries.m_oFIAPlot.m_strCondTable + " c " +
-                              "ON p.biosum_plot_id = c.biosum_plot_id) " +
-                              "ON o.biosum_cond_id = c.biosum_cond_id " +
-                              "SET o.gis_yard_dist_ft = IIF(p.gis_yard_dist_ft IS NULL,1,p.gis_yard_dist_ft)," +
-                                  "o.elev = p.elev," + 
-                                  "o.slope = IIF(c.slope IS NULL,0,c.slope)";
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            if (m_oAdo.m_intError == 0)
-            {
-
-                //
-                //Update output table with bin table values
-                //
-                m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.UpdateOutputTableFromBinTables(p_strBinOutputTableName, p_strBinTotalsTableName, p_strHwdBinTotalsTableName);
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            }
-            if (m_oAdo.m_intError == 0)
-            {
-
-                //
-                //DELETE SUMBIOMASSBYLOGSIZE TABLE
-                //
-                if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, p_strBiomassByLogSizeTableName))
-                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + p_strBiomassByLogSizeTableName);
-                //
-                //Sum Biomass By Log Size into SUMBIOMASSBYLOGSIZE table
-                //
-                m_oAdo.m_strSQL = "SELECT t.biosum_cond_id, t.rxpackage, t.rx, t.rxcycle,d.class," +
-                                          "SUM(ROUND(f.drybiot,0)) AS TreeBiomass," +
-                                          "SUM(ROUND(f.drybiom,0)) AS BoleBiomass " +
-                                  "INTO " + p_strBiomassByLogSizeTableName + " " +
-                                  "FROM (" + p_strTreeDataInTableName + " t " +
-                                  "INNER JOIN " + p_strDiametersTableName + " d " +
-                                  "ON t.dia = d.DBH AND t.species_group=d.species_group) " +
-                                  "INNER JOIN " + strTableName + " f " +
-                                  "ON (t.fvs_tree_id = f.fvs_tree_id) " +
-                                  "GROUP BY t.biosum_cond_id, t.rxpackage,t.rx,t.rxcycle, d.class " +
-                                  "HAVING (((TRIM(d.class))='SMLOGS' OR (TRIM(d.class))='LGLOGS'))";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            }
-            if (m_oAdo.m_intError == 0)
-            {
-
-                //
-                //Update OUTPUT table with  residue fraction for small logs from the SUMBIOMASSBYLOGSIZE table
-                //
-                m_oAdo.m_strSQL = "UPDATE " + p_strBinOutputTableName + " o " +
-                                  "INNER JOIN " + p_strBiomassByLogSizeTableName + " s " +
-                                  "ON  o.BIOSUM_COND_ID = s.biosum_cond_id AND " +
-                                      "o.rxpackage = s.rxpackage AND " +
-                                      "o.rx = s.rx AND " +
-                                      "o.rxcycle = s.rxcycle  " +
-                                  "SET o.[SMLOGS Chip Fraction] = IIF(s.BoleBiomass=0,0,ROUND((s.TreeBiomass-s.BoleBiomass)/s.BoleBiomass*100,0)) " +
-                                  "WHERE (((TRIM(s.class))='SMLOGS'))";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            }
-            if (m_oAdo.m_intError == 0)
-            {
-
-
-                //
-                //Update OUTPUT table with  residue fraction for large logs from the SUMBIOMASSBYLOGSIZE table
-                //
-                m_oAdo.m_strSQL = "UPDATE " + p_strBinOutputTableName + " o " +
-                                  "INNER JOIN " + p_strBiomassByLogSizeTableName + " s " +
-                                  "ON o.biosum_cond_id = s.biosum_cond_id AND " +
-                                     "o.rxpackage = s.rxpackage AND " +
-                                     "o.rx = s.rx AND " +
-                                     "o.rxcycle = s.rxcycle " +
-                                  "SET o.[LGLOGS Chip Fraction] = IIF(s.BoleBiomass=0,0,ROUND((s.TreeBiomass-s.BoleBiomass)/s.BoleBiomass*100,0)) " +
-                                  "WHERE (((TRIM(s.class))='LGLOGS'))";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            }
-            if (m_oAdo.m_intError == 0)
-            {
-
-                //
-                //DELETE SUMBIOMASSBYSTANDRX TABLE
-                //
-                if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, p_strBiomassByStandRxTableName))
-                    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE " + p_strBiomassByStandRxTableName);
-                //
-                //Sum Biomass By Stand+Rx into SUMBIOMASSBYSTANDRX table
-                //
-                m_oAdo.m_strSQL = "SELECT t.biosum_cond_id, t.rxpackage, t.rx, t.rxcycle," +
-                                          "SUM(ROUND(f.drybiot,0)) AS TreeBiomass," +
-                                          "SUM(ROUND(f.drybiom,0)) AS BoleBiomass " +
-                                  "INTO " + p_strBiomassByStandRxTableName + " " +
-                                  "FROM (" + p_strTreeDataInTableName + " t " +
-                                  "INNER JOIN " + p_strDiametersTableName + " d " +
-                                  "ON t.dia = d.DBH AND t.species_group=d.species_group) " +
-                                  "INNER JOIN " + strTableName + " f " +
-                                  "ON (t.fvs_tree_id = f.fvs_tree_id) " +
-                                  "GROUP BY t.biosum_cond_id, t.rxpackage,t.rx,t.rxcycle, d.class";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            }
-            if (m_oAdo.m_intError == 0)
-            {
-
-                //
-                //Update OUTPUT table with TOTAL residue fraction for a STAND and TREATMENT from the SUMBIOMASSBYSTANDRX table
-                //
-                m_oAdo.m_strSQL = "UPDATE " + p_strBinOutputTableName + " o " +
-                                  "INNER JOIN " + p_strBiomassByStandRxTableName + " s " +
-                                  "ON  o.BIOSUM_COND_ID = s.biosum_cond_id AND " +
-                                      "o.rxpackage = s.rxpackage AND " +
-                                      "o.rx = s.rx AND " +
-                                      "o.rxcycle = s.rxcycle  " +
-                                  "SET o.[TOTAL Chip Fraction] = IIF(s.BoleBiomass=0,0,ROUND((s.TreeBiomass-s.BoleBiomass)/s.BoleBiomass*100,0))";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            }
-            if (m_oAdo.m_intError == 0)
-            {
-
-                //
-                //Update OUTPUT table with  utilized chips for small and large logs from the SUMBIOMASSBYLOGSIZE table
-                //
-                m_oAdo.m_strSQL = "UPDATE " + p_strBinOutputTableName + " o " +
-                                  "SET o.[SMLOGS utilized chips (tons)] = " +
-                                          "IIF(o.[SMLOGS utilized chips (tons)] IS NOT NULL," +
-                                              "o.[SMLOGS utilized chips (tons)]*(o.[SMLOGS Chip Fraction]/100),0)," +
-                                      "o.[LGLOGS utilized chips (tons)] = " +
-                                          "IIF(o.[LGLOGS utilized chips (tons)] IS NOT NULL," +
-                                              "o.[LGLOGS utilized chips (tons)]*(o.[LGLOGS Chip Fraction]/100),0)," +
-                                      "o.[TOTAL utilized chips (tons)] = " +
-                                          "IIF(o.[BRUSH CUT utilized chips (tons)] IS NOT NULL," +
-                                              "o.[BRUSH CUT utilized chips (tons)]*(o.[TOTAL Chip Fraction]/100),0)";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            }
-            if (m_oAdo.m_intError == 0)
-            {
-
-                //
-                //Update OUTPUT table null values with zero
-                //
-                m_oAdo.m_strSQL = "UPDATE " + p_strBinOutputTableName + " o " +
-                                   "SET o.[CHIPS Average Vol (ft3)] = " +
-                                            "IIf(o.[CHIPS Average Vol (ft3)] Is Null,0,o.[CHIPS Average Vol (ft3)])," +
-                                       "o.[CHIPS Average Weight (tons)] = " +
-                                            "IIf(o.[CHIPS Average Weight (tons)] Is Null,0,o.[CHIPS Average Weight (tons)])," +
-                                       "o.[CHIPS Average Density (lbs/ft3)] = " +
-                                            "IIf(o.[CHIPS Average Density (lbs/ft3)] Is Null,0,o.[CHIPS Average Density (lbs/ft3)])," +
-                                       "o.[CHIPS Hwd Proportion] = " +
-                                            "IIf(o.[CHIPS Hwd Proportion] Is Null,0,o.[CHIPS Hwd Proportion])," +
-                                       "o.[SMLOGS Average Vol (ft3)] = " +
-                                            "IIf(o.[SMLOGS Average Vol (ft3)] Is Null,0,o.[SMLOGS Average Vol (ft3)])," +
-                                       "o.[SMLOGS Average Weight (tons)] = " +
-                                            "IIf(o.[SMLOGS Average Weight (tons)] Is Null,0,o.[SMLOGS Average Weight (tons)])," +
-                                       "o.[SMLOGS Average Density (lbs/ft3)] = " +
-                                            "IIf(o.[SMLOGS Average Density (lbs/ft3)] Is Null,0,o.[SMLOGS Average Density (lbs/ft3)])," +
-                                       "o.[SMLOGS Hwd Proportion] = " +
-                                            "IIf(o.[SMLOGS Hwd Proportion] Is Null,0,o.[SMLOGS Hwd Proportion])," +
-                                       "o.[LGLOGS Average Vol (ft3)] = " +
-                                            "IIf(o.[LGLOGS Average Vol (ft3)] Is Null,0,o.[LGLOGS Average Vol (ft3)])," +
-                                       "o.[LGLOGS Average Weight (tons)] = " +
-                                            "IIf(o.[LGLOGS Average Weight (tons)] Is Null,0,o.[LGLOGS Average Weight (tons)])," +
-                                       "o.[LGLOGS Average Density (lbs/ft3)] = " +
-                                            "IIf(o.[LGLOGS Average Density (lbs/ft3)] Is Null,0,o.[LGLOGS Average Density (lbs/ft3)])," +
-                                       "o.[LGLOGS Hwd Proportion] = " +
-                                            "IIf(o.[LGLOGS Hwd Proportion] Is Null,0,o.[LGLOGS Hwd Proportion])," +
-                                       "o.[TOTAL Average Vol (ft3)] = " +
-                                            "IIf(o.[TOTAL Average Vol (ft3)] Is Null,0,o.[TOTAL Average Vol (ft3)])," +
-                                       "o.[TOTAL Average Weight (tons)] = " +
-                                            "IIf(o.[TOTAL Average Weight (tons)] Is Null,0,o.[TOTAL Average Weight (tons)])," +
-                                       "o.[TOTAL Average Density (lbs/ft3)] = " +
-                                            "IIf(o.[TOTAL Average Density (lbs/ft3)] Is Null,0,o.[TOTAL Average Density (lbs/ft3)])," +
-                                       "o.[TOTAL Hwd Proportion] = " +
-                                            "IIf(o.[TOTAL Hwd Proportion] Is Null,0,o.[TOTAL Hwd Proportion])";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            }
-            m_intError = m_oAdo.m_intError;
-            m_strError = m_oAdo.m_strError;
-
-
-        }
-        private void RunScenario_UpdateOutputTableWithHarvestingSystem(string p_strBinOutputTableName,
-                                                                       bool  p_bSteepSlope)
-        {
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_UpdateOutputTableWithHarvestingSystem\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-            int x;
-            if (ScenarioHarvestMethodVariables.UseDefaultRxHarvestMethod == false)
-            {
-                if (p_bSteepSlope == false)
-                {
-                    m_oAdo.m_strSQL = "UPDATE " + p_strBinOutputTableName + " SET [Harvesting system] = '" + ScenarioHarvestMethodVariables.HarvestMethodLowSlope.Trim() + "'";
-                }
-                else
-                {
-                    m_oAdo.m_strSQL = "UPDATE " + p_strBinOutputTableName + " SET [Harvesting system] = '" + ScenarioHarvestMethodVariables.HarvestMethodSteepSlope.Trim() + "'";
-                }
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            }
-            else
-            {
-                //find the default harvesting method for each treatment
-                if (this.m_oRxPackageItem.SimulationYear1Rx != "000")
-                {
-                    for (x = 0; x <= m_oRxItem_Collection.Count - 1; x++)
-                    {
-                        if (m_oRxItem_Collection.Item(x).RxId.Trim() == this.m_oRxPackageItem.SimulationYear1Rx)
-                        {
-                            if (p_bSteepSlope == false)
-                            {
-                                m_oAdo.m_strSQL = "UPDATE " + p_strBinOutputTableName + " " +
-                                                  "SET [Harvesting system] = '" +
-                                                     m_oRxItem_Collection.Item(x).HarvestMethodLowSlope.Trim() + "' " +
-                                                  "WHERE rxpackage='" + m_oRxPackageItem.RxPackageId.Trim() + "' AND " +
-                                                        "rx='" + m_oRxPackageItem.SimulationYear1Rx.Trim() + "' AND " +
-                                                        "rxcycle='1'";
-                            }
-                            else
-                            {
-                                m_oAdo.m_strSQL = "UPDATE " + p_strBinOutputTableName + " " +
-                                                 "SET [Harvesting system] = '" +
-                                                    m_oRxItem_Collection.Item(x).HarvestMethodSteepSlope.Trim() + "' " +
-                                                 "WHERE rxpackage='" + m_oRxPackageItem.RxPackageId.Trim() + "' AND " +
-                                                       "rx='" + m_oRxPackageItem.SimulationYear1Rx.Trim() + "' AND " +
-                                                       "rxcycle='1'";
-                            }
-                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                            break;
-
-                        }
-                    }
-                }
-                if (m_oAdo.m_intError == 0)
-                {
-
-                    if (this.m_oRxPackageItem.SimulationYear2Rx != "000")
-                    {
-                        for (x = 0; x <= m_oRxItem_Collection.Count - 1; x++)
-                        {
-                            if (m_oRxItem_Collection.Item(x).RxId.Trim() == this.m_oRxPackageItem.SimulationYear2Rx)
-                            {
-                                if (p_bSteepSlope == false)
-                                {
-                                    m_oAdo.m_strSQL = "UPDATE " + p_strBinOutputTableName + " " +
-                                                      "SET [Harvesting system] = '" +
-                                                         m_oRxItem_Collection.Item(x).HarvestMethodLowSlope.Trim() + "' " +
-                                                      "WHERE rxpackage='" + m_oRxPackageItem.RxPackageId.Trim() + "' AND " +
-                                                            "rx='" + m_oRxPackageItem.SimulationYear2Rx.Trim() + "' AND " +
-                                                            "rxcycle='2'";
-                                }
-                                else
-                                {
-                                    m_oAdo.m_strSQL = "UPDATE " + p_strBinOutputTableName + " " +
-                                                      "SET [Harvesting system] = '" +
-                                                         m_oRxItem_Collection.Item(x).HarvestMethodSteepSlope.Trim() + "' " +
-                                                      "WHERE rxpackage='" + m_oRxPackageItem.RxPackageId.Trim() + "' AND " +
-                                                            "rx='" + m_oRxPackageItem.SimulationYear2Rx.Trim() + "' AND " +
-                                                            "rxcycle='2'";
-                                }
-                                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                                break;
-
-                            }
-                        }
-                    }
-                }
-                if (m_oAdo.m_intError == 0)
-                {
-
-                    if (this.m_oRxPackageItem.SimulationYear3Rx != "000")
-                    {
-                        for (x = 0; x <= m_oRxItem_Collection.Count - 1; x++)
-                        {
-                            if (m_oRxItem_Collection.Item(x).RxId.Trim() == this.m_oRxPackageItem.SimulationYear3Rx)
-                            {
-                                if (p_bSteepSlope == false)
-                                {
-                                    m_oAdo.m_strSQL = "UPDATE " + p_strBinOutputTableName + " " +
-                                                      "SET [Harvesting system] = '" +
-                                                         m_oRxItem_Collection.Item(x).HarvestMethodLowSlope.Trim() + "' " +
-                                                      "WHERE rxpackage='" + m_oRxPackageItem.RxPackageId.Trim() + "' AND " +
-                                                            "rx='" + m_oRxPackageItem.SimulationYear3Rx.Trim() + "' AND " +
-                                                            "rxcycle='3'";
-                                }
-                                else
-                                {
-                                    m_oAdo.m_strSQL = "UPDATE " + p_strBinOutputTableName + " " +
-                                                     "SET [Harvesting system] = '" +
-                                                        m_oRxItem_Collection.Item(x).HarvestMethodSteepSlope.Trim() + "' " +
-                                                     "WHERE rxpackage='" + m_oRxPackageItem.RxPackageId.Trim() + "' AND " +
-                                                           "rx='" + m_oRxPackageItem.SimulationYear3Rx.Trim() + "' AND " +
-                                                           "rxcycle='3'";
-                                }
-                                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                                break;
-
-                            }
-                        }
-                    }
-                }
-                if (m_oAdo.m_intError == 0)
-                {
-
-                    if (this.m_oRxPackageItem.SimulationYear4Rx != "000")
-                    {
-                        for (x = 0; x <= m_oRxItem_Collection.Count - 1; x++)
-                        {
-                            if (m_oRxItem_Collection.Item(x).RxId.Trim() == this.m_oRxPackageItem.SimulationYear4Rx)
-                            {
-                                if (p_bSteepSlope == false)
-                                {
-                                    m_oAdo.m_strSQL = "UPDATE " + p_strBinOutputTableName + " " +
-                                                      "SET [Harvesting system] = '" +
-                                                         m_oRxItem_Collection.Item(x).HarvestMethodLowSlope.Trim() + "' " +
-                                                      "WHERE rxpackage='" + m_oRxPackageItem.RxPackageId.Trim() + "' AND " +
-                                                            "rx='" + m_oRxPackageItem.SimulationYear4Rx.Trim() + "' AND " +
-                                                            "rxcycle='4'";
-                                }
-                                else
-                                {
-                                    m_oAdo.m_strSQL = "UPDATE " + p_strBinOutputTableName + " " +
-                                                      "SET [Harvesting system] = '" +
-                                                         m_oRxItem_Collection.Item(x).HarvestMethodSteepSlope.Trim() + "' " +
-                                                      "WHERE rxpackage='" + m_oRxPackageItem.RxPackageId.Trim() + "' AND " +
-                                                            "rx='" + m_oRxPackageItem.SimulationYear4Rx.Trim() + "' AND " +
-                                                            "rxcycle='4'";
-                                }
-                                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                                break;
-
-                            }
-                        }
-                    }
-                }
-            }
-            m_intError = m_oAdo.m_intError;
-            m_strError = m_oAdo.m_strError;
-        }
-        
-        private void RunScenario_InitTreeVolVal(string p_strBinSumTableName,
-                                                string p_strHwdBinSumTableName,
-                                                string p_strVariant, 
-                                                string p_strSlopeExpr)
-        {
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_InitTreeVolVal\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-            
-            //
-            //DELETE WORK TABLE
-            //
-            if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection,"tree_vol_by_spc_grp_dbh_grp"))
-                 m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection,"DROP TABLE tree_vol_by_spc_grp_dbh_grp");
-            //
-            //POPULATE WORK TABLE
-            //
-            m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.SumBinSumTableByPlotRxSpcGrpDbhGrp
-                                ("tree_vol_by_spc_grp_dbh_grp", p_strBinSumTableName, p_strHwdBinSumTableName);
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection,m_oAdo.m_strSQL);
-            m_intError = m_oAdo.m_intError;
-            m_strError = m_oAdo.m_strError;
-        }
-        private void RunScenario_AppendToTreeVolVal(string p_strTreeVolValTableName)
-        {
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_AppendDataToTreeVolVal\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-            //
-            //Populate the TREE_VOL_VAL_BY_SPECIES_DIAM_GROUPS WORK table with TREE_VOL_BY_SPC_GRP_DBH_GRP table.
-            //
-            if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, p_strTreeVolValTableName) == false)
-                frmMain.g_oTables.m_oProcessor.CreateTreeVolValSpeciesDiamGroupsWorkTable(
-                      m_oAdo, m_oAdo.m_OleDbConnection, p_strTreeVolValTableName);
-
-            m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.AppendToTreeVolVal("tree_vol_by_spc_grp_dbh_grp", p_strTreeVolValTableName, m_strDateTimeCreated);
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            m_intError = m_oAdo.m_intError;
-            m_strError = m_oAdo.m_strError;
-        }
-        
-        private void RunScenario_UpdateTreeVolValWithMerchChipMarketValues(string p_strTreeVolValTableName)
-        {
-            //
-            //Update the TREE_VOL_VAL_BY_SPECIES_DIAM_GROUPS table with Chip and Merch market values by species groups and diameter groups.
-            //
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_UpdateTreeVolValWithMerchChipMarketValues\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-            m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.UpdateTreeVolValWithMerchChipMarketValues
-                 ("scenario_tree_species_diam_dollar_values",
-                  "scenario_cost_revenue_escalators",
-                  ScenarioId,
-                  p_strTreeVolValTableName);
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            //
-            //remove any nulls
-            //
-            m_oAdo.m_strSQL = "UPDATE " + p_strTreeVolValTableName + " " + 
-                             "SET chip_val_dpa = IIF(chip_val_dpa IS NULL,0,chip_val_dpa)," +
-                                 "merch_val_dpa = IIF(merch_val_dpa IS NULL,0,merch_val_dpa)";
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            m_intError = m_oAdo.m_intError;
-            m_strError = m_oAdo.m_strError;
-        }
-        private void RunScenario_InitFRCSInputTable(string p_strBinOutputTableName,string p_strFRCSInputTableName)
-        {
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_InitFRCSInputTable\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-            m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.PopulateFRCSInputTable(p_strFRCSInputTableName, p_strBinOutputTableName);
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            if (m_oAdo.m_intError == 0)
-            {
-                m_oAdo.m_strSQL = "UPDATE " + p_strFRCSInputTableName + " SET [One-way Yarding Distance] = 1 WHERE [One-way Yarding Distance] < 1";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            }
-            m_intError = m_oAdo.m_intError;
-            m_strError = m_oAdo.m_strError;
-        }
-        private void RunScenario_InitOPCOSTInputTable(string p_strBinOutputTableName, string p_strOPCOSTInputTableName)
-        {
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_InitOPCOSTInputTable\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-            m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.PopulateOPCOSTInputTable(p_strOPCOSTInputTableName, p_strBinOutputTableName);
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            if (m_oAdo.m_intError == 0)
-            {
-                m_oAdo.m_strSQL = "UPDATE " + p_strOPCOSTInputTableName + " SET [One-way Yarding Distance] = 1 WHERE [One-way Yarding Distance] < 1";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            }
-            m_intError = m_oAdo.m_intError;
-            m_strError = m_oAdo.m_strError;
-        }
-        private void RunScenario_AppendToFRCSInputTable(string p_strDestTableName, string p_strSourceTableName)
-        {
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_AppendToFRCSInputTable\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-            m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.AppendToFRCSInputTable(p_strDestTableName, p_strSourceTableName);
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            if (m_oAdo.m_intError == 0)
-            {
-                m_oAdo.m_strSQL = "UPDATE " + p_strDestTableName + " SET [One-way Yarding Distance] = 1 WHERE [One-way Yarding Distance] < 1";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            }
-            m_intError = m_oAdo.m_intError;
-            m_strError = m_oAdo.m_strError;
-        }
-        private void RunScenario_AppendToOPCOSTInputTable(string p_strDestTableName, string p_strSourceTableName)
-        {
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_AppendToOPCOSTInputTable\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-            m_oAdo.m_strSQL = Queries.ProcessorScenarioRun.AppendToOPCOSTInputTable(p_strDestTableName, p_strSourceTableName);
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            if (m_oAdo.m_intError == 0)
-            {
-                m_oAdo.m_strSQL = "UPDATE " + p_strDestTableName + " SET [One-way Yarding Distance] = 1 WHERE [One-way Yarding Distance] < 1";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            }
-            m_intError = m_oAdo.m_intError;
-            m_strError = m_oAdo.m_strError;
-        }
- 
-        private void RunScenario_UpdateFRCSThresholds()
-        {
-            int x;
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//UpdateFRCSThresholds\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-            frmMain.g_oUtils.WriteText(frmMain.g_oEnv.strTempDir + "\\FIA_BIOSUM_FRCS_UPDATETHRESHOLDS.TXT", "get FRCS batch output from DataForAccess Sheet");
-            //
-            //START FRCS
-            //
-            m_oExcel.DisplayAlerts = false;
-            m_oExcel.StartExcelApplication();
-            //open the workbook found in value m_oExcel.ExcelFileName
-            if (m_oExcel.m_intError == 0)
-            {
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Open Excel Workbook: " + m_oExcel.ExcelFileName + "\r\n");
-                m_oExcel.OpenWorkBook();
-            }
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "Error code: " + m_oExcel.m_intError.ToString().Trim() + "\r\n");
-            if (m_oExcel.m_intError == 0)
-            {
-                m_oExcel.Hide();
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Assign Current Worksheet <Outputs>\r\n");
-                m_oExcel.AssignCurrentSheet("Outputs");
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Error code: " + m_oExcel.m_intError.ToString().Trim() + "\r\n");
-            }
-            if (m_oExcel.m_intError == 0)
-            {
-
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Unprotect <Outputs> worksheet\r\n");
-                m_oExcel.UnprotectSheet();
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Error code: " + m_oExcel.m_intError.ToString().Trim() + "\r\n");
-            }
-            if (m_oExcel.m_intError == 0)
-            {
-                //Delete all this code; Obsolete
-            }
-            if (m_oExcel.m_intError == 0)
-            {
-                m_oExcel.DisplayAlerts = false;
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Save And Exit Workbook\r\n");
-                m_oExcel.SaveAndExit();
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Error code: " + m_oExcel.m_intError.ToString().Trim() + "\r\n");
-            }
-            System.IO.File.Delete(frmMain.g_oEnv.strTempDir + "\\FIA_BIOSUM_FRCS_UPDATETHRESHOLDS.TXT");
-            System.Threading.Thread.Sleep(10000);
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "Release Excel Com Objects\r\n");
-            m_oExcel.ReleaseComObjects();
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "Error code: " + m_oExcel.m_intError.ToString().Trim() + "\r\n");
-            m_intError = m_oExcel.m_intError;
-            m_strError = m_oExcel.m_strError;
-
-        }
+        }        
         private void RunScenario_ProcessOPCOST(string p_strVariant, string p_strRxPackage)
         {
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
@@ -2495,30 +1017,6 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//RunScenario_ProcessOPCOST\r\n");
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
-
-            //add the year
-            //ALTER TABLE YEAR COLUMN
-            // Can't we just define this as an INTEGER to begin with?
-            //m_oAdo.m_strSQL = "ALTER TABLE OPCOST_INPUT ALTER COLUMN [YearCostCalc] INTEGER;";
-            //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-            //    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-            //m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-
-            //m_oAdo.m_strSQL = "DROP TABLE temp_year";
-            //if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, "temp_year"))
-            //    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            //m_oAdo.m_strSQL = "SELECT DISTINCT biosum_cond_id+rxpackage+rx+rxcycle AS STAND,RXYEAR " +
-            //                  "INTO temp_year " +
-            //                  "FROM " + Tables.FVS.DefaultFVSCutTreeTableName;
-            //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-            //    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-            //m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            //m_oAdo.m_strSQL = "UPDATE opcost_input a INNER JOIN temp_year b ON a.STAND=b.STAND SET a.YearCostCalc=CINT(b.RXYEAR)";
-            //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-            //    frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-            //m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-            //m_oAdo.m_strSQL = "DROP TABLE temp_year";
-            //m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
 
             m_oDataMgr.m_strSQL = "DROP TABLE temp_year";
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(m_strTempSqliteDbFile)))
@@ -2547,38 +1045,6 @@ namespace FIA_Biosum_Manager
                                              p_strVariant + "_" + p_strRxPackage + "_opcost_error_log.txt";
             bool bOPCOSTWindow = RunScenario_CreateOPCOSTBatchFile(strOPCOSTErrorFilePath);
             RunScenario_ExecuteOPCOST(bOPCOSTWindow, strOPCOSTErrorFilePath);
-
-            //ado_data_access oAdo = new ado_data_access();
-            //using (var oConn = new System.Data.OleDb.OleDbConnection(m_oAdo.m_OleDbConnection.ConnectionString))
-            //{
-            //    oConn.Open();
-            //    if (oAdo.TableExist(oConn.ConnectionString, Tables.ProcessorScenarioRun.DefaultOpcostErrorsTableName))
-            //    {
-            //        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-            //            frmMain.g_oUtils.WriteText(m_strDebugFile, "Querying " + Tables.ProcessorScenarioRun.DefaultOpcostErrorsTableName + "table \r\n");
-            //        int intCount = Convert.ToInt32(oAdo.getRecordCount(oConn, "select count(*) from " + Tables.ProcessorScenarioRun.DefaultOpcostErrorsTableName,
-            //            Tables.ProcessorScenarioRun.DefaultOpcostErrorsTableName));
-
-            //        if (intCount > 0)
-            //        {
-            //            // This is the first error so we pop a message
-            //            if (_lstErrorVariants.Count == 0)
-            //            {
-            //                string strMessage = "Costs could not be estimated for " + intCount +
-            //                                    " stands in Variant " + p_strVariant + " Sequence " + p_strRxPackage +
-            //                                    ". Do you wish to continue ? ";
-            //                DialogResult res = MessageBox.Show(strMessage, "FIA Biosum", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-            //                if (res != DialogResult.Yes)
-            //                {
-            //                    m_intError = -1;
-            //                    return;
-            //                }
-            //            }
-            //                _lstErrorVariants.Add(p_strVariant + "|" + p_strRxPackage);
-            //        }
-            //     }
-            //     oAdo = null;
-            //}
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(m_strTempSqliteDbFile)))
             {
                 conn.Open();
@@ -2612,11 +1078,6 @@ namespace FIA_Biosum_Manager
         
         private void RunScenario_ExecuteOPCOST(bool bOPCOSTWindow, string strOPCOSTErrorFilePath)
         {
-            //close the open connection
-            //string strConn = m_oAdo.m_OleDbConnection.ConnectionString;
-            //string strDb = m_oQueries.m_strTempDbFile;
-            //m_oAdo.CloseConnection(m_oAdo.m_OleDbConnection);
-            //System.Threading.Thread.Sleep(5000);
 
             System.Diagnostics.Process proc = new System.Diagnostics.Process();
 
@@ -3830,45 +2291,6 @@ namespace FIA_Biosum_Manager
                                             }
                                         }
                                     }
-                                    if (!ReferenceProcessorScenarioForm.m_bUsingSqlite)
-                                    {
-                                        if (sb.Length > 0)
-                                        {
-                                            strSetValues = $@" SET {ScenarioId.Trim()} = " + sb.ToString().TrimEnd('+');
-                                            m_oAdo.m_strSQL = $@"UPDATE {p_strAddCostsWorktable} k 
-                                            INNER JOIN {Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName} S ON K.biosum_cond_id = S.biosum_cond_id AND K.rx=S.rx
-                                            {strSetValues} WHERE K.RX = '{oRx.RxId}' AND TRIM(UCASE(SCENARIO_ID)) = '{ScenarioId.Trim().ToUpper()}'";
-                                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                                            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-
-                                        //APPLY THE ESCALATORS AND SET ADDITIONAL_CPA = 0 IF NULL
-                                            m_oAdo.m_strSQL = $@"UPDATE {p_strAddCostsWorktable} h, scenario_cost_revenue_escalators e SET {ScenarioId.Trim()} = 
-                                            IIF(h.RXCycle = '2', (H.{ScenarioId.Trim()} * e.EscalatorOperatingCosts_Cycle2), 
-                                            IIF(h.RXCycle='3',(H.{ScenarioId.Trim()} * e.EscalatorOperatingCosts_Cycle3), 
-                                            IIF(h.RXCycle='4',(H.{ScenarioId.Trim()} * e.EscalatorOperatingCosts_Cycle4),H.{ScenarioId.Trim()}))),
-                                            ADDITIONAL_CPA = IIF(H.ADDITIONAL_CPA IS NULL, 0, ADDITIONAL_CPA) WHERE RX = '{oRx.RxId}'";
-                                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                                            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                                        }
-
-                                        //ADD ON SCENARIO LEVEL COSTS IF KCP COSTS WERE INCURRED
-                                        m_oAdo.m_strSQL = $@"UPDATE {p_strAddCostsWorktable} SET ADDITIONAL_CPA = 
-                                        IIF(ADDITIONAL_CPA >0, ADDITIONAL_CPA + {ScenarioId.Trim()}, {ScenarioId.Trim()}) WHERE RX = '{oRx.RxId}'";
-                                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-
-                                        //ADD ON SCENARIO LEVEL COSTS IF KCP COSTS WERE INCURRED
-                                        m_oAdo.m_strSQL = $@"UPDATE {p_strAddCostsWorktable} SET ADDITIONAL_CPA = 
-                                        IIF(ADDITIONAL_CPA >0, ADDITIONAL_CPA + {ScenarioId.Trim()}, {ScenarioId.Trim()}) WHERE RX = '{oRx.RxId}'";
-                                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                                    }
-                                    else
-                                    {
                                         using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(p_strTempDb)))
                                         {
                                             conn.Open();
@@ -3908,7 +2330,6 @@ namespace FIA_Biosum_Manager
                                             m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
 
                                         }  // End Using
-                                    }
                                 }
                             }
 
@@ -4971,16 +3392,6 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
                     }
 
-                    // Connection for m_oAdo is opened during loadvalues()
-                    if (m_oAdo.m_OleDbConnection.State == ConnectionState.Closed)
-                    {
-                        m_oAdo.OpenConnection(m_oAdo.getMDBConnString(m_oQueries.m_strTempDbFile, "", ""), 5);
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        {
-                            frmMain.g_oUtils.WriteText(m_strDebugFile, "Reopening Access connection because it was closed" + "\r\n");
-                        }
-                    }
-
                     using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(m_strTempSqliteDbFile)))
                     {
                         conn.Open();
@@ -5150,7 +3561,7 @@ namespace FIA_Biosum_Manager
                         processor.Escalators oEscalators = mainProcessor.LoadEscalators();
                         ProcessorScenarioItem oTempProcessorScenarioItem = new ProcessorScenarioItem();
                         oTempProcessorScenarioItem.ScenarioId = ScenarioId;
-                        oProcessorScenarioTools.LoadHarvestCostComponentsSqlite(m_strScenarioDb, oTempProcessorScenarioItem);
+                        oProcessorScenarioTools.LoadHarvestCostComponents(m_strScenarioDb, oTempProcessorScenarioItem);
                         if (bRxPackageUsesKcpAdditionalCpa)
                         {
                             strKcpCpaWorkTable = "KcpCpaWorkTable";
