@@ -872,7 +872,10 @@ namespace FIA_Biosum_Manager
 		{
             m_intError = 0; m_strError = "";
 			frmMain.g_sbpInfo.Text = "Saving scenario rule definitions...Stand by";
-			if (m_bRulesFirstTime==false)
+            this.uc_scenario_notes1.SaveScenarioNotes();
+            this.uc_scenario1.UpdateDescription();
+
+            if (m_bRulesFirstTime==false)
 			{
                 frmMain.g_oFrmMain.ActivateStandByAnimation(
                       this.WindowState,
@@ -889,11 +892,8 @@ namespace FIA_Biosum_Manager
                 if (m_intError == 0) m_intError = uc_processor_scenario_merch_chip_value1.m_intError;
                 this.uc_processor_scenario_escalators1.savevalues();
                 if (m_intError == 0) m_intError = uc_processor_scenario_escalators1.m_intError;
-                this.uc_processor_scenario_additional_harvest_cost_columns1.savevaluesSqlite();
-                if (m_intError == 0) m_intError = uc_processor_scenario_additional_harvest_cost_columns1.m_intError;
-                this.uc_scenario_notes1.SaveScenarioNotes();
-                this.uc_scenario1.UpdateDescription();
-
+                this.uc_processor_scenario_additional_harvest_cost_columns1.savevalues();
+                if (m_intError == 0) m_intError = uc_processor_scenario_additional_harvest_cost_columns1.m_intError;               
                 frmMain.g_oFrmMain.DeactivateStandByAnimation();
 			}
             if (m_bTreeGroupsCopied == true)

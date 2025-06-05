@@ -2291,45 +2291,6 @@ namespace FIA_Biosum_Manager
                                             }
                                         }
                                     }
-                                    if (!ReferenceProcessorScenarioForm.m_bUsingSqlite)
-                                    {
-                                        if (sb.Length > 0)
-                                        {
-                                            strSetValues = $@" SET {ScenarioId.Trim()} = " + sb.ToString().TrimEnd('+');
-                                            m_oAdo.m_strSQL = $@"UPDATE {p_strAddCostsWorktable} k 
-                                            INNER JOIN {Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName} S ON K.biosum_cond_id = S.biosum_cond_id AND K.rx=S.rx
-                                            {strSetValues} WHERE K.RX = '{oRx.RxId}' AND TRIM(UCASE(SCENARIO_ID)) = '{ScenarioId.Trim().ToUpper()}'";
-                                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                                            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-
-                                        //APPLY THE ESCALATORS AND SET ADDITIONAL_CPA = 0 IF NULL
-                                            m_oAdo.m_strSQL = $@"UPDATE {p_strAddCostsWorktable} h, scenario_cost_revenue_escalators e SET {ScenarioId.Trim()} = 
-                                            IIF(h.RXCycle = '2', (H.{ScenarioId.Trim()} * e.EscalatorOperatingCosts_Cycle2), 
-                                            IIF(h.RXCycle='3',(H.{ScenarioId.Trim()} * e.EscalatorOperatingCosts_Cycle3), 
-                                            IIF(h.RXCycle='4',(H.{ScenarioId.Trim()} * e.EscalatorOperatingCosts_Cycle4),H.{ScenarioId.Trim()}))),
-                                            ADDITIONAL_CPA = IIF(H.ADDITIONAL_CPA IS NULL, 0, ADDITIONAL_CPA) WHERE RX = '{oRx.RxId}'";
-                                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                                frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                                            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                                        }
-
-                                        //ADD ON SCENARIO LEVEL COSTS IF KCP COSTS WERE INCURRED
-                                        m_oAdo.m_strSQL = $@"UPDATE {p_strAddCostsWorktable} SET ADDITIONAL_CPA = 
-                                        IIF(ADDITIONAL_CPA >0, ADDITIONAL_CPA + {ScenarioId.Trim()}, {ScenarioId.Trim()}) WHERE RX = '{oRx.RxId}'";
-                                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-
-                                        //ADD ON SCENARIO LEVEL COSTS IF KCP COSTS WERE INCURRED
-                                        m_oAdo.m_strSQL = $@"UPDATE {p_strAddCostsWorktable} SET ADDITIONAL_CPA = 
-                                        IIF(ADDITIONAL_CPA >0, ADDITIONAL_CPA + {ScenarioId.Trim()}, {ScenarioId.Trim()}) WHERE RX = '{oRx.RxId}'";
-                                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                            frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                                    }
-                                    else
-                                    {
                                         using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(p_strTempDb)))
                                         {
                                             conn.Open();
@@ -2369,7 +2330,6 @@ namespace FIA_Biosum_Manager
                                             m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
 
                                         }  // End Using
-                                    }
                                 }
                             }
 
@@ -3430,16 +3390,6 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "// Dropping OpCost tables " + strVariant + strRxPackage + "\r\n");
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-                    }
-
-                    // Connection for m_oAdo is opened during loadvalues()
-                    if (m_oAdo.m_OleDbConnection.State == ConnectionState.Closed)
-                    {
-                        m_oAdo.OpenConnection(m_oAdo.getMDBConnString(m_oQueries.m_strTempDbFile, "", ""), 5);
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        {
-                            frmMain.g_oUtils.WriteText(m_strDebugFile, "Reopening Access connection because it was closed" + "\r\n");
-                        }
                     }
 
                     using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(m_strTempSqliteDbFile)))

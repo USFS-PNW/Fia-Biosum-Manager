@@ -1712,13 +1712,13 @@ namespace FIA_Biosum_Manager
 					//open scenario
 					//
 				case 0:
-					frmMain.g_oFrmMain.OpenOptimizerScenarioSqlite("Open", this);
+					frmMain.g_oFrmMain.OpenOptimizerScenario("Open", this);
 					break;
 					//
 					//new scenario
 					//
 				case 1:
-					frmMain.g_oFrmMain.OpenOptimizerScenarioSqlite("New", this);
+					frmMain.g_oFrmMain.OpenOptimizerScenario("New", this);
 					break;
 				case 2:
 					this.SaveRuleDefinitions();

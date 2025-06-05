@@ -316,83 +316,6 @@ namespace FIA_Biosum_Manager
 			{
 			}
 		}
-
-		
-		
-		public void populate_scenario_listbox_access(string strDebugFile)
-		{
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(strDebugFile, "=====================   populate_scenario_listbox   =====================\r\n");
-            }
-            string strScenarioId="";
-			string strDescription="";
-			string strScenarioPath="";
-	          
-			string strProjDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
-
-			string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\db";
-			string strFile = "scenario_" + ScenarioType + "_rule_definitions.mdb";
-			StringBuilder strFullPath = new StringBuilder(strScenarioDir);
-			strFullPath.Append("\\");
-			strFullPath.Append(strFile);
-			ado_data_access p_ado = new ado_data_access();
-			string strConn=p_ado.getMDBConnString(strFullPath.ToString(),"","");
-
-		    try
-			{
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(strDebugFile, "populate_scenario_listbox: select * from scenario \r\n");
-                using (System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection(strConn))
-                {
-                    oConn.Open();
-                    p_ado.SqlQueryReader(oConn, "select * from scenario");
-                    if (p_ado.m_intError == 0)
-                    {
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(strDebugFile, "populate_scenario_listbox: Ready to read m_OleDbDataReader \r\n");
-                        while (p_ado.m_OleDbDataReader.Read())
-                        {
-                            strScenarioId = p_ado.m_OleDbDataReader["scenario_id"].ToString();
-                            //strScenarioMDBFile = p_ado.m_OleDbDataReader["file"].ToString();
-                            strDescription = p_ado.m_OleDbDataReader["description"].ToString();
-                            strScenarioPath = p_ado.m_OleDbDataReader["path"].ToString();
-                            this.lstScenario.Items.Add(p_ado.m_OleDbDataReader["scenario_id"].ToString());
-                        }
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(strDebugFile, "populate_scenario_listbox: Finished reading m_OleDbDataReader \r\n");
-                        p_ado.m_OleDbDataReader.Close();
-                        p_ado.m_OleDbDataReader = null;
-
-                        this.lstScenario.SelectedIndex = this.lstScenario.Items.Count - 1;
-                        this.txtScenarioPath.Text = strScenarioPath;
-                        this.txtDescription.Text = strDescription;
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(strDebugFile, "populate_scenario_listbox: Finished setting default item \r\n");
-                    }
-                    else
-                    {
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(strDebugFile, "populate_scenario_listbox ERROR: " + p_ado.m_strError + " ERROR CODE: " + p_ado.m_intError + " \r\n");
-                    }
-                }
-            }
-            catch (Exception caught)
-		    {
-				intError = -1;
-				strError = caught.Message;
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                {
-                    frmMain.g_oUtils.WriteText(strDebugFile, "populate_scenario_listbox caught Exception: " + strError + " \r\n");
-                    frmMain.g_oUtils.WriteText(strDebugFile, "populate_scenario_listbox stackTrace: " + caught.StackTrace + " \r\n");
-                }
-                MessageBox.Show(strError);
-			}
-			p_ado = null;
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(strDebugFile, "=====================   populate_scenario_listbox finished! =====================  \r\n");
-        }
-
         public void populate_scenario_listbox()
         {
             string strScenarioId = "";
@@ -847,23 +770,8 @@ namespace FIA_Biosum_Manager
             {
                 frmMain.g_oUtils.WriteText(strDebugFile, "=====================   OpenScenario   =====================\r\n");
             }
-			string strOptimizerScenarioDefinitions = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + "\\" +
-				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
-			if (!System.IO.File.Exists(strOptimizerScenarioDefinitions) && this.ScenarioType == "optimizer")
-            {
-				frmMain.g_oFrmMain.frmProject.uc_scenario1.migrate_access_data_optimizer();
-            }
-            if (this.ScenarioType == "optimizer" ||
-				ReferenceProcessorScenarioForm != null && 
-                ReferenceProcessorScenarioForm.m_bUsingSqlite == true)
-            {
-                this.populate_scenario_listbox();
-            }
-            else
-            {
-                this.populate_scenario_listbox_access(strDebugFile);
-            }
-            	        
+			this.populate_scenario_listbox();
+           	        
 			this.btnCancel.Enabled = true;
 			this.btnOpen.Enabled = true;
 			this.txtDescription.Enabled=false;
@@ -877,48 +785,6 @@ namespace FIA_Biosum_Manager
             }
 
         }
-        private void RefreshForm_access()
-		{
-			
-			string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\db";
-			string strFile = "scenario_" + ScenarioType + "_rule_definitions.mdb"; 
-			StringBuilder strFullPath = new StringBuilder(strScenarioDir);
-			strFullPath.Append("\\");
-			strFullPath.Append(strFile);
-			ado_data_access p_ado = new ado_data_access();
-			string strConn = p_ado.getMDBConnString(strFullPath.ToString(),"admin","");
-			//string strConn = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + strFullPath.ToString() + ";User Id=admin;Password=;";
-			string strSQL = "select * from scenario where scenario_id = '" + this.lstScenario.SelectedItem.ToString().Trim() + "';";
-			
-            p_ado.SqlQueryReader(strConn,strSQL);
-			if (p_ado.m_intError==0)
-			{
-				try
-				{
-					while (p_ado.m_OleDbDataReader.Read())
-					{
-
-						this.txtDescription.Text =  p_ado.m_OleDbDataReader["description"].ToString();
-						this.txtScenarioPath.Text =  p_ado.m_OleDbDataReader["path"].ToString();
-						this.txtScenarioId.Text = p_ado.m_OleDbDataReader["scenario_id"].ToString();
-						//((frmScenario)this.ParentForm).uc_scenario_notes1.txtNotes.Text = p_ado.m_OleDbDataReader["notes"].ToString();
-						break;
-					}
-					p_ado.m_OleDbDataReader.Close();
-
-				}
-				catch (Exception caught)
-				{
-                  this.strError = caught.Message;
-				  this.intError=-1;
-				  MessageBox.Show(this.strError);
-				}
-				p_ado.m_OleDbDataReader = null;
-				p_ado.m_OleDbCommand = null;
-				p_ado.m_OleDbConnection.Close();
-				p_ado.m_OleDbConnection = null;
-			}
-		}
         private void RefreshForm()
         {
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
