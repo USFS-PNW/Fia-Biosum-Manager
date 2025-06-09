@@ -5835,23 +5835,6 @@ namespace FIA_Biosum_Manager
                     "DateTimeCreated CHAR(22)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id,rxpackage,rx,rxcycle))";
             }
-            public void CreateAdditionalHarvestCostsTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, Tables.Processor.CreateAdditionalHarvestCostsTableSQL(p_strTableName));
-                CreateAdditionalHarvestCostsTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateAdditionalHarvestCostsTableIndexes(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "biosum_cond_id,rx");
-            }
-            static public string CreateAdditionalHarvestCostsTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "biosum_cond_id CHAR(25)," +
-                    "rx CHAR(3))";
-                // "water_barring_roads_cpa DOUBLE," +
-                // "brush_cutting_cpa DOUBLE)";
-            }
             public void CreateSqliteAdditionalHarvestCostsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                 p_oDataMgr.SqlNonQuery(p_oConn, Tables.Processor.CreateSqliteAdditionalHarvestCostsTableSQL(p_strTableName));               
