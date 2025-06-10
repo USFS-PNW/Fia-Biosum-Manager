@@ -3809,42 +3809,8 @@ namespace FIA_Biosum_Manager
                                 }
                             }
 
-                            // Create audit table links to SQLite tables; The queries to update these tables have dependencies on Access tables
-                            oDao.CreateSQLiteTableLink(strTempAccdb, strTempCutListTable, strTempCutListTable,
-                                ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
-                            oDao.CreateSQLiteTableLink(strTempAccdb, "audit_Post_SUMMARY", "audit_Post_SUMMARY",
-                                ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
-                            oDao.CreateSQLiteTableLink(strTempAccdb, "audit_Post_NOTFOUND_ERROR", "audit_Post_NOTFOUND_ERROR",
-                                ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
-                            oDao.CreateSQLiteTableLink(strTempAccdb, "audit_Post_SPCDCHANGE_WARNING", "audit_Post_SPCDCHANGE_WARNING",
-                                ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
-                            oDao.CreateSQLiteTableLink(strTempAccdb, strRxPackageWorktable, strRxPackageWorktable,
-                                ODBCMgr.DSN_KEYS.FvsOutAuditsDsnName, strAuditDbFile);
-
-                            //tree table link
-                            oDao.CreateTableLink(strTempAccdb, m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE],
-                                                      m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.PATH].Trim() + "\\" +
-                                                       m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.MDBFILE].Trim(),
-                                                      m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE], true);
-                            //condition table link
-                            oDao.CreateTableLink(strTempAccdb, m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE],
-                                                      m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.PATH].Trim() + "\\" +
-                                                       m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.MDBFILE].Trim(),
-                                                      m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE], true);
-                            //plot table link
-                            oDao.CreateTableLink(strTempAccdb, m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE],
-                                                      m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.PATH].Trim() + "\\" +
-                                                       m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.MDBFILE].Trim(),
-                                                      m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE], true);
-
-                            oDao.m_DaoWorkspace.Close();
-                            oDao = null;
-                            System.Threading.Thread.Sleep(2000);
-
-                                oAdo.OpenConnection(oAdo.getMDBConnString(strTempAccdb, "", ""));
-
-                                uc_filesize_monitor1.BeginMonitoringFile(strAuditDbFile, 2000000000, "2GB");
-                                uc_filesize_monitor1.Information = "BIOSUM DB file containing FVS OUTPUT PRE/POST AUDIT tables";
+                            uc_filesize_monitor1.BeginMonitoringFile(strAuditDbFile, 2000000000, "2GB");
+                            uc_filesize_monitor1.Information = "BIOSUM DB file containing FVS OUTPUT PRE/POST AUDIT tables";
 
                             m_intProgressStepCurrentCount++;
                             UpdateTherm(m_frmTherm.progressBar1,
