@@ -1132,7 +1132,7 @@ namespace FIA_Biosum_Manager
 
 
                 //Sleep while table link is being built
-                using (var calculateConn = new SQLiteConnection(m_oDataMgr.GetConnectionString(m_strTempDB)))
+                using (SQLiteConnection calculateConn = new SQLiteConnection(m_oDataMgr.GetConnectionString(m_strTempDB)))
                 {
                     calculateConn.Open();
                     if (!m_oDataMgr.DatabaseAttached(calculateConn, strFvsPrePostDb))
