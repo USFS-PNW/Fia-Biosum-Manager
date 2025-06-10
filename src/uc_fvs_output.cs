@@ -2738,22 +2738,12 @@ namespace FIA_Biosum_Manager
                             strOutDirAndFile = strOutDirAndFile.Trim();
                             strOutDirAndFile = strOutDirAndFile + "\\" + Tables.FVS.DefaultFVSOutDbFile;
 
-                            //strAuditDbFile = (string)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)this.txtOutDir, "Text", false);
-                            //strAuditDbFile = strAuditDbFile.Trim();
-                            //strAuditDbFile = strAuditDbFile + "\\" + Tables.FVS.DefaultFVSAuditsDbFile;
-
-
-                            //m_oRxTools.CreateFVSOutputTableLinks(strAuditDbFile, strOutDirAndFile);
-
                             CreatePotFireTables(strAuditDbFile, m_strFvsOutDb, strVariant, strPackage);
 
                             //uc_filesize_monitor1.BeginMonitoringFile(
                             //strOutDirAndFile,
                             //2000000000, "2gb");
                             //uc_filesize_monitor1.Information = "FVS output file";
-
-
-                            //oAdo.OpenConnection(oAdo.getMDBConnString(strAuditDbFile, "", ""));
 
                             m_strLogFile = $@"{this.txtOutDir.Text.Trim()}\FVSOUT_{strVariant}_P{strPackage}_Audit_{m_strLogDate.Replace(" ", "_")}.txt";
                             frmMain.g_oUtils.WriteText(m_strLogFile, "AUDIT LOG \r\n");
@@ -2799,7 +2789,6 @@ namespace FIA_Biosum_Manager
                             if (intItemError==0) 
                             {
                                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim() + " Create SeqNum Matrix tables");
-                                //CreatePrePostSeqNumMatrixTables(oAdo, oAdo.m_OleDbConnection,strPackage,true);
                                 CreatePrePostSeqNumMatrixSqliteTables(strAuditDbFile, strRunTitle, strBaseYrRunTitle, true);
                             }
                             m_intProgressStepCurrentCount++;
@@ -3089,7 +3078,7 @@ namespace FIA_Biosum_Manager
                                                 intItemWarning = 0;
                                                 strItemWarning = "";
 
-                                            this.Validate_FVSGenericTableSqlite(strConn, "FVS_STRCLASS", "FVS_STRCLASS", ref intItemError, ref strItemError, ref intItemWarning,
+                                            this.Validate_FVSGenericTable(strConn, "FVS_STRCLASS", "FVS_STRCLASS", ref intItemError, ref strItemError, ref intItemWarning,
                                                 ref strItemWarning, true, strRunTitle);
 
                                             if (intItemError == 0 && intItemWarning == 0)
@@ -3114,7 +3103,7 @@ namespace FIA_Biosum_Manager
                                                 intItemWarning = 0;
                                                 strItemWarning = "";
 
-                                                this.Validate_FVSGenericTableSqlite(strConn, strSourceTableArray[y].Trim(), strSourceTableArray[y], ref intItemError, ref strItemError, ref intItemWarning, 
+                                                this.Validate_FVSGenericTable(strConn, strSourceTableArray[y].Trim(), strSourceTableArray[y], ref intItemError, ref strItemError, ref intItemWarning, 
                                                     ref strItemWarning, true, strRunTitle);
                                                 if (intItemError == 0 && intItemWarning == 0)
                                                 {
@@ -3492,41 +3481,6 @@ namespace FIA_Biosum_Manager
                 }
             }
             return strPotFireTableName;
-        }
-        // This is the function called by RunAppend_Main
-        private void CreatePrePostSeqNumMatrixTables(string p_strDbFile,string p_strRxPackageId, bool p_bAudit)
-        {
-            ado_data_access oAdo = new ado_data_access();
-            oAdo.OpenConnection(oAdo.getMDBConnString(p_strDbFile, "", ""));
-            CreatePrePostSeqNumMatrixTables(oAdo, oAdo.m_OleDbConnection,p_strRxPackageId, p_bAudit);
-            oAdo.CloseConnection(oAdo.m_OleDbConnection);
-        }
-        private void CreatePrePostSeqNumMatrixTables(ado_data_access p_oAdo,System.Data.OleDb.OleDbConnection p_oConn,string p_strRxPackageId,bool p_bAudit)
-        {
-           int z;
-           string[] strSourceTableArray = p_oAdo.getTableNames(p_oAdo.m_OleDbConnection);
-           CreateFVSPrePostSeqNumWorkTables(p_oAdo, p_oAdo.m_OleDbConnection, "FVS_SUMMARY", "FVS_SUMMARY",p_strRxPackageId, p_bAudit);
-           CreateFVSPrePostSeqNumWorkTables(p_oAdo, p_oAdo.m_OleDbConnection, "FVS_CUTLIST", "FVS_CUTLIST",p_strRxPackageId, p_bAudit);
-           CreateFVSPrePostSeqNumWorkTables(p_oAdo, p_oAdo.m_OleDbConnection, "FVS_POTFIRE", "FVS_POTFIRE",p_strRxPackageId, p_bAudit);
-           
-           for (z = 0; z <= strSourceTableArray.Length - 1; z++)
-           {
-               if (strSourceTableArray[z] == null) break;
-
-               if (RxTools.ValidFVSTable(strSourceTableArray[z]))
-               {
-                   if (strSourceTableArray[z].Trim().ToUpper() != "FVS_SUMMARY" &&
-                       strSourceTableArray[z].Trim().ToUpper() != "FVS_CUTLIST" &&
-                       strSourceTableArray[z].Trim().ToUpper() != "FVS_POTFIRE")
-                   {
-
-                       CreateFVSPrePostSeqNumWorkTables(p_oAdo, p_oAdo.m_OleDbConnection, strSourceTableArray[z], strSourceTableArray[z], p_strRxPackageId, p_bAudit);
-
-                   }
-               }
-           }
-
-           
         }
         private void RunPOSTAudit_Main()
         {
@@ -4058,29 +4012,7 @@ namespace FIA_Biosum_Manager
                                 UpdateTherm(m_frmTherm.progressBar1,
                                             m_intProgressStepCurrentCount,
                                             m_intProgressStepTotalCount);
-                            //check if value errors for DBH
-                            //strSQL = "SELECT COUNT(*) FROM audit_Post_SUMMARY " +
-                            //         "WHERE RXPACKAGE='" + strPackage + "' AND " +
-                            //               "TRIM(COLUMN_NAME)='DBH' AND " +
-                            //               "VALUE_ERROR IS NOT NULL AND " +
-                            //               "LEN(TRIM(VALUE_ERROR)) > 0 AND " +
-                            //               "TRIM(VALUE_ERROR) <> 'NA' AND " + 
-                            //               "VAL(VALUE_ERROR) > 0";
-                            //if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                            //    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
-                            //intRowCount = oAdo.getRecordCount(oAdo.m_OleDbConnection, strSQL, "AUDIT_POST_SUMMARY");
-                            //if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                            //    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-                            //if (intRowCount > 0)
-                            //    {
-                            //        //insert the new audit records
-                            //        strSQL = sqlArray[1];
-                            //        if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                            //            this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
-                            //        oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
-                            //        if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                            //            this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-                            //    }
+
                                 //
                                 //SUMMARIZE REPORT
                                 //
@@ -4380,40 +4312,6 @@ namespace FIA_Biosum_Manager
         private void InitializeAuditLogTableArray()
         {
             InitializeAuditLogTableArray(Tables.FVS.g_strFVSOutTablesArray);
-        }
-		
-        private void CreateFVSPrePostSeqNumWorkTables(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strSourceTableName, string p_strSourceLinkedTableName,string p_strRxPackageId,bool p_bAudit)
-        {
-            if (m_bDebug && frmMain.g_intDebugLevel > 1 && !p_bAudit)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//CreateFVSPrePostSeqNumWorkTables\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "Process Table:" + p_strSourceTableName + "\r\n\r\n");
-            }
-            
-
-            if (p_strSourceTableName.Trim().ToUpper() == "FVS_CASES") return;
-            int x;
-
-            if (p_oAdo.TableExist(p_oConn, p_strSourceTableName))
-            {
-
-                GetPrePostSeqNumConfiguration(p_strSourceTableName, p_strRxPackageId);
-
-                //m_oRxTools.CreateFVSPrePostSeqNumTables(p_oAdo, p_oConn, m_oFVSPrePostSeqNumItem, p_strSourceTableName, p_strSourceTableName, p_bAudit, m_bDebug, m_strDebugFile);
-            }
-            else
-            {
-                if (m_bDebug && frmMain.g_intDebugLevel > 1 && !p_bAudit)
-                {
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, p_strSourceTableName + " table does not exist.\r\n\r\n");
-                }
-            }
-
-            
-
-
         }
         private void GetPrePostSeqNumConfiguration(string p_strFVSOutTable,string p_strRxPackageId)
         {
@@ -4941,7 +4839,7 @@ namespace FIA_Biosum_Manager
                 }
             }
         }
-        private void Validate_FVSGenericTableSqlite(string strConn, string p_strFvsTableName, string p_strFVSOutputTable, ref int p_intItemError, ref string p_strItemError,
+        private void Validate_FVSGenericTable(string strConn, string p_strFvsTableName, string p_strFVSOutputTable, ref int p_intItemError, ref string p_strItemError,
             ref int p_intItemWarning, ref string p_strItemWarning, bool p_bDoWarnings, string p_strRunTitle)
         {
             //ERRORS
