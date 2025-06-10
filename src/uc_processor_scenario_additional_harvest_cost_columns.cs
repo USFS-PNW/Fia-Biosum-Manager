@@ -859,10 +859,8 @@ namespace FIA_Biosum_Manager
             string strUsedColumnList = "";
 
             //get all the columns in the table
-            string strScenarioDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
-            string strConn = dataMgr.GetConnectionString(strScenarioDB);
+            string strConn = dataMgr.GetConnectionString(TempDb);
             string[] strColumnsArray = null;
             using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
@@ -1099,10 +1097,8 @@ namespace FIA_Biosum_Manager
             if (strColumnsToEditList.Trim().Length > 0) strColumnsToEditList = strColumnsToEditList.Substring(0, strColumnsToEditList.Length - 1);
             strColumnsToEditArray = oUtils.ConvertListToArray(strColumnsToEditList,",");
 
-            string strScenarioDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
-            string strConn = dataMgr.GetConnectionString(strScenarioDB);
+            string strConn = dataMgr.GetConnectionString(TempDb);
             using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
                 oConn.Open();
@@ -1397,10 +1393,8 @@ namespace FIA_Biosum_Manager
 
             strColumnsToEditArray = oUtils.ConvertListToArray(strColumnsToEditList, ",");
 
-            string strScenarioDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
-            string strConn = dataMgr.GetConnectionString(strScenarioDB);
+            string strConn = dataMgr.GetConnectionString(TempDb);
             using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
                 oConn.Open();
@@ -1633,8 +1627,8 @@ namespace FIA_Biosum_Manager
                 oConn.Open();
                 dataMgr.m_strSQL = "SELECT DISTINCT a.scenario_id, a.Description, b.Record_Count " +
                     "FROM scenario a, (SELECT COUNT(*) AS Record_Count , scenario_id " +
-                 "FROM scenario_additional_harvest_costs GROUP BY scenario_id)  b " +
-               "WHERE a.scenario_id=b.scenario_id AND a.scenario_id <> '" + ScenarioId + "'";
+                    "FROM scenario_additional_harvest_costs GROUP BY scenario_id)  b " +
+                    "WHERE UPPER(a.scenario_id)=UPPER(b.scenario_id) AND UPPER(a.scenario_id) <> '" + ScenarioId.ToUpper() + "'";
 
                 frmPrevExp.uc_previous_expressions1.lblTitle.Text = "Previous Scenario Harvest Cost Component Values";
                 frmPrevExp.uc_previous_expressions1.loadvalues(dataMgr, oConn, dataMgr.m_strSQL, "DESCRIPTION", "SCENARIO", "scenario");
