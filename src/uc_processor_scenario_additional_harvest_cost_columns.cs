@@ -56,6 +56,9 @@ namespace FIA_Biosum_Manager
             int y;
             int z;
             int zz;
+            string strRx = "";
+            string strColumnName = "";
+            string strDesc = "";
             bool bFound = false;
 
             //
@@ -173,8 +176,56 @@ namespace FIA_Biosum_Manager
                     this.lblNewAddedDescription.Visible = true;
                     this.ReferenceProcessorScenarioForm.m_bSave = true;
                 }
+            }   // Closing connection
 
-
+            //
+            //load rx columns
+            //
+            RxItem_Collection oRxItem_Collection = new RxItem_Collection();
+            m_oRxTools.LoadAllRxItemsFromTableIntoRxCollection(ReferenceProcessorScenarioForm.LoadedQueries, oRxItem_Collection);
+            for (int i = 0; i < oRxItem_Collection.Count; i++)
+            {
+                RxItem oRxItem = oRxItem_Collection.Item(i);
+                RxItemHarvestCostColumnItem_Collection oHarvestCostItemCollection = oRxItem.ReferenceHarvestCostColumnCollection;
+                for (int j = 0; j < oHarvestCostItemCollection.Count; j++)
+                {
+                    RxItemHarvestCostColumnItem oHarvestCostColumn = oHarvestCostItemCollection.Item(j);
+                    strDesc = "";
+                    strRx = oHarvestCostColumn.RxId;
+                    strColumnName = oHarvestCostColumn.HarvestCostColumn;
+                    if (strRx.Length > 0 && strColumnName.Length > 0)
+                    {
+                        strDesc = oHarvestCostColumn.Description;
+                    }
+                    if (this.uc_collection.Count == 0)
+                    {
+                        uc_processor_scenario_additional_harvest_cost_column_item1.ColumnName = strColumnName;
+                        uc_processor_scenario_additional_harvest_cost_column_item1.Name = "uc_processor_scenario_additional_harvest_cost_column_item" + Convert.ToString(uc_collection.Count + 1);
+                        uc_processor_scenario_additional_harvest_cost_column_item1.Type = strRx;
+                        uc_processor_scenario_additional_harvest_cost_column_item1.Description = strDesc;
+                        uc_processor_scenario_additional_harvest_cost_column_item1.EnableColumnNameRemoveButton = false;
+                        uc_processor_scenario_additional_harvest_cost_column_item1.ReferenceAdditionalHarvestCostColumnsUserControl = this;
+                        uc_processor_scenario_additional_harvest_cost_column_item1.ReferenceProcessorScenarioForm = ReferenceProcessorScenarioForm;
+                        uc_collection.Add(this.uc_processor_scenario_additional_harvest_cost_column_item1);
+                    }
+                    else
+                    {
+                        FIA_Biosum_Manager.uc_processor_scenario_additional_harvest_cost_column_item oItem = new uc_processor_scenario_additional_harvest_cost_column_item();
+                        oItem.ColumnName = strColumnName;
+                        oItem.Type = strRx;
+                        oItem.Description = strDesc;
+                        oItem.EnableColumnNameRemoveButton = false;
+                         oItem.ReferenceAdditionalHarvestCostColumnsUserControl = this;
+                        oItem.ReferenceProcessorScenarioForm = ReferenceProcessorScenarioForm;
+                        oItem.Name = "uc_processor_scenario_additional_harvest_cost_column_item" + Convert.ToString(uc_collection.Count + 1);
+                        panel1.Controls.Add(oItem);
+                        oItem.Left = this.uc_processor_scenario_additional_harvest_cost_column_item1.Left;
+                        oItem.Top = uc_collection.Item(uc_collection.Count - 1).Top + oItem.Height;
+                        //oItem.ShowSeparator = true;
+                        oItem.Visible = true;
+                        uc_collection.Add(oItem);
+                    }
+                }
             }
 
             //
@@ -359,12 +410,9 @@ namespace FIA_Biosum_Manager
                 }
 
                 //
-                //append all the current scenario rows into the work table
+                //DON'T append all the current scenario rows into the work table
+                //This is a copy. We want to start fresh with none of the old harvest costs
                 //
-                strDestColumnsList = dataMgr.getFieldNames(oConn, "SELECT * FROM " + m_strAddHarvCostsWorkTable);
-                dataMgr.m_strSQL = "INSERT INTO " + m_strAddHarvCostsWorkTable + " (" + strDestColumnsList + ") " +
-                                    "SELECT " + strDestColumnsList + " FROM scenario_additional_harvest_costs WHERE UPPER(TRIM(scenario_id))='" + this.ScenarioId.Trim().ToUpper() + "'";
-                dataMgr.SqlNonQuery(oConn, dataMgr.m_strSQL);
 
                 //
                 //GET ALL BIOSUM_COND_ID + RX possible combinations from tree and rx tables
@@ -495,7 +543,7 @@ namespace FIA_Biosum_Manager
                 {
                     strColumn = uc_collection.Item(q).ColumnName.Trim();
                     //make sure the source scenario has this column
-                    if (dataMgr.ColumnExist(dataMgr.m_Connection, "scenario_additional_harvest_costs", strColumn))
+                    if (dataMgr.ColumnExist(oConn, "scenario_additional_harvest_costs", strColumn))
                     {
                         //make sure columnname not already referenced
                         if (dataMgr.m_strSQL.ToUpper().IndexOf("B." + strColumn.ToUpper() + " IS NOT NULL", 0) < 0)
@@ -570,7 +618,7 @@ namespace FIA_Biosum_Manager
                 string[] strColumnsArray = p_DataMgr.getFieldNamesArray(oConn, "SELECT * FROM additional_harvest_costs_work_table ");
                 for (y = 0; y <= uc_collection.Count - 1; y++)
                 {
-                    if (!p_DataMgr.ColumnExist(p_DataMgr.m_Connection, "additional_harvest_costs_work_table", uc_collection.Item(y).ColumnName.Trim()))
+                    if (!p_DataMgr.ColumnExist(oConn, "additional_harvest_costs_work_table", uc_collection.Item(y).ColumnName.Trim()))
                     {
                         if (strColumnsAddedList.IndexOf("," + uc_collection.Item(y).ColumnName.Trim().ToUpper() + ",", 0) < 0)
                         {
@@ -586,7 +634,7 @@ namespace FIA_Biosum_Manager
                             {
                                 p_DataMgr.m_strSQL = "ALTER TABLE additional_harvest_costs_work_table  " +
                                                   "ADD COLUMN " + uc_collection.Item(y).ColumnName.Trim() + " DOUBLE ";
-                                p_DataMgr.SqlNonQuery(p_DataMgr.m_Connection, p_DataMgr.m_strSQL);
+                                p_DataMgr.SqlNonQuery(oConn, p_DataMgr.m_strSQL);
                                 strColumnsAddedList = strColumnsAddedList + "," + strColumnName + ",";
                             }
                         }
@@ -811,10 +859,8 @@ namespace FIA_Biosum_Manager
             string strUsedColumnList = "";
 
             //get all the columns in the table
-            string strScenarioDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
-            string strConn = dataMgr.GetConnectionString(strScenarioDB);
+            string strConn = dataMgr.GetConnectionString(TempDb);
             string[] strColumnsArray = null;
             using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
@@ -1051,10 +1097,8 @@ namespace FIA_Biosum_Manager
             if (strColumnsToEditList.Trim().Length > 0) strColumnsToEditList = strColumnsToEditList.Substring(0, strColumnsToEditList.Length - 1);
             strColumnsToEditArray = oUtils.ConvertListToArray(strColumnsToEditList,",");
 
-            string strScenarioDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
-            string strConn = dataMgr.GetConnectionString(strScenarioDB);
+            string strConn = dataMgr.GetConnectionString(TempDb);
             using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
                 oConn.Open();
@@ -1349,10 +1393,8 @@ namespace FIA_Biosum_Manager
 
             strColumnsToEditArray = oUtils.ConvertListToArray(strColumnsToEditList, ",");
 
-            string strScenarioDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
-            string strConn = dataMgr.GetConnectionString(strScenarioDB);
+            string strConn = dataMgr.GetConnectionString(TempDb);
             using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
                 oConn.Open();
@@ -1585,8 +1627,8 @@ namespace FIA_Biosum_Manager
                 oConn.Open();
                 dataMgr.m_strSQL = "SELECT DISTINCT a.scenario_id, a.Description, b.Record_Count " +
                     "FROM scenario a, (SELECT COUNT(*) AS Record_Count , scenario_id " +
-                 "FROM scenario_additional_harvest_costs GROUP BY scenario_id)  b " +
-               "WHERE a.scenario_id=b.scenario_id AND a.scenario_id <> '" + ScenarioId + "'";
+                    "FROM scenario_additional_harvest_costs GROUP BY scenario_id)  b " +
+                    "WHERE UPPER(a.scenario_id)=UPPER(b.scenario_id) AND UPPER(a.scenario_id) <> '" + ScenarioId.ToUpper() + "'";
 
                 frmPrevExp.uc_previous_expressions1.lblTitle.Text = "Previous Scenario Harvest Cost Component Values";
                 frmPrevExp.uc_previous_expressions1.loadvalues(dataMgr, oConn, dataMgr.m_strSQL, "DESCRIPTION", "SCENARIO", "scenario");
