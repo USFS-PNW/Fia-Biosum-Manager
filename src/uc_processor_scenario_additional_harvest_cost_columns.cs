@@ -1496,16 +1496,18 @@ namespace FIA_Biosum_Manager
                 "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
             string strConn = dataMgr.GetConnectionString(strScenarioDB);
-            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
+            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(dataMgr.GetConnectionString(TempDb)))
             {
                 oConn.Open();
+                //attach processor scenario definitions
+                dataMgr.SqlNonQuery(oConn, $@"ATTACH '{strScenarioDB}' AS DEFINITIONS");
                 if (strRx.Trim().Length == 0)
                 {
                     dataMgr.m_strSQL = "SELECT DISTINCT a.scenario_id, a.Description, b.Record_Count " +
                                       "FROM scenario a," +
                                         "(SELECT COUNT(*) AS Record_Count , scenario_id " +
                                          "FROM scenario_additional_harvest_costs GROUP BY scenario_id)  b " +
-                                       "WHERE a.scenario_id=b.scenario_id AND a.scenario_id <> '" + ScenarioId + "'";
+                                       "WHERE UPPER(a.scenario_id)=UPPER(b.scenario_id) AND a.scenario_id <> '" + ScenarioId.ToUpper() + "'";
                 }
                 else
                 {
@@ -1513,7 +1515,7 @@ namespace FIA_Biosum_Manager
                                         "FROM scenario a," +
                                           "(SELECT COUNT(*) AS Record_Count , scenario_id " +
                                            "FROM scenario_additional_harvest_costs WHERE rx='" + strRx + "' GROUP BY scenario_id )  b " +
-                                         "WHERE a.scenario_id=b.scenario_id AND a.scenario_id <> '" + ScenarioId + "'";
+                                         "WHERE UPPER(a.scenario_id)=UPPER(b.scenario_id) AND a.scenario_id <> '" + ScenarioId.ToUpper() + "'";
                 }
                 frmPrevExp.uc_previous_expressions1.lblTitle.Text = "Previous Scenario Harvest Cost Component Values";
                 frmPrevExp.uc_previous_expressions1.loadvalues(dataMgr, oConn, dataMgr.m_strSQL, "DESCRIPTION", "SCENARIO", "scenario");
@@ -1557,7 +1559,7 @@ namespace FIA_Biosum_Manager
                             dataMgr.m_strSQL = $@"UPDATE additional_harvest_costs_work_table 
                                 SET ({strColumn}) = (select CASE WHEN b.{strColumn} IS NOT NULL THEN b.{strColumn} ELSE additional_harvest_costs_work_table.{strColumn} END 
                                 FROM scenario_additional_harvest_costs b WHERE additional_harvest_costs_work_table.biosum_cond_id=b.biosum_cond_id 
-                                AND additional_harvest_costs_work_table.rx=b.rx and b.scenario_id = '{frmPrevExp.uc_previous_expressions1.listView1.SelectedItems[0].SubItems[1].Text.Trim()}')
+                                AND additional_harvest_costs_work_table.rx=b.rx and UPPER(b.scenario_id) = '{frmPrevExp.uc_previous_expressions1.listView1.SelectedItems[0].SubItems[1].Text.Trim().ToUpper()}')
                                 WHERE rx = '{strRx}'";
                     }
                     else
@@ -1570,7 +1572,7 @@ namespace FIA_Biosum_Manager
                             dataMgr.m_strSQL = $@"UPDATE additional_harvest_costs_work_table 
                                 SET ({strColumn}) = (select CASE WHEN b.{strColumn} IS NOT NULL THEN b.{strColumn} ELSE additional_harvest_costs_work_table.{strColumn} END 
                                 FROM scenario_additional_harvest_costs b WHERE additional_harvest_costs_work_table.biosum_cond_id=b.biosum_cond_id 
-                                AND additional_harvest_costs_work_table.rx=b.rx and b.scenario_id = '{frmPrevExp.uc_previous_expressions1.listView1.SelectedItems[0].SubItems[1].Text.Trim()}')";
+                                AND additional_harvest_costs_work_table.rx=b.rx and UPPER(b.scenario_id) = '{frmPrevExp.uc_previous_expressions1.listView1.SelectedItems[0].SubItems[1].Text.Trim().ToUpper()}')";
                     }
 
                        frmMain.g_oFrmMain.ActivateStandByAnimation(
@@ -1670,17 +1672,20 @@ namespace FIA_Biosum_Manager
                             strClearSQL = strClearSQL.Substring(0, strClearSQL.Length - 2);
                             dataMgr.SqlNonQuery(oConn, strClearSQL);
                         }
+                        dataMgr.m_strSQL = "";  // Reset property
                         for (int x = 0; x <= uc_collection.Count - 1; x++)
                         {
                             strColumn = uc_collection.Item(x).ColumnName.Trim();
-
                             //make sure the source scenario has this column
-                            if (dataMgr.ColumnExist(oConn, "scenario_additional_harvest_costs", strColumn))
+                            if (dataMgr.AttachedColumnExist(oConn, "scenario_additional_harvest_costs", strColumn))
                             {
                                 //make sure columnname not already referenced
                                 if (dataMgr.m_strSQL.ToUpper().IndexOf("B." + strColumn.ToUpper() + " IS NOT NULL", 0) < 0)
                                 {
-                                    dataMgr.m_strSQL = dataMgr.m_strSQL + "a." + strColumn + "= IIF(b." + strColumn + " IS NOT NULL,b." + strColumn + ",a." + strColumn + "),";
+                                    dataMgr.m_strSQL = dataMgr.m_strSQL + strColumn + " = (select CASE WHEN b." + strColumn + " IS NOT NULL THEN b." + strColumn + " ELSE additional_harvest_costs_work_table." + strColumn + " END " +
+                                        "FROM scenario_additional_harvest_costs b " +
+                                        "WHERE additional_harvest_costs_work_table.biosum_cond_id = b.biosum_cond_id " +
+                                        "AND additional_harvest_costs_work_table.rx = b.rx and UPPER(b.scenario_id) = '" + frmPrevExp.uc_previous_expressions1.listView1.SelectedItems[0].SubItems[1].Text.Trim().ToUpper() + "'),";
                                 }
                             }
                         }
@@ -1694,12 +1699,7 @@ namespace FIA_Biosum_Manager
                                    this.ParentForm.Top);
                             //remove the comma at the end of the strings
                             dataMgr.m_strSQL = dataMgr.m_strSQL.Substring(0, dataMgr.m_strSQL.Length - 1);
-                            dataMgr.m_strSQL = "UPDATE additional_harvest_costs_work_table a " +
-                                              "INNER JOIN  scenario_additional_harvest_costs b " +
-                                              "ON a.biosum_cond_id=b.biosum_cond_id AND a.rx=b.rx " +
-                                              "SET " + dataMgr.m_strSQL +
-                                              " WHERE b.scenario_id = '" + frmPrevExp.uc_previous_expressions1.listView1.SelectedItems[0].SubItems[1].Text.Trim() + "'";
-
+                            dataMgr.m_strSQL = "UPDATE additional_harvest_costs_work_table SET " + dataMgr.m_strSQL;
 
                             frmMain.g_sbpInfo.Text = "Updating Harvest Cost Component $/A/C Values...Stand By";
 
