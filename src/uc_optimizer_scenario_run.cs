@@ -1051,7 +1051,7 @@ namespace FIA_Biosum_Manager
 			{
                 UpdateThermPercent();
 				ReferenceOptimizerScenarioForm.uc_scenario_fvs_prepost_optimization1.DisplayAuditMessage=false;
-				ReferenceOptimizerScenarioForm.uc_scenario_fvs_prepost_optimization1.AuditSqlite();
+				ReferenceOptimizerScenarioForm.uc_scenario_fvs_prepost_optimization1.Audit();
 				this.m_intError = ReferenceOptimizerScenarioForm.uc_scenario_fvs_prepost_optimization1.m_intError;
 				if (this.m_intError!=0)
 					MessageBox.Show(ReferenceOptimizerScenarioForm.uc_scenario_fvs_prepost_optimization1.m_strError,"FIA Biosum");
@@ -2438,53 +2438,7 @@ namespace FIA_Biosum_Manager
 		/// <summary>
 		/// create links to the tables located in the optimizer_results.accdb file
 		/// </summary>
-		private void CreateOptimizerResultTables_access()
-		{
-
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//CreateOptimizerResultsTables\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-			string[] strTableNames;
-			strTableNames = new string[1];
-			ado_data_access oAdo = new ado_data_access();			
-			oAdo.OpenConnection(oAdo.getMDBConnString(m_strSystemResultsDbPathAndFile,"",""));
-
-            strTableNames = oAdo.getTableNames(oAdo.m_OleDbConnection);
-            for (int x = 0; x <= strTableNames.Length - 1; x++)
-            {
-                if (strTableNames[x] != null &&
-                    strTableNames[x].Trim().Length > 0)
-                {
-                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, "DROP TABLE " + strTableNames[x]);
-                }
-            }
-
-            // Query the optimization variable for the selected revenue attribute so we can pass it to the table
-            string strColumnFilterName = "";
-            if (this.m_oOptimizationVariable.bUseFilter == true)
-                strColumnFilterName = this.m_oOptimizationVariable.strRevenueAttribute;
-
-            frmMain.g_oTables.m_oOptimizerScenarioResults.CreateValidComboTable(oAdo,oAdo.m_OleDbConnection,Tables.OptimizerScenarioResults.DefaultScenarioResultsValidCombosTableName);
-			frmMain.g_oTables.m_oOptimizerScenarioResults.CreateValidComboFVSPrePostTable(oAdo,oAdo.m_OleDbConnection,Tables.OptimizerScenarioResults.DefaultScenarioResultsValidCombosFVSPrePostTableName);
-			frmMain.g_oTables.m_oOptimizerScenarioResults.CreateTieBreakerTable(oAdo,oAdo.m_OleDbConnection,Tables.OptimizerScenarioResults.DefaultScenarioResultsTieBreakerTableName);
-            frmMain.g_oTables.m_oOptimizerScenarioResults.CreateOptimizationTable(oAdo, oAdo.m_OleDbConnection, this.ReferenceOptimizerScenarioForm.OutputTablePrefix +
-                Tables.OptimizerScenarioResults.DefaultScenarioResultsOptimizationTableSuffix, strColumnFilterName);
-            frmMain.g_oTables.m_oOptimizerScenarioResults.CreateEffectiveTable(oAdo, oAdo.m_OleDbConnection, this.ReferenceOptimizerScenarioForm.OutputTablePrefix, strColumnFilterName);
-            string strScenarioResultsBestRxSummaryTableName = this.ReferenceOptimizerScenarioForm.OutputTablePrefix + Tables.OptimizerScenarioResults.DefaultScenarioResultsBestRxSummaryTableSuffix;
-            frmMain.g_oTables.m_oOptimizerScenarioResults.CreateBestRxSummaryCycle1Table(oAdo, oAdo.m_OleDbConnection, strScenarioResultsBestRxSummaryTableName);
-            frmMain.g_oTables.m_oOptimizerScenarioResults.CreateBestRxSummaryCycle1Table(oAdo, oAdo.m_OleDbConnection, strScenarioResultsBestRxSummaryTableName + "_before_tiebreaks");
-            frmMain.g_oTables.m_oOptimizerScenarioResults.CreateProductYieldsTable(oAdo, oAdo.m_OleDbConnection, Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName);
-            frmMain.g_oTables.m_oOptimizerScenarioResults.CreateEconByRxUtilSumTable(oAdo, oAdo.m_OleDbConnection, Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName);
-            frmMain.g_oTables.m_oOptimizerScenarioResults.CreatePostEconomicWeightedTable(oAdo, oAdo.m_OleDbConnection, Tables.OptimizerScenarioResults.DefaultScenarioResultsPostEconomicWeightedTableName);
-            frmMain.g_oTables.m_oOptimizerScenarioResults.CreateHaulCostTable(oAdo, oAdo.m_OleDbConnection, Tables.OptimizerScenarioResults.DefaultScenarioResultsHaulCostsTableName);
-            frmMain.g_oTables.m_oOptimizerScenarioResults.CreateCondPsiteTable(oAdo, oAdo.m_OleDbConnection, Tables.OptimizerScenarioResults.DefaultScenarioResultsCondPsiteTableName);
-            frmMain.g_oTables.m_oOptimizerScenarioResults.CreateVersionTable(oAdo, oAdo.m_OleDbConnection, Tables.OptimizerScenarioResults.DefaultScenarioResultsVersionTableName);
-            
-            oAdo.CloseConnection(oAdo.m_OleDbConnection);
-		}
+		
         private void CreateOptimizerResultTables()
         {
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)

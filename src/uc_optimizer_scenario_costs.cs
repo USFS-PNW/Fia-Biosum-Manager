@@ -16,14 +16,9 @@ namespace FIA_Biosum_Manager
         private System.Windows.Forms.ImageList imgSize;
 		private System.Windows.Forms.GroupBox groupBox1;
 		private System.ComponentModel.IContainer components;
-		//private int m_intFullHt=250;
         private System.Windows.Forms.GroupBox grpboxCost;
         private System.Windows.Forms.Label label2;
-		//ldp public FIA_Biosum_Manager.txtDollarsAndCents txtRevPerGreenTon_subclass;
-		//private FIA_Biosum_Manager.txtDollarsAndCents txtBrushCut_subclass;
-		//private FIA_Biosum_Manager.txtDollarsAndCents txtWaterBarring_subclass;
 		private System.Windows.Forms.TextBox txtHaulCost;
-		//ldp public FIA_Biosum_Manager.txtDollarsAndCents txtHaulCost_subclass;
 
         public System.Data.OleDb.OleDbConnection m_OleDbConnectionScenario;
 		public FIA_Biosum_Manager.frmOptimizerScenario m_frmScenario;
@@ -32,14 +27,10 @@ namespace FIA_Biosum_Manager
 		public int m_intColumnsToEditCount=0;
 		private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.TextBox txtRailHaulCost;
-		//ldp public FIA_Biosum_Manager.txtDollarsAndCents txtRailHaulCost_subclass;
 		private System.Windows.Forms.Label label4;
-		//ldp public FIA_Biosum_Manager.txtDollarsAndCents txtRailMerchTransfer_subclass;
 		private System.Windows.Forms.Label label6;
-		//ldp public FIA_Biosum_Manager.txtDollarsAndCents txtRailChipTransfer_subclass;
 		private System.Windows.Forms.TextBox txtRailMerchTransfer;
         private System.Windows.Forms.TextBox txtRailChipTransfer;
-        //ldp public FIA_Biosum_Manager.txtDollarsAndCents txtChipsProcessorMktValPgt_subclass;
 		private env m_oEnv;
 		public System.Windows.Forms.Label lblTitle;
         private System.Windows.Forms.Label lblRequired;
@@ -53,15 +44,6 @@ namespace FIA_Biosum_Manager
         private string m_strTextRailChipTransferSave = "";
 
 
-       
-
-		//private bool bEdit = true;
-		
-		//private int intDollarMaxLen=4;
-		//private int intCentMaxLen=2;
-		//private int intDollarCurLen=0;
-		//private int intCentCurLen=0;
-		//private string strLastKey = "";
 
 		public uc_optimizer_scenario_costs()
 		{
@@ -347,28 +329,13 @@ namespace FIA_Biosum_Manager
 		{
 			int x = 0;
 
-			//string str="";
-			string strSQL = "";
-			string strConn = "";
-			string strRevPerGreenTon = "";
-
 			string strHaulCost;
 			string strRailHaulCost;
 			string strRailBioTransferCost;
 			string strRailMerchTransferCost;
 
-
-			//ldp strRevPerGreenTon = this.txtRevPerGreenTon_subclass.Text.Replace("$","");
-			//ldp strRevPerGreenTon = strRevPerGreenTon.Replace(",","");
-			//ldp if (strRevPerGreenTon.Trim().Length == 1) strRevPerGreenTon = "0.00";
-
-
-
-
 			//strHaulCost = this.txtHaulCost_subclass.Text.Replace("$","");
 			strHaulCost = RoadHaulCostDollarsPerGreenTonPerHour.Replace("$", "");
-
-
 			strHaulCost = strHaulCost.Replace(",", "");
 			if (strHaulCost.Trim().Length == 1) strHaulCost = "0.00";
 
@@ -405,10 +372,10 @@ namespace FIA_Biosum_Manager
 				}
 
 				//delete all records from the scenario wind speed class table
-				strSQL = "DELETE FROM scenario_costs WHERE " +
-					" TRIM(UPPER(scenario_id)) = '" + strScenarioId.Trim().ToUpper() + "';";
+				oDataMgr.m_strSQL = "DELETE FROM scenario_costs WHERE " +
+					"TRIM(UPPER(scenario_id)) = '" + strScenarioId.Trim().ToUpper() + "'";
 
-				oDataMgr.SqlNonQuery(conn, strSQL);
+				oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 				if (oDataMgr.m_intError < 0)
 				{
 					conn.Close();
@@ -417,12 +384,10 @@ namespace FIA_Biosum_Manager
 					return x;
 				}
 
-				oDataMgr.m_strSQL = "INSERT INTO scenario_costs (scenario_id,road_haul_cost_pgt_per_hour,rail_haul_cost_pgt_per_mile,rail_chip_transfer_pgt,rail_merch_transfer_pgt)" +
-						" VALUES ('" + strScenarioId + "'," +
-						  strHaulCost + "," + strRailHaulCost + "," + strRailBioTransferCost + "," + strRailMerchTransferCost + ");";
+				oDataMgr.m_strSQL = "INSERT INTO scenario_costs (scenario_id,road_haul_cost_pgt_per_hour,rail_haul_cost_pgt_per_mile,rail_chip_transfer_pgt,rail_merch_transfer_pgt) " +
+						"VALUES ('" + strScenarioId + "'," +
+						  strHaulCost + "," + strRailHaulCost + "," + strRailBioTransferCost + "," + strRailMerchTransferCost + ")";
 				oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
-
-				conn.Close();
 			}
 			return 0;
 		}
@@ -430,12 +395,6 @@ namespace FIA_Biosum_Manager
 		public int val_scenario_costs()
 		{
 			int x=0;
-			//ldp if (Convert.ToInt32(this.txtRevPerGreenTon.Text) <= 0)
-			//ldp {
-			//ldp 	x = -1;
-			//ldp 	MessageBox.Show("Run Scenario Failed: Cost per green ton must be a value between 1 and 999","Run Scenario",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);		
-			//ldp	return x;
-			//ldp }
 			return x;
 
 		}
@@ -510,153 +469,6 @@ namespace FIA_Biosum_Manager
     		return 0;
 		}
 
-		private void btnHarvestCosts_Click(object sender, System.EventArgs e)
-		{
-			string strScenarioId="";
-			//string strScenarioMDB="";
-			string strConn="";
-			string strSQL="";
-			string strRandomPathAndFile="";
-			string strHvstCostsTableName="";
-			string strCondTableName="";
-			
-			string[] strColumnsToEditArray;
-			string strColumnsToEditList="";
-			string[] strAllColumnsArray;
-			string  strAllColumnsList="";
-			string strScenarioConn="";
-			int x,y;
-
-			strScenarioId =  this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
-
-			/*****************************************************************
-			 **lets see if this harvest costs edit form is already open
-			 *****************************************************************/
-			utils p_oUtils = new utils();
-			p_oUtils.m_intLevel=1;
-            if (p_oUtils.FindWindowLike(frmMain.g_oFrmMain.Handle, "Treatment Optimizer: Edit Harvest Costs " + " (" + strScenarioId + ")", "*", true, false) > 0)
-			{
-				MessageBox.Show("!!Harvest Costs Edit Form Is  Already Open!!","Harvest Costs Edit Form",MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-				if (this.m_frmHarvestCosts.WindowState == System.Windows.Forms.FormWindowState.Minimized)
-					this.m_frmHarvestCosts.WindowState = System.Windows.Forms.FormWindowState.Normal;
-				this.m_frmHarvestCosts.Focus();
-				return;
-			}
-			
-
-		
-			
-
-			ado_data_access p_ado = new ado_data_access();
-
-			strRandomPathAndFile= 
-				this.ReferenceOptimizerScenarioForm.uc_datasource1.CreateMDBAndScenarioTableDataSourceLinks(this.m_oEnv.strTempDir);
-			if (strRandomPathAndFile.Trim().Length > 0)
-			{
-				strConn = p_ado.getMDBConnString(strRandomPathAndFile,"admin","");
-			
-					strHvstCostsTableName = 
-						this.ReferenceOptimizerScenarioForm.uc_datasource1.getDataSourceTableName("Harvest Costs");
-					if (strHvstCostsTableName.Trim().Length > 0)
-					{
-						strCondTableName = 
-							this.ReferenceOptimizerScenarioForm.uc_datasource1.getDataSourceTableName("Condition");
-						if (strCondTableName.Trim().Length > 0)
-						{
-							strColumnsToEditArray = new string[1];
-							strColumnsToEditList="";
-
-							string strScenarioMDB = 
-								frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text + "\\" +
-								Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
-
-							strScenarioConn = p_ado.getMDBConnString(strScenarioMDB,"admin","");
-							
-							strSQL = "SELECT * FROM scenario_harvest_cost_columns WHERE " + 
-								" TRIM(scenario_id) = '" + strScenarioId.Trim() + "';";
-							p_ado.SqlQueryReader(strScenarioConn, strSQL);
-							if (p_ado.m_OleDbDataReader.HasRows)
-							{
-								while (p_ado.m_OleDbDataReader.Read())
-								{
-									if (p_ado.m_OleDbDataReader["ColumnName"] != System.DBNull.Value)
-									{
-										strColumnsToEditList = strColumnsToEditList + p_ado.m_OleDbDataReader["ColumnName"].ToString().Trim() + ",";
-									}
-								}
-							}
-							p_ado.m_OleDbDataReader.Close();
-							p_ado.m_OleDbDataReader=null;
-
-							if (strColumnsToEditList.Trim().Length > 0)
-							{
-								strColumnsToEditList = strColumnsToEditList.Substring(0,strColumnsToEditList.Trim().Length-1);
-								strColumnsToEditArray = p_oUtils.ConvertListToArray(strColumnsToEditList,",");
-							}
-							else
-							{
-							    //strColumnsToEditArray = new string[2];
-								//strColumnsToEditArray[0] = "water_barring_roads_cpa";
-								//strColumnsToEditArray[1] = "brush_cutting_cpa";
-							}
-						    
-							strAllColumnsList = p_ado.getFieldNames(strConn,"select * from " + strHvstCostsTableName);
-							strAllColumnsArray = p_oUtils.ConvertListToArray(strAllColumnsList,",");
-
-
-							strSQL = "";
-							for (x=0;x<=strAllColumnsArray.Length-1;x++)
-							{
-								if (strAllColumnsArray[x].Trim().ToUpper()=="BIOSUM_COND_ID")
-								{
-									strSQL = "biosum_cond_id,";
-									strSQL = strSQL + "mid(biosum_cond_id,6,2) as statecd,mid(biosum_cond_id,12,3) as countycd,mid(biosum_cond_id,15,7) as plot,mid(biosum_cond_id,25,1) as condid,";
-								}
-							
-								else
-								{
-									for (y=0;y<=strColumnsToEditArray.Length-1;y++)
-									{
-										if (strAllColumnsArray[x].Trim().ToUpper()==strColumnsToEditArray[y].Trim().ToUpper())
-										{
-											strSQL = strSQL + strColumnsToEditArray[y].Trim() + ",";
-										}
-									}
-								}
-							}
-							strSQL = strSQL.Substring(0,strSQL.Trim().Length - 1);
-							
-							strSQL = "SELECT DISTINCT " + strSQL + " FROM " + strHvstCostsTableName;
-
-							this.m_strColumnsToEdit = strColumnsToEditArray;
-							this.m_intColumnsToEditCount = m_strColumnsToEdit.Length;
-
-							string[] strRecordKeyField = new string[1];
-							strRecordKeyField[0] = "biosum_cond_id";
-
-
-							this.m_frmHarvestCosts = new frmGridView();
-							this.m_frmHarvestCosts.HarvestCostColumns=true;
-							this.m_frmHarvestCosts.ReferenceOptimizerScenarioForm=this.ReferenceOptimizerScenarioForm;
-							this.m_frmHarvestCosts.LoadDataSetToEdit(strConn,strSQL, strHvstCostsTableName,this.m_strColumnsToEdit,this.m_intColumnsToEditCount,strRecordKeyField); 
-							if (this.m_frmHarvestCosts.Visible==false)
-							{
-
-								this.m_frmHarvestCosts.MdiParent = this.ParentForm.ParentForm;
-                                this.m_frmHarvestCosts.Text = "Treatment Optimizer Analysis: Edit Harvest Costs " + " (" + strScenarioId + ")";
-								this.m_frmHarvestCosts.Show();
-							}
-							this.m_frmHarvestCosts.Focus();
-
-
-				  
-							
-						}
-					}
-				
-			}
-			p_oUtils = null;
-		}
 
 		private void txtHaulCost_KeyPress(object sender, System.Windows.Forms.KeyPressEventArgs e)
 		{

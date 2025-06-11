@@ -1421,40 +1421,7 @@ namespace FIA_Biosum_Manager
 				}
 			}
 		}
-		public void CreateOptimizerScenarioRuleDefinitionDbAndTables(string p_strPathAndFile)
-		{
-			dao_data_access oDao = new dao_data_access();
-			ado_data_access oAdo = new ado_data_access();
-
-			string strDestFile = p_strPathAndFile;
-			oDao.CreateMDB(strDestFile);
-			string strConn = oAdo.getMDBConnString(strDestFile,"admin","");
-			oAdo.OpenConnection(strConn);
-			frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioCostsTable(oAdo,oAdo.m_OleDbConnection,Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCostsTableName);
-			frmMain.g_oTables.m_oScenario.CreateScenarioDatasourceTable(oAdo,oAdo.m_OleDbConnection,Tables.Scenario.DefaultScenarioDatasourceTableName);
-			frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioHarvestCostColumnsTable(oAdo,oAdo.m_OleDbConnection,Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioHarvestCostColumnsTableName);
-			frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioLandOwnerGroupsTable(oAdo,oAdo.m_OleDbConnection,Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLandOwnerGroupsTableName);
-			frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioMergeTable(oAdo,oAdo.m_OleDbConnection,Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioMergeTableName);
-			frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioPlotFilterMiscTable(oAdo,oAdo.m_OleDbConnection,Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPlotFilterMiscTableName);
-			frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioPlotFilterTable(oAdo,oAdo.m_OleDbConnection,Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPlotFilterTableName);
-			frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioPSitesTable(oAdo,oAdo.m_OleDbConnection,Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName);
-			frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioLastTieBreakRankTable(oAdo,oAdo.m_OleDbConnection,Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLastTieBreakRankTableName);
-			frmMain.g_oTables.m_oScenario.CreateScenarioTable(oAdo,oAdo.m_OleDbConnection,Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableName);
-			frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioFVSVariablesTable(oAdo,oAdo.m_OleDbConnection,Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTableName);
-			frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioFVSVariablesOverallEffectiveTable(oAdo,oAdo.m_OleDbConnection,Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOverallEffectiveTableName);
-			frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioFVSVariablesOptimizationTable(oAdo,oAdo.m_OleDbConnection,Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOptimizationTableName);
-			frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioFVSVariablesTieBreakerTable(oAdo,oAdo.m_OleDbConnection,Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName);
-			frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioCondFilterMiscTable(oAdo,oAdo.m_OleDbConnection,Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCondFilterMiscTableName);
-			frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioCondFilterTable(oAdo,oAdo.m_OleDbConnection,Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCondFilterTableName);
-            frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioProcessorScenarioSelectTable_Access(oAdo, oAdo.m_OleDbConnection, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName);
-
-            //create empty prepost_fvs_weighted.accdb
-            strDestFile = this.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile;
-            oDao.CreateMDB(strDestFile);
-            
-            oAdo.CloseConnection(oAdo.m_OleDbConnection);
-			oDao = null;
-		}
+		
 
 		public void CreateOptimizerScenarioRuleDefinitionSqliteDbAndTables(string p_strPathAndFile)
         {

@@ -261,67 +261,11 @@ namespace FIA_Biosum_Manager
             //
             //EFFECTIVE TABLE
             //
-            public void CreateEffectiveTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn,
-                string p_strTablePrefix, string p_strFilterColumnName)
+            public void CreateSqliteEffectiveTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn,
+                                                   string p_strTablePrefix, string p_strFilterColumnName)
             {
                 string strTableName = p_strTablePrefix + Tables.OptimizerScenarioResults.DefaultScenarioResultsEffectiveTableSuffix;
-                p_oAdo.SqlNonQuery(p_oConn, CreateEffectiveTableSQL(strTableName, p_strFilterColumnName));
-                CreateEffectiveTableIndexes(p_oAdo, p_oConn, strTableName);
-            }
-            public void CreateEffectiveTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "biosum_cond_id,rxpackage,rx,rxcycle");
-            }
-            static public string CreateEffectiveTableSQL(string p_strTableName, string p_strFilterColumnName)
-            {
-                string strSql = "CREATE TABLE " + p_strTableName + " (" +
-                         "biosum_cond_id CHAR(25)," +
-                         "rxpackage CHAR(3)," +
-                         "rx CHAR(3)," +
-                         "rxcycle CHAR(1)," +
-                         "nr_dpa DOUBLE,";
-                if (!String.IsNullOrEmpty(p_strFilterColumnName))
-                    strSql = strSql + p_strFilterColumnName + " DOUBLE,";
-                strSql = strSql +
-                         "pre_variable1_name CHAR(100)," +
-                         "post_variable1_name CHAR(100)," +
-                           "pre_variable1_value DOUBLE," +
-                         "post_variable1_value DOUBLE," +
-                         "variable1_change DOUBLE," +
-                         "variable1_better_yn CHAR(1)," +
-                         "variable1_worse_yn CHAR(1)," +
-                         "variable1_effective_yn CHAR(1)," +
-                         "pre_variable2_name CHAR(100)," +
-                         "post_variable2_name CHAR(100)," +
-                         "pre_variable2_value DOUBLE," +
-                         "post_variable2_value DOUBLE," +
-                         "variable2_change DOUBLE," +
-                         "variable2_better_yn CHAR(1)," +
-                         "variable2_worse_yn CHAR(1)," +
-                         "variable2_effective_yn CHAR(1)," +
-                         "pre_variable3_name CHAR(100)," +
-                         "post_variable3_name CHAR(100)," +
-                         "pre_variable3_value DOUBLE," +
-                         "post_variable3_value DOUBLE," +
-                         "variable3_change DOUBLE," +
-                         "variable3_better_yn CHAR(1)," +
-                         "variable3_worse_yn CHAR(1)," +
-                         "variable3_effective_yn CHAR(1)," +
-                         "pre_variable4_name CHAR(100)," +
-                         "post_variable4_name CHAR(100)," +
-                         "pre_variable4_value DOUBLE," +
-                         "post_variable4_value DOUBLE," +
-                         "variable4_change DOUBLE," +
-                         "variable4_better_yn CHAR(1)," +
-                         "variable4_worse_yn CHAR(1)," +
-                         "variable4_effective_yn CHAR(1)," +
-                         "overall_effective_yn CHAR(1))";
-                return strSql;
-            }
-            public void CreateSqliteEffectiveTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn,
-                                                   string p_strTableName, string p_strFilterColumnName)
-            {
-                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteEffectiveTableSQL(p_strTableName, p_strFilterColumnName));
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteEffectiveTableSQL(strTableName, p_strFilterColumnName));
             }
             static public string CreateSqliteEffectiveTableSQL(string p_strTableName, string p_strFilterColumnName)
             {

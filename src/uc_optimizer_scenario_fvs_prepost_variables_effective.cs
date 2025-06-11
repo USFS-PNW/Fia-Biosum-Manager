@@ -15,7 +15,6 @@ namespace FIA_Biosum_Manager
 	{
 		private System.Windows.Forms.GroupBox groupBox1;
 		private System.ComponentModel.IContainer components;
-		//private int m_intFullHt=400;
 		public System.Data.OleDb.OleDbDataAdapter m_OleDbDataAdapter;
 		public System.Data.DataSet m_DataSet;
 		public System.Data.OleDb.OleDbConnection m_OleDbConnectionMaster;
@@ -31,8 +30,6 @@ namespace FIA_Biosum_Manager
 		private string m_strCurrentIndexTypeAndClass;
 		private string m_strOverallEffectiveExpression="";
 		private FIA_Biosum_Manager.utils m_oUtils; 
-		private bool _bTorchIndex=true;
-		private bool _bCrownIndex=true;
 		public System.Windows.Forms.Label lblTitle;
 		private System.Windows.Forms.GroupBox grpboxFVSVariablesPrePostVariable;
 		private System.Windows.Forms.GroupBox grpboxFVSVariablesPrePostVariablePostSelected;
@@ -1673,10 +1670,10 @@ namespace FIA_Biosum_Manager
 				int intVarNum = 0;
 
 				//fvs variables
-				oDataMgr.m_strSQL = "SELECT a.* " +
-								"FROM scenario_fvs_variables a " +
-								"WHERE TRIM(UPPER(a.scenario_id))='" + strScenarioId.Trim().ToUpper() + "' AND " +
-								"a.current_yn='Y' " +
+				oDataMgr.m_strSQL = "SELECT * " +
+								"FROM scenario_fvs_variables " +
+								"WHERE TRIM(UPPER(scenario_id))='" + strScenarioId.Trim().ToUpper() + "' AND " +
+								"current_yn='Y' " +
 								"ORDER BY variable_number";
 				oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
 				if (oDataMgr.m_DataReader.HasRows)
@@ -1705,14 +1702,14 @@ namespace FIA_Biosum_Manager
 
 						this.UpdateListViewVariableItem(intVarNum, intVarNum + 1, m_oOldVar);
 					}
+					oDataMgr.m_DataReader.Close();
 				}
-				oDataMgr.m_DataReader.Close();
-
+				
 				//overall expression
-				oDataMgr.m_strSQL = "SELECT b.overall_effective_expression, b.current_yn " +
-								"FROM scenario_fvs_variables_overall_effective b " +
-								"WHERE TRIM(UPPER(b.scenario_id))='" + strScenarioId.Trim().ToUpper() + "' AND " +
-								"b.current_yn='Y'";
+				oDataMgr.m_strSQL = "SELECT overall_effective_expression, current_yn " +
+								"FROM scenario_fvs_variables_overall_effective " +
+								"WHERE TRIM(UPPER(scenario_id))='" + strScenarioId.Trim().ToUpper() + "' AND " +
+								"current_yn='Y'";
 
 				oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
 				if (oDataMgr.m_DataReader.HasRows)
@@ -1725,11 +1722,10 @@ namespace FIA_Biosum_Manager
 							m_oOldVar.m_strOverallEffectiveExpr = Convert.ToString(oDataMgr.m_DataReader["overall_effective_expression"]).Trim();
                         }
 					}
+					oDataMgr.m_DataReader.Close();
 				}
-				oDataMgr.m_DataReader.Close();
-
-				conn.Close();
 			}
+
 			for (x = 0; x <= NUMBER_OF_VARIABLES - 1; x++)
 			{
 				if (m_oOldVar.m_strPreVarArray[x].Trim().Length > 0 &&
@@ -1908,7 +1904,6 @@ namespace FIA_Biosum_Manager
 						oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 					}
 				}
-				conn.Close();
 			}
 			return 1;
 		}
@@ -2888,72 +2883,63 @@ namespace FIA_Biosum_Manager
 			}
 		}
 
-	
-
 
 		private void btnFVSVariablesPrePostExpressionTest_Click(object sender, System.EventArgs e)
-		{
+        {
 			string strSQL = this.txtExpression.Text;
-			dao_data_access oDao = new dao_data_access();
-			string strTempFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir,"accdb");
-			oDao.CreateMDB(strTempFile);
-			oDao.m_DaoWorkspace.Close();
-			oDao=null;
+			DataMgr oDataMgr = new DataMgr();
+			string strTempFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
+			oDataMgr.CreateDbFile(strTempFile);
 
-			
-
-            ado_data_access oAdo = new ado_data_access();
-			oAdo.OpenConnection(oAdo.getMDBConnString(strTempFile,"",""));
-
-            // Query the optimization uc for the selected revenue attribute so we can pass it to the table
-            OptimizerScenarioItem.OptimizationVariableItem_Collection oOptimizationVariableCollection =
-                this.ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem_Collection.Item(0).m_oOptimizationVariableItem_Collection;
-            string strColumnFilterName = "";
-            for (int x = 0; x <= oOptimizationVariableCollection.Count - 1; x++)
+			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strTempFile)))
             {
-                if (oOptimizationVariableCollection.Item(x).bSelected)
-                {
-                    if (oOptimizationVariableCollection.Item(x).bUseFilter == true)
-                        strColumnFilterName = oOptimizationVariableCollection.Item(x).strRevenueAttribute;
-                    break;
-                }
-            }
- 
-            string strPrefix = "cycle1";
-            for(int i=0;i<lvFVSVariablesPrePostValues.Items.Count;i++){
-                string strPreVariable = Convert.ToString(lvFVSVariablesPrePostValues.Items[i].SubItems[COLUMN_PREVAR]).Trim();
-                string[] strPieces = strPreVariable.Split('.');
-                if (strPieces.Length == 2 && !String.IsNullOrEmpty(strPieces[0]))
-                {
-                    if (strPieces[0].ToUpper().Contains("_WEIGHTED"))
-                    {
-                        strPrefix = "all_cycles";
-                        break;
-                    }
-                }
+				conn.Open();
 
-            }
-            string strEffectiveTableName = strPrefix + "_effective";
-            frmMain.g_oTables.m_oOptimizerScenarioResults.CreateEffectiveTable(oAdo,oAdo.m_OleDbConnection,
-                strPrefix, strColumnFilterName);
+				// Query the optimization uc for the selected revenue attribute so we can pass it to the table
+				OptimizerScenarioItem.OptimizationVariableItem_Collection oOptimizationVariableCollection =
+					this.ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem_Collection.Item(0).m_oOptimizationVariableItem_Collection;
+				string strColumnFilterName = "";
+				for (int x = 0; x <= oOptimizationVariableCollection.Count - 1; x++)
+				{
+					if (oOptimizationVariableCollection.Item(x).bSelected)
+					{
+						if (oOptimizationVariableCollection.Item(x).bUseFilter == true)
+							strColumnFilterName = oOptimizationVariableCollection.Item(x).strRevenueAttribute;
+						break;
+					}
+				}
 
-			strSQL = "SELECT * FROM " + strEffectiveTableName + " WHERE " +
-				strSQL + ";";
-			oAdo.SqlQueryReader(oAdo.m_OleDbConnection, strSQL);
+				string strPrefix = "cycle1";
+				for (int i = 0; i < lvFVSVariablesPrePostValues.Items.Count; i++)
+				{
+					string strPreVariable = Convert.ToString(lvFVSVariablesPrePostValues.Items[i].SubItems[COLUMN_PREVAR]).Trim();
+					string[] strPieces = strPreVariable.Split('.');
+					if (strPieces.Length == 2 && !String.IsNullOrEmpty(strPieces[0]))
+					{
+						if (strPieces[0].ToUpper().Contains("_WEIGHTED"))
+						{
+							strPrefix = "all_cycles";
+							break;
+						}
+					}
 
-			if (oAdo.m_intError == 0)
-			{
-				
+				}
 
-				MessageBox.Show("Valid Syntax");
-				
-				oAdo.m_OleDbDataReader.Close();
-				oAdo.m_OleDbDataReader = null;
-				oAdo.m_OleDbCommand = null;
-				
+				string strEffectiveTableName = strPrefix + "_effective";
+				frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteEffectiveTable(oDataMgr, conn,
+					strPrefix, strColumnFilterName);
+
+				strSQL = "SELECT * FROM " + strEffectiveTableName + " WHERE " +
+					strSQL + ";";
+				oDataMgr.SqlQueryReader(conn, strSQL);
+
+				if (oDataMgr.m_intError == 0)
+				{
+					MessageBox.Show("Valid Syntax");
+
+					oDataMgr.m_DataReader.Close();
+				}
 			}
-			oAdo.CloseConnection(oAdo.m_OleDbConnection);
-
 		}
 		private void Go()
 		{
@@ -3812,7 +3798,7 @@ namespace FIA_Biosum_Manager
 							// function so that it can be shared with optimizer and tie break
 							char[] preArray = "PRE_".ToCharArray();
 							string strTempTableName = strPieces[0].TrimStart(preArray);
-							string strWeightedError = this.m_oOptimizerScenarioTools.AuditWeightedFvsVariablesSqlite(strTempTableName, out m_intError);
+							string strWeightedError = this.m_oOptimizerScenarioTools.AuditWeightedFvsVariables(strTempTableName, out m_intError);
 							if (m_intError != 0)
 							{
 								m_strError = m_strError + strWeightedError;
@@ -3855,7 +3841,7 @@ namespace FIA_Biosum_Manager
 
 			this.ReferenceOptimizationUserControl.DisplayAuditMessage = false;
 
-			this.ReferenceOptimizationUserControl.AuditSqlite();
+			this.ReferenceOptimizationUserControl.Audit();
 
 			this.m_strError = m_strError + ReferenceOptimizationUserControl.m_strError;
 			x = ReferenceOptimizationUserControl.m_intError;

@@ -26,15 +26,11 @@ namespace FIA_Biosum_Manager
 		public int m_intError = 0;
 		public string m_strError = "";
 		private System.Windows.Forms.Button btnNext;
-		private System.Windows.Forms.Button btnPrev;
 		public System.Windows.Forms.Label lblTitle;
 		private FIA_Biosum_Manager.frmOptimizerScenario _frmScenario=null;
 		private FIA_Biosum_Manager.uc_optimizer_scenario_fvs_prepost_optimization _uc_optimization;
 
 
-				
-		private int m_intCurVar=-1;
-		int m_intCurVariableDefinitionStepCount=1;
 		string[] m_strUserNavigation=null;
 		
 
@@ -50,7 +46,6 @@ namespace FIA_Biosum_Manager
 		const int WIZARD_STEP_VARIABLES_OVERALL_EFFECTIVE=5;
 
 		
-		//const int COLUMN_OPTIMIZE=0;
 		const int COLUMN_CHECKBOX=0;
 		const int COLUMN_METHOD=1;
 		const int COLUMN_FVSVARIABLE=2;
@@ -1101,8 +1096,8 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioFVSVariablesTieBreakerTable(oDataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName);
                     }
                     oDataMgr.m_strSQL = "SELECT * FROM " +
-                                    Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName + " " +
-                                    "WHERE TRIM(UPPER(scenario_id))='" + strScenarioId.Trim().ToUpper() + "'";
+                                    Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName + 
+                                    " WHERE TRIM(UPPER(scenario_id))='" + strScenarioId.Trim().ToUpper() + "'";
 
                     oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
                     if (oDataMgr.m_DataReader.HasRows)
@@ -1177,11 +1172,10 @@ namespace FIA_Biosum_Manager
                                 }
                             }
                         }
+                        oDataMgr.m_DataReader.Close();
                     }
-                    oDataMgr.m_DataReader.Close();
                     this.m_oSavTieBreakerCollection.Copy(this.m_oOldTieBreakerCollection, ref this.m_oSavTieBreakerCollection, true);
                 }
-                conn.Close();
             }
             this.m_intError = oDataMgr.m_intError;
             this.m_strError = oDataMgr.m_strError;
@@ -1204,8 +1198,8 @@ namespace FIA_Biosum_Manager
                 if (oDataMgr.m_intError == 0)
                 {
                     //delete all records from the scenario fvs variables table
-                    oDataMgr.m_strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName + " " +
-                                    "WHERE LOWER(TRIM(scenario_id)) = '" + strScenarioId.Trim().ToLower() + "';";
+                    oDataMgr.m_strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName +
+                                    " WHERE LOWER(TRIM(scenario_id)) = '" + strScenarioId.Trim().ToLower() + "';";
 
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                     if (oDataMgr.m_intError < 0)
@@ -1255,8 +1249,8 @@ namespace FIA_Biosum_Manager
                         this.m_oSavTieBreakerCollection.Item(0).bSelected = false;
                     }
 
-                    oDataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName + " " +
-                                    "(" + strColumns + ") VALUES " +
+                    oDataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName + 
+                                    " (" + strColumns + ") VALUES " +
                                     "(" + strValues + ")";
 
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
@@ -1300,8 +1294,8 @@ namespace FIA_Biosum_Manager
                         this.m_oSavTieBreakerCollection.Item(1).bSelected = false;
                     }
 
-                    oDataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName + " " +
-                                    "(" + strColumns + ") VALUES " +
+                    oDataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName +
+                                    " (" + strColumns + ") VALUES " +
                                     "(" + strValues + ")";
 
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
@@ -1336,13 +1330,12 @@ namespace FIA_Biosum_Manager
                         this.m_oSavTieBreakerCollection.Item(2).bSelected = false;
                     }
 
-                    oDataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName + " " +
-                        "(" + strColumns + ") VALUES " +
+                    oDataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName +
+                        " (" + strColumns + ") VALUES " +
                         "(" + strValues + ")";
 
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
-                conn.Close();
             }
             this.uc_scenario_last_tiebreak_rank1.savevalues();
             return 0;
@@ -1721,7 +1714,7 @@ namespace FIA_Biosum_Manager
                     if (strPieces[0].ToUpper().Contains("_WEIGHTED"))
                     {
                         FIA_Biosum_Manager.OptimizerScenarioTools oOptimizerScenarioTools = new OptimizerScenarioTools();
-                        string strWeightedError = oOptimizerScenarioTools.AuditWeightedFvsVariablesSqlite(strPieces[0], out m_intError);
+                        string strWeightedError = oOptimizerScenarioTools.AuditWeightedFvsVariables(strPieces[0], out m_intError);
                         if (m_intError != 0)
                         {
                             m_strError = m_strError + strWeightedError;

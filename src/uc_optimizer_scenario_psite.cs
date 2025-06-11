@@ -16,12 +16,10 @@ namespace FIA_Biosum_Manager
 	{
 		private ListViewEmbeddedControls.ListViewEx lstPSites;
 		private System.Windows.Forms.ImageList imgSize;
-		private System.Windows.Forms.Button btnScenarioPSiteDefault;
 		private System.Windows.Forms.ListView listView1;
 		private System.ComponentModel.IContainer components;
 		private string m_strTravelTimeTable;
 		private string m_strPSiteTable;
-		private string m_strTempMDBFile;
 		private string m_strTempDBFile;
 		private env m_oEnv;
 		public int m_intError=0;
@@ -30,8 +28,6 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Button btnUnselectAll;
 		private System.Windows.Forms.ToolTip toolTip1;
 		private System.Windows.Forms.ComboBox m_Combo;
-		private System.Windows.Forms.ComboBox m_ComboBio;
-		private System.Windows.Forms.Button btnScenarioPSiteUpdate;
 		private System.Windows.Forms.GroupBox groupBox1;
 		public System.Windows.Forms.Label lblTitle;
 		private FIA_Biosum_Manager.frmOptimizerScenario _frmScenario=null;
@@ -917,93 +913,7 @@ namespace FIA_Biosum_Manager
 /// </summary>
 /// <param name="sender"></param>
 /// <param name="e"></param>
-		private void btnScenarioPSiteDefault_Click(object sender, System.EventArgs e)
-		{
-			int x;
-			byte byteTranCd=9;
-			byte byteBioCd=9;
-			int intPSiteId;
-
-			ado_data_access p_ado = new ado_data_access();
-			string strConn = p_ado.getMDBConnString(this.m_strTempMDBFile,"","");
-			
-			
-			p_ado.m_strSQL = "SELECT DISTINCT p.psite_id,p.name,p.trancd,p.trancd_def,p.biocd,p.biocd_def,p.exists_yn " + 
-				"FROM " + m_strPSiteTable + " p WHERE EXISTS (SELECT DISTINCT(t.psite_id) " + 
-				"FROM " + this.m_strTravelTimeTable + " t " + 
-				"WHERE t.psite_id=p.psite_id)";
-														                  
-			p_ado.SqlQueryReader(strConn,p_ado.m_strSQL);
-			
-			if (p_ado.m_OleDbDataReader.HasRows==true)
-			{
-				x=0;
-				while (p_ado.m_OleDbDataReader.Read())
-				{
-					if (p_ado.m_OleDbDataReader["psite_id"] != System.DBNull.Value)
-					{
-						intPSiteId=Convert.ToInt32(p_ado.m_OleDbDataReader["psite_id"]);
-						for (x=0;x<=lstPSites.Items.Count-1;x++)
-						{
-							
-							if (intPSiteId==Convert.ToInt32(lstPSites.Items[x].SubItems[COLUMN_PSITEID].Text.Trim()))
-							{
-								
-								if (lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim()=="Regular - PSite With Road Only Access")
-								{
-								}
-								else
-								{
-									if (p_ado.m_OleDbDataReader["trancd"] != System.DBNull.Value)
-									{
-										byteTranCd=Convert.ToByte(p_ado.m_OleDbDataReader["trancd"]);
-										switch (byteTranCd)
-										{
-											case 2:
-												this.m_Combo=(System.Windows.Forms.ComboBox)this.lstPSites.GetEmbeddedControl(COLUMN_PSITEROADRAIL,x);
-												this.m_Combo.Text = "Railhead - Road To Rail Wood Transfer Point";
-												break;
-											case 3:
-												this.m_Combo=(System.Windows.Forms.ComboBox)this.lstPSites.GetEmbeddedControl(COLUMN_PSITEROADRAIL,x);
-												this.m_Combo.Text = "Rail Collector - PSite With Both Road And Rail Access";
-												break;
-										}
-
-									}
-								}
-								if (p_ado.m_OleDbDataReader["biocd"] != System.DBNull.Value)
-								{
-									byteBioCd=Convert.ToByte(p_ado.m_OleDbDataReader["biocd"]);
-									this.m_Combo=(System.Windows.Forms.ComboBox)this.lstPSites.GetEmbeddedControl(COLUMN_PSITEBIOPROCESSTYPE,x);
-									switch (byteBioCd)
-									{
-										case 1:
-											this.m_Combo.Text = "Merchantable - Logs Only";
-											break;
-										case 2:
-											this.m_Combo.Text = "Chips - Chips Only";
-											break;
-										case 3:
-											this.m_Combo.Text = "Both - Logs And Chips";
-											break;
-										case 4:
-											this.m_Combo.Text = "Other - Nongeneric Wood Facility with Potential";
-											break;
-									}
-
-								}
-							}
-						}
-
-					}
-				}
-			}
-			p_ado.m_OleDbDataReader.Close();
-			p_ado.m_OleDbConnection.Close();
-			//if (((frmScenario)this.ParentForm).btnSave.Enabled==false) 
-			//	((frmScenario)this.ParentForm).btnSave.Enabled=true;
-			p_ado=null;
-		}
+		
 		private void m_Combo_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			//MessageBox.Show("SelectedIndexChanged");
@@ -1047,131 +957,7 @@ namespace FIA_Biosum_Manager
 			if (this.lstPSites.SelectedItems.Count > 0)
 				m_oLvRowColors.DelegateListViewItem(this.lstPSites.SelectedItems[0]);
 		}
-		private void btnScenarioPSiteUpdate_Click(object sender, System.EventArgs e)
-		{
-			if (this.lstPSites.CheckedItems.Count==0) 
-			{
-				MessageBox.Show("Select the wood processing site item(s) to update","FIA Biosum",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
-				return;
-			}
-
-			int x;
-			string strPSiteId;
-			string strTranCd;
-			string strTranCdDef;
-			string strBioCd;
-			string strBioCdDef;
-			int intUpdateCount=0;
-			string strScenarioId;
-			string strScenarioSQL="";
-
-			strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim();
-
-			ado_data_access p_ado = new ado_data_access();
-			string strConn = p_ado.getMDBConnString(this.m_strTempMDBFile,"","");
-			p_ado.OpenConnection(strConn);
-			if (p_ado.m_intError==0)
-			{
-				for (x=0;x<=this.lstPSites.CheckedItems.Count-1;x++)
-				{
-					p_ado.m_strSQL="";
-					strScenarioSQL="";
-					strBioCd="";
-					strBioCdDef="";
-					strTranCd="";
-					strTranCdDef="";
-					strPSiteId = lstPSites.Items[x].SubItems[1].Text.Trim();
-					//transportation mode
-					if (lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text != null &&
-						lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim().Length > 0 && 
-						(lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim()=="Regular - PSite With Road Only Access" ||
-						 lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim()=="Processing Site - Road Access Only"))
-					{
-						strTranCd = "1";
-						strTranCdDef = "Regular";
-					}
-					else
-					{
-						this.m_Combo=(System.Windows.Forms.ComboBox)this.lstPSites.GetEmbeddedControl(COLUMN_PSITEROADRAIL,x);
-						if (this.m_Combo != null && this.m_Combo.Text.Trim().Length > 0)
-						{
-							if (this.m_Combo.Text.Trim() == "Railhead - Road To Rail Wood Transfer Point")
-							{
-								strTranCd = "2";
-								strTranCdDef = "Railhead";
-							}
-							else if (this.m_Combo.Text.Trim() == "Rail Collector - PSite With Both Road And Rail Access")
-							{
-								strTranCd = "3";
-								strTranCdDef = "Rail Collector";
-							}
-						}
-					}
-					//bio processing
-					this.m_Combo=(System.Windows.Forms.ComboBox)this.lstPSites.GetEmbeddedControl(COLUMN_PSITEBIOPROCESSTYPE,x);
-					if (this.m_Combo.Text != null && this.m_Combo.Text.Trim().Length > 0)
-					{
-						switch (this.m_Combo.Text.Trim())
-						{
-							case "Merchantable - Logs Only":
-								strBioCd = "1";
-								strBioCdDef = "Merchantable";
-								break;
-							case "Chips - Chips Only":
-								strBioCd = "2";
-								strBioCdDef = "Chips";
-								break;
-							case "Both - Logs And Chips":
-								strBioCd = "3";
-								strBioCdDef = "Both";
-								break;
-							case "Other - Nongeneric Wood Facility with Potential":
-								strBioCd = "4";
-								strBioCdDef = "Other";
-								break;
-						}
-					}
-
-
-					if (strTranCd.Trim().Length > 0)
-					{
-						strScenarioSQL = strScenarioSQL + "trancd=" + strTranCd + ",";
-						p_ado.m_strSQL = p_ado.m_strSQL + "trancd=" + strTranCd + ",";
-						p_ado.m_strSQL = p_ado.m_strSQL + "trancd_def='" + strTranCdDef + "',";
-					}
-
-					if (strBioCd.Trim().Length > 0)
-					{
-						strScenarioSQL = strScenarioSQL + "biocd=" + strBioCd + ",";
-						p_ado.m_strSQL = p_ado.m_strSQL + "biocd=" + strBioCd + ",";
-						p_ado.m_strSQL = p_ado.m_strSQL + "biocd_def='" + strBioCdDef + "',";
-					}
-
-					if (p_ado.m_strSQL.Trim().Length > 0)
-					{
-						//remove the last comma
-						p_ado.m_strSQL=p_ado.m_strSQL.Substring(0,p_ado.m_strSQL.Trim().Length -1);
-						strScenarioSQL = strScenarioSQL.Substring(0,strScenarioSQL.Trim().Length -1);
-						p_ado.m_strSQL = "UPDATE " + this.m_strPSiteTable + " " + 
-							"SET " + p_ado.m_strSQL + " " + 
-							"WHERE psite_id=" + strPSiteId + ";" ;
-						p_ado.SqlNonQuery(p_ado.m_OleDbConnection,p_ado.m_strSQL);
-						if (p_ado.m_intError != 0) break;
-						//update the scenario psite table
-					    strScenarioSQL = "UPDATE scenario_psites " + 
-							"SET " + strScenarioSQL + " " + 
-							"WHERE TRIM(scenario_id)='" + strScenarioId.Trim() + "' AND " + 
-								   "psite_id=" + strPSiteId + ";";
-						p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strScenarioSQL);
-					
-						intUpdateCount++;
-					}
-				}
-				p_ado.m_OleDbConnection.Close();
-				 MessageBox.Show("Updated " + intUpdateCount.ToString() + " wood processing site records","FIA Biosum",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Information);
-			}
-			p_ado=null;
-		}
+		
 
 		private void groupBox1_Resize(object sender, System.EventArgs e)
 		{
