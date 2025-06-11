@@ -916,7 +916,7 @@ namespace FIA_Biosum_Manager
 								break;
                             case "SCENARIO_PROCESSOR_SCENARIO_SELECT":
                                 strTableName=Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName;
-								frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioProcessorScenarioSelectTable(oAdo,oConn,strTableName);
+								frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioProcessorScenarioSelectTable_Access(oAdo,oConn,strTableName);
 
                                 break;
 
@@ -1050,7 +1050,7 @@ namespace FIA_Biosum_Manager
 							break;
                         case "SCENARIO_PROCESSOR_SCENARIO_SELECT":
                             strTableName=Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName;
-							frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioProcessorScenarioSelectTable(oAdo,oConn,strTableName);
+							frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioProcessorScenarioSelectTable_Access(oAdo,oConn,strTableName);
                             break;
 					}
 				}

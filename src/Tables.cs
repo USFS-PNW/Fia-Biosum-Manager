@@ -2238,27 +2238,27 @@ namespace FIA_Biosum_Manager
                     "rail_chip_transfer_pgt DOUBLE DEFAULT 0, " +
                     "rail_merch_transfer_pgt DOUBLE DEFAULT 0)";
             }
-            public void CreateScenarioProcessorScenarioSelectTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+            public void CreateScenarioProcessorScenarioSelectTable_Access(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
-                p_oAdo.SqlNonQuery(p_oConn, CreateScenarioProcessorScenarioSelectTableSQL(p_strTableName));
-                CreateScenarioProcessorScenarioSelectTableIndexes(p_oAdo, p_oConn, p_strTableName);
+                p_oAdo.SqlNonQuery(p_oConn, CreateScenarioProcessorScenarioSelectTableSQL_Access(p_strTableName));
+                CreateScenarioProcessorScenarioSelectTableIndexes_Access(p_oAdo, p_oConn, p_strTableName);
             }
-            public void CreateScenarioProcessorScenarioSelectTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+            public void CreateScenarioProcessorScenarioSelectTableIndexes_Access(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
                 p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "scenario_id");
             }
-            static public string CreateScenarioProcessorScenarioSelectTableSQL(string p_strTableName)
+            static public string CreateScenarioProcessorScenarioSelectTableSQL_Access(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "scenario_id CHAR(20)," +
                     "processor_scenario_id CHAR(20)," +
                     "FullDetailsYN CHAR(1))";
             }
-            public void CreateSqliteScenarioProcessorScenarioSelectTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            public void CreateScenarioProcessorScenarioSelectTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
-                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteScenarioProcessorScenarioSelectTableSQL(p_strTableName));
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateScenarioProcessorScenarioSelectTableSQL(p_strTableName));
             }
-            static public string CreateSqliteScenarioProcessorScenarioSelectTableSQL(string p_strTableName)
+            static public string CreateScenarioProcessorScenarioSelectTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "scenario_id CHAR(20) PRIMARY KEY, " +
@@ -2593,24 +2593,12 @@ namespace FIA_Biosum_Manager
             {
                 p_oDataMgr.SqlNonQuery(p_oConn, CreateScenarioFVSVariablesTieBreakerTableSQL(p_strTableName));
             }
-            public void CreateScenarioFvsVariableWeightsReferenceTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+
+            public void CreateScenarioFvsVariableWeightsReferenceTable(SQLite.ADO.DataMgr oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
-                p_oAdo.SqlNonQuery(p_oConn, CreateScenarioFvsVariableWeightsReferenceTableSQL(p_strTableName));
+                oDataMgr.SqlNonQuery(p_oConn, CreateScenarioFvsVariableWeightsReferenceTableSQL(p_strTableName));
             }
             static public string CreateScenarioFvsVariableWeightsReferenceTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "rxcycle CHAR(1)," +
-                    "pre_or_post CHAR(4)," +
-                    "rxyear INTEGER," +
-                    "weight DOUBLE)";
-            }
-
-            public void CreateSqliteScenarioFvsVariableWeightsReferenceTable(SQLite.ADO.DataMgr oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
-            {
-                oDataMgr.SqlNonQuery(p_oConn, CreateSqliteScenarioFvsVariableWeightsReferenceTableSQL(p_strTableName));
-            }
-            static public string CreateSqliteScenarioFvsVariableWeightsReferenceTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "rxcycle TEXT," +

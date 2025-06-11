@@ -1052,7 +1052,7 @@ namespace FIA_Biosum_Manager
                 }
                 m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
             }
-            frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioFvsVariableWeightsReferenceTable(m_oDataMgr,
+            frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioFvsVariableWeightsReferenceTable(m_oDataMgr,
                 m_oDataMgr.m_Connection, m_strFvsViewTableName);
             init_m_dg();
 
@@ -1180,7 +1180,7 @@ namespace FIA_Biosum_Manager
                         }
                         m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
                     }
-                    frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioFvsVariableWeightsReferenceTable(m_oDataMgr,
+                    frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioFvsVariableWeightsReferenceTable(m_oDataMgr,
                         m_oDataMgr.m_Connection, m_strFvsViewTableName);
 
                     strSql = "SELECT rxcycle, MIN(Year) as MinYear, \"PRE\" as pre_or_post" +
@@ -1485,7 +1485,7 @@ namespace FIA_Biosum_Manager
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
             {
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "savevalues_sqlite BEGIN \r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "savevalues BEGIN \r\n");
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "------------------------------------------------------------------------------------------------\r\n");
             }
 

@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Windows.Forms;
-using System.Data.OleDb;
 using SQLite.ADO;
 
 
@@ -19,14 +18,12 @@ namespace FIA_Biosum_Manager
         private System.Windows.Forms.ImageList imgSize;
 		private System.Windows.Forms.ListView listView1;
 		private System.ComponentModel.IContainer components;
-		private string m_strTempMDBFile;
 		private env m_oEnv;
 		public int m_intError=0;
 		public string m_strError="";
 		private System.Windows.Forms.Button btnSelectAll;
 		private System.Windows.Forms.Button btnUnselectAll;
 		private System.Windows.Forms.ToolTip toolTip1;
-        private System.Windows.Forms.ComboBox m_Combo;
 		private System.Windows.Forms.GroupBox groupBox1;
 		public System.Windows.Forms.Label lblTitle;
 		private FIA_Biosum_Manager.frmOptimizerScenario _frmScenario=null;
@@ -95,6 +92,7 @@ namespace FIA_Biosum_Manager
             this.loadvalues(oProcItem);
         }
 		
+       
         public void loadvalues(ProcessorScenarioItem oProcItem)
         {
             this.lstRxPackages.Clear();
@@ -112,7 +110,7 @@ namespace FIA_Biosum_Manager
             this.lstRxPackages.ListViewItemSorter = lvwColumnSorter;
 
             m_oEnv = new env();
-            ado_data_access oAdo = new ado_data_access();
+            DataMgr oDataMgr = new DataMgr();
 
             if (String.IsNullOrEmpty(oProcItem.ScenarioId))
             {
@@ -146,67 +144,27 @@ namespace FIA_Biosum_Manager
                 }
             }
 
-            /**************************************************************
-             **create a temporary MDB File that will contain table links
-             **to the cond, plot, and harvest_costs tables
-             **************************************************************/
-            dao_data_access p_dao = new dao_data_access();
-            ODBCMgr p_odbcMgr = new ODBCMgr();
-            DataMgr p_dataMgr = new DataMgr();
-            bool harvestCostTableExists = false;
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(strHarvestCostsPathAndFile)))
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strHarvestCostsPathAndFile)))
             {
                 conn.Open();
-                harvestCostTableExists = p_dataMgr.TableExist(conn, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName);
-            }
-            if (System.IO.File.Exists(strHarvestCostsPathAndFile) && harvestCostTableExists)
-            {
-                this.m_strTempMDBFile = this.ReferenceOptimizerScenarioForm.uc_datasource1.CreateMDBAndScenarioTableDataSourceLinks(m_oEnv.strTempDir);
+                bool harvestCostTableExists = oDataMgr.TableExist(conn, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName);
 
-                if (p_odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProcessorResultsDsnName))
+                if (harvestCostTableExists)
                 {
-                    p_odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProcessorResultsDsnName);
-                }
-                p_odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ProcessorResultsDsnName, strHarvestCostsPathAndFile);
+                    oDataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultRxPackageDbFile + "' AS master";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 
-                p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName,
-                    ODBCMgr.DSN_KEYS.ProcessorResultsDsnName, strHarvestCostsPathAndFile);
+                    oDataMgr.m_strSQL = "SELECT DISTINCT p.fvs_variant, h.rxpackage, COUNT(*) AS count " +
+                        "FROM master." + strCondTableName + " AS c, master." + strPlotTableName + " AS p, " + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName + " AS h " +
+                        "WHERE c.biosum_plot_id = p.biosum_plot_id AND c.biosum_cond_id = h.biosum_cond_id " +
+                        "GROUP BY fvs_variant, rxpackage";
+                    oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
 
-                p_dao = null;
-
-                string strTempConn = oAdo.getMDBConnString(this.m_strTempMDBFile, "", "");
-                using (var oConn = new OleDbConnection(strTempConn))
-                {
-                    oConn.Open();
-
-                    int i = 0;
-                    do
+                    if (oDataMgr.m_DataReader.HasRows)
                     {
-                        // break out of loop if it runs too long
-                        if (i > 20)
+                        while (oDataMgr.m_DataReader.Read())
                         {
-                            System.Windows.Forms.MessageBox.Show("An error occurred while trying to attach " + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName + " table! " +
-                            "Validate the contents of this database before trying to open a Treatment Optimizer scenario.", "FIA Biosum");
-                            break;
-                        }
-                        System.Threading.Thread.Sleep(1000);
-                        i++;
-                    }
-                    while (!oAdo.TableExist(strTempConn, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName));
-
-                    oAdo.m_strSQL = "SELECT DISTINCT plot.fvs_variant, harvest_costs.rxpackage, Count(*) AS [Count]" +
-                                    " FROM (" + strCondTableName + " INNER JOIN " + strPlotTableName +
-                                    " ON " + strCondTableName + ".biosum_plot_id = " + strPlotTableName + ".biosum_plot_id) " +
-                                    " INNER JOIN " + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName +
-                                    " ON " + strCondTableName + ".biosum_cond_id = " + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName + ".biosum_cond_id" +
-                                    " GROUP BY FVS_VARIANT, RXPACKAGE";
-
-                    oAdo.SqlQueryReader(oConn, oAdo.m_strSQL);
-                    if (oAdo.m_OleDbDataReader.HasRows == true)
-                    {
-                        while (oAdo.m_OleDbDataReader.Read())
-                        {
-                            if (oAdo.m_OleDbDataReader["fvs_variant"] != System.DBNull.Value)
+                            if (oDataMgr.m_DataReader["fvs_variant"] != System.DBNull.Value)
                             {
                                 //null column
                                 this.lstRxPackages.Items.Add(" ");
@@ -216,15 +174,15 @@ namespace FIA_Biosum_Manager
                                 this.m_oLvRowColors.AddColumns(lstRxPackages.Items.Count - 1, lstRxPackages.Columns.Count);
 
                                 //fvs_variant
-                                this.lstRxPackages.Items[lstRxPackages.Items.Count - 1].SubItems.Add(Convert.ToString(oAdo.m_OleDbDataReader["fvs_variant"]));
+                                this.lstRxPackages.Items[lstRxPackages.Items.Count - 1].SubItems.Add(Convert.ToString(oDataMgr.m_DataReader["fvs_variant"]));
                                 this.m_oLvRowColors.ListViewSubItem(lstRxPackages.Items.Count - 1,
                                     COLUMN_FVS_VARIANT,
                                     lstRxPackages.Items[lstRxPackages.Items.Count - 1].SubItems[COLUMN_FVS_VARIANT], false);
 
                                 // rxPackage
-                                if (oAdo.m_OleDbDataReader["rxpackage"] != System.DBNull.Value)
+                                if (oDataMgr.m_DataReader["rxpackage"] != System.DBNull.Value)
                                 {
-                                    this.lstRxPackages.Items[this.lstRxPackages.Items.Count - 1].SubItems.Add(oAdo.m_OleDbDataReader["rxpackage"].ToString());
+                                    this.lstRxPackages.Items[this.lstRxPackages.Items.Count - 1].SubItems.Add(oDataMgr.m_DataReader["rxpackage"].ToString());
                                 }
                                 else
                                 {
@@ -235,41 +193,11 @@ namespace FIA_Biosum_Manager
                                     lstRxPackages.Items[lstRxPackages.Items.Count - 1].SubItems[COLUMN_RXPACKAGE], false);
                             }
                         }
+                        oDataMgr.m_DataReader.Close();
                     }
-                    oAdo.m_OleDbDataReader.Close();
                 }
-                if (p_odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProcessorResultsDsnName))
-                {
-                    p_odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProcessorResultsDsnName);
-                }
-                p_odbcMgr = null;
             }
         }
-
-        // We do not currently save the list of selected packages. It is reloaded
-        // each time a scenario is loaded.
-        public int savevalues()
-		{
-			string strScenarioId;
-            int x = -1;
-
-			ado_data_access p_ado = new ado_data_access();
-			strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
-			string strScenarioMDB = 
-				frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
-                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
-
-			string strConn = p_ado.getMDBConnString(strScenarioMDB,"admin","");
-			p_ado.OpenConnection(strConn);	
-			if (p_ado.m_intError != 0)
-			{
-				x=p_ado.m_intError;
-				p_ado=null;
-				return x;
-			}
-			
-			return x;
-		}
 		public int val_rxPackages()
 		{
 			if (this.lstRxPackages.CheckedItems.Count == 0)
