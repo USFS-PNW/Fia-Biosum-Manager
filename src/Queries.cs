@@ -3636,7 +3636,7 @@ namespace FIA_Biosum_Manager
                     {
                         return String.Format(
                             "UPDATE FVS_STANDINIT_COND SET Site_Species={1}, Site_Index={2}, Site_Index_Base_Ag={3}," +
-                            "BioSumGeneratedSiteIndex_YN = 'Y' " +
+                            "SITE_INDEX_BSCALC_YN = 'Y' " +
                             "WHERE STAND_ID={0} AND Site_Index IS NULL",
                             strStandID, strSiteSpecies, strSiteIndex, strBaseAge);
                     }

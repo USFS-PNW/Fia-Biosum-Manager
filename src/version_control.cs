@@ -7419,9 +7419,9 @@ namespace FIA_Biosum_Manager
             {
                 conn.Open();
 
-                if (!oDataMgr.ColumnExist(conn, Tables.FIA2FVS.DefaultFvsInputStandTableName, "BioSumGeneratedSiteIndex_YN"))
+                if (!oDataMgr.ColumnExist(conn, Tables.FIA2FVS.DefaultFvsInputStandTableName, "SITE_INDEX_BSCALC_YN"))
                 {
-                    oDataMgr.AddColumn(conn, Tables.FIA2FVS.DefaultFvsInputStandTableName, "BioSumGeneratedSiteIndex_YN", "CHAR", "1");
+                    oDataMgr.AddColumn(conn, Tables.FIA2FVS.DefaultFvsInputStandTableName, "SITE_INDEX_BSCALC_YN", "CHAR", "1");
                 }
             }
             if (oDao != null)

@@ -2524,6 +2524,11 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", intProgressBarCounter++);
                 frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
                     "Customizing FVS_STANDINIT_COND table For Variant " + strVariant);
+
+                // Populate SITE_INDEX_BSCALC_YN column to default N
+                DebugLogSQL("UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName + " SET SITE_INDEX_BSCALC_YN = 'N'");
+                oDataMgr.SqlNonQuery(tempConn, "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName + " SET SITE_INDEX_BSCALC_YN = 'N'");
+
                 // Populate the STAND_ID and SAM_WT from the BioSum Cond table
                 DebugLogSQL(Queries.FVS.FVSInput.StandInit.UpdateFromCond(m_strCondTable, strVariant));
                 oDataMgr.SqlNonQuery(tempConn, Queries.FVS.FVSInput.StandInit.UpdateFromCond("master." + m_strCondTable, strVariant));
@@ -2744,8 +2749,8 @@ namespace FIA_Biosum_Manager
                 oDataMgr.SqlNonQuery(p_Conn, strSql);
             }
 
-            // Add BiosumGeneratedSiteIndex_YN column to stand table
-            oDataMgr.AddColumn(p_Conn, Tables.FIA2FVS.DefaultFvsInputStandTableName, "BioSumGeneratedSiteIndex_YN",
+            // Add SITE_INDEX_BSCALC_YN column to stand table
+            oDataMgr.AddColumn(p_Conn, Tables.FIA2FVS.DefaultFvsInputStandTableName, "SITE_INDEX_BSCALC_YN",
                 "CHAR", "1");
 
             // Add VARIANT field to empty tree table
