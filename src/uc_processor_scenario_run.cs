@@ -3257,8 +3257,6 @@ namespace FIA_Biosum_Manager
             if (System.IO.File.Exists(m_strDebugFile))
                 System.IO.File.Delete(m_strDebugFile);
 
-            System.Threading.Thread.Sleep(2000);
-
             if (frmMain.g_bDebug)
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "*****START*****" + System.DateTime.Now.ToString() + "\r\n");
 
@@ -3397,27 +3395,15 @@ namespace FIA_Biosum_Manager
                         conn.Open();
                         if (m_oDataMgr.TableExist(conn, "HarvestCostsWorkTable") == true)
                             m_oDataMgr.SqlNonQuery(conn, "DROP TABLE HarvestCostsWorkTable");
-                        // Delete the link too -- TEMPORARY
-                        if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, "HarvestCostsWorkTable") == true)
-                            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE HarvestCostsWorkTable");
 
                         if (m_oDataMgr.TableExist(conn, "InactiveStandsWorkTable") == true)
                             m_oDataMgr.SqlNonQuery(conn, "DROP TABLE InactiveStandsWorkTable");
-                        // Delete the link too -- TEMPORARY
-                        if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, "InactiveStandsWorkTable") == true)
-                            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE InactiveStandsWorkTable");
 
                         if (m_oDataMgr.TableExist(conn, "TreeVolValLowSlope") == true)
                             m_oDataMgr.SqlNonQuery(conn, "DROP TABLE TreeVolValLowSlope");
-                        // Delete the link too -- TEMPORARY
-                        if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, "TreeVolValLowSlope") == true)
-                            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE TreeVolValLowSlope");
 
                         if (m_oDataMgr.TableExist(conn, "HarvestCostsTotalAdditionalWorkTable") == true)
                             m_oDataMgr.SqlNonQuery(conn, "DROP TABLE HarvestCostsTotalAdditionalWorkTable");
-                        // Delete the link too -- TEMPORARY
-                        if (m_oAdo.TableExist(m_oAdo.m_OleDbConnection, "HarvestCostsTotalAdditionalWorkTable") == true)
-                            m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, "DROP TABLE HarvestCostsTotalAdditionalWorkTable");
 
                         if (m_oDataMgr.TableExist(conn, "opcost_input") == true)
                             m_oDataMgr.SqlNonQuery(conn, "DROP TABLE opcost_input");
@@ -3427,7 +3413,6 @@ namespace FIA_Biosum_Manager
 
                         if (m_oDataMgr.TableExist(conn, "opcost_errors") == true)
                             m_oDataMgr.SqlNonQuery(conn, "DROP TABLE opcost_errors");
-
                     }
 
                     //Here we set the maximum number of ticks on the progress bar
@@ -3447,7 +3432,7 @@ namespace FIA_Biosum_Manager
                         m_intError = mainProcessor.LoadTrees(strVariant, strRxPackage, m_oQueries.m_oFIAPlot.m_strCondTable,
                             m_oQueries.m_oFIAPlot.m_strPlotTable, m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.HarvestMethods),
                             m_oQueries.m_oReference.m_strRefHarvestMethodTable, m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Rx), 
-                            m_oQueries.m_oFvs.m_strRxTable);
+                            m_oQueries.m_oFvs.m_strRxTable, m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Plot));
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         {
                             frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");

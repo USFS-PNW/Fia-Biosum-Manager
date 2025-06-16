@@ -173,13 +173,11 @@ namespace FIA_Biosum_Manager
  
             return p_oQueries;
         }
-        
         public int LoadTrees(string p_strVariant, string p_strRxPackage, string p_strCondTableName, string p_strPlotTableName,
-                             string p_strRefHarvestDatabase, string p_strRefHarvestMethodTableName, string p_strRxDatabase, string p_strRxTableName)
+                             string p_strRefHarvestDatabase, string p_strRefHarvestMethodTableName, string p_strRxDatabase, 
+                             string p_strRxTableName, string p_strMasterDatabase)
         {
-
             //Load harvest methods; Prescription load depends on harvest methods
-            //@ToDo: Table names that are passed in here are still in MS Access
             m_harvestMethodList = LoadHarvestMethods(p_strRefHarvestDatabase, p_strRefHarvestMethodTableName);
             //If harvest methods didn't load, stop processing
             if (m_harvestMethodList == null)
@@ -194,18 +192,6 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//Variant: " + p_strVariant + " Package: " + p_strRxPackage + "\r\n");
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
-            // Link to FVSOUT_TREE_LIST.db
-            if (!m_oAdo.TableExist(m_oAdo.m_OleDbConnection, Tables.FVS.DefaultFVSCutTreeTableName))
-            {
-                dao_data_access oDao = new dao_data_access();
-                oDao.CreateSQLiteTableLink(m_oAdo.m_OleDbConnection.DataSource, Tables.FVS.DefaultFVSCutTreeTableName, Tables.FVS.DefaultFVSCutTreeTableName,
-                    ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                    Tables.FVS.DefaultFVSTreeListDbFile);
-                oDao.m_DaoWorkspace.Close();
-                oDao = null;
-                // Sleep to ensure table link is complete
-                System.Threading.Thread.Sleep(5000);
-            }
 
             //Load prescriptions into reference dictionary
             m_prescriptions = LoadPrescriptions(p_strRxDatabase, p_strRxTableName);
@@ -219,16 +205,25 @@ namespace FIA_Biosum_Manager
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "loadTrees: Diameter Variables in Use: " + m_scenarioHarvestMethod.ToString() + "\r\n");
-            
-            if (m_oAdo.m_intError == 0)
+
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(m_strSqliteConnection)))
             {
-                //string strSQL = "SELECT z.biosum_cond_id, c.biosum_plot_id, z.rxCycle, z.rx, z.rxYear, z.dbh, z.tpa, 
-                //z.volCfNet, z.drybiot, z.drybiom,z.FvsCreatedTree_YN, z.fvs_tree_id, z.fvs_species, z.volCfGrs, 
-                //c.slope, c.elev, c.gis_yard_dist_ft FROM FVS_CutTree z, (SELECT p.biosum_plot_id,p.gis_yard_dist_ft,p.elev,
-                //d.biosum_cond_id,d.slope FROM plot p 
-                //INNER JOIN cond d ON p.biosum_plot_id = d.biosum_plot_id) c 
-                //WHERE z.rxpackage='001' AND z.fvs_variant = 'BM' AND z.biosum_cond_id = c.biosum_cond_id AND dbh > 1.0"
-                string strSQL = "SELECT z.biosum_cond_id, c.biosum_plot_id, z.rxCycle, z.rx, z.rxYear, z.dbh, z.tpa, " +
+                conn.Open();
+                // Attach FVS_CutTree table
+                string strSQL = $@"ATTACH '{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSTreeListDbFile}' AS CUTLIST";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
+                SQLite.SqlQueryReader(conn, strSQL);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                // Attach master.db
+                strSQL = $@"ATTACH '{p_strMasterDatabase}' AS MASTER";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
+                SQLite.SqlQueryReader(conn, strSQL);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                strSQL = "SELECT z.biosum_cond_id, c.biosum_plot_id, z.rxCycle, z.rx, z.rxYear, z.dbh, z.tpa, " +
                                 "z.volCfNet, z.drybiot, z.drybiom,z.FvsCreatedTree_YN, z.fvs_tree_id, " +
                                 "z.fvs_species, z.volCfGrs, c.slope, c.elev, c.gis_yard_dist_ft " +
                                 "FROM " + Tables.FVS.DefaultFVSCutTreeTableName + " z, " +
@@ -238,55 +233,55 @@ namespace FIA_Biosum_Manager
                                 "z.biosum_cond_id = c.biosum_cond_id";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
-                m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
+                SQLite.SqlQueryReader(conn, strSQL);
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                 
-                if (m_oAdo.m_OleDbDataReader.HasRows)
+                if (SQLite.m_DataReader.HasRows)
                 {
                     m_trees = new System.Collections.Generic.List<tree>();
-                    while (m_oAdo.m_OleDbDataReader.Read())
+                    while (SQLite.m_DataReader.Read())
                     {
                         tree newTree = new tree();
                         try
                         {
                             newTree.DebugFile = m_strDebugFile;
-                            newTree.CondId = Convert.ToString(m_oAdo.m_OleDbDataReader["biosum_cond_id"]).Trim();
-                            newTree.PlotId = Convert.ToString(m_oAdo.m_OleDbDataReader["biosum_plot_id"]).Trim();
-                            newTree.FvsTreeId = Convert.ToString(m_oAdo.m_OleDbDataReader["fvs_tree_id"]).Trim();
-                            newTree.RxCycle = Convert.ToString(m_oAdo.m_OleDbDataReader["rxCycle"]).Trim();
+                            newTree.CondId = Convert.ToString(SQLite.m_DataReader["biosum_cond_id"]).Trim();
+                            newTree.PlotId = Convert.ToString(SQLite.m_DataReader["biosum_plot_id"]).Trim();
+                            newTree.FvsTreeId = Convert.ToString(SQLite.m_DataReader["fvs_tree_id"]).Trim();
+                            newTree.RxCycle = Convert.ToString(SQLite.m_DataReader["rxCycle"]).Trim();
                             newTree.RxPackage = p_strRxPackage;
-                            newTree.Rx = Convert.ToString(m_oAdo.m_OleDbDataReader["rx"]).Trim();
-                            newTree.RxYear = Convert.ToString(m_oAdo.m_OleDbDataReader["rxYear"]).Trim();
-                            newTree.Dbh = Convert.ToDouble(m_oAdo.m_OleDbDataReader["dbh"]);
-                            newTree.Tpa = Convert.ToDouble(m_oAdo.m_OleDbDataReader["tpa"]);
+                            newTree.Rx = Convert.ToString(SQLite.m_DataReader["rx"]).Trim();
+                            newTree.RxYear = Convert.ToString(SQLite.m_DataReader["rxYear"]).Trim();
+                            newTree.Dbh = Convert.ToDouble(SQLite.m_DataReader["dbh"]);
+                            newTree.Tpa = Convert.ToDouble(SQLite.m_DataReader["tpa"]);
                             // Special processing for saplings where volCfNet may be null
-                            if (m_oAdo.m_OleDbDataReader["volCfNet"] == System.DBNull.Value && newTree.IsSapling)
+                            if (SQLite.m_DataReader["volCfNet"] == System.DBNull.Value && newTree.IsSapling)
                             {
                                 newTree.VolCfNet = 0;
                             }
                             else
                             {
-                                newTree.VolCfNet = Convert.ToDouble(m_oAdo.m_OleDbDataReader["volCfNet"]);
+                                newTree.VolCfNet = Convert.ToDouble(SQLite.m_DataReader["volCfNet"]);
                             }
                             // Special processing for saplings where volCfGrs may be null
-                            if (m_oAdo.m_OleDbDataReader["volCfGrs"] == System.DBNull.Value && newTree.IsSapling)
+                            if (SQLite.m_DataReader["volCfGrs"] == System.DBNull.Value && newTree.IsSapling)
                             {
                                 newTree.VolCfGrs = 0;
                             }
                             else
                             {
-                                newTree.VolCfGrs = Convert.ToDouble(m_oAdo.m_OleDbDataReader["volCfGrs"]);
+                                newTree.VolCfGrs = Convert.ToDouble(SQLite.m_DataReader["volCfGrs"]);
                             }
-                            newTree.DryBiot = Convert.ToDouble(m_oAdo.m_OleDbDataReader["drybiot"]);
+                            newTree.DryBiot = Convert.ToDouble(SQLite.m_DataReader["drybiot"]);
                             // Special processing for saplings where drybiom may be null
-                            if (m_oAdo.m_OleDbDataReader["drybiom"] == System.DBNull.Value && newTree.IsSapling)
+                            if (SQLite.m_DataReader["drybiom"] == System.DBNull.Value && newTree.IsSapling)
                             {
                                 newTree.DryBiom = 0;
                             }
                             else
                             {
-                                newTree.DryBiom = Convert.ToDouble(m_oAdo.m_OleDbDataReader["drybiom"]);
+                                newTree.DryBiom = Convert.ToDouble(SQLite.m_DataReader["drybiom"]);
                             }
                         }
                         catch (Exception)
@@ -300,7 +295,7 @@ namespace FIA_Biosum_Manager
                             return -1;
                         }
 
-                        newTree.Slope = Convert.ToInt32(m_oAdo.m_OleDbDataReader["slope"]);
+                        newTree.Slope = Convert.ToInt32(SQLite.m_DataReader["slope"]);
                         // find default harvest methods in prescription in case we need them
                         harvestMethod objDefaultHarvestMethodLowSlope = null;
                         harvestMethod objDefaultHarvestMethodSteepSlope = null;
@@ -315,8 +310,7 @@ namespace FIA_Biosum_Manager
                         if (newTree.Slope < m_scenarioHarvestMethod.SteepSlopePct)
                         {
                             // assign low slope harvest method if not rx
-                            if ((m_scenarioHarvestMethod.HarvMethodSelection.Equals(HarvestMethodSelection.SELECTED) || 
-                                 m_scenarioHarvestMethod.HarvMethodSelection.Equals(HarvestMethodSelection.LOWEST_COST)) &&
+                            if ((m_scenarioHarvestMethod.HarvMethodSelection.Equals(HarvestMethodSelection.SELECTED)) &&
                                  m_scenarioHarvestMethod.HarvestMethodLowSlope != null)
                             {
                                 newTree.HarvestMethod = m_scenarioHarvestMethod.HarvestMethodLowSlope;
@@ -329,8 +323,7 @@ namespace FIA_Biosum_Manager
                         else
                         {
                             // assign steep slope harvest method if not rx
-                            if ((m_scenarioHarvestMethod.HarvMethodSelection.Equals(HarvestMethodSelection.SELECTED) || 
-                                 m_scenarioHarvestMethod.HarvMethodSelection.Equals(HarvestMethodSelection.LOWEST_COST)) &&
+                            if ((m_scenarioHarvestMethod.HarvMethodSelection.Equals(HarvestMethodSelection.SELECTED)) &&
                                  m_scenarioHarvestMethod.HarvestMethodSteepSlope != null)
                             {
                                 newTree.HarvestMethod = m_scenarioHarvestMethod.HarvestMethodSteepSlope;
@@ -340,19 +333,19 @@ namespace FIA_Biosum_Manager
                                 newTree.HarvestMethod = objDefaultHarvestMethodSteepSlope;
                             }
                         }
-                        if (Convert.ToString(m_oAdo.m_OleDbDataReader["FvsCreatedTree_YN"]).Trim().ToUpper() == "Y")
+                        if (Convert.ToString(SQLite.m_DataReader["FvsCreatedTree_YN"]).Trim().ToUpper() == "Y")
                         {
                             newTree.FvsCreatedTree = true;
                             // only use fvs_species from cut list if it is an FVS created tree
                             // convert to int to get rid of leading 0
-                            int intSpcd = Convert.ToInt16(m_oAdo.m_OleDbDataReader["fvs_species"]);
+                            int intSpcd = Convert.ToInt16(SQLite.m_DataReader["fvs_species"]);
                             newTree.SpCd = Convert.ToString(intSpcd);
                         }
-                        newTree.Elevation = Convert.ToInt32(m_oAdo.m_OleDbDataReader["elev"]);
-                        if (m_oAdo.m_OleDbDataReader["gis_yard_dist_ft"] == System.DBNull.Value)
+                        newTree.Elevation = Convert.ToInt32(SQLite.m_DataReader["elev"]);
+                        if (SQLite.m_DataReader["gis_yard_dist_ft"] == System.DBNull.Value)
                             newTree.YardingDistance = -1;
                         else
-                            newTree.YardingDistance = Convert.ToDouble(m_oAdo.m_OleDbDataReader["gis_yard_dist_ft"]);
+                            newTree.YardingDistance = Convert.ToDouble(SQLite.m_DataReader["gis_yard_dist_ft"]);
 
                         // only process the tree if it has a valid yarding distance
                         if (newTree.YardingDistance > 0)
@@ -392,11 +385,9 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "//This query didn't return any rows: \r\n");
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "//SELECT z.biosum_cond_id, c.biosum_plot_id, z.rxCycle, z.rx, z.rxYear, z.dbh, z.tpa, z.volCfNet, z.drybiot, \r\n");
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "//z.drybiom,z.FvsCreatedTree_YN, z.fvs_tree_id, z.fvs_species, z.volCfGrs, c.slope, c.elev, \r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//c.gis_yard_dist, t.min_traveltime FROM fvs_tree_IN_BM_P001_TREE_CUTLIST z, (SELECT MIN(ONE_WAY_HOURS) AS  \r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//min_traveltime, BIOSUM_PLOT_ID FROM TRAVEL_TIME WHERE ONE_WAY_HOURS > 0 GROUP BY BIOSUM_PLOT_ID) t, (SELECT \r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//p.biosum_plot_id,p.gis_yard_dist_ft,p.elev,d.biosum_cond_id,d.slope FROM plot p INNER JOIN cond d ON  \r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//p.biosum_plot_id = d.biosum_plot_id) c WHERE z.rxpackage='001' AND z.biosum_cond_id = c.biosum_cond_id AND \r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//c.biosum_plot_id = t.biosum_plot_id \r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//c.gis_yard_dist_ft FROM FVS_CutTree z,  \r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//(SELECT p.biosum_plot_id,p.gis_yard_dist_ft,p.elev,d.biosum_cond_id,d.slope FROM plot p INNER JOIN cond d ON p.biosum_plot_id = d.biosum_plot_id) c \r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, $@"//WHERE z.rxpackage='{p_strRxPackage}' AND z.fvs_variant = '{p_strVariant}' AND z.biosum_cond_id = c.biosum_cond_id  \r\n");
                 }
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
@@ -452,19 +443,20 @@ namespace FIA_Biosum_Manager
                     "FIA Biosum", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 return -1;
             }
-            
+
             //Query TREE table to get original FIA species codes
-            if (m_oAdo.m_intError == 0)
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(m_strSqliteConnection)))
             {
-            string strSQL = "SELECT DISTINCT t.fvs_tree_id, t.biosum_cond_id, t.spcd " +
+                conn.Open();
+                string strSQL = "SELECT DISTINCT t.fvs_tree_id, t.biosum_cond_id, t.spcd " +
                     "FROM " + p_strTreeTableName + " t, " + Tables.FVS.DefaultFVSCutTreeTableName + " z " +
                     "WHERE trim(t.fvs_tree_id) = z.fvs_tree_id " +
                     "AND t.biosum_cond_id = z.biosum_cond_id " +
                     "AND z.rxpackage='" + p_strRxPackage + "' " +
                     "GROUP BY t.fvs_tree_id, t.biosum_cond_id, t.spcd";
 
-            m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
-            if (m_oAdo.m_OleDbDataReader.HasRows)
+            SQLite.SqlQueryReader(conn, strSQL);
+            if (SQLite.m_DataReader.HasRows)
             {
                 System.Collections.Generic.Dictionary<String, String> dictSpCd = 
                     new System.Collections.Generic.Dictionary<string, string>();
