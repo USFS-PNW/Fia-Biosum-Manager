@@ -98,7 +98,7 @@ namespace FIA_Biosum_Manager
             m_strTempDbFile = this.m_oDataSource.CreateMDBAndTableDataSourceLinks();
 		}
 
-        public void LoadDatasourcesSqlite(bool p_bLimited, bool p_bUsingSqlite, string p_strScenarioType, string p_strScenarioId)
+        public void LoadDatasourcesSqlite(bool p_bLimited, string p_strScenarioType, string p_strScenarioId)
         {
             Scenario = true;
             ScenarioType = p_strScenarioType;
@@ -134,7 +134,26 @@ namespace FIA_Biosum_Manager
             m_strTempDbFile = this.m_oDataSource.CreateMDBAndTableDataSourceLinks();
         }
 
-		protected void LoadLimitedDatasources()
+        public void LoadDatasourcesNew(bool p_bLimited)
+        {
+            if (p_bLimited)
+            {
+                LoadLimitedDatasources();
+
+            }
+            else
+            {
+
+            }
+            if (this.m_oFvs.LoadDatasource) this.m_oFvs.LoadDatasources();
+            if (this.m_oFIAPlot.LoadDatasource) this.m_oFIAPlot.LoadDatasources();
+            if (this.m_oReference.LoadDatasource) this.m_oReference.LoadDatasources();
+            if (this.m_oProcessor.LoadDatasource) this.m_oProcessor.LoadDatasources();
+            if (this.m_oTravelTime.LoadDatasource) this.m_oTravelTime.LoadDatasources();
+            m_strTempDbFile = this.m_oDataSource.CreateDB();
+        }
+
+        protected void LoadLimitedDatasources()
 		{
 			string strProjDir=frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
 			
@@ -314,12 +333,20 @@ namespace FIA_Biosum_Manager
             /// <param name="p_strPlotTable"></param>
             /// <param name="p_strRxPackageTable"></param>
             /// <returns></returns>
-            static public string GetFVSVariantSQL(string p_strPlotTable)
+            static public string GetFVSVariantSQL_access(string p_strPlotTable)
             {
                 return "SELECT DISTINCT fvs_variant " +
                        "FROM " + p_strPlotTable +
                        " WHERE fvs_variant IS NOT NULL AND " +
                               "LEN(TRIM(fvs_variant)) > 0;";
+            }
+
+            static public string GetFVSVariantSQL(string p_strPlotTable)
+            {
+                return "SELECT DISTINCT fvs_variant " +
+                    "FROM " + p_strPlotTable +
+                    " WHERE fvs_variant IS NOT NULL AND " +
+                    "LENGTH(TRIM(fvs_variant)) > 0";
             }
 
             /// <summary>
@@ -3223,7 +3250,7 @@ namespace FIA_Biosum_Manager
 
 		            public static string CreateDWMFuelbedTypCdToFVSConversionTable()
 		            {
-		                return "CREATE TABLE Ref_DWM_Fuelbed_Type_Codes (dwm_fuelbed_typcd TEXT(3), fuel_model LONG);";
+		                return "CREATE TABLE Ref_DWM_Fuelbed_Type_Codes (dwm_fuelbed_typcd CHAR(3), fuel_model INTEGER)";
 		            }
 
 		            public static string BulkImportStandDataFromBioSumMaster(string strVariant, string strDestTable,
@@ -3248,15 +3275,13 @@ namespace FIA_Biosum_Manager
 		                return strInsertIntoStandInit + strBioSumWorkTableSelectStmt + strFromTableExpr +
 		                       strFilters;
 		            }
-
-		            public static string UpdateFuelModel(string strDestTable, string strCondTableName)
-		            {
-		                return String.Format(
-		                    "UPDATE ({0} fvs INNER JOIN {1} c ON fvs.Stand_ID=c.biosum_cond_id) " +
-		                    "LEFT JOIN {2} ref ON c.dwm_fuelbed_typcd=ref.dwm_fuelbed_typcd " +
-		                    "SET fvs.Fuel_Model=IIF(c.dwm_fuelbed_typcd IS NULL, NULL, ref.Fuel_Model);",
-		                    strDestTable, strCondTableName, "Ref_DWM_Fuelbed_Type_Codes");
-		            }
+                    public static string UpdateFuelModel(string strDestTable, string strCondTable)
+                    {
+                        return "UPDATE " + strDestTable + " AS fvs " +
+                            "SET fuel_model = CASE WHEN c.dwm_fuelbed_typcd IS NULL THEN NULL ELSE ref.fuel_model END " +
+                            "FROM " + strCondTable + " AS c LEFT JOIN Ref_DWM_Fuelbed_Type_Codes AS ref " +
+                            "ON c.dwm_fuelbed_typcd = ref.dwm_fuelbed_typcd WHERE fvs.stand_id = c.biosum_cond_id";
+                    }
 
 		            /// <summary>
 		            /// Calculate biomass contribution to condition per CWD piece so that they can be summed
@@ -3267,317 +3292,8 @@ namespace FIA_Biosum_Manager
 		            /// <param name="strRefSpecies"></param>
 		            /// <param name="strTransectSegmentTable"></param>
 		            /// <returns></returns>
-		            public static string[] CalculateCoarseWoodyDebrisBiomassTonsPerAcre(string strCoarseWoodyDebrisTable,
-		                string strCondTable, string strRefSpecies, string strTransectSegmentTable, string strMinCwdTransectLengthTotal)
-		            {
-		                string[] strCwdSqlStmts = new string[11];
-		                int idx = 0;
-
-		                //Sum horizontal lengths for transects
-		                strCwdSqlStmts[idx++] = String.Format(
-		                    "SELECT biosum_cond_id, SUM(horiz_length) as CWDTotalLength " +
-		                    "INTO CWDTotalLengthWorkTable " +
-		                    "FROM {0} " +
-		                    "GROUP BY biosum_cond_id;", strTransectSegmentTable);
-
-		                //Create worktable for calculation of cwd piece biomass
-		                strCwdSqlStmts[idx++] = String.Format("SELECT cwd.biosum_cond_id, " +
-		                                                      "cwd.spcd, " +
-		                                                      "cwd.transdia, " +
-		                                                      "cwd.inclination, " +
-		                                                      "cwd.decaycd, " +
-		                                                      "CDbl(0) as BulkDensity, " +
-		                                                      "CDbl(0) as DecayRatio, " +
-		                                                      "tl.CWDTotalLength, " +
-		                                                      "CDbl(0) as Biomass, " +
-		                                                      //from NRS-22 Eqn 3.27
-		                                                      //.1865972082080956863 = (1.0/2000.0)*(43560.0/144.0)*(3.141592654^2/8.0)
-		                                                      "0.186597208 as ScalingConstants " +
-		                                                      "INTO CwdPieceWorkTable " +
-		                                                      "FROM {0} cwd " +
-		                                                      "INNER JOIN CWDTotalLengthWorkTable tl " +
-		                                                      "ON cwd.biosum_cond_id=tl.biosum_cond_id;",
-		                    strCoarseWoodyDebrisTable);
-
-		                //Set BulkDensity And DecayRatios for each piece for easy multiplication across row
-		                strCwdSqlStmts[idx++] = String.Format("UPDATE CwdPieceWorkTable cwd " +
-		                                                      "INNER JOIN {0} spc ON cwd.spcd=spc.spcd " +
-		                                                      "SET cwd.BulkDensity=spc.CWD_Bulk_Density," +
-		                                                      "cwd.DecayRatio=IIF(cwd.decaycd=1, spc.CWD_Decay_Ratio1, " +
-		                                                      "IIF(cwd.decaycd=2, spc.CWD_Decay_Ratio2, " +
-		                                                      "IIF(cwd.decaycd=3, spc.CWD_Decay_Ratio3, " +
-		                                                      "IIF(cwd.decaycd=4, spc.CWD_Decay_Ratio4, " +
-		                                                      "IIF(cwd.decaycd=5, spc.CWD_Decay_Ratio5, 0)))));",
-		                    strRefSpecies);
-
-		                //TODO: null spcd needs bulkdensity and decayratio
-		                strCwdSqlStmts[idx++] = String.Format(
-		                    "UPDATE CwdPieceWorkTable cwd, (SELECT * FROM {0} WHERE spcd=998) spc " +
-		                    "SET cwd.BulkDensity=spc.CWD_Bulk_Density," +
-		                    "cwd.DecayRatio=IIF(cwd.decaycd=1, spc.CWD_Decay_Ratio1, " +
-		                    "IIF(cwd.decaycd=2, spc.CWD_Decay_Ratio2, " +
-		                    "IIF(cwd.decaycd=3, spc.CWD_Decay_Ratio3, " +
-		                    "IIF(cwd.decaycd=4, spc.CWD_Decay_Ratio4, " +
-		                    "IIF(cwd.decaycd=5, spc.CWD_Decay_Ratio5, 0))))) " +
-		                    "WHERE cwd.spcd IS NULL;",
-		                    strRefSpecies);
-
-
-		                //Calculate the CWD piece's biomass contribution to the condition
-		                //The last step is to group these by biosum_cond_id and sum them
-		                strCwdSqlStmts[idx++] = "UPDATE CwdPieceWorkTable cwd " +
-		                                        "SET cwd.Biomass=cwd.ScalingConstants*cwd.BulkDensity*cwd.DecayRatio*cwd.transdia^2/cwd.CWDTotalLength;";
-
-
-                        //Update CWD piece's biomass: scale by cosine_inclination or 1 if inclination is null 
-                        //Piece inclination is measured in degrees from 0 to 90. Convert to radians for Access cosine function
-		                strCwdSqlStmts[idx++] = "UPDATE CwdPieceWorkTable cwd " +
-		                                        "SET cwd.Biomass=cwd.Biomass/COS(cwd.inclination * 3.141592654/180)" +
-		                                        "WHERE cwd.inclination IS NOT NULL;";
-
-		                //Sum by size and decay bins to match FVS_StandInit columns
-		                strCwdSqlStmts[idx++] = "SELECT cwd.biosum_cond_id, " +
-		                                        "SUM(IIF((cwd.transdia >= 3 AND cwd.transdia < 6) AND (cwd.decaycd IN (1,2,3)), " +
-		                                        "cwd.Biomass, 0)) as fuel_3_6_H, " +
-		                                        "SUM(IIF((cwd.transdia >= 6 AND cwd.transdia < 12) AND (cwd.decaycd IN (1,2,3)), " +
-		                                        "cwd.Biomass, 0)) as fuel_6_12_H, " +
-		                                        "SUM(IIF((cwd.transdia >= 12 AND cwd.transdia < 20) AND (cwd.decaycd IN (1,2,3)), " +
-		                                        "cwd.Biomass, 0)) as fuel_12_20_H, " +
-		                                        "SUM(IIF((cwd.transdia >= 20 AND cwd.transdia < 35) AND (cwd.decaycd IN (1,2,3)), " +
-		                                        "cwd.Biomass, 0)) as fuel_20_35_H, " +
-		                                        "SUM(IIF((cwd.transdia >= 35 AND cwd.transdia < 50) AND (cwd.decaycd IN (1,2,3)), " +
-		                                        "cwd.Biomass, 0)) as fuel_35_50_H, " +
-		                                        "SUM(IIF((cwd.transdia >= 50 AND cwd.transdia < 999) AND (cwd.decaycd IN (1,2,3)), " +
-		                                        "cwd.Biomass, 0)) as fuel_gt_50_H, " +
-		                                        "SUM(IIF((cwd.transdia >= 3 AND cwd.transdia < 6) AND (cwd.decaycd IN (4,5)), " +
-		                                        "cwd.Biomass, 0)) as fuel_3_6_S, " +
-		                                        "SUM(IIF((cwd.transdia >= 6 AND cwd.transdia < 12) AND (cwd.decaycd IN (4,5)), " +
-		                                        "cwd.Biomass, 0)) as fuel_6_12_S, " +
-		                                        "SUM(IIF((cwd.transdia >= 12 AND cwd.transdia < 20) AND (cwd.decaycd IN (4,5)), " +
-		                                        "cwd.Biomass, 0)) as fuel_12_20_S, " +
-		                                        "SUM(IIF((cwd.transdia >= 20 AND cwd.transdia < 35) AND (cwd.decaycd IN (4,5)), " +
-		                                        "cwd.Biomass, 0)) as fuel_20_35_S, " +
-		                                        "SUM(IIF((cwd.transdia >= 35 AND cwd.transdia < 50) AND (cwd.decaycd IN (4,5)), " +
-		                                        "cwd.Biomass, 0)) as fuel_35_50_S, " +
-		                                        "SUM(IIF((cwd.transdia >= 50 AND cwd.transdia < 999) AND (cwd.decaycd IN (4,5)), " +
-		                                        "cwd.Biomass, 0)) as fuel_gt_50_S " +
-		                                        "INTO DWM_CWD_Aggregates_WorkTable " +
-		                                        "FROM CwdPieceWorkTable cwd " +
-		                                        "GROUP BY cwd.biosum_cond_id;";
-
-		                //Update CWD columns in FVS_StandInit
-		                strCwdSqlStmts[idx++] = "UPDATE FVS_StandInit_WorkTable fvs " +
-		                                        "INNER JOIN DWM_CWD_Aggregates_WorkTable cwd ON fvs.Stand_ID=cwd.biosum_cond_id " +
-		                                        "SET fvs.fuel_3_6_H=cwd.fuel_3_6_H, " +
-		                                        "fvs.fuel_6_12_H=cwd.fuel_6_12_H, " +
-		                                        "fvs.fuel_12_20_H=cwd.fuel_12_20_H, " +
-		                                        "fvs.fuel_20_35_H=cwd.fuel_20_35_H, " +
-		                                        "fvs.fuel_35_50_H=cwd.fuel_35_50_H, " +
-		                                        "fvs.fuel_gt_50_H=cwd.fuel_gt_50_H, " +
-		                                        "fvs.fuel_3_6_S=cwd.fuel_3_6_S, " +
-		                                        "fvs.fuel_6_12_S=cwd.fuel_6_12_S, " +
-		                                        "fvs.fuel_12_20_S=cwd.fuel_12_20_S, " +
-		                                        "fvs.fuel_20_35_S=cwd.fuel_20_35_S, " +
-		                                        "fvs.fuel_35_50_S=cwd.fuel_35_50_S, " +
-		                                        "fvs.fuel_gt_50_S=cwd.fuel_gt_50_S;";
-
-		                //Write them to fvs_standinit column
-		                strCwdSqlStmts[idx++] = "UPDATE FVS_StandInit_WorkTable fvs " +
-		                                        "INNER JOIN CWDTotalLengthWorkTable t ON fvs.stand_id=t.biosum_cond_id " +
-		                                        "SET fvs.cwdtotallength=t.CWDTotalLength;";
-		                
-		                //Nullify CWD where total horizontal length is less than the minimum
-		                strCwdSqlStmts[idx++] = String.Format("UPDATE FVS_StandInit_WorkTable fvs " +
-		                                        "INNER JOIN CWDTotalLengthWorkTable t ON fvs.stand_id=t.biosum_cond_id " +
-		                                        "SET fvs.fuel_3_6_H=NULL, " +
-		                                        "fvs.fuel_6_12_H=NULL, " +
-		                                        "fvs.fuel_12_20_H=NULL, " +
-		                                        "fvs.fuel_20_35_H=NULL, " +
-		                                        "fvs.fuel_35_50_H=NULL, " +
-		                                        "fvs.fuel_gt_50_H=NULL, " +
-		                                        "fvs.fuel_3_6_S=NULL, " +
-		                                        "fvs.fuel_6_12_S=NULL, " +
-		                                        "fvs.fuel_12_20_S=NULL, " +
-		                                        "fvs.fuel_20_35_S=NULL, " +
-		                                        "fvs.fuel_35_50_S=NULL, " +
-		                                        "fvs.fuel_gt_50_S=NULL " + 
-		                                        "WHERE fvs.CwdTotalLength < {0};", strMinCwdTransectLengthTotal);
-
-		                //Set cwd fuels to 0 if TS.horiz_length is non-null and positive
-		                //FVS interprets 0s as 0 tons/acre, but null lets it insert default values for the variant.
-                        strCwdSqlStmts[idx++] = String.Format("UPDATE FVS_StandInit_WorkTable " +
-                                                              "SET Fuel_3_6_H=IIF(Fuel_3_6_H is null, 0, Fuel_3_6_H), " +
-                                                              "Fuel_6_12_H=IIF(Fuel_6_12_H is null, 0, Fuel_6_12_H), " +
-                                                              "Fuel_12_20_H=IIF(Fuel_12_20_H is null, 0, Fuel_12_20_H), " +
-                                                              "Fuel_20_35_H=IIF(Fuel_20_35_H is null, 0, Fuel_20_35_H), " +
-                                                              "Fuel_35_50_H=IIF(Fuel_35_50_H is null, 0, Fuel_35_50_H), " +
-                                                              "Fuel_gt_50_H=IIF(Fuel_gt_50_H is null, 0, Fuel_gt_50_H), " +
-                                                              "Fuel_3_6_S=IIF(Fuel_3_6_S is null, 0, Fuel_3_6_S), " +
-                                                              "Fuel_6_12_S=IIF(Fuel_6_12_S is null, 0, Fuel_6_12_S), " +
-                                                              "Fuel_12_20_S=IIF(Fuel_12_20_S is null, 0, Fuel_12_20_S), " +
-                                                              "Fuel_20_35_S=IIF(Fuel_20_35_S is null, 0, Fuel_20_35_S), " +
-                                                              "Fuel_35_50_S=IIF(Fuel_35_50_S is null, 0, Fuel_35_50_S), " +
-                                                              "Fuel_gt_50_S=IIF(Fuel_gt_50_S is null, 0, Fuel_gt_50_S) " +
-                                                              "WHERE CWDTotalLength > 0;");
-
-		                return strCwdSqlStmts;
-		            }
-                    public static string[] CalculateCoarseWoodyDebrisBiomassTonsPerAcreSqlite_old(string strCoarseWoodyDebrisTable,
-                        string strRefSpecies, string strTransectSegmentTable, string strMinCwdTransectLengthTotal,
-                        string strStandTable)
-                    {
-                        string[] strCwdSqlStmts = new string[11];
-                        int idx = 0;
-
-                        //Sum horizontal lengths for transects
-                        strCwdSqlStmts[idx++] = String.Format(
-                            "SELECT biosum_cond_id, SUM(horiz_length) as CWDTotalLength " +
-                            "INTO CWDTotalLengthWorkTable " +
-                            "FROM {0} " +
-                            "GROUP BY biosum_cond_id;", strTransectSegmentTable);
-
-                        //Create worktable for calculation of cwd piece biomass
-                        strCwdSqlStmts[idx++] = String.Format("SELECT cwd.biosum_cond_id, " +
-                                                              "cwd.spcd, " +
-                                                              "cwd.transdia, " +
-                                                              "cwd.inclination, " +
-                                                              "cwd.decaycd, " +
-                                                              "CDbl(0) as BulkDensity, " +
-                                                              "CDbl(0) as DecayRatio, " +
-                                                              "tl.CWDTotalLength, " +
-                                                              "CDbl(0) as Biomass, " +
-                                                              //from NRS-22 Eqn 3.27
-                                                              //.1865972082080956863 = (1.0/2000.0)*(43560.0/144.0)*(3.141592654^2/8.0)
-                                                              "0.186597208 as ScalingConstants " +
-                                                              "INTO CwdPieceWorkTable " +
-                                                              "FROM {0} cwd " +
-                                                              "INNER JOIN CWDTotalLengthWorkTable tl " +
-                                                              "ON cwd.biosum_cond_id=tl.biosum_cond_id;",
-                            strCoarseWoodyDebrisTable);
-
-                        //Set BulkDensity And DecayRatios for each piece for easy multiplication across row
-                        strCwdSqlStmts[idx++] = String.Format("UPDATE CwdPieceWorkTable cwd " +
-                                                              "INNER JOIN {0} spc ON cwd.spcd=spc.spcd " +
-                                                              "SET cwd.BulkDensity=spc.CWD_Bulk_Density," +
-                                                              "cwd.DecayRatio=IIF(cwd.decaycd=1, spc.CWD_Decay_Ratio1, " +
-                                                              "IIF(cwd.decaycd=2, spc.CWD_Decay_Ratio2, " +
-                                                              "IIF(cwd.decaycd=3, spc.CWD_Decay_Ratio3, " +
-                                                              "IIF(cwd.decaycd=4, spc.CWD_Decay_Ratio4, " +
-                                                              "IIF(cwd.decaycd=5, spc.CWD_Decay_Ratio5, 0)))));",
-                            strRefSpecies);
-
-                        //TODO: null spcd needs bulkdensity and decayratio
-                        strCwdSqlStmts[idx++] = String.Format(
-                            "UPDATE CwdPieceWorkTable cwd, (SELECT * FROM {0} WHERE spcd=998) spc " +
-                            "SET cwd.BulkDensity=spc.CWD_Bulk_Density," +
-                            "cwd.DecayRatio=IIF(cwd.decaycd=1, spc.CWD_Decay_Ratio1, " +
-                            "IIF(cwd.decaycd=2, spc.CWD_Decay_Ratio2, " +
-                            "IIF(cwd.decaycd=3, spc.CWD_Decay_Ratio3, " +
-                            "IIF(cwd.decaycd=4, spc.CWD_Decay_Ratio4, " +
-                            "IIF(cwd.decaycd=5, spc.CWD_Decay_Ratio5, 0))))) " +
-                            "WHERE cwd.spcd IS NULL;",
-                            strRefSpecies);
-
-                        //Calculate the CWD piece's biomass contribution to the condition
-                        //The last step is to group these by biosum_cond_id and sum them
-                        strCwdSqlStmts[idx++] = "UPDATE CwdPieceWorkTable cwd " +
-                                                "SET cwd.Biomass=cwd.ScalingConstants*cwd.BulkDensity*cwd.DecayRatio*cwd.transdia^2/cwd.CWDTotalLength;";
-
-
-                        //Update CWD piece's biomass: scale by cosine_inclination or 1 if inclination is null 
-                        //Piece inclination is measured in degrees from 0 to 90. Convert to radians for Access cosine function
-                        strCwdSqlStmts[idx++] = "UPDATE CwdPieceWorkTable cwd " +
-                                                "SET cwd.Biomass=cwd.Biomass/COS(cwd.inclination * 3.141592654/180)" +
-                                                "WHERE cwd.inclination IS NOT NULL;";
-
-                        //Sum by size and decay bins to match FVS_StandInit columns
-                        strCwdSqlStmts[idx++] = "SELECT cwd.biosum_cond_id, " +
-                                                "SUM(IIF((cwd.transdia >= 3 AND cwd.transdia < 6) AND (cwd.decaycd IN (1,2,3)), " +
-                                                "cwd.Biomass, 0)) as fuel_3_6_H, " +
-                                                "SUM(IIF((cwd.transdia >= 6 AND cwd.transdia < 12) AND (cwd.decaycd IN (1,2,3)), " +
-                                                "cwd.Biomass, 0)) as fuel_6_12_H, " +
-                                                "SUM(IIF((cwd.transdia >= 12 AND cwd.transdia < 20) AND (cwd.decaycd IN (1,2,3)), " +
-                                                "cwd.Biomass, 0)) as fuel_12_20_H, " +
-                                                "SUM(IIF((cwd.transdia >= 20 AND cwd.transdia < 35) AND (cwd.decaycd IN (1,2,3)), " +
-                                                "cwd.Biomass, 0)) as fuel_20_35_H, " +
-                                                "SUM(IIF((cwd.transdia >= 35 AND cwd.transdia < 50) AND (cwd.decaycd IN (1,2,3)), " +
-                                                "cwd.Biomass, 0)) as fuel_35_50_H, " +
-                                                "SUM(IIF((cwd.transdia >= 50 AND cwd.transdia < 999) AND (cwd.decaycd IN (1,2,3)), " +
-                                                "cwd.Biomass, 0)) as fuel_gt_50_H, " +
-                                                "SUM(IIF((cwd.transdia >= 3 AND cwd.transdia < 6) AND (cwd.decaycd IN (4,5)), " +
-                                                "cwd.Biomass, 0)) as fuel_3_6_S, " +
-                                                "SUM(IIF((cwd.transdia >= 6 AND cwd.transdia < 12) AND (cwd.decaycd IN (4,5)), " +
-                                                "cwd.Biomass, 0)) as fuel_6_12_S, " +
-                                                "SUM(IIF((cwd.transdia >= 12 AND cwd.transdia < 20) AND (cwd.decaycd IN (4,5)), " +
-                                                "cwd.Biomass, 0)) as fuel_12_20_S, " +
-                                                "SUM(IIF((cwd.transdia >= 20 AND cwd.transdia < 35) AND (cwd.decaycd IN (4,5)), " +
-                                                "cwd.Biomass, 0)) as fuel_20_35_S, " +
-                                                "SUM(IIF((cwd.transdia >= 35 AND cwd.transdia < 50) AND (cwd.decaycd IN (4,5)), " +
-                                                "cwd.Biomass, 0)) as fuel_35_50_S, " +
-                                                "SUM(IIF((cwd.transdia >= 50 AND cwd.transdia < 999) AND (cwd.decaycd IN (4,5)), " +
-                                                "cwd.Biomass, 0)) as fuel_gt_50_S " +
-                                                "INTO DWM_CWD_Aggregates_WorkTable " +
-                                                "FROM CwdPieceWorkTable cwd " +
-                                                "GROUP BY cwd.biosum_cond_id;";
-
-                        //Update CWD columns in FVS_StandInit
-                        strCwdSqlStmts[idx++] = "UPDATE " + strStandTable + " fvs " +
-                                                "INNER JOIN DWM_CWD_Aggregates_WorkTable cwd ON fvs.Stand_ID=cwd.biosum_cond_id " +
-                                                "SET fvs.fuel_3_6_H=cwd.fuel_3_6_H, " +
-                                                "fvs.fuel_6_12_H=cwd.fuel_6_12_H, " +
-                                                "fvs.fuel_12_20_H=cwd.fuel_12_20_H, " +
-                                                "fvs.fuel_20_35_H=cwd.fuel_20_35_H, " +
-                                                "fvs.fuel_35_50_H=cwd.fuel_35_50_H, " +
-                                                "fvs.fuel_gt_50_H=cwd.fuel_gt_50_H, " +
-                                                "fvs.fuel_3_6_S=cwd.fuel_3_6_S, " +
-                                                "fvs.fuel_6_12_S=cwd.fuel_6_12_S, " +
-                                                "fvs.fuel_12_20_S=cwd.fuel_12_20_S, " +
-                                                "fvs.fuel_20_35_S=cwd.fuel_20_35_S, " +
-                                                "fvs.fuel_35_50_S=cwd.fuel_35_50_S, " +
-                                                "fvs.fuel_gt_50_S=cwd.fuel_gt_50_S;";
-
-                        //Write them to fvs_standinit column
-                        strCwdSqlStmts[idx++] = "UPDATE " + strStandTable + " fvs " +
-                                                "INNER JOIN CWDTotalLengthWorkTable t ON fvs.stand_id=t.biosum_cond_id " +
-                                                "SET fvs.cwdtotallength=t.CWDTotalLength;";
-
-                        //Nullify CWD where total horizontal length is less than the minimum
-                        strCwdSqlStmts[idx++] = String.Format("UPDATE " + strStandTable + " fvs " +
-                                                "INNER JOIN CWDTotalLengthWorkTable t ON fvs.stand_id=t.biosum_cond_id " +
-                                                "SET fvs.fuel_3_6_H=NULL, " +
-                                                "fvs.fuel_6_12_H=NULL, " +
-                                                "fvs.fuel_12_20_H=NULL, " +
-                                                "fvs.fuel_20_35_H=NULL, " +
-                                                "fvs.fuel_35_50_H=NULL, " +
-                                                "fvs.fuel_gt_50_H=NULL, " +
-                                                "fvs.fuel_3_6_S=NULL, " +
-                                                "fvs.fuel_6_12_S=NULL, " +
-                                                "fvs.fuel_12_20_S=NULL, " +
-                                                "fvs.fuel_20_35_S=NULL, " +
-                                                "fvs.fuel_35_50_S=NULL, " +
-                                                "fvs.fuel_gt_50_S=NULL " +
-                                                "WHERE fvs.CwdTotalLength < {0};", strMinCwdTransectLengthTotal);
-
-                        //Set cwd fuels to 0 if TS.horiz_length is non-null and positive
-                        //FVS interprets 0s as 0 tons/acre, but null lets it insert default values for the variant.
-                        strCwdSqlStmts[idx++] = String.Format("UPDATE " + strStandTable +
-                                                              " SET Fuel_3_6_H=IIF(Fuel_3_6_H is null, 0, Fuel_3_6_H), " +
-                                                              "Fuel_6_12_H=IIF(Fuel_6_12_H is null, 0, Fuel_6_12_H), " +
-                                                              "Fuel_12_20_H=IIF(Fuel_12_20_H is null, 0, Fuel_12_20_H), " +
-                                                              "Fuel_20_35_H=IIF(Fuel_20_35_H is null, 0, Fuel_20_35_H), " +
-                                                              "Fuel_35_50_H=IIF(Fuel_35_50_H is null, 0, Fuel_35_50_H), " +
-                                                              "Fuel_gt_50_H=IIF(Fuel_gt_50_H is null, 0, Fuel_gt_50_H), " +
-                                                              "Fuel_3_6_S=IIF(Fuel_3_6_S is null, 0, Fuel_3_6_S), " +
-                                                              "Fuel_6_12_S=IIF(Fuel_6_12_S is null, 0, Fuel_6_12_S), " +
-                                                              "Fuel_12_20_S=IIF(Fuel_12_20_S is null, 0, Fuel_12_20_S), " +
-                                                              "Fuel_20_35_S=IIF(Fuel_20_35_S is null, 0, Fuel_20_35_S), " +
-                                                              "Fuel_35_50_S=IIF(Fuel_35_50_S is null, 0, Fuel_35_50_S), " +
-                                                              "Fuel_gt_50_S=IIF(Fuel_gt_50_S is null, 0, Fuel_gt_50_S) " +
-                                                              "WHERE CWDTotalLength > 0;");
-
-                        return strCwdSqlStmts;
-                    }
-                    public static string[] CalculateCoarseWoodyDebrisBiomassTonsPerAcreSqlite(string strCoarseWoodyDebrisTable,
+		            
+                    public static string[] CalculateCoarseWoodyDebrisBiomassTonsPerAcre(string strCoarseWoodyDebrisTable,
                         string strRefSpecies, string strTransectSegmentTable, string strMinCwdTransectLengthTotal,
                         string strStandTable)
                     {
@@ -3729,246 +3445,31 @@ namespace FIA_Biosum_Manager
                     /// <param name="strMinSmallFwdTransectLengthTotal"></param>
                     /// <param name="strMinLargeFwdTransectLengthTotal"></param>
                     /// <returns></returns>
-		            public static string[] CalculateFineWoodyDebrisBiomassTonsPerAcre(string strDwmFineWoodyDebrisTable,
-		                string strCondTable, string strMinSmallFwdTransectLengthTotal, string strMinLargeFwdTransectLengthTotal)
-		            {
-		                string[] strFwdSqlStmts = new string[7];
-		                int idx = 0;
-
-                        //Gather variables for NRS-22 FWD equation into temporary table
-		                strFwdSqlStmts[idx++] = String.Format(
-		                    "SELECT fwd.biosum_cond_id, first(fwd.rsnctcd) as rsncntcd, " +
-		                    "sum(fwd.smallct) as smallTotal, first(fwd.small_tl_cond) as smallTL, " +
-		                    "sum(fwd.mediumct) as mediumTotal, first(fwd.medium_tl_cond) as mediumTL, " +
-		                    "sum(fwd.largect) as largeTotal, first(fwd.large_tl_cond) as largeTL, " +
-		                    "first(rftg.fwd_decay_ratio) as decayRatio, first(rftg.fwd_density) as bulkDensity, " +
-		                    "first(rftg.fwd_small_qmd) as smallQMD,  " +
-		                    "first(rftg.fwd_medium_qmd) as mediumQMD,  " +
-		                    "first(rftg.fwd_large_qmd) as largeQMD, " +
-		                    "first(small_tl_cond) as SmallMediumTotalLength, " +
-		                    "first(large_tl_cond) as LargeTotalLength, " +
-		                    "0.186597208 as ScalingConstants " +
-		                    "INTO DWM_FWD_Aggregates_WorkTable " +
-		                    "FROM (({0} fwd INNER JOIN {1} c ON fwd.biosum_cond_id = c.biosum_cond_id) " +
-		                    "INNER JOIN REF_FOREST_TYPE rft ON c.fortypcd = rft.`VALUE`) " +
-		                    "INNER JOIN REF_FOREST_TYPE_GROUP rftg ON rft.TYPGRPCD = rftg.`VALUE` " +
-		                    "WHERE fwd.rsnctcd < 2 OR fwd.rsnctcd IS NULL " +
-		                    "GROUP BY fwd.biosum_cond_id;", strDwmFineWoodyDebrisTable, strCondTable);
-
-
-                        //Creates a table for scaling FWD TLs because the counts (small, medium, large) are filtered by RsnCtCd
-		                strFwdSqlStmts[idx++] = String.Format("SELECT fwd.biosum_cond_id, " +
-		                                                      "COUNT(iif(rsnctcd < 2 OR rsnctcd IS NULL, true, null)) as totalAcceptabelRsnCtCd, " +
-		                                                      "COUNT(*) as totalFWDRecords, " +
-		                                                      "CDbl(totalAcceptabelRsnCtCd)/totalFWDRecords as RsnCtCdScalingFactor " +
-		                                                      "INTO Dwm_Fwd_RsnCtCd_WorkTable " +
-		                                                      "FROM {0} fwd INNER JOIN FVS_StandInit_WorkTable fvs ON fwd.biosum_cond_id=fvs.stand_id " +
-		                                                      "GROUP BY fwd.biosum_cond_id", strDwmFineWoodyDebrisTable);
-
-                        //Multiply the FWD transect lengths for biomass calculations by the proportion of TLs with accepted RsnCtCds.
-                        //These RsnCtCd values are currently filtered out (2,3,4). Nulls are kept in.
-		                strFwdSqlStmts[idx++] = String.Format("UPDATE DWM_FWD_Aggregates_WorkTable fwd " +
-		                                                      "INNER JOIN Dwm_Fwd_RsnCtCd_WorkTable rsn " +
-		                                                      "ON fwd.biosum_cond_id=rsn.biosum_cond_id " +
-		                                                      "SET fwd.smallTL=fwd.smallTL*rsn.RsnCtCdScalingFactor, " +
-		                                                      "fwd.mediumTL=fwd.mediumTL*rsn.RsnCtCdScalingFactor, " +
-		                                                      "fwd.largeTL=fwd.largeTL*rsn.RsnCtCdScalingFactor, " +
-		                                                      "fwd.SmallMediumTotalLength=fwd.SmallMediumTotalLength*rsn.RsnCtCdScalingFactor, " +
-		                                                      "fwd.LargeTotalLength=fwd.LargeTotalLength*rsn.RsnCtCdScalingFactor;");
-
-
-		                strFwdSqlStmts[idx++] = "UPDATE FVS_StandInit_WorkTable fvs " +
-		                                        "INNER JOIN DWM_FWD_Aggregates_WorkTable fwd " +
-		                                        "ON fvs.stand_id=fwd.biosum_cond_id " +
-		                                        "SET fvs.fuel_0_25_H=IIF(smallTL=0 OR smallTL IS NULL, NULL, " +
-		                                        "(fwd.ScalingConstants * (fwd.smallTotal * fwd.smallQMD^2) / fwd.smallTL) * fwd.bulkDensity * fwd.decayRatio), " +
-		                                        "fvs.fuel_25_1_H=IIF(mediumTL=0 OR mediumTL IS NULL, NULL, " +
-		                                        "(fwd.ScalingConstants * (fwd.mediumTotal * fwd.mediumQMD^2) / fwd.mediumTL) * fwd.bulkDensity * fwd.decayRatio), " +
-		                                        "fvs.fuel_1_3_H=IIF(largeTL=0 OR largeTL IS NULL, NULL, " +
-		                                        "(fwd.ScalingConstants * (fwd.largeTotal * fwd.largeQMD^2) / fwd.largeTL) * fwd.bulkDensity * fwd.decayRatio), " +
-		                                        "fvs.fuel_0_25_S=IIF(smallTL=0 OR smallTL IS NULL, NULL, 0), " +
-		                                        "fvs.fuel_25_1_S=IIF(mediumTL=0 OR mediumTL IS NULL, NULL, 0), " +
-		                                        "fvs.fuel_1_3_S=IIF(largeTL=0 OR largeTL IS NULL, NULL, 0), " +
-		                                        "fvs.SmallMediumTotalLength=fwd.SmallMediumTotalLength," +
-		                                        "fvs.LargeTotalLength=fwd.LargeTotalLength;";
-
-		                // Set FWD columns to null if the scaling factor determined by all the DWM_Fine_Woody_Debris.RsnCtCd is 0.
-		                strFwdSqlStmts[idx++] = "UPDATE FVS_StandInit_WorkTable fvs " +
-		                                        "INNER JOIN Dwm_Fwd_RsnCtCd_WorkTable rsn " +
-		                                        "ON fvs.stand_id=rsn.biosum_cond_id " +
-		                                        "SET fvs.fuel_0_25_H=NULL, " +
-		                                        "fvs.fuel_25_1_H=NULL," +
-		                                        "fvs.fuel_1_3_H=NULL, " +
-		                                        "fvs.fuel_0_25_S=NULL, " +
-		                                        "fvs.fuel_25_1_S=NULL, " +
-		                                        "fvs.fuel_1_3_S=NULL, " +
-		                                        "fvs.SmallMediumTotalLength=NULL, " +
-		                                        "fvs.LargeTotalLength=NULL " +
-		                                        "WHERE rsn.RsnCtCdScalingFactor=0;";
-
-		                //Filter out FWD Small and Medium fuels where the minimum Small TL is larger
-		                strFwdSqlStmts[idx++] = String.Format("UPDATE FVS_StandInit_WorkTable fvs " +
-		                                                      "SET fvs.fuel_0_25_H=NULL, " +
-		                                                      "fvs.fuel_25_1_H=NULL, " +
-		                                                      "fvs.fuel_0_25_S=NULL, " +
-		                                                      "fvs.fuel_25_1_S=NULL " +
-		                                                      "WHERE fvs.SmallMediumTotalLength < {0} ",
-		                    strMinSmallFwdTransectLengthTotal);
-
-		                //Filter out FWD Large fuels where the minimum Large TL is larger
-		                strFwdSqlStmts[idx++] = String.Format("UPDATE FVS_StandInit_WorkTable fvs " +
-		                                                      "SET fvs.fuel_1_3_H=NULL, " +
-		                                                      "fvs.fuel_1_3_S=NULL " +
-		                                                      "WHERE fvs.LargeTotalLength < {0} ",
-		                    strMinLargeFwdTransectLengthTotal);
-		                return strFwdSqlStmts;
-		            }
-                    public static string[] CalculateFineWoodyDebrisBiomassTonsPerAcreSqlite_old(string strDwmFineWoodyDebrisTable,
+                    public static string[] CalculateFineWoodyDebrisBiomassTonsPerAcre(string strDwmFineWoodyDebrisTable,
                         string strCondTable, string strMinSmallFwdTransectLengthTotal, string strMinLargeFwdTransectLengthTotal,
-                        string strStandTable)
+                        string strStandTable, string strRefForestTypeTable, string strRefForestTypeGroupTable)
                     {
                         string[] strFwdSqlStmts = new string[7];
                         int idx = 0;
 
                         //Gather variables for NRS-22 FWD equation into temporary table
-                        strFwdSqlStmts[idx++] = String.Format(
-                            "SELECT fwd.biosum_cond_id, first(fwd.rsnctcd) as rsncntcd, " +
-                            "sum(fwd.smallct) as smallTotal, first(fwd.small_tl_cond) as smallTL, " +
-                            "sum(fwd.mediumct) as mediumTotal, first(fwd.medium_tl_cond) as mediumTL, " +
-                            "sum(fwd.largect) as largeTotal, first(fwd.large_tl_cond) as largeTL, " +
-                            "first(rftg.fwd_decay_ratio) as decayRatio, first(rftg.fwd_density) as bulkDensity, " +
-                            "first(rftg.fwd_small_qmd) as smallQMD,  " +
-                            "first(rftg.fwd_medium_qmd) as mediumQMD,  " +
-                            "first(rftg.fwd_large_qmd) as largeQMD, " +
-                            "first(small_tl_cond) as SmallMediumTotalLength, " +
-                            "first(large_tl_cond) as LargeTotalLength, " +
+                        strFwdSqlStmts[idx++] = "CREATE TABLE DWM_FWD_Aggregates_WorkTable AS " +
+                            "SELECT fwd.biosum_cond_id, MIN(fwd.small_tl_cond) AS smallTL, " +
+                            "SUM(fwd.smallct) AS smallTotal, MIN(fwd.small_tl_cond) AS smallTL, " +
+                            "SUM(fwd.mediumct) AS mediumTotal, MIN(fwd.medium_tl_cond) AS mediumTL, " +
+                            "SUM(fwd.largect) AS largeTotal, MIN(fwd.large_tl_cond) AS largeTL, " +
+                            "MIN(rftg.fwd_decay_ratio) AS decayRatio, MIN(rftg.fwd_density) AS bulkDensity, " +
+                            "MIN(rftg.fwd_small_qmd) AS smallQMD, " +
+                            "MIN(rftg.fwd_medium_qmd) AS mediumQMD, " +
+                            "MIN(rftg.fwd_large_qmd) AS largeQMD, " +
+                            "MIN(small_tl_cond) AS SmallMediumTotalLength, " +
+                            "MIN(large_tl_cond) AS LargeTotalLength, " +
                             "0.186597208 as ScalingConstants " +
-                            "INTO DWM_FWD_Aggregates_WorkTable " +
-                            "FROM (({0} fwd INNER JOIN {1} c ON fwd.biosum_cond_id = c.biosum_cond_id) " +
-                            "INNER JOIN REF_FOREST_TYPE rft ON c.fortypcd = rft.`VALUE`) " +
-                            "INNER JOIN REF_FOREST_TYPE_GROUP rftg ON rft.TYPGRPCD = rftg.`VALUE` " +
-                            "WHERE fwd.rsnctcd < 2 OR fwd.rsnctcd IS NULL " +
-                            "GROUP BY fwd.biosum_cond_id;", strDwmFineWoodyDebrisTable, strCondTable);
-
-
-                        //Creates a table for scaling FWD TLs because the counts (small, medium, large) are filtered by RsnCtCd
-                        strFwdSqlStmts[idx++] = String.Format("SELECT fwd.biosum_cond_id, " +
-                                                              "COUNT(iif(rsnctcd < 2 OR rsnctcd IS NULL, true, null)) as totalAcceptabelRsnCtCd, " +
-                                                              "COUNT(*) as totalFWDRecords, " +
-                                                              "CDbl(totalAcceptabelRsnCtCd)/totalFWDRecords as RsnCtCdScalingFactor " +
-                                                              "INTO Dwm_Fwd_RsnCtCd_WorkTable " +
-                                                              "FROM {0} fwd INNER JOIN {1} fvs ON fwd.biosum_cond_id=fvs.stand_id " +
-                                                              "GROUP BY fwd.biosum_cond_id", strDwmFineWoodyDebrisTable, strStandTable);
-
-                        //Multiply the FWD transect lengths for biomass calculations by the proportion of TLs with accepted RsnCtCds.
-                        //These RsnCtCd values are currently filtered out (2,3,4). Nulls are kept in.
-                        strFwdSqlStmts[idx++] = String.Format("UPDATE DWM_FWD_Aggregates_WorkTable fwd " +
-                                                              "INNER JOIN Dwm_Fwd_RsnCtCd_WorkTable rsn " +
-                                                              "ON fwd.biosum_cond_id=rsn.biosum_cond_id " +
-                                                              "SET fwd.smallTL=fwd.smallTL*rsn.RsnCtCdScalingFactor, " +
-                                                              "fwd.mediumTL=fwd.mediumTL*rsn.RsnCtCdScalingFactor, " +
-                                                              "fwd.largeTL=fwd.largeTL*rsn.RsnCtCdScalingFactor, " +
-                                                              "fwd.SmallMediumTotalLength=fwd.SmallMediumTotalLength*rsn.RsnCtCdScalingFactor, " +
-                                                              "fwd.LargeTotalLength=fwd.LargeTotalLength*rsn.RsnCtCdScalingFactor;");
-
-
-                        strFwdSqlStmts[idx++] = "UPDATE " + strStandTable + " fvs " +
-                                                "INNER JOIN DWM_FWD_Aggregates_WorkTable fwd " +
-                                                "ON fvs.stand_id=fwd.biosum_cond_id " +
-                                                "SET fvs.fuel_0_25_H=IIF(smallTL=0 OR smallTL IS NULL, NULL, " +
-                                                "(fwd.ScalingConstants * (fwd.smallTotal * fwd.smallQMD^2) / fwd.smallTL) * fwd.bulkDensity * fwd.decayRatio), " +
-                                                "fvs.fuel_25_1_H=IIF(mediumTL=0 OR mediumTL IS NULL, NULL, " +
-                                                "(fwd.ScalingConstants * (fwd.mediumTotal * fwd.mediumQMD^2) / fwd.mediumTL) * fwd.bulkDensity * fwd.decayRatio), " +
-                                                "fvs.fuel_1_3_H=IIF(largeTL=0 OR largeTL IS NULL, NULL, " +
-                                                "(fwd.ScalingConstants * (fwd.largeTotal * fwd.largeQMD^2) / fwd.largeTL) * fwd.bulkDensity * fwd.decayRatio), " +
-                                                "fvs.fuel_0_25_S=IIF(smallTL=0 OR smallTL IS NULL, NULL, 0), " +
-                                                "fvs.fuel_25_1_S=IIF(mediumTL=0 OR mediumTL IS NULL, NULL, 0), " +
-                                                "fvs.fuel_1_3_S=IIF(largeTL=0 OR largeTL IS NULL, NULL, 0), " +
-                                                "fvs.SmallMediumTotalLength=fwd.SmallMediumTotalLength," +
-                                                "fvs.LargeTotalLength=fwd.LargeTotalLength;";
-
-                        // Set FWD columns to null if the scaling factor determined by all the DWM_Fine_Woody_Debris.RsnCtCd is 0.
-                        strFwdSqlStmts[idx++] = "UPDATE " + strStandTable + " fvs " +
-                                                "INNER JOIN Dwm_Fwd_RsnCtCd_WorkTable rsn " +
-                                                "ON fvs.stand_id=rsn.biosum_cond_id " +
-                                                "SET fvs.fuel_0_25_H=NULL, " +
-                                                "fvs.fuel_25_1_H=NULL," +
-                                                "fvs.fuel_1_3_H=NULL, " +
-                                                "fvs.fuel_0_25_S=NULL, " +
-                                                "fvs.fuel_25_1_S=NULL, " +
-                                                "fvs.fuel_1_3_S=NULL, " +
-                                                "fvs.SmallMediumTotalLength=NULL, " +
-                                                "fvs.LargeTotalLength=NULL " +
-                                                "WHERE rsn.RsnCtCdScalingFactor=0;";
-
-                        //Filter out FWD Small and Medium fuels where the minimum Small TL is larger
-                        strFwdSqlStmts[idx++] = String.Format("UPDATE {1} fvs " +
-                                                              "SET fvs.fuel_0_25_H=NULL, " +
-                                                              "fvs.fuel_25_1_H=NULL, " +
-                                                              "fvs.fuel_0_25_S=NULL, " +
-                                                              "fvs.fuel_25_1_S=NULL " +
-                                                              "WHERE fvs.SmallMediumTotalLength < {0} ",
-                            strMinSmallFwdTransectLengthTotal, strStandTable);
-
-                        //Filter out FWD Large fuels where the minimum Large TL is larger
-                        strFwdSqlStmts[idx++] = String.Format("UPDATE {1} fvs " +
-                                                              "SET fvs.fuel_1_3_H=NULL, " +
-                                                              "fvs.fuel_1_3_S=NULL " +
-                                                              "WHERE fvs.LargeTotalLength < {0} ",
-                            strMinLargeFwdTransectLengthTotal, strStandTable);
-                        return strFwdSqlStmts;
-                    }
-
-                    public static string[] CalculateFineWoodyDebrisBiomassTonsPerAcreSqlite(string strDwmFineWoodyDebrisTable,
-                        string strCondTable, string strMinSmallFwdTransectLengthTotal, string strMinLargeFwdTransectLengthTotal,
-                        string strStandTable)
-                    {
-                        string[] strFwdSqlStmts = new string[8];
-                        int idx = 0;
-
-                        //Create empty DWM_FWD_Aggregates_WorkTable table in SQLite
-                        strFwdSqlStmts[idx++] = "CREATE TABLE DWM_FWD_Aggregates_WorkTable " +
-                            "(temp_id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                            "biosum_cond_id CHAR(25)," +
-                            "rsncntcd INTEGER," +
-                            "smallTotal INTEGER," +
-                            "smallTL DOUBLE," +
-                            "mediumTotal INTEGER," +
-                            "mediumTL DOUBLE," +
-                            "largeTotal INTEGER," +
-                            "largeTL DOUBLE," +
-                            "decayRatio DOUBLE," +
-                            "bulkDensity DOUBLE," +
-                            "smallQMD DOUBLE," +
-                            "mediumQMD DOUBLE," +
-                            "largeQMD DOUBLE," +
-                            "SmallMediumTotalLength DOUBLE," +
-                            "LargeTotalLength DOUBLE," +
-                            "ScalingConstants DOUBLE DEFAULT 0.186597208)";
-
-                        //Gather variables for NRS-22 FWD equation into temporary table
-                        strFwdSqlStmts[idx++] = "INSERT INTO DWM_FWD_Aggregates_WorkTable " +
-                            "(biosum_cond_id, rsncntcd, smallTotal, smallTL," +
-                            "mediumTotal, mediumTL, largeTotal, largeTL," +
-                            "decayRatio, bulkDensity, smallQMD, mediumQMD, largeQMD," +
-                            "SmallMediumTotalLength, LargeTotalLength) " +
-                            "SELECT fwd.biosum_cond_id, first(fwd.rsnctcd) as rsncntcd, " +
-                            "sum(fwd.smallct) as smallTotal, first(fwd.small_tl_cond) as smallTL, " +
-                            "sum(fwd.mediumct) as mediumTotal, first(fwd.medium_tl_cond) as mediumTL, " +
-                            "sum(fwd.largect) as largeTotal, first(fwd.large_tl_cond) as largeTL, " +
-                            "first(rftg.fwd_decay_ratio) as decayRatio, first(rftg.fwd_density) as bulkDensity, " +
-                            "first(rftg.fwd_small_qmd) as smallQMD,  " +
-                            "first(rftg.fwd_medium_qmd) as mediumQMD,  " +
-                            "first(rftg.fwd_large_qmd) as largeQMD, " +
-                            "first(small_tl_cond) as SmallMediumTotalLength, " +
-                            "first(large_tl_cond) as LargeTotalLength " +
-                            "FROM ((" + strDwmFineWoodyDebrisTable + " fwd INNER JOIN " + strCondTable +
-                            " c ON fwd.biosum_cond_id = c.biosum_cond_id) " +
-                            "INNER JOIN REF_FOREST_TYPE rft ON c.fortypcd = rft.[VALUE]) " +
-                            "INNER JOIN REF_FOREST_TYPE_GROUP rftg ON rft.TYPGRPCD = rftg.[VALUE] " +
-                            "WHERE fwd.rsnctcd < 2 OR fwd.rsnctcd IS NULL " +
+                            "FROM " + strDwmFineWoodyDebrisTable + " AS fwd, " + strCondTable + " AS c, " +
+                            strRefForestTypeTable + " AS rft, " + strRefForestTypeGroupTable + " AS rftg " +
+                            "WHERE fwd.biosum_cond_id = c.biosum_cond_id AND c.fortypcd = rft.value AND " +
+                            "rft.typgrpcd = rftg.value AND (fwd.rsnctcd < 2 OR fwd.rsnctcd IS NULL) " +
                             "GROUP BY fwd.biosum_cond_id";
-
 
                         //Creates a table for scaling FWD TLs because the counts (small, medium, large) are filtered by RsnCtCd
                         strFwdSqlStmts[idx++] = "CREATE TABLE Dwm_Fwd_RsnCtCd_WorkTable AS " +
@@ -4036,57 +3537,24 @@ namespace FIA_Biosum_Manager
                             "WHERE LargeTotalLength < " + strMinLargeFwdTransectLengthTotal;
                         return strFwdSqlStmts;
                     }
-
-                    public static string CalculateDuffLitterBiomassTonsPerAcre(string strDwmDuffLitterTable, string strCondTable)
-		            {
-		                return String.Format(
-		                    "SELECT dl.biosum_cond_id, " +
-		                    "SUM(IIF(duffdep IS NOT NULL, 1, 0)) as DuffPitCount, " +
-		                    "SUM(IIF(littdep IS NOT NULL, 1, 0)) as LitterPitCount, " +
-		                    "(AVG(dl.duffdep)*first(rftg.duff_density)*1.815) as fvs_fuel_duff_tonsPerAcre, " +
-		                    "(AVG(dl.littdep)*first(rftg.litter_density)*1.815) as fvs_fuel_litter_tonsPerAcre " +
-		                    "INTO DWM_DuffLitter_Aggregates_WorkTable " +
-		                    "FROM ((({0} dl " +
-		                    "INNER JOIN {1} c ON dl.biosum_cond_id = c.biosum_cond_id) " +
-		                    "INNER JOIN REF_FOREST_TYPE rft ON c.fortypcd = rft.`VALUE`) " +
-		                    "INNER JOIN REF_FOREST_TYPE_GROUP rftg ON rft.TYPGRPCD = rftg.`VALUE`) " +
-		                    "INNER JOIN FVS_StandInit_WorkTable fvs on dl.biosum_cond_id=fvs.stand_ID " +
-		                    "GROUP BY dl.biosum_cond_id;", strDwmDuffLitterTable, strCondTable);
-		            }
-                    public static string CalculateDuffLitterBiomassTonsPerAcreSqlite_old(string strDwmDuffLitterTable, string strCondTable, string strStandTable)
-                    {
-                        return String.Format(
-                            "SELECT dl.biosum_cond_id, " +
-                            "SUM(IIF(duffdep IS NOT NULL, 1, 0)) as DuffPitCount, " +
-                            "SUM(IIF(littdep IS NOT NULL, 1, 0)) as LitterPitCount, " +
-                            "(AVG(dl.duffdep)*first(rftg.duff_density)*1.815) as fvs_fuel_duff_tonsPerAcre, " +
-                            "(AVG(dl.littdep)*first(rftg.litter_density)*1.815) as fvs_fuel_litter_tonsPerAcre " +
-                            "INTO DWM_DuffLitter_Aggregates_WorkTable " +
-                            "FROM ((({0} dl " +
-                            "INNER JOIN {1} c ON dl.biosum_cond_id = c.biosum_cond_id) " +
-                            "INNER JOIN REF_FOREST_TYPE rft ON c.fortypcd = rft.`VALUE`) " +
-                            "INNER JOIN REF_FOREST_TYPE_GROUP rftg ON rft.TYPGRPCD = rftg.`VALUE`) " +
-                            "INNER JOIN {2} fvs on dl.biosum_cond_id=fvs.stand_ID " +
-                            "GROUP BY dl.biosum_cond_id;", strDwmDuffLitterTable, strCondTable, strStandTable);
-                    }
-                    public static string CalculateDuffLitterBiomassTonsPerAcreSqlite(string strDwmDuffLitterTable, string strCondTable, string strStandTable)
+                    public static string CalculateDuffLitterBiomassTonsPerAcre(string strDwmDuffLitterTable, string strCondTable, string strStandTable,
+                        string strRefForestTypeTable, string strRefForestTypeGroupTable)
                     {
                         return "INSERT INTO DWM_DuffLitter_Aggregates_WorkTable " +
-                            "(biosum_cond_id, DuffPitCount, LitterPitCount," +
+                            "(biosum_cond_id, DuffPitCount, LitterPitCount, " +
                             "fvs_fuel_duff_tonsPerAcre, fvs_fuel_litter_tonsPerAcre) " +
                             "SELECT dl.biosum_cond_id, " +
-                            "SUM(IIF(duffdep IS NOT NULL, 1, 0)), " +
-                            "SUM(IIF(littdep IS NOT NULL, 1, 0)), " +
-                            "(AVG(dl.duffdep)*first(rftg.duff_density)*1.815), " +
-                            "(AVG(dl.littdep)*first(rftg.litter_density)*1.815) " +
-                            "FROM (((" + strDwmDuffLitterTable + " dl " +
-                            "INNER JOIN " + strCondTable + " c ON dl.biosum_cond_id = c.biosum_cond_id) " +
-                            "INNER JOIN REF_FOREST_TYPE rft ON c.fortypcd = rft.[VALUE]) " +
-                            "INNER JOIN REF_FOREST_TYPE_GROUP rftg ON rft.TYPGRPCD = rftg.[VALUE]) " +
-                            "INNER JOIN " + strStandTable + " fvs on dl.biosum_cond_id=fvs.stand_ID " +
+                            "SUM(CASE WHEN duffdep IS NOT NULL THEN 1 ELSE 0 END), " +
+                            "SUM(CASE WHEN littdep IS NOT NULL THEN 1 ELSE 0 END), " +
+                            "(AVG(dl.duffdep) * MIN(rftg.duff_density) * 1.815), " +
+                            "(AVG(dl.littdep) * MIN(rftg.litter_density) * 1.815) " +
+                            "FROM " + strDwmDuffLitterTable + " AS dl, " + strCondTable + " AS c, " +
+                            strRefForestTypeTable + " AS rft, " + strRefForestTypeGroupTable + " AS rftg, " + strStandTable + " AS fvs " +
+                            "WHERE dl.biosum_cond_id = c.biosum_cond_id AND c.fortypcd = rft.value AND " +
+                            "rft.typgrpcd = rftg.value AND dl.biosum_cond_id = fvs.stand_id " +
                             "GROUP BY dl.biosum_cond_id";
                     }
-                    public static string CreateDuffLitterBiomassTonsPerAcreSqlite()
+                    public static string CreateDuffLitterBiomassTonsPerAcre()
                     {
                         return "CREATE TABLE DWM_DuffLitter_Aggregates_WorkTable " +
                             "(temp_id INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -4097,25 +3565,7 @@ namespace FIA_Biosum_Manager
                             "fvs_fuel_litter_tonsPerAcre DOUBLE)";
                     }
 
-                    public static string UpdateFvsStandInitDuffLitterColumns()
-		            {
-		                return "UPDATE Fvs_StandInit_WorkTable fvs " +
-		                       "INNER JOIN DWM_DuffLitter_Aggregates_WorkTable dl ON fvs.stand_id=dl.biosum_cond_id  " +
-		                       "SET fvs.fuel_duff = dl.fvs_fuel_duff_tonsPerAcre, " +
-		                       "fvs.fuel_litter = dl.fvs_fuel_litter_tonsPerAcre," +
-		                       "fvs.DuffPitCount = dl.DuffPitCount," +
-		                       "fvs.LitterPitCount = dl.LitterPitCount;";
-		            }
-                    public static string UpdateFvsStandInitDuffLitterColumnsSqlite_old(string strStandTable)
-                    {
-                        return "UPDATE " + strStandTable + " fvs " +
-                               "INNER JOIN DWM_DuffLitter_Aggregates_WorkTable dl ON fvs.stand_id=dl.biosum_cond_id  " +
-                               "SET fvs.fuel_duff = dl.fvs_fuel_duff_tonsPerAcre, " +
-                               "fvs.fuel_litter = dl.fvs_fuel_litter_tonsPerAcre," +
-                               "fvs.DuffPitCount = dl.DuffPitCount," +
-                               "fvs.LitterPitCount = dl.LitterPitCount;";
-                    }
-                    public static string UpdateFvsStandInitDuffLitterColumnsSqlite(string strStandTable)
+                    public static string UpdateFvsStandInitDuffLitterColumns(string strStandTable)
                     {
                         return "UPDATE " + strStandTable + " AS fvs " +
                             "SET fuel_duff = dl.fvs_fuel_duff_tonsPerAcre, " +
@@ -4126,45 +3576,14 @@ namespace FIA_Biosum_Manager
                             "WHERE TRIM(fvs.stand_id) = TRIM(dl.biosum_cond_id)";
                     }
 
-
-                    public static string RemoveDuffYears(string yearsFilter)
-		            {
-		                return "UPDATE Fvs_StandInit_WorkTable fvs " +
-		                       "SET fvs.fuel_duff = null," +
-		                       "fvs.DuffPitCount=null " +
-		                       "WHERE fvs.inv_year IN (" + yearsFilter + ")";
-		            }
-                    public static string RemoveDuffYearsSqlite_old(string yearsFilter, string strStandTable)
-                    {
-                        return "UPDATE " + strStandTable + " fvs " +
-                               "SET fvs.fuel_duff = null," +
-                               "fvs.DuffPitCount=null " +
-                               "WHERE fvs.inv_year IN (" + yearsFilter + ")";
-                    }
-                    public static string RemoveDuffYearsSqlite(string yearsFilter, string strStandTable)
+                    public static string RemoveDuffYears(string yearsFilter, string strStandTable)
                     {
                         return "UPDATE " + strStandTable +
                             " SET fuel_duff = NULL, " +
                             "DuffPitCount = NULL " +
                             "WHERE inv_year IN (" + yearsFilter + ")";
                     }
-
-
-                    public static string RemoveLitterYears(string yearsFilter)
-		            {
-		                return "UPDATE Fvs_StandInit_WorkTable fvs " +
-		                       "SET fvs.fuel_litter=null," +
-		                       "fvs.LitterPitCount=null " +
-		                       "WHERE fvs.inv_year IN (" + yearsFilter + ")";
-		            }
-                    public static string RemoveLitterYearsSqlite_old(string yearsFilter, string strStandTable)
-                    {
-                        return "UPDATE " + strStandTable + " fvs " +
-                               "SET fvs.fuel_litter=null," +
-                               "fvs.LitterPitCount=null " +
-                               "WHERE fvs.inv_year IN (" + yearsFilter + ")";
-                    }
-                    public static string RemoveLitterYearsSqlite(string yearsFilter, string strStandTable)
+                    public static string RemoveLitterYears(string yearsFilter, string strStandTable)
                     {
                         return "UPDATE " + strStandTable +
                             "SET fuel_litter = NULL, " +
@@ -4174,23 +3593,22 @@ namespace FIA_Biosum_Manager
 
 
                     public static string CreateSiteIndexDataset(string strVariant,
-		                string strCondTableName, string strPlotTableName)
-		            {
-		                string strSQL = "SELECT p.biosum_plot_id, c.biosum_cond_id, p.statecd ," +
-		                                "p.countycd, p.plot, p.fvs_variant, p.measyear," +
-		                                "c.adforcd,p.elev,c.condid, c.habtypcd1," +
-		                                "c.stdage,c.slope,c.aspect,c.ground_land_class_pnw," +
-		                                "c.sisp,p.lat,p.lon,c.adforcd,c.habtypcd1, " +
-                                        "p.elev,c.cond_status_cd,c.ba_ft2_ac,c.habtypcd1 " +
-		                                "FROM " + strCondTableName + " c," +
-		                                strPlotTableName + " p " +
-		                                "WHERE p.biosum_plot_id = c.biosum_plot_id AND " +
-                                        "c.cond_status_cd=1 AND " +
-		                                "ucase(trim(p.fvs_variant)) = '" + strVariant.Trim().ToUpper() + "';";
-		                return strSQL;
-		            }
+                        string strCondTable, string strPlotTable)
+                    {
+                        string strSQL = "SELECT p.biosum_plot_id, c.biosum_cond_id, p.statecd, " +
+                            "p.countycd, p.plot, p.fvs_variant, p.measyear, " +
+                            "c.adforcd, p.elev, c.condid, c.habtypcd1, " +
+                            "c.stdage, c.slope, c.aspect, " +
+                            "c.sisp, p.lat, p.lon, c.adforcd, c.habtypcd1, " +
+                            "p.elev, c.cond_status_cd, c.ba_ft2_ac, c.habtypcd1 " +
+                            "FROM " + strCondTable + " AS c, " + strPlotTable + " AS p " +
+                            "WHERE p.biosum_plot_id = c.biosum_plot_id AND c.cond_status_cd = 1 AND " +
+                            "UPPER(TRIM(p.fvs_variant)) = '" + strVariant.Trim().ToUpper() + "'";
+                        return strSQL;
+                    }
 
-		            public static string TranslateWorkTableToStandInitTable(string strSourceTable, string strDestTable)
+
+                    public static string TranslateWorkTableToStandInitTable(string strSourceTable, string strDestTable)
 		            {
 		                string strInsertIntoStandInit =
 		                    "INSERT INTO " + strDestTable;
@@ -4213,19 +3631,12 @@ namespace FIA_Biosum_Manager
 		                return strInsertIntoStandInit + strBioSumWorkTableSelectStmt + strFromTableExpr;
 		            }
 
-		            public static string InsertSiteIndexSpeciesRow(string strStandID, string strSiteSpecies,
-		                string strSiteIndex)
-		            {
-		                return String.Format(
-		                    "UPDATE FVS_StandInit_WorkTable SET Site_Species={1}, Site_Index={2} WHERE STAND_ID={0}; ",
-		                    strStandID, strSiteSpecies, strSiteIndex);
-		            }
-
-                    public static string InsertSiteIndexSpeciesRowNew(string strStandID, string strSiteSpecies,
+                    public static string InsertSiteIndexSpeciesRow(string strStandID, string strSiteSpecies,
                         string strSiteIndex, string strBaseAge)
                     {
                         return String.Format(
-                            "UPDATE FVS_STANDINIT_COND SET Site_Species={1}, Site_Index={2}, Site_Index_Base_Ag={3} " +
+                            "UPDATE FVS_STANDINIT_COND SET Site_Species={1}, Site_Index={2}, Site_Index_Base_Ag={3}," +
+                            "SITE_INDEX_BSCALC_YN = 'Y' " +
                             "WHERE STAND_ID={0} AND Site_Index IS NULL",
                             strStandID, strSiteSpecies, strSiteIndex, strBaseAge);
                     }
@@ -4249,7 +3660,7 @@ namespace FIA_Biosum_Manager
 		                return strSQL;
 		            }
 
-                    public static string PopulateStandInit(string strSourceStandTableAlias, string strCondTable, string strVariant)
+                    public static string PopulateStandInitOld(string strSourceStandTableAlias, string strCondTable, string strVariant)
                     {
                         string strSQL = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
                              " SELECT " + strSourceStandTableAlias + ".*" +
@@ -4260,13 +3671,32 @@ namespace FIA_Biosum_Manager
                         return strSQL;
                     }
 
-                    public static string UpdateFromCond(string strCondTable, string strVariant)
+                    public static string PopulateStandInit(string strSourceStandTable, string strFields, string strCondTable, string strVariant)
+                    {
+                        string strSQL = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputStandTableName + 
+                            " (" + strFields + ") " +
+                            "SELECT s.* FROM " + strSourceStandTable + " AS s " +
+                            "JOIN " + strCondTable + " AS c ON TRIM(c.cn) = TRIM(s.stand_cn) " +
+                            "WHERE s.variant = '" + strVariant + "' AND c.cond_status_cd = 1";
+                        return strSQL;
+                    }
+
+                    public static string UpdateFromCondOld(string strCondTable, string strVariant)
                     {
                         string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
                          " INNER JOIN " + strCondTable + " ON TRIM(" + strCondTable + ".cn) = TRIM(" + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".STAND_CN)" +
                          " SET STAND_ID = trim(biosum_cond_id)," +
                          " SAM_WT = ACRES" +
                          " WHERE " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".VARIANT = '" + strVariant + "'";
+                        return strSQL;
+                    }
+
+                    public static string UpdateFromCond(string strCondTable, string strVariant)
+                    {
+                        string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName + " AS s " +
+                            "SET stand_id = TRIM(biosum_cond_id), sam_wt = acres " +
+                            "FROM " + strCondTable + " AS c " +
+                            "WHERE TRIM(c.cn) = TRIM(s.stand_cn) AND s.variant = '" + strVariant + "'";
                         return strSQL;
                     }
 
@@ -4389,7 +3819,7 @@ namespace FIA_Biosum_Manager
                     }
                 }
 
-		        //All the queries necessary to create the FVSIn.accdb FVS_TreeInit table using intermediate tables
+                //All the queries necessary to create the FVSIn.accdb FVS_TreeInit table using intermediate tables
                 public class TreeInit
                 {
                     TreeInit()
@@ -4643,7 +4073,7 @@ namespace FIA_Biosum_Manager
                         return "DROP TABLE SPCD_CHANGE_WORK_TABLE;";
                     }
 
-                    public static string PopulateTreeInit(string strSourceTreeTableAlias, string strSourceStandTableAlias,
+                    public static string PopulateTreeInitOld(string strSourceTreeTableAlias, string strSourceStandTableAlias,
                         string strCondTable, string strTreeTable, string strVariant)
                     {
                         string strSql = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
@@ -4659,44 +4089,57 @@ namespace FIA_Biosum_Manager
                         return strSql;
                     }
 
+                    public static string PopulateTreeInit(string strSourceTreeTable, string strFields, string strSourceStandTable,
+                        string strCondTable, string strTreeTable, string strVariant)
+                    {
+                        string strSQL = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                            " (" + strFields + ") " +
+                            "SELECT st.* FROM " + strSourceTreeTable + " AS st, " +
+                            strTreeTable + " AS t, " + strSourceStandTable + " AS ss, " +
+                            strCondTable + " AS c " +
+                            "WHERE c.biosum_cond_id = t.biosum_cond_id AND TRIM(t.cn) = st.tree_cn " +
+                            "AND TRIM(c.cn) = ss.stand_cn AND TRIM(c.cn) = st.stand_cn " +
+                            "AND c.cond_status_cd = 1 AND t.dia > 0 " +
+                            "AND ss.variant = '" + strVariant + "'";
+                        return strSQL;
+                    }
+
                     public static string UpdateFromCond(string strCondTable, string strVariant, string strTargetTable)
                     {
-                        string strSQL = "UPDATE(" + strTargetTable +
-                            " INNER JOIN cond ON " + strTargetTable + ".STAND_CN = TRIM(" + strCondTable + ".cn))" +
-                            " INNER JOIN " + Tables.FIA2FVS.DefaultFvsInputStandTableName + " ON " + strTargetTable + ".STAND_CN = " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".STAND_CN" +
-                            " SET " + strTargetTable + ".STAND_ID = Trim(" + strCondTable + ".BIOSUM_COND_ID)" +
-                            " WHERE " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".VARIANT = '" + strVariant + "'";
+                        string strSQL = "UPDATE " + strTargetTable + " AS t " +
+                            "SET stand_id = TRIM(c.biosum_cond_id) " +
+                            "FROM " + strCondTable + " AS c, " + Tables.FIA2FVS.DefaultFvsInputStandTableName + " AS s " +
+                            "WHERE t.stand_cn = TRIM(c.cn) AND t.stand_cn = s.stand_cn AND s.variant = '" + strVariant + "'";
                         return strSQL;
                     }
 
                     public static string UpdateFromTree(string strTreeTable, string strTargetTable)
                     {
-                        string strSQL = "UPDATE " + strTargetTable +
-                         " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
-                         " AND " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
-                         " SET TREE_ID = trim(fvs_tree_id)";
+                        string strSQL = "UPDATE " + strTargetTable + " AS u " +
+                            "SET tree_id = TRIM(fvs_tree_id) " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE u.tree_cn = TRIM(t.cn) AND u.stand_id = TRIM(t.biosum_cond_id)";
                         return strSQL;
                     }
 
                     public static string UpdateTreeCount(string strTreeTable, string strTargetTable)
                     {
-                        string strSQL = "UPDATE " + strTargetTable +
-                         " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
-                         " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
-                         " SET TREE_COUNT = tpacurr where statuscd not in (2,3)";
+                        string strSQL = "UPDATE " + strTargetTable + " AS u " +
+                            "SET tree_count = tpacurr " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE u.stand_id = TRIM(t.biosum_cond_id) AND u.tree_cn = TRIM(t.cn)";
                         return strSQL;
                     }
-
                     public static string DeleteSeedlings(string strTargetTable)
                     {
                         string strSQL = "DELETE FROM " + strTargetTable +
-                         " WHERE DIAMETER = 0.1 AND LEFT(TREE_CN,1) = 'S'";
+                            " WHERE diameter = 0.1 AND SUBSTR(tree_cn, 1, 1) = 'S'";
                         return strSQL;
                     }
 
                     public static string SetCalibrationColumnsToNull(string strTargetTable, string strTargetField)
                     {
-                        string strSQL = $@"UPDATE {strTargetTable} SET {strTargetTable}.{strTargetField} = NULL ";
+                        string strSQL = "UPDATE " + strTargetTable + " SET " + strTargetField + " = NULL ";
                         return strSQL;
                     }
 
@@ -4704,119 +4147,125 @@ namespace FIA_Biosum_Manager
                     {
                         string[] arrDamageCodeUpdates = new string[18];
                         // First pass updates the damage code and severity fields with cull (25) if they are null or = 96, 97
-                        arrDamageCodeUpdates[0] = "UPDATE " + strTargetTable +
-                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
-                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
-                            " SET Damage1 = 25, Severity1 = (" + strTreeTable + ".CULL + " + strTreeTable + ".ROUGHCULL)" +
-                            " WHERE (Damage1 IS Null or Damage1 in (96,97)) AND History = 1" +
-                            " AND(" + strTreeTable + ".cull + " + strTreeTable + ".roughcull) > 0";
-                        arrDamageCodeUpdates[1] = "UPDATE " + strTargetTable +
-                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
-                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
-                            " SET Damage2 = 25, Severity2 = (" + strTreeTable + ".CULL + " + strTreeTable + ".ROUGHCULL)" +
-                            " WHERE Damage1 <> 25 AND (Damage2 IS Null or Damage2 in (96,97)) AND History = 1" +
-                            " AND(" + strTreeTable + ".cull + " + strTreeTable + ".roughcull) > 0";
-                        arrDamageCodeUpdates[2] = "UPDATE " + strTargetTable +
-                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
-                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
-                            " SET Damage3 = 25, Severity3 = (" + strTreeTable + ".CULL + " + strTreeTable + ".ROUGHCULL)" +
-                            " WHERE Damage1 <> 25 AND Damage2 <> 25 AND (Damage3 IS Null or Damage3 in (96,97)) AND History = 1" +
-                            " AND(" + strTreeTable + ".cull + " + strTreeTable + ".roughcull) > 0";
+                        arrDamageCodeUpdates[0] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage1 = 25, severity1 = (t.cull + t.roughcull) " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) " +
+                            "AND (damage1 IS NULL OR damage1 IN (96,97)) AND history = 1 " +
+                            "AND (t.cull + t.roughcull) > 0";
+                        arrDamageCodeUpdates[1] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage2 = 25, severity2 = (t.cull + t.roughcull) " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 25 AND (damage2 IS NULL OR damage2 IN (96,97)) AND " +
+                            "history = 1 AND (t.cull + t.roughcull) > 0";
+                        arrDamageCodeUpdates[2] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage3 = 25, severity3 = (t.cull + t.roughcull) " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 25 AND damage2 <> 25 AND (damage3 IS NULL OR damage3 IN (96,97)) AND " +
+                            "history = 1 AND (t.cull + t.roughcull) > 0";
                         // second pass updates the damage code and severity fields with mistletoe (30) if they are null or = 96, 97
-                        arrDamageCodeUpdates[3] = "UPDATE " + strTargetTable +
-                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
-                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
-                            " SET Damage1 = 30, Severity1 = " + strTreeTable + ".mist_cl_cd" +
-                            " WHERE (Damage1 IS Null OR Damage1 in (96,97)) AND History = 1" +
-                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd NOT IN (202, 108, 122, 73)";
-                        arrDamageCodeUpdates[4] = "UPDATE " + strTargetTable +
-                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
-                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
-                            " SET Damage2 = 30, Severity2 = " + strTreeTable + ".mist_cl_cd" +
-                            " WHERE Damage1 <> 30 AND (Damage2 IS Null OR Damage2 IN (96,97)) AND History = 1" +
-                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd NOT IN (202, 108, 122, 73)";
-                        arrDamageCodeUpdates[5] = "UPDATE " + strTargetTable +
-                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
-                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
-                            " SET Damage3 = 30, Severity3 = " + strTreeTable + ".mist_cl_cd" +
-                            " WHERE Damage1 <> 30 AND Damage2 <> 30 AND (Damage3 IS Null OR Damage3 IN (96,97)) AND History = 1" +
-                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd NOT IN (202, 108, 122, 73)";
+                        arrDamageCodeUpdates[3] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage1 = 30, severity1 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "(damage1 IS NULL OR damage1 IN (96,97)) AND history = 1 " +
+                            "AND t.mist_cl_cd > 0 AND t.spcd NOT IN (202, 108, 122, 73)";
+                        arrDamageCodeUpdates[4] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage2 = 30, severity2 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 30 AND (damage2 IS NULL OR damage2 IN (96,97)) AND history = 1 " +
+                            "AND t.mist_cl_cd > 0 AND t.spcd NOT IN (202, 108, 122, 73)";
+                        arrDamageCodeUpdates[5] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage3 = 30, severity3 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 30 AND damage2 <> 30 AND (damage3 IS NULL OR damage3 IN (96,97)) AND history = 1 " +
+                            "AND t.mist_cl_cd > 0 AND t.spcd NOT IN (202, 108, 122, 73)";
                         // third pass updates the damage code and severity fields with mistletoe (31) if they are null or = 96, 97
-                        arrDamageCodeUpdates[6] = "UPDATE " + strTargetTable +
-                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
-                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
-                            " SET Damage1 = 31, Severity1 = " + strTreeTable + ".mist_cl_cd" +
-                            " WHERE (Damage1 IS Null OR Damage1 in (96,97)) AND History = 1" +
-                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 108";
-                        arrDamageCodeUpdates[7] = "UPDATE " + strTargetTable +
-                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
-                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
-                            " SET Damage2 = 31, Severity2 = " + strTreeTable + ".mist_cl_cd" +
-                            " WHERE Damage1 <> 31 AND (Damage2 IS Null OR Damage2 IN (96,97)) AND History = 1" +
-                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 108";
-                        arrDamageCodeUpdates[8] = "UPDATE " + strTargetTable +
-                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
-                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
-                            " SET Damage3 = 31, Severity3 = " + strTreeTable + ".mist_cl_cd" +
-                            " WHERE Damage1 <> 31 AND Damage2 <> 31 AND (Damage3 IS Null OR Damage3 IN (96,97)) AND History = 1" +
-                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 108";
+                        arrDamageCodeUpdates[6] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage1 = 31, severity1 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "(damage1 IS NULL OR damage1 IN (96,97)) AND history = 1 " +
+                            "AND t.mist_cl_cd > 0 AND t.spcd = 108";
+                        arrDamageCodeUpdates[7] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage2 = 31, severity2 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 31 AND (damage2 IS NULL OR damage2 IN (96,97)) AND history = 1 " +
+                            "AND t.mist_cl_cd > 0 AND t.spcd = 108";
+                        arrDamageCodeUpdates[8] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage2 = 31, severity2 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 31 AND damage2 <> 31 AND (damage3 IS NULL OR damage3 IN (96,97)) AND history = 1 " +
+                            "AND t.mist_cl_cd > 0 AND t.spcd = 108";
                         // fourth pass updates the damage code and severity fields with mistletoe (32) if they are null or = 96, 97
-                        arrDamageCodeUpdates[9] = "UPDATE " + strTargetTable +
-                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
-                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
-                            " SET Damage1 = 32, Severity1 = " + strTreeTable + ".mist_cl_cd" +
-                            " WHERE (Damage1 IS Null OR Damage1 in (96,97)) AND History = 1" +
-                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 73";
-                        arrDamageCodeUpdates[10] = "UPDATE " + strTargetTable +
-                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
-                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
-                            " SET Damage2 = 32, Severity2 = " + strTreeTable + ".mist_cl_cd" +
-                            " WHERE Damage1 <> 32 AND (Damage2 IS Null OR Damage2 IN (96,97)) AND History = 1" +
-                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 73";
-                        arrDamageCodeUpdates[11] = "UPDATE " + strTargetTable +
-                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
-                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
-                            " SET Damage3 = 32, Severity3 = " + strTreeTable + ".mist_cl_cd" +
-                            " WHERE Damage1 <> 32 AND Damage2 <> 32 AND (Damage3 IS Null OR Damage3 IN (96,97)) AND History = 1" +
-                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 73";
+                        arrDamageCodeUpdates[9] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage1 = 32, severity1 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "(damage1 IS NULL OR damage1 IN (96,97)) AND history = 1 AND " +
+                            "t.mist_cl_cd > 0 AND t.spcd = 73";
+                        arrDamageCodeUpdates[10] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage2 = 32, severity2 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 32 AND (damage2 IS NULL OR damage2 IN (96,97)) AND history = 1 AND " +
+                            "t.mist_cl_cd > 0 AND t.spcd = 73";
+                        arrDamageCodeUpdates[11] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage3 = 32, severity3 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 32 AND damage2 <> 32 AND (damage3 IS NULL OR damage3 IN (96,97)) AND history = 1 AND " +
+                            "t.mist_cl_cd > 0 AND t.spcd = 73";
                         // fifth pass updates the damage code and severity fields with mistletoe (33) if they are null or = 96, 97
-                        arrDamageCodeUpdates[12] = "UPDATE " + strTargetTable +
-                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
-                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
-                            " SET Damage1 = 33, Severity1 = " + strTreeTable + ".mist_cl_cd" +
-                            " WHERE (Damage1 IS Null OR Damage1 in (96,97)) AND History = 1" +
-                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 202";
-                        arrDamageCodeUpdates[13] = "UPDATE " + strTargetTable +
-                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
-                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
-                            " SET Damage2 = 33, Severity2 = " + strTreeTable + ".mist_cl_cd" +
-                            " WHERE Damage1 <> 33 AND (Damage2 IS Null OR Damage2 IN (96,97)) AND History = 1" +
-                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 202";
-                        arrDamageCodeUpdates[14] = "UPDATE " + strTargetTable +
-                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
-                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
-                            " SET Damage3 = 33, Severity3 = " + strTreeTable + ".mist_cl_cd" +
-                            " WHERE Damage1 <> 33 AND Damage2 <> 33 AND (Damage3 IS Null OR Damage3 IN (96,97)) AND History = 1" +
-                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 202";
+                        arrDamageCodeUpdates[12] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage1 = 33, severity1 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "(damage1 IS NULL OR damage1 IN (96,97)) AND history = 1 AND " +
+                            "t.mist_cl_cd > 0 AND t.spcd = 202";
+                        arrDamageCodeUpdates[13] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage2 = 33, severity2 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 33 AND (damage2 IS NULL OR damage2 IN (96,97)) AND history = 1 AND " +
+                            "t.mist_cl_cd > 0 AND t.spcd = 202";
+                        arrDamageCodeUpdates[14] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage3 = 33, severity3 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 33 AND damage2 <> 33 AND (damage3 IS NULL OR damage3 IN (96,97)) AND history = 1 AND " +
+                            "t.mist_cl_cd > 0 AND t.spcd = 202";
                         // Final 6th pass updates the damage code and severity fields with mistletoe (34) if they are null or = 96, 97
-                        arrDamageCodeUpdates[15] = "UPDATE " + strTargetTable +
-                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
-                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
-                            " SET Damage1 = 34, Severity1 = " + strTreeTable + ".mist_cl_cd" +
-                            " WHERE (Damage1 IS Null OR Damage1 in (96,97)) AND History = 1" +
-                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 122";
-                        arrDamageCodeUpdates[16] = "UPDATE " + strTargetTable +
-                            " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
-                            " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
-                            " SET Damage2 = 34, Severity2 = " + strTreeTable + ".mist_cl_cd" +
-                            " WHERE Damage1 <> 34 AND (Damage2 IS Null OR Damage2 IN (96,97)) AND History = 1" +
-                            " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 122";
+                        arrDamageCodeUpdates[15] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage1 = 34, severity1 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "(damage1 IS NULL OR damage1 IN (96,97)) AND history = 1 " +
+                            "AND t.mist_cl_cd > 0 AND t.spcd = 122";
+                        arrDamageCodeUpdates[16] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage2 = 34, severity2 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 34 AND (damage2 IS NULL OR damage2 IN (96,97)) AND history = 1 " +
+                            "AND t.mist_cl_cd > 0 AND t.spcd = 122";
                         arrDamageCodeUpdates[17] = "UPDATE " + strTargetTable +
                             " INNER JOIN " + strTreeTable + " ON " + strTargetTable + ".STAND_ID = TRIM(" + strTreeTable + ".biosum_cond_id)" +
                             " AND " + strTargetTable + ".TREE_CN = TRIM(" + strTreeTable + ".cn)" +
                             " SET Damage3 = 34, Severity3 = " + strTreeTable + ".mist_cl_cd" +
                             " WHERE Damage1 <> 34 AND Damage2 <> 34 AND (Damage3 IS Null OR Damage3 IN (96,97)) AND History = 1" +
                             " AND " + strTreeTable + ".mist_cl_cd > 0 AND " + strTreeTable + ".spcd = 122";
+                        arrDamageCodeUpdates[17] = "UPDATE " + strTargetTable + " AS x " +
+                            "SET damage3 = 34, severity3 = t.mist_cl_cd " +
+                            "FROM " + strTreeTable + " AS t " +
+                            "WHERE x.stand_id = TRIM(t.biosum_cond_id) AND x.tree_cn = TRIM(t.cn) AND " +
+                            "damage1 <> 34 AND damage2 <> 34 AND (damage3 IS NULL OR damage3 IN (96,97)) AND history = 1 " +
+                            "AND t.mist_cl_cd > 0 AND t.spcd = 122";
 
                         return arrDamageCodeUpdates;
                     }
@@ -4840,18 +4289,18 @@ namespace FIA_Biosum_Manager
 
                     public static string UpdateFieldsFromTempTable(string strSourceTable, IList<string> lstFields)
                     {
-                        string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
-                         " INNER JOIN " + strSourceTable + " ON " + strSourceTable + ".TREE_CN = " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".TREE_CN" +
-                         " AND " + strSourceTable + ".STAND_CN = " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + ".STAND_CN" +
-                         " SET ";
+                        string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName + " AS t " +
+                            "SET ";
                         System.Text.StringBuilder sb = new System.Text.StringBuilder();
                         foreach (var item in lstFields)
                         {
-                            sb.Append(Tables.FIA2FVS.DefaultFvsInputTreeTableName + "." + item + "=" + strSourceTable + "." + item);
+                            sb.Append(item + "= s." + item);
                             sb.Append(",");
                         }
-                        sb.Length--;    // Remove trailing comma
-                        strSQL = strSQL + sb.ToString();
+                        sb.Length--; // Remove trailing comma
+                        strSQL += sb.ToString();
+                        strSQL += " FROM " + strSourceTable + " AS s " +
+                            "WHERE s.tree_cn = t.tree_cn AND s.stand_cn = t.stand_cn";
                         return strSQL;
                     }
 

@@ -20,7 +20,7 @@ namespace FIA_Biosum_Manager
 		public string m_strTable;
 		public const int TABLETYPE = 0;
 		public const int PATH = 1;
-		public const int MDBFILE = 2;
+		public const int DBFILE = 2;
 		public const int FILESTATUS = 3;
 		public const int TABLE = 4;
 		public const int TABLESTATUS = 5;
@@ -220,7 +220,7 @@ namespace FIA_Biosum_Manager
                         // Add a ListItem object to the ListView.
                         this.m_strDataSource[x, TABLETYPE] = oDataReader["table_type"].ToString().Trim();
                         this.m_strDataSource[x, PATH] = oDataReader["path"].ToString().Trim();
-                        this.m_strDataSource[x, MDBFILE] = oDataReader["file"].ToString().Trim();
+                        this.m_strDataSource[x, DBFILE] = oDataReader["file"].ToString().Trim();
                         strPathAndFile = oMacroSub.GeneralTranslateVariableSubstitution(oDataReader["path"].ToString().Trim()) +
                             "\\" + oDataReader["file"].ToString().Trim();
                         if (System.IO.File.Exists(strPathAndFile) == true)
@@ -229,7 +229,7 @@ namespace FIA_Biosum_Manager
                             this.m_strDataSource[x, TABLE] = oDataReader["table_name"].ToString().Trim();
                             string strExistsConn = oExistsAdo.getMDBConnString(strPathAndFile, "", "");
                             bool bSQLite = false;
-                            if (System.IO.Path.GetExtension(this.m_strDataSource[x, MDBFILE]).Trim().ToUpper().Equals(".DB"))
+                            if (System.IO.Path.GetExtension(this.m_strDataSource[x, DBFILE]).Trim().ToUpper().Equals(".DB"))
                             {
                                 // This is an SQLite data source
                                 bSQLite = true;
@@ -439,7 +439,7 @@ namespace FIA_Biosum_Manager
                             // Add a ListItem object to the array
                             this.m_strDataSource[x, TABLETYPE] = dataMgr.m_DataReader["table_type"].ToString().Trim();
                             this.m_strDataSource[x, PATH] = dataMgr.m_DataReader["path"].ToString().Trim();
-                            this.m_strDataSource[x, MDBFILE] = dataMgr.m_DataReader["file"].ToString().Trim();
+                            this.m_strDataSource[x, DBFILE] = dataMgr.m_DataReader["file"].ToString().Trim();
                             strPathAndFile = oMacroSub.GeneralTranslateVariableSubstitution(dataMgr.m_DataReader["path"].ToString().Trim()) +
                                 "\\" + dataMgr.m_DataReader["file"].ToString().Trim();
                             if (System.IO.File.Exists(strPathAndFile) == true)
@@ -579,12 +579,120 @@ namespace FIA_Biosum_Manager
             p_ado = null;
         }
 
+		public void populate_datasource_array_sqlite_new()
+        {
+			macrosubst oMacroSub = new macrosubst();
+			oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
 
-        ///<summary>
-        ///Validate the existance of the table in the datasource
-        ///</summary>
-        /// <param name="strTableName">Table name to validate.</param>
-        public bool DataSourceTableExist(string strTableName)
+			int intRecCnt = 0;
+			string strPathAndFile = "";
+			string strSQL = "";
+			string strConn = "";
+			this.m_intNumberOfTables = 0;
+
+			DataMgr dataMgr = new DataMgr();
+
+			this.m_intError = 0;
+			this.m_strError = "";
+
+			strConn = dataMgr.GetConnectionString(this.m_strDataSourceMDBFile);
+			using (System.Data.SQLite.SQLiteConnection sqlConn = new System.Data.SQLite.SQLiteConnection(strConn))
+			{
+				sqlConn.Open();
+				intRecCnt = Convert.ToInt32(dataMgr.getRecordCount(sqlConn, "select count(*) from " + this.m_strDataSourceTableName, this.m_strDataSourceTableName));
+				this.m_strDataSource = new String[intRecCnt, 10];
+				if (this.m_strScenarioId.Trim().Length > 0)
+				{
+					strSQL = "select table_type,path,file,table_name from scenario_datasource" +
+							 " where TRIM(UPPER(scenario_id)) = '" + this.m_strScenarioId.Trim().ToUpper() + "';";
+				}
+				else
+				{
+					strSQL = "select table_type,path,file,table_name from " + this.m_strDataSourceTableName + ";";
+				}
+				try
+				{
+					dataMgr.SqlQueryReader(sqlConn, strSQL);
+					int x = 0;
+					while (dataMgr.m_DataReader.Read())
+					{
+						this.m_intNumberOfTables++;
+						// Add a ListItem object to the array
+						this.m_strDataSource[x, TABLETYPE] = dataMgr.m_DataReader["table_type"].ToString().Trim();
+						this.m_strDataSource[x, PATH] = dataMgr.m_DataReader["path"].ToString().Trim();
+						this.m_strDataSource[x, DBFILE] = dataMgr.m_DataReader["file"].ToString().Trim();
+						strPathAndFile = oMacroSub.GeneralTranslateVariableSubstitution(dataMgr.m_DataReader["path"].ToString().Trim()) +
+							"\\" + dataMgr.m_DataReader["file"].ToString().Trim();
+						if (System.IO.File.Exists(strPathAndFile) == true)
+						{
+							this.m_strDataSource[x, FILESTATUS] = "F";
+							this.m_strDataSource[x, TABLE] = dataMgr.m_DataReader["table_name"].ToString().Trim();DataMgr oExistsDataMgr = new DataMgr();
+							string strExistsConn = oExistsDataMgr.GetConnectionString(strPathAndFile);
+							using (System.Data.SQLite.SQLiteConnection existsConn = new System.Data.SQLite.SQLiteConnection(strExistsConn))
+							{
+								existsConn.Open();
+								//see if the table exists in the db database container
+								if (oExistsDataMgr.TableExist(existsConn, dataMgr.m_DataReader["table_name"].ToString().Trim()))
+								{
+									this.m_strDataSource[x, TABLESTATUS] = "F";
+									this.m_strDataSource[x, RECORDCOUNT] = "0";
+									this.m_strDataSource[x, COLUMN_LIST] = "";
+									this.m_strDataSource[x, DATATYPE_LIST] = "";
+
+									if (this.LoadTableRecordCount || this.LoadTableColumnNamesAndDataTypes)
+									{
+										DataMgr sourceDataMgr = new DataMgr();
+										strConn = sourceDataMgr.GetConnectionString(strPathAndFile);
+										sourceDataMgr.OpenConnection(strConn);
+										if (sourceDataMgr.m_intError == 0)
+										{
+											strSQL = "select count(*) from " + dataMgr.m_DataReader["table_name"].ToString();
+											if (this.LoadTableRecordCount)
+											{
+												this.m_strDataSource[x, RECORDCOUNT] = Convert.ToString(sourceDataMgr.getRecordCount(strConn, strSQL, dataMgr.m_DataReader["table_name"].ToString()));
+											}
+											if (this.LoadTableColumnNamesAndDataTypes)
+											{
+												sourceDataMgr.getFieldNamesAndDataTypes(sourceDataMgr.m_Connection, "select * from " + dataMgr.m_DataReader["table_name"].ToString(), ref this.m_strDataSource[x, COLUMN_LIST], ref this.m_strDataSource[x, DATATYPE_LIST]);
+											}
+										}
+									}
+								}
+								else
+								{
+									this.m_strDataSource[x, TABLESTATUS] = "NF";
+									this.m_strDataSource[x, RECORDCOUNT] = "0";
+								}
+							}
+						}
+						else
+						{
+							this.m_strDataSource[x, FILESTATUS] = "NF";
+							this.m_strDataSource[x, TABLE] = dataMgr.m_DataReader["table_name"].ToString().Trim();
+							this.m_strDataSource[x, TABLESTATUS] = "NF";
+							this.m_strDataSource[x, RECORDCOUNT] = "0";
+						}
+						UpdateTableMacroVariable(this.m_strDataSource[x, TABLETYPE], this.m_strDataSource[x, TABLE]);
+
+						x++;
+					}
+					dataMgr.m_DataReader.Close();
+				}
+				catch (Exception e)
+				{
+					this.m_intError = -1;
+					this.m_strError = "The Query Command " + strSQL + " Failed";
+					MessageBox.Show(this.m_strError);
+					return;
+				}
+			}
+		}
+
+		///<summary>
+		///Validate the existance of the table in the datasource
+		///</summary>
+		/// <param name="strTableName">Table name to validate.</param>
+		public bool DataSourceTableExist(string strTableName)
 		{
 			int x;
 			for (x=0; x <= this.m_intNumberOfTables-1; x++)
@@ -637,7 +745,7 @@ namespace FIA_Biosum_Manager
 			for (x=0; x <= this.m_intNumberOfTables - 1; x++)
 			{
                 bool bSQLite = false;
-                if (System.IO.Path.GetExtension(this.m_strDataSource[x, MDBFILE].Trim()).ToUpper().Equals(".DB"))
+                if (System.IO.Path.GetExtension(this.m_strDataSource[x, DBFILE].Trim()).ToUpper().Equals(".DB"))
                 {
                     // This is an SQLite data source
                     bSQLite = true;
@@ -666,7 +774,7 @@ namespace FIA_Biosum_Manager
 						p_dao.CreateTableLink(strTempMDB,
 							this.m_strDataSource[x,TABLE].Trim(),
 							oMacroSub.GeneralTranslateVariableSubstitution(this.m_strDataSource[x,PATH].Trim()) + "\\" +
-							     this.m_strDataSource[x,MDBFILE].Trim(),
+							     this.m_strDataSource[x,DBFILE].Trim(),
 							this.m_strDataSource[x,TABLE].Trim());
 						this.m_intNumberOfValidTables++;
 					}
@@ -719,7 +827,6 @@ namespace FIA_Biosum_Manager
         {
 			macrosubst oMacroSub = new macrosubst();
 			oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
-			string strTempDB = "";
 			int x;
 
 			FIA_Biosum_Manager.env p_env = new env();
@@ -731,43 +838,9 @@ namespace FIA_Biosum_Manager
 			// used to create a link to the table
 			DataMgr p_dataMgr = new DataMgr();
 
-			strTempDB = p_utils.getRandomFile(p_env.strTempDir, "db");
+			string strTempDB = p_utils.getRandomFile(p_env.strTempDir, "db");
 			p_dataMgr.CreateDbFile(strTempDB);
-			//for (x=0; x <= this.m_intNumberOfTables - 1; x++)
-			//         {
-			//	string strFileStatus = this.m_strDataSource[x, FILESTATUS];
-			//	if (strFileStatus != null)
-			//             {
-			//		strFileStatus = strFileStatus.Trim().ToUpper();
-			//             }
-			//	string strTableStatus = this.m_strDataSource[x, TABLESTATUS];
-			//	if (strTableStatus != null)
-			//             {
-			//		strTableStatus = strTableStatus.Trim().ToUpper();
-			//	}
-			//	if (strTableStatus == "F" && strFileStatus == "F")
-			//             {
-			//		if (strTempDB.Trim().Length == 0)
-			//                 {
-			//			// get temporary db file
-			//			strTempDB = p_utils.getRandomFile(p_env.strTempDir, "db");
-
-			//			//create a temporary mdb that will contain all 
-			//			//the links to the scenario datasource tables
-			//			p_dataMgr.CreateDbFile(strTempDB);
-			//		}
-			//		using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(strTempDB)))
-			//                 {
-			//			p_dataMgr.m_strSQL = "ATTACH DATABASE '" + oMacroSub.GeneralTranslateVariableSubstitution(this.m_strDataSource[x, PATH].Trim()) + "\\" +
-			//					 this.m_strDataSource[x, MDBFILE].Trim() + "'";
-			//			p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
-			//		}
-			//		this.m_intNumberOfValidTables++;
-			//	}
-			//}
-			p_utils = null;
-			p_dataMgr = null;
-			p_env = null;
+			
 			if (strTempDB.Trim().Length == 0)
             {
 				MessageBox.Show("!!None of the data source tables are found!!");
@@ -1166,7 +1239,7 @@ namespace FIA_Biosum_Manager
 					this.m_strDataSource[x,TABLETYPE].Trim().ToUpper())
 				{
                     string strPathAndFile = oMacroSub.GeneralTranslateVariableSubstitution(this.m_strDataSource[x, PATH].ToString().Trim())
-                        + "\\" + this.m_strDataSource[x, MDBFILE].ToString().Trim();
+                        + "\\" + this.m_strDataSource[x, DBFILE].ToString().Trim();
                     return strPathAndFile;
 				}
 			}
@@ -1184,7 +1257,7 @@ namespace FIA_Biosum_Manager
 				if (this.m_strDataSource[x,FILESTATUS].Trim().ToUpper()=="NF")
 				{
 					MessageBox.Show("Datasource Failure: data source file " + this.m_strDataSource[x,PATH].Trim() + "\\" + 
-		            this.m_strDataSource[x,MDBFILE].Trim() + " is not found");
+		            this.m_strDataSource[x,DBFILE].Trim() + " is not found");
 					return -1;
 				}
 				if (this.m_strDataSource[x,TABLESTATUS].Trim().ToUpper()=="NF")
@@ -1517,7 +1590,7 @@ namespace FIA_Biosum_Manager
                     {
                         string[] arrSource = dictSources[tableType];
                         strPathAndFile = oMacroSub.GeneralTranslateVariableSubstitution(arrSource[PATH]) +
-                            "\\" + arrSource[MDBFILE];
+                            "\\" + arrSource[DBFILE];
                         if (System.IO.File.Exists(strPathAndFile) == true)
                         {
                             arrSource[FILESTATUS] = "F";

@@ -15,7 +15,6 @@ namespace FIA_Biosum_Manager
 	{
 		private System.Windows.Forms.GroupBox groupBox1;
 		private System.ComponentModel.IContainer components;
-		//private int m_intFullHt=400;
 		public System.Data.OleDb.OleDbDataAdapter m_OleDbDataAdapter;
 		public System.Data.DataSet m_DataSet;
 		public System.Data.OleDb.OleDbConnection m_OleDbConnectionMaster;
@@ -27,16 +26,12 @@ namespace FIA_Biosum_Manager
 		public int m_intError = 0;
 		public string m_strError = "";
 		private System.Windows.Forms.Button btnNext;
-		private System.Windows.Forms.Button btnPrev;
 		private FIA_Biosum_Manager.utils m_oUtils; 
 		public System.Windows.Forms.Label lblTitle;
 		private FIA_Biosum_Manager.frmOptimizerScenario _frmScenario=null;
 		private FIA_Biosum_Manager.uc_optimizer_scenario_fvs_prepost_variables_tiebreaker _uc_tiebreaker;
 
 		
-		private int m_intCurVar=-1;
-		int m_intCurVariableDefinitionStepCount=1;
-		string[] m_strUserNavigation=null;
 		private System.Windows.Forms.Panel pnlFVSVariablesPrePostVariable;
 		private System.Windows.Forms.GroupBox grpboxOptimization;
 		private System.Windows.Forms.Panel pnlOptimization;
@@ -1114,221 +1109,7 @@ namespace FIA_Biosum_Manager
             }
 
         }
-        public void loadvalues_access(System.Collections.Generic.IDictionary<string, System.Collections.Generic.IList<String>> p_dictFVSTables)
-		{
-			
-			this.m_intError=0;
-			this.m_strError="";
-
-			int y;
-            lstFVSTablesList.Items.Clear();
-            m_dictFVSTables = new System.Collections.Generic.Dictionary<string,
-                System.Collections.Generic.IList<string>>(p_dictFVSTables);
-            foreach (string strKey in m_dictFVSTables.Keys)
-            {
-                lstFVSTablesList.Items.Add(strKey);
-            }
-
-			this.lvOptimizationListValues.Items.Clear();
-			this.m_oLvRowColors.InitializeRowCollection();
-			this.m_oLvRowColors.m_intSelectedRow=-1;
-
-			CreateListViewOptimizationRow();
-			this.m_oLvRowColors.AddRow();
-			this.m_oLvRowColors.AddColumns(lvOptimizationListValues.Items.Count-1,lvOptimizationListValues.Columns.Count);
-			this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count-1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_OPTIMIZE_VARIABLE].Text = "Revenue";
-			this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count-1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FVS_VARIABLE].Text = "NA";
-			this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count-1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_VALUESOURCE].Text = "NA";
-			this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count-1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_MAXMIN].Text = "Not Defined";
-			this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count-1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_USEFILTER].Text = "No";
-			this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count-1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FILTER_OPERATOR].Text = "Not Defined";
-			this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count-1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FILTER_VALUE].Text = "Not Defined";
-
-			CreateListViewOptimizationRow();
-			this.m_oLvRowColors.AddRow();
-			this.m_oLvRowColors.AddColumns(lvOptimizationListValues.Items.Count-1,lvOptimizationListValues.Columns.Count);
-			this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count-1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_OPTIMIZE_VARIABLE].Text = "Merchantable Volume";
-			this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count-1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FVS_VARIABLE].Text = "NA";
-			this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count-1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_VALUESOURCE].Text = "NA";
-			this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count-1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_MAXMIN].Text = "Not Defined";
-			this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count-1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_USEFILTER].Text = "No";
-			this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count-1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FILTER_OPERATOR].Text = "Not Defined";
-			this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count-1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FILTER_VALUE].Text = "Not Defined";
-
-			CreateListViewOptimizationRow();
-			this.m_oLvRowColors.AddRow();
-			this.m_oLvRowColors.AddColumns(lvOptimizationListValues.Items.Count-1,lvOptimizationListValues.Columns.Count);
-            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_OPTIMIZE_VARIABLE].Text = "Stand Attribute";
-			this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count-1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FVS_VARIABLE].Text = "Not Defined";
-			this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count-1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_VALUESOURCE].Text = "Not Defined";
-			this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count-1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_MAXMIN].Text = "Not Defined";
-			this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count-1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_USEFILTER].Text = "No";
-			this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count-1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FILTER_OPERATOR].Text = "Not Defined";
-			this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count-1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FILTER_VALUE].Text = "Not Defined";
-
-            // New row for economic weighted variables
-            CreateListViewOptimizationRow();
-            this.m_oLvRowColors.AddRow();
-            this.m_oLvRowColors.AddColumns(lvOptimizationListValues.Items.Count - 1, lvOptimizationListValues.Columns.Count);
-            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_OPTIMIZE_VARIABLE].Text = "Economic Attribute";
-            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FVS_VARIABLE].Text = "NA";
-            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_VALUESOURCE].Text = "NA";
-            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_MAXMIN].Text = "Not Defined";
-            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_USEFILTER].Text = "No";
-            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FILTER_OPERATOR].Text = "Not Defined";
-            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FILTER_VALUE].Text = "Not Defined";
-
-
-			//
-			//load previous scenario values
-			//
-			if (this.m_bFirstTime)
-			{
-				ado_data_access oAdo = new ado_data_access();
-				string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
-				string strScenarioMDB = 
-					frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
-                    Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
-				oAdo.OpenConnection(oAdo.getMDBConnString(strScenarioMDB,"",""));
-				if (oAdo.m_intError==0)
-				{
-                    this.ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem_Collection.Item(0).m_oOptimizationVariableItem_Collection.Clear();
-                    int intVarNum=0;
-
-					oAdo.m_strSQL = "SELECT * " + 
-						"FROM scenario_fvs_variables_optimization " + 
-						"WHERE TRIM(scenario_id)='" + strScenarioId.Trim() + "' AND " + 
-						"current_yn='Y'";
-
-					oAdo.SqlQueryReader(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-					if (oAdo.m_OleDbDataReader.HasRows)
-					{
-						while (oAdo.m_OleDbDataReader.Read())
-						{
-						    OptimizerScenarioItem.OptimizationVariableItem oItem = new OptimizerScenarioItem.OptimizationVariableItem();
-							if (oAdo.m_OleDbDataReader["optimization_variable"] != System.DBNull.Value)
-							{
-								oItem.strOptimizedVariable = Convert.ToString(oAdo.m_OleDbDataReader["optimization_variable"]);
-								//optimization variable
-								if (oAdo.m_OleDbDataReader["fvs_variable_name"] != System.DBNull.Value)
-								{
-									oItem.strFVSVariableName = Convert.ToString(oAdo.m_OleDbDataReader["fvs_variable_name"]).Trim();
-								}
-								else
-								{
-									oItem.strFVSVariableName = "NA";
-								}
-								//value source (POST or POST-PRE)
-								if (oAdo.m_OleDbDataReader["value_source"] != System.DBNull.Value)
-								{
-									oItem.strValueSource = Convert.ToString(oAdo.m_OleDbDataReader["value_source"]).Trim();
-								}
-								else
-								{
-									oItem.strValueSource = "Not Defined";
-								}
-
-								//max value
-								if (oAdo.m_OleDbDataReader["max_yn"] != System.DBNull.Value)
-								{
-									oItem.strMaxYN = Convert.ToString(oAdo.m_OleDbDataReader["max_yn"]).Trim();
-								}
-								else
-								{
-									oItem.strMaxYN = "N";
-								}
-								//min value
-								if (oAdo.m_OleDbDataReader["min_yn"] != System.DBNull.Value)
-								{
-									oItem.strMinYN = Convert.ToString(oAdo.m_OleDbDataReader["min_yn"]).Trim();
-								}
-								else
-								{
-									oItem.strMinYN = "N";
-								}
-								//enable filter
-								if (oAdo.m_OleDbDataReader["filter_enabled_yn"] != System.DBNull.Value)
-								{
-									if (Convert.ToString(oAdo.m_OleDbDataReader["filter_enabled_yn"]).Trim()=="Y")
-										oItem.bUseFilter=true;
-									else
-										oItem.bUseFilter=false;
-										 
-								}
-								else
-								{
-									oItem.bUseFilter=false;
-								}
-								//filter operator
-								if (oAdo.m_OleDbDataReader["filter_operator"] != System.DBNull.Value)
-								{
-									
-									oItem.strFilterOperator = Convert.ToString(oAdo.m_OleDbDataReader["filter_operator"]).Trim();	 
-								}
-								else
-								{
-									oItem.strFilterOperator="";
-								}
-								//filter value
-								if (oAdo.m_OleDbDataReader["filter_value"] != System.DBNull.Value)
-								{
-									oItem.dblFilterValue = Convert.ToDouble(oAdo.m_OleDbDataReader["filter_value"]);	 
-								}
-								//filter operator
-								if (oAdo.m_OleDbDataReader["checked_yn"] != System.DBNull.Value)
-								{
-                                    if (Convert.ToString(oAdo.m_OleDbDataReader["checked_yn"]).Trim() == "Y")
-                                    {
-                                        oItem.bSelected = true;
-                                        if (oItem.strOptimizedVariable.Trim().ToUpper() == "STAND ATTRIBUTE")
-                                        {
-                                            ReferenceOptimizerScenarioForm.uc_scenario_run1.UpdateOptimizationVariableGroupboxText(oItem.strFVSVariableName);
-                                        }
-                                        else
-                                        {
-                                            ReferenceOptimizerScenarioForm.uc_scenario_run1.UpdateOptimizationVariableGroupboxText(oItem.strOptimizedVariable);
-                                        }
-                                    }
-                                    else
-                                        oItem.bSelected = false;
-								}
-								else
-								{
-									oItem.bSelected=false;
-								}
-                                //revenue attribute
-                                if (oAdo.m_OleDbDataReader["revenue_attribute"] != System.DBNull.Value)
-                                {
-                                    oItem.strRevenueAttribute = Convert.ToString(oAdo.m_OleDbDataReader["revenue_attribute"]).Trim();
-                                }
-                                //rxcycle
-                                if (oAdo.m_OleDbDataReader["rxcycle"] != System.DBNull.Value)
-                                {
-                                    oItem.RxCycle = Convert.ToString(oAdo.m_OleDbDataReader["rxcycle"]).Trim();
-                                }
-
-                                this.ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem_Collection.Item(0).m_oOptimizationVariableItem_Collection.Add(oItem);
-							}
-						}
-					}
-					oAdo.m_OleDbDataReader.Close();
-					oAdo.CloseConnection(oAdo.m_OleDbConnection);
-					oAdo.m_OleDbConnection.Dispose();
-				}
-
-
-
-			
-			
-				this.m_intError=oAdo.m_intError;
-				this.m_strError=oAdo.m_strError;
-				oAdo=null;
-				this.m_bFirstTime=false;
-			}
-			this.UpdateValues();
-
-			
-		}
+       
         public void loadvalues(System.Collections.Generic.IDictionary<string, System.Collections.Generic.IList<String>> p_dictFVSTables)
         {
             this.m_intError = 0;
@@ -1563,81 +1344,81 @@ namespace FIA_Biosum_Manager
 			//
 			//update list view items
 			//
-				bool bFound;
-                OptimizerScenarioItem.OptimizationVariableItem_Collection oOptimizationVariableItemCollection =
-                    this.ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem_Collection.Item(0).m_oOptimizationVariableItem_Collection;
-				for (y=0;y<=this.lvOptimizationListValues.Items.Count-1;y++)
+			bool bFound;
+            OptimizerScenarioItem.OptimizationVariableItem_Collection oOptimizationVariableItemCollection =
+                this.ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem_Collection.Item(0).m_oOptimizationVariableItem_Collection;
+			for (y=0;y<=this.lvOptimizationListValues.Items.Count-1;y++)
+			{
+				bFound=false;
+                string strOptimizeVariable = lvOptimizationListValues.Items[y].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_OPTIMIZE_VARIABLE].Text.Trim().ToUpper();
+                // It is the Revenue or Merchantable Volume line
+                if (strOptimizeVariable.IndexOf("ATTRIBUTE") < 0)
 				{
-					bFound=false;
-                    string strOptimizeVariable = lvOptimizationListValues.Items[y].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_OPTIMIZE_VARIABLE].Text.Trim().ToUpper();
-                    // It is the Revenue or Merchantable Volume line
-                    if (strOptimizeVariable.IndexOf("ATTRIBUTE") < 0)
+                    for (x = 0; x <= oOptimizationVariableItemCollection.Count - 1; x++)
 					{
-                        for (x = 0; x <= oOptimizationVariableItemCollection.Count - 1; x++)
+						if (lvOptimizationListValues.Items[y].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_OPTIMIZE_VARIABLE].Text.Trim().ToUpper() ==
+                            oOptimizationVariableItemCollection.Item(x).strOptimizedVariable.Trim().ToUpper())
 						{
-							if (lvOptimizationListValues.Items[y].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_OPTIMIZE_VARIABLE].Text.Trim().ToUpper() ==
-                                oOptimizationVariableItemCollection.Item(x).strOptimizedVariable.Trim().ToUpper())
-							{
-								bFound=true;
-								break;
-							}
+							bFound=true;
+							break;
 						}
 					}
-					// It is the Stand or Economic Attribute line
-                    else
+				}
+				// It is the Stand or Economic Attribute line
+                else
+				{
+                    for (x = 0; x <= oOptimizationVariableItemCollection.Count - 1; x++)
 					{
-                        for (x = 0; x <= oOptimizationVariableItemCollection.Count - 1; x++)
+                        if ((strOptimizeVariable == "STAND ATTRIBUTE" &&
+                            oOptimizationVariableItemCollection.Item(x).strOptimizedVariable.Trim().ToUpper() == "STAND ATTRIBUTE") ||
+                            (strOptimizeVariable == "ECONOMIC ATTRIBUTE" &&
+                            oOptimizationVariableItemCollection.Item(x).strOptimizedVariable.Trim().ToUpper() == "ECONOMIC ATTRIBUTE"))
 						{
-                            if ((strOptimizeVariable == "STAND ATTRIBUTE" &&
-                                oOptimizationVariableItemCollection.Item(x).strOptimizedVariable.Trim().ToUpper() == "STAND ATTRIBUTE") ||
-                                (strOptimizeVariable == "ECONOMIC ATTRIBUTE" &&
-                                oOptimizationVariableItemCollection.Item(x).strOptimizedVariable.Trim().ToUpper() == "ECONOMIC ATTRIBUTE"))
-							{
-								bFound=true;
-								break;
-							}
+							bFound=true;
+							break;
 						}
 					}
-					if (bFound)
+				}
+				if (bFound)
+				{
+                    UpdateListViewItem(lvOptimizationListValues.Items[y], oOptimizationVariableItemCollection.Item(x));
+				}
+				else
+				{
+                    OptimizerScenarioItem.OptimizationVariableItem oItem = new OptimizerScenarioItem.OptimizationVariableItem();
+					oItem.intListViewIndex = y;
+					oItem.strOptimizedVariable = this.lvOptimizationListValues.Items[y].SubItems[COLUMN_OPTIMIZE_VARIABLE].Text.Trim();
+					oItem.strFVSVariableName = this.lvOptimizationListValues.Items[y].SubItems[COLUMN_FVS_VARIABLE].Text.Trim();
+					oItem.strValueSource = lvOptimizationListValues.Items[y].SubItems[COLUMN_VALUESOURCE].Text.Trim();
+					oItem.bSelected = this.lvOptimizationListValues.Items[y].Checked;
+					if (this.lvOptimizationListValues.Items[y].SubItems[COLUMN_USEFILTER].Text.Trim() == "Yes")
+						oItem.bUseFilter=true;
+					else
+						oItem.bUseFilter=false;
+						
+					if (this.lvOptimizationListValues.Items[y].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_MAXMIN].Text.Trim() == "MAX")
 					{
-                        UpdateListViewItem(lvOptimizationListValues.Items[y], oOptimizationVariableItemCollection.Item(x));
+						oItem.strMaxYN="Y";
 					}
 					else
+						oItem.strMaxYN="N";
+
+					if (this.lvOptimizationListValues.Items[y].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_MAXMIN].Text.Trim() == "MIN")
 					{
-                        OptimizerScenarioItem.OptimizationVariableItem oItem = new OptimizerScenarioItem.OptimizationVariableItem();
-						oItem.intListViewIndex = y;
-						oItem.strOptimizedVariable = this.lvOptimizationListValues.Items[y].SubItems[COLUMN_OPTIMIZE_VARIABLE].Text.Trim();
-						oItem.strFVSVariableName = this.lvOptimizationListValues.Items[y].SubItems[COLUMN_FVS_VARIABLE].Text.Trim();
-						oItem.strValueSource = lvOptimizationListValues.Items[y].SubItems[COLUMN_VALUESOURCE].Text.Trim();
-						oItem.bSelected = this.lvOptimizationListValues.Items[y].Checked;
-						if (this.lvOptimizationListValues.Items[y].SubItems[COLUMN_USEFILTER].Text.Trim() == "Yes")
-							oItem.bUseFilter=true;
-						else
-							oItem.bUseFilter=false;
-						
-						if (this.lvOptimizationListValues.Items[y].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_MAXMIN].Text.Trim() == "MAX")
-						{
-							oItem.strMaxYN="Y";
-						}
-						else
-							oItem.strMaxYN="N";
-
-						if (this.lvOptimizationListValues.Items[y].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_MAXMIN].Text.Trim() == "MIN")
-						{
-							oItem.strMinYN="Y";
-						}
-						else
-							oItem.strMinYN="N";
-                        this.ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem_Collection.Item(0).m_oOptimizationVariableItem_Collection.Add(oItem);
-
+						oItem.strMinYN="Y";
 					}
+					else
+						oItem.strMinYN="N";
+                    this.ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem_Collection.Item(0).m_oOptimizationVariableItem_Collection.Add(oItem);
+
 				}
+			}
 			
-				for (x=oOptimizationVariableItemCollection.Count-1;x>=0;x--)
-				{
-					if (oOptimizationVariableItemCollection.Item(x).intListViewIndex==-1)
-						oOptimizationVariableItemCollection.Remove(x);
-				}
+			for (x=oOptimizationVariableItemCollection.Count-1;x>=0;x--)
+			{
+				if (oOptimizationVariableItemCollection.Item(x).intListViewIndex==-1)
+					oOptimizationVariableItemCollection.Remove(x);
+			}
 			
 			
 		}
@@ -1681,105 +1462,7 @@ namespace FIA_Biosum_Manager
             m_oValidate.ValidateDecimal(Convert.ToString(p_oVariableItem.dblFilterValue).Trim());
             p_lvItem.SubItems[COLUMN_FILTER_VALUE].Text = m_oValidate.ReturnValue;
 		}
-		public int savevalues_access()
-		{
-			int x;
-			string strValues="";
-			string strColumns="";
-			string strWhere="";
-			ado_data_access oAdo = new ado_data_access();
-			string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
-			string strScenarioMDB = 
-				frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
-                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
-			oAdo.OpenConnection(oAdo.getMDBConnString(strScenarioMDB,"",""));
-			if (oAdo.m_intError==0)
-			{
-				oAdo.m_strSQL = "SELECT COUNT(*) FROM scenario_fvs_variables_optimization WHERE " + 
-					" scenario_id = '" + strScenarioId + "' AND current_yn = 'Y';";
-				if ((int)oAdo.getRecordCount(oAdo.m_OleDbConnection,oAdo.m_strSQL,"scenario_fvs_variables_optimization")> 0)
-				{
-					oAdo.m_strSQL = "UPDATE scenario_fvs_variables_optimization SET current_yn = 'N'" + 
-						" WHERE scenario_id = '" + strScenarioId + "' AND current_yn = 'Y';";
-					oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-				}
-
-				if (oAdo.m_intError < 0)
-				{
-					oAdo.m_OleDbConnection.Close();
-					x=oAdo.m_intError;
-					oAdo = null;
-					return x;
-				}
-				strColumns = "scenario_id,rxcycle,optimization_variable,fvs_variable_name,value_source,max_yn,min_yn,filter_enabled_yn,filter_operator,filter_value,checked_yn,current_yn,revenue_attribute";
-
-                OptimizerScenarioItem.OptimizationVariableItem_Collection oOptimizationVariableItemCollection =
-                    this.ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem_Collection.Item(0).m_oOptimizationVariableItem_Collection;
-                for (x = 0; x <= oOptimizationVariableItemCollection.Count - 1; x++)
-				{
-					strValues = "'" + strScenarioId.Trim() + "','1'";
-					strWhere = "TRIM(scenario_id)='" + strScenarioId.Trim() + "' AND rxcycle='1' ";
-                    strValues = strValues + ",'" + oOptimizationVariableItemCollection.Item(x).strOptimizedVariable + "'";
-                    strWhere = strWhere + " AND UCASE(TRIM(optimization_variable))='" + oOptimizationVariableItemCollection.Item(x).strOptimizedVariable.Trim().ToUpper() + "'";
-                    strValues = strValues + ",'" + oOptimizationVariableItemCollection.Item(x).strFVSVariableName + "'";
-                    strWhere = strWhere + " AND UCASE(TRIM(fvs_variable_name))='" + oOptimizationVariableItemCollection.Item(x).strFVSVariableName.Trim().ToUpper() + "'";
-
-                    strValues = strValues + ",'" + oOptimizationVariableItemCollection.Item(x).strValueSource + "'";
-                    strWhere = strWhere + " AND UCASE(TRIM(value_source))='" + oOptimizationVariableItemCollection.Item(x).strValueSource.Trim().ToUpper() + "'";
-
-                    strValues = strValues + ",'" + oOptimizationVariableItemCollection.Item(x).strMaxYN + "'";
-                    strWhere = strWhere + " AND UCASE(TRIM(max_yn))='" + oOptimizationVariableItemCollection.Item(x).strMaxYN.Trim().ToUpper() + "'";
-                    strValues = strValues + ",'" + oOptimizationVariableItemCollection.Item(x).strMinYN + "'";
-                    strWhere = strWhere + " AND UCASE(TRIM(min_yn))='" + oOptimizationVariableItemCollection.Item(x).strMinYN.Trim().ToUpper() + "'";
-                    if (oOptimizationVariableItemCollection.Item(x).bUseFilter)
-					{
-						strValues = strValues + ",'Y'";
-						strWhere = strWhere + " AND UCASE(TRIM(filter_enabled_yn))='Y'";					
-					}
-					else
-					{
-						strValues = strValues + ",'N'";
-						strWhere = strWhere + " AND UCASE(TRIM(filter_enabled_yn))='N'";					
-					}
-
-
-                    strValues = strValues + ",'" + oOptimizationVariableItemCollection.Item(x).strFilterOperator + "'";
-                    strWhere = strWhere + " AND UCASE(TRIM(filter_operator))='" + oOptimizationVariableItemCollection.Item(x).strFilterOperator.Trim().ToUpper() + "'";
-                    strValues = strValues + "," + oOptimizationVariableItemCollection.Item(x).dblFilterValue.ToString().Trim();
-                    strWhere = strWhere + " AND filter_value=" + oOptimizationVariableItemCollection.Item(x).dblFilterValue.ToString().Trim();
-                    if (oOptimizationVariableItemCollection.Item(x).bSelected)
-						strValues = strValues + ",'Y'";
-					else
-						strValues = strValues + ",'N'";
-
-					strValues = strValues + ",'Y'";
-                    if (!String.IsNullOrEmpty(oOptimizationVariableItemCollection.Item(x).strRevenueAttribute.Trim()))
-                    {
-                        strValues = strValues + ",'" + oOptimizationVariableItemCollection.Item(x).strRevenueAttribute.Trim() + "'";
-                    }
-                    else
-                    {
-                        strValues = strValues + ",''";
-                    }
-
-					//delete duplicates
-					oAdo.m_strSQL = "DELETE FROM scenario_fvs_variables_optimization WHERE " + strWhere;
-					oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-
-
-
-
-					oAdo.m_strSQL = "INSERT INTO scenario_fvs_variables_optimization " + 
-							"(" + strColumns + ") VALUES " + 
-							"(" + strValues + ")";
-					oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-				}
-				
-
-			}
-			return 1;
-			
-		}
+		
         public int savevalues()
         {
             int x;
@@ -1912,11 +1595,6 @@ namespace FIA_Biosum_Manager
 
 		}
 
-		
-		
-		
-			
-		
 
 		protected void NextButton(ref System.Windows.Forms.GroupBox p_oGb, ref System.Windows.Forms.Button p_oButton, string strButtonName)
 		{
@@ -1934,9 +1612,6 @@ namespace FIA_Biosum_Manager
 			p_oButton.Left = this.btnNext.Left - p_oButton.Width;
 			p_oButton.Name = strButtonName;	
 		}
-		
-		
-
 		
 		public void main_resize()
 		{
@@ -1958,9 +1633,6 @@ namespace FIA_Biosum_Manager
 
 		
 		}
-
-	
-		
 
 		private void btnFVSVariablesPrePostVariableValue_Click(object sender, System.EventArgs e)
 		{
@@ -2024,9 +1696,6 @@ namespace FIA_Biosum_Manager
 			
 			
 		}
-
-	
-
 
 		private void Go()
 		{
@@ -2470,157 +2139,10 @@ namespace FIA_Biosum_Manager
 		private void btnOptimizationAudit_Click(object sender, System.EventArgs e)
 		{
 			this.DisplayAuditMessage=true;
-			AuditSqlite();
+			Audit();
 		}
-		public void Audit()
-		{
-			
-			
-			int x;
-			this.m_intError=0;
-			m_strError="";
-			if (DisplayAuditMessage)
-			{
-				this.m_strError="Audit Results \r\n";
-				this.m_strError=m_strError + "-------------\r\n\r\n";
-			}
-
-            OptimizerScenarioItem.OptimizationVariableItem_Collection oOptVariableItemCollection =
-                this.ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem_Collection.Item(0).m_oOptimizationVariableItem_Collection;
-            for (x = 0; x <= oOptVariableItemCollection.Count - 1; x++)
-			{
-                if (oOptVariableItemCollection.Item(x).bSelected) break;
-			}
-            if (x > oOptVariableItemCollection.Count - 1)
-			{
-				m_intError=-1;
-				m_strError = m_strError + "No optimization variable was checked. \r\n";
-			}
-			else
-			{
-
-                if (oOptVariableItemCollection.Item(x).strFVSVariableName.Trim().ToUpper() == "NOT DEFINED" &&
-                    oOptVariableItemCollection.Item(x).bSelected)
-				{
-					m_intError=-1;
-                    m_strError = m_strError + "Stand Attribute is selected but is not defined\r\n";
-				}
-				else
-				{
-                    if (oOptVariableItemCollection.Item(x).strFVSVariableName.Trim().ToUpper() != "NA" &&
-                        oOptVariableItemCollection.Item(x).strFVSVariableName.Trim().ToUpper() != "NOT DEFINED" &&
-                        oOptVariableItemCollection.Item(x).strFVSVariableName.IndexOf(".") > -1)
-					{
-						if (System.IO.File.Exists(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\fvs\\db\\biosum_fvsout_prepost_rx.mdb"))
-						{
-							ado_data_access oAdo = new ado_data_access();
-							oAdo.OpenConnection(oAdo.getMDBConnString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\fvs\\db\\biosum_fvsout_prepost_rx.mdb","",""));
-							if (oAdo.m_intError==0)
-							{
-                                string[] strTableColumnArray = frmMain.g_oUtils.ConvertListToArray(oOptVariableItemCollection.Item(x).strFVSVariableName, ".");
-								string strTable = strTableColumnArray[0].Trim();
-								string strColumn = strTableColumnArray[1].Trim();
-								if (oAdo.TableExist(oAdo.m_OleDbConnection,"post_" + strTable))
-								{
-									if (oAdo.ColumnExist(oAdo.m_OleDbConnection,"post_" + strTable,strColumn)==false)
-									{
-										m_intError=-1;
-										m_strError=m_strError + "Table column post_" + strTable + "." + strColumn + " does not exist in Db file biosum_fvsout_prepost_rx.mdb\r\n";
-									}
-								}
-								else
-								{
-									m_intError=-1;
-									m_strError = m_strError + "Table post_" + strTable + " does not exist in Db file biosum_fvsout_prepost_rx.mdb\r\n";
-								}
-
-                                if (oOptVariableItemCollection.Item(x).strValueSource.Trim().ToUpper() == "POST-PRE")
-								{
-									if (oAdo.TableExist(oAdo.m_OleDbConnection,"pre_" + strTable))
-									{
-										if (oAdo.ColumnExist(oAdo.m_OleDbConnection,"pre_" + strTable,strColumn)==false)
-										{
-											m_intError=-1;
-											m_strError=m_strError + "Table column pre_" + strTable + "." + strColumn + " does not exist in Db file biosum_fvsout_prepost_rx.mdb\r\n";
-										}
-									}
-									else
-									{
-										m_intError=-1;
-										m_strError = m_strError + "Table pre_" + strTable + " does not exist in Db file biosum_fvsout_prepost_rx.mdb\r\n";
-									}
-								}
-							
-								oAdo.CloseConnection(oAdo.m_OleDbConnection);
-
-							}
-							else
-							{
-								m_intError=-1;
-								m_strError= m_strError + "Error making a db connection to biosum_fvsout_prepost_rx.mdb\r\n";
-							}
-						}
-						else
-						{
-							m_intError=-1;
-							m_strError = m_strError + "Db file biosum_fvsout_prepost_rx.mdb does not exist\r\n";
-						}
-                        string[] strPieces = oOptVariableItemCollection.Item(x).strFVSVariableName.Trim().ToUpper().Split('.');
-                        FIA_Biosum_Manager.OptimizerScenarioTools oOptimizerScenarioTools = new OptimizerScenarioTools();
-                        if (strPieces.Length == 2)
-                        {
-                            if (strPieces[0].ToUpper().Contains("_WEIGHTED"))
-                            {
-                                string strWeightedError = oOptimizerScenarioTools.AuditWeightedFvsVariables(strPieces[0], out m_intError);
-                                if (m_intError != 0)
-                                {
-                                    m_strError = m_strError + strWeightedError;
-                                }
-                            }
-                        }
-					}
-
-                    if (oOptVariableItemCollection.Item(x).strMaxYN == "N" &&
-                        oOptVariableItemCollection.Item(x).strMinYN == "N")
-					{
-						m_intError=-1;
-						m_strError = m_strError + "The optimization variable requires a MAXIMUM or MINIMUM definition. \r\n";
-					}
-
-                    if (oOptVariableItemCollection.Item(x).bUseFilter)
-					{
-                        switch (oOptVariableItemCollection.Item(x).strFilterOperator.Trim())
-						{ 
-							case ">": break;
-							case "<": break;
-							case "<>": break;
-							case ">=": break;
-							case "<=": break;
-							default:
-								m_intError=-1;
-								m_strError = m_strError + "Invalid filter operator for the optimization variable. \r\n";
-								break;
-						}
-                        if (String.IsNullOrEmpty(oOptVariableItemCollection.Item(x).strRevenueAttribute))
-                        {
-                            m_intError = -1;
-                            m_strError = m_strError + "Net Revenue calculation is required when using Net Revenue filter \r\n";
-                        }
-
-					}
-				}
-				this.ReferenceTieBreaker.AuditCheckOptimiztionAndTieBreakerVariable(ref m_intError,ref m_strError);
-			}
-			
-			if (DisplayAuditMessage)
-			{
-				if (m_intError==0) this.m_strError=m_strError + "Passed Audit";
-				else m_strError = m_strError + "\r\n\r\n" + "Failed Audit";
-				MessageBox.Show(m_strError,"FIA Biosum");
-			}
-
-		}
-        public void AuditSqlite()
+		
+        public void Audit()
         {
             int x;
             this.m_intError = 0;
@@ -2723,7 +2245,7 @@ namespace FIA_Biosum_Manager
                         {
                             if (strPieces[0].ToUpper().Contains("_WEIGHTED"))
                             {
-                                string strWeightedError = oOptimizerScenarioTools.AuditWeightedFvsVariablesSqlite(strPieces[0], out m_intError);
+                                string strWeightedError = oOptimizerScenarioTools.AuditWeightedFvsVariables(strPieces[0], out m_intError);
                                 if (m_intError != 0)
                                 {
                                     m_strError = m_strError + strWeightedError;

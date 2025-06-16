@@ -1164,7 +1164,7 @@ namespace FIA_Biosum_Manager
                                 switch (strSettingsArray[0].Trim())
                                 {
                                     case "FVSInputForm":
-                                        if (strSettingsArray[1].Trim().ToUpper() == "Y") frmMain.g_bSuppressFVSInputTableRowCount = true;
+                                        if (strSettingsArray[1].Trim().ToUpper() == "Y") frmMain.g_bSuppressFVSInputTableRowCount = false;
                                         else frmMain.g_bSuppressFVSInputTableRowCount = false;
                                         break;
                                     case "FVSOutputForm":

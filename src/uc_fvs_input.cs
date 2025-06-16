@@ -23,27 +23,8 @@ namespace FIA_Biosum_Manager
         private System.Windows.Forms.Button btnClose;
         private string m_strProjDir = "";
         private string m_strProjId = "";
-        //private string m_strDsnIn="";
-        private string m_strLocFile = "";
-        private string m_strSlfFile = "";
-        //private string m_strFvsFile="";
-        private string m_strDsnOut = "";
-        //private string m_strInDir="";
-        // private string m_strInMDBFile="";
-        //private string m_strOutDir="";
-        private string m_strOutMDBFile = "";
-        private string m_strRxTable = "";
-        private string m_strPlotTable = "";
-        private string m_strCondTable = "";
-        private string m_strTreeTable = "";
-        private string m_strTreeSpcTable = "";
-        private string m_strOutPotFireBaseYearMDBFile = "";
-        private ado_data_access m_ado;
-        private dao_data_access m_dao;
         private DataMgr m_dataMgr = new DataMgr();
-        private string m_strConn = "";
         private bool m_bOverwrite = true;
-        private bool m_bKcpOverwrite = true;
         private IDictionary<string, List<string>> m_dictVariantStates = null;
         private System.Windows.Forms.Button btnHelp;
         private int m_intError = 0;
@@ -52,13 +33,8 @@ namespace FIA_Biosum_Manager
         //list view column constants
         private const int COL_CHECKBOX = 0;
         private const int COL_VARIANT = 1;
-        //private const int COL_RX = 2;
         private const int COL_STANDCOUNT = 2;
         private const int COL_TREECOUNT = 3;
-        //private const int COL_MDBOUT = 5;
-        //private const int COL_SUMMARYCOUNT = 6;
-        //private const int COL_CUTCOUNT = 7;
-        //private const int COL_LEFTCOUNT = 8;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.Label lblProgress;
         private System.Windows.Forms.Button btnCancel;
@@ -69,27 +45,20 @@ namespace FIA_Biosum_Manager
         private RxTools m_oRxTools = new RxTools();
         private frmMain _frmMain = null;
         private frmDialog _frmDialog = null;
-        private string m_strFVSCycleLength = "10";
         Dictionary<string, int[]> m_VariantCountsDict = null;
 
         private env m_oEnv;
         private Help m_oHelp;
         private string m_xpsFile = Help.DefaultFvsXPSFile;
         private string m_strDebugFile;
-        private TabPage tabPage2;
         private TextBox txtDataDir;
         private Button btnCreateFvsInput;
         public ListView lstFvsInput;
         private ComboBox cmbAction;
-        //private Label lblRxCnt;
         private Label label1;
         private Button btnChkAll;
-        //private Button btnRxPackage;
         private Button btnClearAll;
-        private Label lblRxPackageCnt;
         private Button btnRefresh;
-        //private Button btnRx;
-        private TabPage tabPage1;
         private GroupBox otherOptionsGroupBox;
         private GroupBox grpCalibOptions;
         private CheckBox chkUsePrevHt;
@@ -129,8 +98,6 @@ namespace FIA_Biosum_Manager
         {
             // This call is required by the Windows.Forms Form Designer.
             InitializeComponent();
-            this.m_ado = new ado_data_access();
-            this.m_dao = new dao_data_access();
             this.m_oLvRowColors.ReferenceAlternateBackgroundColor = frmMain.g_oGridViewAlternateRowBackgroundColor;
             this.m_oLvRowColors.ReferenceAlternateForegroundColor = frmMain.g_oGridViewRowForegroundColor;
             this.m_oLvRowColors.ReferenceBackgroundColor = frmMain.g_oGridViewRowBackgroundColor;
@@ -804,17 +771,10 @@ namespace FIA_Biosum_Manager
 
         private void populate_listbox()
         {
-            //bool bResult;
             string strInDirAndFile;
-            //bool bFoundDsnIn;
+
             try
             {
-                //load rx properties
-                //RxItem_Collection oRxItem_Collection = new RxItem_Collection();
-                //this.m_oRxTools.LoadAllRxItemsFromTableIntoRxCollection(m_oQueries, oRxItem_Collection);
-                ////load rxpackage properties
-                //RxPackageItem_Collection oRxPackageItem_Collection = new RxPackageItem_Collection();
-                //this.m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_oQueries, oRxPackageItem_Collection);
                 this.lstFvsInput.Clear();
                 this.m_oLvRowColors.InitializeRowCollection();
 
@@ -826,21 +786,23 @@ namespace FIA_Biosum_Manager
                 this.lstFvsInput.Columns[COL_CHECKBOX].Width = -2;
 
                 List<string> lstVariants = new List<string>();
-                using (System.Data.OleDb.OleDbConnection conn = new System.Data.OleDb.OleDbConnection(m_strConn))
+                string strMasterConn = m_dataMgr.GetConnectionString(m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Plot));
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strMasterConn))
                 {
                     conn.Open();
 
-                    m_ado.SqlQueryReader(conn, Queries.FVS.GetFVSVariantSQL(m_oQueries.m_oFIAPlot.m_strPlotTable));
-                    if (m_ado.m_OleDbDataReader.HasRows)
+                    m_dataMgr.SqlQueryReader(conn, Queries.FVS.GetFVSVariantSQL(m_oQueries.m_oFIAPlot.m_strPlotTable));
+                    if (m_dataMgr.m_DataReader.HasRows)
                     {
-                        while (m_ado.m_OleDbDataReader.Read())
+                        while (m_dataMgr.m_DataReader.Read())
                         {
-                            string strCurrentVariant = m_ado.m_OleDbDataReader["fvs_variant"].ToString().Trim();
+                            string strCurrentVariant = m_dataMgr.m_DataReader["fvs_variant"].ToString().Trim();
                             lstVariants.Add(strCurrentVariant);
                         }
                     }
-                    m_ado.m_OleDbDataReader.Close();
+                    m_dataMgr.m_DataReader.Close();
                 }
+
                 //Keep a count of records in FVS_StandInit and FVS_TreeInit tables in each variant
                 m_VariantCountsDict = new Dictionary<string, int[]>();
                 foreach (string strVariant in lstVariants)
@@ -877,7 +839,7 @@ namespace FIA_Biosum_Manager
                     {
                         if (m_VariantCountsDict[strVariant] == null)
                         {
-                            m_VariantCountsDict[strVariant] = getFVSSQLiteInputRecordCounts(strInDirAndFile, strVariant);
+                            m_VariantCountsDict[strVariant] = getFVSInputRecordCounts(strInDirAndFile, strVariant);
                         }
                         entryListItem.SubItems[COL_STANDCOUNT].Text = Convert.ToString(m_VariantCountsDict[strVariant][0]);
                         entryListItem.SubItems[COL_TREECOUNT].Text = Convert.ToString(m_VariantCountsDict[strVariant][1]);
@@ -895,8 +857,6 @@ namespace FIA_Biosum_Manager
 
                 this.m_intError = -1;
             }
-            this.Refresh();
-
         }
 
         private void LoadDataSources()
@@ -904,12 +864,7 @@ namespace FIA_Biosum_Manager
             this.txtDataDir.Text = this.m_strProjDir + "\\fvs\\data";
             this.m_oQueries.m_oFvs.LoadDatasource = true;
             this.m_oQueries.m_oFIAPlot.LoadDatasource = true;
-            this.m_oQueries.LoadDatasources(true);
-            this.m_strConn = m_ado.getMDBConnString(this.m_oQueries.m_strTempDbFile, "", "");
-
-
-
-
+            this.m_oQueries.LoadDatasourcesNew(true);
         }
 
         private void btnClose_Click(object sender, System.EventArgs e)
@@ -919,10 +874,6 @@ namespace FIA_Biosum_Manager
 
         }
 
-        private void btnRefresh_Click(object sender, System.EventArgs e)
-        {
-            this.populate_listbox();
-        }
 
         private void btnChkAll_Click(object sender, System.EventArgs e)
         {
@@ -956,23 +907,6 @@ namespace FIA_Biosum_Manager
 
                     return;
             }
-        }
-        private void CancelThreadCleanup()
-        {
-
-            this.cmbAction.Enabled = true;
-            this.btnRefresh.Enabled = true;
-            this.btnCreateFvsInput.Enabled = true;
-            this.btnChkAll.Enabled = true;
-            this.btnClearAll.Enabled = true;
-            this.btnClose.Enabled = true;
-            this.btnHelp.Enabled = true;
-
-            this.progressBar1.Visible = false;
-            this.lblProgress.Visible = false;
-            this.btnCancel.Visible = false;
-
-            this.m_thread = null;
         }
 
         public void CreateFia2FvsInputFiles()
@@ -1107,11 +1041,7 @@ namespace FIA_Biosum_Manager
                 string strMessage = "BioSum has found an existing " + Tables.FIA2FVS.KcpFileBiosumKeywords + Tables.FIA2FVS.KcpFileExtension +
                     " file. Do you wish to overwrite it?";
                 DialogResult res = MessageBox.Show(strMessage, "FIA BioSum", MessageBoxButtons.YesNo);
-                if (res != DialogResult.Yes)
-                {
-                    m_bKcpOverwrite = false;
-                }
-                else
+                if (res == DialogResult.Yes)
                 {
                     strMessage = "Would you like to make a copy of your existing " + Tables.FIA2FVS.KcpFileBiosumKeywords +
                         Tables.FIA2FVS.KcpFileExtension + " file? The name of the file backup will include today's date.";
@@ -1127,7 +1057,6 @@ namespace FIA_Biosum_Manager
                             MessageBox.Show("A backup file from today already exists: " + Tables.FIA2FVS.KcpFileBiosumKeywords + Tables.FIA2FVS.KcpFileExtension
                                 + strFileSuffix + ". Delete this file manually if you want to " +
                                 "back up today's data again!! The current file will not be overwritten.", "FIA BioSum");
-                            m_bKcpOverwrite = false;
                         }
                         else
                         {
@@ -1240,11 +1169,14 @@ namespace FIA_Biosum_Manager
             p_fvs.strGroup = p_fvs.strGroup.Trim();
         }
 
+        
         private void ExtractFIA2FVSRecords()
         {
             m_intError = 0;
             string strCurVariant = "";
-            string strVariant = "";
+            string strVariant;
+            string strMasterDb = strProjectDirectory + "\\" + frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableSqliteDbFile;
+
             m_strDebugFile = this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\biosum_fvs_input_debug.txt";
             if (File.Exists(m_strDebugFile)) System.IO.File.Delete(m_strDebugFile);
 
@@ -1256,77 +1188,12 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
 
-            dao_data_access oDao = new dao_data_access();
-            ado_data_access oAdo = new ado_data_access();
+            DataMgr oDataMgr = new DataMgr();
 
             try
             {
                 fvs_input p_fvsinput = new fvs_input(this.m_strProjDir, this.m_frmTherm);
                 ConfigureFvsInput(p_fvsinput);
-
-                // Get a temporary database name for processing
-                string strTempMDB = frmMain.g_oUtils.getRandomFile(this.m_oEnv.strTempDir, "accdb");
-                // Create a temporary mdb that will contain all our required table links
-                oDao.CreateMDB(strTempMDB);
-                // Check to see if the input DSN exists and if so, delete so we can add
-                ODBCMgr odbcmgr = new ODBCMgr();
-                if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName))
-                {
-                    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName);
-                }
-                // Also delete FIABIOSUM_PLOT_INPUT DSN as it may be pointing to the same database
-                if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.PlotInputDsnName))
-                {
-                    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.PlotInputDsnName);
-                }
-                odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName, p_fvsinput.strSourceFiaDb);
-                if (!string.IsNullOrEmpty(odbcmgr.m_strError))
-                {
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "ODBCMgr error: " + odbcmgr.m_strError + "\r\n");
-                    return;
-                }
-                else
-                {
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Created DSN for " + ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName + "\r\n");
-                }
-
-                // Link to cond table
-                m_strCondTable = m_oQueries.m_oFIAPlot.m_strCondTable;
-                string strCondMdb = m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Condition);
-                oDao.CreateTableLink(strTempMDB, m_strCondTable, strCondMdb, m_strCondTable);
-                // Link to tree table
-                m_strTreeTable = m_oQueries.m_oFIAPlot.m_strTreeTable;
-                string strTreeMdb = m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree);
-                oDao.CreateTableLink(strTempMDB, m_strTreeTable, strTreeMdb, m_strTreeTable);
-                // Link to plot table
-                m_strPlotTable = m_oQueries.m_oFIAPlot.m_strPlotTable;
-                string strPlotMdb = m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Plot);
-                oDao.CreateTableLink(strTempMDB, m_strPlotTable, strPlotMdb, m_strPlotTable);
-                // Link to sitetree table
-                string strSiteTreeMdb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + "\\db\\master.mdb";
-                oDao.CreateTableLink(strTempMDB, "sitetree", strSiteTreeMdb, "sitetree");
-
-                // Link to the input SQLite table; Takes the whole path to the DB
-                string strSourceStandTableAlias = Tables.FIA2FVS.DefaultFvsInputStandTableName + "_1";
-                string strSourceTreeTableAlias = Tables.FIA2FVS.DefaultFvsInputTreeTableName + "_1";
-                oDao.CreateSQLiteTableLink(strTempMDB, Tables.FIA2FVS.DefaultFvsInputStandTableName, strSourceStandTableAlias,
-                    ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName, p_fvsinput.strSourceFiaDb);
-                if (oDao.m_intError != 0)
-                {
-                    return;
-                }
-
-                // Set the index, required to by ODBC to update
-                //oDao.CreatePrimaryKeyIndex(strTempMDB, strSourceStandTableAlias, "STAND_CN");
-                oDao.CreateSQLiteTableLink(strTempMDB, Tables.FIA2FVS.DefaultFvsInputTreeTableName, strSourceTreeTableAlias,
-                    ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName, p_fvsinput.strSourceFiaDb);
-                // Set the index, required to by ODBC to update
-                //oDao.CreatePrimaryKeyIndex(strTempMDB, strSourceTreeTableAlias, "TREE_CN");
-                if (oDao.m_intError != 0)
-                {
-                    return;
-                }
 
                 int steps = m_VariantCountsDict.Keys.Count * 2;
                 int interval = (int)Math.Floor((double)90 / steps);
@@ -1353,9 +1220,8 @@ namespace FIA_Biosum_Manager
                             {
                                 lstStates = m_dictVariantStates[strCurVariant];
                             }
-                            p_fvsinput.StartFIA2FVS(odbcmgr, oDao, oAdo, strTempMDB, m_bOverwrite, m_strDebugFile,
-                                strCurVariant, lstStates, strSourceStandTableAlias,
-                                strSourceTreeTableAlias);
+                            p_fvsinput.StartFIA2FVSNew(oDataMgr, m_bOverwrite, strMasterDb, m_strDebugFile,
+                                strCurVariant, lstStates);
                         }
                         frmMain.g_oDelegate.SetControlPropertyValue(
                             m_frmTherm.progressBar1,
@@ -1364,9 +1230,9 @@ namespace FIA_Biosum_Manager
                         // This happens at the end
                         // Populates stand and tree count on screen. Uses " " instead of 0
                         // for variants that haven't been run yet
-                        if (File.Exists(strInDirAndFile) == true) 
+                        if (File.Exists(strInDirAndFile) == true)
                         {
-                            int[] fvsInputRecordCounts = getFVSSQLiteInputRecordCounts(strInDirAndFile, strVariant);
+                            int[] fvsInputRecordCounts = getFVSInputRecordCounts(strInDirAndFile, strVariant);
                             frmMain.g_oDelegate.SetListViewSubItemPropertyValue(this.lstFvsInput, x, COL_STANDCOUNT, "Text",
                                 Convert.ToString(fvsInputRecordCounts[0]));
                             frmMain.g_oDelegate.SetListViewSubItemPropertyValue(this.lstFvsInput, x, COL_TREECOUNT, "Text",
@@ -1384,36 +1250,6 @@ namespace FIA_Biosum_Manager
                     if (bAbort == true) break;
 
                 }
-
-                // Copy KCP files to output directory
-                if (m_bKcpOverwrite == true)
-                {
-                    string[] arrKcpFiles = { Tables.FIA2FVS.KcpFileBiosumKeywords };
-                    foreach (var kcp in arrKcpFiles)
-                    {
-                        string sourcePath = frmMain.g_oEnv.strAppDir + @"\scripts\" + kcp;
-                        string targetPath = this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\" + kcp + Tables.FIA2FVS.KcpFileExtension;
-                        File.Copy(sourcePath, targetPath, true);
-                    }
-                }
-
-                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName);    // Clean up DSN
-                if (!string.IsNullOrEmpty(odbcmgr.m_strError))
-                {
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "ODBCMgr error: " + odbcmgr.m_strError + "\r\n");
-                }
-                else
-                {
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Removed DSN for " + ODBCMgr.DSN_KEYS.Fia2FvsInputDsnName + "\r\n");
-                }
-
-                frmMain.g_oDelegate.SetControlPropertyValue(
-                            m_frmTherm.progressBar2,
-                            "Value",
-                            frmMain.g_oDelegate.GetControlPropertyValue(
-                                    m_frmTherm.progressBar2, "Maximum", false));
-
             }
             catch (ThreadInterruptedException err)
             {
@@ -1422,48 +1258,43 @@ namespace FIA_Biosum_Manager
             }
             catch (ThreadAbortException)
             {
-                if (oAdo != null)
+                if (oDataMgr != null)
                 {
-                    if (oAdo.m_DataSet != null)
+                    if (oDataMgr.m_DataSet != null)
                     {
-                        oAdo.m_DataSet.Clear();
-                        oAdo.m_DataSet.Dispose();
+                        oDataMgr.m_DataSet.Clear();
+                        oDataMgr.m_DataSet.Dispose();
                     }
-                    oAdo = null;
+                    oDataMgr = null;
                 }
                 m_intError = -1;
             }
             catch (Exception err)
             {
                 MessageBox.Show("!!Error!! \n" +
-                    "Module - uc_fvs_input:ExtractFIA2FVSRecords  \n" +
-                    "Err Msg - " + err.Message.ToString().Trim(),
-                    "ExtractFIA2FVSRecords", System.Windows.Forms.MessageBoxButtons.OK,
-                    System.Windows.Forms.MessageBoxIcon.Exclamation);
+                   "Module - uc_fvs_input:ExtractFIA2FVSRecords  \n" +
+                   "Err Msg - " + err.Message.ToString().Trim(),
+                   "ExtractFIA2FVSRecords", System.Windows.Forms.MessageBoxButtons.OK,
+                   System.Windows.Forms.MessageBoxIcon.Exclamation);
                 this.m_intError = -1;
             }
             finally
             {
-                if (oAdo != null)
+                if (oDataMgr != null)
                 {
-                    if (oAdo.m_DataSet != null)
+                    if (oDataMgr.m_DataSet != null)
                     {
-                        oAdo.m_DataSet.Clear();
-                        oAdo.m_DataSet.Dispose();
+                        oDataMgr.m_DataSet.Clear();
+                        oDataMgr.m_DataSet.Dispose();
                     }
-                    oAdo = null;
+                    oDataMgr = null;
                 }
-                //destroy the object and release it from memory
-                oDao.m_DaoWorkspace.Close();
-                oDao.m_DaoWorkspace = null;
-                oDao = null;
                 if (m_intError == 0)
                 {
                     ThreadCleanUp();
                 }
             }
         }
-
         public void StopThread()
         {
             this.m_thread.Suspend();
@@ -1551,47 +1382,8 @@ namespace FIA_Biosum_Manager
 
         }
 
-        private int[] getFVSInputRecordCounts(string strDirAndFile)
-        {
-            int stands = 0;
-            int trees = 0;
-            try
-            {
-                if (File.Exists(strDirAndFile))
-                {
-                    DataMgr dataMgr = new DataMgr();
-                    string strConn = dataMgr.GetConnectionString(strDirAndFile);
-                    using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
-                    {
-                        oConn.Open();
-                        if (dataMgr.TableExist(oConn, Tables.FIA2FVS.DefaultFvsInputStandTableName))
-                        {
-                            stands = (int)dataMgr.getSingleDoubleValueFromSQLQuery(oConn,
-                            $@"SELECT COUNT(*) as StandInitCount FROM (SELECT DISTINCT Stand_ID FROM {Tables.FIA2FVS.DefaultFvsInputStandTableName});",
-                            Tables.FIA2FVS.DefaultFvsInputStandTableName);
-                        }
-                        if (dataMgr.TableExist(oConn, Tables.FIA2FVS.DefaultFvsInputTreeTableName))
-                        {
-                            trees = (int)dataMgr.getSingleDoubleValueFromSQLQuery(oConn,
-                            $@"SELECT COUNT(*) as TreeInitCount FROM {Tables.FIA2FVS.DefaultFvsInputTreeTableName};",
-                            Tables.FIA2FVS.DefaultFvsInputTreeTableName);
-                        }
-
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show("!!Error!! \n" +
-                                "Module - uc_fvs_input:getFVSInputRecordCounts  \n" +
-                                "Err Msg - " + e.Message.ToString().Trim(),
-                    "FVS Input", System.Windows.Forms.MessageBoxButtons.OK,
-                    System.Windows.Forms.MessageBoxIcon.Exclamation);
-                this.m_intError = -1;
-            }
-            return new int[] { stands, trees };
-        }
-        private int[] getFVSSQLiteInputRecordCounts(string strDirAndFile, string strFVSVariant)
+        
+        private int[] getFVSInputRecordCounts(string strDirAndFile, string strFVSVariant)
         {
             int stands = 0;
             int trees = 0;
@@ -1601,28 +1393,28 @@ namespace FIA_Biosum_Manager
                 {
                     SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
                     string connSourceDb = oDataMgr.GetConnectionString(strDirAndFile);
-                    using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(connSourceDb))
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(connSourceDb))
                     {
                         string strSql = "";
-                        con.Open();
+                        conn.Open();
                         // Do stuff in sqlite side
-                        if (oDataMgr.TableExist(con, Tables.FIA2FVS.DefaultFvsInputStandTableName))
+                        if (oDataMgr.TableExist(conn, Tables.FIA2FVS.DefaultFvsInputStandTableName))
                         {
                             strSql = "SELECT COUNT(*) as StandInitCount " +
                                      "FROM (SELECT DISTINCT STAND_CN FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName + 
                                      " WHERE VARIANT = '" + strFVSVariant + "')";
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2 && System.IO.File.Exists(m_strDebugFile))
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + strSql + "\r\n");
-                            stands = (int)oDataMgr.getSingleDoubleValueFromSQLQuery(con, strSql, Tables.FIA2FVS.DefaultFvsInputStandTableName);
+                            stands = (int)oDataMgr.getSingleDoubleValueFromSQLQuery(conn, strSql, Tables.FIA2FVS.DefaultFvsInputStandTableName);
                         }
-                        if (oDataMgr.TableExist(con, Tables.FIA2FVS.DefaultFvsInputTreeTableName))
+                        if (oDataMgr.TableExist(conn, Tables.FIA2FVS.DefaultFvsInputTreeTableName))
                         {
                             strSql = "SELECT COUNT(*) as TreeInitCount " +
                                      "FROM (SELECT DISTINCT TREE_CN FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
                                      " WHERE VARIANT = '" + strFVSVariant + "')";
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2 && System.IO.File.Exists(m_strDebugFile))
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + strSql + "\r\n");
-                            trees = (int)oDataMgr.getSingleDoubleValueFromSQLQuery(con, strSql, Tables.FIA2FVS.DefaultFvsInputTreeTableName);
+                            trees = (int)oDataMgr.getSingleDoubleValueFromSQLQuery(conn, strSql, Tables.FIA2FVS.DefaultFvsInputTreeTableName);
                         }
                     }
                     oDataMgr = null;
@@ -1640,12 +1432,6 @@ namespace FIA_Biosum_Manager
             return new int[] { stands, trees };
         }
 
-        private void btnRx_Click(object sender, System.EventArgs e)
-        {
-
-            frmMain.g_oFrmMain.StartRxDialog((frmDialog)ParentForm);
-        }
-
         private void btnHelp_Click(object sender, System.EventArgs e)
         {
             if (m_oHelp == null)
@@ -1654,20 +1440,6 @@ namespace FIA_Biosum_Manager
             }
             string helpPage = "INPUT_DATA";
             m_oHelp.ShowHelp(new string[] { "FVS", helpPage });
-        }
-        private void txtDataDir_KeyPress(object sender, System.Windows.Forms.KeyPressEventArgs e)
-        {
-            e.Handled = true;
-        }
-
-        private void txtInDir_KeyPress(object sender, System.Windows.Forms.KeyPressEventArgs e)
-        {
-            e.Handled = true;
-        }
-
-        private void txtOutDir_KeyPress(object sender, System.Windows.Forms.KeyPressEventArgs e)
-        {
-            e.Handled = true;
         }
 
         private void lstFvsInput_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
@@ -1692,11 +1464,6 @@ namespace FIA_Biosum_Manager
         {
             if (lstFvsInput.SelectedItems.Count > 0)
                 this.m_oLvRowColors.DelegateListViewItem(lstFvsInput.SelectedItems[0]);
-        }
-
-        private void btnRxPackage_Click(object sender, System.EventArgs e)
-        {
-            frmMain.g_oFrmMain.StartRxPackageDialog((frmDialog)ParentForm);
         }
 
 

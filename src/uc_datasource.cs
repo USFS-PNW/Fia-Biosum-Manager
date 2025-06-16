@@ -576,7 +576,7 @@ namespace FIA_Biosum_Manager
                                 string[] arrSource = new string[7];
                                 arrSource[Datasource.TABLETYPE] = strKey;
                                 arrSource[Datasource.PATH] = dataMgr.m_DataReader["path"].ToString().Trim();
-                                arrSource[Datasource.MDBFILE] = dataMgr.m_DataReader["file"].ToString().Trim();
+                                arrSource[Datasource.DBFILE] = dataMgr.m_DataReader["file"].ToString().Trim();
                                 arrSource[Datasource.TABLE] = dataMgr.m_DataReader["table_name"].ToString().Trim();
                                 dictSources.Add(strKey, arrSource);
                             }
@@ -601,7 +601,7 @@ namespace FIA_Biosum_Manager
                         this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_datasource.TABLETYPE, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
                         this.lstRequiredTables.Items[x].SubItems.Add(arrSource[Datasource.PATH]);
                         this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_datasource.PATH, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
-                        this.lstRequiredTables.Items[x].SubItems.Add(arrSource[Datasource.MDBFILE]);
+                        this.lstRequiredTables.Items[x].SubItems.Add(arrSource[Datasource.DBFILE]);
                         this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, uc_datasource.MDBFILE, entryListItem.SubItems[entryListItem.SubItems.Count - 1], false);
                         if (arrSource[Datasource.FILESTATUS] == "F")
                         {

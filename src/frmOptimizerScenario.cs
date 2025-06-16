@@ -236,14 +236,9 @@ namespace FIA_Biosum_Manager
                 this.uc_scenario_processor_scenario_select1.Dock = System.Windows.Forms.DockStyle.Fill;
                 this.uc_scenario_processor_scenario_select1.ReferenceOptimizerScenarioForm = this;
 
-                // Check to see if Processor is using Sqlite
-                if (System.IO.File.Exists(
-                    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()
-                    + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile) )
-                {
-                    this.uc_scenario_processor_scenario_select1.ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite = true;
-                }
-
+                //
+                //rxpackage select
+                //
                 this.uc_optimizer_scenario_select_packages1 = new uc_optimizer_scenario_select_packages();
                 this.tbFilterPkg.Controls.Add(uc_optimizer_scenario_select_packages1);
                 this.uc_optimizer_scenario_select_packages1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -260,13 +255,6 @@ namespace FIA_Biosum_Manager
 
                 this.m_oEnv = new env();
 
-                //migrate access data if not done already
-                //string strFVSWeightedPathAndDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile;
-                //string strCalculatedVariablesPathAndDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultSqliteDbFile;
-                //if (!System.IO.File.Exists(strFVSWeightedPathAndDbFile) || !System.IO.File.Exists(strCalculatedVariablesPathAndDbFile))
-                //{
-                //    migrate_access_data(strCalculatedVariablesPathAndDbFile, strFVSWeightedPathAndDbFile);
-                //}
 
                 //load weighted variable definitions
                 m_oOptimizerScenarioTools.LoadWeightedVariables(m_oWeightedVariableCollection);
@@ -969,174 +957,7 @@ namespace FIA_Biosum_Manager
 		
 		}
 
-        private void migrate_access_data(string strCalculatedVariablesPathAndDbFile, string strFVSWeightedPathAndDbFile)
-        {
-            DataMgr m_oDataMgr = new DataMgr();
-            ODBCMgr odbcmgr = new ODBCMgr();
-            FIA_Biosum_Manager.utils m_oUtils = new utils();
-            dao_data_access oDao = new dao_data_access();
-            ado_data_access m_oAdo = new ado_data_access();
-
-            if (!System.IO.File.Exists(strCalculatedVariablesPathAndDbFile))
-            {
-                // Create SQLite copy of optimizer_definitions database
-                string variablesSourceFile = this.m_oEnv.strAppDir + "\\db\\" +
-                    System.IO.Path.GetFileName(Tables.OptimizerDefinitions.DefaultSqliteDbFile);
-                System.IO.File.Copy(variablesSourceFile, strCalculatedVariablesPathAndDbFile);
-
-                // Check to see if the input SQLite DSN exists for optimizer_definitions and if so, delete so we can add
-                if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.OptimizerCalcVariableDsnName))
-                {
-                    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.OptimizerCalcVariableDsnName);
-                }
-                odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.OptimizerCalcVariableDsnName, strCalculatedVariablesPathAndDbFile);
-
-                // Create temporary database for optimizer_definitions
-                string strTempAccdb = m_oUtils.getRandomFile(this.m_oEnv.strTempDir, "accdb");
-                oDao.CreateMDB(strTempAccdb);
-
-                // Create table links for transferring data for optimizer_definitions
-                string targetEcon = Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName + "_1";
-                string targetFvs = Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName + "_1";
-                string targetVariables = Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + "_1";
-
-                string strCalculatedVariablesPathAndAccdbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultDbFile;
-                // Link to all tables in source database for optimizer_definitons
-                oDao.CreateTableLinks(strTempAccdb, strCalculatedVariablesPathAndAccdbFile);
-                oDao.CreateSQLiteTableLink(strTempAccdb, Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName, targetEcon,
-                    ODBCMgr.DSN_KEYS.OptimizerCalcVariableDsnName, strCalculatedVariablesPathAndDbFile);
-                oDao.CreateSQLiteTableLink(strTempAccdb, Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName, targetFvs,
-                    ODBCMgr.DSN_KEYS.OptimizerCalcVariableDsnName, strCalculatedVariablesPathAndDbFile);
-                oDao.CreateSQLiteTableLink(strTempAccdb, Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName, targetVariables,
-                    ODBCMgr.DSN_KEYS.OptimizerCalcVariableDsnName, strCalculatedVariablesPathAndDbFile);
-
-                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strCalculatedVariablesPathAndDbFile)))
-                {
-                    conn.Open();
-                    // Delete any existing data from SQLite tables
-                    string defaultEcon = Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName;
-                    string defaultVariables = Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName;
-
-                    m_oDataMgr.m_strSQL = "DELETE FROM " + defaultEcon;
-                    m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
-
-                    m_oDataMgr.m_strSQL = "DELETE FROM " + defaultVariables;
-                    m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
-
-                    m_oDataMgr.CloseConnection(conn);
-                }
-
-                string strCopyConn = m_oAdo.getMDBConnString(strTempAccdb, "", "");
-                using (var copyConn = new OleDbConnection(strCopyConn))
-                {
-                    copyConn.Open();
-
-                    m_oAdo.m_strSQL = "INSERT INTO " + targetEcon +
-                                      " SELECT * FROM " + Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName;
-                    m_oAdo.SqlNonQuery(copyConn, m_oAdo.m_strSQL);
-
-                    m_oAdo.m_strSQL = "INSERT INTO " + targetFvs +
-                      " SELECT * FROM " + Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName;
-                    m_oAdo.SqlNonQuery(copyConn, m_oAdo.m_strSQL);
-
-                    m_oAdo.m_strSQL = "INSERT INTO " + targetVariables +
-                        " SELECT * FROM " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName;
-                    m_oAdo.SqlNonQuery(copyConn, m_oAdo.m_strSQL);
-                }
-
-                if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.OptimizerCalcVariableDsnName))
-                {
-                    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.OptimizerCalcVariableDsnName);
-                }
-            }
-
-            if (!System.IO.File.Exists(strFVSWeightedPathAndDbFile))
-            {
-                m_oDataMgr.CreateDbFile(strFVSWeightedPathAndDbFile);
-
-                if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.PrePostFvsWeightedDsnName))
-                {
-                    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.PrePostFvsWeightedDsnName);
-                }
-                odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.PrePostFvsWeightedDsnName, strFVSWeightedPathAndDbFile);
-
-                string strTempAccdb = m_oUtils.getRandomFile(this.m_oEnv.strTempDir, "accdb");
-                oDao.CreateMDB(strTempAccdb);
-
-                string strFVSWeightedPathAndccdbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile;
-                oDao.CreateTableLinks(strTempAccdb, strFVSWeightedPathAndccdbFile);
-                string[] tableNames = null;
-
-                string strCalcConn = m_oAdo.getMDBConnString(strFVSWeightedPathAndccdbFile, "", "");
-                using (var calcConn = new OleDbConnection(strCalcConn))
-                {
-                    calcConn.Open();
-                    tableNames = m_oAdo.getTableNames(calcConn);
-                    foreach (string table in tableNames)
-                    {
-                        string targetTable = table + "_1";
-                        //m_oAdo.getFieldNamesAndDataTypes(calcConn, "SELECT * FROM " + table, ref fields, ref dataTypes);
-                        using (System.Data.SQLite.SQLiteConnection sqliteConn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strFVSWeightedPathAndDbFile)))
-                        {
-                            sqliteConn.Open();
-
-                            string[] arrFields = m_oAdo.getFieldNamesArray(calcConn, "SELECT * FROM " + table);
-                            string fieldsAndDataTypes = "biosum_cond_id CHAR(25), rxpackage CHAR(3), rx CHAR(3), rxcycle CHAR(1), fvs_variant CHAR(2), ";
-
-                            for (int x = 5; x <= arrFields.Length - 1; x++)
-                            {
-                                string field = "";
-                                string dataType = "";
-                                m_oAdo.getFieldNamesAndDataTypes(calcConn, "SELECT " + arrFields[x] + " FROM " + table, ref field, ref dataType);
-                                dataType = utils.DataTypeConvert(dataType.ToUpper(), true);
-                                fieldsAndDataTypes = fieldsAndDataTypes + field + " " + dataType + ", ";
-                            }
-                            //fieldsAndDataTypes = fieldsAndDataTypes.Substring(0, fieldsAndDataTypes.Length - 2);
-                            m_oDataMgr.m_strSQL = "CREATE TABLE " + table + " (" + fieldsAndDataTypes + "PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
-                            m_oDataMgr.SqlNonQuery(sqliteConn, m_oDataMgr.m_strSQL);
-                            sqliteConn.Close();
-                        }
-                        oDao.CreateSQLiteTableLink(strTempAccdb, table, targetTable,
-                        ODBCMgr.DSN_KEYS.PrePostFvsWeightedDsnName, strFVSWeightedPathAndDbFile);
-                    }
-                    calcConn.Close();
-                }
-
-                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strFVSWeightedPathAndDbFile)))
-                {
-                    conn.Open();
-                    // Delete any existing data from SQLite tables
-                    foreach (string table in tableNames)
-                    {
-                        m_oDataMgr.m_strSQL = "DELETE FROM " + table;
-                        m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
-                    }
-                    m_oDataMgr.CloseConnection(conn);
-                }
-
-                string strCopyConn = m_oAdo.getMDBConnString(strTempAccdb, "", "");
-                using (var copyConn = new OleDbConnection(strCopyConn))
-                {
-                    copyConn.Open();
-
-                    foreach (string table in tableNames)
-                    {
-                        string targetTable = table + "_1";
-                        m_oAdo.m_strSQL = "INSERT INTO " + targetTable +
-                                     " SELECT * FROM " + table;
-                        m_oAdo.SqlNonQuery(copyConn, m_oAdo.m_strSQL);
-                    }
-                }
-                if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.PrePostFvsWeightedDsnName))
-                {
-                    odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.PrePostFvsWeightedDsnName);
-                }
-            }
-            m_oDataMgr = null;
-            odbcmgr = null;
-            m_oAdo = null;
-            oDao = null;
-        }
+        
 		private void btnCurrentScenario_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
 		{
 			string strTemp = this.uc_scenario1.txtDescription.Text.Trim();
@@ -1230,75 +1051,6 @@ namespace FIA_Biosum_Manager
 
 
 		}
-		private void LoadRuleDefinitions_access()
-		{
-            int x;
-			frmTherm p_frmTherm = new frmTherm();
-			p_frmTherm.lblMsg.Text = "";
-			p_frmTherm.progressBar1.Minimum = 0;
-			p_frmTherm.progressBar1.Maximum = 7;
-			p_frmTherm.btnCancel.Visible=false;
-			p_frmTherm.lblMsg.Visible=true;
-			p_frmTherm.Show();
-			p_frmTherm.progressBar1.Value=1;
-			p_frmTherm.progressBar1.Value=2;
-            Queries oQueries = new Queries();
-            
-            this.m_oOptimizerScenarioItem.ScenarioId = this.uc_scenario1.txtScenarioId.Text.Trim();
-
-            this.m_oOptimizerScenarioTools.LoadAll_access(
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + 
-                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile,
-                oQueries, m_bProcessorUsingSqlite, m_oOptimizerScenarioItem.ScenarioId,
-                m_oOptimizerScenarioItem_Collection);
-            //find the current scenario
-            for (x = 0; x <= m_oOptimizerScenarioItem_Collection.Count - 1; x++)
-            {
-                if (m_oOptimizerScenarioItem_Collection.Item(x).ScenarioId.Trim().ToUpper() ==
-                    m_oOptimizerScenarioItem.ScenarioId.Trim().ToUpper())
-                    break;
-            }
-
-            this.m_oOptimizerScenarioItem.Copy(m_oOptimizerScenarioItem_Collection.Item(x), m_oSavOptimizerScenarioItem);
-            this.m_oOptimizerScenarioItem = m_oOptimizerScenarioItem_Collection.Item(x);
-
-			p_frmTherm.progressBar1.Value=3;
-			p_frmTherm.lblMsg.Text = "Rule Definitions: FVS Variables Data";
-			p_frmTherm.lblMsg.Refresh();
-
-            this.uc_scenario_fvs_prepost_variables_effective1.loadvalues_access();
- 			p_frmTherm.progressBar1.Value=4;
-
-
-			p_frmTherm.lblMsg.Text = "Rule Definitions: Owner Group Data";
-			p_frmTherm.lblMsg.Refresh();
-
-			this.uc_scenario_owner_groups1.loadvalues();
-			p_frmTherm.progressBar1.Value=5;
-			p_frmTherm.lblMsg.Text = "Rule Definitions: Cost And Revenue Data";
-			p_frmTherm.lblMsg.Refresh();
-			this.uc_scenario_costs1.loadvalues();
-            this.uc_scenario_processor_scenario_select1.loadvalues_access(false);
-			p_frmTherm.progressBar1.Value=6;
-			p_frmTherm.lblMsg.Text = "Rule Definitions: Plot Filter Data";
-			p_frmTherm.lblMsg.Refresh();
-			this.uc_scenario_filter1.loadvalues(false);
-			this.uc_scenario_cond_filter1.loadvalues(false);
-			this.uc_scenario_psite1.loadvalues_access();
-            ProcessorScenarioItem_Collection oProcItemCollection = this.m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection;
-            foreach (ProcessorScenarioItem psItem in oProcItemCollection)
-            {
-                if (psItem.Selected == true)
-                {
-                    this.uc_optimizer_scenario_select_packages1.loadvalues_FromProperties(psItem);
-                }
-            }
-			p_frmTherm.progressBar1.Value=7;
-			p_frmTherm.Close();
-			p_frmTherm = null;
-			this.m_lrulesfirsttime=false;
-
-		}
 
         private void LoadRuleDefinitions()
         {
@@ -1319,7 +1071,7 @@ namespace FIA_Biosum_Manager
             this.m_oOptimizerScenarioTools.LoadAll(
                 frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
                 Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile,
-                oQueries, m_bProcessorUsingSqlite, m_oOptimizerScenarioItem.ScenarioId,
+                oQueries, m_oOptimizerScenarioItem.ScenarioId,
                 m_oOptimizerScenarioItem_Collection);
             //find the current scenario
             for (x = 0; x <= m_oOptimizerScenarioItem_Collection.Count - 1; x++)
@@ -1368,54 +1120,7 @@ namespace FIA_Biosum_Manager
             p_frmTherm = null;
             this.m_lrulesfirsttime = false;
         }
-		public void SaveRuleDefinitions_access()
-		{
-			int savestatus;
-            int x;
-
-			frmMain.g_sbpInfo.Text = "Saving scenario rule definitions...Stand by";
-            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 12;
-            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMinimumSteps = 1;
-            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicCurrentStep = 1;
-
-            if (m_lrulesfirsttime == false)
-            {
-                frmMain.g_oFrmMain.ActivateStandByAnimation(
-                    this.WindowState,
-                    this.Left,
-                    this.Height,
-                    this.Width,
-                    this.Top);
-                
-                savestatus = this.uc_scenario_fvs_prepost_variables_effective1.savevalues_access();
-                if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                savestatus = this.uc_scenario_fvs_prepost_optimization1.savevalues_access();
-                if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                savestatus = this.uc_scenario_fvs_prepost_variables_tiebreaker1.savevalues_access();
-                if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                savestatus = this.uc_scenario_owner_groups1.savevalues_access();
-                if (FIA_Biosum_Manager.RunOptimizer .g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                savestatus = this.uc_scenario_costs1.savevalues_access();
-                if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                savestatus = this.uc_scenario_psite1.savevalues_access();
-                if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                savestatus = this.uc_scenario_filter1.savevalues_access();
-                if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                savestatus = this.uc_scenario_cond_filter1.savevalues_access();
-                if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-                this.uc_scenario_processor_scenario_select1.savevalues_access();
-                if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-
-                frmMain.g_oFrmMain.DeactivateStandByAnimation();
-            }
-			this.uc_scenario_notes1.SaveScenarioNotes();
-            if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-			this.uc_scenario1.UpdateDescription();
-            if (FIA_Biosum_Manager.RunOptimizer.g_bOptimizerRun) FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-            
-			this.m_bSave=false;
-			frmMain.g_sbpInfo.Text = "Ready";
-		}
+		
 		public void SaveRuleDefinitions()
         {
             int savestatus;
@@ -1758,56 +1463,7 @@ namespace FIA_Biosum_Manager
                     break;
 			}
 		}
-        private void CopyScenario_access()
-        {
-            frmDialog frmTemp = new frmDialog();
-            frmTemp.Initialize_Scenario_Optimizer_Scenario_Copy(this);
-            frmTemp.Text = "FIA Biosum";
-            if (m_oOptimizerScenarioItem.ScenarioId.Trim().Length == 0) LoadRuleDefinitions_access();
-
-            frmTemp.uc_scenario_optimizer_scenario_copy1.ReferenceCurrentScenarioItem = m_oOptimizerScenarioItem;
-            frmTemp.uc_scenario_optimizer_scenario_copy1.loadvalues_access();
-            DialogResult result = frmTemp.ShowDialog(this);
-            if (result == DialogResult.OK)
-            {
-
-                frmMain.g_sbpInfo.Text = "Copying scenario rule definitions...Stand by";
-
-                this.uc_scenario_fvs_prepost_variables_effective1.loadvalues_FromProperties_access();
-
-                this.uc_scenario1.txtDescription.Text = m_oOptimizerScenarioItem.Description;
-                frmMain.g_sbpInfo.Text = "Loading Scenario Notes...Stand By";
-                this.uc_scenario_notes1.ReferenceOptimizerScenarioForm = this;
-                this.uc_scenario_notes1.loadvalues_FromProperties();
-                this.uc_scenario_owner_groups1.loadvalues();
-                
-                
-                this.uc_scenario_costs1.loadvalues();
-                this.uc_scenario_processor_scenario_select1.loadvalues_access(true);
-                
-                
-                this.uc_scenario_filter1.loadvalues(true);
-                this.uc_scenario_cond_filter1.loadvalues(true);
-                this.uc_scenario_psite1.loadvalues_FromProperties();
-                ProcessorScenarioItem_Collection oProcItemCollection = this.m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection;
-                //if (oProcItemCollection != null && oProcItemCollection.Count > 0)
-                //{
-                //    ProcessorScenarioItem oProcItem = oProcItemCollection.Item(0);
-                //    this.uc_optimizer_scenario_select_packages1.loadvalues_FromProperties(oProcItem);
-                //}
-                foreach (ProcessorScenarioItem psItem in oProcItemCollection)
-                {
-                    if (psItem.Selected == true)
-                    {
-                        this.uc_optimizer_scenario_select_packages1.loadvalues_FromProperties(psItem);
-                    }
-                }
-                
-                frmMain.g_sbpInfo.Text = "Ready";
-                m_bSave = true;
-            }
-
-        }
+       
         private void CopyScenario()
         {
             frmDialog frmTemp = new frmDialog();
@@ -3018,25 +2674,6 @@ namespace FIA_Biosum_Manager
         public OptimizerScenarioTools()
         {
         }
-        public void LoadScenario_access(string p_strScenarioId, Queries p_oQueries, bool p_bProcessorUsingSqlite,
-            OptimizerScenarioItem_Collection p_oOptimizerScenarioItem_Collection)
-        {
-           
-            //
-            //LOAD PROJECT DATATASOURCES INFO
-            //
-            p_oQueries.m_oFvs.LoadDatasource = true;
-            p_oQueries.m_oFIAPlot.LoadDatasource = true;
-            p_oQueries.m_oProcessor.LoadDatasource = true;
-            p_oQueries.m_oReference.LoadDatasource = true;
-            p_oQueries.LoadDatasources(true, "optimizer", p_strScenarioId);
-            p_oQueries.m_oDataSource.CreateScenarioRuleDefinitionTableLinks(
-                p_oQueries.m_strTempDbFile,
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim(),
-                "C");
-            LoadAll_access(p_oQueries.m_strTempDbFile, p_oQueries, p_bProcessorUsingSqlite,
-                p_strScenarioId, p_oOptimizerScenarioItem_Collection);
-        }
         public void LoadScenario(string p_strScenarioId, Queries p_oQueries, bool p_bProcessorUsingSqlite,
             OptimizerScenarioItem_Collection p_oOptimizerScenarioItem_Collection)
         {
@@ -3048,54 +2685,14 @@ namespace FIA_Biosum_Manager
             p_oQueries.m_oFIAPlot.LoadDatasource = true;
             p_oQueries.m_oProcessor.LoadDatasource = true;
             p_oQueries.m_oReference.LoadDatasource = true;
-            p_oQueries.LoadDatasourcesSqlite(true, false, "optimizer", p_strScenarioId);
+            p_oQueries.LoadDatasourcesSqlite(true, "optimizer", p_strScenarioId);
             p_oQueries.m_oDataSource.CreateScenarioRuleDefinitionTableLinksSqliteToAccess(
                 p_oQueries.m_strTempDbFile,
                 frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim());
-            LoadAll_access(p_oQueries.m_strTempDbFile, p_oQueries, p_bProcessorUsingSqlite, p_strScenarioId, p_oOptimizerScenarioItem_Collection);
+            LoadAll(p_oQueries.m_strTempDbFile, p_oQueries, p_strScenarioId, p_oOptimizerScenarioItem_Collection);
         }
-        public void LoadAll_access(string p_strDbFile, Queries p_oQueries, bool p_bProcessorUsingSqlite, 
-            string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem_Collection p_oOptimizerScenarioItem_Collection)
-        {
-            int x;
-            for (x = p_oOptimizerScenarioItem_Collection.Count - 1; x >= 0; x--)
-            {
-                if (p_oOptimizerScenarioItem_Collection.Item(x).ScenarioId.Trim().ToUpper() ==
-                    p_strScenarioId.Trim().ToUpper())
-                {
-                    p_oOptimizerScenarioItem_Collection.Remove(x);
-                }
-            }
-            ado_data_access oAdo = new ado_data_access();
-            oAdo.OpenConnection(oAdo.getMDBConnString(p_strDbFile, "", ""));
-            if (oAdo.m_intError == 0)
-            {
-
-                OptimizerScenarioItem oItem = new OptimizerScenarioItem();
-                this.LoadGeneral_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
-                this.LoadEffectiveVariables_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
-                this.LoadOptimizationVariable_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId,oItem);
-                this.LoadTieBreakerVariables_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
-                this.LoadLastTieBreakRank_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
-                this.LoadProcessorScenarioItems(oAdo, oAdo.m_OleDbConnection, p_bProcessorUsingSqlite, p_strScenarioId, oItem);
-                this.LoadPlotFilter_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
-                this.LoadCondFilter_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
-                this.LoadProcessingSites_SqliteToAccess(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
-                this.LoadLandOwnerGroupFilter_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
-                this.LoadTransportationCosts_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, oItem);
-                p_oOptimizerScenarioItem_Collection.Add(oItem);
-                
-
-
-
-
-            }
-            m_intError = oAdo.m_intError;
-            oAdo.CloseConnection(oAdo.m_OleDbConnection);
-            oAdo = null;
-        }
-
-        public void LoadAll(string p_strDbFile, Queries p_oQueries, bool p_bProcessorUsingSqlite,
+        
+        public void LoadAll(string p_strDbFile, Queries p_oQueries,
             string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem_Collection p_oOptimizerScenarioItem_Collection)
         {
             int x;
@@ -3119,7 +2716,7 @@ namespace FIA_Biosum_Manager
                     this.LoadOptimizationVariable(oDataMgr, conn, p_strScenarioId, oItem);
                     this.LoadTieBreakerVariables(oDataMgr, conn, p_strScenarioId, oItem);
                     this.LoadLastTieBreakRank(oDataMgr, conn, p_strScenarioId, oItem);
-                    this.LoadProcessorScenarioItems(oDataMgr, conn, p_bProcessorUsingSqlite, p_strScenarioId, oItem);
+                    this.LoadProcessorScenarioItems(oDataMgr, conn, p_strScenarioId, oItem);
                     this.LoadPlotFilter(oDataMgr, conn, p_strScenarioId, oItem);
                     this.LoadCondFilter(oDataMgr, conn, p_strScenarioId, oItem);
                     this.LoadProcessingSites(oDataMgr, conn, p_strScenarioId, oItem);
@@ -3130,69 +2727,6 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        public void LoadGeneral_access(string p_strDbFile, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerAnalysisScenarioItem)
-        {
-            ado_data_access oAdo = new ado_data_access();
-            oAdo.OpenConnection(oAdo.getMDBConnString(p_strDbFile, "", ""));
-            if (oAdo.m_intError == 0)
-            {
-                this.LoadGeneral_access(oAdo, oAdo.m_OleDbConnection, p_strScenarioId, p_oOptimizerAnalysisScenarioItem);
-            }
-            m_intError = oAdo.m_intError;
-            oAdo.CloseConnection(oAdo.m_OleDbConnection);
-            oAdo = null;
-        }
-        public void LoadGeneral_access(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
-        {
-            p_oAdo.SqlQueryReader(p_oConn, "SELECT * FROM scenario " + " WHERE TRIM(UCASE(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'");
-
-            if (p_oAdo.m_intError == 0)
-            {
-                if (p_oAdo.m_OleDbDataReader.HasRows)
-                {
-                    while (p_oAdo.m_OleDbDataReader.Read())
-                    {
-                        //
-                        //SCENARIO ID
-                        //
-                        if (p_oAdo.m_OleDbDataReader["scenario_id"] != System.DBNull.Value)
-                        {
-                            p_oOptimizerScenarioItem.ScenarioId = p_oAdo.m_OleDbDataReader["scenario_id"].ToString().Trim();
-                        }
-                        //
-                        //DESCRIPTION
-                        //
-                        if (p_oAdo.m_OleDbDataReader["description"] != System.DBNull.Value)
-                        {
-                            p_oOptimizerScenarioItem.Description = p_oAdo.m_OleDbDataReader["description"].ToString().Trim();
-                        }
-                        //
-                        //PATH
-                        //
-                        if (p_oAdo.m_OleDbDataReader["path"] != System.DBNull.Value)
-                        {
-                            p_oOptimizerScenarioItem.DbPath = p_oAdo.m_OleDbDataReader["path"].ToString().Trim();
-                        }
-                        //
-                        //FILE
-                        //
-                        if (p_oAdo.m_OleDbDataReader["file"] != System.DBNull.Value)
-                        {
-                            p_oOptimizerScenarioItem.DbFileName = p_oAdo.m_OleDbDataReader["file"].ToString().Trim();
-                        }
-                        //
-                        //NOTES
-                        //
-                        if (p_oAdo.m_OleDbDataReader["notes"] != System.DBNull.Value)
-                        {
-                            p_oOptimizerScenarioItem.Notes = p_oAdo.m_OleDbDataReader["notes"].ToString().Trim();
-                        }
-
-                    }
-                    p_oAdo.m_OleDbDataReader.Close();
-                }
-            }
-        }
         public void LoadGeneral(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             p_oDataMgr.SqlQueryReader(p_oConn, "SELECT * FROM scenario WHERE TRIM(UPPER(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'");
@@ -3242,112 +2776,7 @@ namespace FIA_Biosum_Manager
                 }
             }
         }
-        public void LoadEffectiveVariables_access(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
-        {
-            int x = 0, y = 0;
-            string strRxCycle = "";
-            //
-            //INITIALIZE EFFECTIVE VARIABLES COLLECTION
-            //
-            for (x = p_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Count - 1;x>=0 ; x--)
-            {
-                p_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Remove(x);
-            }
-            //
-            //LOAD EFFECTIVE VARIABLES
-            //
-            p_oAdo.m_strSQL = "SELECT a.* " +
-                            "FROM scenario_fvs_variables a " +
-                            "WHERE TRIM(a.scenario_id)='" + p_strScenarioId.Trim() + "' AND " +
-                            "a.current_yn='Y' ORDER BY a.rxcycle,a.variable_number";
-
-            p_oAdo.SqlQueryReader(p_oAdo.m_OleDbConnection, p_oAdo.m_strSQL);
-            if (p_oAdo.m_OleDbDataReader.HasRows)
-            {
-                    
-                while (p_oAdo.m_OleDbDataReader.Read())
-                {
-                    int intVarNum = Convert.ToInt32(p_oAdo.m_OleDbDataReader["variable_number"]) - 1;
-                    strRxCycle = Convert.ToString(p_oAdo.m_OleDbDataReader["rxcycle"]).Trim();
-                    //find the current rxcycle in the collection
-                    for (x = 0; x <= p_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Count - 1; x++)
-                    {
-                        if (p_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(x).RxCycle == strRxCycle)
-                            break;
-                    }
-
-                    if (x > p_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Count - 1)
-                    {
-                        OptimizerScenarioItem.EffectiveVariablesItem oEffItem = new OptimizerScenarioItem.EffectiveVariablesItem();
-                        oEffItem.RxCycle = strRxCycle;
-                        p_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Add(oEffItem);
-                    }
-                    p_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(x).m_strPreVarArray[intVarNum] =
-                        Convert.ToString(p_oAdo.m_OleDbDataReader["pre_fvs_variable"]).Trim();
-
-                    p_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(x).m_strPostVarArray[intVarNum] =
-                        Convert.ToString(p_oAdo.m_OleDbDataReader["post_fvs_variable"]).Trim();
-
-
-                    if (p_oAdo.m_OleDbDataReader["better_expression"] != System.DBNull.Value)
-                        p_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(x).m_strBetterExpr[intVarNum] =
-                            Convert.ToString(p_oAdo.m_OleDbDataReader["better_expression"]).Trim();
-
-                    if (p_oAdo.m_OleDbDataReader["worse_expression"] != System.DBNull.Value)
-                        p_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(x).m_strWorseExpr[intVarNum] =
-                                Convert.ToString(p_oAdo.m_OleDbDataReader["worse_expression"]).Trim();
-
-                    if (p_oAdo.m_OleDbDataReader["effective_expression"] != System.DBNull.Value)
-                        p_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(x).m_strEffectiveExpr[intVarNum] =
-                            Convert.ToString(p_oAdo.m_OleDbDataReader["effective_expression"]).Trim();
-
-                    if (p_oAdo.m_OleDbDataReader["rxcycle"] != System.DBNull.Value)
-                        p_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(x).RxCycle = 
-                            Convert.ToString(p_oAdo.m_OleDbDataReader["rxcycle"]).Trim();
-
-
-                }
-            }
-
-            p_oAdo.m_OleDbDataReader.Close();
-            //
-            //LOAD OVERALL EFFECTIVE VARIABLES
-            //
-            //overall expression
-            p_oAdo.m_strSQL = "SELECT b.overall_effective_expression,b.current_yn," +
-                            "b.rxcycle " +
-                            "FROM scenario_fvs_variables_overall_effective b " +
-                            "WHERE TRIM(b.scenario_id)='" + p_strScenarioId.Trim() + "' AND " +
-                            "b.current_yn='Y'";
-
-
-
-            p_oAdo.SqlQueryReader(p_oAdo.m_OleDbConnection, p_oAdo.m_strSQL);
-            if (p_oAdo.m_OleDbDataReader.HasRows)
-            {
-                while (p_oAdo.m_OleDbDataReader.Read())
-                {
-                    strRxCycle = Convert.ToString(p_oAdo.m_OleDbDataReader["rxcycle"]).Trim();
-                    //find the current rxcycle in the collection
-                    for (x = 0; x <= p_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Count - 1; x++)
-                    {
-                        if (p_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(x).RxCycle == strRxCycle)
-                            break;
-                    }
-                    if (p_oAdo.m_OleDbDataReader["overall_effective_expression"] != System.DBNull.Value &&
-                        p_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(x).m_strOverallEffectiveExpr.Trim().Length == 0)
-                        p_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(x).m_strOverallEffectiveExpr =
-                                Convert.ToString(p_oAdo.m_OleDbDataReader["overall_effective_expression"]).Trim();
-
-                }
-            }
-
-            p_oAdo.m_OleDbDataReader.Close();
-            
-            
-
-               
-        }
+        
         public void LoadEffectiveVariables(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             int x = 0, y = 0;
@@ -3362,10 +2791,10 @@ namespace FIA_Biosum_Manager
             //
             //LOAD EFFECTIVE VARIABLES
             //
-            p_oDataMgr.m_strSQL = "SELECT a.* " +
-                            "FROM scenario_fvs_variables a " +
-                            "WHERE TRIM(UPPER(a.scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "' AND " +
-                            "a.current_yn='Y' ORDER BY a.rxcycle,a.variable_number";
+            p_oDataMgr.m_strSQL = "SELECT * " +
+                            "FROM scenario_fvs_variables " +
+                            "WHERE TRIM(UPPER(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "' AND " +
+                            "current_yn='Y' ORDER BY rxcycle, variable_number";
             p_oDataMgr.SqlQueryReader(p_oConn, p_oDataMgr.m_strSQL);
             if (p_oDataMgr.m_DataReader.HasRows)
             {
@@ -3409,17 +2838,17 @@ namespace FIA_Biosum_Manager
                         p_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(x).RxCycle =
                             Convert.ToString(p_oDataMgr.m_DataReader["rxcycle"]).Trim();
                 }
+                p_oDataMgr.m_DataReader.Close();
             }
-            p_oDataMgr.m_DataReader.Close();
             //
             //LOAD OVERALL EFFECTIVE VARIABLES
             //
             //overall expression
-            p_oDataMgr.m_strSQL = "SELECT b.overall_effective_expression,b.current_yn," +
-                            "b.rxcycle " +
-                            "FROM scenario_fvs_variables_overall_effective b " +
-                            "WHERE TRIM(UPPER(b.scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "' AND " +
-                            "b.current_yn='Y'";
+            p_oDataMgr.m_strSQL = "SELECT overall_effective_expression, current_yn," +
+                            "rxcycle " +
+                            "FROM scenario_fvs_variables_overall_effective " +
+                            "WHERE TRIM(UPPER(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "' AND " +
+                            "current_yn='Y'";
 
             p_oDataMgr.SqlQueryReader(p_oConn, p_oDataMgr.m_strSQL);
             if (p_oDataMgr.m_DataReader.HasRows)
@@ -3438,139 +2867,11 @@ namespace FIA_Biosum_Manager
                         p_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(x).m_strOverallEffectiveExpr =
                                 Convert.ToString(p_oDataMgr.m_DataReader["overall_effective_expression"]).Trim();
                 }
-            }
-            p_oDataMgr.m_DataReader.Close();
-
-        }
-        public void LoadOptimizationVariable_access(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
-        {
-            int x = 0, y = 0;
-            int intVarNum = 0;
-
-            //
-            //INITIALIZE OPTIMIZATION VARIABLES COLLECTION
-            //
-            for (x = p_oOptimizerScenarioItem.m_oOptimizationVariableItem_Collection.Count - 1;x>=0 ; x--)
-            {
-                p_oOptimizerScenarioItem.m_oOptimizationVariableItem_Collection.Remove(x);
+                p_oDataMgr.m_DataReader.Close();
             }
             
-            p_oAdo.m_strSQL = "SELECT * " +
-                "FROM scenario_fvs_variables_optimization " +
-                "WHERE TRIM(scenario_id)='" + p_strScenarioId.Trim() + "' AND " +
-                "current_yn='Y'";
-
-            p_oAdo.SqlQueryReader(p_oAdo.m_OleDbConnection, p_oAdo.m_strSQL);
-            if (p_oAdo.m_OleDbDataReader.HasRows)
-            {
-                
-                while (p_oAdo.m_OleDbDataReader.Read())
-                {
-                   
-
-                    if (p_oAdo.m_OleDbDataReader["optimization_variable"] != System.DBNull.Value)
-                    {
-                        OptimizerScenarioItem.OptimizationVariableItem oItem = new OptimizerScenarioItem.OptimizationVariableItem();
-                        oItem.strOptimizedVariable = Convert.ToString(p_oAdo.m_OleDbDataReader["optimization_variable"]);
-                        //optimization variable
-                        if (p_oAdo.m_OleDbDataReader["fvs_variable_name"] != System.DBNull.Value)
-                        {
-                            oItem.strFVSVariableName = Convert.ToString(p_oAdo.m_OleDbDataReader["fvs_variable_name"]).Trim();
-                        }
-                        else
-                        {
-                            oItem.strFVSVariableName = "NA";
-                        }
-                        //value source (POST or POST-PRE)
-                        if (p_oAdo.m_OleDbDataReader["value_source"] != System.DBNull.Value)
-                        {
-                            oItem.strValueSource = Convert.ToString(p_oAdo.m_OleDbDataReader["value_source"]).Trim();
-                        }
-                        else
-                        {
-                            oItem.strValueSource = "Not Defined";
-                        }
-
-                        //max value
-                        if (p_oAdo.m_OleDbDataReader["max_yn"] != System.DBNull.Value)
-                        {
-                            oItem.strMaxYN = Convert.ToString(p_oAdo.m_OleDbDataReader["max_yn"]).Trim();
-                        }
-                        else
-                        {
-                            oItem.strMaxYN = "N";
-                        }
-                        //min value
-                        if (p_oAdo.m_OleDbDataReader["min_yn"] != System.DBNull.Value)
-                        {
-                            oItem.strMinYN = Convert.ToString(p_oAdo.m_OleDbDataReader["min_yn"]).Trim();
-                        }
-                        else
-                        {
-                            oItem.strMinYN = "N";
-                        }
-                        //enable filter
-                        if (p_oAdo.m_OleDbDataReader["filter_enabled_yn"] != System.DBNull.Value)
-                        {
-                            if (Convert.ToString(p_oAdo.m_OleDbDataReader["filter_enabled_yn"]).Trim() == "Y")
-                                oItem.bUseFilter = true;
-                            else
-                                oItem.bUseFilter = false;
-
-                        }
-                        else
-                        {
-                            oItem.bUseFilter = false;
-                        }
-                        //filter operator
-                        if (p_oAdo.m_OleDbDataReader["filter_operator"] != System.DBNull.Value)
-                        {
-
-                            oItem.strFilterOperator = Convert.ToString(p_oAdo.m_OleDbDataReader["filter_operator"]).Trim();
-                        }
-                        else
-                        {
-                            oItem.strFilterOperator = "";
-                        }
-                        //filter value
-                        if (p_oAdo.m_OleDbDataReader["filter_value"] != System.DBNull.Value)
-                        {
-                            oItem.dblFilterValue = Convert.ToDouble(p_oAdo.m_OleDbDataReader["filter_value"]);
-                        }
-                        //revenue filter attribute
-                        if (p_oAdo.m_OleDbDataReader["revenue_attribute"] != System.DBNull.Value)
-                        {
-                            oItem.strRevenueAttribute = Convert.ToString(p_oAdo.m_OleDbDataReader["revenue_attribute"]).Trim();
-                        }
-                        //filter operator
-                        if (p_oAdo.m_OleDbDataReader["checked_yn"] != System.DBNull.Value)
-                        {
-                            if (Convert.ToString(p_oAdo.m_OleDbDataReader["checked_yn"]).Trim() == "Y")
-                            {
-                                oItem.bSelected = true;
-                                if (oItem.strOptimizedVariable.Trim().ToUpper() == "FVS VARIABLE")
-                                {
-                                }
-                                else
-                                {
-                                }
-                            }
-                            else
-                                oItem.bSelected = false;
-                        }
-                        else
-                        {
-                            oItem.bSelected = false;
-                        }
-                        oItem.RxCycle = p_oAdo.m_OleDbDataReader["rxcycle"].ToString().Trim();
-                        p_oOptimizerScenarioItem.m_oOptimizationVariableItem_Collection.Add(oItem);
-                    }
-                }
-                
-            }
-            p_oAdo.m_OleDbDataReader.Close();
-
         }
+        
         public void LoadOptimizationVariable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             int x = 0, y = 0;
@@ -3692,94 +2993,10 @@ namespace FIA_Biosum_Manager
                         p_oOptimizerScenarioItem.m_oOptimizationVariableItem_Collection.Add(oItem);
                     }
                 }
+                p_oDataMgr.m_DataReader.Close();
             }
-            p_oDataMgr.m_DataReader.Close();
         }
-        public void LoadTieBreakerVariables_access(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
-        {
-            this.m_intError = 0;
-            this.m_strError = "";
-            
-
-            int x, y;
-            //
-            //INITIALIZE TIEBREAKER COLLECTION
-            //
-            p_oOptimizerScenarioItem.m_oTieBreaker_Collection.Clear();
-            //
-            //LOAD TIEBREAKER ITEMS
-            //
-            p_oAdo.m_strSQL = "SELECT * FROM " +
-                                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName + " " +
-                                "WHERE TRIM(scenario_id)='" + p_strScenarioId.Trim() + "'";
-
-
-            p_oAdo.SqlQueryReader(p_oAdo.m_OleDbConnection, p_oAdo.m_strSQL);
-            if (p_oAdo.m_OleDbDataReader.HasRows)
-            {
-                while (p_oAdo.m_OleDbDataReader.Read())
-                {
-
-
-                    if (p_oAdo.m_OleDbDataReader["tiebreaker_method"] != System.DBNull.Value)
-                    {
-                        OptimizerScenarioItem.TieBreakerItem oItem = new OptimizerScenarioItem.TieBreakerItem();
-                        oItem.RxCycle = p_oAdo.m_OleDbDataReader["rxcycle"].ToString().Trim();
-                        oItem.strMethod = p_oAdo.m_OleDbDataReader["tiebreaker_method"].ToString().Trim();
-                        if (oItem.strMethod.ToUpper().IndexOf("ATTRIBUTE") > -1)
-                        {
-
-
-                            //fvs variable name
-                            oItem.strFVSVariableName = p_oAdo.m_OleDbDataReader["fvs_variable_name"].ToString().Trim();
-                            oItem.strValueSource = p_oAdo.m_OleDbDataReader["value_source"].ToString().Trim();
-
-
-
-                            //MAX or MIN	
-                            if (p_oAdo.m_OleDbDataReader["max_yn"].ToString().Trim().ToUpper() == "Y")
-                            {
-                                oItem.strMaxYN = "Y";
-                                oItem.strMinYN = "N";
-                            }
-                            else
-                            {
-                                oItem.strMinYN = "Y";
-                                oItem.strMaxYN = "N";
-
-                            }
-                            if (p_oAdo.m_OleDbDataReader["checked_yn"].ToString().Trim().ToUpper() == "Y")
-                            {
-                                oItem.bSelected = true;
-
-                            }
-                            else
-                            {
-                                oItem.bSelected = false;
-                            }
-                        }
-                        else if (oItem.strMethod.ToUpper() == "LAST TIE-BREAK RANK")
-                        {
-                            if (p_oAdo.m_OleDbDataReader["checked_yn"].ToString().Trim().ToUpper() == "Y")
-                            {
-                                oItem.bSelected = true;
-
-                            }
-                            else
-                            {
-                                oItem.bSelected = false;
-                            }
-                        }
-                        p_oOptimizerScenarioItem.m_oTieBreaker_Collection.Add(oItem);
-                    }
-
-                }
-            }
-
-            p_oAdo.m_OleDbDataReader.Close();
-            
-
-        }
+       
         public void LoadTieBreakerVariables(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             this.m_intError = 0;
@@ -3795,8 +3012,8 @@ namespace FIA_Biosum_Manager
             //LOAD TIEBREAKER ITEMS
             //
             p_oDataMgr.m_strSQL = "SELECT * FROM " +
-                                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName + " " +
-                                "WHERE TRIM(UPPER(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'";
+                                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName + 
+                                " WHERE TRIM(UPPER(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'";
 
             p_oDataMgr.SqlQueryReader(p_oConn, p_oDataMgr.m_strSQL);
             if (p_oDataMgr.m_DataReader.HasRows)
@@ -3810,13 +3027,9 @@ namespace FIA_Biosum_Manager
                         oItem.strMethod = p_oDataMgr.m_DataReader["tiebreaker_method"].ToString().Trim();
                         if (oItem.strMethod.ToUpper().IndexOf("ATTRIBUTE") > -1)
                         {
-
-
                             //fvs variable name
                             oItem.strFVSVariableName = p_oDataMgr.m_DataReader["fvs_variable_name"].ToString().Trim();
                             oItem.strValueSource = p_oDataMgr.m_DataReader["value_source"].ToString().Trim();
-
-
 
                             //MAX or MIN	
                             if (p_oDataMgr.m_DataReader["max_yn"].ToString().Trim().ToUpper() == "Y")
@@ -3855,105 +3068,10 @@ namespace FIA_Biosum_Manager
                         p_oOptimizerScenarioItem.m_oTieBreaker_Collection.Add(oItem);
                     }
                 }
+                p_oDataMgr.m_DataReader.Close();
             }
-            p_oDataMgr.m_DataReader.Close();
         }
-        public void LoadLastTieBreakRank_access(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
-        {
-            this.m_intError = 0;
-            this.m_strError = "";
-
-
-            int x, y;
-            //
-            //GET ALL THE CURRENT TREATMENTS
-            //
-            /*************************************************************************
-			 **get the treatment packages mdb file,table, and connection strings
-			 *************************************************************************/
-            string strRxMDBFile = "", strRxPackageTableName = "", strRxConn = "";
-            p_oAdo.getScenarioDataSourceConnStringAndTable(ref strRxMDBFile,
-                                            ref strRxPackageTableName, ref strRxConn,
-                                            "Treatment Packages",
-                                            p_strScenarioId,
-                                            p_oConn);
-            //
-            //GET A LIST OF ALL THE CURRENT TREATMENTS
-            //
-            System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
-            p_oAdo.OpenConnection(strRxConn,ref oConn);
-            string strRxList = p_oAdo.CreateCommaDelimitedList(oConn, "SELECT RXPACKAGE FROM " + strRxPackageTableName, "'");
-            string[] strRxArray = frmMain.g_oUtils.ConvertListToArray(strRxList, ",");
-            p_oAdo.CloseConnection(oConn);
-            //
-            //INITIALIZE RXINTENSITY COLLECTION
-            //
-            p_oOptimizerScenarioItem.m_oLastTieBreakRankItem_Collection.Clear();
-            //
-            //FIRST DELETE THE RXPACKAGES THAT NO LONGER EXIST
-            //
-            p_oAdo.m_strSQL = "DELETE FROM scenario_last_tiebreak_rank WHERE TRIM(UCASE(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "' AND rxpackage NOT IN (" + strRxList + ")";
-            p_oAdo.SqlNonQuery(p_oConn, p_oAdo.m_strSQL);
-            //
-            //NEXT INSERT INTO THE SCENARIO_LAST_TIEBREAK_RANK THOSE RX'S THAT DO NOT CURRENTLY EXIST
-            //
-            if (p_oAdo.TableExist(p_oConn, "rxtemp"))
-                p_oAdo.SqlNonQuery(p_oConn, "DROP TABLE rxtemp");
-            p_oAdo.SqlNonQuery(p_oConn, Tables.OptimizerScenarioRuleDefinitions.CreateScenarioLastTieBreakTableSQL("rxtemp"));
-            for (x = 0; x <= strRxArray.Length - 1; x++)
-            {
-                // SET THE DEFAULT TREATMENT INTENSITY TO BE THE SAME AS RXPACKAGE SO IT IS ALWAYS UNIQUE AND NEVER NULL
-                int intIntensity = -1;
-                char[] charsToTrim = {' ', '\'' };
-                bool bResult = Int32.TryParse(strRxArray[x].Trim(charsToTrim), out intIntensity);
-                p_oAdo.SqlNonQuery(p_oConn, "INSERT INTO rxtemp (scenario_id,rxpackage,last_tiebreak_rank) VALUES ('" + p_strScenarioId + "'," + strRxArray[x].Trim() + ", " + intIntensity + " )");
-            }
-            p_oAdo.m_strSQL = "INSERT INTO scenario_last_tiebreak_rank " +
-                             "(scenario_id,rxpackage,last_tiebreak_rank) " +
-                             "SELECT a.scenario_id, a.RXPACKAGE, a.last_tiebreak_rank " +
-                             "FROM rxtemp a " +
-                             "WHERE NOT EXISTS (SELECT b.scenario_id,b.rxpackage " +
-                                               "FROM scenario_last_tiebreak_rank b " +
-                                               "WHERE a.rxpackage=b.rxpackage AND TRIM(UCASE(a.scenario_id))=TRIM(UCASE(b.scenario_id)))";
-            p_oAdo.SqlNonQuery(p_oConn, p_oAdo.m_strSQL);
-            if (p_oAdo.TableExist(p_oConn, "rxtemp"))
-                p_oAdo.SqlNonQuery(p_oConn, "DROP TABLE rxtemp");
-            //
-            //LOAD RXINTENSITY ITEMS
-            //
-            p_oAdo.m_strSQL = "SELECT * FROM " +
-                              Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLastTieBreakRankTableName + " " +
-                              "WHERE TRIM(UCASE(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'";
-
-            p_oAdo.SqlQueryReader(p_oAdo.m_OleDbConnection, p_oAdo.m_strSQL);
-            if (p_oAdo.m_OleDbDataReader.HasRows)
-            {
-                while (p_oAdo.m_OleDbDataReader.Read())
-                {
-
-
-                    if (p_oAdo.m_OleDbDataReader["rxpackage"] != System.DBNull.Value)
-                    {
-                        OptimizerScenarioItem.LastTieBreakRankItem oItem = new OptimizerScenarioItem.LastTieBreakRankItem();
-                        oItem.RxPackage = p_oAdo.m_OleDbDataReader["rxpackage"].ToString().Trim();
-                        if (p_oAdo.m_OleDbDataReader["last_tiebreak_rank"] != System.DBNull.Value)
-                        {
-                            oItem.LastTieBreakRank = Convert.ToInt32(p_oAdo.m_OleDbDataReader["last_tiebreak_rank"]);
-                        }
-                        else
-                        {
-                            oItem.LastTieBreakRank = -1;
-                        }
-                        p_oOptimizerScenarioItem.m_oLastTieBreakRankItem_Collection.Add(oItem);
-                    }
-
-                }
-            }
-
-            p_oAdo.m_OleDbDataReader.Close();
-            
-
-        }
+        
         public void LoadLastTieBreakRank(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             this.m_intError = 0;
@@ -3969,21 +3087,23 @@ namespace FIA_Biosum_Manager
 			 *************************************************************************/
             string strRxDBFile = "";
             string strRxPackageTableName = "";
-            string strRxConn = "";
-            p_oDataMgr.m_strSQL = "select path,file, table_name from scenario_datasource " +
-                          "where TRIM(UPPER(table_type)) = 'TREATMENT PACKAGES' " +
-                          "and TRIM(UPPER(scenario_id)) = '" + p_strScenarioId.Trim().ToUpper() + "';";
+            p_oDataMgr.m_strSQL = "SELECT path, file, table_name FROM scenario_datasource " +
+                          "WHERE TRIM(UPPER(table_type)) = 'TREATMENT PACKAGES' " +
+                          "AND TRIM(UPPER(scenario_id)) = '" + p_strScenarioId.Trim().ToUpper() + "';";
             p_oDataMgr.SqlQueryReader(p_oConn, p_oDataMgr.m_strSQL);
             if (p_oDataMgr.m_intError == 0)
             {
-                while (p_oDataMgr.m_DataReader.Read())
+                if (p_oDataMgr.m_DataReader.HasRows)
                 {
-                    strRxPackageTableName = p_oDataMgr.m_DataReader["table_name"].ToString().Trim();
-                    strRxDBFile = p_oDataMgr.m_DataReader["path"].ToString().Trim() + "\\" + p_oDataMgr.m_DataReader["file"].ToString().Trim();
-                    //strRxConn = p_oDataMgr.GetConnectionString(strRxDBFile);
-                    break;
+                    while (p_oDataMgr.m_DataReader.Read())
+                    {
+                        strRxPackageTableName = p_oDataMgr.m_DataReader["table_name"].ToString().Trim();
+                        strRxDBFile = p_oDataMgr.m_DataReader["path"].ToString().Trim() + "\\" + p_oDataMgr.m_DataReader["file"].ToString().Trim();
+                        //strRxConn = p_oDataMgr.GetConnectionString(strRxDBFile);
+                        break;
+                    }
+                    p_oDataMgr.m_DataReader.Close();
                 }
-                p_oDataMgr.m_DataReader.Close();
             }
 
             //
@@ -4010,40 +3130,11 @@ namespace FIA_Biosum_Manager
                             strRxList += ",'" + p_oDataMgr.m_DataReader[0].ToString().Trim() + "'";
                         }
                     }
+                    p_oDataMgr.m_DataReader.Close();
                 }
-                p_oDataMgr.m_DataReader.Close();
             }
-            //using (System.Data.SQLite.SQLiteConnection rxConn = new System.Data.SQLite.SQLiteConnection(strRxConn))
-            //{
-            //    rxConn.Open();
-            //    p_oDataMgr.SqlQueryReader(rxConn, "SELECT RXPACKAGE FROM " + strRxPackageTableName);
-            //    if (p_oDataMgr.m_intError == 0)
-            //    {
-            //        if (p_oDataMgr.m_DataReader.HasRows)
-            //        {
-            //            while (p_oDataMgr.m_DataReader.Read())
-            //            {
-            //                if (strRxList.Trim().Length == 0)
-            //                {
 
-            //                    strRxList = "'" + p_oDataMgr.m_DataReader[0].ToString().Trim() + "'";
-            //                }
-            //                else
-            //                {
-            //                    strRxList += ",'" + p_oDataMgr.m_DataReader[0].ToString().Trim() + "'";
-            //                }
-            //            }
-            //        }
-            //        p_oDataMgr.m_DataReader.Close();
-            //    }
-            //}
             string[] strRxArray = frmMain.g_oUtils.ConvertListToArray(strRxList, ",");
-            //ado_data_access p_oAdo = new ado_data_access();
-            //System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
-            //p_oAdo.OpenConnection(strRxConn, ref oConn);
-            //string strRxList = p_oAdo.CreateCommaDelimitedList(oConn, "SELECT RXPACKAGE FROM " + strRxPackageTableName, "'");
-            //string[] strRxArray = frmMain.g_oUtils.ConvertListToArray(strRxList, ",");
-            //p_oAdo.CloseConnection(oConn);
             //
             //INITIALIZE RXINTENSITY COLLECTION
             //
@@ -4111,53 +3202,53 @@ namespace FIA_Biosum_Manager
                         p_oOptimizerScenarioItem.m_oLastTieBreakRankItem_Collection.Add(oItem);
                     }
                 }
+                p_oDataMgr.m_DataReader.Close();
             }
-            p_oDataMgr.m_DataReader.Close();
         }
-        public void LoadProcessorScenarioItems(DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, bool bProcessorUsingSqlite,
+        public void LoadProcessorScenarioItems(DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, 
             string p_strScenarioId, OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             int x;
             Queries oQueries = new Queries();
             ProcessorScenarioTools oTools = new ProcessorScenarioTools();
 
-                //scenario db connection
-                string strProcessorScenarioDB =
-                  frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                  "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
-                //
-                //get a list of all the scenarios
-                //
-                SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
-                string strConn = dataMgr.GetConnectionString(strProcessorScenarioDB);
-                using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
+            //scenario db connection
+            string strProcessorScenarioDB =
+                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+            //
+            //get a list of all the scenarios
+            //
+            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
+            string strConn = dataMgr.GetConnectionString(strProcessorScenarioDB);
+            using (System.Data.SQLite.SQLiteConnection processorConn = new System.Data.SQLite.SQLiteConnection(strConn))
+            {
+                processorConn.Open();
+                System.Collections.Generic.IList<string> lstScenarios = dataMgr.getStringList(processorConn,
+                        "SELECT scenario_id " +
+                        "FROM scenario " +
+                        "WHERE scenario_id IS NOT NULL AND " +
+                                            "LENGTH(TRIM(scenario_id)) > 0");
+                if (lstScenarios.Count == 0) return;
+                for (x = 0; x <= lstScenarios.Count - 1; x++)
                 {
-                    oConn.Open();
-                    System.Collections.Generic.IList<string> lstScenarios = dataMgr.getStringList(oConn,
-                           "SELECT scenario_id " +
-                           "FROM scenario " +
-                           "WHERE scenario_id IS NOT NULL AND " +
-                                             "LENGTH(TRIM(scenario_id)) > 0");
-                    if (lstScenarios.Count == 0) return;
-                    for (x = 0; x <= lstScenarios.Count - 1; x++)
-                    {
-                        //
-                        //LOAD PROJECT DATATASOURCES INFO
-                        //
-                        oQueries.m_oFvs.LoadDatasource = true;
-                        oQueries.m_oFIAPlot.LoadDatasource = true;
-                        oQueries.m_oProcessor.LoadDatasource = true;
-                        oQueries.m_oReference.LoadDatasource = true;
-                        oQueries.LoadDatasources(true, "processor", lstScenarios[x]);
-                        oTools.LoadAll(oQueries, lstScenarios[x], p_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection);
-                    }
-                    oConn.Close();
+                    //
+                    //LOAD PROJECT DATATASOURCES INFO
+                    //
+                    oQueries.m_oFvs.LoadDatasource = true;
+                    oQueries.m_oFIAPlot.LoadDatasource = true;
+                    oQueries.m_oProcessor.LoadDatasource = true;
+                    oQueries.m_oReference.LoadDatasource = true;
+                    oQueries.LoadDatasources(true, "processor", lstScenarios[x]);
+                    oTools.LoadAll(oQueries, lstScenarios[x], p_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection);
                 }
+                processorConn.Close();
+            }
 
             if (p_oDataMgr.TableExist(p_oConn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName))
             {
-                p_oDataMgr.m_strSQL = "SELECT * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName + " " +
-                                "WHERE TRIM(UPPER(scenario_id)) = '" +
+                p_oDataMgr.m_strSQL = "SELECT * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName +
+                                " WHERE TRIM(UPPER(scenario_id)) = '" +
                                    p_strScenarioId.Trim().ToUpper() + "';";
                 p_oDataMgr.SqlQueryReader(p_oConn, p_oDataMgr.m_strSQL);
                 string strProcessorScenario = "";
@@ -4178,8 +3269,9 @@ namespace FIA_Biosum_Manager
                             strFullDetailsYN = p_oDataMgr.m_DataReader["FullDetailsYN"].ToString().Trim();
                         }
                     }
+                    p_oDataMgr.m_DataReader.Close();
                 }
-                p_oDataMgr.m_DataReader.Close();
+                
                 //
                 //find the current selected scenario in the collection
                 //
@@ -4201,151 +3293,15 @@ namespace FIA_Biosum_Manager
             }
             else
             {
-                frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioProcessorScenarioSelectTable(p_oDataMgr, p_oConn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioProcessorScenarioSelectTable(p_oDataMgr, p_oConn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName);
             }
         }
 
-        public void LoadProcessorScenarioItems(ado_data_access p_oAdo,
-                                 System.Data.OleDb.OleDbConnection p_oConn,
-                                 bool bProcessorUsingSqlite, string p_strScenarioId,
-                                 OptimizerScenarioItem p_oOptimizerScenarioItem)
-        {
-            int x;
-            Queries oQueries = new Queries();
-            ProcessorScenarioTools oTools = new ProcessorScenarioTools();
-
-            //scenario mdb connection
-            string strProcessorScenarioDB =
-              frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-              "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
-            //
-            //get a list of all the scenarios
-            //
-            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
-            string strConn = dataMgr.GetConnectionString(strProcessorScenarioDB);
-            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
-            {
-                oConn.Open();
-                System.Collections.Generic.IList<string> lstScenarios = dataMgr.getStringList(oConn, 
-                       "SELECT scenario_id " +
-                       "FROM scenario " +
-                       "WHERE scenario_id IS NOT NULL AND " +
-                                         "LENGTH(TRIM(scenario_id)) > 0");
-                if (lstScenarios.Count == 0) return;
-                for (x = 0; x <= lstScenarios.Count - 1; x++)
-                {
-                    //
-                    //LOAD PROJECT DATATASOURCES INFO
-                    //
-                    oQueries.m_oFvs.LoadDatasource = true;
-                    oQueries.m_oFIAPlot.LoadDatasource = true;
-                    oQueries.m_oProcessor.LoadDatasource = true;
-                    oQueries.m_oReference.LoadDatasource = true;
-                    oQueries.LoadDatasources(true, "processor", lstScenarios[x]);
-                    oTools.LoadAll(oQueries, lstScenarios[x], p_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection);
-                }
-            }
-            ado_data_access oAdo = new ado_data_access();
-
-
-
-            if (p_oAdo.TableExist(p_oConn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName))
-            {
-                p_oAdo.m_strSQL = "SELECT * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName + " " +
-                                "WHERE TRIM(UCASE(scenario_id)) = '" +
-                                   p_strScenarioId.Trim().ToUpper() + "';";
-                p_oAdo.SqlQueryReader(p_oConn, p_oAdo.m_strSQL);
-                string strProcessorScenario = "";
-                string strFullDetailsYN = "N";
-
-                if (p_oAdo.m_OleDbDataReader.HasRows)
-                {
-                    while (p_oAdo.m_OleDbDataReader.Read())
-                    {
-                        if (p_oAdo.m_OleDbDataReader["processor_scenario_id"] != System.DBNull.Value &&
-                            p_oAdo.m_OleDbDataReader["processor_scenario_id"].ToString().Trim().Length > 0)
-                        {
-                            strProcessorScenario = p_oAdo.m_OleDbDataReader["processor_scenario_id"].ToString().Trim();
-                        }
-                        if (p_oAdo.m_OleDbDataReader["FullDetailsYN"] != System.DBNull.Value &&
-                            p_oAdo.m_OleDbDataReader["FullDetailsYN"].ToString().Trim().Length > 0)
-                        {
-                            strFullDetailsYN = p_oAdo.m_OleDbDataReader["FullDetailsYN"].ToString().Trim();
-                        }
-                    }
-                }
-                p_oAdo.m_OleDbDataReader.Close();
-                //
-                //find the current selected scenario in the collection
-                //
-                for (x = 0; x <= p_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection.Count - 1; x++)
-                {
-                    if (p_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection.Item(x).ScenarioId.Trim().ToUpper() ==
-                        strProcessorScenario.Trim().ToUpper())
-                    {
-                        p_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection.Item(x).Selected = true;
-                        p_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection.Item(x).DisplayFullDetailsYN = strFullDetailsYN;
-                    }
-                    else
-                    {
-                        p_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection.Item(x).Selected = false;
-                        p_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection.Item(x).DisplayFullDetailsYN = strFullDetailsYN;
-
-                    }
-                }
-            }
-            else
-            {
-                frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioProcessorScenarioSelectTable(oAdo, p_oConn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName);
-            }
-
-
-
-
-        }
-        public void LoadPlotFilter_access(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
-        {
-
-            p_oAdo.m_strSQL = "SELECT * FROM scenario_plot_filter  WHERE " +
-                " TRIM(UCASE(scenario_id)) = '" + p_strScenarioId.Trim().ToUpper() + "' AND current_yn = 'Y';";
-            p_oAdo.SqlQueryReader(p_oConn, p_oAdo.m_strSQL);
-
-
-
-            if (p_oAdo.m_intError == 0)
-            {
-
-                if (p_oAdo.m_OleDbDataReader.HasRows)
-                {
-                    while (p_oAdo.m_OleDbDataReader.Read())
-                    {
-                        if (p_oAdo.m_OleDbDataReader["sql_command"] != System.DBNull.Value)
-                        {
-                            if (p_oAdo.m_OleDbDataReader["sql_command"].ToString().Trim().Length > 0)
-                            {
-                                p_oOptimizerScenarioItem.PlotTableSQLFilter = p_oAdo.m_OleDbDataReader["sql_command"].ToString().Trim();
-                            }
-                        }
-
-                    }
-                }
-                else
-                {
-
-                    p_oOptimizerScenarioItem.PlotTableSQLFilter = "SELECT @@PlotTable@@.* FROM @@PlotTable@@ ";
-
-                }
-
-                p_oAdo.m_OleDbDataReader.Close();
-            }
-
-
-
-        }
+       
         public void LoadPlotFilter(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             p_oDataMgr.m_strSQL = "SELECT * FROM scenario_plot_filter  WHERE " +
-              " TRIM(UPPER(scenario_id)) = '" + p_strScenarioId.Trim().ToUpper() + "' AND current_yn = 'Y';";
+              "TRIM(UPPER(scenario_id)) = '" + p_strScenarioId.Trim().ToUpper() + "' AND current_yn = 'Y';";
             p_oDataMgr.SqlQueryReader(p_oConn, p_oDataMgr.m_strSQL);
 
             if (p_oDataMgr.m_intError == 0)
@@ -4362,78 +3318,19 @@ namespace FIA_Biosum_Manager
                             }
                         }
                     }
+                    p_oDataMgr.m_DataReader.Close();
                 }
                 else
                 {
                     p_oOptimizerScenarioItem.PlotTableSQLFilter = "SELECT @@PlotTable@@.* FROM @@PlotTable@@ ";
                 }
-                p_oDataMgr.m_DataReader.Close();
             }
         }
-        public void LoadCondFilter_access(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
-        {
-            p_oAdo.m_strSQL = "SELECT * FROM scenario_cond_filter  WHERE " +
-                " TRIM(UCASE(scenario_id)) = '" + p_strScenarioId.Trim().ToUpper() + "' AND current_yn = 'Y';";
-            p_oAdo.SqlQueryReader(p_oConn, p_oAdo.m_strSQL);
-
-
-
-            if (p_oAdo.m_intError == 0)
-            {
-
-                if (p_oAdo.m_OleDbDataReader.HasRows)
-                {
-                    while (p_oAdo.m_OleDbDataReader.Read())
-                    {
-                        if (p_oAdo.m_OleDbDataReader["sql_command"] != System.DBNull.Value)
-                        {
-                            if (p_oAdo.m_OleDbDataReader["sql_command"].ToString().Trim().Length > 0)
-                            {
-                                p_oOptimizerScenarioItem.m_oCondTableSQLFilter.SQL =
-                                    p_oAdo.m_OleDbDataReader["sql_command"].ToString().Trim();
-                            }
-                        }
-
-                    }
-                }
-                else
-                {
-                    p_oOptimizerScenarioItem.m_oCondTableSQLFilter.SQL =
-                        "SELECT * FROM @@CondTable@@";
-                }
-
-                p_oAdo.m_OleDbDataReader.Close();
-            }
-
-            p_oAdo.m_strSQL = "SELECT * FROM scenario_cond_filter_misc WHERE " +
-                             " TRIM(UCASE(scenario_id)) = '" + p_strScenarioId.Trim().ToUpper() + "';";
-            p_oAdo.SqlQueryReader(p_oConn, p_oAdo.m_strSQL);
-
-
-
-            if (p_oAdo.m_intError == 0)
-            {
-                //load  wind speed class definitions
-                while (p_oAdo.m_OleDbDataReader.Read())
-                {
-                    if (p_oAdo.m_OleDbDataReader["yard_dist"] != System.DBNull.Value)
-                    {
-                        if (p_oAdo.m_OleDbDataReader["yard_dist"].ToString().Trim().Length > 0)
-                        {
-                            p_oOptimizerScenarioItem.m_oCondTableSQLFilter.LowSlopeMaximumYardingDistanceFeet = 
-                                Convert.ToString(p_oAdo.m_OleDbDataReader["yard_dist"].ToString().Trim());
-                            p_oOptimizerScenarioItem.m_oCondTableSQLFilter.SteepSlopeMaximumYardingDistanceFeet=
-                                Convert.ToString(p_oAdo.m_OleDbDataReader["yard_dist2"].ToString().Trim());
-                        }
-                    }
-                }
-                p_oAdo.m_OleDbDataReader.Close();
-            }
-        }
+        
         public void LoadCondFilter(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             p_oDataMgr.m_strSQL = "SELECT * FROM scenario_cond_filter  WHERE " +
-                " TRIM(UPPER(scenario_id)) = '" + p_strScenarioId.Trim().ToUpper() + "' AND current_yn = 'Y';";
+                "TRIM(UPPER(scenario_id)) = '" + p_strScenarioId.Trim().ToUpper() + "' AND current_yn = 'Y';";
             p_oDataMgr.SqlQueryReader(p_oConn, p_oDataMgr.m_strSQL);
 
             if (p_oDataMgr.m_intError == 0)
@@ -4451,401 +3348,40 @@ namespace FIA_Biosum_Manager
                             }
                         }
                     }
+                    p_oDataMgr.m_DataReader.Close();
                 }
                 else
                 {
                     p_oOptimizerScenarioItem.m_oCondTableSQLFilter.SQL =
                         "SELECT * FROM @@CondTable@@";
                 }
-                p_oDataMgr.m_DataReader.Close();
             }
             p_oDataMgr.m_strSQL = "SELECT * FROM scenario_cond_filter_misc WHERE " +
-                             " TRIM(UPPER(scenario_id)) = '" + p_strScenarioId.Trim().ToUpper() + "';";
+                             "TRIM(UPPER(scenario_id)) = '" + p_strScenarioId.Trim().ToUpper() + "';";
             p_oDataMgr.SqlQueryReader(p_oConn, p_oDataMgr.m_strSQL);
 
             if (p_oDataMgr.m_intError == 0)
             {
-                while (p_oDataMgr.m_DataReader.Read())
+                if (p_oDataMgr.m_DataReader.HasRows)
                 {
-                    if (p_oDataMgr.m_DataReader["yard_dist"] != System.DBNull.Value)
+                    while (p_oDataMgr.m_DataReader.Read())
                     {
-                        if (p_oDataMgr.m_DataReader["yard_dist"].ToString().Trim().Length > 0)
+                        if (p_oDataMgr.m_DataReader["yard_dist"] != System.DBNull.Value)
                         {
-                            p_oOptimizerScenarioItem.m_oCondTableSQLFilter.LowSlopeMaximumYardingDistanceFeet =
-                                Convert.ToString(p_oDataMgr.m_DataReader["yard_dist"].ToString().Trim());
-                            p_oOptimizerScenarioItem.m_oCondTableSQLFilter.SteepSlopeMaximumYardingDistanceFeet =
-                                Convert.ToString(p_oDataMgr.m_DataReader["yard_dist2"].ToString().Trim());
-                        }
-                    }
-                }
-                p_oDataMgr.m_DataReader.Close();
-            }
-        }
-        public void LoadProcessingSites_access(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
-        {
-			
-
-			
-			this.m_intError = 0;
-            this.m_strError = "";
-
-
-            int x, y;
-            //
-            //GET ALL THE PSITES LISTED IN THE TRAVEL TIMES TABLE
-            //
-            /*************************************************************************
-			 **get the travel times mdb file,table, and connection strings
-			 *************************************************************************/
-            string strTravelTimeMDBFile = "", strTravelTimeTableName = "", strTravelTimeConn = "";
-            p_oAdo.getScenarioDataSourceConnStringAndTable(ref strTravelTimeMDBFile,
-                                            ref strTravelTimeTableName, ref strTravelTimeConn,
-                                            "TRAVEL TIMES",
-                                            p_strScenarioId,
-                                            p_oConn);
-            //
-            //GET THE PSITE LIST
-            //
-            System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
-            p_oAdo.OpenConnection(strTravelTimeConn,ref oConn);
-            string strList = p_oAdo.CreateCommaDelimitedList(oConn, "SELECT DISTINCT CSTR(psite_id) AS psite_id FROM " + strTravelTimeTableName, "");
-            string[] strArray = frmMain.g_oUtils.ConvertListToArray(strList, ",");
-            p_oAdo.CloseConnection(oConn);
-            //
-            //INITIALIZE PSITE COLLECTION
-            //
-            p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Clear();
-            //
-            //FIRST DELETE THE PSITE'S THAT NO LONGER EXIST
-            //
-            if (!String.IsNullOrEmpty(strList))
-            {
-                p_oAdo.m_strSQL = "DELETE FROM scenario_psites WHERE TRIM(UCASE(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "' AND psite_id NOT IN (" + strList + ")";
-                p_oAdo.SqlNonQuery(p_oConn, p_oAdo.m_strSQL);
-                //
-                //LOAD UP THE PSITES THAT EXIST
-                //
-                for (x = 0; x <= strArray.Length - 1; x++)
-                {
-                    OptimizerScenarioItem.ProcessingSiteItem oItem = new OptimizerScenarioItem.ProcessingSiteItem();
-                    oItem.ProcessingSiteId = strArray[x].Trim();
-                    p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Add(oItem);
-
-                }
-                /*************************************************************************
-                 **get the processing sites mdb file,table, and connection strings
-                 *************************************************************************/
-                string strPSitesMDBFile = "", strPSitesTableName = "", strPSitesConn = "";
-                p_oAdo.getScenarioDataSourceConnStringAndTable(ref strPSitesMDBFile,
-                                                ref strPSitesTableName, ref strPSitesConn,
-                                                "PROCESSING SITES",
-                                                p_strScenarioId,
-                                                p_oConn);
-                //
-                //GET THE PSITE LIST
-                //
-                oConn = new System.Data.OleDb.OleDbConnection();
-                p_oAdo.OpenConnection(strPSitesConn, ref oConn);
-                p_oAdo.m_strSQL = "SELECT DISTINCT p.psite_id,p.name,p.trancd,p.trancd_def,p.biocd,p.biocd_def,p.exists_yn " +
-                                 "FROM " + strPSitesTableName + " p WHERE p.psite_id IN (" + strList + ")";
-                p_oAdo.SqlQueryReader(oConn, p_oAdo.m_strSQL);
-                if (p_oAdo.m_OleDbDataReader.HasRows == true)
-                {
-                    x = 0;
-                    while (p_oAdo.m_OleDbDataReader.Read())
-                    {
-                        if (p_oAdo.m_OleDbDataReader["psite_id"] != System.DBNull.Value)
-                        {
-                            for (x = 0; x <= p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Count - 1; x++)
+                            if (p_oDataMgr.m_DataReader["yard_dist"].ToString().Trim().Length > 0)
                             {
-                                if (p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).ProcessingSiteId.Trim() ==
-                                    Convert.ToString(p_oAdo.m_OleDbDataReader["psite_id"]).Trim())
-                                {
-                                    //processing site name
-                                    if (p_oAdo.m_OleDbDataReader["name"] != System.DBNull.Value)
-                                    {
-                                        p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).ProcessingSiteName =
-                                            Convert.ToString(p_oAdo.m_OleDbDataReader["name"]).Trim();
-                                    }
-                                    //transportation code
-                                    if (p_oAdo.m_OleDbDataReader["trancd"] != System.DBNull.Value)
-                                    {
-                                        p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).TransportationCode =
-                                            Convert.ToString(p_oAdo.m_OleDbDataReader["trancd"]).Trim();
-                                    }
-                                    //biomass code
-                                    if (p_oAdo.m_OleDbDataReader["biocd"] != System.DBNull.Value)
-                                    {
-                                        p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).BiomassCode =
-                                            Convert.ToString(p_oAdo.m_OleDbDataReader["biocd"]).Trim();
-                                    }
-                                    //exists YN
-                                    if (p_oAdo.m_OleDbDataReader["exists_yn"] != System.DBNull.Value)
-                                    {
-                                        p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).ProcessingSiteExistYN =
-                                            Convert.ToString(p_oAdo.m_OleDbDataReader["exists_yn"]).Trim();
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                p_oAdo.m_OleDbDataReader.Close();
-                p_oAdo.CloseConnection(oConn);
-            }
-            
-            //
-            //SET THE PREVIOUSLY SELECTED
-            //
-            p_oAdo.m_strSQL = "SELECT psite_id,trancd,biocd,selected_yn " +
-                              "FROM scenario_psites WHERE TRIM(UCASE(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'";
-            p_oAdo.SqlQueryReader(p_oConn,p_oAdo.m_strSQL);
-            if (p_oAdo.m_OleDbDataReader.HasRows == true)
-            {
-                x = 0;
-                while (p_oAdo.m_OleDbDataReader.Read())
-                {
-
-                    if (p_oAdo.m_OleDbDataReader["psite_id"] != System.DBNull.Value)
-                    {
-                        for (x = 0; x <= p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Count - 1; x++)
-                        {
-                            if (p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).ProcessingSiteId.Trim() ==
-                                Convert.ToString(p_oAdo.m_OleDbDataReader["psite_id"]).Trim())
-                            {
-                                if (p_oAdo.m_OleDbDataReader["selected_yn"] != System.DBNull.Value)
-                                {
-                                    if (Convert.ToString(p_oAdo.m_OleDbDataReader["selected_yn"]).Trim() == "Y")
-                                    {
-                                        p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).Selected = true;
-                                    }
-                                    else
-                                    {
-                                        p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).Selected = false;
-                                    }
-                                }
-                                //transportation code
-                                if (p_oAdo.m_OleDbDataReader["trancd"] != System.DBNull.Value)
-                                {
-                                    p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).TransportationCode =
-                                        Convert.ToString(p_oAdo.m_OleDbDataReader["trancd"]).Trim();
-                                }
-                                //biomass code
-                                if (p_oAdo.m_OleDbDataReader["biocd"] != System.DBNull.Value)
-                                {
-                                    p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).BiomassCode =
-                                        Convert.ToString(p_oAdo.m_OleDbDataReader["biocd"]).Trim();
-                                }
-                                break;
-                            }
-                        }
-                    }
-                }
-                
-            }
-            p_oAdo.m_OleDbDataReader.Close();
-            
-
-			
-		}
-        public void LoadProcessingSites_SqliteToAccess(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
-        {
-            this.m_intError = 0;
-            this.m_strError = "";
-
-            int x, y;
-
-            DataMgr p_oDataMgr = new DataMgr();
-
-            //
-            //GET ALL THE PSITES LISTED IN THE TRAVEL TIMES TABLE
-            //
-            /*************************************************************************
-			 **get the travel times mdb file,table, and connection strings
-			 *************************************************************************/
-            string strTravelTimeDBFile = "", strTravelTimeTableName = "", strTravelTimeConn = "";
-            p_oAdo.getScenarioDataSourceConnStringAndTable(ref strTravelTimeDBFile,
-                                            ref strTravelTimeTableName, ref strTravelTimeConn,
-                                            "TRAVEL TIMES",
-                                            p_strScenarioId,
-                                            p_oConn);
-
-            //
-            //GET THE PSITE LIST
-            //
-
-            string strList = "";
-
-            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(p_oDataMgr.GetConnectionString(strTravelTimeDBFile)))
-            {
-                oConn.Open();
-
-                p_oDataMgr.SqlQueryReader(oConn, "SELECT DISTINCT CAST(psite_id AS text) FROM " + strTravelTimeTableName);
-                if (p_oDataMgr.m_intError == 0)
-                {
-                    if (p_oDataMgr.m_DataReader.HasRows)
-                    {
-                        while (p_oDataMgr.m_DataReader.Read())
-                        {
-                            if (strList.Trim().Length == 0)
-                            {
-
-                                //strList = "'" + p_oDataMgr.m_DataReader[0].ToString().Trim() + "'";
-                                strList = p_oDataMgr.m_DataReader[0].ToString().Trim();
-                            }
-                            else
-                            {
-                                //strList += ",'" + p_oDataMgr.m_DataReader[0].ToString().Trim() + "'";
-                                strList += "," + p_oDataMgr.m_DataReader[0].ToString().Trim();
+                                p_oOptimizerScenarioItem.m_oCondTableSQLFilter.LowSlopeMaximumYardingDistanceFeet =
+                                    Convert.ToString(p_oDataMgr.m_DataReader["yard_dist"].ToString().Trim());
+                                p_oOptimizerScenarioItem.m_oCondTableSQLFilter.SteepSlopeMaximumYardingDistanceFeet =
+                                    Convert.ToString(p_oDataMgr.m_DataReader["yard_dist2"].ToString().Trim());
                             }
                         }
                     }
                     p_oDataMgr.m_DataReader.Close();
                 }
-                oConn.Close();
-            }
-            string[] strArray = frmMain.g_oUtils.ConvertListToArray(strList, ",");
-            //
-
-            //INITIALIZE PSITE COLLECTION
-            //
-            p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Clear();
-            //
-
-            //FIRST DELETE THE PSITE'S THAT NO LONGER EXIST
-            //
-            if (!String.IsNullOrEmpty(strList))
-            {
-                p_oAdo.m_strSQL = "DELETE FROM scenario_psites WHERE TRIM(UCASE(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "' AND psite_id NOT IN (" + strList + ")";
-                p_oAdo.SqlNonQuery(p_oConn, p_oAdo.m_strSQL);
-                //
-                //LOAD UP THE PSITES THAT EXIST
-                //
-                for (x = 0; x <= strArray.Length - 1; x++)
-                {
-                    OptimizerScenarioItem.ProcessingSiteItem oItem = new OptimizerScenarioItem.ProcessingSiteItem();
-                    oItem.ProcessingSiteId = strArray[x].Trim();
-                    p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Add(oItem);
-
-                }
-                /*************************************************************************
-                 **get the processing sites mdb file,table, and connection strings
-                 *************************************************************************/
-                string strPSitesDBFile = "", strPSitesTableName = "", strPSitesConn = "";
-                p_oAdo.getScenarioDataSourceConnStringAndTable(ref strPSitesDBFile,
-                                                ref strPSitesTableName, ref strPSitesConn,
-                                                "PROCESSING SITES",
-                                                p_strScenarioId,
-                                                p_oConn);
-                //
-                //GET THE PSITE LIST
-                //
-                using (System.Data.SQLite.SQLiteConnection pSitesConn = new System.Data.SQLite.SQLiteConnection(p_oDataMgr.GetConnectionString(strPSitesDBFile)))
-                {
-                    pSitesConn.Open();
-                    p_oDataMgr.m_strSQL = "SELECT DISTINCT p.psite_id,p.name,p.trancd,p.trancd_def,p.biocd,p.biocd_def,p.exists_yn " +
-                                 "FROM " + strPSitesTableName + " p WHERE p.psite_id IN (" + strList + ")";
-                    p_oDataMgr.SqlQueryReader(pSitesConn, p_oDataMgr.m_strSQL);
-
-                    if (p_oDataMgr.m_DataReader.HasRows)
-                    {
-                        x = 0;
-                        while (p_oDataMgr.m_DataReader.Read())
-                        {
-                            if (p_oDataMgr.m_DataReader["psite_id"] != System.DBNull.Value)
-                            {
-                                for (x = 0; x <= p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Count - 1; x++)
-                                {
-                                    if (p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).ProcessingSiteId.Trim() ==
-                                        Convert.ToString(p_oDataMgr.m_DataReader["psite_id"]).Trim())
-                                    {
-                                        //processing site name
-                                        if (p_oDataMgr.m_DataReader["name"] != System.DBNull.Value)
-                                        {
-                                            p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).ProcessingSiteName =
-                                                Convert.ToString(p_oDataMgr.m_DataReader["name"]).Trim();
-                                        }
-                                        //transportation code
-                                        if (p_oDataMgr.m_DataReader["trancd"] != System.DBNull.Value)
-                                        {
-                                            p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).TransportationCode =
-                                                Convert.ToString(p_oDataMgr.m_DataReader["trancd"]).Trim();
-                                        }
-                                        //biomass code
-                                        if (p_oDataMgr.m_DataReader["biocd"] != System.DBNull.Value)
-                                        {
-                                            p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).BiomassCode =
-                                                Convert.ToString(p_oDataMgr.m_DataReader["biocd"]).Trim();
-                                        }
-                                        //exists YN
-                                        if (p_oDataMgr.m_DataReader["exists_yn"] != System.DBNull.Value)
-                                        {
-                                            p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).ProcessingSiteExistYN =
-                                                Convert.ToString(p_oDataMgr.m_DataReader["exists_yn"]).Trim();
-                                        }
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    p_oDataMgr.m_DataReader.Close();
-                    pSitesConn.Close();
-                }
-
-                //
-                //SET THE PREVIOUSLY SELECTED
-                //
-                p_oAdo.m_strSQL = "SELECT psite_id,trancd,biocd,selected_yn " +
-                              "FROM scenario_psites WHERE TRIM(UCASE(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'";
-                p_oAdo.SqlQueryReader(p_oConn, p_oAdo.m_strSQL);
-                if (p_oAdo.m_OleDbDataReader.HasRows == true)
-                {
-                    x = 0;
-                    while (p_oAdo.m_OleDbDataReader.Read())
-                    {
-
-                        if (p_oAdo.m_OleDbDataReader["psite_id"] != System.DBNull.Value)
-                        {
-                            for (x = 0; x <= p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Count - 1; x++)
-                            {
-                                if (p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).ProcessingSiteId.Trim() ==
-                                    Convert.ToString(p_oAdo.m_OleDbDataReader["psite_id"]).Trim())
-                                {
-                                    if (p_oAdo.m_OleDbDataReader["selected_yn"] != System.DBNull.Value)
-                                    {
-                                        if (Convert.ToString(p_oAdo.m_OleDbDataReader["selected_yn"]).Trim() == "Y")
-                                        {
-                                            p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).Selected = true;
-                                        }
-                                        else
-                                        {
-                                            p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).Selected = false;
-                                        }
-                                    }
-                                    //transportation code
-                                    if (p_oAdo.m_OleDbDataReader["trancd"] != System.DBNull.Value)
-                                    {
-                                        p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).TransportationCode =
-                                            Convert.ToString(p_oAdo.m_OleDbDataReader["trancd"]).Trim();
-                                    }
-                                    //biomass code
-                                    if (p_oAdo.m_OleDbDataReader["biocd"] != System.DBNull.Value)
-                                    {
-                                        p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).BiomassCode =
-                                            Convert.ToString(p_oAdo.m_OleDbDataReader["biocd"]).Trim();
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                }
-                p_oAdo.m_OleDbDataReader.Close();
             }
         }
+        
         public void LoadProcessingSites(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             this.m_intError = 0;
@@ -4867,24 +3403,27 @@ namespace FIA_Biosum_Manager
             p_oDataMgr.SqlQueryReader(p_oConn, p_oDataMgr.m_strSQL);
             if (p_oDataMgr.m_intError == 0)
             {
-                while (p_oDataMgr.m_DataReader.Read())
+                if (p_oDataMgr.m_DataReader.HasRows)
                 {
-                    strTravelTimeTableName = p_oDataMgr.m_DataReader["table_name"].ToString();
-                    strTravelTimeDBFile = p_oDataMgr.m_DataReader["path"].ToString().Trim() + "\\" + p_oDataMgr.m_DataReader["file"].ToString().Trim();
-                    strTravelTimeConn = p_oDataMgr.GetConnectionString(strTravelTimeDBFile);
-                    break;
+                    while (p_oDataMgr.m_DataReader.Read())
+                    {
+                        strTravelTimeTableName = p_oDataMgr.m_DataReader["table_name"].ToString();
+                        strTravelTimeDBFile = p_oDataMgr.m_DataReader["path"].ToString().Trim() + "\\" + p_oDataMgr.m_DataReader["file"].ToString().Trim();
+                        strTravelTimeConn = p_oDataMgr.GetConnectionString(strTravelTimeDBFile);
+                        break;
+                    }
+                    p_oDataMgr.m_DataReader.Close();
                 }
-                p_oDataMgr.m_DataReader.Close();
             }
 
             //
             //GET THE PSITE LIST
             //
             string strList = "";
-            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strTravelTimeConn))
+            using (System.Data.SQLite.SQLiteConnection travelTimesConn = new System.Data.SQLite.SQLiteConnection(strTravelTimeConn))
             {
-                oConn.Open();
-                p_oDataMgr.SqlQueryReader(oConn, "SELECT DISTINCT CAST(psite_id AS text) FROM " + strTravelTimeTableName);
+                travelTimesConn.Open();
+                p_oDataMgr.SqlQueryReader(travelTimesConn, "SELECT DISTINCT CAST(psite_id AS text) FROM " + strTravelTimeTableName);
                 if (p_oDataMgr.m_intError == 0)
                 {
                     if (p_oDataMgr.m_DataReader.HasRows)
@@ -4901,10 +3440,9 @@ namespace FIA_Biosum_Manager
                                 strList += ",'" + p_oDataMgr.m_DataReader[0].ToString().Trim() + "'";
                             }
                         }
+                        p_oDataMgr.m_DataReader.Close();
                     }
-                    p_oDataMgr.m_DataReader.Close();
                 }
-                oConn.Close();
             }
             string[] strArray = frmMain.g_oUtils.ConvertListToArray(strList, ",");
             //
@@ -4939,21 +3477,24 @@ namespace FIA_Biosum_Manager
                 p_oDataMgr.SqlQueryReader(p_oConn, p_oDataMgr.m_strSQL);
                 if (p_oDataMgr.m_intError == 0)
                 {
-                    while (p_oDataMgr.m_DataReader.Read())
+                    if (p_oDataMgr.m_DataReader.HasRows)
                     {
-                        strPSitesTableName = p_oDataMgr.m_DataReader["table_name"].ToString();
-                        strPSitesDBFile = p_oDataMgr.m_DataReader["path"].ToString().Trim() + "\\" + p_oDataMgr.m_DataReader["file"].ToString().Trim();
-                        strPSitesConn = p_oDataMgr.GetConnectionString(strPSitesDBFile);
-                        break;
+                        while (p_oDataMgr.m_DataReader.Read())
+                        {
+                            strPSitesTableName = p_oDataMgr.m_DataReader["table_name"].ToString();
+                            strPSitesDBFile = p_oDataMgr.m_DataReader["path"].ToString().Trim() + "\\" + p_oDataMgr.m_DataReader["file"].ToString().Trim();
+                            strPSitesConn = p_oDataMgr.GetConnectionString(strPSitesDBFile);
+                            break;
+                        }
+                        p_oDataMgr.m_DataReader.Close();
                     }
-                    p_oDataMgr.m_DataReader.Close();
                 }
 
                 using (System.Data.SQLite.SQLiteConnection pSitesConn = new System.Data.SQLite.SQLiteConnection(strPSitesConn))
                 {
                     pSitesConn.Open();
-                    p_oDataMgr.m_strSQL = "SELECT DISTINCT p.psite_id,p.name,p.trancd,p.trancd_def,p.biocd,p.biocd_def,p.exists_yn " +
-                                 "FROM " + strPSitesTableName + " p WHERE p.psite_id IN (" + strList + ")";
+                    p_oDataMgr.m_strSQL = "SELECT DISTINCT psite_id, name, trancd, trancd_def, biocd, biocd_def, exists_yn " +
+                                 "FROM " + strPSitesTableName + " WHERE psite_id IN (" + strList + ")";
                     p_oDataMgr.SqlQueryReader(pSitesConn, p_oDataMgr.m_strSQL);
 
                     if (p_oDataMgr.m_DataReader.HasRows)
@@ -4997,14 +3538,13 @@ namespace FIA_Biosum_Manager
                                 }
                             }
                         }
+                        p_oDataMgr.m_DataReader.Close();
                     }
-                    p_oDataMgr.m_DataReader.Close();
-                    pSitesConn.Close();
                 }
                 //
                 //SET THE PREVIOUSLY SELECTED
                 //
-                p_oDataMgr.m_strSQL = "SELECT psite_id,trancd,biocd,selected_yn " +
+                p_oDataMgr.m_strSQL = "SELECT psite_id, trancd, biocd, selected_yn " +
                                   "FROM scenario_psites WHERE TRIM(UPPER(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'";
                 p_oDataMgr.SqlQueryReader(p_oConn, p_oDataMgr.m_strSQL);
 
@@ -5049,64 +3589,34 @@ namespace FIA_Biosum_Manager
                             }
                         }
                     }
+                    p_oDataMgr.m_DataReader.Close();
                 }
-                p_oDataMgr.m_DataReader.Close();
             }
         }
 
-        public void LoadLandOwnerGroupFilter_access(ado_data_access p_oAdo, 
-                                         System.Data.OleDb.OleDbConnection p_oConn,
-                                         string p_strScenarioId, 
-                                         OptimizerScenarioItem p_oOptimizerScenarioItem)
-        {
-             p_oOptimizerScenarioItem.OwnerGroupCodeList="";
-            string strSQL = "SELECT * FROM scenario_land_owner_groups WHERE " +
-                " TRIM(scenario_id) = '" + p_strScenarioId + "';";
-            p_oAdo.SqlQueryReader(p_oConn, strSQL);
-
-
-            if (p_oAdo.m_intError == 0)
-            {
-
-                //load step one with wind class speed definitions
-                while (p_oAdo.m_OleDbDataReader.Read())
-                {
-                    if (p_oAdo.m_OleDbDataReader["owngrpcd"] != System.DBNull.Value)
-                    {
-                        p_oOptimizerScenarioItem.OwnerGroupCodeList =
-                            p_oOptimizerScenarioItem.OwnerGroupCodeList +
-                            Convert.ToString(p_oAdo.m_OleDbDataReader["owngrpcd"]).Trim() + ",";
-                    }
-                }
-                p_oAdo.m_OleDbDataReader.Close();
-                p_oAdo.m_OleDbDataReader = null;
-                p_oAdo.m_OleDbCommand = null;
-                if (p_oOptimizerScenarioItem.OwnerGroupCodeList.Trim().Length > 0)
-                    p_oOptimizerScenarioItem.OwnerGroupCodeList =
-                        p_oOptimizerScenarioItem.OwnerGroupCodeList.Substring(0, p_oOptimizerScenarioItem.OwnerGroupCodeList.Length - 1);
-            }
-        }
         public void LoadLandOwnerGroupFilter(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             p_oOptimizerScenarioItem.OwnerGroupCodeList = "";
             p_oDataMgr.m_strSQL = "SELECT * FROM scenario_land_owner_groups WHERE " +
-                " TRIM(UPPER(scenario_id)) = '" + p_strScenarioId.Trim().ToUpper() + "';";
+                "TRIM(UPPER(scenario_id)) = '" + p_strScenarioId.Trim().ToUpper() + "';";
             p_oDataMgr.SqlQueryReader(p_oConn, p_oDataMgr.m_strSQL);
 
             if (p_oDataMgr.m_intError == 0)
             {
-
-                //load step one with wind class speed definitions
-                while (p_oDataMgr.m_DataReader.Read())
+                if (p_oDataMgr.m_DataReader.HasRows)
                 {
-                    if (p_oDataMgr.m_DataReader["owngrpcd"] != System.DBNull.Value)
+                    //load step one with wind class speed definitions
+                    while (p_oDataMgr.m_DataReader.Read())
                     {
-                        p_oOptimizerScenarioItem.OwnerGroupCodeList =
-                            p_oOptimizerScenarioItem.OwnerGroupCodeList +
-                            Convert.ToString(p_oDataMgr.m_DataReader["owngrpcd"]).Trim() + ",";
+                        if (p_oDataMgr.m_DataReader["owngrpcd"] != System.DBNull.Value)
+                        {
+                            p_oOptimizerScenarioItem.OwnerGroupCodeList =
+                                p_oOptimizerScenarioItem.OwnerGroupCodeList +
+                                Convert.ToString(p_oDataMgr.m_DataReader["owngrpcd"]).Trim() + ",";
+                        }
                     }
+                    p_oDataMgr.m_DataReader.Close();
                 }
-                p_oDataMgr.m_DataReader.Close();
                 if (p_oOptimizerScenarioItem.OwnerGroupCodeList.Trim().Length > 0)
                 {
                     p_oOptimizerScenarioItem.OwnerGroupCodeList =
@@ -5114,53 +3624,7 @@ namespace FIA_Biosum_Manager
                 }
             }
         }
-        public void LoadTransportationCosts_access(ado_data_access p_oAdo,
-                                         System.Data.OleDb.OleDbConnection p_oConn,
-                                         string p_strScenarioId,
-                                         OptimizerScenarioItem p_oOptimizerScenarioItem)
-        {
-            p_oOptimizerScenarioItem.m_oTranCosts.RailChipTransferPerGreenTon = "";
-            p_oOptimizerScenarioItem.m_oTranCosts.RailHaulCostPerGreenTonPerMile = "";
-            p_oOptimizerScenarioItem.m_oTranCosts.RailMerchTransferPerGreenTon = "";
-            p_oOptimizerScenarioItem.m_oTranCosts.RoadHaulCostPerGreenTonPerHour="";
-
-            
-            string strSQL = "SELECT * FROM scenario_costs WHERE " +
-                " TRIM(UCASE(scenario_id)) = '" + p_strScenarioId.Trim().ToUpper() + "';";
-            p_oAdo.SqlQueryReader(p_oConn, strSQL);
-
-            if (p_oAdo.m_intError == 0)
-            {
-
-                //load step one with wind class speed definitions
-                while (p_oAdo.m_OleDbDataReader.Read())
-                {
-                    if (p_oAdo.m_OleDbDataReader["road_haul_cost_pgt_per_hour"] != System.DBNull.Value)
-                    {
-                        p_oOptimizerScenarioItem.m_oTranCosts.RoadHaulCostPerGreenTonPerHour =
-                           Convert.ToString(p_oAdo.m_OleDbDataReader["road_haul_cost_pgt_per_hour"]).Trim();
-                    }
-                    if (p_oAdo.m_OleDbDataReader["rail_haul_cost_pgt_per_mile"] != System.DBNull.Value)
-                    {
-                        p_oOptimizerScenarioItem.m_oTranCosts.RailHaulCostPerGreenTonPerMile =
-                           Convert.ToString(p_oAdo.m_OleDbDataReader["rail_haul_cost_pgt_per_mile"]).Trim();
-                    }
-                    if (p_oAdo.m_OleDbDataReader["rail_chip_transfer_pgt"] != System.DBNull.Value)
-                    {
-                        p_oOptimizerScenarioItem.m_oTranCosts.RailChipTransferPerGreenTon =
-                           Convert.ToString(p_oAdo.m_OleDbDataReader["rail_chip_transfer_pgt"]).Trim();
-                    }
-                    if (p_oAdo.m_OleDbDataReader["rail_merch_transfer_pgt"] != System.DBNull.Value)
-                    {
-                        p_oOptimizerScenarioItem.m_oTranCosts.RailMerchTransferPerGreenTon =
-                           Convert.ToString(p_oAdo.m_OleDbDataReader["rail_merch_transfer_pgt"]).Trim();
-                    }
-
-                }
-                p_oAdo.m_OleDbDataReader.Close();
-               
-            }
-        }
+        
         public void LoadTransportationCosts(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             p_oOptimizerScenarioItem.m_oTranCosts.RailChipTransferPerGreenTon = "";
@@ -5168,140 +3632,41 @@ namespace FIA_Biosum_Manager
             p_oOptimizerScenarioItem.m_oTranCosts.RailMerchTransferPerGreenTon = "";
             p_oOptimizerScenarioItem.m_oTranCosts.RoadHaulCostPerGreenTonPerHour = "";
 
-
             p_oDataMgr.m_strSQL = "SELECT * FROM scenario_costs WHERE " +
-                " TRIM(UPPER(scenario_id)) = '" + p_strScenarioId.Trim().ToUpper() + "';";
+                "TRIM(UPPER(scenario_id)) = '" + p_strScenarioId.Trim().ToUpper() + "';";
             p_oDataMgr.SqlQueryReader(p_oConn, p_oDataMgr.m_strSQL);
 
             if (p_oDataMgr.m_intError == 0)
             {
-
-                //load step one with wind class speed definitions
-                while (p_oDataMgr.m_DataReader.Read())
+                if (p_oDataMgr.m_DataReader.HasRows)
                 {
-                    if (p_oDataMgr.m_DataReader["road_haul_cost_pgt_per_hour"] != System.DBNull.Value)
+                    //load step one with wind class speed definitions
+                    while (p_oDataMgr.m_DataReader.Read())
                     {
-                        p_oOptimizerScenarioItem.m_oTranCosts.RoadHaulCostPerGreenTonPerHour =
-                           Convert.ToString(p_oDataMgr.m_DataReader["road_haul_cost_pgt_per_hour"]).Trim();
-                    }
-                    if (p_oDataMgr.m_DataReader["rail_haul_cost_pgt_per_mile"] != System.DBNull.Value)
-                    {
-                        p_oOptimizerScenarioItem.m_oTranCosts.RailHaulCostPerGreenTonPerMile =
-                           Convert.ToString(p_oDataMgr.m_DataReader["rail_haul_cost_pgt_per_mile"]).Trim();
-                    }
-                    if (p_oDataMgr.m_DataReader["rail_chip_transfer_pgt"] != System.DBNull.Value)
-                    {
-                        p_oOptimizerScenarioItem.m_oTranCosts.RailChipTransferPerGreenTon =
-                           Convert.ToString(p_oDataMgr.m_DataReader["rail_chip_transfer_pgt"]).Trim();
-                    }
-                    if (p_oDataMgr.m_DataReader["rail_merch_transfer_pgt"] != System.DBNull.Value)
-                    {
-                        p_oOptimizerScenarioItem.m_oTranCosts.RailMerchTransferPerGreenTon =
-                           Convert.ToString(p_oDataMgr.m_DataReader["rail_merch_transfer_pgt"]).Trim();
-                    }
-                }
-                p_oDataMgr.m_DataReader.Close();
-            }
-        }
-
-        public System.Collections.Generic.Dictionary<string, System.Collections.Generic.IList<String>> LoadFvsTablesAndVariables_access(FIA_Biosum_Manager.ado_data_access p_oAdo)
-        {
-            int x, y;
-            RxTools oRxTools = new RxTools();
-
-            string strTargetMdb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\fvs\\db\\biosum_fvsout_prepost_rx.mdb";
-            
-            //
-            //delete the old table links first in case any are obsolete
-            //
-            //if (System.IO.File.Exists(strTargetMdb))
-            //{
-            //    oRxTools.DeleteTableLinksToFVSPrePostTables(strTargetMdb);
-            //}
-            
-            //
-            //load list box with all the pre and post table columns
-            //
-            //oRxTools.CreateTableLinksToFVSPrePostTables(strTargetMdb);
-            oRxTools = null;
-            p_oAdo.OpenConnection(p_oAdo.getMDBConnString(strTargetMdb, "", ""));
-            System.Collections.Generic.Dictionary<string, System.Collections.Generic.IList<String>> _dictFVSTables = 
-                new System.Collections.Generic.Dictionary<string,
-                System.Collections.Generic.IList<string>>();
-            if (p_oAdo.m_intError == 0)
-            {
-
-                string[] strTableNamesArray = p_oAdo.getTableNames(p_oAdo.m_OleDbConnection);
-                for (x = 0; x <= strTableNamesArray.Length - 1; x++)
-                {
-                    if (strTableNamesArray[x].ToUpper().IndexOf("PRE_", 0) == 0)
-                    {
-                        string strColumnNamesList = "";
-                        string strDataTypesList = "";
-                        p_oAdo.getFieldNamesAndDataTypes(p_oAdo.m_OleDbConnection, "SELECT * FROM " + strTableNamesArray[x], 
-                            ref strColumnNamesList, ref strDataTypesList);
-                        string[] strColumnNamesArray = new string[0];
-                        string[] strDataTypesArray = new string[0];
-                        if (!String.IsNullOrEmpty(strColumnNamesList))
+                        if (p_oDataMgr.m_DataReader["road_haul_cost_pgt_per_hour"] != System.DBNull.Value)
                         {
-                            strColumnNamesArray = strColumnNamesList.Split(",".ToCharArray());
-                            strDataTypesArray = strDataTypesList.Split(",".ToCharArray());
+                            p_oOptimizerScenarioItem.m_oTranCosts.RoadHaulCostPerGreenTonPerHour =
+                               Convert.ToString(p_oDataMgr.m_DataReader["road_haul_cost_pgt_per_hour"]).Trim();
                         }
-                        System.Collections.Generic.IList<string> lstFVSFields = new System.Collections.Generic.List<string>();
-                        for (y = 0; y <= strColumnNamesArray.Length - 1; y++)
+                        if (p_oDataMgr.m_DataReader["rail_haul_cost_pgt_per_mile"] != System.DBNull.Value)
                         {
-                            switch (strColumnNamesArray[y].Trim().ToUpper())
-                            {
-                                case "BIOSUM_COND_ID":
-                                    break;
-                                case "RXPACKAGE":
-                                    break;
-                                case "RX":
-                                    break;
-                                case "RXCYCLE":
-                                    break;
-                                case "STANDID":
-                                    break;
-                                case "ID":
-                                    break;
-                                case "CASEID":
-                                    break;
-                                case "FVS_VARIANT":
-                                    break;
-                                case "YEAR":
-                                    break;
-                                default:
-                                    // Text data types can't be have a weight applied
-                                    if (!strDataTypesArray[y].Trim().ToUpper().Equals("SYSTEM.STRING"))
-                                    {
-                                        if (p_oAdo.ColumnExist(p_oAdo.m_OleDbConnection,
-                                            "POST_" + strTableNamesArray[x].Substring(4, strTableNamesArray[x].Length - 4),
-                                            strColumnNamesArray[y]))
-                                        {
-                                            lstFVSFields.Add(strColumnNamesArray[y]);
-                                        }
-                                    }
-                                    break;
-                            }
-
+                            p_oOptimizerScenarioItem.m_oTranCosts.RailHaulCostPerGreenTonPerMile =
+                               Convert.ToString(p_oDataMgr.m_DataReader["rail_haul_cost_pgt_per_mile"]).Trim();
                         }
-                        if (lstFVSFields.Count > 0)
+                        if (p_oDataMgr.m_DataReader["rail_chip_transfer_pgt"] != System.DBNull.Value)
                         {
-                            string strFvsTableName = strTableNamesArray[x].Substring(4, strTableNamesArray[x].Length - 4);
-                            if (!_dictFVSTables.ContainsKey(strFvsTableName))
-                            {
-                                _dictFVSTables.Add(strFvsTableName, lstFVSFields);
-                            }
-                            else
-                            {
-                                System.Collections.Generic.List<string> lstTemp = (System.Collections.Generic.List<string>) _dictFVSTables[strFvsTableName];
-                                lstTemp.AddRange(lstFVSFields);
-                            }
+                            p_oOptimizerScenarioItem.m_oTranCosts.RailChipTransferPerGreenTon =
+                               Convert.ToString(p_oDataMgr.m_DataReader["rail_chip_transfer_pgt"]).Trim();
+                        }
+                        if (p_oDataMgr.m_DataReader["rail_merch_transfer_pgt"] != System.DBNull.Value)
+                        {
+                            p_oOptimizerScenarioItem.m_oTranCosts.RailMerchTransferPerGreenTon =
+                               Convert.ToString(p_oDataMgr.m_DataReader["rail_merch_transfer_pgt"]).Trim();
                         }
                     }
+                    p_oDataMgr.m_DataReader.Close();
                 }
             }
-            return _dictFVSTables;
         }
 
         public System.Collections.Generic.Dictionary<string, System.Collections.Generic.IList<String>> LoadFvsTablesAndVariables()
@@ -5392,7 +3757,6 @@ namespace FIA_Biosum_Manager
                         }
                     }
                 }
-                conn.Close();
             }
             // Connect to and pull from prepost_fvs_weighted.db
             strTargetDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile;
@@ -5464,43 +3828,8 @@ namespace FIA_Biosum_Manager
                         }
                     }
                 }
-                weightedConn.Close();
             }
             return _dictFVSTables;
-        }
-
-        public void LoadWeightedVariables_access(ado_data_access p_oAdo, FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables.Variable_Collection p_oWeightedVariableCollection)
-        {
-            p_oWeightedVariableCollection.Clear();
-            p_oAdo.OpenConnection(p_oAdo.getMDBConnString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultDbFile, "", ""));
-            p_oAdo.m_strSQL = "SELECT * " +
-                              "FROM " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName;
-            p_oAdo.SqlQueryReader(p_oAdo.m_OleDbConnection, p_oAdo.m_strSQL);
-
-            if (p_oAdo.m_intError == 0)
-            {
-                //load step one with wind class speed definitions
-                while (p_oAdo.m_OleDbDataReader.Read())
-                {
-                    FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables.VariableItem oItem = new uc_optimizer_scenario_calculated_variables.VariableItem();
-                    oItem.intId = Convert.ToInt32(p_oAdo.m_OleDbDataReader["id"]);
-                    oItem.strVariableName = Convert.ToString(p_oAdo.m_OleDbDataReader["variable_name"]).Trim();
-                    oItem.strVariableType = Convert.ToString(p_oAdo.m_OleDbDataReader["VARIABLE_TYPE"]).Trim();
-                    if (p_oAdo.m_OleDbDataReader["variable_description"] != System.DBNull.Value)
-                    {
-                        oItem.strVariableDescr = Convert.ToString(p_oAdo.m_OleDbDataReader["variable_description"]).Trim();
-                    }
-                    if (p_oAdo.m_OleDbDataReader["BASELINE_RXPACKAGE"] != System.DBNull.Value)
-                    {
-                        oItem.strRxPackage = Convert.ToString(p_oAdo.m_OleDbDataReader["BASELINE_RXPACKAGE"]).Trim();
-                    }
-                    if (p_oAdo.m_OleDbDataReader["VARIABLE_SOURCE"] != System.DBNull.Value)
-                    {
-                        oItem.strVariableSource = Convert.ToString(p_oAdo.m_OleDbDataReader["VARIABLE_SOURCE"]).Trim();
-                    }
-                    p_oWeightedVariableCollection.Add(oItem);
-                }
-            }
         }
 
         public void LoadWeightedVariables( FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables.Variable_Collection p_oWeightedVariableCollection)
@@ -5518,54 +3847,30 @@ namespace FIA_Biosum_Manager
 
                 if (p_oDataMgr.m_intError == 0)
                 {
-                    //load step one with wind class speed definitions
-                    while (p_oDataMgr.m_DataReader.Read())
+                    if (p_oDataMgr.m_DataReader.HasRows)
                     {
-                        FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables.VariableItem oItem = new uc_optimizer_scenario_calculated_variables.VariableItem();
-                        oItem.intId = Convert.ToInt32(p_oDataMgr.m_DataReader["id"]);
-                        oItem.strVariableName = Convert.ToString(p_oDataMgr.m_DataReader["variable_name"]).Trim();
-                        oItem.strVariableType = Convert.ToString(p_oDataMgr.m_DataReader["VARIABLE_TYPE"]).Trim();
-                        if (p_oDataMgr.m_DataReader["variable_description"] != System.DBNull.Value)
+                        //load step one with wind class speed definitions
+                        while (p_oDataMgr.m_DataReader.Read())
                         {
-                            oItem.strVariableDescr = Convert.ToString(p_oDataMgr.m_DataReader["variable_description"]).Trim();
+                            FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables.VariableItem oItem = new uc_optimizer_scenario_calculated_variables.VariableItem();
+                            oItem.intId = Convert.ToInt32(p_oDataMgr.m_DataReader["id"]);
+                            oItem.strVariableName = Convert.ToString(p_oDataMgr.m_DataReader["variable_name"]).Trim();
+                            oItem.strVariableType = Convert.ToString(p_oDataMgr.m_DataReader["VARIABLE_TYPE"]).Trim();
+                            if (p_oDataMgr.m_DataReader["variable_description"] != System.DBNull.Value)
+                            {
+                                oItem.strVariableDescr = Convert.ToString(p_oDataMgr.m_DataReader["variable_description"]).Trim();
+                            }
+                            if (p_oDataMgr.m_DataReader["BASELINE_RXPACKAGE"] != System.DBNull.Value)
+                            {
+                                oItem.strRxPackage = Convert.ToString(p_oDataMgr.m_DataReader["BASELINE_RXPACKAGE"]).Trim();
+                            }
+                            if (p_oDataMgr.m_DataReader["VARIABLE_SOURCE"] != System.DBNull.Value)
+                            {
+                                oItem.strVariableSource = Convert.ToString(p_oDataMgr.m_DataReader["VARIABLE_SOURCE"]).Trim();
+                            }
+                            p_oWeightedVariableCollection.Add(oItem);
                         }
-                        if (p_oDataMgr.m_DataReader["BASELINE_RXPACKAGE"] != System.DBNull.Value)
-                        {
-                            oItem.strRxPackage = Convert.ToString(p_oDataMgr.m_DataReader["BASELINE_RXPACKAGE"]).Trim();
-                        }
-                        if (p_oDataMgr.m_DataReader["VARIABLE_SOURCE"] != System.DBNull.Value)
-                        {
-                            oItem.strVariableSource = Convert.ToString(p_oDataMgr.m_DataReader["VARIABLE_SOURCE"]).Trim();
-                        }
-                        p_oWeightedVariableCollection.Add(oItem);
-                    }
-                    p_oDataMgr.m_DataReader.Close();
-                }
-                conn.Close();
-            }
-        }
-
-        public void loadEconomicVariableWeightsAccess(FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables.VariableItem p_oWeightedVariable)
-        {
-            if (p_oWeightedVariable != null)
-            {
-                ado_data_access oAdo = new ado_data_access();
-                string strEconConn = oAdo.getMDBConnString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultDbFile, "", "");
-                using (var econConn = new OleDbConnection(strEconConn))
-                {
-                    econConn.Open();
-                    string strSql = "SELECT * FROM " + Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName +
-                                    " WHERE calculated_variables_id = " + p_oWeightedVariable.intId +
-                                    " ORDER BY rxcycle";
-                    oAdo.SqlQueryReader(econConn, strSql);
-                    if (oAdo.m_intError == 0)
-                    {
-                        System.Collections.Generic.IList<double> lstEconWeights = new System.Collections.Generic.List<double>();
-                        while (oAdo.m_OleDbDataReader.Read())
-                        {
-                            lstEconWeights.Add(Convert.ToDouble(oAdo.m_OleDbDataReader["weight"]));
-                        }
-                        p_oWeightedVariable.lstWeights = lstEconWeights;
+                        p_oDataMgr.m_DataReader.Close();
                     }
                 }
             }
@@ -5832,52 +4137,7 @@ namespace FIA_Biosum_Manager
             return strLine;
 
         }
-
-        public string AuditWeightedFvsVariables (string strTableName, out int intError)
-        {
-            intError = 0;
-            string strErrorMessage = "";
-            ado_data_access oAdo = new ado_data_access();
-            int intFvsPreTableCount = -1;
-            int intWeightedPreTableCount = -1;
-            char[] preArray = "PRE_".ToCharArray();
-            string strNamePart1 = strTableName.TrimStart(preArray);
-            string strName = strNamePart1.Substring(0,(strNamePart1.Length - "_WEIGHTED".Length));
-            string strFvsPrePostDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
-                "\\fvs\\db\\PREPOST_" + strName + ".ACCDB";
-            string strCalcConn = oAdo.getMDBConnString(strFvsPrePostDb, "", "");
-            string strSql = "SELECT Count(*) AS N FROM (" +
-                            "SELECT DISTINCT biosum_cond_id, rxpackage, fvs_variant" +
-                            " from PRE_" + strName + ")";
-            using (var oCalcConn = new OleDbConnection(strCalcConn))
-            {
-                oCalcConn.Open();
-                intFvsPreTableCount = oAdo.getRecordCount(oCalcConn, strSql, "PRE_" + strName);
-            }
-            strFvsPrePostDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
-                "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile;
-            strSql = "SELECT Count(*) AS N FROM (" +
-                "SELECT DISTINCT biosum_cond_id, rxpackage, fvs_variant" +
-                " from PRE_" + strTableName + ")";
-            strCalcConn = oAdo.getMDBConnString(strFvsPrePostDb, "", "");
-            using (var oCalcConn = new OleDbConnection(strCalcConn))
-            {
-                oCalcConn.Open();
-                intWeightedPreTableCount = oAdo.getRecordCount(oCalcConn, strSql, strTableName);
-            }
-
-            if (intFvsPreTableCount != intWeightedPreTableCount)
-            {
-                intError = -1;
-                strErrorMessage = "PRE_" + strName + " table has a different number of records (" + intFvsPreTableCount +
-                    ") than " + strTableName + " (" + intWeightedPreTableCount + "). Weighted variables from this table" +
-                    " cannot be used! \r\nConsider running the 'Recalculate All' tool from the 'Calculated Variables'" +
-                    "screen to recalculate all weighted variable \r\n";
-            }
-
-            return strErrorMessage;
-        }
-        public string AuditWeightedFvsVariablesSqlite(string strTableName, out int intError)
+        public string AuditWeightedFvsVariables(string strTableName, out int intError)
         {
             intError = 0;
             string strErrorMessage = "";
@@ -5938,81 +4198,7 @@ namespace FIA_Biosum_Manager
             set { _SQLite = value; }
         }
 
-        public bool CheckForExistingData(string strReferenceProjectDirectory, out bool bTablesHaveData)
-        {
-            bool bExistingTables = false;
-            bTablesHaveData = false;
-            ado_data_access oAdo = new ado_data_access();
-            DataMgr oDataMgr = new DataMgr();
-
-            // Load project data sources table
-            m_oProjectDs = new Datasource();
-            m_oProjectDs.m_strDataSourceMDBFile = strReferenceProjectDirectory + "\\db\\project.mdb";
-            m_oProjectDs.m_strDataSourceTableName = "datasource";
-            m_oProjectDs.m_strScenarioId = "";
-            m_oProjectDs.LoadTableColumnNamesAndDataTypes = false;
-            m_oProjectDs.LoadTableRecordCount = false;
-            m_oProjectDs.populate_datasource_array();
-
-            int intTable = m_oProjectDs.getTableNameRow(Datasource.TableTypes.TravelTimes);
-            string strDirectoryPath = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-            string strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
-            //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
-            string strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
-            string strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
-            string strSQL = "SELECT count(*) FROM " + strTableName;
-
-            // Check for travel times table and data
-            if (strTableStatus == "F")
-            {
-                bExistingTables = true;
-                string strTestConn = oAdo.getMDBConnString(strDirectoryPath + "\\" + strFileName, "", "");
-                using (var oTestConn = new OleDbConnection(strTestConn))
-                {
-                    oTestConn.Open();
-                    int intRecordCount = oAdo.getRecordCount(oTestConn, strSQL, strTableName);
-                    if (intRecordCount > 0)
-                    {
-                        bTablesHaveData = true;
-                    }
-                }
-                
-            }
-
-            // If no travel times, check for psites table and data
-            if (bExistingTables == false || bTablesHaveData == false)
-            {
-                intTable = m_oProjectDs.getTableNameRow(Datasource.TableTypes.ProcessingSites);
-                strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
-                strDirectoryPath = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-                strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
-                //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
-                strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
-                if (strTableStatus == "F")
-                {
-                    bExistingTables = true;
-                    string strTestConn = oAdo.getMDBConnString(strDirectoryPath + "\\" + strFileName, "", "");
-                    using (var oTestConn = new OleDbConnection(strTestConn))
-                    {
-                        oTestConn.Open();
-                        strSQL = "SELECT count(*) FROM " + strTableName;
-                        int intRecordCount = oAdo.getRecordCount(oTestConn, strSQL, strTableName);
-                        if (intRecordCount > 0)
-                        {
-                            bTablesHaveData = true;
-                        }
-                    }
-                }
-            }
-
-            if (oAdo != null)
-            {
-                oAdo.CloseConnection(oAdo.m_OleDbConnection);
-                oAdo = null;
-            }
-            return bExistingTables;
-        }
-
+        
         public bool CheckForExistingDataSqlite(string strReferenceProjectDirectory, out bool bTablesHaveData)
         {
             bool bExistingTables = false;
@@ -6029,7 +4215,7 @@ namespace FIA_Biosum_Manager
 
             int intTable = m_oProjectDs.getTableNameRow(Datasource.TableTypes.TravelTimes);
             string strDirectoryPath = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-            string strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            string strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
             //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
             string strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
             string strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
@@ -6057,7 +4243,7 @@ namespace FIA_Biosum_Manager
                 intTable = m_oProjectDs.getTableNameRow(Datasource.TableTypes.ProcessingSites);
                 strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
                 strDirectoryPath = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-                strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+                strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
                 //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
                 strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
                 if (strTableStatus == "F")
@@ -6105,7 +4291,7 @@ namespace FIA_Biosum_Manager
             // travel times
             int intTable = m_oProjectDs.getValidTableNameRow(Datasource.TableTypes.TravelTimes);
             string strDirectoryPath = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-            string strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            string strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
             //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
             string strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
             string strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
@@ -6127,7 +4313,7 @@ namespace FIA_Biosum_Manager
             // processing sites
             intTable = m_oProjectDs.getValidTableNameRow(Datasource.TableTypes.ProcessingSites);
             strDirectoryPath = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-            strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+            strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
             //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
             strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
             strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
@@ -6156,109 +4342,6 @@ namespace FIA_Biosum_Manager
             return bSuccess;
         }
 
-        public int LoadGisData()
-        {
-            ado_data_access oAdo = new ado_data_access();
-
-            m_oProjectDs.populate_datasource_array();
-            
-            string[] arrTableTypes = { Datasource.TableTypes.TravelTimes, Datasource.TableTypes.ProcessingSites};
-            string strTravelTimesTableName = "";
-            string strPSitesTableName = "";
-            int intRecordCount = -1;
-
-            frmMain.g_sbpInfo.Text = "Creating travel_time and processing_site tables...Stand by";
-            foreach (string strTableType in arrTableTypes)
-            {
-                // travel times
-                int intTable = m_oProjectDs.getTableNameRow(strTableType);
-                string strDirectoryPath = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-                string strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
-                //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
-                string strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
-                string strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
-                string strLoadConn = oAdo.getMDBConnString(strDirectoryPath + "\\" + strFileName, "", "");
-                using (var oLoadConn = new OleDbConnection(strLoadConn))
-                {
-                    oLoadConn.Open();
-                    if (strTableStatus == "F")
-                    {
-                        string strSql = "DROP TABLE " + strTableName;
-                        oAdo.SqlNonQuery(oLoadConn, strSql);
-                    }
-                    if (oAdo.m_intError == 0)
-                    {
-                        if (strTableType.Equals(Datasource.TableTypes.TravelTimes))
-                        {
-                            frmMain.g_oTables.m_oTravelTime.CreateTravelTimeTable(oAdo, oLoadConn, strTableName);
-                            strTravelTimesTableName = strTableName;
-                        }
-                        else
-                        {
-                            frmMain.g_oTables.m_oTravelTime.CreateProcessingSiteTable(oAdo, oLoadConn, strTableName);
-                            strPSitesTableName = strTableName;
-                        }
-
-                    }
-                }
-            }
-
-            if (oAdo.m_intError == 0)
-            {
-                frmMain.g_sbpInfo.Text = "Creating temp database and table links...Stand by";
-                string strTempDb = CreateACCDBAndTableDataSourceLinks();
-                string strLoadConn = oAdo.getMDBConnString(strTempDb, "", "");
-                using (var oLoadConn = new OleDbConnection(strLoadConn))
-                {
-                    oLoadConn.Open();
-                    // Sleep until the table link exists
-                    do
-                    {
-                        System.Threading.Thread.Sleep(1000);
-                    }
-                    while (!oAdo.TableExist(oLoadConn, strTravelTimesTableName));
-                    
-                    frmMain.g_sbpInfo.Text = "Loading travel_time table...Stand by";
-                    string strSql = "INSERT INTO " + strTravelTimesTableName +
-                                    " SELECT TRAVELTIME_ID, PSITE_ID, biosum_plot_id," +
-                                    " COLLECTOR_ID, RAILHEAD_ID, TRAVEL_MODE, ONE_WAY_HOURS," +
-                                    " PT.PLOT AS PLOT, PT.STATECD AS STATECD" +
-                                    " FROM " + m_strPlotTableName + " PT" +
-                                    " INNER JOIN " + m_strMasterTravelTime + " TT ON (PT.statecd = TT.STATECD) AND (PT.plot = TT.PLOT)";
-                    oAdo.SqlNonQuery(oLoadConn, strSql);
-                    strSql = "SELECT COUNT(*) FROM " + strTravelTimesTableName;
-                    intRecordCount = oAdo.getRecordCount(oLoadConn, strSql, strTravelTimesTableName);
-
-                    if (oAdo.m_intError == 0 && intRecordCount > 0)
-                    {
-                        frmMain.g_sbpInfo.Text = "Loading processing_site table...Stand by";
-                        strSql = "INSERT into " + strPSitesTableName +
-                                 " SELECT distinct p.psite_id, name, TRANCD, TRANCD_DEF, BIOCD," +
-                                                             " BIOCD_DEF," +
-                                                             " EXISTS_YN, LAT, LON, STATE, CITY, COUNTY, MILL_TYPE, STATUS" +
-                                 " FROM " + m_strMasterPSite + " p" +
-                                 " INNER JOIN " + strTravelTimesTableName + " tt ON p.PSITE_ID = tt.PSITE_ID" +
-                                 " group by P.PSITE_ID, NAME, TRANCD, TRANCD_DEF, BIOCD, BIOCD_DEF, EXISTS_YN, LAT, LON, STATE, CITY, COUNTY, MILL_TYPE, STATUS";
-                        oAdo.SqlNonQuery(oLoadConn, strSql);
-                        strSql = "SELECT COUNT(*) FROM " + strPSitesTableName;
-                        intRecordCount = oAdo.getRecordCount(oLoadConn, strSql, strPSitesTableName);
-                    }
-                }
-
-            }
-
-            
-            
-
-            if (oAdo != null)
-            {
-                oAdo.CloseConnection(oAdo.m_OleDbConnection);
-                oAdo = null;
-            }
-
-            return intRecordCount;
-        }
-
         public int LoadSqliteGisData(string strSourceYardingDistField, double dblMaxOneWayHours, string strDebugFile)
         {
             m_oProjectDs.populate_datasource_array();
@@ -6275,7 +4358,7 @@ namespace FIA_Biosum_Manager
                 // travel times
                 int intTable = m_oProjectDs.getTableNameRow(strTableType);
                 string strDirectoryPath = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-                string strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+                string strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
                 //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
                 string strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
                 string strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
@@ -6421,54 +4504,6 @@ namespace FIA_Biosum_Manager
             return intRecordCount;
         }
 
-        private string CreateACCDBAndTableDataSourceLinks()
-        {
-            string strTempMDB = "";
-            //used to get the temporary random file name
-            FIA_Biosum_Manager.utils oUtils = new FIA_Biosum_Manager.utils();
-            env oEnv = new env();
-            strTempMDB = oUtils.getRandomFile(oEnv.strTempDir, "accdb");
-
-            //create a temporary mdb that will contain all 
-            //the links to the scenario datasource tables
-            if (m_oDao == null)
-            {
-                m_oDao = new dao_data_access();
-            }
-            m_oDao.CreateMDB(strTempMDB);
-
-            //links to the three project tables we need
-            string[] arrTableTypes = { Datasource.TableTypes.TravelTimes, Datasource.TableTypes.ProcessingSites, Datasource.TableTypes.Plot };
-            foreach (string strTableType in arrTableTypes)
-            {
-                int intTable = m_oProjectDs.getTableNameRow(strTableType);
-                string strDirectoryPath = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-                string strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
-                //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
-                string strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
-                string strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
-                if (strTableStatus == "F")
-                {
-                    m_oDao.CreateTableLink(strTempMDB, strTableName, strDirectoryPath + "\\" + strFileName, strTableName);
-                    if (strTableType.Equals(Datasource.TableTypes.Plot))
-                    {
-                        m_strPlotTableName = strTableName;
-                    }
-                }
-            }
-            
-            // master databases            
-            m_oDao.CreateTableLink(strTempMDB, m_strMasterTravelTime, m_masterFolder + "\\" + Tables.TravelTime.DefaultMasterTravelTimeAccdbFile, Tables.TravelTime.DefaultTravelTimeTableName);
-            m_oDao.CreateTableLink(strTempMDB, m_strMasterPSite, m_masterFolder + "\\" + Tables.TravelTime.DefaultMasterTravelTimeAccdbFile, Tables.TravelTime.DefaultProcessingSiteTableName);
-
-            if (m_oDao != null)
-            {
-                m_oDao.m_DaoWorkspace.Close();
-                m_oDao = null;
-            }
-            return strTempMDB;
-        }
-
         private void CreateDBAndTableDataSourceLinks()
         {
             //used to get the temporary random file name
@@ -6540,7 +4575,7 @@ namespace FIA_Biosum_Manager
             {
                 intTable = m_oProjectDs.getTableNameRow(strTableType);
                 string strDirectoryPath = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-                string strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
+                string strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
                 //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
                 strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
                 strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
@@ -6580,151 +4615,6 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        public int migrate_access_data_1()
-        {
-            // Check if Processor parameters in SQLite
-            string strTest = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\processor\{Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile}";
-            if (!System.IO.File.Exists(strTest))
-            {
-                MessageBox.Show("Processor parameters have not been migrated to SQLite. SQLite GIS data cannot be loaded!", "FIA Biosum");
-                return -1;
-            }
-            // Check if Optimizer parameters in SQLite
-            strTest = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile}";
-            if (!System.IO.File.Exists(strTest))
-            {
-                MessageBox.Show("Optimizer parameters have not been migrated to SQLite. SQLite GIS data cannot be loaded!", "FIA Biosum");
-                return -1;
-            }
-
-            string gisPathAndDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                "\\" + Tables.TravelTime.DefaultTravelTimePathAndDbFile;
-            if (!System.IO.File.Exists(gisPathAndDbFile))
-            {
-                SQLite.CreateDbFile(gisPathAndDbFile);
-            }
-            // Create audit db
-           string strAuditDBPath = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory}\{Tables.TravelTime.DefaultGisAuditPathAndDbFile}";
-            if (!System.IO.File.Exists(strAuditDBPath))
-            {
-                SQLite.CreateDbFile(strAuditDBPath);
-            }
-
-            // Create target tables in new database
-            string strCopyConn = SQLite.GetConnectionString(gisPathAndDbFile);
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strCopyConn))
-            {
-                conn.Open();
-                frmMain.g_oTables.m_oTravelTime.CreateSqliteProcessingSiteTable(SQLite, conn, Tables.TravelTime.DefaultProcessingSiteTableName);
-                frmMain.g_oTables.m_oTravelTime.CreateSqliteTravelTimeTable(SQLite, conn, Tables.TravelTime.DefaultTravelTimeTableName);
-            }
-            // Find path to existing tables
-            m_oProjectDs = new Datasource();
-            m_oProjectDs.m_strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\project.mdb";
-            m_oProjectDs.m_strDataSourceTableName = "datasource";
-            m_oProjectDs.m_strScenarioId = "";
-            m_oProjectDs.LoadTableColumnNamesAndDataTypes = false;
-            m_oProjectDs.LoadTableRecordCount = false;
-            m_oProjectDs.populate_datasource_array();
-            ado_data_access oAdo = new ado_data_access();
-
-            // Travel times
-            int intTravelTable = m_oProjectDs.getTableNameRow(Datasource.TableTypes.TravelTimes);
-            int intPSitesTable = m_oProjectDs.getTableNameRow(Datasource.TableTypes.ProcessingSites);
-            string strDirectoryPath = m_oProjectDs.m_strDataSource[intTravelTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-            string strFileName = m_oProjectDs.m_strDataSource[intTravelTable, FIA_Biosum_Manager.Datasource.MDBFILE].Trim();
-            //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
-            string strTableName = m_oProjectDs.m_strDataSource[intTravelTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
-            string strTableStatus = m_oProjectDs.m_strDataSource[intTravelTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strCopyConn))
-            {
-                conn.Open();
-                string[] arrUpdateTableType = new string[2];
-                string[] arrUpdateTableName = new string[2];
-                if (m_oProjectDs.DataSourceTableExist(intTravelTable))
-                {
-                    string strDbName = System.IO.Path.GetFileName(Tables.TravelTime.DefaultTravelTimePathAndDbFile);
-                    string strNewDirectoryPath = System.IO.Path.GetDirectoryName(gisPathAndDbFile);
-                    string strConn = oAdo.getMDBConnString(m_oProjectDs.getFullPathAndFile(Datasource.TableTypes.TravelTimes), "", "");
-                    using (var pConn = new System.Data.OleDb.OleDbConnection(strConn))
-                    {
-                        pConn.Open();
-                        oAdo.m_strSQL = $@"SELECT TRAVELTIME_ID, PSITE_ID, BIOSUM_PLOT_ID, COLLECTOR_ID,RAILHEAD_ID,
-                        TRAVEL_MODE, ONE_WAY_HOURS, PLOT, STATECD FROM {strTableName}";
-                        oAdo.CreateDataTable(pConn, oAdo.m_strSQL, strTableName, false);
-                        using (System.Data.SQLite.SQLiteDataAdapter da = new System.Data.SQLite.SQLiteDataAdapter(oAdo.m_strSQL, conn))
-                        {
-                            using (System.Data.SQLite.SQLiteCommandBuilder cb = new System.Data.SQLite.SQLiteCommandBuilder(da))
-                            {
-                                using (var transaction = conn.BeginTransaction())
-                                {
-                                    da.InsertCommand = cb.GetInsertCommand();
-                                    int rows = da.Update(oAdo.m_DataTable);
-                                    transaction.Commit();
-                                }
-                            }
-                        }
-                        m_oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.TravelTimes, strNewDirectoryPath, strDbName, strTableName);
-                        arrUpdateTableType[0] = Datasource.TableTypes.TravelTimes;
-                        arrUpdateTableName[0] = strTableName;
-                        if (m_oProjectDs.DataSourceTableExist(intPSitesTable))
-                        {
-                            strTableName = m_oProjectDs.m_strDataSource[intPSitesTable, Datasource.TABLE].Trim();
-                            oAdo.m_strSQL = $@"SELECT PSITE_ID,NAME,TRANCD,TRANCD_DEF,BIOCD,BIOCD_DEF,EXISTS_YN,LAT,LON,
-                                            STATE,CITY,MILL_TYPE,COUNTY,STATUS,NOTES FROM {strTableName}";
-                            oAdo.CreateDataTable(pConn, oAdo.m_strSQL, strTableName, false);
-                            using (System.Data.SQLite.SQLiteDataAdapter da = new System.Data.SQLite.SQLiteDataAdapter(oAdo.m_strSQL, conn))
-                            {
-                                using (System.Data.SQLite.SQLiteCommandBuilder cb = new System.Data.SQLite.SQLiteCommandBuilder(da))
-                                {
-                                    using (var transaction = conn.BeginTransaction())
-                                    {
-                                        da.InsertCommand = cb.GetInsertCommand();
-                                        int rows = da.Update(oAdo.m_DataTable);
-                                        transaction.Commit();
-                                    }
-                                }
-                            }
-                            m_oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.ProcessingSites, strNewDirectoryPath, strDbName, strTableName);
-                            arrUpdateTableType[1] = Datasource.TableTypes.ProcessingSites;
-                            arrUpdateTableName[1] = strTableName;
-                        }
-                    }
-                    strConn = SQLite.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile}");
-                    using (System.Data.SQLite.SQLiteConnection scenarioConn = new System.Data.SQLite.SQLiteConnection(strConn))
-                    {
-                        scenarioConn.Open();
-                        for (int i = 0; i < arrUpdateTableType.Length; i++)
-                        {
-                            if (!string.IsNullOrEmpty(arrUpdateTableType[i]))
-                            {
-                                System.Text.StringBuilder sb = new System.Text.StringBuilder();
-                                sb.Append($@"UPDATE {Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioDatasourceTableName} SET ");
-                                sb.Append($@"PATH = '{strNewDirectoryPath}', file='{strDbName}', table_name = '{arrUpdateTableName[i]}' ");
-                                sb.Append($@"WHERE TRIM(table_type) = '{arrUpdateTableType[i]}'");
-                                SQLite.SqlNonQuery(scenarioConn, sb.ToString());
-                            }
-                        }
-                    }
-                    strConn = SQLite.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\processor\{Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile}");
-                    using (System.Data.SQLite.SQLiteConnection scenarioConn = new System.Data.SQLite.SQLiteConnection(strConn))
-                    {
-                        scenarioConn.Open();
-                        for (int i = 0; i < arrUpdateTableType.Length; i++)
-                        {
-                            if (!string.IsNullOrEmpty(arrUpdateTableType[i]))
-                            {
-                                System.Text.StringBuilder sb = new System.Text.StringBuilder();
-                                sb.Append($@"UPDATE {Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioDatasourceTableName} SET ");
-                                sb.Append($@"PATH = '{strNewDirectoryPath}', file='{strDbName}', table_name = '{arrUpdateTableName[i]}' ");
-                                sb.Append($@"WHERE TRIM(table_type) = '{arrUpdateTableType[i]}'");
-                                SQLite.SqlNonQuery(scenarioConn, sb.ToString());
-                            }
-                        }
-                    }
-                }
-            }
-            return 0;
-        }
+        
     }
 }

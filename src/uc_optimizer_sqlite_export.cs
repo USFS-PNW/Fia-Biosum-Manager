@@ -1174,30 +1174,30 @@ namespace FIA_Biosum_Manager
                     {
                         lstTableNames.Add(p_datasource.m_strDataSource[intCondTableType, Datasource.TABLE].Trim());
                         lstDatabases.Add(p_datasource.m_strDataSource[intCondTableType, Datasource.PATH].Trim() + "\\" +
-                                                p_datasource.m_strDataSource[intCondTableType, Datasource.MDBFILE].Trim());
+                                                p_datasource.m_strDataSource[intCondTableType, Datasource.DBFILE].Trim());
                         dictCustomDb.Add(p_datasource.m_strDataSource[intCondTableType, Datasource.TABLE].Trim(),
                                                 p_datasource.m_strDataSource[intCondTableType, Datasource.PATH].Trim() + "\\" +
-                                                p_datasource.m_strDataSource[intCondTableType, Datasource.MDBFILE].Trim());
+                                                p_datasource.m_strDataSource[intCondTableType, Datasource.DBFILE].Trim());
                     }
                     int intPlotTableType = p_datasource.getDataSourceTableNameRow(Datasource.TableTypes.Plot);
                     if (p_datasource.DataSourceTableExist(intPlotTableType))
                     {
                         lstTableNames.Add(p_datasource.m_strDataSource[intPlotTableType, Datasource.TABLE].Trim());
                         lstDatabases.Add(p_datasource.m_strDataSource[intPlotTableType, Datasource.PATH].Trim() + "\\" +
-                                                p_datasource.m_strDataSource[intPlotTableType, Datasource.MDBFILE].Trim());
+                                                p_datasource.m_strDataSource[intPlotTableType, Datasource.DBFILE].Trim());
                         dictCustomDb.Add(p_datasource.m_strDataSource[intPlotTableType, Datasource.TABLE].Trim(),
                             p_datasource.m_strDataSource[intPlotTableType, Datasource.PATH].Trim() + "\\" +
-                            p_datasource.m_strDataSource[intPlotTableType, Datasource.MDBFILE].Trim());
+                            p_datasource.m_strDataSource[intPlotTableType, Datasource.DBFILE].Trim());
                     }
                     int intPSiteType = p_datasource.getDataSourceTableNameRow(Datasource.TableTypes.ProcessingSites);
                     if (p_datasource.DataSourceTableExist(intPSiteType))
                     {
                         lstTableNames.Add(p_datasource.m_strDataSource[intPSiteType, Datasource.TABLE].Trim());
                         lstDatabases.Add(p_datasource.m_strDataSource[intPSiteType, Datasource.PATH].Trim() + "\\" +
-                                                p_datasource.m_strDataSource[intPSiteType, Datasource.MDBFILE].Trim());
+                                                p_datasource.m_strDataSource[intPSiteType, Datasource.DBFILE].Trim());
                         dictCustomDb.Add(p_datasource.m_strDataSource[intPSiteType, Datasource.TABLE].Trim(),
                             p_datasource.m_strDataSource[intPSiteType, Datasource.PATH].Trim() + "\\" +
-                            p_datasource.m_strDataSource[intPSiteType, Datasource.MDBFILE].Trim());
+                            p_datasource.m_strDataSource[intPSiteType, Datasource.DBFILE].Trim());
                     }
 
                     System.Collections.Generic.IList<string[]> lstColumnNames = new System.Collections.Generic.List<string[]>();

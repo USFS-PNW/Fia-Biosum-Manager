@@ -261,67 +261,11 @@ namespace FIA_Biosum_Manager
             //
             //EFFECTIVE TABLE
             //
-            public void CreateEffectiveTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn,
-                string p_strTablePrefix, string p_strFilterColumnName)
+            public void CreateSqliteEffectiveTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn,
+                                                   string p_strTablePrefix, string p_strFilterColumnName)
             {
                 string strTableName = p_strTablePrefix + Tables.OptimizerScenarioResults.DefaultScenarioResultsEffectiveTableSuffix;
-                p_oAdo.SqlNonQuery(p_oConn, CreateEffectiveTableSQL(strTableName, p_strFilterColumnName));
-                CreateEffectiveTableIndexes(p_oAdo, p_oConn, strTableName);
-            }
-            public void CreateEffectiveTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "biosum_cond_id,rxpackage,rx,rxcycle");
-            }
-            static public string CreateEffectiveTableSQL(string p_strTableName, string p_strFilterColumnName)
-            {
-                string strSql = "CREATE TABLE " + p_strTableName + " (" +
-                         "biosum_cond_id CHAR(25)," +
-                         "rxpackage CHAR(3)," +
-                         "rx CHAR(3)," +
-                         "rxcycle CHAR(1)," +
-                         "nr_dpa DOUBLE,";
-                if (!String.IsNullOrEmpty(p_strFilterColumnName))
-                    strSql = strSql + p_strFilterColumnName + " DOUBLE,";
-                strSql = strSql +
-                         "pre_variable1_name CHAR(100)," +
-                         "post_variable1_name CHAR(100)," +
-                           "pre_variable1_value DOUBLE," +
-                         "post_variable1_value DOUBLE," +
-                         "variable1_change DOUBLE," +
-                         "variable1_better_yn CHAR(1)," +
-                         "variable1_worse_yn CHAR(1)," +
-                         "variable1_effective_yn CHAR(1)," +
-                         "pre_variable2_name CHAR(100)," +
-                         "post_variable2_name CHAR(100)," +
-                         "pre_variable2_value DOUBLE," +
-                         "post_variable2_value DOUBLE," +
-                         "variable2_change DOUBLE," +
-                         "variable2_better_yn CHAR(1)," +
-                         "variable2_worse_yn CHAR(1)," +
-                         "variable2_effective_yn CHAR(1)," +
-                         "pre_variable3_name CHAR(100)," +
-                         "post_variable3_name CHAR(100)," +
-                         "pre_variable3_value DOUBLE," +
-                         "post_variable3_value DOUBLE," +
-                         "variable3_change DOUBLE," +
-                         "variable3_better_yn CHAR(1)," +
-                         "variable3_worse_yn CHAR(1)," +
-                         "variable3_effective_yn CHAR(1)," +
-                         "pre_variable4_name CHAR(100)," +
-                         "post_variable4_name CHAR(100)," +
-                         "pre_variable4_value DOUBLE," +
-                         "post_variable4_value DOUBLE," +
-                         "variable4_change DOUBLE," +
-                         "variable4_better_yn CHAR(1)," +
-                         "variable4_worse_yn CHAR(1)," +
-                         "variable4_effective_yn CHAR(1)," +
-                         "overall_effective_yn CHAR(1))";
-                return strSql;
-            }
-            public void CreateSqliteEffectiveTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn,
-                                                   string p_strTableName, string p_strFilterColumnName)
-            {
-                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteEffectiveTableSQL(p_strTableName, p_strFilterColumnName));
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteEffectiveTableSQL(strTableName, p_strFilterColumnName));
             }
             static public string CreateSqliteEffectiveTableSQL(string p_strTableName, string p_strFilterColumnName)
             {
@@ -2238,27 +2182,27 @@ namespace FIA_Biosum_Manager
                     "rail_chip_transfer_pgt DOUBLE DEFAULT 0, " +
                     "rail_merch_transfer_pgt DOUBLE DEFAULT 0)";
             }
-            public void CreateScenarioProcessorScenarioSelectTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+            public void CreateScenarioProcessorScenarioSelectTable_Access(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
-                p_oAdo.SqlNonQuery(p_oConn, CreateScenarioProcessorScenarioSelectTableSQL(p_strTableName));
-                CreateScenarioProcessorScenarioSelectTableIndexes(p_oAdo, p_oConn, p_strTableName);
+                p_oAdo.SqlNonQuery(p_oConn, CreateScenarioProcessorScenarioSelectTableSQL_Access(p_strTableName));
+                CreateScenarioProcessorScenarioSelectTableIndexes_Access(p_oAdo, p_oConn, p_strTableName);
             }
-            public void CreateScenarioProcessorScenarioSelectTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+            public void CreateScenarioProcessorScenarioSelectTableIndexes_Access(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
                 p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "scenario_id");
             }
-            static public string CreateScenarioProcessorScenarioSelectTableSQL(string p_strTableName)
+            static public string CreateScenarioProcessorScenarioSelectTableSQL_Access(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "scenario_id CHAR(20)," +
                     "processor_scenario_id CHAR(20)," +
                     "FullDetailsYN CHAR(1))";
             }
-            public void CreateSqliteScenarioProcessorScenarioSelectTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            public void CreateScenarioProcessorScenarioSelectTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
-                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteScenarioProcessorScenarioSelectTableSQL(p_strTableName));
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateScenarioProcessorScenarioSelectTableSQL(p_strTableName));
             }
-            static public string CreateSqliteScenarioProcessorScenarioSelectTableSQL(string p_strTableName)
+            static public string CreateScenarioProcessorScenarioSelectTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "scenario_id CHAR(20) PRIMARY KEY, " +
@@ -2593,24 +2537,12 @@ namespace FIA_Biosum_Manager
             {
                 p_oDataMgr.SqlNonQuery(p_oConn, CreateScenarioFVSVariablesTieBreakerTableSQL(p_strTableName));
             }
-            public void CreateScenarioFvsVariableWeightsReferenceTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+
+            public void CreateScenarioFvsVariableWeightsReferenceTable(SQLite.ADO.DataMgr oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
-                p_oAdo.SqlNonQuery(p_oConn, CreateScenarioFvsVariableWeightsReferenceTableSQL(p_strTableName));
+                oDataMgr.SqlNonQuery(p_oConn, CreateScenarioFvsVariableWeightsReferenceTableSQL(p_strTableName));
             }
             static public string CreateScenarioFvsVariableWeightsReferenceTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "rxcycle CHAR(1)," +
-                    "pre_or_post CHAR(4)," +
-                    "rxyear INTEGER," +
-                    "weight DOUBLE)";
-            }
-
-            public void CreateSqliteScenarioFvsVariableWeightsReferenceTable(SQLite.ADO.DataMgr oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
-            {
-                oDataMgr.SqlNonQuery(p_oConn, CreateSqliteScenarioFvsVariableWeightsReferenceTableSQL(p_strTableName));
-            }
-            static public string CreateSqliteScenarioFvsVariableWeightsReferenceTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "rxcycle TEXT," +
