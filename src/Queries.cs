@@ -2753,7 +2753,8 @@ namespace FIA_Biosum_Manager
                 sqlArray[0] = "INSERT INTO  " + p_strInsertTable + " " +
                                    "SELECT * FROM " +
                                         "(SELECT 'FVS_SPECIES' AS COLUMN_NAME," +
-                                                "'SPCD DOES NOT MATCH: FVS=' + TRIM(FVS.FVS_SPECIES) + ' FIA=' + TRIM(CAST(FIA.SPCD AS TEXT)) AS WARNING_DESC," +
+                                                //"'SPCD DOES NOT MATCH: FVS=' + TRIM(FVS.FVS_SPECIES) + ' FIA=' + TRIM(CAST(FIA.SPCD AS TEXT)) AS WARNING_DESC," +
+                                                "'SPCD DOES NOT MATCH: FVS=' || TRIM(FVS.FVS_SPECIES) || ' FIA=' || TRIM(CAST(FIA.SPCD AS TEXT)) AS WARNING_DESC," +
                                                 "fvs.ID," +
                                                 "fvs.BIOSUM_COND_ID," +
                                                 "fvs.FVS_VARIANT," +
