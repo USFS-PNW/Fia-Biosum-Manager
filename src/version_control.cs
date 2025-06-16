@@ -7415,13 +7415,16 @@ namespace FIA_Biosum_Manager
             // Add BioSum generated site index flag column to FVS_STANDINIT_COND table in FVSIn.db
             frmMain.g_sbpInfo.Text = "Version Update: Updating FVSIn.db tables ...Stand by";
             string strFVSInFile = ReferenceProjectDirectory.Trim() + "\\fvs\\data\\" + Tables.FIA2FVS.DefaultFvsInputFile;
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strFVSInFile)))
+            if (System.IO.File.Exists(strFVSInFile))
             {
-                conn.Open();
-
-                if (!oDataMgr.ColumnExist(conn, Tables.FIA2FVS.DefaultFvsInputStandTableName, "SITE_INDEX_BSCALC_YN"))
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strFVSInFile)))
                 {
-                    oDataMgr.AddColumn(conn, Tables.FIA2FVS.DefaultFvsInputStandTableName, "SITE_INDEX_BSCALC_YN", "CHAR", "1");
+                    conn.Open();
+
+                    if (!oDataMgr.ColumnExist(conn, Tables.FIA2FVS.DefaultFvsInputStandTableName, "SITE_INDEX_BSCALC_YN"))
+                    {
+                        oDataMgr.AddColumn(conn, Tables.FIA2FVS.DefaultFvsInputStandTableName, "SITE_INDEX_BSCALC_YN", "CHAR", "1");
+                    }
                 }
             }
             if (oDao != null)
