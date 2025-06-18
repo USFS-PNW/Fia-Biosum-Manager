@@ -113,13 +113,13 @@ namespace FIA_Biosum_Manager
 		public System.Data.OleDb.OleDbConnection m_TempMDBFileConn;
 		public System.Windows.Forms.ListView lvDataSource;
 		public System.Data.DataSet m_dsDataSource;
-		const int TABLETYPE = 0;
-		const int PATH = 1;
-		const int MDBFILE = 2;
-		const int FILESTATUS = 3;
-		const int TABLE = 4;
-		const int TABLESTATUS = 5;
-		const int RECORDCOUNT = 6;
+		const int TABLETYPE = 1;
+		const int PATH = 2;
+		const int MDBFILE = 3;
+		const int FILESTATUS = 4;
+		const int TABLE = 5;
+		const int TABLESTATUS = 6;
+		const int RECORDCOUNT = 7;
 		public int m_intError=0;
 		private System.Data.OleDb.OleDbDataAdapter m_OleDbDataAdapter;
 		private System.Data.SQLite.SQLiteDataAdapter m_DataAdapter;
@@ -2409,6 +2409,9 @@ namespace FIA_Biosum_Manager
 			int y = 0;
 			bool lLoaded = false;
 
+			macrosubst oMacroSub = new macrosubst();
+			oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
+
 			this.m_intError = 0;
 
 			DataMgr p_dataMgr = new DataMgr();
@@ -2442,7 +2445,7 @@ namespace FIA_Biosum_Manager
 							==
 							this.lvDataSource.Items[x].SubItems[TABLE].Text.Trim().ToUpper())
 						{
-							strFullPathDB = this.lvDataSource.Items[x].SubItems[PATH].Text.Trim() +
+							strFullPathDB = oMacroSub.GeneralTranslateVariableSubstitution(this.lvDataSource.Items[x].SubItems[PATH].Text.Trim()) +
 								"\\" + this.lvDataSource.Items[x].SubItems[MDBFILE].Text.Trim();
 							strConn = p_dataMgr.GetConnectionString(strFullPathDB);
 							using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
