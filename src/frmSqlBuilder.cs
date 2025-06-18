@@ -1541,7 +1541,7 @@ namespace FIA_Biosum_Manager
 			}
 		}
 
-		private void btnTest_Click(object sender, System.EventArgs e)
+		private void btnTest_Click_old(object sender, System.EventArgs e)
 		{
 			string strSQL="";
 			string strConn="";
@@ -1574,7 +1574,7 @@ namespace FIA_Biosum_Manager
 
 				if (this.ClientId.Trim().ToUpper()=="CORE SCENARIO PLOT FILTER")
 				{
-					if (this.ReferenceOptimizerScenarioForm.uc_scenario_filter1.Val_PlotFilter(p_conn,this.txtSQLCommand.Text.Trim())!=0)
+					if (this.ReferenceOptimizerScenarioForm.uc_scenario_filter1.Val_PlotFilter_old(p_conn,this.txtSQLCommand.Text.Trim())!=0)
 					{
 						MessageBox.Show(ReferenceOptimizerScenarioForm.uc_scenario_filter1.m_strError,"FIA Biosum");
 					}
@@ -1586,7 +1586,7 @@ namespace FIA_Biosum_Manager
 				}
 				else if (this.ClientId.Trim().ToUpper()=="CORE SCENARIO COND FILTER")
 				{
-					if (this.ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.Val_CondFilter(p_conn,this.txtSQLCommand.Text.Trim())!=0)
+					if (this.ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.Val_CondFilter_old(p_conn,this.txtSQLCommand.Text.Trim())!=0)
 					{
 						MessageBox.Show(ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.m_strError,"FIA Biosum");
 					}
@@ -1609,6 +1609,33 @@ namespace FIA_Biosum_Manager
 			p_ado = null;
 			
 			
+		}
+
+		private void btnTest_Click(object sender, System.EventArgs e)
+        {
+			if (this.ClientId.Trim().ToUpper() == "OPTIMIZER SCENARIO PLOT FILTER")
+			{
+				if (this.ReferenceOptimizerScenarioForm.uc_scenario_filter1.Val_PlotFilter(this.txtSQLCommand.Text.Trim()) != 0)
+				{
+					MessageBox.Show(ReferenceOptimizerScenarioForm.uc_scenario_filter1.m_strError, "FIA Biosum");
+				}
+				else
+				{
+					MessageBox.Show("Valid Syntax");
+				}
+
+			}
+			else if (this.ClientId.Trim().ToUpper() == "OPTIMIZER SCENARIO COND FILTER")
+			{
+				if (this.ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.Val_CondFilter(this.txtSQLCommand.Text.Trim()) != 0)
+				{
+					MessageBox.Show(ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.m_strError, "FIA Biosum");
+				}
+				else
+				{
+					MessageBox.Show("Valid Syntax");
+				}
+			}
 		}
 
 		private void btnExists_Click(object sender, System.EventArgs e)

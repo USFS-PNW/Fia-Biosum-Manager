@@ -823,6 +823,7 @@ namespace FIA_Biosum_Manager
 				MessageBox.Show("!!None of the data source tables are found!!");
 			return strTempMDB;
 		}
+
 		public string CreateDB()
         {
 			macrosubst oMacroSub = new macrosubst();
@@ -1742,6 +1743,38 @@ namespace FIA_Biosum_Manager
 			}
 
 			return strTempDb;
+		}
+
+		public System.Collections.Generic.List<string> GetDataSourceDbsList()
+        {
+			int x;
+			macrosubst oMacroSub = new macrosubst();
+			oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
+
+			System.Collections.Generic.List<string> lstDataSourcePaths = new System.Collections.Generic.List<string>();
+
+			for (x = 0; x <= m_intNumberOfTables - 1; x++)
+            {
+				string strFileStatus = this.m_strDataSource[x, FILESTATUS];
+				if (strFileStatus != null)
+                {
+					strFileStatus = strFileStatus.Trim().ToUpper();
+				}
+				string strTableStatus = this.m_strDataSource[x, TABLESTATUS];
+				if (strTableStatus != null)
+                {
+					strTableStatus = strTableStatus.Trim().ToUpper();
+				}
+
+				string strPath = oMacroSub.GeneralTranslateVariableSubstitution(this.m_strDataSource[x, PATH].Trim()) + "\\" +
+								 this.m_strDataSource[x, DBFILE].Trim();
+				if (!lstDataSourcePaths.Contains(strPath))
+                {
+					lstDataSourcePaths.Add(strPath);
+                }
+			}
+
+			return lstDataSourcePaths;
 		}
 
         public class TableTypes

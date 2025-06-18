@@ -79,18 +79,6 @@ namespace FIA_Biosum_Manager
             this.m_strCurrentConnection = strConn;
 		    this.m_strTable = strTable;
 
-            //ado_data_access p_ado = new ado_data_access();		
-            //p_ado.OpenConnection(strConn);	
-            //if (p_ado.m_intError != 0)
-            //{
-            //	p_ado = null;
-            //	return;
-            //}
-            //         loadvalues(p_ado, p_ado.m_OleDbConnection, strSelectSQL, strDisplayColumn, strSelectColumn, strTable);			
-            //if (p_ado.m_intError==0) 	p_ado.m_OleDbDataReader.Close();
-            //p_ado.m_OleDbConnection.Close();
-            //p_ado = null;
-
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
             using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
             {

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Windows.Forms;
+using SQLite.ADO;
 
 namespace FIA_Biosum_Manager
 {
@@ -108,6 +109,7 @@ namespace FIA_Biosum_Manager
 		public int m_intNumberOfTablesLoadedIntoDatasets;
 		public int m_intNumberOfValidTables;
 		public string m_strTempMDBFile;
+		public string m_strTempDBFile;
 		public System.Data.OleDb.OleDbConnection m_TempMDBFileConn;
 		public System.Windows.Forms.ListView lvDataSource;
 		public System.Data.DataSet m_dsDataSource;
@@ -120,6 +122,7 @@ namespace FIA_Biosum_Manager
 		const int RECORDCOUNT = 6;
 		public int m_intError=0;
 		private System.Data.OleDb.OleDbDataAdapter m_OleDbDataAdapter;
+		private System.Data.SQLite.SQLiteDataAdapter m_DataAdapter;
 		private System.Windows.Forms.Button btnExists;
 		private FIA_Biosum_Manager.utils m_oUtils;
 		private System.Windows.Forms.Button btnN;
@@ -151,6 +154,8 @@ namespace FIA_Biosum_Manager
             this.frmGridView1.MdiParent = this.ParentForm;
             
             this.m_OleDbDataAdapter = new System.Data.OleDb.OleDbDataAdapter();
+
+			this.m_DataAdapter = new System.Data.SQLite.SQLiteDataAdapter();
             
             this.m_dsDataSource = new DataSet();
             
@@ -1363,7 +1368,7 @@ namespace FIA_Biosum_Manager
 			}
 		}
 
-		private void btnTest_Click(object sender, System.EventArgs e)
+		private void btnTest_Click_old(object sender, System.EventArgs e)
 		{
 			//((frmDialog)this.ParentForm).m_frmScenarioCallingForm.uc_scenario_filter1.m_ado_core_tables.m_dsCoreTables.WriteXmlSchema("c:\\temp\\temp.xsd");
 		    //((frmDialog)this.ParentForm).m_frmScenarioCallingForm.uc_scenario_filter1.m_ado_core_tables.m_dsCoreTables.WriteXml("c:\\temp\\temp.xml");
@@ -1411,8 +1416,13 @@ namespace FIA_Biosum_Manager
 			p_ado = null;
 			
 			
+
 		}
 
+		private void btnTest_Click(object sender, System.EventArgs e)
+        {
+
+        }
 		/*******************************************************************
 		 ** provide list box for user to select the tables that
 		 ** he/she  can select from.
@@ -1483,8 +1493,9 @@ namespace FIA_Biosum_Manager
 			p_ado = null;
 		
 			
-
 		}
+
+
 
 		private void lstTables_SelectedValueChanged(object sender, System.EventArgs e)
 		{
@@ -2243,7 +2254,12 @@ namespace FIA_Biosum_Manager
 				}
 			}
 		}
-		public void InitializeDataSource(System.Windows.Forms.ListView lv)
+
+		private void btnExecute_Click_new(object sender, System.EventArgs e)
+        {
+
+        }
+		public void InitializeDataSource_old(System.Windows.Forms.ListView lv)
 		{
 			this.lvDataSource = lv;
             dao_data_access p_dao = new dao_data_access();
@@ -2270,13 +2286,28 @@ namespace FIA_Biosum_Manager
 			/************************************************
 			 **load up the tables into datasets
 			 ************************************************/
-			this.LoadTablesIntoDatasets();
-
-
-
+			this.LoadTablesIntoDatasets_old();
 
 		}
-		private void LoadTablesIntoDatasets()
+		public void InitializeDataSource(System.Windows.Forms.ListView lv)
+        {
+			this.lvDataSource = lv;
+			DataMgr p_dataMgr = new DataMgr();
+			getNumberOfValidTables();
+
+			for (int x = 0; x <= this.m_intNumberOfValidTables - 1; x++)
+			{
+				this.m_strListedTablesLoadedIntoDatasets[x] = "";
+			}
+			this.m_intNumberOfTablesLoadedIntoDatasets = 0;
+
+			/************************************************
+			 **load up the tables into datasets
+			 ************************************************/
+			LoadTablesIntoDatasets();
+		}
+
+		private void LoadTablesIntoDatasets_old()
 		{
 			//string strScenarioMDB="";
 			string strSQL="";
@@ -2366,6 +2397,76 @@ namespace FIA_Biosum_Manager
 			p_ado = null;
 
 			
+		}
+
+		private void LoadTablesIntoDatasets()
+		{
+			string strSQL = "";
+			string strFullPathDB = "";
+			string strConn = "";
+
+			int x = 0;
+			int y = 0;
+			bool lLoaded = false;
+
+			this.m_intError = 0;
+
+			DataMgr p_dataMgr = new DataMgr();
+
+			//go through each of the items in the listbox
+			for (y = 0; y <= this.lstTables.Items.Count - 1; y++)
+			{
+				lLoaded = false;
+				//see if the listbox item is already loaded into a dataset table and the linked db table
+				if (this.m_intNumberOfTablesLoadedIntoDatasets != 0)
+				{
+					for (x = 0; x <= this.m_intNumberOfValidTables - 1; x++)
+					{
+						if (this.m_strListedTablesLoadedIntoDatasets[x].Trim().Length > 0)
+						{
+							if (this.lstTables.Items[y].ToString().Trim().ToLower() ==
+								this.m_strListedTablesLoadedIntoDatasets[x].Trim().ToLower())
+							{
+								lLoaded = true;
+								break;
+							}
+						}
+					}
+				}
+				if (lLoaded == false)
+                {
+					for (x = 0; x <= this.lvDataSource.Items.Count - 1; x++)
+					{
+						//look to make sure we have the correct record
+						if (this.lstTables.Items[y].ToString().Trim().ToUpper()
+							==
+							this.lvDataSource.Items[x].SubItems[TABLE].Text.Trim().ToUpper())
+						{
+							strFullPathDB = this.lvDataSource.Items[x].SubItems[PATH].Text.Trim() +
+								"\\" + this.lvDataSource.Items[x].SubItems[MDBFILE].Text.Trim();
+							strConn = p_dataMgr.GetConnectionString(strFullPathDB);
+							using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                            {
+								conn.Open();
+
+								p_dataMgr.m_strSQL = "SELECT * FROM " + this.lvDataSource.Items[x].SubItems[TABLE].Text.Trim();
+								m_DataAdapter.SelectCommand = new System.Data.SQLite.SQLiteCommand(p_dataMgr.m_strSQL, conn);
+								try
+								{
+									m_DataAdapter.Fill(this.m_dsDataSource, this.lvDataSource.Items[x].SubItems[TABLE].Text.Trim());
+								}
+								catch (Exception e)
+								{
+									MessageBox.Show(e.Message, "Table", MessageBoxButtons.OK, MessageBoxIcon.Error);
+									this.m_intError = -1;
+								}
+								this.m_strListedTablesLoadedIntoDatasets[this.m_intNumberOfTablesLoadedIntoDatasets] = this.lvDataSource.Items[x].SubItems[TABLE].Text.Trim();
+								this.m_intNumberOfTablesLoadedIntoDatasets++;
+							}
+						}
+					}
+				}
+			}
 		}
 
 		public void getNumberOfValidTables()
