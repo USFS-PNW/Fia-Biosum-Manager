@@ -252,6 +252,10 @@ namespace FIA_Biosum_Manager
 		{
 			this.AddDataSet(p_conn, strSQL, strTableName);
 		}
+		public void LoadDataSet(System.Data.SQLite.SQLiteConnection p_conn, string strSQL)
+        {
+			this.AddDataSet(p_conn, strSQL, "DataSet" + Convert.ToString(this.m_intNumberOfGridViews + 1).Trim());
+        }
 		public void LoadDataSet(string strConn, string strSQL)
 		{
 			this.AddDataSet(strConn,strSQL,"DataSet" + Convert.ToString(this.m_intNumberOfGridViews + 1).Trim());

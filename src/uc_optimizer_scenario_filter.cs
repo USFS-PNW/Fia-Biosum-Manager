@@ -750,6 +750,8 @@ namespace FIA_Biosum_Manager
 		}
 		private void btnExecuteSQL_Click(object sender, System.EventArgs e)
         {
+			DataMgr oDataMgr = new DataMgr();
+			utils p_utils = new utils();
 			macrosubst oMacroSubst = new macrosubst();
 			oMacroSubst.ReferenceSQLMacroSubstitutionVariableCollection = frmMain.g_oSQLMacroSubstitutionVariable_Collection;
 			FIA_Biosum_Manager.Datasource oDs = new Datasource();
@@ -759,12 +761,35 @@ namespace FIA_Biosum_Manager
 			oDs.m_strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text; ;
 			oDs.LoadTableColumnNamesAndDataTypes = false;
 			oDs.LoadTableRecordCount = false;
+
 			oDs.populate_datasource_array_sqlite_new();
+			System.Collections.Generic.List<string> lstDataSourceDbs = oDs.GetDataSourceDbsList();
 
 			if (oDs.m_intError == 0)
-            {
+			{
+				string strTempDb = p_utils.getRandomFile(m_oEnv.strTempDir, "db");
+				oDataMgr.CreateDbFile(strTempDb);
 
-            }
+				// attach databases from datasource array
+				using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strTempDb)))
+				{
+					conn.Open();
+
+					char[] arrAliases = "zyxwvutsrq".ToCharArray();
+					for (int x = 0; x <= lstDataSourceDbs.Count - 1; x++)
+					{
+						if (!oDataMgr.DatabaseAttached(conn, lstDataSourceDbs[x]))
+						{
+							oDataMgr.m_strSQL = "ATTACH DATABASE '" + lstDataSourceDbs[x] + "' AS " + arrAliases[x + 1];
+							oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+						}
+					}
+
+					string strSQL = this.txtCurrentSQL.Text.Trim();
+					if (strSQL.IndexOf("@@", 0) >= 0) strSQL = oMacroSubst.SQLTranslateVariableSubstitution(strSQL);
+					((frmOptimizerScenario)this.ParentForm).frmGridView1.LoadDataSet(conn, strSQL);
+				}
+			}
 		}
 
 		private void txtCurrentSQL_KeyPress(object sender, System.Windows.Forms.KeyPressEventArgs e)
@@ -962,6 +987,7 @@ namespace FIA_Biosum_Manager
 				string strTempDb = p_utils.getRandomFile(m_oEnv.strTempDir, "db");
 				oDataMgr.CreateDbFile(strTempDb);
 
+				// attach databases from datasource array
 				using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strTempDb)))
                 {
 					conn.Open();
