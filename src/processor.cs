@@ -1578,8 +1578,6 @@ namespace FIA_Biosum_Manager
         {
             System.Collections.Generic.IDictionary<String, treeSpecies> dictTreeSpecies = 
                 new System.Collections.Generic.Dictionary<String, treeSpecies>();
-            if (m_oAdo.m_intError == 0)
-            {
                 string strSQL = "SELECT DISTINCT s.SPCD, s.SPECIES_GROUP, f.od_wgt, f.Dry_to_Green, f.WOODLAND_YN FROM " +
                          p_strTreeSpeciesTableName + " t, " +
                          Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName + " s, " +
@@ -1589,12 +1587,12 @@ namespace FIA_Biosum_Manager
                          "AND S.SPCD IS NOT NULL AND S.SPECIES_GROUP IS NOT NULL " +
                          "AND TRIM(UCASE(S.scenario_id)) = '" + m_strScenarioId.Trim().ToUpper() + "' " +
                          "GROUP BY s.SPCD, s.SPECIES_GROUP, f.OD_WGT, f.Dry_to_Green, f.WOODLAND_YN";
-                m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
-                if (m_oAdo.m_OleDbDataReader.HasRows)
+                SQLite.SqlQueryReader(SQLite.m_Connection, strSQL);
+                if (SQLite.m_DataReader.HasRows)
                 {
-                    while (m_oAdo.m_OleDbDataReader.Read())
+                    while (SQLite.m_DataReader.Read())
                     {
-                        string strSpCd = Convert.ToString(m_oAdo.m_OleDbDataReader["SPCD"]).Trim();
+                        string strSpCd = Convert.ToString(SQLite.m_DataReader["SPCD"]).Trim();
                         if (dictTreeSpecies.ContainsKey(strSpCd))
                         {
                             System.Windows.Forms.MessageBox.Show("The tree_species table contains duplicate entries for variant " +
@@ -1603,10 +1601,10 @@ namespace FIA_Biosum_Manager
                                 System.Windows.Forms.MessageBoxIcon.Error);
                             return null;
                         }
-                        int intSpcGroup = Convert.ToInt32(m_oAdo.m_OleDbDataReader["SPECIES_GROUP"]);
-                        double dblOdWgt = Convert.ToDouble(m_oAdo.m_OleDbDataReader["OD_WGT"]);
-                        double dblDryToGreen = Convert.ToDouble(m_oAdo.m_OleDbDataReader["Dry_to_Green"]);
-                        string strIsWoodlandSpecies = Convert.ToString(m_oAdo.m_OleDbDataReader["WOODLAND_YN"]).Trim();
+                        int intSpcGroup = Convert.ToInt32(SQLite.m_DataReader["SPECIES_GROUP"]);
+                        double dblOdWgt = Convert.ToDouble(SQLite.m_DataReader["OD_WGT"]);
+                        double dblDryToGreen = Convert.ToDouble(SQLite.m_DataReader["Dry_to_Green"]);
+                        string strIsWoodlandSpecies = Convert.ToString(SQLite.m_DataReader["WOODLAND_YN"]).Trim();
                         bool isWoodlandSpecies = false;
                         if (strIsWoodlandSpecies == "Y")
                         {
@@ -1616,7 +1614,6 @@ namespace FIA_Biosum_Manager
                         dictTreeSpecies.Add(strSpCd, nextTreeSpecies);
                     }
                 }
-            }
             return dictTreeSpecies;
         }
 

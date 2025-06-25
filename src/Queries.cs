@@ -247,7 +247,6 @@ namespace FIA_Biosum_Manager
 			public string m_strRxTable;
 			public string m_strRxHarvestCostColumnsTable;
 			public string m_strRxPackageTable;
-			public string m_strTreeSpcTable;
 			public string m_strFvsTreeTable;
             public string m_strFVSPrePostSeqNumTable;
             public string m_strFVSPrePostSeqNumRxPackageAssgnTable;
