@@ -394,8 +394,9 @@ namespace FIA_Biosum_Manager
             return 0;
         }
 
-        public int UpdateTrees(string p_strVariant, string p_strRxPackage, string p_strTreeTableName, 
-            string p_strTreeSpeciesTableName, string p_strTravelTimesDbPath, string p_strTravelTimesTable, bool blnCreateReconcilationTable)
+        public int UpdateTrees(string p_strVariant, string p_strRxPackage, string p_strTreeDbPath, string p_strTreeTableName, 
+            string p_strTreeSpeciesDbPath, string p_strTreeSpeciesTableName, string p_strTravelTimesDbPath, string p_strTravelTimesTable, 
+            bool blnCreateReconcilationTable)
         {
             if (m_trees == null)
             {
@@ -415,8 +416,11 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
 
+            //Attach tree species database
+            SQLite.SqlNonQuery(SQLite.m_Connection, $@"ATTACH '{p_strTreeSpeciesDbPath}' AS SPECIES_REF");
             //Load species groups into reference dictionary
-            System.Collections.Generic.IDictionary<string, treeSpecies> dictTreeSpecies = LoadTreeSpecies(p_strVariant, p_strTreeSpeciesTableName);
+            System.Collections.Generic.IDictionary<string, treeSpecies> dictTreeSpecies = LoadTreeSpecies(p_strTreeSpeciesTableName);
+            SQLite.SqlNonQuery(SQLite.m_Connection, $@"DETACH SPECIES_REF");
             //Load species diam values into reference dictionary
             System.Collections.Generic.IDictionary<string, speciesDiamValue> dictSpeciesDiamValues = LoadSpeciesDiamValues(m_strScenarioId);
             //Load diameter groups into reference list
@@ -434,7 +438,7 @@ namespace FIA_Biosum_Manager
                         "This is not a valid configuration. Process halted!",
                         "FIA Biosum", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                     return -1;
-            }
+                }
             }
 
             if (dictTreeSpecies == null)
@@ -445,10 +449,13 @@ namespace FIA_Biosum_Manager
             }
 
             //Query TREE table to get original FIA species codes
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(m_strSqliteConnection)))
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(p_strTreeDbPath)))
             {
                 conn.Open();
-                string strSQL = "SELECT DISTINCT t.fvs_tree_id, t.biosum_cond_id, t.spcd " +
+                string strFvsCutTreeDb = $@"{ frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() }\{ Tables.FVS.DefaultFVSTreeListDbFile}";
+                string strSQL = $@"ATTACH '{strFvsCutTreeDb}' AS CUT_TREE";
+                SQLite.SqlNonQuery(conn, strSQL);
+                strSQL = "SELECT DISTINCT t.fvs_tree_id, t.biosum_cond_id, t.spcd " +
                     "FROM " + p_strTreeTableName + " t, " + Tables.FVS.DefaultFVSCutTreeTableName + " z " +
                     "WHERE trim(t.fvs_tree_id) = z.fvs_tree_id " +
                     "AND t.biosum_cond_id = z.biosum_cond_id " +
@@ -460,11 +467,11 @@ namespace FIA_Biosum_Manager
             {
                 System.Collections.Generic.Dictionary<String, String> dictSpCd = 
                     new System.Collections.Generic.Dictionary<string, string>();
-                while (m_oAdo.m_OleDbDataReader.Read())
+                while (SQLite.m_DataReader.Read())
                 {
-                    string strTreeId = Convert.ToString(m_oAdo.m_OleDbDataReader["fvs_tree_id"]).Trim();
-                    string strCondId = Convert.ToString(m_oAdo.m_OleDbDataReader["biosum_cond_id"]).Trim();
-                    string strSpCd = Convert.ToString(m_oAdo.m_OleDbDataReader["spcd"]).Trim();
+                    string strTreeId = Convert.ToString(SQLite.m_DataReader["fvs_tree_id"]).Trim();
+                    string strCondId = Convert.ToString(SQLite.m_DataReader["biosum_cond_id"]).Trim();
+                    string strSpCd = Convert.ToString(SQLite.m_DataReader["spcd"]).Trim();
                     dictSpCd.Add(strCondId + "_" + strTreeId, strSpCd);
                 }
 
@@ -577,13 +584,14 @@ namespace FIA_Biosum_Manager
                 {
                     m_trees.Remove(objTree);
                 }
+                    SQLite.m_DataReader.Close();
               }
             }
             
             // Create the reconcilation table, if desired
             if (blnCreateReconcilationTable == true)
             {
-                CreateTreeReconcilationTable(p_strVariant, p_strRxPackage, p_strTreeTableName, m_oAdo);
+                CreateTreeReconcilationTable(p_strVariant, p_strRxPackage, p_strTreeDbPath, p_strTreeTableName);
             }
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
@@ -596,42 +604,43 @@ namespace FIA_Biosum_Manager
             return 0;
         }
 
-        private void CreateTreeReconcilationTable(string p_strVariant, string p_strRxPackage, string p_strTreeTableName, 
-            ado_data_access p_oAdo)
+        private void CreateTreeReconcilationTable(string p_strVariant, string p_strRxPackage, string p_strMasterDatabase,
+            string p_strTreeTableName)
         {
-            if (p_oAdo.m_intError == 0)
+            string strSQL = "SELECT fvs_tree_id, biosum_cond_id, tree, cn from " + p_strTreeTableName + " where fvs_tree_id is not null and biosum_cond_id is not null";
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(m_strSqliteConnection)))
             {
-                string strSQL = "SELECT fvs_tree_id, biosum_cond_id, tree, cn from " + p_strTreeTableName + " where fvs_tree_id is not null and biosum_cond_id is not null";
-  
-                p_oAdo.SqlQueryReader(p_oAdo.m_OleDbConnection, strSQL);
-                if (p_oAdo.m_OleDbDataReader.HasRows)
+                conn.Open();
+                SQLite.SqlNonQuery(conn, $@"ATTACH '{p_strMasterDatabase}' AS MASTER");
+                SQLite.SqlQueryReader(conn, strSQL);
+                if (SQLite.m_DataReader.HasRows)
                 {
                     short idxTree = 0;
                     short idxCn = 1;
-                    System.Collections.Generic.IDictionary<string, System.Collections.Generic.List<string>> dictTreeTable = 
+                    System.Collections.Generic.IDictionary<string, System.Collections.Generic.List<string>> dictTreeTable =
                         new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<string>>();
-                    while (p_oAdo.m_OleDbDataReader.Read())
+                    while (SQLite.m_DataReader.Read())
                     {
-                        System.Collections.Generic.List<string> treeList = 
+                        System.Collections.Generic.List<string> treeList =
                             new System.Collections.Generic.List<string>();
-                        string strFvsTreeId = Convert.ToString(p_oAdo.m_OleDbDataReader["fvs_tree_id"]).Trim();
-                        string strKey = Convert.ToString(p_oAdo.m_OleDbDataReader["biosum_cond_id"]).Trim() + "_" + strFvsTreeId;
+                        string strFvsTreeId = Convert.ToString(SQLite.m_DataReader["fvs_tree_id"]).Trim();
+                        string strKey = Convert.ToString(SQLite.m_DataReader["biosum_cond_id"]).Trim() + "_" + strFvsTreeId;
                         //This is stored as a number but we convert to string so we can store in list
-                        string strTree = Convert.ToString(p_oAdo.m_OleDbDataReader["tree"]);
-                        string strCn = Convert.ToString(p_oAdo.m_OleDbDataReader["cn"]).Trim();
+                        string strTree = Convert.ToString(SQLite.m_DataReader["tree"]);
+                        string strCn = Convert.ToString(SQLite.m_DataReader["cn"]).Trim();
                         treeList.Add(strTree);
                         treeList.Add(strCn);
                         dictTreeTable.Add(strKey, treeList);
                     }
+                    SQLite.m_DataReader.Close();
 
                     string strTableName = p_strVariant + "_" + p_strRxPackage + "_reconcile_trees";
 
                     // drop reconcilation table if it already exists
-                    if (p_oAdo.TableExist(p_oAdo.m_OleDbConnection, strTableName) == true)
-                        p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection, "DROP TABLE " + strTableName);
+                    if (SQLite.TableExist(conn, strTableName) == true)
+                        SQLite.SqlNonQuery(conn, "DROP TABLE " + strTableName);
 
-
-                    frmMain.g_oTables.m_oProcessor.CreateTreeReconcilationTable(p_oAdo, p_oAdo.m_OleDbConnection, strTableName);
+                    frmMain.g_oTables.m_oProcessor.CreateTreeReconcilationTable(SQLite, conn, strTableName);
 
                     string strTempCn = "9999";
                     string strTempTree = "9999";
@@ -644,7 +653,7 @@ namespace FIA_Biosum_Manager
                             strTempTree = treeList[idxTree];
                             strTempCn = treeList[idxCn];
                         }
-                        p_oAdo.m_strSQL = "INSERT INTO " + strTableName + " " +
+                        SQLite.m_strSQL = "INSERT INTO " + strTableName + " " +
                         "(cn, fvs_tree_id, biosum_cond_id, biosum_plot_id, spcd, merchWtGt, nonMerchWtGt, drybiom, " +
                         "drybiot, volCfNet, volCfGrs, odWgt, dryToGreen, tpa, dbh, species_group, " +
                         "isSapling, isWoodland, isCull, diam_group, merch_value, opcost_type, biosum_category)" +
@@ -652,13 +661,12 @@ namespace FIA_Biosum_Manager
                         nextTree.SpCd + ", " + nextTree.MerchWtGtPa + ", " + nextTree.NonMerchWtGtPa + ", " + nextTree.DryBiom + ", " +
                         nextTree.DryBiot + ", " + nextTree.VolCfNet + ", " + nextTree.VolCfGrs + ", " + nextTree.OdWgt +
                         ", " + nextTree.DryToGreen + ", " + nextTree.Tpa + ", " + nextTree.Dbh + ", " + nextTree.SpeciesGroup + ", " +
-                        nextTree.IsSapling + ", " + nextTree.IsWoodlandSpecies + ", " + nextTree.IsCull + ", " + nextTree.DiamGroup + 
+                        nextTree.IsSapling + ", " + nextTree.IsWoodlandSpecies + ", " + nextTree.IsCull + ", " + nextTree.DiamGroup +
                         ", " + nextTree.MerchValue + ", '" + nextTree.TreeType + "', " + nextTree.HarvestMethod.BiosumCategory + " )";
 
-                        p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection, p_oAdo.m_strSQL);
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                     }
                 }
-
             }
         }
 
@@ -1573,8 +1581,7 @@ namespace FIA_Biosum_Manager
             return listDiamGroups;
         }
 
-        private System.Collections.Generic.IDictionary<String, treeSpecies> LoadTreeSpecies(string p_strVariant, 
-            string p_strTreeSpeciesTableName)
+        private System.Collections.Generic.IDictionary<String, treeSpecies> LoadTreeSpecies(string p_strTreeSpeciesTableName)
         {
             System.Collections.Generic.IDictionary<String, treeSpecies> dictTreeSpecies = 
                 new System.Collections.Generic.Dictionary<String, treeSpecies>();
@@ -1583,9 +1590,8 @@ namespace FIA_Biosum_Manager
                          Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName + " s, " +
                          Tables.ProcessorScenarioRun.DefaultFiaTreeSpeciesRefTableName + " f " +
                          "WHERE t.spcd = s.spcd AND t.spcd = f.spcd and f.spcd = s.spcd " +
-                         "AND FVS_VARIANT = '" + p_strVariant + "' " +
                          "AND S.SPCD IS NOT NULL AND S.SPECIES_GROUP IS NOT NULL " +
-                         "AND TRIM(UCASE(S.scenario_id)) = '" + m_strScenarioId.Trim().ToUpper() + "' " +
+                         "AND TRIM(UPPER(S.scenario_id)) = '" + m_strScenarioId.Trim().ToUpper() + "' " +
                          "GROUP BY s.SPCD, s.SPECIES_GROUP, f.OD_WGT, f.Dry_to_Green, f.WOODLAND_YN";
                 SQLite.SqlQueryReader(SQLite.m_Connection, strSQL);
                 if (SQLite.m_DataReader.HasRows)
@@ -1595,8 +1601,8 @@ namespace FIA_Biosum_Manager
                         string strSpCd = Convert.ToString(SQLite.m_DataReader["SPCD"]).Trim();
                         if (dictTreeSpecies.ContainsKey(strSpCd))
                         {
-                            System.Windows.Forms.MessageBox.Show("The tree_species table contains duplicate entries for variant " +
-                                p_strVariant + " spcd " + strSpCd + ". Please resolve this issue before running Processor.",
+                            System.Windows.Forms.MessageBox.Show("The tree_species table contains duplicate entries for spcd " + 
+                                strSpCd + ". Please resolve this issue before running Processor.",
                                 "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, 
                                 System.Windows.Forms.MessageBoxIcon.Error);
                             return null;

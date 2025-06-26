@@ -7405,6 +7405,9 @@ namespace FIA_Biosum_Manager
                 oDataMgr.m_strSQL = "DELETE FROM " + Tables.Scenario.DefaultScenarioDatasourceTableName +
                     " WHERE table_type = '" + Datasource.TableTypes.TreeSpecies + "'";
                 oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                oDataMgr.m_strSQL = $@"UPDATE {Tables.Scenario.DefaultScenarioDatasourceTableName} SET FILE = '{Tables.Reference.DefaultBiosumReferenceSqliteFile}' 
+                    WHERE table_type = '{Datasource.TableTypes.FiaTreeSpeciesReference}'";
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
             }
 
             if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.MasterDsnName))

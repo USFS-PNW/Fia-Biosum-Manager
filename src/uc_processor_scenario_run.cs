@@ -3449,9 +3449,10 @@ namespace FIA_Biosum_Manager
                             // print reconcile trees table if debug at highest level; This will be in temporary .accdb
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 blnCreateReconcileTreesTable = true;
-                            m_intError = mainProcessor.UpdateTrees(strVariant, strRxPackage, m_oQueries.m_oFIAPlot.m_strTreeTable,
-                                this.m_oQueries.m_oDataSource.getValidDataSourceTableName(Datasource.TableTypes.FiaTreeSpeciesReference), this.m_oQueries.m_oTravelTime.m_strDbFile,
-                                this.m_oQueries.m_oTravelTime.m_strTravelTimeTable, blnCreateReconcileTreesTable);
+                            m_intError = mainProcessor.UpdateTrees(strVariant, strRxPackage, this.m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree), 
+                                m_oQueries.m_oFIAPlot.m_strTreeTable, this.m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.FiaTreeSpeciesReference),
+                                this.m_oQueries.m_oDataSource.getValidDataSourceTableName(Datasource.TableTypes.FiaTreeSpeciesReference), 
+                                this.m_oQueries.m_oTravelTime.m_strDbFile, this.m_oQueries.m_oTravelTime.m_strTravelTimeTable, blnCreateReconcileTreesTable);
 
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             {
