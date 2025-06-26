@@ -695,59 +695,6 @@ namespace FIA_Biosum_Manager
 			frmPrevExp = null;
 		}
 
-		private void btnExecuteSQL_Click_old(object sender, System.EventArgs e)
-		{
-			macrosubst oMacroSubst = new macrosubst();
-			oMacroSubst.ReferenceSQLMacroSubstitutionVariableCollection = frmMain.g_oSQLMacroSubstitutionVariable_Collection;
-			FIA_Biosum_Manager.Datasource oDs = new Datasource();
-			oDs.m_strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
-				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
-			oDs.m_strDataSourceTableName = "scenario_datasource";
-			oDs.m_strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text; ;
-			oDs.LoadTableColumnNamesAndDataTypes = false;
-			oDs.LoadTableRecordCount = false;
-			oDs.populate_datasource_array_sqlite();
-
-			if (oDs.m_intError == 0)
-			{
-				string strConn = "";
-				string strFile = oDs.CreateMDBAndTableDataSourceLinks();
-
-				strConn = "Provider=Microsoft.Ace.OLEDB.12.0;Data Source=" + strFile + ";User Id=admin;Password=;";
-				string strSQL = this.txtCurrentSQL.Text.Trim();
-				if (strSQL.IndexOf("@@", 0) >= 0) strSQL = oMacroSubst.SQLTranslateVariableSubstitution(strSQL);
-				((frmOptimizerScenario)this.ParentForm).frmGridView1.LoadDataSet(strConn, strSQL);
-				if (((frmOptimizerScenario)this.ParentForm).frmGridView1.Visible == false)
-				{
-
-					((frmOptimizerScenario)this.ParentForm).frmGridView1.MdiParent = this.ParentForm.ParentForm;
-					((frmOptimizerScenario)this.ParentForm).frmGridView1.Text = "Treatment Optimizer: Plot Filter Browser" + " (" + ((frmOptimizerScenario)this.ParentForm).uc_scenario1.txtScenarioId.Text + ")";
-
-					try
-					{
-						((frmOptimizerScenario)this.ParentForm).frmGridView1.Show();
-					}
-					catch
-					{
-						((frmOptimizerScenario)this.ParentForm).frmGridView1 = new frmGridView();
-						((frmOptimizerScenario)this.ParentForm).frmGridView1.MdiParent = this.ParentForm.ParentForm;
-						((frmOptimizerScenario)this.ParentForm).frmGridView1.Visible = false;
-						((frmOptimizerScenario)this.ParentForm).frmGridView1.LoadDataSet(strConn, strSQL);
-						((frmOptimizerScenario)this.ParentForm).frmGridView1.MdiParent = this.ParentForm.ParentForm;
-						((frmOptimizerScenario)this.ParentForm).frmGridView1.Text = "Treatment Optimizer: Plot Filter Browser" + " (" + ((frmOptimizerScenario)this.ParentForm).uc_scenario1.txtScenarioId.Text + ")";
-
-						((frmOptimizerScenario)this.ParentForm).frmGridView1.Show();
-					}
-				}
-				if (((frmOptimizerScenario)this.ParentForm).frmGridView1.WindowState ==
-						System.Windows.Forms.FormWindowState.Minimized)
-					((frmOptimizerScenario)this.ParentForm).frmGridView1.WindowState =
-						System.Windows.Forms.FormWindowState.Normal;
-				((frmOptimizerScenario)this.ParentForm).frmGridView1.Focus();
-			}
-
-
-		}
 		private void btnExecuteSQL_Click(object sender, System.EventArgs e)
         {
 			DataMgr oDataMgr = new DataMgr();
@@ -758,7 +705,7 @@ namespace FIA_Biosum_Manager
 			oDs.m_strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
 				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
 			oDs.m_strDataSourceTableName = "scenario_datasource";
-			oDs.m_strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text; ;
+			oDs.m_strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text;
 			oDs.LoadTableColumnNamesAndDataTypes = false;
 			oDs.LoadTableRecordCount = false;
 
@@ -775,12 +722,11 @@ namespace FIA_Biosum_Manager
 				{
 					conn.Open();
 
-					char[] arrAliases = "zyxwvutsrq".ToCharArray();
 					for (int x = 0; x <= lstDataSourceDbs.Count - 1; x++)
 					{
 						if (!oDataMgr.DatabaseAttached(conn, lstDataSourceDbs[x]))
 						{
-							oDataMgr.m_strSQL = "ATTACH DATABASE '" + lstDataSourceDbs[x] + "' AS " + arrAliases[x + 1];
+							oDataMgr.m_strSQL = "ATTACH DATABASE '" + lstDataSourceDbs[x] + "' AS alias" + x.ToString();
 							oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 						}
 					}
@@ -788,6 +734,34 @@ namespace FIA_Biosum_Manager
 					string strSQL = this.txtCurrentSQL.Text.Trim();
 					if (strSQL.IndexOf("@@", 0) >= 0) strSQL = oMacroSubst.SQLTranslateVariableSubstitution(strSQL);
 					((frmOptimizerScenario)this.ParentForm).frmGridView1.LoadDataSet(conn, strSQL);
+
+					if (((frmOptimizerScenario)this.ParentForm).frmGridView1.Visible == false)
+					{
+
+						((frmOptimizerScenario)this.ParentForm).frmGridView1.MdiParent = this.ParentForm.ParentForm;
+						((frmOptimizerScenario)this.ParentForm).frmGridView1.Text = "Treatment Optimizer: Plot Filter Browser" + " (" + ((frmOptimizerScenario)this.ParentForm).uc_scenario1.txtScenarioId.Text + ")";
+
+						try
+						{
+							((frmOptimizerScenario)this.ParentForm).frmGridView1.Show();
+						}
+						catch
+						{
+							((frmOptimizerScenario)this.ParentForm).frmGridView1 = new frmGridView();
+							((frmOptimizerScenario)this.ParentForm).frmGridView1.MdiParent = this.ParentForm.ParentForm;
+							((frmOptimizerScenario)this.ParentForm).frmGridView1.Visible = false;
+							((frmOptimizerScenario)this.ParentForm).frmGridView1.LoadDataSet(conn, strSQL);
+							((frmOptimizerScenario)this.ParentForm).frmGridView1.MdiParent = this.ParentForm.ParentForm;
+							((frmOptimizerScenario)this.ParentForm).frmGridView1.Text = "Treatment Optimizer: Plot Filter Browser" + " (" + ((frmOptimizerScenario)this.ParentForm).uc_scenario1.txtScenarioId.Text + ")";
+
+							((frmOptimizerScenario)this.ParentForm).frmGridView1.Show();
+						}
+					}
+					if (((frmOptimizerScenario)this.ParentForm).frmGridView1.WindowState ==
+							System.Windows.Forms.FormWindowState.Minimized)
+						((frmOptimizerScenario)this.ParentForm).frmGridView1.WindowState =
+							System.Windows.Forms.FormWindowState.Normal;
+					((frmOptimizerScenario)this.ParentForm).frmGridView1.Focus();
 				}
 			}
 		}
@@ -845,40 +819,7 @@ namespace FIA_Biosum_Manager
 		private void cmdFilter_Click(object sender, System.EventArgs e)
 		{
 		}
-		public int Val_PlotFilter_old(System.Data.OleDb.OleDbConnection p_oConn,string p_strSql)
-		{
-			m_intError=0;
-			m_strError="";
-			FIA_Biosum_Manager.macrosubst oVarSub=new macrosubst();
-			oVarSub.ReferenceSQLMacroSubstitutionVariableCollection = frmMain.g_oSQLMacroSubstitutionVariable_Collection;
-			ado_data_access oAdo = new ado_data_access();
-
-
-			//make sure no duplicates of biosum_plot_id
-			oAdo.m_strSQL = "SELECT b.plotcount,a.biosum_plot_id FROM @@PlotTable@@ a," + 
-				"(SELECT COUNT(*) as plotcount,a.biosum_plot_id " + 
-				"FROM (" + p_strSql + ") " + 
-				"AS a " +
-				"GROUP BY a.biosum_plot_id) b " + 
-				"WHERE b.biosum_plot_id=a.biosum_plot_id AND b.plotcount > 1";
-					
-			oAdo.m_strSQL=oVarSub.SQLTranslateVariableSubstitution(oAdo.m_strSQL);
-			if ((int)oAdo.getRecordCount(p_oConn,oAdo.m_strSQL,"testforplotduplicates") > 0)
-			{
-				m_intError=-5;
-                m_strError = "Invalid Sql: Duplicate biosum_plot_id's were detected. Biosum_plot_id must be unique in the Treatment Optimizer Plot Filter";
-				return -5;
-			}
-            else if (oAdo.m_intError != 0)
-            {
-                return oAdo.m_intError;
-            }
-			else
-			{
-				return 0;
-			}
-
-		}
+		
 		public int Val_PlotFilter(System.Data.SQLite.SQLiteConnection p_oConn, string p_strSql)
         {
 			m_intError = 0;
@@ -911,53 +852,7 @@ namespace FIA_Biosum_Manager
 				return 0;
             }
 		}
-		public int Val_PlotFilter_old(string p_strSql)
-        {
-			int intError = 0;
-			if (p_strSql.ToUpper().Contains("PLOT_ACCESSIBLE_YN"))
-			{
-				intError = -1;
-				m_strError = "The Plot filter contains the 'plot_accessible_YN' field. " +
-							 "This field no longer exists on the plot table and must be " +
-							 "removed from the filter !!";
-				return intError;
-			}
-			DataMgr oDataMgr = new DataMgr();
-			FIA_Biosum_Manager.Datasource oDs = new Datasource();
-			oDs.m_strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
-				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
-			oDs.m_strDataSourceTableName = "scenario_datasource";
-			oDs.m_strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text;
-			oDs.LoadTableColumnNamesAndDataTypes = false;
-			oDs.LoadTableRecordCount = false;
-			oDs.populate_datasource_array_sqlite();
-			if (oDs.m_intError == 0)
-            {
-				string strFile = oDs.CreateMDBAndTableDataSourceLinks();
-				ado_data_access oAdo = new ado_data_access();
-				oAdo.OpenConnection(oAdo.getMDBConnString(strFile, "", ""));
-				if (oAdo.m_intError == 0)
-				{
-					intError = (int)Val_PlotFilter_old(oAdo.m_OleDbConnection, p_strSql.Trim());
-					if (intError != 0 && String.IsNullOrEmpty(m_strError))
-					{
-						m_strError = "An error occurred while validating the Plot filter!";
-					}
-					oAdo.CloseConnection(oAdo.m_OleDbConnection);
-				}
-				else
-				{
-					intError = oAdo.m_intError;
-					m_intError = intError;
-					m_strError = oAdo.m_strError;
-				}
-				oAdo = null;
-			}
-			oDataMgr = null;
-			oDs = null;
-
-			return intError;
-		}
+		
 		public int Val_PlotFilter(string p_strSql)
         {
 			int intError = 0;
@@ -992,12 +887,11 @@ namespace FIA_Biosum_Manager
                 {
 					conn.Open();
 
-					char[] arrAliases = "zyxwvutsrq".ToCharArray();
 					for (int x = 0; x <= lstDataSourceDbs.Count - 1; x++)
 					{
 						if (!oDataMgr.DatabaseAttached(conn, lstDataSourceDbs[x]))
 						{
-							oDataMgr.m_strSQL = "ATTACH DATABASE '" + lstDataSourceDbs[x] + "' AS " + arrAliases[x + 1];
+							oDataMgr.m_strSQL = "ATTACH DATABASE '" + lstDataSourceDbs[x] + "' AS alias" + x.ToString();
 							oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 						}
 					}
@@ -1013,48 +907,7 @@ namespace FIA_Biosum_Manager
 			return intError;
 		}
 
-		public int Val_CondFilter_old(System.Data.OleDb.OleDbConnection p_oConn,string p_strSql)
-		{
-			m_intError=0;
-			m_strError="";
-			FIA_Biosum_Manager.macrosubst oVarSub=new macrosubst();
-			oVarSub.ReferenceSQLMacroSubstitutionVariableCollection = frmMain.g_oSQLMacroSubstitutionVariable_Collection;
-			ado_data_access oAdo = new ado_data_access();
-
-
-			//make sure no duplicates of biosum_plot_id
-			oAdo.m_strSQL = "SELECT b.condcount,a.biosum_cond_id FROM @@CondTable@@ a," + 
-				"(SELECT COUNT(*) as condcount,a.biosum_cond_id " + 
-				"FROM (" + p_strSql + ") " + 
-				"AS a " +
-				"GROUP BY a.biosum_cond_id) b " + 
-				"WHERE b.biosum_cond_id=a.biosum_cond_id AND b.condcount > 1";
-					
-			oAdo.m_strSQL=oVarSub.SQLTranslateVariableSubstitution(oAdo.m_strSQL);
-			if ((int)oAdo.getRecordCount(p_oConn,oAdo.m_strSQL,"testforcondduplicates") > 0)
-			{
-				m_intError=-6;
-                m_strError = "Invalid Sql: Duplicate biosum_cond_id's were detected. Biosum_cond_id must be unique in the Treatment Optimizer Scenario Cond Filter";
-				return -6;
-			}
-            else if (oAdo.m_intError != 0)
-            {
-                return oAdo.m_intError;
-            }
-			else
-			{
-				if (this.txtYardDist.Text.Trim().Length ==0 || this.txtYardDist2.Text.Trim().Length == 0) 
-				{
-					m_intError=-7;
-					m_strError="No value defined for yarding distance in the <Filter Cond Records> tab";
-					return -7;
-
-				}
-				return 0;
-			}
-
-		}
-
+		
 		public int Val_CondFilter(System.Data.SQLite.SQLiteConnection p_oConn, string p_strSql)
         {
 
@@ -1095,52 +948,7 @@ namespace FIA_Biosum_Manager
 			}
 		}
 
-		public int Val_CondFilter_old(string p_strSql)
-        {
-			DataMgr oDataMgr = new DataMgr();
-			FIA_Biosum_Manager.Datasource oDs = new Datasource();
-			oDs.m_strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
-				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
-			oDs.m_strDataSourceTableName = "scenario_datasource";
-			oDs.m_strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text;
-			oDs.LoadTableColumnNamesAndDataTypes = false;
-			oDs.LoadTableRecordCount = false;
-			oDs.populate_datasource_array_sqlite();
-			int intError = 0;
-			if (oDs.m_intError == 0)
-            {
-				string strFile = oDs.CreateMDBAndTableDataSourceLinks();
-				ado_data_access oAdo = new ado_data_access();
-				oAdo.OpenConnection(oAdo.getMDBConnString(strFile, "", ""));
-				if (oAdo.m_intError == 0)
-				{
-					intError = (int)Val_CondFilter_old(oAdo.m_OleDbConnection, p_strSql.Trim());
-					if (intError != 0 && String.IsNullOrEmpty(m_strError))
-					{
-						m_strError = "An error occurred while validating the Condition filter!";
-					}
-					oAdo.CloseConnection(oAdo.m_OleDbConnection);
-				}
-				else
-				{
-					intError = oAdo.m_intError;
-					m_intError = intError;
-					m_strError = oAdo.m_strError;
-				}
-				oAdo = null;
-			}
-			else
-			{
-				intError = oDs.m_intError;
-				m_intError = intError;
-				m_strError = oDs.m_strError;
-			}
-			oDataMgr = null;
-			oDs = null;
-
-			return intError;
-		}
-
+		
 		public int Val_CondFilter(string p_strSql)
         {
 			DataMgr oDataMgr = new DataMgr();
@@ -1166,12 +974,11 @@ namespace FIA_Biosum_Manager
 				{
 					conn.Open();
 
-					char[] arrAliases = "zyxwvutsrq".ToCharArray();
 					for (int x = 0; x <= lstDataSourceDbs.Count - 1; x++)
                     {
 						if (!oDataMgr.DatabaseAttached(conn, lstDataSourceDbs[x]))
                         {
-							oDataMgr.m_strSQL = "ATTACH DATABASE '" + lstDataSourceDbs[x] + "' AS " + arrAliases[x + 1];
+							oDataMgr.m_strSQL = "ATTACH DATABASE '" + lstDataSourceDbs[x] + "' AS alias" + x.ToString(); ;
 							oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                         }
                     }

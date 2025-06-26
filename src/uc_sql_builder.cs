@@ -1368,57 +1368,6 @@ namespace FIA_Biosum_Manager
 			}
 		}
 
-		private void btnTest_Click_old(object sender, System.EventArgs e)
-		{
-			//((frmDialog)this.ParentForm).m_frmScenarioCallingForm.uc_scenario_filter1.m_ado_core_tables.m_dsCoreTables.WriteXmlSchema("c:\\temp\\temp.xsd");
-		    //((frmDialog)this.ParentForm).m_frmScenarioCallingForm.uc_scenario_filter1.m_ado_core_tables.m_dsCoreTables.WriteXml("c:\\temp\\temp.xml");
-			
-			
-			string strSQL="";
-			//int intArrayCount;
-			//int x=0;
-			string strConn="";
-			//string strCommand="";
-			//string str="";
-            System.Data.OleDb.OleDbConnection p_conn;
-			ado_data_access p_ado = new ado_data_access();
-            
-			p_conn = new System.Data.OleDb.OleDbConnection();
-			strConn = p_ado.getMDBConnString(this.m_strTempMDBFile,"admin",""); //"Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + this.m_strTempMDBFile + ";User Id=admin;Password=;";
-			p_ado.OpenConnection(strConn, ref p_conn);	
-			
-			if (p_ado.m_intError != 0)
-			{
-				p_ado = null;
-				return;
-			}
-
-			strSQL = this.txtSQLCommand.Text.Trim();
-
-			p_ado.SqlQueryReader(p_conn, strSQL);
-
-			
-			if (p_ado.m_intError == 0)
-			{
-				
-
-				MessageBox.Show("Valid Syntax");
-				
-				p_ado.m_OleDbDataReader.Close();
-				
-				p_ado.m_OleDbDataReader = null;
-				p_ado.m_OleDbCommand = null;
-				
-				
-			}
-		    p_conn.Close();
-			p_conn = null;
-			p_ado = null;
-			
-			
-
-		}
-
 		private void btnTest_Click(object sender, System.EventArgs e)
         {
 
@@ -2255,40 +2204,6 @@ namespace FIA_Biosum_Manager
 			}
 		}
 
-		private void btnExecute_Click_new(object sender, System.EventArgs e)
-        {
-
-        }
-		public void InitializeDataSource_old(System.Windows.Forms.ListView lv)
-		{
-			this.lvDataSource = lv;
-            dao_data_access p_dao = new dao_data_access();
-			utils p_utils = new utils();
-            this.getNumberOfValidTables();
-			for (int x=0; x <= this.m_intNumberOfValidTables - 1; x++)
-			{
-				this.m_strListedTablesLoadedIntoDatasets[x] = "";
-			}
-			this.m_intNumberOfTablesLoadedIntoDatasets = 0;
-
-			/*************************
-			 **get temporary mdb file
-			 *************************/
-			this.m_strTempMDBFile =  p_utils.getRandomFile(this.m_oEnv.strTempDir,"accdb");
-			p_utils = null;
-
-			/*****************************************************
-			 **create a temporary mdb that will contain all 
-			 **the links to the tables that 
-			 *****************************************************/
-			p_dao.CreateMDB(this.m_strTempMDBFile);
-
-			/************************************************
-			 **load up the tables into datasets
-			 ************************************************/
-			this.LoadTablesIntoDatasets_old();
-
-		}
 		public void InitializeDataSource(System.Windows.Forms.ListView lv)
         {
 			this.lvDataSource = lv;
@@ -2307,98 +2222,7 @@ namespace FIA_Biosum_Manager
 			LoadTablesIntoDatasets();
 		}
 
-		private void LoadTablesIntoDatasets_old()
-		{
-			//string strScenarioMDB="";
-			string strSQL="";
-			string strFullPathMDB="";
-			string strConn="";
-			
-			int x=0;
-			int y=0;
-			bool lLoaded=false;
-			
-			this.m_intError=0;
-              
-			
 		
-			//ado specific routines class
-			ado_data_access p_ado = new ado_data_access();
-
-			//go through each of the items in the listbox
-			for (y = 0; y <= this.lstTables.Items.Count - 1; y++)
-			{
-				lLoaded=false;
-				//see if the listbox item is already loaded into a dataset table and the linked mdb table
-				if (this.m_intNumberOfTablesLoadedIntoDatasets != 0)
-				{   
-					for (x=0;x<=this.m_intNumberOfValidTables - 1;x++)
-					{
-						if (this.m_strListedTablesLoadedIntoDatasets[x].Trim().Length > 0)
-						{
-							if (this.lstTables.Items[y].ToString().Trim().ToLower() == 
-								this.m_strListedTablesLoadedIntoDatasets[x].Trim().ToLower())
-							{
-								lLoaded=true;
-								break;
-							}
-						}
-					}
-				}
-				if (lLoaded==false)
-				{
-					for (x=0; x<=this.lvDataSource.Items.Count-1;x++)
-					{
-						//look to make sure we have the correct record
-						if (this.lstTables.Items[y].ToString().Trim().ToUpper() 
-							==
-							this.lvDataSource.Items[x].SubItems[TABLE].Text.Trim().ToUpper())
-						{
-							strFullPathMDB = this.lvDataSource.Items[x].SubItems[PATH].Text.Trim() + 
-								"\\" + this.lvDataSource.Items[x].SubItems[MDBFILE].Text.Trim();
-							
-							//used to create a link to the table
-							dao_data_access p_dao = new dao_data_access();
-
-							//create a link to the table in an mdb file
-							p_dao.CreateTableLink(this.m_strTempMDBFile,this.lstTables.Items[y].ToString().Trim(),
-								strFullPathMDB,this.lstTables.Items[y].ToString().Trim());
-							p_dao = null;
-
-							//connect to mdb file that will be used as the master table link file
-							this.m_TempMDBFileConn = new System.Data.OleDb.OleDbConnection();
-							strConn = p_ado.getMDBConnString(this.m_strTempMDBFile,"admin",""); //"Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + this.m_strTempMDBFile + ";User Id=admin;Password=;";
-							p_ado.OpenConnection(strConn, ref this.m_TempMDBFileConn);
-	
-							//strConn = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=c:\\temp\\temp.mdb;User Id=admin;Password=;";
-							//strConn = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + strFullPathMDB + ";User Id=admin;Password=;";
-							strSQL = "SELECT * FROM " + this.lvDataSource.Items[x].SubItems[TABLE].Text.Trim();
-							this.m_OleDbDataAdapter.SelectCommand = new System.Data.OleDb.OleDbCommand(strSQL,this.m_TempMDBFileConn);
-							try 
-							{
-
-								this.m_OleDbDataAdapter.Fill(this.m_dsDataSource,this.lvDataSource.Items[x].SubItems[TABLE].Text.Trim());
-							}
-							catch (Exception e)
-							{
-								MessageBox.Show(e.Message,"Table",MessageBoxButtons.OK,MessageBoxIcon.Error);
-								this.m_intError=-1;
-							}
-							this.m_strListedTablesLoadedIntoDatasets[this.m_intNumberOfTablesLoadedIntoDatasets] = this.lvDataSource.Items[x].SubItems[TABLE].Text.Trim();
-							this.m_intNumberOfTablesLoadedIntoDatasets++;
-
-							this.m_TempMDBFileConn.Close();
-							this.m_TempMDBFileConn= null;
-								
-						}
-					}
-				}
-			}
-			p_ado = null;
-
-			
-		}
-
 		private void LoadTablesIntoDatasets()
 		{
 			string strSQL = "";
@@ -2502,23 +2326,6 @@ namespace FIA_Biosum_Manager
 		public void TablesFromListBoxToDatasets()
 		{
 			
-
-		}
-		/********************************************************
-		 ** return the row associated with the table type
-		 ********************************************************/
-		private int getDataSourceTableNameRow(string pcTableId)
-		{
-			int x;
-			for (x=0; x<= this.lvDataSource.Items.Count-1;x++)
-			{
-				if (pcTableId.Trim().ToUpper() == 
-					this.lvDataSource.Items[x].SubItems[TABLETYPE].Text.Trim().ToUpper())
-				{
-					return x;
-				}
-			}
-			return -1;
 
 		}
 

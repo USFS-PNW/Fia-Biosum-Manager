@@ -1172,8 +1172,8 @@ namespace FIA_Biosum_Manager
                                 }
                             }
                         }
-                        oDataMgr.m_DataReader.Close();
                     }
+                    oDataMgr.m_DataReader.Close();
                     this.m_oSavTieBreakerCollection.Copy(this.m_oOldTieBreakerCollection, ref this.m_oSavTieBreakerCollection, true);
                 }
             }

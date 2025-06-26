@@ -2772,8 +2772,8 @@ namespace FIA_Biosum_Manager
                             p_oOptimizerScenarioItem.Notes = p_oDataMgr.m_DataReader["notes"].ToString().Trim();
                         }
                     }
-                    p_oDataMgr.m_DataReader.Close();
                 }
+                p_oDataMgr.m_DataReader.Close();
             }
         }
         
@@ -2838,8 +2838,8 @@ namespace FIA_Biosum_Manager
                         p_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(x).RxCycle =
                             Convert.ToString(p_oDataMgr.m_DataReader["rxcycle"]).Trim();
                 }
-                p_oDataMgr.m_DataReader.Close();
             }
+            p_oDataMgr.m_DataReader.Close();
             //
             //LOAD OVERALL EFFECTIVE VARIABLES
             //
@@ -2867,9 +2867,8 @@ namespace FIA_Biosum_Manager
                         p_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(x).m_strOverallEffectiveExpr =
                                 Convert.ToString(p_oDataMgr.m_DataReader["overall_effective_expression"]).Trim();
                 }
-                p_oDataMgr.m_DataReader.Close();
             }
-            
+            p_oDataMgr.m_DataReader.Close();
         }
         
         public void LoadOptimizationVariable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
@@ -2993,8 +2992,8 @@ namespace FIA_Biosum_Manager
                         p_oOptimizerScenarioItem.m_oOptimizationVariableItem_Collection.Add(oItem);
                     }
                 }
-                p_oDataMgr.m_DataReader.Close();
             }
+            p_oDataMgr.m_DataReader.Close();
         }
        
         public void LoadTieBreakerVariables(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
@@ -3067,9 +3066,9 @@ namespace FIA_Biosum_Manager
                         }
                         p_oOptimizerScenarioItem.m_oTieBreaker_Collection.Add(oItem);
                     }
-                }
-                p_oDataMgr.m_DataReader.Close();
+                }            
             }
+            p_oDataMgr.m_DataReader.Close();
         }
         
         public void LoadLastTieBreakRank(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
@@ -3102,8 +3101,8 @@ namespace FIA_Biosum_Manager
                         //strRxConn = p_oDataMgr.GetConnectionString(strRxDBFile);
                         break;
                     }
-                    p_oDataMgr.m_DataReader.Close();
                 }
+                p_oDataMgr.m_DataReader.Close();
             }
 
             //
@@ -3130,8 +3129,8 @@ namespace FIA_Biosum_Manager
                             strRxList += ",'" + p_oDataMgr.m_DataReader[0].ToString().Trim() + "'";
                         }
                     }
-                    p_oDataMgr.m_DataReader.Close();
                 }
+                p_oDataMgr.m_DataReader.Close();
             }
 
             string[] strRxArray = frmMain.g_oUtils.ConvertListToArray(strRxList, ",");
@@ -3202,8 +3201,8 @@ namespace FIA_Biosum_Manager
                         p_oOptimizerScenarioItem.m_oLastTieBreakRankItem_Collection.Add(oItem);
                     }
                 }
-                p_oDataMgr.m_DataReader.Close();
             }
+            p_oDataMgr.m_DataReader.Close();
         }
         public void LoadProcessorScenarioItems(DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, 
             string p_strScenarioId, OptimizerScenarioItem p_oOptimizerScenarioItem)
@@ -3269,9 +3268,9 @@ namespace FIA_Biosum_Manager
                             strFullDetailsYN = p_oDataMgr.m_DataReader["FullDetailsYN"].ToString().Trim();
                         }
                     }
-                    p_oDataMgr.m_DataReader.Close();
                 }
-                
+                p_oDataMgr.m_DataReader.Close();
+
                 //
                 //find the current selected scenario in the collection
                 //
@@ -3318,12 +3317,12 @@ namespace FIA_Biosum_Manager
                             }
                         }
                     }
-                    p_oDataMgr.m_DataReader.Close();
                 }
                 else
                 {
                     p_oOptimizerScenarioItem.PlotTableSQLFilter = "SELECT @@PlotTable@@.* FROM @@PlotTable@@ ";
                 }
+                p_oDataMgr.m_DataReader.Close();
             }
         }
         
@@ -3348,13 +3347,13 @@ namespace FIA_Biosum_Manager
                             }
                         }
                     }
-                    p_oDataMgr.m_DataReader.Close();
                 }
                 else
                 {
                     p_oOptimizerScenarioItem.m_oCondTableSQLFilter.SQL =
                         "SELECT * FROM @@CondTable@@";
                 }
+                p_oDataMgr.m_DataReader.Close();
             }
             p_oDataMgr.m_strSQL = "SELECT * FROM scenario_cond_filter_misc WHERE " +
                              "TRIM(UPPER(scenario_id)) = '" + p_strScenarioId.Trim().ToUpper() + "';";
@@ -3377,8 +3376,8 @@ namespace FIA_Biosum_Manager
                             }
                         }
                     }
-                    p_oDataMgr.m_DataReader.Close();
                 }
+                p_oDataMgr.m_DataReader.Close();
             }
         }
         
@@ -3412,8 +3411,8 @@ namespace FIA_Biosum_Manager
                         strTravelTimeConn = p_oDataMgr.GetConnectionString(strTravelTimeDBFile);
                         break;
                     }
-                    p_oDataMgr.m_DataReader.Close();
                 }
+                p_oDataMgr.m_DataReader.Close();
             }
 
             //
@@ -3440,8 +3439,8 @@ namespace FIA_Biosum_Manager
                                 strList += ",'" + p_oDataMgr.m_DataReader[0].ToString().Trim() + "'";
                             }
                         }
-                        p_oDataMgr.m_DataReader.Close();
                     }
+                    p_oDataMgr.m_DataReader.Close();
                 }
             }
             string[] strArray = frmMain.g_oUtils.ConvertListToArray(strList, ",");
@@ -3486,8 +3485,8 @@ namespace FIA_Biosum_Manager
                             strPSitesConn = p_oDataMgr.GetConnectionString(strPSitesDBFile);
                             break;
                         }
-                        p_oDataMgr.m_DataReader.Close();
                     }
+                    p_oDataMgr.m_DataReader.Close();
                 }
 
                 using (System.Data.SQLite.SQLiteConnection pSitesConn = new System.Data.SQLite.SQLiteConnection(strPSitesConn))
@@ -3538,8 +3537,8 @@ namespace FIA_Biosum_Manager
                                 }
                             }
                         }
-                        p_oDataMgr.m_DataReader.Close();
                     }
+                    p_oDataMgr.m_DataReader.Close();
                 }
                 //
                 //SET THE PREVIOUSLY SELECTED
@@ -3589,8 +3588,8 @@ namespace FIA_Biosum_Manager
                             }
                         }
                     }
-                    p_oDataMgr.m_DataReader.Close();
                 }
+                p_oDataMgr.m_DataReader.Close();
             }
         }
 
@@ -3615,8 +3614,8 @@ namespace FIA_Biosum_Manager
                                 Convert.ToString(p_oDataMgr.m_DataReader["owngrpcd"]).Trim() + ",";
                         }
                     }
-                    p_oDataMgr.m_DataReader.Close();
                 }
+                p_oDataMgr.m_DataReader.Close();
                 if (p_oOptimizerScenarioItem.OwnerGroupCodeList.Trim().Length > 0)
                 {
                     p_oOptimizerScenarioItem.OwnerGroupCodeList =
@@ -3664,8 +3663,8 @@ namespace FIA_Biosum_Manager
                                Convert.ToString(p_oDataMgr.m_DataReader["rail_merch_transfer_pgt"]).Trim();
                         }
                     }
-                    p_oDataMgr.m_DataReader.Close();
                 }
+                p_oDataMgr.m_DataReader.Close();
             }
         }
 
@@ -3870,8 +3869,8 @@ namespace FIA_Biosum_Manager
                             }
                             p_oWeightedVariableCollection.Add(oItem);
                         }
-                        p_oDataMgr.m_DataReader.Close();
                     }
+                    p_oDataMgr.m_DataReader.Close();
                 }
             }
         }

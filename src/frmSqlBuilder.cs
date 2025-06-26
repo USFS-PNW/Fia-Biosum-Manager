@@ -20,13 +20,13 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.ListView m_lvDataSource;
         private utils m_oUtils;
 		private env m_oEnv;
-		private string m_strTempMDBFile;
-		private ado_data_access m_oAdo;
+		private string m_strTempDBFile;
+		private SQLite.ADO.DataMgr m_oDataMgr;
 		private System.Threading.Thread m_thread;
 		private frmTherm m_frmTherm;
 		private string m_strCurTable;
 		private string m_strCurField;
-		private string m_strTempMDBConn;
+		private System.Collections.Generic.List<string> m_lstSourceDbs;
 		private string m_strType;                       //type of collection
 		private FIA_Biosum_Manager.macrosubst m_oVarSub;  //macro variable substitution routines
 
@@ -243,171 +243,115 @@ namespace FIA_Biosum_Manager
 			
 
 		}
+		
 		private void Init()
-		{
-
-			this.m_oUtils = new utils();
-			this.m_oEnv = new env();
-			this.m_oAdo = new ado_data_access();
-			string strPathAndTable="";
-			string str="";
+        {
+			m_oUtils = new utils();
+			m_oEnv = new env();
+			m_oDataMgr = new SQLite.ADO.DataMgr();
+			string strPath = "";
+			string strPathAndTable = "";
+			string str = "";
 			int x;
+			m_lstSourceDbs = new System.Collections.Generic.List<string>();
 
-            this.m_oVarSub = new macrosubst();
-			this.m_oVarSub.ReferenceSQLMacroSubstitutionVariableCollection = frmMain.g_oSQLMacroSubstitutionVariable_Collection;
+			m_oVarSub = new macrosubst();
+			m_oVarSub.ReferenceSQLMacroSubstitutionVariableCollection = frmMain.g_oSQLMacroSubstitutionVariable_Collection;
 
-			dao_data_access p_dao = new dao_data_access();
-			ODBCMgr p_odbcMgr = new ODBCMgr();
-			SQLite.ADO.DataMgr p_dataMgr = new SQLite.ADO.DataMgr();
+			macrosubst oMacroSub = new macrosubst();
+			oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
 
-			this.m_strTempMDBFile = this.m_oUtils.getRandomFile(this.m_oEnv.strTempDir,"accdb");
-            p_dao.CreateMDB(this.m_strTempMDBFile);
-
-			
+			m_strTempDBFile = this.m_oUtils.getRandomFile(this.m_oEnv.strTempDir, "db");
+			m_oDataMgr.CreateDbFile(m_strTempDBFile);
 
 			//create links to all the tables in our datasource list
-			
-			for (x=0; x<=this.m_lvDataSource.Items.Count-1;x++)
+			for (x = 0; x <= this.m_lvDataSource.Items.Count - 1; x++)
 			{
-
-				if (this.m_lvDataSource.Items[x].SubItems[frmSqlBuilder.FILESTATUS].Text.Trim()=="Found")
+				if (this.m_lvDataSource.Items[x].SubItems[frmSqlBuilder.FILESTATUS].Text.Trim() == "Found")
 				{
-					if (this.m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLESTATUS].Text.Trim()=="Found")
+					if (this.m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLESTATUS].Text.Trim() == "Found")
 					{
-						strPathAndTable="#" + m_lvDataSource.Items[x].SubItems[frmSqlBuilder.PATH].Text.Trim() + "\\" + 
-							m_lvDataSource.Items[x].SubItems[frmSqlBuilder.MDBFILE].Text.Trim() + 
-							m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim()+"#";
-						//see if the table has been added already
-						if (str.IndexOf(strPathAndTable,0) < 0)
-						{
-                            //// temporary while only some tables are in SQLite
-                            if (m_lvDataSource.Items[x].SubItems[frmSqlBuilder.MDBFILE].Text.Trim().ToUpper() == "GIS_TRAVEL_TIMES.DB")
-                            {
-                                if (p_odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.GisTravelTimesDsnName))
-                                {
-                                    p_odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.GisTravelTimesDsnName);
-                                }
-                                p_odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.GisTravelTimesDsnName, m_lvDataSource.Items[x].SubItems[frmSqlBuilder.PATH].Text.Trim() + "\\" +
-                                    m_lvDataSource.Items[x].SubItems[frmSqlBuilder.MDBFILE].Text.Trim());
-
-                                p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim(), m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim(),
-                                    ODBCMgr.DSN_KEYS.GisTravelTimesDsnName, m_lvDataSource.Items[x].SubItems[frmSqlBuilder.PATH].Text.Trim() + "\\" +
-                                    m_lvDataSource.Items[x].SubItems[frmSqlBuilder.MDBFILE].Text.Trim());
-                            }
-							else if (m_lvDataSource.Items[x].SubItems[frmSqlBuilder.MDBFILE].Text.Trim().ToUpper() == "MASTER.DB")
-                            {
-								if (p_odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.MasterDsnName))
-								{
-									p_odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.MasterDsnName);
-								}
-								p_odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.MasterDsnName, m_lvDataSource.Items[x].SubItems[frmSqlBuilder.PATH].Text.Trim() + "\\" +
-									m_lvDataSource.Items[x].SubItems[frmSqlBuilder.MDBFILE].Text.Trim());
-
-								p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim(), m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim(),
-									ODBCMgr.DSN_KEYS.MasterDsnName, m_lvDataSource.Items[x].SubItems[frmSqlBuilder.PATH].Text.Trim() + "\\" +
-									m_lvDataSource.Items[x].SubItems[frmSqlBuilder.MDBFILE].Text.Trim());
-							}
-							else if (m_lvDataSource.Items[x].SubItems[frmSqlBuilder.MDBFILE].Text.Trim().ToUpper() == "BIOSUM_REF.DB")
-                            {
-								macrosubst oMacroSub = new macrosubst();
-								oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
-								string strPathAndFile = oMacroSub.GeneralTranslateVariableSubstitution(m_lvDataSource.Items[x].SubItems[frmSqlBuilder.PATH].Text.Trim())
+						strPath = oMacroSub.GeneralTranslateVariableSubstitution(m_lvDataSource.Items[x].SubItems[frmSqlBuilder.PATH].Text.Trim())
 									+ "\\" + m_lvDataSource.Items[x].SubItems[frmSqlBuilder.MDBFILE].Text.Trim();
+						strPathAndTable = strPath + m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim();
 
-								if (p_odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.BiosumRefDsnName))
-								{
-									p_odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.BiosumRefDsnName);
-								}
-								p_odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.BiosumRefDsnName, strPathAndFile);
+						if (str.IndexOf(strPathAndTable, 0) < 0)
+                        {
+							str = str + strPathAndTable;
+							lstTables.Items.Add(m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim());
 
-								p_dao.CreateSQLiteTableLink(this.m_strTempMDBFile, m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim(),
-									m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim(),
-									ODBCMgr.DSN_KEYS.BiosumRefDsnName, strPathAndFile);
-							}
-                            else
+							if (!m_lstSourceDbs.Contains(strPath))
                             {
-								p_dao.CreateTableLink(this.m_strTempMDBFile,
-									m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim(),
-									m_lvDataSource.Items[x].SubItems[frmSqlBuilder.PATH].Text.Trim() + "\\" +
-									m_lvDataSource.Items[x].SubItems[frmSqlBuilder.MDBFILE].Text.Trim(),
-									m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim());
-							}
-							str=str+strPathAndTable;
-							if (p_dao.m_intError==0)
-							{
-								this.lstTables.Items.Add(m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim());
-							}
+								m_lstSourceDbs.Add(strPath);
+                            }
 						}
-
 					}
-
 				}
-			    FIA_Biosum_Manager.Datasource.UpdateTableMacroVariable(m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLETYPE].Text.Trim(),
+				FIA_Biosum_Manager.Datasource.UpdateTableMacroVariable(m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLETYPE].Text.Trim(),
 					m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim());
 			}
 
-			
-
-			p_dao.m_DaoWorkspace.Close();
-			p_dao = null;
-
 			//add the substitution variables
 			this.lstSQLBuilderVarSub.Items.Clear();
-			for (x=0;x<=frmMain.g_oSQLMacroSubstitutionVariable_Collection.Count-1;x++)
+			for (x = 0; x <= frmMain.g_oSQLMacroSubstitutionVariable_Collection.Count - 1; x++)
 			{
 				this.lstSQLBuilderVarSub.Items.Add(frmMain.g_oSQLMacroSubstitutionVariable_Collection.Item(x).VariableName);
 			}
 
-
 			/******************************************************
-			 **open the tables in ado data set
+			 **open the tables in data set
 			 ******************************************************/
-			string strSQL;
-			this.m_strTempMDBConn = this.m_oAdo.getMDBConnString(this.m_strTempMDBFile,"","");
-			this.m_oAdo.OpenConnection(this.m_strTempMDBConn);
-			this.m_oAdo.m_OleDbDataAdapter = new System.Data.OleDb.OleDbDataAdapter();
-			this.m_oAdo.m_DataSet = new System.Data.DataSet();
-			p_dataMgr.m_DataAdapter = new System.Data.SQLite.SQLiteDataAdapter();
-			p_dataMgr.m_DataSet = new System.Data.DataSet();
+			m_oDataMgr.m_DataAdapter = new System.Data.SQLite.SQLiteDataAdapter();
+			m_oDataMgr.m_DataSet = new System.Data.DataSet();
+			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(m_strTempDBFile)))
+            {
+				conn.Open();
 
-			if (this.m_oAdo.m_intError==0)
-			{
-				
-				for (x=0;x<=this.m_lvDataSource.Items.Count-1;x++)
+				int z = 0;
+				foreach (string strDb in m_lstSourceDbs)
+                {
+					if (!m_oDataMgr.DatabaseAttached(conn, strDb))
+                    {
+						m_oDataMgr.m_strSQL = "ATTACH DATABASE '" + strDb + "' AS alias" + z.ToString();
+						m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+						z++;
+                    }
+                }
+
+				if (m_oDataMgr.m_intError == 0)
 				{
-
-					if (this.m_lvDataSource.Items[x].SubItems[frmSqlBuilder.FILESTATUS].Text.Trim()=="Found")
+					for (x = 0; x <= this.m_lvDataSource.Items.Count - 1; x++)
 					{
-						if (this.m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLESTATUS].Text.Trim()=="Found")
+						if (this.m_lvDataSource.Items[x].SubItems[frmSqlBuilder.FILESTATUS].Text.Trim() == "Found")
 						{
-							for (int y = 0; y <= lstTables.Items.Count - 1; y++)
+							if (this.m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLESTATUS].Text.Trim() == "Found")
 							{
-								if (lstTables.Items[y].ToString().Trim() ==
-									m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim())
+								for (int y = 0; y <= lstTables.Items.Count - 1; y++)
 								{
-									strSQL = "SELECT TOP 1  * FROM " + m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim();
+									if (lstTables.Items[y].ToString().Trim() ==
+										m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim())
+									{
+										m_oDataMgr.m_strSQL = "SELECT * FROM " + m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim() + " LIMIT 1";
 
-									this.m_oAdo.m_OleDbDataAdapter.SelectCommand = new System.Data.OleDb.OleDbCommand(strSQL, this.m_oAdo.m_OleDbConnection);
-									try
-									{
-										this.m_oAdo.m_OleDbDataAdapter.Fill(this.m_oAdo.m_DataSet, this.m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim());
-									}
-									catch (Exception e)
-									{
-										MessageBox.Show(e.Message, "Table", MessageBoxButtons.OK, MessageBoxIcon.Error);
-										this.m_oAdo.m_intError = -1;
+										m_oDataMgr.m_DataAdapter.SelectCommand = new System.Data.SQLite.SQLiteCommand(m_oDataMgr.m_strSQL, conn);
+										try
+										{
+											m_oDataMgr.m_DataAdapter.Fill(m_oDataMgr.m_DataSet, this.m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim());
+										}
+										catch (Exception e)
+										{
+											MessageBox.Show(e.Message, "Table", MessageBoxButtons.OK, MessageBoxIcon.Error);
+											m_oDataMgr.m_intError = -1;
+										}
 									}
 								}
 							}
 						}
 					}
 				}
-			}
-			if (p_odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.GisTravelTimesDsnName))
-			{
-				p_odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.GisTravelTimesDsnName);
-			}
+            }
 		}
+
 		public string SQL
 		{
 			set {this.txtSQLCommand.Text = value;}
@@ -1541,76 +1485,7 @@ namespace FIA_Biosum_Manager
 			}
 		}
 
-		private void btnTest_Click_old(object sender, System.EventArgs e)
-		{
-			string strSQL="";
-			string strConn="";
-			System.Data.OleDb.OleDbConnection p_conn;
-			ado_data_access p_ado = new ado_data_access();
-			p_conn = new System.Data.OleDb.OleDbConnection();
-			strConn = p_ado.getMDBConnString(this.m_strTempMDBFile,"admin","");
-			p_ado.OpenConnection(strConn, ref p_conn);	
-			
-			if (p_ado.m_intError != 0)
-			{
-				p_ado = null;
-				return;
-			}
-
-
-			strSQL = this.txtSQLCommand.Text.Trim();
-			
-			if (strSQL.IndexOf("@@",0) >=0) strSQL=this.m_oVarSub.SQLTranslateVariableSubstitution(strSQL);
-
-			p_ado.SqlQueryReader(p_conn, strSQL);
-
-
-
-
-			
-			if (p_ado.m_intError == 0)
-			{
-				p_ado.m_OleDbDataReader.Close();
-
-				if (this.ClientId.Trim().ToUpper()=="CORE SCENARIO PLOT FILTER")
-				{
-					if (this.ReferenceOptimizerScenarioForm.uc_scenario_filter1.Val_PlotFilter_old(p_conn,this.txtSQLCommand.Text.Trim())!=0)
-					{
-						MessageBox.Show(ReferenceOptimizerScenarioForm.uc_scenario_filter1.m_strError,"FIA Biosum");
-					}
-					else
-					{
-						MessageBox.Show("Valid Syntax");
-					}
-
-				}
-				else if (this.ClientId.Trim().ToUpper()=="CORE SCENARIO COND FILTER")
-				{
-					if (this.ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.Val_CondFilter_old(p_conn,this.txtSQLCommand.Text.Trim())!=0)
-					{
-						MessageBox.Show(ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.m_strError,"FIA Biosum");
-					}
-					else
-					{
-						MessageBox.Show("Valid Syntax");
-					}
-				}
-				else
-				{
-					MessageBox.Show("Valid Syntax");
-				}
-				p_ado.m_OleDbDataReader = null;
-				p_ado.m_OleDbCommand = null;
-				
-				
-			}
-			p_conn.Close();
-			p_conn = null;
-			p_ado = null;
-			
-			
-		}
-
+		
 		private void btnTest_Click(object sender, System.EventArgs e)
         {
 			if (this.ClientId.Trim().ToUpper() == "OPTIMIZER SCENARIO PLOT FILTER")
@@ -2228,43 +2103,43 @@ namespace FIA_Biosum_Manager
 			this.DialogResult = DialogResult.Cancel;
 		}
 
-		private void lstTables_SelectedIndexChanged(object sender, System.EventArgs e)
+
+        private void lstTables_SelectedIndexChanged(object sender, System.EventArgs e)
 		{
-			if (this.m_strCurTable == this.lstTables.Text)
-				return;
-
-
-		    
-			int x=0;
-			string strField="";
-			string strTable = this.lstTables.Text;
-			this.lstFields.Items.Clear();
-			this.lstValues.Items.Clear();
-			int ColumnCount = this.m_oAdo.m_DataSet.Tables[strTable].Columns.Count;
-			for (x=0;x<=ColumnCount-1;x++)
+			if (m_strCurTable == lstTables.Text)
 			{
-				strField = this.m_oAdo.m_DataSet.Tables[strTable].Columns[x].ColumnName;
-				this.lstFields.Items.Add(strField);
+				return;
 			}
-			this.m_strCurTable = this.lstTables.Text;
-			this.m_strCurField = "";
+
+			int x = 0;
+			string strField;
+			string strTable = lstTables.Text;
+			lstFields.Items.Clear();
+			lstValues.Items.Clear();
+			int intColCount = m_oDataMgr.m_DataSet.Tables[strTable].Columns.Count;
+			for (x = 0; x <= intColCount - 1; x++)
+			{
+				strField = m_oDataMgr.m_DataSet.Tables[strTable].Columns[x].ColumnName;
+				lstFields.Items.Add(strField);
+			}
+
+			m_strCurTable = lstTables.Text;
+			m_strCurField = "";
 		}
 
 		private void btnLoad_Click(object sender, System.EventArgs e)
-
-		{
-			
+        {
 			bool lSingleQuote;
-			
 			string str;
 
-			if (this.m_strCurField.Trim() == this.lstFields.Text.Trim())
+			if (m_strCurField.Trim() == lstFields.Text.Trim())
+            {
 				return;
-			this.lstValues.Items.Clear();
-			
+			}
+			lstValues.Items.Clear();
 
 			//get the datatype of the field
-			switch (this.m_oAdo.m_DataSet.Tables[this.lstTables.Text.Trim()].Columns[this.lstFields.Text.Trim()].DataType.ToString().Trim())
+			switch (m_oDataMgr.m_DataSet.Tables[this.lstTables.Text.Trim()].Columns[this.lstFields.Text.Trim()].DataType.ToString().Trim())
 			{
 				case "System.Single":
 					lSingleQuote = false;
@@ -2292,7 +2167,7 @@ namespace FIA_Biosum_Manager
 					break;
 				case "System.DayOfWeek":
 					lSingleQuote = false;
-					break; 
+					break;
 				case "System.Int64":
 					lSingleQuote = false;
 					break;
@@ -2304,45 +2179,61 @@ namespace FIA_Biosum_Manager
 					break;
 				default:
 					lSingleQuote = false;
-					MessageBox.Show("unknown datatype for " + this.lstTables.Text.Trim() + "." +  this.lstFields.Text.Trim() + ":" + this.m_oAdo.m_DataSet.Tables[this.lstTables.Text.Trim()].Columns[this.lstFields.Text.Trim()].DataType.ToString().Trim());
+					MessageBox.Show("unknown datatype for " + this.lstTables.Text.Trim() + "." + this.lstFields.Text.Trim() + ":" + m_oDataMgr.m_DataSet.Tables[this.lstTables.Text.Trim()].Columns[this.lstFields.Text.Trim()].DataType.ToString().Trim());
 					break;
 			}
 			this.lblMsg.Show();
 			this.lblMsg.Refresh();
-            string strSQL = "SELECT DISTINCT tempfield." + this.lstFields.Text.Trim() +   " FROM " + this.lstTables.Text.Trim() + " AS tempfield;";
-			this.m_oAdo.SqlQueryReader(this.m_oAdo.m_OleDbConnection,strSQL);
-            this.lblMsg.Hide();
-			if (this.m_oAdo.m_intError == 0)
-			{
 
-				while (this.m_oAdo.m_OleDbDataReader.Read())
+			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(m_strTempDBFile)))
+            {
+				conn.Open();
+
+				int x = 0;
+				foreach (string strDb in m_lstSourceDbs)
 				{
-					if (this.m_oAdo.m_OleDbDataReader[this.lstFields.Text.Trim()]==null)
+					if (!m_oDataMgr.DatabaseAttached(conn, strDb))
 					{
+						m_oDataMgr.m_strSQL = "ATTACH DATABASE '" + strDb + "' AS alias" + x.ToString();
+						m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+						x++;
 					}
-					else if ((Convert.ToString(this.m_oAdo.m_OleDbDataReader[this.lstFields.Text.Trim()]).Trim().Length==0))
-					{
-					}
-					else
-					{
-						str = Convert.ToString(this.m_oAdo.m_OleDbDataReader[this.lstFields.Text.Trim()]).Trim();
-					
-						
-						if (lSingleQuote == true)
-						{
-							str = "'" + str + "'";
-						}
-						this.lstValues.Items.Add(str);
-					}
-
 				}
-				this.m_oAdo.m_OleDbDataReader.Close();
+
+				m_oDataMgr.m_strSQL = "SELECT DISTINCT tempfield." + this.lstFields.Text.Trim() + " FROM " + this.lstTables.Text.Trim() + " AS tempfield";
+				m_oDataMgr.SqlQueryReader(conn, m_oDataMgr.m_strSQL);
+				this.lblMsg.Hide();
+
+				if (m_oDataMgr.m_intError == 0)
+                {
+					if (m_oDataMgr.m_DataReader.HasRows)
+                    {
+						while (m_oDataMgr.m_DataReader.Read())
+						{
+							if (m_oDataMgr.m_DataReader[this.lstFields.Text.Trim()] == null)
+							{
+							}
+							else if ((Convert.ToString(m_oDataMgr.m_DataReader[this.lstFields.Text.Trim()]).Trim().Length == 0))
+							{
+							}
+							else
+							{
+								str = Convert.ToString(m_oDataMgr.m_DataReader[this.lstFields.Text.Trim()]).Trim();
+
+								if (lSingleQuote == true)
+								{
+									str = "'" + str + "'";
+								}
+								this.lstValues.Items.Add(str);
+							}
+						}
+                    }
+					m_oDataMgr.m_DataReader.Close();
+                }
 			}
-			
-			this.m_oAdo.m_OleDbDataReader = null;
-			this.m_oAdo.m_OleDbCommand = null;
-			this.m_strCurField=this.lstFields.Text;
-			
+			m_oDataMgr.m_DataReader = null;
+			m_oDataMgr.m_Command = null;
+			m_strCurField = lstFields.Text;
 		}
 
 		private void lstFields_SelectedValueChanged(object sender, System.EventArgs e)
@@ -2352,14 +2243,31 @@ namespace FIA_Biosum_Manager
 		}
 
 		private void btnExecute_Click(object sender, System.EventArgs e)
-		{
-			string strSQL = this.txtSQLCommand.Text;
-			if (strSQL.IndexOf("@@",0) >=0) strSQL=this.m_oVarSub.SQLTranslateVariableSubstitution(strSQL);
-			frmGridView frmtemp = new frmGridView();
-		    frmtemp.Text="FIA Biosum";
-			frmtemp.LoadDataSet(m_oAdo.m_OleDbConnection,this.m_strTempMDBConn,strSQL,"buildsql");
-			frmtemp.ShowDialog();
-			
+        {
+			string strSQL = txtSQLCommand.Text;
+			if (strSQL.IndexOf("@@", 0) >= 0)
+            {
+				strSQL = m_oVarSub.SQLTranslateVariableSubstitution(strSQL);
+            }
+			frmGridView frmTemp = new frmGridView();
+			frmTemp.Text = "FIA Biosum";
+			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(m_strTempDBFile)))
+			{
+				conn.Open();
+
+				int x = 0;
+				foreach (string strDb in m_lstSourceDbs)
+				{
+					if (!m_oDataMgr.DatabaseAttached(conn, strDb))
+					{
+						m_oDataMgr.m_strSQL = "ATTACH DATABASE '" + strDb + "' AS alias" + x.ToString();
+						m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+						x++;
+					}
+				}
+				frmTemp.LoadDataSet(conn, strSQL);
+			}
+			frmTemp.ShowDialog();
 		}
 
 		private void btnCancel_Click(object sender, System.EventArgs e)

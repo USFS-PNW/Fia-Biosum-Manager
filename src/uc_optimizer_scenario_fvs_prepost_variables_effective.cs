@@ -1702,9 +1702,9 @@ namespace FIA_Biosum_Manager
 
 						this.UpdateListViewVariableItem(intVarNum, intVarNum + 1, m_oOldVar);
 					}
-					oDataMgr.m_DataReader.Close();
 				}
-				
+				oDataMgr.m_DataReader.Close();
+
 				//overall expression
 				oDataMgr.m_strSQL = "SELECT overall_effective_expression, current_yn " +
 								"FROM scenario_fvs_variables_overall_effective " +
@@ -1722,8 +1722,8 @@ namespace FIA_Biosum_Manager
 							m_oOldVar.m_strOverallEffectiveExpr = Convert.ToString(oDataMgr.m_DataReader["overall_effective_expression"]).Trim();
                         }
 					}
-					oDataMgr.m_DataReader.Close();
 				}
+				oDataMgr.m_DataReader.Close();
 			}
 
 			for (x = 0; x <= NUMBER_OF_VARIABLES - 1; x++)
