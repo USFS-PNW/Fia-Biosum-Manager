@@ -607,6 +607,12 @@ namespace FIA_Biosum_Manager
         private void CreateTreeReconcilationTable(string p_strVariant, string p_strRxPackage, string p_strMasterDatabase,
             string p_strTreeTableName)
         {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//Processor.CreateTreeReconcilationTable BEGIN \r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
             string strSQL = "SELECT fvs_tree_id, biosum_cond_id, tree, cn from " + p_strTreeTableName + " where fvs_tree_id is not null and biosum_cond_id is not null";
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(m_strSqliteConnection)))
             {
@@ -644,29 +650,52 @@ namespace FIA_Biosum_Manager
 
                     string strTempCn = "9999";
                     string strTempTree = "9999";
-                    foreach (tree nextTree in m_trees)
+                    System.Data.SQLite.SQLiteCommand command = conn.CreateCommand();
+                    System.Data.SQLite.SQLiteTransaction transaction = conn.BeginTransaction(System.Data.IsolationLevel.ReadCommitted);  // Start a local transaction                    
+                    command.Transaction = transaction;  // Assign transaction object for a pending local transaction
+                    try
                     {
-                        string strKey = nextTree.CondId + "_" + nextTree.FvsTreeId;
-                        if (dictTreeTable.ContainsKey(strKey))
+                        foreach (tree nextTree in m_trees)
                         {
-                            System.Collections.Generic.List<string> treeList = dictTreeTable[strKey];
-                            strTempTree = treeList[idxTree];
-                            strTempCn = treeList[idxCn];
+                            string strKey = nextTree.CondId + "_" + nextTree.FvsTreeId;
+                            if (dictTreeTable.ContainsKey(strKey))
+                            {
+                                System.Collections.Generic.List<string> treeList = dictTreeTable[strKey];
+                                strTempTree = treeList[idxTree];
+                                strTempCn = treeList[idxCn];
+                            }
+                            SQLite.m_strSQL = "INSERT INTO " + strTableName + " " +
+                            "(cn, fvs_tree_id, biosum_cond_id, biosum_plot_id, spcd, merchWtGt, nonMerchWtGt, drybiom, " +
+                            "drybiot, volCfNet, volCfGrs, odWgt, dryToGreen, tpa, dbh, species_group, " +
+                            "isSapling, isWoodland, isCull, diam_group, merch_value, opcost_type, biosum_category)" +
+                            "VALUES ('" + strTempCn + "', '" + strTempTree + "', '" + nextTree.CondId + "', '" + nextTree.PlotId + "', " +
+                            nextTree.SpCd + ", " + nextTree.MerchWtGtPa + ", " + nextTree.NonMerchWtGtPa + ", " + nextTree.DryBiom + ", " +
+                            nextTree.DryBiot + ", " + nextTree.VolCfNet + ", " + nextTree.VolCfGrs + ", " + nextTree.OdWgt +
+                            ", " + nextTree.DryToGreen + ", " + nextTree.Tpa + ", " + nextTree.Dbh + ", " + nextTree.SpeciesGroup + ", " +
+                            nextTree.IsSapling + ", " + nextTree.IsWoodlandSpecies + ", " + nextTree.IsCull + ", " + nextTree.DiamGroup +
+                            ", " + nextTree.MerchValue + ", '" + nextTree.TreeType + "', " + nextTree.HarvestMethod.BiosumCategory + " )";
+                            command.CommandText = SQLite.m_strSQL;
+                            command.ExecuteNonQuery();
                         }
-                        SQLite.m_strSQL = "INSERT INTO " + strTableName + " " +
-                        "(cn, fvs_tree_id, biosum_cond_id, biosum_plot_id, spcd, merchWtGt, nonMerchWtGt, drybiom, " +
-                        "drybiot, volCfNet, volCfGrs, odWgt, dryToGreen, tpa, dbh, species_group, " +
-                        "isSapling, isWoodland, isCull, diam_group, merch_value, opcost_type, biosum_category)" +
-                        "VALUES ('" + strTempCn + "', '" + strTempTree + "', '" + nextTree.CondId + "', '" + nextTree.PlotId + "', " +
-                        nextTree.SpCd + ", " + nextTree.MerchWtGtPa + ", " + nextTree.NonMerchWtGtPa + ", " + nextTree.DryBiom + ", " +
-                        nextTree.DryBiot + ", " + nextTree.VolCfNet + ", " + nextTree.VolCfGrs + ", " + nextTree.OdWgt +
-                        ", " + nextTree.DryToGreen + ", " + nextTree.Tpa + ", " + nextTree.Dbh + ", " + nextTree.SpeciesGroup + ", " +
-                        nextTree.IsSapling + ", " + nextTree.IsWoodlandSpecies + ", " + nextTree.IsCull + ", " + nextTree.DiamGroup +
-                        ", " + nextTree.MerchValue + ", '" + nextTree.TreeType + "', " + nextTree.HarvestMethod.BiosumCategory + " )";
-
-                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                        transaction.Commit();
                     }
+                    catch (Exception e)
+                    {
+                        System.Windows.Forms.MessageBox.Show(e.Message);
+                        transaction.Rollback();
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Processor.createTreeReconcilationTable ERROR " + System.DateTime.Now.ToString() + "\r\n");
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "SQL: " + SQLite.m_strSQL + "\r\n");
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "*********************************************" + "\r\n");
+                    }
+                    transaction.Dispose();
+                    transaction = null;
                 }
+            }
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//Processor.CreateTreeReconcilationTable END \r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
         }
 
@@ -1330,17 +1359,6 @@ namespace FIA_Biosum_Manager
 
                 // create tree vol val work table (TreeVolValLowSlope); Re-use the sql from tree vol val but don't create the indexes
                 SQLite.SqlNonQuery(conn, Tables.Processor.CreateSqliteTreeVolValSpeciesDiamGroupsTableSQL(m_strTvvTableName, false));
-
-                // check to see if table link exists; Create it if it doesn't
-                if (! m_oAdo.TableExist(m_oAdo.m_OleDbConnection, m_strTvvTableName))
-                {
-                    dao_data_access oDao = new dao_data_access();
-                    oDao.CreateSQLiteTableLink(m_oAdo.m_OleDbConnection.DataSource, m_strTvvTableName,
-                        m_strTvvTableName, ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName,
-                        conn.FileName);
-                    oDao.m_DaoWorkspace.Close();
-                    oDao = null;
-                }
                 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "createTreeVolValWorkTable: Read trees into tree vol val - " + System.DateTime.Now.ToString() + "\r\n");
