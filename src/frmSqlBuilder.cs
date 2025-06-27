@@ -30,7 +30,6 @@ namespace FIA_Biosum_Manager
 		private string m_strType;                       //type of collection
 		private FIA_Biosum_Manager.macrosubst m_oVarSub;  //macro variable substitution routines
 
-		const int COLUMN_NULL = 0;
 		const int TABLETYPE = 1;
 		const int PATH = 2;
 		const int MDBFILE = 3;
@@ -82,7 +81,10 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Button btnParenthLeft;
 		private System.Windows.Forms.Button btnSingleQuote;
 		private System.Windows.Forms.Button btnDoubleQuote;
-		private System.Windows.Forms.Button btnIIF;
+		private System.Windows.Forms.Button btnCaseWhen;
+        private System.Windows.Forms.Button btnThen;
+        private System.Windows.Forms.Button btnElse;
+        private System.Windows.Forms.Button btnEnd;
 		private System.Windows.Forms.Button btnIn;
 		private System.Windows.Forms.Button btnNot;
 		private System.Windows.Forms.Button btnBetween;
@@ -90,9 +92,9 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Button btnOr;
 		private System.Windows.Forms.Button btnAnd;
 		private System.Windows.Forms.GroupBox grpboxVariableManipulation;
-		private System.Windows.Forms.Button btnMid;
-		private System.Windows.Forms.Button btnLCase;
-		private System.Windows.Forms.Button btnUCase;
+		private System.Windows.Forms.Button btnSubstr;
+		private System.Windows.Forms.Button btnLower;
+		private System.Windows.Forms.Button btnUpper;
 		private System.Windows.Forms.Button btnTrim;
 		private System.Windows.Forms.GroupBox grpboxSelectSyntax;
 		private System.Windows.Forms.Label lblFieldAlias;
@@ -127,7 +129,6 @@ namespace FIA_Biosum_Manager
 		public System.Windows.Forms.ListBox lstTables;
 		private System.Windows.Forms.Label label1;
 		public System.Windows.Forms.TextBox txtSQLCommand;
-		const int RECORDCOUNT = 7;
 		private string _strClientId="";
 		private FIA_Biosum_Manager.frmOptimizerScenario _frmScenario;
 
@@ -410,7 +411,10 @@ namespace FIA_Biosum_Manager
             this.btnParenthLeft = new System.Windows.Forms.Button();
             this.btnSingleQuote = new System.Windows.Forms.Button();
             this.btnDoubleQuote = new System.Windows.Forms.Button();
-            this.btnIIF = new System.Windows.Forms.Button();
+            this.btnCaseWhen = new System.Windows.Forms.Button();
+            this.btnThen = new System.Windows.Forms.Button();
+            this.btnElse = new System.Windows.Forms.Button();
+            this.btnEnd = new System.Windows.Forms.Button();
             this.btnIn = new System.Windows.Forms.Button();
             this.btnNot = new System.Windows.Forms.Button();
             this.btnBetween = new System.Windows.Forms.Button();
@@ -418,9 +422,9 @@ namespace FIA_Biosum_Manager
             this.btnOr = new System.Windows.Forms.Button();
             this.btnAnd = new System.Windows.Forms.Button();
             this.grpboxVariableManipulation = new System.Windows.Forms.GroupBox();
-            this.btnMid = new System.Windows.Forms.Button();
-            this.btnLCase = new System.Windows.Forms.Button();
-            this.btnUCase = new System.Windows.Forms.Button();
+            this.btnSubstr = new System.Windows.Forms.Button();
+            this.btnLower = new System.Windows.Forms.Button();
+            this.btnUpper = new System.Windows.Forms.Button();
             this.btnTrim = new System.Windows.Forms.Button();
             this.grpboxSelectSyntax = new System.Windows.Forms.GroupBox();
             this.lblFieldAlias = new System.Windows.Forms.Label();
@@ -787,7 +791,10 @@ namespace FIA_Biosum_Manager
             this.grpboxCondExp.Controls.Add(this.btnParenthLeft);
             this.grpboxCondExp.Controls.Add(this.btnSingleQuote);
             this.grpboxCondExp.Controls.Add(this.btnDoubleQuote);
-            this.grpboxCondExp.Controls.Add(this.btnIIF);
+            this.grpboxCondExp.Controls.Add(this.btnCaseWhen);
+            this.grpboxCondExp.Controls.Add(this.btnThen);
+            this.grpboxCondExp.Controls.Add(this.btnElse);
+            this.grpboxCondExp.Controls.Add(this.btnEnd);
             this.grpboxCondExp.Controls.Add(this.btnIn);
             this.grpboxCondExp.Controls.Add(this.btnNot);
             this.grpboxCondExp.Controls.Add(this.btnBetween);
@@ -806,10 +813,10 @@ namespace FIA_Biosum_Manager
             // 
             this.btnN.BackColor = System.Drawing.SystemColors.Control;
             this.btnN.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnN.Location = new System.Drawing.Point(280, 88);
+            this.btnN.Location = new System.Drawing.Point(352, 88);
             this.btnN.Name = "btnN";
             this.btnN.Size = new System.Drawing.Size(32, 24);
-            this.btnN.TabIndex = 36;
+            this.btnN.TabIndex = 38;
             this.btnN.Text = "\'N\'";
             this.btnN.UseVisualStyleBackColor = false;
             this.btnN.Click += new System.EventHandler(this.btnN_Click);
@@ -818,10 +825,10 @@ namespace FIA_Biosum_Manager
             // 
             this.btnY.BackColor = System.Drawing.SystemColors.Control;
             this.btnY.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnY.Location = new System.Drawing.Point(248, 88);
+            this.btnY.Location = new System.Drawing.Point(320, 88);
             this.btnY.Name = "btnY";
             this.btnY.Size = new System.Drawing.Size(32, 24);
-            this.btnY.TabIndex = 35;
+            this.btnY.TabIndex = 37;
             this.btnY.Text = "\'Y\'";
             this.btnY.UseVisualStyleBackColor = false;
             this.btnY.Click += new System.EventHandler(this.btnY_Click);
@@ -829,27 +836,27 @@ namespace FIA_Biosum_Manager
             // btnExists
             // 
             this.btnExists.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnExists.Location = new System.Drawing.Point(112, 64);
+            this.btnExists.Location = new System.Drawing.Point(224, 64);
             this.btnExists.Name = "btnExists";
             this.btnExists.Size = new System.Drawing.Size(56, 24);
-            this.btnExists.TabIndex = 34;
+            this.btnExists.TabIndex = 32;
             this.btnExists.Text = "EXISTS";
             this.btnExists.Click += new System.EventHandler(this.btnExists_Click);
             // 
             // btnIsNull
             // 
             this.btnIsNull.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnIsNull.Location = new System.Drawing.Point(296, 40);
+            this.btnIsNull.Location = new System.Drawing.Point(72, 64);
             this.btnIsNull.Name = "btnIsNull";
             this.btnIsNull.Size = new System.Drawing.Size(48, 24);
-            this.btnIsNull.TabIndex = 33;
+            this.btnIsNull.TabIndex = 29;
             this.btnIsNull.Text = "IS NULL";
             this.btnIsNull.Click += new System.EventHandler(this.btnIsNull_Click);
             // 
             // btnLessThanEqualTo
             // 
             this.btnLessThanEqualTo.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnLessThanEqualTo.Location = new System.Drawing.Point(128, 88);
+            this.btnLessThanEqualTo.Location = new System.Drawing.Point(200, 88);
             this.btnLessThanEqualTo.Name = "btnLessThanEqualTo";
             this.btnLessThanEqualTo.Size = new System.Drawing.Size(120, 24);
             this.btnLessThanEqualTo.TabIndex = 32;
@@ -859,80 +866,80 @@ namespace FIA_Biosum_Manager
             // btnLessThan
             // 
             this.btnLessThan.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnLessThan.Location = new System.Drawing.Point(240, 64);
+            this.btnLessThan.Location = new System.Drawing.Point(8, 88);
             this.btnLessThan.Name = "btnLessThan";
             this.btnLessThan.Size = new System.Drawing.Size(72, 24);
-            this.btnLessThan.TabIndex = 31;
+            this.btnLessThan.TabIndex = 34;
             this.btnLessThan.Text = "Less Than";
             this.btnLessThan.Click += new System.EventHandler(this.btnLessThan_Click);
             // 
             // btnMoreThanEqualTo
             // 
             this.btnMoreThanEqualTo.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnMoreThanEqualTo.Location = new System.Drawing.Point(8, 88);
+            this.btnMoreThanEqualTo.Location = new System.Drawing.Point(80, 88);
             this.btnMoreThanEqualTo.Name = "btnMoreThanEqualTo";
             this.btnMoreThanEqualTo.Size = new System.Drawing.Size(120, 24);
-            this.btnMoreThanEqualTo.TabIndex = 30;
+            this.btnMoreThanEqualTo.TabIndex = 35;
             this.btnMoreThanEqualTo.Text = "More Than Or Equal To";
             this.btnMoreThanEqualTo.Click += new System.EventHandler(this.btnMoreThanEqualTo_Click);
             // 
             // btnMoreThan
             // 
             this.btnMoreThan.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnMoreThan.Location = new System.Drawing.Point(168, 64);
+            this.btnMoreThan.Location = new System.Drawing.Point(280, 64);
             this.btnMoreThan.Name = "btnMoreThan";
             this.btnMoreThan.Size = new System.Drawing.Size(72, 24);
-            this.btnMoreThan.TabIndex = 29;
+            this.btnMoreThan.TabIndex = 33;
             this.btnMoreThan.Text = "More Than";
             this.btnMoreThan.Click += new System.EventHandler(this.btnMoreThan_Click);
             // 
             // btnNotEqual
             // 
             this.btnNotEqual.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnNotEqual.Location = new System.Drawing.Point(56, 64);
+            this.btnNotEqual.Location = new System.Drawing.Point(168, 64);
             this.btnNotEqual.Name = "btnNotEqual";
             this.btnNotEqual.Size = new System.Drawing.Size(56, 24);
-            this.btnNotEqual.TabIndex = 28;
+            this.btnNotEqual.TabIndex = 36;
             this.btnNotEqual.Text = "Not Equal";
             this.btnNotEqual.Click += new System.EventHandler(this.btnNotEqual_Click);
             // 
             // btnEqual
             // 
             this.btnEqual.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnEqual.Location = new System.Drawing.Point(8, 64);
+            this.btnEqual.Location = new System.Drawing.Point(120, 64);
             this.btnEqual.Name = "btnEqual";
             this.btnEqual.Size = new System.Drawing.Size(48, 24);
-            this.btnEqual.TabIndex = 26;
+            this.btnEqual.TabIndex = 30;
             this.btnEqual.Text = "Equal";
             this.btnEqual.Click += new System.EventHandler(this.btnEqual_Click);
             // 
             // btnPercent
             // 
             this.btnPercent.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnPercent.Location = new System.Drawing.Point(248, 40);
+            this.btnPercent.Location = new System.Drawing.Point(40, 64);
             this.btnPercent.Name = "btnPercent";
-            this.btnPercent.Size = new System.Drawing.Size(48, 24);
-            this.btnPercent.TabIndex = 25;
+            this.btnPercent.Size = new System.Drawing.Size(32, 24);
+            this.btnPercent.TabIndex = 28;
             this.btnPercent.Text = "%";
             this.btnPercent.Click += new System.EventHandler(this.btnPercent_Click);
             // 
             // btnComma
             // 
             this.btnComma.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnComma.Location = new System.Drawing.Point(200, 40);
+            this.btnComma.Location = new System.Drawing.Point(8, 64);
             this.btnComma.Name = "btnComma";
-            this.btnComma.Size = new System.Drawing.Size(48, 24);
-            this.btnComma.TabIndex = 24;
+            this.btnComma.Size = new System.Drawing.Size(32, 24);
+            this.btnComma.TabIndex = 27;
             this.btnComma.Text = ",";
             this.btnComma.Click += new System.EventHandler(this.btnComma_Click);
             // 
             // btnParenthRight
             // 
             this.btnParenthRight.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnParenthRight.Location = new System.Drawing.Point(152, 40);
+            this.btnParenthRight.Location = new System.Drawing.Point(320, 40);
             this.btnParenthRight.Name = "btnParenthRight";
-            this.btnParenthRight.Size = new System.Drawing.Size(48, 24);
-            this.btnParenthRight.TabIndex = 23;
+            this.btnParenthRight.Size = new System.Drawing.Size(32, 24);
+            this.btnParenthRight.TabIndex = 26;
             this.btnParenthRight.Text = ")";
             this.btnParenthRight.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             this.btnParenthRight.Click += new System.EventHandler(this.btnParenthRight_Click);
@@ -940,10 +947,10 @@ namespace FIA_Biosum_Manager
             // btnParenthLeft
             // 
             this.btnParenthLeft.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnParenthLeft.Location = new System.Drawing.Point(104, 40);
+            this.btnParenthLeft.Location = new System.Drawing.Point(288, 40);
             this.btnParenthLeft.Name = "btnParenthLeft";
-            this.btnParenthLeft.Size = new System.Drawing.Size(48, 24);
-            this.btnParenthLeft.TabIndex = 22;
+            this.btnParenthLeft.Size = new System.Drawing.Size(32, 24);
+            this.btnParenthLeft.TabIndex = 25;
             this.btnParenthLeft.Text = "(";
             this.btnParenthLeft.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             this.btnParenthLeft.Click += new System.EventHandler(this.btnParenthLeft_Click);
@@ -951,31 +958,61 @@ namespace FIA_Biosum_Manager
             // btnSingleQuote
             // 
             this.btnSingleQuote.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSingleQuote.Location = new System.Drawing.Point(56, 40);
+            this.btnSingleQuote.Location = new System.Drawing.Point(256, 40);
             this.btnSingleQuote.Name = "btnSingleQuote";
-            this.btnSingleQuote.Size = new System.Drawing.Size(48, 24);
-            this.btnSingleQuote.TabIndex = 21;
+            this.btnSingleQuote.Size = new System.Drawing.Size(32, 24);
+            this.btnSingleQuote.TabIndex = 24;
             this.btnSingleQuote.Text = "\'";
             this.btnSingleQuote.Click += new System.EventHandler(this.btnSingleQuote_Click);
             // 
             // btnDoubleQuote
             // 
             this.btnDoubleQuote.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnDoubleQuote.Location = new System.Drawing.Point(8, 40);
+            this.btnDoubleQuote.Location = new System.Drawing.Point(224, 40);
             this.btnDoubleQuote.Name = "btnDoubleQuote";
-            this.btnDoubleQuote.Size = new System.Drawing.Size(48, 24);
-            this.btnDoubleQuote.TabIndex = 20;
+            this.btnDoubleQuote.Size = new System.Drawing.Size(32, 24);
+            this.btnDoubleQuote.TabIndex = 23;
             this.btnDoubleQuote.Text = "\"";
             // 
-            // btnIIF
+            // btnCaseWhen
             // 
-            this.btnIIF.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnIIF.Location = new System.Drawing.Point(312, 24);
-            this.btnIIF.Name = "btnIIF";
-            this.btnIIF.Size = new System.Drawing.Size(48, 16);
-            this.btnIIF.TabIndex = 19;
-            this.btnIIF.Text = "IIF";
-            this.btnIIF.Click += new System.EventHandler(this.btnIIF_Click);
+            this.btnCaseWhen.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnCaseWhen.Location = new System.Drawing.Point(8, 40);
+            this.btnCaseWhen.Name = "btnCaseWhen";
+            this.btnCaseWhen.Size = new System.Drawing.Size(72, 24);
+            this.btnCaseWhen.TabIndex = 19;
+            this.btnCaseWhen.Text = "CASE WHEN";
+            this.btnCaseWhen.Click += new System.EventHandler(this.btnCaseWhen_Click);
+            //
+            // btnThen
+            //
+            this.btnThen.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnThen.Location = new System.Drawing.Point(80, 40);
+            this.btnThen.Name = "btnThen";
+            this.btnThen.Size = new System.Drawing.Size(48, 24);
+            this.btnThen.TabIndex = 20;
+            this.btnThen.Text = "THEN";
+            this.btnThen.Click += new System.EventHandler(this.btnThen_Click);
+            //
+            // btnElse
+            //
+            this.btnElse.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnElse.Location = new System.Drawing.Point(128, 40);
+            this.btnElse.Name = "btnElse";
+            this.btnElse.Size = new System.Drawing.Size(48, 24);
+            this.btnElse.TabIndex = 21;
+            this.btnElse.Text = "ELSE";
+            this.btnElse.Click += new System.EventHandler(this.btnElse_Click);
+            //
+            // btnEnd
+            //
+            this.btnEnd.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnEnd.Location = new System.Drawing.Point(176, 40);
+            this.btnEnd.Name = "btnEnd";
+            this.btnEnd.Size = new System.Drawing.Size(48, 24);
+            this.btnEnd.TabIndex = 22;
+            this.btnEnd.Text = "END";
+            this.btnEnd.Click += new System.EventHandler(this.btnEnd_Click);
             // 
             // btnIn
             // 
@@ -1039,9 +1076,9 @@ namespace FIA_Biosum_Manager
             // 
             // grpboxVariableManipulation
             // 
-            this.grpboxVariableManipulation.Controls.Add(this.btnMid);
-            this.grpboxVariableManipulation.Controls.Add(this.btnLCase);
-            this.grpboxVariableManipulation.Controls.Add(this.btnUCase);
+            this.grpboxVariableManipulation.Controls.Add(this.btnSubstr);
+            this.grpboxVariableManipulation.Controls.Add(this.btnLower);
+            this.grpboxVariableManipulation.Controls.Add(this.btnUpper);
             this.grpboxVariableManipulation.Controls.Add(this.btnTrim);
             this.grpboxVariableManipulation.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.grpboxVariableManipulation.Location = new System.Drawing.Point(360, 360);
@@ -1051,35 +1088,35 @@ namespace FIA_Biosum_Manager
             this.grpboxVariableManipulation.TabStop = false;
             this.grpboxVariableManipulation.Text = "Variable Manipulation";
             // 
-            // btnMid
+            // btnSubstr
             // 
-            this.btnMid.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnMid.Location = new System.Drawing.Point(152, 16);
-            this.btnMid.Name = "btnMid";
-            this.btnMid.Size = new System.Drawing.Size(48, 16);
-            this.btnMid.TabIndex = 17;
-            this.btnMid.Text = "MID";
-            this.btnMid.Click += new System.EventHandler(this.btnMid_Click);
+            this.btnSubstr.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnSubstr.Location = new System.Drawing.Point(152, 16);
+            this.btnSubstr.Name = "btnSubstr";
+            this.btnSubstr.Size = new System.Drawing.Size(48, 16);
+            this.btnSubstr.TabIndex = 17;
+            this.btnSubstr.Text = "SUBSTR";
+            this.btnSubstr.Click += new System.EventHandler(this.btnSubstr_Click);
             // 
             // btnLCase
             // 
-            this.btnLCase.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnLCase.Location = new System.Drawing.Point(104, 16);
-            this.btnLCase.Name = "btnLCase";
-            this.btnLCase.Size = new System.Drawing.Size(48, 16);
-            this.btnLCase.TabIndex = 16;
-            this.btnLCase.Text = "LCASE";
-            this.btnLCase.Click += new System.EventHandler(this.btnLCase_Click);
+            this.btnLower.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnLower.Location = new System.Drawing.Point(104, 16);
+            this.btnLower.Name = "btnLower";
+            this.btnLower.Size = new System.Drawing.Size(48, 16);
+            this.btnLower.TabIndex = 16;
+            this.btnLower.Text = "LOWER";
+            this.btnLower.Click += new System.EventHandler(this.btnLower_Click);
             // 
             // btnUCase
             // 
-            this.btnUCase.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnUCase.Location = new System.Drawing.Point(56, 16);
-            this.btnUCase.Name = "btnUCase";
-            this.btnUCase.Size = new System.Drawing.Size(48, 16);
-            this.btnUCase.TabIndex = 15;
-            this.btnUCase.Text = "UCASE";
-            this.btnUCase.Click += new System.EventHandler(this.btnUCase_Click);
+            this.btnUpper.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnUpper.Location = new System.Drawing.Point(56, 16);
+            this.btnUpper.Name = "btnUpper";
+            this.btnUpper.Size = new System.Drawing.Size(48, 16);
+            this.btnUpper.TabIndex = 15;
+            this.btnUpper.Text = "UPPER";
+            this.btnUpper.Click += new System.EventHandler(this.btnUpper_Click);
             // 
             // btnTrim
             // 
@@ -1549,39 +1586,39 @@ namespace FIA_Biosum_Manager
 			}
 		}
 
-		private void btnMid_Click(object sender, System.EventArgs e)
+		private void btnSubstr_Click(object sender, System.EventArgs e)
 		{
 			if (this.m_oUtils.IsCapsLockOn() == true)
 			{
-				this.SendKeyStrokes(this.txtSQLCommand, " mid{(}");
+				this.SendKeyStrokes(this.txtSQLCommand, " substr{(}");
 			}
 			else
 			{
-				this.SendKeyStrokes(this.txtSQLCommand, " MID{(}");
+				this.SendKeyStrokes(this.txtSQLCommand, " SUBSTR{(}");
 			}
 		}
 
-		private void btnUCase_Click(object sender, System.EventArgs e)
+		private void btnUpper_Click(object sender, System.EventArgs e)
 		{
 			if (this.m_oUtils.IsCapsLockOn() == true)
 			{
-				this.SendKeyStrokes(this.txtSQLCommand, " ucase{(}");
+				this.SendKeyStrokes(this.txtSQLCommand, " upper{(}");
 			}
 			else
 			{
-				this.SendKeyStrokes(this.txtSQLCommand, " UCASE{(}");
+				this.SendKeyStrokes(this.txtSQLCommand, " UPPER{(}");
 			}
 		}
 
-		private void btnLCase_Click(object sender, System.EventArgs e)
+		private void btnLower_Click(object sender, System.EventArgs e)
 		{
 			if (this.m_oUtils.IsCapsLockOn() == true)
 			{
-				this.SendKeyStrokes(this.txtSQLCommand, " lcase{(}");
+				this.SendKeyStrokes(this.txtSQLCommand, " lower{(}");
 			}
 			else
 			{
-				this.SendKeyStrokes(this.txtSQLCommand, " LCASE{(}");
+				this.SendKeyStrokes(this.txtSQLCommand, " LOWER{(}");
 			}
 		}
 
@@ -1767,19 +1804,55 @@ namespace FIA_Biosum_Manager
 			this.SendKeyStrokes(this.txtSQLCommand, "'");
 		}
 
-		private void btnIIF_Click(object sender, System.EventArgs e)
+		private void btnCaseWhen_Click(object sender, System.EventArgs e)
 		{
 			if (this.m_oUtils.IsCapsLockOn() == true)
 			{
-				this.SendKeyStrokes(this.txtSQLCommand, " iif{(}");
+				this.SendKeyStrokes(this.txtSQLCommand, " case when ");
 			}
 			else
 			{
-				this.SendKeyStrokes(this.txtSQLCommand, " IIF{(}");
+				this.SendKeyStrokes(this.txtSQLCommand, " CASE WHEN ");
 			}
 		}
 
-		private void btnIn_Click(object sender, System.EventArgs e)
+        private void btnThen_Click(object sender, System.EventArgs e)
+        {
+            if (this.m_oUtils.IsCapsLockOn() == true)
+            {
+                this.SendKeyStrokes(this.txtSQLCommand, " then ");
+            }
+            else
+            {
+                this.SendKeyStrokes(this.txtSQLCommand, " THEN ");
+            }
+        }
+
+        private void btnElse_Click(object sender, System.EventArgs e)
+        {
+            if (this.m_oUtils.IsCapsLockOn() == true)
+            {
+                this.SendKeyStrokes(this.txtSQLCommand, " else ");
+            }
+            else
+            {
+                this.SendKeyStrokes(this.txtSQLCommand, " ELSE ");
+            }
+        }
+
+        private void btnEnd_Click(object sender, System.EventArgs e)
+        {
+            if (this.m_oUtils.IsCapsLockOn() == true)
+            {
+                this.SendKeyStrokes(this.txtSQLCommand, " end ");
+            }
+            else
+            {
+                this.SendKeyStrokes(this.txtSQLCommand, " END ");
+            }
+        }
+
+        private void btnIn_Click(object sender, System.EventArgs e)
 		{
 			if (this.m_oUtils.IsCapsLockOn() == true)
 			{
