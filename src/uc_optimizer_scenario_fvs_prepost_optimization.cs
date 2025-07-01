@@ -1559,7 +1559,6 @@ namespace FIA_Biosum_Manager
                         oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                     }
                 }
-                conn.Close();
             }
             return 1;
         }
@@ -2231,7 +2230,6 @@ namespace FIA_Biosum_Manager
                                     m_intError = -1;
                                     m_strError = m_strError + "Error making a db connection to PREPOST_FVSOUT.db\r\n";
                                 }
-                                conn.Close();
                             }
                         }
                         else

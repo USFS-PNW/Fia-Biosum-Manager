@@ -3,7 +3,6 @@ using System.Drawing;
 using System.Collections;
 using System.ComponentModel;
 using System.Windows.Forms;
-using System.Data.OleDb;
 using SQLite.ADO;
 
 namespace FIA_Biosum_Manager
@@ -71,9 +70,6 @@ namespace FIA_Biosum_Manager
 		public System.Windows.Forms.TabPage tbOptimization;
 		public bool m_bOptimizeTabPageEnabled=true;
 
-		private bool m_oTabPageLast;
-
-
 		public string m_strAllowLeaveTabPageMsg="";
 		public bool m_bEnableSelectedTabPage=true;
 		public int  m_intEditTabPageIndex=0;
@@ -89,7 +85,6 @@ namespace FIA_Biosum_Manager
         private TabPage tbProcessorScenario;
 
         public const int TOTALCYCLES = 4;
-		
 		
 		public bool m_bPopup = false;
 
@@ -4282,7 +4277,7 @@ namespace FIA_Biosum_Manager
             return bSourceFieldExists;
         }
 
-            public bool BackupGisData()
+        public bool BackupGisData()
         {
             string strFileSuffix = "_" + DateTime.Now.ToString("MMddyyyy");
             string strBackedUpMdb = "";
@@ -4341,9 +4336,22 @@ namespace FIA_Biosum_Manager
             return bSuccess;
         }
 
-        public int LoadSqliteGisData(string strSourceYardingDistField, double dblMaxOneWayHours, string strDebugFile)
+
+        public int LoadGisData(string strSourceYardingDistField, double dblMaxOneWayHours, string strDebugFile)
         {
+            DataMgr oDataMgr = new DataMgr();
+
             m_oProjectDs.populate_datasource_array();
+
+            // plot
+            int intTable = m_oProjectDs.getTableNameRow(Datasource.TableTypes.Plot);
+            //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
+            string strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
+            string strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
+            if (strTableStatus == "F")
+            {
+                m_strPlotTableName = strTableName;
+            }
 
             string[] arrTableTypes = { Datasource.TableTypes.TravelTimes, Datasource.TableTypes.ProcessingSites };
             string strTravelTimesTableName = "";
@@ -4351,154 +4359,131 @@ namespace FIA_Biosum_Manager
             int intRecordCount = -1;
 
             frmMain.g_sbpInfo.Text = "Creating travel_time and processing_site tables...Stand by";
-            string strSQLiteConn = "";
-            foreach (string strTableType in arrTableTypes)
+            string strConn = "";
+
+            // travel times
+            intTable = m_oProjectDs.getTableNameRow(arrTableTypes[0]);
+            string strDirectoryPath = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
+            string strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
+            strConn = oDataMgr.GetConnectionString(strDirectoryPath + "\\" + strFileName);
+
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
-                // travel times
-                int intTable = m_oProjectDs.getTableNameRow(strTableType);
-                string strDirectoryPath = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-                string strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
-                //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
-                string strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
-                string strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
-                strSQLiteConn = SQLite.GetConnectionString(strDirectoryPath + "\\" + strFileName);
-                using (var oLoadConn = new System.Data.SQLite.SQLiteConnection(strSQLiteConn))
+                conn.Open();
+
+                foreach (string strTableType in arrTableTypes)
                 {
-                    oLoadConn.Open();
+                    intTable = m_oProjectDs.getTableNameRow(strTableType);
+                    //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
+                    strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
+                    strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
+
                     if (strTableStatus == "F")
                     {
-                        string strSql = "DROP TABLE " + strTableName;
-                        SQLite.SqlNonQuery(oLoadConn, strSql);
+                        oDataMgr.m_strSQL = "DROP TABLE " + strTableName;
+                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                     }
-                    if (SQLite.m_intError == 0)
+                    if (oDataMgr.m_intError == 0)
                     {
                         if (strTableType.Equals(Datasource.TableTypes.TravelTimes))
                         {
-                            frmMain.g_oTables.m_oTravelTime.CreateSqliteTravelTimeTable(SQLite, oLoadConn, strTableName);
+                            frmMain.g_oTables.m_oTravelTime.CreateSqliteTravelTimeTable(oDataMgr, conn, strTableName);
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(strDebugFile, "Created travel_time table \r\n END: " + System.DateTime.Now.ToString() + "\r\n");
                             strTravelTimesTableName = strTableName;
                         }
                         else
                         {
-                            frmMain.g_oTables.m_oTravelTime.CreateSqliteProcessingSiteTable(SQLite, oLoadConn, strTableName);
+                            frmMain.g_oTables.m_oTravelTime.CreateSqliteProcessingSiteTable(oDataMgr, conn, strTableName);
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(strDebugFile, "Created processing_site table \r\n END: " + System.DateTime.Now.ToString() + "\r\n");
                             strPSitesTableName = strTableName;
                         }
                     }
-
                 }
-            }
 
-            ado_data_access oAdo = new ado_data_access();
-            bool bPlotRecords = false;
-            if (SQLite.m_intError == 0)
-            {
-                frmMain.g_sbpInfo.Text = "Creating temp database and table links...Stand by";
-                CreateDBAndTableDataSourceLinks();
-                string strLoadConn = oAdo.getMDBConnString(m_strTempAccdb, "", "");
-                string strSql = "";
-                using (var oLoadConn = new OleDbConnection(strLoadConn))
+                string strMasterGisFile = m_masterFolder + "\\" + Tables.TravelTime.DefaultMasterTravelTimeDbFile;
+                oDataMgr.m_strSQL = "ATTACH DATABASE'" + strMasterGisFile + "' AS source";
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+                string strMasterDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + "\\" + Tables.FVS.DefaultRxPackageDbFile;
+                oDataMgr.m_strSQL = "ATTACH DATABASE '" + strMasterDb + "' AS master";
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+                oDataMgr.m_strSQL = "INSERT INTO " + strTravelTimesTableName + 
+                    " SELECT traveltime_id, psite_id, biosum_plot_id, collector_id, " +
+                    "railhead_id, travel_mode, one_way_hours, p.plot, p.statecd " +
+                    "FROM " + m_strPlotTableName + " AS p, source." + strTravelTimesTableName + " AS t " +
+                    "WHERE p.statecd = t.statecd AND p.plot = t.plot AND one_way_hours <= " + dblMaxOneWayHours;
+                frmMain.g_sbpInfo.Text = "Loading project travel_times table...Stand by";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
+
+                bool bPlotRecords = false;
+                oDataMgr.m_strSQL = "SELECT COUNT(*) FROM " + strTravelTimesTableName;
+                intRecordCount = (int)oDataMgr.getRecordCount(conn, oDataMgr.m_strSQL, strTravelTimesTableName);
+                oDataMgr.m_strSQL = "SELECT COUNT(*) FROM (SELECT * FROM " + m_strPlotTableName + " LIMIT 1)";
+                if (oDataMgr.getRecordCount(conn, oDataMgr.m_strSQL, m_strPlotTableName) > 0)
                 {
-                    oLoadConn.Open();
-                    // Sleep until the table link exists
-                    do
-                    {
-                        System.Threading.Thread.Sleep(1000);
-                    }
-                    while (!oAdo.TableExist(oLoadConn, strTravelTimesTableName));
-
-                    strSql = "INSERT INTO " + strTravelTimesTableName +
-                                    " SELECT TRAVELTIME_ID, PSITE_ID, biosum_plot_id," +
-                                    " COLLECTOR_ID, RAILHEAD_ID, TRAVEL_MODE, ONE_WAY_HOURS," +
-                                    " PT.PLOT AS PLOT, PT.STATECD AS STATECD" +
-                                    " FROM " + m_strPlotTableName + " PT" +
-                                    " INNER JOIN " + m_strMasterTravelTime + " TT ON (PT.statecd = TT.STATECD) AND (PT.plot = TT.PLOT)" +
-                                    " WHERE ONE_WAY_HOURS <= " + dblMaxOneWayHours;
-                    frmMain.g_sbpInfo.Text = "Loading project travel_times table...Stand by";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSql + "\r\n");
-                    oAdo.SqlNonQuery(oLoadConn, strSql);
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
-                    
-                    strSql = "SELECT COUNT(*) FROM " + strTravelTimesTableName;
-                    intRecordCount = oAdo.getRecordCount(oLoadConn, strSql, strTravelTimesTableName);
-                    strSql = $@"SELECT COUNT(*) FROM(SELECT TOP 1 plot FROM {m_strPlotTableName})";
-                    if (oAdo.getRecordCount(oLoadConn, strSql, m_strPlotTableName) > 0)
-                    {
-                        bPlotRecords = true;
-                    } 
+                    bPlotRecords = true;
                 }
 
-                if (oAdo.m_intError == 0 && intRecordCount > 0)
+                if (oDataMgr.m_intError == 0 && intRecordCount > 0)
                 {
                     frmMain.g_sbpInfo.Text = "Loading project processing_site table...Stand by";
-                    using (var oLoadConn = new System.Data.SQLite.SQLiteConnection(strSQLiteConn))
-                    {
-                        oLoadConn.Open();
-                        strSql = $@"ATTACH '{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}' as p";
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSql + "\r\n");
-                        SQLite.SqlNonQuery(oLoadConn, strSql);
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
+                    oDataMgr.m_strSQL = "INSERT INTO " + strPSitesTableName +
+                        " SELECT DISTINCT s.psite_id, psite_cn, name, trancd, trancd_def, biocd, biocd_def, " +
+                        "exists_yn, lat, lon, state, city, mill_type, county, status, '' AS notes " +
+                        "FROM source." + strPSitesTableName + " AS s, " + strTravelTimesTableName + " AS t " +
+                        "WHERE s.psite_id = t.psite_id GROUP BY s.psite_id, psite_cn, name, trancd, trancd_def, " +
+                        "biocd, biocd_def, exists_yn, lat, lon, state, city, mill_type, county, status";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
 
-                        strSql = $@"INSERT into processing_site SELECT distinct source.psite_id, PSITE_CN, name, TRANCD, TRANCD_DEF, BIOCD, BIOCD_DEF, 
-                                 EXISTS_YN, LAT, LON, STATE, CITY, MILL_TYPE, COUNTY,  STATUS, '' AS NOTES 
-                                 FROM p.processing_site source INNER JOIN travel_time tt ON source.PSITE_ID = tt.PSITE_ID 
-                                 group by source.PSITE_ID, PSITE_CN, NAME, TRANCD, TRANCD_DEF, BIOCD, BIOCD_DEF, EXISTS_YN, LAT, LON, STATE, CITY, MILL_TYPE, COUNTY,  STATUS";
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSql + "\r\n");
-                        SQLite.SqlNonQuery(oLoadConn, strSql);
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
-
-                        strSql = "SELECT COUNT(*) FROM " + strPSitesTableName;
-                        intRecordCount = (int) SQLite.getRecordCount(oLoadConn, strSql, strPSitesTableName);
-                    }
+                    oDataMgr.m_strSQL = "SELECT COUNT(*) FROM " + strPSitesTableName;
+                    intRecordCount = (int)oDataMgr.getRecordCount(conn, oDataMgr.m_strSQL, strPSitesTableName);
                 }
-                if (oAdo.m_intError == 0 && !String.IsNullOrEmpty(strSourceYardingDistField))
+
+                if (oDataMgr.m_intError == 0 && !String.IsNullOrEmpty(strSourceYardingDistField))
                 {
                     if (bPlotRecords)
                     {
-                        frmMain.g_sbpInfo.Text = "Updating yarding distances on plot table...Stand by";
-                        using (var oLoadConn = new OleDbConnection(strLoadConn))
-                        {
-                            oLoadConn.Open();
-                            // Access wants a primary key so that we can update the plot table from plot_gis
-                            oAdo.AddPrimaryKey(oLoadConn, Tables.TravelTime.DefaultPlotGisTableName, $@"{Tables.TravelTime.DefaultPlotGisTableName}_pk", "PLOT,STATECD");
+                        string strAuditDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + "\\" + Tables.TravelTime.DefaultGisAuditPathAndDbFile;
+                        oDataMgr.m_strSQL = "ATTACH DATABASE '" + strAuditDb + "' AS audit";
+                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 
-                            // Run audit before performing the update
-                            strSql = $@"INSERT INTO {Tables.TravelTime.DefaultGisPlotDistanceAuditTable} SELECT biosum_plot_id, PT.statecd, PT.plot, gis_yard_dist_ft, {strSourceYardingDistField}
-                                FROM {m_strPlotTableName} PT LEFT JOIN {Tables.TravelTime.DefaultPlotGisTableName} PG ON (PT.statecd = PG.statecd) AND (PT.plot = PG.PLOT)
-                                WHERE {strSourceYardingDistField} IS NULL";                            
-                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                frmMain.g_oUtils.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSql + "\r\n");
-                            oAdo.SqlNonQuery(oLoadConn, strSql);
-                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                frmMain.g_oUtils.WriteText(strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
+                        // Run audit before performing the update
+                        oDataMgr.m_strSQL = "INSERT INTO " + Tables.TravelTime.DefaultGisPlotDistanceAuditTable +
+                            " SELECT biosum_plot_id, p.statecd, p.plot, gis_yard_dist_ft, " + strSourceYardingDistField +
+                            " FROM " + m_strPlotTableName + " AS p LEFT JOIN " + Tables.TravelTime.DefaultPlotGisTableName + " AS g " +
+                            "ON p.statecd = g.statecd AND p.plot = g.plot " +
+                            "WHERE " + strSourceYardingDistField + " IS NULL";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
 
-                            strSql = $@"UPDATE {m_strPlotTableName} PT INNER JOIN {Tables.TravelTime.DefaultPlotGisTableName} PG ON 
-                                PT.PLOT = PG.PLOT AND PT.STATECD = PG.STATECD SET GIS_YARD_DIST_FT = {strSourceYardingDistField}";
-                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                frmMain.g_oUtils.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSql + "\r\n");
-                            oAdo.SqlNonQuery(oLoadConn, strSql);
-                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                                frmMain.g_oUtils.WriteText(strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
-                        }
+                        oDataMgr.m_strSQL = "UPDATE " + m_strPlotTableName + " AS p " +
+                            "SET gis_yard_dist_ft = " + strSourceYardingDistField +
+                            " FROM " + Tables.TravelTime.DefaultPlotGisTableName + " AS g " +
+                            "WHERE p.plot = g.plot AND p.statecd = g.statecd";
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            frmMain.g_oUtils.WriteText(strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
                     }
-
                 }
-
             }
 
-            if (oAdo != null)
-            {
-                oAdo.CloseConnection(oAdo.m_OleDbConnection);
-                oAdo = null;
-            }
+            oDataMgr = null;
 
             return intRecordCount;
         }

@@ -255,12 +255,7 @@ namespace FIA_Biosum_Manager
 		{
 			int x = 0;
 
-			//const int LANDOWNER_FORESTSERVICE = 10;
-			//const int LANDOWNER_OTHERFEDERAL = 20;
-			//const int LANDOWNER_STATELOCAL = 30;
-			//const int LANDOWNER_PRIVATE = 40;
 
-			//string str="";
 			string strSQL = "";
 			string strConn = "";
 
@@ -320,7 +315,6 @@ namespace FIA_Biosum_Manager
 						" VALUES ('" + strScenarioId + "',40);";
 					oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 				}
-				conn.Close();
 			}
 			return 0;
 		}

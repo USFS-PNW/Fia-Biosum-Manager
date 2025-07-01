@@ -452,12 +452,20 @@ namespace FIA_Biosum_Manager
             this.uc_optimizer_sqlite_export1.Visible = true;
 
         }
-        public void Initialize_Load_Gis_Data_User_Control()
+        public bool Initialize_Load_Gis_Data_User_Control()
         {
 
             this.uc_optimizer_load_gis_data1 = new uc_optimizer_load_gis_data(this.m_frmMain);
-            this.Controls.Add(this.uc_optimizer_load_gis_data1);
-            this.uc_optimizer_load_gis_data1.Visible = true;
+			if (this.uc_optimizer_load_gis_data1.bTerminateLoad)
+			{
+				return true;
+			}
+            else
+            {
+				this.Controls.Add(this.uc_optimizer_load_gis_data1);
+				this.uc_optimizer_load_gis_data1.Visible = true;
+				return false;
+			}
         }
         public void Initialize_Plot_Data_Add_Edit_User_Control()
 		{

@@ -18,6 +18,7 @@ namespace FIA_Biosum_Manager
         private string m_xpsFile = Help.DefaultTreatmentOptimizerFile;
         string m_strMasterDb;
         string m_strSourceField;
+        public bool bTerminateLoad = false;
 
         public uc_optimizer_load_gis_data(frmMain p_frmMain)
         {
@@ -63,6 +64,8 @@ namespace FIA_Biosum_Manager
                 DialogResult res = MessageBox.Show(strMessage, "FIA BioSum", MessageBoxButtons.YesNo);
                 if (res != DialogResult.Yes)
                 {
+                    MessageBox.Show("GIS data load terminated", "FIA BioSum");
+                    bTerminateLoad = true;
                     return;
                 }
             }
@@ -112,7 +115,7 @@ namespace FIA_Biosum_Manager
                 {
                     m_strSourceField = "";
                 }
-                int intRowCount = m_oGisTools.LoadSqliteGisData(m_strSourceField, dblMaxHours, (frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile));
+                int intRowCount = m_oGisTools.LoadGisData(m_strSourceField, dblMaxHours, (frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile));
                 if (intRowCount < 1)
                 {
                     MessageBox.Show("An error occurred while loading the GIS data!!", "FIA BioSum");

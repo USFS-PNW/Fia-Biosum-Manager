@@ -715,7 +715,7 @@ namespace FIA_Biosum_Manager
                     convertedType = "DOUBLE";
                     break;
                 case "SYSTEM.STRING":
-                    convertedType = "VARCHAR(255)";
+                    convertedType = "CHAR(255)";
                     break;
 				case "SYSTEM.BYTE":
 					convertedType = "CHAR(1)";

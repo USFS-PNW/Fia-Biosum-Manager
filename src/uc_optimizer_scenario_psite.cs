@@ -585,7 +585,6 @@ namespace FIA_Biosum_Manager
 					if (oDataMgr.m_intError != 0) break;
 				}
 				x = oDataMgr.m_intError;
-				conn.Close();
 			}
 			return x;
 		}

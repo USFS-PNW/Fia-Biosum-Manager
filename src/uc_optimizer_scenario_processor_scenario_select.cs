@@ -242,7 +242,6 @@ namespace FIA_Biosum_Manager
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 
                 }
-                conn.Close();
             }
             
         }

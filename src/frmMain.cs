@@ -1666,20 +1666,24 @@ namespace FIA_Biosum_Manager
                     this.m_frmLoadGis.BackColor = System.Drawing.SystemColors.Control;
                     this.m_frmLoadGis.Text = "Load GIS Data";
                     this.m_frmLoadGis.MdiParent = this;
-                    this.m_frmLoadGis.Initialize_Load_Gis_Data_User_Control();
+                    bool bTerminateLoad = this.m_frmLoadGis.Initialize_Load_Gis_Data_User_Control();
 
-                    this.m_frmLoadGis.DisposeOfFormWhenClosing = true;
+                    if (!bTerminateLoad)
+                    {
+                        this.m_frmLoadGis.DisposeOfFormWhenClosing = true;
 
-                    this.m_frmLoadGis.Width = this.m_frmLoadGis.uc_optimizer_load_gis_data1.Width + 25;
-                    this.m_frmLoadGis.Height = this.m_frmLoadGis.uc_optimizer_load_gis_data1.Height + 40;
-                    this.m_frmLoadGis.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-                    this.m_frmLoadGis.uc_optimizer_load_gis_data1.Top = 0;
-                    this.m_frmLoadGis.uc_optimizer_load_gis_data1.Left = 0;
+                        this.m_frmLoadGis.Width = this.m_frmLoadGis.uc_optimizer_load_gis_data1.Width + 25;
+                        this.m_frmLoadGis.Height = this.m_frmLoadGis.uc_optimizer_load_gis_data1.Height + 40;
+                        this.m_frmLoadGis.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+                        this.m_frmLoadGis.uc_optimizer_load_gis_data1.Top = 0;
+                        this.m_frmLoadGis.uc_optimizer_load_gis_data1.Left = 0;
 
-                    this.m_frmLoadGis.uc_optimizer_load_gis_data1.Visible = true;
-                    this.m_frmLoadGis.MinimizeMainForm = true;
-                    this.m_frmLoadGis.ParentControl = frmMain.g_oFrmMain;
-                    this.m_frmLoadGis.Show();
+                        this.m_frmLoadGis.uc_optimizer_load_gis_data1.Visible = true;
+                        this.m_frmLoadGis.MinimizeMainForm = true;
+                        this.m_frmLoadGis.ParentControl = frmMain.g_oFrmMain;
+                        this.m_frmLoadGis.Show();
+                    }
+
                 }
                 else if (strText.Trim().ToUpper() == "OPTIMIZATION SCENARIO")
                 {
