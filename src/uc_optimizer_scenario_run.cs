@@ -1497,38 +1497,42 @@ namespace FIA_Biosum_Manager
 
                     //FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
-					//this.CreateAuditTableLinks();
-					//if (this.m_intError != 0) return;
+                    //this.CreateAuditTableLinks();
+                    //if (this.m_intError != 0) return;
 
-					//this.CreateScenarioTableLinks();
-     //               if (this.m_intError != 0)
-     //               {
-     //                   FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
-     //                   FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
-     //                   return;
-     //               }
-     //               this.CreateValidComboTableLinks();
-     //               if (this.m_intError != 0)
-     //               {
-     //                   FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
-     //                   FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
-     //                   return;
-     //               }
-                    
+                    //this.CreateScenarioTableLinks();
+                    //               if (this.m_intError != 0)
+                    //               {
+                    //                   FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    //                   FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    //                   return;
+                    //               }
+                    //               this.CreateValidComboTableLinks();
+                    //               if (this.m_intError != 0)
+                    //               {
+                    //                   FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    //                   FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    //                   return;
+                    //               }
 
-     //               FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
-     //               m_oRxTools.CreateTableLinksToFVSPrePostTables(m_strTempMDBFile);
-     //               m_intError = m_oRxTools.m_intError;
-     //               if (this.m_intError != 0)
-     //               {
-     //                   FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
-     //                   FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
-     //                   return;
-     //               }
+                    //               FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
-					//CREATE WORK TABLES
-					CreateTableStructureOfHarvestCosts();
+                    //               m_oRxTools.CreateTableLinksToFVSPrePostTables(m_strTempMDBFile);
+                    //               m_intError = m_oRxTools.m_intError;
+                    //               if (this.m_intError != 0)
+                    //               {
+                    //                   FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    //                   FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    //                   return;
+                    //               }
+
+                    // Processor scenario results tables
+                    m_strTreeVolValBySpcDiamGroupsTable = Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName;
+                    m_strHvstCostsTable = Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName;
+
+                    //CREATE WORK TABLES
+                    CreateTableStructureOfHarvestCosts();
                     if (this.m_intError != 0)
                     {
                         FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
@@ -4503,7 +4507,7 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nInsert into work table. Cheapest rail route to merch psite\r\n ");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n"); ;
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
                 if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
 
@@ -4573,7 +4577,7 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nInsert into work table. Cheapest road route to chip psite\r\n ");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n"); ;
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
                 if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
 
@@ -4597,7 +4601,7 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nInsert into work table. Cheapest rail route to chip psite\r\n ");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n"); ;
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
                 if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
 
@@ -4638,7 +4642,7 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nInsert into work table. Get the overall cheapest chip route\r\n");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n"); ;
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
                 if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
 
@@ -4658,11 +4662,13 @@ namespace FIA_Biosum_Manager
 
                 p_dataMgr.m_strSQL = "INSERT INTO haul_costs (biosum_plot_id, railhead_id, psite_id, " +
                     "transfer_cost_dpgt, road_cost_dpgt, rail_cost_dpgt, complete_haul_cost_dpgt, materialcd) " +
-                    "SELECT * FROM cheapest_merch_haul_costs_work_table";
+                    "SELECT biosum_plot_id, railhead_id, psite_id," +
+                    "transfer_cost_dpgt, road_cost_dpgt, rail_cost_dpgt, complete_haul_cost_dpgt, materialcd " +
+                    "FROM cheapest_merch_haul_costs_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nInsert into haul_costs table cheapest merch route for each plot\r\n");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n"); ;
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n"); 
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
                 if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
 
@@ -4678,11 +4684,13 @@ namespace FIA_Biosum_Manager
 
                 p_dataMgr.m_strSQL = "INSERT INTO haul_costs(biosum_plot_id, railhead_id, psite_id, " +
                     "transfer_cost_dpgt, road_cost_dpgt, rail_cost_dpgt, complete_haul_cost_dpgt, materialcd) " +
-                    "SELECT * FROM cheapest_chip_haul_costs_work_table";
+                    "SELECT biosum_plot_id, railhead_id, psite_id, " +
+                    "transfer_cost_dpgt, road_cost_dpgt, rail_cost_dpgt, complete_haul_cost_dpgt, materialcd " +
+                    "FROM cheapest_chip_haul_costs_work_table";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nInsert into haul_costs table cheapest chip route for each plot\r\n");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n"); ;
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
                 if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
 
@@ -6122,8 +6130,8 @@ namespace FIA_Biosum_Manager
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "--Execute rule definition filters for the condition table. The filters include ownership and condition accessible--\r\n");
-                p_dataMgr.m_strSQL = "INSERT INTO ruledefinitionscondfilter SELECT * FROM " + m_strCondTable +
-                    " WHERE c.owngrpcd IN (";
+                p_dataMgr.m_strSQL = "INSERT INTO ruledefinitionscondfilter SELECT * FROM " + m_strCondTable + " AS c " +
+                    "WHERE c.owngrpcd IN (";
 
                 //usfs ownnership
                 if (ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_owner_groups1.chkOwnGrp10.Checked == true)
@@ -6177,9 +6185,6 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "--Execute SQL that deletes from the condition rule definitions table (ruledefinitionscondfilter) those biosum_cond_id that are not found in the user defined condition SQL filter table (userdefinedcondfilter_work)--\r\n");
 
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strSystemResultsDbPathAndFile + "' AS results";
-                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
-
                 p_dataMgr.m_strSQL = "DELETE FROM ruledefinitionscondfilter AS a " +
                         "WHERE NOT EXISTS " +
                         "(SELECT b.biosum_cond_id " +
@@ -6217,6 +6222,7 @@ namespace FIA_Biosum_Manager
 
                 //cycle1
                 p_dataMgr.m_strSQL = "INSERT INTO validcombos_fvspost " +
+                           "(biosum_cond_id, rxpackage, rx, rxcycle) " +
                            "SELECT a.biosum_cond_id, b.rxpackage, b.simyear1_rx AS rx, '1' AS rxcycle " +
                            "FROM " + m_strCondTable + " AS a, " + m_strRxPackageTable + " AS b " +
                            "WHERE b.simyear1_rx IS NOT NULL AND LENGTH(TRIM(b.simyear1_rx)) > 0 AND b.simyear1_rx<>'000'";
@@ -6227,6 +6233,7 @@ namespace FIA_Biosum_Manager
 
                 //cycle2
                 p_dataMgr.m_strSQL = "INSERT INTO validcombos_fvspost " +
+                           "(biosum_cond_id, rxpackage, rx, rxcycle) " +
                            "SELECT a.biosum_cond_id, b.rxpackage, b.simyear2_rx AS rx, '2' AS rxcycle " +
                            "FROM " + m_strCondTable + " AS a, " + m_strRxPackageTable + " AS b " +
                            "WHERE b.simyear2_rx IS NOT NULL AND LENGTH(TRIM(b.simyear2_rx)) > 0 AND b.simyear2_rx<>'000'";
@@ -6237,6 +6244,7 @@ namespace FIA_Biosum_Manager
 
                 //cycle3
                 p_dataMgr.m_strSQL = "INSERT INTO validcombos_fvspost " +
+                           "(biosum_cond_id, rxpackage, rx, rxcycle) " +
                            "SELECT a.biosum_cond_id, b.rxpackage, b.simyear3_rx AS rx ,'3' AS rxcycle " +
                            "FROM " + m_strCondTable + " AS a, " + m_strRxPackageTable + " AS b " +
                            "WHERE b.simyear3_rx IS NOT NULL AND LENGTH(TRIM(b.simyear3_rx)) > 0 AND b.simyear3_rx<>'000'";
@@ -6247,6 +6255,7 @@ namespace FIA_Biosum_Manager
 
                 //cycle4
                 p_dataMgr.m_strSQL = "INSERT INTO validcombos_fvspost " +
+                        "(biosum_cond_id, rxpackage, rx, rxcycle) " +
                         "SELECT a.biosum_cond_id, b.rxpackage, b.simyear4_rx AS rx, '4' AS rxcycle " +
                         "FROM " + m_strCondTable + " AS a, " + m_strRxPackageTable + " AS b " +
                         "WHERE b.simyear4_rx IS NOT NULL AND LENGTH(TRIM(b.simyear4_rx)) > 0 AND b.simyear4_rx<>'000'";
@@ -6261,6 +6270,7 @@ namespace FIA_Biosum_Manager
 
                 //cycle1
                 p_dataMgr.m_strSQL = "INSERT INTO validcombos_fvspre " +
+                        "(biosum_cond_id, rxpackage, rx, rxcycle) " +
                         "SELECT a.biosum_cond_id, b.rxpackage, b.simyear1_rx AS rx, '1' AS rxcycle " +
                         "FROM " + m_strCondTable + " AS a, " + m_strRxPackageTable + " AS b " +
                         "WHERE b.simyear1_rx IS NOT NULL AND LENGTH(TRIM(b.simyear1_rx)) > 0 AND b.simyear1_rx<>'000'";
@@ -6271,6 +6281,7 @@ namespace FIA_Biosum_Manager
 
                 //cycle2
                 p_dataMgr.m_strSQL = "INSERT INTO validcombos_fvspre " +
+                           "(biosum_cond_id, rxpackage, rx, rxcycle) " +
                            "SELECT a.biosum_cond_id, b.rxpackage, b.simyear2_rx AS rx, '2' AS rxcycle " +
                            "FROM " + m_strCondTable + " AS a, " + m_strRxPackageTable + " AS b " +
                            "WHERE b.simyear2_rx IS NOT NULL AND LENGTH(TRIM(b.simyear2_rx)) > 0 AND b.simyear2_rx<>'000'";
@@ -6281,6 +6292,7 @@ namespace FIA_Biosum_Manager
 
                 //cycle3
                 p_dataMgr.m_strSQL = "INSERT INTO validcombos_fvspre " +
+                           "(biosum_cond_id, rxpackage, rx, rxcycle) " +
                            "SELECT a.biosum_cond_id, b.rxpackage, b.simyear3_rx AS rx, '3' AS rxcycle " +
                            "FROM " + m_strCondTable + " AS a, " + m_strRxPackageTable + " AS b " +
                            "WHERE b.simyear3_rx IS NOT NULL AND LENGTH(TRIM(b.simyear3_rx)) > 0 AND b.simyear3_rx<>'000'";
@@ -6291,6 +6303,7 @@ namespace FIA_Biosum_Manager
 
                 //cycle4
                 p_dataMgr.m_strSQL = "INSERT INTO validcombos_fvspre " +
+                        "(biosum_cond_id, rxpackage, rx, rxcycle) " +
                         "SELECT a.biosum_cond_id, b.rxpackage, b.simyear4_rx AS rx, '4' AS rxcycle " +
                         "FROM " + m_strCondTable + " AS a, " + m_strRxPackageTable + " AS b " +
                         "WHERE b.simyear4_rx IS NOT NULL AND LENGTH(TRIM(b.simyear4_rx)) > 0 AND b.simyear4_rx<>'000'";
@@ -6369,7 +6382,7 @@ namespace FIA_Biosum_Manager
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
                 // Set the fvs_variant from the plot table
-                p_dataMgr.m_strSQL = "UPDATE validcombos_fvs_prepost AS v " +
+                p_dataMgr.m_strSQL = "UPDATE validcombos_fvsprepost AS v " +
                     "SET fvs_variant = p.fvs_variant " +
                     "FROM " + m_strCondTable + " AS c, " + m_strPlotTable + " AS p " +
                     "WHERE v.biosum_cond_id = c.biosum_cond_id AND c.biosum_plot_id = p.biosum_plot_id";
@@ -9473,13 +9486,19 @@ namespace FIA_Biosum_Manager
 
             using (System.Data.SQLite.SQLiteConnection workConn = new System.Data.SQLite.SQLiteConnection(m_strWorkTablesConn))
             {
-                workConn.Close();
+                workConn.Open();
 
                 string strScenarioDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + strScenarioDb + "' AS scenario";
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strSystemResultsDbPathAndFile + "' AS results";
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strCondPathAndFile + "' AS master";
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strProcessorResultsPathAndFile + "' AS processor_results";
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
                 /********************************************
@@ -9510,12 +9529,13 @@ namespace FIA_Biosum_Manager
 
                 // Create econ_by_rx_cycle_work_table in temp work tables db
                 // Have to parse by column source
-                string strSelectSQL = "SELECT vc.biosum_cond_id, vc.rxpackage, vc.rx, vc.rxcycle " +
+                // Think I need to break this up into several queries
+                string strSelectSQL = "SELECT vc.biosum_cond_id, vc.rxpackage, vc.rx, vc.rxcycle, " +
                     "tvvs.merch_vol_cf, tvvs.chip_vol_cf, tvvs.chip_wt_gt, tvvs.chip_val_dpa, tvvs.merch_wt_gt, tvvs.merch_val_dpa, hc.complete_cpa AS harvest_onsite_cost_dpa, " +
                     "CASE WHEN psa.merch_haul_cost_dpgt IS NOT NULL THEN " +
                     "CASE WHEN tvvs.rxcycle = '2' THEN psa.merch_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle2 + " ELSE " +
                     "CASE WHEN tvvs.rxcycle = '3' THEN psa.merch_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle3 + " ELSE " +
-                    "CASE WHEN tvvs.rxcycle= '4' THEN psa.psa.merch_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle4 + " ELSE " +
+                    "CASE WHEN tvvs.rxcycle= '4' THEN psa.merch_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle4 + " ELSE " +
                     "psa.merch_haul_cost_dpgt END END END ELSE 0 END AS escalator_merch_haul_cpa_pt, " +
                     "escalator_merch_haul_cpa_pt * tvvs.merch_wt_gt AS merch_haul_cost_dpa, " +
                     "CASE WHEN psa.chip_haul_cost_dpgt IS NOT NULL THEN " +
@@ -9590,6 +9610,7 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
 
                 if (p_dataMgr.m_intError != 0)
                 {
@@ -14454,7 +14475,7 @@ namespace FIA_Biosum_Manager
 
                 p_dataMgr.m_strSQL = "UPDATE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsHarvestMethodRefTableName + " AS ref " +
                     "SET rx_harvest_method_steep_id = HarvestMethodId, rx_harvest_method_steep_category = biosum_category, " +
-                    "rx_harvest_method_steep_category_descr = top_limn_slope_status " +
+                    "rx_harvest_method_steep_category_descr = top_limb_slope_status " +
                     "FROM " + m_strHarvestMethodsTable + " AS m " +
                     "WHERE TRIM(m.method) = TRIM(ref.rx_harvest_method_steep) AND steep_yn = 'Y'";
 
@@ -14478,7 +14499,7 @@ namespace FIA_Biosum_Manager
 
                     p_dataMgr.m_strSQL = "UPDATE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsHarvestMethodRefTableName + " AS ref " +
                         "SET scenario_harvest_method_low_id = HarvestMethodId, scenario_harvest_method_low_category = biosum_category, " +
-                        "scenario_harvest_method_low_category_descr = top_limn_slope_status " +
+                        "scenario_harvest_method_low_category_descr = top_limb_slope_status " +
                         "FROM " + m_strHarvestMethodsTable + " AS m " +
                         "WHERE TRIM(m.method) = TRIM(ref.scenario_harvest_method_low) AND steep_yn = 'N'";
 
@@ -14503,7 +14524,7 @@ namespace FIA_Biosum_Manager
 
                 p_dataMgr.m_strSQL = "UPDATE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsHarvestMethodRefTableName +
                                 " SET rx_harvest_method_low = 'NA', rx_harvest_method_low_id = 999, rx_harvest_method_low_category = 999, " +
-                                "rx_harveset_method_low_category_descr = 'NA', " +
+                                "rx_harvest_method_low_category_descr = 'NA', " +
                                 "rx_harvest_method_steep = 'NA', rx_harvest_method_steep_id = 999, rx_harvest_method_steep_category = 999, " +
                                 "rx_harvest_method_steep_category_descr = 'NA', " +
                                 "scenario_harvest_method_low = 'NA', scenario_harvest_method_low_id = 999, scenario_harvest_method_low_category = 999, " +
@@ -14572,7 +14593,7 @@ namespace FIA_Biosum_Manager
                     }
 
                     p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsDiameterSpeciesGroupRefTableName +
-                                    " (dbh_class_num, dbh_range_inches, spp_grp_code, spp_grp, to_chips, merch_val_dpcf, value_id_chipped_dpgt)" +
+                                    " (dbh_class_num, dbh_range_inches, spp_grp_code, spp_grp, to_chips, merch_val_dpcf, value_if_chipped_dpgt)" +
                                     " VALUES (" + oItem.DiameterGroupId + ", '" + oItem.DbhGroup + "'," + oItem.SpeciesGroupId + ",'" + oItem.SpeciesGroup + "','" +
                                     strEnergyWood + "', " + oItem.MerchDollarPerCubicFootValue + ", " +
                                     dblChippedValue + ")";
