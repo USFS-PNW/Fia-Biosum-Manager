@@ -4867,7 +4867,7 @@ namespace FIA_Biosum_Manager
                     "SUM(s.merch_wt_gt) AS merch_wt_gt," +
                     "SUM(s.merch_val_dpa) AS merch_val_dpa, " +
                     "s.place_holder " +
-                    "FROM " + this.m_strTreeVolValBySpcDiamGroupsTable.Trim() + " AS s " + 
+                    "FROM " + m_strTreeVolValBySpcDiamGroupsTable.Trim() + " AS s " + 
                     "GROUP BY biosum_cond_id,rxpackage,rx,rxcycle, place_holder " +
                     "ORDER BY biosum_cond_id,rxpackage,rx,rxcycle, place_holder";
 
@@ -7266,29 +7266,29 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "Selected", true);
             frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "focused", true);
 
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strSystemResultsDbPathAndFile)))
+            using (System.Data.SQLite.SQLiteConnection resultsConn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strSystemResultsDbPathAndFile)))
             {
-                conn.Open();
+                resultsConn.Open();
 
                 //attach FVS prepost weighted database
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile + "' AS fvs_weighted";
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
 
                 //attach FVS prepost
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile + "' AS fvs_out";
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
 
                 //get all the column names in the effective table
                 string strEffectiveTableName = ReferenceOptimizerScenarioForm.OutputTablePrefix + Tables.OptimizerScenarioResults.DefaultScenarioResultsEffectiveTableSuffix;
-                strEffectiveColumnArray = p_dataMgr.getFieldNamesArray(conn, "SELECT * FROM " + strEffectiveTableName);
+                strEffectiveColumnArray = p_dataMgr.getFieldNamesArray(resultsConn, "SELECT * FROM " + strEffectiveTableName);
 
                 /********************************************
 			     **delete all records in the effective table
 			     ********************************************/
-                p_dataMgr.m_strSQL = "delete from " + strEffectiveTableName;
+                p_dataMgr.m_strSQL = "DELETE FROM " + strEffectiveTableName;
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
@@ -7296,20 +7296,9 @@ namespace FIA_Biosum_Manager
                 p_dataMgr.m_strSQL = "INSERT INTO " + strEffectiveTableName + " (biosum_cond_id,rxpackage,rx,rxcycle) SELECT biosum_cond_id,rxpackage,rx,rxcycle FROM validcombos WHERE rxcycle='1'";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
-
-                //insert net revenue per acre into the effective table
-                //p_dataMgr.m_strSQL = "UPDATE " + strEffectiveTableName + " AS e " +
-                //    "SET nr_dpa = CASE WHEN p.max_nr_dpa IS NOT NULL THEN p.max_nr_dpa ELSE 0 END " +
-                //    "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName + " AS p " +
-                //    "WHERE e.biosum_cond_id = p.biosum_cond_id AND " +
-                //    "e.rxpackage = p.rxpackage AND " +
-                //    "e.rx = p.rx AND e.rxcycle = p.rxcycle";
-                //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                //    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-                //p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
 
                 //insert revenue filter field into the effective table
                 if (this.m_oOptimizationVariable.bUseFilter == true)
@@ -7334,7 +7323,7 @@ namespace FIA_Biosum_Manager
                                 "WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-                            p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                            p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
                         }
                     }
                 }
@@ -7392,7 +7381,7 @@ namespace FIA_Biosum_Manager
                             "SET " + p_dataMgr.m_strSQL;
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-                        p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                        p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
                     }
                 }
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
@@ -7410,7 +7399,7 @@ namespace FIA_Biosum_Manager
                 p_dataMgr.m_strSQL = "UPDATE " + strEffectiveTableName + " SET " + p_dataMgr.m_strSQL;
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
@@ -7518,7 +7507,7 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "--Improvement--\r\n");
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + strBetterSql + "\r\n");
-                    p_dataMgr.SqlNonQuery(conn, strBetterSql);
+                    p_dataMgr.SqlNonQuery(resultsConn, strBetterSql);
 
                 }
 
@@ -7531,7 +7520,7 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "--Disimprovement--\r\n");
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + strWorseSql + "\r\n");
-                    p_dataMgr.SqlNonQuery(conn, strWorseSql);
+                    p_dataMgr.SqlNonQuery(resultsConn, strWorseSql);
 
                 }
 
@@ -7544,7 +7533,7 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "--Variable Effective--\r\n");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + strEffectiveSql + "\r\n");
-                p_dataMgr.SqlNonQuery(conn, strEffectiveSql);
+                p_dataMgr.SqlNonQuery(resultsConn, strEffectiveSql);
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
@@ -7555,7 +7544,7 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "--Overall Effective--\r\n");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
 
                 if (p_dataMgr.m_intError != 0)
                 {
@@ -7568,7 +7557,7 @@ namespace FIA_Biosum_Manager
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
-                if (Convert.ToInt32(p_dataMgr.getRecordCount(conn, "SELECT COUNT(*) FROM " + strEffectiveTableName + " WHERE overall_effective_yn='Y'", "temp")) == 0)
+                if (Convert.ToInt32(p_dataMgr.getRecordCount(resultsConn, "SELECT COUNT(*) FROM " + strEffectiveTableName + " WHERE overall_effective_yn='Y'", "temp")) == 0)
                 {
 
                     MessageBox.Show("No overall effective treatments found. Processing is cancelled");
@@ -7580,16 +7569,13 @@ namespace FIA_Biosum_Manager
                 }
             }
 
-           
-
             if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
-
-
 
             if (this.m_intError == 0)
             {
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
             }
+            p_dataMgr = null;
         }
 
 
@@ -7779,19 +7765,21 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "focused", true);
 
 
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strSystemResultsDbPathAndFile)))
+            using (System.Data.SQLite.SQLiteConnection resultsConn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strSystemResultsDbPathAndFile)))
             {
-                conn.Open();
+                resultsConn.Open();
 
                 /********************************************
                  **delete all records in the optimization table
                  ********************************************/
                 string strOptimizationTableName = ReferenceOptimizerScenarioForm.OutputTablePrefix +
                     Tables.OptimizerScenarioResults.DefaultScenarioResultsOptimizationTableSuffix;
-                p_dataMgr.m_strSQL = "delete from " + strOptimizationTableName;
+
+                p_dataMgr.m_strSQL = "DELETE FROM " + strOptimizationTableName;
+
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
@@ -7807,7 +7795,7 @@ namespace FIA_Biosum_Manager
                     " WHERE overall_effective_yn='Y'";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
@@ -7851,9 +7839,9 @@ namespace FIA_Biosum_Manager
                     strPostColumn = strCol[1].Trim();
 
                     p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile + "' AS prepost_fvsout";
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
                     p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile + "' AS fvs_weighted";
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
                     p_dataMgr.m_strSQL = "UPDATE " + strOptimizationTableName + " AS e " +
                         "SET change_value = CASE WHEN a." + strPostColumn + " IS NOT NULL AND b." + strPreColumn + " IS NOT NULL " +
                         "THEN a." + strPostColumn + " - b." + strPreColumn +
@@ -7869,7 +7857,7 @@ namespace FIA_Biosum_Manager
                 }
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
 
                 // Update affordable flag for revenue filter
                 if (this.m_oOptimizationVariable.bUseFilter == true)
@@ -7879,13 +7867,13 @@ namespace FIA_Biosum_Manager
                         " THEN 'Y' ELSE 'N' END";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
                 }
-
-                conn.Close();
             }
             FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
             FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
+
+            p_dataMgr = null;
         }
 
         private string getEconomicOptimizationSqlAccess()
@@ -8315,17 +8303,17 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "Selected", true);
             frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "focused", true);
 
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strSystemResultsDbPathAndFile)))
+            using (System.Data.SQLite.SQLiteConnection resultsConn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strSystemResultsDbPathAndFile)))
             {
-                conn.Open();
+                resultsConn.Open();
 
                 /********************************************
 			     **delete all records in the tie breaker table
 			     ********************************************/
-                p_dataMgr.m_strSQL = "delete from tiebreaker";
+                p_dataMgr.m_strSQL = "DELETE FROM tiebreaker";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
@@ -8336,17 +8324,17 @@ namespace FIA_Biosum_Manager
                               "SELECT biosum_cond_id,rxpackage,rx,rxcycle FROM " + strOptimizationTableName + " WHERE affordable_YN='Y'";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                 //attach FVS prepost weighted database
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile + "' AS fvs_weighted";
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
 
                 //attach FVS out database
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile + "' AS prepost_fvsout";
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
 
                 //populate the variable table.column name and its value to the tiebreaker table
                 oItem = oTieBreakerCollection.Item(0);  // STAND ATTRIBUTE
@@ -8389,7 +8377,7 @@ namespace FIA_Biosum_Manager
                             "WHERE e.biosum_cond_id = post.biosum_cond_id AND e.rxpackage = post.rxpackage AND e.rx = post.rx AND e.rxcycle = post.rxcycle";
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-                        p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                        p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
 
                     }
 
@@ -8402,7 +8390,7 @@ namespace FIA_Biosum_Manager
                     p_dataMgr.m_strSQL = "UPDATE tiebreaker SET " + p_dataMgr.m_strSQL;
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
                 }
 
                 oItem = oTieBreakerCollection.Item(1);  // ECONOMIC ATTRIBUTE
@@ -8476,7 +8464,7 @@ namespace FIA_Biosum_Manager
 
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-                        p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                        p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
                     }
                 }
 
@@ -8487,7 +8475,7 @@ namespace FIA_Biosum_Manager
                 {
                     p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
                     Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile + "' AS rule_defs";
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
 
                     p_dataMgr.m_strSQL = "UPDATE tiebreaker AS a " +
                         "SET last_tiebreak_rank = b.last_tiebreak_rank " +
@@ -8495,12 +8483,13 @@ namespace FIA_Biosum_Manager
                         "AND TRIM(UPPER(b.scenario_id)) = '" + ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToUpper() + "'";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
-
+                    p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
                 }
             }
             FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
             FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
+
+            p_dataMgr = null;
         }
 
 
@@ -8917,7 +8906,7 @@ namespace FIA_Biosum_Manager
 		/// revenue, and costs of an applied
 		/// treatment on a plot 
 		/// </summary>
-		private void econ_by_rx_cycle()
+		private void econ_by_rx_cycle_old()
         {
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
@@ -9444,8 +9433,436 @@ namespace FIA_Biosum_Manager
 
 
         }
+        private void econ_by_rx_cycle()
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//econ_by_rx_cycle\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
 
-       
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n\r\nWood Product Yields,Revenue, And Costs Table By Treatment\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "-----------------------------------------------\r\n");
+            }
+            int intListViewIndex = -1;
+
+            string[] strUpdateSQL = new string[25];
+
+            /**********************************************
+			 **complete harvest cost per acre
+			 **********************************************/
+            intListViewIndex = FIA_Biosum_Manager.uc_optimizer_scenario_run.GetListViewItemIndex(
+                        ReferenceUserControlScenarioRun.listViewEx1, "Summarize Wood Product Volume Yields, Costs, And Net Revenue For A Stand And Treatment");
+
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem = intListViewIndex;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 5;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMinimumSteps = 1;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicCurrentStep = 1;
+            FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic = (ProgressBarBasic.ProgressBarBasic)ReferenceUserControlScenarioRun.listViewEx1.GetEmbeddedControl(1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem);
+            frmMain.g_oDelegate.EnsureListViewExItemVisible(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem);
+            frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "Selected", true);
+            frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "focused", true);
+
+            /*****************************************************
+			 **get the Chips market value per green ton
+			 *****************************************************/
+            DataMgr p_dataMgr = new DataMgr();
+
+            using (System.Data.SQLite.SQLiteConnection workConn = new System.Data.SQLite.SQLiteConnection(m_strWorkTablesConn))
+            {
+                workConn.Close();
+
+                string strScenarioDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + strScenarioDb + "' AS scenario";
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strSystemResultsDbPathAndFile + "' AS results";
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                /********************************************
+			     **delete all records in the table
+			     ********************************************/
+                p_dataMgr.m_strSQL = "DELETE FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName;
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nInsert Records\r\n");
+
+                if (p_dataMgr.TableExist(workConn, m_strEconByRxWorkTableName))
+                {
+                    p_dataMgr.SqlNonQuery(workConn, "DROP TABLE " + m_strEconByRxWorkTableName);
+                }
+
+                // Create econ_by_rx_cycle_work_table in temp work tables db
+                // Have to parse by column source
+                string strSelectSQL = "SELECT vc.biosum_cond_id, vc.rxpackage, vc.rx, vc.rxcycle " +
+                    "tvvs.merch_vol_cf, tvvs.chip_vol_cf, tvvs.chip_wt_gt, tvvs.chip_val_dpa, tvvs.merch_wt_gt, tvvs.merch_val_dpa, hc.complete_cpa AS harvest_onsite_cost_dpa, " +
+                    "CASE WHEN psa.merch_haul_cost_dpgt IS NOT NULL THEN " +
+                    "CASE WHEN tvvs.rxcycle = '2' THEN psa.merch_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle2 + " ELSE " +
+                    "CASE WHEN tvvs.rxcycle = '3' THEN psa.merch_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle3 + " ELSE " +
+                    "CASE WHEN tvvs.rxcycle= '4' THEN psa.psa.merch_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle4 + " ELSE " +
+                    "psa.merch_haul_cost_dpgt END END END ELSE 0 END AS escalator_merch_haul_cpa_pt, " +
+                    "escalator_merch_haul_cpa_pt * tvvs.merch_wt_gt AS merch_haul_cost_dpa, " +
+                    "CASE WHEN psa.chip_haul_cost_dpgt IS NOT NULL THEN " +
+                    "CASE WHEN tvvs.rxcycle = '2' THEN psa.chip_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle2 + " ELSE " +
+                    "CASE WHEN tvvs.rxcycle = '3' THEN psa.chip_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle3 + " ELSE " +
+                    "CASE WHEN tvvs.rxcycle = '4' THEN psa.chip_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle4 + " ELSE " +
+                    "psa.chip_haul_cost_dpgt END END END ELSE 0 END AS escalator_chip_haul_cpa_pt, " +
+                    "escalator_chip_haul_cpa_pt * tvvs.chip_wt_gt AS chip_haul_cost_dpa, " +
+                    "merch_val_dpa + chip_val_dpa - harvest_onsite_cost_dpa - (chip_haul_cost_dpa + merch_haul_cost_dpa) AS merch_chip_nr_dpa, " +
+                    "merch_val_dpa - harvest_onsite_cost_dpa - merch_haul_cost_dpa AS merch_nr_dpa, " +
+                    "CASE WHEN psa.chip_haul_psite IS NULL THEN 'N' ELSE 'Y' END AS usebiomass_yn, " +
+                    "0.0 AS max_nr_dpa, c.acres, c.owngrpcd, " +
+                    "CASE WHEN usebiomass_yn = 'Y' THEN merch_haul_cost_dpa + chip_haul_cost_dpa ELSE merch_haul_cost_dpa END AS haul_costs_dpa " +
+                    "FROM validcombos AS vc, " + m_strCondTable + " AS c, " + m_strHvstCostsTable.Trim() + " AS hc, " +
+                    Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " AS psa, " + m_strTreeVolValSumTable.Trim() + " AS tvvs " +
+                    "WHERE vc.biosum_cond_id = c.biosum_cond_id AND c.biosum_cond_id = psa.biosum_cond_id AND " +
+                    "vc.biosum_cond_id = tvvs.biosum_cond_id AND vc.rxpackage = tvvs.rxpackage AND vc.rx = tvvs.rx AND " +
+                    "vc.rxcycle = tvvs.rxcycle AND vc.biosum_cond_id = hc.biosum_cond_id AND vc.rxpackage = hc.rxpackage AND " +
+                    "vc.rx = hc.rx = vc.rxcycle = hc.rx_cycle AND tvvs.place_holder = 'N'";
+
+                string fieldsAndDataTypes = "";
+
+                string field = "";
+                string dataType = "";
+                string[] columnsFromValidCombos = { "biosum_cond_id", "rxpackage", "rx", "rxcycle" };
+                foreach (string column in columnsFromValidCombos)
+                {
+                    field = "";
+                    dataType = "";
+                    p_dataMgr.getFieldNamesAndDataTypes(workConn, "SELECT " + column + " FROM validcombos", ref field, ref dataType);
+                    dataType = utils.DataTypeConvert(dataType.ToUpper(), true);
+                    fieldsAndDataTypes += field + " " + dataType + ", ";
+                }
+
+                string[] columnsFromTreeVolValSum = { "merch_vol_cf", "chip_vol_cf", "chip_wt_gt", "chip_val_dpa", "merch_wt_gt", "merch_val_dpa" };
+                foreach (string column in columnsFromTreeVolValSum)
+                {
+                    field = "";
+                    dataType = "";
+                    p_dataMgr.getFieldNamesAndDataTypes(workConn, "SELECT " + column + " FROM " + m_strTreeVolValSumTable.Trim(), ref field, ref dataType);
+                    dataType = utils.DataTypeConvert(dataType.ToUpper(), true);
+                    fieldsAndDataTypes += field + " " + dataType + ", ";
+                }
+
+                field = "";
+                dataType = "";
+                p_dataMgr.getFieldNamesAndDataTypes(workConn, "SELECT complete_cpa FROM " + m_strHvstCostsTable.Trim(), ref field, ref dataType);
+                dataType = utils.DataTypeConvert(dataType.ToUpper(), true);
+                fieldsAndDataTypes += "harvest_onsite_cost_dpa " + dataType + ", ";
+
+                fieldsAndDataTypes += "escalator_merch_haul_cpa_pt DOUBLE, merch_haul_cost_dpa DOUBLE, escalator_chip_haul_cpa_pt DOUBLE," +
+                    "chip_haul_cost_dpa DOUBLE, merch_chip_nr_dpa DOUBLE, merch_nr_dpa DOUBLE, usebiomass_yn CHAR(1), max_nr_dpa DOUBLE, ";
+
+                string[] columnsFromCondTable = { "acres", "owngrpcd" };
+                foreach (string column in columnsFromCondTable)
+                {
+                    field = "";
+                    dataType = "";
+                    p_dataMgr.getFieldNamesAndDataTypes(workConn, "SELECT " + column + " FROM " + m_strCondTable.Trim(), ref field, ref dataType);
+                    dataType = utils.DataTypeConvert(dataType.ToUpper(), true);
+                    fieldsAndDataTypes += field + " " + dataType + ", ";
+                }
+
+                fieldsAndDataTypes += "haul_costs_dpa DOUBLE, ";
+
+                p_dataMgr.m_strSQL = "CREATE TABLE " + m_strEconByRxWorkTableName + " (" + fieldsAndDataTypes + "PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = "INSERT INTO " + m_strEconByRxWorkTableName + " " + strSelectSQL;
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nUpdates to " + m_strEconByRxWorkTableName + "\r\n");
+
+                // Get the highest value for chips out of the Processor item. They should all be the same, but just in case ...            
+                string strChipValue = "-1";
+                for (int x = 0; x < this.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Count - 1; x++)
+                {
+                    ProcessorScenarioItem.TreeSpeciesAndDbhDollarValuesItem oItem =
+                      this.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x);
+                    if (Convert.ToDouble(strChipValue) < Convert.ToDouble(oItem.ChipsDollarPerCubicFootValue.Trim()))
+                    {
+                        strChipValue = oItem.ChipsDollarPerCubicFootValue.Trim();
+                    }
+                }
+
+                // Only use Biomass if chip revenue is higher than the cost of hauling them
+                p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName + " AS w " +
+                    "SET usebiomass_yn = CASE WHEN " + strChipValue + " < psa.chip_haul_cost_dpgt THEN 'N' ELSE 'Y' END " +
+                    "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " AS psa " +
+                    "WHERE w.biosum_cond_id = psa.biosum_cond_id AND usebiomass_yn = 'Y' AND rxcycle = '1'";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName + " AS w " +
+                    "SET usebiomass_yn = CASE WHEN " + strChipValue + " * " + m_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle2 +
+                    " < psa.chip_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle2 +
+                    " THEN 'N' ELSE 'Y' END " +
+                    "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " AS psa " +
+                    "WHERE w.biosum_cond_id = psa.biosum_cond_id AND usebiomass_yn = 'Y' AND rxcycle = '2'";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName + " AS w " +
+                    "SET usebiomass_yn = CASE WHEN " + strChipValue + " * " + m_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle3 +
+                    " < psa.chip_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle3 +
+                    " THEN 'N' ELSE 'Y' END " +
+                    "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " AS psa " +
+                    "WHERE w.biosum_cond_id = psa.biosum_cond_id AND usebiomass_yn = 'Y' AND rxcycle = '3'";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName + " AS w " +
+                    "SET usebiomass_yn = CASE WHEN " + strChipValue + " * " + m_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle4 +
+                    " < psa.chip_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle4 +
+                    " THEN 'N' ELSE 'Y' END " +
+                    "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " AS psa " +
+                    "WHERE w.biosum_cond_id = psa.biosum_cond_id AND usebiomass_yn = 'Y' AND rxcycle = '4'";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+
+                    return;
+                }
+
+                // Don't use Biomass if no chip weight
+                p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
+                    " SET usebiomass_yn = chip_wt_gt = 0 THEN 'N' ELSE 'Y' END " +
+                    "WHERE usebiomass_yn = 'Y'";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                // Update fields based on USEBIOMASS_YN
+                p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
+                    " SET haul_costs_dpa = CASE WHEN usebiomass_yn = 'N' THEN merch_haul_cost_dpa ELSE merch_haul_cost_dpa + chip_haul_cost_dpa END, " +
+                    "max_nr_dpa = CASE WHEN usebiomass_yn = 'Y' THEN merch_chip_nr_dpa ELSE merch_nr_dpa END";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                // Create temp table with inactive stands from harvest_costs table
+                // This should only contain the inactive stands missing from the econ_by_rx_cycle worktable, but we will
+                // do an outer join when appending them to be sure
+
+                string strInactiveStandsWorkTable = "InactiveStandsWorkTable";
+                strSelectSQL = "SELECT vc.biosum_cond_id, vc.rxpackage, vc.rx, vc.rxcycle, " +
+                            "0 AS merch_vol_cf, 0 as chip_vol_cf, 0 as chip_wt_gt, " +
+                            "0 as chip_val_dpa, 0 as merch_wt_gt, 0 AS merch_val_dpa, " +
+                            "hc.complete_cpa AS harvest_onsite_cost_dpa, 0 AS escalator_merch_haul_cpa_pt ," +
+                            "0 AS merch_haul_cost_dpa, 0 AS escalator_chip_haul_cpa_pt, 0 AS chip_haul_cost_dpa, " +
+                            "0 AS merch_chip_nr_dpa, 0 AS merch_nr_dpa, 0 AS max_nr_dpa, " +
+                            "c.acres, c.owngrpcd, 0 AS haul_costs_dpa " +
+                            "FROM validcombos AS vc, " + m_strCondTable + " AS c, " + m_strHvstCostsTable.Trim() + " AS hc " +
+                            "WHERE vc.biosum_cond_id = c.biosum_cond_id AND vc.biosum_cond_id = hc.biosum_cond_id AND " +
+                            "vc.rxpackage = hc.rxpackage AND vc.rx = hc.rx AND vc.rxcycle = hc.rxcycle AND " +
+                            "hc.harvest_cpa = 0 AND hc.complete_cpa <> 0";
+
+                fieldsAndDataTypes = "";
+
+                foreach (string column in columnsFromValidCombos)
+                {
+                    field = "";
+                    dataType = "";
+                    p_dataMgr.getFieldNamesAndDataTypes(workConn, "SELECT " + column + " FROM validcombos", ref field, ref dataType);
+                    dataType = utils.DataTypeConvert(dataType.ToUpper(), true);
+                    fieldsAndDataTypes += field + " " + dataType + ", ";
+                }
+
+                fieldsAndDataTypes += "merch_vol_cf INTEGER, chip_vol_cf INTEGER, chip_wt_gt INTEGER, chip_val_dpa INTEGER, merch_wt_gt INTEGER, merch_val_dpa INTEGER, ";
+
+                field = "";
+                dataType = "";
+                p_dataMgr.getFieldNamesAndDataTypes(workConn, "SELECT complete_cpa FROM " + m_strHvstCostsTable.Trim(), ref field, ref dataType);
+                dataType = utils.DataTypeConvert(dataType.ToUpper(), true);
+                fieldsAndDataTypes += "harvest_onsite_cost_dpa " + dataType + ", ";
+
+                fieldsAndDataTypes += "escalator_merch_haul_cpa_pt INTEGER, merch_haul_cost_dpa INTEGER, escalator_chip_haul_cpa_pt INTEGER, chip_haul_cost_dpa INTEGER, " +
+                    "merch_chip_nr_dpa INTEGER, merch_nr_dpa INTEGER, max_nr_dpa INTEGER, ";
+
+                foreach (string column in columnsFromCondTable)
+                {
+                    field = "";
+                    dataType = "";
+                    p_dataMgr.getFieldNamesAndDataTypes(workConn, "SELECT " + column + " FROM " + m_strCondTable.Trim(), ref field, ref dataType);
+                    dataType = utils.DataTypeConvert(dataType.ToUpper(), true);
+                    fieldsAndDataTypes += field + " " + dataType + ", ";
+                }
+
+                fieldsAndDataTypes += "haul_costs_dpa INTEGER,";
+
+                p_dataMgr.m_strSQL = "CREATE TABLE " + strInactiveStandsWorkTable + " (" + fieldsAndDataTypes + " PRIMARY KEY (biosum_cond_id, rxpackage, rx, rxcycle))";
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = "INSERT INTO " + strInactiveStandsWorkTable + " " + strSelectSQL;
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                p_dataMgr.m_strSQL = "INSERT INTO " + m_strEconByRxWorkTableName +
+                    " SELECT isw.biosum_cond_id, isw.rxpackage, isw.rx, isw.rxcycle, isw.merch_vol_cf, " +
+                    "isw.chip_vol_cf, isw.chip_wt_gt, isw.chip_val_dpa, isw.merch_wt_gt, isw.merch_val_dpa, " +
+                    "isw.harvest_onsite_cost_dpa, isw.escalator_merch_haul_cpa_pt, isw.merch_haul_cost_dpa, " +
+                    "isw.escalator_chip_haul_cpa_pt, isw.chip_haul_cost_dpa, isw.merch_chip_nr_dpa, " +
+                    "isw.merch_nr_dpa, 'N' AS usebiomass_yn, isw.max_nr_dpa, isw.acres, isw.owngrpcd, isw.haul_costs_dpa " +
+                    "FROM " + strInactiveStandsWorkTable + " AS isw " +
+                    "LEFT OUTER JOIN " + m_strEconByRxWorkTableName + " AS w " +
+                    "ON w.biosum_cond_id = isw.biosum_cond_id AND w.rxpackage = isw.rxpackage AND w.rx = isw.rx AND " +
+                    "w.rxcycle = isw.rxcycle " +
+                    "WHERE w.biosum_cond_id IS NULL";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName +
+                                    "(biosum_cond_id,rxpackage,rx,rxcycle," +
+                                    "merch_vol_cf,chip_vol_cf," +
+                                    "chip_wt_gt,chip_val_dpa," +
+                                    "merch_wt_gt,merch_val_dpa,harvest_onsite_cost_dpa," +
+                                    "merch_haul_cost_dpa,chip_haul_cost_dpa,merch_chip_nr_dpa," +
+                                    "merch_nr_dpa,usebiomass_yn,max_nr_dpa,acres,owngrpcd,haul_costs_dpa) " +
+                                "SELECT biosum_cond_id,rxpackage,rx,rxcycle," +
+                                    "merch_vol_cf,chip_vol_cf," +
+                                    "chip_wt_gt,chip_val_dpa," +
+                                    "merch_wt_gt,merch_val_dpa,harvest_onsite_cost_dpa," +
+                                    "merch_haul_cost_dpa,chip_haul_cost_dpa,merch_chip_nr_dpa," +
+                                    "merch_nr_dpa,usebiomass_yn,max_nr_dpa,acres,owngrpcd,haul_costs_dpa " +
+                                "FROM " + m_strEconByRxWorkTableName;
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+            }
+
+            if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+            if (this.m_intError == 0)
+            {
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
+            }
+
+            p_dataMgr = null;
+        }
+
+
         private void calculate_weighted_econ_variables()
         {
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
@@ -9791,6 +10208,7 @@ namespace FIA_Biosum_Manager
             {
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
             }
+            p_dataMgr = null;
         }
 
         /// <summary>
@@ -10054,7 +10472,7 @@ namespace FIA_Biosum_Manager
 
         }
 
-        private void econ_by_rx_utilized_sum()
+        private void econ_by_rx_utilized_sum_old()
         {
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -10298,6 +10716,236 @@ namespace FIA_Biosum_Manager
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
 
             }
+        }
+
+        private void econ_by_rx_utilized_sum()
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//econ_by_rx_utilized_sum\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n\r\nWood Product Yields,Revenue, And Costs Table By Treatment Package\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "-------------------------------------------------------\r\n");
+            }
+
+            intListViewIndex = FIA_Biosum_Manager.uc_optimizer_scenario_run.GetListViewItemIndex(
+                      ReferenceUserControlScenarioRun.listViewEx1, "Summarize Wood Product Volume Yields, Costs, And Net Revenue For A Stand And Treatment Package");
+
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem = intListViewIndex;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 6;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMinimumSteps = 1;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicCurrentStep = 1;
+            FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic = (ProgressBarBasic.ProgressBarBasic)ReferenceUserControlScenarioRun.listViewEx1.GetEmbeddedControl(1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem);
+            frmMain.g_oDelegate.EnsureListViewExItemVisible(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem);
+            frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "Selected", true);
+            frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "focused", true);
+
+            DataMgr p_dataMgr = new DataMgr();
+
+            using (System.Data.SQLite.SQLiteConnection workConn = new System.Data.SQLite.SQLiteConnection(m_strWorkTablesConn))
+            {
+                workConn.Open();
+
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strSystemResultsDbPathAndFile + "' AS results";
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                /********************************************
+                 **delete all records in the table
+                 ********************************************/
+                p_dataMgr.m_strSQL = "DELETE FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName;
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                // We manipulate econ_by_rx_worktable to zero out some chip fields if use_biomass_yn='N'
+                // Then we sum from the worktable to get the correct numbers in the summary fields
+                p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
+                    " SET chip_vol_cf = CASE WHEN usebiomass_yn = 'N' THEN 0 ELSE chip_vol_cf END, " +
+                    "chip_wt_gt = CASE WHEN usebiomass_yn = 'N' THEN 0 ELSE chip_wt_gt END, " +
+                    "chip_val_dpa = CASE WHEN usebiomass_yn = 'N' THEN 0 ELSE chip_val_dpa END, " +
+                    "chip_haul_cost_dpa = CASE WHEN usebiomass_yn = 'N' THEN 0 ELSE chip_haul_cost_dpa END";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nUpdate " + m_strEconByRxWorkTableName + " based on use_biomass_yn values\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+
+                    return;
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nInsert Records\r\n");
+
+                p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName +
+                    " (biosum_cond_id, rxpackage, chip_vol_cf_utilized, merch_vol_cf, chip_wt_gt_utilized, merch_wt_gt, chip_val_dpa_utilized, " +
+                    "merch_val_dpa, harvest_onsite_cost_dpa, chip_haul_cost_dpa_utilized, merch_haul_cost_dpa, merch_chip_nr_dpa, " +
+                    "merch_nr_dpa, max_nr_dpa, haul_costs_dpa, treated_acres,acres, owngrpcd) " +
+                    "SELECT a.biosum_cond_id, a.rxpackage, a.sum_chip_yield_cf AS chip_vol_cf_utilized, a.sum_merch_yield_cf AS merch_vol_cf, " +
+                    "a.sum_chip_yield_gt AS chip_wt_gt_utilized, a.sum_merch_yield_gt AS merch_wt_gt, a.sum_chip_val_dpa AS chip_val_dpa_utilized, " +
+                    "a.sum_merch_val_dpa AS merch_val_dpa, a.sum_harvest_onsite_cpa AS harvest_onsite_cost_dpa, a.sum_haul_chip_cpa AS chip_haul_cost_dpa_utilized, " +
+                    "a.sum_haul_merch_cpa AS merch_haul_cost_dpa, a.sum_merch_chip_nr_dpa AS merch_chip_nr_dpa, a.sum_merch_nr_dpa AS merch_nr_dpa, " +
+                    "a.sum_max_nr_dpa AS max_nr_dpa, a.sum_haul_costs_dpa AS haul_costs_dpa, a.sum_treated_acres AS treated_acres, a.acres, a.owngrpcd " +
+                    "FROM (SELECT biosum_cond_id, rxpackage, SUM(IFNULL(chip_vol_cf, 0)) AS sum_chip_yield_cf, SUM(IFNULL(merch_vol_cf, 0)) AS sum_merch_yield_cf, " +
+                    "SUM(IFNULL(chip_wt_gt, 0)) AS sum_chip_yield_gt, SUM(IFNULL(merch_wt_gt, 0)) AS sum_merch_yield_gt, SUM(IFNULL(chip_val_dpa, 0)) AS sum_chip_val_dpa, " +
+                    "SUM(IFNULL(merch_val_dpa, 0)) AS sum_merch_val_dpa, SUM(IFNULL(harvest_onsite_cost_dpa, 0)) AS sum_harvest_onsite_cpa, SUM(IFNULL(chip_haul_cost_dpa, 0)) AS sum_haul_chip_cpa, " +
+                    "SUM(IFNULL(merch_haul_cost_dpa, 0)) AS sum_haul_merch_cpa, SUM(IFNULL(merch_chip_nr_dpa, 0)) AS sum_merch_chip_nr_dpa, SUM(IFNULL(merch_nr_dpa, 0)) AS sum_merch_nr_dpa, " +
+                    "SUM(IFNULL(max_nr_dpa, 0)) AS sum_max_nr_dpa, SUM(IFNULL(haul_costs_dpa, 0)) AS sum_haul_costs_dpa, SUM(IFNULL(acres, 0)) AS sum_treated_acres, acres, owngrpcd " +
+                    "FROM " + m_strEconByRxWorkTableName + " GROUP BY biosum_cond_id, rxpackage, acres, owngrpcd) AS a";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+
+                    return;
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                // Create worktable for HVST_TYPE_BY_CYCLE field
+                string strTreeSumWorktableName = "ECON_SUM_WORKTABLE";
+                if (p_dataMgr.TableExist(workConn, strTreeSumWorktableName))
+                {
+                    p_dataMgr.SqlNonQuery(workConn, "DROP TABLE " + strTreeSumWorktableName);
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nDelete existing econ_sum_work table\r\n");
+
+                }
+
+                p_dataMgr.m_strSQL = "CREATE TABLE " + strTreeSumWorktableName + " (" +
+                                "biosum_cond_id CHAR(25), " +
+                                "rxpackage CHAR(3), " +
+                                "CYCLE_1 CHAR(1), " +
+                                "CYCLE_2 CHAR(1), " +
+                                "CYCLE_3 CHAR(1), " +
+                                "CYCLE_4 CHAR(1))";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nCreate econ_sum_worktable\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    this.m_intError = p_dataMgr.m_intError;
+                    return;
+                }
+
+                //Add rows to worktable
+                p_dataMgr.m_strSQL = "INSERT INTO " + strTreeSumWorktableName +
+                                " SELECT biosum_cond_id, rxpackage, '0' as cycle_1, '0' AS cycle_2, '0' AS cycle_3, '0' AS cycle_4" +
+                                " FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName;
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nAdd condition/rxpackages to econ_sum_worktable\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    this.m_intError = p_dataMgr.m_intError;
+                    return;
+                }
+
+                // Update worktable from econ_by_rx_cycle
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nUpdate cycle values on econ_sum_worktable\r\n");
+
+                string[] arrFieldToUpdate = { "CYCLE_1", "CYCLE_2", "CYCLE_3", "CYCLE_4" };
+                string[] arrRxCycle = { "1", "2", "3", "4" };
+                for (int arrIdx = 0; arrIdx < 4; arrIdx++)
+                {
+                    p_dataMgr.m_strSQL = "UPDATE " + strTreeSumWorktableName +
+                        " SET " + arrFieldToUpdate[arrIdx] + " = " +
+                        "CASE WHEN a.chip_vol_cf > 0 AND a.merch_vol_cf > 0 THEN '3' WHEN a.chip_vol_cf = 0 AND a.merch_vol_cf = 0 THEN '0' " +
+                        "WHEN a.chip_vol_cf > 0 THEN '2' ELSE '1' END " +
+                        "FROM (SELECT biosum_cond_id, rxpackage, rxcycle, chip_vol_cf, merch_vol_cf FROM econ_by_rx_cycle) AS a " +
+                        "WHERE " + strTreeSumWorktableName + ".biosum_cond_id = a.biosum_cond_id AND " + strTreeSumWorktableName + ".rxpackage = " +
+                        "a.rxpackage AND a.rxcycle = '" + arrRxCycle[arrIdx] + "'";
+
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                    p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                }
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    this.m_intError = p_dataMgr.m_intError;
+                    return;
+                }
+
+                // Populate hvst_type_by_cycle from worktable
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate hvst_type_by_cycle from econ_sum_worktable\r\n");
+
+                p_dataMgr.m_strSQL = "UPDATE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName +
+                    " SET hvst_type_by_cycle = (SELECT cycle_1 || cycle_2 || cycle_3 || cycle_4 " +
+                    "FROM " + strTreeSumWorktableName + " WHERE " + strTreeSumWorktableName + ".biosum_cond_id = " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName + ".biosum_cond_id " +
+                    "AND " + strTreeSumWorktableName + ".rxpackage = " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName + ".rxpackage)";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    this.m_intError = p_dataMgr.m_intError;
+                    return;
+                }
+            }
+
+            if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+            if (this.m_intError == 0)
+            {
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
+            }
+            p_dataMgr = null;
         }
 
         /// <summary>
@@ -12036,7 +12684,7 @@ namespace FIA_Biosum_Manager
 			}
 		
 		}
-        private void Best_rx_summary()
+        private void Best_rx_summary_old()
         {
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
@@ -12358,6 +13006,237 @@ namespace FIA_Biosum_Manager
             {
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
             }
+        }
+
+        private void Best_rx_summary()
+        {
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+            {
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//Best_rx_summary\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+            string strTable = "";
+            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.lblMsg, "Text", "Finding Best Treatments: Maximum Net Revenue");
+            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.lblMsg, "Visible", true);
+            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)ReferenceUserControlScenarioRun.lblMsg, "Refresh");
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n\r\nBest Rx Summary\r\n");
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "--------------------\r\n");
+
+            intListViewIndex = FIA_Biosum_Manager.uc_optimizer_scenario_run.GetListViewItemIndex(
+                   ReferenceUserControlScenarioRun.listViewEx1, "Identify The Best Effective Treatment For Each Stand");
+
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem = intListViewIndex;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 5;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMinimumSteps = 1;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicCurrentStep = 1;
+            FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic = (ProgressBarBasic.ProgressBarBasic)ReferenceUserControlScenarioRun.listViewEx1.GetEmbeddedControl(1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem);
+            frmMain.g_oDelegate.EnsureListViewExItemVisible(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem);
+            frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "Selected", true);
+            frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem, "focused", true);
+
+
+            FIA_Biosum_Manager.uc_optimizer_scenario_fvs_prepost_variables_tiebreaker.TieBreaker_Collection oTieBreakerCollection =
+                ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_fvs_prepost_variables_tiebreaker1.m_oSavTieBreakerCollection;
+
+            DataMgr p_dataMgr = new DataMgr();
+
+            string strScenarioId = this.ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim();
+            string strTieBreakerAggregate = "MAX";
+
+            using (System.Data.SQLite.SQLiteConnection workConn = new System.Data.SQLite.SQLiteConnection(m_strWorkTablesConn))
+            {
+                workConn.Open();
+
+                //
+                //CREATE WORK TABLES
+                //
+                //best_rx_summary_work_table
+                strTable = "cycle1_best_rx_summary_work_table";
+                if (p_dataMgr.TableExist(workConn, strTable))
+                {
+                    p_dataMgr.SqlNonQuery(workConn, "DROP TABLE " + strTable);
+                }
+                p_dataMgr.SqlNonQuery(workConn, Tables.OptimizerScenarioResults.CreateSqliteBestRxSummaryTableSQL(strTable));
+                
+                //best_rx_summury_optimization_and_tiebreaker_work_table
+                if (p_dataMgr.TableExist(workConn, "cycle1_best_rx_summary_optimization_and_tiebreaker_work_table"))
+                {
+                    p_dataMgr.SqlNonQuery(workConn, "DROP TABLE cycle1_best_rx_summary_optimization_and_tiebreaker_work_table");
+                }
+                p_dataMgr.SqlNonQuery(workConn, Tables.OptimizerScenarioResults.CreateSqliteBestRxSummaryCycle1TieBreakerTableSQL("cycle1_best_rx_summary_optimization_and_tiebreaker_work_table"));
+                
+                //best_rx_summury_optimization_and_tiebreaker_work_table2
+                if (p_dataMgr.TableExist(workConn, "cycle1_best_rx_summary_optimization_and_tiebreaker_work_table2"))
+                {
+                    p_dataMgr.SqlNonQuery(workConn, "DROP TABLE cycle1_best_rx_summary_optimization_and_tiebreaker_work_table2");
+                }
+                p_dataMgr.SqlNonQuery(workConn, Tables.OptimizerScenarioResults.CreateSqliteBestRxSummaryCycle1TieBreakerTableSQL("cycle1_best_rx_summary_optimization_and_tiebreaker_work_table2"));
+                
+                //best_rx_summury_optimization_and_tiebreaker_work_table3
+                if (p_dataMgr.TableExist(workConn, "cycle1_best_rx_summary_optimization_and_tiebreaker_work_table3"))
+                {
+                    p_dataMgr.SqlNonQuery(workConn, "DROP TABLE cycle1_best_rx_summary_optimization_and_tiebreaker_work_table3");
+                }
+                p_dataMgr.SqlNonQuery(workConn, Tables.OptimizerScenarioResults.CreateSqliteBestRxSummaryCycle1TieBreakerTableSQL("cycle1_best_rx_summary_optimization_and_tiebreaker_work_table3"));
+
+                /**********************************************
+			     **insert unique biosum_cond_id's into the
+			     **best_rx_summary table so we dont have
+			     **to worry about whether the biosum_cond_id 
+			     **record is in the table or not
+			     **********************************************/
+                p_dataMgr.m_strSQL = "INSERT INTO " + strTable +
+                    " (biosum_cond_id, acres, owngrpcd) " +
+                    "SELECT DISTINCT c.biosum_cond_id, c.acres, c.owngrpcd " +
+                    "FROM " + m_strCondTable.Trim() + " AS c, " +
+                    Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " AS p, " +
+                    ReferenceOptimizerScenarioForm.OutputTablePrefix + Tables.OptimizerScenarioResults.DefaultScenarioResultsOptimizationTableSuffix + " AS e " +
+                    "WHERE c.biosum_cond_id = p.biosum_cond_id AND e.biosum_cond_id = c.biosum_cond_id AND " +
+                    "e.affordable_YN = 'Y' AND e.rxcycle = '1' AND " +
+                    "(p.merch_haul_cost_id IS NOT NULL OR p.chip_haul_cost_id IS NOT NULL)";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "--insert condition records that have MERCH or CHIP haul costs into best_rx_summary--\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "!!!Error Executing SQL!!!");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                string strWorkTable = "cycle1_effective_" + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName;
+                if (p_dataMgr.TableExist(workConn, strWorkTable))
+                {
+                    p_dataMgr.SqlNonQuery(workConn, "DROP TABLE " + strWorkTable);
+                }
+
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteProductYieldsTable(p_dataMgr, workConn, strWorkTable);
+
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strSystemResultsDbPathAndFile + "' AS results";
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = "INSERT INTO " + strWorkTable +
+                    " SELECT p.* FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName + " AS p, " +
+                    ReferenceOptimizerScenarioForm.OutputTablePrefix + Tables.OptimizerScenarioResults.DefaultScenarioResultsEffectiveTableSuffix + " AS e " +
+                    "WHERE p.biosum_cond_id = e.biosum_cond_id AND " +
+                    "p.rxpackage=e.rxpackage AND p.rx=e.rx AND p.rxcycle=e.rxcycle AND e.overall_effective_yn='Y'";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "--write overall effective treatments to the " + strWorkTable + "--\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n\r\n");
+
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "!!!Error Executing SQL!!!");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (p_dataMgr.TableExist(workConn, "cycle1_effective_optimization_treatments"))
+                {
+                    p_dataMgr.SqlNonQuery(workConn, "DROP TABLE cycle1_effective_optimization_treatments");
+                }
+                string strColumnFilterName = "";
+                if (this.m_oOptimizationVariable.bUseFilter)
+                {
+                    strColumnFilterName = this.m_oOptimizationVariable.strRevenueAttribute;
+                }
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteEffectiveTable(p_dataMgr, workConn, "cycle1_effective_optimization_treatments", strColumnFilterName);
+
+                p_dataMgr.m_strSQL = "INSERT INTO cycle1_effective_optimization_treatments " +
+                   "SELECT e.* FROM " + ReferenceOptimizerScenarioForm.OutputTablePrefix +
+                   Tables.OptimizerScenarioResults.DefaultScenarioResultsEffectiveTableSuffix + " AS e " +
+                   "WHERE e.overall_effective_yn = 'Y'";
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "--write overall effective treatments to the cycle1_effective_optimization_treatments--\r\n");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "!!!Error Executing SQL!!!");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                if (this.m_oOptimizationVariable.strOptimizedVariable.Trim().ToUpper() == "REVENUE")
+                {
+                    Best_rx_summary(oTieBreakerCollection, strTieBreakerAggregate, false);
+
+                }
+                else if (this.m_oOptimizationVariable.strOptimizedVariable.Trim().ToUpper() == "MERCHANTABLE VOLUME")
+                {
+                    Best_rx_summary(oTieBreakerCollection, strTieBreakerAggregate, false);
+                }
+                else if (this.m_oOptimizationVariable.strOptimizedVariable.Trim().ToUpper() == "ECONOMIC ATTRIBUTE")
+                {
+                    Best_rx_summary(oTieBreakerCollection, strTieBreakerAggregate, false);
+                }
+                else
+                {
+                    Best_rx_summary(oTieBreakerCollection, strTieBreakerAggregate, true);
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                string strBestRxSummaryTableName = this.ReferenceOptimizerScenarioForm.OutputTablePrefix +
+                    Tables.OptimizerScenarioResults.DefaultScenarioResultsBestRxSummaryTableSuffix;
+
+                if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
+
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "!!!Error Executing SQL!!!");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                /****************************************************************************
+                 **finished with minimum merchantable wood removal with positive net revenue
+                 ****************************************************************************/
+            }
+
+            if (this.m_intError == 0)
+            {
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
+            }
+
+            p_dataMgr = null;
         }
 
         private void Best_rx_summary_access(
@@ -12683,12 +13562,12 @@ namespace FIA_Biosum_Manager
 
             DataMgr p_dataMgr = new DataMgr();
 
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strWorkTablesDb)))
+            using (System.Data.SQLite.SQLiteConnection workConn = new System.Data.SQLite.SQLiteConnection(m_strWorkTablesConn))
             {
-                conn.Open();
+                workConn.Open();
 
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + this.m_strSystemResultsDbPathAndFile + "' AS results";
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
                 string strOptimizationTableName = ReferenceOptimizerScenarioForm.OutputTablePrefix +
                 Tables.OptimizerScenarioResults.DefaultScenarioResultsOptimizationTableSuffix;
@@ -12696,31 +13575,23 @@ namespace FIA_Biosum_Manager
                 if (bFVSVariable == false)
                 {
                     //find the treatment for each plot that produces the MAX/MIN revenue value
-                    p_dataMgr.m_strSQL = "SELECT a.biosum_cond_id,a.rxpackage,a.rx,a." + this.m_strOptimizationColumnNameSql + " AS optimization_value " + //LPOTTS,a.rx_intensity " + 
-                        "FROM " + strOptimizationTableName + " AS a,";
-
-
-                    p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + "(SELECT " + this.m_strOptimizationAggregateSql + "(" + this.m_strOptimizationColumnNameSql + ") AS " + this.m_strOptimizationAggregateColumnName + ",biosum_cond_id " +
-                        "FROM " + strOptimizationTableName + " where affordable_YN = 'Y'";
-
-                    p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + " GROUP BY biosum_cond_id) AS b ";
-
-                    p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + "WHERE a.biosum_cond_id=b.biosum_cond_id AND a." + this.m_strOptimizationColumnNameSql + " = b." + this.m_strOptimizationAggregateColumnName +
-                                      " AND a.affordable_YN = 'Y'";
+                    p_dataMgr.m_strSQL = "SELECT a.biosum_cond_id, a.rxpackage, a.rx, a." + m_strOptimizationColumnNameSql + " AS optimization value " +
+                        "FROM " + strOptimizationTableName + " AS a, " +
+                        "(SELECT " + m_strOptimizationAggregateSql + "(" + m_strOptimizationColumnNameSql + ") AS " + m_strOptimizationAggregateColumnName + ", biosum_cond_id " +
+                        "FROM " + strOptimizationTableName + " WHERE affordable_YN = 'Y' " +
+                        "GROUP BY biosum_cond_id) AS b " +
+                        "WHERE a.biosum_cond_id = b.biosum_cond_id AND a." + m_strOptimizationColumnNameSql + " = b. " + m_strOptimizationAggregateColumnName +
+                        " AND a.affordable_YN = 'Y'";
                 }
                 else
                 {
-                    p_dataMgr.m_strSQL = "SELECT a.biosum_cond_id,a.rxpackage,a.rx,a." + this.m_strOptimizationColumnNameSql + " AS optimization_value " + //LPOTTS,a.rx_intensity " + 
-                        "FROM " + strOptimizationTableName + " AS a,";
-
-
-                    p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + "(SELECT " + this.m_strOptimizationAggregateSql + "(" + this.m_strOptimizationColumnNameSql + ") AS " + this.m_strOptimizationAggregateColumnName + ",biosum_cond_id " +
-                        "FROM " + strOptimizationTableName + " where affordable_YN = 'Y'";
-
-                    p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + " GROUP BY biosum_cond_id) AS b ";
-
-                    p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + "WHERE a.biosum_cond_id=b.biosum_cond_id AND a." + this.m_strOptimizationColumnNameSql + " = b." + this.m_strOptimizationAggregateColumnName +
-                        " AND a.affordable_YN = 'Y'";
+                    p_dataMgr.m_strSQL = "SELECT a.biosum_cond_id, a.rxpackage, a.rx, a." + m_strOptimizationColumnNameSql + " AS optimization_value " +
+                        "FROM " + strOptimizationTableName + " AS a, " +
+                        "(SELECT " + m_strOptimizationAggregateSql + "(" + m_strOptimizationColumnNameSql + ") AS " + m_strOptimizationAggregateColumnName + ", biosum_cond_id " +
+                        "FROM " + strOptimizationTableName + " WHERE afforable_YN = 'Y' " +
+                        "GROUP BY biosum_cond_id) AS b " +
+                        "WHERE a.biosum_cond_id = b.biosum_cond_id AND a." + m_strOptimizationColumnNameSql + " = b." + m_strOptimizationAggregateColumnName +
+                        " AMD a.affordable_YN = 'Y'";
                 }
 
                 p_dataMgr.m_strSQL = "INSERT INTO cycle1_best_rx_summary_optimization_and_tiebreaker_work_table (biosum_cond_id, rxpackage, rx, optimization_value) " +
@@ -12730,7 +13601,7 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "--filter effective treatments to find " + this.m_strOptimizationAggregateSql + " " + this.m_oOptimizationVariable.strOptimizedVariable + "--\r\n");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n\r\n");
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
                 if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
 
                 if (p_dataMgr.m_intError != 0)
@@ -12749,7 +13620,7 @@ namespace FIA_Biosum_Manager
                     "WHERE a.biosum_cond_id = b.biosum_cond_id";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n");
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
                 //Stand OR Economic Attribute selected AND Last Tie-Break Rank
 
@@ -12772,14 +13643,14 @@ namespace FIA_Biosum_Manager
                         "WHERE a.biosum_cond_id = b.biosum_cond_id AND a.rxpackage = b.rxpackage AND a.rx = b.rx";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n");
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
                     p_dataMgr.m_strSQL = "INSERT INTO " + ReferenceOptimizerScenarioForm.OutputTablePrefix +
                         Tables.OptimizerScenarioResults.DefaultScenarioResultsBestRxSummaryBeforeTiebreaksTableSuffix +
                         " SELECT DISTINCT * FROM cycle1_best_rx_summary_optimization_and_tiebreaker_work_table";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n");
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
                     //find the treatment for each plot that produces the MAX/MIN tiebreaker value
                     p_dataMgr.m_strSQL = "SELECT a.biosum_cond_id,a.rxpackage,a.rx,a.acres,a.owngrpcd,a.optimization_value,a.tiebreaker_value,a.last_tiebreak_rank " +
@@ -12795,7 +13666,7 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "--break any ties by finding the " + strTieBreakerAggregate + " tie breaker value--\r\n");
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n\r\n");
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
                     if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
 
@@ -12823,7 +13694,7 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "--break any additional ties by finding the least intense treatment--\r\n");
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n\r\n");
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
                     if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
 
                     if (p_dataMgr.m_intError != 0)
@@ -12844,7 +13715,7 @@ namespace FIA_Biosum_Manager
 
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n");
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
                     p_dataMgr.m_strSQL = "INSERT INTO " + ReferenceOptimizerScenarioForm.OutputTablePrefix +
                         Tables.OptimizerScenarioResults.DefaultScenarioResultsBestRxSummaryTableSuffix +
@@ -12853,7 +13724,7 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "--insert the work table records into the best_rx_summary table--\r\n");
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n\r\n");
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
                     if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
 
                     if (p_dataMgr.m_intError != 0)
@@ -12876,7 +13747,7 @@ namespace FIA_Biosum_Manager
                         "WHERE a.biosum_cond_id = b.biosum_cond_id AND a.rx = b.rx AND a.rxpackage = b.rxpackage";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n");
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
                     p_dataMgr.m_strSQL = "INSERT INTO " +
                         ReferenceOptimizerScenarioForm.OutputTablePrefix +
@@ -12884,7 +13755,7 @@ namespace FIA_Biosum_Manager
                         " SELECT DISTINCT * FROM cycle1_best_rx_summary_optimization_and_tiebreaker_work_table";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n");
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
                     p_dataMgr.m_strSQL = "SELECT a.biosum_cond_id,a.rxpackage,a.rx,a.acres,a.owngrpcd,a.optimization_value," +
                         "a.tiebreaker_value,a.last_tiebreak_rank " +
@@ -12900,7 +13771,7 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "--break any additional ties by finding the least intense treatment--\r\n");
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n\r\n");
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
                     if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
 
                     if (p_dataMgr.m_intError != 0)
@@ -12920,7 +13791,7 @@ namespace FIA_Biosum_Manager
                         "WHERE a.biosum_cond_id = b.biosum_cond_id";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n");
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
                     p_dataMgr.m_strSQL = "INSERT INTO " + ReferenceOptimizerScenarioForm.OutputTablePrefix +
                         Tables.OptimizerScenarioResults.DefaultScenarioResultsBestRxSummaryTableSuffix +
@@ -12929,7 +13800,7 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "--insert the work table records into the best_rx_summary table--\r\n");
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL:" + p_dataMgr.m_strSQL + "\r\n\r\n");
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
                     if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
 
                     if (p_dataMgr.m_intError != 0)
@@ -12942,7 +13813,6 @@ namespace FIA_Biosum_Manager
                         return;
                     }
                 }
-                conn.Close();
             }
         }
 
@@ -13460,16 +14330,16 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "----------------------------------------\r\n");
             }
 
-            DataMgr m_dataMgr = new DataMgr();
+            DataMgr p_dataMgr = new DataMgr();
 
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_dataMgr.GetConnectionString(this.m_strSystemResultsDbPathAndFile)))
+            using (System.Data.SQLite.SQLiteConnection workConn = new System.Data.SQLite.SQLiteConnection(m_strWorkTablesConn))
             {
-                conn.Open();
+                workConn.Open();
 
-                this.m_strSQL = "ATTACH DATABASE '" + this.m_strWorkTablesDb + "' AS work_tables";
-                m_dataMgr.SqlNonQuery(conn, this.m_strSQL);
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strSystemResultsDbPathAndFile + "' AS results";
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
-                this.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsCondPsiteTableName +
+                p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsCondPsiteTableName +
                 " (BIOSUM_COND_ID,MERCH_PSITE_NUM,MERCH_PSITE_NAME,CHIP_PSITE_NUM,CHIP_PSITE_NAME) " +
                 "SELECT a.biosum_cond_id, a.merch_haul_psite, a.merch_haul_psite_name, a.chip_haul_psite, a.chip_haul_psite_name " +
                 "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " AS a " +
@@ -13479,18 +14349,18 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\ninsert into cond_psite \r\n");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + this.m_strSQL + "\r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
 
-                m_dataMgr.SqlNonQuery(conn, this.m_strSQL);
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
             }
             FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
-            if (m_dataMgr.m_intError != 0)
+            if (p_dataMgr.m_intError != 0)
             {
                 FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
 
-                this.m_intError = m_dataMgr.m_intError;
+                this.m_intError = p_dataMgr.m_intError;
 
                 return;
             }
@@ -13530,28 +14400,27 @@ namespace FIA_Biosum_Manager
 
             DataMgr p_dataMgr = new DataMgr();
 
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(this.m_strContextDbPathAndFile)))
+            using (System.Data.SQLite.SQLiteConnection contextConn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(m_strContextDbPathAndFile)))
             {
-                conn.Open();
+                contextConn.Open();
 
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultSqliteDbFile + "' AS optimizer_defs";
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + this.m_strProcessorResultsPathAndFile + "' AS processor_results";
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strProcessorResultsPathAndFile + "' AS processor_results";
+                p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile + "' AS processor_rules";
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile + "' AS optimizer_rules";
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oEnv.strApplicationDataDirectory.Trim() + frmMain.g_strBiosumDataDir + "\\" +
-                    Tables.Reference.DefaultBiosumReferenceSqliteFile + "' AS biosum_ref";
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strHarvestMethodsPathAndFile + "' AS biosum_ref";
+                p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile + "' AS master";
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strPlotPathAndFile + "' AS master";
+                p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                 {
@@ -13567,117 +14436,105 @@ namespace FIA_Biosum_Manager
                 }
                 int intSteepSlopePct = -1;
                 bool bSuccess = int.TryParse(oHarvestMethod.SteepSlopePercent, out intSteepSlopePct);
+
                 p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsHarvestMethodRefTableName +
-                                " (RX, RX_HARVEST_METHOD_LOW, RX_HARVEST_METHOD_LOW_ID, RX_HARVEST_METHOD_LOW_CATEGORY, RX_HARVEST_METHOD_LOW_CATEGORY_DESCR, " +
-                                "RX_HARVEST_METHOD_STEEP, USE_RX_HARVEST_METHOD_YN, STEEP_SLOPE_PCT)" +
-                                 " SELECT RX, HarvestMethodLowSlope AS RX_HARVEST_METHOD_LOW, " + m_strHarvestMethodsTable +
-                                 ".HarvestMethodID AS RX_HARVEST_METHOD_LOW_ID, " + m_strHarvestMethodsTable + ".BIOSUM_CATEGORY AS RX_HARVEST_METHOD_LOW_CATEGORY, " +
-                                 m_strHarvestMethodsTable + ".top_limb_slope_status AS RX_HARVEST_METHOD_LOW_CATEGORY_DESCR, " +
-                                 "HarvestMethodSteepSlope AS RX_HARVEST_METHOD_STEEP, '" + strRxHarvestMethod + "' as USE_RX_HARVEST_METHOD_YN, " +
-                                 intSteepSlopePct + " AS STEEP_SLOPE_PCT FROM " + m_strRxTable +
-                                 " INNER JOIN " + m_strHarvestMethodsTable + " ON TRIM(" + m_strHarvestMethodsTable + ".Method) = TRIM(RX.HarvestMethodLowSlope) " +
-                                 " WHERE STEEP_YN = 'N'";
+                    " (rx, rx_harvest_method_low, rx_harvest_method_low_id, rx_harvest_method_low_category, rx_harvest_method_low_category_descr, " +
+                    "rx_harvest_method_steep, use_rx_harvest_method_yn, steep_slope_pct) " +
+                    "SELECT rx, HarvestMethodLowSlope As rx_harvest_method_low, m.HarvestMethodId AS rx_harvest_method_low_id, " +
+                    "m.biosum_category AS rx_harvest_method_low_category, m.top_limb_slope_status AS rx_harvest_method_low_category_descr, " +
+                    "HarvestMethodSteepSlope AS rx_harvest_method_sleep, '" + strRxHarvestMethod + "' AS use_rx_harvest_method_yn, " +
+                    intSteepSlopePct + " AS steep_slope_pct FROM " + m_strRxTable + " AS r, " + m_strHarvestMethodsTable + " AS m " +
+                    "WHERE TRIM(m.method) = TRIM(r.HarvestMethodLowSlope) AND steep_yn = 'N'";
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\ninsert rx harvest methods into HARVEST_METHOD_REF \r\n");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
-
-                p_dataMgr.m_strSQL = "UPDATE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsHarvestMethodRefTableName +
-                    " SET RX_HARVEST_METHOD_STEEP_ID = HarvestMethodID, RX_HARVEST_METHOD_STEEP_CATEGORY = BIOSUM_CATEGORY, " +
-                    "RX_HARVEST_METHOD_STEEP_CATEGORY_DESCR = top_limb_slope_status " +
-                    "FROM " + m_strHarvestMethodsTable + " WHERE TRIM(" + m_strHarvestMethodsTable + ".Method) = " +
-                    "TRIM(" + Tables.OptimizerScenarioResults.DefaultScenarioResultsHarvestMethodRefTableName + ".RX_HARVEST_METHOD_STEEP) " +
-                    "AND STEEP_YN = 'Y'";
+                p_dataMgr.m_strSQL = "UPDATE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsHarvestMethodRefTableName + " AS ref " +
+                    "SET rx_harvest_method_steep_id = HarvestMethodId, rx_harvest_method_steep_category = biosum_category, " +
+                    "rx_harvest_method_steep_category_descr = top_limn_slope_status " +
+                    "FROM " + m_strHarvestMethodsTable + " AS m " +
+                    "WHERE TRIM(m.method) = TRIM(ref.rx_harvest_method_steep) AND steep_yn = 'Y'";
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nUpdate HARVEST_METHOD_REF with properties of rx steep slope methods\r\n");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
                 if (strRxHarvestMethod.Equals("N"))
                 {
                     p_dataMgr.m_strSQL = "UPDATE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsHarvestMethodRefTableName +
-                                     " SET SCENARIO_HARVEST_METHOD_LOW = '" + m_oProcessorScenarioItem.m_oHarvestMethod.HarvestMethodLowSlope.Trim() +
-                                     "', SCENARIO_HARVEST_METHOD_STEEP = '" + m_oProcessorScenarioItem.m_oHarvestMethod.HarvestMethodSteepSlope.Trim() + "'";
+                                     " SET scenario_harvest_method_low = '" + m_oProcessorScenarioItem.m_oHarvestMethod.HarvestMethodLowSlope.Trim() +
+                                     "', scenario_harvest_method_steep = '" + m_oProcessorScenarioItem.m_oHarvestMethod.HarvestMethodSteepSlope.Trim() + "'";
 
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nUpdate HARVEST_METHOD_REF for scenario harvest methods\r\n");
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                    p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
-
-                    p_dataMgr.m_strSQL = "UPDATE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsHarvestMethodRefTableName +
-                        " SET SCENARIO_HARVEST_METHOD_LOW_ID = HarvestMethodID, SCENARIO_HARVEST_METHOD_LOW_CATEGORY = BIOSUM_CATEGORY, " +
-                        "SCENARIO_HARVEST_METHOD_LOW_CATEGORY_DESCR = top_limb_slope_status FROM " + m_strHarvestMethodsTable +
-                        " WHERE TRIM(" + m_strHarvestMethodsTable + ".Method) = " +
-                        "TRIM(" + Tables.OptimizerScenarioResults.DefaultScenarioResultsHarvestMethodRefTableName + ".SCENARIO_HARVEST_METHOD_LOW) " +
-                        "AND STEEP_YN = 'N'";
+                    p_dataMgr.m_strSQL = "UPDATE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsHarvestMethodRefTableName + " AS ref " +
+                        "SET scenario_harvest_method_low_id = HarvestMethodId, scenario_harvest_method_low_category = biosum_category, " +
+                        "scenario_harvest_method_low_category_descr = top_limn_slope_status " +
+                        "FROM " + m_strHarvestMethodsTable + " AS m " +
+                        "WHERE TRIM(m.method) = TRIM(ref.scenario_harvest_method_low) AND steep_yn = 'N'";
 
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nUpdate HARVEST_METHOD_REF with properties of scenario low slope methods\r\n");
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                    p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
-
-                    p_dataMgr.m_strSQL = "UPDATE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsHarvestMethodRefTableName +
-                        " SET SCENARIO_HARVEST_METHOD_STEEP_ID = HarvestMethodID, SCENARIO_HARVEST_METHOD_STEEP_CATEGORY = BIOSUM_CATEGORY, " +
-                        "SCENARIO_HARVEST_METHOD_STEEP_CATEGORY_DESCR = top_limb_slope_status " +
-                        "FROM " + m_strHarvestMethodsTable +
-                        " WHERE TRIM(" + m_strHarvestMethodsTable + ".Method) = " +
-                        "TRIM(" + Tables.OptimizerScenarioResults.DefaultScenarioResultsHarvestMethodRefTableName + ".SCENARIO_HARVEST_METHOD_STEEP) " +
-                        "AND STEEP_YN = 'Y'";
+                    p_dataMgr.m_strSQL = "UPDATE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsHarvestMethodRefTableName + " AS ref " +
+                        "SET scenario_harvest_method_steep_id = HarvestMethodId, scenario_harvest_method_steep_category = biosum_category, " +
+                        "scenario_harvest_method_steep_category_descr = top_limb_slope_status " +
+                        "FROM " + m_strHarvestMethodsTable + " AS m " +
+                        "WHERE TRIM(m.method) = TRIM(ref.scenario_harvest_method_steep) AND steep_yn = 'Y'";
 
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nUpdate HARVEST_METHOD_REF with properties of scenario steep slope methods\r\n");
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
                 }
 
                 p_dataMgr.m_strSQL = "UPDATE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsHarvestMethodRefTableName +
-                                " SET RX_HARVEST_METHOD_LOW = 'NA', RX_HARVEST_METHOD_LOW_ID = 999, RX_HARVEST_METHOD_LOW_CATEGORY = 999," +
-                                " RX_HARVEST_METHOD_LOW_CATEGORY_DESCR = 'NA'," +
-                                " RX_HARVEST_METHOD_STEEP = 'NA', RX_HARVEST_METHOD_STEEP_ID = 999, RX_HARVEST_METHOD_STEEP_CATEGORY = 999," +
-                                " RX_HARVEST_METHOD_STEEP_CATEGORY_DESCR = 'NA'," +
-                                " SCENARIO_HARVEST_METHOD_LOW = 'NA', SCENARIO_HARVEST_METHOD_LOW_ID = 999, SCENARIO_HARVEST_METHOD_LOW_CATEGORY = 999," +
-                                " SCENARIO_HARVEST_METHOD_LOW_CATEGORY_DESCR = 'NA'," +
-                                " SCENARIO_HARVEST_METHOD_STEEP = 'NA', SCENARIO_HARVEST_METHOD_STEEP_ID = 999, SCENARIO_HARVEST_METHOD_STEEP_CATEGORY = 999," +
-                                " SCENARIO_HARVEST_METHOD_STEEP_CATEGORY_DESCR = 'NA'" +
-                                " WHERE RX = '999'";
+                                " SET rx_harvest_method_low = 'NA', rx_harvest_method_low_id = 999, rx_harvest_method_low_category = 999, " +
+                                "rx_harveset_method_low_category_descr = 'NA', " +
+                                "rx_harvest_method_steep = 'NA', rx_harvest_method_steep_id = 999, rx_harvest_method_steep_category = 999, " +
+                                "rx_harvest_method_steep_category_descr = 'NA', " +
+                                "scenario_harvest_method_low = 'NA', scenario_harvest_method_low_id = 999, scenario_harvest_method_low_category = 999, " +
+                                "scenario_harvest_method_low_category_descr = 'NA', " +
+                                "scenario_harvest_method_steep = 'NA', scenario_harvest_method_steep_id = 999, scenario_harvest_method_steep_category = 999, " +
+                                "scenario_harvest_method_steep_category_descr = 'NA' " +
+                                "WHERE rx = '999'";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nUpdate HARVEST_METHOD_REF for rx 999 (grow-only) \r\n");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                 p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsRxPackageRefTableName +
-                                " (RXPACKAGE, DESCRIPTION, SIMYEAR1_RX, SIMYEAR2_RX, SIMYEAR3_RX, SIMYEAR4_RX)" +
-                                " SELECT RXPACKAGE, " + m_strRxPackageTable + ".description, simyear1_rx, simyear2_rx, simyear3_rx, simyear4_rx " +
-                                " FROM " + m_strRxPackageTable;
+                                " (rxpackage, description, simyear1_rx, simyear2_rx, simyear3_rx, simyear4_rx) " +
+                                "SELECT rxpackage, " + m_strRxPackageTable + ".description, simyear1_rx, simyear2_rx, simyear3_rx, simyear4_rx " +
+                                "FROM " + m_strRxPackageTable;
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nInsert records into RXPACKAGE_REF \r\n");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
-
-                string[] arrRxCycle = new string[] { "SIMYEAR1_RX", "SIMYEAR2_RX", "SIMYEAR3_RX", "SIMYEAR4_RX" };
+                string[] arrRxCycle = new string[] { "simyear1_rx", "simyear2_rx", "simyear3_rx", "simyear4_rx" };
                 foreach (string strRxCycle in arrRxCycle)
                 {
                     p_dataMgr.m_strSQL = "UPDATE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsRxPackageRefTableName +
-                        " SET " + strRxCycle + "_DESCRIPTION = " + m_strRxTable + ".DESCRIPTION " +
+                        " SET " + strRxCycle + "_description = " + m_strRxTable + ".description " +
                         "FROM " + m_strRxTable +
                         " WHERE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsRxPackageRefTableName + "." + strRxCycle + " = " + m_strRxTable + ".rx";
 
@@ -13685,9 +14542,7 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nUpdate RXPACKAGE_REF for " + strRxCycle + " \r\n");
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
-
+                    p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
                 }
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
@@ -13700,8 +14555,7 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate rx_harvest_cost_columns_C table \r\n");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
@@ -13718,7 +14572,7 @@ namespace FIA_Biosum_Manager
                     }
 
                     p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsDiameterSpeciesGroupRefTableName +
-                                    " (DBH_CLASS_NUM, DBH_RANGE_INCHES, SPP_GRP_CODE, SPP_GRP, TO_CHIPS, MERCH_VAL_DpCF, VALUE_IF_CHIPPED_DpGT)" +
+                                    " (dbh_class_num, dbh_range_inches, spp_grp_code, spp_grp, to_chips, merch_val_dpcf, value_id_chipped_dpgt)" +
                                     " VALUES (" + oItem.DiameterGroupId + ", '" + oItem.DbhGroup + "'," + oItem.SpeciesGroupId + ",'" + oItem.SpeciesGroup + "','" +
                                     strEnergyWood + "', " + oItem.MerchDollarPerCubicFootValue + ", " +
                                     dblChippedValue + ")";
@@ -13727,100 +14581,91 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate DIAMETER_SPP_GRP_REF_C table \r\n");
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
                 }
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
-                p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsWeightedVariablesRefTableName;
-                p_dataMgr.m_strSQL += " SELECT VARIABLE_NAME, VARIABLE_DESCRIPTION, BASELINE_RXPACKAGE, VARIABLE_SOURCE," +
-                                 " weight_1_pre, weight_1_post, weight_2_pre, weight_2_post, weight_3_pre, weight_3_post, weight_4_pre, weight_4_post";
-                p_dataMgr.m_strSQL += " FROM " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName +
-                                 " JOIN " + Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName + " ON " +
-                                 Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName + ".calculated_variables_id = " +
-                                 Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + ".ID";
+                p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsWeightedVariablesRefTableName +
+                    " SELECT variable_name, variable_description, baseline_rxpackage, variable_source, " +
+                    "weight_1_pre, weight_1_post, weight_2_pre, weight_2_post, weight_3_pre, weight_3_post, weight_4_pre, weight_4_post " +
+                    "FROM " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + " AS o, " +
+                    Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName + " AS f " +
+                    "WHERE f.calculated_variables_id = o.id";
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate FVS_WEIGHTED_VARIABLES_REF table \r\n");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                 p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName +
-                    " (VARIABLE_NAME, VARIABLE_DESCRIPTION, VARIABLE_SOURCE, CYCLE_1_WEIGHT)";
-                p_dataMgr.m_strSQL += " SELECT VARIABLE_NAME, VARIABLE_DESCRIPTION, VARIABLE_SOURCE," +
-                                 " weight as CYCLE_1_WEIGHT";
-                p_dataMgr.m_strSQL += " FROM " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName +
-                                 " JOIN " + Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName + " ON " +
-                                 Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName + ".calculated_variables_id = " +
-                                 Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + ".ID" +
-                                 " WHERE rxcycle = '1'";
+                    " (variable_name, variable_description, variable_source, cycle_1_weight) " +
+                    "SELECT variable_name, variable_description, variable_source, weight AS cycle_1_weight " +
+                    "FROM " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + " AS o, " +
+                    Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName + " AS e " +
+                    "WHERE e.calculated_variables_id = o.id AND rxcycle = '1'";
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate ECON_WEIGHTED_VARIABLES_REF table \r\n");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
                 arrRxCycle = new string[] { "2", "3", "4" };
 
                 foreach (string strRxCycle in arrRxCycle)
                 {
-                    string strFieldName = "CYCLE_" + strRxCycle + "_WEIGHT";
+                    string strFieldName = "cycle_" + strRxCycle + "_weight";
 
-                    p_dataMgr.m_strSQL = "UPDATE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName + " AS r " +
+                    p_dataMgr.m_strSQL = "UPDATE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName + " AS ref " +
                         "SET " + strFieldName + " = e.weight " +
-                        "FROM " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + " AS o JOIN " + Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName + " AS e " +
-                        "ON o.ID = e.calculated_variables_id WHERE r.VARIABLE_NAME = o.VARIABLE_NAME AND e.rxcycle = '" + strRxCycle + "'";
+                        "FROM " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + " AS o, " +
+                        Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName + " AS e " +
+                        "WHERE o.id = e.calculated_variables_id AND ref.variable_name = o.variable_name AND e.rxcycle = '" + strRxCycle + "'";
 
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nUpdate " + strFieldName + " field \r\n");
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-
-                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
                 }
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                 p_dataMgr.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName + "_C" +
                             " SELECT * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName +
-                            " WHERE SCENARIO_ID = '" + this.m_oProcessorScenarioItem.ScenarioId + "'";
+                            " WHERE scenario_id = '" + this.m_oProcessorScenarioItem.ScenarioId + "'";
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate SCENARIO_ADDITIONAL_ HARVEST_COSTS table \r\n");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                 p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsSpeciesGroupRefTableName +
-                " SELECT species_group AS SPP_GRP_CD, COMMON_NAME, spcd AS FIA_SPCD" +
+                " SELECT species_group AS spp_grp_cd, common_name, spcd AS Ffia_spcd" +
                 " FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName +
-                " WHERE SCENARIO_ID = '" + this.m_oProcessorScenarioItem.ScenarioId + "'";
+                " WHERE scenario_id = '" + this.m_oProcessorScenarioItem.ScenarioId + "'";
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate spp_grp_ref_C table \r\n");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
                 p_dataMgr.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName + "_C " +
                     "SELECT * FROM " + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName;
+
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate harvest_costs_C table \r\n");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
                 p_dataMgr.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName + "_C " +
                     "SELECT * FROM " + Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName;
@@ -13828,8 +14673,7 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate tree_vol_val_by_species_diam_groups_C table \r\n");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
                 p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName + "_C " +
                     "SELECT * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName;
@@ -13837,8 +14681,7 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate scenario_psites_C table \r\n");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-
-                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
             }
@@ -13854,8 +14697,6 @@ namespace FIA_Biosum_Manager
             }
 
             if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic)) return;
-
-
             if (this.m_intError == 0)
             {
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
