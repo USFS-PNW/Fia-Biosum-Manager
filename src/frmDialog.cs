@@ -25,7 +25,6 @@ namespace FIA_Biosum_Manager
         public FIA_Biosum_Manager.frmProcessorScenario m_frmProcessorScenarioCallingForm;
 		public FIA_Biosum_Manager.frmMain m_frmMain;
 		public FIA_Biosum_Manager.uc_previous_expressions uc_previous_expressions1;
-		public FIA_Biosum_Manager.uc_scenario_merge_tables uc_merge_tables1;
         public FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables uc_core_scenario_weighted_average1;
         public FIA_Biosum_Manager.uc_optimizer_sqlite_export uc_optimizer_sqlite_export1;
         public FIA_Biosum_Manager.uc_optimizer_load_gis_data uc_optimizer_load_gis_data1;
