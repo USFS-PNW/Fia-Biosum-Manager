@@ -15,9 +15,6 @@ namespace FIA_Biosum_Manager
     {
         public int m_intError = 0;
         public string m_strError = "";
-
-        private ado_data_access m_oAdo;
-
         //list view associated classes
         private ListViewEmbeddedControls.ListViewEx m_lvEx;
         private ProgressBarEx.ProgressBarEx m_oProgressBarEx1;
@@ -26,17 +23,11 @@ namespace FIA_Biosum_Manager
 
         int m_intLvCheckedCount = 0;
         int m_intLvTotalCount=0;
-        int m_intTotalSteps = 75;
-        int m_intCurrentStep = 0;
-        int m_intCurrentCount = 0;
         string m_strDateTimeCreated = "";
         string m_strOPCOSTTimeStamp = "";
         string m_strOPCOSTBatchFile="";
         private string m_strDebugFile = frmMain.g_oEnv.strTempDir + "\\biosum_processor_debug.txt";
         private string m_strOPCOSTRefPath;
-        //@ToDo: Remove these when removing old Processor code; These variable stand-in for checkboxes that are removed
-        bool m_blnLowSlope = true;
-        bool m_blnSteepSlope = true;
         
         Queries m_oQueries = new Queries();
         RxTools m_oRxTools = new RxTools();
@@ -1128,16 +1119,6 @@ namespace FIA_Biosum_Manager
                     MessageBox.Show(m_strError, "FIA Biosum", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
-
-            //m_oAdo.OpenConnection(strConn);
-            //if (!m_oAdo.TableExist(m_oAdo.m_OleDbConnection,"OPCOST_OUTPUT"))
-            //{
-            //    m_intError=-1;
-            //    m_strError="!!OPCOST processing did not complete successfully. Check the error log at " +
-            //                strOPCOSTErrorFilePath + " for details!!";
-
-            //    MessageBox.Show(m_strError,"FIA Biosum",MessageBoxButtons.OK,MessageBoxIcon.Error);
-            //}
         }
         private bool RunScenario_CreateOPCOSTBatchFile(string strOPCOSTErrorFilePath)
         {
@@ -1744,72 +1725,7 @@ namespace FIA_Biosum_Manager
                             }
                         }
                     }
-                    //if (m_oAdo.m_intError == 0)
-                    //{
-                    //    //
-                    //    //WITHOUT TREATMENTS:
-                    //    //PROCESS TREATMENTS THAT ARE IN THE SCENARIO_ADDITIONAL_HARVEST_COSTS table
-                    //    //BUT ARE NOT IN THE SCENARIO_ADDITIONAL_HARVEST_COST_COLUMNS table
-                    //    //
-                    //    m_oAdo.m_strSQL = "SELECT DISTINCT  a.rx " +
-                    //                      "FROM scenario_additional_harvest_costs a " +
-                    //                      "WHERE NOT EXISTS (SELECT b.rx " +
-                    //                                        "FROM scenario_harvest_cost_columns b " +
-                    //                                        "WHERE b.rx=a.rx AND TRIM(UCASE(scenario_id))='" + ScenarioId.Trim().ToUpper() + "')";
-                    //    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    //        frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                    //    strRXArray = frmMain.g_oUtils.ConvertListToArray(
-                    //               (string)m_oAdo.CreateCommaDelimitedList(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL, ""), ",");
 
-                    //    if (strRXArray != null && strScenarioRxArray != null)
-                    //    {
-
-                    //        for (x = 0; x <= strRXArray.Length - 1; x++)
-                    //        {
-                    //            strSum = "";
-
-                    //            for (y = 0; y <= strScenarioRxArray.Length - 1; y++)
-                    //            {
-                    //                //check 
-                    //                if (strScenarioRxArray[y].Trim().Length > 0 && strScenarioRxArray[y] != "*")
-                    //                {
-
-                    //                }
-                    //                else
-                    //                {
-                    //                    //scenario harvest cost
-                    //                    strSum = strSum + "IIF(b." + strScenarioColumnNameArray[y].Trim() + " IS NOT NULL,b." + strScenarioColumnNameArray[y].Trim() + ",0) +";
-                    //                }
-                    //            }                    
-                    //if (strSum.Trim().Length > 0)
-                    //{
-                    //    strSum = strSum.Substring(0, strSum.Length - 1);
-                    //    m_oAdo.m_strSQL = "UPDATE " + strAddCpaWorkTable + " a " +
-                    //                      "INNER JOIN scenario_additional_harvest_costs b " +
-                    //                      "ON a.biosum_cond_id=b.biosum_cond_id AND " +
-                    //                         "a.RX = b.RX " +
-                    //                      "SET a.complete_additional_cpa = " + strSum + " " +
-                    //                      "WHERE TRIM(UCASE(b.scenario_id))='" + ScenarioId.ToUpper().Trim() + "' AND " +
-                    //                             "b.RX = '" + strRXArray[x] + "'";
-
-                    //    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    //        frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                    //    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                    //    if (m_oAdo.m_intError != 0) break;
-                    //}
-
-                    //        }
-                    //    }
-                    //}
-                    //@ToDo: review this with new design
-                    //if (m_oAdo.m_intError == 0)
-                    //{
-                    //    m_oAdo.m_strSQL = $@"UPDATE {strAddCpaWorkTable} SET complete_additional_cpa = 0
-                    //                          WHERE complete_additional_cpa IS NULL";
-                    //    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    //        frmMain.g_oUtils.WriteText(m_strDebugFile, m_oAdo.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-                    //    m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                    //}
                     //INSERT INACTIVE STANDS WITH HARVEST COSTS INTO THE HARVEST COSTS WORK TABLE WHERE ADDITIONAL_CPA > 0
                     using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(p_strTempDb)))
                     {
@@ -2128,18 +2044,6 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.CurrentThreadProcessIdle = true;
             
 
-        }
-
-        private void chkLowSlope_CheckedChanged(object sender, EventArgs e)
-        {
-            if (ReferenceProcessorScenarioForm.m_bDataSourceFirstTime == false) ReferenceProcessorScenarioForm.m_bSave = true;
-            ScenarioHarvestMethodVariables.ProcessLowSlope = m_blnLowSlope;
-        }
-
-        private void chkSteepSlope_CheckedChanged(object sender, EventArgs e)
-        {
-            if (ReferenceProcessorScenarioForm.m_bDataSourceFirstTime == false) ReferenceProcessorScenarioForm.m_bSave = true;
-            ScenarioHarvestMethodVariables.ProcessSteepSlope = m_blnSteepSlope;
         }
         private void RunScenario_AppendPlaceholdersToTreeVolValAndHarvestCostsTables()
         {
@@ -2586,8 +2490,6 @@ namespace FIA_Biosum_Manager
 
                         if (m_intError == 0)
                         {
-                            //m_oAdo.m_strSQL = "SELECT COUNT(*) AS reccount FROM opcost_input";
-                            //m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
                             y++;
                             frmMain.g_oDelegate.SetControlPropertyValue(ReferenceProgressBarEx, "Value", y);
                         }

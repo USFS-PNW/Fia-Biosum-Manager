@@ -69,7 +69,6 @@ namespace FIA_Biosum_Manager
         public FIA_Biosum_Manager.uc_optimizer_scenario_copy uc_scenario_optimizer_scenario_copy1;
         public FIA_Biosum_Manager.uc_processor_scenario_copy uc_processor_scenario_copy1;
         public FIA_Biosum_Manager.uc_fvs_output_prepost_seqnum uc_fvs_output_prepost_seqnum1=null;
-        public FIA_Biosum_Manager.uc_processor_opcost_settings uc_processor_opcost_settings1 = null;
         public Control _oParentControl = null;
         public System.Windows.Forms.FormWindowState _oLastWindowState;
 		
@@ -316,8 +315,6 @@ namespace FIA_Biosum_Manager
             
             this.uc_project1 = new uc_project();
             
-            this.uc_scenario1 = new uc_scenario();
-            
             this.uc_project_document_links1 = new uc_project_document_links();
             
             this.uc_project_document_links_edit1 = new uc_project_document_links_edit();
@@ -335,9 +332,7 @@ namespace FIA_Biosum_Manager
             this.Controls.Add(this.uc_select_list_item1);
             
             this.Controls.Add(this.uc_project1);
-            
-            this.Controls.Add(this.uc_scenario1);
-            
+                        
             this.Controls.Add(this.uc_project_document_links1);
             
             this.Controls.Add(this.uc_project_document_links_edit1);
@@ -354,7 +349,6 @@ namespace FIA_Biosum_Manager
             
 
             this.uc_select_list_item1.Visible=false;
-			this.uc_scenario1.Visible=false;
 			this.uc_project_document_links1.Visible=false;
 			this.uc_project_document_links_edit1.Visible=false;
 			this.uc_project1.Visible=false;
@@ -393,17 +387,6 @@ namespace FIA_Biosum_Manager
 			
 		
 		}
-        public void Ininialize_Processor_OPCOST_Settings_User_Control()
-        {
-            this.uc_processor_opcost_settings1 = new uc_processor_opcost_settings();
-            this.Controls.Add(this.uc_processor_opcost_settings1);
-            uc_processor_opcost_settings1.ReferenceDialog = this;
-            this.Width = uc_processor_opcost_settings1.Width + 10;
-            this.Height = uc_processor_opcost_settings1.Height + 40;
-            uc_processor_opcost_settings1.Dock = DockStyle.Fill;
-            this.Text = "Processor: OPCOST Settings";
-            uc_processor_opcost_settings1.Visible = true;
-        }
         public void Initialize_FVS_Output_PREPOST_SeqNum_User_Control()
 		{
 			this.uc_fvs_output_prepost_seqnum1 = new uc_fvs_output_prepost_seqnum();
@@ -427,14 +410,6 @@ namespace FIA_Biosum_Manager
 			this.uc_scenario_harvest_cost_column_edit1 = new uc_scenario_harvest_cost_column_edit();
 			this.Controls.Add(this.uc_scenario_harvest_cost_column_edit1);
 			this.uc_scenario_harvest_cost_column_edit1.Visible=true;
-		}
-		public void Initialize_Join_Scenario_User_Control()
-		{
-
-		   this.uc_merge_tables1 = new uc_scenario_merge_tables(this.m_frmMain);
-           this.Controls.Add(this.uc_merge_tables1);
-		   this.uc_merge_tables1.Visible = true;
-            
 		}
         public void Initialize_Core_User_Variables_User_Control()
         {

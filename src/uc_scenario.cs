@@ -16,13 +16,6 @@ namespace FIA_Biosum_Manager
 		public System.Windows.Forms.Button btnOpen;
 		public System.Windows.Forms.TextBox txtDescription;
 		private System.Data.DataSet dataSet1;
-		private System.Data.OleDb.OleDbCommand oleDbSelectCommand1;
-		private System.Data.OleDb.OleDbCommand oleDbInsertCommand1;
-		private System.Data.OleDb.OleDbCommand oleDbUpdateCommand1;
-		private System.Data.OleDb.OleDbCommand oleDbDeleteCommand1;
-		private System.Data.OleDb.OleDbDataAdapter oleDbDataAdapter1;
-		private System.Data.OleDb.OleDbCommand oleDbCommand1;
-		private System.Data.OleDb.OleDbConnection oleDbConnection1;
 		private System.ComponentModel.Container components = null;
 		public int intError;
 		public System.Windows.Forms.Button btnCancel;
@@ -92,13 +85,6 @@ namespace FIA_Biosum_Manager
             this.lblScenarioPath = new System.Windows.Forms.Label();
             this.txtScenarioPath = new System.Windows.Forms.TextBox();
             this.dataSet1 = new System.Data.DataSet();
-            this.oleDbSelectCommand1 = new System.Data.OleDb.OleDbCommand();
-            this.oleDbInsertCommand1 = new System.Data.OleDb.OleDbCommand();
-            this.oleDbUpdateCommand1 = new System.Data.OleDb.OleDbCommand();
-            this.oleDbDeleteCommand1 = new System.Data.OleDb.OleDbCommand();
-            this.oleDbDataAdapter1 = new System.Data.OleDb.OleDbDataAdapter();
-            this.oleDbCommand1 = new System.Data.OleDb.OleDbCommand();
-            this.oleDbConnection1 = new System.Data.OleDb.OleDbConnection();
             this.lblNewScenario = new System.Windows.Forms.Label();
             this.txtScenarioId = new System.Windows.Forms.TextBox();
             this.btnCancel = new System.Windows.Forms.Button();
@@ -162,13 +148,6 @@ namespace FIA_Biosum_Manager
             // 
             this.dataSet1.DataSetName = "NewDataSet";
             this.dataSet1.Locale = new System.Globalization.CultureInfo("en-US");
-            // 
-            // oleDbDataAdapter1
-            // 
-            this.oleDbDataAdapter1.DeleteCommand = this.oleDbDeleteCommand1;
-            this.oleDbDataAdapter1.InsertCommand = this.oleDbInsertCommand1;
-            this.oleDbDataAdapter1.SelectCommand = this.oleDbSelectCommand1;
-            this.oleDbDataAdapter1.UpdateCommand = this.oleDbUpdateCommand1;
             // 
             // lblNewScenario
             // 
@@ -626,44 +605,20 @@ namespace FIA_Biosum_Manager
 		{
 			string strDesc="";
             string strScenarioDBDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\db";
-            if ((ReferenceProcessorScenarioForm != null && !ReferenceProcessorScenarioForm.m_bUsingSqlite)
-                 && ScenarioType.Trim().ToUpper() == "PROCESSOR")
+            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+            string strScenarioFile = "scenario_" + ScenarioType + "_rule_definitions.db";
+            StringBuilder strScenarioFullPath = new StringBuilder(strScenarioDBDir);
+            strScenarioFullPath.Append("\\");
+            strScenarioFullPath.Append(strScenarioFile);
+            string strConn = oDataMgr.GetConnectionString(strScenarioFullPath.ToString());
+            if (this.txtDescription.Text.Trim().Length > 0) strDesc = oDataMgr.FixString(this.txtDescription.Text.Trim(), "'", "''");
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
-                ado_data_access oAdo = new ado_data_access();
-                string strScenarioFile = "scenario_" + ScenarioType + "_rule_definitions.mdb";
-                StringBuilder strScenarioFullPath = new StringBuilder(strScenarioDBDir);
-                strScenarioFullPath.Append("\\");
-                strScenarioFullPath.Append(strScenarioFile);
-                string strScenarioConn = oAdo.getMDBConnString(strScenarioFullPath.ToString(), "admin", "");
-                oAdo.OpenConnection(strScenarioConn);
-                if (this.txtDescription.Text.Trim().Length > 0) strDesc = oAdo.FixString(this.txtDescription.Text.Trim(), "'", "''");
-                oAdo.m_strSQL = "UPDATE scenario SET description='" + strDesc.Trim() + "' WHERE TRIM(scenario_id)='" + this.txtScenarioId.Text.Trim() + "'";
-                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                oAdo.m_OleDbConnection.Close();
-                while (oAdo.m_OleDbConnection.State != System.Data.ConnectionState.Closed)
-                {
-                    oAdo.m_OleDbConnection.Close();
-                    System.Threading.Thread.Sleep(1000);
-                }
-                oAdo = null;
+                conn.Open();
+                oDataMgr.m_strSQL = "UPDATE scenario SET description='" + strDesc.Trim() + "' WHERE TRIM(scenario_id)='" + this.txtScenarioId.Text.Trim() + "'";
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
             }
-            else
-            {
-                SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
-                string strScenarioFile = "scenario_" + ScenarioType + "_rule_definitions.db";
-                StringBuilder strScenarioFullPath = new StringBuilder(strScenarioDBDir);
-                strScenarioFullPath.Append("\\");
-                strScenarioFullPath.Append(strScenarioFile);
-                string strConn = oDataMgr.GetConnectionString(strScenarioFullPath.ToString());
-                if (this.txtDescription.Text.Trim().Length > 0) strDesc = oDataMgr.FixString(this.txtDescription.Text.Trim(), "'", "''");
-                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
-                {
-                    conn.Open();
-                    oDataMgr.m_strSQL = "UPDATE scenario SET description='" + strDesc.Trim() + "' WHERE TRIM(scenario_id)='" + this.txtScenarioId.Text.Trim() + "'";
-                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
-                }
-                oDataMgr = null;
-            }
+            oDataMgr = null;
 		}
 		public string strScenarioId
 		{

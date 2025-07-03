@@ -22,9 +22,7 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Button btnAuditAdd;
 		private System.Windows.Forms.Button btnAuditCheckAll;
 		private System.Windows.Forms.Button btnAuditClearAll;
-		private string m_strProjDir;
 		private string m_strTempDbFile;
-        private ODBCMgr m_odbcmgr = new ODBCMgr();
 		private System.Data.DataView m_dv;
 		public int m_intIndex=0;
 		private int m_intCurrRow=0;
@@ -59,9 +57,7 @@ namespace FIA_Biosum_Manager
 		private int m_intDeletedCount=0;
 		private string m_strColumnFilterList="";
 		private string m_strColumnSortList="";
-		//private string m_strTreeSpCdList="";
-
-		private System.Data.DataTable m_dtTableSchema;
+		//private string m_strTreeSpCdList=""
 		private System.Windows.Forms.ComboBox cmbAudit;
 		private System.Windows.Forms.Button btnAudit;
 
@@ -90,14 +86,12 @@ namespace FIA_Biosum_Manager
 		/// </summary>
 		private System.ComponentModel.Container components = null;
 
-		public uc_processor_tree_spc(string p_strProjDir)
+		public uc_processor_tree_spc()
 		{
 			// This call is required by the Windows.Forms Form Designer.
 			InitializeComponent();
 
 			// TODO: Add any initialization after the InitializeComponent call
-
-			this.m_strProjDir = p_strProjDir;
             this.m_oEnv = new env();
 
 			this.m_oQueries = new Queries();
@@ -1207,42 +1201,6 @@ namespace FIA_Biosum_Manager
 			frmTemp.ShowDialog();
 			strValues = null;
 			frmTemp = null;
-		}
-
-		/// <summary>
-		/// return the row of the containing the column definitions of 
-		/// column name, datatype, length, default value, allow nulls, etc.
-		/// </summary>
-		/// <param name="strColumnName">column definition to look up</param>
-		/// <returns></returns>
-		private int getTableSchemaColumnDefinition(string strColumnName)
-		{
-			int x;
-			for (x=0;x<=this.m_dtTableSchema.Rows.Count-1;x++)
-			{
-				if (this.m_dtTableSchema.Rows[x]["COLUMNNAME"].ToString().Trim().ToUpper()==
-					strColumnName.Trim().ToUpper())
-				{
-					return x;
-					
-				}
-
-			}
-			//could not find the column
-			return -1;
-		}
-
-
-		public string strProjectDirectory
-		{
-			set
-			{
-				this.m_strProjDir = value;
-			}
-			get
-			{
-				return this.m_strProjDir;
-			}
 		}
 
 		#region Component Designer generated code

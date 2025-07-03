@@ -36,9 +36,7 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Label label6;
 		private System.Windows.Forms.TextBox txtMinDiaSmallLogs;
 		private System.Windows.Forms.TextBox txtMinDiaLargeLogs;
-		//private Queries m_oQueries = new Queries();
 		private RxTools m_oRxTools = new RxTools();
-		private ado_data_access m_oAdo = new ado_data_access();
 		private string _strScenarioId="";
         private frmProcessorScenario _frmProcessorScenario = null;
 		public System.Windows.Forms.Label lblTitle;
@@ -743,7 +741,7 @@ namespace FIA_Biosum_Manager
 			}
 			this.cmbSteepSlopePercent.Text = "40";
 
-            ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadHarvestMethodSqlite
+            ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadHarvestMethod
                 (frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
                 "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile,
                 ReferenceProcessorScenarioForm.m_oProcessorScenarioItem);

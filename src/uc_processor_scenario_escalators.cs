@@ -30,7 +30,6 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Label lblCycleLengthDesc;
 		private System.Windows.Forms.Label lblCycleLength;
 		private RxTools m_oRxTools = new RxTools();
-		private ado_data_access m_oAdo = null;
 		private string _strScenarioId="";
 		private frmProcessorScenario _frmProcessorScenario=null;
         private Label lblNote;
@@ -332,7 +331,7 @@ namespace FIA_Biosum_Manager
             string strScenarioDB =
                 frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
                 "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
-            ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadEscalatorsSqlite(ReferenceProcessorScenarioForm.LoadedQueries, 
+            ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadEscalators(ReferenceProcessorScenarioForm.LoadedQueries, 
                 strScenarioDB, ReferenceProcessorScenarioForm.m_oProcessorScenarioItem);
 
             ProcessorScenarioItem.Escalators oEscalators = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oEscalators;

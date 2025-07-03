@@ -453,12 +453,6 @@
     <Compile Include="uc_print_report_wizard.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="uc_processor_opcost_settings.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_processor_opcost_settings.Designer.cs">
-      <DependentUpon>uc_processor_opcost_settings.cs</DependentUpon>
-    </Compile>
     <Compile Include="uc_processor_scenario_additional_harvest_cost_columns.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -558,9 +552,6 @@
     <Compile Include="uc_optimizer_scenario_costs.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="uc_scenario_ffe.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Include="uc_optimizer_scenario_filter.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -574,9 +565,6 @@
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="uc_scenario_harvest_cost_column_edit.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_scenario_merge_tables.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="uc_scenario_notes.cs">
@@ -829,9 +817,6 @@
     <EmbeddedResource Include="uc_print_report_wizard.resx">
       <DependentUpon>uc_print_report_wizard.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="uc_processor_opcost_settings.resx">
-      <DependentUpon>uc_processor_opcost_settings.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="uc_processor_scenario_additional_harvest_cost_columns.resx">
       <DependentUpon>uc_processor_scenario_additional_harvest_cost_columns.cs</DependentUpon>
     </EmbeddedResource>
@@ -916,9 +901,6 @@
     <EmbeddedResource Include="uc_optimizer_scenario_costs.resx">
       <DependentUpon>uc_optimizer_scenario_costs.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="uc_scenario_ffe.resx">
-      <DependentUpon>uc_scenario_ffe.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="uc_optimizer_scenario_filter.resx">
       <DependentUpon>uc_optimizer_scenario_filter.cs</DependentUpon>
     </EmbeddedResource>
@@ -933,9 +915,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="uc_scenario_harvest_cost_column_edit.resx">
       <DependentUpon>uc_scenario_harvest_cost_column_edit.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="uc_scenario_merge_tables.resx">
-      <DependentUpon>uc_scenario_merge_tables.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="uc_scenario_notes.resx">
       <DependentUpon>uc_scenario_notes.cs</DependentUpon>

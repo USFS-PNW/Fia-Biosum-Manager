@@ -13,10 +13,8 @@ namespace FIA_Biosum_Manager
         public int m_intError = 0;
         public string m_strError = "";
         private uc_processor_scenario_additional_harvest_cost_column_collection uc_collection = new uc_processor_scenario_additional_harvest_cost_column_collection();
-        ado_data_access m_oAdo=null;
         private string _strScenarioId = "";
         private frmProcessorScenario _frmProcessorScenario = null;
-        System.Data.OleDb.OleDbConnection m_oConnAdditionalHarvestCosts = new System.Data.OleDb.OleDbConnection();
         RxTools m_oRxTools = new RxTools();
         private string _strTempDb = "";
 
@@ -979,8 +977,6 @@ namespace FIA_Biosum_Manager
                     uc_processor_scenario_additional_harvest_cost_column_item1.Type = "Scenario";
                     uc_processor_scenario_additional_harvest_cost_column_item1.Description = frmTemp.uc_scenario_harvest_cost_column_edit1.ColumnDescription.Trim(); ;
                     uc_processor_scenario_additional_harvest_cost_column_item1.EnableColumnNameRemoveButton = true;
-                    //uc_processor_scenario_additional_harvest_cost_column_item1.ReferenceAdo = m_oAdo;
-                    //uc_processor_scenario_additional_harvest_cost_column_item1.ReferenceOleDbConnection = m_oAdo.m_OleDbConnection;
                     uc_processor_scenario_additional_harvest_cost_column_item1.ReferenceAdditionalHarvestCostColumnsUserControl = this;
                     uc_processor_scenario_additional_harvest_cost_column_item1.NullCount = Convert.ToString(intCount);
                     uc_processor_scenario_additional_harvest_cost_column_item1.Visible = true;
@@ -996,8 +992,6 @@ namespace FIA_Biosum_Manager
                     oItem.Name = "uc_processor_scenario_additional_harvest_cost_column_item" + Convert.ToString(uc_collection.Count + 1);
                     oItem.Description = frmTemp.uc_scenario_harvest_cost_column_edit1.ColumnDescription.Trim();
                     oItem.EnableColumnNameRemoveButton = true;
-                    //oItem.ReferenceAdo = m_oAdo;
-                    //oItem.ReferenceOleDbConnection = m_oAdo.m_OleDbConnection;
                     oItem.ReferenceAdditionalHarvestCostColumnsUserControl = this;
                     oItem.ReferenceProcessorScenarioForm = this.ReferenceProcessorScenarioForm;
                     panel1.Controls.Add(oItem);
