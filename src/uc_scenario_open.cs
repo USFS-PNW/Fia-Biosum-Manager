@@ -15,14 +15,6 @@ namespace FIA_Biosum_Manager
 	{
 		public System.Windows.Forms.Button btnOpen;
 		public System.Windows.Forms.TextBox txtDescription;
-		private System.Data.DataSet dataSet1;
-		private System.Data.OleDb.OleDbCommand oleDbSelectCommand1;
-		private System.Data.OleDb.OleDbCommand oleDbInsertCommand1;
-		private System.Data.OleDb.OleDbCommand oleDbUpdateCommand1;
-		private System.Data.OleDb.OleDbCommand oleDbDeleteCommand1;
-		private System.Data.OleDb.OleDbDataAdapter oleDbDataAdapter1;
-		private System.Data.OleDb.OleDbCommand oleDbCommand1;
-		private System.Data.OleDb.OleDbConnection oleDbConnection1;
 		private System.ComponentModel.Container components = null;
 		public int intError;
 		public System.Windows.Forms.Button btnCancel;
@@ -93,21 +85,12 @@ namespace FIA_Biosum_Manager
             this.lblScenarioDescription = new System.Windows.Forms.Label();
             this.lblScenarioPath = new System.Windows.Forms.Label();
             this.txtScenarioPath = new System.Windows.Forms.TextBox();
-            this.dataSet1 = new System.Data.DataSet();
-            this.oleDbSelectCommand1 = new System.Data.OleDb.OleDbCommand();
-            this.oleDbInsertCommand1 = new System.Data.OleDb.OleDbCommand();
-            this.oleDbUpdateCommand1 = new System.Data.OleDb.OleDbCommand();
-            this.oleDbDeleteCommand1 = new System.Data.OleDb.OleDbCommand();
-            this.oleDbDataAdapter1 = new System.Data.OleDb.OleDbDataAdapter();
-            this.oleDbCommand1 = new System.Data.OleDb.OleDbCommand();
-            this.oleDbConnection1 = new System.Data.OleDb.OleDbConnection();
             this.lblNewScenario = new System.Windows.Forms.Label();
             this.txtScenarioId = new System.Windows.Forms.TextBox();
             this.btnCancel = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.lblTitle = new System.Windows.Forms.Label();
             this.btnClose = new System.Windows.Forms.Button();
-            ((System.ComponentModel.ISupportInitialize)(this.dataSet1)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -178,18 +161,6 @@ namespace FIA_Biosum_Manager
             this.txtScenarioPath.Name = "txtScenarioPath";
             this.txtScenarioPath.Size = new System.Drawing.Size(448, 30);
             this.txtScenarioPath.TabIndex = 7;
-            // 
-            // dataSet1
-            // 
-            this.dataSet1.DataSetName = "NewDataSet";
-            this.dataSet1.Locale = new System.Globalization.CultureInfo("en-US");
-            // 
-            // oleDbDataAdapter1
-            // 
-            this.oleDbDataAdapter1.DeleteCommand = this.oleDbDeleteCommand1;
-            this.oleDbDataAdapter1.InsertCommand = this.oleDbInsertCommand1;
-            this.oleDbDataAdapter1.SelectCommand = this.oleDbSelectCommand1;
-            this.oleDbDataAdapter1.UpdateCommand = this.oleDbUpdateCommand1;
             // 
             // lblNewScenario
             // 
@@ -276,7 +247,6 @@ namespace FIA_Biosum_Manager
             this.Load += new System.EventHandler(this.uc_scenario_Load);
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.uc_scenario_MouseDown);
             this.Resize += new System.EventHandler(this.uc_scenario_Resize);
-            ((System.ComponentModel.ISupportInitialize)(this.dataSet1)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.ResumeLayout(false);

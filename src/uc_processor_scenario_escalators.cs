@@ -30,7 +30,6 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Label lblCycleLengthDesc;
 		private System.Windows.Forms.Label lblCycleLength;
 		private RxTools m_oRxTools = new RxTools();
-		private ado_data_access m_oAdo = null;
 		private string _strScenarioId="";
 		private frmProcessorScenario _frmProcessorScenario=null;
         private Label lblNote;
@@ -332,7 +331,7 @@ namespace FIA_Biosum_Manager
             string strScenarioDB =
                 frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
                 "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
-            ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadEscalatorsSqlite(ReferenceProcessorScenarioForm.LoadedQueries, 
+            ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadEscalators(ReferenceProcessorScenarioForm.LoadedQueries, 
                 strScenarioDB, ReferenceProcessorScenarioForm.m_oProcessorScenarioItem);
 
             ProcessorScenarioItem.Escalators oEscalators = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oEscalators;
@@ -651,14 +650,14 @@ namespace FIA_Biosum_Manager
 
         private void btnDefault_Click(object sender, EventArgs e)
         {
-            string strCycle2 = "0.65";
-            string strCycle3 = "0.44";
-            string strCycle4 = "0.30";
+            string strCycle2 = "0.6496";
+            string strCycle3 = "0.4388";
+            string strCycle4 = "0.2965";
             if (lblCycleLength.Text.Equals("5"))
             {
-                strCycle2 = "0.79";
-                strCycle3 = "0.65";
-                strCycle4 = "0.53";
+                strCycle2 = "0.7903";
+                strCycle3 = "0.6496";
+                strCycle4 = "0.5339";
             }
 
             this.uc_processor_scenario_escalators_value1.Cycle2 = strCycle2;

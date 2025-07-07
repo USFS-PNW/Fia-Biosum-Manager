@@ -12,9 +12,7 @@ namespace FIA_Biosum_Manager
     {
         private uc_processor_scenario_additional_harvest_cost_columns _uc_processor_scenario_additional_harvest_cost_columns=null;
         private Queries _oQueries=null;
-        private ado_data_access _oAdo = null;
         private SQLite.ADO.DataMgr _DataMgr;
-        private System.Data.OleDb.OleDbConnection _oConn;
         private FIA_Biosum_Manager.ValidateNumericValues m_oValidate = new ValidateNumericValues();
         private string m_strCubicFootDollarValueSave = "";
         private frmProcessorScenario _oFrmProcessorScenario = null;

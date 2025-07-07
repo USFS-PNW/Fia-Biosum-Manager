@@ -8,13 +8,9 @@ namespace FIA_Biosum_Manager
     public class processor
     {
         private string m_strScenarioId = "";
-        private ado_data_access  m_oAdo;
         private string m_strOpcostTableName = "OpCost_Input";
         private string m_strTvvTableName = "TreeVolValLowSlope";
         private string m_strDebugFile ="";
-        private string m_strOpcostIdealTableName = "OpCost_Ideal_Output";
-        private bool m_bUsingSqlite = false;
-        //private ado_data_access p_oAdo;
         private System.Collections.Generic.List<tree> m_trees;
         private scenarioHarvestMethod m_scenarioHarvestMethod;
         private scenarioMoveInCost m_scenarioMoveInCost;
@@ -31,155 +27,27 @@ namespace FIA_Biosum_Manager
             set { _SQLite = value; }
         }
 
-        public processor(string strDebugFile, string strScenarioId, ado_data_access oAdo, bool bUsingSqlite,
-                         string sqliteTempDb)
+        public processor(string strDebugFile, string strScenarioId, string sqliteTempDb)
         {
             m_strDebugFile = strDebugFile;
             m_strScenarioId = strScenarioId;
-            m_bUsingSqlite = bUsingSqlite;
-            m_oAdo = oAdo;
-            ODBCMgr odbcmgr = new ODBCMgr();
-            // Set up an ODBC DSN for the FVSOUT_TREE_LIST.db
-            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName))
-            {
-                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName);
-            }
-            odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName,
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + 
-                Tables.FVS.DefaultFVSTreeListDbFile);
             m_strSqliteConnection = sqliteTempDb;
-            if (m_bUsingSqlite)
-            {
-                SQLite.OpenConnection(SQLite.GetConnectionString(m_strSqliteConnection));
-                // Attach to rule definitions database; Seems to be connection-specific
-                string strScenarioDB =
-                    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
-                string strSql = "ATTACH DATABASE '" + strScenarioDB + "' AS definitions";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + strSql + "\r\n");
-                SQLite.SqlNonQuery(SQLite.m_Connection, strSql);
-            }
-            // Set up an ODBC DSN for the temp database
-            // Check to see if the input SQLite DSN exists and if so, delete so we can add
-            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName))
-            {
-                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName);
-            }
-            odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName,
-                m_strSqliteConnection);
-        }
-        
-        public Queries init()
-        {
-            Queries p_oQueries = new Queries();
-            
-            //
-            //CREATE LINK IN TEMP MDB TO ALL PROCESSOR SCENARIO TABLES
-            //
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "START: Create Links to the Scenario tables - " + System.DateTime.Now.ToString() + "\r\n");
-            dao_data_access oDao = new dao_data_access();
-            //
-            //SCENARIO MDB
-            //
-            
-            string strScenarioMDB =
+            SQLite.OpenConnection(SQLite.GetConnectionString(m_strSqliteConnection));
+            // Attach to rule definitions database; Seems to be connection-specific
+            string strScenarioDB =
                 frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                "\\processor\\db\\scenario_processor_rule_definitions.mdb";
-            //
-            //SCENARIO RESULTS MDB
-            //
-            string strScenarioResultsMDB =
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                "\\processor\\" + m_strScenarioId + "\\" + Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsDbFile;
-
-            //
-            //LOAD PROJECT DATATASOURCES INFO
-            //
-            p_oQueries.m_oFvs.LoadDatasource = true;
-            p_oQueries.m_oReference.LoadDatasource = true;
-            p_oQueries.m_oProcessor.LoadDatasource = true;
-            p_oQueries.LoadDatasources(true, "processor", m_strScenarioId);
-
-            //link to all the scenario rule definition tables
-            oDao.CreateTableLink(p_oQueries.m_strTempDbFile,
-                "scenario_cost_revenue_escalators",
-                strScenarioMDB, "scenario_cost_revenue_escalators", true);
-            oDao.CreateTableLink(p_oQueries.m_strTempDbFile,
-                "scenario_additional_harvest_costs",
-                strScenarioMDB, "scenario_additional_harvest_costs", true);
-            oDao.CreateTableLink(p_oQueries.m_strTempDbFile,
-               "scenario_harvest_cost_columns",
-               strScenarioMDB, "scenario_harvest_cost_columns", true);
-            oDao.CreateTableLink(p_oQueries.m_strTempDbFile,
-              "scenario_harvest_method",
-              strScenarioMDB, "scenario_harvest_method", true);
-            oDao.CreateTableLink(p_oQueries.m_strTempDbFile,
-                Tables.ProcessorScenarioRuleDefinitions.DefaultMoveInCostsTableName,
-                strScenarioMDB, 
-                Tables.ProcessorScenarioRuleDefinitions.DefaultMoveInCostsTableName, true);
-            oDao.CreateTableLink(p_oQueries.m_strTempDbFile,
-                Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName,
-                strScenarioMDB,
-                Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName, true);
-            oDao.CreateTableLink(p_oQueries.m_strTempDbFile,
-             "scenario_tree_species_diam_dollar_values",
-             strScenarioMDB, "scenario_tree_species_diam_dollar_values", true);
-            //link scenario results tables
-            oDao.CreateTableLink(p_oQueries.m_strTempDbFile,
-                Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName,
-                strScenarioResultsMDB,
-                Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName, true);
-            oDao.CreateTableLink(p_oQueries.m_strTempDbFile,
-                Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName,
-                strScenarioResultsMDB,
-                Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName, true);
-
-            // link gis travel_timetable
-            oDao.CreateTableLink(p_oQueries.m_strTempDbFile,
-                p_oQueries.m_oTravelTime.m_strTravelTimeTable,
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.TravelTime.DefaultTravelTimeTableDbFile,
-                p_oQueries.m_oTravelTime.m_strTravelTimeTable, true);
-
-            oDao.m_DaoDbEngine.Idle(1);
-            oDao.m_DaoDbEngine.Idle(8);
-            oDao.m_DaoWorkspace.Close();
-            oDao.m_DaoDbEngine = null;
-            oDao = null;
-
+                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+            string strSql = "ATTACH DATABASE '" + strScenarioDB + "' AS definitions";
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "END: Create Links to the Scenario tables - " + System.DateTime.Now.ToString() + "\r\n");
-
-            //
-            //CREATE LINK IN TEMP MDB TO ALL VARIANT CUTLIST TABLES
-            //
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "START: Create ODBC DSN for SQLite FVSOUT_TREE_LIST.db - " + System.DateTime.Now.ToString() + "\r\n");
-            ODBCMgr odbcMgr = new ODBCMgr();
-            if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName))
-            {
-                odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName);
-            }
-            odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName,
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                Tables.FVS.DefaultFVSTreeListDbFile);
-
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "END: Create ODBC DSN for SQLite FVSOUT_TREE_LIST.db - " + System.DateTime.Now.ToString() + "\r\n");
-
-            m_oAdo = new ado_data_access();
-            m_oAdo.OpenConnection(m_oAdo.getMDBConnString(p_oQueries.m_strTempDbFile, "", ""));
- 
-            return p_oQueries;
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + strSql + "\r\n");
+            SQLite.SqlNonQuery(SQLite.m_Connection, strSql);
         }
         
         public int LoadTrees(string p_strVariant, string p_strRxPackage, string p_strCondTableName, string p_strPlotTableName,
-                             string p_strRefHarvestDatabase, string p_strRefHarvestMethodTableName, string p_strRxDatabase, string p_strRxTableName)
+                             string p_strRefHarvestDatabase, string p_strRefHarvestMethodTableName, string p_strRxDatabase, 
+                             string p_strRxTableName, string p_strMasterDatabase)
         {
-
             //Load harvest methods; Prescription load depends on harvest methods
-            //@ToDo: Table names that are passed in here are still in MS Access
             m_harvestMethodList = LoadHarvestMethods(p_strRefHarvestDatabase, p_strRefHarvestMethodTableName);
             //If harvest methods didn't load, stop processing
             if (m_harvestMethodList == null)
@@ -194,18 +62,6 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//Variant: " + p_strVariant + " Package: " + p_strRxPackage + "\r\n");
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
-            // Link to FVSOUT_TREE_LIST.db
-            if (!m_oAdo.TableExist(m_oAdo.m_OleDbConnection, Tables.FVS.DefaultFVSCutTreeTableName))
-            {
-                dao_data_access oDao = new dao_data_access();
-                oDao.CreateSQLiteTableLink(m_oAdo.m_OleDbConnection.DataSource, Tables.FVS.DefaultFVSCutTreeTableName, Tables.FVS.DefaultFVSCutTreeTableName,
-                    ODBCMgr.DSN_KEYS.FvsOutTreeListDsnName, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                    Tables.FVS.DefaultFVSTreeListDbFile);
-                oDao.m_DaoWorkspace.Close();
-                oDao = null;
-                // Sleep to ensure table link is complete
-                System.Threading.Thread.Sleep(5000);
-            }
 
             //Load prescriptions into reference dictionary
             m_prescriptions = LoadPrescriptions(p_strRxDatabase, p_strRxTableName);
@@ -219,16 +75,25 @@ namespace FIA_Biosum_Manager
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "loadTrees: Diameter Variables in Use: " + m_scenarioHarvestMethod.ToString() + "\r\n");
-            
-            if (m_oAdo.m_intError == 0)
+
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(m_strSqliteConnection)))
             {
-                //string strSQL = "SELECT z.biosum_cond_id, c.biosum_plot_id, z.rxCycle, z.rx, z.rxYear, z.dbh, z.tpa, 
-                //z.volCfNet, z.drybiot, z.drybiom,z.FvsCreatedTree_YN, z.fvs_tree_id, z.fvs_species, z.volCfGrs, 
-                //c.slope, c.elev, c.gis_yard_dist_ft FROM FVS_CutTree z, (SELECT p.biosum_plot_id,p.gis_yard_dist_ft,p.elev,
-                //d.biosum_cond_id,d.slope FROM plot p 
-                //INNER JOIN cond d ON p.biosum_plot_id = d.biosum_plot_id) c 
-                //WHERE z.rxpackage='001' AND z.fvs_variant = 'BM' AND z.biosum_cond_id = c.biosum_cond_id AND dbh > 1.0"
-                string strSQL = "SELECT z.biosum_cond_id, c.biosum_plot_id, z.rxCycle, z.rx, z.rxYear, z.dbh, z.tpa, " +
+                conn.Open();
+                // Attach FVS_CutTree table
+                string strSQL = $@"ATTACH '{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSTreeListDbFile}' AS CUTLIST";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
+                SQLite.SqlQueryReader(conn, strSQL);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                // Attach master.db
+                strSQL = $@"ATTACH '{p_strMasterDatabase}' AS MASTER";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
+                SQLite.SqlQueryReader(conn, strSQL);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                strSQL = "SELECT z.biosum_cond_id, c.biosum_plot_id, z.rxCycle, z.rx, z.rxYear, z.dbh, z.tpa, " +
                                 "z.volCfNet, z.drybiot, z.drybiom,z.FvsCreatedTree_YN, z.fvs_tree_id, " +
                                 "z.fvs_species, z.volCfGrs, c.slope, c.elev, c.gis_yard_dist_ft " +
                                 "FROM " + Tables.FVS.DefaultFVSCutTreeTableName + " z, " +
@@ -238,55 +103,55 @@ namespace FIA_Biosum_Manager
                                 "z.biosum_cond_id = c.biosum_cond_id";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
-                m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
+                SQLite.SqlQueryReader(conn, strSQL);
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                 
-                if (m_oAdo.m_OleDbDataReader.HasRows)
+                if (SQLite.m_DataReader.HasRows)
                 {
                     m_trees = new System.Collections.Generic.List<tree>();
-                    while (m_oAdo.m_OleDbDataReader.Read())
+                    while (SQLite.m_DataReader.Read())
                     {
                         tree newTree = new tree();
                         try
                         {
                             newTree.DebugFile = m_strDebugFile;
-                            newTree.CondId = Convert.ToString(m_oAdo.m_OleDbDataReader["biosum_cond_id"]).Trim();
-                            newTree.PlotId = Convert.ToString(m_oAdo.m_OleDbDataReader["biosum_plot_id"]).Trim();
-                            newTree.FvsTreeId = Convert.ToString(m_oAdo.m_OleDbDataReader["fvs_tree_id"]).Trim();
-                            newTree.RxCycle = Convert.ToString(m_oAdo.m_OleDbDataReader["rxCycle"]).Trim();
+                            newTree.CondId = Convert.ToString(SQLite.m_DataReader["biosum_cond_id"]).Trim();
+                            newTree.PlotId = Convert.ToString(SQLite.m_DataReader["biosum_plot_id"]).Trim();
+                            newTree.FvsTreeId = Convert.ToString(SQLite.m_DataReader["fvs_tree_id"]).Trim();
+                            newTree.RxCycle = Convert.ToString(SQLite.m_DataReader["rxCycle"]).Trim();
                             newTree.RxPackage = p_strRxPackage;
-                            newTree.Rx = Convert.ToString(m_oAdo.m_OleDbDataReader["rx"]).Trim();
-                            newTree.RxYear = Convert.ToString(m_oAdo.m_OleDbDataReader["rxYear"]).Trim();
-                            newTree.Dbh = Convert.ToDouble(m_oAdo.m_OleDbDataReader["dbh"]);
-                            newTree.Tpa = Convert.ToDouble(m_oAdo.m_OleDbDataReader["tpa"]);
+                            newTree.Rx = Convert.ToString(SQLite.m_DataReader["rx"]).Trim();
+                            newTree.RxYear = Convert.ToString(SQLite.m_DataReader["rxYear"]).Trim();
+                            newTree.Dbh = Convert.ToDouble(SQLite.m_DataReader["dbh"]);
+                            newTree.Tpa = Convert.ToDouble(SQLite.m_DataReader["tpa"]);
                             // Special processing for saplings where volCfNet may be null
-                            if (m_oAdo.m_OleDbDataReader["volCfNet"] == System.DBNull.Value && newTree.IsSapling)
+                            if (SQLite.m_DataReader["volCfNet"] == System.DBNull.Value && newTree.IsSapling)
                             {
                                 newTree.VolCfNet = 0;
                             }
                             else
                             {
-                                newTree.VolCfNet = Convert.ToDouble(m_oAdo.m_OleDbDataReader["volCfNet"]);
+                                newTree.VolCfNet = Convert.ToDouble(SQLite.m_DataReader["volCfNet"]);
                             }
                             // Special processing for saplings where volCfGrs may be null
-                            if (m_oAdo.m_OleDbDataReader["volCfGrs"] == System.DBNull.Value && newTree.IsSapling)
+                            if (SQLite.m_DataReader["volCfGrs"] == System.DBNull.Value && newTree.IsSapling)
                             {
                                 newTree.VolCfGrs = 0;
                             }
                             else
                             {
-                                newTree.VolCfGrs = Convert.ToDouble(m_oAdo.m_OleDbDataReader["volCfGrs"]);
+                                newTree.VolCfGrs = Convert.ToDouble(SQLite.m_DataReader["volCfGrs"]);
                             }
-                            newTree.DryBiot = Convert.ToDouble(m_oAdo.m_OleDbDataReader["drybiot"]);
+                            newTree.DryBiot = Convert.ToDouble(SQLite.m_DataReader["drybiot"]);
                             // Special processing for saplings where drybiom may be null
-                            if (m_oAdo.m_OleDbDataReader["drybiom"] == System.DBNull.Value && newTree.IsSapling)
+                            if (SQLite.m_DataReader["drybiom"] == System.DBNull.Value && newTree.IsSapling)
                             {
                                 newTree.DryBiom = 0;
                             }
                             else
                             {
-                                newTree.DryBiom = Convert.ToDouble(m_oAdo.m_OleDbDataReader["drybiom"]);
+                                newTree.DryBiom = Convert.ToDouble(SQLite.m_DataReader["drybiom"]);
                             }
                         }
                         catch (Exception)
@@ -300,7 +165,7 @@ namespace FIA_Biosum_Manager
                             return -1;
                         }
 
-                        newTree.Slope = Convert.ToInt32(m_oAdo.m_OleDbDataReader["slope"]);
+                        newTree.Slope = Convert.ToInt32(SQLite.m_DataReader["slope"]);
                         // find default harvest methods in prescription in case we need them
                         harvestMethod objDefaultHarvestMethodLowSlope = null;
                         harvestMethod objDefaultHarvestMethodSteepSlope = null;
@@ -315,8 +180,7 @@ namespace FIA_Biosum_Manager
                         if (newTree.Slope < m_scenarioHarvestMethod.SteepSlopePct)
                         {
                             // assign low slope harvest method if not rx
-                            if ((m_scenarioHarvestMethod.HarvMethodSelection.Equals(HarvestMethodSelection.SELECTED) || 
-                                 m_scenarioHarvestMethod.HarvMethodSelection.Equals(HarvestMethodSelection.LOWEST_COST)) &&
+                            if ((m_scenarioHarvestMethod.HarvMethodSelection.Equals(HarvestMethodSelection.SELECTED)) &&
                                  m_scenarioHarvestMethod.HarvestMethodLowSlope != null)
                             {
                                 newTree.HarvestMethod = m_scenarioHarvestMethod.HarvestMethodLowSlope;
@@ -329,8 +193,7 @@ namespace FIA_Biosum_Manager
                         else
                         {
                             // assign steep slope harvest method if not rx
-                            if ((m_scenarioHarvestMethod.HarvMethodSelection.Equals(HarvestMethodSelection.SELECTED) || 
-                                 m_scenarioHarvestMethod.HarvMethodSelection.Equals(HarvestMethodSelection.LOWEST_COST)) &&
+                            if ((m_scenarioHarvestMethod.HarvMethodSelection.Equals(HarvestMethodSelection.SELECTED)) &&
                                  m_scenarioHarvestMethod.HarvestMethodSteepSlope != null)
                             {
                                 newTree.HarvestMethod = m_scenarioHarvestMethod.HarvestMethodSteepSlope;
@@ -340,19 +203,19 @@ namespace FIA_Biosum_Manager
                                 newTree.HarvestMethod = objDefaultHarvestMethodSteepSlope;
                             }
                         }
-                        if (Convert.ToString(m_oAdo.m_OleDbDataReader["FvsCreatedTree_YN"]).Trim().ToUpper() == "Y")
+                        if (Convert.ToString(SQLite.m_DataReader["FvsCreatedTree_YN"]).Trim().ToUpper() == "Y")
                         {
                             newTree.FvsCreatedTree = true;
                             // only use fvs_species from cut list if it is an FVS created tree
                             // convert to int to get rid of leading 0
-                            int intSpcd = Convert.ToInt16(m_oAdo.m_OleDbDataReader["fvs_species"]);
+                            int intSpcd = Convert.ToInt16(SQLite.m_DataReader["fvs_species"]);
                             newTree.SpCd = Convert.ToString(intSpcd);
                         }
-                        newTree.Elevation = Convert.ToInt32(m_oAdo.m_OleDbDataReader["elev"]);
-                        if (m_oAdo.m_OleDbDataReader["gis_yard_dist_ft"] == System.DBNull.Value)
+                        newTree.Elevation = Convert.ToInt32(SQLite.m_DataReader["elev"]);
+                        if (SQLite.m_DataReader["gis_yard_dist_ft"] == System.DBNull.Value)
                             newTree.YardingDistance = -1;
                         else
-                            newTree.YardingDistance = Convert.ToDouble(m_oAdo.m_OleDbDataReader["gis_yard_dist_ft"]);
+                            newTree.YardingDistance = Convert.ToDouble(SQLite.m_DataReader["gis_yard_dist_ft"]);
 
                         // only process the tree if it has a valid yarding distance
                         if (newTree.YardingDistance > 0)
@@ -392,19 +255,18 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "//This query didn't return any rows: \r\n");
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "//SELECT z.biosum_cond_id, c.biosum_plot_id, z.rxCycle, z.rx, z.rxYear, z.dbh, z.tpa, z.volCfNet, z.drybiot, \r\n");
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "//z.drybiom,z.FvsCreatedTree_YN, z.fvs_tree_id, z.fvs_species, z.volCfGrs, c.slope, c.elev, \r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//c.gis_yard_dist, t.min_traveltime FROM fvs_tree_IN_BM_P001_TREE_CUTLIST z, (SELECT MIN(ONE_WAY_HOURS) AS  \r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//min_traveltime, BIOSUM_PLOT_ID FROM TRAVEL_TIME WHERE ONE_WAY_HOURS > 0 GROUP BY BIOSUM_PLOT_ID) t, (SELECT \r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//p.biosum_plot_id,p.gis_yard_dist_ft,p.elev,d.biosum_cond_id,d.slope FROM plot p INNER JOIN cond d ON  \r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//p.biosum_plot_id = d.biosum_plot_id) c WHERE z.rxpackage='001' AND z.biosum_cond_id = c.biosum_cond_id AND \r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//c.biosum_plot_id = t.biosum_plot_id \r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//c.gis_yard_dist_ft FROM FVS_CutTree z,  \r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//(SELECT p.biosum_plot_id,p.gis_yard_dist_ft,p.elev,d.biosum_cond_id,d.slope FROM plot p INNER JOIN cond d ON p.biosum_plot_id = d.biosum_plot_id) c \r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, $@"//WHERE z.rxpackage='{p_strRxPackage}' AND z.fvs_variant = '{p_strVariant}' AND z.biosum_cond_id = c.biosum_cond_id  \r\n");
                 }
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
             return 0;
         }
 
-        public int UpdateTrees(string p_strVariant, string p_strRxPackage, string p_strTreeTableName, 
-            string p_strTreeSpeciesTableName, string p_strTravelTimesDbPath, string p_strTravelTimesTable, bool blnCreateReconcilationTable)
+        public int UpdateTrees(string p_strVariant, string p_strRxPackage, string p_strTreeDbPath, string p_strTreeTableName, 
+            string p_strTreeSpeciesDbPath, string p_strTreeSpeciesTableName, string p_strTravelTimesDbPath, string p_strTravelTimesTable, 
+            bool blnCreateReconcilationTable)
         {
             if (m_trees == null)
             {
@@ -424,8 +286,11 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
 
+            //Attach tree species database
+            SQLite.SqlNonQuery(SQLite.m_Connection, $@"ATTACH '{p_strTreeSpeciesDbPath}' AS SPECIES_REF");
             //Load species groups into reference dictionary
-            System.Collections.Generic.IDictionary<string, treeSpecies> dictTreeSpecies = LoadTreeSpecies(p_strVariant, p_strTreeSpeciesTableName);
+            System.Collections.Generic.IDictionary<string, treeSpecies> dictTreeSpecies = LoadTreeSpecies(p_strTreeSpeciesTableName);
+            SQLite.SqlNonQuery(SQLite.m_Connection, $@"DETACH SPECIES_REF");
             //Load species diam values into reference dictionary
             System.Collections.Generic.IDictionary<string, speciesDiamValue> dictSpeciesDiamValues = LoadSpeciesDiamValues(m_strScenarioId);
             //Load diameter groups into reference list
@@ -443,7 +308,7 @@ namespace FIA_Biosum_Manager
                         "This is not a valid configuration. Process halted!",
                         "FIA Biosum", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                     return -1;
-            }
+                }
             }
 
             if (dictTreeSpecies == null)
@@ -452,27 +317,31 @@ namespace FIA_Biosum_Manager
                     "FIA Biosum", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 return -1;
             }
-            
+
             //Query TREE table to get original FIA species codes
-            if (m_oAdo.m_intError == 0)
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(p_strTreeDbPath)))
             {
-            string strSQL = "SELECT DISTINCT t.fvs_tree_id, t.biosum_cond_id, t.spcd " +
+                conn.Open();
+                string strFvsCutTreeDb = $@"{ frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() }\{ Tables.FVS.DefaultFVSTreeListDbFile}";
+                string strSQL = $@"ATTACH '{strFvsCutTreeDb}' AS CUT_TREE";
+                SQLite.SqlNonQuery(conn, strSQL);
+                strSQL = "SELECT DISTINCT t.fvs_tree_id, t.biosum_cond_id, t.spcd " +
                     "FROM " + p_strTreeTableName + " t, " + Tables.FVS.DefaultFVSCutTreeTableName + " z " +
                     "WHERE trim(t.fvs_tree_id) = z.fvs_tree_id " +
                     "AND t.biosum_cond_id = z.biosum_cond_id " +
                     "AND z.rxpackage='" + p_strRxPackage + "' " +
                     "GROUP BY t.fvs_tree_id, t.biosum_cond_id, t.spcd";
 
-            m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
-            if (m_oAdo.m_OleDbDataReader.HasRows)
+            SQLite.SqlQueryReader(conn, strSQL);
+            if (SQLite.m_DataReader.HasRows)
             {
                 System.Collections.Generic.Dictionary<String, String> dictSpCd = 
                     new System.Collections.Generic.Dictionary<string, string>();
-                while (m_oAdo.m_OleDbDataReader.Read())
+                while (SQLite.m_DataReader.Read())
                 {
-                    string strTreeId = Convert.ToString(m_oAdo.m_OleDbDataReader["fvs_tree_id"]).Trim();
-                    string strCondId = Convert.ToString(m_oAdo.m_OleDbDataReader["biosum_cond_id"]).Trim();
-                    string strSpCd = Convert.ToString(m_oAdo.m_OleDbDataReader["spcd"]).Trim();
+                    string strTreeId = Convert.ToString(SQLite.m_DataReader["fvs_tree_id"]).Trim();
+                    string strCondId = Convert.ToString(SQLite.m_DataReader["biosum_cond_id"]).Trim();
+                    string strSpCd = Convert.ToString(SQLite.m_DataReader["spcd"]).Trim();
                     dictSpCd.Add(strCondId + "_" + strTreeId, strSpCd);
                 }
 
@@ -585,13 +454,14 @@ namespace FIA_Biosum_Manager
                 {
                     m_trees.Remove(objTree);
                 }
+                    SQLite.m_DataReader.Close();
               }
             }
             
             // Create the reconcilation table, if desired
             if (blnCreateReconcilationTable == true)
             {
-                CreateTreeReconcilationTable(p_strVariant, p_strRxPackage, p_strTreeTableName, m_oAdo);
+                CreateTreeReconcilationTable(p_strVariant, p_strRxPackage, p_strTreeDbPath, p_strTreeTableName);
             }
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
@@ -604,376 +474,101 @@ namespace FIA_Biosum_Manager
             return 0;
         }
 
-        private void CreateTreeReconcilationTable(string p_strVariant, string p_strRxPackage, string p_strTreeTableName, 
-            ado_data_access p_oAdo)
+        private void CreateTreeReconcilationTable(string p_strVariant, string p_strRxPackage, string p_strMasterDatabase,
+            string p_strTreeTableName)
         {
-            if (p_oAdo.m_intError == 0)
+            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
-                string strSQL = "SELECT fvs_tree_id, biosum_cond_id, tree, cn from " + p_strTreeTableName + " where fvs_tree_id is not null and biosum_cond_id is not null";
-  
-                p_oAdo.SqlQueryReader(p_oAdo.m_OleDbConnection, strSQL);
-                if (p_oAdo.m_OleDbDataReader.HasRows)
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//Processor.CreateTreeReconcilationTable BEGIN \r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+            }
+            string strSQL = "SELECT fvs_tree_id, biosum_cond_id, tree, cn from " + p_strTreeTableName + " where fvs_tree_id is not null and biosum_cond_id is not null";
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(m_strSqliteConnection)))
+            {
+                conn.Open();
+                SQLite.SqlNonQuery(conn, $@"ATTACH '{p_strMasterDatabase}' AS MASTER");
+                SQLite.SqlQueryReader(conn, strSQL);
+                if (SQLite.m_DataReader.HasRows)
                 {
                     short idxTree = 0;
                     short idxCn = 1;
-                    System.Collections.Generic.IDictionary<string, System.Collections.Generic.List<string>> dictTreeTable = 
+                    System.Collections.Generic.IDictionary<string, System.Collections.Generic.List<string>> dictTreeTable =
                         new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<string>>();
-                    while (p_oAdo.m_OleDbDataReader.Read())
+                    while (SQLite.m_DataReader.Read())
                     {
-                        System.Collections.Generic.List<string> treeList = 
+                        System.Collections.Generic.List<string> treeList =
                             new System.Collections.Generic.List<string>();
-                        string strFvsTreeId = Convert.ToString(p_oAdo.m_OleDbDataReader["fvs_tree_id"]).Trim();
-                        string strKey = Convert.ToString(p_oAdo.m_OleDbDataReader["biosum_cond_id"]).Trim() + "_" + strFvsTreeId;
+                        string strFvsTreeId = Convert.ToString(SQLite.m_DataReader["fvs_tree_id"]).Trim();
+                        string strKey = Convert.ToString(SQLite.m_DataReader["biosum_cond_id"]).Trim() + "_" + strFvsTreeId;
                         //This is stored as a number but we convert to string so we can store in list
-                        string strTree = Convert.ToString(p_oAdo.m_OleDbDataReader["tree"]);
-                        string strCn = Convert.ToString(p_oAdo.m_OleDbDataReader["cn"]).Trim();
+                        string strTree = Convert.ToString(SQLite.m_DataReader["tree"]);
+                        string strCn = Convert.ToString(SQLite.m_DataReader["cn"]).Trim();
                         treeList.Add(strTree);
                         treeList.Add(strCn);
                         dictTreeTable.Add(strKey, treeList);
                     }
+                    SQLite.m_DataReader.Close();
 
                     string strTableName = p_strVariant + "_" + p_strRxPackage + "_reconcile_trees";
 
                     // drop reconcilation table if it already exists
-                    if (p_oAdo.TableExist(p_oAdo.m_OleDbConnection, strTableName) == true)
-                        p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection, "DROP TABLE " + strTableName);
+                    if (SQLite.TableExist(conn, strTableName) == true)
+                        SQLite.SqlNonQuery(conn, "DROP TABLE " + strTableName);
 
-
-                    frmMain.g_oTables.m_oProcessor.CreateTreeReconcilationTable(p_oAdo, p_oAdo.m_OleDbConnection, strTableName);
+                    frmMain.g_oTables.m_oProcessor.CreateTreeReconcilationTable(SQLite, conn, strTableName);
 
                     string strTempCn = "9999";
                     string strTempTree = "9999";
-                    foreach (tree nextTree in m_trees)
+                    System.Data.SQLite.SQLiteCommand command = conn.CreateCommand();
+                    System.Data.SQLite.SQLiteTransaction transaction = conn.BeginTransaction(System.Data.IsolationLevel.ReadCommitted);  // Start a local transaction                    
+                    command.Transaction = transaction;  // Assign transaction object for a pending local transaction
+                    try
                     {
-                        string strKey = nextTree.CondId + "_" + nextTree.FvsTreeId;
-                        if (dictTreeTable.ContainsKey(strKey))
+                        foreach (tree nextTree in m_trees)
                         {
-                            System.Collections.Generic.List<string> treeList = dictTreeTable[strKey];
-                            strTempTree = treeList[idxTree];
-                            strTempCn = treeList[idxCn];
+                            string strKey = nextTree.CondId + "_" + nextTree.FvsTreeId;
+                            if (dictTreeTable.ContainsKey(strKey))
+                            {
+                                System.Collections.Generic.List<string> treeList = dictTreeTable[strKey];
+                                strTempTree = treeList[idxTree];
+                                strTempCn = treeList[idxCn];
+                            }
+                            SQLite.m_strSQL = "INSERT INTO " + strTableName + " " +
+                            "(cn, fvs_tree_id, biosum_cond_id, biosum_plot_id, spcd, merchWtGt, nonMerchWtGt, drybiom, " +
+                            "drybiot, volCfNet, volCfGrs, odWgt, dryToGreen, tpa, dbh, species_group, " +
+                            "isSapling, isWoodland, isCull, diam_group, merch_value, opcost_type, biosum_category)" +
+                            "VALUES ('" + strTempCn + "', '" + strTempTree + "', '" + nextTree.CondId + "', '" + nextTree.PlotId + "', " +
+                            nextTree.SpCd + ", " + nextTree.MerchWtGtPa + ", " + nextTree.NonMerchWtGtPa + ", " + nextTree.DryBiom + ", " +
+                            nextTree.DryBiot + ", " + nextTree.VolCfNet + ", " + nextTree.VolCfGrs + ", " + nextTree.OdWgt +
+                            ", " + nextTree.DryToGreen + ", " + nextTree.Tpa + ", " + nextTree.Dbh + ", " + nextTree.SpeciesGroup + ", " +
+                            nextTree.IsSapling + ", " + nextTree.IsWoodlandSpecies + ", " + nextTree.IsCull + ", " + nextTree.DiamGroup +
+                            ", " + nextTree.MerchValue + ", '" + nextTree.TreeType + "', " + nextTree.HarvestMethod.BiosumCategory + " )";
+                            command.CommandText = SQLite.m_strSQL;
+                            command.ExecuteNonQuery();
                         }
-                        p_oAdo.m_strSQL = "INSERT INTO " + strTableName + " " +
-                        "(cn, fvs_tree_id, biosum_cond_id, biosum_plot_id, spcd, merchWtGt, nonMerchWtGt, drybiom, " +
-                        "drybiot, volCfNet, volCfGrs, odWgt, dryToGreen, tpa, dbh, species_group, " +
-                        "isSapling, isWoodland, isCull, diam_group, merch_value, opcost_type, biosum_category)" +
-                        "VALUES ('" + strTempCn + "', '" + strTempTree + "', '" + nextTree.CondId + "', '" + nextTree.PlotId + "', " +
-                        nextTree.SpCd + ", " + nextTree.MerchWtGtPa + ", " + nextTree.NonMerchWtGtPa + ", " + nextTree.DryBiom + ", " +
-                        nextTree.DryBiot + ", " + nextTree.VolCfNet + ", " + nextTree.VolCfGrs + ", " + nextTree.OdWgt +
-                        ", " + nextTree.DryToGreen + ", " + nextTree.Tpa + ", " + nextTree.Dbh + ", " + nextTree.SpeciesGroup + ", " +
-                        nextTree.IsSapling + ", " + nextTree.IsWoodlandSpecies + ", " + nextTree.IsCull + ", " + nextTree.DiamGroup + 
-                        ", " + nextTree.MerchValue + ", '" + nextTree.TreeType + "', " + nextTree.HarvestMethod.BiosumCategory + " )";
-
-                        p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection, p_oAdo.m_strSQL);
+                        transaction.Commit();
                     }
+                    catch (Exception e)
+                    {
+                        System.Windows.Forms.MessageBox.Show(e.Message);
+                        transaction.Rollback();
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Processor.createTreeReconcilationTable ERROR " + System.DateTime.Now.ToString() + "\r\n");
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "SQL: " + SQLite.m_strSQL + "\r\n");
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "*********************************************" + "\r\n");
+                    }
+                    transaction.Dispose();
+                    transaction = null;
                 }
-
             }
-        }
-
-        public int CreateOpcostInput(string p_strVariant, string p_strRxPackage)
-        {
-            int intReturnVal = -1;
-            int intHwdSpeciesCodeThreshold = 299; // Species codes greater than this are hardwoods
-            if (m_trees.Count < 1)
-            {
-                System.Text.StringBuilder sb = new System.Text.StringBuilder();
-                sb.Append("No cut trees have been loaded for this scenario, variant, package combination. ");
-                sb.Append("The OpCost input file cannot be created!\r\n");
-                sb.Append($@"Review the log at {m_strDebugFile}.");
-                System.Windows.MessageBox.Show(sb.ToString(),
-                    "FIA Biosum", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-                return intReturnVal;
-            }
-
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//Processor.createOpcostInput BEGIN \r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "//Processor.CreateTreeReconcilationTable END \r\n");
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
-            
-            if (m_oAdo.m_intError == 0)
-            {
-
-                // create opcost input table
-                frmMain.g_oTables.m_oProcessor.CreateNewOpcostInputTable(m_oAdo, m_oAdo.m_OleDbConnection, m_strOpcostTableName);
-
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "createOpcostInput: Read trees into opcost input - " + System.DateTime.Now.ToString() + "\r\n");
-
-                System.Collections.Generic.IDictionary<string, opcostInput> dictOpcostInput = 
-                    new System.Collections.Generic.Dictionary<string, opcostInput>();
-
-                    foreach (tree nextTree in m_trees)
-                    {
-                        opcostInput nextInput = null;
-                        string strStand = nextTree.CondId + nextTree.RxPackage + nextTree.Rx + nextTree.RxCycle;
-                        bool blnFound = dictOpcostInput.TryGetValue(strStand, out nextInput);
-                        if (!blnFound)
-                        { 
-                            nextInput = new opcostInput(nextTree.CondId, nextTree.Slope, nextTree.RxCycle, nextTree.RxPackage,
-                                                        nextTree.Rx, nextTree.RxYear, nextTree.YardingDistance, nextTree.Elevation,
-                                                        nextTree.HarvestMethod, nextTree.TravelTime, m_scenarioMoveInCost);
-                            dictOpcostInput.Add(strStand, nextInput);
-                        }
-
-                        // All trees add their BaFracCutNumerator to the total, regardless of treeType
-                        nextInput.TotalBaFracCutNumerator = nextInput.TotalBaFracCutNumerator + nextTree.BaFracCutNumerator;
-                        
-                        // Metrics for brush cut trees
-                        if (nextTree.TreeType == OpCostTreeType.BC)
-                        {
-                            nextInput.TotalBcTpa = nextInput.TotalBcTpa + nextTree.Tpa;
-                            nextInput.PerAcBcVolCf = nextInput.PerAcBcVolCf + nextTree.BrushCutVolCfPa;
-                        }
-
-                        // Metrics for chip trees
-                        else if (nextTree.TreeType == OpCostTreeType.CT)
-                        {
-                            nextInput.TotalChipTpa = nextInput.TotalChipTpa + nextTree.Tpa;
-                            nextInput.ChipMerchVolCfPa = nextInput.ChipMerchVolCfPa + nextTree.MerchVolCfPa;
-                            nextInput.ChipNonMerchVolCfPa = nextInput.ChipNonMerchVolCfPa + nextTree.NonMerchVolCfPa;
-                            nextInput.ChipVolCfPa = nextInput.ChipVolCfPa + nextTree.TotalVolCfPa;
-                            nextInput.ChipWtGtPa = nextInput.ChipWtGtPa + nextTree.TotalWtGtPa;
-                            if (Convert.ToInt32(nextTree.SpCd) > intHwdSpeciesCodeThreshold)
-                                nextInput.ChipHwdVolCfPa = nextInput.ChipHwdVolCfPa + nextTree.TotalVolCfPa;
-                        }
-
-                        // Metrics for small log trees
-                        else if (nextTree.TreeType == OpCostTreeType.SL)
-                        {
-                            nextInput.TotalSmLogTpa = nextInput.TotalSmLogTpa + nextTree.Tpa;
-                            nextInput.SmLogMerchVolCfPa = nextInput.SmLogMerchVolCfPa + nextTree.MerchVolCfPa;
-                            if (nextTree.IsNonCommercial || nextTree.IsCull)
-                            {
-                                nextInput.SmLogNonCommMerchVolCfPa = nextInput.SmLogNonCommMerchVolCfPa + nextTree.MerchVolCfPa;
-                                nextInput.SmLogNonCommVolCfPa = nextInput.SmLogNonCommVolCfPa + nextTree.TotalVolCfPa;
-                            }
-                            else
-                            {
-                                nextInput.SmLogCommNonMerchVolCfPa = nextInput.SmLogCommNonMerchVolCfPa + nextTree.NonMerchVolCfPa;
-                            }
-                            nextInput.SmLogVolCfPa = nextInput.SmLogVolCfPa + nextTree.TotalVolCfPa;
-                            nextInput.SmLogWtGtPa = nextInput.SmLogWtGtPa + nextTree.TotalWtGtPa;
-                            if (Convert.ToInt32(nextTree.SpCd) > intHwdSpeciesCodeThreshold)
-                                nextInput.SmLogHwdVolCfPa = nextInput.SmLogHwdVolCfPa + nextTree.TotalVolCfPa;
-                            nextInput.TotalSmLogQmdPa = nextInput.TotalSmLogQmdPa + nextTree.QmdPa;
-                        }
-
-                        // Metrics for large log trees
-                        else if (nextTree.TreeType == OpCostTreeType.LL)
-                        {
-                            nextInput.TotalLgLogTpa = nextInput.TotalLgLogTpa + nextTree.Tpa;
-                            nextInput.LgLogMerchVolCfPa = nextInput.LgLogMerchVolCfPa + nextTree.MerchVolCfPa;
-                            if (nextTree.IsNonCommercial || nextTree.IsCull)
-                            {
-                                nextInput.LgLogNonCommMerchVolCfPa = nextInput.LgLogNonCommMerchVolCfPa + nextTree.MerchVolCfPa;
-                                nextInput.LgLogNonCommVolCfPa = nextInput.LgLogNonCommVolCfPa + nextTree.TotalVolCfPa;
-                            }
-                            else
-                            {
-                                nextInput.LgLogCommNonMerchVolCfPa = nextInput.LgLogCommNonMerchVolCfPa + nextTree.NonMerchVolCfPa;
-                            }
-                            nextInput.LgLogVolCfPa = nextInput.LgLogVolCfPa + nextTree.TotalVolCfPa;
-                            nextInput.LgLogWtGtPa = nextInput.LgLogWtGtPa + nextTree.TotalWtGtPa;
-                            if (Convert.ToInt32(nextTree.SpCd) > intHwdSpeciesCodeThreshold)
-                                nextInput.LgLogHwdVolCfPa = nextInput.LgLogHwdVolCfPa + nextTree.TotalVolCfPa;
-                            nextInput.TotalLgLogQmdPa = nextInput.TotalLgLogQmdPa + nextTree.QmdPa;
-                        }
-                    }
-                //System.Windows.MessageBox.Show(dictOpcostInput.Keys.Count + " lines in file");
-
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "createOpcostInput: Finished reading trees - " + System.DateTime.Now.ToString() + "\r\n");
-
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "createOpcostInput: Load Basal Area for all conditions from PRE_FVS_SUMMARY - " + System.DateTime.Now.ToString() + "\r\n");
-
-                System.Collections.Generic.IDictionary<string, double> dictFvsPreBasalArea = this.LoadFvsPreBasalArea(p_strVariant, p_strRxPackage);
-
-                if (dictFvsPreBasalArea.Keys.Count == 0)
-                {
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "createOpcostInput: NO BASAL AREA (BA) RECORDS FOUND IN PRE_FVS_SUMMARY TABLE!!   \r\n");
-                }
-
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "createOpcostInput: Begin writing opcost input table - " + System.DateTime.Now.ToString() + "\r\n");
-                long lngCount =0;
-
-                foreach (string key in dictOpcostInput.Keys)
-                {
-                    opcostInput nextStand = dictOpcostInput[key];
-
-                        // Some fields we wait to calculate until we have the totals
-                        // *** BRUSH CUT ***
-                        double dblBcAvgVolume = 0;
-
-                        if (nextStand.TotalBcTpa > 0)
-                        { dblBcAvgVolume = nextStand.PerAcBcVolCf / nextStand.TotalBcTpa; }
-
-                        // *** CHIP TREES ***
-                        double dblCtAvgVolume = 0;
-                        if (nextStand.TotalChipTpa > 0)
-                        { dblCtAvgVolume = nextStand.ChipVolCfPa / nextStand.TotalChipTpa; }
-                        double dblCtMerchPctTotal = 0;
-                        double dblCtAvgDensity = 0;
-                        double dblCtHwdPct = 0;
-                        if (nextStand.ChipVolCfPa > 0)
-                        {
-                            dblCtMerchPctTotal = nextStand.ChipMerchVolCfPa / nextStand.ChipVolCfPa * 100;
-                            dblCtAvgDensity = nextStand.ChipWtGtPa * 2000 / nextStand.ChipVolCfPa;
-                            dblCtHwdPct = nextStand.ChipHwdVolCfPa / nextStand.ChipVolCfPa * 100;
-                        }
-
-
-                        // *** SMALL LOGS ***
-                        double dblSmLogAvgVolume = 0;
-                        double dblSmLogAvgVolumeAdj = 0;
-                        if (nextStand.TotalSmLogTpa > 0)
-                        { dblSmLogAvgVolume = nextStand.SmLogVolCfPa / nextStand.TotalSmLogTpa; }
-                        double dblSmLogMerchPctTotal = 0;
-                        double dblSmLogChipPct_Cat1_3 = 0;
-                        double dblSmLogChipPct_Cat2_4 = 0;
-                        double dblSmLogChipPct_Cat5 = 0;
-                        double dblSmLogAvgDensity = 0;
-                        double dblSmLogHwdPct = 0;
-                        if (nextStand.SmLogVolCfPa > 0)
-                        {
-                            dblSmLogMerchPctTotal = nextStand.SmLogMerchVolCfPa / nextStand.SmLogVolCfPa * 100;
-                            dblSmLogChipPct_Cat1_3 = nextStand.SmLogNonCommMerchVolCfPa / nextStand.SmLogVolCfPa * 100;
-                            dblSmLogChipPct_Cat2_4 = (nextStand.SmLogNonCommVolCfPa + nextStand.SmLogCommNonMerchVolCfPa) / nextStand.SmLogVolCfPa * 100;
-                            dblSmLogChipPct_Cat5 = nextStand.SmLogNonCommVolCfPa / nextStand.SmLogVolCfPa * 100;
-                            dblSmLogAvgDensity = nextStand.SmLogWtGtPa * 2000 / nextStand.SmLogVolCfPa;
-                            dblSmLogHwdPct = nextStand.SmLogHwdVolCfPa / nextStand.SmLogVolCfPa * 100;
-                        }
-                        // Apply OpCost value limits
-                        if (nextStand.TotalSmLogTpa > 0)
-                        {
-                            if (nextStand.TotalSmLogTpa < nextStand.HarvestMethod.MinTpa)
-                            {
-                                nextStand.TotalSmLogTpaUnadj = nextStand.TotalSmLogTpa;
-                                nextStand.TotalSmLogTpa = nextStand.HarvestMethod.MinTpa;
-                            }
-                            if (dblSmLogAvgVolume < nextStand.HarvestMethod.MinAvgTreeVolCf)
-                            {
-                                dblSmLogAvgVolumeAdj = dblSmLogAvgVolume;
-                                dblSmLogAvgVolume = nextStand.HarvestMethod.MinAvgTreeVolCf;
-                            }
-                        }
-
-                        // *** LARGE LOGS ***
-                        double dblLgLogAvgVolume = 0;
-                        double dblLgLogAvgVolumeAdj = 0;
-                        if (nextStand.TotalLgLogTpa > 0)
-                        { dblLgLogAvgVolume = nextStand.LgLogVolCfPa / nextStand.TotalLgLogTpa; }
-                        double dblLgLogMerchPctTotal = 0;
-                        double dblLgLogChipPct_Cat1_3_4 = 0;
-                        double dblLgLogChipPct_Cat2 = 0;
-                        double dblLgLogChipPct_Cat5 = 0;
-                        double dblLgLogAvgDensity = 0;
-                        double dblLgLogHwdPct = 0;
-                        if (nextStand.LgLogVolCfPa > 0)
-                        {
-                            dblLgLogMerchPctTotal = nextStand.LgLogMerchVolCfPa / nextStand.LgLogVolCfPa * 100;
-                            dblLgLogChipPct_Cat1_3_4 = nextStand.LgLogNonCommMerchVolCfPa / nextStand.LgLogVolCfPa * 100;
-                            dblLgLogChipPct_Cat2 = (nextStand.LgLogNonCommVolCfPa + nextStand.LgLogCommNonMerchVolCfPa) / nextStand.LgLogVolCfPa * 100;
-                            dblLgLogChipPct_Cat5 = nextStand.LgLogNonCommVolCfPa / nextStand.LgLogVolCfPa * 100;
-                            dblLgLogAvgDensity = nextStand.LgLogWtGtPa * 2000 / nextStand.LgLogVolCfPa;
-                            dblLgLogHwdPct = nextStand.LgLogHwdVolCfPa / nextStand.LgLogVolCfPa * 100;
-                        }
-                        // Apply OpCost value limits
-                        if (nextStand.TotalLgLogTpa > 0)
-                        {
-                            if (dblLgLogAvgVolume < nextStand.HarvestMethod.MinAvgTreeVolCf)
-                            {
-                                dblLgLogAvgVolumeAdj = dblLgLogAvgVolume;
-                                dblLgLogAvgVolume = nextStand.HarvestMethod.MinAvgTreeVolCf;
-                            }
-                        }
-
-                        // ** BA FRAC CUT (INTENSITY) **
-                        if (dictFvsPreBasalArea.ContainsKey(nextStand.OpCostStand))
-                        {
-                            double dblBaFracCutDenominator = dictFvsPreBasalArea[nextStand.OpCostStand];
-                            if (dblBaFracCutDenominator > 0)
-                            {
-                                double dblTestBaFracCut = nextStand.TotalBaFracCutNumerator / dblBaFracCutDenominator;
-                                if (dblTestBaFracCut > 0 &&
-                                    dblTestBaFracCut < 1)
-                                {
-                                    nextStand.BaFracCut = dblTestBaFracCut;
-                                }
-                                else
-                                {
-                                    frmMain.g_oUtils.WriteText(m_strDebugFile, "BA_FRAC_CUT --> INVALID VALUE: " + dblTestBaFracCut + " from opcost stand " + nextStand.OpCostStand + "\r\n");
-                                }
-                            }
-                            else
-                            {
-                                frmMain.g_oUtils.WriteText(m_strDebugFile, "BA_FRAC_CUT --> INVALID VALUE FOR PRE_FVS_SUMMARY.BA: " + dblBaFracCutDenominator + " from opcost stand " + nextStand.OpCostStand + "\r\n");
-                            }
-                        }
-                        else
-                        {
-                            frmMain.g_oUtils.WriteText(m_strDebugFile, "BA_FRAC_CUT --> OPCOST STAND MISSING FROM PRE_FVS_SUMMARY TABLE: " + nextStand.OpCostStand + "\r\n");
-                        }
-
-                        m_oAdo.m_strSQL = "INSERT INTO " + m_strOpcostTableName + " " +
-                        "(Stand, [Percent Slope], [One-way Yarding Distance], YearCostCalc, " +
-                        "[Project Elevation], [Harvesting System], [Chip tree per acre], [Chip trees MerchAsPctOfTotal], " +
-                        "[Chip trees average volume(ft3)], [CHIPS Average Density (lbs/ft3)], [CHIPS Hwd Percent], [Small log trees per acre],  " +
-                        "[Small log trees MerchAsPctOfTotal], [Small log trees ChipPct_Cat1_3], [Small log trees ChipPct_Cat2_4], " +
-                        "[Small log trees ChipPct_Cat5], [Small log trees average volume(ft3)], [Small log trees average density(lbs/ft3)], " +
-                        "[Small log trees hardwood percent], [Large log trees per acre], [Large log trees MerchAsPctOfTotal], " +
-                        "[Large log trees ChipPct_Cat1_3_4], [Large log trees ChipPct_Cat2], [Large log trees ChipPct_Cat5], " +
-                        "[Large log trees average vol(ft3)], [Large log trees average density(lbs/ft3)], [Large log trees hardwood percent], " +
-                        "BrushCutTPA, [BrushCutAvgVol], RxPackage_Rx_RxCycle, biosum_cond_id, RxPackage, Rx, RxCycle, Move_In_Hours, " +
-                        "Harvest_Area_Assumed_Acres, [Unadjusted One-way Yarding distance], " +
-                        "[Unadjusted Small log trees per acre], [Unadjusted Small log trees average volume (ft3)], " +
-                        "[Unadjusted Large log trees per acre], [Unadjusted Large log trees average vol(ft3)], " +
-                        "ba_frac_cut, QMD_SL, QMD_LL )" +
-                        "VALUES ('" + nextStand.OpCostStand + "', " + nextStand.PercentSlope + ", " + nextStand.YardingDistance + ", '" + nextStand.RxYear + "', " +
-                        nextStand.Elev + ", '" + nextStand.HarvestMethod.Method + "', " + nextStand.TotalChipTpa + ", " +
-                        dblCtMerchPctTotal + ", " + dblCtAvgVolume + ", " + dblCtAvgDensity + ", " + dblCtHwdPct + ", " +
-                        nextStand.TotalSmLogTpa + ", " + dblSmLogMerchPctTotal + ", " + dblSmLogChipPct_Cat1_3 + ", " +
-                        dblSmLogChipPct_Cat2_4 + ", " + dblSmLogChipPct_Cat5 + ", " + dblSmLogAvgVolume + ", " + dblSmLogAvgDensity + ", " + dblSmLogHwdPct + ", " +
-                        nextStand.TotalLgLogTpa + ", " + dblLgLogMerchPctTotal + ", " + dblLgLogChipPct_Cat1_3_4 + "," +
-                        dblLgLogChipPct_Cat2 + "," + dblLgLogChipPct_Cat5 + "," + dblLgLogAvgVolume + ", " +
-                        dblLgLogAvgDensity + ", " + dblLgLogHwdPct + "," + nextStand.TotalBcTpa + ", " + dblBcAvgVolume +
-                        ",'" + nextStand.RxPackageRxRxCycle + "', '" + nextStand.CondId + "', '" + nextStand.RxPackage + "', '" +
-                        nextStand.Rx + "', '" + nextStand.RxCycle + "', " + nextStand.MoveInHours + ", " + 
-                        nextStand.HarvestAreaAssumedAc + ", " + nextStand.YardingDistanceUnadj + ", " +
-                        nextStand.TotalSmLogTpaUnadj + ", " + dblSmLogAvgVolumeAdj + ", " +
-                        nextStand.TotalLgLogTpaUnadj + ", " + dblLgLogAvgVolumeAdj + ", " + nextStand.BaFracCut + ", " +
-                        nextStand.QMD_SL + ", " + nextStand.QMD_LL +
-                        " )";
-
-                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-                        if (m_oAdo.m_intError != 0)
-                        {
-                            frmMain.g_oUtils.WriteText(m_strDebugFile, "Processor.createOpcostInput ERROR " + System.DateTime.Now.ToString() + "\r\n");
-                            frmMain.g_oUtils.WriteText(m_strDebugFile, "SQL: " + m_oAdo.m_strSQL + "\r\n");
-                            frmMain.g_oUtils.WriteText(m_strDebugFile, "*********************************************" + "\r\n");
-                            break;
-                        }
-
-                        lngCount++;
-                        intReturnVal = 0;
-                    }
-
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                {
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//Processor.createOpcostInput END \r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//INSERTED " + lngCount + " RECORDS: " + System.DateTime.Now.ToString() + "\r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-                }
-                return intReturnVal;
-            }
-            return -1;
         }
-
-        public int CreateSqliteOpcostInput(string p_strVariant, string p_strRxPackage)
+        public int CreateOpcostInput(string p_strVariant, string p_strRxPackage)
         {
             int intReturnVal = -1;
             int intHwdSpeciesCodeThreshold = 299; // Species codes greater than this are hardwoods
@@ -1330,17 +925,6 @@ namespace FIA_Biosum_Manager
 
                 // create tree vol val work table (TreeVolValLowSlope); Re-use the sql from tree vol val but don't create the indexes
                 SQLite.SqlNonQuery(conn, Tables.Processor.CreateSqliteTreeVolValSpeciesDiamGroupsTableSQL(m_strTvvTableName, false));
-
-                // check to see if table link exists; Create it if it doesn't
-                if (! m_oAdo.TableExist(m_oAdo.m_OleDbConnection, m_strTvvTableName))
-                {
-                    dao_data_access oDao = new dao_data_access();
-                    oDao.CreateSQLiteTableLink(m_oAdo.m_OleDbConnection.DataSource, m_strTvvTableName,
-                        m_strTvvTableName, ODBCMgr.DSN_KEYS.ProcessorTemporaryDsnName,
-                        conn.FileName);
-                    oDao.m_DaoWorkspace.Close();
-                    oDao = null;
-                }
                 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "createTreeVolValWorkTable: Read trees into tree vol val - " + System.DateTime.Now.ToString() + "\r\n");
@@ -1581,40 +1165,36 @@ namespace FIA_Biosum_Manager
             return listDiamGroups;
         }
 
-        private System.Collections.Generic.IDictionary<String, treeSpecies> LoadTreeSpecies(string p_strVariant, 
-            string p_strTreeSpeciesTableName)
+        private System.Collections.Generic.IDictionary<String, treeSpecies> LoadTreeSpecies(string p_strTreeSpeciesTableName)
         {
             System.Collections.Generic.IDictionary<String, treeSpecies> dictTreeSpecies = 
                 new System.Collections.Generic.Dictionary<String, treeSpecies>();
-            if (m_oAdo.m_intError == 0)
-            {
                 string strSQL = "SELECT DISTINCT s.SPCD, s.SPECIES_GROUP, f.od_wgt, f.Dry_to_Green, f.WOODLAND_YN FROM " +
                          p_strTreeSpeciesTableName + " t, " +
                          Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName + " s, " +
                          Tables.ProcessorScenarioRun.DefaultFiaTreeSpeciesRefTableName + " f " +
                          "WHERE t.spcd = s.spcd AND t.spcd = f.spcd and f.spcd = s.spcd " +
-                         "AND FVS_VARIANT = '" + p_strVariant + "' " +
                          "AND S.SPCD IS NOT NULL AND S.SPECIES_GROUP IS NOT NULL " +
-                         "AND TRIM(UCASE(S.scenario_id)) = '" + m_strScenarioId.Trim().ToUpper() + "' " +
+                         "AND TRIM(UPPER(S.scenario_id)) = '" + m_strScenarioId.Trim().ToUpper() + "' " +
                          "GROUP BY s.SPCD, s.SPECIES_GROUP, f.OD_WGT, f.Dry_to_Green, f.WOODLAND_YN";
-                m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
-                if (m_oAdo.m_OleDbDataReader.HasRows)
+                SQLite.SqlQueryReader(SQLite.m_Connection, strSQL);
+                if (SQLite.m_DataReader.HasRows)
                 {
-                    while (m_oAdo.m_OleDbDataReader.Read())
+                    while (SQLite.m_DataReader.Read())
                     {
-                        string strSpCd = Convert.ToString(m_oAdo.m_OleDbDataReader["SPCD"]).Trim();
+                        string strSpCd = Convert.ToString(SQLite.m_DataReader["SPCD"]).Trim();
                         if (dictTreeSpecies.ContainsKey(strSpCd))
                         {
-                            System.Windows.Forms.MessageBox.Show("The tree_species table contains duplicate entries for variant " +
-                                p_strVariant + " spcd " + strSpCd + ". Please resolve this issue before running Processor.",
+                            System.Windows.Forms.MessageBox.Show("The tree_species table contains duplicate entries for spcd " + 
+                                strSpCd + ". Please resolve this issue before running Processor.",
                                 "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, 
                                 System.Windows.Forms.MessageBoxIcon.Error);
                             return null;
                         }
-                        int intSpcGroup = Convert.ToInt32(m_oAdo.m_OleDbDataReader["SPECIES_GROUP"]);
-                        double dblOdWgt = Convert.ToDouble(m_oAdo.m_OleDbDataReader["OD_WGT"]);
-                        double dblDryToGreen = Convert.ToDouble(m_oAdo.m_OleDbDataReader["Dry_to_Green"]);
-                        string strIsWoodlandSpecies = Convert.ToString(m_oAdo.m_OleDbDataReader["WOODLAND_YN"]).Trim();
+                        int intSpcGroup = Convert.ToInt32(SQLite.m_DataReader["SPECIES_GROUP"]);
+                        double dblOdWgt = Convert.ToDouble(SQLite.m_DataReader["OD_WGT"]);
+                        double dblDryToGreen = Convert.ToDouble(SQLite.m_DataReader["Dry_to_Green"]);
+                        string strIsWoodlandSpecies = Convert.ToString(SQLite.m_DataReader["WOODLAND_YN"]).Trim();
                         bool isWoodlandSpecies = false;
                         if (strIsWoodlandSpecies == "Y")
                         {
@@ -1624,7 +1204,6 @@ namespace FIA_Biosum_Manager
                         dictTreeSpecies.Add(strSpCd, nextTreeSpecies);
                     }
                 }
-            }
             return dictTreeSpecies;
         }
 
@@ -3165,35 +2744,6 @@ namespace FIA_Biosum_Manager
                 get { return _dblMinAvgTreeVolCf; }
             }
         }
-
-        private System.Collections.Generic.IDictionary<String, opcostIdeal> LoadOpcostIdeal()
-        {
-            System.Collections.Generic.IDictionary<String, opcostIdeal> dictOpcostIdeal =
-                new System.Collections.Generic.Dictionary<String, opcostIdeal>();
-            if (m_oAdo.m_intError == 0)
-            {
-                string strSQL = "SELECT * FROM " +
-                                m_strOpcostIdealTableName;
-                m_oAdo.SqlQueryReader(m_oAdo.m_OleDbConnection, strSQL);
-                if (m_oAdo.m_OleDbDataReader.HasRows)
-                {
-                    while (m_oAdo.m_OleDbDataReader.Read())
-                    {
-                        string strCondId = Convert.ToString(m_oAdo.m_OleDbDataReader["biosum_cond_id"]).Trim();
-                        string strRxPackage = Convert.ToString(m_oAdo.m_OleDbDataReader["rxPackage"]).Trim();
-                        string strRx = Convert.ToString(m_oAdo.m_OleDbDataReader["rx"]).Trim();
-                        string strRxCycle = Convert.ToString(m_oAdo.m_OleDbDataReader["rxCycle"]).Trim();
-                        string strHarvestSystem = Convert.ToString(m_oAdo.m_OleDbDataReader["harvest_system"]).Trim();
-
-                        string key = strCondId + strRxPackage + strRx + strRxCycle;
-                        opcostIdeal newIdeal = new opcostIdeal(strCondId, strRxCycle, strRxPackage, strRx, strHarvestSystem);
-                        dictOpcostIdeal.Add(key, newIdeal);
-                    }
-                }
-            }
-            return dictOpcostIdeal;
-        }
-
         private System.Collections.Generic.IDictionary<String, double> LoadTravelTimes(string p_strTravelTimesDbPath, string p_strTravelTimesTable)
         {
             System.Collections.Generic.IDictionary<String, double> dictTravelTimes =

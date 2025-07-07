@@ -19,7 +19,6 @@ namespace FIA_Biosum_Manager
         private System.Windows.Forms.Panel panel1;
 		private System.Windows.Forms.Label lblYardDistThreshold;
 		private RxTools m_oRxTools = new RxTools();
-		private ado_data_access m_oAdo = null;
 		private string _strScenarioId="";
         private frmProcessorScenario _frmProcessorScenario = null;
         private TextBox txtMoveInAddend;
@@ -327,7 +326,7 @@ namespace FIA_Biosum_Manager
 		public void loadvalues()
 		{
             ScenarioId = this.ReferenceProcessorScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
-            ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadMoveInCostsSqlite
+            ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadMoveInCosts
                 (frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
                 "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile,
                 ReferenceProcessorScenarioForm.m_oProcessorScenarioItem);
@@ -370,7 +369,6 @@ namespace FIA_Biosum_Manager
             //OPEN CONNECTION TO DB FILE CONTAINING PROCESSOR SCENARIO TABLES
             //
             //scenario mdb connection
-            ado_data_access oAdo = null;
             SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
             string strScenarioDB =
                 frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +

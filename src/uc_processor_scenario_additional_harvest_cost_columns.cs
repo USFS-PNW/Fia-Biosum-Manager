@@ -13,10 +13,8 @@ namespace FIA_Biosum_Manager
         public int m_intError = 0;
         public string m_strError = "";
         private uc_processor_scenario_additional_harvest_cost_column_collection uc_collection = new uc_processor_scenario_additional_harvest_cost_column_collection();
-        ado_data_access m_oAdo=null;
         private string _strScenarioId = "";
         private frmProcessorScenario _frmProcessorScenario = null;
-        System.Data.OleDb.OleDbConnection m_oConnAdditionalHarvestCosts = new System.Data.OleDb.OleDbConnection();
         RxTools m_oRxTools = new RxTools();
         private string _strTempDb = "";
 
@@ -543,7 +541,7 @@ namespace FIA_Biosum_Manager
                 {
                     strColumn = uc_collection.Item(q).ColumnName.Trim();
                     //make sure the source scenario has this column
-                    if (dataMgr.ColumnExist(oConn, "scenario_additional_harvest_costs", strColumn))
+                    if (dataMgr.AttachedColumnExist(oConn, "scenario_additional_harvest_costs", strColumn))
                     {
                         //make sure columnname not already referenced
                         if (dataMgr.m_strSQL.ToUpper().IndexOf("B." + strColumn.ToUpper() + " IS NOT NULL", 0) < 0)
@@ -979,8 +977,6 @@ namespace FIA_Biosum_Manager
                     uc_processor_scenario_additional_harvest_cost_column_item1.Type = "Scenario";
                     uc_processor_scenario_additional_harvest_cost_column_item1.Description = frmTemp.uc_scenario_harvest_cost_column_edit1.ColumnDescription.Trim(); ;
                     uc_processor_scenario_additional_harvest_cost_column_item1.EnableColumnNameRemoveButton = true;
-                    //uc_processor_scenario_additional_harvest_cost_column_item1.ReferenceAdo = m_oAdo;
-                    //uc_processor_scenario_additional_harvest_cost_column_item1.ReferenceOleDbConnection = m_oAdo.m_OleDbConnection;
                     uc_processor_scenario_additional_harvest_cost_column_item1.ReferenceAdditionalHarvestCostColumnsUserControl = this;
                     uc_processor_scenario_additional_harvest_cost_column_item1.NullCount = Convert.ToString(intCount);
                     uc_processor_scenario_additional_harvest_cost_column_item1.Visible = true;
@@ -996,8 +992,6 @@ namespace FIA_Biosum_Manager
                     oItem.Name = "uc_processor_scenario_additional_harvest_cost_column_item" + Convert.ToString(uc_collection.Count + 1);
                     oItem.Description = frmTemp.uc_scenario_harvest_cost_column_edit1.ColumnDescription.Trim();
                     oItem.EnableColumnNameRemoveButton = true;
-                    //oItem.ReferenceAdo = m_oAdo;
-                    //oItem.ReferenceOleDbConnection = m_oAdo.m_OleDbConnection;
                     oItem.ReferenceAdditionalHarvestCostColumnsUserControl = this;
                     oItem.ReferenceProcessorScenarioForm = this.ReferenceProcessorScenarioForm;
                     panel1.Controls.Add(oItem);
@@ -1496,16 +1490,18 @@ namespace FIA_Biosum_Manager
                 "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
             string strConn = dataMgr.GetConnectionString(strScenarioDB);
-            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
+            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(dataMgr.GetConnectionString(TempDb)))
             {
                 oConn.Open();
+                //attach processor scenario definitions
+                dataMgr.SqlNonQuery(oConn, $@"ATTACH '{strScenarioDB}' AS DEFINITIONS");
                 if (strRx.Trim().Length == 0)
                 {
                     dataMgr.m_strSQL = "SELECT DISTINCT a.scenario_id, a.Description, b.Record_Count " +
                                       "FROM scenario a," +
                                         "(SELECT COUNT(*) AS Record_Count , scenario_id " +
                                          "FROM scenario_additional_harvest_costs GROUP BY scenario_id)  b " +
-                                       "WHERE a.scenario_id=b.scenario_id AND a.scenario_id <> '" + ScenarioId + "'";
+                                       "WHERE UPPER(a.scenario_id)=UPPER(b.scenario_id) AND a.scenario_id <> '" + ScenarioId.ToUpper() + "'";
                 }
                 else
                 {
@@ -1513,7 +1509,7 @@ namespace FIA_Biosum_Manager
                                         "FROM scenario a," +
                                           "(SELECT COUNT(*) AS Record_Count , scenario_id " +
                                            "FROM scenario_additional_harvest_costs WHERE rx='" + strRx + "' GROUP BY scenario_id )  b " +
-                                         "WHERE a.scenario_id=b.scenario_id AND a.scenario_id <> '" + ScenarioId + "'";
+                                         "WHERE UPPER(a.scenario_id)=UPPER(b.scenario_id) AND a.scenario_id <> '" + ScenarioId.ToUpper() + "'";
                 }
                 frmPrevExp.uc_previous_expressions1.lblTitle.Text = "Previous Scenario Harvest Cost Component Values";
                 frmPrevExp.uc_previous_expressions1.loadvalues(dataMgr, oConn, dataMgr.m_strSQL, "DESCRIPTION", "SCENARIO", "scenario");
@@ -1557,7 +1553,7 @@ namespace FIA_Biosum_Manager
                             dataMgr.m_strSQL = $@"UPDATE additional_harvest_costs_work_table 
                                 SET ({strColumn}) = (select CASE WHEN b.{strColumn} IS NOT NULL THEN b.{strColumn} ELSE additional_harvest_costs_work_table.{strColumn} END 
                                 FROM scenario_additional_harvest_costs b WHERE additional_harvest_costs_work_table.biosum_cond_id=b.biosum_cond_id 
-                                AND additional_harvest_costs_work_table.rx=b.rx and b.scenario_id = '{frmPrevExp.uc_previous_expressions1.listView1.SelectedItems[0].SubItems[1].Text.Trim()}')
+                                AND additional_harvest_costs_work_table.rx=b.rx and UPPER(b.scenario_id) = '{frmPrevExp.uc_previous_expressions1.listView1.SelectedItems[0].SubItems[1].Text.Trim().ToUpper()}')
                                 WHERE rx = '{strRx}'";
                     }
                     else
@@ -1570,7 +1566,7 @@ namespace FIA_Biosum_Manager
                             dataMgr.m_strSQL = $@"UPDATE additional_harvest_costs_work_table 
                                 SET ({strColumn}) = (select CASE WHEN b.{strColumn} IS NOT NULL THEN b.{strColumn} ELSE additional_harvest_costs_work_table.{strColumn} END 
                                 FROM scenario_additional_harvest_costs b WHERE additional_harvest_costs_work_table.biosum_cond_id=b.biosum_cond_id 
-                                AND additional_harvest_costs_work_table.rx=b.rx and b.scenario_id = '{frmPrevExp.uc_previous_expressions1.listView1.SelectedItems[0].SubItems[1].Text.Trim()}')";
+                                AND additional_harvest_costs_work_table.rx=b.rx and UPPER(b.scenario_id) = '{frmPrevExp.uc_previous_expressions1.listView1.SelectedItems[0].SubItems[1].Text.Trim().ToUpper()}')";
                     }
 
                        frmMain.g_oFrmMain.ActivateStandByAnimation(
@@ -1645,78 +1641,75 @@ namespace FIA_Biosum_Manager
                                          "Do you wish to continue with this action?(Y/N)", "FIA Biosum", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (result == DialogResult.Yes)
                 {
-                    m_oAdo.m_strSQL = "";
-
-                    // Query the work table for the column names so we can clear their values before copying
-                    System.Data.DataTable oTargetTableSchema = m_oAdo.getTableSchema(m_oAdo.m_OleDbConnection, "SELECT * FROM additional_harvest_costs_work_table");
-                    string strTargetColumnsList = m_oAdo.getFieldNames(m_oAdo.m_OleDbConnection, "SELECT * FROM additional_harvest_costs_work_table");
-                    string strTargetColumnsReservedWordFormattedList = m_oAdo.FormatReservedWordsInColumnNameList(strTargetColumnsList, ",");
-                    string[] strTargetColumnsArray = frmMain.g_oUtils.ConvertListToArray(strTargetColumnsList, ",");
-                    String strClearSQL = "UPDATE additional_harvest_costs_work_table SET ";
-                    foreach (String strColName in strTargetColumnsArray)
+                    using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(dataMgr.GetConnectionString(TempDb)))
                     {
-                        // Add column to ClearSQL so we clear out the value before updating it from source
-                        if (!strColName.ToUpper().Equals("SCENARIO_ID") &&
-                            !strColName.ToUpper().Equals("BIOSUM_COND_ID") &&
-                            !strColName.ToUpper().Equals("RX"))
-                        strClearSQL = strClearSQL + strColName + " = NULL, ";
-                    }
-                    if (strClearSQL.Trim().Length > 0)
-                    {
-                        strClearSQL = strClearSQL.Substring(0, strClearSQL.Length - 2);
-                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, strClearSQL);
-                    }
+                        oConn.Open();
+                        //attach processor scenario definitions
+                        dataMgr.SqlNonQuery(oConn, $@"ATTACH '{strScenarioDB}' AS DEFINITIONS");
 
-                    for (int x = 0; x <= uc_collection.Count - 1; x++)
-                    {
-                        strColumn = uc_collection.Item(x).ColumnName.Trim();
-
-                        //make sure the source scenario has this column
-                        if (m_oAdo.ColumnExist(m_oAdo.m_OleDbConnection, "scenario_additional_harvest_costs", strColumn))
+                        // Query the work table for the column names so we can clear their values before copying
+                        System.Data.DataTable oTargetTableSchema = dataMgr.getTableSchema(oConn, "SELECT * FROM additional_harvest_costs_work_table");
+                        string strTargetColumnsList = dataMgr.getFieldNames(oConn, "SELECT * FROM additional_harvest_costs_work_table");
+                        string strTargetColumnsReservedWordFormattedList = dataMgr.FormatReservedWordsInColumnNameList(strTargetColumnsList, ",");
+                        string[] strTargetColumnsArray = frmMain.g_oUtils.ConvertListToArray(strTargetColumnsList, ",");
+                        String strClearSQL = "UPDATE additional_harvest_costs_work_table SET ";
+                        foreach (String strColName in strTargetColumnsArray)
                         {
-                            
-                            //make sure columnname not already referenced
-                            if (m_oAdo.m_strSQL.ToUpper().IndexOf("B." + strColumn.ToUpper() + " IS NOT NULL", 0) < 0)
+                            // Add column to ClearSQL so we clear out the value before updating it from source
+                            if (!strColName.ToUpper().Equals("SCENARIO_ID") &&
+                                !strColName.ToUpper().Equals("BIOSUM_COND_ID") &&
+                                !strColName.ToUpper().Equals("RX"))
+                                strClearSQL = strClearSQL + strColName + " = NULL, ";
+                        }
+                        if (strClearSQL.Trim().Length > 0)
+                        {
+                            strClearSQL = strClearSQL.Substring(0, strClearSQL.Length - 2);
+                            dataMgr.SqlNonQuery(oConn, strClearSQL);
+                        }
+                        dataMgr.m_strSQL = "";  // Reset property
+                        for (int x = 0; x <= uc_collection.Count - 1; x++)
+                        {
+                            strColumn = uc_collection.Item(x).ColumnName.Trim();
+                            //make sure the source scenario has this column
+                            if (dataMgr.AttachedColumnExist(oConn, "scenario_additional_harvest_costs", strColumn))
                             {
-                                m_oAdo.m_strSQL = m_oAdo.m_strSQL + "a." + strColumn + "= IIF(b." + strColumn + " IS NOT NULL,b." + strColumn + ",a." + strColumn + "),";
+                                //make sure columnname not already referenced
+                                if (dataMgr.m_strSQL.ToUpper().IndexOf("B." + strColumn.ToUpper() + " IS NOT NULL", 0) < 0)
+                                {
+                                    dataMgr.m_strSQL = dataMgr.m_strSQL + strColumn + " = (select CASE WHEN b." + strColumn + " IS NOT NULL THEN b." + strColumn + " ELSE additional_harvest_costs_work_table." + strColumn + " END " +
+                                        "FROM scenario_additional_harvest_costs b " +
+                                        "WHERE additional_harvest_costs_work_table.biosum_cond_id = b.biosum_cond_id " +
+                                        "AND additional_harvest_costs_work_table.rx = b.rx and UPPER(b.scenario_id) = '" + frmPrevExp.uc_previous_expressions1.listView1.SelectedItems[0].SubItems[1].Text.Trim().ToUpper() + "'),";
+                                }
                             }
-
                         }
-                    }
-
-                    if (m_oAdo.m_strSQL.Trim().Length > 0)
-                    {
-                        frmMain.g_oFrmMain.ActivateStandByAnimation(
-                               this.ParentForm.WindowState,
-                               this.ParentForm.Left,
-                               this.ParentForm.Height,
-                               this.ParentForm.Width,
-                               this.ParentForm.Top);
-                        //remove the comma at the end of the strings
-                        m_oAdo.m_strSQL = m_oAdo.m_strSQL.Substring(0, m_oAdo.m_strSQL.Length - 1);
-
-                        m_oAdo.m_strSQL = "UPDATE additional_harvest_costs_work_table a " +
-                                          "INNER JOIN  scenario_additional_harvest_costs b " +
-                                          "ON a.biosum_cond_id=b.biosum_cond_id AND a.rx=b.rx " +
-                                          "SET " + m_oAdo.m_strSQL +
-                                          " WHERE b.scenario_id = '" + frmPrevExp.uc_previous_expressions1.listView1.SelectedItems[0].SubItems[1].Text.Trim() + "'";
-
-
-                        frmMain.g_sbpInfo.Text = "Updating Harvest Cost Component $/A/C Values...Stand By";
-
-                        m_oAdo.SqlNonQuery(m_oAdo.m_OleDbConnection, m_oAdo.m_strSQL);
-
-                        frmMain.g_sbpInfo.Text = "Ready";
-
-                        if (m_oAdo.m_intError == 0)
+                        if (dataMgr.m_strSQL.Trim().Length > 0)
                         {
-                            UpdateNullCounts(TempDb);
-                            frmMain.g_oFrmMain.DeactivateStandByAnimation();
-                            MessageBox.Show("Done");
-                        }
-                        else
-                            frmMain.g_oFrmMain.DeactivateStandByAnimation();
+                            frmMain.g_oFrmMain.ActivateStandByAnimation(
+                                   this.ParentForm.WindowState,
+                                   this.ParentForm.Left,
+                                   this.ParentForm.Height,
+                                   this.ParentForm.Width,
+                                   this.ParentForm.Top);
+                            //remove the comma at the end of the strings
+                            dataMgr.m_strSQL = dataMgr.m_strSQL.Substring(0, dataMgr.m_strSQL.Length - 1);
+                            dataMgr.m_strSQL = "UPDATE additional_harvest_costs_work_table SET " + dataMgr.m_strSQL;
 
+                            frmMain.g_sbpInfo.Text = "Updating Harvest Cost Component $/A/C Values...Stand By";
+
+                            dataMgr.SqlNonQuery(oConn, dataMgr.m_strSQL);
+
+                            frmMain.g_sbpInfo.Text = "Ready";
+                            if (dataMgr.m_intError == 0)
+                            {
+                                UpdateNullCounts(TempDb);
+                                frmMain.g_oFrmMain.DeactivateStandByAnimation();
+                                MessageBox.Show("Done");
+                            }
+                            else
+                                frmMain.g_oFrmMain.DeactivateStandByAnimation();
+
+                        }
                     }
                 }
 

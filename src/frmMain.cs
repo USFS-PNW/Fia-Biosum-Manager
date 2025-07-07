@@ -1738,55 +1738,6 @@ namespace FIA_Biosum_Manager
                     //this.m_frmSqlite.ParentControl = frmMain.g_oFrmMain;
                     //this.m_frmSqlite.Show();
                 }
-                else if (strText.Trim().ToUpper() == "JOIN DATA FROM MULTIPLE SCENARIOS")
-                {
-                    //check to see if the form has already been loaded
-                    if (this.IsChildWindowVisible("Treatment Optimizer: Join Data From Multiple Scenarios") == false)
-                    {
-
-                        this.m_frmCoreMerge = new frmDialog(this);
-                        this.m_frmCoreMerge.MaximizeBox = false;
-                        this.m_frmCoreMerge.BackColor = System.Drawing.SystemColors.Control;
-                        this.m_frmCoreMerge.Text = "Treatment Optimizer: Join Data From Multiple Scenarios";
-                        this.m_frmCoreMerge.MdiParent = this;
-                        this.m_frmCoreMerge.Initialize_Join_Scenario_User_Control();
-                        this.m_frmCoreMerge.uc_merge_tables1.Top = 0;
-                        this.m_frmCoreMerge.uc_merge_tables1.Left = 0;
-                        int intHt = 0;
-
-
-
-                        int intHt2 = this.m_frmCoreMerge.uc_merge_tables1.groupBox1.Top + this.m_frmCoreMerge.uc_merge_tables1.lblTitle.Height + this.m_frmCoreMerge.uc_merge_tables1.grpboxOpen.Top + this.m_frmCoreMerge.uc_merge_tables1.grpboxOpen.Height;
-                        int intTop = this.m_frmCoreMerge.uc_merge_tables1.groupBox1.Top;
-                        while (intTop + intHt2 + 20
-                            >= intHt)
-                        {
-                            intHt += 10;
-
-                        }
-                        this.m_frmCoreMerge.Height = intHt;
-
-
-                        this.m_frmCoreMerge.DisposeOfFormWhenClosing = true;
-                        this.m_frmCoreMerge.Height = this.m_frmCoreMerge.uc_merge_tables1.Height + this.m_frmCoreMerge.uc_merge_tables1.lblTitle.Height;
-                        this.m_frmCoreMerge.Width = ((this.m_frmCoreMerge.uc_merge_tables1.Left + this.m_frmCoreMerge.uc_merge_tables1.groupBox1.Left + this.m_frmCoreMerge.uc_merge_tables1.grpboxOpen.Left) * 2) + this.m_frmCoreMerge.uc_merge_tables1.grpboxOpen.Width + 5;
-
-                        this.m_frmCoreMerge.Left = 0;
-                        this.m_frmCoreMerge.Top = 0;
-                        this.m_frmCoreMerge.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-                        this.m_frmCoreMerge.Show();
-
-                    }
-                    else
-                    {
-                        if (this.m_frmCoreMerge.WindowState == System.Windows.Forms.FormWindowState.Minimized)
-                            this.m_frmCoreMerge.WindowState = System.Windows.Forms.FormWindowState.Normal;
-
-                        this.m_frmCoreMerge.Focus();
-
-                    }
-
-                }
             }
             else if (this.btnDB.Enabled == false)
             {
@@ -4011,7 +3962,7 @@ namespace FIA_Biosum_Manager
 				this.m_frmProcessorSpc.MaximizeBox = true;
 				this.m_frmProcessorSpc.BackColor = System.Drawing.SystemColors.Control;
 				this.m_frmProcessorSpc.Text = strTitle;
-				FIA_Biosum_Manager.uc_processor_tree_spc p_uc = new uc_processor_tree_spc(this.frmProject.uc_project1.txtRootDirectory.Text.Trim());
+				FIA_Biosum_Manager.uc_processor_tree_spc p_uc = new uc_processor_tree_spc();
 				if (p_uc.m_intError < 0) 
 				{
 					this.m_frmProcessorSpc.Dispose();

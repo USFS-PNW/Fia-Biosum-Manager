@@ -6010,19 +6010,19 @@ namespace FIA_Biosum_Manager
                             " )";
             }
 
-            public void CreateTreeReconcilationTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+            public void CreateTreeReconcilationTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
-                p_oAdo.SqlNonQuery(p_oConn, Tables.Processor.CreateTreeReconcilationTableSQL(p_strTableName));
+                p_oDataMgr.SqlNonQuery(p_oConn, Tables.Processor.CreateTreeReconcilationTableSQL(p_strTableName));
                 // No indexes currently on OpCost input table
             }
 
             static public string CreateTreeReconcilationTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName +
-                       " (cn text (34)," +
+                       " (cn CHAR (34)," +
                        " fvs_tree_id CHAR(10)," +
-                       " biosum_cond_id text (25)," +
-                       " biosum_plot_id text (24)," +
+                       " biosum_cond_id CHAR (25)," +
+                       " biosum_plot_id CHAR (24)," +
                        " spcd INTEGER," +
                        " merchWtGt double," +
                        " nonMerchWtGt double," +
@@ -6035,13 +6035,13 @@ namespace FIA_Biosum_Manager
                        " dryToGreen double, " +
                        " tpa double, " +
                        " dbh double, " +
-                       " isSapling bit, " +
-                       " isWoodland bit, " +
-                       " isCull bit, " +
+                       " isSapling CHAR(1), " +
+                       " isWoodland CHAR(1), " +
+                       " isCull CHAR(1), " +
                        " species_group integer, " +
                        " diam_group integer, " +
                        " merch_value double, " +
-                       " opcost_type text (5), " +
+                       " opcost_type CHAR (5), " +
                        " biosum_category integer)";
             }
         }

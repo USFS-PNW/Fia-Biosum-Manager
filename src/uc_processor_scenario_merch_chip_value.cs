@@ -27,7 +27,6 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox txtChipValue;
 		private RxTools m_oRxTools = new RxTools();
-		private ado_data_access m_oAdo = null;
 		private string _strScenarioId="";
 		private frmProcessorScenario _frmProcessorScenario=null;
 		public FIA_Biosum_Manager.ResizeFormUsingVisibleScrollBars m_oResizeForm = new ResizeFormUsingVisibleScrollBars();
@@ -87,7 +86,7 @@ namespace FIA_Biosum_Manager
             string strScenarioMDB =
                 frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
                 "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
-            ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadSpeciesAndDiameterGroupDollarValuesSqlite(strScenarioMDB,
+            ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadSpeciesAndDiameterGroupDollarValues(strScenarioMDB,
                 ReferenceProcessorScenarioForm.m_oProcessorScenarioItem);
 
                 //REMOVE OLD CONTROLS FROM FORM IF THEY EXIST

@@ -16,9 +16,9 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.TextBox txtCycle2;
 		private System.Windows.Forms.TextBox txtCycle3;
 		private System.Windows.Forms.TextBox txtCycle4;
-		private string m_strCycle2Save="1.00";
-		private string m_strCycle3Save="1.00";
-		private string m_strCycle4Save="1.00";
+		private string m_strCycle2Save="1.0000";
+		private string m_strCycle3Save="1.0000";
+		private string m_strCycle4Save="1.0000";
         private frmProcessorScenario _oFrmProcessorScenario = null;
 
 		//protected override bool ProcessDialogKey(Keys keyData); 
@@ -36,12 +36,12 @@ namespace FIA_Biosum_Manager
 		{
 			// This call is required by the Windows.Forms Form Designer.
 			InitializeComponent();
-			m_oValidate.RoundDecimalLength=2;
+			m_oValidate.RoundDecimalLength=5;
 			m_oValidate.Money=false;
 			m_oValidate.NullsAllowed=false;
 			m_oValidate.TestForMaxMin=true;
-			m_oValidate.MaxValue=1.99;
-			m_oValidate.MinValue=-1.99;
+			m_oValidate.MaxValue=1.9999;
+			m_oValidate.MinValue=-1.9999;
 
 			// TODO: Add any initialization after the InitializeComponent call
 
@@ -104,7 +104,7 @@ namespace FIA_Biosum_Manager
             // txtCycle2
             // 
             this.txtCycle2.Location = new System.Drawing.Point(8, 6);
-            this.txtCycle2.MaxLength = 5;
+            this.txtCycle2.MaxLength = 6;
             this.txtCycle2.Name = "txtCycle2";
             this.txtCycle2.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtCycle2.Size = new System.Drawing.Size(112, 22);
@@ -117,7 +117,7 @@ namespace FIA_Biosum_Manager
             // txtCycle3
             // 
             this.txtCycle3.Location = new System.Drawing.Point(136, 6);
-            this.txtCycle3.MaxLength = 5;
+            this.txtCycle3.MaxLength = 6;
             this.txtCycle3.Name = "txtCycle3";
             this.txtCycle3.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtCycle3.Size = new System.Drawing.Size(112, 22);
@@ -130,7 +130,7 @@ namespace FIA_Biosum_Manager
             // txtCycle4
             // 
             this.txtCycle4.Location = new System.Drawing.Point(264, 6);
-            this.txtCycle4.MaxLength = 5;
+            this.txtCycle4.MaxLength = 6;
             this.txtCycle4.Name = "txtCycle4";
             this.txtCycle4.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtCycle4.Size = new System.Drawing.Size(112, 22);
