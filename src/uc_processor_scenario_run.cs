@@ -1044,17 +1044,15 @@ namespace FIA_Biosum_Manager
                 {
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Querying " + Tables.ProcessorScenarioRun.DefaultOpcostErrorsTableName + "table \r\n");
-                    int intCount = Convert.ToInt32(m_oDataMgr.getRecordCount(conn, "select count(*) from " + Tables.ProcessorScenarioRun.DefaultOpcostErrorsTableName,
-                        Tables.ProcessorScenarioRun.DefaultOpcostErrorsTableName));
+                int intCount = Convert.ToInt32(m_oDataMgr.getRecordCount(conn, "select count(*) from " + Tables.ProcessorScenarioRun.DefaultOpcostErrorsTableName,
+                    Tables.ProcessorScenarioRun.DefaultOpcostErrorsTableName));
 
-                    if (intCount > 0)
+                if (intCount > 0)
                     {
                         // This is the first error so we pop a message
                         if (_lstErrorVariants.Count == 0)
                         {
-                            string strMessage = "Costs could not be estimated for " + intCount +
-                                                " stands in Variant " + p_strVariant + " Sequence " + p_strRxPackage +
-                                                ". Do you wish to continue ? ";
+                            string strMessage = $@"Costs could not be estimated for {intCount} stands in Variant {p_strVariant} RxPackage {p_strRxPackage}. If you continue, there may be missing costs in other packages. Please review the opcost_errors table for ALL variant/package combinations. {Environment.NewLine}Do you wish to continue ?";
                             DialogResult res = MessageBox.Show(strMessage, "FIA Biosum", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                             if (res != DialogResult.Yes)
                             {
@@ -2298,7 +2296,7 @@ namespace FIA_Biosum_Manager
             }
             frmMain.g_oDelegate.SetControlPropertyValue(lblMsg, "Text", "Prepare for processing...Stand By");
 
-            // Create temp SQLite database; The temp Access database is created in loadValues
+            // Create temp SQLite database
             m_strTempSqliteDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
             m_oDataMgr.CreateDbFile(m_strTempSqliteDbFile);
 
@@ -2700,9 +2698,9 @@ namespace FIA_Biosum_Manager
                     if (strPieces.Length == 2)
                         strVariantInfo = strVariantInfo + strPieces[0] + String.Format("{0,8}", strPieces[1]) + "\r\n";
                 }
-                string strMessage = "Done with warnings. Biosum could not estimate costs for some Variant/Sequence combinations. " +
+                string strMessage = "Done with warnings. Biosum could not estimate costs for some Variant/Package combinations. " +
                     "Please review the opcost_errors tables in the most recent OPCOST databases located in the " +
-                    frmMain.g_oFrmMain.getProjectDirectory() + "\\OPCOST\\Input folder for these Variant/Sequence combinations: \r\n\r\n" +
+                    frmMain.g_oFrmMain.getProjectDirectory() + "\\OPCOST\\Input folder for these Variant/Package combinations: \r\n\r\n" +
                     strVariantInfo;
                 MessageBox.Show(strMessage, "FIA Biosum");
             }
