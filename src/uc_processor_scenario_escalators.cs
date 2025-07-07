@@ -650,14 +650,14 @@ namespace FIA_Biosum_Manager
 
         private void btnDefault_Click(object sender, EventArgs e)
         {
-            string strCycle2 = "0.65";
-            string strCycle3 = "0.44";
-            string strCycle4 = "0.30";
+            string strCycle2 = "0.6496";
+            string strCycle3 = "0.4388";
+            string strCycle4 = "0.2965";
             if (lblCycleLength.Text.Equals("5"))
             {
-                strCycle2 = "0.79";
-                strCycle3 = "0.65";
-                strCycle4 = "0.53";
+                strCycle2 = "0.7903";
+                strCycle3 = "0.6496";
+                strCycle4 = "0.5339";
             }
 
             this.uc_processor_scenario_escalators_value1.Cycle2 = strCycle2;
