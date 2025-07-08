@@ -1206,7 +1206,7 @@ namespace FIA_Biosum_Manager
                 //
                 FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic =(ProgressBarBasic.ProgressBarBasic)ReferenceUserControlScenarioRun.listViewEx1.GetEmbeddedControl(1, 2);
                 FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem = 2;
-                FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 19;
+                FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 16;
                 FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMinimumSteps=1;
                 FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicCurrentStep=1;
 
@@ -1490,12 +1490,10 @@ namespace FIA_Biosum_Manager
                     //    return;
                     //}
 
-                    //FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                     ////CREATE PROCESSOR SCENARIO TABLE LINKS
                     //CreateProcessorScenarioResultTableLinks();
 
-                    //FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                     //this.CreateAuditTableLinks();
                     //if (this.m_intError != 0) return;
@@ -1516,7 +1514,6 @@ namespace FIA_Biosum_Manager
                     //               }
 
 
-                    //               FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                     //               m_oRxTools.CreateTableLinksToFVSPrePostTables(m_strTempMDBFile);
                     //               m_intError = m_oRxTools.m_intError;
@@ -9606,7 +9603,45 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
-                p_dataMgr.m_strSQL = "INSERT INTO " + m_strEconByRxWorkTableName + " " + strSelectSQL;
+                p_dataMgr.m_strSQL = "INSERT INTO " + m_strEconByRxWorkTableName +
+                    " (biosum_cond_id, rxpackage, rx, rxcycle, merch_vol_cf, chip_vol_cf, chip_wt_gt, " +
+                    "chip_val_dpa, merch_wt_gt, merch_val_dpa, harvest_onsite_cost_dpa, escalator_merch_haul_cpa_pt, " +
+                    "escalator_chip_haul_cpa_pt, usebiomass_yn, max_nr_dpa, acres, owngrpcd) " +
+                    "SELECT vc.biosum_cond_id, vc.rxpackage, vc.rx, vc.rxcycle, " +
+                    "tvvs.merch_vol_cf, tvvs.chip_vol_cf, tvvs.chip_wt_gt, tvvs.chip_val_dpa, tvvs.merch_wt_gt, tvvs.merch_val_dpa, hc.complete_cpa AS harvest_onsite_cost_dpa, " +
+                    "CASE WHEN psa.merch_haul_cost_dpgt IS NOT NULL THEN " +
+                    "CASE WHEN tvvs.rxcycle = '2' THEN psa.merch_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle2 + " ELSE " +
+                    "CASE WHEN tvvs.rxcycle = '3' THEN psa.merch_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle3 + " ELSE " +
+                    "CASE WHEN tvvs.rxcycle= '4' THEN psa.merch_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle4 + " ELSE " +
+                    "psa.merch_haul_cost_dpgt END END END ELSE 0 END AS escalator_merch_haul_cpa_pt, " +
+                    "CASE WHEN psa.chip_haul_cost_dpgt IS NOT NULL THEN " +
+                    "CASE WHEN tvvs.rxcycle = '2' THEN psa.chip_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle2 + " ELSE " +
+                    "CASE WHEN tvvs.rxcycle = '3' THEN psa.chip_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle3 + " ELSE " +
+                    "CASE WHEN tvvs.rxcycle = '4' THEN psa.chip_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle4 + " ELSE " +
+                    "psa.chip_haul_cost_dpgt END END END ELSE 0 END AS escalator_chip_haul_cpa_pt, " +
+                    "CASE WHEN psa.chip_haul_psite IS NULL THEN 'N' ELSE 'Y' END AS usebiomass_yn, " +
+                    "0.0 AS max_nr_dpa, c.acres, c.owngrpcd " +
+                    "FROM validcombos AS vc, " + m_strCondTable + " AS c, " + m_strHvstCostsTable.Trim() + " AS hc, " +
+                    Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " AS psa, " + m_strTreeVolValSumTable.Trim() + " AS tvvs " +
+                    "WHERE vc.biosum_cond_id = c.biosum_cond_id AND c.biosum_cond_id = psa.biosum_cond_id AND " +
+                    "vc.biosum_cond_id = tvvs.biosum_cond_id AND vc.rxpackage = tvvs.rxpackage AND vc.rx = tvvs.rx AND " +
+                    "vc.rxcycle = tvvs.rxcycle AND vc.biosum_cond_id = hc.biosum_cond_id AND vc.rxpackage = hc.rxpackage AND " +
+                    "vc.rx = hc.rx AND vc.rxcycle = hc.rxcycle AND tvvs.place_holder = 'N'";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
+                    " SET merch_haul_cost_dpa = escalator_merch_haul_cpa_pt * merch_wt_gt, " +
+                    "chip_haul_cost_dpa = escalator_chip_haul_cpa_pt * chip_wt_gt";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
+                    " SET merch_chip_nr_dpa = merch_val_dpa + chip_val_dpa - harvest_onsite_cost_dpa - (chip_haul_cost_dpa + merch_haul_cost_dpa), " +
+                    "merch_nr_dpa = merch_val_dpa - harvest_onsite_cost_dpa - merch_haul_cost_dpa, " +
+                    "haul_costs_dpa = CASE WHEN usebiomass_yn = 'Y' THEN merch_haul_cost_dpa + chip_haul_cost_dpa ELSE merch_haul_cost_dpa END";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
@@ -9715,7 +9750,7 @@ namespace FIA_Biosum_Manager
 
                 // Don't use Biomass if no chip weight
                 p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
-                    " SET usebiomass_yn = chip_wt_gt = 0 THEN 'N' ELSE 'Y' END " +
+                    " SET usebiomass_yn = CASE WHEN chip_wt_gt = 0 THEN 'N' ELSE 'Y' END " +
                     "WHERE usebiomass_yn = 'Y'";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
@@ -13071,6 +13106,13 @@ namespace FIA_Biosum_Manager
             {
                 workConn.Open();
 
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strPlotPathAndFile + "' AS master";
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strSystemResultsDbPathAndFile + "' AS results";
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
                 //
                 //CREATE WORK TABLES
                 //
@@ -13145,9 +13187,6 @@ namespace FIA_Biosum_Manager
                 }
 
                 frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteProductYieldsTable(p_dataMgr, workConn, strWorkTable);
-
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strSystemResultsDbPathAndFile + "' AS results";
-                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
                 p_dataMgr.m_strSQL = "INSERT INTO " + strWorkTable +
                     " SELECT p.* FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName + " AS p, " +
@@ -13609,10 +13648,10 @@ namespace FIA_Biosum_Manager
                     p_dataMgr.m_strSQL = "SELECT a.biosum_cond_id, a.rxpackage, a.rx, a." + m_strOptimizationColumnNameSql + " AS optimization_value " +
                         "FROM " + strOptimizationTableName + " AS a, " +
                         "(SELECT " + m_strOptimizationAggregateSql + "(" + m_strOptimizationColumnNameSql + ") AS " + m_strOptimizationAggregateColumnName + ", biosum_cond_id " +
-                        "FROM " + strOptimizationTableName + " WHERE afforable_YN = 'Y' " +
+                        "FROM " + strOptimizationTableName + " WHERE affordable_YN = 'Y' " +
                         "GROUP BY biosum_cond_id) AS b " +
                         "WHERE a.biosum_cond_id = b.biosum_cond_id AND a." + m_strOptimizationColumnNameSql + " = b." + m_strOptimizationAggregateColumnName +
-                        " AMD a.affordable_YN = 'Y'";
+                        " AND a.affordable_YN = 'Y'";
                 }
 
                 p_dataMgr.m_strSQL = "INSERT INTO cycle1_best_rx_summary_optimization_and_tiebreaker_work_table (biosum_cond_id, rxpackage, rx, optimization_value) " +

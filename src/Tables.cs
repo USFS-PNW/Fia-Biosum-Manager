@@ -262,9 +262,9 @@ namespace FIA_Biosum_Manager
             //EFFECTIVE TABLE
             //
             public void CreateSqliteEffectiveTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn,
-                                                   string p_strTablePrefix, string p_strFilterColumnName)
+                                                   string p_strTable, string p_strFilterColumnName)
             {
-                string strTableName = p_strTablePrefix + Tables.OptimizerScenarioResults.DefaultScenarioResultsEffectiveTableSuffix;
+                string strTableName = p_strTable;
                 p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteEffectiveTableSQL(strTableName, p_strFilterColumnName));
             }
             static public string CreateSqliteEffectiveTableSQL(string p_strTableName, string p_strFilterColumnName)
