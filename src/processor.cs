@@ -359,7 +359,7 @@ namespace FIA_Biosum_Manager
                     // set tree species fields from treeSpecies dictionary
                     if (!dictTreeSpecies.ContainsKey(nextTree.SpCd))
                     {
-                        System.Windows.Forms.MessageBox.Show("The tree_species table is missing either an entry or species group for variant " +
+                        System.Windows.Forms.MessageBox.Show("The fia_tree_species_ref table is missing either an entry or species group for variant " +
                         p_strVariant + " spcd " + nextTree.SpCd + ". Please resolve this issue before running Processor.",
                         "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                         return -1;
@@ -1187,7 +1187,7 @@ namespace FIA_Biosum_Manager
                         string strSpCd = Convert.ToString(SQLite.m_DataReader["SPCD"]).Trim();
                         if (dictTreeSpecies.ContainsKey(strSpCd))
                         {
-                            System.Windows.Forms.MessageBox.Show("The tree_species table contains duplicate entries for spcd " + 
+                            System.Windows.Forms.MessageBox.Show("The fia_tree_species_ref table contains duplicate entries for spcd " + 
                                 strSpCd + ". Please resolve this issue before running Processor.",
                                 "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, 
                                 System.Windows.Forms.MessageBoxIcon.Error);
