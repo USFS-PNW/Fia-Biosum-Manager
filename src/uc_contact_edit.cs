@@ -781,32 +781,31 @@ namespace FIA_Biosum_Manager
 		private void populate_state_combo()
 		{
 			this.cmbState.Items.Clear();
-			ado_data_access p_ado = new ado_data_access();
-			env p_env = new env();
-			string strConn = p_ado.getMDBConnString(p_env.strAppDir.Trim() + "\\db\\utils.mdb","","");
+			SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
+			string strConn = dataMgr.GetConnectionString(frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
+				frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceSqliteFile);
 			try
 			{
-				p_ado.SqlQueryReader(strConn,"select * from states order by stabv");
-				if (p_ado.m_OleDbDataReader.HasRows == true)
+				using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
 				{
-					while (p_ado.m_OleDbDataReader.Read())
+					conn.Open();
+					dataMgr.SqlQueryReader(conn, "select * from states order by stabv");
+					if (dataMgr.m_DataReader.HasRows == true)
 					{
-						string strState = p_ado.m_OleDbDataReader["stabv"].ToString().Trim() + " - " +
-							p_ado.m_OleDbDataReader["state_name"].ToString();
-						this.cmbState.Items.Add(strState);
+						while (dataMgr.m_DataReader.Read())
+						{
+							string strState = dataMgr.m_DataReader["stabv"].ToString().Trim() + " - " +
+								dataMgr.m_DataReader["state_name"].ToString();
+							this.cmbState.Items.Add(strState);
+						}
 					}
+					dataMgr.m_DataReader.Close();
 				}
-				p_ado.m_OleDbDataReader.Close();
-				p_ado.m_OleDbConnection.Close();
-				p_ado.m_OleDbConnection.Dispose();
 			}
 			catch 
 			{
-			}
-			p_ado = null;
-			p_env=null;
-
-            
+				// munch
+			}        
 		}
 	
 		public string strName

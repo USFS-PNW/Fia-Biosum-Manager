@@ -207,14 +207,13 @@ namespace FIA_Biosum_Manager
 		public static string g_strAppVer = "5.11.2";
         public static string g_strBiosumDataDir = "\\FIABiosum";
         public static int g_intRefDbVer = 8;
-        public static int g_intRefSqliteDbVer = 10;
+        public static int g_intRefSqliteDbVer = 14;
         public static bool g_bUseOracleXE = false;
 
 		private System.Windows.Forms.MenuItem mnuSettings;
         private MenuItem mnuTools;
         private MenuItem mnuToolsFCS;
 
-		private bool m_bRefresh=false;
         private Help m_oHelp;
         //
         //splasher
@@ -4032,7 +4031,6 @@ namespace FIA_Biosum_Manager
 			
 			this.frmProject.uc_project_notes1.Visible=false;
 			this.frmProject.uc_project1.Visible=false;
-			this.frmProject.uc_scenario1.Visible=false;
 			this.frmProject.uc_project_document_links1.Visible=false;
 			this.frmProject.uc_contact_list1.loadvalues(this.frmProject.uc_project1.txtRootDirectory.Text.Trim());
 			this.frmProject.uc_contact_list1.Visible=true;

@@ -7179,6 +7179,12 @@ namespace FIA_Biosum_Manager
                 oDao.m_DaoWorkspace.Close();
                 oDao = null;
             }
+
+            // Copy ref_master.db to project if it doesn't already exist
+            if (!System.IO.File.Exists(ReferenceProjectDirectory.Trim() + "\\" + Tables.Reference.DefaultRefMasterDbFile))
+            {
+                System.IO.File.Copy($@"{frmMain.g_oEnv.strAppDir}\{Tables.Reference.DefaultRefMasterDbFile}", ReferenceProjectDirectory.Trim() + "\\" + Tables.Reference.DefaultRefMasterDbFile, true );
+            }
         }
 
         // Method to compare two versions.
