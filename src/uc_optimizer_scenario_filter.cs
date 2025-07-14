@@ -478,7 +478,7 @@ namespace FIA_Biosum_Manager
 						}
 
 						oDataMgr.m_strSQL = "INSERT INTO scenario_cond_filter_misc (scenario_id,yard_dist,yard_dist2)" +
-							" VALUES ('" + strScenarioId + "'," +
+							" VALUES ('" + strScenarioId.Trim() + "'," +
 							this.txtYardDist.Text.Trim() + "," + this.txtYardDist2.Text.Trim() + ");";
 						oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 						if (oDataMgr.m_intError < 0)

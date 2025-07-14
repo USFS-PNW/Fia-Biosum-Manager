@@ -615,7 +615,7 @@ namespace FIA_Biosum_Manager
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
                 conn.Open();
-                oDataMgr.m_strSQL = "UPDATE scenario SET description='" + strDesc.Trim() + "' WHERE TRIM(scenario_id)='" + this.txtScenarioId.Text.Trim() + "'";
+                oDataMgr.m_strSQL = "UPDATE scenario SET description='" + strDesc.Trim() + "' WHERE TRIM(LOWER(scenario_id))='" + this.txtScenarioId.Text.Trim().ToLower() + "'";
                 oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
             }
             oDataMgr = null;
@@ -803,6 +803,11 @@ namespace FIA_Biosum_Manager
                     if (oDataMgr.m_intError == 0)
                     {
                         strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName + " WHERE TRIM(scenario_id) =  " + "'" + p_strScenarioId.Trim() + "'";
+                        oDataMgr.SqlNonQuery(conn, strSQL);
+                    }
+                    if (oDataMgr.m_intError == 0)
+                    {
+                        strSQL = "DELETE FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioHarvestCostColumnsTableName + " WHERE TRIM(scenario_id) = '" + p_strScenarioId.Trim() + "'";
                         oDataMgr.SqlNonQuery(conn, strSQL);
                     }
                     if (oDataMgr.m_intError == 0)

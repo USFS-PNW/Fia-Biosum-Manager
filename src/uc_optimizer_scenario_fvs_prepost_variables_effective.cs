@@ -1812,7 +1812,7 @@ namespace FIA_Biosum_Manager
 				strFVSVariableList = strFVSVariableList.Substring(0, strFVSVariableList.Length - 1);
 
 			DataMgr oDataMgr = new DataMgr();
-			string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
+			string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim();
 			string strScenarioDB =
 				frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
 				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;

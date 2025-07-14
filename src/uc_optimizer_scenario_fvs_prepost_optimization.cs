@@ -1470,7 +1470,7 @@ namespace FIA_Biosum_Manager
             string strColumns = "";
             string strWhere = "";
             DataMgr oDataMgr = new DataMgr();
-            string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
+            string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim();
             string strScenarioDB =
                 frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
                 Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;

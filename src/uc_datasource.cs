@@ -553,7 +553,7 @@ namespace FIA_Biosum_Manager
                 {
                     dataMgr.m_strSQL = "select table_type,path,file,table_name from " + this.m_strDataSourceTable + " " +
                         " where trim(scenario_id) = '" +
-                        m_strScenarioId.Trim() + "';";
+                        m_strScenarioId.Trim().ToLower() + "';";
                 }
                 else
                 {

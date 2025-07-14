@@ -2669,23 +2669,7 @@ namespace FIA_Biosum_Manager
         public OptimizerScenarioTools()
         {
         }
-        public void LoadScenario(string p_strScenarioId, Queries p_oQueries, bool p_bProcessorUsingSqlite,
-            OptimizerScenarioItem_Collection p_oOptimizerScenarioItem_Collection)
-        {
 
-            //
-            //LOAD PROJECT DATATASOURCES INFO
-            //
-            p_oQueries.m_oFvs.LoadDatasource = true;
-            p_oQueries.m_oFIAPlot.LoadDatasource = true;
-            p_oQueries.m_oProcessor.LoadDatasource = true;
-            p_oQueries.m_oReference.LoadDatasource = true;
-            p_oQueries.LoadDatasourcesSqlite(true, "optimizer", p_strScenarioId);
-            p_oQueries.m_oDataSource.CreateScenarioRuleDefinitionTableLinksSqliteToAccess(
-                p_oQueries.m_strTempDbFile,
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim());
-            LoadAll(p_oQueries.m_strTempDbFile, p_oQueries, p_strScenarioId, p_oOptimizerScenarioItem_Collection);
-        }
         
         public void LoadAll(string p_strDbFile, Queries p_oQueries,
             string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem_Collection p_oOptimizerScenarioItem_Collection)
@@ -2703,6 +2687,7 @@ namespace FIA_Biosum_Manager
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(p_strDbFile)))
             {
                 conn.Open();
+
                 if (oDataMgr.m_intError == 0)
                 {
                     OptimizerScenarioItem oItem = new OptimizerScenarioItem();

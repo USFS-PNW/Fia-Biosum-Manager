@@ -2205,6 +2205,10 @@ namespace FIA_Biosum_Manager
 			bool lSingleQuote;
 			string str;
 
+            if (m_strCurField == null)
+            {
+                return;
+            }
 			if (m_strCurField.Trim() == lstFields.Text.Trim())
             {
 				return;
