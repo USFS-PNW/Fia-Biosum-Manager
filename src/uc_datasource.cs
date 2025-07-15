@@ -552,7 +552,7 @@ namespace FIA_Biosum_Manager
                 if (m_strScenarioId != null && this.m_strScenarioId.Trim().Length > 0)
                 {
                     dataMgr.m_strSQL = "select table_type,path,file,table_name from " + this.m_strDataSourceTable + " " +
-                        " where trim(scenario_id) = '" +
+                        " where trim(lower(scenario_id)) = '" +
                         m_strScenarioId.Trim().ToLower() + "';";
                 }
                 else
