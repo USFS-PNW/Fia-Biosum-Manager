@@ -3485,7 +3485,7 @@ namespace FIA_Biosum_Manager
                             {
                                 for (x = 0; x <= p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Count - 1; x++)
                                 {
-                                    if (p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).ProcessingSiteId.Trim() ==
+                                    if (p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).ProcessingSiteId.Trim('\'') ==
                                         Convert.ToString(p_oDataMgr.m_DataReader["psite_id"]).Trim())
                                     {
                                         //processing site name
@@ -3537,7 +3537,7 @@ namespace FIA_Biosum_Manager
                         {
                             for (x = 0; x <= p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Count - 1; x++)
                             {
-                                if (p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).ProcessingSiteId.Trim() ==
+                                if (p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).ProcessingSiteId.Trim('\'') ==
                                     Convert.ToString(p_oDataMgr.m_DataReader["psite_id"]).Trim())
                                 {
                                     if (p_oDataMgr.m_DataReader["selected_yn"] != System.DBNull.Value)
