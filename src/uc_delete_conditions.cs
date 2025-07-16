@@ -726,9 +726,9 @@ namespace FIA_Biosum_Manager
                     m_dataMgr.SqlNonQuery(p_conn, "INSERT INTO conds_to_delete (cn) VALUES (" + condCN + ")");
                 }
 
-                m_dataMgr.m_strSQL = "SELECT c.cn, c.biosum_cond_id, t.cn " +
+                m_dataMgr.m_strSQL = "SELECT TRIM(c.cn), c.biosum_cond_id, TRIM(t.cn) " +
                     "FROM ((" + m_strCondTable + " AS c " +
-                    "INNER JOIN conds_to_delete AS cd ON c.cn = cd.cn) " +
+                    "INNER JOIN conds_to_delete AS cd ON TRIM(c.cn) = TRIM(cd.cn)) " +
                     "INNER JOIN " + m_strPlotTable + " AS p ON c.biosum_plot_id = p.biosum_plot_id) " +
                     "LEFT JOIN " + m_strTreeTable + " AS t ON c.biosum_cond_id = t.biosum_cond_id";
                 m_dataMgr.CreateDataSet(p_conn, m_dataMgr.m_strSQL, "identifiers");
@@ -740,10 +740,10 @@ namespace FIA_Biosum_Manager
                     setTreeCNs.Add(String.Format("'{0}'", row[2]));
                 }
 
-                m_dataMgr.m_strSQL = "SELECT allconds.biosum_plot_id, allconds.cn " +
+                m_dataMgr.m_strSQL = "SELECT allconds.biosum_plot_id, TRIM(allconds.cn) " +
                     "FROM (SELECT p.biosum_plot_id, p.cn, COUNT(*) AS cntconds " +
                     "FROM (" + m_strCondTable + " AS c " +
-                    "INNER JOIN conds_to_delete AS cd ON c.cn = cd.cn) " +
+                    "INNER JOIN conds_to_delete AS cd ON TRIM(c.cn) = TRIM(cd.cn)) " +
                     "INNER JOIN " + m_strPlotTable + " AS p ON c.biosum_plot_id = p.biosum_plot_id " +
                     "WHERE c.cn IN (" + m_strCondCNs + ") GROUP BY p.biosum_plot_id, p.cn) AS someconds " +
                     "RIGHT JOIN (SELECT p.biosum_plot_id, p.cn, COUNT(*) AS cntconds " +
