@@ -710,7 +710,7 @@ namespace FIA_Biosum_Manager
 			oDs.LoadTableRecordCount = false;
 
 			oDs.populate_datasource_array_sqlite_new();
-			System.Collections.Generic.List<string> lstDataSourceDbs = oDs.GetDataSourceDbsList();
+			System.Collections.Generic.List<string> lstDataSourceDbs = oDs.getDataSourceDbsList();
 
 			if (oDs.m_intError == 0)
 			{
@@ -875,7 +875,7 @@ namespace FIA_Biosum_Manager
 			oDs.LoadTableRecordCount = false;
 			oDs.populate_datasource_array_sqlite_new();
 
-			System.Collections.Generic.List<string> lstDataSourceDbs = oDs.GetDataSourceDbsList();
+			System.Collections.Generic.List<string> lstDataSourceDbs = oDs.getDataSourceDbsList();
 
 			if (oDs.m_intError == 0)
             {
@@ -962,7 +962,7 @@ namespace FIA_Biosum_Manager
 			oDs.LoadTableRecordCount = false;
 			oDs.populate_datasource_array_sqlite_new();
 
-			System.Collections.Generic.List<string> lstDataSourceDbs = oDs.GetDataSourceDbsList();
+			System.Collections.Generic.List<string> lstDataSourceDbs = oDs.getDataSourceDbsList();
 
 			int intError = 0;
 			if (oDs.m_intError == 0)

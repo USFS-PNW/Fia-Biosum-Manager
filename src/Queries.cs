@@ -128,7 +128,7 @@ namespace FIA_Biosum_Manager
             {
                 this.m_oProcessor.LoadDatasources();
             }
-            m_lstSourceDbs = this.m_oDataSource.GetDataSourceDbsList();
+            m_lstSourceDbs = this.m_oDataSource.getDataSourceDbsList();
         }
         public void LoadDatasourcesSqlite(bool p_bLimited, string p_strScenarioType, string p_strScenarioId)
         {
@@ -209,7 +209,7 @@ namespace FIA_Biosum_Manager
             if (this.m_oProcessor.LoadDatasource) this.m_oProcessor.LoadDatasources();
             if (this.m_oTravelTime.LoadDatasource) this.m_oTravelTime.LoadDatasources();
             m_strTempDbFile = this.m_oDataSource.CreateDB();
-            m_lstSourceDbs = this.m_oDataSource.GetDataSourceDbsList();
+            m_lstSourceDbs = this.m_oDataSource.getDataSourceDbsList();
         }
 
         protected void LoadLimitedDatasources()

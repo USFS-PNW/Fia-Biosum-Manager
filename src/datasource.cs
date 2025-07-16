@@ -1684,7 +1684,7 @@ namespace FIA_Biosum_Manager
 			return strTempDb;
 		}
 
-		public System.Collections.Generic.List<string> GetDataSourceDbsList()
+		public System.Collections.Generic.List<string> getDataSourceDbsList()
         {
 			int x;
 			macrosubst oMacroSub = new macrosubst();
@@ -1707,7 +1707,7 @@ namespace FIA_Biosum_Manager
 
 				string strPath = oMacroSub.GeneralTranslateVariableSubstitution(this.m_strDataSource[x, PATH].Trim()) + "\\" +
 								 this.m_strDataSource[x, DBFILE].Trim();
-				if (!lstDataSourcePaths.Contains(strPath))
+				if (!lstDataSourcePaths.Contains(strPath) && strFileStatus == "F" && strTableStatus == "F")
                 {
 					lstDataSourcePaths.Add(strPath);
                 }

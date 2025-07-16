@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Windows.Forms;
+using SQLite.ADO;
 
 
 namespace FIA_Biosum_Manager
@@ -138,7 +139,7 @@ namespace FIA_Biosum_Manager
             this.tblbtnDeleteConds.Name = "tblbtnDeleteConds";
             this.tblbtnDeleteConds.Text = "Delete Conditions";
             // Hide Condition zapper until we can convert it to sqlite
-            this.tblbtnDeleteConds.Visible = false;
+            //this.tblbtnDeleteConds.Visible = false;
             // 
             // tblbtnDeletePackages
             // 
@@ -366,7 +367,7 @@ namespace FIA_Biosum_Manager
 		/// <summary>
 		/// Delete all plot records and the plot's tree and condition records
 		/// </summary>
-		private void DeleteAllPlotRecords()
+		private void DeleteAllPlotRecords_old()
 		{
 			string strMsg = "All condition and tree records for the plots deleted will also be deleted. \n Are you sure you want to remove all plot data from the project?";
 			DialogResult result = MessageBox.Show(strMsg,"Delete All Plot Data", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
@@ -487,6 +488,143 @@ namespace FIA_Biosum_Manager
 				
 					
 				MessageBox.Show(strSQL,"DELETE ALL PLOT DATA",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
+			}
+		}
+
+		private void DeleteAllPlotRecords()
+        {
+			string strMsg = "All condition and tree records for the plots deleted will also be deleted. \n Are you sure you want to remove all plot data from the project?";
+			DialogResult result = MessageBox.Show(strMsg, "Delete All Plot Data", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+			switch (result)
+			{
+				case DialogResult.Yes:
+					break;
+				case DialogResult.No:
+					return;
+				case DialogResult.Cancel:
+					return;
+			}
+
+			frmMain.g_oFrmMain.ActivateStandByAnimation(frmMain.g_oFrmMain.WindowState,
+							   this.Left, this.Height, this.Width, this.Top);
+
+			DataMgr p_dataMgr = new DataMgr();
+
+			//instantiate the datasource class
+			FIA_Biosum_Manager.Datasource p_datasource = new Datasource(((frmDialog)this.ParentForm).m_frmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim());
+
+			string strTempDb = p_datasource.CreateDB();
+			string strConn = p_dataMgr.GetConnectionString(strTempDb);
+
+			//get the location in the array for each of the table type information
+			int intTree = p_datasource.getValidTableNameRow("TREE");
+			string strTreeDb = p_datasource.getFullPathAndFile("TREE");
+			int intPlot = p_datasource.getValidTableNameRow("PLOT");
+			string strPlotDb = p_datasource.getFullPathAndFile("PLOT");
+			int intCond = p_datasource.getValidTableNameRow("CONDITION");
+			string strCondDb = p_datasource.getFullPathAndFile("CONDITION");
+			int intTreeRegionalBiomass = p_datasource.getValidTableNameRow("TREE REGIONAL BIOMASS");
+			string strTreeRegionalBiomassDb = p_datasource.getFullPathAndFile("TREE REGIONAL BIOMASS");
+			int intSiteTree = p_datasource.getValidTableNameRow("SITE TREE");
+			string strSiteTreeDb = p_datasource.getFullPathAndFile("SITE TREE");
+
+			//check to see if we found all the table information
+			if (intTree >= 0 && intPlot >= 0 && intCond >= 0)
+            {
+				using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+				{
+					conn.Open();
+
+					//check if we have tree regional biomass records
+					if (p_datasource.m_strDataSource[intTreeRegionalBiomass, RECORDCOUNT].Trim() != "0")
+					{
+						if (!p_dataMgr.DatabaseAttached(conn, strTreeRegionalBiomassDb))
+                        {
+							p_dataMgr.m_strSQL = "ATTACH DATABASE '" + strTreeRegionalBiomassDb + "' AS trbdb";
+							p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                        }
+
+						//delete the tree regional records that are related to a plot
+						p_dataMgr.m_strSQL = "DELETE FROM " +
+							p_datasource.m_strDataSource[intTreeRegionalBiomass, TABLE];
+						p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+					}
+
+					//check if we have site tree records
+					if (p_datasource.m_strDataSource[intSiteTree, RECORDCOUNT].Trim() != "0")
+					{
+						if (!p_dataMgr.DatabaseAttached(conn, strSiteTreeDb))
+                        {
+							p_dataMgr.m_strSQL = "ATTACH DATABASE '" + strSiteTreeDb + "' AS stdb";
+							p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                        }
+
+						p_dataMgr.m_strSQL = "DELETE FROM " +
+							p_datasource.m_strDataSource[intSiteTree, TABLE];
+						p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+					}
+
+					//check if we have tree records
+					if (p_datasource.m_strDataSource[intTree, RECORDCOUNT].Trim() != "0")
+					{
+						if (!p_dataMgr.DatabaseAttached(conn, strTreeDb))
+                        {
+							p_dataMgr.m_strSQL = "ATTACH DATABASE '" + strTreeDb + "' AS treedb";
+							p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                        }
+
+						//delete the tree records that are related to a plot
+						p_dataMgr.m_strSQL = "DELETE FROM " +
+							p_datasource.m_strDataSource[intTree, TABLE];
+						p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+					}
+
+					//check if we have cond records
+					if (p_dataMgr.m_intError == 0 && p_datasource.m_strDataSource[intCond, RECORDCOUNT].Trim() != "0")
+					{
+						if (!p_dataMgr.DatabaseAttached(conn, strCondDb))
+                        {
+							p_dataMgr.m_strSQL = "ATTACH DATABASE '" + strCondDb + "' AS conddb";
+							p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                        }
+
+						//delete the cond records that are related to a plot
+						p_dataMgr.m_strSQL = "DELETE FROM " +
+							p_datasource.m_strDataSource[intCond, TABLE];
+						p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+					}
+
+					//check if we have plot records
+					if (p_dataMgr.m_intError == 0 && p_datasource.m_strDataSource[intPlot, RECORDCOUNT].Trim() != "0")
+					{
+						if (!p_dataMgr.DatabaseAttached(conn, strPlotDb))
+                        {
+							p_dataMgr.m_strSQL = "ATTACH DATABASE '" + strPlotDb + "' AS plotdb";
+							p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                        }
+
+						//delete all the plot records                   
+						p_dataMgr.m_strSQL = "DELETE FROM " +
+							p_datasource.m_strDataSource[intPlot, TABLE];
+						p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+					}
+
+					frmMain.g_oFrmMain.DeactivateStandByAnimation();
+					MessageBox.Show("Done", "DELETE ALL PLOT DATA", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.None);
+				}
+			}
+			else
+			{
+				frmMain.g_oFrmMain.DeactivateStandByAnimation();
+				string strError = "Delete Failed - Could not locate these designated tables:\n";
+				if (intPlot == -1)
+					strError += "Plot table\n";
+				if (intCond == -1)
+					strError += "Cond table\n";
+				if (intTree == -1)
+					strError += "Tree table\n";
+
+				MessageBox.Show(strError, "DELETE ALL PLOT DATA", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
 			}
 		}
 

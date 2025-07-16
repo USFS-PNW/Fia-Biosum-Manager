@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
+using SQLite.ADO;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -47,6 +48,7 @@ namespace FIA_Biosum_Manager
         private frmTherm m_frmTherm;
         private ado_data_access m_ado;
         private dao_data_access m_dao;
+        private DataMgr m_dataMgr;
         private OleDbConnection m_connTempMDBFile;
         private string m_strTempMDBFileConn;
         private string m_strTempMDBFile;
@@ -187,7 +189,7 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.m_oThread.Start();
         }
 
-        private void DeleteCondsFromBiosumProject_Process()
+        private void DeleteCondsFromBiosumProject_Process_old()
         {
             frmMain.g_oDelegate.CurrentThreadProcessStarted = true;
             this.m_intError = 0;
@@ -219,7 +221,7 @@ namespace FIA_Biosum_Manager
                 this.m_ado.OpenConnection(this.m_strTempMDBFileConn, ref this.m_connTempMDBFile);
 
                 UpdateProgressBar2(10);
-                SetConditionLookupAndIDStrings();
+                //SetConditionLookupAndIDStrings();
 
                 //Need to access plot.fvs_variants before deleting records
                 string[] strVariants = m_oDatasource.getVariants();
@@ -410,7 +412,194 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.m_oEventThreadStopped.Set();
             this.Invoke(frmMain.g_oDelegate.m_oDelegateThreadFinished);
         }
+        private void DeleteCondsFromBiosumProject_Process()
+        {
+            frmMain.g_oDelegate.CurrentThreadProcessStarted = true;
+            this.m_intError = 0;
+            try
+            {
+                m_dataMgr = new DataMgr();
 
+                //progress bar 1: single process
+                this.SetThermValue(m_frmTherm.progressBar1, "Maximum", 100);
+                this.SetThermValue(m_frmTherm.progressBar1, "Minimum", 0);
+                this.SetThermValue(m_frmTherm.progressBar1, "Value", 0);
+                this.SetLabelValue(m_frmTherm.lblMsg, "Text", "");
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)m_frmTherm, "Visible", true);
+                //progress bar 2: overall progress
+                this.SetThermValue(m_frmTherm.progressBar2, "Maximum", 100);
+                this.SetThermValue(m_frmTherm.progressBar2, "Minimum", 0);
+                this.SetThermValue(m_frmTherm.progressBar2, "Value", 0);
+                this.SetLabelValue(m_frmTherm.lblMsg2, "Text", "Overall Progress");
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)m_frmTherm, "Visible", true);
+
+                string strTempDb = m_oDatasource.CreateDB();
+                System.Collections.Generic.List<string> lstSourceDbs = m_oDatasource.getDataSourceDbsList();
+
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_dataMgr.GetConnectionString(strTempDb)))
+                {
+                    conn.Open();
+
+                    int x = 0;
+                    foreach (string strDb in lstSourceDbs)
+                    {
+                        if (!m_dataMgr.DatabaseAttached(conn, strDb))
+                        {
+                            m_dataMgr.m_strSQL = "ATTACH DATABASE '" + strDb + "' AS alias" + x.ToString();
+                            m_dataMgr.SqlNonQuery(conn, m_dataMgr.m_strSQL);
+                            x++;
+                        }
+                    }
+
+                    UpdateProgressBar2(10);
+                    SetConditionLookupAndIDStrings(conn);
+                }
+
+                //Need to access plot.fvs_variants before deleting records
+                string[] strVariants = m_oDatasource.getVariants();
+
+                //ProjectRoot\gis Section
+                UpdateProgressBar2(20);
+
+                // travel times
+                ConnectToDatabasesInPathAndExecuteDeletes(
+                    Directory.GetFiles(m_strProjDir + "\\gis\\db\\", "*.db"));
+
+                //ProjectRoot\processor Section
+                UpdateProgressBar2(30);
+                foreach (string subfolder in Directory.GetDirectories(m_strProjDir + "\\processor\\"))
+                {
+                    if (Path.GetFileName(subfolder) == "db")
+                        ConnectToDatabasesInPathAndExecuteDeletes(Directory.GetFiles(subfolder, "*.db"));
+                    else
+                        if (Directory.Exists(subfolder + "\\db\\"))
+                        ConnectToDatabasesInPathAndExecuteDeletes(Directory.GetFiles(subfolder + "\\db\\", "*.db"));
+                }
+
+                //FVS Section
+                UpdateProgressBar2(40);
+                if (strVariants != null && strVariants.Length > 0)
+                {
+                    string strFvsDataDir = m_strProjDir + "\\fvs\\data\\";
+                    if (Directory.Exists(strFvsDataDir))
+                        ConnectToDatabasesInPathAndExecuteDeletes(Directory.GetFiles(strFvsDataDir, "*.db"),
+                            null, strTableExceptions: new string[] { "FVS_GroupAddFilesAndKeywords" });
+                }
+
+                //PREPOST Databases
+                UpdateProgressBar2(70);
+                ConnectToDatabasesInPathAndExecuteDeletes(
+                    Directory.GetFiles(m_strProjDir + "\\fvs\\db\\", "PREPOST*.db"),
+                    strTableExceptions: new string[] { "FVS_TREE" });
+
+                //OPTIMIZER weighted variables
+                UpdateProgressBar2(80);
+                ConnectToDatabasesInPathAndExecuteDeletes(
+                    Directory.GetFiles(m_strProjDir + "\\optimizer\\db\\", "prepost*.db"));
+
+                //ProjectRoot\db Section
+                UpdateProgressBar2(90);
+                ConnectToDatabasesInPathAndExecuteDeletes(Directory
+                    .GetFiles(m_strProjDir + "\\db\\", "*.db*"));
+
+                //Done
+                UpdateProgressBar2(100);
+
+                if (!Checked(chkDeletesDisabled))
+                {
+                    MessageBox.Show(
+                        String.Format("Successfully deleted data associated with {0} Conditions!",
+                            ((HashSet<string>)m_dictIdentityColumnsToValues["biosum_cond_id"]).Count),
+                        "Delete Conditions Results");
+                }
+
+                //Cleanup section, assuming no exceptions were thrown
+                if (m_dataMgr != null)
+                {
+                    if (m_dataMgr.m_DataSet != null)
+                    {
+                        m_dataMgr.m_DataSet.Clear();
+                        m_dataMgr.m_DataSet.Dispose();
+                    }
+                    m_dataMgr = null;
+                }
+
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Visible",
+                    true);
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Enabled",
+                    true);
+
+                DeleteCondsFromBiosumProject_Finish();
+            }
+            catch (System.Threading.ThreadInterruptedException err)
+            {
+                MessageBox.Show("Threading Interruption Error " + err.Message.ToString());
+            }
+            catch (System.Threading.ThreadAbortException err)
+            {
+                if (m_dataMgr != null)
+                {
+                    if (m_dataMgr.m_DataSet != null)
+                    {
+                        m_dataMgr.m_DataSet.Clear();
+                        m_dataMgr.m_DataSet.Dispose();
+                    }
+                    m_dataMgr = null;
+                }
+                this.ThreadCleanUp();
+                this.CleanupThread();
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show("!!Error!! \n" +
+                                "Module - uc_delete_conditions:DeleteCondsFromBiosumProject_Process  \n" +
+                                "Err Msg - " + err.Message.ToString().Trim(),
+                    "FVS Biosum", System.Windows.Forms.MessageBoxButtons.OK,
+                    System.Windows.Forms.MessageBoxIcon.Exclamation);
+                this.m_intError = -1;
+            }
+            finally
+            {
+                string strLogFileName = String.Concat(frmMain.g_oFrmMain.getProjectDirectory(),
+                    "\\db\\biosum_deleted_records_",
+                    String.Format("{0:yyyyMMddhhmm}", DateTime.Now),
+                    Checked(chkDeletesDisabled) ? "_no_deletes" : "",
+                    ".txt");
+                if (Checked(chkCreateLog) || Checked(chkDeletesDisabled))
+                {
+                    CreateLogFile(strLogFileName);
+                    if (Checked(chkDeletesDisabled))
+                    {
+                        MessageBox.Show("Record count complete! The results were recorded in " + strLogFileName,
+                        "Delete Conditions Results");
+                    }
+                }
+                m_dictDeletedRowCountsByDatabaseAndTable = new Dictionary<string, Dictionary<string, int>>();
+                m_dictIdentityColumnsToValues = new Dictionary<string, HashSet<string>>();
+            }
+
+            if (m_dataMgr != null)
+            {
+                if (m_dataMgr.m_DataSet != null)
+                {
+                    m_dataMgr.m_DataSet.Clear();
+                    m_dataMgr.m_DataSet.Dispose();
+                }
+                m_dataMgr = null;
+            }
+            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Enabled",
+                true);
+            if (this.m_frmTherm != null)
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)m_frmTherm, "Visible", false);
+
+
+            DeleteCondsFromBiosumProject_Finish();
+
+            CleanupThread();
+
+            frmMain.g_oDelegate.m_oEventThreadStopped.Set();
+            this.Invoke(frmMain.g_oDelegate.m_oDelegateThreadFinished);
+        }
 
         private void UpdateProgressBar1(string label, int value)
         {
@@ -425,7 +614,7 @@ namespace FIA_Biosum_Manager
                 "Value", value);
         }
 
-        private void ConnectToDatabasesInPathAndExecuteDeletes(string[] strDatabaseNames, string[] strTargetTables = null, string[] strTableExceptions = null)
+        private void ConnectToDatabasesInPathAndExecuteDeletes_old(string[] strDatabaseNames, string[] strTargetTables = null, string[] strTableExceptions = null)
         {
             int counter = 0;
 
@@ -439,7 +628,22 @@ namespace FIA_Biosum_Manager
             UpdateProgressBar1("", 0);
         }
 
-        private void SetConditionLookupAndIDStrings()
+        private void ConnectToDatabasesInPathAndExecuteDeletes(string[] strDatabaseNames, string[] strTargetTables = null, string[] strTableExceptions = null)
+        {
+            int counter = 0;
+
+            foreach (string db in strDatabaseNames)
+            {
+                var message = (Checked(chkDeletesDisabled) ? "Checking " : "Deleting from ") + Path.GetFileName(db);
+                UpdateProgressBar1(message, (int)Math.Floor(100 * ((double)(counter + 1) / (strDatabaseNames.Length + 1))));
+                counter += 1;
+
+                ExecuteDeleteOnTables(db, tables: strTargetTables, exceptions: strTableExceptions);
+            }
+            UpdateProgressBar1("", 0);
+        }
+
+        private void SetConditionLookupAndIDStrings_old()
         {
             string[] condCNs = m_strCondCNs.Split(',');
 
@@ -501,8 +705,76 @@ namespace FIA_Biosum_Manager
             };
         }
 
+        private void SetConditionLookupAndIDStrings(System.Data.SQLite.SQLiteConnection p_conn)
+        {
+            string[] condCNs = m_strCondCNs.Split(',');
 
-        private void ExecuteDeleteOnTables(string strDbPathFile, string[] tables = null, string[] exceptions = null)
+            setBiosumCondCNs = new HashSet<string>();
+            setBiosumCondIds = new HashSet<string>();
+            setBiosumPlotIds = new HashSet<string>();
+            setPlotCNs = new HashSet<string>();
+            setTreeCNs = new HashSet<string>();
+
+            if (m_intError == 0 && !GetBooleanValue(m_frmTherm, "AbortProcess"))
+            {
+                SetThermValue(m_frmTherm.progressBar1, "Value", 20);
+
+                //Create table of condition CNs to join Plot/Cond/Tree
+                m_dataMgr.SqlNonQuery(p_conn, "CREATE TABLE conds_to_delete (cn CHAR(34) PRIMARY KEY)");
+                foreach (string condCN in condCNs)
+                {
+                    m_dataMgr.SqlNonQuery(p_conn, "INSERT INTO conds_to_delete (cn) VALUES (" + condCN + ")");
+                }
+
+                m_dataMgr.m_strSQL = "SELECT c.cn, c.biosum_cond_id, t.cn " +
+                    "FROM ((" + m_strCondTable + " AS c " +
+                    "INNER JOIN conds_to_delete AS cd ON c.cn = cd.cn) " +
+                    "INNER JOIN " + m_strPlotTable + " AS p ON c.biosum_plot_id = p.biosum_plot_id) " +
+                    "LEFT JOIN " + m_strTreeTable + " AS t ON c.biosum_cond_id = t.biosum_cond_id";
+                m_dataMgr.CreateDataSet(p_conn, m_dataMgr.m_strSQL, "identifiers");
+
+                foreach (DataRow row in m_dataMgr.m_DataSet.Tables["identifiers"].Rows)
+                {
+                    setBiosumCondCNs.Add(String.Format("'{0}'", row[0]));
+                    setBiosumCondIds.Add(String.Format("'{0}'", row[1]));
+                    setTreeCNs.Add(String.Format("'{0}'", row[2]));
+                }
+
+                m_dataMgr.m_strSQL = "SELECT allconds.biosum_plot_id, allconds.cn " +
+                    "FROM (SELECT p.biosum_plot_id, p.cn, COUNT(*) AS cntconds " +
+                    "FROM (" + m_strCondTable + " AS c " +
+                    "INNER JOIN conds_to_delete AS cd ON c.cn = cd.cn) " +
+                    "INNER JOIN " + m_strPlotTable + " AS p ON c.biosum_plot_id = p.biosum_plot_id " +
+                    "WHERE c.cn IN (" + m_strCondCNs + ") GROUP BY p.biosum_plot_id, p.cn) AS someconds " +
+                    "RIGHT JOIN (SELECT p.biosum_plot_id, p.cn, COUNT(*) AS cntconds " +
+                    "FROM " + m_strCondTable + " AS c " +
+                    "INNER JOIN " + m_strPlotTable + " AS p ON c.biosum_plot_id = p.biosum_plot_id " +
+                    "GROUp BY p.biosum_plot_id, p.cn) AS allconds " +
+                    "ON allconds.biosum_plot_id = someconds.biosum_plot_id " +
+                    "WHERE allconds.cntconds = someconds.cntconds";
+                m_dataMgr.CreateDataSet(p_conn, m_dataMgr.m_strSQL, "plots_with_all_conds_deleted");
+
+                foreach (DataRow row in m_dataMgr.m_DataSet.Tables["plots_with_all_conds_deleted"].Rows)
+                {
+                    setBiosumPlotIds.Add(String.Format("'{0}'", row[0]));
+                    setPlotCNs.Add(String.Format("'{0}'", row[1]));
+                }
+                m_intError = m_dataMgr.m_intError;
+            }
+
+            m_dictIdentityColumnsToValues = new Dictionary<string, HashSet<string>>
+            {
+                {"biosum_cond_id", setBiosumCondIds},
+                {"StandID", setBiosumCondIds},
+                {"Stand_ID", setBiosumCondIds},
+                {"biosum_plot_id", setBiosumPlotIds},
+                {"cnd_cn", setBiosumCondCNs},
+                {"plt_cn", setPlotCNs},
+                {"tre_cn", setTreeCNs},
+            };
+        }
+
+        private void ExecuteDeleteOnTables_old(string strDbPathFile, string[] tables = null, string[] exceptions = null)
         {
             using (var conn = new OleDbConnection(m_ado.getMDBConnString(strDbPathFile, "", "")))
             {
@@ -559,6 +831,63 @@ namespace FIA_Biosum_Manager
             if (Checked(chkCompactMDB)) m_dao.CompactMDB(strDbPathFile);
         }
 
+        private void ExecuteDeleteOnTables(string strDbPathFile, string[] tables = null, string[] exceptions = null)
+        {
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_dataMgr.GetConnectionString(strDbPathFile)))
+            {
+                conn.Open();
+
+                string[] strTables = tables;
+                if (tables == null || tables.Length == 0)
+                {
+                    strTables = m_dataMgr.getTableNames(conn);
+                    //In case none of the tables are valid
+                    if (strTables.Length == 1 && strTables[0] == "")
+                        return;
+                }
+
+                string column;
+                foreach (string table in strTables)
+                {
+                    if (exceptions != null && exceptions.Contains(table))
+                    {
+                        continue;
+                    }
+
+                    column = null;
+                    foreach (string col in m_dictIdentityColumnsToValues.Keys)
+                    {
+                        if (m_dataMgr.ColumnExist(conn, table, col))
+                        {
+                            column = col;
+                            break;
+                        }
+                    }
+
+                    if (!String.IsNullOrEmpty(column) && m_dictIdentityColumnsToValues[column].Count > 0)
+                    {
+                        string strTempIndex = column + "_delete_idx";
+                        if (!m_dataMgr.IndexExist(conn, strTempIndex))
+                        {
+                            m_dataMgr.AddIndex(conn, table, strTempIndex, column);
+                        }
+
+                        if (frmMain.g_bDebug)
+                        {
+                            frmMain.g_oUtils.WriteText(m_strDebugFile, Checked(chkDeletesDisabled)
+                                ? "\r\nCounting records to delete from " + strDbPathFile + " " + table + " using " + column + "\r\n"
+                                : "\r\nDeleting from " + strDbPathFile + " " + table + " using " + column + "\r\n");
+                        }
+
+                        int deletedRecords = BuildAndExecuteDeleteSQLStmts(conn, table, column);
+                        if (deletedRecords > 0) AddDeletedCountToDictionary(strDbPathFile, table, deletedRecords);
+                        m_dataMgr.m_strSQL = "DROP INDEX " + strTempIndex;
+                        m_dataMgr.SqlNonQuery(conn, m_dataMgr.m_strSQL);
+                    }
+                }
+            }
+        }
+
         private void AddDeletedCountToDictionary(string strDbPathFile, string table, int deletedRecords)
         {
             if (!m_dictDeletedRowCountsByDatabaseAndTable.Keys.Contains(strDbPathFile))
@@ -601,6 +930,44 @@ namespace FIA_Biosum_Manager
 
                 if (!Checked(chkDeletesDisabled))
                     m_ado.SqlNonQuery(oConn, deleteSQL);
+            }
+
+            return matchedRecordCount;
+        }
+
+        private int BuildAndExecuteDeleteSQLStmts(System.Data.SQLite.SQLiteConnection oConn, string table, string column)
+        {
+            int matchedRecordCount = 0;
+            string columnKey = column;
+            string[] edgeCaseTables = { "fcs_biosum_volumes_input" };
+
+            if (edgeCaseTables.Contains(table))
+            {
+                //FCS schema uses cnd_cn/plt_cn, but we set these values to biosum_cond_id/biosum_plot_id in FVSOUT stage
+                if (table.ToLower() == "fcs_biosum_volumes_input" && column.ToLower() == "cnd_cn")
+                    columnKey = "biosum_cond_id";
+            }
+
+            var batches = m_dictIdentityColumnsToValues[columnKey]
+                .Select((id, i) => new { id, i })
+                .GroupBy(p => p.i / 100, p => p.id);
+
+            foreach (var batch in batches)
+            {
+                string values = string.Join(",", batch);
+                matchedRecordCount += (int)m_dataMgr.getSingleDoubleValueFromSQLQuery(oConn,
+                    "SELECT COUNT(*) FROM " + table + " WHERE " + column + " IN (" + values + ")", table);
+                string deleteSQL = "DELETE FROM " + table + " WHERE " + column + " IN (" + values + ")";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                {
+                    var message = Checked(chkDeletesDisabled)
+                        ? "Generated but not executed: " + deleteSQL + "\r\n"
+                        : "Attempting to execute: " + deleteSQL + "\r\n";
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, message);
+                }
+
+                if (!Checked(chkDeletesDisabled))
+                    m_dataMgr.SqlNonQuery(oConn, deleteSQL);
             }
 
             return matchedRecordCount;
