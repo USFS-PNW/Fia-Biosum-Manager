@@ -1735,6 +1735,7 @@ namespace FIA_Biosum_Manager
             static public string RxHarvestCostColumns = "Treatment Prescriptions Harvest Cost Columns";
 			static public string TreeSpecies = "Tree Species";
 			static public string FiaTreeMacroPlotBreakpointDia = "FIA Tree Macro Plot Breakpoint Diameter";
+			static public string OwnerGroups = "Owner Groups";
 		}
 		
 	}
