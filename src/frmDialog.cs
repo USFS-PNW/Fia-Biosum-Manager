@@ -52,8 +52,6 @@ namespace FIA_Biosum_Manager
 		public FIA_Biosum_Manager.uc_processor_tree_spc uc_processor_tree_spc1;
 		public FIA_Biosum_Manager.uc_processor_tree_spc_edit uc_processor_tree_spc_edit1;
 		public FIA_Biosum_Manager.uc_gis_psite uc_gis_psite1;
-		public FIA_Biosum_Manager.uc_plot_fvs_variant uc_plot_fvs_variant1;
-		public FIA_Biosum_Manager.uc_plot_fvs_variant_edit uc_plot_fvs_variant_edit1;
 		public FIA_Biosum_Manager.uc_contact_edit uc_contact_edit1;
 		public FIA_Biosum_Manager.uc_db uc_db1;
         public FIA_Biosum_Manager.uc_db_sqlite uc_db_sqlite_1;
@@ -273,7 +271,6 @@ namespace FIA_Biosum_Manager
 			{
                 if (this.uc_fvs_output1 != null) this.ParentControl.Enabled = true;
                 if (this.uc_fvs_input1 != null) this.ParentControl.Enabled = true;
-                if (this.PlotFvsVariantUserControl != null) this.ParentControl.Enabled = true;
                 if (this.ProcessorTreeSpcUserControl != null) this.ParentControl.Enabled = true;
                 if (this.uc_rx_package_list1 != null) this.ParentControl.Enabled=true;
                 if (this.uc_rx_list1 != null) this.ParentControl.Enabled = true;
@@ -709,28 +706,7 @@ namespace FIA_Biosum_Manager
 				return this.uc_gis_psite1;
 			}
 		}
-		public FIA_Biosum_Manager.uc_plot_fvs_variant PlotFvsVariantUserControl
-		{
-			set
-			{
-				this.uc_plot_fvs_variant1 = value;
-			}
-			get
-			{
-				return this.uc_plot_fvs_variant1;
-			}
-		}
-		public FIA_Biosum_Manager.uc_plot_fvs_variant_edit PlotFvsVariantEditUserControl
-		{
-			set
-			{
-				this.uc_plot_fvs_variant_edit1 = value;
-			}
-			get
-			{
-				return this.uc_plot_fvs_variant_edit1;
-			}
-		}
+		
 		public FIA_Biosum_Manager.uc_processor_scenario_tree_spc_groups TreeSpcGroupsUserControl
 		{
 			set

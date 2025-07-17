@@ -435,12 +435,6 @@
     <Compile Include="uc_plot_edit.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="uc_plot_fvs_variant.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_plot_fvs_variant_edit.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Include="uc_plot_input.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -795,12 +789,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="uc_plot_edit.resx">
       <DependentUpon>uc_plot_edit.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="uc_plot_fvs_variant.resx">
-      <DependentUpon>uc_plot_fvs_variant.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="uc_plot_fvs_variant_edit.resx">
-      <DependentUpon>uc_plot_fvs_variant_edit.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="uc_plot_input.resx">
       <DependentUpon>uc_plot_input.cs</DependentUpon>
