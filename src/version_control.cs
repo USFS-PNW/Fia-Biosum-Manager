@@ -1154,16 +1154,7 @@ namespace FIA_Biosum_Manager
 								ReferenceProjectDirectory.Trim() + "\\gis\\db",
 								frmMain.g_oUtils.getFileNameUsingLastIndexOf(frmMain.g_oTables.m_oTravelTime.DefaultProcessingSiteTableDbFile),
                                 Tables.TravelTime.DefaultProcessingSiteTableName);
-							break;
-						case "FIADB FVS VARIANT":
-							oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-								"('FIADB FVS Variant'," + 
-								"'" + ReferenceProjectDirectory.Trim() + "\\db'," + 
-								"'ref_master.mdb'," + 
-								"'fiadb_fvs_variant');";
-							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-							break;
-						
+							break;						
 						case "PLOT AND CONDITION RECORD AUDIT":
 							oDs.InsertDatasourceRecord(oAdo,oAdo.m_OleDbConnection,
 								Datasource.g_strProjectDatasourceTableTypesArray[x].Trim(),
@@ -1725,8 +1716,7 @@ namespace FIA_Biosum_Manager
 							
 							//create a link to all the pre-populated reference tables
 							oDao.CreateTableLink(strDbFile,"owner_groups_temp",strTempDbFile,"owner_groups",true);
-							oDao.CreateTableLink(strDbFile,"fiadb_fvs_variant_temp",strTempDbFile,"fiadb_fvs_variant",true);
-		                            oDao.CreateTableLink(strDbFile, "harvest_methods_temp", strTempDbFile, "harvest_methods", true);
+		                    oDao.CreateTableLink(strDbFile, "harvest_methods_temp", strTempDbFile, "harvest_methods", true);
 							oAdoCurrent.OpenConnection(oAdo.getMDBConnString(strDbFile,"",""));
 							strCurrDbFile=strDbFile;
 
@@ -4615,15 +4605,6 @@ namespace FIA_Biosum_Manager
                 oDao.RenameTable(strDirectoryPath + "\\" + strFileName, strTargetTable, strTargetTable + strTableSuffix, true, false);
             }
 
-            frmMain.g_sbpInfo.Text = "Version Update: Moving FVS Variant table ...Stand by";
-            string strDataSourceMdb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\project.mdb";
-            oAdo.OpenConnection(oAdo.getMDBConnString(strDataSourceMdb, "", ""));
-            oAdo.m_strSQL = "UPDATE datasource " +
-                            "SET PATH = '@@appdata@@\\fiabiosum', file = '" + Tables.Reference.DefaultBiosumReferenceDbFile + "' " +
-                            "WHERE TABLE_TYPE = '" + Datasource.TableTypes.FVSVariant + "'";
-            oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-            oAdo.m_OleDbConnection.Close();
-
             frmMain.g_sbpInfo.Text = "Version Update: Adding fvsloccode to Plot table ...Stand by";
             int intPlotTable = oDs.getValidTableNameRow("Plot");
             strDirectoryPath = oDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
@@ -7126,12 +7107,12 @@ namespace FIA_Biosum_Manager
                 }
             }
 
-            // Update project datasources; tree_species and fvs_tree_species have been eliminated; fia_tree_species_ref has moved
+            // Update project datasources; tree_species, fvs_tree_species, and fiadb_fvs_variant have been eliminated; fia_tree_species_ref has moved
             string strDsConn = oAdo.getMDBConnString(oProjectDs.m_strDataSourceMDBFile, "", "");
             using (OleDbConnection copyConn = new System.Data.OleDb.OleDbConnection(strDsConn))
             {
                 copyConn.Open();
-                oAdo.m_strSQL = $@"DELETE FROM {oProjectDs.m_strDataSourceTableName} WHERE TABLE_TYPE IN ('{Datasource.TableTypes.TreeSpecies}','{Datasource.TableTypes.FvsTreeSpecies}')";
+                oAdo.m_strSQL = $@"DELETE FROM {oProjectDs.m_strDataSourceTableName} WHERE TABLE_TYPE IN ('{Datasource.TableTypes.TreeSpecies}','{Datasource.TableTypes.FvsTreeSpecies}', {Datasource.TableTypes.FVSVariant})";
                 oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
             }
 

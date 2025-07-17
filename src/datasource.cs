@@ -59,7 +59,6 @@ namespace FIA_Biosum_Manager
 			"Travel Times",
 			"Processing Sites",
 			"FVS Tree List For Processor",
-			"FIADB FVS Variant",
 			"FIA Tree Macro Plot Breakpoint Diameter",
 			Datasource.TableTypes.HarvestMethods,
 			"BIOSUM Pop Stratum Adjustment Factors",
@@ -79,7 +78,6 @@ namespace FIA_Biosum_Manager
 	        "Travel Times",
 	        "Processing Sites",
 	        "FVS Tree List For Processor",
-	        "FIADB FVS Variant",
 	        "FIA Tree Macro Plot Breakpoint Diameter",
 	        Datasource.TableTypes.HarvestMethods,
 	        "BIOSUM Pop Stratum Adjustment Factors",
@@ -98,7 +96,6 @@ namespace FIA_Biosum_Manager
 	        "Travel Times",
 	        "Processing Sites",
 	        "FVS Tree List For Processor",
-	        "FIADB FVS Variant",
 	        "FIA Tree Macro Plot Breakpoint Diameter",
 	        Datasource.TableTypes.HarvestMethods,
 	        "BIOSUM Pop Stratum Adjustment Factors",
@@ -1255,10 +1252,6 @@ namespace FIA_Biosum_Manager
 				case "HARVEST COSTS":
 					oItem.VariableName="HarvestCostsTable";
                     if (p_strTableName.Trim().Length == 0) p_strTableName = Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName;
-					break;
-                case "FIADB FVS VARIANT":
-					oItem.VariableName="FiadbFvsVariantTable";
-					if (p_strTableName.Trim().Length == 0) p_strTableName=Tables.Reference.DefaultFiadbFVSVariantTableName;
 					break;
                 case "HARVEST METHODS":
 					oItem.VariableName="HarvestMethodsTable";
