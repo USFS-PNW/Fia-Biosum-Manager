@@ -1140,24 +1140,7 @@ namespace FIA_Biosum_Manager
 								"'" + strDbFile.Trim() + "'," + 
 								"'rx');";
 							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-							break;
-						case "TREE SPECIES":
-							oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-								"('Tree Species'," + 
-								"'" + ReferenceProjectDirectory.Trim() + "\\db'," + 
-								"'ref_master.mdb'," + 
-								"'tree_species');";
-							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-							break;
-						case "FVS TREE SPECIES":
-							oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-								"('FVS Tree Species'," + 
-								"'" + ReferenceProjectDirectory.Trim() + "\\db'," + 
-								"'ref_master.mdb'," + 
-								"'fvs_tree_species');";
-							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-							break;
-						
+							break;						
 						case "TRAVEL TIMES":
 							oDs.InsertDatasourceRecord(oAdo,oAdo.m_OleDbConnection,
 								Datasource.g_strProjectDatasourceTableTypesArray[x].Trim(),
@@ -1171,16 +1154,7 @@ namespace FIA_Biosum_Manager
 								ReferenceProjectDirectory.Trim() + "\\gis\\db",
 								frmMain.g_oUtils.getFileNameUsingLastIndexOf(frmMain.g_oTables.m_oTravelTime.DefaultProcessingSiteTableDbFile),
                                 Tables.TravelTime.DefaultProcessingSiteTableName);
-							break;
-						case "FIADB FVS VARIANT":
-							oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-								"('FIADB FVS Variant'," + 
-								"'" + ReferenceProjectDirectory.Trim() + "\\db'," + 
-								"'ref_master.mdb'," + 
-								"'fiadb_fvs_variant');";
-							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-							break;
-						
+							break;						
 						case "PLOT AND CONDITION RECORD AUDIT":
 							oDs.InsertDatasourceRecord(oAdo,oAdo.m_OleDbConnection,
 								Datasource.g_strProjectDatasourceTableTypesArray[x].Trim(),
@@ -1404,13 +1378,6 @@ namespace FIA_Biosum_Manager
 								case "TREATMENT PRESCRIPTIONS":
 									frmMain.g_oTables.m_oFvs.CreateRxTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection,Tables.FVS.DefaultRxTableName);
 									break;
-								case "TREE SPECIES":
-									frmMain.g_oTables.m_oReference.CreateTreeSpeciesTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection,Tables.Reference.DefaultFVSTreeSpeciesTableName);
-									break;
-								case "FVS TREE SPECIES":
-									frmMain.g_oTables.m_oReference.CreateFVSTreeSpeciesTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection,Tables.Reference.DefaultFVSTreeSpeciesTableName);
-									break;
-								
 								case "TRAVEL TIMES":
 									frmMain.g_oTables.m_oTravelTime.CreateTravelTimeTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection,Tables.TravelTime.DefaultTravelTimeTableName);
 									break;
@@ -1497,11 +1464,6 @@ namespace FIA_Biosum_Manager
 									strTempTableName = Tables.FVS.DefaultRxTableName;
 									frmMain.g_oTables.m_oFvs.CreateRxTable(oAdoCurrent,oConn,strTempTableName);
 									break;
-								case "FVS TREE SPECIES":
-									strTempTableName = Tables.Reference.DefaultFVSTreeSpeciesTableName;
-									frmMain.g_oTables.m_oReference.CreateFVSTreeSpeciesTable(oAdoCurrent,oConn,strTempTableName);
-									break;
-							
 								case "TRAVEL TIMES":
                                     strTempTableName = Tables.TravelTime.DefaultTravelTimeTableName;
 									frmMain.g_oTables.m_oTravelTime.CreateTravelTimeTable(oAdoCurrent,oConn,strTempTableName);
@@ -1733,14 +1695,6 @@ namespace FIA_Biosum_Manager
 							{  
 								if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection,"owner_groups_temp"))
 									 oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"DROP TABLE owner_groups_temp");
-								if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection,"tree_species_temp"))
-									oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"DROP TABLE tree_species_temp");
-								if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection,"fvs_tree_species_temp"))
-									oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"DROP TABLE fvs_tree_species_temp");
-								if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection,"fiadb_fvs_variant_temp"))
-									oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"DROP TABLE fiadb_fvs_variant_temp");
-								if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection,"inventories_temp"))
-									oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"DROP TABLE inventories_temp");
                                 if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection, "harvest_methods_temp"))
                                     oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, "DROP TABLE harvest_methods_temp");
 								oAdoCurrent.CloseConnection(oAdoCurrent.m_OleDbConnection);
@@ -1762,11 +1716,7 @@ namespace FIA_Biosum_Manager
 							
 							//create a link to all the pre-populated reference tables
 							oDao.CreateTableLink(strDbFile,"owner_groups_temp",strTempDbFile,"owner_groups",true);
-							oDao.CreateTableLink(strDbFile,"tree_species_temp",strTempDbFile,"tree_species",true);
-							oDao.CreateTableLink(strDbFile,"fvs_tree_species_temp",strTempDbFile,"fvs_tree_species",true);
-							oDao.CreateTableLink(strDbFile,"fiadb_fvs_variant_temp",strTempDbFile,"fiadb_fvs_variant",true);
-							oDao.CreateTableLink(strDbFile,"inventories_temp",strTempDbFile,"inventories",true);
-                            oDao.CreateTableLink(strDbFile, "harvest_methods_temp", strTempDbFile, "harvest_methods", true);
+		                    oDao.CreateTableLink(strDbFile, "harvest_methods_temp", strTempDbFile, "harvest_methods", true);
 							oAdoCurrent.OpenConnection(oAdo.getMDBConnString(strDbFile,"",""));
 							strCurrDbFile=strDbFile;
 
@@ -1779,34 +1729,6 @@ namespace FIA_Biosum_Manager
 
                                 case "OWNER GROUPS":
                                     oAdoCurrent.m_strSQL = "SELECT * INTO " + oDs.m_strDataSource[x, Datasource.TABLE].Trim() + " FROM owner_groups_temp";
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
-                                    oDs.SetPrimaryIndexesAndAutoNumbers(oAdoCurrent, oAdoCurrent.m_OleDbConnection,
-                                        oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),
-                                        oDs.m_strDataSource[x, Datasource.TABLE].Trim());
-                                    break;
-                                case "TREE SPECIES":
-                                    oAdoCurrent.m_strSQL = "SELECT * INTO " + oDs.m_strDataSource[x, Datasource.TABLE].Trim() + " FROM tree_species_temp";
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
-                                    oDs.SetPrimaryIndexesAndAutoNumbers(oAdoCurrent, oAdoCurrent.m_OleDbConnection,
-                                        oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),
-                                        oDs.m_strDataSource[x, Datasource.TABLE].Trim());
-                                    break;
-                                case "FVS TREE SPECIES":
-                                    oAdoCurrent.m_strSQL = "SELECT * INTO " + oDs.m_strDataSource[x, Datasource.TABLE].Trim() + " FROM fvs_tree_species_temp";
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
-                                    oDs.SetPrimaryIndexesAndAutoNumbers(oAdoCurrent, oAdoCurrent.m_OleDbConnection,
-                                        oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),
-                                        oDs.m_strDataSource[x, Datasource.TABLE].Trim());
-                                    break;
-                                case "FIADB FVS VARIANT":
-                                    oAdoCurrent.m_strSQL = "SELECT * INTO " + oDs.m_strDataSource[x, Datasource.TABLE].Trim() + " FROM fiadb_fvs_variant_temp";
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
-                                    oDs.SetPrimaryIndexesAndAutoNumbers(oAdoCurrent, oAdoCurrent.m_OleDbConnection,
-                                        oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),
-                                        oDs.m_strDataSource[x, Datasource.TABLE].Trim());
-                                    break;
-                                case "INVENTORIES":
-                                    oAdoCurrent.m_strSQL = "SELECT * INTO " + oDs.m_strDataSource[x, Datasource.TABLE].Trim() + " FROM inventories_temp";
                                     oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
                                     oDs.SetPrimaryIndexesAndAutoNumbers(oAdoCurrent, oAdoCurrent.m_OleDbConnection,
                                         oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),
@@ -1864,186 +1786,6 @@ namespace FIA_Biosum_Manager
                                         oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),
                                         oDs.m_strDataSource[x, Datasource.TABLE].Trim());
                                     break;
-                                case "TREE SPECIES":
-                                    strTempTableName = "tree_species_temp";
-
-
-                                    //insert any new tree species records
-                                    strColumnsArray = oAdoCurrent.getFieldNamesArray(oAdoCurrent.m_OleDbConnection, "SELECT * FROM " + strTempTableName);
-                                    for (y = 0; y <= strColumnsArray.Length - 1; y++)
-                                    {
-                                        if (strColumnsArray[y].Trim().ToUpper() != "ID")
-                                            strColumnsList = strColumnsList + "a." + strColumnsArray[y].Trim() + ",";
-                                    }
-                                    strColumnsList = strColumnsList.Substring(0, strColumnsList.Length - 1);
-                                    strInsertSql = "INSERT INTO " +
-                                                        oDs.m_strDataSource[x, Datasource.TABLE] + " " +
-                                                    "SELECT " + strColumnsList + " " +
-                                                    "FROM tree_species_temp a " +
-                                                    "WHERE  a.fvs_variant IS NOT NULL AND " +
-                                                           "LEN(TRIM(a.fvs_variant)) > 0 AND " +
-                                                           "NOT EXISTS " +
-                                                          "(SELECT b.spcd,b.fvs_variant  " +
-                                                           "FROM " + oDs.m_strDataSource[x, Datasource.TABLE].Trim() + " b " +
-                                                           "WHERE a.spcd=b.spcd AND a.fvs_variant=b.fvs_variant)";
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, strInsertSql);
-                                    //update any null values
-                                    strColumnsList = "";
-                                    for (y = 0; y <= strColumnsArray.Length - 1; y++)
-                                    {
-                                        if (strColumnsArray[y].Trim().ToUpper() != "ID")
-                                            strColumnsList = strColumnsList + "a." + strColumnsArray[y].Trim() +
-                                                "=IIF(a." + strColumnsArray[y].Trim() + " IS NULL," +
-                                                     "b." + strColumnsArray[y].Trim() + "," +
-                                                     "a." + strColumnsArray[y].Trim() + "),";
-                                    }
-                                    strColumnsList = strColumnsList.Substring(0, strColumnsList.Length - 1);
-                                    strUpdateSql = "UPDATE " + oDs.m_strDataSource[x, Datasource.TABLE].Trim() + " a " +
-                                                   "INNER JOIN tree_species_temp b " +
-                                                   "ON a.spcd=b.spcd AND a.fvs_variant=b.fvs_variant " +
-                                                   "SET " + strColumnsList;
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, strUpdateSql);
-
-                                    break;
-                                case "FVS TREE SPECIES":
-                                    strTempTableName = "fvs_tree_species_temp";
-
-                                    //add/update columns
-                                    //oAdoCurrent.ReconcileTableColumns(oAdoCurrent.m_OleDbConnection,
-                                    //	oDs.m_strDataSource[x,Datasource.TABLE],oAdoCurrent.m_OleDbConnection,
-                                    //	strTempTableName);
-
-                                    //insert any new tree species records
-                                    strColumnsArray = oAdoCurrent.getFieldNamesArray(oAdoCurrent.m_OleDbConnection, "SELECT * FROM " + strTempTableName);
-                                    for (y = 0; y <= strColumnsArray.Length - 1; y++)
-                                    {
-                                        if (strColumnsArray[y].Trim().ToUpper() != "ID")
-                                            strColumnsList = strColumnsList + "a." + strColumnsArray[y].Trim() + ",";
-                                    }
-                                    strColumnsList = strColumnsList.Substring(0, strColumnsList.Length - 1);
-                                    strInsertSql = "INSERT INTO " +
-                                        oDs.m_strDataSource[x, Datasource.TABLE] + " " +
-                                        "SELECT " + strColumnsList + " " +
-                                        "FROM fvs_tree_species_temp a " +
-                                        "WHERE  a.fvs_variant IS NOT NULL AND " +
-                                        "LEN(TRIM(a.fvs_variant)) > 0 AND " +
-                                        "NOT EXISTS " +
-                                        "(SELECT b.spcd,b.fvs_variant  " +
-                                        "FROM " + oDs.m_strDataSource[x, Datasource.TABLE].Trim() + " b " +
-                                        "WHERE a.spcd=b.spcd AND a.fvs_variant=b.fvs_variant)";
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, strInsertSql);
-                                    //update any null values
-                                    strColumnsList = "";
-                                    for (y = 0; y <= strColumnsArray.Length - 1; y++)
-                                    {
-                                        if (strColumnsArray[y].Trim().ToUpper() != "ID")
-                                            strColumnsList = strColumnsList + "a." + strColumnsArray[y].Trim() +
-                                                "=IIF(a." + strColumnsArray[y].Trim() + " IS NULL," +
-                                                "b." + strColumnsArray[y].Trim() + "," +
-                                                "a." + strColumnsArray[y].Trim() + "),";
-                                    }
-                                    strColumnsList = strColumnsList.Substring(0, strColumnsList.Length - 1);
-                                    strUpdateSql = "UPDATE " + oDs.m_strDataSource[x, Datasource.TABLE].Trim() + " a " +
-                                        "INNER JOIN fvs_tree_species_temp b " +
-                                        "ON a.spcd=b.spcd AND a.fvs_variant=b.fvs_variant " +
-                                        "SET " + strColumnsList;
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, strUpdateSql);
-                                    break;
-                                case "FIADB FVS VARIANT":
-                                    strTempTableName = "fiadb_fvs_variant_temp";
-
-                                    //insert any new tree species records
-                                    strColumnsArray = oAdoCurrent.getFieldNamesArray(oAdoCurrent.m_OleDbConnection, "SELECT * FROM " + strTempTableName);
-                                    for (y = 0; y <= strColumnsArray.Length - 1; y++)
-                                    {
-                                        if (strColumnsArray[y].Trim().ToUpper() != "ID")
-                                            strColumnsList = strColumnsList + "a." + strColumnsArray[y].Trim() + ",";
-                                    }
-                                    strColumnsList = strColumnsList.Substring(0, strColumnsList.Length - 1);
-                                    strInsertSql = "INSERT INTO " +
-                                        oDs.m_strDataSource[x, Datasource.TABLE] + " " +
-                                        "SELECT " + strColumnsList + " " +
-                                        "FROM " + strTempTableName + " a " +
-                                        "WHERE  a.fvs_variant IS NOT NULL AND " +
-                                        "LEN(TRIM(a.fvs_variant)) > 0 AND " +
-                                        "a.statecd IS NOT NULL AND " +
-                                        "a.countycd IS NOT NULL AND " +
-                                        "a.plot IS NOT NULL AND " +
-                                        "NOT EXISTS " +
-                                        "(SELECT b.statecd,b.countycd,b.plot,b.fvs_variant  " +
-                                        "FROM " + oDs.m_strDataSource[x, Datasource.TABLE].Trim() + " b " +
-                                        "WHERE a.statecd=b.statecd AND " +
-                                              "a.countycd=b.countycd AND " +
-                                              "a.plot=b.plot AND " +
-                                              "a.fvs_variant=b.fvs_variant)";
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, strInsertSql);
-
-                                    //update any null values
-                                    strColumnsList = "";
-                                    for (y = 0; y <= strColumnsArray.Length - 1; y++)
-                                    {
-                                        if (strColumnsArray[y].Trim().ToUpper() != "ID")
-                                            strColumnsList = strColumnsList + "a." + strColumnsArray[y].Trim() +
-                                                "=IIF(a." + strColumnsArray[y].Trim() + " IS NULL," +
-                                                "b." + strColumnsArray[y].Trim() + "," +
-                                                "a." + strColumnsArray[y].Trim() + "),";
-                                    }
-                                    strColumnsList = strColumnsList.Substring(0, strColumnsList.Length - 1);
-                                    strUpdateSql = "UPDATE " + oDs.m_strDataSource[x, Datasource.TABLE].Trim() + " a " +
-                                        "INNER JOIN " + strTempTableName + " b " +
-                                        "ON a.statecd=b.statecd AND " +
-                                           "a.countycd=b.countycd AND " +
-                                           "a.plot=b.plot AND " +
-                                           "a.fvs_variant=b.fvs_variant " +
-                                        "SET " + strColumnsList;
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, strUpdateSql);
-                                    break;
-                                //version 5 additions
-                                case "TREATMENT PRESCRIPTION CATEGORIES":
-                                    if ((int)oAdoCurrent.getRecordCount(oAdoCurrent.m_OleDbConnection, "SELECT COUNT(*) FROM " + oDs.m_strDataSource[x, Datasource.TABLE].Trim(), "TEMP") == 0)
-                                    {
-                                        strTempTableName = "fvs_rx_category_temp";
-                                        strColumnsList="";
-                                        //insert any new tree species records
-                                        strColumnsArray = oAdoCurrent.getFieldNamesArray(oAdoCurrent.m_OleDbConnection, "SELECT * FROM " + strTempTableName);
-                                        for (y = 0; y <= strColumnsArray.Length - 1; y++)
-                                        {
-                                            strColumnsList = strColumnsList + "a." + strColumnsArray[y].Trim() + ",";
-                                        }
-                                        strColumnsList = strColumnsList.Substring(0, strColumnsList.Length - 1);
-                                        strInsertSql = "INSERT INTO " +
-                                            oDs.m_strDataSource[x, Datasource.TABLE] + " " +
-                                            "SELECT " + strColumnsList + " " +
-                                            "FROM " + strTempTableName + " a ";
-                                           
-                                        oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, strInsertSql);
-                          
-                                        
-                                    }
-                                    break;
-                                case "TREATMENT PRESCRIPTION SUBCATEGORIES":
-                                     if ((int)oAdoCurrent.getRecordCount(oAdoCurrent.m_OleDbConnection, "SELECT COUNT(*) FROM " + oDs.m_strDataSource[x, Datasource.TABLE].Trim(), "TEMP") == 0)
-                                    {
-                                        strTempTableName = "fvs_rx_subcategory_temp";
-                                        strColumnsList="";
-                                        //insert any new tree species records
-                                        strColumnsArray = oAdoCurrent.getFieldNamesArray(oAdoCurrent.m_OleDbConnection, "SELECT * FROM " + strTempTableName);
-                                        for (y = 0; y <= strColumnsArray.Length - 1; y++)
-                                        {
-                                            strColumnsList = strColumnsList + "a." + strColumnsArray[y].Trim() + ",";
-                                        }
-                                        strColumnsList = strColumnsList.Substring(0, strColumnsList.Length - 1);
-                                        strInsertSql = "INSERT INTO " +
-                                            oDs.m_strDataSource[x, Datasource.TABLE] + " " +
-                                            "SELECT " + strColumnsList + " " +
-                                            "FROM " + strTempTableName + " a ";
-                                           
-                                        oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, strInsertSql);
-                          
-                                            
-                                    
-                                    }
-                                    break;
                                 case "HARVEST METHODS":
                                         oAdoCurrent.m_strSQL = "DROP TABLE " + oDs.m_strDataSource[x, Datasource.TABLE];
                                         oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
@@ -2073,14 +1815,6 @@ namespace FIA_Biosum_Manager
 			{
 				if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection,"owner_groups_temp"))
 					oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"DROP TABLE owner_groups_temp");
-				if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection,"tree_species_temp"))
-					oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"DROP TABLE tree_species_temp");
-				if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection,"fvs_tree_species_temp"))
-					oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"DROP TABLE fvs_tree_species_temp");
-				if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection,"fiadb_fvs_variant_temp"))
-					oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"DROP TABLE fiadb_fvs_variant_temp");
-				if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection,"inventories_temp"))
-					oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"DROP TABLE inventories_temp");
                 if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection, "harvest_methods_temp"))
                     oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, "DROP TABLE harvest_methods_temp");
                 if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection, "fvs_rx_category_temp"))
@@ -4871,15 +4605,6 @@ namespace FIA_Biosum_Manager
                 oDao.RenameTable(strDirectoryPath + "\\" + strFileName, strTargetTable, strTargetTable + strTableSuffix, true, false);
             }
 
-            frmMain.g_sbpInfo.Text = "Version Update: Moving FVS Variant table ...Stand by";
-            string strDataSourceMdb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\project.mdb";
-            oAdo.OpenConnection(oAdo.getMDBConnString(strDataSourceMdb, "", ""));
-            oAdo.m_strSQL = "UPDATE datasource " +
-                            "SET PATH = '@@appdata@@\\fiabiosum', file = '" + Tables.Reference.DefaultBiosumReferenceDbFile + "' " +
-                            "WHERE TABLE_TYPE = '" + Datasource.TableTypes.FVSVariant + "'";
-            oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-            oAdo.m_OleDbConnection.Close();
-
             frmMain.g_sbpInfo.Text = "Version Update: Adding fvsloccode to Plot table ...Stand by";
             int intPlotTable = oDs.getValidTableNameRow("Plot");
             strDirectoryPath = oDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
@@ -7382,12 +7107,12 @@ namespace FIA_Biosum_Manager
                 }
             }
 
-            // Update project datasources; tree_species and fvs_tree_species have been eliminated; fia_tree_species_ref has moved
+            // Update project datasources; tree_species, fvs_tree_species, and fiadb_fvs_variant have been eliminated; fia_tree_species_ref has moved
             string strDsConn = oAdo.getMDBConnString(oProjectDs.m_strDataSourceMDBFile, "", "");
             using (OleDbConnection copyConn = new System.Data.OleDb.OleDbConnection(strDsConn))
             {
                 copyConn.Open();
-                oAdo.m_strSQL = $@"DELETE FROM {oProjectDs.m_strDataSourceTableName} WHERE TABLE_TYPE IN ('{Datasource.TableTypes.TreeSpecies}','{Datasource.TableTypes.FvsTreeSpecies}')";
+                oAdo.m_strSQL = $@"DELETE FROM {oProjectDs.m_strDataSourceTableName} WHERE TABLE_TYPE IN ('{Datasource.TableTypes.TreeSpecies}','{Datasource.TableTypes.FvsTreeSpecies}', {Datasource.TableTypes.FVSVariant})";
                 oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
             }
 
@@ -7436,6 +7161,12 @@ namespace FIA_Biosum_Manager
             {
                 oDao.m_DaoWorkspace.Close();
                 oDao = null;
+            }
+
+            // Copy ref_master.db to project if it doesn't already exist
+            if (!System.IO.File.Exists(ReferenceProjectDirectory.Trim() + "\\" + Tables.Reference.DefaultRefMasterDbFile))
+            {
+                System.IO.File.Copy($@"{frmMain.g_oEnv.strAppDir}\{Tables.Reference.DefaultRefMasterDbFile}", ReferenceProjectDirectory.Trim() + "\\" + Tables.Reference.DefaultRefMasterDbFile, true );
             }
         }
 

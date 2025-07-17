@@ -2484,6 +2484,12 @@ namespace FIA_Biosum_Manager
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//Processor.createOpcostInput return value: " + m_intError + "\r\n");
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
                             }
+                            if (m_intError != 0 && frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                            {
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, "//OPCOST Processing Batch Input ERROR: " + m_strError + "\r\n");
+                                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+                            }
                         }
 
                         if (m_intError == 0)
@@ -2499,15 +2505,7 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oDelegate.SetControlPropertyValue(lblMsg, "Text", "OPCOST Processing Batch Input...Stand By");
                             RunScenario_ProcessOPCOST(strVariant, strRxPackage);
                         }
-                        else
-                        {
-                            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            {
-                                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                                frmMain.g_oUtils.WriteText(m_strDebugFile, "//OPCOST Processing Batch Input ERROR: " + m_strError + "\r\n");
-                                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-                            }
-                        }
+
                         if (m_intError == 0)
                         {
                             y++;
@@ -2542,13 +2540,13 @@ namespace FIA_Biosum_Manager
                         y++;
                         frmMain.g_oDelegate.SetControlPropertyValue(ReferenceProgressBarEx, "Value", y);
                     }
+
                     string strKcpCpaWorkTable = "";
-                    bool bRxPackageUsesKcpAdditionalCpa = DoesVariantPackageUseKcpCpa(strVariant, strRxPackage);
-
+                    bool bRxPackageUsesKcpAdditionalCpa = false;
                     if (m_intError == 0)
-                    {
+                    {                        
                         frmMain.g_oDelegate.SetControlPropertyValue(lblMsg, "Text", "Update Harvest Costs Work Table With Additional Costs...Stand By");
-
+                        bRxPackageUsesKcpAdditionalCpa = DoesVariantPackageUseKcpCpa(strVariant, strRxPackage);
                         // Had to get creative here because the ReferenceScenarioProcessorForm doesn't reflect configuration changes from the current session
                         processor.Escalators oEscalators = mainProcessor.LoadEscalators();
                         ProcessorScenarioItem oTempProcessorScenarioItem = new ProcessorScenarioItem();

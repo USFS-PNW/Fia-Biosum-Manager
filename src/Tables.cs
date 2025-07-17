@@ -7045,8 +7045,6 @@ namespace FIA_Biosum_Manager
             }
             static public string DefaultTreeSpeciesTableDbFile { get { return @"db\ref_master.mdb"; } }
             static public string DefaultOwnerGroupsTableName { get { return "owner_groups"; } }
-            static public string DefaultFVSTreeSpeciesTableDbFile { get { return @"db\ref_master.mdb"; } }
-            static public string DefaultFVSTreeSpeciesTableName { get { return "fvs_tree_species"; } }
             static public string DefaultFiadbFVSVariantTableName { get { return "fiadb_fvs_variant"; } }
             static public string DefaultHarvestMethodsTableDbFile { get { return @"db\ref_master.mdb"; } }
             static public string DefaultHarvestMethodsTableName { get { return "harvest_methods"; } }
@@ -7302,23 +7300,6 @@ namespace FIA_Biosum_Manager
                     "SE_Mapped_To CHAR(2)," +
                     "SN_Mapped_To CHAR(2))";
 
-            }
-            static public string CreateFIATreeSpeciesRefTable(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + "( " +
-                    "SPCD INTEGER PRIMARY KEY," +
-                    "COMMON_NAME CHAR(100)," +
-                    "od_wgt DOUBLE," +
-                    "green_to_dry DOUBLE," +
-                    "dry_to_green DOUBLE," +
-                    "dry_to_green_substitution_desc CHAR(255)," +
-                    "WOODLAND_YN CHAR(1)," +
-                    "CWD_Bulk_Density DOUBLE," +
-                    "CWD_DECAY_RATIO1 DOUBLE," +
-                    "CWD_DECAY_RATIO2 DOUBLE," +
-                    "CWD_DECAY_RATIO3 DOUBLE," +
-                    "CWD_DECAY_RATIO4 DOUBLE," +
-                    "CWD_DECAY_RATIO5 DOUBLE)";
             }
         }
 
