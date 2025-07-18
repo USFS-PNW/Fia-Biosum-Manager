@@ -701,7 +701,8 @@ namespace FIA_Biosum_Manager
             return $@"`{str}`";
         }
 
-        /// <summary>Converts the string representation of an SQLite data type to the equivalent Access data type strings. </summary>
+        /// <summary>Converts the string representation of an SQLite data type to the equivalent Access data type strings.
+		/// NOTE: String values are set to length 255 regardless of their length in the original database</summary>
         /// <param name="dataTypeFromDB">The string representation of an SQLite data type.</param>
         public static string DataTypeConvert(string dataTypeFromDB, bool bTargetSqlite)
         {

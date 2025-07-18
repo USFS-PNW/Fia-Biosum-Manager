@@ -1358,15 +1358,25 @@ namespace FIA_Biosum_Manager
                             }
                             if (!bFound)
                             {
-                                //column not found so let's add it
-                                var colName = oDataTableSchema.Rows[z]["columnname"].ToString().ToUpper();
-                                var dataType = oDataTableSchema.Rows[z]["datatype"].ToString().ToUpper();
+                                    //column not found so let's add it
+                                    var colName = oDataTableSchema.Rows[z]["columnname"].ToString().ToUpper();
+                                    var dataType = oDataTableSchema.Rows[z]["datatype"].ToString().ToUpper();
                                     string strSize = "";
                                     if (oDataTableSchema.Rows[z]["ColumnSize"] != null)
                                         strSize = Convert.ToString(oDataTableSchema.Rows[z]["ColumnSize"]);
+                                    // We used to set the column size of the new column to the source size but our current translation
+                                    // subroutine doesn't support this. Print a warning to the log if column size exceeds 255
+                                    if (dataType.IndexOf("VARCHAR") > -1)
+                                    {
+                                        if (Convert.ToInt32(oDataTableSchema.Rows[z]["ColumnSize"]) > 255)
+                                        {
+                                            if (m_bDebug && frmMain.g_intDebugLevel > 1)
+                                                this.WriteText(m_strDebugFile, "Column size value " + strSize + " is greater than the 255 maximum allowed\r\n\r\n");
+                                        }
+                                    }
                                     SQLite.AddColumn(conn, strPreTable, utils.TranslateColumn(colName), utils.DataTypeConvert(dataType, true), strSize);
-                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                    this.WriteText(m_strDebugFile, "DONE: Added column " + utils.TranslateColumn(colName) + " " + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                        this.WriteText(m_strDebugFile, "DONE: Added column " + utils.TranslateColumn(colName) + " " + System.DateTime.Now.ToString() + "\r\n\r\n");
 
                                     SQLite.AddColumn(conn, strPostTable, utils.TranslateColumn(colName), utils.DataTypeConvert(dataType, true), strSize);
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
