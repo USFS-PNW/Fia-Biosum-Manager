@@ -7112,7 +7112,7 @@ namespace FIA_Biosum_Manager
             using (OleDbConnection copyConn = new System.Data.OleDb.OleDbConnection(strDsConn))
             {
                 copyConn.Open();
-                oAdo.m_strSQL = $@"DELETE FROM {oProjectDs.m_strDataSourceTableName} WHERE TABLE_TYPE IN ('{Datasource.TableTypes.TreeSpecies}','{Datasource.TableTypes.FvsTreeSpecies}', {Datasource.TableTypes.FVSVariant})";
+                oAdo.m_strSQL = $@"DELETE FROM {oProjectDs.m_strDataSourceTableName} WHERE TABLE_TYPE IN ('{Datasource.TableTypes.TreeSpecies}','{Datasource.TableTypes.FvsTreeSpecies}', '{Datasource.TableTypes.FVSVariant}')";
                 oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
             }
 
