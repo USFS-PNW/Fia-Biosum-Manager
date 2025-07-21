@@ -527,7 +527,8 @@ namespace FIA_Biosum_Manager
                     var oRxPackageItem_Collection = dictFvsVariantPackage[key];
                     for (int j = 0; j < oRxPackageItem_Collection.Count; j++)
                     {
-                        bool _bInactiveVarRxPackage = false;
+                        bool bInactiveVarRxPackage = false;
+                        var bAddToList = true;
                         RxPackageItem rxPackageItem = oRxPackageItem_Collection.Item(j);
                         strRxPackage = rxPackageItem.RxPackageId;
                         if (frmMain.g_bSuppressProcessorScenarioTableRowCount == false)
@@ -580,7 +581,7 @@ namespace FIA_Biosum_Manager
                                         long count = m_oDataMgr.getRecordCount(conn, strSQL, Tables.FVS.DefaultPreFVSComputeTableName);
                                         if (count > 0)
                                         {
-                                            _bInactiveVarRxPackage = true;
+                                            bInactiveVarRxPackage = true;
                                             break;
                                         }
                                         else
@@ -591,34 +592,32 @@ namespace FIA_Biosum_Manager
                                             count = m_oDataMgr.getRecordCount(conn, strSQL, Tables.FVS.DefaultPreFVSComputeTableName);
                                             if (count > 0)
                                             {
-                                                _bInactiveVarRxPackage = true;
+                                                bInactiveVarRxPackage = true;
                                                 break;
                                             }
                                         }
                                     }
                                 }
-                                if (_bInactiveVarRxPackage)
+                                if (bInactiveVarRxPackage)
                                 {
                                     break;
                                 }
                             }
-                            if (_bInactiveVarRxPackage == true)
+                            if (bInactiveVarRxPackage == true)
                             {
                                 strCount = "1";
                             }
                             else
                             {
-                                // Reset strVariant so it fails the test to be added to the list
-                                strVariant = "";
+                                bAddToList = false;
                             }
                         }
                         else
                         {
-                            // Reset strVariant so it fails the test to be added to the list
                             // This variant package has no records in FVS_CutTree and isn't using FVS_Compute to indicate treatment activity
-                            strVariant = "";
+                            bAddToList = false;
                         }
-                        if (!String.IsNullOrEmpty(strVariant))
+                        if (bAddToList)
                         {
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(strDebugFile, "Add To List Variant:" + strVariant + " RxPackage:" + strRxPackage + " " + System.DateTime.Now.ToString() + "\r\n");
@@ -689,7 +688,7 @@ namespace FIA_Biosum_Manager
                                                         "(t.biosum_cond_id=c.biosum_cond_id AND " +
                                                          "p.biosum_plot_id=c.biosum_plot_id AND " +
                                                          "p.fvs_variant='" + strVariant + "')";
-                                if (frmMain.g_bSuppressProcessorScenarioTableRowCount == false && _bInactiveVarRxPackage == false)
+                                if (frmMain.g_bSuppressProcessorScenarioTableRowCount == false && bInactiveVarRxPackage == false)
                                 {
                                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                         frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
@@ -709,7 +708,7 @@ namespace FIA_Biosum_Manager
                                                         "(t.biosum_cond_id=c.biosum_cond_id AND " +
                                                          "p.biosum_plot_id=c.biosum_plot_id AND " +
                                                          "p.fvs_variant='" + strVariant + "')";
-                                if (frmMain.g_bSuppressProcessorScenarioTableRowCount == false && _bInactiveVarRxPackage == false)
+                                if (frmMain.g_bSuppressProcessorScenarioTableRowCount == false && bInactiveVarRxPackage == false)
                                 {
                                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                         frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
@@ -726,9 +725,9 @@ namespace FIA_Biosum_Manager
                                 //opcost dropped column count; Always empty
                                 entryListItem.SubItems.Add(" ");
                                 //tree cutlist count
-                                if (frmMain.g_bSuppressProcessorScenarioTableRowCount == false && !_bInactiveVarRxPackage)
+                                if (frmMain.g_bSuppressProcessorScenarioTableRowCount == false && !bInactiveVarRxPackage)
                                     entryListItem.SubItems.Add(strCount);
-                                else if (_bInactiveVarRxPackage)
+                                else if (bInactiveVarRxPackage)
                                 {
                                     entryListItem.SubItems.Add("0");
                                 }
@@ -757,7 +756,7 @@ namespace FIA_Biosum_Manager
 
                                 //fvstree processing date and time variant,rxpackage
                                 string strFvsTreeDateCreated = " ";
-                                if (_bInactiveVarRxPackage == false)
+                                if (bInactiveVarRxPackage == false)
                                 {
                                     m_oDataMgr.m_strSQL = "SELECT DISTINCT DateTimeCreated " +
                                                   "FROM " + Tables.FVS.DefaultFVSCutTreeTableName + " t " +
@@ -812,7 +811,7 @@ namespace FIA_Biosum_Manager
 
 
                                 this.m_oLvAlternateColors.ListViewItem(m_lvEx.Items[m_lvEx.Items.Count - 1]);
-                                if (bUpdate && _bInactiveVarRxPackage == false)
+                                if (bUpdate && bInactiveVarRxPackage == false)
                                 {
                                     this.lblMsg.Text = "* = New FVS Tree records to process";
                                     if (this.lblMsg.Visible == false) lblMsg.Show();
