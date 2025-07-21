@@ -44,8 +44,6 @@ namespace FIA_Biosum_Manager
 		public FIA_Biosum_Manager.uc_rx_edit uc_rx_edit1;
 		public FIA_Biosum_Manager.uc_rx_package_list uc_rx_package_list1;
 		public FIA_Biosum_Manager.uc_fvs_input uc_fvs_input1;
-		public FIA_Biosum_Manager.uc_fvs_tree_spc_conversion uc_tree_spc_conversion1;
-		public FIA_Biosum_Manager.uc_fvs_tree_spc_conversion_edit uc_fvs_tree_spc_conversion_edit1;
         public FIA_Biosum_Manager.uc_fvs_output uc_fvs_output1;
 		public FIA_Biosum_Manager.uc_processor_tree_spc uc_processor_tree_spc1;
 		public FIA_Biosum_Manager.uc_processor_tree_spc_edit uc_processor_tree_spc_edit1;
@@ -626,28 +624,6 @@ namespace FIA_Biosum_Manager
 				return this.uc_fvs_input1;
 			}
 		}
-		public FIA_Biosum_Manager.uc_fvs_tree_spc_conversion TreeSpeciesConversionUserControl
-		{
-			set
-			{
-				this.uc_tree_spc_conversion1 = value;
-			}
-			get
-			{
-				return this.uc_tree_spc_conversion1;
-			}
-		}
-		public FIA_Biosum_Manager.uc_fvs_tree_spc_conversion_edit TreeSpeciesConversionEditUserControl
-		{
-			set
-			{
-				this.uc_fvs_tree_spc_conversion_edit1 = value;
-			}
-			get
-			{
-				return this.uc_fvs_tree_spc_conversion_edit1;
-			}
-		}
         public FIA_Biosum_Manager.uc_fvs_output FvsOutProcessorInUserControl
 		{
 			set
@@ -752,15 +728,6 @@ namespace FIA_Biosum_Manager
             get { return _oLastWindowState; }
             set { _oLastWindowState = value; }
         }
-		public void AddGrid(System.Data.OleDb.OleDbConnection p_conn, string strConn,string strSQL, string strDataSet)
-		{
-			this.uc_gridview1 = new uc_gridview(p_conn,strSQL,strDataSet, null);
-			this.Controls.Add(this.uc_gridview1);
-			this.uc_gridview1.Dock = System.Windows.Forms.DockStyle.Fill;
-
-		   
-		}
-
         private void frmDialog_Activated(object sender, EventArgs e)
         {
             if (uc_fvs_output1 != null)

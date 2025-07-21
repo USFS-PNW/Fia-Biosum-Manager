@@ -414,12 +414,6 @@
     <Compile Include="uc_fvs_output_prepost_seqnum.Designer.cs">
       <DependentUpon>uc_fvs_output_prepost_seqnum.cs</DependentUpon>
     </Compile>
-    <Compile Include="uc_fvs_tree_spc_conversion.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_fvs_tree_spc_conversion_edit.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Include="uc_gis_psite.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -765,12 +759,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="uc_fvs_output_prepost_seqnum.resx">
       <DependentUpon>uc_fvs_output_prepost_seqnum.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="uc_fvs_tree_spc_conversion.resx">
-      <DependentUpon>uc_fvs_tree_spc_conversion.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="uc_fvs_tree_spc_conversion_edit.resx">
-      <DependentUpon>uc_fvs_tree_spc_conversion_edit.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="uc_gis_psite.resx">
       <DependentUpon>uc_gis_psite.cs</DependentUpon>
