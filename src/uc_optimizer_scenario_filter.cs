@@ -517,92 +517,54 @@ namespace FIA_Biosum_Manager
 			}
 		}
 
+
 		private void btnCreateSQL_Click(object sender, System.EventArgs e)
-		{
-			int x=0;
-			int y=0;
+        {
+			int x = 0;
+			int y = 0;
 			DialogResult result;
-              
-			x = ((frmOptimizerScenario)this.ParentForm).uc_datasource1.getDataSourceTableNameRow("PLOT");
-			if (x < 0) 
+
+			x = this.ReferenceOptimizerScenarioForm.uc_datasource1.getDataSourceTableNameRow("PLOT");
+			if (x < 0)
 			{
 				MessageBox.Show("!!Plot table cannot be found!!");
 				return;
 			}
 
-				frmDialog frmTemp = new frmDialog();
-                frmTemp.Text = "Treatment Optimizer: Select Database Tables For SQL";
-                frmTemp.uc_select_list_item1.lblMsg.Enabled=true;
-				frmTemp.uc_select_list_item1.lblMsg.Text= "Data Sources";
-				frmTemp.uc_select_list_item1.lblMsg.Visible = true;
-				frmTemp.uc_select_list_item1.Dock = System.Windows.Forms.DockStyle.Fill;
-						
-				frmTemp.uc_project1.Visible=false;
-				frmTemp.uc_select_list_item1.listBox1.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple;
-				frmTemp.uc_select_list_item1.listBox1.Items.Clear();
+			frmSqlBuilder frmSQL = new frmSqlBuilder(ReferenceOptimizerScenarioForm.uc_datasource1.lstRequiredTables, "");
 
-				((frmOptimizerScenario)this.ParentForm).uc_datasource1.LoadScenarioDataSourceTablesIntoListBox(frmTemp.uc_select_list_item1.listBox1);
+			if (this.FilterType == "PLOT") frmSQL.ClientId = "OPTIMIZER SCENARIO PLOT FILTER";
+			else frmSQL.ClientId = "OPTIMIZER SCENARIO COND FILTER";
 
+			frmSQL.ReferenceOptimizerScenarioForm = this.ReferenceOptimizerScenarioForm;
+			frmSQL.txtSQLCommand.Text = this.txtCurrentSQL.Text;
 
-				frmTemp.uc_select_list_item1.Visible=true;
-				result = frmTemp.ShowDialog(this);
-						
-				if (result == DialogResult.OK) 
+			result = frmSQL.ShowDialog(this);
+
+			if (result == DialogResult.OK)
+			{
+				if (frmSQL.txtSQLCommand.Text.Trim().Length > 0)
 				{
-					frmDialog frmSQL = new frmDialog((frmOptimizerScenario)this.ParentForm,(frmMain)this.ParentForm.ParentForm);
-					
-					frmSQL.Width = frmSQL.uc_sql_builder1.m_intFullWd;
-					frmSQL.Height = frmSQL.uc_sql_builder1.m_intFullHt;
-
-					frmSQL.Text = "Treatment Optimizer: SQL Builder";
-					
-					//send current sql to sql builder text box
-					frmSQL.uc_sql_builder1.SendSingleKeyStrokes(frmSQL.uc_sql_builder1.txtSQLCommand,this.txtCurrentSQL.Text);
-					
-					frmSQL.uc_sql_builder1.Visible=true;
-					for (x=0; x<=frmTemp.uc_select_list_item1.listBox1.SelectedItems.Count-1;x++)
+					result = MessageBox.Show("REPLACE \n" + "----------------\n\n" + "'" + this.txtCurrentSQL.Text + "' \n\n\n WITH  \n----------------\n\n'" + frmSQL.txtSQLCommand.Text + "'", "Plot Filter", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+					if (result == DialogResult.Yes)
 					{
-						for (y=0; y <= frmSQL.uc_sql_builder1.lstTables.Items.Count-1;y++)
+						for (x = 0; x <= ReferenceOptimizerScenarioForm.uc_datasource1.lstRequiredTables.Items.Count - 1; x++)
 						{
-							if (frmSQL.uc_sql_builder1.lstTables.Items[y].ToString().Trim().ToUpper() ==
-                                 frmTemp.uc_select_list_item1.listBox1.SelectedItems[x].ToString().Trim().ToUpper())
-								   break;
-
+							m_strOptimizerTables[x] = "";
 						}
-						if (y >= frmSQL.uc_sql_builder1.lstTables.Items.Count)
-					        frmSQL.uc_sql_builder1.lstTables.Items.Add(frmTemp.uc_select_list_item1.listBox1.SelectedItems[x]);
-					}
-					frmSQL.uc_sql_builder1.InitializeDataSource(((frmOptimizerScenario)this.ParentForm).uc_datasource1.lstRequiredTables);
 
-					result = frmSQL.ShowDialog(this);
-					if (result == DialogResult.OK)
-					{
-						if (frmSQL.uc_sql_builder1.txtSQLCommand.Text.Trim().Length > 0)
+						for (x = 0; x <= frmSQL.lstTables.Items.Count - 1; x++)
 						{
-							result = MessageBox.Show("REPLACE \n" + "-------\n" + "'" + this.txtCurrentSQL.Text + "' \n WITH  \n----\n'" + frmSQL.uc_sql_builder1.txtSQLCommand.Text + "'", "Plot Filter",MessageBoxButtons.YesNo,MessageBoxIcon.Question);
-							if (result == DialogResult.Yes)
-							{
-								for(x=0;x <= ((frmOptimizerScenario)this.ParentForm).uc_datasource1.lstRequiredTables.Items.Count-1;x++)
-								{
-									m_strOptimizerTables[x] = "";
-								}
-
-								for(x=0;x <= frmSQL.uc_sql_builder1.lstTables.Items.Count-1;x++)
-								{
-									m_strOptimizerTables[x] = frmSQL.uc_sql_builder1.lstTables.Items[x].ToString();
-								}
-								this.m_intNumberOfOptimizerTablesLoadedIntoDatasets = frmSQL.uc_sql_builder1.m_intNumberOfTablesLoadedIntoDatasets;
-								this.txtCurrentSQL.Text = frmSQL.uc_sql_builder1.txtSQLCommand.Text;
-								((frmOptimizerScenario)this.ParentForm).m_bSave=true;
-
-							}
+							m_strOptimizerTables[x] = frmSQL.lstTables.Items[x].ToString();
 						}
+						this.txtCurrentSQL.Text = frmSQL.txtSQLCommand.Text;
+						((frmOptimizerScenario)this.ParentForm).m_bSave = true;
 					}
-					frmSQL.Close();
-					frmSQL = null;
 				}
-				frmTemp.Close();
-				frmTemp = null;
+			}
+
+			frmSQL.Close();
+			frmSQL = null;
 		}
 
 		/****************************************************************

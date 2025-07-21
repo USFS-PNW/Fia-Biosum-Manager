@@ -579,12 +579,6 @@
     <Compile Include="uc_select_previous_expression.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="uc_sql_builder.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_sql_builder_new.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Include="uc_table_exists_dialog.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -927,9 +921,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="uc_select_previous_expression.resx">
       <DependentUpon>uc_select_previous_expression.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="uc_sql_builder.resx">
-      <DependentUpon>uc_sql_builder.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="uc_table_exists_dialog.resx">
       <DependentUpon>uc_table_exists_dialog.cs</DependentUpon>
