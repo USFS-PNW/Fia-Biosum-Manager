@@ -83,7 +83,6 @@ namespace FIA_Biosum_Manager
             if (this.m_oReference.LoadDatasource) this.m_oReference.LoadDatasources();
             if (this.m_oProcessor.LoadDatasource) this.m_oProcessor.LoadDatasources();
             if (this.m_oTravelTime.LoadDatasource) this.m_oTravelTime.LoadDatasources();
-            m_strTempDbFile = this.m_oDataSource.CreateDB();
             m_lstSourceDbs = this.m_oDataSource.getDataSourceDbsList();
         }
         protected void LoadLimitedDatasources()
