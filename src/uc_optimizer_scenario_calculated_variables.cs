@@ -1098,8 +1098,7 @@ namespace FIA_Biosum_Manager
         }
 
         private void loadm_dg()
-        {
-            //@ToDo: Using MS Access to query FVS Out tables          
+        {        
             m_strTempDB = m_oUtils.getRandomFile(this.m_oEnv.strTempDir, "db");
             m_oDataMgr.CreateDbFile(m_strTempDB);
          
@@ -1129,9 +1128,6 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oFrmMain.Top);
                 
                 //Add links to FVS pre/post tables if they don't exist
-
-
-                //Sleep while table link is being built
                 using (SQLiteConnection calculateConn = new SQLiteConnection(m_oDataMgr.GetConnectionString(m_strTempDB)))
                 {
                     calculateConn.Open();
@@ -1144,10 +1140,7 @@ namespace FIA_Biosum_Manager
                         m_oDataMgr.m_strSQL = "CREATE TABLE " + strFvsPostTableName + " AS SELECT * FROM SOURCE." + strFvsPostTableName;
                         m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
                     }
-                    while (!m_oDataMgr.TableExist(calculateConn, strFvsPreTableName))
-                    {
-                        Thread.Sleep(1000);
-                    }
+
                     frmMain.g_oFrmMain.DeactivateStandByAnimation();
 
                     //Populate baseline prescription list
@@ -4191,8 +4184,6 @@ namespace FIA_Biosum_Manager
                     }
                     m_oDataMgr.CloseConnection(m_oDataMgr.m_Connection);
                 }
-
-                Thread.Sleep(2000); //sleep 5 seconds
 
                 if (m_oDataMgr.m_Connection != null) m_oDataMgr.m_Connection.Dispose();
                 m_oDataMgr.OpenConnection(m_oDataMgr.GetConnectionString(m_strCalculatedVariablesDb));
