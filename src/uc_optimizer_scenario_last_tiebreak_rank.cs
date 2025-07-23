@@ -176,7 +176,6 @@ namespace FIA_Biosum_Manager
 						if (oDataMgr.m_intError < 0) break;
 
 					}
-					conn.Close();
 				}
 			}
 			catch (Exception caught)

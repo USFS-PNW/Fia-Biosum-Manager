@@ -97,11 +97,9 @@ namespace FIA_Biosum_Manager
 
 		//FVS panel and buttons
 		public System.Windows.Forms.Panel m_pnlFvs;
-		public FIA_Biosum_Manager.btnMainForm m_btnFvsVariant;
 		public FIA_Biosum_Manager.btnMainForm m_btnFvsRx;
 		public FIA_Biosum_Manager.btnMainForm m_btnFvsRxPackage;
 		public FIA_Biosum_Manager.btnMainForm m_btnFvsInput;
-        //public FIA_Biosum_Manager.btnMainForm m_btnCreateFvsOutputMdbs;
         public FIA_Biosum_Manager.btnMainForm m_btnFvsOutput;
 		public FIA_Biosum_Manager.btnMainForm m_btnFvsTreeSpcCvt;
 		public FIA_Biosum_Manager.btnMainForm m_btnFvsTreeSpc;
@@ -1665,20 +1663,24 @@ namespace FIA_Biosum_Manager
                     this.m_frmLoadGis.BackColor = System.Drawing.SystemColors.Control;
                     this.m_frmLoadGis.Text = "Load GIS Data";
                     this.m_frmLoadGis.MdiParent = this;
-                    this.m_frmLoadGis.Initialize_Load_Gis_Data_User_Control();
+                    bool bTerminateLoad = this.m_frmLoadGis.Initialize_Load_Gis_Data_User_Control();
 
-                    this.m_frmLoadGis.DisposeOfFormWhenClosing = true;
+                    if (!bTerminateLoad)
+                    {
+                        this.m_frmLoadGis.DisposeOfFormWhenClosing = true;
 
-                    this.m_frmLoadGis.Width = this.m_frmLoadGis.uc_optimizer_load_gis_data1.Width + 25;
-                    this.m_frmLoadGis.Height = this.m_frmLoadGis.uc_optimizer_load_gis_data1.Height + 40;
-                    this.m_frmLoadGis.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-                    this.m_frmLoadGis.uc_optimizer_load_gis_data1.Top = 0;
-                    this.m_frmLoadGis.uc_optimizer_load_gis_data1.Left = 0;
+                        this.m_frmLoadGis.Width = this.m_frmLoadGis.uc_optimizer_load_gis_data1.Width + 25;
+                        this.m_frmLoadGis.Height = this.m_frmLoadGis.uc_optimizer_load_gis_data1.Height + 40;
+                        this.m_frmLoadGis.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+                        this.m_frmLoadGis.uc_optimizer_load_gis_data1.Top = 0;
+                        this.m_frmLoadGis.uc_optimizer_load_gis_data1.Left = 0;
 
-                    this.m_frmLoadGis.uc_optimizer_load_gis_data1.Visible = true;
-                    this.m_frmLoadGis.MinimizeMainForm = true;
-                    this.m_frmLoadGis.ParentControl = frmMain.g_oFrmMain;
-                    this.m_frmLoadGis.Show();
+                        this.m_frmLoadGis.uc_optimizer_load_gis_data1.Visible = true;
+                        this.m_frmLoadGis.MinimizeMainForm = true;
+                        this.m_frmLoadGis.ParentControl = frmMain.g_oFrmMain;
+                        this.m_frmLoadGis.Show();
+                    }
+
                 }
                 else if (strText.Trim().ToUpper() == "OPTIMIZATION SCENARIO")
                 {
@@ -1919,11 +1921,6 @@ namespace FIA_Biosum_Manager
             {
                 switch (strText.Trim().ToUpper())
                 {
-                    case "PLOT FVS VARIANTS":
-                        StartPlotFVSVariantsDialog(this);
-
-                        break;
-
                     case "RX":
                         StartRxDialog(this);
                         break;
@@ -1947,81 +1944,6 @@ namespace FIA_Biosum_Manager
                     default:
                         break;
                 }
-
-            }
-        }
-        public void StartPlotFVSVariantsDialog(System.Windows.Forms.Control p_oParentControl)
-        {
-            //check to see if the form has already been loaded
-            if (this.IsChildWindowVisible("FVS: Plot FVS Variant") == false)
-            {
-                frmMain.g_sbpInfo.Text = "Loading Plot FVS Variants...Stand By";
-               
-                this.m_frmFvsVariant = new frmDialog(this);
-                this.m_frmFvsVariant.MaximizeBox = true;
-                this.m_frmFvsVariant.BackColor = System.Drawing.SystemColors.Control;
-                this.m_frmFvsVariant.Text = "FVS: Plot FVS Variant";
-
-                FIA_Biosum_Manager.uc_plot_fvs_variant p_uc = new uc_plot_fvs_variant(this.frmProject.uc_project1.txtRootDirectory.Text.Trim());
-                if (p_uc.m_intError < 0)
-                {
-                    this.m_frmFvsVariant.Dispose();
-                    return;
-                }
-                this.m_frmFvsVariant.Controls.Add(p_uc);
-                this.m_frmFvsVariant.PlotFvsVariantUserControl = p_uc;
-                this.m_frmFvsVariant.Height = 0;
-                this.m_frmFvsVariant.Width = 0;
-                if (p_uc.Top + p_uc.Height > this.m_frmFvsVariant.ClientSize.Height + 2)
-                {
-                    for (int x = 1; ; x++)
-                    {
-                        this.m_frmFvsVariant.Height = x;
-                        if (p_uc.Top +
-                            p_uc.Height <
-                            this.m_frmFvsVariant.ClientSize.Height)
-                        {
-                            break;
-                        }
-                    }
-
-                }
-                if (p_uc.Left + p_uc.Width > this.m_frmFvsVariant.ClientSize.Width + 2)
-                {
-                    for (int x = 1; ; x++)
-                    {
-                        this.m_frmFvsVariant.Width = x;
-                        if (p_uc.Left +
-                            p_uc.Width <
-                            this.m_frmFvsVariant.ClientSize.Width)
-                        {
-                            break;
-                        }
-                    }
-
-                }
-                p_uc.Dock = System.Windows.Forms.DockStyle.Fill;
-                p_uc.loadvalues();
-
-
-                this.m_frmFvsVariant.Left = 0;
-                this.m_frmFvsVariant.Top = 0;
-                this.m_frmFvsVariant.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
-                this.m_frmFvsVariant.DisposeOfFormWhenClosing = true;
-                this.m_frmFvsVariant.MinimizeMainForm = true;
-                this.m_frmFvsVariant.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-                frmMain.g_sbpInfo.Text = "Ready";
-                p_oParentControl.Enabled = false;
-                m_frmFvsVariant.ParentControl = p_oParentControl;
-                this.m_frmFvsVariant.Show();
-
-            }
-            else
-            {
-                if (this.m_frmFvsVariant.WindowState == System.Windows.Forms.FormWindowState.Minimized)
-                    this.m_frmFvsVariant.WindowState = System.Windows.Forms.FormWindowState.Normal;
-
-                this.m_frmFvsVariant.Focus();
 
             }
         }

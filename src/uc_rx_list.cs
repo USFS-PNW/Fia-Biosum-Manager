@@ -1103,7 +1103,7 @@ namespace FIA_Biosum_Manager
             Queries oQueries = new Queries();
             oQueries.m_oFvs.LoadDatasource = true;
 			// pulls from master databases - keep as Access version for now
-            oQueries.LoadDatasources(true);
+            oQueries.LoadDatasourcesSqlite(true);
             this.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(oQueries, p_oRxPackageItemCollection);
             oQueries = null;
         }

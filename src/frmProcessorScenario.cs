@@ -2152,7 +2152,7 @@ namespace FIA_Biosum_Manager
             p_oQueries.m_oFIAPlot.LoadDatasource = true;
             p_oQueries.m_oProcessor.LoadDatasource = true;
             p_oQueries.m_oReference.LoadDatasource = true;
-            p_oQueries.LoadDatasources(true, "processor", p_strScenarioId);
+            p_oQueries.LoadDatasourcesSqlite(true, "processor", p_strScenarioId);
             LoadAll(p_oQueries, p_strScenarioId, p_oProcessorScenarioItem_Collection);
         }
         public void LoadAll(Queries p_oQueries, string p_strScenarioId, 

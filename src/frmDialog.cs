@@ -18,8 +18,6 @@ namespace FIA_Biosum_Manager
 		public FIA_Biosum_Manager.uc_contact_list uc_contact_list1;
 		public FIA_Biosum_Manager.uc_project_document_links_edit uc_project_document_links_edit1;
 		 public FIA_Biosum_Manager.uc_scenario uc_scenario1;
-		public FIA_Biosum_Manager.uc_sql_builder uc_sql_builder1;
-		public FIA_Biosum_Manager.uc_sql_builder_new uc_sql_builder2;
 		public FIA_Biosum_Manager.frmDialog m_frmDialogCallingForm;
 		public FIA_Biosum_Manager.frmOptimizerScenario m_frmScenarioCallingForm;
         public FIA_Biosum_Manager.frmProcessorScenario m_frmProcessorScenarioCallingForm;
@@ -50,8 +48,6 @@ namespace FIA_Biosum_Manager
 		public FIA_Biosum_Manager.uc_processor_tree_spc uc_processor_tree_spc1;
 		public FIA_Biosum_Manager.uc_processor_tree_spc_edit uc_processor_tree_spc_edit1;
 		public FIA_Biosum_Manager.uc_gis_psite uc_gis_psite1;
-		public FIA_Biosum_Manager.uc_plot_fvs_variant uc_plot_fvs_variant1;
-		public FIA_Biosum_Manager.uc_plot_fvs_variant_edit uc_plot_fvs_variant_edit1;
 		public FIA_Biosum_Manager.uc_contact_edit uc_contact_edit1;
 		public FIA_Biosum_Manager.uc_db uc_db1;
         public FIA_Biosum_Manager.uc_db_sqlite uc_db_sqlite_1;
@@ -271,7 +267,6 @@ namespace FIA_Biosum_Manager
 			{
                 if (this.uc_fvs_output1 != null) this.ParentControl.Enabled = true;
                 if (this.uc_fvs_input1 != null) this.ParentControl.Enabled = true;
-                if (this.PlotFvsVariantUserControl != null) this.ParentControl.Enabled = true;
                 if (this.ProcessorTreeSpcUserControl != null) this.ParentControl.Enabled = true;
                 if (this.uc_rx_package_list1 != null) this.ParentControl.Enabled=true;
                 if (this.uc_rx_list1 != null) this.ParentControl.Enabled = true;
@@ -309,10 +304,6 @@ namespace FIA_Biosum_Manager
             
             this.uc_project_document_links_edit1 = new uc_project_document_links_edit();
             
-            this.uc_sql_builder1 = new uc_sql_builder();
-            
-            this.uc_sql_builder2 = new uc_sql_builder_new();
-            
             this.uc_previous_expressions1 = new uc_previous_expressions();
             
             this.uc_project_notes1 = new uc_project_notes();
@@ -327,10 +318,6 @@ namespace FIA_Biosum_Manager
             
             this.Controls.Add(this.uc_project_document_links_edit1);
             
-            this.Controls.Add(this.uc_sql_builder1);
-            
-            this.Controls.Add(this.uc_sql_builder2);
-            
             this.Controls.Add(this.uc_previous_expressions1);
             
             this.Controls.Add(this.uc_project_notes1);
@@ -342,13 +329,9 @@ namespace FIA_Biosum_Manager
 			this.uc_project_document_links1.Visible=false;
 			this.uc_project_document_links_edit1.Visible=false;
 			this.uc_project1.Visible=false;
-			this.uc_sql_builder1.Visible=false;
-			this.uc_sql_builder2.Visible=false;
 			this.uc_previous_expressions1.Visible=false;
 			this.uc_project_notes1.Visible=false;
 			this.uc_contact_list1.Visible=false;
-			this.uc_sql_builder1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.uc_sql_builder2.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.uc_project_document_links1.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.uc_project_document_links_edit1.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.uc_previous_expressions1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -417,12 +400,20 @@ namespace FIA_Biosum_Manager
             this.uc_optimizer_sqlite_export1.Visible = true;
 
         }
-        public void Initialize_Load_Gis_Data_User_Control()
+        public bool Initialize_Load_Gis_Data_User_Control()
         {
 
             this.uc_optimizer_load_gis_data1 = new uc_optimizer_load_gis_data(this.m_frmMain);
-            this.Controls.Add(this.uc_optimizer_load_gis_data1);
-            this.uc_optimizer_load_gis_data1.Visible = true;
+			if (this.uc_optimizer_load_gis_data1.bTerminateLoad)
+			{
+				return true;
+			}
+            else
+            {
+				this.Controls.Add(this.uc_optimizer_load_gis_data1);
+				this.uc_optimizer_load_gis_data1.Visible = true;
+				return false;
+			}
         }
         public void Initialize_Plot_Data_Add_Edit_User_Control()
 		{
@@ -677,28 +668,7 @@ namespace FIA_Biosum_Manager
 				return this.uc_gis_psite1;
 			}
 		}
-		public FIA_Biosum_Manager.uc_plot_fvs_variant PlotFvsVariantUserControl
-		{
-			set
-			{
-				this.uc_plot_fvs_variant1 = value;
-			}
-			get
-			{
-				return this.uc_plot_fvs_variant1;
-			}
-		}
-		public FIA_Biosum_Manager.uc_plot_fvs_variant_edit PlotFvsVariantEditUserControl
-		{
-			set
-			{
-				this.uc_plot_fvs_variant_edit1 = value;
-			}
-			get
-			{
-				return this.uc_plot_fvs_variant_edit1;
-			}
-		}
+		
 		public FIA_Biosum_Manager.uc_processor_scenario_tree_spc_groups TreeSpcGroupsUserControl
 		{
 			set

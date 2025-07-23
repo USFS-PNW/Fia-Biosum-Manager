@@ -429,12 +429,6 @@
     <Compile Include="uc_plot_edit.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="uc_plot_fvs_variant.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_plot_fvs_variant_edit.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Include="uc_plot_input.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -577,12 +571,6 @@
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="uc_select_previous_expression.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_sql_builder.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_sql_builder_new.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="uc_table_exists_dialog.cs">
@@ -784,12 +772,6 @@
     <EmbeddedResource Include="uc_plot_edit.resx">
       <DependentUpon>uc_plot_edit.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="uc_plot_fvs_variant.resx">
-      <DependentUpon>uc_plot_fvs_variant.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="uc_plot_fvs_variant_edit.resx">
-      <DependentUpon>uc_plot_fvs_variant_edit.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="uc_plot_input.resx">
       <DependentUpon>uc_plot_input.cs</DependentUpon>
     </EmbeddedResource>
@@ -927,9 +909,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="uc_select_previous_expression.resx">
       <DependentUpon>uc_select_previous_expression.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="uc_sql_builder.resx">
-      <DependentUpon>uc_sql_builder.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="uc_table_exists_dialog.resx">
       <DependentUpon>uc_table_exists_dialog.cs</DependentUpon>

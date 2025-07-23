@@ -809,8 +809,8 @@ namespace FIA_Biosum_Manager
                             break;
                         }
                     }
-                    dataMgr.m_DataReader.Close();
                 }
+                dataMgr.m_DataReader.Close();
 
                 if (!variantFound)
                 {
@@ -1389,8 +1389,8 @@ namespace FIA_Biosum_Manager
                         dblDia = dblDia + tempDia * tempTpa;
                         dblBasalArea = dblBasalArea + (Math.Pow(tempDia, 2) * 0.00545415) * tempTpa;
                     }
-                    dataMgr.m_DataReader.Close();
                 }
+                dataMgr.m_DataReader.Close();
 
                 if (dblCount > 0)
                 {

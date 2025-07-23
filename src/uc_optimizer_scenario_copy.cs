@@ -291,11 +291,9 @@ namespace FIA_Biosum_Manager
                 lblMsg.Text = "Loading Treatment Optimizer Scenario " + p_strScenarioId.Trim() + "...Stand By";
                 lblMsg.Show();
                 lblMsg.Refresh();
-                //load the scenario into the collection
-                m_oOptimizerScenarioTools.LoadScenario(
-                    p_strScenarioId.Trim(),
-                    m_oQueries, ReferenceOptimizerScenarioForm.m_bProcessorUsingSqlite,
-                    m_oOptimizerScenarioItem_Collection);
+                m_oOptimizerScenarioTools.LoadAll(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile,
+                m_oQueries, p_strScenarioId.Trim(), m_oOptimizerScenarioItem_Collection);
                 lblMsg.Hide();
             }
         }

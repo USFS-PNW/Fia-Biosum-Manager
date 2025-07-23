@@ -255,18 +255,13 @@ namespace FIA_Biosum_Manager
 		{
 			int x = 0;
 
-			//const int LANDOWNER_FORESTSERVICE = 10;
-			//const int LANDOWNER_OTHERFEDERAL = 20;
-			//const int LANDOWNER_STATELOCAL = 30;
-			//const int LANDOWNER_PRIVATE = 40;
 
-			//string str="";
 			string strSQL = "";
 			string strConn = "";
 
 
 			DataMgr oDataMgr = new DataMgr();
-			string strScenarioId = ((frmOptimizerScenario)this.ParentForm).uc_scenario1.txtScenarioId.Text.Trim().ToLower();
+			string strScenarioId = ((frmOptimizerScenario)this.ParentForm).uc_scenario1.txtScenarioId.Text.Trim();
 			string strScenarioDB =
 				((frmMain)this.ParentForm.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\" +
 				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
@@ -320,7 +315,6 @@ namespace FIA_Biosum_Manager
 						" VALUES ('" + strScenarioId + "',40);";
 					oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 				}
-				conn.Close();
 			}
 			return 0;
 		}

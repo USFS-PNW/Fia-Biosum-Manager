@@ -7119,6 +7119,8 @@ namespace FIA_Biosum_Manager
             // Update project datasources
             oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.FiaTreeMacroPlotBreakpointDia, "@@appdata@@\\fiabiosum",
                 Tables.Reference.DefaultTreeMacroPlotBreakPointDiaTableDbFile, Tables.Reference.DefaultTreeMacroPlotBreakPointDiaTableName);
+            oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.OwnerGroups, "@@appdata@@\\fiabiosum",
+                Tables.Reference.DefaultBiosumReferenceSqliteFile, Tables.Reference.DefaultOwnerGroupsTableName);
             oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.FiaTreeSpeciesReference, "@@appdata@@\\fiabiosum",
                 Tables.Reference.DefaultBiosumReferenceSqliteFile, Tables.Reference.DefaultFIATreeSpeciesTableName);
 

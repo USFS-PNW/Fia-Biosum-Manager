@@ -39,7 +39,6 @@
             this.btnFilterCancel = new System.Windows.Forms.Button();
             this.grpboxFilterOptions = new System.Windows.Forms.GroupBox();
             this.chkDeletesDisabled = new System.Windows.Forms.CheckBox();
-            this.chkCompactMDB = new System.Windows.Forms.CheckBox();
             this.chkCreateLog = new System.Windows.Forms.CheckBox();
             this.label1 = new System.Windows.Forms.Label();
             this.btnFilterByFileBrowse = new System.Windows.Forms.Button();
@@ -136,7 +135,6 @@
             // grpboxFilterOptions
             // 
             this.grpboxFilterOptions.Controls.Add(this.chkDeletesDisabled);
-            this.grpboxFilterOptions.Controls.Add(this.chkCompactMDB);
             this.grpboxFilterOptions.Controls.Add(this.chkCreateLog);
             this.grpboxFilterOptions.Controls.Add(this.label1);
             this.grpboxFilterOptions.Controls.Add(this.btnFilterByFileBrowse);
@@ -151,24 +149,12 @@
             // chkDeletesDisabled
             // 
             this.chkDeletesDisabled.AutoSize = true;
-            this.chkDeletesDisabled.Location = new System.Drawing.Point(282, 220);
+            this.chkDeletesDisabled.Location = new System.Drawing.Point(154, 220);
             this.chkDeletesDisabled.Name = "chkDeletesDisabled";
             this.chkDeletesDisabled.Size = new System.Drawing.Size(232, 21);
             this.chkDeletesDisabled.TabIndex = 8;
             this.chkDeletesDisabled.Text = "Count Records Without Deleting";
             this.chkDeletesDisabled.UseVisualStyleBackColor = true;
-            this.chkDeletesDisabled.CheckedChanged += new System.EventHandler(this.chkDeletesDisabled_CheckedChanged);
-            // 
-            // chkCompactMDB
-            // 
-            this.chkCompactMDB.AutoSize = true;
-            this.chkCompactMDB.Location = new System.Drawing.Point(154, 220);
-            this.chkCompactMDB.Name = "chkCompactMDB";
-            this.chkCompactMDB.Size = new System.Drawing.Size(157, 21);
-            this.chkCompactMDB.TabIndex = 1;
-            this.chkCompactMDB.Text = "Compact Databases";
-            this.chkCompactMDB.UseVisualStyleBackColor = true;
-            this.chkCompactMDB.CheckedChanged += new System.EventHandler(this.chkCompactMDB_CheckedChanged);
             // 
             // chkCreateLog
             // 
@@ -251,7 +237,6 @@
         public System.Windows.Forms.Label lblTitle;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.CheckBox chkCreateLog;
-        private System.Windows.Forms.CheckBox chkCompactMDB;
         private System.Windows.Forms.CheckBox chkDeletesDisabled;
     }
 }

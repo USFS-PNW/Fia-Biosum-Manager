@@ -435,7 +435,7 @@ namespace FIA_Biosum_Manager
 				 **update listview with the previous scenario settings
 				 ***************************************************/
 				p_dataMgr.m_strSQL = "SELECT * FROM scenario_psites " +
-								 "WHERE TRIM(scenario_id) = '" + this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim() + "';";
+								 "WHERE TRIM(UPPER(scenario_id)) = '" + this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToUpper() + "';";
 
 				p_dataMgr.SqlQueryReader(travelTimesConn, p_dataMgr.m_strSQL);
 				if (p_dataMgr.m_DataReader.HasRows == true)
@@ -488,7 +488,7 @@ namespace FIA_Biosum_Manager
 			int x;
 
 			DataMgr oDataMgr = new DataMgr();
-			strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
+			strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim();
 			string strScenarioDB =
 				frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
 				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
@@ -585,7 +585,6 @@ namespace FIA_Biosum_Manager
 					if (oDataMgr.m_intError != 0) break;
 				}
 				x = oDataMgr.m_intError;
-				conn.Close();
 			}
 			return x;
 		}

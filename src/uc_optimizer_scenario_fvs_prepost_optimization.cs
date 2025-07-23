@@ -1470,7 +1470,7 @@ namespace FIA_Biosum_Manager
             string strColumns = "";
             string strWhere = "";
             DataMgr oDataMgr = new DataMgr();
-            string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
+            string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim();
             string strScenarioDB =
                 frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
                 Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
@@ -1559,7 +1559,6 @@ namespace FIA_Biosum_Manager
                         oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                     }
                 }
-                conn.Close();
             }
             return 1;
         }
@@ -2231,7 +2230,6 @@ namespace FIA_Biosum_Manager
                                     m_intError = -1;
                                     m_strError = m_strError + "Error making a db connection to PREPOST_FVSOUT.db\r\n";
                                 }
-                                conn.Close();
                             }
                         }
                         else

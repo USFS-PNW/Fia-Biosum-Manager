@@ -26,9 +26,9 @@ namespace FIA_Biosum_Manager
 		public FIA_Biosum_Manager.Datasource m_oDataSource;
         public VolumeAndBiomass m_oVolumeAndBiomass = new VolumeAndBiomass();
 		public string m_strTempDbFile;
+        public List<string> m_lstSourceDbs;
 		private bool _bScenario=false;
 		private string _strScenarioType="";
-
 		
 		public Queries()
 		{
@@ -97,7 +97,39 @@ namespace FIA_Biosum_Manager
             if (this.m_oTravelTime.LoadDatasource) this.m_oTravelTime.LoadDatasources();
             m_strTempDbFile = this.m_oDataSource.CreateMDBAndTableDataSourceLinks();
 		}
-
+        public void LoadDatasourcesSqlite(bool p_bLimited)
+        {
+            if (p_bLimited)
+            {
+                LoadLimitedDatasourcesSqlite();
+            }
+            if (this.m_oDataSource.m_intError < 0)
+            {
+                // An error has occurred in LoadLimitedDatasources
+                // The error originates in populate_datasource_array()
+                MessageBox.Show("An error occurred while loading data sources! Close the current window " +
+                                "and try again. If the problem persists, close and restart FIA Biosum Manager.",
+                                "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+                return;
+            }
+            if (this.m_oFvs.LoadDatasource)
+            {
+                this.m_oFvs.LoadDatasources();
+            }
+            if (this.m_oFIAPlot.LoadDatasource)
+            {
+                this.m_oFIAPlot.LoadDatasources();
+            }
+            if (this.m_oReference.LoadDatasource)
+            {
+                this.m_oReference.LoadDatasources();
+            }
+            if (this.m_oProcessor.LoadDatasource)
+            {
+                this.m_oProcessor.LoadDatasources();
+            }
+            m_lstSourceDbs = this.m_oDataSource.getDataSourceDbsList();
+        }
         public void LoadDatasourcesSqlite(bool p_bLimited, string p_strScenarioType, string p_strScenarioId)
         {
             Scenario = true;
@@ -151,6 +183,33 @@ namespace FIA_Biosum_Manager
             if (this.m_oProcessor.LoadDatasource) this.m_oProcessor.LoadDatasources();
             if (this.m_oTravelTime.LoadDatasource) this.m_oTravelTime.LoadDatasources();
             m_strTempDbFile = this.m_oDataSource.CreateDB();
+        }
+
+        public void LoadDatasourcesNew(bool p_bLimited, string p_strScenarioType, string p_strScenarioId)
+        {
+            Scenario = true;
+            ScenarioType = p_strScenarioType;
+            if (p_bLimited)
+            {
+                LoadLimitedDatasourcesSqlite(p_strScenarioType, p_strScenarioId);
+            }
+            if (this.m_oDataSource.m_intError < 0)
+            {
+                // An error has occurred in LoadLimitedDatasources
+                // The error originates in populate_datasource_array()
+                MessageBox.Show("An error occurred while loading data sources! Close the current window " +
+                                "and try again. If the problem persists, close and restart FIA Biosum Manager.",
+                                "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+                return;
+            }
+
+            if (this.m_oFvs.LoadDatasource) this.m_oFvs.LoadDatasources();
+            if (this.m_oFIAPlot.LoadDatasource) this.m_oFIAPlot.LoadDatasources();
+            if (this.m_oReference.LoadDatasource) this.m_oReference.LoadDatasources();
+            if (this.m_oProcessor.LoadDatasource) this.m_oProcessor.LoadDatasources();
+            if (this.m_oTravelTime.LoadDatasource) this.m_oTravelTime.LoadDatasources();
+            m_strTempDbFile = this.m_oDataSource.CreateDB();
+            m_lstSourceDbs = this.m_oDataSource.getDataSourceDbsList();
         }
 
         protected void LoadLimitedDatasources()

@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
+using SQLite.ADO;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -31,8 +31,7 @@ namespace FIA_Biosum_Manager
         private int m_intError;
         private string m_strCurrentProcess;
         private frmTherm m_frmTherm;
-        private ado_data_access m_ado;
-        private dao_data_access m_dao;
+        private DataMgr m_dataMgr;
         private string m_strProjDir;
         private string m_strMessage = "";
         private string m_strDebugFile = "";
@@ -135,30 +134,29 @@ namespace FIA_Biosum_Manager
             m_intError = 0;
             try
             {
-                m_ado = new ado_data_access();
-                m_dao = new dao_data_access();
+                m_dataMgr = new DataMgr();
 
                 //progress bar 1: single process
                 SetThermValue(m_frmTherm.progressBar1, "Maximum", 100);
                 SetThermValue(m_frmTherm.progressBar1, "Minimum", 0);
                 SetThermValue(m_frmTherm.progressBar1, "Value", 0);
                 SetLabelValue(m_frmTherm.lblMsg, "Text", "");
-                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form) m_frmTherm, "Visible", true);
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)m_frmTherm, "Visible", true);
                 //progress bar 2: overall progress
                 SetThermValue(m_frmTherm.progressBar2, "Maximum", 100);
                 SetThermValue(m_frmTherm.progressBar2, "Minimum", 0);
                 SetThermValue(m_frmTherm.progressBar2, "Value", 0);
                 SetLabelValue(m_frmTherm.lblMsg2, "Text", "Overall Progress");
-                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form) m_frmTherm, "Visible", true);
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)m_frmTherm, "Visible", true);
 
                 UpdateProgressBar2(0);
 
-                var projectFiles = new List<string>();
+                List<string> projectFiles = new List<string>();
                 if (Directory.Exists(m_strProjDir + "\\db\\"))
                 {
                     projectFiles.AddRange(Directory
                         .GetFiles(m_strProjDir + "\\db\\", "*.*", SearchOption.AllDirectories)
-                        .Where(s => !s.ToLower().Contains("fvsmaster.mdb")));
+                        .Where(s => !s.ToLower().Contains("fvsmaster.db")));
                 }
 
                 if (Directory.Exists(m_strProjDir + "\\fvs\\"))
@@ -178,19 +176,19 @@ namespace FIA_Biosum_Manager
                     projectFiles.AddRange(Directory.GetFiles(m_strProjDir + "\\opcost\\", "*.*",
                         SearchOption.AllDirectories));
                 }
+
                 //OPTIMIZER weighted variables
                 if (Directory.Exists(m_strProjDir + "\\optimizer\\db\\"))
                 {
-                    projectFiles.AddRange(Directory.GetFiles(m_strProjDir + "\\optimizer\\db\\", "prepost*.accdb",
+                    projectFiles.AddRange(Directory.GetFiles(m_strProjDir + "\\optimizer\\db\\", "prepost*.db",
                         SearchOption.AllDirectories));
                 }
 
-
-                var allProjectFiles = projectFiles.ToArray();
-                var databases = allProjectFiles.Where(s => s.ToLower().EndsWith(".mdb") || s.ToLower().EndsWith(".accdb")).ToArray();
+                string[] allProjectFiles = projectFiles.ToArray();
+                string[] databases = allProjectFiles.Where(s => s.ToLower().EndsWith(".db")).ToArray();
                 Regex packagePattern = new Regex(".*P\\d{3}.*");
-                var nonPackageDatabases = databases.Where(s => !packagePattern.Match(s).Success).ToArray();
-                var packageFiles = allProjectFiles.Where(s => packagePattern.Match(s).Success
+                string[] nonPackageDatabases = databases.Where(s => !packagePattern.Match(s).Success).ToArray();
+                string[] packageFiles = allProjectFiles.Where(s => packagePattern.Match(s).Success
                                                               && !s.ToLower().EndsWith(".kcp")
                                                               && !s.ToLower().EndsWith(".kcp.template")).ToArray();
 
@@ -202,9 +200,9 @@ namespace FIA_Biosum_Manager
                     {
                         if (pathFile.Contains(packageNumber))
                         {
-                            var fileSize = string.Format("{0:0.00}", new FileInfo(pathFile).Length / 1048576.0);
+                            string fileSize = string.Format("{0:0.00}", new FileInfo(pathFile).Length / 1048576.0);
                             m_dictDeletedDatabasesAndFileSizes.Add(pathFile, fileSize);
-                            var message = (!Checked(chkDeletesDisabled) ? "Would delete : " : "Attempting to delete: ") + pathFile + "\r\n";
+                            string message = (!Checked(chkDeletesDisabled) ? "Would delete : " : "Attempting to delete: ") + pathFile + "\r\n";
                             if (!Checked(chkDeletesDisabled)) File.Delete(pathFile);
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2) frmMain.g_oUtils.WriteText(m_strDebugFile, message);
                             break;
@@ -212,8 +210,8 @@ namespace FIA_Biosum_Manager
                     }
 
                     counter += 1;
-                    UpdateProgressBar1(Path.GetFileName(pathFile), (int) Math.Floor(100 * ((double)(counter+1)/(packageFiles.Length+1))));
-                    UpdateProgressBar2((int) Math.Floor(50 * ((double)(counter+1)/(packageFiles.Length+1))));
+                    UpdateProgressBar1(Path.GetFileName(pathFile), (int)Math.Floor(100 * ((double)(counter + 1) / (packageFiles.Length + 1))));
+                    UpdateProgressBar2((int)Math.Floor(50 * ((double)(counter + 1) / (packageFiles.Length + 1))));
                 }
 
                 UpdateProgressBar1("", 0);
@@ -231,25 +229,19 @@ namespace FIA_Biosum_Manager
                             m_packageNumbers.Length), "Delete Packages Results");
                 }
 
-                if (m_ado != null)
+                if (m_dataMgr != null)
                 {
-                    if (m_ado.m_DataSet != null)
+                    if (m_dataMgr.m_DataSet != null)
                     {
-                        m_ado.m_DataSet.Clear();
-                        m_ado.m_DataSet.Dispose();
+                        m_dataMgr.m_DataSet.Clear();
+                        m_dataMgr.m_DataSet.Dispose();
                     }
-                    m_ado = null;
-                }
-                if (m_dao != null)
-                {
-                    m_dao.m_DaoWorkspace.Close();
-                    m_dao.m_DaoWorkspace = null;
-                    m_dao = null;
+                    m_dataMgr = null;
                 }
 
-                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form) ReferenceFormDialog, "Visible",
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Visible",
                     true);
-                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form) ReferenceFormDialog, "Enabled",
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Enabled",
                     true);
 
                 DeletePkgsFromBiosumProject_Finish();
@@ -260,14 +252,14 @@ namespace FIA_Biosum_Manager
             }
             catch (System.Threading.ThreadAbortException err)
             {
-                if (m_ado != null)
+                if (m_dataMgr != null)
                 {
-                    if (m_ado.m_DataSet != null)
+                    if (m_dataMgr.m_DataSet != null)
                     {
-                        m_ado.m_DataSet.Clear();
-                        m_ado.m_DataSet.Dispose();
+                        m_dataMgr.m_DataSet.Clear();
+                        m_dataMgr.m_DataSet.Dispose();
                     }
-                    m_ado = null;
+                    m_dataMgr = null;
                 }
                 ThreadCleanUp();
                 CleanupThread();
@@ -302,19 +294,19 @@ namespace FIA_Biosum_Manager
                 m_dictDeletedRowCountsByDatabaseAndTable = new Dictionary<string, Dictionary<string, int>>();
             }
 
-            if (m_ado != null)
+            if (m_dataMgr != null)
             {
-                if (m_ado.m_DataSet != null)
+                if (m_dataMgr.m_DataSet != null)
                 {
-                    m_ado.m_DataSet.Clear();
-                    m_ado.m_DataSet.Dispose();
+                    m_dataMgr.m_DataSet.Clear();
+                    m_dataMgr.m_DataSet.Dispose();
                 }
-                m_ado = null;
+                m_dataMgr = null;
             }
-            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form) ReferenceFormDialog, "Enabled",
+            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)ReferenceFormDialog, "Enabled",
                 true);
             if (m_frmTherm != null)
-                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form) m_frmTherm, "Visible", false);
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Form)m_frmTherm, "Visible", false);
 
 
             DeletePkgsFromBiosumProject_Finish();
@@ -324,8 +316,6 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.m_oEventThreadStopped.Set();
             Invoke(frmMain.g_oDelegate.m_oDelegateThreadFinished);
         }
-
-
         private void UpdateProgressBar1(string label, int value)
         {
             SetLabelValue(m_frmTherm.lblMsg, "Text", label);
@@ -357,14 +347,14 @@ namespace FIA_Biosum_Manager
 
         private void ExecuteDeleteOnTables(string strDbPathFile, string[] tables = null, string[] exceptions = null)
         {
-            using (var conn = new OleDbConnection(m_ado.getMDBConnString(strDbPathFile, "", "")))
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_dataMgr.GetConnectionString(strDbPathFile)))
             {
                 conn.Open();
 
                 string[] strTables = tables;
                 if (tables == null || tables.Length == 0)
                 {
-                    strTables = m_ado.getTableNamesOfSpecificTypes(conn).Where(s => !(s.Contains("~") || s.Contains(" "))).ToArray();
+                    strTables = m_dataMgr.getTableNames(conn).Where(s => !(s.Contains("~") || s.Contains(" "))).ToArray();
                     //In case none of the tables are valid
                     if (strTables.Length == 1 && strTables[0] == "")
                         return;
@@ -379,9 +369,9 @@ namespace FIA_Biosum_Manager
                     }
 
                     column = null;
-                    foreach (string col in new string[] {"rxpackage"})
+                    foreach (string col in new string[] { "rxpackage" })
                     {
-                        if (m_ado.ColumnExist(conn, table, col))
+                        if (m_dataMgr.ColumnExist(conn, table, col))
                         {
                             column = col;
                             break;
@@ -390,10 +380,10 @@ namespace FIA_Biosum_Manager
 
                     if (!String.IsNullOrEmpty(column))
                     {
-                        var strTempIndex = column + "_delete_idx";
-                        if (!m_dao.IndexExists(strDbPathFile, table, strTempIndex))
+                        string strTempIndex = column + "_delete_idx";
+                        if (!m_dataMgr.IndexExist(conn, strTempIndex))
                         {
-                            m_ado.AddIndex(conn, table, strTempIndex, column);
+                            m_dataMgr.AddIndex(conn, table, strTempIndex, column);
                         }
 
                         if (frmMain.g_bDebug)
@@ -405,13 +395,12 @@ namespace FIA_Biosum_Manager
 
                         int deletedRecords = BuildAndExecuteDeleteSQLStmts(conn, table, column);
                         if (deletedRecords > 0) AddDeletedCountToDictionary(strDbPathFile, table, deletedRecords);
-                        m_ado.SqlNonQuery(conn, String.Format("DROP INDEX {0} ON {1}", strTempIndex, table));
+                        m_dataMgr.m_strSQL = "DROP INDEX " + strTempIndex;
+                        m_dataMgr.SqlNonQuery(conn, m_dataMgr.m_strSQL);
                     }
                 }
             }
-            if (Checked(chkCompactMDB)) m_dao.CompactMDB(strDbPathFile);
         }
-
         private void AddDeletedCountToDictionary(string strDbPathFile, string table, int deletedRecords)
         {
             if (!m_dictDeletedRowCountsByDatabaseAndTable.Keys.Contains(strDbPathFile))
@@ -422,14 +411,14 @@ namespace FIA_Biosum_Manager
             m_dictDeletedRowCountsByDatabaseAndTable[strDbPathFile].Add(table, deletedRecords);
         }
 
-        private int BuildAndExecuteDeleteSQLStmts(OleDbConnection oConn, string table, string column)
+
+        private int BuildAndExecuteDeleteSQLStmts(System.Data.SQLite.SQLiteConnection oConn, string table, string column)
         {
-            var matchedRecordCount = (int) m_ado.getSingleDoubleValueFromSQLQuery(oConn,
-                String.Format("SELECT COUNT(*) FROM {0} WHERE {1} IN ({2});", table, column, m_strPackageNumbers),
-                table);
+            int matchedRecordCount = (int)m_dataMgr.getSingleDoubleValueFromSQLQuery(oConn,
+                "SELECT COUNT(*) FROM " + table + " WHERE " + column + " IN (" + m_strPackageNumbers + ")", table);
             if (matchedRecordCount == 0) return 0;
 
-            var deleteSQL = String.Format("DELETE FROM {0} WHERE {1} IN ({2});", table, column, m_strPackageNumbers);
+            string deleteSQL = "DELETE FROM " + table + " WHERE " + column + " IN (" + m_strPackageNumbers + ")";
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
             {
                 var message = Checked(chkDeletesDisabled)
@@ -437,10 +426,9 @@ namespace FIA_Biosum_Manager
                     : "Attempting to execute: " + deleteSQL + "\r\n";
                 frmMain.g_oUtils.WriteText(m_strDebugFile, message);
             }
-            if (!Checked(chkDeletesDisabled)) m_ado.SqlNonQuery(oConn, deleteSQL);
+            if (!Checked(chkDeletesDisabled)) m_dataMgr.SqlNonQuery(oConn, deleteSQL);
             return matchedRecordCount;
         }
-
         private void CreateLogFile(string strLogFileName)
         {
             string strMessage;
@@ -730,22 +718,5 @@ namespace FIA_Biosum_Manager
             m_oHelp.ShowHelp(new string[] { "DATABASE", "DELETE_PACKAGES" });
         }
 
-        private void chkCompactMDB_CheckedChanged(object sender, EventArgs e)
-        {
-            // Don't allow chkCompactMDB to be checked if chkDeletesDisabled is checked
-            if (Checked(chkCompactMDB))
-            {
-                chkDeletesDisabled.Checked = false;
-            }
-        }
-
-        private void chkDeletesDisabled_CheckedChanged(object sender, EventArgs e)
-        {
-            // Don't allow chkCompactMDB to be checked if chkDeletesDisabled is checked
-            if (Checked(chkDeletesDisabled))
-            {
-                chkCompactMDB.Checked = false;
-            }
-        }
     }
 }
