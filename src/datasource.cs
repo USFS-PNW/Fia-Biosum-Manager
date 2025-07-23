@@ -139,13 +139,6 @@ namespace FIA_Biosum_Manager
 			this.m_strScenarioId = strScenarioId;
 			this.populate_datasource_array_sqlite();
 		}
-		public Datasource(string p_strProjDir, string p_strScenarioId,string p_strScenarioType)
-		{
-			this.m_strDataSourceMDBFile = p_strProjDir + "\\" + p_strScenarioType + "\\db\\scenario_" + p_strScenarioType + "_rule_definitions.db";
-			this.m_strDataSourceTableName = "scenario_datasource";
-			this.m_strScenarioId = p_strScenarioId;
-			this.populate_datasource_array_sqlite();
-		}
 		~Datasource()
 		{
 		}
