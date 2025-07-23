@@ -110,7 +110,7 @@ namespace FIA_Biosum_Manager
 
 			this.m_oQueries = new Queries();
 			m_oQueries.m_oFvs.LoadDatasource=true;
-			m_oQueries.LoadDatasources(true);
+			m_oQueries.LoadDatasourcesNew(true);
 
 			this.m_oLvAlternateColors.InitializeRowCollection();      
 			this.lstRx.Clear();
@@ -1103,7 +1103,7 @@ namespace FIA_Biosum_Manager
             Queries oQueries = new Queries();
             oQueries.m_oFvs.LoadDatasource = true;
 			// pulls from master databases - keep as Access version for now
-            oQueries.LoadDatasourcesSqlite(true);
+            oQueries.LoadDatasourcesNew(true);
             this.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(oQueries, p_oRxPackageItemCollection);
             oQueries = null;
         }

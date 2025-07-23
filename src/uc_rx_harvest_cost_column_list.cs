@@ -25,9 +25,7 @@ namespace FIA_Biosum_Manager
 		const int COLUMN_DESC=3;
 		private System.Windows.Forms.Label lblDesc;
 		private Queries m_oQueries = new Queries();
-		private ado_data_access m_oAdo = new ado_data_access();
 		private FIA_Biosum_Manager.frmRxItem _frmRxItem=null;
-		private string m_strColumnNameList="";
         private string m_strHarvestTableColumnNameList = "";
 		/// <summary> 
 		/// Required designer variable.
@@ -64,10 +62,7 @@ namespace FIA_Biosum_Manager
 			m_oQueries.m_oFvs.LoadDatasource=true;
 			m_oQueries.m_oReference.LoadDatasource=true;
             m_oQueries.m_oProcessor.LoadDatasource = true;
-			m_oQueries.LoadDatasources(true);
-			m_oAdo = new ado_data_access();
-			m_oAdo.OpenConnection(m_oAdo.getMDBConnString(m_oQueries.m_strTempDbFile,"",""));
-			
+			m_oQueries.LoadDatasourcesNew(true);			
 			this.lvRxHarvestCostColumns.Clear();
 			
 			this.m_oLvAlternateRowColors.InitializeRowCollection();

@@ -293,9 +293,6 @@
     <Compile Include="frmRxItem.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frmRxItemFvsCmdItem.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="frmRxPackageItem.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -495,12 +492,6 @@
     <Compile Include="uc_rx_edit.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="uc_rx_fvscmd_edit.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_rx_fvscmd_list.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Include="uc_rx_harvest_cost_column_list.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -511,9 +502,6 @@
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="uc_rx_package_edit.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_rx_package_fvscmd_list.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="uc_rx_package_harvest_cost_column_list.cs">
@@ -687,9 +675,6 @@
     <EmbeddedResource Include="frmRxItem.resx">
       <DependentUpon>frmRxItem.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="frmRxItemFvsCmdItem.resx">
-      <DependentUpon>frmRxItemFvsCmdItem.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="frmRxPackageItem.resx">
       <DependentUpon>frmRxPackageItem.cs</DependentUpon>
     </EmbeddedResource>
@@ -826,12 +811,6 @@
     <EmbeddedResource Include="uc_rx_edit.resx">
       <DependentUpon>uc_rx_edit.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="uc_rx_fvscmd_edit.resx">
-      <DependentUpon>uc_rx_fvscmd_edit.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="uc_rx_fvscmd_list.resx">
-      <DependentUpon>uc_rx_fvscmd_list.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="uc_rx_harvest_cost_column_list.resx">
       <DependentUpon>uc_rx_harvest_cost_column_list.cs</DependentUpon>
     </EmbeddedResource>
@@ -843,9 +822,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="uc_rx_package_edit.resx">
       <DependentUpon>uc_rx_package_edit.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="uc_rx_package_fvscmd_list.resx">
-      <DependentUpon>uc_rx_package_fvscmd_list.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="uc_rx_package_harvest_cost_column_list.resx">
       <DependentUpon>uc_rx_package_harvest_cost_column_list.cs</DependentUpon>

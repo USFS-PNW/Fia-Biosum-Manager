@@ -72,7 +72,7 @@ namespace FIA_Biosum_Manager
                     m_oQueries.m_oFIAPlot.LoadDatasource = true;
                     m_oQueries.m_oProcessor.LoadDatasource = true;
                     m_oQueries.m_oReference.LoadDatasource = true;
-                    m_oQueries.LoadDatasources(true, "processor", strScenarioArray[x]);
+                    m_oQueries.LoadDatasourcesNew(true, "processor", strScenarioArray[x]);
                     oTools.LoadAll(m_oQueries, strScenarioArray[x], m_oProcessorScenarioItem_Collection);
                 }
             }

@@ -337,8 +337,7 @@ namespace FIA_Biosum_Manager
             m_oQueries.m_oReference.LoadDatasource = true;
             m_oQueries.m_oProcessor.LoadDatasource = true;
             m_oQueries.m_oTravelTime.LoadDatasource = true;
-            // The following call creates the temp database that is used for running calculations
-            m_oQueries.LoadDatasources(true, "processor", ScenarioId);
+             m_oQueries.LoadDatasourcesNew(true, "processor", ScenarioId);
             //
             //LOAD RX PACKAGE INFO
             //
@@ -1372,7 +1371,7 @@ namespace FIA_Biosum_Manager
                 if (m_oDataMgr.m_intError == 0)
                 {
                     //update the harvest costs table complete costs per acre column
-                    m_oDataMgr.m_strSQL = Queries.ProcessorScenarioRun.UpdateSqliteHarvestCostsTableWithCompleteCostsPerAcre(
+                    m_oDataMgr.m_strSQL = Queries.ProcessorScenarioRun.UpdateHarvestCostsTableWithCompleteCostsPerAcre(
                         "HarvestCostsTotalAdditionalWorkTable", p_strHarvestCostsTableName, oEscalators, false);
 
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -1748,7 +1747,7 @@ namespace FIA_Biosum_Manager
                         {
                             //Update the harvest costs work table complete costs per acre column;
                             //Also applies the escalators to harvest_costs
-                            m_oDataMgr.m_strSQL = Queries.ProcessorScenarioRun.UpdateSqliteHarvestCostsTableWithKcpCostsPerAcre(
+                            m_oDataMgr.m_strSQL = Queries.ProcessorScenarioRun.UpdateHarvestCostsTableWithKcpCostsPerAcre(
                                          p_strAddCostsWorktable,
                                          p_strHarvestCostsTableName, p_oEscalators, true);
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -1769,7 +1768,7 @@ namespace FIA_Biosum_Manager
                         {
                             //Update the complete_cpa for stands where additional_cpa = 0; This should be the case where stands are in a project
                             //that uses kcp cpa, but kcp cpa is not defined for them
-                            m_oDataMgr.m_strSQL = Queries.ProcessorScenarioRun.UpdateSqliteHarvestCostsTableWhenZeroKcpCosts(p_strHarvestCostsTableName,
+                            m_oDataMgr.m_strSQL = Queries.ProcessorScenarioRun.UpdateHarvestCostsTableWhenZeroKcpCosts(p_strHarvestCostsTableName,
                                 p_oEscalators);
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");

@@ -177,7 +177,7 @@ namespace FIA_Biosum_Manager
                 // We have an open project
                 m_oQueries.m_oFvs.LoadDatasource = true;
                 m_oQueries.m_oFIAPlot.LoadDatasource = true;
-                m_oQueries.LoadDatasources(true);
+                m_oQueries.LoadDatasourcesNew(true);
 
                 //
                 //OPEN CONNECTION TO TREELIST DB FILE

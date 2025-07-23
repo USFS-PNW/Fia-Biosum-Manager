@@ -37,7 +37,6 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.TabPage tbPgRxPackageItem;
 		private System.Windows.Forms.ToolBar tlbRxPackageItem;
 		private System.ComponentModel.IContainer components;
-		public FIA_Biosum_Manager.uc_rx_package_fvscmd_list uc_rx_package_fvscmd_list1;
         private TabPage tbPgRxItemHarvestCostColumn;
         public uc_rx_package_harvest_cost_column_list uc_rx_package_harvest_cost_column_list1;
 		private string _strUsedRxPackageList="";
@@ -105,7 +104,6 @@ namespace FIA_Biosum_Manager
             this.uc_rx_package_edit1 = new FIA_Biosum_Manager.uc_rx_package_edit();
             this.tbPgRxItemHarvestCostColumn = new System.Windows.Forms.TabPage();
             this.uc_rx_package_harvest_cost_column_list1 = new FIA_Biosum_Manager.uc_rx_package_harvest_cost_column_list();
-            this.uc_rx_package_fvscmd_list1 = new FIA_Biosum_Manager.uc_rx_package_fvscmd_list();
             this.tlbRxPackageItem = new System.Windows.Forms.ToolBar();
             this.btnOk = new System.Windows.Forms.ToolBarButton();
             this.btnCancel = new System.Windows.Forms.ToolBarButton();
@@ -183,14 +181,6 @@ namespace FIA_Biosum_Manager
             this.uc_rx_package_harvest_cost_column_list1.ReferenceFormRxPackageItem = null;
             this.uc_rx_package_harvest_cost_column_list1.Size = new System.Drawing.Size(800, 385);
 
-            // 
-            // uc_rx_package_fvscmd_list1
-            // 
-            this.uc_rx_package_fvscmd_list1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.uc_rx_package_fvscmd_list1.Location = new System.Drawing.Point(0, 0);
-            this.uc_rx_package_fvscmd_list1.Name = "uc_rx_package_fvscmd_list1";
-            this.uc_rx_package_fvscmd_list1.Size = new System.Drawing.Size(800, 385);
-            this.uc_rx_package_fvscmd_list1.TabIndex = 0;
             // 
             // tlbRxPackageItem
             // 
@@ -320,18 +310,13 @@ namespace FIA_Biosum_Manager
 			
 
 			if (m_strAction=="edit")
-			{
-				
+			{				
 				this.uc_rx_package_edit1.loadvalues();
-				this.uc_rx_package_fvscmd_list1.loadvalues();
                 this.uc_rx_package_harvest_cost_column_list1.loadvalues();
-
 			}
 			else
-			{
-				
+			{				
 				this.uc_rx_package_edit1.loadvalues();
-				this.uc_rx_package_fvscmd_list1.loadvalues();
                 this.uc_rx_package_harvest_cost_column_list1.loadvalues();
 			}
 		}
@@ -443,22 +428,9 @@ namespace FIA_Biosum_Manager
                 case "Properties":
 					Properties();
 					break;
-				case "Edit":
-					this.uc_rx_package_fvscmd_list1.EditItem();
-					break;
-                case "Delete":
-					this.uc_rx_package_fvscmd_list1.RemoveItem();
-					break;
-				case "New":
-					this.uc_rx_package_fvscmd_list1.AddItem();
-					break;
 				case "Contacts":
 					break;
 			}
-		}
-		public bool TabPageHasFocus(int p_intTabPageIndex)
-		{
-			return this.tabControl1.TabPages[p_intTabPageIndex].ContainsFocus;
 		}
 		private void OpenKCPFile()
 		{

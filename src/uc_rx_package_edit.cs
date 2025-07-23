@@ -463,7 +463,7 @@ namespace FIA_Biosum_Manager
 		{
 
 			this.m_oQueries.m_oFvs.LoadDatasource=true;
-			this.m_oQueries.LoadDatasources(true);
+			this.m_oQueries.LoadDatasourcesNew(true);
 			//
 			//populate category list box
 			//
@@ -783,7 +783,6 @@ namespace FIA_Biosum_Manager
 
 				if ((this.chkFVSCycleSkip.Checked || this.chkFVSCycleSkip.Checked) && bCheck)
 				{
-					this.ReferenceFormRxPackageItem.uc_rx_package_fvscmd_list1.RemoveRxItemsFromList(strCurRx,strCurFvsCycle);
                     this.ReferenceFormRxPackageItem.uc_rx_package_harvest_cost_column_list1.RemoveRxItemsFromList(strCurRx, strCurFvsCycle);
                     
 				}
@@ -793,14 +792,11 @@ namespace FIA_Biosum_Manager
 					{
 						if (strCurRx.Trim().Length > 0 && strCurRx.Trim() != this.cmbRx.Text.Trim())
 						{
-							this.ReferenceFormRxPackageItem.uc_rx_package_fvscmd_list1.RemoveRxItemsFromList(strCurRx,strCurFvsCycle);
-							this.ReferenceFormRxPackageItem.uc_rx_package_fvscmd_list1.AddRxItemsToList(cmbRx.Text,strCurFvsCycle);
                             this.ReferenceFormRxPackageItem.uc_rx_package_harvest_cost_column_list1.RemoveRxItemsFromList(strCurRx, strCurFvsCycle);
                             this.ReferenceFormRxPackageItem.uc_rx_package_harvest_cost_column_list1.AddRxItemsToList(cmbRx.Text, strCurFvsCycle);
 						}
 						else
 						{
-							this.ReferenceFormRxPackageItem.uc_rx_package_fvscmd_list1.AddRxItemsToList(cmbRx.Text,strCurFvsCycle);
                             this.ReferenceFormRxPackageItem.uc_rx_package_harvest_cost_column_list1.AddRxItemsToList(cmbRx.Text, strCurFvsCycle);
 						}
 						
@@ -965,7 +961,6 @@ namespace FIA_Biosum_Manager
 			{
 				if (this.lstRx.Items[x].SubItems[COLUMN_RX].Text.Trim().Length > 0)
 				{
-					this.ReferenceFormRxPackageItem.uc_rx_package_fvscmd_list1.RemoveRxItemsFromList(lstRx.Items[x].SubItems[COLUMN_RX].Text.Trim(),Convert.ToString(lstRx.Items[x].Index + 1));
                     this.ReferenceFormRxPackageItem.uc_rx_package_harvest_cost_column_list1.RemoveRxItemsFromList(lstRx.Items[x].SubItems[COLUMN_RX].Text.Trim(),Convert.ToString(lstRx.Items[x].Index + 1));
 				}
 				this.lstRx.Items[x].SubItems[COLUMN_RX].Text="";
@@ -983,7 +978,6 @@ namespace FIA_Biosum_Manager
 
 			if (this.lstRx.SelectedItems[0].SubItems[COLUMN_RX].Text.Trim().Length > 0)
 			{
-				this.ReferenceFormRxPackageItem.uc_rx_package_fvscmd_list1.RemoveRxItemsFromList(lstRx.SelectedItems[0].SubItems[COLUMN_RX].Text.Trim(),Convert.ToString(lstRx.SelectedItems[0].Index + 1));
                 this.ReferenceFormRxPackageItem.uc_rx_package_harvest_cost_column_list1.RemoveRxItemsFromList(lstRx.SelectedItems[0].SubItems[COLUMN_RX].Text.Trim(), Convert.ToString(lstRx.SelectedItems[0].Index + 1));
 			}
 			this.lstRx.SelectedItems[0].SubItems[COLUMN_RX].Text="";

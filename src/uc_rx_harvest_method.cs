@@ -279,9 +279,8 @@ namespace FIA_Biosum_Manager
 			this.txtSteepSlopeDesc.Text="";
 			m_oQueries.m_oFvs.LoadDatasource=true;
 			m_oQueries.m_oReference.LoadDatasource=true;
-			m_oQueries.LoadDatasources(true);
+			m_oQueries.LoadDatasourcesNew(true);
             string strDbFile = m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.HarvestMethods);
-            //this.m_oRxTools.LoadRxHarvestMethods(m_oAdo,m_oAdo.m_OleDbConnection,m_oQueries,cmbMethod,cmbSteepSlopeMethod);
             m_descrDictionary.Clear();
             m_steepDescrDictionary.Clear();
             this.m_oRxTools.LoadRxHarvestMethods(strDbFile, m_oQueries, cmbMethod, cmbSteepSlopeMethod, m_descrDictionary,

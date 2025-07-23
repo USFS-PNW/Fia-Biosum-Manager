@@ -265,7 +265,7 @@ namespace FIA_Biosum_Manager
                 m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(strDbConn, m_oCurFVSPrepostSeqNumItem_Collection);
                 m_oCurFVSPrepostSeqNumItem_Collection.CopyProperties(m_oSavFVSPrepostSeqNumItem_Collection, m_oCurFVSPrepostSeqNumItem_Collection);
                 m_oQueries.m_oFvs.LoadDatasource = true;
-                m_oQueries.LoadDatasources(true);
+                m_oQueries.LoadDatasourcesNew(true);
                 if (m_oRxPackageItem_Collection == null)
                 {
                     m_oRxPackageItem_Collection = new RxPackageItem_Collection();

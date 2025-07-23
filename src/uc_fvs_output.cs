@@ -142,7 +142,7 @@ namespace FIA_Biosum_Manager
 			this.m_oQueries = new Queries();
 			m_oQueries.m_oFvs.LoadDatasource=true;
 			m_oQueries.m_oFIAPlot.LoadDatasource=true;
-			m_oQueries.LoadDatasources(true);
+			m_oQueries.LoadDatasourcesNew(true);
             this.m_oEnv = new env();
 
             this.m_bDebug = frmMain.g_bDebug;

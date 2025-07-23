@@ -104,7 +104,7 @@ namespace FIA_Biosum_Manager
 			this.DisplayGroupSet(1);
 
             this.m_oQueries = new Queries();
-            m_oQueries.LoadDatasources(true);
+            m_oQueries.LoadDatasourcesNew(true);
              spc_common_name_collection1 = new spc_common_name_collection();
             this.m_oEnv = new env();
 		}
