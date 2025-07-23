@@ -15,7 +15,6 @@ namespace FIA_Biosum_Manager
 	{
 		private System.Windows.Forms.ImageList imgSize;
 		private System.ComponentModel.IContainer components;
-		public System.Data.OleDb.OleDbConnection m_OleDbConnectionScenario;
 		public int m_intFullHt = 304;
 		private System.Windows.Forms.GroupBox groupBox1;
 		public System.Windows.Forms.CheckBox chkOwnGrp10;
