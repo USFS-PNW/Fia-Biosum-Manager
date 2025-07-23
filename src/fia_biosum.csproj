@@ -287,9 +287,6 @@
     <Compile Include="frmProcessorScenario.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frmRunOptimizerScenario.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="frmRxItem.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -668,9 +665,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmProcessorScenario.resx">
       <DependentUpon>frmProcessorScenario.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmRunOptimizerScenario.resx">
-      <DependentUpon>frmRunOptimizerScenario.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmRxItem.resx">
       <DependentUpon>frmRxItem.cs</DependentUpon>
