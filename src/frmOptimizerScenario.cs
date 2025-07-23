@@ -39,7 +39,6 @@ namespace FIA_Biosum_Manager
 		public FIA_Biosum_Manager.uc_optimizer_scenario_owner_groups uc_scenario_owner_groups1;
         public FIA_Biosum_Manager.uc_optimizer_scenario_select_packages uc_optimizer_scenario_select_packages1;
 		public FIA_Biosum_Manager.frmGridView frmGridView1;
-		private FIA_Biosum_Manager.frmRunOptimizerScenario frmRunOptimizerScenario1;
 		
 		public System.Windows.Forms.VScrollBar m_vScrollBar;
 		public System.Windows.Forms.HScrollBar m_hScrollBar;
@@ -1273,36 +1272,6 @@ namespace FIA_Biosum_Manager
 		{
 		}
 
-		private void btnRun_Click(object sender, System.EventArgs e)
-		{
-			int intAvailWd = this.ParentForm.ClientSize.Width - ((frmMain)this.ParentForm).grpboxLeft.Left - ((frmMain)this.ParentForm).grpboxLeft.Width - 20;
-			int intAvailHt = this.ParentForm.ClientSize.Height - ((frmMain)this.ParentForm).tlbMain.Top - ((frmMain)this.ParentForm).tlbMain.Height - 20;
-			FIA_Biosum_Manager.utils p_oUtils = new FIA_Biosum_Manager.utils();
-			if (p_oUtils.FindWindowLike((IntPtr)((frmMain)this.ParentForm).Handle, "Treatment Optimizer: Run Scenario (" +  this.uc_scenario1.txtScenarioId.Text.Trim() + ")","*",true,true) > 0)
-			{
-				this.frmRunOptimizerScenario1.WindowState = System.Windows.Forms.FormWindowState.Normal;
-				this.frmRunOptimizerScenario1.Focus();
-				this.frmRunOptimizerScenario1.Height = intAvailHt; 
-				this.frmRunOptimizerScenario1.Width = intAvailWd; 
-				this.frmRunOptimizerScenario1.Left = 0;
-				this.frmRunOptimizerScenario1.Top = 0;
-				return;
-
-			}
-			this.frmRunOptimizerScenario1 = new frmRunOptimizerScenario(this);
-			this.frmRunOptimizerScenario1.Text = "Treatment Optimizer: Run Scenario (" + this.uc_scenario1.txtScenarioId.Text.Trim() + ")";
-			this.frmRunOptimizerScenario1.MdiParent = this.ParentForm;
-			this.frmRunOptimizerScenario1.btnCancel.Text = "Start";
-			this.frmRunOptimizerScenario1.WindowState = System.Windows.Forms.FormWindowState.Normal;
-			this.frmRunOptimizerScenario1.Enabled=true;
-			this.frmRunOptimizerScenario1.Show();
-			
-			
-			this.frmRunOptimizerScenario1.Height = intAvailHt; 
-			this.frmRunOptimizerScenario1.Width = intAvailWd; 
-			this.frmRunOptimizerScenario1.Left = 0;
-			this.frmRunOptimizerScenario1.Top = 0;
-		}
 		private void hScrollBar_ValueChanged(Object sender, EventArgs e)
 		{
 			try
