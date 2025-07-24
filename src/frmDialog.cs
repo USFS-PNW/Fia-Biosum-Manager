@@ -24,7 +24,6 @@ namespace FIA_Biosum_Manager
 		public FIA_Biosum_Manager.frmMain m_frmMain;
 		public FIA_Biosum_Manager.uc_previous_expressions uc_previous_expressions1;
         public FIA_Biosum_Manager.uc_optimizer_scenario_calculated_variables uc_core_scenario_weighted_average1;
-        public FIA_Biosum_Manager.uc_optimizer_sqlite_export uc_optimizer_sqlite_export1;
         public FIA_Biosum_Manager.uc_optimizer_load_gis_data uc_optimizer_load_gis_data1;
         public FIA_Biosum_Manager.txtDollarsAndCents m_txtMoney;
 		public FIA_Biosum_Manager.txtNumeric m_txtNumeric;
@@ -390,14 +389,6 @@ namespace FIA_Biosum_Manager
             this.uc_core_scenario_weighted_average1 = new uc_optimizer_scenario_calculated_variables(this.m_frmMain);
             this.Controls.Add(this.uc_core_scenario_weighted_average1);
             this.uc_core_scenario_weighted_average1.Visible = true;
-
-        }
-        public void Initialize_Optimizer_Sqlite_User_Control()
-        {
-
-            this.uc_optimizer_sqlite_export1 = new uc_optimizer_sqlite_export(this.m_frmMain);
-            this.Controls.Add(this.uc_optimizer_sqlite_export1);
-            this.uc_optimizer_sqlite_export1.Visible = true;
 
         }
         public bool Initialize_Load_Gis_Data_User_Control()
