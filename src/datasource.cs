@@ -66,41 +66,6 @@ namespace FIA_Biosum_Manager
 			Datasource.TableTypes.FiaTreeSpeciesReference,
 	    };
 
-	    public static string[] g_strCoreDatasourceTableTypesArray =
-	    {
-	        "Plot",
-	        "Condition",
-	        "Tree",
-	        "Owner Groups",
-	        "Treatment Prescriptions",
-	        "Treatment Prescriptions Harvest Cost Columns",
-	        "Treatment Packages",
-	        "Travel Times",
-	        "Processing Sites",
-	        "FVS Tree List For Processor",
-	        "FIA Tree Macro Plot Breakpoint Diameter",
-	        Datasource.TableTypes.HarvestMethods,
-	        "BIOSUM Pop Stratum Adjustment Factors",
-	        "Site Tree"
-	    };
-
-	    public static string[] g_strProcessorDatasourceTableTypesArray =
-	    {
-	        "Plot",
-	        "Condition",
-	        "Tree",
-	        "Owner Groups",
-	        "Treatment Prescriptions",
-	        "Treatment Prescriptions Harvest Cost Columns",
-	        "Treatment Packages",
-	        "Travel Times",
-	        "Processing Sites",
-	        "FVS Tree List For Processor",
-	        "FIA Tree Macro Plot Breakpoint Diameter",
-	        Datasource.TableTypes.HarvestMethods,
-	        "BIOSUM Pop Stratum Adjustment Factors",
-	        "Site Tree"
-	    };
 		public static FIA_Biosum_Manager.SQLMacroSubstitutionVariableItem g_oCurrentSQLMacroSubstitutionVariableItem=
 			            new SQLMacroSubstitutionVariableItem();
 
@@ -124,20 +89,6 @@ namespace FIA_Biosum_Manager
 			this.m_strDataSourceTableName = "datasource";
 			this.m_strScenarioId="";
 			this.populate_datasource_array();
-		}
-  	    ///<summary>
-	    ///get scenario datasource information.
-	    ///Scenario Datasource information is loaded
-	    ///into strDataSource[,] array when this class is instatiated.
-	    ///</summary>
-	    ///<param name="strProjDir">Project Root Directory</param>
-		/// <param name="strScenarioId">Value is used to query core analysis scenario datasource infornation.</param>
-		public Datasource(string strProjDir, string strScenarioId)
-		{
-            this.m_strDataSourceMDBFile = strProjDir + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
-			this.m_strDataSourceTableName = "scenario_datasource";
-			this.m_strScenarioId = strScenarioId;
-			this.populate_datasource_array_sqlite();
 		}
 		~Datasource()
 		{
@@ -838,124 +789,6 @@ namespace FIA_Biosum_Manager
 				}
 			}
 			return 0;
-		}
-		/// <summary>
-		/// create primary indexes and set autonumber increment 
-		/// </summary>
-		/// <param name="p_strMDBPathAndFile">full directory path and file name that contains the table</param>
-		/// <param name="p_strTableType">datasource table type</param>
-		/// <param name="p_strTable">table name of the table type</param>
-		/// <param name="p_dao">dao_data_access object</param>
-		public void SetPrimaryIndexesAndAutoNumbers(string p_strMDBPathAndFile, string p_strTableType, string p_strTable, dao_data_access p_dao)
-		{
-			switch (p_strTableType.Trim().ToUpper())
-			{
-				case "PLOT":
-					p_dao.CreatePrimaryKeyIndex(p_strMDBPathAndFile,p_strTable,"biosum_plot_id");
-					break;
-				case "CONDITION":
-					p_dao.CreatePrimaryKeyIndex(p_strMDBPathAndFile,p_strTable,"biosum_cond_id");
-					break;
-				case "HARVEST COSTS":
-					p_dao.CreatePrimaryKeyIndex(p_strMDBPathAndFile,p_strTable,"biosum_cond_id,rx");
-					break;
-				case "TREATMENT PRESCRIPTIONS":
-					p_dao.CreatePrimaryKeyIndex(p_strMDBPathAndFile,p_strTable,"rx");
-					break;
-				case "TREE VOLUMES AND VALUES BY SPECIES AND DIAMETER GROUPS":
-					p_dao.CreatePrimaryKeyIndex(p_strMDBPathAndFile,p_strTable,"id");
-					p_dao.CreateAutoNumber(p_strMDBPathAndFile,p_strTable,"id");
-					break;
-				case "FVS TREE LIST FOR PROCESSOR":
-					p_dao.CreatePrimaryKeyIndex(p_strMDBPathAndFile,p_strTable,"id");
-					p_dao.CreateAutoNumber(p_strMDBPathAndFile,p_strTable,"id");
-					break;
-				case "TRAVEL TIMES":
-					p_dao.CreatePrimaryKeyIndex(p_strMDBPathAndFile,p_strTable,"traveltime_id");
-					p_dao.CreateAutoNumber(p_strMDBPathAndFile,p_strTable,"traveltime_id");
-					break;
-				case "TREE SPECIES AND DIAMETER GROUPS DOLLAR VALUES":
-					p_dao.CreatePrimaryKeyIndex(p_strMDBPathAndFile,p_strTable,"id");
-					p_dao.CreateAutoNumber(p_strMDBPathAndFile,p_strTable,"id");
-					break;
-				case "PROCESSING SITES":
-					p_dao.CreatePrimaryKeyIndex(p_strMDBPathAndFile,p_strTable,"psite_id");
-					break;
-			}
-
-		}
-
-		public void SetPrimaryIndexesAndAutoNumbers(string p_strTableType, string p_strTable, dao_data_access p_dao)
-		{
-			switch (p_strTableType.Trim().ToUpper())
-			{
-				case "PLOT":
-					p_dao.CreatePrimaryKeyIndex(p_dao.m_DaoDatabase,p_strTable,"biosum_plot_id");
-					break;
-				case "CONDITION":
-					p_dao.CreatePrimaryKeyIndex(p_dao.m_DaoDatabase,p_strTable,"biosum_cond_id");
-					break;
-				case "HARVEST COSTS":
-					p_dao.CreatePrimaryKeyIndex(p_dao.m_DaoDatabase,p_strTable,"biosum_cond_id,rx");
-					break;
-				case "TREATMENT PRESCRIPTIONS":
-					p_dao.CreatePrimaryKeyIndex(p_dao.m_DaoDatabase,p_strTable,"rx");
-					break;
-				case "TREE VOLUMES AND VALUES BY SPECIES AND DIAMETER GROUPS":
-					p_dao.CreatePrimaryKeyIndex(p_dao.m_DaoDatabase,p_strTable,"id");
-					p_dao.CreateAutoNumber(p_dao.m_DaoDatabase,p_strTable,"id");
-					break;
-				case "FVS TREE LIST FOR PROCESSOR":
-					p_dao.CreatePrimaryKeyIndex(p_dao.m_DaoDatabase,p_strTable,"id");
-					p_dao.CreateAutoNumber(p_dao.m_DaoDatabase,p_strTable,"id");
-					break;
-				case "TRAVEL TIMES":
-					p_dao.CreatePrimaryKeyIndex(p_dao.m_DaoDatabase,p_strTable,"traveltime_id");
-					p_dao.CreateAutoNumber(p_dao.m_DaoDatabase,p_strTable,"traveltime_id");
-					break;
-				case "PROCESSING SITES":
-					p_dao.CreatePrimaryKeyIndex(p_dao.m_DaoDatabase,p_strTable,"psite_id");
-					break;
-				case "TREE SPECIES AND DIAMETER GROUPS DOLLAR VALUES":
-					p_dao.CreatePrimaryKeyIndex(p_dao.m_DaoDatabase,p_strTable,"id");
-					p_dao.CreateAutoNumber(p_dao.m_DaoDatabase,p_strTable,"id");
-					break;
-			}
-
-		}
-		public void SetPrimaryIndexesAndAutoNumbers(ado_data_access p_oAdo,System.Data.OleDb.OleDbConnection p_oConn,string p_strTableType, string p_strTableName)
-		{
-			switch (p_strTableType.Trim().ToUpper())
-			{
-				case "PLOT":
-					frmMain.g_oTables.m_oFIAPlot.CreatePlotTableIndexes(p_oAdo,p_oConn,p_strTableName);
-					break;
-				case "CONDITION":
-					frmMain.g_oTables.m_oFIAPlot.CreateConditionTableIndexes(p_oAdo,p_oConn,p_strTableName);
-					break;
-				case "HARVEST COSTS":
-					frmMain.g_oTables.m_oProcessor.CreateHarvestCostsTableIndexes(p_oAdo,p_oConn,p_strTableName);
-					break;
-				case "TREATMENT PRESCRIPTIONS":
-					frmMain.g_oTables.m_oFvs.CreateRxTableIndexes(p_oAdo,p_oConn,p_strTableName);
-					break;
-				case "TREE VOLUMES AND VALUES BY SPECIES AND DIAMETER GROUPS":
-					frmMain.g_oTables.m_oProcessor.CreateTreeVolValSpeciesDiamGroupsTableIndexes(p_oAdo,p_oConn,p_strTableName);
-					break;
-				case "FVS TREE LIST FOR PROCESSOR":
-					frmMain.g_oTables.m_oFvs.CreateFVSOutProcessorInTableIndexes(p_oAdo,p_oConn,p_strTableName);
-					break;
-				case "TRAVEL TIMES":
-					frmMain.g_oTables.m_oTravelTime.CreateTravelTimeTableIndexes(p_oAdo,p_oConn,p_strTableName);
-					break;
-				case "PROCESSING SITES":
-					frmMain.g_oTables.m_oTravelTime.CreateProcessingSiteTableIndexes(p_oAdo,p_oConn,p_strTableName);
-					break;
-                case "HARVEST METHODS":
-                    frmMain.g_oTables.m_oReference.CreateHarvestMethodsTableIndexes(p_oAdo, p_oConn, p_strTableName);
-                    break;
-			}
-
 		}
 	    public static void UpdateTableMacroVariable(string p_strTableType,string p_strTableName)
 		{

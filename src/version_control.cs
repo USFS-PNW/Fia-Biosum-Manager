@@ -615,10 +615,10 @@ namespace FIA_Biosum_Manager
                 CheckCoreScenarioRuleDefinitionTables();
                 frmMain.g_sbpInfo.Text = "Version Update: Checking Project Datasource Table Records...Stand by";
                 CheckProjectDatasourceTableRecords();
-                frmMain.g_sbpInfo.Text = "Version Update: Checking Project Datasource Tables...Stand by";
-                CheckProjectDatasourceTables();
-                frmMain.g_sbpInfo.Text = "Version Update: Checking Pre-Populated Reference Tables...Stand by";
-                CheckProjectReferenceDatasourceTables();
+                //frmMain.g_sbpInfo.Text = "Version Update: Checking Project Datasource Tables...Stand by";
+                //CheckProjectDatasourceTables();
+                //frmMain.g_sbpInfo.Text = "Version Update: Checking Pre-Populated Reference Tables...Stand by";
+                //CheckProjectReferenceDatasourceTables();
                 frmMain.g_sbpInfo.Text = "Version Update: Checking Core Scenario Datasource Table Records...Stand by";
                 CheckCoreScenarioDatasourceTableRecords();
                 frmMain.g_sbpInfo.Text = "Version Update: Checking Processor Scenario Datasource Table Records...Stand by";
@@ -1283,697 +1283,353 @@ namespace FIA_Biosum_Manager
 			}
 			oAdo.CloseConnection(oAdo.m_OleDbConnection);
 		}
-		/// <summary>
-		/// Project table type Db files, tables and table columns are updated to the current version.
-		/// Each record in the datasource table is checked to make sure the db file exists,
-		/// the table exists, and all the columns exist. 
-		/// </summary>
-		private void CheckProjectDatasourceTables()
-		{
 
-			int x;
-			FIA_Biosum_Manager.Datasource oDs = new Datasource();
-			oDs.m_strDataSourceMDBFile = ReferenceProjectDirectory.Trim() + "\\db\\project.mdb";
-			oDs.m_strDataSourceTableName = "datasource";
-			oDs.m_strScenarioId="";
-			oDs.LoadTableColumnNamesAndDataTypes=false;
-			oDs.LoadTableRecordCount=false;
-			oDs.populate_datasource_array();
+		//private void CheckProjectReferenceDatasourceTables()
+		//{
 
-			ado_data_access oAdo=new ado_data_access();
-			ado_data_access oAdoCurrent=null;
+		//	int x,y;
+		//	FIA_Biosum_Manager.Datasource oDs = new Datasource();
+		//	oDs.m_strDataSourceMDBFile = ReferenceProjectDirectory.Trim() + "\\db\\project.mdb";
+		//	oDs.m_strDataSourceTableName = "datasource";
+		//	oDs.m_strScenarioId="";
+		//	oDs.LoadTableColumnNamesAndDataTypes=false;
+		//	oDs.LoadTableRecordCount=false;
+		//	oDs.populate_datasource_array();
 
-			dao_data_access oDao=null;
-			string strCurrDbFile="";
-			string strDbFile="";
-			string strTempDbFile="";
-			string strTempTableName="";
-			System.Data.OleDb.OleDbConnection oConn=null;
-			
-			
+		//	ado_data_access oAdo=new ado_data_access();
+		//	ado_data_access oAdoCurrent=null;
 
-			//open the project db file
-			oAdo.OpenConnection(oAdo.getMDBConnString(ReferenceProjectDirectory.Trim() + "\\" + 
-				frmMain.g_oTables.m_oProject.DefaultProjectTableDbFile,"",""));
-
-            
+		//	dao_data_access oDao= new dao_data_access();
+		//	string strCurrDbFile="";
+		//	string strDbFile="";
+		//	string strTempDbFile="";
+		//	string strTempTableName="";
+		//	System.Data.OleDb.OleDbConnection oConn=null;
 
 
-			oAdo.m_strSQL = "SELECT * FROM datasource ORDER BY path,file";
-			oAdo.SqlQueryReader(oAdo.m_OleDbConnection,oAdo.m_strSQL);
+		//	//copy ref_master.mdb to project db directory if file does not exist
+		//	if (System.IO.File.Exists(ReferenceProjectDirectory.Trim() + "\\db\\ref_master.mdb")==false)
+		//		 System.IO.File.Copy(frmMain.g_oEnv.strAppDir + "\\db\\ref_master.mdb",this.ReferenceProjectDirectory + "\\db\\ref_master.mdb",true);
 
-			if (oAdo.m_OleDbDataReader.HasRows)
-			{
-				//sequentially read each record
-				while (oAdo.m_OleDbDataReader.Read())
-				{
-					if (oAdo.m_OleDbDataReader["path"] != System.DBNull.Value &&
-						oAdo.m_OleDbDataReader["file"] != System.DBNull.Value)
-					{
-					    //get the array number of the current datasource table type
-						x=oDs.getDataSourceTableNameRow(oAdo.m_OleDbDataReader["table_type"].ToString().Trim());
+		//	//open the project db file
+		//	oAdo.OpenConnection(oAdo.getMDBConnString(ReferenceProjectDirectory.Trim() + "\\" + 
+		//		frmMain.g_oTables.m_oProject.DefaultProjectTableDbFile,"",""));
 
-						
-						strDbFile = oAdo.m_OleDbDataReader["path"].ToString().Trim() + "\\" + 
-							        oAdo.m_OleDbDataReader["file"].ToString().Trim();
+		//	oAdo.m_strSQL = "SELECT * FROM datasource " + 
+		//		            "WHERE table_type IS NOT NULL AND " + 
+  //                                "UCASE(TRIM(table_type)) " + 
+  //                                "IN ('OWNER GROUPS'," + 
+  //                                    "'TREE SPECIES'," + 
+  //                                    "'FVS TREE SPECIES'," + 
+  //                                    "'FIADB FVS VARIANT'," + 
+  //                                    "'INVENTORIES'," + 
+  //                                    "'TREATMENT PRESCRIPTION CATEGORIES'," + 
+  //                                    "'TREATMENT PRESCRIPTION SUBCATEGORIES'," + 
+  //                                    "'HARVEST METHODS'," + 
+  //                                    "'FVS WESTERN TREE SPECIES TRANSLATOR'," +
+  //                                    "'FVS EASTERN TREE SPECIES TRANSLATOR'" + 
+  //                                    ") ORDER BY path,file";
+		//	oAdo.SqlQueryReader(oAdo.m_OleDbConnection,oAdo.m_strSQL);
 
-						//check if the DB file has changed
-						if (strDbFile.Trim().ToUpper() != strCurrDbFile.Trim().ToUpper())
-						{
-							//close the current open DB file
-							if (oAdoCurrent!=null) oAdoCurrent.CloseConnection(oAdoCurrent.m_OleDbConnection);
-							else oAdoCurrent = new ado_data_access();
-
-							//make sure the db file exists
-							if (System.IO.File.Exists(strDbFile)==false)
-							{
-								//create the DB file
-								if (oDao==null) oDao = new dao_data_access();
-								oDao.CreateMDB(strDbFile);
-							}
-							//open a connection to the DB file
-							oAdoCurrent.OpenConnection(oAdo.getMDBConnString(strDbFile,"",""));
-							strCurrDbFile=strDbFile;
-
-						}
-						//check the table
-						if (oDs.m_strDataSource[x,Datasource.TABLESTATUS]=="NF") //NF=table not found
-						{
-							//create the table
-							switch (oDs.m_strDataSource[x,Datasource.TABLETYPE].Trim().ToUpper())
-							{
-								
-								case "PLOT":
-									frmMain.g_oTables.m_oFIAPlot.CreatePlotTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableName);
-									break;
-								case "CONDITION":
-									frmMain.g_oTables.m_oFIAPlot.CreateConditionTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultConditionTableName);
-									break;
-								case "TREE":
-									frmMain.g_oTables.m_oFIAPlot.CreateTreeTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName);
-									break;
-								case "OWNER GROUPS":  
-									frmMain.g_oTables.m_oReference.CreateOwnerGroupsTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection,Tables.Reference.DefaultOwnerGroupsTableName);
-									break;
-								case "TREATMENT PRESCRIPTIONS":
-									frmMain.g_oTables.m_oFvs.CreateRxTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection,Tables.FVS.DefaultRxTableName);
-									break;
-								case "TRAVEL TIMES":
-									frmMain.g_oTables.m_oTravelTime.CreateTravelTimeTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection,Tables.TravelTime.DefaultTravelTimeTableName);
-									break;
-								case "PROCESSING SITES":
-                                    frmMain.g_oTables.m_oTravelTime.CreateProcessingSiteTable(oAdoCurrent, oAdoCurrent.m_OleDbConnection, Tables.TravelTime.DefaultProcessingSiteTableName);
-									break;
-								case "FVS TREE LIST FOR PROCESSOR":
-									frmMain.g_oTables.m_oFvs.CreateFVSOutProcessorIn(oAdoCurrent,oAdoCurrent.m_OleDbConnection,Tables.FVS.DefaultFVSTreeTableName);
-									break;
-								case "FIADB FVS VARIANT":
-									frmMain.g_oTables.m_oReference.CreateFiadbFVSVariantTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection,Tables.Reference.DefaultFiadbFVSVariantTableName);
-									break;
-								
-								case "PLOT AND CONDITION RECORD AUDIT":
-                                    frmMain.g_oTables.m_oAudit.CreateCondAuditTable(oAdoCurrent, oAdoCurrent.m_OleDbConnection, Tables.Audit.DefaultCondAuditTableName);
-									break;
-								case "PLOT, CONDITION AND TREATMENT RECORD AUDIT":
-                                    frmMain.g_oTables.m_oAudit.CreatePlotCondRxAuditTable(oAdoCurrent, oAdoCurrent.m_OleDbConnection, Tables.Audit.DefaultCondRxAuditTableName);
-									break;
-								case "POPULATION EVALUATION":
-									frmMain.g_oTables.m_oFIAPlot.CreatePopEvalTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName);
-									break;
-								case "POPULATION ESTIMATION UNIT":
-									frmMain.g_oTables.m_oFIAPlot.CreatePopEstnUnitTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableName);
-									break;
-								case "POPULATION STRATUM":
-									frmMain.g_oTables.m_oFIAPlot.CreatePopStratumTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName);
-									break;
-								case "POPULATION PLOT STRATUM ASSIGNMENT":
-									frmMain.g_oTables.m_oFIAPlot.CreatePopPlotStratumAssgnTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName);
-									break;
-								case "SITE TREE":
-									frmMain.g_oTables.m_oFIAPlot.CreateSiteTreeTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection,frmMain.g_oTables.m_oFIAPlot.DefaultSiteTreeTableName);
-									break;
-                                //version 5 additions
-                                case "TREATMENT PRESCRIPTIONS HARVEST COST COLUMNS":
-                                    frmMain.g_oTables.m_oFvs.CreateRxHarvestCostColumnTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection,Tables.FVS.DefaultRxHarvestCostColumnsTableName);
-                                    break;
-                                case "TREATMENT PACKAGES":
-                                    frmMain.g_oTables.m_oFvs.CreateRxPackageTable(oAdoCurrent, oAdoCurrent.m_OleDbConnection, Tables.FVS.DefaultRxPackageTableName);
-                                    break;
-                                case "HARVEST METHODS":
-                                    frmMain.g_oTables.m_oReference.CreateHarvestMethodsTable(oAdoCurrent,oAdoCurrent.m_OleDbConnection, Tables.Reference.DefaultHarvestMethodsTableName);
-                                    break;                                                             
-							}
-						}
-						else
-						{
-							//update columns in the table
-							if (oDao==null)
-							{ 
-								//create a temp file that will contain a temporary copy of 
-								//the latest tables
-								oDao = new dao_data_access();
-								strTempDbFile=frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir,"accdb");
-								oDao.CreateMDB(strTempDbFile);
-								oConn = new System.Data.OleDb.OleDbConnection();
-								oConn.ConnectionString = oAdoCurrent.getMDBConnString(strTempDbFile,"","");
-								oConn.Open();
-							}
-
-							strTempTableName="";
-							//create an empty table structure of the table
-							switch (oDs.m_strDataSource[x,Datasource.TABLETYPE].Trim().ToUpper())
-							{
-								case "PLOT":
-									strTempTableName = frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableName;
-									frmMain.g_oTables.m_oFIAPlot.CreatePlotTable(oAdoCurrent,oConn,
-										     strTempTableName);
-									break;
-								case "CONDITION":
-									strTempTableName = frmMain.g_oTables.m_oFIAPlot.DefaultConditionTableName;
-									frmMain.g_oTables.m_oFIAPlot.CreateConditionTable(oAdoCurrent,oConn,strTempTableName);
-									break;
-								case "TREE":
-									strTempTableName = frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName;
-									frmMain.g_oTables.m_oFIAPlot.CreateTreeTable(oAdoCurrent,oConn,strTempTableName);
-									break;
-								case "OWNER GROUPS":  
-									strTempTableName = Tables.Reference.DefaultOwnerGroupsTableName;
-									frmMain.g_oTables.m_oReference.CreateOwnerGroupsTable(oAdoCurrent,oConn,strTempTableName);
-									break;
-								case "TREATMENT PRESCRIPTIONS":
-									strTempTableName = Tables.FVS.DefaultRxTableName;
-									frmMain.g_oTables.m_oFvs.CreateRxTable(oAdoCurrent,oConn,strTempTableName);
-									break;
-								case "TRAVEL TIMES":
-                                    strTempTableName = Tables.TravelTime.DefaultTravelTimeTableName;
-									frmMain.g_oTables.m_oTravelTime.CreateTravelTimeTable(oAdoCurrent,oConn,strTempTableName);
-									break;
-								case "PROCESSING SITES":
-                                    strTempTableName = Tables.TravelTime.DefaultProcessingSiteTableName;
-									frmMain.g_oTables.m_oTravelTime.CreateProcessingSiteTable(oAdoCurrent,oConn,strTempTableName);
-									break;
-								case "FVS TREE LIST FOR PROCESSOR":
-									strTempTableName = Tables.FVS.DefaultFVSTreeTableName;
-									frmMain.g_oTables.m_oFvs.CreateFVSOutProcessorIn(oAdoCurrent,oConn,strTempTableName);
-									break;
-								case "FIADB FVS VARIANT":
-									strTempTableName = Tables.Reference.DefaultFiadbFVSVariantTableName;
-									frmMain.g_oTables.m_oReference.CreateFiadbFVSVariantTable(oAdoCurrent,oConn,strTempTableName);
-									break;
-								
-								case "PLOT AND CONDITION RECORD AUDIT":
-                                    strTempTableName = Tables.Audit.DefaultCondAuditTableName;
-									frmMain.g_oTables.m_oAudit.CreateCondAuditTable(oAdoCurrent,oConn,strTempTableName);
-									break;
-								case "PLOT, CONDITION AND TREATMENT RECORD AUDIT":
-                                    strTempTableName = Tables.Audit.DefaultCondRxAuditTableName;
-									frmMain.g_oTables.m_oAudit.CreatePlotCondRxAuditTable(oAdoCurrent,oConn,strTempTableName);
-									break;
-								case "POPULATION EVALUATION":
-									strTempTableName = frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableName;
-									frmMain.g_oTables.m_oFIAPlot.CreatePopEvalTable(oAdoCurrent,oConn,strTempTableName);
-									break;
-								case "POPULATION ESTIMATION UNIT":
-									strTempTableName = frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableName;
-									frmMain.g_oTables.m_oFIAPlot.CreatePopEstnUnitTable(oAdoCurrent,oConn,strTempTableName);
-									break;
-								case "POPULATION STRATUM":
-									strTempTableName = frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableName;
-									frmMain.g_oTables.m_oFIAPlot.CreatePopStratumTable(oAdoCurrent,oConn,strTempTableName);
-									break;
-								case "POPULATION PLOT STRATUM ASSIGNMENT":
-									strTempTableName = frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableName;
-									frmMain.g_oTables.m_oFIAPlot.CreatePopPlotStratumAssgnTable(oAdoCurrent,oConn,strTempTableName);
-									break;
-								case "SITE TREE":
-									strTempTableName = frmMain.g_oTables.m_oFIAPlot.DefaultSiteTreeTableName;
-									frmMain.g_oTables.m_oFIAPlot.CreateSiteTreeTable(oAdoCurrent,oConn,strTempTableName);
-									break;
-                                //version 5 additions
-                                 case "TREATMENT PRESCRIPTIONS HARVEST COST COLUMNS":
-                                    strTempTableName = Tables.FVS.DefaultRxHarvestCostColumnsTableName;
-                                    frmMain.g_oTables.m_oFvs.CreateRxHarvestCostColumnTable(oAdoCurrent, oConn, strTempTableName);
-                                    break;
-                                case "TREATMENT PACKAGES":
-                                    strTempTableName = Tables.FVS.DefaultRxPackageTableName;
-                                    frmMain.g_oTables.m_oFvs.CreateRxPackageTable(oAdoCurrent, oConn, strTempTableName);
-                                    break;                                
-                                case "HARVEST METHODS":
-                                    strTempTableName = Tables.Reference.DefaultHarvestMethodsTableName;
-                                    frmMain.g_oTables.m_oReference.CreateHarvestMethodsTable(oAdoCurrent, oConn, strTempTableName);
-                                    break;
-							}
-							if (strTempTableName.Trim().Length > 0)
-							{
-								
-								
-								string strEmptyTable = oDs.m_strDataSource[x,Datasource.TABLE].Trim() + "_work_temp";
-
-								oAdoCurrent.m_strSQL = "SELECT COUNT(*) FROM (SELECT TOP 1 * FROM " + oDs.m_strDataSource[x,Datasource.TABLE].Trim() + ")";
-								
-								//check if the projects version of the table has records
-								if ((int)oAdoCurrent.getRecordCount(oAdoCurrent.m_OleDbConnection,oAdoCurrent.m_strSQL, oDs.m_strDataSource[x,Datasource.TABLE].Trim()) > 0)
-								{
-
-									bool bModified=false;
-
-									if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection,strEmptyTable))
-										oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"DROP TABLE " + strEmptyTable);
-
-									//create a temp copy with no records (empty table) of the projects version of the table
-									oAdoCurrent.m_strSQL = "SELECT TOP 1 * INTO " + strEmptyTable + " FROM " + oDs.m_strDataSource[x,Datasource.TABLE].Trim();
-									oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,oAdoCurrent.m_strSQL);
-								    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"DELETE FROM " + strEmptyTable);
-									
-
-									//compare the application version of the table with the 
-									//projects version of the table and 
-									//modify the projects version of the table structure if needs be.
-									bModified = oAdoCurrent.ReconcileTableColumns(oAdoCurrent.m_OleDbConnection,
-													strEmptyTable,
-													oConn,strTempTableName);
-									if (bModified)
-									{
-										
-										//insert all the records into our new empty table
-										oAdoCurrent.m_strSQL = "INSERT INTO " + strEmptyTable + " SELECT * FROM " + oDs.m_strDataSource[x,Datasource.TABLE].Trim();
-										oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,oAdoCurrent.m_strSQL);
-										//drop the current table
-										oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"DROP TABLE " + oDs.m_strDataSource[x,Datasource.TABLE].Trim());
-										//create the table structure giving it the current table name
-										oAdoCurrent.m_strSQL = "SELECT TOP 1 * INTO " + oDs.m_strDataSource[x,Datasource.TABLE].Trim() + " FROM " + strEmptyTable;
-										oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,oAdoCurrent.m_strSQL);
-										//delete the 1 record in the current table
-										oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"DELETE FROM " + oDs.m_strDataSource[x,Datasource.TABLE].Trim());
-                                        //insert all the records from the new empty table to the current table
-										oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"INSERT INTO " + oDs.m_strDataSource[x,Datasource.TABLE].Trim() + " SELECT *  FROM " + strEmptyTable.Trim());
-										//drop the empty table
-										oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"DROP TABLE " + strEmptyTable);
-                                        
-                                        if (oAdoCurrent.ColumnExist(oAdo.m_OleDbConnection,oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),"RX") &&
-                                            oAdoCurrent.ColumnExist(oAdo.m_OleDbConnection,oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),"RXPACKAGE") &&
-                                            oAdoCurrent.ColumnExist(oAdo.m_OleDbConnection,oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),"RXCYCLE"))
-                                              this.ConvertRxAndRxPackageAndRxCycle(oAdoCurrent,oAdoCurrent.m_OleDbConnection,oDs.m_strDataSource[x,Datasource.TABLETYPE].Trim());
-
-                                        //create the indexes for the empty table structure
-                                        if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection, strEmptyTable))
-                                        {
-                                            oDs.SetPrimaryIndexesAndAutoNumbers(oAdoCurrent, oAdoCurrent.m_OleDbConnection,
-                                                oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(), strEmptyTable.Trim());
-                                        }
-                                        else
-                                        {
-                                            if (oAdoCurrent.TableExist(oConn, strEmptyTable))
-                                            {
-                                                oDs.SetPrimaryIndexesAndAutoNumbers(oAdoCurrent, oConn,
-                                                    oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(), strEmptyTable.Trim());
-                                            }
-                                        }
-
-									}
-									else
-									{
-										oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"DROP TABLE " + strEmptyTable);
-									}
-
-								
-
-								}
-								else
-								{
-									if (oAdoCurrent.ReconcileTableColumns(oAdoCurrent.m_OleDbConnection,
-										oDs.m_strDataSource[x,Datasource.TABLE],
-										oConn,strTempTableName))
-									{
-									}
-								}
-								
-							}
-						}
-					}
-				}
-			}
-			if (oAdoCurrent!=null) oAdoCurrent.CloseConnection(oAdoCurrent.m_OleDbConnection);
-			oAdo.CloseConnection(oAdo.m_OleDbConnection);
-			if (oConn != null)
-			{
-			   oAdo.CloseConnection(oConn);
-			}
-			if (oDao!=null)
-			{
-				oDao.m_DaoWorkspace.Close();
-				oDao=null; 
-			}
-			oAdoCurrent=null;
-			oAdo=null;
-		}
-
-		private void CheckProjectReferenceDatasourceTables()
-		{
-
-			int x,y;
-			FIA_Biosum_Manager.Datasource oDs = new Datasource();
-			oDs.m_strDataSourceMDBFile = ReferenceProjectDirectory.Trim() + "\\db\\project.mdb";
-			oDs.m_strDataSourceTableName = "datasource";
-			oDs.m_strScenarioId="";
-			oDs.LoadTableColumnNamesAndDataTypes=false;
-			oDs.LoadTableRecordCount=false;
-			oDs.populate_datasource_array();
-
-			ado_data_access oAdo=new ado_data_access();
-			ado_data_access oAdoCurrent=null;
-
-			dao_data_access oDao= new dao_data_access();
-			string strCurrDbFile="";
-			string strDbFile="";
-			string strTempDbFile="";
-			string strTempTableName="";
-			System.Data.OleDb.OleDbConnection oConn=null;
-
-
-			//copy ref_master.mdb to project db directory if file does not exist
-			if (System.IO.File.Exists(ReferenceProjectDirectory.Trim() + "\\db\\ref_master.mdb")==false)
-				 System.IO.File.Copy(frmMain.g_oEnv.strAppDir + "\\db\\ref_master.mdb",this.ReferenceProjectDirectory + "\\db\\ref_master.mdb",true);
-
-			//open the project db file
-			oAdo.OpenConnection(oAdo.getMDBConnString(ReferenceProjectDirectory.Trim() + "\\" + 
-				frmMain.g_oTables.m_oProject.DefaultProjectTableDbFile,"",""));
-
-			oAdo.m_strSQL = "SELECT * FROM datasource " + 
-				            "WHERE table_type IS NOT NULL AND " + 
-                                  "UCASE(TRIM(table_type)) " + 
-                                  "IN ('OWNER GROUPS'," + 
-                                      "'TREE SPECIES'," + 
-                                      "'FVS TREE SPECIES'," + 
-                                      "'FIADB FVS VARIANT'," + 
-                                      "'INVENTORIES'," + 
-                                      "'TREATMENT PRESCRIPTION CATEGORIES'," + 
-                                      "'TREATMENT PRESCRIPTION SUBCATEGORIES'," + 
-                                      "'HARVEST METHODS'," + 
-                                      "'FVS WESTERN TREE SPECIES TRANSLATOR'," +
-                                      "'FVS EASTERN TREE SPECIES TRANSLATOR'" + 
-                                      ") ORDER BY path,file";
-			oAdo.SqlQueryReader(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-
-			if (oAdo.m_OleDbDataReader.HasRows)
-			{
-				while (oAdo.m_OleDbDataReader.Read())
-				{
-					if (oAdo.m_OleDbDataReader["path"] != System.DBNull.Value &&
-						oAdo.m_OleDbDataReader["file"] != System.DBNull.Value)
-					{
-						x=oDs.getDataSourceTableNameRow(oAdo.m_OleDbDataReader["table_type"].ToString().Trim());
+		//	if (oAdo.m_OleDbDataReader.HasRows)
+		//	{
+		//		while (oAdo.m_OleDbDataReader.Read())
+		//		{
+		//			if (oAdo.m_OleDbDataReader["path"] != System.DBNull.Value &&
+		//				oAdo.m_OleDbDataReader["file"] != System.DBNull.Value)
+		//			{
+		//				x=oDs.getDataSourceTableNameRow(oAdo.m_OleDbDataReader["table_type"].ToString().Trim());
 
 
 						
-						strDbFile = oAdo.m_OleDbDataReader["path"].ToString().Trim() + "\\" + 
-							oAdo.m_OleDbDataReader["file"].ToString().Trim();
+		//				strDbFile = oAdo.m_OleDbDataReader["path"].ToString().Trim() + "\\" + 
+		//					oAdo.m_OleDbDataReader["file"].ToString().Trim();
 
-						if (strDbFile.Trim().ToUpper() != strCurrDbFile.Trim().ToUpper())
-						{
-							if (oAdoCurrent!=null) 
-							{  
-								if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection,"owner_groups_temp"))
-									 oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"DROP TABLE owner_groups_temp");
-                                if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection, "harvest_methods_temp"))
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, "DROP TABLE harvest_methods_temp");
-								oAdoCurrent.CloseConnection(oAdoCurrent.m_OleDbConnection);
-							}
-							else 
-							{
-								strTempDbFile=frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir,"accdb");
-								oDao.CreateMDB(strTempDbFile);
-								System.IO.File.Copy(frmMain.g_oEnv.strAppDir.Trim() + "\\db\\ref_master.mdb",strTempDbFile,true);
+		//				if (strDbFile.Trim().ToUpper() != strCurrDbFile.Trim().ToUpper())
+		//				{
+		//					if (oAdoCurrent!=null) 
+		//					{  
+		//						if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection,"owner_groups_temp"))
+		//							 oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"DROP TABLE owner_groups_temp");
+  //                              if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection, "harvest_methods_temp"))
+  //                                  oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, "DROP TABLE harvest_methods_temp");
+		//						oAdoCurrent.CloseConnection(oAdoCurrent.m_OleDbConnection);
+		//					}
+		//					else 
+		//					{
+		//						strTempDbFile=frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir,"accdb");
+		//						oDao.CreateMDB(strTempDbFile);
+		//						System.IO.File.Copy(frmMain.g_oEnv.strAppDir.Trim() + "\\db\\ref_master.mdb",strTempDbFile,true);
 
-								oAdoCurrent = new ado_data_access();
-							}
+		//						oAdoCurrent = new ado_data_access();
+		//					}
 
-							//make sure the db file exists
-							if (System.IO.File.Exists(strDbFile)==false)
-							{
-								oDao.CreateMDB(strDbFile);
-							}
+		//					//make sure the db file exists
+		//					if (System.IO.File.Exists(strDbFile)==false)
+		//					{
+		//						oDao.CreateMDB(strDbFile);
+		//					}
 							
-							//create a link to all the pre-populated reference tables
-							oDao.CreateTableLink(strDbFile,"owner_groups_temp",strTempDbFile,"owner_groups",true);
-		                    oDao.CreateTableLink(strDbFile, "harvest_methods_temp", strTempDbFile, "harvest_methods", true);
-							oAdoCurrent.OpenConnection(oAdo.getMDBConnString(strDbFile,"",""));
-							strCurrDbFile=strDbFile;
+		//					//create a link to all the pre-populated reference tables
+		//					oDao.CreateTableLink(strDbFile,"owner_groups_temp",strTempDbFile,"owner_groups",true);
+		//                    oDao.CreateTableLink(strDbFile, "harvest_methods_temp", strTempDbFile, "harvest_methods", true);
+		//					oAdoCurrent.OpenConnection(oAdo.getMDBConnString(strDbFile,"",""));
+		//					strCurrDbFile=strDbFile;
 
-						}
-                        if (oDs.m_strDataSource[x, Datasource.TABLESTATUS] == "NF") //NF=table not found
-                        {
-                            //create the table
-                            switch (oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim().ToUpper())
-                            {
+		//				}
+  //                      if (oDs.m_strDataSource[x, Datasource.TABLESTATUS] == "NF") //NF=table not found
+  //                      {
+  //                          //create the table
+  //                          switch (oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim().ToUpper())
+  //                          {
 
-                                case "OWNER GROUPS":
-                                    oAdoCurrent.m_strSQL = "SELECT * INTO " + oDs.m_strDataSource[x, Datasource.TABLE].Trim() + " FROM owner_groups_temp";
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
-                                    oDs.SetPrimaryIndexesAndAutoNumbers(oAdoCurrent, oAdoCurrent.m_OleDbConnection,
-                                        oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),
-                                        oDs.m_strDataSource[x, Datasource.TABLE].Trim());
-                                    break;
-                                //version 5 additions
-                                case "TREATMENT PRESCRIPTION CATEGORIES":
-                                    oAdoCurrent.m_strSQL = "SELECT * INTO " + oDs.m_strDataSource[x, Datasource.TABLE].Trim() + " FROM fvs_rx_category_temp";
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
-                                    oDs.SetPrimaryIndexesAndAutoNumbers(oAdoCurrent, oAdoCurrent.m_OleDbConnection,
-                                        oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),
-                                        oDs.m_strDataSource[x, Datasource.TABLE].Trim());
-                                    break;
-                                case "TREATMENT PRESCRIPTION SUBCATEGORIES":
-                                    oAdoCurrent.m_strSQL = "SELECT * INTO " + oDs.m_strDataSource[x, Datasource.TABLE].Trim() + " FROM fvs_rx_subcategory_temp";
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
-                                    oDs.SetPrimaryIndexesAndAutoNumbers(oAdoCurrent, oAdoCurrent.m_OleDbConnection,
-                                        oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),
-                                        oDs.m_strDataSource[x, Datasource.TABLE].Trim());
-                                    break;
-                                case "HARVEST METHODS":
-                                    oAdoCurrent.m_strSQL = "SELECT * INTO " + oDs.m_strDataSource[x, Datasource.TABLE].Trim() + " FROM harvest_methods_temp";
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
-                                    oDs.SetPrimaryIndexesAndAutoNumbers(oAdoCurrent, oAdoCurrent.m_OleDbConnection,
-                                        oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),
-                                        oDs.m_strDataSource[x, Datasource.TABLE].Trim());
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            //update columns and data
-                            strTempTableName = "";
-                            strInsertSql = "";
-                            strUpdateSql = "";
-                            string[] strColumnsArray = null;
-                            string strColumnsList = "";
-                            switch (oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim().ToUpper())
-                            {
-                                case "OWNER GROUPS":
-                                    oAdoCurrent.m_strSQL = "DROP TABLE " + oDs.m_strDataSource[x, Datasource.TABLE];
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
-                                    strInsertSql = "SELECT * INTO " + oDs.m_strDataSource[x, Datasource.TABLE] + " FROM owner_groups_temp";
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, strInsertSql);
-                                    oDs.SetPrimaryIndexesAndAutoNumbers(oAdoCurrent, oAdoCurrent.m_OleDbConnection,
-                                            oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),
-                                            oDs.m_strDataSource[x, Datasource.TABLE].Trim());
-                                    break;
-                                case "INVENTORIES":
-                                    oAdoCurrent.m_strSQL = "DROP TABLE " + oDs.m_strDataSource[x, Datasource.TABLE];
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
-                                    strInsertSql = "SELECT * INTO " + oDs.m_strDataSource[x, Datasource.TABLE] + " FROM inventories_temp";
-                                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, strInsertSql);
-                                    oDs.SetPrimaryIndexesAndAutoNumbers(oAdoCurrent, oAdoCurrent.m_OleDbConnection,
-                                        oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),
-                                        oDs.m_strDataSource[x, Datasource.TABLE].Trim());
-                                    break;
-                                case "HARVEST METHODS":
-                                        oAdoCurrent.m_strSQL = "DROP TABLE " + oDs.m_strDataSource[x, Datasource.TABLE];
-                                        oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
-                                        frmMain.g_oTables.m_oReference.CreateHarvestMethodsTable(oAdoCurrent, oAdoCurrent.m_OleDbConnection, oDs.m_strDataSource[x, Datasource.TABLE]);
-                                        strTempTableName = "harvest_methods_temp";
-                                        strColumnsList="";
-                                        //insert any new tree species records
-                                        strColumnsArray = oAdoCurrent.getFieldNamesArray(oAdoCurrent.m_OleDbConnection, "SELECT * FROM " + strTempTableName);
-                                        for (y = 0; y <= strColumnsArray.Length - 1; y++)
-                                        {
-                                            strColumnsList = strColumnsList + "a." + strColumnsArray[y].Trim() + ",";
-                                        }
-                                        strColumnsList = strColumnsList.Substring(0, strColumnsList.Length - 1);
-                                        strInsertSql = "INSERT INTO " +
-                                            oDs.m_strDataSource[x, Datasource.TABLE] + " " +
-                                            "SELECT " + strColumnsList + " " +
-                                            "FROM " + strTempTableName + " a ";
+  //                              case "OWNER GROUPS":
+  //                                  oAdoCurrent.m_strSQL = "SELECT * INTO " + oDs.m_strDataSource[x, Datasource.TABLE].Trim() + " FROM owner_groups_temp";
+  //                                  oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
+  //                                  oDs.SetPrimaryIndexesAndAutoNumbers(oAdoCurrent, oAdoCurrent.m_OleDbConnection,
+  //                                      oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),
+  //                                      oDs.m_strDataSource[x, Datasource.TABLE].Trim());
+  //                                  break;
+  //                              //version 5 additions
+  //                              case "TREATMENT PRESCRIPTION CATEGORIES":
+  //                                  oAdoCurrent.m_strSQL = "SELECT * INTO " + oDs.m_strDataSource[x, Datasource.TABLE].Trim() + " FROM fvs_rx_category_temp";
+  //                                  oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
+  //                                  oDs.SetPrimaryIndexesAndAutoNumbers(oAdoCurrent, oAdoCurrent.m_OleDbConnection,
+  //                                      oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),
+  //                                      oDs.m_strDataSource[x, Datasource.TABLE].Trim());
+  //                                  break;
+  //                              case "TREATMENT PRESCRIPTION SUBCATEGORIES":
+  //                                  oAdoCurrent.m_strSQL = "SELECT * INTO " + oDs.m_strDataSource[x, Datasource.TABLE].Trim() + " FROM fvs_rx_subcategory_temp";
+  //                                  oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
+  //                                  oDs.SetPrimaryIndexesAndAutoNumbers(oAdoCurrent, oAdoCurrent.m_OleDbConnection,
+  //                                      oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),
+  //                                      oDs.m_strDataSource[x, Datasource.TABLE].Trim());
+  //                                  break;
+  //                              case "HARVEST METHODS":
+  //                                  oAdoCurrent.m_strSQL = "SELECT * INTO " + oDs.m_strDataSource[x, Datasource.TABLE].Trim() + " FROM harvest_methods_temp";
+  //                                  oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
+  //                                  oDs.SetPrimaryIndexesAndAutoNumbers(oAdoCurrent, oAdoCurrent.m_OleDbConnection,
+  //                                      oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),
+  //                                      oDs.m_strDataSource[x, Datasource.TABLE].Trim());
+  //                                  break;
+  //                          }
+  //                      }
+  //                      else
+  //                      {
+  //                          //update columns and data
+  //                          strTempTableName = "";
+  //                          strInsertSql = "";
+  //                          strUpdateSql = "";
+  //                          string[] strColumnsArray = null;
+  //                          string strColumnsList = "";
+  //                          switch (oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim().ToUpper())
+  //                          {
+  //                              case "OWNER GROUPS":
+  //                                  oAdoCurrent.m_strSQL = "DROP TABLE " + oDs.m_strDataSource[x, Datasource.TABLE];
+  //                                  oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
+  //                                  strInsertSql = "SELECT * INTO " + oDs.m_strDataSource[x, Datasource.TABLE] + " FROM owner_groups_temp";
+  //                                  oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, strInsertSql);
+  //                                  oDs.SetPrimaryIndexesAndAutoNumbers(oAdoCurrent, oAdoCurrent.m_OleDbConnection,
+  //                                          oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),
+  //                                          oDs.m_strDataSource[x, Datasource.TABLE].Trim());
+  //                                  break;
+  //                              case "INVENTORIES":
+  //                                  oAdoCurrent.m_strSQL = "DROP TABLE " + oDs.m_strDataSource[x, Datasource.TABLE];
+  //                                  oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
+  //                                  strInsertSql = "SELECT * INTO " + oDs.m_strDataSource[x, Datasource.TABLE] + " FROM inventories_temp";
+  //                                  oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, strInsertSql);
+  //                                  oDs.SetPrimaryIndexesAndAutoNumbers(oAdoCurrent, oAdoCurrent.m_OleDbConnection,
+  //                                      oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),
+  //                                      oDs.m_strDataSource[x, Datasource.TABLE].Trim());
+  //                                  break;
+  //                              case "HARVEST METHODS":
+  //                                      oAdoCurrent.m_strSQL = "DROP TABLE " + oDs.m_strDataSource[x, Datasource.TABLE];
+  //                                      oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
+  //                                      frmMain.g_oTables.m_oReference.CreateHarvestMethodsTable(oAdoCurrent, oAdoCurrent.m_OleDbConnection, oDs.m_strDataSource[x, Datasource.TABLE]);
+  //                                      strTempTableName = "harvest_methods_temp";
+  //                                      strColumnsList="";
+  //                                      //insert any new tree species records
+  //                                      strColumnsArray = oAdoCurrent.getFieldNamesArray(oAdoCurrent.m_OleDbConnection, "SELECT * FROM " + strTempTableName);
+  //                                      for (y = 0; y <= strColumnsArray.Length - 1; y++)
+  //                                      {
+  //                                          strColumnsList = strColumnsList + "a." + strColumnsArray[y].Trim() + ",";
+  //                                      }
+  //                                      strColumnsList = strColumnsList.Substring(0, strColumnsList.Length - 1);
+  //                                      strInsertSql = "INSERT INTO " +
+  //                                          oDs.m_strDataSource[x, Datasource.TABLE] + " " +
+  //                                          "SELECT " + strColumnsList + " " +
+  //                                          "FROM " + strTempTableName + " a ";
                                            
-                                        oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, strInsertSql);
-                                    break;
-                            }
-                        }
-					}
-				}
-			}
-			if (oAdoCurrent!=null) 
-			{
-				if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection,"owner_groups_temp"))
-					oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"DROP TABLE owner_groups_temp");
-                if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection, "harvest_methods_temp"))
-                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, "DROP TABLE harvest_methods_temp");
-                if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection, "fvs_rx_category_temp"))
-                    oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, "DROP TABLE fvs_rx_category_temp");
-				oAdoCurrent.CloseConnection(oAdoCurrent.m_OleDbConnection);
-			}
-			oAdo.CloseConnection(oAdo.m_OleDbConnection);
-			if (oConn != null)
-			{
-				oAdo.CloseConnection(oConn);
-			}
-			if (oDao!=null)
-			{
-				oDao.m_DaoWorkspace.Close();
-				oDao=null; 
-			}
-			oAdoCurrent=null;
-			oAdo=null;
-            strCurrDbFile = "";
-            strDbFile = "";
-            strTempDbFile = "";
-            strTempTableName = "";
-            oConn = null;
-            //
-            //fvs commands table
-            //
+  //                                      oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, strInsertSql);
+  //                                  break;
+  //                          }
+  //                      }
+		//			}
+		//		}
+		//	}
+		//	if (oAdoCurrent!=null) 
+		//	{
+		//		if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection,"owner_groups_temp"))
+		//			oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"DROP TABLE owner_groups_temp");
+  //              if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection, "harvest_methods_temp"))
+  //                  oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, "DROP TABLE harvest_methods_temp");
+  //              if (oAdoCurrent.TableExist(oAdoCurrent.m_OleDbConnection, "fvs_rx_category_temp"))
+  //                  oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, "DROP TABLE fvs_rx_category_temp");
+		//		oAdoCurrent.CloseConnection(oAdoCurrent.m_OleDbConnection);
+		//	}
+		//	oAdo.CloseConnection(oAdo.m_OleDbConnection);
+		//	if (oConn != null)
+		//	{
+		//		oAdo.CloseConnection(oConn);
+		//	}
+		//	if (oDao!=null)
+		//	{
+		//		oDao.m_DaoWorkspace.Close();
+		//		oDao=null; 
+		//	}
+		//	oAdoCurrent=null;
+		//	oAdo=null;
+  //          strCurrDbFile = "";
+  //          strDbFile = "";
+  //          strTempDbFile = "";
+  //          strTempTableName = "";
+  //          oConn = null;
+  //          //
+  //          //fvs commands table
+  //          //
             
 
             
-            oAdo = new ado_data_access();
-            oDao = new dao_data_access();
-            string strNewDbFile = "";
-            string strOldDbFile = "";
+  //          oAdo = new ado_data_access();
+  //          oDao = new dao_data_access();
+  //          string strNewDbFile = "";
+  //          string strOldDbFile = "";
 
-            //open the project db file
-            oAdo.OpenConnection(oAdo.getMDBConnString(ReferenceProjectDirectory.Trim() + "\\" +
-                frmMain.g_oTables.m_oProject.DefaultProjectTableDbFile, "", ""));
+  //          //open the project db file
+  //          oAdo.OpenConnection(oAdo.getMDBConnString(ReferenceProjectDirectory.Trim() + "\\" +
+  //              frmMain.g_oTables.m_oProject.DefaultProjectTableDbFile, "", ""));
 
-            oAdo.m_strSQL = "SELECT * FROM datasource " +
-                            "WHERE table_type IS NOT NULL AND " +
-                                  "UCASE(TRIM(table_type)) " +
-                                  "IN ('FVS COMMANDS') ORDER BY path,file";
-            oAdo.SqlQueryReader(oAdo.m_OleDbConnection, oAdo.m_strSQL);
+  //          oAdo.m_strSQL = "SELECT * FROM datasource " +
+  //                          "WHERE table_type IS NOT NULL AND " +
+  //                                "UCASE(TRIM(table_type)) " +
+  //                                "IN ('FVS COMMANDS') ORDER BY path,file";
+  //          oAdo.SqlQueryReader(oAdo.m_OleDbConnection, oAdo.m_strSQL);
 
-            if (oAdo.m_OleDbDataReader.HasRows)
-            {
-                while (oAdo.m_OleDbDataReader.Read())
-                {
-                    if (oAdo.m_OleDbDataReader["path"] != System.DBNull.Value &&
-                        oAdo.m_OleDbDataReader["file"] != System.DBNull.Value)
-                    {
-                        x = oDs.getDataSourceTableNameRow(oAdo.m_OleDbDataReader["table_type"].ToString().Trim());
+  //          if (oAdo.m_OleDbDataReader.HasRows)
+  //          {
+  //              while (oAdo.m_OleDbDataReader.Read())
+  //              {
+  //                  if (oAdo.m_OleDbDataReader["path"] != System.DBNull.Value &&
+  //                      oAdo.m_OleDbDataReader["file"] != System.DBNull.Value)
+  //                  {
+  //                      x = oDs.getDataSourceTableNameRow(oAdo.m_OleDbDataReader["table_type"].ToString().Trim());
 
 
 
-                        strOldDbFile = oAdo.m_OleDbDataReader["path"].ToString().Trim() + "\\" +
-                            oAdo.m_OleDbDataReader["file"].ToString().Trim();
+  //                      strOldDbFile = oAdo.m_OleDbDataReader["path"].ToString().Trim() + "\\" +
+  //                          oAdo.m_OleDbDataReader["file"].ToString().Trim();
 
-                        if (System.IO.File.Exists(strOldDbFile))
-                        {
-                            oAdoCurrent = new ado_data_access();
-                            //
-                            //get all table names in the old file
-                            //
-                            string[] strTablesArray = null;
-                            oDao.getTableNames(strOldDbFile, ref strTablesArray);
-                            //
-                            //get the new file name
-                            //
-                            strNewDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
-                            //
-                            //create the new file and open it
-                            //
-                            oDao.CreateMDB(strNewDbFile);
-                            oDao.OpenDb(strNewDbFile);
-                            //
-                            //create a link to all tables from the old file to the new file
-                            //
-                            if (strTablesArray != null)
-                            {
+  //                      if (System.IO.File.Exists(strOldDbFile))
+  //                      {
+  //                          oAdoCurrent = new ado_data_access();
+  //                          //
+  //                          //get all table names in the old file
+  //                          //
+  //                          string[] strTablesArray = null;
+  //                          oDao.getTableNames(strOldDbFile, ref strTablesArray);
+  //                          //
+  //                          //get the new file name
+  //                          //
+  //                          strNewDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
+  //                          //
+  //                          //create the new file and open it
+  //                          //
+  //                          oDao.CreateMDB(strNewDbFile);
+  //                          oDao.OpenDb(strNewDbFile);
+  //                          //
+  //                          //create a link to all tables from the old file to the new file
+  //                          //
+  //                          if (strTablesArray != null)
+  //                          {
                                
-                                for (y = 0; y <= strTablesArray.Length - 1; y++)
-                                {
-                                    if (strTablesArray[y] == null) break;
-                                    if (strTablesArray[y].Trim().Length > 0)
-                                    {
-                                        //do not link to the table we are replacing
-                                        if (strTablesArray[y].Trim().ToUpper() !=
-                                            oDs.m_strDataSource[x, Datasource.TABLE].Trim().ToUpper())
-                                        {
-                                            oDao.CreateTableLink(oDao.m_DaoDatabase, strTablesArray[y].Trim() + "_temp", strOldDbFile, strTablesArray[y].Trim());
-                                        }
+  //                              for (y = 0; y <= strTablesArray.Length - 1; y++)
+  //                              {
+  //                                  if (strTablesArray[y] == null) break;
+  //                                  if (strTablesArray[y].Trim().Length > 0)
+  //                                  {
+  //                                      //do not link to the table we are replacing
+  //                                      if (strTablesArray[y].Trim().ToUpper() !=
+  //                                          oDs.m_strDataSource[x, Datasource.TABLE].Trim().ToUpper())
+  //                                      {
+  //                                          oDao.CreateTableLink(oDao.m_DaoDatabase, strTablesArray[y].Trim() + "_temp", strOldDbFile, strTablesArray[y].Trim());
+  //                                      }
 
 
-                                    }
-                                }
-                                oDao.m_DaoWorkspace.Close();
-                                oDao = null;
-                                //open oledb connection to new file
-                                oAdoCurrent.OpenConnection(oAdoCurrent.getMDBConnString(strNewDbFile,"",""));
-                                for (y = 0; y <= strTablesArray.Length - 1; y++)
-                                {
-                                    if (strTablesArray[y] == null) break;
-                                    //import linked tables
-                                    if (strTablesArray[y].Trim().ToUpper() == oDs.m_strDataSource[x, Datasource.TABLE].Trim().ToUpper())
-                                    {
+  //                                  }
+  //                              }
+  //                              oDao.m_DaoWorkspace.Close();
+  //                              oDao = null;
+  //                              //open oledb connection to new file
+  //                              oAdoCurrent.OpenConnection(oAdoCurrent.getMDBConnString(strNewDbFile,"",""));
+  //                              for (y = 0; y <= strTablesArray.Length - 1; y++)
+  //                              {
+  //                                  if (strTablesArray[y] == null) break;
+  //                                  //import linked tables
+  //                                  if (strTablesArray[y].Trim().ToUpper() == oDs.m_strDataSource[x, Datasource.TABLE].Trim().ToUpper())
+  //                                  {
                                         
-                                    }
-                                    else
-                                    {
-                                        oAdoCurrent.m_strSQL = "SELECT * INTO " + strTablesArray[y].Trim() + " " +
-                                                               "FROM " + strTablesArray[y].Trim() + "_temp";
-                                        oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
-                                        //drop the linked table
-                                        oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"DROP TABLE " + strTablesArray[y].Trim() + "_temp");
-                                    }
-                                }
+  //                                  }
+  //                                  else
+  //                                  {
+  //                                      oAdoCurrent.m_strSQL = "SELECT * INTO " + strTablesArray[y].Trim() + " " +
+  //                                                             "FROM " + strTablesArray[y].Trim() + "_temp";
+  //                                      oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
+  //                                      //drop the linked table
+  //                                      oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection,"DROP TABLE " + strTablesArray[y].Trim() + "_temp");
+  //                                  }
+  //                              }
                                
-                            }
-                            //
-                            //import linked fvs_commands table
-                            //
-                            if (oAdoCurrent.m_OleDbConnection.State == System.Data.ConnectionState.Closed)
-                                oAdoCurrent.OpenConnection(oAdoCurrent.getMDBConnString(strNewDbFile, "", ""));
-                            oAdoCurrent.m_strSQL = "SELECT * " + 
-                                                   "INTO " + oDs.m_strDataSource[x, Datasource.TABLE].Trim() + " " + 
-                                                   "FROM fvs_commands_temp";
-                            oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
-                            oDs.SetPrimaryIndexesAndAutoNumbers(oAdoCurrent, oAdoCurrent.m_OleDbConnection,
-                                oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),
-                                oDs.m_strDataSource[x, Datasource.TABLE].Trim());
-                            oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, "DROP TABLE fvs_commands_temp");
-                            oAdoCurrent.CloseConnection(oAdoCurrent.m_OleDbConnection);
-                            //
-                            //delete old file and copy new file
-                            //
-                            System.IO.File.Delete(strOldDbFile);
-                            System.IO.File.Copy(strNewDbFile,strOldDbFile,true);
+  //                          }
+  //                          //
+  //                          //import linked fvs_commands table
+  //                          //
+  //                          if (oAdoCurrent.m_OleDbConnection.State == System.Data.ConnectionState.Closed)
+  //                              oAdoCurrent.OpenConnection(oAdoCurrent.getMDBConnString(strNewDbFile, "", ""));
+  //                          oAdoCurrent.m_strSQL = "SELECT * " + 
+  //                                                 "INTO " + oDs.m_strDataSource[x, Datasource.TABLE].Trim() + " " + 
+  //                                                 "FROM fvs_commands_temp";
+  //                          oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, oAdoCurrent.m_strSQL);
+  //                          oDs.SetPrimaryIndexesAndAutoNumbers(oAdoCurrent, oAdoCurrent.m_OleDbConnection,
+  //                              oDs.m_strDataSource[x, Datasource.TABLETYPE].Trim(),
+  //                              oDs.m_strDataSource[x, Datasource.TABLE].Trim());
+  //                          oAdoCurrent.SqlNonQuery(oAdoCurrent.m_OleDbConnection, "DROP TABLE fvs_commands_temp");
+  //                          oAdoCurrent.CloseConnection(oAdoCurrent.m_OleDbConnection);
+  //                          //
+  //                          //delete old file and copy new file
+  //                          //
+  //                          System.IO.File.Delete(strOldDbFile);
+  //                          System.IO.File.Copy(strNewDbFile,strOldDbFile,true);
 
-                        }
+  //                      }
 
                         
-                    }
-                }
-            }
+  //                  }
+  //              }
+  //          }
             
-            oAdo.CloseConnection(oAdo.m_OleDbConnection);
-            if (oConn != null)
-            {
-                oAdo.CloseConnection(oConn);
-            }
-            if (oDao != null)
-            {
-                oDao.m_DaoWorkspace.Close();
-                oDao = null;
-            }
-            oAdoCurrent = null;
-            oAdo = null;
-		}
+  //          oAdo.CloseConnection(oAdo.m_OleDbConnection);
+  //          if (oConn != null)
+  //          {
+  //              oAdo.CloseConnection(oConn);
+  //          }
+  //          if (oDao != null)
+  //          {
+  //              oDao.m_DaoWorkspace.Close();
+  //              oDao = null;
+  //          }
+  //          oAdoCurrent = null;
+  //          oAdo = null;
+		//}
 
 
 

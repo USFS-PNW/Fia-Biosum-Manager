@@ -4137,16 +4137,13 @@ namespace FIA_Biosum_Manager
         private string m_strMasterPSite = Tables.TravelTime.DefaultProcessingSiteTableName + "_m";
         private string m_strPlotTableName = "";
         private string m_masterFolder = frmMain.g_oEnv.strApplicationDataDirectory.Trim() + frmMain.g_strBiosumDataDir;
-        dao_data_access m_oDao;
         private string m_strTempAccdb;
         private SQLite.ADO.DataMgr _SQLite = new SQLite.ADO.DataMgr();
         public SQLite.ADO.DataMgr SQLite
         {
             get { return _SQLite; }
             set { _SQLite = value; }
-        }
-
-        
+        }        
         public bool CheckForExistingDataSqlite(string strReferenceProjectDirectory, out bool bTablesHaveData)
         {
             bool bExistingTables = false;
@@ -4440,119 +4437,6 @@ namespace FIA_Biosum_Manager
             oDataMgr = null;
 
             return intRecordCount;
-        }
-
-        private void CreateDBAndTableDataSourceLinks()
-        {
-            //used to get the temporary random file name
-            FIA_Biosum_Manager.utils oUtils = new FIA_Biosum_Manager.utils();
-            env oEnv = new env();
-            m_strTempAccdb = oUtils.getRandomFile(oEnv.strTempDir, "accdb");
-
-            //create a temporary mdb that will contain all 
-            //the links to the scenario datasource tables
-            if (m_oDao == null)
-            {
-                m_oDao = new dao_data_access();
-            }
-            m_oDao.CreateMDB(m_strTempAccdb);
-
-            // Create ODBC Data sources
-            ODBCMgr odbcMgr = new ODBCMgr();
-            if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.GisProjectDbDsnName))
-            {
-                odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.GisProjectDbDsnName);
-            }
-            if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.GisMasterDbDsnName))
-            {
-                odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.GisMasterDbDsnName);
-            }
-            if (odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.GisAuditDbDsnName))
-            {
-                odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.GisAuditDbDsnName);
-            }
-            int intTable = m_oProjectDs.getTableNameRow(Datasource.TableTypes.TravelTimes);
-            string strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
-            string strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
-            if (strTableStatus == "F")
-            {
-                odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.GisProjectDbDsnName, m_oProjectDs.getFullPathAndFile(Datasource.TableTypes.TravelTimes));
-            }
-            m_oDao.CreateSQLiteTableLink(m_strTempAccdb, strTableName, strTableName, ODBCMgr.DSN_KEYS.GisProjectDbDsnName, m_oProjectDs.getFullPathAndFile(Datasource.TableTypes.TravelTimes));
-            intTable = m_oProjectDs.getTableNameRow(Datasource.TableTypes.ProcessingSites);
-            strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
-            strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
-            m_oDao.CreateSQLiteTableLink(m_strTempAccdb, strTableName, strTableName, ODBCMgr.DSN_KEYS.GisProjectDbDsnName, m_oProjectDs.getFullPathAndFile(Datasource.TableTypes.ProcessingSites));
-
-            // Link to master travel times tables
-            odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.GisMasterDbDsnName, $@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
-            string strMasterConn = SQLite.GetConnectionString($@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
-            using (var oMasterConn = new System.Data.SQLite.SQLiteConnection(strMasterConn))
-            {
-                oMasterConn.Open();
-                if (SQLite.TableExist(oMasterConn, Tables.TravelTime.DefaultTravelTimeTableName))
-                {
-                    m_oDao.CreateSQLiteTableLink(m_strTempAccdb, Tables.TravelTime.DefaultTravelTimeTableName, m_strMasterTravelTime,
-                        ODBCMgr.DSN_KEYS.GisMasterDbDsnName, $@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
-                }
-                if (SQLite.TableExist(oMasterConn, Tables.TravelTime.DefaultProcessingSiteTableName))
-                {
-                    m_oDao.CreateSQLiteTableLink(m_strTempAccdb, Tables.TravelTime.DefaultProcessingSiteTableName, m_strMasterPSite,
-                        ODBCMgr.DSN_KEYS.GisMasterDbDsnName, $@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
-                }
-                if (SQLite.TableExist(oMasterConn, Tables.TravelTime.DefaultTravelTimeTableName))
-                {
-                    m_oDao.CreateSQLiteTableLink(m_strTempAccdb, Tables.TravelTime.DefaultPlotGisTableName, Tables.TravelTime.DefaultPlotGisTableName,
-                        ODBCMgr.DSN_KEYS.GisMasterDbDsnName, $@"{m_masterFolder}\{Tables.TravelTime.DefaultMasterTravelTimeDbFile}");
-                }
-            }
-
-            //links to the project table we need
-            string[] arrTableTypes = { Datasource.TableTypes.Plot };
-            foreach (string strTableType in arrTableTypes)
-            {
-                intTable = m_oProjectDs.getTableNameRow(strTableType);
-                string strDirectoryPath = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
-                string strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
-                //(‘F’ = FILE FOUND, ‘NF’ = NOT FOUND)
-                strTableName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLE].Trim();
-                strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
-                if (strTableStatus == "F")
-                {
-                    m_oDao.CreateTableLink(m_strTempAccdb, strTableName, strDirectoryPath + "\\" + strFileName, strTableName);
-                    if (strTableType.Equals(Datasource.TableTypes.Plot))
-                    {
-                        m_strPlotTableName = strTableName;
-                    }
-                }
-            }
-
-            // Manage plot yarding distance audit table
-            string strAuditDBPath = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory}\{Tables.TravelTime.DefaultGisAuditPathAndDbFile}";
-            string strAuditConn = SQLite.GetConnectionString(strAuditDBPath);
-            using (var oAuditConn = new System.Data.SQLite.SQLiteConnection(strAuditConn))
-            {
-                oAuditConn.Open();
-                if (SQLite.TableExist(oAuditConn, Tables.TravelTime.DefaultGisPlotDistanceAuditTable))
-                {
-                    SQLite.SqlNonQuery(oAuditConn, $@"DROP TABLE {Tables.TravelTime.DefaultGisPlotDistanceAuditTable}");
-                }
-                frmMain.g_oTables.m_oTravelTime.CreateSqlitePlotDistanceAuditTable(SQLite, oAuditConn, Tables.TravelTime.DefaultGisPlotDistanceAuditTable);
-                if (SQLite.TableExist(oAuditConn, Tables.TravelTime.DefaultGisPlotDistanceAuditTable))
-                {
-                    odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.GisAuditDbDsnName, strAuditDBPath);
-                    m_oDao.CreateSQLiteTableLink(m_strTempAccdb, Tables.TravelTime.DefaultGisPlotDistanceAuditTable, Tables.TravelTime.DefaultGisPlotDistanceAuditTable,
-                        ODBCMgr.DSN_KEYS.GisAuditDbDsnName, strAuditDBPath);
-                }
-            }
-
-            if (m_oDao != null)
-            {
-                m_oDao.m_DaoWorkspace.Close();
-                m_oDao = null;
-            }
-        }
-
-        
+        }        
     }
 }

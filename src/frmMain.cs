@@ -1713,27 +1713,6 @@ namespace FIA_Biosum_Manager
                     //version_control oVersCtl = new version_control();
                     //oVersCtl.UpdateDatasources_5_11_0(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim());
                     //MessageBox.Show("Upgrade Complete!");
-                    //this.m_frmSqlite = new frmDialog(this);
-                    //this.m_frmSqlite.MaximizeBox = false;
-                    //this.m_frmSqlite.MinimizeBox = false;
-                    //this.m_frmSqlite.BackColor = System.Drawing.SystemColors.Control;
-                    //this.m_frmSqlite.Text = "Treatment Optimizer: Export to SQLITE";
-                    //this.m_frmSqlite.MdiParent = this;
-                    //this.m_frmSqlite.Initialize_Optimizer_Sqlite_User_Control();
-
-                    //this.m_frmSqlite.DisposeOfFormWhenClosing = true;
-
-                    //this.m_frmSqlite.Width = this.m_frmSqlite.uc_optimizer_sqlite_export1.Width + 25;
-                    //this.m_frmSqlite.Height = this.m_frmSqlite.uc_optimizer_sqlite_export1.Height + 40;
-                    //this.m_frmSqlite.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-                    //this.m_frmSqlite.uc_optimizer_sqlite_export1.Top = 0;
-                    //this.m_frmSqlite.uc_optimizer_sqlite_export1.Left = 0;
-
-                    //this.m_frmSqlite.uc_optimizer_sqlite_export1.ReferenceFormDialog = this.m_frmSqlite;
-                    //this.m_frmSqlite.uc_optimizer_sqlite_export1.Visible = true;
-                    //this.m_frmSqlite.MinimizeMainForm = true;
-                    //this.m_frmSqlite.ParentControl = frmMain.g_oFrmMain;
-                    //this.m_frmSqlite.Show();
                 }
             }
             else if (this.btnDB.Enabled == false)
