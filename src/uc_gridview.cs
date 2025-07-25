@@ -12,12 +12,6 @@ namespace FIA_Biosum_Manager
 	/// Summary description for uc_gridview.
 	/// </summary>
 	///
-
-	
-	
-
-  
-
 	public class uc_gridview : System.Windows.Forms.UserControl
 
 	{
@@ -34,11 +28,8 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Button btnClose;
 		private System.ComponentModel.IContainer components;
 	    public  System.Data.DataSet m_ds;
-		private System.Data.OleDb.OleDbDataAdapter m_da;
-		private System.Data.OleDb.OleDbConnection m_conn;
-        private System.Data.SQLite.SQLiteDataAdapter m_SQLite_da;
-        private System.Data.SQLite.SQLiteConnection m_SQLite_conn;
-        //private System.Data.OleDb.OleDbCommand m_command;
+        private System.Data.SQLite.SQLiteDataAdapter m_da;
+        private System.Data.SQLite.SQLiteConnection m_conn;
         public int m_intError=0;
 		public System.Windows.Forms.DataGrid m_dg;
 		public System.Data.DataView m_dv;
@@ -56,10 +47,7 @@ namespace FIA_Biosum_Manager
 		public System.Windows.Forms.TextBox txtDropDown;
 		private string m_strSQL;
 
-		//private int[] intColumnEdit;
 		private System.Windows.Forms.ToolBarButton btnID;
-		//private int intColumnEditCount=0;
-		//private string m_strBiosumIdField="";
 		public System.Windows.Forms.ToolBarButton btnSave;
 		private int m_intBiosumIdColumn=0;
 		private string[] m_strColumnsToEdit;
@@ -67,33 +55,25 @@ namespace FIA_Biosum_Manager
 		private string[] m_strRecordKeyColumns;
         private int[] m_intRecordKeyColumns;
         
-		//private string m_strConn;
 		private bool m_bClearDataSet=true;
 		public System.Windows.Forms.ContextMenu m_mnuDataGridPopup;
 		public System.Windows.Forms.ContextMenu m_mnuDataGridTextBoxPopup;
-		//private const int MENU_FILTER = 0;
 		private const int MENU_FILTERBYVALUE=0;
 		private const int MENU_FILTERBYENTEREDVALUE=1;
 		private const int MENU_REMOVEFILTER = 2;
 		private const int MENU_UNIQUEVALUES = 3;
 		private const int MENU_MODIFY = 5;
-		private const int MENU_DELETE=6;
-		private const int MENU_SELECTALL = 8;
-		private const int MENU_IDXASC = 10;
-		private const int MENU_IDXDESC = 11;
-		private const int MENU_REMOVEIDX = 12;
-		private const int MENU_MAX = 14;
-		private const int MENU_MIN = 15;
-		private const int MENU_AVG = 16;
-		private const int MENU_SUM = 17;
-		//private const int MENU_COUNT = 14;
-		private const int MENU_COUNTBYVALUE=18;
-
-
-		
+		private const int MENU_SELECTALL = 7;
+		private const int MENU_IDXASC = 8;
+		private const int MENU_IDXDESC = 9;
+		private const int MENU_REMOVEIDX = 10;
+		private const int MENU_MAX = 12;
+		private const int MENU_MIN = 13;
+		private const int MENU_AVG = 14;
+		private const int MENU_SUM = 15;
+		private const int MENU_COUNTBYVALUE=16;
 
 		private int m_intPopupColumn=0;
-		private bool m_bDelete=false;
 		private string m_strDeletedPlotList="";
 		private int m_intDeletedPlotCount=0;
 		private string m_strColumnFilterList="";
@@ -103,11 +83,6 @@ namespace FIA_Biosum_Manager
 		private int m_intTableSchemaColumnRow;
         private bool m_bAdapterDisposed = true;
 		private FIA_Biosum_Manager.frmGridView _frmGridView=null;
-		//private bool m_bDeleteRow=false;
-		
-		
-
-		
 
 		public uc_gridview()
 		{
@@ -116,15 +91,13 @@ namespace FIA_Biosum_Manager
             this.sbQueryRecordCount.Text = "";
             this.sbDisplayedRecordCount.Text = "";
             this.sbMsg.Text = "";
-
-           
 			// TODO: Add any initialization after the InitializeComponent call
 
 		}
 		public uc_gridview(string strConn, string strSQL,string strDataSetName)
 		{
 			InitializeComponent();
-            LoadGridViewSqlite(strConn, strSQL, strDataSetName);
+            LoadGridView(strConn, strSQL, strDataSetName);
 		}
 		
 		public uc_gridview(System.Data.SQLite.SQLiteConnection p_conn,
@@ -135,7 +108,7 @@ namespace FIA_Biosum_Manager
 			string strColumnName="";
 			this.m_dg.MouseWheel+=new MouseEventHandler(m_dg_MouseWheel);
 			this.m_ds = new DataSet();
-			this.m_SQLite_da = new System.Data.SQLite.SQLiteDataAdapter();
+			this.m_da = new System.Data.SQLite.SQLiteDataAdapter();
 
 			this.m_dg.Left = 5;
 			this.toolBar1.Left = 5;
@@ -147,11 +120,11 @@ namespace FIA_Biosum_Manager
 			this.toolBar2.Left = (int)(this.groupBox1.Width * .50) - (int)(this.toolBar2.Width * .50);
 			this.m_dg.Height =  this.toolBar2.Top - this.m_dg.Top;
 
-			this.m_SQLite_da.SelectCommand = new System.Data.SQLite.SQLiteCommand(strSQL, p_conn);
+			this.m_da.SelectCommand = new System.Data.SQLite.SQLiteCommand(strSQL, p_conn);
 			
 			try 
 			{
-				this.m_SQLite_da.Fill(this.m_ds, strDataSetName);
+				this.m_da.Fill(this.m_ds, strDataSetName);
 					
 				this.m_dv = new DataView(this.m_ds.Tables[strDataSetName]);
 				
@@ -164,7 +137,6 @@ namespace FIA_Biosum_Manager
 				 **assign the aColumnTextColumn as type DataGridColoredTextBoxColumn object class
 				 ***********************************************************************************/
 				gridview_DataGridColoredTextBoxColumn aColumnTextColumn ;
-
 
 				/***************************************************************
 				 **custom define the grid style
@@ -187,7 +159,6 @@ namespace FIA_Biosum_Manager
 				//get the number of columns from the scenario_rx_intensity data set
 				int numCols = this.m_ds.Tables[strDataSetName].Columns.Count;
                 
-                    
 				/************************************************
 				 **loop through all the columns in the dataset	
 				 ************************************************/
@@ -195,24 +166,18 @@ namespace FIA_Biosum_Manager
 				{
 					strColumnName = this.m_ds.Tables[strDataSetName].Columns[i].ColumnName;
 					
-
 					/******************************************************************
 					 **create a new instance of the DataGridColoredTextBoxColumn class
 					 ******************************************************************/
 					aColumnTextColumn = new gridview_DataGridColoredTextBoxColumn(false,this);
-
 
 					/***********************************
 					 **all columns are read-only except
 					 **the edit columns
 					 ***********************************/
 					aColumnTextColumn.ReadOnly=true;
-
-
 					aColumnTextColumn.HeaderText = strColumnName;
 
-					//aColumnTextColumn.TextBox = new txtDollarsAndCents(5,2);
-				 				    
 					/********************************************************************
 					 **assign the mappingname property the data sets column name
 					 ********************************************************************/
@@ -226,7 +191,6 @@ namespace FIA_Biosum_Manager
 					 **table style object
 					 ********************************************************************/
 					tableStyle.GridColumnStyles.Add(aColumnTextColumn);
-
 				}
 				/*********************************************************************
 				 ** make the dataGrid use our new tablestyle and bind it to our table
@@ -236,10 +200,7 @@ namespace FIA_Biosum_Manager
 				this.m_dg.TableStyles.Clear();
 				this.m_dg.TableStyles.Add(tableStyle);
 
-
 				this.m_dg.DataSource = this.m_dv;  
-
-				
 
 				this.m_dg.Expand(-1);
 			}
@@ -247,19 +208,15 @@ namespace FIA_Biosum_Manager
 			{
 				MessageBox.Show(e.Message,"Table",MessageBoxButtons.OK,MessageBoxIcon.Error);
 				this.m_intError=-1;
-				this.m_conn.Close();
 				this.m_ds.Clear();
 				this.m_ds = null;
-				this.m_da.Dispose();
-				this.m_da = null;
                 if (p_conn != null)
                 {
 					p_conn.Close();
-					this.m_SQLite_da.Dispose();
-					this.m_SQLite_da = null;
+					this.m_da.Dispose();
+					this.m_da = null;
                 }
 				return;
-
 			}
 
 			this.sbMsg.Text= strDataSetName + " (Read Only)";
@@ -299,13 +256,11 @@ namespace FIA_Biosum_Manager
 			{
 				if (this.m_ds.Tables[strDataSetName].Columns[x].ColumnName.Trim().ToUpper() == "BIOSUM_COND_ID")
 				{
-
 					this.m_intBiosumIdColumn = x;
 					break;
 				}
 				if (this.m_ds.Tables[strDataSetName].Columns[x].ColumnName.Trim().ToUpper() == "BIOSUM_PLOT_ID")
 				{
-
 					this.m_intBiosumIdColumn = x;
 					break;
 				}
@@ -320,8 +275,6 @@ namespace FIA_Biosum_Manager
 			}
 		}
 
-		
-		
 		/*************************************************
 		 ** Edit Version
 		 *************************************************/
@@ -338,8 +291,8 @@ namespace FIA_Biosum_Manager
 			this.m_dg.MouseWheel+=new MouseEventHandler(m_dg_MouseWheel);
 			string strColumnName="";
             this.m_ds = new DataSet();
-            this.m_SQLite_conn = new System.Data.SQLite.SQLiteConnection();
-            this.m_SQLite_da = new System.Data.SQLite.SQLiteDataAdapter();
+            this.m_conn = new System.Data.SQLite.SQLiteConnection();
+            this.m_da = new System.Data.SQLite.SQLiteDataAdapter();
 
             this.m_dg.Left = 5;
 			this.toolBar1.Left = 5;
@@ -359,7 +312,7 @@ namespace FIA_Biosum_Manager
             this.m_intRecordKeyColumns = new int[strRecordKeyColumns.Length];
 
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
-            dataMgr.OpenConnection(strConn, ref this.m_SQLite_conn);
+            dataMgr.OpenConnection(strConn, ref this.m_conn);
             if (dataMgr.m_intError != 0)
             {
                 this.m_intError = dataMgr.m_intError;
@@ -367,12 +320,12 @@ namespace FIA_Biosum_Manager
                 return;
             }
             //get the table schema of the result of the sql
-            this.m_dtTableSchema = dataMgr.getTableSchema(this.m_SQLite_conn, strSQL);
-            this.m_SQLite_da.SelectCommand = new System.Data.SQLite.SQLiteCommand(strSQL, this.m_SQLite_conn);
+            this.m_dtTableSchema = dataMgr.getTableSchema(this.m_conn, strSQL);
+            this.m_da.SelectCommand = new System.Data.SQLite.SQLiteCommand(strSQL, this.m_conn);
 
 			try 
 			{
-                this.m_SQLite_da.Fill(this.m_ds, strTableName);
+                this.m_da.Fill(this.m_ds, strTableName);
                 //for (int x=0; x<=this.m_ds.Tables.Count-1;x++) MessageBox.Show(this.m_ds.Tables[x].TableName);
                 this.m_dv = new DataView(this.m_ds.Tables[strTableName]);
 				
@@ -382,19 +335,16 @@ namespace FIA_Biosum_Manager
 				this.m_dg.CaptionText = strTableName;
 				m_dg.BackgroundColor=frmMain.g_oGridViewBackgroundColor;
 				
-               
 				/***********************************************************************************
 				 **assign the aColumnTextColumn as type DataGridColoredTextBoxColumn object class
 				 ***********************************************************************************/
 				gridview_DataGridColoredTextBoxColumn aColumnTextColumn ;
-
 
 				/***************************************************************
 				 **custom define the grid style
 				 ***************************************************************/
 				DataGridTableStyle tableStyle = new DataGridTableStyle();
                
-
 				/***********************************************************************
 				 **map the data grid table style to the scenario rx intensity dataset
 				 ***********************************************************************/
@@ -443,20 +393,16 @@ namespace FIA_Biosum_Manager
 					 *****************************************************************/
 					if (x > intColumnsToEditCount-1)
 					{
-
 						/******************************************************************
 						 **create a new instance of the DataGridColoredTextBoxColumn class
 						 ******************************************************************/
 						aColumnTextColumn = new gridview_DataGridColoredTextBoxColumn(false,this);
-
 
 						/***********************************
 						 **all columns are read-only except
 						 **the edit columns
 						 ***********************************/
 						aColumnTextColumn.ReadOnly=true;
-
-
 					}
 					else
 					{
@@ -466,13 +412,9 @@ namespace FIA_Biosum_Manager
 						aColumnTextColumn = new gridview_DataGridColoredTextBoxColumn(true,this);
 						
 						aColumnTextColumn.Format="#0.00";
-                       
-
 					}
 					aColumnTextColumn.HeaderText = strColumnName;
 
-					
-				 				    
 					/********************************************************************
 					 **assign the mappingname property the data sets column name
 					 ********************************************************************/
@@ -487,10 +429,7 @@ namespace FIA_Biosum_Manager
 					 **table style object
 					 ********************************************************************/
 					tableStyle.GridColumnStyles.Add(aColumnTextColumn);
-                    
-
 				}
-
 
 				/*********************************************************************
 				 ** make the dataGrid use our new tablestyle and bind it to our table
@@ -509,21 +448,15 @@ namespace FIA_Biosum_Manager
 			{
 				MessageBox.Show(e.Message,"Table",MessageBoxButtons.OK,MessageBoxIcon.Error);
 				this.m_intError=-1;
-				this.m_conn.Close();
-				this.m_conn = null;
 				this.m_ds.Clear();
 				this.m_ds = null;
-				this.m_da.Dispose();
-				this.m_da = null;
-                if (m_SQLite_conn != null)
+                if (m_conn != null)
                 {
-                    m_SQLite_conn.Close();
+                    m_conn.Close();
                 }
 				return;
-
 			}
 			
-
 			this.sbMsg.Text= strTableName + " (Edit/No Append/No Delete)";
 			if (this.m_ds.Tables[strTableName].Rows.Count == 0)
 			{
@@ -552,23 +485,19 @@ namespace FIA_Biosum_Manager
 			this.m_strSQL = strSQL;
 			if (this.m_strSQL.Trim().Length > 0) this.btnSQL.Enabled=true;
 
-
 			/******************************************************************
 			 **if biosum_cond_id or biosum_plot_id is part of the dataset then
 			 **enable the id toolbar button
 			 ******************************************************************/
-
 			for (x=0; x<=this.m_ds.Tables[strTableName].Columns.Count-1;x++)
 			{
 				if (this.m_ds.Tables[strTableName].Columns[x].ColumnName.Trim().ToUpper() == "BIOSUM_COND_ID")
 				{
-					
 					this.m_intBiosumIdColumn = x;
 					break;
 				}
 				if (this.m_ds.Tables[strTableName].Columns[x].ColumnName.Trim().ToUpper() == "BIOSUM_PLOT_ID")
 				{
-					
 					this.m_intBiosumIdColumn = x;
 					break;
 				}
@@ -582,9 +511,7 @@ namespace FIA_Biosum_Manager
 				this.toolBar1.Buttons[3].Enabled=false;
 			}
 			
-
 		}
-
 
 		public string DataSetName
 		{
@@ -601,30 +528,11 @@ namespace FIA_Biosum_Manager
 				return 0;
 			}
 		}
-		public System.Data.OleDb.OleDbConnection getConnection
-		{
-			get
-			{
-				return this.m_conn;
-			}
-			set
-			{
-				
-			}
-			
-		}
 		public System.Data.DataSet getDataSet
 		{
 			get
 			{
 				return this.m_ds;
-			}
-		}
-		public System.Data.OleDb.OleDbDataAdapter getDataAdapter
-		{
-			get
-			{
-				return this.m_da;
 			}
 		}
 		public uc_gridview getGridViewObject
@@ -708,7 +616,6 @@ namespace FIA_Biosum_Manager
             this.m_dg.MouseUp += new System.Windows.Forms.MouseEventHandler(this.m_dg_MouseUp);
             this.m_dg.MouseDown += new System.Windows.Forms.MouseEventHandler(this.m_dg_MouseDown);
             this.m_dg.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.m_dg_KeyPress);
-            this.m_dg.KeyDown += new System.Windows.Forms.KeyEventHandler(this.m_dg_KeyDown);
             this.m_dg.Navigate += new System.Windows.Forms.NavigateEventHandler(this.dataGrid1_Navigate);
             // 
             // groupBox1
@@ -921,9 +828,6 @@ namespace FIA_Biosum_Manager
 		}
 		#endregion
 
-		
-
-
 		private void dataGrid1_Navigate(object sender, System.Windows.Forms.NavigateEventArgs ne)
 		{
 		
@@ -963,15 +867,10 @@ namespace FIA_Biosum_Manager
 			{
 				if (this.m_dg.CurrentRowIndex != this.m_intCurrRow - 1)
 				{
-					//if (m_dg.CurrentRowIndex >= 0) m_dg.UnSelect(m_dg.CurrentRowIndex);
-//					if (m_dg.CurrentRowIndex >=0) m_dg.Select(m_dg.CurrentRowIndex);
 					this.m_intCurrRow = this.m_dg.CurrentRowIndex + 1;
 					this.sbQueryRecordCount.Text= this.m_intCurrRow.ToString().Trim() + "/"+ this.m_ds.Tables[DataSetName].Rows.Count.ToString().Trim();
 				}
 			}
-			//			MessageBox.Show ("Col is " + this.m_dg.CurrentCell.ColumnNumber
-			//				+ ", Row is " + this.m_dg.CurrentCell.RowNumber 
-			//				+ ", Value is " + this.m_dg[this.m_dg.CurrentCell] );
 		}
 
 		private void toolBar2_ButtonClick(object sender, System.Windows.Forms.ToolBarButtonClickEventArgs e)
@@ -1015,13 +914,13 @@ namespace FIA_Biosum_Manager
 					while (this.m_bAdapterDisposed==false)
 						System.Threading.Thread.Sleep(1000);
 				}
-                if (m_SQLite_da != null)
+                if (m_da != null)
                 {
-                    this.m_SQLite_da.Dispose();
+                    this.m_da.Dispose();
                     // For now, let's just dispose of it and hope it works properly
                 }
 				if (m_da != null) this.m_da = null;
-                if (m_SQLite_da != null) this.m_SQLite_da = null;
+                if (m_da != null) this.m_da = null;
                 if (m_ds.Tables[m_dg.CaptionText] != null)  m_ds.Tables[m_dg.CaptionText].Clear();
 				if (m_ds.Tables[m_dg.CaptionText] !=null) m_ds.Tables[m_dg.CaptionText].Dispose();
 				if (m_ds != null) this.m_ds.Clear();
@@ -1033,17 +932,15 @@ namespace FIA_Biosum_Manager
 				}
 				if (m_conn != null) m_conn.Dispose();
 				if (m_conn != null) this.m_conn = null;
-                if (m_SQLite_conn != null)
+                if (m_conn != null)
                 {
-                    this.m_SQLite_conn.Close();
+                    this.m_conn.Close();
                 }
-                if (m_SQLite_conn != null) this.m_SQLite_conn.Dispose();
+                if (m_conn != null) this.m_conn.Dispose();
 
 			}
 			if (this.DataSetName.Trim().Length > 0) this.ReferenceGridViewForm.RemoveGridViewMenuItem(this.DataSetName);
 			if (this.DataSetName.Trim().Length > 0) this.ReferenceGridViewForm.RemoveGridViewCollectionItem(this.DataSetName);
-			//if (this.DataSetName.Trim().Length > 0) ((frmGridView)this.ParentForm).RemoveGridViewMenuItem(this.DataSetName);
-			//if (this.DataSetName.Trim().Length > 0) ((frmGridView)this.ParentForm).RemoveGridViewCollectionItem(this.DataSetName);
 			this.Dispose();
 		}
 		private void m_da_Disposed(object sender, EventArgs e)
@@ -1105,11 +1002,6 @@ namespace FIA_Biosum_Manager
 					frmTemp.Text = "Print Report Wizard";
 					uc_print_report_wizard1.Dock = System.Windows.Forms.DockStyle.Fill;
 					frmTemp.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-					//frmTemp.Width = 280;
-					//frmTemp.Height = 460;
-					//uc_print_report_wizard1.Width = 272;
-					//uc_print_report_wizard1.Height = 448;
-					//frmTemp.Visible=true;
 					uc_print_report_wizard1.Visible=true;
 					frmTemp.ShowDialog();
 
@@ -1122,7 +1014,6 @@ namespace FIA_Biosum_Manager
 						frmDialog frmBiosumId = new frmDialog();
 						frmBiosumId.Visible=false;
 
-						//					uc_biosum_id uc_biosum_id1 = new uc_biosum_id(this.m_ds.Tables[this.m_dg.CaptionText].Rows[this.m_dg.CurrentRowIndex][this.m_strBiosumIdField].ToString());
 						uc_biosum_id uc_biosum_id1 = new uc_biosum_id(this.m_dg[this.m_dg.CurrentRowIndex,this.m_intBiosumIdColumn].ToString().Trim());
 						frmBiosumId.Controls.Add(uc_biosum_id1);
 						frmBiosumId.MaximizeBox = false;
@@ -1130,7 +1021,6 @@ namespace FIA_Biosum_Manager
 						frmBiosumId.Width = uc_biosum_id1.m_intWd;
 						frmBiosumId.Height = uc_biosum_id1.m_intHt;
 						uc_biosum_id1.Visible=true;
-						//frmBiosumId.Text = "FIA Biosum Id (" + this.m_ds.Tables[this.m_dg.CaptionText].Rows[this.m_dg.CurrentRowIndex][this.m_strBiosumIdField].ToString() + ")";
 						frmBiosumId.Text = "FIA Biosum Id (" + this.m_dg[this.m_dg.CurrentRowIndex,this.m_intBiosumIdColumn].ToString().Trim() + ")";
 						uc_biosum_id1.Dock =  System.Windows.Forms.DockStyle.Fill;
 						frmBiosumId.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
@@ -1139,16 +1029,6 @@ namespace FIA_Biosum_Manager
 						frmBiosumId.ShowDialog();
 					}
 
-					//uc_print_report_wizard1.Dock = System.Windows.Forms.DockStyle.Fill;
-					//frmTemp.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-					//frmTemp.Width = 280;
-					//frmTemp.Height = 460;
-					//uc_print_report_wizard1.Width = 272;
-					//uc_print_report_wizard1.Height = 448;
-					//frmTemp.Visible=true;
-					//uc_print_report_wizard1.Visible=true;
-				
-					//frmTemp2.ShowDialog();
 					break;
 				case 4:  //save gridview contents
 					this.savevalues();
@@ -1158,21 +1038,18 @@ namespace FIA_Biosum_Manager
 			}
 
 		}
+
 		public void savevalues()
-		{
+        {
 			int x;
 			int y;
-			//string strConn="";
-			string strSQL="";
-			string strSQLWhere="";
+			string strSQL = "";
+			string strSQLWhere = "";
 			int intCurrRow;
-			//int intMovedRow;
-			//string strValue="";
-			bool bFirstTime=false;
-            ado_data_access p_ado;
-            SQLite.ADO.DataMgr p_dataMgr = null;
+			bool bFirstTime = false;
+			SQLite.ADO.DataMgr p_dataMgr = new SQLite.ADO.DataMgr();
 
-			this.m_intError=0;
+			this.m_intError = 0;
 
 			/******************************************************
 			 **save the current row, move the current row to a
@@ -1180,16 +1057,15 @@ namespace FIA_Biosum_Manager
 			 **move back to current row
 			 ******************************************************/
 			intCurrRow = this.m_dg.CurrentRowIndex;
-			if (intCurrRow==0)
+			if (intCurrRow == 0)
 			{
 				this.m_dg.CurrentRowIndex++;
 			}
 			else
 			{
-                this.m_dg.CurrentRowIndex=0;
+				this.m_dg.CurrentRowIndex = 0;
 			}
-			 
-               			
+
 			System.Data.DataTable p_dtChanges;
 
 			/******************************************************
@@ -1197,326 +1073,172 @@ namespace FIA_Biosum_Manager
 			 ******************************************************/
 			p_dtChanges = this.m_ds.Tables[this.m_dg.CaptionText].GetChanges(System.Data.DataRowState.Modified);
 			if (p_dtChanges != null && p_dtChanges.Rows.Count > 0)
-			{
-                frmMain.g_oFrmMain.ActivateStandByAnimation(
-                    this.ParentForm.WindowState,
-                    this.ParentForm.Left,
-                    this.ParentForm.Height,
-                    this.ParentForm.Width,
-                    this.ParentForm.Top);
+            {
+				frmMain.g_oFrmMain.ActivateStandByAnimation(
+					this.ParentForm.WindowState,
+					this.ParentForm.Left,
+					this.ParentForm.Height,
+					this.ParentForm.Width,
+					this.ParentForm.Top);
 
-				p_ado = new ado_data_access();
-                if (m_SQLite_da != null)    // Indicates that the grid is loaded with SQLite data
+                try
                 {
-                    p_dataMgr = new SQLite.ADO.DataMgr();
-                }
-            
-				try
-				{
-                    /******************************************************
+					/******************************************************
 					 **save all the rows that changed
 					 ******************************************************/
-                    if (p_dataMgr == null)
-                    {
-                        for (x = 0; x <= p_dtChanges.Rows.Count - 1; x++)
-                        {
-                            /*****************************************************
-                             **build the sql string
-                             *****************************************************/
-                            bFirstTime = true;
-                            for (y = 0; y <= this.m_strColumnsToEdit.Length - 1; y++)
-                            {
 
-                                if (p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]] != System.DBNull.Value)
-                                {
-                                    if (bFirstTime == true)
-                                    {
+					for (x = 0; x <= p_dtChanges.Rows.Count - 1; x++)
+					{
+						/*****************************************************
+						 **build the sql string
+						 *****************************************************/
+						bFirstTime = true;
+						for (y = 0; y <= this.m_strColumnsToEdit.Length - 1; y++)
+						{
+							if (p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]] != System.DBNull.Value)
+							{
+								if (bFirstTime == true)
+								{
+									bFirstTime = false;
+									/***********************************************************
+									 **check to see if the column data type is numeric or not
+									 ***********************************************************/
+									if (p_dataMgr.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strColumnsToEdit[y]].DataType.FullName.ToString()) == "Y")
+									{
+										/**********************************************************
+										 **it is a string datatype so enclose the variable value
+										 **with single quotation marks
+										 **********************************************************/
+										strSQL = "update " + this.m_dg.CaptionText + " set " +
+											this.m_strColumnsToEdit[y] + "='" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString() + "'";
+									}
+									else
+									{
+										/**********************************************
+										 **not a string datatype
+										 **********************************************/
+										strSQL = "update " + this.m_dg.CaptionText + " set " +
+											this.m_strColumnsToEdit[y] + "=" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString();
+									}
+								}
+								else
+								{
+									/***********************************************************
+									 **check to see if the column data type is numeric or not
+									 ***********************************************************/
+									if (p_dataMgr.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strColumnsToEdit[y]].DataType.FullName.ToString()) == "Y")
+									{
+										/**********************************************************
+										 **it is a string datatype so enclose the variable value
+										 **with single quotation marks
+										 **********************************************************/
+										strSQL += "," +
+											this.m_strColumnsToEdit[y] + "= '" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString() + "'";
+									}
+									else
+									{
+										/**********************************************
+										 **not a string datatype
+										 **********************************************/
+										strSQL += "," +
+											this.m_strColumnsToEdit[y] + "=" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString();
+									}
+								}
+							}
+						}
+						/****************************************
+						 **make sure that we have sql
+						 ****************************************/
+						if (strSQL.Trim().Length > 0)
+						{
+							/***********************************************************
+							 **build the where clause to update the correct record(s)
+							 ***********************************************************/
+							for (y = 0; y <= this.m_strRecordKeyColumns.Length - 1; y++)
+							{
+								if (y == 0)
+								{
+									/***********************************************************
+									 **check to see if the column data type is numeric or not
+									 ***********************************************************/
+									if (p_dataMgr.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strRecordKeyColumns[y]].DataType.FullName.ToString()) == "Y")
+									{
+										/**********************************************************
+										 **it is a string datatype so enclose the variable value
+										 **with single quotation marks
+										 **********************************************************/
+										strSQLWhere = " where " + this.m_strRecordKeyColumns[y].Trim() + " = '" + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString() + "'";
+									}
+									else
+									{
+										/**********************************************
+										 **not a string datatype
+										 **********************************************/
+										strSQLWhere = " where " + this.m_strRecordKeyColumns[y].Trim() + " = " + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString();
+									}
+								}
+								else
+								{
+									/***********************************************************
+									 **check to see if the column data type is numeric or not
+									 ***********************************************************/
+									if (p_dataMgr.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strRecordKeyColumns[y]].DataType.FullName.ToString()) == "Y")
+									{
+										/**********************************************************
+										 **it is a string datatype so enclose the variable value
+										 **with single quotation marks
+										 **********************************************************/
+										strSQLWhere += " and " + this.m_strRecordKeyColumns[y].Trim() + " = '" + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString() + "'";
+									}
+									else
+									{
+										/**********************************************
+										 **not a string datatype
+										 **********************************************/
+										strSQLWhere += " and " + this.m_strRecordKeyColumns[y].Trim() + " = " + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString();
+									}
+								}
+							}
 
-                                        bFirstTime = false;
-                                        /***********************************************************
-                                         **check to see if the column data type is numeric or not
-                                         ***********************************************************/
-                                        if (p_ado.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strColumnsToEdit[y]].DataType.FullName.ToString()) == "Y")
-                                        {
-                                            /**********************************************************
-                                             **it is a string datatype so enclose the variable value
-                                             **with single quotation marks
-                                             **********************************************************/
-                                            strSQL = "update " + this.m_dg.CaptionText + " set " +
-                                                this.m_strColumnsToEdit[y] + "='" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString() + "'";
-                                        }
-                                        else
-                                        {
-                                            /**********************************************
-                                             **not a string datatype
-                                             **********************************************/
-                                            strSQL = "update " + this.m_dg.CaptionText + " set " +
-                                                this.m_strColumnsToEdit[y] + "=" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString();
+							strSQL += strSQLWhere + ";";
 
-                                        }
-                                    }
-                                    else
-                                    {
-                                        /***********************************************************
-                                         **check to see if the column data type is numeric or not
-                                         ***********************************************************/
-                                        if (p_ado.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strColumnsToEdit[y]].DataType.FullName.ToString()) == "Y")
-                                        {
-                                            /**********************************************************
-                                             **it is a string datatype so enclose the variable value
-                                             **with single quotation marks
-                                             **********************************************************/
-                                            strSQL += "," +
-                                                this.m_strColumnsToEdit[y] + "= '" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString() + "'";
-                                        }
-                                        else
-                                        {
-                                            /**********************************************
-                                             **not a string datatype
-                                             **********************************************/
-                                            strSQL += "," +
-                                                this.m_strColumnsToEdit[y] + "=" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString();
-
-                                        }
-                                    }
-                                }
-                            }
-                            /****************************************
-                             **make sure that we have sql
-                             ****************************************/
-                            if (strSQL.Trim().Length > 0)
-                            {
-                                /***********************************************************
-                                 **build the where clause to update the correct record(s)
-                                 ***********************************************************/
-                                for (y = 0; y <= this.m_strRecordKeyColumns.Length - 1; y++)
-                                {
-                                    if (y == 0)
-                                    {
-                                        /***********************************************************
-                                         **check to see if the column data type is numeric or not
-                                         ***********************************************************/
-                                        if (p_ado.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strRecordKeyColumns[y]].DataType.FullName.ToString()) == "Y")
-                                        {
-                                            /**********************************************************
-                                             **it is a string datatype so enclose the variable value
-                                             **with single quotation marks
-                                             **********************************************************/
-                                            strSQLWhere = " where " + this.m_strRecordKeyColumns[y].Trim() + " = '" + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString() + "'";
-                                        }
-                                        else
-                                        {
-                                            /**********************************************
-                                             **not a string datatype
-                                             **********************************************/
-                                            strSQLWhere = " where " + this.m_strRecordKeyColumns[y].Trim() + " = " + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString();
-
-                                        }
-                                    }
-                                    else
-                                    {
-                                        /***********************************************************
-                                         **check to see if the column data type is numeric or not
-                                         ***********************************************************/
-                                        if (p_ado.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strRecordKeyColumns[y]].DataType.FullName.ToString()) == "Y")
-                                        {
-                                            /**********************************************************
-                                             **it is a string datatype so enclose the variable value
-                                             **with single quotation marks
-                                             **********************************************************/
-                                            strSQLWhere += " and " + this.m_strRecordKeyColumns[y].Trim() + " = '" + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString() + "'";
-                                        }
-                                        else
-                                        {
-                                            /**********************************************
-                                             **not a string datatype
-                                             **********************************************/
-                                            strSQLWhere += " and " + this.m_strRecordKeyColumns[y].Trim() + " = " + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString();
-                                        }
-
-                                    }
-                                }
-
-                                strSQL += strSQLWhere + ";";
-
-                                p_ado.SqlNonQuery(this.m_conn, strSQL);
-                                if (p_ado.m_intError == -1)
-                                {
-                                    p_dtChanges.Clear();
-                                    p_dtChanges = null;
-                                    p_ado = null;
-                                    this.m_intError = -1;
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        for (x = 0; x <= p_dtChanges.Rows.Count - 1; x++)
-                        {
-                            /*****************************************************
-                             **build the sql string
-                             *****************************************************/
-                            bFirstTime = true;
-                            for (y = 0; y <= this.m_strColumnsToEdit.Length - 1; y++)
-                            {
-
-                                if (p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]] != System.DBNull.Value)
-                                {
-                                    if (bFirstTime == true)
-                                    {
-
-                                        bFirstTime = false;
-                                        /***********************************************************
-                                         **check to see if the column data type is numeric or not
-                                         ***********************************************************/
-                                        if (p_dataMgr.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strColumnsToEdit[y]].DataType.FullName.ToString()) == "Y")
-                                        {
-                                            /**********************************************************
-                                             **it is a string datatype so enclose the variable value
-                                             **with single quotation marks
-                                             **********************************************************/
-                                            strSQL = "update " + this.m_dg.CaptionText + " set " +
-                                                this.m_strColumnsToEdit[y] + "='" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString() + "'";
-                                        }
-                                        else
-                                        {
-                                            /**********************************************
-                                             **not a string datatype
-                                             **********************************************/
-                                            strSQL = "update " + this.m_dg.CaptionText + " set " +
-                                                this.m_strColumnsToEdit[y] + "=" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString();
-
-                                        }
-                                    }
-                                    else
-                                    {
-                                        /***********************************************************
-                                         **check to see if the column data type is numeric or not
-                                         ***********************************************************/
-                                        if (p_dataMgr.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strColumnsToEdit[y]].DataType.FullName.ToString()) == "Y")
-                                        {
-                                            /**********************************************************
-                                             **it is a string datatype so enclose the variable value
-                                             **with single quotation marks
-                                             **********************************************************/
-                                            strSQL += "," +
-                                                this.m_strColumnsToEdit[y] + "= '" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString() + "'";
-                                        }
-                                        else
-                                        {
-                                            /**********************************************
-                                             **not a string datatype
-                                             **********************************************/
-                                            strSQL += "," +
-                                                this.m_strColumnsToEdit[y] + "=" + p_dtChanges.Rows[x][this.m_strColumnsToEdit[y]].ToString();
-
-                                        }
-                                    }
-                                }
-                            }
-                            /****************************************
-                             **make sure that we have sql
-                             ****************************************/
-                            if (strSQL.Trim().Length > 0)
-                            {
-                                /***********************************************************
-                                 **build the where clause to update the correct record(s)
-                                 ***********************************************************/
-                                for (y = 0; y <= this.m_strRecordKeyColumns.Length - 1; y++)
-                                {
-                                    if (y == 0)
-                                    {
-                                        /***********************************************************
-                                         **check to see if the column data type is numeric or not
-                                         ***********************************************************/
-                                        if (p_dataMgr.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strRecordKeyColumns[y]].DataType.FullName.ToString()) == "Y")
-                                        {
-                                            /**********************************************************
-                                             **it is a string datatype so enclose the variable value
-                                             **with single quotation marks
-                                             **********************************************************/
-                                            strSQLWhere = " where " + this.m_strRecordKeyColumns[y].Trim() + " = '" + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString() + "'";
-                                        }
-                                        else
-                                        {
-                                            /**********************************************
-                                             **not a string datatype
-                                             **********************************************/
-                                            strSQLWhere = " where " + this.m_strRecordKeyColumns[y].Trim() + " = " + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString();
-
-                                        }
-                                    }
-                                    else
-                                    {
-                                        /***********************************************************
-                                         **check to see if the column data type is numeric or not
-                                         ***********************************************************/
-                                        if (p_dataMgr.getIsTheFieldAStringDataType(p_dtChanges.Columns[this.m_strRecordKeyColumns[y]].DataType.FullName.ToString()) == "Y")
-                                        {
-                                            /**********************************************************
-                                             **it is a string datatype so enclose the variable value
-                                             **with single quotation marks
-                                             **********************************************************/
-                                            strSQLWhere += " and " + this.m_strRecordKeyColumns[y].Trim() + " = '" + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString() + "'";
-                                        }
-                                        else
-                                        {
-                                            /**********************************************
-                                             **not a string datatype
-                                             **********************************************/
-                                            strSQLWhere += " and " + this.m_strRecordKeyColumns[y].Trim() + " = " + p_dtChanges.Rows[x][this.m_strRecordKeyColumns[y]].ToString();
-                                        }
-
-                                    }
-                                }
-
-                                strSQL += strSQLWhere + ";";
-
-                                p_dataMgr.SqlNonQuery(this.m_SQLite_conn, strSQL);
-                                if (p_dataMgr.m_intError == -1)
-                                {
-                                    p_dtChanges.Clear();
-                                    p_dtChanges = null;
-                                    p_ado = null;
-                                    this.m_intError = -1;
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                    
+							p_dataMgr.SqlNonQuery(this.m_conn, strSQL);
+							if (p_dataMgr.m_intError == -1)
+							{
+								p_dtChanges.Clear();
+								p_dtChanges = null;
+								this.m_intError = -1;
+								return;
+							}
+						}
+					}
 				}
 				catch (Exception caught)
 				{
-                    frmMain.g_oFrmMain.DeactivateStandByAnimation();
+					frmMain.g_oFrmMain.DeactivateStandByAnimation();
 					MessageBox.Show(caught.Message);
 					p_dtChanges.Clear();
-					p_dtChanges=null;
-					this.m_intError=-1;
+					p_dtChanges = null;
+					this.m_intError = -1;
 				}
-				if (this.m_intError==0)
+				if (this.m_intError == 0)
 				{
-                    frmMain.g_oFrmMain.DeactivateStandByAnimation();
+					frmMain.g_oFrmMain.DeactivateStandByAnimation();
 					p_dtChanges.AcceptChanges(); //this.m_ds.Tables[this.m_dg.CaptionText].AcceptChanges();
 				}
 				p_dtChanges.Clear();
-                p_dataMgr = null;
-
+				p_dataMgr = null;
 			}
-			p_dtChanges=null;
-
+			p_dtChanges = null;
 
 			this.m_dg.CurrentRowIndex = intCurrRow;
-			this.btnSave.Enabled=false;
-            if (m_intError == 0)
-            {
-                if (this.ReferenceGridViewForm.ReferenceProcessorScenarioForm != null)
-                    this.ReferenceGridViewForm.ReferenceProcessorScenarioForm.m_bSave = true;
-            }
+			this.btnSave.Enabled = false;
+			if (m_intError == 0)
+			{
+				if (this.ReferenceGridViewForm.ReferenceProcessorScenarioForm != null)
+					this.ReferenceGridViewForm.ReferenceProcessorScenarioForm.m_bSave = true;
+			}
 
-            
 			return;
 		}
 		private void m_dg_MouseWheel(object sender,MouseEventArgs e)
@@ -1528,7 +1250,6 @@ namespace FIA_Biosum_Manager
 			this.m_mnuDataGridPopup = new ContextMenu();
 			this.m_mnuDataGridTextBoxPopup = new ContextMenu();
 
-           // this.m_mnuDataGridPopup.MenuItems.Add("Filter",new EventHandler(PopUp_Clicked));
 			this.m_mnuDataGridPopup.MenuItems.Add("Filter By Value",new EventHandler(PopUp_Clicked));
 			this.m_mnuDataGridPopup.MenuItems.Add("Filter By Entered Value", new EventHandler(Filter_Clicked));
             this.m_mnuDataGridPopup.MenuItems.Add("Remove Filter",new EventHandler(PopUp_Clicked));
@@ -1537,8 +1258,6 @@ namespace FIA_Biosum_Manager
 			this.m_mnuDataGridPopup.MenuItems.Add("-");
             this.m_mnuDataGridPopup.MenuItems.Add("Modify",new EventHandler(PopUp_Clicked));
 			this.m_mnuDataGridPopup.MenuItems[MENU_MODIFY].Enabled=false;
-			this.m_mnuDataGridPopup.MenuItems.Add("Delete",new EventHandler(PopUp_Clicked));
-			this.m_mnuDataGridPopup.MenuItems[MENU_DELETE].Enabled=false;
 			this.m_mnuDataGridPopup.MenuItems.Add("-");
 			this.m_mnuDataGridPopup.MenuItems.Add("Select All",new EventHandler(PopUp_Clicked));
 			this.m_mnuDataGridPopup.MenuItems[MENU_SELECTALL].Enabled=true;
@@ -1552,14 +1271,9 @@ namespace FIA_Biosum_Manager
 			this.m_mnuDataGridPopup.MenuItems.Add("Minimum",new EventHandler(PopUp_Clicked));
 			this.m_mnuDataGridPopup.MenuItems.Add("Average",new EventHandler(PopUp_Clicked));
 			this.m_mnuDataGridPopup.MenuItems.Add("Sum",new EventHandler(PopUp_Clicked));
-
 			this.m_mnuDataGridPopup.MenuItems.Add("Count By Value",new EventHandler(PopUp_Clicked));
-			
-			
-
-
-			
 		}
+
 		private void PopUp_Clicked(object sender,EventArgs e)
 		{
 			MenuItem miClicked = (MenuItem)sender;
@@ -1567,7 +1281,6 @@ namespace FIA_Biosum_Manager
 			string strCellValue = "";
 			string strCol = "";
 			string strFilter = "";
-			//string strCount1="";
 			string strExp="";
 			int intLeft=0;
 			int intTop=0;
@@ -1577,7 +1290,6 @@ namespace FIA_Biosum_Manager
 			System.Windows.Forms.CurrencyManager p_cm;
 			System.Data.DataView p_dv;
 			int intCurrRow=0;
-			//MessageBox.Show(strItem);
 			switch (strItem.ToUpper().Trim())
 			{
 				case "FILTER BY VALUE":
@@ -1628,12 +1340,6 @@ namespace FIA_Biosum_Manager
                     {
 
                         //------------text box------------//
-                        //instatiate numeric text class
-                        //FIA_Biosum_Manager.txtDollarsAndCents p_txtCPA = new FIA_Biosum_Manager.txtDollarsAndCents(4, 2);
-                       // FIA_Biosum_Manager.ValidateNumericValues oValidate = new ValidateNumericValues();
-                        //p_txtCPA.ReferenceCoreScenarioForm = ((frmGridView)this.ParentForm).ReferenceCoreScenarioForm;
-
-
                         //define form properties
                         frmTemp.Width = 200;
                         frmTemp.Height = 200;
@@ -1669,29 +1375,6 @@ namespace FIA_Biosum_Manager
                         
                         oTextBox.Focus();
 
-                        //p_txtCPA.Name = "txtModify";
-                        //p_txtCPA.TabIndex = 0;
-                        //p_txtCPA.Tag = "";
-                        //p_txtCPA.Visible = true;
-                        //p_txtCPA.Enabled = true;
-                        //frmTemp.Controls.Add(p_txtCPA);  //add the text box to the form
-                        //p_txtCPA.Height = 100;
-
-                        //p_txtCPA.Top = (int)(frmTemp.ClientSize.Height * .50) - (int)(p_txtCPA.Height * .50);
-                        //p_txtCPA.Width = frmTemp.ClientSize.Width - 20;
-                        //p_txtCPA.Left = 10;
-                        //p_txtNumeric.Top = 100;
-                        //p_txtNumeric.Left = 5;
-
-                        //p_txtCPA.bEdit = true;
-                        //p_txtCPA.ReadOnly = false;
-                        //p_txtCPA.Text = "0.00";
-                        //intLeft = p_txtCPA.Left;
-                        //intTop = p_txtCPA.Top;
-                        //frmTemp.m_txtMoney = p_txtCPA;
-                        //frmTemp.txtMoney = p_txtCPA;
-                        //frmTemp.txtMoney.Focus();
-                        //frmTemp.txtMoney.SelectionStart = 1;
                         frmTemp.strCallingFormType = "TM";
 
 
@@ -1699,24 +1382,15 @@ namespace FIA_Biosum_Manager
                      
 					else
 					{
-						//MessageBox.Show(this.m_dv.Table.Columns[this.m_dg.CurrentCell.ColumnNumber].DataType.FullName);
-						//MessageBox.Show(this.m_dg[this.m_dg.CurrentCell.RowNumber,this.m_dg.CurrentCell.ColumnNumber].GetType().FullName.ToString().Trim());
-						//switch (this.m_dg[this.m_dg.CurrentCell.RowNumber,this.m_dg.CurrentCell.ColumnNumber].GetType().FullName.ToString().Trim())
 						this.m_intTableSchemaColumnRow = this.getTableSchemaColumnDefinition(this.m_dv.Table.Columns[this.m_dg.CurrentCell.ColumnNumber].ColumnName.ToString());
 						if (this.m_intTableSchemaColumnRow != -1)
 						{
-							//switch (this.m_dv.Table.Columns[this.m_dg.CurrentCell.ColumnNumber].DataType.FullName.Trim())
                             switch (this.m_dtTableSchema.Rows[this.m_intTableSchemaColumnRow]["DATATYPE"].ToString().Trim())
 							{
 								case "System.String":
-									//MessageBox.Show(this.m_dv.Table.Columns[this.m_dg.CurrentCell.ColumnNumber].ColumnName.ToString());
 									//------------text box------------//
-									//instatiate numeric text class
-									//FIA_Biosum_Manager.txtNumeric p_txtDefault = new FIA_Biosum_Manager.txtNumeric(4,0);
                                     System.Windows.Forms.TextBox p_txtString = new TextBox();
 		                    
-								
-
 									//define form properties
 									frmTemp.Width = 200;
 									frmTemp.Height = 200;
@@ -1738,8 +1412,6 @@ namespace FIA_Biosum_Manager
 									p_txtString.Top = (int)(frmTemp.ClientSize.Height * .50) - (int)(p_txtString.Height * .50);
 									p_txtString.Width = frmTemp.ClientSize.Width - 20;
 									p_txtString.Left = 10;
-									//p_txtNumeric.Top = 100;
-									//p_txtNumeric.Left = 5;
 
 									p_txtString.ReadOnly=false;
 									p_txtString.Text = "";
@@ -1754,7 +1426,6 @@ namespace FIA_Biosum_Manager
 
 									intLeft = p_txtString.Left;
 									intTop = p_txtString.Top;
-										//frmTemp.m_txtNumeric = p_txtDefault;
 									frmTemp.txtBox = p_txtString;
 									frmTemp.txtBox.Focus();
 									frmTemp.txtBox.SelectionStart = 1;
@@ -1769,7 +1440,6 @@ namespace FIA_Biosum_Manager
 									//instatiate numeric text class
 									FIA_Biosum_Manager.txtNumeric p_txtDouble = new FIA_Biosum_Manager.txtNumeric(12,20);
 		                    
-								
 									//define form properties
 									frmTemp.Width = 200;
 									frmTemp.Height = 200;
@@ -1792,33 +1462,22 @@ namespace FIA_Biosum_Manager
 									p_txtDouble.Top = (int)(frmTemp.ClientSize.Height * .50) - (int)(p_txtDouble.Height * .50);
 									p_txtDouble.Width = frmTemp.ClientSize.Width - 20;
 									p_txtDouble.Left = 10;
-									//p_txtNumeric.Top = 100;
-									//p_txtNumeric.Left = 5;
-
 									p_txtDouble.bEdit=true;
 									p_txtDouble.ReadOnly=false;
 									p_txtDouble.Text = "0";
 									intLeft = p_txtDouble.Left;
 									intTop = p_txtDouble.Top;
-									//frmTemp.m_txtNumeric = p_txtDouble;
 									frmTemp.txtNumeric = p_txtDouble;
 									frmTemp.txtNumeric.Focus();
 									frmTemp.txtNumeric.SelectionStart=1;
 									frmTemp.strCallingFormType="TD";
 
-							
-
 									break;
 						
 								default:
-									//strExp = strCol  + "=" + strCellValue;
-                            
 									//------------text box------------//
 									//instatiate numeric text class
 									FIA_Biosum_Manager.txtNumeric p_txtDefault = new FIA_Biosum_Manager.txtNumeric(4,0);
-
-		                    
-								
 
 									//define form properties
 									frmTemp.Width = 200;
@@ -1841,8 +1500,6 @@ namespace FIA_Biosum_Manager
 									p_txtDefault.Top = (int)(frmTemp.ClientSize.Height * .50) - (int)(p_txtDefault.Height * .50);
 									p_txtDefault.Width = frmTemp.ClientSize.Width - 20;
 									p_txtDefault.Left = 10;
-									//p_txtNumeric.Top = 100;
-									//p_txtNumeric.Left = 5;
 
 									p_txtDefault.bEdit=true;
 									p_txtDefault.ReadOnly=false;
@@ -1850,7 +1507,6 @@ namespace FIA_Biosum_Manager
 
 									intLeft = p_txtDefault.Left;
 									intTop = p_txtDefault.Top;
-									//frmTemp.m_txtNumeric = p_txtDefault;
 									frmTemp.txtNumeric = p_txtDefault;
 									frmTemp.txtNumeric.Focus();
 									frmTemp.txtNumeric.SelectionStart = 1;
@@ -1858,7 +1514,6 @@ namespace FIA_Biosum_Manager
 									break;
 							}
 						}
-
 					}
 					//-----------label---------------//
 					System.Windows.Forms.Label lblTemp = new Label();
@@ -1872,7 +1527,6 @@ namespace FIA_Biosum_Manager
 					lblTemp.Top = intTop - lblTemp.Height - 10;
 					lblTemp.Left = intLeft;
 					lblTemp.Visible=true;
-
 
                     //----------------OK button-----------------//
 					System.Windows.Forms.Button btnTempOK = new Button();
@@ -1899,11 +1553,8 @@ namespace FIA_Biosum_Manager
 					btnTempCancel.Top = intTop + btnTempCancel.Height + 10;
 					btnTempCancel.Left = (int)(frmTemp.Width * .50) ;
 					btnTempCancel.Visible=true;
-                    //frmTemp.Top = (int)(this.ParentForm.ClientSize.Height * .50) + (int)(frmTemp.Height * .50) + this.ParentForm.Top;
-					//frmTemp.Left = (int)(this.ParentForm.ClientSize.Width * .50) + (int)(frmTemp.Width * .50) + this.ParentForm.Left;
                     frmTemp.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 					dlgResult = frmTemp.ShowDialog();
-					//MessageBox.Show(dlgResult.ToString());
 					if (dlgResult.ToString().Trim().ToUpper() == "OK" )
 					{
                         frmMain.g_oFrmMain.ActivateStandByAnimation(
@@ -1995,16 +1646,8 @@ namespace FIA_Biosum_Manager
                             {
                                 for (x = 0; x <= y - 1; x++)
                                 {
-
                                     if (m_dg.IsSelected(x) || x == intCurrRow)
                                     {
-
-
-                                        //string str="";
-                                        //for (int zz=0;zz<=this.m_strRecordKeyColumns.Length-1;zz++)
-                                        //{
-
-                                        //    str = m_dg[x,m_strRecordKeyColumns[zz]]; 
                                         if (bApplyModifyCount == true)
                                         {
                                             m_dg.CurrentRowIndex = x - intModifyCount;
@@ -2029,13 +1672,10 @@ namespace FIA_Biosum_Manager
                                         }
                                         else if (frmTemp.strCallingFormType == "TM")
                                         {
-
-                                            //m_dg[x,this.m_intPopupColumn] = frmTemp.txtMoney.Text.Substring(1,frmTemp.txtMoney.Text.Trim().Length - 1);
                                             m_dg[x, this.m_intPopupColumn] = frmTemp.txtBox.Text.Replace("$", "");
                                         }
                                         if (this.btnSave.Enabled == false) this.btnSave.Enabled = true;
                                         intModifyCount++;
-
                                     }
                                 }
                             }
@@ -2049,13 +1689,10 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oFrmMain.DeactivateStandByAnimation();
 							MessageBox.Show(err.Message);
 						}
-
-						
 					}
 					frmTemp = null;
 					break;
 				case "REMOVE FILTER":
-
 					this.m_dv.RowFilter="";
 					this.m_strColumnFilterList="";
 					this.m_mnuDataGridPopup.MenuItems[MENU_REMOVEFILTER].Enabled=false;
@@ -2133,8 +1770,6 @@ namespace FIA_Biosum_Manager
 					break;
 
 				case "COUNT BY VALUE":
-//					//double dbl = Convert.ToDouble(this.m_dg[this.m_dg.CurrentCell.RowNumber,this.m_dg.CurrentCell.ColumnNumber]);
-//					System.Decimal decimal1 = (decimal)dbl;
 					strCellValue = string.Format("{0:#.####################}",this.m_dg[this.m_dg.CurrentCell.RowNumber,this.m_dg.CurrentCell.ColumnNumber].ToString());
 					strCol = this.m_dg.TableStyles[0].GridColumnStyles[this.m_intPopupColumn].HeaderText.Trim();
 					switch (this.m_dg[this.m_dg.CurrentCell.RowNumber,this.m_dg.CurrentCell.ColumnNumber].GetType().FullName.ToString().Trim())
@@ -2164,13 +1799,7 @@ namespace FIA_Biosum_Manager
 						this.m_dg.Select(x);
 					}
 					break;
-                case "DELETE":
-					this.DeleteRecords();
-
-					break;
 					
-					
-		    
 			}
 		}
 
@@ -2183,7 +1812,6 @@ namespace FIA_Biosum_Manager
 			string strCol = "";
 			string strDataType="";
 			string strFilter = "";
-			//string strCount1="";
 			string strExp="";
 			int intLeft=0;
 			int intTop=0;
@@ -2193,7 +1821,6 @@ namespace FIA_Biosum_Manager
 			System.Windows.Forms.CurrencyManager p_cm;
 			System.Data.DataView p_dv;
 			int intCurrRow=0;
-			//MessageBox.Show(strItem);
 			switch (strItem.ToUpper().Trim())
 			{
 				case "FILTER BY ENTERED VALUE":
@@ -2323,9 +1950,7 @@ namespace FIA_Biosum_Manager
 								}
 							}
 							break;
-
 					}
-			
 					break;
 			}
 			if (strFilter.Trim().Length > 0)
@@ -2335,24 +1960,16 @@ namespace FIA_Biosum_Manager
 				if (this.m_strColumnFilterList.Trim().Length > 0) this.m_strColumnFilterList+=  strCol.Trim() + ",";
 				else this.m_strColumnFilterList = strCol.Trim() + ",";
 			}
-			
-					
-			
 		}
 
 		private void m_dg_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
 		{
-			//int x;
-
 			switch (e.Button)
 			{
 				case System.Windows.Forms.MouseButtons.Right :
 					Point pt = new Point(e.X,e.Y);
 					try
 					{
-					
-						// DataGrid.HitTestInfo hitTestInfo ;
-                     
 						System.Windows.Forms.DataGrid.HitTestInfo hitTestInfo = this.m_dg.HitTest(pt);
 						this.m_intPopupColumn = hitTestInfo.Column;
 						switch (this.m_dg[0,this.m_intPopupColumn].GetType().FullName.ToString().Trim())
@@ -2426,10 +2043,6 @@ namespace FIA_Biosum_Manager
 						{
 							if (this.m_mnuDataGridPopup.MenuItems[MENU_REMOVEIDX].Enabled==false)
 								this.m_mnuDataGridPopup.MenuItems[MENU_REMOVEIDX].Enabled=true;
-							//if (this.m_mnuDataGridPopup.MenuItems[MENU_IDXASC].Enabled==true)
-							//	this.m_mnuDataGridPopup.MenuItems[MENU_IDXASC].Enabled=false;
-							//if (this.m_mnuDataGridPopup.MenuItems[MENU_IDXDESC].Enabled==true)
-							//	this.m_mnuDataGridPopup.MenuItems[MENU_IDXDESC].Enabled=false;
 						
 						}
 						else
@@ -2440,10 +2053,7 @@ namespace FIA_Biosum_Manager
 								this.m_mnuDataGridPopup.MenuItems[MENU_IDXDESC].Enabled=true;
 							if (this.m_mnuDataGridPopup.MenuItems[MENU_REMOVEIDX].Enabled==true)
 								this.m_mnuDataGridPopup.MenuItems[MENU_REMOVEIDX].Enabled=false;
-
 						}
-                        
-					
 					}
 					catch
 					{
@@ -2460,7 +2070,6 @@ namespace FIA_Biosum_Manager
 						this.m_mnuDataGridPopup.MenuItems[MENU_SELECTALL].Enabled=false;
 						this.m_mnuDataGridPopup.MenuItems[MENU_IDXASC].Enabled=false;
 						this.m_mnuDataGridPopup.MenuItems[MENU_IDXDESC].Enabled=false;
-						this.m_mnuDataGridPopup.MenuItems[MENU_DELETE].Enabled=false;
 
 						this.m_mnuDataGridPopup.Show(this, new Point(pt.X,pt.Y + this.m_dg.Top));
 					}
@@ -2469,16 +2078,11 @@ namespace FIA_Biosum_Manager
 				case System.Windows.Forms.MouseButtons.Left :
 					if (this.m_dg.CurrentRowIndex != this.m_intMouseUpCurrRow - 1)
 					{
-						//if (m_dg.CurrentRowIndex >= 0) m_dg.UnSelect(m_dg.CurrentRowIndex);
-						//if (m_dg.CurrentRowIndex >=0) m_dg.Select(m_dg.CurrentRowIndex);
 						m_intMouseUpCurrRow=this.m_dg.CurrentRowIndex+1;
 					}
 					Point pt2 = new Point(e.X,e.Y);
 					try
 					{
-					
-						// DataGrid.HitTestInfo hitTestInfo ;
-                     
 						System.Windows.Forms.DataGrid.HitTestInfo hitTestInfo = this.m_dg.HitTest(pt2);
 						this.m_intPopupColumn = hitTestInfo.Column;
 
@@ -2491,19 +2095,13 @@ namespace FIA_Biosum_Manager
 							case DataGrid.HitTestType.Cell:
 								break;
 						}
-
-					
 					}
 					catch
 					{
 					}
 
 					break;
-
 			}
-
-			
-																	   
 		}
 		private void m_dg_TextBox_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
 		{
@@ -2520,8 +2118,6 @@ namespace FIA_Biosum_Manager
 						this.m_mnuDataGridPopup.MenuItems[MENU_MODIFY].Enabled=false;
 					}
 
-//					System.Windows.Forms.DataGrid.HitTestInfo hitTestInfo = this.m_dg.HitTest(pt);
-//					this.m_intPopupColumn = hitTestInfo.Column;
 					switch (this.m_dg[0,this.m_intPopupColumn].GetType().FullName.ToString().Trim())
 					{
 						case "System.String":
@@ -2534,7 +2130,6 @@ namespace FIA_Biosum_Manager
 							this.m_mnuDataGridPopup.MenuItems[MENU_SUM].Enabled=true;
 							break;
 					}
-					//MessageBox.Show("textbox mousedown");
 					if (this.m_mnuDataGridPopup.MenuItems[MENU_UNIQUEVALUES].Enabled==false)
 						this.m_mnuDataGridPopup.MenuItems[MENU_UNIQUEVALUES].Enabled=true;
 
@@ -2563,10 +2158,6 @@ namespace FIA_Biosum_Manager
 					{
 						if (this.m_mnuDataGridPopup.MenuItems[MENU_REMOVEIDX].Enabled==false)
 							this.m_mnuDataGridPopup.MenuItems[MENU_REMOVEIDX].Enabled=true;
-						//if (this.m_mnuDataGridPopup.MenuItems[MENU_IDXASC].Enabled==true)
-						//	this.m_mnuDataGridPopup.MenuItems[MENU_IDXASC].Enabled=false;
-						//if (this.m_mnuDataGridPopup.MenuItems[MENU_IDXDESC].Enabled==true)
-						//	this.m_mnuDataGridPopup.MenuItems[MENU_IDXDESC].Enabled=false;
 						
 					}
 					else
@@ -2580,13 +2171,9 @@ namespace FIA_Biosum_Manager
 
 					}
 
-
-
 					break;
 			}
-
-			
-																	   
+								   
 		}
 
 		private void m_dg_TextBox_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
@@ -2629,11 +2216,9 @@ namespace FIA_Biosum_Manager
 
 			}																																					 
  					
-			
 			FIA_Biosum_Manager.frmDialog frmTemp = new frmDialog();
 			System.Windows.Forms.ListBox p_lst = new ListBox();
          
-						
 		     //define form properties
 			frmTemp.Width = 200;
 			frmTemp.Height = 300;
@@ -2684,285 +2269,14 @@ namespace FIA_Biosum_Manager
 			strValues = null;
 			frmTemp = null;
 		}
-		/// <summary>
-		/// Delete all selected records. Currently only plot records can be deleted
-		/// </summary>
-		public void DeleteRecords()
-		{
-			int x;
-			string strConn="";
-			string strSQL="";
-			int intCurrRow;
-			string strValue="";
-			ado_data_access p_ado;
-			Datasource p_datasource;
-			const int TABLE = 4;
-			const int RECORDCOUNT = 6;
-			System.Windows.Forms.CurrencyManager p_cm;
-			System.Data.DataView p_dv;
-
-            
 		
-     
 
-			this.m_intError=0;
-
-			 
-               			
-			//only plot data can be deleted        
-			if (this.m_bDelete == true)
-			{
-				p_ado = new ado_data_access();
-				
-				p_cm = (CurrencyManager)this.BindingContext[this.m_dg.DataSource,this.m_dg.DataMember];
-				p_dv = (DataView)p_cm.List;
-				intCurrRow= this.m_intCurrRow-1;
-				//add selected plots to the delete list
-				for (x=0; x < p_dv.Count;x++)
-				{
-					if (m_dg.IsSelected(x) || x == intCurrRow)
-					{
-						if (this.m_strDeletedPlotList.Trim().Length > 0)
-						{
-                            if (m_strDeletedPlotList.IndexOf(",'" + p_dv[x]["biosum_plot_id"].ToString().Trim() + ",", 0) < 0)
-                            {
-                                this.m_strDeletedPlotList += ",'" + p_dv[x]["biosum_plot_id"].ToString().Trim() + "'";
-                                this.m_intDeletedPlotCount++;
-                            }
-						}
-						else
-						{
-							this.m_strDeletedPlotList = "'" + p_dv[x]["biosum_plot_id"].ToString().Trim() + "'";
-                            this.m_intDeletedPlotCount++;
-						}
-						
-					}
-				}
-                string[] strArray = frmMain.g_oUtils.ConvertListToArray(m_strDeletedPlotList, ","); 
-               
-				if (strArray != null && strArray.Length > 0)
-				{
-                    m_intDeletedPlotCount = strArray.Length;
-					string strMsg = this.m_intDeletedPlotCount.ToString().Trim() + " plots will be deleted from the table.\n All condition and tree records for the plots deleted will also be deleted. \n Are you sure you want to remove the selected plot data from the project?";
-					DialogResult result = MessageBox.Show(strMsg,"Delete Selected Plot Data", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-					if (result == DialogResult.Yes)
-					{
-                        frmMain.g_sbpInfo.Text = "Deleting Plot Records...Stand By";
-                        frmMain.g_sbpInfo.Parent.Refresh();
-						this.m_dv.AllowDelete=true;
-						this.m_frmTherm = new frmTherm();
-						try
-						{
-						
-
-							//instantiate the datasource class
-							p_datasource = new Datasource(((frmGridView)this.ParentForm).strProjectDirectory);
-		
-							/********************************************************************
-							 **have the data source class create an mdb file in the user's temp
-							 **directory, create links to the plot,tree, and cond table and
-							 **return the name of the mdb path and file
-							 ********************************************************************/
-                            p_datasource.LoadTableColumnNamesAndDataTypes = false;
-							string strMDBFile = p_datasource.CreateMDBAndTableDataSourceLinks();
-
-							//have the ado data access class return the connection string
-							strConn = p_ado.getMDBConnString(strMDBFile,"","");
-
-							System.Data.OleDb.OleDbConnection p_oConn = new System.Data.OleDb.OleDbConnection();
-							p_ado.OpenConnection(strConn,ref p_oConn);
-							
-							if (p_ado.m_intError==0)
-							{
-                                
-
-								strSQL = "";
-
-								//get the location in the array for each of the table type information
-								int intTree = p_datasource.getValidTableNameRow("TREE");
-								int intPlot = p_datasource.getValidTableNameRow("PLOT");
-								int intCond = p_datasource.getValidTableNameRow("CONDITION");
-								int intPpsa = p_datasource.getValidTableNameRow("POPULATION PLOT STRATUM ASSIGNMENT");
-								int intTreeRegionalBiomass = p_datasource.getValidTableNameRow("TREE REGIONAL BIOMASS");
-								int intSiteTree = p_datasource.getValidTableNameRow("SITE TREE");
-
-								//check to see if we found all the table information
-								if (intTree >= 0 && intPlot >=0 && intCond >=0 && intTreeRegionalBiomass > 0 && intSiteTree > 0)
-								{
-
-									this.m_frmTherm.progressBar1.Minimum=0;
-									this.m_frmTherm.progressBar1.Maximum=4;
-									this.m_frmTherm.progressBar1.Value=1;
-									this.m_frmTherm.btnCancel.Visible=false;
-									this.m_frmTherm.Text = "Deleting Plot Records";
-									this.m_frmTherm.lblMsg.Text="";
-									this.m_frmTherm.lblMsg.Visible=true;
-									this.m_frmTherm.progressBar2.Visible=false;
-									this.m_frmTherm.MinimizeBox = false;
-									this.m_frmTherm.MaximizeBox = false;
-									this.m_frmTherm.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-									this.m_frmTherm.Show();
-									this.m_frmTherm.Refresh();
-
-									//create temporary tables
-									strSQL = "SELECT p.cn,p.biosum_plot_id INTO plt_cn_temp FROM " + 
-										p_datasource.m_strDataSource[intPlot,TABLE] + " p " + 
-										"WHERE p.biosum_plot_id IN (" + this.m_strDeletedPlotList.Trim() + ")";
-									p_ado.SqlNonQuery(p_oConn,strSQL);
-
-									strSQL = "SELECT t.cn INTO tre_cn_temp FROM " + 
-										p_datasource.m_strDataSource[intTree,TABLE] + " t, " +
-										p_datasource.m_strDataSource[intCond,TABLE] + " c," +
-										"plt_cn_temp z " + 
-										"WHERE c.biosum_plot_id=z.biosum_plot_id AND " + 
-										"t.biosum_cond_id=c.biosum_cond_id";
-									p_ado.SqlNonQuery(p_oConn,strSQL);
-
-
-									//check if we have tree regional biomass records
-									if (p_datasource.m_strDataSource[intTreeRegionalBiomass,RECORDCOUNT].Trim() != "0")
-									{
-										this.m_frmTherm.lblMsg.Text="Deleting Regional Biomass Tree(s)...Stand By";
-										this.m_frmTherm.lblMsg.Refresh();
-										//delete the tree regional records that are related to a plot
-										strSQL =  "DELETE FROM " + 
-											p_datasource.m_strDataSource[intTreeRegionalBiomass,TABLE] + " tr " + 
-											"WHERE EXISTS (SELECT t.cn FROM tre_cn_temp t WHERE tr.tre_cn=t.cn)";
-										p_ado.SqlNonQuery(p_oConn,strSQL);
-									}
-
-									//check if we have tree records
-									if (p_datasource.m_strDataSource[intTree,RECORDCOUNT].Trim() != "0")
-									{
-										this.m_frmTherm.lblMsg.Text="Deleting Tree(s)...Stand By";
-										this.m_frmTherm.lblMsg.Refresh();
-										//delete the tree records that are related to a plot
-										strSQL =  "DELETE FROM " + 
-											p_datasource.m_strDataSource[intTree,TABLE] + " t " + 
-											"WHERE EXISTS (SELECT tre_cn_temp.cn FROM tre_cn_temp WHERE t.cn=tre_cn_temp.cn)";
-										p_ado.SqlNonQuery(p_oConn,strSQL);
-									}
-									this.m_frmTherm.progressBar1.Value=2;
-									this.m_frmTherm.progressBar1.Refresh();
-									//check if we have cond records
-									if (p_datasource.m_strDataSource[intCond,RECORDCOUNT].Trim() != "0")
-									{
-										this.m_frmTherm.lblMsg.Text="Deleting Condition(s)...Stand By";
-										this.m_frmTherm.lblMsg.Refresh();
-										//delete the tree records that are related to a plot
-										strSQL = "DELETE FROM  " + 
-											p_datasource.m_strDataSource[intCond,TABLE] + " c " +
-											"WHERE  c.biosum_plot_id IN (" + this.m_strDeletedPlotList.Trim() + ");";
-										p_ado.SqlNonQuery(p_oConn,strSQL);
-									}
-									this.m_frmTherm.progressBar1.Value=3;
-									this.m_frmTherm.progressBar1.Refresh();
-									//check if we have site tree records
-									if (p_datasource.m_strDataSource[intSiteTree,RECORDCOUNT].Trim() != "0")
-									{
-										this.m_frmTherm.lblMsg.Text="Deleting Site Trees...Stand By";
-										this.m_frmTherm.lblMsg.Refresh();
-										//delete the tree records that are related to a plot
-										strSQL = "DELETE FROM  " + 
-											p_datasource.m_strDataSource[intSiteTree,TABLE] + " t " +
-											"WHERE  t.biosum_plot_id IN (" + this.m_strDeletedPlotList.Trim() + ");";
-										p_ado.SqlNonQuery(p_oConn,strSQL);
-									}
-									this.m_frmTherm.progressBar1.Value=4;
-									this.m_frmTherm.progressBar1.Refresh();
-									this.m_frmTherm.lblMsg.Text = "Done";
-									this.m_frmTherm.lblMsg.Refresh();
-								}
-								else
-								{
-									strSQL="Delete Failed - Could not locate these designated tables:\n";
-									if (intPlot==-1)
-										strSQL+= "Plot table\n";
-									if (intCond==-1)
-										strSQL+= "Cond table\n";
-									if (intTree==-1)
-										strSQL+= "Tree table\n";
-									if (intTreeRegionalBiomass==-1)
-										strSQL+= "Tree Regional Biomass table\n";
-									if (intSiteTree==-1)
-										strSQL+= "Site Tree table\n";
-									MessageBox.Show(strSQL,"DELETE SELECTED PLOT DATA",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
-
-								}
-								
-								if (this.m_intError==0 && p_ado.m_intError==0)
-								{
-									//delete any plots that are in the delete list
-									for (x=0; x < p_dv.Count;x++)
-									{
-										strValue = "'" + p_dv[x]["biosum_plot_id"].ToString().Trim() + "'";
-										if (this.m_strDeletedPlotList.IndexOf(strValue) >=0)
-										{
-											p_dv[x].Delete();
-											x=x-1;
-									
-										}
-									}
-									this.sbDisplayedRecordCount.Text = this.m_dv.Count.ToString();
-									System.Data.OleDb.OleDbTransaction p_oTran = p_oConn.BeginTransaction();
-									strSQL = "select biosum_plot_id FROM " + p_datasource.m_strDataSource[intPlot,TABLE] + " order by biosum_plot_id;";
-									p_ado.ConfigureDataAdapterDeleteCommand(p_oConn,
-										this.m_da,
-										p_oTran,
-										"select biosum_plot_id from " +  p_datasource.m_strDataSource[intPlot,TABLE],
-										p_datasource.m_strDataSource[intPlot,TABLE]);
-									m_da.Update(this.m_ds.Tables[this.m_dg.CaptionText]);
-									p_oTran.Commit();
-									this.m_ds.Tables[this.m_dg.CaptionText].AcceptChanges();
-
-								}
-								p_oConn.Close();
-								while (p_oConn.State == System.Data.ConnectionState.Open)
-									System.Threading.Thread.Sleep(1000);
-								p_oConn.Dispose();
-								p_oConn=null;
-
-								p_datasource=null;
-                                frmMain.g_sbpInfo.Text = "Ready";
-                                frmMain.g_sbpInfo.Parent.Refresh();
-							}
-							
-
-						}
-						catch (Exception caught)
-						{
-							MessageBox.Show(caught.Message);
-							this.m_intError=-1;
-                            frmMain.g_sbpInfo.Text = "Ready";
-                            frmMain.g_sbpInfo.Parent.Refresh();
-
-						}
-						this.m_frmTherm.Dispose();
-						this.m_frmTherm=null;
-						p_ado=null;
-						this.m_strDeletedPlotList="";
-						this.m_intDeletedPlotCount=0;
-						this.m_dv.AllowDelete=false;
-						
-
-					}
-					else 
-					{
-						this.m_intDeletedPlotCount=0;
-						this.m_strDeletedPlotList="";
-					}
-					this.sbQueryRecordCount.Text= "1/"+ this.m_ds.Tables[this.m_dg.CaptionText].Rows.Count.ToString().Trim();
-				}
-			}
-			return;
-		}
-
-        public void LoadGridViewSqlite(string strConn, string strSQL, string strDataSetName)
+        public void LoadGridView(string strConn, string strSQL, string strDataSetName)
         {
             string strColumnName = "";
             this.InitializePopup();
             this.m_dg.MouseWheel += new MouseEventHandler(m_dg_MouseWheel);
-            this.m_SQLite_conn = new System.Data.SQLite.SQLiteConnection();
+            this.m_conn = new System.Data.SQLite.SQLiteConnection();
 
             if (strDataSetName != null && strDataSetName.Trim().Length > 0)
             {
@@ -2973,8 +2287,7 @@ namespace FIA_Biosum_Manager
                 this.m_ds = new DataSet();
             }
 
-
-            this.m_SQLite_da = new System.Data.SQLite.SQLiteDataAdapter();
+            this.m_da = new System.Data.SQLite.SQLiteDataAdapter();
 
             this.m_dg.Left = 5;
             this.toolBar1.Left = 5;
@@ -2987,7 +2300,7 @@ namespace FIA_Biosum_Manager
             this.m_dg.Height = this.toolBar2.Top - this.m_dg.Top;
 
             var p_dataMgr = new SQLite.ADO.DataMgr();
-            p_dataMgr.OpenConnection(strConn, ref this.m_SQLite_conn);
+            p_dataMgr.OpenConnection(strConn, ref this.m_conn);
             if (p_dataMgr.m_intError != 0)
             {
                 this.m_intError = p_dataMgr.m_intError;
@@ -2995,11 +2308,11 @@ namespace FIA_Biosum_Manager
                 return;
             }
 
-            this.m_SQLite_da.SelectCommand = new System.Data.SQLite.SQLiteCommand(strSQL, this.m_SQLite_conn);
+            this.m_da.SelectCommand = new System.Data.SQLite.SQLiteCommand(strSQL, this.m_conn);
             try
             {
 
-                this.m_SQLite_da.Fill(this.m_ds, strDataSetName);
+                this.m_da.Fill(this.m_ds, strDataSetName);
                 this.m_dv = new DataView(this.m_ds.Tables[strDataSetName]);
 
                 this.m_dv.AllowNew = false;       //cannot append new records
@@ -3059,8 +2372,6 @@ namespace FIA_Biosum_Manager
 
                     aColumnTextColumn.HeaderText = strColumnName;
 
-
-
                     /********************************************************************
 					 **assign the mappingname property the data sets column name
 					 ********************************************************************/
@@ -3087,20 +2398,18 @@ namespace FIA_Biosum_Manager
 
                 this.m_dg.DataSource = this.m_dv;
 
-
-
                 this.m_dg.Expand(-1);
             }
             catch (Exception e)
             {
                 MessageBox.Show(e.Message, "LoadGridViewSqlite", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 this.m_intError = -1;
-                this.m_SQLite_conn.Close();
-                this.m_SQLite_conn = null;
+                this.m_conn.Close();
+                this.m_conn = null;
                 this.m_ds.Clear();
                 this.m_ds = null;
-                this.m_SQLite_da.Dispose();
-                this.m_SQLite_da = null;
+                this.m_da.Dispose();
+                this.m_da = null;
                 return;
 
             }
@@ -3194,10 +2503,6 @@ namespace FIA_Biosum_Manager
 					{
 						if (this.m_mnuDataGridPopup.MenuItems[MENU_REMOVEIDX].Enabled==false)
 							this.m_mnuDataGridPopup.MenuItems[MENU_REMOVEIDX].Enabled=true;
-						//if (this.m_mnuDataGridPopup.MenuItems[MENU_IDXASC].Enabled==true)
-						//	this.m_mnuDataGridPopup.MenuItems[MENU_IDXASC].Enabled=false;
-						//if (this.m_mnuDataGridPopup.MenuItems[MENU_IDXDESC].Enabled==true)
-						//	this.m_mnuDataGridPopup.MenuItems[MENU_IDXDESC].Enabled=false;
 						
 					}
 					else
@@ -3219,14 +2524,6 @@ namespace FIA_Biosum_Manager
 						this.m_mnuDataGridPopup.MenuItems[MENU_MIN].Enabled=true;
 					if (this.m_mnuDataGridPopup.MenuItems[MENU_MAX].Enabled==false)
 						this.m_mnuDataGridPopup.MenuItems[MENU_MAX].Enabled=true;
-					if (this.m_bDelete==true)
-					{
-						if (this.m_mnuDataGridPopup.MenuItems[MENU_DELETE].Enabled==false)
-						{
-							if (this.sbQueryRecordCount.Text.Trim() != "0")
-								this.m_mnuDataGridPopup.MenuItems[MENU_DELETE].Enabled=true;
-						}
-					}
 					   
 				    break;
 			}
@@ -3260,25 +2557,7 @@ namespace FIA_Biosum_Manager
 
 
 		}
-		private void m_dg_KeyUp(object sender, System.Windows.Forms.KeyEventArgs e)
-		{
-			if (e.KeyCode == Keys.Delete)
-			{
-				//e.Handled=true;
-				this.DeleteRecords();
 
-			}
-		}
-
-		private void m_dg_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
-		{
-			if (e.KeyCode == Keys.Delete)
-			{
-                //e.Handled=true;
-     			this.DeleteRecords();
-
-			}
-		}
 		private void uc_gridview_RowDeleted(object sender, DataRowChangeEventArgs e)
 		{
 		}
@@ -3289,12 +2568,6 @@ namespace FIA_Biosum_Manager
 
 		private void uc_gridview_RowChanging(object sender, DataRowChangeEventArgs e)
 		{
-			//MessageBox.Show("here i am");
-			//if (e.Action == DataRowAction.Delete)
-			//{
-			//	MessageBox.Show("here i am2");
-			//	e.Row.RejectChanges();
-			//}
 		}
 		public bool CloseButton_Visible
 		{
@@ -3307,18 +2580,11 @@ namespace FIA_Biosum_Manager
 			set {this._frmGridView=value;}
 		}
 
-		
-
-
-
-
-
 	}
 	public class gridview_DataGridColoredTextBoxColumn : DataGridTextBoxColumn
 	{
 		bool m_bEdit=false;
 		uc_gridview uc_gridview1;
-		//int m_intKeyPress=0;
 		string m_strLastKey="";
 		
 
@@ -3340,20 +2606,6 @@ namespace FIA_Biosum_Manager
 			// color only the columns that can be edited by the user
 			try
 			{
-				//object o = this.GetColumnValueAtRow(source, rowNum);
-				//MessageBox.Show(this.HeaderText);
-				//MessageBox.Show(source.Position.ToString());
-				//if( o!= null)
-				//{
-				//char c = ((string)o)[0];
-				/*****************************************************************
-				 **see if this column is one that is to be edited
-				 *****************************************************************/
-				//for (int x=0; x <= this.m_intColumnsToEditCount; x++)
-				//{
-				//	if (this.HeaderText.Trim().ToUpper() == 
-				//		this.m_strColumnsToEdit[x].Trim().ToUpper()) 
-				//	{
 				if (this.m_bEdit == true)
 				{
 					backBrush = new System.Drawing.Drawing2D.LinearGradientBrush(bounds,
@@ -3362,10 +2614,6 @@ namespace FIA_Biosum_Manager
 						System.Drawing.Drawing2D.LinearGradientMode.BackwardDiagonal);
 					foreBrush = new SolidBrush(Color.White);
 				}
-				//	}
-				//}
-				
-				//}
 			}
 			catch { /* empty catch */ }
 			finally
@@ -3377,7 +2625,6 @@ namespace FIA_Biosum_Manager
 		}
 		private void TextBox_TextChanged(object sender, EventArgs e)
 		{
-			//MessageBox.Show("textchange");
 		}
 		private void TextBox_KeyDown(object sender, KeyEventArgs e)
 		{
@@ -3385,12 +2632,6 @@ namespace FIA_Biosum_Manager
 			{
 				if (this.m_strLastKey.Trim().Length == 0) this.m_strLastKey = Convert.ToString(e.KeyValue);
 			}
-			
-			
-
-
-
-			//if (this.m_bEdit==true) this.uc_gridview1.btnSave.Enabled=true;
 		}
 		private void TextBox_Enter(object sender, EventArgs e)
 		{
@@ -3405,11 +2646,8 @@ namespace FIA_Biosum_Manager
 					if (this.uc_gridview1.btnSave.Enabled==false) this.uc_gridview1.btnSave.Enabled=true;
 				}
 			}
-			//if (this.m_bEdit==true) MessageBox.Show("leave");
-			//if (this.m_bEdit==true) this.uc_gridview1.btnSave.Enabled=true;
 		}
 
-		
 		     
 	}
 

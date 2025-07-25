@@ -274,7 +274,7 @@ namespace FIA_Biosum_Manager
             else
             {
                 this.uc_gridview1 = new uc_gridview();
-                this.uc_gridview1.LoadGridViewSqlite(strConn, strSQL, strDataSetName);
+                this.uc_gridview1.LoadGridView(strConn, strSQL, strDataSetName);
             }
 
 			this.uc_gridview1.ReferenceGridViewForm=this;
