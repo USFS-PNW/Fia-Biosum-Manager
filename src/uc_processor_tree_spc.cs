@@ -65,7 +65,6 @@ namespace FIA_Biosum_Manager
 		Queries m_oQueries = new Queries();
 		RxTools m_oRxTools = new RxTools();
         FIA_Biosum_Manager.RxPackageItem_Collection m_oRxPackageItem_Collection = new RxPackageItem_Collection();
-        private Button btnView;
 
         private env m_oEnv;
         private Help m_oHelp;
@@ -1221,7 +1220,6 @@ namespace FIA_Biosum_Manager
             this.btnCancel = new System.Windows.Forms.Button();
             this.m_dg = new System.Windows.Forms.DataGrid();
             this.grpboxAudit = new System.Windows.Forms.GroupBox();
-            this.btnView = new System.Windows.Forms.Button();
             this.cmbAudit = new System.Windows.Forms.ComboBox();
             this.btnAudit = new System.Windows.Forms.Button();
             this.btnAuditClearAll = new System.Windows.Forms.Button();
@@ -1344,7 +1342,6 @@ namespace FIA_Biosum_Manager
             // 
             // grpboxAudit
             // 
-            this.grpboxAudit.Controls.Add(this.btnView);
             this.grpboxAudit.Controls.Add(this.cmbAudit);
             this.grpboxAudit.Controls.Add(this.btnAudit);
             this.grpboxAudit.Controls.Add(this.btnAuditClearAll);
@@ -1357,17 +1354,6 @@ namespace FIA_Biosum_Manager
             this.grpboxAudit.TabIndex = 28;
             this.grpboxAudit.TabStop = false;
             this.grpboxAudit.Text = "Audit Results";
-            // 
-            // btnView
-            // 
-            this.btnView.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnView.Location = new System.Drawing.Point(536, 136);
-            this.btnView.Name = "btnView";
-            this.btnView.Size = new System.Drawing.Size(136, 32);
-            this.btnView.TabIndex = 35;
-            this.btnView.Text = "View Affected Trees";
-            this.btnView.Visible = false;
-            this.btnView.Click += new System.EventHandler(this.btnView_Click);
             // 
             // cmbAudit
             // 
@@ -1445,7 +1431,6 @@ namespace FIA_Biosum_Manager
             this.lstAudit.UseCompatibleStateImageBehavior = false;
             this.lstAudit.View = System.Windows.Forms.View.Details;
             this.lstAudit.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.lstAudit_ItemCheck);
-            this.lstAudit.SelectedIndexChanged += new System.EventHandler(this.lstAudit_SelectedIndexChanged);
             // 
             // lblTitle
             // 
@@ -2306,14 +2291,11 @@ namespace FIA_Biosum_Manager
                 btnAuditCheckAll.Enabled = false;
                 btnAuditClearAll.Enabled = false;
                 lstAudit.CheckBoxes = false;
-                this.btnView.Hide();
 				//first get unique tree species
 				string[,] strValues = new string[1000,2];
 
                 frmMain.g_oFrmMain.ActivateStandByAnimation(this.ParentForm.WindowState,
                 this.ParentForm.Left, this.ParentForm.Height, this.ParentForm.Width, this.ParentForm.Top);
-
-				int count=0;
 				string strSpCd="";
 				string strMsg="";
 				this.lstAudit.Columns.Add("spcd", 60, HorizontalAlignment.Left);
@@ -2680,111 +2662,10 @@ namespace FIA_Biosum_Manager
 			//   this.cmbAudit.SelectedIndex = 0;
 			//}
 		}
-
-		private void lstAudit_SelectedIndexChanged(object sender, System.EventArgs e)
-		{
-			if (this.lstAudit.SelectedItems.Count==0) return;
-            if (cmbAudit.Text.Trim()=="Assess Data Readiness: Check If Each FIA Tree Spc, FVS Variant, And FVS Tree Spc Combination Is In The Tree Spc Table")
-			{
-				CurrencyManager p_cm;
-				p_cm = (CurrencyManager)this.BindingContext[this.m_dg.DataSource,this.m_dg.DataMember];
-				string strVariant=this.lstAudit.SelectedItems[0].SubItems[0].Text.Trim();
-				string strSpCd = this.lstAudit.SelectedItems[0].SubItems[1].Text.Trim();
-				for (int x=0;x<=p_cm.Count-1;x++)
-				{
-					string strVariantCellValue = this.m_dg[x,0].ToString().Trim();
-					string strSpCdCellValue = m_dg[x,1].ToString().Trim();
-					if (strVariantCellValue == strVariant && strSpCd == strSpCdCellValue)
-					{
-						m_dg.CurrentRowIndex = x;
-						break;
-					}
-
-				}
-                btnView.Text = "View Affected Trees for Variant:" + strVariant + " SpCd:" + strSpCd;
-			}
-		}
-
         private void cmbAudit_SelectedIndexChanged(object sender, EventArgs e)
         {
             
         }
-
-        private void btnView_Click(object sender, EventArgs e)
-        {
-            if (lstAudit.SelectedItems.Count == 0)
-            {
-                MessageBox.Show("No Rows Are Selected", "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                return;
-            }
-
-            int x;
-            string[] strFVSVariantArray = new string[1];
-           
-            string strFiaSpCd = lstAudit.SelectedItems[0].SubItems[1].Text.Trim();
-            string strFvsVariant = lstAudit.SelectedItems[0].SubItems[0].Text.Trim();
-            string strFvsSpCd = lstAudit.SelectedItems[0].SubItems[2].Text.Trim();
-            strFVSVariantArray[0] = strFvsVariant;
-
-			SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
-			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(m_strTempDbFile)))
-			{
-				conn.Open();
-				if (oDataMgr.TableExist(conn, "fvsouttreetemp2"))
-					oDataMgr.SqlNonQuery(conn, "DROP TABLE fvsouttreetemp2");
-				if (oDataMgr.TableExist(conn, "fvsouttreetemp"))
-					oDataMgr.SqlNonQuery(conn, "DROP TABLE fvsouttreetemp");
-
-				// Attach FVSOUT_TREE_LIST.db database
-				if (!oDataMgr.AttachedTableExist(conn, Tables.FVS.DefaultFVSCutTreeTableName))
-				{
-					oDataMgr.m_strSQL = $@"attach '{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSTreeListDbFile}' as TREE_LIST";
-					oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
-				}
-				// Attach master.db database
-				if (!oDataMgr.AttachedTableExist(conn, m_oQueries.m_oFIAPlot.m_strTreeTable))
-				{
-					oDataMgr.m_strSQL = $@"attach '{m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree)}' as MASTER";
-					oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
-				}
-
-				List<string> strSqlCommandList = Queries.Processor.AuditFvsOut_SelectIntoUnionOfFVSTreeTablesUsingListArray(
-					oDataMgr,
-					conn,
-					"fvsouttreetemp2",
-					"fvs_tree_id,fvs_species,biosum_cond_id");
-
-				for (x = 0; x <= strSqlCommandList.Count - 1; x++)
-				{
-					oDataMgr.SqlNonQuery(conn, strSqlCommandList[x]);
-				}
-
-				oDataMgr.m_strSQL = $@"CREATE TABLE fvsouttreetemp AS SELECT DISTINCT fvs_tree_id,fvs_species,biosum_cond_id, FvsCreatedTree_YN, max(dbh) as dbh, 0 as spcd, '' as cn, 0 as tree, 'N' as exist_in_tree_species_table_yn FROM fvsouttreetemp2
-                            group by fvs_tree_id, biosum_cond_id";
-				oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
-
-				oDataMgr.m_strSQL = "SELECT DISTINCT b.fvs_tree_id," +
-						"b.fvs_species AS FVS_SpCd, a.SpCd AS FIA_SpCd, a.* " +
-				"FROM " + m_oQueries.m_oFIAPlot.m_strTreeTable + " a," +
-						"fvsouttreetemp2 b " +
-				"WHERE trim(a.fvs_tree_id)=b.fvs_tree_id AND " +
-					  "a.biosum_cond_id=b.biosum_cond_id AND " +
-					  "a.spcd=" + strFiaSpCd + " AND " +
-					  "TRIM(b.fvs_species)='" + strFvsSpCd + "'";
-
-				frmMain.g_sbpInfo.Text = "Loading Grid...Stand by";
-
-				frmGridView frmGridView1 = new frmGridView();
-				frmGridView1.LoadDataSet(conn,
-				   oDataMgr.m_strSQL, "AuditFiaSpCdAndFvsSpCd");
-				frmGridView1.TileGridViews();
-				frmMain.g_sbpInfo.Text = "Ready";
-				frmGridView1.ShowDialog();
-				//if (oDataMgr.TableExist(conn, "fvsouttreetemp2"))
-				//	oDataMgr.SqlNonQuery(conn, "DROP TABLE fvsouttreetemp2");
-			}            
-        }
-
         private void lstAudit_ItemCheck(object sender, ItemCheckEventArgs e)
         {
             if (handleCheck)
