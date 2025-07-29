@@ -1124,14 +1124,6 @@ namespace FIA_Biosum_Manager
 								frmMain.g_oUtils.getFileNameUsingLastIndexOf(frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableDbFile),
 								frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName);
 							break;
-						
-						case "OWNER GROUPS":  
-							oDs.InsertDatasourceRecord(oAdo,oAdo.m_OleDbConnection,
-								Datasource.g_strProjectDatasourceTableTypesArray[x].Trim(),
-								ReferenceProjectDirectory.Trim() + "\\db",
-								"ref_master.mdb",
-								"owner_groups");
-							break;
 						case "TREATMENT PRESCRIPTIONS":
                             strDbFile = frmMain.g_oUtils.getFileNameUsingLastIndexOf(Tables.FVS.DefaultRxTableDbFile);
 							oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
@@ -6217,6 +6209,8 @@ namespace FIA_Biosum_Manager
                 oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.Condition, ReferenceProjectDirectory + "\\db", strMasterDb, arrTargetTables[1]);
                 oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.Tree, ReferenceProjectDirectory + "\\db", strMasterDb, arrTargetTables[2]);
                 oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.SiteTree, ReferenceProjectDirectory + "\\db", strMasterDb, arrTargetTables[3]);
+                oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.PopStratumAdjFactors, ReferenceProjectDirectory + "\\db", strMasterDb, 
+                    frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName);
 
                 // Update processor datasources
                 strDestFile = ReferenceProjectDirectory.Trim() + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
@@ -6251,15 +6245,14 @@ namespace FIA_Biosum_Manager
             using (OleDbConnection copyConn = new System.Data.OleDb.OleDbConnection(strDsConn))
             {
                 copyConn.Open();
-                oAdo.m_strSQL = $@"DELETE FROM {oProjectDs.m_strDataSourceTableName} WHERE TABLE_TYPE IN ('{Datasource.TableTypes.TreeSpecies}','{Datasource.TableTypes.FvsTreeSpecies}', '{Datasource.TableTypes.FVSVariant}')";
+                oAdo.m_strSQL = $@"DELETE FROM {oProjectDs.m_strDataSourceTableName} WHERE TABLE_TYPE IN ('{Datasource.TableTypes.TreeSpecies}','{Datasource.TableTypes.FvsTreeSpecies}', '{Datasource.TableTypes.FVSVariant}',
+                    '{Datasource.TableTypes.OwnerGroups}')";
                 oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
             }
 
             // Update project datasources
             oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.FiaTreeMacroPlotBreakpointDia, "@@appdata@@\\fiabiosum",
                 Tables.Reference.DefaultTreeMacroPlotBreakPointDiaTableDbFile, Tables.Reference.DefaultTreeMacroPlotBreakPointDiaTableName);
-            oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.OwnerGroups, "@@appdata@@\\fiabiosum",
-                Tables.Reference.DefaultBiosumReferenceSqliteFile, Tables.Reference.DefaultOwnerGroupsTableName);
             oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.FiaTreeSpeciesReference, "@@appdata@@\\fiabiosum",
                 Tables.Reference.DefaultBiosumReferenceSqliteFile, Tables.Reference.DefaultFIATreeSpeciesTableName);
 

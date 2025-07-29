@@ -1334,7 +1334,7 @@ namespace FIA_Biosum_Manager
 			this.m_strCondTable = m_oDatasource.getValidDataSourceTableName("CONDITION");
 			this.m_strTreeTable = m_oDatasource.getValidDataSourceTableName("TREE");
 			this.m_strSiteTreeTable = m_oDatasource.getValidDataSourceTableName("SITE TREE");
-            this.m_strBiosumPopStratumAdjustmentFactorsTable = m_oDatasource.getValidDataSourceTableName("BIOSUM POP STRATUM ADJUSTMENT FACTORS");
+            this.m_strBiosumPopStratumAdjustmentFactorsTable = m_oDatasource.getValidDataSourceTableName(Datasource.TableTypes.PopStratumAdjFactors);
             this.m_strTreeMacroPlotBreakPointDiaTable = m_oDatasource.getValidDataSourceTableName("FIA TREE MACRO PLOT BREAKPOINT DIAMETER");
 		}
 
@@ -2315,7 +2315,7 @@ namespace FIA_Biosum_Manager
 
                             SQLite.m_strSQL = "INSERT INTO TEMPDB.tempseedling " +
                                 "SELECT TRIM(p.biosum_plot_id) || CAST(s.condid AS TEXT) AS biosum_cond_id, 9 AS biosum_status_cd, " +
-                                "0.1 AS dia, 1 AS diahtcd, '1' || printf('%03d', SPCD) || '00' || SUBP AS fvs_tree_id, 1 AS statuscd, s.* " +
+                                "0.1 AS dia, 1 AS diahtcd, '1' || printf('%03d', SPCD) || '0' || SUBP AS fvs_tree_id, 1 AS statuscd, s.* " +
                                 "FROM FIADB." + strSeedlingSource + " AS s, " + this.m_strPlotTable + " AS p " +
                                 "WHERE s.plt_cn = TRIM(p.cn) AND p.biosum_status_cd = 9";
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -2326,7 +2326,7 @@ namespace FIA_Biosum_Manager
                         {
                             SQLite.m_strSQL = "CREATE TABLE TEMPDB.tempseedling AS " +
                             "SELECT TRIM(p.biosum_plot_id) || CAST(s.condid AS TEXT) AS biosum_cond_id, 9 AS biosum_status_cd, " +
-                            "0.1 AS dia, 1 AS diahtcd, '1' || printf('%03d', SPCD) || '00' || SUBP AS fvs_tree_id, 1 AS statuscd, s.* " +
+                            "0.1 AS dia, 1 AS diahtcd, '1' || printf('%03d', SPCD) || '0' || SUBP AS fvs_tree_id, 1 AS statuscd, s.* " +
                             "FROM FIADB." + strSeedlingSource + " AS s, " + this.m_strPlotTable + " AS p " +
                             "WHERE s.plt_cn = TRIM(p.cn) AND p.biosum_status_cd = 9";
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)

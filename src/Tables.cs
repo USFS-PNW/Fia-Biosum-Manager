@@ -4625,7 +4625,6 @@ namespace FIA_Biosum_Manager
             public string DefaultPopStratumTableDbFile { get { return @"db\master.mdb"; } }
             public string DefaultPopStratumTableName { get { return "pop_stratum"; } }
             public string DefaultBiosumPopStratumAdjustmentFactorsTableName { get { return "biosum_pop_stratum_adjustment_factors"; } }
-            public string DefaultBiosumPopStratumAdjustmentFactorsTableDbFile { get { return @"db\master.mdb"; } }
             public string DefaultSiteTreeTableDbFile { get { return @"db\master.mdb"; } }
             public string DefaultSiteTreeTableName { get { return "sitetree"; } }
             public string DefaultPopTableDbFile { get { return @"db\master.db"; } }
@@ -7043,8 +7042,6 @@ namespace FIA_Biosum_Manager
             public Reference()
             {
             }
-            static public string DefaultTreeSpeciesTableDbFile { get { return @"db\ref_master.mdb"; } }
-            static public string DefaultOwnerGroupsTableName { get { return "owner_groups"; } }
             static public string DefaultFiadbFVSVariantTableName { get { return "fiadb_fvs_variant"; } }
             static public string DefaultHarvestMethodsTableDbFile { get { return @"db\ref_master.mdb"; } }
             static public string DefaultHarvestMethodsTableName { get { return "harvest_methods"; } }
