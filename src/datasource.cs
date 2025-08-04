@@ -61,7 +61,7 @@ namespace FIA_Biosum_Manager
 			"FVS Tree List For Processor",
 			"FIA Tree Macro Plot Breakpoint Diameter",
 			Datasource.TableTypes.HarvestMethods,
-			"BIOSUM Pop Stratum Adjustment Factors",
+			Datasource.TableTypes.PopStratumAdjFactors,
 			"Site Tree",
 			Datasource.TableTypes.FiaTreeSpeciesReference,
 	    };
@@ -723,10 +723,6 @@ namespace FIA_Biosum_Manager
 					oItem.VariableName="TreeTable";
 					if (p_strTableName.Trim().Length == 0) p_strTableName=frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName;
 					break;
-				case "OWNER GROUPS":
-					oItem.VariableName="OwnerGroupsTable";
-					if (p_strTableName.Trim().Length == 0) p_strTableName=Tables.Reference.DefaultOwnerGroupsTableName;
-					break;
 				case "HARVEST COSTS":
 					oItem.VariableName="HarvestCostsTable";
                     if (p_strTableName.Trim().Length == 0) p_strTableName = Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName;
@@ -1035,6 +1031,8 @@ namespace FIA_Biosum_Manager
 			static public string TreeSpecies = "Tree Species";
 			static public string FiaTreeMacroPlotBreakpointDia = "FIA Tree Macro Plot Breakpoint Diameter";
 			static public string OwnerGroups = "Owner Groups";
+			static public string PopStratumAdjFactors = "BIOSUM Pop Stratum Adjustment Factors";
+
 		}
 		
 	}

@@ -1185,13 +1185,6 @@ namespace FIA_Biosum_Manager
 					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
 
 					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-						"('Owner Groups'," + 
-						"'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," + 
-						"'ref_master.mdb'," + 
-						"'owner_groups');";
-					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
-
-					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
 						"('Treatment Prescriptions'," + 
 						"'" + this.txtRootDirectory.Text.ToString().Trim()  + "\\db'," + 
 						"'master.db'," + 
@@ -1227,13 +1220,6 @@ namespace FIA_Biosum_Manager
                     p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
 
 					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-						"('Tree Species'," + 
-						"'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," + 
-						"'ref_master.mdb'," + 
-						"'tree_species');";
-					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
-
-					strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
 						"('Travel Times'," + 
 						"'" + this.txtRootDirectory.Text.ToString().Trim() + "\\gis\\db'," + 
 						"'" + Tables.TravelTime.DefaultTravelTimeDbFile + "'," + 
@@ -1262,7 +1248,7 @@ namespace FIA_Biosum_Manager
 					p_ado.SqlNonQuery(p_ado.m_OleDbConnection,strSQL);
 
                     strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-                        "('BIOSUM Pop Stratum Adjustment Factors'," +
+                        "('" + Datasource.TableTypes.PopStratumAdjFactors + "'," +
                         "'" + this.txtRootDirectory.Text.ToString().Trim() + "\\db'," +
                         "'master.db'," +
                         "'" + frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName + "');";
@@ -1278,7 +1264,7 @@ namespace FIA_Biosum_Manager
                     strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
                              "('" + Datasource.TableTypes.FiaTreeSpeciesReference + "'," +
                              "'@@AppData@@" + frmMain.g_strBiosumDataDir + "'," +
-                             "'" + Tables.Reference.DefaultBiosumReferenceDbFile + "'," +
+                             "'" + Tables.Reference.DefaultBiosumReferenceSqliteFile + "'," +
                              "'" + Tables.ProcessorScenarioRun.DefaultFiaTreeSpeciesRefTableName + "');";
                     p_ado.SqlNonQuery(p_ado.m_OleDbConnection, strSQL);
 
