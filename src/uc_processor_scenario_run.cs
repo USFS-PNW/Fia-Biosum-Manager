@@ -2306,7 +2306,7 @@ namespace FIA_Biosum_Manager
                     if ((bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.UserControl)uc_filesize_monitor1, "Visible", false) == false)
                     {
                         uc_filesize_monitor1.BeginMonitoringFile(
-                            m_oQueries.m_strTempDbFile, 2000000000, "2GB");
+                            m_strTempSqliteDbFile, 2000000000, "2GB");
                         uc_filesize_monitor1.Information = "Work table containing table links";
                         uc_filesize_monitor2.BeginMonitoringFile(
                              frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +

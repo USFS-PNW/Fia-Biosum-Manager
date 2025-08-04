@@ -1006,17 +1006,6 @@ namespace FIA_Biosum_Manager
                 //
                 //prepopulated ref master file
                 //
-                //copy default master database to the new project directory
-                strSourceFile = this.m_oEnv.strAppDir + "\\db\\ref_master.mdb";
-                strDestFile = this.txtRootDirectory.Text.Trim() + "\\db\\ref_master.mdb";
-                p_frmTherm.Increment(6);
-                p_frmTherm.lblMsg.Text = strDestFile;
-                p_frmTherm.lblMsg.Refresh();
-                System.IO.File.Copy(strSourceFile, strDestFile, true);
-
-                //
-                //prepopulated ref master file
-                //
                 //copy default ref_master SQLitedatabase to the new project directory
                 strSourceFile = $@"{this.m_oEnv.strAppDir}\{Tables.Reference.DefaultRefMasterDbFile}";
 				strDestFile = $@"{this.txtRootDirectory.Text.Trim()}\{Tables.Reference.DefaultRefMasterDbFile}";

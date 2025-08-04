@@ -7043,7 +7043,6 @@ namespace FIA_Biosum_Manager
             {
             }
             static public string DefaultFiadbFVSVariantTableName { get { return "fiadb_fvs_variant"; } }
-            static public string DefaultHarvestMethodsTableDbFile { get { return @"db\ref_master.mdb"; } }
             static public string DefaultHarvestMethodsTableName { get { return "harvest_methods"; } }
             static public string DefaultTreeMacroPlotBreakPointDiaTableDbFile { get { return @"biosum_ref.db"; } }
             static public string DefaultTreeMacroPlotBreakPointDiaTableName { get { return "TreeMacroPlotBreakPointDia"; } }

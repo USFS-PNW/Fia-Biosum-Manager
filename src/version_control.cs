@@ -3527,25 +3527,6 @@ namespace FIA_Biosum_Manager
                 oDao.RenameTable(strDirectoryPath + "\\" + strFileName, strTargetTable, strTargetTable + strTableSuffix, true, false);
             }
 
-            // Copying the updated harvest_methods table into ref_master.accdb
-            string strHarvestWorkTableName = "harvestmethod_worktable";
-            string strSourceDbFile = frmMain.g_oEnv.strAppDir.Trim() + "\\" + Tables.Reference.DefaultHarvestMethodsTableDbFile;
-            string strTargetDbFile = ReferenceProjectDirectory.Trim() + "\\" + Tables.Reference.DefaultHarvestMethodsTableDbFile;
-            // Harvest Methods table
-            oDao.CreateTableLink(strTargetDbFile, strHarvestWorkTableName, strSourceDbFile, strTargetTable);
-
-            //copy contents of new harvest methods table into place
-            oAdo.OpenConnection(oAdo.getMDBConnString(strTargetDbFile, "", ""));
-            oAdo.m_strSQL = "SELECT * INTO " + strTargetTable + " FROM " + strHarvestWorkTableName;
-            oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-
-            //drop the harvest methods table link
-            if (oAdo.TableExist(oAdo.m_OleDbConnection, strHarvestWorkTableName))
-            {
-                oAdo.m_strSQL = "DROP TABLE " + strHarvestWorkTableName;
-                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-            }
-
             int intTreeSpeciesTable = oDs.getValidTableNameRow("Tree Species");
             strDirectoryPath = oDs.m_strDataSource[intTreeSpeciesTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
             strFileName = oDs.m_strDataSource[intTreeSpeciesTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
@@ -3557,23 +3538,6 @@ namespace FIA_Biosum_Manager
             if (strFileStatus == "F" && strTableStatus == "F")
             {
                 oDao.RenameTable(strDirectoryPath + "\\" + strFileName, strTargetTable, strTargetTable + strTableSuffix, true, false);
-            }
-
-            // Copying the updated tree_species table into ref_master.accdb
-            string strTreeSpeciesWorkTableName = "treespecies_worktable";
-            // Tree species table
-            oDao.CreateTableLink(strTargetDbFile, strTreeSpeciesWorkTableName, strSourceDbFile, strTargetTable);
-
-            //copy contents of new harvest methods table into place
-            oAdo.OpenConnection(oAdo.getMDBConnString(strTargetDbFile, "", ""));
-            oAdo.m_strSQL = "SELECT * INTO " + strTargetTable + " FROM " + strTreeSpeciesWorkTableName;
-            oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-
-            //drop the tree species table link
-            if (oAdo.TableExist(oAdo.m_OleDbConnection, strTreeSpeciesWorkTableName))
-            {
-                oAdo.m_strSQL = "DROP TABLE " + strTreeSpeciesWorkTableName;
-                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
             }
 
             frmMain.g_sbpInfo.Text = "Version Update: Updating Reference Tables ...Stand by";
@@ -4012,26 +3976,6 @@ namespace FIA_Biosum_Manager
             {
                 oDao.RenameTable(strDirectoryPath + "\\" + strFileName, strTargetTable, strTargetTable + strTableSuffix, true, false);
             }
-
-            // Copying the updated harvest_methods table into ref_master.accdb
-            string strHarvestWorkTableName = "harvestmethod_worktable";
-            string strSourceDbFile = frmMain.g_oEnv.strAppDir.Trim() + "\\" + Tables.Reference.DefaultHarvestMethodsTableDbFile;
-            string strTargetDbFile = ReferenceProjectDirectory.Trim() + "\\" + Tables.Reference.DefaultHarvestMethodsTableDbFile;
-            // Harvest Methods table
-            oDao.CreateTableLink(strTargetDbFile, strHarvestWorkTableName, strSourceDbFile, strTargetTable);
-
-            //copy contents of new harvest methods table into place
-            oAdo.OpenConnection(oAdo.getMDBConnString(strTargetDbFile, "", ""));
-            oAdo.m_strSQL = "SELECT * INTO " + strTargetTable + " FROM " + strHarvestWorkTableName;
-            oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-
-            //drop the harvest methods table link
-            if (oAdo.TableExist(oAdo.m_OleDbConnection, strHarvestWorkTableName))
-            {
-                oAdo.m_strSQL = "DROP TABLE " + strHarvestWorkTableName;
-                oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-            }
-
 
             if (oDao != null)
             {
