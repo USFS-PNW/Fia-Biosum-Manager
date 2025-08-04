@@ -4527,14 +4527,17 @@ namespace FIA_Biosum_Manager
                 /// Create and Populate a CULL work table with TOTALCULL (cull + roughcull)
                 /// </summary>
                 /// <returns></returns>
-                public static string BuildInputTableForVolumeCalculation_Step4(string p_strCullTable, string p_strInputVolumesTable)
+                public static string[] BuildInputTableForVolumeCalculation_Step4(string p_strCullTable, string p_strInputVolumesTable)
                 {
                     //TODO: does inputVolumesTable have an id column? yes. What is it set to? How is id populated? FVS_TREE.ID?
                     //string columns = "id, IIF(cull IS NOT NULL AND roughcull IS NOT NULL, cull + roughcull, IIF(cull IS NOT NULL,cull, IIF(roughcull IS NOT NULL, roughcull,0))) AS totalcull";
                     //return $@"SELECT {columns} INTO {p_strCullTable} FROM {p_strInputVolumesTable}";
-                    return $@"CREATE TABLE {p_strCullTable}
+                    string[] arrReturn = new string[2];
+                    arrReturn[0] = $@"CREATE TABLE {p_strCullTable}
                         AS SELECT ID, (CASE WHEN CULL IS NOT NULL AND ROUGHCULL IS NOT NULL THEN CULL + ROUGHCULL
                         WHEN CULL IS NOT NULL THEN CULL ELSE ROUGHCULL END) AS TOTALCULL FROM {p_strInputVolumesTable}";
+                    arrReturn[1] = $@"CREATE INDEX {p_strCullTable}_idx1 ON {p_strCullTable} (ID)";
+                    return arrReturn;
                 }
                 public class PNWRS
                 {
