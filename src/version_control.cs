@@ -600,7 +600,7 @@ namespace FIA_Biosum_Manager
                 }
             }
 
-            //UpdateDatasources_5_12_0();
+            UpdateDatasources_5_12_0();
 
             if (bPerformCheck)
             {
