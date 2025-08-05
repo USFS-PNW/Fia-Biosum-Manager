@@ -47,7 +47,6 @@ namespace FIA_Biosum_Manager
 		public System.Windows.Forms.TextBox txtDropDown;
 		private string m_strSQL;
 
-		private System.Windows.Forms.ToolBarButton btnID;
 		public System.Windows.Forms.ToolBarButton btnSave;
 		private int m_intBiosumIdColumn=0;
 		private string[] m_strColumnsToEdit;
@@ -246,33 +245,6 @@ namespace FIA_Biosum_Manager
 
 			this.m_strSQL = strSQL;
 			if (this.m_strSQL.Trim().Length > 0) this.btnSQL.Enabled=true;
-
-			/******************************************************************
-			 **if biosum_cond_id or biosum_plot_id is part of the dataset then
-			 **enable the id toolbar button
-			 ******************************************************************/
-			int x=0;
-			for (x=0; x<=this.m_ds.Tables[strDataSetName].Columns.Count-1;x++)
-			{
-				if (this.m_ds.Tables[strDataSetName].Columns[x].ColumnName.Trim().ToUpper() == "BIOSUM_COND_ID")
-				{
-					this.m_intBiosumIdColumn = x;
-					break;
-				}
-				if (this.m_ds.Tables[strDataSetName].Columns[x].ColumnName.Trim().ToUpper() == "BIOSUM_PLOT_ID")
-				{
-					this.m_intBiosumIdColumn = x;
-					break;
-				}
-			}
-			if (x <= this.m_ds.Tables[strDataSetName].Columns.Count-1)
-			{
-				this.toolBar1.Buttons[3].Enabled=true;
-			}
-			else
-			{
-				this.toolBar1.Buttons[3].Enabled=false;
-			}
 		}
 
 		/*************************************************
@@ -484,32 +456,6 @@ namespace FIA_Biosum_Manager
 
 			this.m_strSQL = strSQL;
 			if (this.m_strSQL.Trim().Length > 0) this.btnSQL.Enabled=true;
-
-			/******************************************************************
-			 **if biosum_cond_id or biosum_plot_id is part of the dataset then
-			 **enable the id toolbar button
-			 ******************************************************************/
-			for (x=0; x<=this.m_ds.Tables[strTableName].Columns.Count-1;x++)
-			{
-				if (this.m_ds.Tables[strTableName].Columns[x].ColumnName.Trim().ToUpper() == "BIOSUM_COND_ID")
-				{
-					this.m_intBiosumIdColumn = x;
-					break;
-				}
-				if (this.m_ds.Tables[strTableName].Columns[x].ColumnName.Trim().ToUpper() == "BIOSUM_PLOT_ID")
-				{
-					this.m_intBiosumIdColumn = x;
-					break;
-				}
-			}
-			if (x <= this.m_ds.Tables[strTableName].Columns.Count-1)
-			{
-				this.toolBar1.Buttons[3].Enabled=true;
-			}
-			else
-			{
-				this.toolBar1.Buttons[3].Enabled=false;
-			}
 			
 		}
 
@@ -592,7 +538,6 @@ namespace FIA_Biosum_Manager
             this.btnStructure = new System.Windows.Forms.ToolBarButton();
             this.btnMaxSize = new System.Windows.Forms.ToolBarButton();
             this.btnPrint = new System.Windows.Forms.ToolBarButton();
-            this.btnID = new System.Windows.Forms.ToolBarButton();
             this.btnSave = new System.Windows.Forms.ToolBarButton();
             this.statusBar1 = new System.Windows.Forms.StatusBar();
             this.sbMsg = new System.Windows.Forms.StatusBarPanel();
@@ -739,7 +684,6 @@ namespace FIA_Biosum_Manager
             this.btnStructure,
             this.btnMaxSize,
             this.btnPrint,
-            this.btnID,
             this.btnSave});
             this.toolBar1.Divider = false;
             this.toolBar1.Dock = System.Windows.Forms.DockStyle.None;
@@ -769,12 +713,6 @@ namespace FIA_Biosum_Manager
             this.btnPrint.ImageIndex = 6;
             this.btnPrint.Name = "btnPrint";
             this.btnPrint.ToolTipText = "Print Report";
-            // 
-            // btnID
-            // 
-            this.btnID.ImageIndex = 8;
-            this.btnID.Name = "btnID";
-            this.btnID.ToolTipText = "biosum_cond_id or biosum_plot_id";
             // 
             // btnSave
             // 
@@ -1005,32 +943,9 @@ namespace FIA_Biosum_Manager
 					uc_print_report_wizard1.Visible=true;
 					frmTemp.ShowDialog();
 
-
-					
 					break;
-				case 3:    //biosum_cond_id or biosum_plot_id record identification
-					if (this.m_dg.CurrentRowIndex != -1)
-					{
-						frmDialog frmBiosumId = new frmDialog();
-						frmBiosumId.Visible=false;
 
-						uc_biosum_id uc_biosum_id1 = new uc_biosum_id(this.m_dg[this.m_dg.CurrentRowIndex,this.m_intBiosumIdColumn].ToString().Trim());
-						frmBiosumId.Controls.Add(uc_biosum_id1);
-						frmBiosumId.MaximizeBox = false;
-						frmBiosumId.MinimizeBox = false;
-						frmBiosumId.Width = uc_biosum_id1.m_intWd;
-						frmBiosumId.Height = uc_biosum_id1.m_intHt;
-						uc_biosum_id1.Visible=true;
-						frmBiosumId.Text = "FIA Biosum Id (" + this.m_dg[this.m_dg.CurrentRowIndex,this.m_intBiosumIdColumn].ToString().Trim() + ")";
-						uc_biosum_id1.Dock =  System.Windows.Forms.DockStyle.Fill;
-						frmBiosumId.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-						uc_biosum_id1.btnClose.Left = uc_biosum_id1.Width - uc_biosum_id1.btnClose.Width -5;
-						uc_biosum_id1.btnClose.Top = uc_biosum_id1.Height - uc_biosum_id1.btnClose.Height -5;
-						frmBiosumId.ShowDialog();
-					}
-
-					break;
-				case 4:  //save gridview contents
+				case 3:  //save gridview contents
 					this.savevalues();
                     break;
 				
@@ -2443,35 +2358,6 @@ namespace FIA_Biosum_Manager
 
             this.m_strSQL = strSQL;
             if (this.m_strSQL.Trim().Length > 0) this.btnSQL.Enabled = true;
-
-            /******************************************************************
-			 **if biosum_cond_id or biosum_plot_id is part of the dataset then
-			 **enable the id toolbar button
-			 ******************************************************************/
-            int x = 0;
-            for (x = 0; x <= this.m_ds.Tables[strDataSetName].Columns.Count - 1; x++)
-            {
-                if (this.m_ds.Tables[strDataSetName].Columns[x].ColumnName.Trim().ToUpper() == "BIOSUM_COND_ID")
-                {
-
-                    this.m_intBiosumIdColumn = x;
-                    break;
-                }
-                if (this.m_ds.Tables[strDataSetName].Columns[x].ColumnName.Trim().ToUpper() == "BIOSUM_PLOT_ID")
-                {
-
-                    this.m_intBiosumIdColumn = x;
-                    break;
-                }
-            }
-            if (x <= this.m_ds.Tables[strDataSetName].Columns.Count - 1)
-            {
-                this.toolBar1.Buttons[3].Enabled = true;
-            }
-            else
-            {
-                this.toolBar1.Buttons[3].Enabled = false;
-            }
         }
 
         private void m_dg_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
