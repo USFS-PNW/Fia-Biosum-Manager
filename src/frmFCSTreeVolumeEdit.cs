@@ -1857,7 +1857,7 @@ namespace FIA_Biosum_Manager
                 m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
             }
 
-        uc_gridview1.LoadGridViewSqlite(
+        uc_gridview1.LoadGridView(
             m_oDataMgr.GetConnectionString(m_strTempDBFile),
             "SELECT DRYBIOM," +
                    "DRYBIOT," +
@@ -1929,7 +1929,7 @@ namespace FIA_Biosum_Manager
     private void LoadTreeSample()
     {
             m_strSelectedDBFile = m_strTreeSampleDBFile;
-            uc_gridview1.LoadGridViewSqlite(m_oDataMgr.GetConnectionString(m_strTreeSampleDBFile),
+            uc_gridview1.LoadGridView(m_oDataMgr.GetConnectionString(m_strTreeSampleDBFile),
             "SELECT DRYBIOM," +
                    "DRYBIOT," +
                    "DRYBIO_BOLE," +
@@ -2089,7 +2089,7 @@ namespace FIA_Biosum_Manager
                 m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
             }
 
-            uc_gridview1.LoadGridViewSqlite(m_oDataMgr.GetConnectionString(m_strTempDBFile),
+            uc_gridview1.LoadGridView(m_oDataMgr.GetConnectionString(m_strTempDBFile),
                 "SELECT DRYBIOM," +
                    "DRYBIOT," +
                    "DRYBIO_BOLE_CALC AS DRYBIO_BOLE," +

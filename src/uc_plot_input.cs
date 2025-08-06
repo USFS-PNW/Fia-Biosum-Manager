@@ -1335,6 +1335,10 @@ namespace FIA_Biosum_Manager
 			this.m_strTreeTable = m_oDatasource.getValidDataSourceTableName("TREE");
 			this.m_strSiteTreeTable = m_oDatasource.getValidDataSourceTableName("SITE TREE");
             this.m_strBiosumPopStratumAdjustmentFactorsTable = m_oDatasource.getValidDataSourceTableName(Datasource.TableTypes.PopStratumAdjFactors);
+            if (this.m_strBiosumPopStratumAdjustmentFactorsTable.Length == 0)
+            {
+                this.m_strBiosumPopStratumAdjustmentFactorsTable = frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName;
+            }
             this.m_strTreeMacroPlotBreakPointDiaTable = m_oDatasource.getValidDataSourceTableName("FIA TREE MACRO PLOT BREAKPOINT DIAMETER");
 		}
 
@@ -1755,7 +1759,19 @@ namespace FIA_Biosum_Manager
                 SetThermValue(m_frmTherm.progressBar1, "Value", 100);
                 System.Threading.Thread.Sleep(2000);
                 SetThermValue(m_frmTherm.progressBar2, "Value", 60);
-                
+
+                // create biosum_pop_stratum_adjustment_factors if it doesn't exist
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(m_strMasterDbFile)))
+                {
+                    conn.Open();
+
+                    if (!SQLite.TableExist(conn, this.m_strBiosumPopStratumAdjustmentFactorsTable))
+                    {
+                        frmMain.g_oTables.m_oFIAPlot.CreateSQLiteBiosumPopStratumAdjustmentFactorsTable(SQLite, conn,
+                                frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName);
+                    }
+                }
+
                 //delete any records from the production biosum adjustment factor table that did not previously complete processing (error or user cancelled)
                 //or any previous rscd and evalid that equal the current ones
                 if (this.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
@@ -1763,18 +1779,18 @@ namespace FIA_Biosum_Manager
                     SetThermValue(m_frmTherm.progressBar1, "Value", 0);
                     this.SetLabelValue(m_frmTherm.lblMsg, "Text", "Deleting Old Data");
                     //open the connection to the temp mdb file
-                    using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConnection))
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConnection))
                     {
-                        con.Open();
+                        conn.Open();
                         SQLite.m_strSQL = $@"ATTACH DATABASE '{m_strMasterDbFile}' AS MASTER";
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
-                        SQLite.SqlNonQuery(con, SQLite.m_strSQL);
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                         //delete any previous rscd and evalid that equal the current ones
                         SQLite.m_strSQL = $@"DELETE FROM MASTER.{this.m_strBiosumPopStratumAdjustmentFactorsTable} WHERE biosum_status_cd=9 or (rscd={m_strCurrFIADBRsCd} and evalid={m_strCurrFIADBEvalId})";
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
-                        SQLite.SqlNonQuery(con, SQLite.m_strSQL);
+                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                         SetThermValue(m_frmTherm.progressBar1, "Value", 50);
                         m_intError = SQLite.m_intError;
 
@@ -1783,14 +1799,14 @@ namespace FIA_Biosum_Manager
                         {
                             this.SetLabelValue(m_frmTherm.lblMsg, "Text", "Appending New Data");
                             //SQLite.m_strSQL = $@"INSERT INTO MASTER.{this.m_strBiosumPopStratumAdjustmentFactorsTable} SELECT a.*,9 AS biosum_status_cd FROM biosum_pop_stratum_adjustment_factors a";
-                            SQLite.m_strSQL = $@"INSERT INTO MASTER.biosum_pop_stratum_adjustment_factors 
-                                SELECT stratum_cn,rscd,evalid,eval_descr,estn_unit,estn_unit_descr,stratumcd,
-                                p2pointcnt_man,double_sampling,stratum_area,expns,pmh_macr,pmh_sub,pmh_micr,
-                                pmh_cond,adj_factor_macr,adj_factor_subp,adj_factor_micr,9 AS biosum_status_cd 
-                                FROM biosum_pop_stratum_adjustment_factors";
+                            SQLite.m_strSQL = "INSERT INTO MASTER." + this.m_strBiosumPopStratumAdjustmentFactorsTable +
+                                " SELECT stratum_cn,rscd,evalid,eval_descr,estn_unit,estn_unit_descr,stratumcd, " +
+                                "p2pointcnt_man,double_sampling,stratum_area,expns,pmh_macr,pmh_sub,pmh_micr, " +
+                                "pmh_cond,adj_factor_macr,adj_factor_subp,adj_factor_micr,9 AS biosum_status_cd " +
+                                "FROM biosum_pop_stratum_adjustment_factors";
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
-                            SQLite.SqlNonQuery(con, SQLite.m_strSQL);
+                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                             SetThermValue(m_frmTherm.progressBar1, "Value", 100);
                             SetThermValue(m_frmTherm.progressBar2, "Value", 100);
                         }
