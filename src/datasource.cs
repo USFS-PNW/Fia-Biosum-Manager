@@ -658,35 +658,7 @@ namespace FIA_Biosum_Manager
 			return "";
 
 		}
-		///<summary>
-		//validate the datasources and return -1 if there are problems
-		///</summary>
-		public int val_datasources()
-		{
-		  int x=0;
-			for (x=0; x <= this.m_intNumberOfTables - 1; x++)
-			{
-				if (this.m_strDataSource[x,FILESTATUS].Trim().ToUpper()=="NF")
-				{
-					MessageBox.Show("Datasource Failure: data source file " + this.m_strDataSource[x,PATH].Trim() + "\\" + 
-		            this.m_strDataSource[x,DBFILE].Trim() + " is not found");
-					return -1;
-				}
-				if (this.m_strDataSource[x,TABLESTATUS].Trim().ToUpper()=="NF")
-				{
-					MessageBox.Show("Datasource Failure: data source table " + this.m_strDataSource[x,TABLE].Trim() + 
-						 " is not found");
-					return -1;
-				}
-				if (this.m_strDataSource[x,RECORDCOUNT].Trim().ToUpper()=="0")
-				{
-					MessageBox.Show("Datasource Failure: data source table " + this.m_strDataSource[x,TABLE].Trim() + 
-						" has 0 records");
-					return -1;
-				}
-			}
-			return 0;
-		}
+
 	    public static void UpdateTableMacroVariable(string p_strTableType,string p_strTableName)
 		{
 			
