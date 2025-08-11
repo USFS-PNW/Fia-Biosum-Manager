@@ -820,18 +820,6 @@ namespace FIA_Biosum_Manager
 
 		}
 
-		public void InsertDatasourceRecord(ado_data_access p_oAdo,System.Data.OleDb.OleDbConnection p_oConn,
-			                               string p_strTableType,string p_strDirectory,string p_strDbFile,
-			                               string p_strTableName)
-		{
-			p_oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " + 
-				"('" + p_strTableType.Trim() + "'," + 
-				"'" + p_strDirectory.Trim() + "'," + 
-				"'" + p_strDbFile.Trim() + "'," + 
-				"'" + p_strTableName.Trim() + "');";
-			p_oAdo.SqlNonQuery(p_oConn,p_oAdo.m_strSQL);
-
-		}
         /// <summary>
         /// get distinct FVS variants
         /// </summary>
@@ -855,93 +843,49 @@ namespace FIA_Biosum_Manager
 			return strVariantArray;       
         }
 
-        public void ValidateDataSources(
-            ref System.Collections.Generic.IDictionary<string, string[]> dictSources)
-        {
-            string strSql;
-            string strPathAndFile = "";
-            string strSqliteConn = "";
-            string strAccdbConn = "";
+		public void ValidateDataSources(
+		   ref System.Collections.Generic.IDictionary<string, string[]> dictSources)
+		{
+			string strPathAndFile = "";
+			string strConn = "";
 
-            macrosubst oMacroSub = new macrosubst();
-            oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
-            DataMgr dataMgr = new DataMgr();
-            ado_data_access oAdo = new ado_data_access();
-            dao_data_access oDao = new dao_data_access();   // This is here even though we never use it to avoid dao errors later
-            using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection())
+			macrosubst oMacroSub = new macrosubst();
+			oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
+			DataMgr dataMgr = new DataMgr();
+
+			foreach (var tableType in dictSources.Keys)
             {
-                using (System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection())
-                {
-                    foreach (var tableType in dictSources.Keys)
-                    {
-                        string[] arrSource = dictSources[tableType];
-                        strPathAndFile = oMacroSub.GeneralTranslateVariableSubstitution(arrSource[PATH]) +
-                            "\\" + arrSource[DBFILE];
-                        if (System.IO.File.Exists(strPathAndFile) == true)
-                        {
-                            arrSource[FILESTATUS] = "F";
-                            if (System.IO.Path.GetExtension(strPathAndFile).Equals(".db"))
-                            {
-                                string strNewConn = dataMgr.GetConnectionString(strPathAndFile);
-                                if (!strSqliteConn.Equals(strNewConn))
-                                {
-                                    con.Close();
-                                    con.ConnectionString = strNewConn;
-                                    con.Open();
-                                    strSqliteConn = strNewConn;
-                                }
-                                if (dataMgr.TableExist(con, arrSource[TABLE]))
-                                {
-                                    arrSource[TABLESTATUS] = "F";
-                                    strSql = "select count(*) from " + arrSource[TABLE];
-                                    long recordCount = dataMgr.getRecordCount(con, strSql, arrSource[TABLE]);
-                                    arrSource[RECORDCOUNT] = Convert.ToString(recordCount);
-                                }
-                                else
-                                {
-                                    arrSource[TABLESTATUS] = "NF";
-                                }
+				string[] arrSource = dictSources[tableType];
+				strPathAndFile = oMacroSub.GeneralTranslateVariableSubstitution(arrSource[PATH]) +
+					"\\" + arrSource[DBFILE];
 
-                            }
-                            else
-                            {
-                                //MS Access
-                                string strNewConn = oAdo.getMDBConnString(strPathAndFile, "admin", "");
-                                if (!strAccdbConn.Equals(strNewConn))
-                                {
-                                    if (oConn.State == ConnectionState.Open)
-                                    {
-                                        oConn.Close();
-                                    }
-                                    while (oConn.State != ConnectionState.Closed)
-                                        System.Threading.Thread.Sleep(2000);
-                                    oConn.ConnectionString = strNewConn;
-                                    oConn.Open();
-                                    strAccdbConn = strNewConn;
-                                }
-                                if (oAdo.TableExist(oConn, arrSource[TABLE]))
-                                {
-                                    arrSource[TABLESTATUS] = "F";
-                                    strSql = "select count(*) from " + arrSource[TABLE];
-                                    long recordCount = oAdo.getRecordCount(oConn, strSql, arrSource[TABLE]);
-                                    arrSource[RECORDCOUNT] = Convert.ToString(recordCount);
-                                }
-                                else
-                                {
-                                    arrSource[TABLESTATUS] = "NF";
-                                }
-                            }
-                        }
-                        else
+				if (System.IO.File.Exists(strPathAndFile) == true && System.IO.Path.GetExtension(strPathAndFile).Equals(".db"))
+                {
+					arrSource[FILESTATUS] = "F";
+
+					strConn = dataMgr.GetConnectionString(strPathAndFile);
+					using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                    {
+						conn.Open();
+
+						if (dataMgr.TableExist(conn, arrSource[TABLE]))
                         {
-                            arrSource[FILESTATUS] = "NF";
-                            arrSource[TABLESTATUS] = "NF";
-                            arrSource[RECORDCOUNT] = "0";
-                        }
-                    }
-                }
-            }
-        }
+							arrSource[TABLESTATUS] = "F";
+							dataMgr.m_strSQL = "SELECT COUNT(*) FROM " + arrSource[TABLE];
+							long recordCount = dataMgr.getRecordCount(conn, dataMgr.m_strSQL, arrSource[TABLE]);
+							arrSource[RECORDCOUNT] = Convert.ToString(recordCount);
+						}
+					}
+				}
+                else
+                {
+					arrSource[FILESTATUS] = "NF";
+					arrSource[TABLESTATUS] = "NF";
+					arrSource[RECORDCOUNT] = "0";
+				}
+			}
+		}
+
         public void UpdateDataSourcePath(string strTableType, string strPath, string strFile, string strTableName)
         {
             ado_data_access oAdo = new ado_data_access();
