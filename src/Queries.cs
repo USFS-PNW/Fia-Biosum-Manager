@@ -57,6 +57,7 @@ namespace FIA_Biosum_Manager
             if (this.m_oFvs.LoadDatasource) this.m_oFvs.LoadDatasources();
             if (this.m_oFIAPlot.LoadDatasource) this.m_oFIAPlot.LoadDatasources();
             if (this.m_oReference.LoadDatasource) this.m_oReference.LoadDatasources();
+            if (this.m_oTravelTime.LoadDatasource) this.m_oTravelTime.LoadDatasources();
         }
         public void LoadDatasourcesNew(bool p_bLimited, string p_strScenarioType, string p_strScenarioId)
         {
