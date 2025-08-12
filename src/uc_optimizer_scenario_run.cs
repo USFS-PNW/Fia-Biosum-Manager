@@ -2119,39 +2119,6 @@ namespace FIA_Biosum_Manager
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Cond Path and File:" + this.m_strCondPathAndFile + "\r\n");
 
-
-            /**************************************************************
-             **get the psites table name and path
-             **************************************************************/
-            arr1 = new string[] { "PROCESSING SITES" };
-            oValue = frmMain.g_oDelegate.GetValueExecuteControlMethodWithParam(ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_datasource1,
-                "getDataSourceTableName", arr1, true);
-            if (oValue != null)
-            {
-                string strValue = Convert.ToString(oValue);
-                if (strValue != "false")
-                {
-                    this.m_strPSiteTable = strValue;
-                }
-            }
-
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "Processing Sites Table:" + this.m_strPSiteTable + "\r\n");
-
-            oValue = frmMain.g_oDelegate.GetValueExecuteControlMethodWithParam(ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_datasource1,
-                "getDataSourcePathAndFile", arr1, true);
-            if (oValue != null)
-            {
-                string strValue = Convert.ToString(oValue);
-                if (strValue != "false")
-                {
-                    this.m_strPSitePathAndFile = strValue;
-                }
-            }
-            
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "Processing Sites Path and file:" + m_strPSitePathAndFile + "\r\n");
-
             /**************************************************************
              **get the processing sites table name and path
              **************************************************************/
