@@ -29,7 +29,6 @@ namespace FIA_Biosum_Manager
         private string m_strDebugFile = frmMain.g_oEnv.strTempDir + "\\biosum_processor_debug.txt";
         private string m_strOPCOSTRefPath;
         
-        Queries m_oQueries = new Queries();
         RxTools m_oRxTools = new RxTools();
         excel_latebinding.excel_latebinding m_oExcel=null;
         FIA_Biosum_Manager.RxPackageItem_Collection m_oRxPackageItem_Collection = null;
@@ -331,21 +330,14 @@ namespace FIA_Biosum_Manager
                 "\\processor\\" + ScenarioId + "\\" + Tables.ProcessorScenarioRun.DefaultSqliteResultsDbFile;
 
             //
-            //LOAD PROJECT DATATASOURCES INFO
-            //
-            m_oQueries.m_oFvs.LoadDatasource = true;
-            m_oQueries.m_oReference.LoadDatasource = true;
-            m_oQueries.m_oProcessor.LoadDatasource = true;
-            m_oQueries.m_oTravelTime.LoadDatasource = true;
-             m_oQueries.LoadDatasourcesNew(true, "processor", ScenarioId);
-            //
             //LOAD RX PACKAGE INFO
             //
             //load rxpackage properties
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(strDebugFile, "START: LoadAllRxPackageItemsFromTableIntoRxPackageCollection - " + System.DateTime.Now.ToString() + "\r\n");
             m_oRxPackageItem_Collection = new RxPackageItem_Collection();
-            m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(m_oQueries, this.m_oRxPackageItem_Collection);
+            m_oRxTools.LoadAllRxPackageItemsFromTableIntoRxPackageCollection(this.ReferenceProcessorScenarioForm.LoadedQueries, 
+                this.m_oRxPackageItem_Collection);
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(strDebugFile, "END: LoadAllRxPackageItemsFromTableIntoRxPackageCollection - " + System.DateTime.Now.ToString() + "\r\n");
 
@@ -356,7 +348,7 @@ namespace FIA_Biosum_Manager
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(strDebugFile, "START: LoadAllRxItemsFromTableIntoRxCollection - " + System.DateTime.Now.ToString() + "\r\n");
             m_oRxItem_Collection = new RxItem_Collection();
-            m_oRxTools.LoadAllRxItemsFromTableIntoRxCollection(m_oQueries, m_oRxItem_Collection);
+            m_oRxTools.LoadAllRxItemsFromTableIntoRxCollection(this.ReferenceProcessorScenarioForm.LoadedQueries, m_oRxItem_Collection);
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(strDebugFile, "END: LoadAllRxItemsFromTableIntoRxCollection - " + System.DateTime.Now.ToString() + "\r\n");
 
@@ -438,7 +430,7 @@ namespace FIA_Biosum_Manager
                 //
                 //attach master db
                 //
-                m_oDataMgr.m_strSQL = $@"ATTACH '{m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Plot)}' as MASTER";
+                m_oDataMgr.m_strSQL = $@"ATTACH '{this.ReferenceProcessorScenarioForm.LoadedQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Plot)}' as MASTER";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
                 m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
@@ -463,11 +455,11 @@ namespace FIA_Biosum_Manager
                     "ProcessorVariantPackageDateTimeCreated_work_table_idx1", "biosum_cond_id");
 
                 m_oDataMgr.m_strSQL = $@"UPDATE ProcessorVariantPackageDateTimeCreated_work_table
-                    SET fvs_variant = (SELECT p.fvs_variant FROM {m_oQueries.m_oFIAPlot.m_strPlotTable} p
-                    INNER JOIN {m_oQueries.m_oFIAPlot.m_strCondTable} c ON p.biosum_plot_id = c.biosum_plot_id
+                    SET fvs_variant = (SELECT p.fvs_variant FROM {this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strPlotTable} p
+                    INNER JOIN {this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strCondTable} c ON p.biosum_plot_id = c.biosum_plot_id
                     WHERE ProcessorVariantPackageDateTimeCreated_work_table.biosum_cond_id = c.biosum_cond_id)
-                    WHERE EXISTS (SELECT 1 FROM {m_oQueries.m_oFIAPlot.m_strPlotTable} p
-                    INNER JOIN {m_oQueries.m_oFIAPlot.m_strCondTable} c ON p.biosum_plot_id = c.biosum_plot_id
+                    WHERE EXISTS (SELECT 1 FROM {this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strPlotTable} p
+                    INNER JOIN {this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strCondTable} c ON p.biosum_plot_id = c.biosum_plot_id
                     WHERE ProcessorVariantPackageDateTimeCreated_work_table.biosum_cond_id = c.biosum_cond_id)";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
@@ -483,7 +475,7 @@ namespace FIA_Biosum_Manager
             //
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(strDebugFile, "START: GetListOfFVSVariantsInPlotTable - " + System.DateTime.Now.ToString() + "\r\n");
-            IDictionary<string, RxPackageItem_Collection> dictFvsVariantPackage = m_oRxTools.GetFvsVariantPackageDictionary(m_oQueries);
+            IDictionary<string, RxPackageItem_Collection> dictFvsVariantPackage = m_oRxTools.GetFvsVariantPackageDictionary(this.ReferenceProcessorScenarioForm.LoadedQueries);
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(strDebugFile, "END: GetListOfFVSVariantsInPlotTable - " + System.DateTime.Now.ToString() + "\r\n");
 
@@ -513,7 +505,7 @@ namespace FIA_Biosum_Manager
                 m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(strDebugFile, "END SQL " + System.DateTime.Now.ToString() + "\r\n");
-                m_oDataMgr.m_strSQL = $@"ATTACH '{m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Plot)}' as MASTER";
+                m_oDataMgr.m_strSQL = $@"ATTACH '{this.ReferenceProcessorScenarioForm.LoadedQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Plot)}' as MASTER";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
                 m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
@@ -681,8 +673,8 @@ namespace FIA_Biosum_Manager
                                 // tree vol val count
                                 m_oDataMgr.m_strSQL = "SELECT COUNT(*) as rowcount " +
                                                   "FROM " + Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName + " t," +
-                                                            m_oQueries.m_oFIAPlot.m_strCondTable + " c," +
-                                                            m_oQueries.m_oFIAPlot.m_strPlotTable + " p " +
+                                                            this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strCondTable + " c," +
+                                                            this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strPlotTable + " p " +
                                                   "WHERE t.rxpackage='" + strRxPackage + "' AND " +
                                                         "(t.biosum_cond_id=c.biosum_cond_id AND " +
                                                          "p.biosum_plot_id=c.biosum_plot_id AND " +
@@ -701,8 +693,8 @@ namespace FIA_Biosum_Manager
                                 //tree harvest cost count
                                 m_oDataMgr.m_strSQL = "SELECT COUNT(*) as rowcount " +
                                                   "FROM " + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName + " t," +
-                                                            m_oQueries.m_oFIAPlot.m_strCondTable + " c," +
-                                                            m_oQueries.m_oFIAPlot.m_strPlotTable + " p " +
+                                                            this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strCondTable + " c," +
+                                                            this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strPlotTable + " p " +
                                                   "WHERE t.rxpackage='" + strRxPackage + "' AND " +
                                                         "(t.biosum_cond_id=c.biosum_cond_id AND " +
                                                          "p.biosum_plot_id=c.biosum_plot_id AND " +
@@ -1854,14 +1846,14 @@ namespace FIA_Biosum_Manager
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(m_strProcessorResultsPathAndFile)))
             {
                 conn.Open();
-                m_oDataMgr.m_strSQL = $@"ATTACH '{m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Plot)}' AS MASTER";
+                m_oDataMgr.m_strSQL = $@"ATTACH '{this.ReferenceProcessorScenarioForm.LoadedQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Plot)}' AS MASTER";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                 m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
                 m_oDataMgr.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName + " as t " +
                   "WHERE EXISTS (SELECT c.biosum_cond_id,p.fvs_variant " +
-                                "FROM " + this.m_oQueries.m_oFIAPlot.m_strCondTable + " c," +
-                                          this.m_oQueries.m_oFIAPlot.m_strPlotTable + " p " +
+                                "FROM " + this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strCondTable + " c," +
+                                          this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strPlotTable + " p " +
                                 "WHERE t.rxpackage='" + p_strRxPackage + "' AND " +
                                       "t.biosum_cond_id=c.biosum_cond_id AND " +
                                       "p.biosum_plot_id=c.biosum_plot_id AND " +
@@ -1877,8 +1869,8 @@ namespace FIA_Biosum_Manager
                     //
                     m_oDataMgr.m_strSQL = "DELETE FROM " + Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName + " as t " +
                                       "WHERE EXISTS (SELECT c.biosum_cond_id,p.fvs_variant " +
-                                                    "FROM " + this.m_oQueries.m_oFIAPlot.m_strCondTable + " c," +
-                                                              this.m_oQueries.m_oFIAPlot.m_strPlotTable + " p " +
+                                                    "FROM " + this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strCondTable + " c," +
+                                                              this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strPlotTable + " p " +
                                                     "WHERE trim(t.rxpackage)='" + p_strRxPackage + "' AND " +
                                                          "(trim(t.biosum_cond_id)=c.biosum_cond_id AND " +
                                                           "p.biosum_plot_id=c.biosum_plot_id AND " +
@@ -1894,8 +1886,8 @@ namespace FIA_Biosum_Manager
                     //DELETE THE VARIANT+RXPACKAGE FROM THE additional_kcp_cpa TABLE
                     //
                     m_oDataMgr.m_strSQL = $@"DELETE FROM {Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName} as t 
-                                  WHERE EXISTS (SELECT c.biosum_cond_id,p.fvs_variant FROM {this.m_oQueries.m_oFIAPlot.m_strCondTable} c,
-                                  {this.m_oQueries.m_oFIAPlot.m_strPlotTable} p
+                                  WHERE EXISTS (SELECT c.biosum_cond_id,p.fvs_variant FROM {this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strCondTable} c,
+                                  {this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strPlotTable} p
                                   WHERE trim(t.rxpackage)='{p_strRxPackage}' AND (trim(t.biosum_cond_id)=c.biosum_cond_id AND 
                                   p.biosum_plot_id=c.biosum_plot_id AND p.fvs_variant='{p_strVariant}'))";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -2436,10 +2428,10 @@ namespace FIA_Biosum_Manager
                     processor mainProcessor = new processor(m_strDebugFile, ScenarioId.Trim(), m_strTempSqliteDbFile);
                     if (!_bInactiveVarRxPackage)
                     {
-                        m_intError = mainProcessor.LoadTrees(strVariant, strRxPackage, m_oQueries.m_oFIAPlot.m_strCondTable,
-                            m_oQueries.m_oFIAPlot.m_strPlotTable, m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.HarvestMethods),
-                            m_oQueries.m_oReference.m_strRefHarvestMethodTable, m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Rx), 
-                            m_oQueries.m_oFvs.m_strRxTable, m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Plot));
+                        m_intError = mainProcessor.LoadTrees(strVariant, strRxPackage, this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strCondTable,
+                            this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strPlotTable, this.ReferenceProcessorScenarioForm.LoadedQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.HarvestMethods),
+                            this.ReferenceProcessorScenarioForm.LoadedQueries.m_oReference.m_strRefHarvestMethodTable, this.ReferenceProcessorScenarioForm.LoadedQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Rx),
+                            this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFvs.m_strRxTable, this.ReferenceProcessorScenarioForm.LoadedQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Plot));
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         {
                             frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
@@ -2456,10 +2448,10 @@ namespace FIA_Biosum_Manager
                             // print reconcile trees table if debug at highest level; This will be in temporary .accdb
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 blnCreateReconcileTreesTable = true;
-                            m_intError = mainProcessor.UpdateTrees(strVariant, strRxPackage, this.m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree), 
-                                m_oQueries.m_oFIAPlot.m_strTreeTable, this.m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.FiaTreeSpeciesReference),
-                                this.m_oQueries.m_oDataSource.getValidDataSourceTableName(Datasource.TableTypes.FiaTreeSpeciesReference), 
-                                this.m_oQueries.m_oTravelTime.m_strDbFile, this.m_oQueries.m_oTravelTime.m_strTravelTimeTable, blnCreateReconcileTreesTable);
+                            m_intError = mainProcessor.UpdateTrees(strVariant, strRxPackage, this.ReferenceProcessorScenarioForm.LoadedQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree),
+                                this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strTreeTable, this.ReferenceProcessorScenarioForm.LoadedQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.FiaTreeSpeciesReference),
+                                this.ReferenceProcessorScenarioForm.LoadedQueries.m_oDataSource.getValidDataSourceTableName(Datasource.TableTypes.FiaTreeSpeciesReference),
+                                this.ReferenceProcessorScenarioForm.LoadedQueries.m_oTravelTime.m_strDbFile, this.ReferenceProcessorScenarioForm.LoadedQueries.m_oTravelTime.m_strTravelTimeTable, blnCreateReconcileTreesTable);
 
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             {
@@ -2884,11 +2876,11 @@ namespace FIA_Biosum_Manager
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(m_strTempSqliteDbFile)))
             {
                 conn.Open();                
-                m_oDataMgr.SqlNonQuery(conn, $@"ATTACH '{m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Plot)}' as MASTER");
+                m_oDataMgr.SqlNonQuery(conn, $@"ATTACH '{this.ReferenceProcessorScenarioForm.LoadedQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Plot)}' as MASTER");
                 m_oDataMgr.m_strSQL = $@"DELETE FROM {p_strHarvestCostsTableName} WHERE biosum_cond_id IN (
                     SELECT {p_strHarvestCostsTableName}.biosum_cond_id FROM {p_strHarvestCostsTableName}
-                    INNER JOIN {m_oQueries.m_oFIAPlot.m_strCondTable} c ON HarvestCostsWorkTable.biosum_cond_id = c.biosum_cond_id
-                    INNER JOIN {m_oQueries.m_oFIAPlot.m_strPlotTable} p ON c.biosum_plot_id = p.biosum_plot_id
+                    INNER JOIN {this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strCondTable} c ON HarvestCostsWorkTable.biosum_cond_id = c.biosum_cond_id
+                    INNER JOIN {this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strPlotTable} p ON c.biosum_plot_id = p.biosum_plot_id
                     WHERE p.gis_yard_dist_ft < 0)";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");

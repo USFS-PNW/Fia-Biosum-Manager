@@ -833,7 +833,6 @@ namespace FIA_Biosum_Manager
 		public void LoadRuleDefinitions()
 		{
             // Initialize Queries object for use by child forms
-            //@ToDo: m_oQueries.m_oFvs.LoadDatasource = true;
             m_oQueries.m_oReference.LoadDatasource = true;
             string ScenarioId = this.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
             m_oQueries.LoadDatasourcesNew(true, "processor", ScenarioId);

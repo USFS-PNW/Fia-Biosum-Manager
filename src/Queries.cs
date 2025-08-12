@@ -57,7 +57,6 @@ namespace FIA_Biosum_Manager
             if (this.m_oFvs.LoadDatasource) this.m_oFvs.LoadDatasources();
             if (this.m_oFIAPlot.LoadDatasource) this.m_oFIAPlot.LoadDatasources();
             if (this.m_oReference.LoadDatasource) this.m_oReference.LoadDatasources();
-            if (this.m_oProcessor.LoadDatasource) this.m_oProcessor.LoadDatasources();
             if (this.m_oTravelTime.LoadDatasource) this.m_oTravelTime.LoadDatasources();
         }
         public void LoadDatasourcesNew(bool p_bLimited, string p_strScenarioType, string p_strScenarioId)
@@ -81,7 +80,6 @@ namespace FIA_Biosum_Manager
             if (this.m_oFvs.LoadDatasource) this.m_oFvs.LoadDatasources();
             if (this.m_oFIAPlot.LoadDatasource) this.m_oFIAPlot.LoadDatasources();
             if (this.m_oReference.LoadDatasource) this.m_oReference.LoadDatasources();
-            if (this.m_oProcessor.LoadDatasource) this.m_oProcessor.LoadDatasources();
             if (this.m_oTravelTime.LoadDatasource) this.m_oTravelTime.LoadDatasources();
             m_lstSourceDbs = this.m_oDataSource.getDataSourceDbsList();
         }
@@ -4805,7 +4803,6 @@ namespace FIA_Biosum_Manager
                 set { _bLoadDataSources = value; }
             }
 			
-
             public void LoadDatasources()
             {
                 m_strTravelTimeTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName(Datasource.TableTypes.TravelTimes);
@@ -5169,35 +5166,7 @@ namespace FIA_Biosum_Manager
                 get { return _bLoadDataSources; }
                 set { _bLoadDataSources = value; }
             }
-            public void LoadDatasources()
-            {
-              
-            }
-           
 
-			public static string AuditFvsOut_SelectIntoUnionOfFVSTreeTables(ado_data_access p_oAdo,System.Data.OleDb.OleDbConnection p_oConn,string p_strIntoTable,RxPackageItem_Collection p_oRxPackageItem_Collection, string[] p_strFVSVariantsArray,string p_strColumnList)
-			{
-               
-				string strSql="SELECT DISTINCT " + p_strColumnList +  " " + 
-					          "INTO " + p_strIntoTable + " " + 
-					          "FROM (";
-				int x,y;
-				for (x=0;x<=p_strFVSVariantsArray.Length-1;x++)
-				{
-                    for (y = 0; y <= p_oRxPackageItem_Collection.Count - 1; y++)
-                    {
-                        if (p_oAdo.TableExist(p_oConn, "fvs_tree_IN_" + p_strFVSVariantsArray[x].Trim() + "_P" + p_oRxPackageItem_Collection.Item(y).RxPackageId + "_TREE_CUTLIST"))
-                        {
-                            strSql = strSql + "SELECT " + p_strColumnList + " " +
-                                              "FROM fvs_tree_IN_" + p_strFVSVariantsArray[x].Trim() + "_P" + p_oRxPackageItem_Collection.Item(y).RxPackageId + "_TREE_CUTLIST UNION ";
-                        }
-                    }
-				}
-				if (strSql.IndexOf("UNION",0) > 0) strSql = strSql.Substring(0,strSql.Length - 6) + ")";
-               
-				return strSql;
-				
-			}
             public static List<string> AuditFvsOut_SelectIntoUnionOfFVSTreeTablesUsingListArray(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strIntoTable, string p_strColumnList)
             {
                 List<string> strList = new List<string>();

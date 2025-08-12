@@ -301,10 +301,13 @@ namespace FIA_Biosum_Manager
             if (m_scenarioMoveInCost.MoveInTimeMultiplier > 0)
             {
                 //Load travel times
-                dictTravelTimes = LoadTravelTimes(p_strTravelTimesDbPath, p_strTravelTimesTable);
-
+                if (!string.IsNullOrEmpty(p_strTravelTimesTable))
+                {
+                    dictTravelTimes = LoadTravelTimes(p_strTravelTimesDbPath, p_strTravelTimesTable);
+                }
+                
                 //Abort if travel times have not been loaded
-                if (dictTravelTimes.Count == 0)
+                if (dictTravelTimes == null || dictTravelTimes.Count == 0)
                 {
                     System.Windows.MessageBox.Show("Move-in Time Multiplier is set to 0 but there are no valid entries in the travel_time table. " +
                         "This is not a valid configuration. Process halted!",
