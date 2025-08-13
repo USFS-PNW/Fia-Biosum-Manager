@@ -982,7 +982,7 @@ namespace FIA_Biosum_Manager
                 }
 
                 //
-                //fvsmaster file
+                //master file
                 //
 				p_frmTherm.Increment(5);
 				p_frmTherm.lblMsg.Text = strDestFile;

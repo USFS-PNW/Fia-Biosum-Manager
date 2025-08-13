@@ -114,30 +114,6 @@ namespace FIA_Biosum_Manager
 
 		}
 
-
-		public uc_datasource(string p_strScenarioMDBFile, string p_strScenarioId)
-		{
-			// This call is required by the Windows.Forms Form Designer.
-			InitializeComponent();
-			this.lstRequiredTables.View = System.Windows.Forms.View.Details;
-			this.m_strDataSourceMDBFile=p_strScenarioMDBFile;
-			this.m_strDataSourceTable="scenario_datasource";
-			this.m_strScenarioId = p_strScenarioId;
-			this.lblTitle.Text = "Scenario Data Sources";
-			this.m_oLvRowColors.ReferenceBackgroundColor = frmMain.g_oGridViewRowBackgroundColor;
-			this.m_oLvRowColors.ReferenceForegroundColor = frmMain.g_oGridViewRowForegroundColor;
-			this.m_oLvRowColors.ReferenceAlternateBackgroundColor = frmMain.g_oGridViewAlternateRowBackgroundColor;
-			this.m_oLvRowColors.ReferenceAlternateForegroundColor = frmMain.g_oGridViewRowForegroundColor;
-			this.m_oLvRowColors.ReferenceSelectedRowBackgroundColor=frmMain.g_oGridViewSelectedRowBackgroundColor;
-			this.m_oLvRowColors.CustomFullRowSelect=true;
-			this.m_oLvRowColors.ReferenceListView = lstRequiredTables;
-			if (frmMain.g_oGridViewFont != null) this.lstRequiredTables.Font = frmMain.g_oGridViewFont;
-            this.m_oEnv = new env();
-			
-			// TODO: Add any initialization after the InitializeComponent call
-
-		}
-
 		/// <summary> 
 		/// Clean up any resources being used.
 		/// </summary>

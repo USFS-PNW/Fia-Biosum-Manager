@@ -540,7 +540,7 @@ namespace FIA_Biosum_Manager
                                             bOptimizer = true;
                                             break;
                                         case "PROCESSING SITES":
-                                            bOptimizer = true;
+                                            if (ScenarioType == "optimizer") bOptimizer = true;
                                             break;
                                         case "TREE":
                                             if (ScenarioType == "processor") bOptimizer = true;
