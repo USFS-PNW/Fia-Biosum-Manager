@@ -209,6 +209,18 @@ namespace FIA_Biosum_Manager
             
 					
 			int x=0;
+
+			DataMgr oDataMgr = new DataMgr();
+			string strOptimizerRulesDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+								Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+			
+			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strOptimizerRulesDb)))
+            {
+				conn.Open();
+
+				this.ReferenceOptimizerScenarioForm.m_oOptimizerScenarioTools.LoadLandOwnerGroupFilter(oDataMgr, conn, 
+					this.ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.ScenarioId, this.ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem);
+			}
 			
             string[] strArray = frmMain.g_oUtils.ConvertListToArray(ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.OwnerGroupCodeList,",");
 			this.chkOwnGrp10.Checked=false;

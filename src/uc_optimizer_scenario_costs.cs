@@ -300,6 +300,18 @@ namespace FIA_Biosum_Manager
 		
 		public void loadvalues()
 		{
+            DataMgr oDataMgr = new DataMgr();
+            string strOptimizerRulesDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+                                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strOptimizerRulesDb)))
+            {
+                conn.Open();
+
+                ReferenceOptimizerScenarioForm.m_oOptimizerScenarioTools.LoadTransportationCosts(oDataMgr, conn,
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.ScenarioId, ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem);
+            }
+
             if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTranCosts.RoadHaulCostPerGreenTonPerHour.Trim().Length > 0)
             {
                 txtHaulCost.Text = ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTranCosts.RoadHaulCostPerGreenTonPerHour;

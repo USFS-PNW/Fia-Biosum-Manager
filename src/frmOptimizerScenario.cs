@@ -104,6 +104,7 @@ namespace FIA_Biosum_Manager
         private TabPage tbFilterPkg;
         private string m_strOutputTablePrefix;
         public bool m_bProcessorUsingSqlite = false;
+        private Queries m_oQueries = new Queries();
 
         public frmOptimizerScenario(FIA_Biosum_Manager.frmMain p_frmMain)
 		{
@@ -755,11 +756,11 @@ namespace FIA_Biosum_Manager
 		}
 		#endregion
 
-   public string OutputTablePrefix
-   {
-       get { return m_strOutputTablePrefix; }
-       set { m_strOutputTablePrefix = value; }
-   }
+       public string OutputTablePrefix
+       {
+           get { return m_strOutputTablePrefix; }
+           set { m_strOutputTablePrefix = value; }
+       }
 
 		private void frmOptimizerScenario_Load(object sender, System.EventArgs e)
 		{
@@ -1114,8 +1115,89 @@ namespace FIA_Biosum_Manager
             p_frmTherm = null;
             this.m_lrulesfirsttime = false;
         }
-		
-		public void SaveRuleDefinitions()
+
+        private void LoadRuleDefinitionsNew()
+        {
+            int x;
+            frmTherm p_frmTherm = new frmTherm();
+            p_frmTherm.lblMsg.Text = "";
+            p_frmTherm.progressBar1.Minimum = 0;
+            p_frmTherm.progressBar1.Maximum = 9;
+            p_frmTherm.btnCancel.Visible = false;
+            p_frmTherm.lblMsg.Visible = true;
+            p_frmTherm.Show();
+            p_frmTherm.progressBar1.Value = 1;
+            p_frmTherm.progressBar1.Value = 2;
+
+            m_oQueries.m_oReference.LoadDatasource = true;
+            string strScenarioId = this.uc_scenario1.txtScenarioId.Text.Trim();
+            m_oQueries.LoadDatasourcesNew(true, "optimizer", strScenarioId);
+
+            this.m_oOptimizerScenarioTools.LoadAll(
+                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile,
+                m_oQueries, m_oOptimizerScenarioItem.ScenarioId,
+                m_oOptimizerScenarioItem_Collection);
+
+            ////find the current scenario
+            //for (x = 0; x <= m_oOptimizerScenarioItem_Collection.Count - 1; x++)
+            //{
+            //    if (m_oOptimizerScenarioItem_Collection.Item(x).ScenarioId.Trim().ToUpper() ==
+            //        m_oOptimizerScenarioItem.ScenarioId.Trim().ToUpper())
+            //        break;
+            //}
+
+            //this.m_oOptimizerScenarioItem.Copy(m_oOptimizerScenarioItem_Collection.Item(x), m_oSavOptimizerScenarioItem);
+            //this.m_oOptimizerScenarioItem = m_oOptimizerScenarioItem_Collection.Item(x);
+
+
+            p_frmTherm.progressBar1.Value = 3;
+            p_frmTherm.lblMsg.Text = "Rule Definitions: FVS Variables Data";
+            p_frmTherm.lblMsg.Refresh();
+            this.uc_scenario_fvs_prepost_variables_effective1.loadvalues();
+            p_frmTherm.progressBar1.Value = 4;
+
+
+            p_frmTherm.lblMsg.Text = "Rule Definitions: Owner Group Data";
+            p_frmTherm.lblMsg.Refresh();
+            this.uc_scenario_owner_groups1.loadvalues();
+            p_frmTherm.progressBar1.Value = 5;
+
+            p_frmTherm.lblMsg.Text = "Rule Definitions: Cost And Revenue Data";
+            p_frmTherm.lblMsg.Refresh();
+            this.uc_scenario_costs1.loadvalues();
+            this.uc_scenario_processor_scenario_select1.loadvalues(false);
+            p_frmTherm.progressBar1.Value = 6;
+
+            p_frmTherm.lblMsg.Text = "Rule Definitions: Plot And Cond Filter Data";
+            p_frmTherm.lblMsg.Refresh();
+            this.uc_scenario_filter1.loadvalues(false);
+            this.uc_scenario_cond_filter1.loadvalues(false);
+            p_frmTherm.progressBar1.Value = 7;
+
+            p_frmTherm.lblMsg.Text = "Rule Definitions: Processing Sites";
+            p_frmTherm.lblMsg.Refresh();
+            this.uc_scenario_psite1.loadvalues();
+            p_frmTherm.progressBar1.Value = 8;
+
+            p_frmTherm.lblMsg.Text = "Rule Definitions: Variants and Packages";
+            p_frmTherm.lblMsg.Refresh();
+            ProcessorScenarioItem_Collection oProcItemCollection = this.m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection;
+            foreach (ProcessorScenarioItem psItem in oProcItemCollection)
+            {
+                if (psItem.Selected == true)
+                {
+                    this.uc_optimizer_scenario_select_packages1.loadvalues_FromProperties(psItem);
+                }
+            }
+            p_frmTherm.progressBar1.Value = 9;
+            p_frmTherm.Close();
+            p_frmTherm = null;
+            this.m_lrulesfirsttime = false;
+        }
+
+
+        public void SaveRuleDefinitions()
         {
             int savestatus;
             int x;
@@ -1406,7 +1488,7 @@ namespace FIA_Biosum_Manager
                     break;
                 case 4:
                     if (this.m_lrulesfirsttime == true)
-                        LoadRuleDefinitions();
+                        LoadRuleDefinitionsNew();
                     else
                     {
                         SaveRuleDefinitions();
@@ -1433,7 +1515,7 @@ namespace FIA_Biosum_Manager
             frmDialog frmTemp = new frmDialog();
             frmTemp.Initialize_Scenario_Optimizer_Scenario_Copy(this);
             frmTemp.Text = "FIA Biosum";
-            if (m_oOptimizerScenarioItem.ScenarioId.Trim().Length == 0) LoadRuleDefinitions();
+            if (m_oOptimizerScenarioItem.ScenarioId.Trim().Length == 0) LoadRuleDefinitionsNew();
 
             frmTemp.uc_scenario_optimizer_scenario_copy1.ReferenceCurrentScenarioItem = m_oOptimizerScenarioItem;
             frmTemp.uc_scenario_optimizer_scenario_copy1.loadvalues();
@@ -1491,7 +1573,7 @@ namespace FIA_Biosum_Manager
                 if (tabControlScenario.SelectedTab.Text.Trim().ToUpper()=="RULE DEFINITIONS")
 				{
 					if (m_lrulesfirsttime==true)
-						LoadRuleDefinitions();
+						LoadRuleDefinitionsNew();
 
 				}
 				else if (tabControlScenario.SelectedTab.Text.Trim().ToUpper() == "NOTES")
@@ -1826,8 +1908,16 @@ namespace FIA_Biosum_Manager
                 m_oHelp.ShowHelp(new string[] { "TREATMENT_OPTIMIZER", this.HelpChapter });
             }
         }
-	
-	}
+
+        //
+        //HANDLE TO QUERIES OBJECT SO IT CAN BE RE-USED BY CHILD FORMS WHEN LOADONG
+        //
+        public Queries LoadedQueries
+        {
+            get { return m_oQueries; }
+        }
+
+    }
     public class OptimizerScenarioItem
     {
         
@@ -2661,16 +2751,16 @@ namespace FIA_Biosum_Manager
                 {
                     OptimizerScenarioItem oItem = new OptimizerScenarioItem();
                     this.LoadGeneral(oDataMgr, conn, p_strScenarioId, oItem);
-                    this.LoadEffectiveVariables(oDataMgr, conn, p_strScenarioId, oItem);
-                    this.LoadOptimizationVariable(oDataMgr, conn, p_strScenarioId, oItem);
-                    this.LoadTieBreakerVariables(oDataMgr, conn, p_strScenarioId, oItem);
-                    this.LoadLastTieBreakRank(oDataMgr, conn, p_strScenarioId, oItem);
-                    this.LoadProcessorScenarioItems(oDataMgr, conn, p_strScenarioId, oItem);
-                    this.LoadPlotFilter(oDataMgr, conn, p_strScenarioId, oItem);
-                    this.LoadCondFilter(oDataMgr, conn, p_strScenarioId, oItem);
-                    this.LoadProcessingSites(oDataMgr, conn, p_strScenarioId, oItem);
-                    this.LoadLandOwnerGroupFilter(oDataMgr, conn, p_strScenarioId, oItem);
-                    this.LoadTransportationCosts(oDataMgr, conn, p_strScenarioId, oItem);
+                    //this.LoadEffectiveVariables(oDataMgr, conn, p_strScenarioId, oItem);
+                    //this.LoadOptimizationVariable(oDataMgr, conn, p_strScenarioId, oItem);
+                    //this.LoadTieBreakerVariables(oDataMgr, conn, p_strScenarioId, oItem);
+                    //this.LoadLastTieBreakRank(oDataMgr, conn, p_strScenarioId, oItem);
+                    //this.LoadProcessorScenarioItems(oDataMgr, conn, p_strScenarioId, oItem);
+                    //this.LoadPlotFilter(oDataMgr, conn, p_strScenarioId, oItem);
+                    //this.LoadCondFilter(oDataMgr, conn, p_strScenarioId, oItem);
+                    //this.LoadProcessingSites(oDataMgr, conn, p_strScenarioId, oItem);
+                    //this.LoadLandOwnerGroupFilter(oDataMgr, conn, p_strScenarioId, oItem);
+                    //this.LoadTransportationCosts(oDataMgr, conn, p_strScenarioId, oItem);
                     p_oOptimizerScenarioItem_Collection.Add(oItem);
                 }
             }

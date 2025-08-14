@@ -53,7 +53,6 @@ namespace FIA_Biosum_Manager
             if (frmMain.g_oGridViewFont != null) this.lvProcessorScenario.Font = frmMain.g_oGridViewFont;
 
             DataMgr oDataMgr = new DataMgr();
-            ado_data_access oAdo = new ado_data_access();
             string strProcessorScenario = "";
             string strFullDetailsYN = "N";
             if (p_bScenarioCopy == false)
@@ -75,6 +74,7 @@ namespace FIA_Biosum_Manager
                     m_oQueries.LoadDatasourcesNew(true, "processor", strScenarioArray[x]);
                     oTools.LoadAll(m_oQueries, strScenarioArray[x], m_oProcessorScenarioItem_Collection);
                 }
+                ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection = m_oProcessorScenarioItem_Collection;
             }
             else
             {
@@ -145,6 +145,7 @@ namespace FIA_Biosum_Manager
                     }
                     conn.Close();
                 }
+
             }
             if (lvProcessorScenario.Items.Count > 0)
             {
@@ -159,6 +160,7 @@ namespace FIA_Biosum_Manager
                             if (lvProcessorScenario.Items[x].SubItems[COL_SCENARIOID].Text.Trim().ToUpper() ==
                                 ReferenceOptimizerScenarioForm.uc_scenario_processor_scenario_select1.m_oProcessorScenarioItem_Collection.Item(y).ScenarioId.Trim().ToUpper())
                             {
+                                ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection.Item(y).Selected = true;
                                 ReferenceOptimizerScenarioForm.uc_scenario_cond_filter1.strLowSlope =
                                     ReferenceOptimizerScenarioForm.uc_scenario_processor_scenario_select1.m_oProcessorScenarioItem_Collection.Item(y).m_oHarvestMethod.SteepSlopePercent;
 
@@ -178,6 +180,11 @@ namespace FIA_Biosum_Manager
                 chkFullDetails.Checked = true;
             else
                 chkFullDetails.Checked = false;
+        }
+
+        public void loadvaluesnew(bool p_bScenarioCopy)
+        {
+
         }
 
         private string[] loadScenarioArray()

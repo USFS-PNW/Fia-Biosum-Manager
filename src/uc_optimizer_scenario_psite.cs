@@ -200,282 +200,288 @@ namespace FIA_Biosum_Manager
 			string strOptimizerRulesDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
 								Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
 
-			string strTravelTimesDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.TravelTime.DefaultTravelTimePathAndDbFile;
+			string strTravelTimesDb = this._frmScenario.LoadedQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.TravelTimes);
 
-			using (System.Data.SQLite.SQLiteConnection travelTimesConn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(strTravelTimesDb)))
-			{
-				travelTimesConn.Open();
-
-				p_dataMgr.m_strSQL = "ATTACH DATABASE '" + strOptimizerRulesDb + "' AS rule_defs";
-				p_dataMgr.SqlNonQuery(travelTimesConn, p_dataMgr.m_strSQL);
-
-				/**************************************************************
-				 **get the scenario travel time table name
-				 **************************************************************/
-				this.m_strTravelTimeTable = this.ReferenceOptimizerScenarioForm.uc_datasource1.getDataSourceTableName("TRAVEL TIMES");
-
-				if (this.m_strTravelTimeTable.Trim().Length == 0)
+			if (System.IO.File.Exists(strTravelTimesDb))
+            {
+				using (System.Data.SQLite.SQLiteConnection travelTimesConn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(strTravelTimesDb)))
 				{
-					MessageBox.Show("!!Could Not Locate Scenario Travel Time Table!!", "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-					this.m_intError = -1;
-					return;
-				}
+					travelTimesConn.Open();
 
-				/************************************************************
-				 **get the scenario processing site table name
-				 ************************************************************/
-				this.m_strPSiteTable = this.ReferenceOptimizerScenarioForm.uc_datasource1.getDataSourceTableName("PROCESSING SITES");
-				if (this.m_strPSiteTable.Trim().Length == 0)
-				{
-					MessageBox.Show("!!Could Not Locate Scenario Processing Site Table!!", "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-					this.m_intError = -1;
-					return;
-				}
+					p_dataMgr.m_strSQL = "ATTACH DATABASE '" + strOptimizerRulesDb + "' AS rule_defs";
+					p_dataMgr.SqlNonQuery(travelTimesConn, p_dataMgr.m_strSQL);
 
-				p_dataMgr.m_strSQL = "SELECT DISTINCT p.psite_id,p.psite_cn,p.name,p.trancd,p.trancd_def,p.biocd,p.biocd_def,p.exists_yn,p.state,p.county " +
-							 "FROM " + m_strPSiteTable + " AS p WHERE EXISTS (SELECT DISTINCT(t.psite_id) " +
-																		  "FROM " + this.m_strTravelTimeTable + " AS t " +
-																		  "WHERE t.psite_id=p.psite_id)";
+					/**************************************************************
+					 **get the scenario travel time table name
+					 **************************************************************/
+					this.m_strTravelTimeTable = this.ReferenceOptimizerScenarioForm.uc_datasource1.getDataSourceTableName("TRAVEL TIMES");
 
-				p_dataMgr.SqlQueryReader(travelTimesConn, p_dataMgr.m_strSQL);
-				if (p_dataMgr.m_DataReader.HasRows == true)
-				{
-					x = 0;
-					while (p_dataMgr.m_DataReader.Read())
+					if (this.m_strTravelTimeTable.Trim().Length == 0)
 					{
-						if (p_dataMgr.m_DataReader["psite_id"] != System.DBNull.Value)
+						MessageBox.Show("!!Could Not Locate Scenario Travel Time Table!!", "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+						this.m_intError = -1;
+						return;
+					}
+
+					/************************************************************
+					 **get the scenario processing site table name
+					 ************************************************************/
+					this.m_strPSiteTable = this.ReferenceOptimizerScenarioForm.uc_datasource1.getDataSourceTableName("PROCESSING SITES");
+					if (this.m_strPSiteTable.Trim().Length == 0)
+					{
+						MessageBox.Show("!!Could Not Locate Scenario Processing Site Table!!", "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+						this.m_intError = -1;
+						return;
+					}
+
+					p_dataMgr.m_strSQL = "SELECT DISTINCT p.psite_id,p.psite_cn,p.name,p.trancd,p.trancd_def,p.biocd,p.biocd_def,p.exists_yn,p.state,p.county " +
+								 "FROM " + m_strPSiteTable + " AS p WHERE EXISTS (SELECT DISTINCT(t.psite_id) " +
+																			  "FROM " + this.m_strTravelTimeTable + " AS t " +
+																			  "WHERE t.psite_id=p.psite_id)";
+
+					p_dataMgr.SqlQueryReader(travelTimesConn, p_dataMgr.m_strSQL);
+					if (p_dataMgr.m_DataReader.HasRows == true)
+					{
+						x = 0;
+						while (p_dataMgr.m_DataReader.Read())
 						{
-							//null column
-							this.lstPSites.Items.Add(" ");
-							this.lstPSites.Items[lstPSites.Items.Count - 1].UseItemStyleForSubItems = false;
-							this.m_oLvRowColors.AddRow();
-							this.m_oLvRowColors.AddColumns(lstPSites.Items.Count - 1, lstPSites.Columns.Count);
-
-							//psite_id
-							this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Add(Convert.ToString(p_dataMgr.m_DataReader["psite_id"]));
-							this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
-								COLUMN_PSITEID,
-								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITEID], false);
-
-							if (p_dataMgr.m_DataReader["psite_cn"] != System.DBNull.Value)
+							if (p_dataMgr.m_DataReader["psite_id"] != System.DBNull.Value)
 							{
-								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(p_dataMgr.m_DataReader["psite_cn"].ToString());
-							}
-							else
-							{
-								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(" ");
-							}
-							this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
-								COLUMN_PSITECN,
-								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITECN], false);
+								//null column
+								this.lstPSites.Items.Add(" ");
+								this.lstPSites.Items[lstPSites.Items.Count - 1].UseItemStyleForSubItems = false;
+								this.m_oLvRowColors.AddRow();
+								this.m_oLvRowColors.AddColumns(lstPSites.Items.Count - 1, lstPSites.Columns.Count);
 
-							if (p_dataMgr.m_DataReader["name"] != System.DBNull.Value)
-							{
-								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(p_dataMgr.m_DataReader["name"].ToString());
-							}
-							else
-							{
-								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(" ");
-							}
-							this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
-								COLUMN_PSITENAME,
-								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITENAME], false);
+								//psite_id
+								this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Add(Convert.ToString(p_dataMgr.m_DataReader["psite_id"]));
+								this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
+									COLUMN_PSITEID,
+									lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITEID], false);
 
-
-
-							/**********************************************************
-							 **does the psite current exist
-							 **********************************************************/
-							if (p_dataMgr.m_DataReader["exists_yn"] != System.DBNull.Value)
-							{
-								if (p_dataMgr.m_DataReader["exists_yn"].ToString().Trim() == "Y")
+								if (p_dataMgr.m_DataReader["psite_cn"] != System.DBNull.Value)
 								{
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Y");
-
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(p_dataMgr.m_DataReader["psite_cn"].ToString());
 								}
-								else if (p_dataMgr.m_DataReader["exists_yn"].ToString().Trim() == "N")
+								else
 								{
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("N");
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(" ");
+								}
+								this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
+									COLUMN_PSITECN,
+									lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITECN], false);
+
+								if (p_dataMgr.m_DataReader["name"] != System.DBNull.Value)
+								{
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(p_dataMgr.m_DataReader["name"].ToString());
+								}
+								else
+								{
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(" ");
+								}
+								this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
+									COLUMN_PSITENAME,
+									lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITENAME], false);
+
+
+
+								/**********************************************************
+								 **does the psite current exist
+								 **********************************************************/
+								if (p_dataMgr.m_DataReader["exists_yn"] != System.DBNull.Value)
+								{
+									if (p_dataMgr.m_DataReader["exists_yn"].ToString().Trim() == "Y")
+									{
+										this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Y");
+
+									}
+									else if (p_dataMgr.m_DataReader["exists_yn"].ToString().Trim() == "N")
+									{
+										this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("N");
+									}
+									else
+									{
+										this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Unknown");
+									}
 								}
 								else
 								{
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Unknown");
 								}
-							}
-							else
-							{
-								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Unknown");
-							}
-							this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
-								COLUMN_PSITEEXIST,
-								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITEEXIST], false);
+								this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
+									COLUMN_PSITEEXIST,
+									lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITEEXIST], false);
 
 
 
-							/***********************************************
-							 **processing site type
-							 ***********************************************/
-							int intSubItemCount = 0;
-							if (p_dataMgr.m_DataReader["trancd"] != System.DBNull.Value)
-							{
+								/***********************************************
+								 **processing site type
+								 ***********************************************/
+								int intSubItemCount = 0;
+								if (p_dataMgr.m_DataReader["trancd"] != System.DBNull.Value)
+								{
 
-								byteTranCd = Convert.ToByte(p_dataMgr.m_DataReader["trancd"]);
-								if (Convert.ToByte(p_dataMgr.m_DataReader["trancd"]) == 1)
+									byteTranCd = Convert.ToByte(p_dataMgr.m_DataReader["trancd"]);
+									if (Convert.ToByte(p_dataMgr.m_DataReader["trancd"]) == 1)
+									{
+										this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Facility on Road");
+										intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+										this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+
+									}
+									else if (Convert.ToByte(p_dataMgr.m_DataReader["trancd"]) == 2)
+									{
+										this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Intermodal Transfer");
+										intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+										this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+									}
+									else
+									{
+										this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Facility on Rail");
+										intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+										this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+									}
+								}
+								else
 								{
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Facility on Road");
 									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 
+
 								}
-								else if (Convert.ToByte(p_dataMgr.m_DataReader["trancd"]) == 2) 
+								this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
+									COLUMN_PSITEROADRAIL,
+									lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITEROADRAIL], false);
+
+
+								/***********************************************
+								 **site bio processing type
+								 ***********************************************/
+								intSubItemCount = 0;
+								if (p_dataMgr.m_DataReader["biocd"] != System.DBNull.Value)
 								{
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Intermodal Transfer");
-									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+
+									byteTranCd = Convert.ToByte(p_dataMgr.m_DataReader["biocd"]);
+									if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 2)
+									{
+										this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Chips");
+										intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+										this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+									}
+									else if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 3)
+									{
+										this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Both");
+										intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+										this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+									}
+									else if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 4)
+									{
+										this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Other");
+										intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+										this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+									}
+									else
+									{
+										this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Merch");
+										intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+										this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+									}
 								}
 								else
-                                {
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Facility on Rail");
-									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
-								}
-							}
-							else
-							{
-								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Facility on Road");
-								intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
-								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
-
-
-							}
-							this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
-								COLUMN_PSITEROADRAIL,
-								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITEROADRAIL], false);
-
-
-							/***********************************************
-							 **site bio processing type
-							 ***********************************************/
-							intSubItemCount = 0;
-							if (p_dataMgr.m_DataReader["biocd"] != System.DBNull.Value)
-							{
-
-								byteTranCd = Convert.ToByte(p_dataMgr.m_DataReader["biocd"]);
-								if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 2)
-								{
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Chips");
-									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
-								}
-								else if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 3)
-								{
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Both");
-									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
-									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
-								}
-                                else if (Convert.ToByte(p_dataMgr.m_DataReader["biocd"]) == 4)
-                                {
-                                    this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Other");
-                                    intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
-                                    this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
-                                }
-                                else
 								{
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Merch");
 									intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+
+
 								}
-							}
-							else
-							{
-								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Merch");
-								intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
-								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+								this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
+									COLUMN_PSITEBIOPROCESSTYPE,
+									lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITEBIOPROCESSTYPE], false);
 
-
-							}
-							this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
-								COLUMN_PSITEBIOPROCESSTYPE,
-								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITEBIOPROCESSTYPE], false);
-
-							//state
-							if (p_dataMgr.m_DataReader["state"] != System.DBNull.Value)
-							{
-								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(p_dataMgr.m_DataReader["state"].ToString());
-							}
-							else
-							{
-								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(" ");
-							}
-							this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
-								COLUMN_PSITESTATE,
-								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITESTATE], false);
-
-							//county
-							if (p_dataMgr.m_DataReader["county"] != System.DBNull.Value)
-							{
-								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(p_dataMgr.m_DataReader["county"].ToString());
-							}
-							else
-							{
-								this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(" ");
-							}
-							this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
-								COLUMN_PSITECOUNTY,
-								lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITECOUNTY], false);
-
-							x++;
-						}
-					}
-
-				}
-				p_dataMgr.m_DataReader.Close();
-
-				/***************************************************
-				 **update listview with the previous scenario settings
-				 ***************************************************/
-				p_dataMgr.m_strSQL = "SELECT * FROM scenario_psites " +
-								 "WHERE TRIM(UPPER(scenario_id)) = '" + this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToUpper() + "';";
-
-				p_dataMgr.SqlQueryReader(travelTimesConn, p_dataMgr.m_strSQL);
-				if (p_dataMgr.m_DataReader.HasRows == true)
-				{
-					x = 0;
-					while (p_dataMgr.m_DataReader.Read())
-					{
-						if (p_dataMgr.m_DataReader["psite_id"] != System.DBNull.Value)
-						{
-							intPSiteId = Convert.ToInt32(p_dataMgr.m_DataReader["psite_id"]);
-							for (x = 0; x <= lstPSites.Items.Count - 1; x++)
-							{
-
-								if (intPSiteId == Convert.ToInt32(lstPSites.Items[x].SubItems[COLUMN_PSITEID].Text.Trim()))
+								//state
+								if (p_dataMgr.m_DataReader["state"] != System.DBNull.Value)
 								{
-									if (p_dataMgr.m_DataReader["selected_yn"] != System.DBNull.Value)
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(p_dataMgr.m_DataReader["state"].ToString());
+								}
+								else
+								{
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(" ");
+								}
+								this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
+									COLUMN_PSITESTATE,
+									lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITESTATE], false);
+
+								//county
+								if (p_dataMgr.m_DataReader["county"] != System.DBNull.Value)
+								{
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(p_dataMgr.m_DataReader["county"].ToString());
+								}
+								else
+								{
+									this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add(" ");
+								}
+								this.m_oLvRowColors.ListViewSubItem(lstPSites.Items.Count - 1,
+									COLUMN_PSITECOUNTY,
+									lstPSites.Items[lstPSites.Items.Count - 1].SubItems[COLUMN_PSITECOUNTY], false);
+
+								x++;
+							}
+						}
+
+					}
+					p_dataMgr.m_DataReader.Close();
+
+					/***************************************************
+					 **update listview with the previous scenario settings
+					 ***************************************************/
+					p_dataMgr.m_strSQL = "SELECT * FROM scenario_psites " +
+									 "WHERE TRIM(UPPER(scenario_id)) = '" + this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToUpper() + "';";
+
+					p_dataMgr.SqlQueryReader(travelTimesConn, p_dataMgr.m_strSQL);
+					if (p_dataMgr.m_DataReader.HasRows == true)
+					{
+						x = 0;
+						while (p_dataMgr.m_DataReader.Read())
+						{
+							if (p_dataMgr.m_DataReader["psite_id"] != System.DBNull.Value)
+							{
+								intPSiteId = Convert.ToInt32(p_dataMgr.m_DataReader["psite_id"]);
+								for (x = 0; x <= lstPSites.Items.Count - 1; x++)
+								{
+
+									if (intPSiteId == Convert.ToInt32(lstPSites.Items[x].SubItems[COLUMN_PSITEID].Text.Trim()))
 									{
-										if (p_dataMgr.m_DataReader["selected_yn"].ToString().Trim() == "Y")
+										if (p_dataMgr.m_DataReader["selected_yn"] != System.DBNull.Value)
 										{
-											lstPSites.Items[x].Checked = true;
-										}
-										else
-										{
-											lstPSites.Items[x].Checked = false;
+											if (p_dataMgr.m_DataReader["selected_yn"].ToString().Trim() == "Y")
+											{
+												lstPSites.Items[x].Checked = true;
+											}
+											else
+											{
+												lstPSites.Items[x].Checked = false;
+											}
 										}
 									}
 								}
-							}
 
+							}
 						}
 					}
+					else
+					{
+						//if (((frmScenario)this.ParentForm).btnSave.Enabled==false) 
+						//	((frmScenario)this.ParentForm).btnSave.Enabled=true;
+					}
+					p_dataMgr.m_DataReader.Close();
 				}
-				else
-				{
-					//if (((frmScenario)this.ParentForm).btnSave.Enabled==false) 
-					//	((frmScenario)this.ParentForm).btnSave.Enabled=true;
-				}
-				p_dataMgr.m_DataReader.Close();
 			}
+
 		}
+
+
 
 		public int savevalues()
 		{
