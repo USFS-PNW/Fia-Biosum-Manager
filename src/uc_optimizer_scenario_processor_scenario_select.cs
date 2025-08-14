@@ -34,7 +34,7 @@ namespace FIA_Biosum_Manager
             set { _frmScenario = value; }
         }
 
-        public void loadvalues(bool p_bScenarioCopy)
+        public void loadvalues()
         {
             int x;
             ProcessorScenarioTools oTools = new ProcessorScenarioTools();
@@ -52,42 +52,18 @@ namespace FIA_Biosum_Manager
             this.m_oLvAlternateColors.CustomFullRowSelect = true;
             if (frmMain.g_oGridViewFont != null) this.lvProcessorScenario.Font = frmMain.g_oGridViewFont;
 
-            DataMgr oDataMgr = new DataMgr();
             string strProcessorScenario = "";
             string strFullDetailsYN = "N";
-            if (p_bScenarioCopy == false)
+            foreach (ProcessorScenarioItem psItem in ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection)
             {
-                string[] strScenarioArray = null;
-                strScenarioArray = loadScenarioArray();
-
-                if (strScenarioArray == null) return;
-
-                for (x = 0; x <= strScenarioArray.Length - 1; x++)
+                m_oProcessorScenarioItem_Collection.Add(psItem);
+                if (psItem.Selected == true)
                 {
-                    //
-                    //LOAD PROJECT DATATASOURCES INFO
-                    //
-                    m_oQueries.m_oFvs.LoadDatasource = true;
-                    m_oQueries.m_oFIAPlot.LoadDatasource = true;
-                    m_oQueries.m_oProcessor.LoadDatasource = true;
-                    m_oQueries.m_oReference.LoadDatasource = true;
-                    m_oQueries.LoadDatasourcesNew(true, "processor", strScenarioArray[x]);
-                    oTools.LoadAll(m_oQueries, strScenarioArray[x], m_oProcessorScenarioItem_Collection);
-                }
-                ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection = m_oProcessorScenarioItem_Collection;
-            }
-            else
-            {
-                foreach (ProcessorScenarioItem psItem in ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection)
-                {
-                    m_oProcessorScenarioItem_Collection.Add(psItem);
-                    if (psItem.Selected == true)
-                    {
-                        strProcessorScenario = psItem.ScenarioId;
-                        strFullDetailsYN = psItem.DisplayFullDetailsYN;
-                    }
+                    strProcessorScenario = psItem.ScenarioId;
+                    strFullDetailsYN = psItem.DisplayFullDetailsYN;
                 }
             }
+
             for (x = 0; x <= m_oProcessorScenarioItem_Collection.Count - 1; x++)
             {
                 entryListItem = lvProcessorScenario.Items.Add(" ");
@@ -102,51 +78,6 @@ namespace FIA_Biosum_Manager
             }
             this.m_oLvAlternateColors.ListView();
 
-            if (p_bScenarioCopy == false)
-            {
-                string strScenarioDB =
-                    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
-                    Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
-
-
-                string strConn = oDataMgr.GetConnectionString(strScenarioDB);
-                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
-                {
-                    conn.Open();
-
-                    if (oDataMgr.TableExist(conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName))
-                    {
-                        oDataMgr.m_strSQL = "SELECT * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName + " " +
-                                    "WHERE TRIM(UPPER(scenario_id)) = '" +
-                                        ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToUpper() + "';";
-                        oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
-
-                        if (oDataMgr.m_DataReader.HasRows)
-                        {
-                            while (oDataMgr.m_DataReader.Read())
-                            {
-                                if (oDataMgr.m_DataReader["processor_scenario_id"] != System.DBNull.Value &&
-                                    oDataMgr.m_DataReader["processor_scenario_id"].ToString().Trim().Length > 0)
-                                {
-                                    strProcessorScenario = oDataMgr.m_DataReader["processor_scenario_id"].ToString().Trim();
-                                }
-                                if (oDataMgr.m_DataReader["FullDetailsYN"] != System.DBNull.Value &&
-                                    oDataMgr.m_DataReader["FullDetailsYN"].ToString().Trim().Length > 0)
-                                {
-                                    strFullDetailsYN = oDataMgr.m_DataReader["FullDetailsYN"].ToString().Trim();
-                                }
-                            }
-                        }
-                        oDataMgr.m_DataReader.Close();
-                    }
-                    else
-                    {
-                        frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioProcessorScenarioSelectTable(oDataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName);
-                    }
-                    conn.Close();
-                }
-
-            }
             if (lvProcessorScenario.Items.Count > 0)
             {
                 for (x = 0; x <= lvProcessorScenario.Items.Count - 1; x++)
@@ -180,11 +111,6 @@ namespace FIA_Biosum_Manager
                 chkFullDetails.Checked = true;
             else
                 chkFullDetails.Checked = false;
-        }
-
-        public void loadvaluesnew(bool p_bScenarioCopy)
-        {
-
         }
 
         private string[] loadScenarioArray()

@@ -6959,7 +6959,7 @@ namespace FIA_Biosum_Manager
                 if (bFVSVariable == false)
                 {
                     //find the treatment for each plot that produces the MAX/MIN revenue value
-                    p_dataMgr.m_strSQL = "SELECT a.biosum_cond_id, a.rxpackage, a.rx, a." + m_strOptimizationColumnNameSql + " AS optimization value " +
+                    p_dataMgr.m_strSQL = "SELECT a.biosum_cond_id, a.rxpackage, a.rx, a." + m_strOptimizationColumnNameSql + " AS optimization_value " +
                         "FROM " + strOptimizationTableName + " AS a, " +
                         "(SELECT " + m_strOptimizationAggregateSql + "(" + m_strOptimizationColumnNameSql + ") AS " + m_strOptimizationAggregateColumnName + ", biosum_cond_id " +
                         "FROM " + strOptimizationTableName + " WHERE affordable_YN = 'Y' " +

@@ -1083,6 +1083,7 @@ namespace FIA_Biosum_Manager
         public void loadvalues_FromProperties()
         {
             int x;
+
             if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem_Collection.Item(0) != null)
             {
                 for (x = 0; x <= ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem_Collection.Item(0).m_oOptimizationVariableItem_Collection.Count - 1; x++)

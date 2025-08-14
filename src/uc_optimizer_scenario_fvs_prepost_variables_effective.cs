@@ -1740,7 +1740,35 @@ namespace FIA_Biosum_Manager
 			this.m_strError = oDataMgr.m_strError;
 		}
 
-        private void loadFVSTableAndField()
+		public void loadvaluesnew()
+        {
+			this.m_intError = 0;
+			this.m_strError = "";
+
+			this.lstFVSTablesList.Items.Clear();
+			this.lstFVSTablesList.Sorted = true;
+			m_dictFVSTables = m_oOptimizerScenarioTools.LoadFvsTablesAndVariables();
+			foreach (string strKey in m_dictFVSTables.Keys)
+			{
+				lstFVSTablesList.Items.Add(strKey);
+			}
+			m_oOldVar = new Variables();
+			m_oSavVar = new Variables();
+
+			int x = 0;
+			for (x = 0; x <= NUMBER_OF_VARIABLES - 1; x++)
+				this.RemoveVariable(x);
+
+			int y = 0;
+			for (y = 0; y <= ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Count - 1; y++)
+            {
+				m_oOldVar.m_strPreVarArray[y] = ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(0).m_strPostVarArray[y];
+
+			}
+		}
+
+
+		private void loadFVSTableAndField()
         {
             lstFVSTablesList.ClearSelected();
             string[] strPieces = this.lvFVSVariablesPrePostValues.SelectedItems[0].SubItems[COLUMN_PREVAR].Text.Trim().Split('.');
