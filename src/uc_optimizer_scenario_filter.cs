@@ -320,27 +320,6 @@ namespace FIA_Biosum_Manager
 		}
 		public void loadvalues(bool p_bScenarioCopy)
 		{
-			DataMgr oDataMgr = new DataMgr();
-			string strOptimizerRulesDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
-								Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
-
-			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strOptimizerRulesDb)))
-            {
-				conn.Open();
-
-				if (this.FilterType == "PLOT")
-                {
-					ReferenceOptimizerScenarioForm.m_oOptimizerScenarioTools.LoadPlotFilter(oDataMgr, conn,
-						ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.ScenarioId, ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem);
-                }
-                else
-                {
-					ReferenceOptimizerScenarioForm.m_oOptimizerScenarioTools.LoadCondFilter(oDataMgr, conn,
-						ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.ScenarioId, ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem);
-				}
-
-			}
-
 			this.txtCurrentSQL.Text = "";
             if (this.FilterType == "PLOT")
             {
